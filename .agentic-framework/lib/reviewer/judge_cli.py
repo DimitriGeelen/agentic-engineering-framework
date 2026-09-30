@@ -25,12 +25,18 @@ lib/verdict_ledger.py's shared validator or it does not exist: the worker's sign
 criterion needs with the capture result of each, and a panel's required seats are all registered
 in a signed review run BEFORE dispatch, and `apply` / `check-render` / `audit` read them.
 
-SINGLE-VENDOR HONESTY. Only the claude worker kind exists until T-3582 builds codex/opencode
-seats. A rung-5 run is therefore dispatched as ONE seat, reported "degraded: single-vendor
-panel", and registered as demanding three vendors, so the ledger refuses to let it satisfy the
-criterion. We chose "leave the criterion open" over "downgrade the requirement": a high-impact
-criterion is not quietly closed on a weaker review than the impact model asked for. The
-reviewer's verdict is still recorded and reported (red/amber/escalate keep it open and say why).
+BACKENDS COME FROM THE REGISTRY (T-3583, round 3). No vendor is named here. The seats are the
+backends in policy/review-backends.yaml (read through lib/review_cost.py, the registry's only
+parser) that declare a `--worker-kind` match; the ones `fw termlink worker-kinds` can actually
+dispatch run. Every dispatched seat logs one cost record (`fw review cost log`). A seat that no
+internal backend can fill is offered to a PAID backend by `fw review propose` — and then waits for
+the operator: the judge never dispatches a paid backend.
+
+SINGLE-VENDOR HONESTY. Until T-3582 builds codex/opencode worker kinds only claude dispatches. A
+rung-5 run registers all three seats as required, dispatches the one it can, proposes the paid
+alternative for the others, and is reported "degraded: single-vendor panel"; the ledger refuses to
+let it satisfy the criterion. We chose "leave the criterion open" over "downgrade the requirement":
+a high-impact criterion is not quietly closed on a weaker review than the impact model asked for.
 """
 
 from __future__ import annotations
@@ -64,12 +70,15 @@ CEILING_KEY = "REVIEWER_JUDGE_WEEKLY_SPEND_CEILING"
 DEFAULT_CEILING = 10000.0
 #: Estimated USD per dispatched reviewer, by rung. A panel is three seats.
 RUNG_COST = {1: 2.0, 2: 2.0, 3: 3.0, 5: 6.0}
-#: The vendors a full rung-5 panel needs, and the ones this checkout can actually dispatch.
-#: `AVAILABLE_VENDORS` grows when T-3582 builds real codex/opencode worker kinds.
-PANEL_SEATS = ("claude", "codex", "opencode")
-AVAILABLE_VENDORS = ("claude",)
+#: IW-7: a rung-5 panel is three reviewers from three different vendors. WHICH vendors is the
+#: registry's business (policy/review-backends.yaml), not this module's.
+PANEL_SIZE = 3
+#: Screenshots taken per run. Pages beyond the cap are still REQUIRED: they are registered as
+#: not captured, so the ledger refuses a render green (round 3: no silent truncation).
+MAX_CAPTURE_PAGES = 6
 DEGRADED_SINGLE_VENDOR = "degraded: single-vendor panel"
 UNKNOWN = "unknown"
+COST_PURPOSE = "reviewer-judge"
 
 
 def _root() -> Path:
@@ -134,6 +143,85 @@ def _select_criteria(task_data: dict, criterion_n: int | None = None,
                      root: Path | None = None) -> list[dict]:
     root = root or _root()
     return _partition(task_data, root, task_data["frontmatter"].get("id", ""), criterion_n)[0]
+
+
+# ── backends: the registry decides, the dispatcher says what can run ──────────────
+
+_WORKER_KIND_RE = re.compile(r"--worker-kind\[= \]([A-Za-z0-9_-]+)")
+
+
+class _Env:
+    """Run lib/review_cost.py (the registry's only parser, and the cost/proposal helper) against
+    `root`: it reads PROJECT_ROOT / FRAMEWORK_ROOT from the environment."""
+
+    def __init__(self, root: Path):
+        self.vals = {"PROJECT_ROOT": str(root), "FRAMEWORK_ROOT": str(_HERE.parent)}
+        self.old: dict = {}
+
+    def __enter__(self):
+        self.old = {k: os.environ.get(k) for k in self.vals}
+        os.environ.update(self.vals)
+        from lib import review_cost
+        return review_cost
+
+    def __exit__(self, *exc):
+        for k, v in self.old.items():
+            if v is None:
+                os.environ.pop(k, None)
+            else:
+                os.environ[k] = v
+
+
+def _backends(root: Path) -> tuple[list[dict], list[dict]]:
+    """(seat backends, paid backends) from the registry, in registry order.
+
+    A seat backend is internal and declares the worker kind that runs it in its `match:` list
+    (`--worker-kind[= ]<kind>`); it carries `kind`. A paid backend needs an approved proposal."""
+    with _Env(root) as rc:
+        reg = rc.load_registry()
+    seats, paid = [], []
+    for b in reg:
+        if b.get("cost_class") == "paid" or b.get("approval_required"):
+            paid.append(dict(b))
+            continue
+        kind = next((m.group(1) for pat in b.get("match") or [] for m in [_WORKER_KIND_RE.search(pat)] if m), "")
+        if kind:
+            seats.append({**b, "kind": kind})
+    return seats, paid
+
+
+def _dispatchable_kinds(root: Path) -> set[str]:
+    """The worker kinds `fw termlink dispatch` accepts (`fw termlink worker-kinds`)."""
+    sh = _HERE.parent / "agents" / "termlink" / "termlink.sh"
+    try:
+        out = subprocess.run(["bash", str(sh), "worker-kinds"], capture_output=True, text=True,
+                             timeout=30).stdout
+    except (OSError, subprocess.SubprocessError):
+        return set()
+    return {w for w in out.split() if w}
+
+
+def _log_seat_cost(root: Path, task_id: str, backend: str, purpose: str, evidence: str) -> str:
+    """One cost record per dispatched seat via the helper. '' on success, else the refusal."""
+    try:
+        with _Env(root) as rc:
+            rc.log_cost(task=task_id, backend=backend, purpose=purpose, tokens=None, cost=None,
+                        proposal_id=None, evidence=evidence)
+        return ""
+    except Exception as e:  # noqa: BLE001 - reported, never swallowed
+        return str(e)
+
+
+def _propose_paid(root: Path, task_id: str, backend: str, why: str, estimate: float) -> dict:
+    """Propose a paid seat (`fw review propose`), or reuse this run-seat's open proposal. Returns
+    the proposal; the judge only ever waits on it."""
+    with _Env(root) as rc:
+        used = rc._consumed()
+        for p in rc.proposals().values():
+            if (p.get("task") == task_id and p.get("backend") == backend and p["id"] not in used
+                    and p.get("why") == why):
+                return p
+        return rc.propose(task=task_id, backend=backend, why=why, est_cost=estimate, est_tokens=None)
 
 
 # ── rung (IW-7) ──────────────────────────────────────────────────────────────
@@ -317,7 +405,7 @@ def _pages_for(root: Path, task_id: str, task_text: str, criteria: list[dict]) -
         if p not in seen:
             seen.add(p)
             out.append(p)
-    return out[:6]
+    return out          # every required page; capture is capped separately (MAX_CAPTURE_PAGES)
 
 
 def _watchtower_url(root: Path) -> str:
@@ -383,15 +471,20 @@ def _gather_evidence(root: Path, task_id: str, task_data: dict, criteria: list[d
     ev["pages"] = _pages_for(root, task_id, task_data["text"], [c for c in criteria if c["render"]])
     if dry_run:
         return ev
+    shoot = ev["pages"][:MAX_CAPTURE_PAGES]
     try:
-        shots, err = capture(_watchtower_url(root), ev["pages"], root / EVIDENCE_DIR / task_id)
+        shots, err = capture(_watchtower_url(root), shoot, root / EVIDENCE_DIR / task_id)
     except Exception as e:  # noqa: BLE001
         shots, err = [], f"capture crashed: {e}"
     by_name = {Path(x).name: Path(x) for x in shots if Path(x).exists()}
     errs = err[len("partial: "):].split("; ") if err.startswith("partial: ") else []
     for i, pg in enumerate(ev["pages"]):
-        f = by_name.get(_shot_name(i, pg))
-        if f is not None:
+        f = by_name.get(_shot_name(i, pg)) if i < MAX_CAPTURE_PAGES else None
+        if i >= MAX_CAPTURE_PAGES:
+            ev["captures"].append({"page": pg, "ok": False, "sha256": "", "path": "",
+                                   "error": f"not captured: capture is capped at "
+                                            f"{MAX_CAPTURE_PAGES} pages"})
+        elif f is not None:
             ev["captures"].append({"page": pg, "ok": True, "sha256": vl._hash_path(f),
                                    "path": str(f.resolve().relative_to(root.resolve())), "error": ""})
         else:
@@ -407,10 +500,27 @@ def _gather_evidence(root: Path, task_id: str, task_data: dict, criteria: list[d
 
 # ── the brief ────────────────────────────────────────────────────────────────
 
+def record_command(task_id: str, seat: str, rung: int, run_id: str) -> str:
+    """The exact `verdict record` line a worker runs. Every `$FW_SIDECAR_AGENT_ID` sits in double
+    quotes or bare, never single quotes, so the shell expands it (round 3: a single-quoted
+    reviewer string was submitted literally and refused)."""
+    run = f" --run-id {run_id}" if run_id else ""
+    return (f'bin/fw reviewer verdict record {task_id} --ac <N> --outcome <OUTCOME> '
+            f'--reviewer "reviewer-$FW_SIDECAR_AGENT_ID:{seat or "reviewer"}" '
+            f'--rung {_rung_label(rung, seat)} --dispatch-id "$FW_SIDECAR_AGENT_ID"{run} '
+            f'--digest <DIGEST> --evidence <REPORT>')
+
+
+def commit_command(task_id: str) -> str:
+    return ('git add .context/reviews && GIT_AUTHOR_NAME="reviewer-$FW_SIDECAR_AGENT_ID" '
+            'GIT_COMMITTER_NAME="reviewer-$FW_SIDECAR_AGENT_ID" GIT_AUTHOR_EMAIL=reviewer@aef.local '
+            f'GIT_COMMITTER_EMAIL=reviewer@aef.local git commit -m "{task_id}: reviewer verdict"')
+
+
 def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reason: str = "",
                  ceiling_note: str = "", evidence: dict | None = None, seat: str = "",
                  operator_only: list[dict] | None = None, run_id: str = "",
-                 degraded: str = "") -> str:
+                 degraded: str = "", revision: str = "") -> str:
     ev = {"needed": False, "shots": [], "error": "", "pages": [], "partial": [],
           **(evidence or {})}
     lines = [
@@ -438,9 +548,9 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
     if seat:
         lines.append(f"You hold panel seat `{seat}`.")
     if degraded:
-        lines.append(f"**{degraded}.** Only one vendor is available, so this run cannot satisfy a "
-                     "multi-vendor requirement: your verdict is recorded and reported, and the "
-                     "criterion stays open. Say so in your evidence report.")
+        lines.append(f"**{degraded}.** Fewer vendors can be dispatched than the panel requires, so "
+                     "this run cannot satisfy a multi-vendor requirement: your verdict is recorded "
+                     "and reported, and the criterion stays open. Say so in your evidence report.")
     if ceiling_note:
         lines += ["", f"**RUNG DROPPED: {ceiling_note}.** State this in your evidence report."]
     lines += ["", "## The criteria", "", f"Task: {task_id}", ""]
@@ -473,29 +583,29 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
     lines += [
         "## How you record your verdict (you write it; nobody writes it for you)",
         "",
-        "Your dispatch id is `$FW_SIDECAR_AGENT_ID`. For EACH criterion above, in this order:",
+        f"You review revision `{revision or '$FW_REVIEW_REVISION'}` (registered with your dispatch; "
+        "your verdict is bound to it, not to whatever HEAD is when you record). Your dispatch id "
+        "is `$FW_SIDECAR_AGENT_ID`. For EACH criterion above, in this order:",
         "",
         f"1. Write your evidence report to `{REPORT_DIR}/{task_id}/AC<N>-$FW_SIDECAR_AGENT_ID.md` "
         "(what you checked and found). Copy any screenshot you cite into the same directory and "
         "cite that copy.",
         f"2. Compute the digest you read: `bin/fw reviewer verdict digest {task_id} --ac <N>`",
-        "3. Record it, citing your report (and screenshots) as `--evidence`:",
+        "3. Record it (replace <N>, <OUTCOME>, <DIGEST>, <REPORT>; run it exactly as written, so "
+        "the shell expands `$FW_SIDECAR_AGENT_ID`):",
         "",
-        f"   `bin/fw reviewer verdict record {task_id} --ac <N> --outcome green|amber|red|escalate "
-        f"--reviewer 'reviewer-$FW_SIDECAR_AGENT_ID:{seat or 'reviewer'}' --rung {_rung_label(rung, seat)} "
-        f"--dispatch-id $FW_SIDECAR_AGENT_ID{f' --run-id {run_id}' if run_id else ''} "
-        "--digest <digest> --evidence <report> [--evidence <png> ...] [--guidance '...']`",
+        "   " + record_command(task_id, seat, rung, run_id),
         "",
-        "   `record` signs your completion (your session, the revision you reviewed, the digest, "
-        "the evidence hashes and the exact verdict). Your row counts only if it is committed by "
-        "exactly that session identity.",
+        "   Add `--evidence <png>` once per screenshot you cite, and `--guidance \"...\"` "
+        "(mandatory unless green).",
         "",
-        "   `--guidance` is mandatory unless green.",
+        "   `record` does NOT sign anything. When you exit, the dispatch runtime signs your "
+        "completion (your session, exit state, result stream and the exact rows you left). A row "
+        "you did not leave by then never counts, and neither does a green if you exit non-zero.",
+        "",
         "4. Commit your own rows, staging by name, under your own identity:",
         "",
-        "   `git add .context/reviews && GIT_AUTHOR_NAME=reviewer-$FW_SIDECAR_AGENT_ID "
-        "GIT_COMMITTER_NAME=reviewer-$FW_SIDECAR_AGENT_ID GIT_AUTHOR_EMAIL=reviewer@aef.local "
-        f"GIT_COMMITTER_EMAIL=reviewer@aef.local git commit -m '{task_id}: reviewer verdict'`",
+        "   " + commit_command(task_id),
         "",
         "Do not edit the task file, do not tick anything, do not touch any file outside "
         f"`{REPORT_DIR}/{task_id}/` and the ledger. Never use a bypass flag.",
@@ -524,17 +634,20 @@ Dispatcher = Callable[..., str]
 
 
 def _dispatch_argv(fw: Path, *, task_id: str, name: str, prompt_file: Path, root: Path,
-                   vendor: str, timeout: int) -> list[str]:
+                   vendor: str, timeout: int, revision: str = "") -> list[str]:
     """The exact `fw termlink dispatch` argv: the wrapper takes --project (not --project-dir) and
     --worker-kind for the vendor. A vendor with no worker kind yet (codex/opencode, T-3582) makes
     the wrapper refuse loudly rather than silently run another vendor's worker."""
-    return [str(fw), "termlink", "dispatch", "--name", name, "--task", task_id,
+    argv = [str(fw), "termlink", "dispatch", "--name", name, "--task", task_id,
             "--task-type", "review", "--worker-kind", vendor, "--prompt-file", str(prompt_file),
             "--timeout", str(timeout), "--project", str(root)]
+    if revision:
+        argv += ["--review-revision", revision]
+    return argv
 
 
 def _dispatch_real(*, task_id: str, brief: str, root: Path, name: str, vendor: str = "claude",
-                   timeout: int = 900) -> str:
+                   timeout: int = 900, revision: str = "") -> str:
     """Spawn the review worker via `fw termlink dispatch --task-type review`, wait for it, and
     return its dispatch id (the wrapper appends a random suffix and registers it)."""
     fw = Path(os.environ.get("FRAMEWORK_ROOT") or root) / "bin" / "fw"
@@ -542,7 +655,7 @@ def _dispatch_real(*, task_id: str, brief: str, root: Path, name: str, vendor: s
     pf.parent.mkdir(parents=True, exist_ok=True)
     pf.write_text(brief)
     r = subprocess.run(_dispatch_argv(fw, task_id=task_id, name=name, prompt_file=pf, root=root,
-                                      vendor=vendor, timeout=timeout),
+                                      vendor=vendor, timeout=timeout, revision=revision),
                        cwd=root, capture_output=True, text=True, timeout=120)
     m = re.search(r"Worker spawned:\s*(\S+)", r.stdout)
     if r.returncode != 0 or not m:
@@ -555,11 +668,11 @@ def _dispatch_real(*, task_id: str, brief: str, root: Path, name: str, vendor: s
 
 def _dispatch_reviewer(task_id: str, brief: str, rung: int, dry_run: bool, root: Path,
                        dispatcher: Dispatcher | None = None, name: str | None = None,
-                       vendor: str = "claude") -> str | None:
+                       vendor: str = "claude", revision: str = "") -> str | None:
     if dry_run:
         return None
     dispatcher = dispatcher or _dispatch_real
-    return dispatcher(task_id=task_id, brief=brief, root=root, vendor=vendor,
+    return dispatcher(task_id=task_id, brief=brief, root=root, vendor=vendor, revision=revision,
                       name=name or f"judge-{task_id.lower()}-r{rung}")
 
 
@@ -624,8 +737,9 @@ def _final(root: Path, task_id: str, judged: list[dict], dispatches: list[dict])
     crits = {c.index: c for c in human_criteria(ctx.text)} if ctx else {}
     outcomes, whys = {}, {}
     for c in judged:
-        seat_res = [r for d in dispatches for r in d["results"] if r["ac"] == c["ac_index"]]
-        last = seat_res[-1] if seat_res else {"outcome": UNKNOWN}
+        seat_res = [r for d in dispatches if d.get("dispatch_id") for r in d["results"]
+                    if r["ac"] == c["ac_index"]]
+        last = seat_res[-1] if seat_res else {"outcome": UNKNOWN, "why": "no seat was dispatched"}
         if last["outcome"] == vl.GREEN:
             good, why = (vl.satisfying_verdict(ctx, crits[c["ac_index"]])
                          if ctx and c["ac_index"] in crits else (None, "criterion gone"))
@@ -648,9 +762,29 @@ def _log_spend(root: Path, task_id: str, rung: int, cost: float) -> None:
 
 # ── orchestration ────────────────────────────────────────────────────────────
 
+def _plan_seats(root: Path, rung: int, kinds: set[str]) -> dict:
+    """Which registry backends sit this run. {'seats': [...], 'required': N, 'dispatch': [...],
+    'unfilled': [...], 'paid': [...]} — seats are {'seat', 'vendor', 'backend', 'kind'}."""
+    seat_backends, paid = _backends(root)
+    want = PANEL_SIZE if rung >= 5 else 1
+    runnable = [b for b in seat_backends if b["kind"] in kinds]
+    if rung >= 5:
+        chosen = seat_backends[:want]        # the panel's vendors, in registry order
+    else:
+        chosen = (runnable or seat_backends)[:1]
+    seats = [{"seat": b["id"], "vendor": b["id"], "backend": b["id"], "kind": b["kind"]} for b in chosen]
+    dispatch = [s for s in seats if s["kind"] in kinds]
+    unfilled = [s for s in seats if s["kind"] not in kinds]
+    for i in range(len(seats), want):     # the registry has fewer seat backends than the rung needs
+        unfilled.append({"seat": f"seat-{i + 1}", "vendor": f"seat-{i + 1}", "backend": "", "kind": ""})
+        seats.append(unfilled[-1])
+    return {"seats": seats, "required": want, "dispatch": dispatch, "unfilled": unfilled,
+            "paid": [b["id"] for b in paid]}
+
+
 def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: bool = False,
           dispatcher: Dispatcher | None = None, capture: Capturer | None = None,
-          now: datetime | None = None) -> dict:
+          now: datetime | None = None, worker_kinds: set[str] | None = None) -> dict:
     """Run one judgement. Returns a result dict; never writes a verdict."""
     task_data = _load_task(task_id, root)
     if not task_data:
@@ -671,33 +805,48 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
     res.update(rung_due=due, rung=rung, rung_reason=reason, ceiling_note=note,
                impact=imp, weekly_spend=spent, ceiling=ceiling)
 
-    # Seats: a rung-5 panel wants three vendors; only the available ones can be dispatched.
-    if rung >= 5:
-        seats = [v for v in PANEL_SEATS if v in AVAILABLE_VENDORS]
-        required = len(PANEL_SEATS)
-    else:
-        seats, required = ["claude"], 1
-    degraded = DEGRADED_SINGLE_VENDOR if len(seats) < required else ""
-    res.update(seats=seats, required_vendors=required, degraded=degraded)
+    try:
+        plan = _plan_seats(root, rung, _dispatchable_kinds(root) if worker_kinds is None else set(worker_kinds))
+    except Exception as e:  # noqa: BLE001 - an unreadable registry is a refusal, not a default
+        res.update(error=f"review backend registry unavailable: {e}", code=1)
+        return res
+    seats, required = plan["seats"], plan["required"]
+    degraded = DEGRADED_SINGLE_VENDOR if len(plan["dispatch"]) < required and rung >= 5 else ""
+    res.update(seats=[s["seat"] for s in seats], dispatchable=[s["seat"] for s in plan["dispatch"]],
+               unfilled=[s["seat"] for s in plan["unfilled"]], required_vendors=required,
+               degraded=degraded)
 
+    # The revision under review is captured HERE, before any worker exists, and handed to the
+    # dispatcher, which registers it with the dispatch (round 3).
+    revision = vl._head_sha(root)
+    res["revision"] = revision
     evidence = _gather_evidence(root, task_id, task_data, judged, capture or _capture_playwright,
                                 dry_run=dry_run)
     res["evidence"] = evidence
     run_id = f"run-{task_id.lower()}-{uuid.uuid4().hex[:10]}"
-    briefs = {s: _build_brief(task_id, judged, rung=rung, rung_reason=reason, ceiling_note=note,
-                              evidence=evidence, seat=s, operator_only=operator,
-                              run_id=run_id, degraded=degraded) for s in seats}
-    res["brief"] = briefs[seats[0]]
+    briefs = {s["seat"]: _build_brief(task_id, judged, rung=rung, rung_reason=reason,
+                                      ceiling_note=note, evidence=evidence,
+                                      seat=s["seat"] if rung >= 5 else "", operator_only=operator,
+                                      run_id=run_id, degraded=degraded, revision=revision)
+              for s in seats}
+    res["brief"] = briefs[(plan["dispatch"] or seats)[0]["seat"]]
     if dry_run:
         res["code"] = 0
         return res
+    if not revision:
+        res.update(error="the repository has no commit: nothing to bind a review to", code=1)
+        return res
+    if not plan["dispatch"] and not plan["paid"]:
+        res.update(error="no registered review backend can be dispatched here", code=1)
+        return res
 
-    # Register the run BEFORE any dispatch: what it requires (seats, vendors, the pages each
-    # render criterion needs and how each capture went) is what the ledger later enforces.
+    # Register the run BEFORE any dispatch: what it requires (every seat, its vendors, the pages
+    # each render criterion needs and how each capture went) is what the ledger later enforces.
     try:
         vl.register_run(
             run_id, task_id, acs=[c["ac_index"] for c in judged], rung=_rung_label(rung),
-            seats=[{"seat": s, "vendor": s} for s in seats], required_vendors=required,
+            seats=[{"seat": s["seat"], "vendor": s["vendor"]} for s in seats],
+            required_vendors=required,
             pages={str(c["ac_index"]): evidence["pages"] for c in judged if c["render"]},
             captures=evidence["captures"],
             inputs=imp["inputs"], reason=reason + (f"; {note}" if note else ""),
@@ -707,24 +856,60 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
         return res
     res["run_id"] = run_id
 
-    res["dispatches"] = []
-    for seat in seats:
+    res["dispatches"], res["cost_log_errors"], res["proposals"] = [], [], []
+    per_seat = RUNG_COST.get(rung, 2.0) / (PANEL_SIZE if rung >= 5 else 1)
+    for s in plan["dispatch"]:
+        seat = s["seat"]
         try:
             did = _dispatch_reviewer(
                 task_id, briefs[seat], rung, False, root, dispatcher,
-                name=f"judge-{task_id.lower()}-r{rung}" + (f"-{seat}" if len(seats) > 1 else ""),
-                vendor=seat)
-            vl.bind_dispatch(run_id, seat, did, seat, root=root)
+                name=f"judge-{task_id.lower()}-r{rung}" + (f"-{seat}" if rung >= 5 else ""),
+                vendor=s["kind"], revision=revision)
+            vl.bind_dispatch(run_id, seat, did, s["vendor"], root=root)
         except Exception as e:  # noqa: BLE001
             res["dispatches"].append({"seat": seat, "error": str(e), "results": [
                 {"ac": c["ac_index"], "outcome": UNKNOWN, "source": "dispatch-failed"} for c in judged]})
             break
+        err = _log_seat_cost(root, task_id, s["backend"],
+                             f"{COST_PURPOSE} {run_id} seat {seat} dispatch {did}", did)
+        if err:
+            res["cost_log_errors"].append({"seat": seat, "error": err})
         results = _collect(root, task_id, did, judged)
-        _log_spend(root, task_id, rung, RUNG_COST.get(rung, 2.0) / (3 if rung >= 5 else 1))
-        res["dispatches"].append({"seat": seat, "dispatch_id": did, "results": results})
+        _log_spend(root, task_id, rung, per_seat)
+        res["dispatches"].append({"seat": seat, "backend": s["backend"], "dispatch_id": did,
+                                  "results": results})
         # A panel is sequential and stops at the first seat that does not clear every criterion.
         if any(r["outcome"] != vl.GREEN for r in results):
             break
+
+    # Seats no internal backend can fill: offer them to a paid backend, and WAIT. Never dispatched.
+    stopped = any(d.get("error") or any(r["outcome"] != vl.GREEN for r in d["results"])
+                  for d in res["dispatches"])
+    for s in plan["unfilled"]:
+        if stopped:
+            break
+        entry = {"seat": s["seat"], "results": [
+            {"ac": c["ac_index"], "outcome": UNKNOWN, "source": "not-dispatched"} for c in judged]}
+        if plan["paid"]:
+            backend = plan["paid"][0]
+            # No run id in `why`: a re-run for the same seat reuses the open proposal.
+            why = (f"{task_id} AC#{','.join(str(c['ac_index']) for c in judged)}: rung {rung} "
+                   f"({reason}) needs panel seat {s['seat']}; no internal backend can be "
+                   f"dispatched for it")
+            try:
+                p = _propose_paid(root, task_id, backend, why, per_seat)
+                status = ("awaiting-approval" if p.get("status", "pending") == "pending" else
+                          "approved, not dispatched: the judge never dispatches a paid backend")
+                entry.update(backend=backend, status=status, proposal_id=p["id"])
+                res["proposals"].append({"seat": s["seat"], "backend": backend, "id": p["id"],
+                                         "status": p.get("status", "pending")})
+            except Exception as e:  # noqa: BLE001
+                entry.update(backend=backend, status=f"proposal refused: {e}")
+        else:
+            entry["status"] = "no backend (internal or paid) can fill this seat"
+        for r in entry["results"]:
+            r["source"] = entry["status"]
+        res["dispatches"].append(entry)
     res["outcomes"], res["why"] = _final(root, task_id, judged, res["dispatches"])
     res["code"] = 0
     return res
@@ -737,8 +922,14 @@ def _print_result(res: dict) -> None:
         print(f"  operator-only (never dispatched): AC#{o['ac']} [{o['class']}]")
     print(f"Rung: {res['rung']} ({res['rung_reason']})")
     if res.get("degraded"):
-        print(f"  {res['degraded']}: {', '.join(res['seats'])} of {res['required_vendors']} vendors "
-              f"(T-3582); its verdict cannot satisfy the criterion")
+        print(f"  {res['degraded']}: {', '.join(res.get('dispatchable') or []) or 'none'} of "
+              f"{res['required_vendors']} vendors can be dispatched (T-3582); its verdict cannot "
+              f"satisfy the criterion")
+    for p in res.get("proposals") or []:
+        print(f"  paid seat {p['seat']}: proposed {p['id']} on {p['backend']} ({p['status']}) - "
+              f"waiting for the operator; not dispatched")
+    for e in res.get("cost_log_errors") or []:
+        print(f"  COST NOT LOGGED for seat {e['seat']}: {e['error']}")
     if res.get("ceiling_note"):
         print(f"  {res['ceiling_note']}")
     ev = res.get("evidence", {})
@@ -750,7 +941,8 @@ def _print_result(res: dict) -> None:
         return
     for d in res.get("dispatches", []):
         print(f"Dispatch {d.get('dispatch_id', '-')}{' seat ' + d['seat'] if d.get('seat') else ''}"
-              + (f" FAILED: {d['error']}" if d.get("error") else ""))
+              + (f" FAILED: {d['error']}" if d.get("error") else "")
+              + (f" [{d['status']}]" if d.get("status") else ""))
         for r in d["results"]:
             print(f"  AC#{r['ac']}: {r['outcome']} ({r['source']}){' ' + r['flag'] if r.get('flag') else ''}")
     for ac, why in sorted((res.get("why") or {}).items()):

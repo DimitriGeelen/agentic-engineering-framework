@@ -57,13 +57,15 @@ check-render and `fw audit`:
   * the ledger is append-only as verified against git history (`load_ledger`): modified,
     deleted, duplicated or replaced rows refuse everything; rows are validated before selection.
 
-  * (T-3580 round 2) it carries the worker's own SIGNED COMPLETION (review-completions.jsonl,
-    written by `record`): the worker session (`reviewer-<dispatch id>`, fresh, not the issuer or a
-    producer, and the identity `reviewer` is attributed to), the reviewed revision (an ancestor of
-    the introducing commit at which the criterion has the digest the worker read and any cited
-    file still has the hash it recorded), the criterion digest, the evidence hashes and a hash
-    over the exact verdict; and the commit that introduced the row was made, author AND
-    committer, by exactly that worker;
+  * (T-3580 rounds 2-3) the dispatch RUNTIME's signed completion lists it (review-completions.jsonl,
+    written by run.sh via `complete` after the worker has exited — `record` never writes one): the
+    worker session (the dispatch id; identity `reviewer-<dispatch id>`, fresh, not the issuer or a
+    producer, and the identity `reviewer` is attributed to), its exit state, a hash of its result
+    stream, the reviewed revision captured at DISPATCH time (the criterion has the digest the worker
+    read there, and any cited file the hash it recorded), and per row the digest, evidence hashes
+    and a hash over the exact verdict; the commit that introduced the row was made, author AND
+    committer, by exactly that worker. A green also needs a worker that exited 0, and no work for
+    the task committed after the reviewed revision;
   * (T-3580 round 2) when the dispatch is bound to a signed review run (review-runs.jsonl):
     every required seat has its own valid completed green and the seats span the run's required
     number of distinct vendors (a single-vendor panel cannot satisfy a three-vendor one); a
@@ -135,8 +137,9 @@ RECORDED = Path(".context/reviews/recorded.jsonl")
 #: the pages a render criterion needs with the capture result of each), plus one signed `bind`
 #: row per dispatched seat. A row bound to a run counts only when the run's requirements hold.
 RUNS = Path(".context/reviews/review-runs.jsonl")
-#: Signed worker completions: what the worker itself reports when it records a verdict (T-3581
-#: attribution requirements 1-6). A verdict row counts only if a completion agrees with it.
+#: Signed worker completions, written by the dispatch RUNTIME when the worker exits (T-3581
+#: attribution requirements 1-6, T-3580 round 3). A verdict row counts only if the one completion
+#: of its dispatch lists it with the same contents. `record` never writes here.
 COMPLETIONS = Path(".context/reviews/review-completions.jsonl")
 DISPATCH_KEY = Path(".context/secrets/review-dispatch.key")
 REVIEW_TASK_TYPE = "review"
@@ -290,14 +293,23 @@ def _dispatch_key(root: Path, create: bool = False) -> bytes | None:
 def _sign(key: bytes, row: dict) -> str:
     body = {k: row[k] for k in ("dispatch_id", "task", "task_type", "issuer_session",
                                 "issuer_identity", "ts")}
+    for k in ("revision", "wdir"):          # T-3580 round 3: bound at dispatch time
+        if k in row:
+            body[k] = row[k]
     return hmac.new(key, json.dumps(body, sort_keys=True, separators=(",", ":")).encode(),
                     hashlib.sha256).hexdigest()
 
 
 def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
                       issuer_session: str = "", issuer_identity: str = "",
+                      revision: str = "", wdir: str = "",
                       root: Path | None = None) -> dict:
-    """Record a dispatch. Called by the dispatcher, for every task-type, at spawn time."""
+    """Record a dispatch. Called by the dispatcher, for every task-type, at spawn time.
+
+    `revision` is the commit the reviewer is asked to review, captured BEFORE the worker starts
+    (default: HEAD now, which is before the worker exists). `wdir` is the runtime's worker
+    directory, where it writes the worker's exit state: only a completion from that directory
+    counts (T-3580 round 3)."""
     root = root or _root()
     if not (dispatch_id or "").strip() or not (task_id or "").strip():
         raise ValueError("dispatch_id and task are required")
@@ -308,7 +320,9 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
                          f"id is registered once")
     row = {"dispatch_id": dispatch_id.strip(), "task": task_id.strip(),
            "task_type": (task_type or "").strip().lower(),
-           "issuer_session": issuer_session, "issuer_identity": issuer_identity, "ts": _now()}
+           "issuer_session": issuer_session, "issuer_identity": issuer_identity, "ts": _now(),
+           "revision": (revision or "").strip() or _head_sha(root),
+           "wdir": str(Path(wdir).resolve()) if (wdir or "").strip() else ""}
     row["sig"] = _sign(_dispatch_key(root, create=True), row)
     _append(DISPATCHES, row, root)
     return row
@@ -389,22 +403,70 @@ def _criterion_at(root: Path, rev: str, task_id: str, ac: int) -> str | None:
     return criterion_digest(crit) if crit else None
 
 
-def make_completion(root: Path, row: dict) -> dict:
-    """The signed completion the worker posts for `row` (called from `record`, inside the worker)."""
-    body = {"kind": "completion", "dispatch_id": row["dispatch_id"], "task": row["task"],
-            "ac": row["ac"], "verdict_id": row["id"], "worker": row["worker"],
-            "revision": row["revision"], "ac_digest": row["ac_digest"],
-            "evidence_sha256": row.get("evidence_sha256") or {},
-            "verdict_sha256": verdict_hash(row), "ts": _now()}
-    key = _dispatch_key(root)
-    if key is None:
-        raise VerdictRefused("no dispatch signing key — no completion can be signed")
-    body["sig"] = _sign_row(key, body)
+#: A completion is the dispatch RUNTIME's act, emitted when the worker has exited (T-3580 round 3).
+#: The worker's own environment carries this variable naming its dispatch; `complete` refuses to
+#: run inside it, and the runtime strips it before calling.
+_WORKER_ENV = "FW_SIDECAR_AGENT_ID"
+
+
+def _result_sha(wdir: Path) -> str:
+    for name in ("result.jsonl", "result.md"):
+        f = wdir / name
+        if f.is_file():
+            return hashlib.sha256(f.read_bytes()).hexdigest()
+    return ""
+
+
+def complete(dispatch_id: str, *, wdir: str, exit_code: int, session: str = "",
+             root: Path | None = None) -> dict:
+    """(the dispatch runtime, after the worker exits) sign what the worker left behind.
+
+    Called by run.sh (agents/termlink/termlink.sh) once `exit_code` is written, never by the
+    worker and never by `record`. It binds the worker session, its exit state, a hash of the
+    worker's result stream, the reviewed revision registered at dispatch time, and — for every
+    verdict row the worker wrote — the row's digest, evidence hashes and exact-contents hash.
+    Rows appended after this point are not in it, so they never count. It always appends: a
+    second completion for the same dispatch makes BOTH void (see `_completion_fault`), so a
+    worker that forges one before exiting only invalidates its own verdicts."""
+    root = root or _root()
+    did = (dispatch_id or "").strip()
+    drec, why = dispatch_record(root, did)
+    if drec is None:
+        raise VerdictRefused(why)
+    if drec.get("task_type") != REVIEW_TASK_TYPE:
+        raise VerdictRefused(f"dispatch {did!r} is not a review dispatch")
+    if os.environ.get(_WORKER_ENV, "").strip() == did:
+        raise VerdictRefused("a completion is emitted by the dispatch runtime after the worker "
+                             "exits, never from inside the worker's own environment")
+    if session and session.strip() != did:
+        raise VerdictRefused(f"runtime session {session!r} is not dispatch {did!r}")
+    reg = str(drec.get("wdir") or "")
+    here = str(Path(wdir).resolve()) if (wdir or "").strip() else ""
+    if not reg or here != reg:
+        raise VerdictRefused(f"worker directory {here or '(none)'} is not the one registered for "
+                             f"dispatch {did!r} ({reg or 'none registered'})")
+    ec_file = Path(here) / "exit_code"
+    try:
+        written = int(ec_file.read_text().strip())
+    except (OSError, ValueError):
+        raise VerdictRefused(f"the worker has not exited: {ec_file} holds no exit state")
+    if written != int(exit_code):
+        raise VerdictRefused(f"exit code {exit_code} is not the one the runtime wrote ({written})")
+    verdicts = [{"verdict_id": r.get("id"), "ac": r.get("ac"), "ac_digest": r.get("ac_digest"),
+                 "outcome": r.get("outcome"), "evidence_sha256": r.get("evidence_sha256") or {},
+                 "verdict_sha256": verdict_hash(r)}
+                for r in _read(VERDICTS, root) if r.get("dispatch_id") == did]
+    body = {"kind": "completion", "source": "runtime", "dispatch_id": did, "task": drec["task"],
+            "session": did, "worker": worker_identity(did), "wdir": reg, "exit_code": written,
+            "result_sha256": _result_sha(Path(here)), "revision": drec.get("revision", ""),
+            "verdicts": verdicts, "ts": _now()}
+    body["sig"] = _sign_row(_dispatch_key(root), body)
+    _append(COMPLETIONS, body, root)
     return body
 
 
-def _completion_for(root: Path, verdict_id: str) -> dict | None:
-    return next((c for c in _read(COMPLETIONS, root) if c.get("verdict_id") == verdict_id), None)
+def _completions_for(root: Path, dispatch_id: str) -> list[dict]:
+    return [c for c in _read(COMPLETIONS, root) if c.get("dispatch_id") == dispatch_id]
 
 
 def register_run(run_id: str, task_id: str, *, acs: list[int], rung: str, seats: list[dict],
@@ -799,32 +861,13 @@ def _structural_fault(row: dict) -> str:
     return ""
 
 
-def _completion_fault(base: _Base, row: dict, intro: dict | None, need_commit: bool,
-                      completion: dict | None) -> tuple[str, str] | None:
-    """The six worker-attribution requirements (T-3581 round 3, T-3580 round 2). A row counts only
-    if the worker's own signed completion agrees with it on every binding, and the commit that
-    introduced the row was made by exactly that worker."""
+def _worker_fault(base: _Base, row: dict, intro: dict | None) -> tuple[str, str] | None:
+    """What the row itself must say about its worker and the revision it reviewed (T-3581
+    requirements 1, 2 and 6). Checked at `record` and again at every read."""
     root = base.root
-    comp = completion or _completion_for(root, str(row.get("id")))
-    if comp is None:
-        return "no-completion", (f"row {row.get('id')} has no signed worker completion — a "
-                                 f"registration is not a completion")
-    if completion is None and not _signed_ok(root, comp):
-        return "bad-completion", "the worker completion has an invalid signature"
     worker = str(row.get("worker") or "")
     if not worker:
         return "no-worker", "the row names no worker session"
-    for k, want in (("dispatch_id", row.get("dispatch_id")), ("task", row.get("task")),
-                    ("ac", row.get("ac")), ("verdict_id", row.get("id")), ("worker", worker),
-                    ("revision", row.get("revision")), ("ac_digest", row.get("ac_digest"))):
-        if comp.get(k) != want:
-            return "completion-mismatch", (f"the worker completion's {k} ({comp.get(k)!r}) is not "
-                                           f"the row's ({want!r})")
-    if (comp.get("evidence_sha256") or {}) != (row.get("evidence_sha256") or {}):
-        return "completion-mismatch", "the worker completion's evidence hashes are not the row's"
-    if comp.get("verdict_sha256") != verdict_hash(row):
-        return "verdict-tampered", ("the row's bytes differ from the verdict the worker reported "
-                                    "(verdict hash mismatch)")
     # 1. fresh session: derived from the dispatch, not the issuer's, not a producer's
     if _norm(worker) != _norm(worker_identity(str(row["dispatch_id"]))):
         return "worker-not-fresh", f"worker {worker!r} is not the identity of dispatch {row['dispatch_id']!r}"
@@ -838,8 +881,15 @@ def _completion_fault(base: _Base, row: dict, intro: dict | None, need_commit: b
     hit = is_producer(worker, prod) if prod else ""
     if hit:
         return "reviewer-is-producer", f"worker {worker!r} matches producer {hit!r}"
-    # 2/3/4. the reviewed revision holds the criterion the worker read and the evidence it cites
+    # 2. the reviewed revision is the one captured at dispatch time, before the review ran
     rev = str(row.get("revision") or "")
+    reg = str((drec or {}).get("revision") or "")
+    if not reg:
+        return "revision", (f"dispatch {row['dispatch_id']!r} was registered without a reviewed "
+                            f"revision — nothing binds the review to what it saw")
+    if rev != reg:
+        return "revision", (f"the row names revision {rev[:9] or '(none)'} but the dispatch was "
+                            f"issued to review {reg[:9]}")
     rc, _ = _git_out(root, "cat-file", "-e", f"{rev}^{{commit}}") if rev else (1, "")
     if rc != 0:
         return "revision", f"reviewed revision {rev!r} is not a commit of this repository"
@@ -862,8 +912,55 @@ def _completion_fault(base: _Base, row: dict, intro: dict | None, need_commit: b
     return None
 
 
+def _completion_fault(base: _Base, row: dict) -> tuple[str, str] | None:
+    """The dispatch RUNTIME's signed completion must list this row with the same contents
+    (T-3581 requirements 3, 4, 5 and the completion half of 6). `record` cannot produce it: it is
+    written by run.sh after the worker has exited (`complete`)."""
+    root = base.root
+    did = str(row.get("dispatch_id"))
+    comps = _completions_for(root, did)
+    if not comps:
+        return "no-completion", (f"row {row.get('id')} has no completion from the dispatch runtime "
+                                 f"— a registration is not a completion")
+    if len(comps) > 1:
+        return "completion-duplicate", (f"dispatch {did!r} has {len(comps)} completions; the "
+                                        f"runtime writes exactly one, so none is trusted")
+    comp = comps[0]
+    if not _signed_ok(root, comp):
+        return "bad-completion", "the runtime completion has an invalid signature"
+    drec, _ = dispatch_record(root, did)
+    if comp.get("source") != "runtime" or comp.get("session") != did \
+            or not comp.get("wdir") or comp.get("wdir") != (drec or {}).get("wdir"):
+        return "bad-completion", ("the completion was not emitted by the runtime of this dispatch "
+                                  "(session or worker directory differs from the registration)")
+    for k, want in (("task", row.get("task")), ("worker", row.get("worker")),
+                    ("revision", row.get("revision"))):
+        if comp.get(k) != want:
+            return "completion-mismatch", (f"the runtime completion's {k} ({comp.get(k)!r}) is not "
+                                           f"the row's ({want!r})")
+    entry = next((v for v in comp.get("verdicts") or [] if v.get("verdict_id") == row.get("id")), None)
+    if entry is None:
+        return "not-in-completion", (f"row {row.get('id')} is not among the verdicts its worker had "
+                                     f"written when it exited")
+    for k in ("ac", "ac_digest"):
+        if entry.get(k) != row.get(k):
+            return "completion-mismatch", (f"the runtime completion's {k} ({entry.get(k)!r}) is not "
+                                           f"the row's ({row.get(k)!r})")
+    if (entry.get("evidence_sha256") or {}) != (row.get("evidence_sha256") or {}):
+        return "completion-mismatch", "the runtime completion's evidence hashes are not the row's"
+    if entry.get("verdict_sha256") != verdict_hash(row):
+        return "verdict-tampered", ("the row's bytes differ from the verdict the worker left when it "
+                                    "exited (verdict hash mismatch)")
+    if row.get("outcome") == GREEN and comp.get("exit_code") != 0:
+        return "worker-failed", (f"the worker exited {comp.get('exit_code')} — a green from a "
+                                 f"failed or killed review does not count")
+    if not comp.get("result_sha256"):
+        return "bad-completion", "the runtime recorded no result stream for the worker"
+    return None
+
+
 def _row_fault(base: _Base, row: dict, intro: dict | None, *, need_commit: bool = True,
-               completion: dict | None = None) -> tuple[str, str] | None:
+               recording: bool = False) -> tuple[str, str] | None:
     """(class, reason) when `row` is not a valid, attributable record for base.task_id.
 
     HISTORICAL integrity — nothing here depends on the criterion's CURRENT text, so a
@@ -878,7 +975,7 @@ def _row_fault(base: _Base, row: dict, intro: dict | None, *, need_commit: bool 
     why = _provenance_fault(base.root, base.task_id, row)
     if why:
         return "no-provenance", why
-    f = _completion_fault(base, row, intro, need_commit, completion)
+    f = _worker_fault(base, row, intro) or (None if recording else _completion_fault(base, row))
     if f:
         return f
     if row["outcome"] != GREEN:
@@ -977,7 +1074,7 @@ def _run_fault(ctx: "_Ctx", row: dict, crit, recording: bool) -> tuple[str, str]
 
 
 def _fault(ctx: _Ctx, row: dict, crit, intro: dict | None, *, need_commit: bool = True,
-           completion: dict | None = None) -> tuple[str, str] | None:
+           recording: bool = False) -> tuple[str, str] | None:
     """(class, reason) when `row` may NOT satisfy `crit` right now: historical integrity
     (`_row_fault`) PLUS current eligibility — the row names this criterion, the criterion text
     is unchanged, and the criterion is still reviewer-judged."""
@@ -986,7 +1083,7 @@ def _fault(ctx: _Ctx, row: dict, crit, intro: dict | None, *, need_commit: bool 
             return "schema", "row does not name this criterion"
         if row["ac_digest"] != criterion_digest(crit):
             return "digest-mismatch", "the criterion changed after the reviewer read it"
-    f = _row_fault(ctx, row, intro, need_commit=need_commit, completion=completion)
+    f = _row_fault(ctx, row, intro, need_commit=need_commit, recording=recording)
     if f:
         return f
     if row["outcome"] == GREEN:
@@ -995,7 +1092,36 @@ def _fault(ctx: _Ctx, row: dict, crit, intro: dict | None, *, need_commit: bool 
             return "not-reviewer-judged", (
                 f"AC#{crit.index} is {cl.cls} ({cl.delegation_class}): only the operator may "
                 f"answer it, so no reviewer verdict can satisfy or escalate it — {cl.reason}")
-        return _run_fault(ctx, row, crit, recording=completion is not None)
+        return _run_fault(ctx, row, crit, recording=recording) or _stale_fault(ctx, row)
+    return None
+
+
+#: Paths a later commit may touch without changing what was reviewed: the reviewer's own records,
+#: framework state, and the task file (the criterion itself is pinned by its digest).
+_NOT_WORK = (".context/", ".tasks/")
+
+
+def _stale_fault(ctx: _Ctx, row: dict) -> tuple[str, str] | None:
+    """A green reviewed revision R. If work for the task landed after R, the green is about code
+    that is no longer what ships: refuse it (T-3580 round 3, reviewed-revision negative control)."""
+    rev = str(row.get("revision") or "")
+    rc, out = _git_out(ctx.root, "log", f"{rev}..HEAD", f"--grep={ctx.task_id}", "--name-only",
+                       "--format=%x1e%H%x1f%B%x1d")
+    if rc != 0:
+        return "stale-review", f"git cannot say what changed since reviewed revision {rev[:9]} — refusing"
+    ref = re.compile(rf"(?<![A-Za-z0-9-]){re.escape(ctx.task_id)}(?![0-9])")
+    for rec in out.split("\x1e"):
+        if "\x1d" not in rec:
+            continue
+        head, files = rec.split("\x1d", 1)
+        sha, _, msg = head.partition("\x1f")
+        if not ref.search(msg):
+            continue
+        work = [f for f in files.splitlines() if f.strip() and not f.startswith(_NOT_WORK)]
+        if work:
+            return "stale-review", (f"{ctx.task_id} work changed after reviewed revision {rev[:9]} "
+                                    f"(commit {sha[:9]} touches {work[0]}) — the verdict is about "
+                                    f"code that no longer ships; review again")
     return None
 
 
@@ -1077,11 +1203,13 @@ def satisfying_verdict(ctx: _Ctx, crit) -> tuple[dict | None, str]:
     if not mine:
         return None, "no verdict for the current criterion text"
     last = mine[-1]
-    if last.get("outcome") != GREEN:
-        return None, f"latest verdict is {last.get('outcome')!r}"
+    # Validate BEFORE reading the outcome (T-3580 round 3): an invalid latest row is `unknown`,
+    # whatever colour it claims, for every consumer (apply, check-render, judge, audit).
     f = _fault(ctx, last, crit, led.intro(last["id"]))
     if f:
-        return None, f"{f[0]}: {f[1]}"
+        return None, f"unknown: the latest verdict {last.get('id')} is invalid — {f[0]}: {f[1]}"
+    if last.get("outcome") != GREEN:
+        return None, f"latest verdict is {last.get('outcome')!r}"
     why = _panel_fault(ctx, crit, last, mine)
     if why:
         return None, why
@@ -1106,11 +1234,12 @@ def _panel_fault(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> str:
         if not seat_rows:
             return f"panel-incomplete: required seat {s['seat']!r} of run {run['run_id']} has no verdict"
         r, bb = seat_rows[-1]
-        if r.get("outcome") != GREEN:
-            return f"panel-incomplete: seat {s['seat']!r} of run {run['run_id']} is {r.get('outcome')!r}"
         f = _fault(ctx, r, crit, led.intro(r["id"]))
         if f:
-            return f"panel-incomplete: seat {s['seat']!r} has no valid green — {f[0]}: {f[1]}"
+            return (f"panel-incomplete: seat {s['seat']!r} of run {run['run_id']} is unknown (its "
+                    f"latest verdict is invalid) — {f[0]}: {f[1]}")
+        if r.get("outcome") != GREEN:
+            return f"panel-incomplete: seat {s['seat']!r} of run {run['run_id']} is {r.get('outcome')!r}"
         vendors.add(str(bb.get("vendor")))
     if len(vendors) < int(run.get("required_vendors") or 1):
         return (f"degraded: run {run['run_id']} demands {run.get('required_vendors')} vendor(s), "
@@ -1195,19 +1324,22 @@ def record(task_id: str, ac_index: int, outcome: str, *, reviewer: str, rung: st
                f"AC#{ac_index} is {cl.cls} ({cl.delegation_class}): only the operator may "
                f"answer it, so no reviewer verdict can satisfy or escalate it — {cl.reason}")
 
-    # The worker session that runs this record is the one the completion is signed for.
+    # The worker session that runs this record: its identity derives from the dispatch id.
     worker = worker_identity(dispatch_id)
     if _norm(worker) not in _norm(reviewer):
         refuse("reviewer-worker-mismatch",
                f"reviewer {reviewer.strip()!r} is not attributed to worker {worker!r} — the "
                f"reviewer identity must contain the worker session of dispatch {dispatch_id!r}")
-    revision = _head_sha(root)
+    # The reviewed revision is the one the DISPATCH was issued for (captured before the worker
+    # started), never HEAD now: work that lands during the review must not be credited to it.
+    revision = str(drec.get("revision") or "")
     if not revision:
-        refuse("no-revision", "the repository has no commit to bind the review to")
+        refuse("no-revision", f"dispatch {dispatch_id!r} names no reviewed revision — the "
+                              f"repository had no commit when it was issued")
     if _criterion_at(root, revision, task_id, ac_index) != dg:
         refuse("revision-mismatch",
-               f"at HEAD {revision[:9]} AC#{ac_index} is not the text digest {dg} — commit the "
-               f"task before reviewing, so the review is bound to a revision")
+               f"at reviewed revision {revision[:9]} AC#{ac_index} is not the text digest {dg} — "
+               f"commit the task before dispatching the review, so it is bound to a revision")
 
     try:
         jv = judge_verdict.verdict(_STATE[outcome], guidance,
@@ -1240,14 +1372,13 @@ def record(task_id: str, ac_index: int, outcome: str, *, reviewer: str, rung: st
     }
     if run_id.strip():
         rec["run_id"] = run_id.strip()
-    comp = make_completion(root, rec)
-    f = _fault(ctx, rec, crit, None, need_commit=False, completion=comp)  # not committed yet
+    # Not committed yet, and no completion yet: the runtime signs one when the worker exits.
+    f = _fault(ctx, rec, crit, None, need_commit=False, recording=True)
     if f:
         refuse(*f)
     if ctx.ledger.faults:
         refuse("ledger-integrity", f"{ctx.ledger.faults[0]} — no row is appended to a ledger "
                                    f"whose history does not verify")
-    _append(COMPLETIONS, comp, root)
     _append(VERDICTS, rec, root)
     _append(RECORDED, {"ts": _now(), "verdict_id": rec["id"], "task": task_id, "ac": ac_index,
                        "outcome": outcome}, root)
@@ -1567,6 +1698,15 @@ def _cli(argv: list[str] | None = None) -> int:
     g.add_argument("--task-type", default="")
     g.add_argument("--issuer-session", default="")
     g.add_argument("--issuer-identity", default="")
+    g.add_argument("--revision", default="", help="commit the reviewer is asked to review (default HEAD)")
+    g.add_argument("--wdir", default="", help="the runtime's worker directory")
+
+    cp = sub.add_parser("complete", help="(dispatch runtime, after the worker exits) sign what the "
+                        "review worker left behind")
+    cp.add_argument("--dispatch-id", required=True)
+    cp.add_argument("--wdir", required=True)
+    cp.add_argument("--exit-code", type=int, required=True)
+    cp.add_argument("--session", default="")
 
     a = sub.add_parser("apply", help="tick green-judged criteria; hand ownership over if none left")
     a.add_argument("task_id")
@@ -1605,8 +1745,19 @@ def _cli(argv: list[str] | None = None) -> int:
     if args.cmd == "register-dispatch":
         row = register_dispatch(args.dispatch_id, args.task, args.task_type,
                                 issuer_session=args.issuer_session,
-                                issuer_identity=args.issuer_identity)
-        print(json.dumps({k: row[k] for k in ("dispatch_id", "task", "task_type")}))
+                                issuer_identity=args.issuer_identity,
+                                revision=args.revision, wdir=args.wdir)
+        print(json.dumps({k: row[k] for k in ("dispatch_id", "task", "task_type", "revision")}))
+        return 0
+    if args.cmd == "complete":
+        try:
+            c = complete(args.dispatch_id, wdir=args.wdir, exit_code=args.exit_code,
+                         session=args.session)
+        except VerdictRefused as e:
+            print(f"REFUSED: {e}", file=sys.stderr)
+            return 1
+        print(json.dumps({"dispatch_id": c["dispatch_id"], "exit_code": c["exit_code"],
+                          "verdicts": len(c["verdicts"])}))
         return 0
     if args.cmd == "apply":
         res = apply(args.task_id)
