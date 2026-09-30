@@ -318,7 +318,7 @@ The `## Verification` section contains shell commands that **must pass** before 
 1. Agent writes verification commands in `## Verification` while working (knows what to check)
 2. On `fw task update T-XXX --status work-completed`, update-task.sh extracts and runs each command
 3. If any command exits non-zero → completion is **blocked** (same as unchecked AC)
-4. `--force` bypasses the gate (with warning, logged)
+4. `--force` / `--skip-verification` bypass the gate for the operator only: every consumed `--skip-*` needs `--reason`, and the criterion/ownership flags (acceptance-criteria, verification, sovereignty, human-ownership, rca, recommendation, inception-decision) are refused under `CLAUDECODE=1` unless `--i-am-human` (T-3586)
 5. Tasks without `## Verification` pass through (backward compatible)
 
 **What to verify:**
@@ -1572,48 +1572,23 @@ When communicating with agents on other machines via TermLink remote, choose the
 - **Max 5 parallel workers** — same limit as sub-agent dispatch protocol
 - **Leave 40K tokens headroom** before dispatching workers
 
-## Review and Dispatch Cost Ruling (T-3583)
+## Review and Dispatch Cost Ruling (T-3583, T-3586)
 
-Every review or dispatch records its cost, even internal ones. Cost is never free; subscriptions and local GPUs are low-cost but not zero.
-
-**Cost Classes:**
+Every review or dispatch records its cost, internal ones included. Cost is never free; subscriptions and local GPUs are low-cost, not zero.
 
 | Class | What it includes | Approval required? |
 |-------|------------------|--------------------|
-| **Internal** | Claude Code subscription harness, codex (OpenAI), opencode (Z.ai coding plan), local GPU | No |
-| **Paid** | OpenRouter (pay-per-use, per-request) | Yes |
+| **Internal** | Claude Code subscription, codex (OpenAI), opencode (Z.ai coding plan), local GPU | No — log it |
+| **Paid** | OpenRouter (pay-per-use), and anything the operator classes `paid` | Yes, per request |
 
-**The ruling:** when value or risk is high, propose a paid review with a cost assessment and wait for approval. Cost is not a reason not to ask — it is a reason to be clear about the value.
+**The ruling:** when value or risk is high, **do propose** a paid review with a cost estimate — cost is not a reason not to ask. Then wait: an unapproved paid call is refused.
 
-**How it works:**
+- **Log every use:** `bin/fw review cost log --task T-XXX --backend <id> --purpose "code-review" [--tokens N] [--cost X] [--evidence docs/reports/…]` → one JSON line in `.context/costs/reviews.jsonl` (unmetered subscriptions are recorded as such). Unknown backends are refused.
+- **Paid:** `bin/fw review propose --task T-XXX --backend openrouter --why "…" --estimate-cost N`; the operator approves (`bin/fw review approve RP-XXXX`, refused under `CLAUDECODE=1` unless `--i-am-human`); then log with `--proposal-id`. One approval covers one use.
+- **Guard:** PreToolUse hook `check-paid-backend` blocks a Bash command matching a paid backend's `match:` patterns when the focused task has no approved, unused proposal; internal harnesses (codex, opencode, `claude -p`) pass with a cost-log reminder. Like Tier 0 it sees the typed command only.
+- **Audit:** `fw audit` (enforcement section) reports cost per ISO week by backend and class, WARNs on any paid record with no approved proposal, and FAILs if the registry is invalid. `bin/fw review cost report [--weeks N]` prints the same table.
 
-1. **Log all costs** — Every review or dispatch writes a record to `.context/costs/reviews.jsonl` (timestamp, task, backend, class, purpose, cost if metered).
-   ```bash
-   fw review cost log --task T-XXX --backend claude-code --purpose "code-review"
-   fw review cost log --task T-XXX --backend openrouter --purpose "code-review" --cost 3.50
-   ```
-
-2. **Propose paid reviews** — Before dispatching an OpenRouter review:
-   ```bash
-   fw review propose --task T-XXX --backend openrouter --why "high-risk code, needs vendor check" --estimate-cost 5.00
-   ```
-   The proposal writes a pending entry the operator approves. Dispatching without approval is blocked.
-
-3. **List and manage** — See what's available and what's proposed:
-   ```bash
-   fw review list-backends          # Show cost classes and harnesses
-   fw review list-proposals         # Show pending + approved proposals
-   fw review cost report [START] [END]  # Weekly report by backend and class
-   ```
-
-4. **The operator approves** — Via Watchtower `/approvals` or CLI (when necessary):
-   ```bash
-   fw review approve --proposal-id RP-1234-abcd
-   ```
-
-**Policy file:** `policy/review-backends.yaml` is the single source of truth. Add new backends there as they come online (the ladder will be expanded by the operator).
-
-**Note:** The agent should still suggest OpenRouter reviews when value or risk is high. The operator's approval is a checkpoint, not a veto. Cost is a known and manageable expense — transparency, not a blocker.
+**The registry is `policy/review-backends.yaml`: operator-owned and extensible.** A new backend is a data edit; no code lists vendors. An agent may add an *internal* backend (`bin/fw review backend add … --class internal`, logged to `.context/costs/registry-changes.jsonl`). Adding a paid one, or changing any `cost_class` / `approval_required` (`bin/fw review backend set`), is an operator action. `openrouter` is pinned paid + approval-required: a registry that reclassifies it does not load. There is no Watchtower surface for paid proposals yet; approval is the operator's CLI.
 
 ## Auto-Restart (T-179)
 

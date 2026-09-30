@@ -1,11 +1,11 @@
-id: tests/unit/t3583_review_cost_system.bats
-name: t3583_review_cost_system
+id: tests/unit/t3586_review_cost.bats
+name: t3586_review_cost
 type: script
 subsystem: tests
-location: tests/unit/t3583_review_cost_system.bats
+location: tests/unit/t3586_review_cost.bats
 tags: []
 
-purpose: "Tests for review cost logging and proposal system (T-3583)"
+purpose: "T-3586 (rebuilds T-3583) — review/dispatch cost: extensible operator-owned registry, JSONL cost ledger, paid-approval proposals, fw audit cost line, paid-backend hook."
 purpose_source: header-comment
 
 depends_on:

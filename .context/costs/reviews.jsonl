@@ -1,119 +1,17 @@
-{
-  "ts": "2026-09-30T09:56:57Z",
-  "task": "T-3535",
-  "backend": "claude-code",
-  "class": "internal",
-  "purpose": "objectives-review"
-}
-{
-  "ts": "2026-09-30T09:56:57Z",
-  "task": "T-3535",
-  "backend": "codex",
-  "class": "internal",
-  "purpose": "objectives-review"
-}
-{
-  "ts": "2026-09-30T09:56:57Z",
-  "task": "T-3535",
-  "backend": "opencode",
-  "class": "internal",
-  "purpose": "objectives-review"
-}
-{
-  "ts": "2026-09-30T09:56:57Z",
-  "task": "T-3558",
-  "backend": "claude-code",
-  "class": "internal",
-  "purpose": "external-review"
-}
-{
-  "ts": "2026-09-30T09:56:57Z",
-  "task": "T-3558",
-  "backend": "codex",
-  "class": "internal",
-  "purpose": "external-review"
-}
-{
-  "ts": "2026-09-30T09:56:57Z",
-  "task": "T-3558",
-  "backend": "opencode",
-  "class": "internal",
-  "purpose": "external-review"
-}
-{
-  "ts": "2026-09-30T09:56:57Z",
-  "task": "T-3558",
-  "backend": "claude-code",
-  "class": "internal",
-  "purpose": "external-review-round2"
-}
-{
-  "ts": "2026-09-30T09:56:57Z",
-  "task": "T-3558",
-  "backend": "codex",
-  "class": "internal",
-  "purpose": "external-review-round2"
-}
-{
-  "ts": "2026-09-30T09:56:57Z",
-  "task": "T-3558",
-  "backend": "opencode",
-  "class": "internal",
-  "purpose": "external-review-round2"
-}
-{
-  "ts": "2026-09-30T09:56:57Z",
-  "task": "T-3579",
-  "backend": "codex",
-  "class": "internal",
-  "purpose": "code-review"
-}
-{
-  "ts": "2026-09-30T09:56:57Z",
-  "task": "T-3579",
-  "backend": "opencode",
-  "class": "internal",
-  "purpose": "code-review"
-}
-{
-  "ts": "2026-09-30T09:56:57Z",
-  "task": "T-3580",
-  "backend": "codex",
-  "class": "internal",
-  "purpose": "code-review"
-}
-{
-  "ts": "2026-09-30T09:56:57Z",
-  "task": "T-3581",
-  "backend": "codex",
-  "class": "internal",
-  "purpose": "code-review-rereview"
-}
-{
-  "ts": "2026-09-30T09:56:57Z",
-  "task": "T-3581",
-  "backend": "codex",
-  "class": "internal",
-  "purpose": "code-review-round3"
-}
-{
-  "ts": "2026-09-30T09:56:57Z",
-  "task": "T-3581",
-  "backend": "opencode",
-  "class": "internal",
-  "purpose": "code-review-round3"
-}
-{
-  "ts": "2026-09-30T09:56:57Z",
-  "task": "T-3581",
-  "backend": "opencode",
-  "class": "internal",
-  "purpose": "code-review-rereview"
-}
-{
-  "ts": "2026-09-30T09:56:57Z",
-  "task": "T-3580",
-  "backend": "opencode",
-  "class": "internal",
-  "purpose": "code-review-rereview"
-}
+{"backend": "claude-code", "backfill": "T-3583 back-fill of hand-run reviews; converted to JSON Lines by T-3586", "class": "internal", "cost_amount": null, "evidence": "docs/reports/T-3535-objectives-review-anthropic.md", "metering": "unmetered (subscription)", "proposal_id": null, "purpose": "objectives-review", "task": "T-3535", "tokens": null, "ts": "2026-09-30T09:56:57Z"}
+{"backend": "codex", "backfill": "T-3583 back-fill of hand-run reviews; converted to JSON Lines by T-3586", "class": "internal", "cost_amount": null, "evidence": "docs/reports/T-3535-objectives-review-openai.md", "metering": "unmetered (subscription)", "proposal_id": null, "purpose": "objectives-review", "task": "T-3535", "tokens": null, "ts": "2026-09-30T09:56:57Z"}
+{"backend": "opencode", "backfill": "T-3583 back-fill of hand-run reviews; converted to JSON Lines by T-3586", "class": "internal", "cost_amount": null, "evidence": "docs/reports/T-3535-objectives-review-zai.md", "metering": "unmetered (subscription)", "proposal_id": null, "purpose": "objectives-review", "task": "T-3535", "tokens": null, "ts": "2026-09-30T09:56:57Z"}
+{"backend": "claude-code", "backfill": "T-3583 back-fill of hand-run reviews; converted to JSON Lines by T-3586", "class": "internal", "cost_amount": null, "evidence": "docs/reports/T-3558-review-anthropic.md", "metering": "unmetered (subscription)", "proposal_id": null, "purpose": "external-review", "task": "T-3558", "tokens": null, "ts": "2026-09-30T09:56:57Z"}
+{"backend": "codex", "backfill": "T-3583 back-fill of hand-run reviews; converted to JSON Lines by T-3586", "class": "internal", "cost_amount": null, "evidence": "docs/reports/T-3558-review-openai.md", "metering": "unmetered (subscription)", "proposal_id": null, "purpose": "external-review", "task": "T-3558", "tokens": null, "ts": "2026-09-30T09:56:57Z"}
+{"backend": "opencode", "backfill": "T-3583 back-fill of hand-run reviews; converted to JSON Lines by T-3586", "class": "internal", "cost_amount": null, "evidence": "docs/reports/T-3558-review-zai.md", "metering": "unmetered (subscription)", "proposal_id": null, "purpose": "external-review", "task": "T-3558", "tokens": null, "ts": "2026-09-30T09:56:57Z"}
+{"backend": "claude-code", "backfill": "T-3583 back-fill of hand-run reviews; converted to JSON Lines by T-3586", "class": "internal", "cost_amount": null, "evidence": "docs/reports/T-3558-review2-anthropic.md", "metering": "unmetered (subscription)", "proposal_id": null, "purpose": "external-review-round2", "task": "T-3558", "tokens": null, "ts": "2026-09-30T09:56:57Z"}
+{"backend": "codex", "backfill": "T-3583 back-fill of hand-run reviews; converted to JSON Lines by T-3586", "class": "internal", "cost_amount": null, "evidence": "docs/reports/T-3558-review2-openai.md", "metering": "unmetered (subscription)", "proposal_id": null, "purpose": "external-review-round2", "task": "T-3558", "tokens": null, "ts": "2026-09-30T09:56:57Z"}
+{"backend": "opencode", "backfill": "T-3583 back-fill of hand-run reviews; converted to JSON Lines by T-3586", "class": "internal", "cost_amount": null, "evidence": "docs/reports/T-3558-review2-zai.md", "metering": "unmetered (subscription)", "proposal_id": null, "purpose": "external-review-round2", "task": "T-3558", "tokens": null, "ts": "2026-09-30T09:56:57Z"}
+{"backend": "codex", "backfill": "T-3583 back-fill of hand-run reviews; converted to JSON Lines by T-3586", "class": "internal", "cost_amount": null, "evidence": "docs/reports/T-3579-code-review-openai.md", "metering": "unmetered (subscription)", "proposal_id": null, "purpose": "code-review", "task": "T-3579", "tokens": null, "ts": "2026-09-30T09:56:57Z"}
+{"backend": "opencode", "backfill": "T-3583 back-fill of hand-run reviews; converted to JSON Lines by T-3586", "class": "internal", "cost_amount": null, "evidence": "docs/reports/T-3579-code-review-zai.md", "metering": "unmetered (subscription)", "proposal_id": null, "purpose": "code-review", "task": "T-3579", "tokens": null, "ts": "2026-09-30T09:56:57Z"}
+{"backend": "codex", "backfill": "T-3583 back-fill of hand-run reviews; converted to JSON Lines by T-3586", "class": "internal", "cost_amount": null, "evidence": "docs/reports/T-3580-code-review-openai.md", "metering": "unmetered (subscription)", "proposal_id": null, "purpose": "code-review", "task": "T-3580", "tokens": null, "ts": "2026-09-30T09:56:57Z"}
+{"backend": "codex", "backfill": "T-3583 back-fill of hand-run reviews; converted to JSON Lines by T-3586", "class": "internal", "cost_amount": null, "evidence": "docs/reports/T-3581-rereview-openai.md", "metering": "unmetered (subscription)", "proposal_id": null, "purpose": "code-review-rereview", "task": "T-3581", "tokens": null, "ts": "2026-09-30T09:56:57Z"}
+{"backend": "codex", "backfill": "T-3583 back-fill of hand-run reviews; converted to JSON Lines by T-3586", "class": "internal", "cost_amount": null, "evidence": "docs/reports/T-3581-round3-review-openai.md", "metering": "unmetered (subscription)", "proposal_id": null, "purpose": "code-review-round3", "task": "T-3581", "tokens": null, "ts": "2026-09-30T09:56:57Z"}
+{"backend": "opencode", "backfill": "T-3583 back-fill of hand-run reviews; converted to JSON Lines by T-3586", "class": "internal", "cost_amount": null, "evidence": "docs/reports/T-3581-round3-review-zai.md", "metering": "unmetered (subscription)", "proposal_id": null, "purpose": "code-review-round3", "task": "T-3581", "tokens": null, "ts": "2026-09-30T09:56:57Z"}
+{"backend": "opencode", "backfill": "T-3583 back-fill of hand-run reviews; converted to JSON Lines by T-3586 (no report file found)", "class": "internal", "cost_amount": null, "evidence": null, "metering": "unmetered (subscription)", "proposal_id": null, "purpose": "code-review-rereview", "task": "T-3581", "tokens": null, "ts": "2026-09-30T09:56:57Z"}
+{"backend": "opencode", "backfill": "T-3583 back-fill of hand-run reviews; converted to JSON Lines by T-3586 (no report file found)", "class": "internal", "cost_amount": null, "evidence": null, "metering": "unmetered (subscription)", "proposal_id": null, "purpose": "code-review-rereview", "task": "T-3580", "tokens": null, "ts": "2026-09-30T09:56:57Z"}

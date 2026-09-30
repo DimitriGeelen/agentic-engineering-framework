@@ -1,0 +1,21 @@
+id: lib/review_cost.py
+name: review_cost
+type: script
+subsystem: framework-core
+location: lib/review_cost.py
+tags: []
+
+purpose: "Review and dispatch cost: backend registry, cost ledger, paid-approval proposals."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-30
+created_by: unknown

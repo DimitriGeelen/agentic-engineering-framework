@@ -1,11 +1,11 @@
-id: lib/cost.sh
-name: cost
+id: tests/unit/t3586_skip_flag_policy.bats
+name: t3586_skip_flag_policy
 type: script
-subsystem: framework-core
-location: lib/cost.sh
+subsystem: tests
+location: tests/unit/t3586_skip_flag_policy.bats
 tags: []
 
-purpose: "Cost ledger management for reviews and dispatches. Every review or dispatch records its cost, internal or paid."
+purpose: "T-3586 — the completion gate's --skip-* flags."
 purpose_source: header-comment
 
 depends_on:

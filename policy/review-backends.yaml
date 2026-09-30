@@ -1,21 +1,27 @@
-# Review and dispatch backend registry
-# Single source of truth for which review harnesses are available,
-# their cost classification (internal vs paid), and approval requirements.
+# Review and dispatch backend registry (T-3583, T-3586)
+# Single source of truth for which review harnesses exist, their cost class
+# (internal vs paid) and whether a use needs operator approval first.
 #
-# This file is read by:
-#   - fw review cost log (cost ledger writer)
-#   - fw review propose (paid approval workflow)
-#   - T-3580's judge (verdict ledger)
-#   - fw audit (cost reporting)
-#   - PreToolUse hook for paid-backend guards
+# Read by (lib/review_cost.py is the only parser):
+#   - fw review cost log / report     (cost ledger, .context/costs/reviews.jsonl)
+#   - fw review propose / approve     (paid-approval workflow)
+#   - fw audit                        (weekly cost by backend/class, paid-without-approval WARN)
+#   - PreToolUse hook check-paid-backend (blocks a paid call with no approved proposal)
 #
-# Cost classes:
-#   - internal: no approval required. Subscriptions and local resources.
-#   - paid: approval required per request via fw review propose.
+# OPERATOR-OWNED AND EXTENSIBLE. The ladder will be expanded by the operator.
+# Adding a backend is a data edit — no code names a backend except the pin below.
+#   bin/fw review backend add --id X --name "..." --class internal [--match REGEX]...
+#     An agent may add an INTERNAL backend (logged to .context/costs/registry-changes.jsonl).
+#     Adding a PAID backend is an operator action (--i-am-human).
+#   bin/fw review backend set --id X --class ... --approval-required ... --i-am-human
+#     Changing class or approval_required is an operator action; agents are refused.
+#   openrouter is PINNED paid + approval_required (operator 2026-09-30: "OpenRouter is
+#   always paid"). A registry that reclassifies it does not load at all.
 #
-# The operator may expand this ladder by adding new entries.
-# Each entry has the same required shape; the cost_estimate method is
-# informational (a hint for proposals) and does not affect gate logic.
+# Fields: id, name, harness_class, cost_class (internal|paid), approval_required,
+# cost_estimate_method, description, and optional match: — regexes tried against a
+# Bash command by the hook, case-sensitive (default: the id as a whole word). A paid backend must
+# have approval_required: true.
 
 backends:
   - id: claude-code
@@ -25,6 +31,9 @@ backends:
     approval_required: false
     cost_estimate_method: unmetered
     description: "Claude Code session with subscription harness"
+    match:
+      - '\bclaude\s+(-p|--print)\b'
+      - '--worker-kind[= ]claude\b'
 
   - id: codex
     name: "OpenAI Codex (GPT-4 turbo with code interpreter)"
@@ -33,6 +42,9 @@ backends:
     approval_required: false
     cost_estimate_method: unmetered
     description: "Codex review via subscription account"
+    match:
+      - '(^|[;&|]\s*|/)codex\s'
+      - '--worker-kind[= ]codex\b'
 
   - id: opencode
     name: "Z.ai Coding Plan (opencode)"
@@ -41,6 +53,9 @@ backends:
     approval_required: false
     cost_estimate_method: unmetered
     description: "Z.ai opencode via subscription coding plan"
+    match:
+      - '(^|[;&|]\s*|/)opencode\s'
+      - '--worker-kind[= ]opencode\b'
 
   - id: local-gpu
     name: "Local GPU (operator's machine)"
@@ -57,3 +72,7 @@ backends:
     approval_required: true
     cost_estimate_method: tokens_estimated
     description: "OpenRouter API for on-demand model access; requires approval per request"
+    match:
+      - 'https?://([a-z0-9-]+\.)*openrouter\.ai'
+      - '(^|[;&|]\s*|/)openrouter\s'
+      - '\$\{?OPENROUTER_API_KEY'

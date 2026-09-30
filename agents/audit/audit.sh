@@ -4748,6 +4748,26 @@ else
     pass "Gate-bypass log: clean (no bypasses recorded)"
 fi
 
+# Review and dispatch cost (T-3583 operator ruling, built T-3586): weekly cost by
+# backend and class from .context/costs/reviews.jsonl, a WARN for any paid-class record
+# with no approved proposal, a FAIL when the operator-owned registry does not validate
+# (e.g. openrouter reclassified — it is pinned paid). lib/review_cost.py is the only parser.
+if [ -f "$FRAMEWORK_ROOT/lib/review_cost.py" ]; then
+    while IFS=$'\t' read -r _rc_lvl _rc_msg; do
+        case "$_rc_lvl" in
+            PASS) pass "$_rc_msg" ;;
+            INFO) info "$_rc_msg" ;;
+            WARN) warn "$_rc_msg" ".context/costs/reviews.jsonl + proposals.jsonl" \
+                       "A paid review needs an approved proposal first: bin/fw review propose, operator approves" ;;
+            FAIL) fail "$_rc_msg" "policy/review-backends.yaml" \
+                       "Restore the registry: bin/fw review list-backends names the invalid entries" ;;
+            "") ;;
+            *) warn "Review-cost audit emitted unexpected output: ${_rc_lvl:0:120}" "lib/review_cost.py audit" \
+                    "Run: python3 lib/review_cost.py audit" ;;
+        esac
+    done < <(PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 "$FRAMEWORK_ROOT/lib/review_cost.py" audit 2>&1)
+fi
+
 # Check for commit-msg hook (validates task references)
 if [ -f "$PROJECT_ROOT/.git/hooks/commit-msg" ]; then
     pass "Commit-msg hook installed"
