@@ -49,8 +49,8 @@ def _record(root, did, outcome="green", ac=1, **kw):
     rep.write_text(f"checked {did}\n")
     if outcome != "green":
         kw.setdefault("guidance", "needs work")
-    return vl.record(TID, ac, outcome, reviewer=f"reviewer-{did}:claude",
-                     rung="rung-1-same-vendor-independent", dispatch_id=did,
+    kw.setdefault("rung", "rung-1-same-vendor-independent")
+    return vl.record(TID, ac, outcome, reviewer=f"reviewer-{did}:claude", dispatch_id=did,
                      digest=vl.criterion_digest(_crit(root, ac)),
                      evidence=[str(rep.relative_to(root))], root=root, **kw)
 
@@ -452,19 +452,19 @@ class TestSevenPages:
             shots[p] = f
         caps = [{"page": p, "ok": True, "sha256": vl._hash_path(shots[p]), "error": ""} for p in SEVEN[:6]]
         caps.append({"page": "/p7", "ok": False, "sha256": "", "error": "not captured: capped"})
-        vl.register_run("run-7", TID, acs=[1], rung="rung-1-same-vendor-independent",
+        vl.register_run("run-7", TID, acs=[1], rung="rung-3-termlink-single-reviewer",
                         seats=[{"seat": "claude", "vendor": "claude"}], pages={"1": SEVEN},
                         captures=caps, root=r7)
-        _dispatch(r7, "rv-1")
+        rt.dispatch(r7, "rv-1", TID, run_id="run-7", seat="claude")     # round 6: bound pre-launch
         with monkeypatch.context() as m:
             m.setattr(vl, "_run_fault", lambda *a, **k: None)
             rep = r7 / f".context/reviews/evidence/{TID}/AC1-rv-1.md"
             rep.parent.mkdir(parents=True, exist_ok=True)
             rep.write_text("looked\n")
-            vl.record(TID, 1, "green", reviewer="reviewer-rv-1:claude", rung="r", dispatch_id="rv-1",
+            vl.record(TID, 1, "green", reviewer="reviewer-rv-1:claude",
+                      rung="rung-3-termlink-single-reviewer", dispatch_id="rv-1",
                       digest=vl.criterion_digest(_crit(r7)), run_id="run-7", root=r7,
                       evidence=[str(rep.relative_to(r7))] + [f.name for f in shots.values()])
-        vl.bind_dispatch("run-7", "claude", "rv-1", "claude", root=r7)
         _commit_as(r7, "reviewer-rv-1")
         rt.finish(r7, "rv-1")
         why = _closed(r7)

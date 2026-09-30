@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T07:54:10Z
-last_update: 2026-09-30T17:40:16Z
+last_update: 2026-09-30T20:04:52Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -438,6 +438,13 @@ bin/fw vendor self --check
 
 ### 2026-09-30 — round 5: the completions file under the append-only history check
 - **Chose:** `history_fault` runs the same git-history walk `load_ledger` makes (each commit keeps the previous committed lines as a prefix; the working file keeps the last committed lines as its prefix) on review-completions.jsonl. Apply refuses (`completion-history`) and audit FAILs (`completions integrity`) when it breaks. Uncommitted rows are allowed — run.sh writes the completion after the worker's last commit and does not commit (same index-race reason as above) — and audit names that state as `WARN completions file untracked` instead of leaving it silent. Start records live in the same file, so they are covered too.
+
+### 2026-09-30 — round 6: the ledger enforces the IW-7 rung (codex second-family HIGH)
+- **Chose:** `lib/review_policy.py` is the ONE implementation of IW-7 (impact, required rung, rung labels, spend ceiling). `judge` calls it to choose the rung; the ledger calls it (`required_strength`) for each criterion at `record` and at every read (`_strength_fault`, inside the shared `_fault`). The requirement is the higher of the task now and the task at the reviewed revision, so lowering risk fields around a review does not lower it. Rung 1: any registered independent review dispatch. Rung 3/5: the dispatch must name, in its SIGNED REGISTRATION, a signed run whose rung is at least the required one; the row's `--rung` must equal the run's. A rung-5 run must demand 3 vendors over 3 seats. `--review-run/--review-seat` go from the judge through `fw termlink dispatch` into `register-dispatch`, which checks the run, task and seat and refuses a second dispatch for a seat. Post-launch `bind_dispatch` is removed and its rows are no longer read.
+- **Step-down:** only through `ceiling_decision` in the signed run (due, granted, spend, ceiling, the number of spend-log lines and the clock it used). The ledger re-derives it (`verify_ceiling_decision`) with the ceiling configured NOW. If the operator raises the ceiling, the step-down is withdrawn and the review is owed at full strength again.
+- **Why:** a review dispatch could record a lower-rung green with no run, and apply ticked it on a task that needed a panel.
+- **Rejected:** checking the rung only in the judge, which is what round 5 did; and a per-criterion rung table in the ledger, which would be a second policy that could drift.
+- **Residual (same-user, T-3581):** the spend log is an untracked working file, so a same-user process can append lines to it and make a step-down derivable. `register_run` is public: a same-user caller can register a run, but it cannot register one below the policy without a derivable decision.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

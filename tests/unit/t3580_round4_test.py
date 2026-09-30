@@ -136,11 +136,11 @@ def _alias_panel(root, vendors):
                     root=root)
     for s, v in zip(SEATS, vendors):
         did = f"rv-{s['seat']}"
-        rt.dispatch(root, did, TID, worker_kind="claude", vendor=v)
-        _record(root, did, run_id="run-p")
+        rt.dispatch(root, did, TID, worker_kind="claude", vendor=v, run_id="run-p",
+                    seat=s["seat"])                        # distinct labels; bound pre-launch
+        _record(root, did, run_id="run-p", rung=f"rung-5-panel:{s['seat']}")
         _commit_as(root, f"reviewer-{did}")
         rt.finish(root, did)
-        vl.bind_dispatch("run-p", s["seat"], did, s["vendor"], root=root)   # distinct labels
 
 
 _ALIASES = ("backends:\n" + "".join(

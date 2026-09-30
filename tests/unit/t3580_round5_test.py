@@ -58,8 +58,8 @@ def _resign_dispatch(root, did, **changes):
     _write_rows(root, vl.DISPATCHES, rows)
 
 
-def _green_seat(root, did, run_id=""):
-    _record(root, did, **({"run_id": run_id} if run_id else {}))
+def _green_seat(root, did, run_id="", rung=""):
+    _record(root, did, **({"run_id": run_id} if run_id else {}), **({"rung": rung} if rung else {}))
     _commit_as(root, f"reviewer-{did}")
     rt.finish(root, did)
 
@@ -98,9 +98,8 @@ def _panel(root, kinds):
                     root=root)
     for s, k in zip(SEATS, kinds):
         did = f"rv-{s['seat']}"
-        rt.dispatch(root, did, TID, worker_kind=k)
-        _green_seat(root, did, run_id="run-p")
-        vl.bind_dispatch("run-p", s["seat"], did, s["vendor"], root=root)
+        rt.dispatch(root, did, TID, worker_kind=k, run_id="run-p", seat=s["seat"])   # pre-launch
+        _green_seat(root, did, run_id="run-p", rung=f"rung-5-panel:{s['seat']}")
 
 
 class TestVendorMapping:

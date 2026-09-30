@@ -21,14 +21,16 @@ _HELD: dict = {}
 
 
 def dispatch(root, did, task, *, task_type="review", issuer_session="S-test",
-             issuer_identity="dispatcher", revision="", worker_kind="claude", vendor=""):
+             issuer_identity="dispatcher", revision="", worker_kind="claude", vendor="",
+             run_id="", seat=""):
     """Register a dispatch exactly as the dispatcher does: with its worker dir, revision and worker
     kind (round 5: the ledger derives the vendor; `vendor` is only an assertion)."""
     w = wdir_for(root, did)
     w.mkdir(parents=True, exist_ok=True)
     vl.register_dispatch(did, task, task_type, issuer_session=issuer_session,
                          issuer_identity=issuer_identity, revision=revision, wdir=str(w),
-                         worker_kind=worker_kind, vendor=vendor, root=Path(root))
+                         worker_kind=worker_kind, vendor=vendor, run_id=run_id, seat=seat,
+                         root=Path(root))
     return did
 
 

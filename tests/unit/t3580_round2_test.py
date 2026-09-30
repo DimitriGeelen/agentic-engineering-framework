@@ -51,18 +51,20 @@ def _commit_as(root, who):
     _git(root, "commit", "-q", "-m", f"{TID}: reviewer verdict", env=_ident(who))
 
 
-def _dispatch(root, did, issuer_identity="dispatcher", revision="", kind="claude"):
+def _dispatch(root, did, issuer_identity="dispatcher", revision="", kind="claude", run_id="",
+              seat=""):
     # T-3580 round 5: a dispatch names its worker KIND; the ledger derives the vendor from it.
+    # Round 6: a run seat is bound AT REGISTRATION (before launch), never afterwards.
     return rt.dispatch(root, did, TID, issuer_session="S-x", issuer_identity=issuer_identity,
-                       revision=revision, worker_kind=kind)
+                       revision=revision, worker_kind=kind, run_id=run_id, seat=seat)
 
 
 def _green(root, did="rv-1", ac=1, commit=True, outcome="green", issuer_identity="dispatcher",
            extra_evidence=(), rung="rung-1-same-vendor-independent", run_id="", reviewer=None,
-           report=True, finish=True, kind="claude"):
+           report=True, finish=True, kind="claude", seat=""):
     """A verdict exactly as the worker's `record` writes it; `finish` = the worker then exits and
-    the runtime signs its completion."""
-    _dispatch(root, did, issuer_identity, kind=kind)
+    the runtime signs its completion. `seat`: the dispatch is registered into run `run_id`."""
+    _dispatch(root, did, issuer_identity, kind=kind, run_id=run_id if seat else "", seat=seat)
     rep = root / f".context/reviews/evidence/{TID}/AC{ac}-{did}.md"
     rep.parent.mkdir(parents=True, exist_ok=True)
     rep.write_text(f"checked {did}\n")
@@ -82,6 +84,7 @@ def _green_bypassing_run_checks(root, mp, **kw):
     """Get a row past `record`'s own run check, to show the SHARED validator refuses it later."""
     with mp.context() as m:
         m.setattr(vl, "_run_fault", lambda *a, **k: None)
+        m.setattr(vl, "_strength_fault", lambda *a, **k: None)      # round 6: also a run check
         return _green(root, **kw)
 
 
@@ -300,21 +303,21 @@ def _render_green(root, mp, *, pages, caps, cite, did="rv-1", bypass=True):
         files[name] = _shot(root, f"{did}-{name.strip('/')}.png", name.encode())
     captures = [{"page": p, "ok": bool(ok), "sha256": vl._hash_path(files[p]) if ok else "",
                  "error": "" if ok else "HTTP 500"} for p, ok in caps.items()]
-    vl.register_run(f"run-{did}", TID, acs=[1], rung="rung-1-same-vendor-independent",
+    # Round 6: the fixture criterion names web/blueprints/review.py — IW-7 medium, so rung 3.
+    vl.register_run(f"run-{did}", TID, acs=[1], rung="rung-3-termlink-single-reviewer",
                     seats=[{"seat": "claude", "vendor": "claude"}], required_vendors=1,
                     pages={"1": list(pages)}, captures=captures, root=root)
     cited = [files[p].name for p in cite]
     with mp.context() as m:
         if bypass:
             m.setattr(vl, "_run_fault", lambda *a, **k: None)
-        _dispatch(root, did)
+        _dispatch(root, did, run_id=f"run-{did}", seat="claude")
         rep = root / f".context/reviews/evidence/{TID}/AC1-{did}.md"
         rep.parent.mkdir(parents=True, exist_ok=True)
         rep.write_text("looked\n")
-        vl.record(TID, 1, "green", reviewer=f"reviewer-{did}:claude", rung="rung-1-same-vendor-independent",
+        vl.record(TID, 1, "green", reviewer=f"reviewer-{did}:claude", rung="rung-3-termlink-single-reviewer",
                   dispatch_id=did, digest=vl.criterion_digest(_crit(root)),
                   evidence=[str(rep.relative_to(root))] + cited, run_id=f"run-{did}", root=root)
-    vl.bind_dispatch(f"run-{did}", "claude", did, "claude", root=root)
     _commit_as(root, f"reviewer-{did}")
     rt.finish(root, did)
 
@@ -345,9 +348,13 @@ class TestUnseenPages:
                           bypass=False)
 
     def test_render_green_with_no_run_is_refused(self, rprod, monkeypatch):
-        with pytest.raises(vl.VerdictRefused, match="needs a review run"):
+        # Round 6: the IW-7 strength check (medium: rung 3 needs a run) fires first; the render
+        # check still stands behind it (shown with the strength check out of the way).
+        with pytest.raises(vl.VerdictRefused, match="needs a review run|not bound to an authorised review run"):
             _green(rprod)
         _green_bypassing_run_checks(rprod, monkeypatch, did="rv-2")
+        assert _closed(rprod).startswith("under-strength")
+        monkeypatch.setattr(vl, "_strength_fault", lambda *a, **k: None)
         assert _closed(rprod).startswith("render-needs-run")
         assert vl.render_verdicts(TID, rprod) == []
 
@@ -355,6 +362,8 @@ class TestUnseenPages:
         vl.register_run("run-x", TID, acs=[1], rung="r", seats=[{"seat": "claude", "vendor": "claude"}],
                         pages={"1": ["/review"]}, captures=[], root=rprod)
         _green_bypassing_run_checks(rprod, monkeypatch, run_id="run-x")   # never bound
+        assert _closed(rprod).startswith("under-strength")               # round 6: fires first
+        monkeypatch.setattr(vl, "_strength_fault", lambda *a, **k: None)
         assert _closed(rprod).startswith("run-unbound")
 
     def test_judge_persists_partial_capture_results_in_the_run(self, rprod):
@@ -417,11 +426,14 @@ def _panel(root, outcomes, vendors=("claude", "codex", "opencode"), required=3):
         oc = outcomes.get(s["seat"])
         did = f"rv-{s['seat']}"
         if oc is None:
-            _dispatch(root, did, kind=v)
+            _dispatch(root, did, kind=v, run_id="run-p", seat=s["seat"])
         else:
             _green(root, did=did, outcome=oc, rung=f"rung-5-panel:{s['seat']}", run_id="run-p",
-                   kind=v)
-        vl.bind_dispatch("run-p", s["seat"], did, v, root=root)
+                   kind=v, seat=s["seat"])
+
+
+def _ticked_nothing(root):
+    return vl.apply(TID, root)["ticked"] == []
 
 
 class TestPanels:
@@ -449,10 +461,13 @@ class TestPanels:
         why = _closed(prod)
         assert why.startswith("degraded") and "single-vendor panel" in why
 
-    def test_control_the_same_single_vendor_seats_satisfy_a_one_vendor_requirement(self, prod):
-        _panel(prod, {"claude": "green", "codex": "green", "opencode": "green"},
-               vendors=("claude", "claude", "claude"), required=1)
-        assert [t["ac"] for t in vl.apply(TID, prod)["ticked"]] == [1]
+    def test_negative_a_panel_run_that_requires_one_vendor_is_under_strength(self, prod):
+        """Round 6 (was a control): a run labelled rung-5 that demands one vendor is not a panel.
+        The ledger reads the rung the run authorised; it must come with PANEL_SIZE vendors."""
+        with pytest.raises(vl.VerdictRefused, match="requires 1 vendor"):     # at record
+            _panel(prod, {"claude": "green", "codex": "green", "opencode": "green"},
+                   vendors=("claude", "claude", "claude"), required=1)
+        assert _ticked_nothing(prod)
 
     def test_a_rung_5_claim_with_no_run_is_refused(self, prod, monkeypatch):
         with pytest.raises(vl.VerdictRefused, match="registered review run"):

@@ -264,13 +264,14 @@ class FakeWorker:
         self.calls: list[dict] = []
         self.n = 0
 
-    def __call__(self, *, task_id, brief, root, name, vendor, revision=""):
+    def __call__(self, *, task_id, brief, root, name, vendor, revision="", run_id="", seat=""):
         self.n += 1
         did = f"{name}-{self.n:012x}"
         self.calls.append({"name": name, "brief": brief, "did": did, "vendor": vendor,
                            "revision": revision})
         rt.dispatch(root, did, task_id, issuer_session="S-x", revision=revision,
-                    worker_kind=vendor)   # round 5: the ledger derives the vendor from the kind
+                    worker_kind=vendor,   # round 5: the ledger derives the vendor from the kind
+                    run_id=run_id, seat=seat)   # round 6: bound to its run before launch
         if not self.write:
             if self.runtime:
                 rt.finish(root, did, self.exit_code)

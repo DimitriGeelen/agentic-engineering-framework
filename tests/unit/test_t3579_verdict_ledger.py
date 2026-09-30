@@ -10,6 +10,7 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(ROOT))
 
+from lib import review_policy  # noqa: E402
 from lib import verdict_ledger as vl  # noqa: E402
 from lib.delegation import frontmatter, human_criteria  # noqa: E402
 
@@ -112,21 +113,31 @@ def _rec(root, outcome="green", ac=1, reviewer="openai/gpt-5", commit=True, rend
     it exits and the dispatch runtime signs its completion (`finish=False`: it never does)."""
     if not _has_commit(root):
         _produce(root)
+    kw.setdefault("evidence", ["evidence.md"] if outcome == "green" else [])
     if "dispatch_id" not in kw:
-        kw["dispatch_id"] = _dispatch(root, f"rv-{len(_lines(root, vl.DISPATCHES)) + 1}")
+        did = f"rv-{len(_lines(root, vl.DISPATCHES)) + 1}"
+        # T-3580 round 6: as `judge` does — a criterion IW-7 scores above rung 1 (or a render
+        # criterion) is reviewed inside a signed run at the required rung, bound at registration.
+        f = next((root / ".tasks" / "active").glob(f"{TASK}-*.md"))
+        crit = next(c for c in human_criteria(f.read_text()) if c.index == ac)
+        ctx = vl._Ctx(root, TASK, f, f.read_text())
+        need, _why = vl.required_strength(ctx, crit)
+        if (render and outcome == "green") or need > 1:
+            kw.update(_render_run(root, ac, did, kw["evidence"], render=render and outcome == "green",
+                                  rung=review_policy.rung_label(need)))
+            kw["rung"] = review_policy.rung_label(need)
+            rt.dispatch(root, did, TASK, run_id=kw["run_id"], seat="claude")
+            kw["dispatch_id"] = did
+        else:
+            kw["dispatch_id"] = _dispatch(root, did)
     if "digest" not in kw:
         f = next((root / ".tasks" / "active").glob(f"{TASK}-*.md"))
         kw["digest"] = vl.criterion_digest(
             next(c for c in human_criteria(f.read_text()) if c.index == ac))
     kw.setdefault("rung", "cross-vendor")
-    kw.setdefault("evidence", ["evidence.md"] if outcome == "green" else [])
-    if render and outcome == "green":
-        kw.update(_render_run(root, ac, kw["dispatch_id"], kw["evidence"]))
     if outcome != "green":
         kw.setdefault("guidance", "tighten the second sentence")
     rec = vl.record(TASK, ac, outcome, reviewer=reviewer, root=root, **kw)
-    if kw.get("run_id"):
-        vl.bind_dispatch(kw["run_id"], "claude", kw["dispatch_id"], "claude", root=root)
     if commit:
         _commit_ledger(root)
     if finish:
@@ -134,19 +145,21 @@ def _rec(root, outcome="green", ac=1, reviewer="openai/gpt-5", commit=True, rend
     return rec
 
 
-def _render_run(root, ac, did, evidence, pages=("/review",), ok=True):
+def _render_run(root, ac, did, evidence, pages=("/review",), ok=True, render=True,
+                rung="rung-1-same-vendor-independent"):
     """The judge's side of a render review: a signed run naming the required pages with the
-    capture result of each. Returns the extra kwargs `record` needs to cite the screenshots."""
+    capture result of each. Returns the extra kwargs `record` needs to cite the screenshots.
+    `render=False`: a plain run at `rung` with no pages (round 6)."""
     shots, caps = [], []
-    for i, pg in enumerate(pages):
+    for i, pg in enumerate(pages if render else ()):
         f = root / f"shot-{did}-{i}.png"
         f.write_bytes(b"png-" + pg.encode())
         shots.append(f.name)
         caps.append({"page": pg, "ok": ok, "sha256": vl._hash_path(f) if ok else "",
                      "error": "" if ok else "browser down"})
-    vl.register_run(f"run-{did}", TASK, acs=[ac], rung="rung-1-same-vendor-independent",
+    vl.register_run(f"run-{did}", TASK, acs=[ac], rung=rung,
                     seats=[{"seat": "claude", "vendor": "claude"}], required_vendors=1,
-                    pages={str(ac): list(pages)}, captures=caps, root=root)
+                    pages={str(ac): list(pages)} if render else {}, captures=caps, root=root)
     return {"run_id": f"run-{did}", "evidence": list(evidence) + shots}
 
 

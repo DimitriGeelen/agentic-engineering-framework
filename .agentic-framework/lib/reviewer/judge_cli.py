@@ -56,6 +56,7 @@ _HERE = Path(__file__).resolve().parent.parent
 if str(_HERE.parent) not in sys.path:
     sys.path.insert(0, str(_HERE.parent))
 
+from lib import review_policy  # noqa: E402
 from lib import verdict_ledger as vl  # noqa: E402
 from lib.delegation import (  # noqa: E402
     OPERATOR_ONLY,
@@ -63,16 +64,15 @@ from lib.delegation import (  # noqa: E402
     human_criteria,
 )
 
-SPEND_LOG = Path(".context/working/judge-spend.jsonl")
+SPEND_LOG = review_policy.SPEND_LOG
 EVIDENCE_DIR = Path(".context/working/judge-evidence")
 REPORT_DIR = ".context/reviews/evidence"
-CEILING_KEY = "REVIEWER_JUDGE_WEEKLY_SPEND_CEILING"
-DEFAULT_CEILING = 10000.0
-#: Estimated USD per dispatched reviewer, by rung. A panel is three seats.
-RUNG_COST = {1: 2.0, 2: 2.0, 3: 3.0, 5: 6.0}
+CEILING_KEY = review_policy.CEILING_KEY
+DEFAULT_CEILING = review_policy.DEFAULT_CEILING
+RUNG_COST = review_policy.RUNG_COST
 #: IW-7: a rung-5 panel is three reviewers from three different vendors. WHICH vendors is the
 #: registry's business (policy/review-backends.yaml), not this module's.
-PANEL_SIZE = 3
+PANEL_SIZE = review_policy.PANEL_SIZE
 #: Screenshots taken per run. Pages beyond the cap are still REQUIRED: they are registered as
 #: not captured, so the ledger refuses a render green (round 3: no silent truncation).
 MAX_CAPTURE_PAGES = 6
@@ -238,148 +238,26 @@ def _propose_paid(root: Path, task_id: str, backend: str, why: str, estimate: fl
         return rc.propose(task=task_id, backend=backend, why=why, est_cost=estimate, est_tokens=None)
 
 
-# ── rung (IW-7) ──────────────────────────────────────────────────────────────
-
-_IRREVERSIBLE_RE = re.compile(
-    r"\b(publish(?:es|ed|ing)?|deploy(?:s|ed|ing)?|production|credential[s]?|secret[s]?|payment|"
-    r"drop\s+table|force[- ]push|delete[sd]?\s+(?:data|branch))\b", re.I)
-_CONSUMER_PATH_RE = re.compile(r"(?:^|[\s`'\"(])((?:lib|agents|policy|web|seeds)/[\w./-]+|bin/fw)\b")
-_CROSS_PROJECT_RE = re.compile(r"\b(cross[- ]project|peer projects?|consumer projects?|other projects?|external users?)\b", re.I)
-_CONSUMER_RE = re.compile(r"\b(consumers?|fw upgrade|vendored|install surface)\b", re.I)
-_SECURITY_RE = re.compile(r"\b(security|vulnerab\w*|auth(?:entication|orization)?|sandbox)\b", re.I)
-_OBJECTIVE_RE = re.compile(r"\bproject[- ]objectives?\b", re.I)
+# ── rung (IW-7): lib/review_policy.py, the ONE implementation the ledger also enforces ────────
 
 
 def _impact(task_data: dict, criteria: list[dict] | None = None) -> dict:
-    """IW-7 impact = max(cost_if_wrong, value_at_stake). Returns {'tier', 'inputs', 'reasons'}
-    where inputs records what each axis saw, so the selection is auditable."""
-    fm = task_data["frontmatter"]
-    crit_text = "\n".join(c.get("body", "") for c in (criteria or []))
-    # What the change is ABOUT (title, description, the criteria under review) - not the whole
-    # task body, which mentions "consumers" and "security" in passing on almost every task.
-    scan = f"{fm.get('name', '')}\n{fm.get('description', '')}\n{crit_text}"
-    ce = fm.get("cost_estimate") or {}
-    blast = ce.get("blast_radius")
-    comps = fm.get("components") or []
-    comps = comps if isinstance(comps, list) else [comps]
-    paths = sorted({m for m in _CONSUMER_PATH_RE.findall(scan)} | {str(c) for c in comps
-                    if re.match(r"(lib|agents|policy|web|seeds)/|bin/fw", str(c))})
-    bvp = fm.get("bvp_scores") or {}
-    voi = fm.get("voi_score")
-    conf = fm.get("iw_confidence", fm.get("confidence"))
-    tags = [str(t).lower() for t in (fm.get("tags") or [])] if isinstance(fm.get("tags"), list) else []
-    inputs = {
-        "reversibility": "leaves-repo" if _IRREVERSIBLE_RE.search(scan) else "git-only",
-        "blast_radius": blast, "components": len(comps), "consumer_paths": paths[:6],
-        "audience": ("cross-project" if _CROSS_PROJECT_RE.search(scan)
-                     else "consumers" if (paths or _CONSUMER_RE.search(scan)) else "internal"),
-        "value": {"bvp": {k: bvp.get(k) for k in ("D1", "D2") if k in bvp}, "voi_score": voi,
-                  "project_objective": bool(_OBJECTIVE_RE.search(scan) or "objective" in tags)},
-        "uncertainty": {"confidence": conf,
-                        "inception": str(fm.get("workflow_type")) == "inception"},
-        "security": bool(_SECURITY_RE.search(scan) or "security" in tags),
-    }
-    high, medium = [], []
-    if isinstance(blast, (int, float)) and blast > 5:
-        high.append(f"blast_radius={blast}")
-    elif isinstance(blast, (int, float)) and blast >= 3:
-        medium.append(f"blast_radius={blast}")
-    if len(comps) >= 5:
-        high.append(f"components={len(comps)}")
-    if isinstance(voi, (int, float)) and voi >= 0.6:
-        high.append(f"voi_score={voi}")
-    if bvp and (bvp.get("D1", 0) > 3 or bvp.get("D2", 0) > 3):
-        high.append("D1/D2 > 3")
-    if inputs["value"]["project_objective"]:
-        high.append("project objective")
-    if inputs["security"]:
-        high.append("security")
-    if inputs["audience"] == "cross-project":
-        high.append("cross-project audience")
-    if inputs["reversibility"] == "leaves-repo":
-        high.append("not undone by git revert")
-    if isinstance(conf, (int, float)) and conf <= 1:
-        high.append(f"confidence={conf}")
-    if inputs["audience"] == "consumers":
-        medium.append("consumer-facing code (" + (paths[0] if paths else "consumer text") + ")"
-                      " [held at medium: IW-7's blast-radius row would count the install surface "
-                      "high; see T-3580 Decisions]")
-    if inputs["uncertainty"]["inception"]:
-        medium.append("inception GO")
-    if len(comps) >= 3:
-        medium.append(f"components={len(comps)}")
-    tier = "high" if high else "medium" if medium else "low"
-    return {"tier": tier, "inputs": inputs, "reasons": high if high else medium}
+    """IW-7 impact over the task's frontmatter and the criteria under review (review_policy)."""
+    return review_policy.impact(task_data.get("frontmatter") or {},
+                                [c.get("body", "") for c in (criteria or [])])
 
 
 def _calculate_rung(task_data: dict, criteria: list[dict] | None = None) -> tuple[int, str]:
     """IW-7: low -> rung 1, medium -> rung 3, high -> rung 5. Returns (rung, reason)."""
-    imp = _impact(task_data, criteria)
-    rung = {"low": 1, "medium": 3, "high": 5}[imp["tier"]]
-    return rung, "; ".join(imp["reasons"]) if imp["reasons"] else "default"
+    return review_policy.required_rung(task_data.get("frontmatter") or {},
+                                       [c.get("body", "") for c in (criteria or [])])
 
 
-def _config_value(root: Path, key: str, default: str) -> str:
-    env = os.environ.get(f"FW_{key}")
-    if env:
-        return env
-    try:
-        import yaml
-
-        data = yaml.safe_load((root / ".framework.yaml").read_text()) or {}
-        for scope in (data, data.get("config") or {}):
-            if isinstance(scope, dict) and scope.get(key) not in (None, ""):
-                return str(scope[key])
-    except Exception:
-        pass
-    return default
-
-
-def _ceiling(root: Path) -> float:
-    try:
-        return float(_config_value(root, CEILING_KEY, str(DEFAULT_CEILING)))
-    except ValueError:
-        return DEFAULT_CEILING
-
-
-def _weekly_spend(root: Path, now: datetime | None = None) -> float:
-    now = now or datetime.now(timezone.utc)
-    since = now - timedelta(days=7)
-    total = 0.0
-    p = root / SPEND_LOG
-    if not p.exists():
-        return 0.0
-    for line in p.read_text().splitlines():
-        try:
-            r = json.loads(line)
-            ts = datetime.strptime(r["ts"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
-            if ts >= since:
-                total += float(r.get("cost", 0))
-        except Exception:
-            continue
-    return total
-
-
-def _apply_ceiling(rung: int, reason: str, spent: float, ceiling: float) -> tuple[int, str, str]:
-    """Drop one rung (5 -> 3 -> 1) when the due rung would take the week past the ceiling.
-    Returns (rung, reason, note); note is '' when nothing was dropped."""
-    if spent + RUNG_COST.get(rung, 2.0) <= ceiling:
-        return rung, reason, ""
-    lower = 3 if rung >= 5 else 1
-    if lower == rung or rung <= 1:
-        note = (f"weekly spend ceiling reached (spent {spent:g} of {ceiling:g}); rung {rung} is "
-                f"already the lowest, so it runs at rung {rung} and is not skipped")
-        return rung, reason, note
-    note = (f"reviewed at rung {lower}, weekly spend ceiling reached (spent {spent:g} of "
-            f"{ceiling:g}); rung {rung} was due")
-    return lower, reason, note
-
-
-def _rung_label(rung: int, seat: str = "") -> str:
-    base = ("rung-1-same-vendor-independent" if rung <= 1 else
-            "rung-2-same-vendor-independent" if rung == 2 else
-            "rung-3-termlink-single-reviewer" if rung <= 4 else "rung-5-panel")
-    return f"{base}:{seat}" if seat else base
+_config_value = review_policy.config_value
+_ceiling = review_policy.ceiling
+_weekly_spend = review_policy.weekly_spend
+_apply_ceiling = review_policy.apply_ceiling
+_rung_label = review_policy.rung_label
 
 
 # ── evidence: screenshots of the pages the task touched ──────────────────────
@@ -650,7 +528,8 @@ Dispatcher = Callable[..., str]
 
 
 def _dispatch_argv(fw: Path, *, task_id: str, name: str, prompt_file: Path, root: Path,
-                   vendor: str, timeout: int, revision: str = "") -> list[str]:
+                   vendor: str, timeout: int, revision: str = "", run_id: str = "",
+                   seat: str = "") -> list[str]:
     """The exact `fw termlink dispatch` argv: the wrapper takes --project (not --project-dir) and
     --worker-kind for the vendor. A vendor with no worker kind yet (codex/opencode, T-3582) makes
     the wrapper refuse loudly rather than silently run another vendor's worker."""
@@ -659,6 +538,8 @@ def _dispatch_argv(fw: Path, *, task_id: str, name: str, prompt_file: Path, root
             "--timeout", str(timeout), "--project", str(root)]
     if revision:
         argv += ["--review-revision", revision]
+    if run_id:
+        argv += ["--review-run", run_id, "--review-seat", seat]
     return argv
 
 
@@ -671,7 +552,7 @@ def _await_worker(fw: Path, did: str, root: Path, timeout: int) -> int:
 
 
 def _dispatch_real(*, task_id: str, brief: str, root: Path, name: str, vendor: str,
-                   timeout: int = 900, revision: str = "") -> str:
+                   timeout: int = 900, revision: str = "", run_id: str = "", seat: str = "") -> str:
     """Spawn the review worker via `fw termlink dispatch --task-type review`, wait for it, and
     return its dispatch id (the wrapper appends a random suffix and registers it)."""
     fw = Path(os.environ.get("FRAMEWORK_ROOT") or root) / "bin" / "fw"
@@ -679,7 +560,8 @@ def _dispatch_real(*, task_id: str, brief: str, root: Path, name: str, vendor: s
     pf.parent.mkdir(parents=True, exist_ok=True)
     pf.write_text(brief)
     r = subprocess.run(_dispatch_argv(fw, task_id=task_id, name=name, prompt_file=pf, root=root,
-                                      vendor=vendor, timeout=timeout, revision=revision),
+                                      vendor=vendor, timeout=timeout, revision=revision,
+                                      run_id=run_id, seat=seat),
                        cwd=root, capture_output=True, text=True, timeout=120)
     m = re.search(r"Worker spawned:\s*(\S+)", r.stdout)
     if r.returncode != 0 or not m:
@@ -691,14 +573,15 @@ def _dispatch_real(*, task_id: str, brief: str, root: Path, name: str, vendor: s
 
 def _dispatch_reviewer(task_id: str, brief: str, rung: int, dry_run: bool, root: Path,
                        dispatcher: Dispatcher | None = None, name: str | None = None,
-                       vendor: str = "", revision: str = "") -> str | None:
+                       vendor: str = "", revision: str = "", run_id: str = "",
+                       seat: str = "") -> str | None:
     if dry_run:
         return None
     if not vendor:
         raise ValueError("no worker kind: the registry's seat backend names none")
     dispatcher = dispatcher or _dispatch_real
     return dispatcher(task_id=task_id, brief=brief, root=root, vendor=vendor, revision=revision,
-                      name=name or f"judge-{task_id.lower()}-r{rung}")
+                      name=name or f"judge-{task_id.lower()}-r{rung}", run_id=run_id, seat=seat)
 
 
 # ── reading the result: the ledger is authoritative ──────────────────────────
@@ -828,11 +711,13 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
         res.update(error=f"No REVIEWER_JUDGES criteria found for {task_id}", code=1)
         return res
 
+    # The SAME policy the ledger enforces at record and apply (round 6): the due rung, and — when
+    # the weekly ceiling steps it down — a decision the ledger re-derives from the spend log.
     imp = _impact(task_data, judged)
-    due = {"low": 1, "medium": 3, "high": 5}[imp["tier"]]
-    reason = "; ".join(imp["reasons"]) if imp["reasons"] else "default"
-    spent, ceiling = _weekly_spend(root, now), _ceiling(root)
-    rung, reason, note = _apply_ceiling(due, reason, spent, ceiling)
+    due, reason = _calculate_rung(task_data, judged)
+    decision = review_policy.ceiling_decision(root, due, reason, now)
+    rung, note = decision["granted"], decision["note"]
+    spent, ceiling = decision["spent"], decision["ceiling"]
     res.update(rung_due=due, rung=rung, rung_reason=reason, ceiling_note=note,
                impact=imp, weekly_spend=spent, ceiling=ceiling)
 
@@ -884,7 +769,7 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
             pages={str(c["ac_index"]): evidence["pages"] for c in judged if c["render"]},
             captures=evidence["captures"],
             inputs=imp["inputs"], reason=reason + (f"; {note}" if note else ""),
-            degraded=degraded, root=root)
+            degraded=degraded, ceiling_decision=decision, root=root)
     except Exception as e:  # noqa: BLE001
         res.update(error=f"could not register the review run: {e}", code=1)
         return res
@@ -895,11 +780,12 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
     for s in plan["dispatch"]:
         seat = s["seat"]
         try:
+            # Round 6: the dispatch is bound to its run and seat AT REGISTRATION, before the
+            # worker launches — the dispatcher registers run + seat with the signed dispatch.
             did = _dispatch_reviewer(
                 task_id, briefs[seat], rung, False, root, dispatcher,
                 name=f"judge-{task_id.lower()}-r{rung}" + (f"-{seat}" if rung >= 5 else ""),
-                vendor=s["kind"], revision=revision)
-            vl.bind_dispatch(run_id, seat, did, s["vendor"], root=root)
+                vendor=s["kind"], revision=revision, run_id=run_id, seat=seat)
         except Exception as e:  # noqa: BLE001
             res["dispatches"].append({"seat": seat, "error": str(e), "results": [
                 {"ac": c["ac_index"], "outcome": UNKNOWN, "source": "dispatch-failed"} for c in judged]})

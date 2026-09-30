@@ -80,7 +80,7 @@ _dispatch() {
     mkdir -p "$TEST_TEMP_DIR.tl/${1:-rv-1}"
     PROJECT_ROOT="$PROJECT_ROOT" python3 "$BATS_TEST_DIRNAME/../../lib/verdict_ledger.py" \
         register-dispatch --dispatch-id "${1:-rv-1}" --task T-9200 --task-type review \
-        --wdir "$TEST_TEMP_DIR.tl/${1:-rv-1}" --worker-kind claude >/dev/null
+        --wdir "$TEST_TEMP_DIR.tl/${1:-rv-1}" --worker-kind claude "${@:2}" >/dev/null
 }
 
 _finish() {
@@ -123,30 +123,35 @@ _record() {
     # A render criterion also needs a signed review run that recorded the pages required and a
     # verified screenshot of each (T-3580 round 2): the judge's part, played here in python.
     git -C "$PROJECT_ROOT" rev-parse -q --verify HEAD >/dev/null 2>&1 || _produce
-    _dispatch rv-1
-    local dg extra=()
+    local dg extra=() rung=cross-vendor
     dg=$("$FW" reviewer verdict digest T-9200 --ac 1)
     if [ "$1" = green ]; then
+        # T-3580 round 6: the run is registered first, at the rung IW-7 requires (the shared
+        # policy), and the dispatch is bound to it AT REGISTRATION — before the worker runs.
         printf 'png' > "$PROJECT_ROOT/shot-rv-1.png"
-        PYTHONPATH="$BATS_TEST_DIRNAME/../.." PROJECT_ROOT="$PROJECT_ROOT" python3 - <<'PY'
+        rung=$(PYTHONPATH="$BATS_TEST_DIRNAME/../.." PROJECT_ROOT="$PROJECT_ROOT" python3 - <<'PY'
 import os
 from pathlib import Path
-from lib import verdict_ledger as vl
+from lib import review_policy, verdict_ledger as vl
 root = Path(os.environ["PROJECT_ROOT"])
-vl.register_run("run-rv-1", "T-9200", acs=[1], rung="rung-1-same-vendor-independent",
+ctx = vl._task_ctx(root, "T-9200")
+crit = next(c for c in vl.human_criteria(ctx.text) if c.index == 1)
+label = review_policy.rung_label(vl.required_strength(ctx, crit)[0])
+vl.register_run("run-rv-1", "T-9200", acs=[1], rung=label,
                 seats=[{"seat": "claude", "vendor": "claude"}], required_vendors=1,
                 pages={"1": ["/review"]},
                 captures=[{"page": "/review", "ok": True, "sha256": vl._hash_path(root / "shot-rv-1.png"), "error": ""}],
                 root=root)
+print(label)
 PY
+)
+        _dispatch rv-1 --run-id run-rv-1 --seat claude
         extra=(--run-id run-rv-1 --evidence shot-rv-1.png)
+    else
+        _dispatch rv-1
     fi
     "$FW" reviewer verdict record T-9200 --ac 1 --outcome "$1" --reviewer "reviewer-rv-1:openai/gpt-5" \
-        --rung cross-vendor --dispatch-id rv-1 --digest "$dg" "${extra[@]}" "${@:2}" || return $?
-    if [ "$1" = green ]; then
-        PYTHONPATH="$BATS_TEST_DIRNAME/../.." PROJECT_ROOT="$PROJECT_ROOT" python3 -c \
-            "from lib import verdict_ledger as vl; vl.bind_dispatch('run-rv-1','claude','rv-1','claude')"
-    fi
+        --rung "$rung" --dispatch-id rv-1 --digest "$dg" "${extra[@]}" "${@:2}" || return $?
     git -C "$PROJECT_ROOT" add .context/reviews
     _as "reviewer-rv-1" commit -q -m "T-9200: reviewer verdict"
     _finish rv-1

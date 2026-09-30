@@ -658,7 +658,7 @@ _runtime_alive() {
 
 cmd_dispatch() {
     ensure_termlink
-    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model="" task_type="" tools="" worker_kind="" permission_mode="" mcp_config="" strict_mcp="" allowed_tools="" review_revision=""
+    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model="" task_type="" tools="" worker_kind="" permission_mode="" mcp_config="" strict_mcp="" allowed_tools="" review_revision="" review_run="" review_seat=""
     # T-1700: workflow `env:` plumb-through. Repeatable --env KEY=VAL pairs are
     # injected into the spawned worker's shell so `claude -p` honors per-workflow
     # overrides like ANTHROPIC_BASE_URL=http://localhost:4000 (litellm proxy)
@@ -682,6 +682,11 @@ cmd_dispatch() {
                 # the caller BEFORE dispatch. Registered with the dispatch; the verdict ledger
                 # binds every verdict to it instead of HEAD at record time.
                 review_revision="$2"; shift 2 ;;
+            --review-run|--review-seat)
+                # T-3580 round 6: the signed review run (and seat in it) this dispatch is
+                # authorised under. Registered WITH the dispatch, before the worker launches;
+                # the ledger reads the rung the run authorised, never one the worker types.
+                [ "$1" = "--review-run" ] && review_run="$2" || review_seat="$2"; shift 2 ;;
             --env)
                 # Validate KEY=VALUE shape early; KEY must match [A-Z_][A-Z0-9_]*
                 if [[ ! "$2" =~ ^[A-Z_][A-Z0-9_]*= ]]; then
@@ -971,6 +976,7 @@ METAEOF
             --dispatch-id "$name" --task "$task" --task-type review \
             --revision "$review_revision" --wdir "$wdir" \
             --worker-kind "${worker_kind:-claude}" --ttl "$((timeout + 600))" \
+            --run-id "$review_run" --seat "$review_seat" \
             --issuer-session "${_issuer_session:-}" --issuer-identity "${GIT_AUTHOR_NAME:-$(git -C "$project_dir" config user.name 2>/dev/null)}" \
             >/dev/null || echo "  WARNING: review dispatch not registered — its verdicts will not count" >&2
         : > "$wdir/finalise_required"

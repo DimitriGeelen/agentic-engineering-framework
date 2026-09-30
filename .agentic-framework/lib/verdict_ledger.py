@@ -120,6 +120,7 @@ if str(_HERE.parent) not in sys.path:
 
 from lib import judge_verdict  # noqa: E402
 from lib import review_cost  # noqa: E402
+from lib import review_policy  # noqa: E402
 from lib.delegation import (  # noqa: E402
     REVIEWER_JUDGES,
     classify,
@@ -313,7 +314,8 @@ def _sign(key: bytes, row: dict) -> str:
                                 "issuer_identity", "ts")}
     for k in ("revision", "wdir",           # T-3580 round 3: bound at dispatch time
               "worker_kind", "vendor", "completion_secret_sha256",    # round 4
-              "start_by", "complete_by"):                             # round 5
+              "start_by", "complete_by",                              # round 5
+              "run_id", "seat"):                                      # round 6: bound pre-launch
         if k in row:
             body[k] = row[k]
     return hmac.new(key, json.dumps(body, sort_keys=True, separators=(",", ":")).encode(),
@@ -323,8 +325,8 @@ def _sign(key: bytes, row: dict) -> str:
 def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
                       issuer_session: str = "", issuer_identity: str = "",
                       revision: str = "", wdir: str = "", worker_kind: str = "",
-                      vendor: str = "", ttl: int = DEFAULT_TTL,
-                      root: Path | None = None) -> dict:
+                      vendor: str = "", ttl: int = DEFAULT_TTL, run_id: str = "",
+                      seat: str = "", root: Path | None = None) -> dict:
     """Record a dispatch. Called by the dispatcher, for every task-type, at spawn time.
 
     `revision` is the commit the reviewer is asked to review, captured BEFORE the worker starts
@@ -337,7 +339,12 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
     caller: `vendor`, if given, is only an assertion, and a mismatch is refused. A review dispatch
     whose kind the mapping does not know is refused. A review dispatch with a worker directory
     also gets a fresh completion secret in `wdir/.completion-secret` (0600; only its hash is
-    registered) and two signed deadlines: `start_by` and `complete_by` (registration + `ttl`)."""
+    registered) and two signed deadlines: `start_by` and `complete_by` (registration + `ttl`).
+
+    `run_id` + `seat` (round 6) bind the dispatch to the signed review run the judge registered
+    BEFORE the worker is launched: the run must exist, be for this task and have that seat, and a
+    seat is dispatched once. The binding is part of the signed registration; there is no later
+    bind step a caller could skip or redo."""
     root = root or _root()
     if not (dispatch_id or "").strip() or not (task_id or "").strip():
         raise ValueError("dispatch_id and task are required")
@@ -359,6 +366,20 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
             raise ValueError(f"worker kind {row['worker_kind']!r} has no vendor in {BACKENDS} — a "
                              f"review dispatch's vendor comes from that mapping, never free text")
     row["vendor"] = table.get(row["worker_kind"], "")
+    if (run_id or "").strip() or (seat or "").strip():
+        if row["task_type"] != REVIEW_TASK_TYPE:
+            raise ValueError("only a review dispatch is bound to a review run")
+        run, why = _verified_run(root, (run_id or "").strip())
+        if run is None:
+            raise ValueError(why)
+        if run.get("task") != row["task"]:
+            raise ValueError(f"run {run_id.strip()!r} is for {run.get('task')!r}, not {row['task']}")
+        if (seat or "").strip() not in {s["seat"] for s in run.get("seats") or []}:
+            raise ValueError(f"seat {(seat or '').strip()!r} is not a seat of run {run_id.strip()!r}")
+        if any(r.get("run_id") == run_id.strip() and r.get("seat") == seat.strip()
+               for r in _read(DISPATCHES, root)):
+            raise ValueError(f"seat {seat.strip()!r} of run {run_id.strip()!r} is already dispatched")
+        row["run_id"], row["seat"] = run_id.strip(), seat.strip()
     if (vendor or "").strip() and vendor.strip() != row["vendor"]:
         raise ValueError(f"vendor {vendor.strip()!r} is not the one {BACKENDS} maps worker kind "
                          f"{row['worker_kind']!r} to ({row['vendor'] or 'none'!r}) — refused")
@@ -672,10 +693,14 @@ def _tracked(root: Path, rel: Path) -> bool:
 def register_run(run_id: str, task_id: str, *, acs: list[int], rung: str, seats: list[dict],
                  required_vendors: int = 1, pages: dict | None = None, captures: list | None = None,
                  inputs: dict | None = None, reason: str = "", degraded: str = "",
-                 root: Path | None = None) -> dict:
+                 ceiling_decision: dict | None = None, root: Path | None = None) -> dict:
     """(judge, before dispatching) record a review run: the seats it requires, how many distinct
     vendors it demands, and for render criteria the pages that must have been seen with the
-    capture result of each. Signed; a partial capture failure is kept, never discarded."""
+    capture result of each. Signed; a partial capture failure is kept, never discarded.
+
+    `ceiling_decision` (round 6, lib/review_policy.ceiling_decision) is the judge's due/granted
+    rung with the spend it was computed from; the ledger re-derives it before it accepts a run
+    whose rung is below what IW-7 requires."""
     root = root or _root()
     if any(r.get("kind") == "run" and r.get("run_id") == run_id for r in _read(RUNS, root)):
         raise ValueError(f"run {run_id!r} is already registered")
@@ -686,6 +711,8 @@ def register_run(run_id: str, task_id: str, *, acs: list[int], rung: str, seats:
            "pages": {str(k): list(v) for k, v in (pages or {}).items()},
            "captures": [dict(c) for c in (captures or [])], "inputs": inputs or {},
            "reason": reason, "degraded": degraded, "ts": _now()}
+    if ceiling_decision is not None:
+        row["ceiling_decision"] = dict(ceiling_decision)
     row["sig"] = _sign_row(key, row)
     _append(RUNS, row, root)
     return row
@@ -700,41 +727,21 @@ def _verified_run(root: Path, run_id: str) -> tuple[dict | None, str]:
     return rows[0], ""
 
 
-def bind_dispatch(run_id: str, seat: str, dispatch_id: str, vendor: str, *,
-                  root: Path | None = None) -> dict:
-    """(judge, after dispatching a seat) bind the dispatch to its run and seat. `vendor` is the
-    vendor argument the dispatcher was actually invoked with, not the seat's label."""
-    root = root or _root()
-    run, why = _verified_run(root, run_id)
-    if run is None:
-        raise ValueError(why)
-    if seat not in {s["seat"] for s in run["seats"]}:
-        raise ValueError(f"seat {seat!r} is not a seat of run {run_id!r}")
-    drec, why = dispatch_record(root, dispatch_id)
-    if drec is None or drec.get("task") != run["task"]:
-        raise ValueError(why or f"dispatch {dispatch_id!r} was issued for another task")
-    if any(r.get("kind") == "bind" and r.get("dispatch_id") == dispatch_id for r in _read(RUNS, root)):
-        raise ValueError(f"dispatch {dispatch_id!r} is already bound")
-    row = {"kind": "bind", "run_id": run_id, "seat": seat, "dispatch_id": dispatch_id,
-           "vendor": vendor, "task": run["task"], "ts": _now()}
-    row["sig"] = _sign_row(_dispatch_key(root, create=True), row)
-    _append(RUNS, row, root)
-    return row
-
-
 def run_for_dispatch(root: Path, dispatch_id: str) -> tuple[dict | None, dict | None, str]:
-    """(run, bind, why). (None, None, '') when the dispatch is simply not part of any run;
-    a non-empty `why` means a run/bind row exists but does not verify."""
-    binds = [r for r in _read(RUNS, root) if r.get("kind") == "bind" and r.get("dispatch_id") == dispatch_id]
-    if not binds:
+    """(run, bind, why). The run and seat come from the dispatch's SIGNED REGISTRATION (round 6:
+    bound before launch); `bind` is {'run_id', 'seat', 'dispatch_id'}. (None, None, '') when the
+    dispatch was registered with no run; a non-empty `why` means it names a run that does not
+    verify. Post-hoc `bind` rows (round 2-5) are not read: a binding made after launch proves
+    nothing about what was authorised."""
+    drec, why = dispatch_record(root, dispatch_id)
+    if drec is None or not str(drec.get("run_id") or ""):
         return None, None, ""
-    bind = binds[0]
-    if not _signed_ok(root, bind):
-        return None, None, f"the run binding of dispatch {dispatch_id!r} has an invalid signature"
-    run, why = _verified_run(root, bind.get("run_id", ""))
+    run, why = _verified_run(root, str(drec["run_id"]))
     if run is None:
         return None, None, why
-    return run, bind, ""
+    if str(drec.get("seat") or "") not in {s["seat"] for s in run.get("seats") or []}:
+        return None, None, f"dispatch {dispatch_id!r} names seat {drec.get('seat')!r}, not a seat of its run"
+    return run, {"run_id": run["run_id"], "seat": drec["seat"], "dispatch_id": dispatch_id}, ""
 
 
 # ── identity / producer ──────────────────────────────────────────────────────
@@ -1259,10 +1266,7 @@ def _run_fault(ctx: "_Ctx", row: dict, crit, recording: bool) -> tuple[str, str]
     root = ctx.root
     render = _is_render_review(ctx, crit)
     claimed = str(row.get("run_id") or "")
-    if recording:
-        run, why = _verified_run(root, claimed) if claimed else (None, "")
-    else:
-        run, _bind, why = run_for_dispatch(root, str(row["dispatch_id"]))
+    run, _bind, why = run_for_dispatch(root, str(row["dispatch_id"]))
     if why:
         return "run", why
     if run is None:
@@ -1313,7 +1317,87 @@ def _fault(ctx: _Ctx, row: dict, crit, intro: dict | None, *, need_commit: bool 
             return "not-reviewer-judged", (
                 f"AC#{crit.index} is {cl.cls} ({cl.delegation_class}): only the operator may "
                 f"answer it, so no reviewer verdict can satisfy or escalate it — {cl.reason}")
-        return _run_fault(ctx, row, crit, recording=recording) or _stale_fault(ctx, row)
+        return (_strength_fault(ctx, row, crit) or _run_fault(ctx, row, crit, recording=recording)
+                or _stale_fault(ctx, row))
+    return None
+
+
+def _task_text_at(root: Path, rev: str, task_id: str) -> str:
+    """The task file as committed at `rev`; '' when it was not there."""
+    rc, listing = _git_out(root, "ls-tree", "-r", "--name-only", rev, "--", ".tasks/active", ".tasks/completed")
+    if rc != 0:
+        return ""
+    name = next((ln for ln in listing.splitlines()
+                 if Path(ln).name.startswith(f"{task_id}-") or Path(ln).name == f"{task_id}.md"), None)
+    if not name:
+        return ""
+    rc, blob = _git_out(root, "show", f"{rev}:{name}")
+    return blob if rc == 0 else ""
+
+
+def required_strength(ctx: "_Ctx", crit, revision: str = "") -> tuple[int, str]:
+    """(rung, reason) IW-7 requires for `crit`, from lib/review_policy.py — the function `judge`
+    uses to choose its rung. Scored on the task as it is NOW and as it stood at the reviewed
+    revision; the higher wins, so lowering the task's risk fields after the review, or before it
+    in an uncommitted edit, does not lower what the verdict must have been."""
+    body = [criterion_body(crit)]
+    rung, why = review_policy.required_rung(frontmatter(ctx.text), body)
+    then = _task_text_at(ctx.root, revision, ctx.task_id) if revision else ""
+    if then:
+        r2, w2 = review_policy.required_rung(frontmatter(then), body)
+        if r2 > rung:
+            rung, why = r2, f"{w2} (at reviewed revision {revision[:9]})"
+    return rung, why
+
+
+def _strength_fault(ctx: "_Ctx", row: dict, crit) -> tuple[str, str] | None:
+    """A green counts only at the review strength IW-7 requires for this criterion (round 6).
+
+    rung 1 (low impact): any registered independent review dispatch. Rung 3 or 5: the dispatch
+    must be bound, at registration and so before launch, to a signed review run whose rung is at
+    least the required one — or one step lower only with a ceiling decision the ledger re-derives
+    (lib/review_policy.verify_ceiling_decision). A panel rung needs a run demanding PANEL_SIZE seats
+    and vendors (`_panel_fault` then checks each seat). The row's `--rung` must be the run's rung:
+    the label is what the run authorised, never what the worker typed."""
+    root = ctx.root
+    need, why = required_strength(ctx, crit, str(row.get("revision") or ""))
+    claimed = review_policy.rung_number(row.get("rung"))
+    run, _bind, rwhy = run_for_dispatch(root, str(row["dispatch_id"]))
+    if rwhy:
+        return "run", rwhy
+    if run is None:
+        if need <= 1:
+            return None     # rung 1: any registered independent review dispatch; the label is prose
+        return "under-strength", (
+            f"{ctx.task_id} AC#{crit.index} requires rung {need} ({why}); dispatch "
+            f"{row['dispatch_id']!r} is not bound to an authorised review run, so its claimed "
+            f"{row.get('rung')!r} is unverified and cannot satisfy it")
+    if claimed is None:
+        return "rung", f"rung {row.get('rung')!r} names no rung number (rung-N-...)"
+    granted = review_policy.rung_number(run.get("rung"))
+    if granted is None:
+        return "run", f"run {run.get('run_id')!r} names no rung"
+    if claimed != granted:
+        return "rung-mismatch", (f"the row claims rung {claimed}; its run {run['run_id']!r} "
+                                 f"authorised rung {granted}")
+    if granted < need:
+        dec = run.get("ceiling_decision")
+        if not isinstance(dec, dict) or int(dec.get("granted", -1)) != granted \
+                or int(dec.get("due", 0)) < need:
+            return "under-strength", (
+                f"{ctx.task_id} AC#{crit.index} requires rung {need} ({why}); run "
+                f"{run['run_id']!r} is rung {granted} with no ceiling decision that steps down "
+                f"from rung {need}")
+        bad = review_policy.verify_ceiling_decision(root, dec)
+        if bad:
+            return "ceiling-unverified", (f"run {run['run_id']!r} steps rung {dec.get('due')} down to "
+                                          f"{granted}, but {bad}")
+    if granted >= 5 and (int(run.get("required_vendors") or 0) < review_policy.PANEL_SIZE
+                         or len(run.get("seats") or []) < review_policy.PANEL_SIZE):
+        return "under-strength", (f"run {run['run_id']!r} claims a rung-{granted} panel but requires "
+                                  f"{run.get('required_vendors')} vendor(s) over "
+                                  f"{len(run.get('seats') or [])} seat(s); a panel is "
+                                  f"{review_policy.PANEL_SIZE}")
     return None
 
 
@@ -1949,6 +2033,9 @@ def _cli(argv: list[str] | None = None) -> int:
                    "its vendor is derived from policy/review-backends.yaml, never passed in")
     g.add_argument("--ttl", type=int, default=DEFAULT_TTL,
                    help="seconds after registration past which no completion is accepted")
+    g.add_argument("--run-id", default="", help="the signed review run this dispatch is authorised "
+                   "under (bound here, before launch)")
+    g.add_argument("--seat", default="", help="the run seat this dispatch fills")
 
     st = sub.add_parser("start", help="(dispatch runtime, first act of run.sh) record that the "
                         "runtime started for this dispatch")
@@ -2009,7 +2096,8 @@ def _cli(argv: list[str] | None = None) -> int:
                                 issuer_session=args.issuer_session,
                                 issuer_identity=args.issuer_identity,
                                 revision=args.revision, wdir=args.wdir,
-                                worker_kind=args.worker_kind, ttl=args.ttl)
+                                worker_kind=args.worker_kind, ttl=args.ttl,
+                                run_id=args.run_id, seat=args.seat)
         print(json.dumps({k: row[k] for k in ("dispatch_id", "task", "task_type", "revision",
                                               "worker_kind", "vendor")}))
         return 0
