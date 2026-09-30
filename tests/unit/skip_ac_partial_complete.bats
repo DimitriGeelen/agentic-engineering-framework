@@ -10,6 +10,7 @@ load ../test_helper
 UPDATE_TASK="$FRAMEWORK_ROOT/agents/task-create/update-task.sh"
 
 setup() {
+    unset CLAUDECODE  # T-3586: these fixtures exercise the operator's bypass path
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
     export PROJECT_ROOT="$TEST_TEMP_DIR"
@@ -86,7 +87,7 @@ EOF
 
 @test "partial-complete recheck with --skip-acceptance-criteria: archives to completed/" {
     _make_partial_task "T-9992"
-    run "$UPDATE_TASK" T-9992 --status work-completed --skip-acceptance-criteria
+    run "$UPDATE_TASK" T-9992 --status work-completed --skip-acceptance-criteria --reason "T-3586 fixture: operator bypass"
     [ "$status" -eq 0 ]
     [[ "$output" == *"WARNING"* ]]
     [[ "$output" == *"bypass"* ]]
@@ -96,7 +97,7 @@ EOF
 
 @test "partial-complete recheck with --skip-acceptance-criteria: bypass logged" {
     _make_partial_task "T-9993"
-    run "$UPDATE_TASK" T-9993 --status work-completed --skip-acceptance-criteria
+    run "$UPDATE_TASK" T-9993 --status work-completed --skip-acceptance-criteria --reason "T-3586 fixture: operator bypass"
     [ "$status" -eq 0 ]
     local log="$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml"
     [ -f "$log" ]

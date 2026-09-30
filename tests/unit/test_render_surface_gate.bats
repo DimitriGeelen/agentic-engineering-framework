@@ -10,6 +10,9 @@
 
 load ../test_helper
 
+# T-3586: these fixtures exercise the operator's bypass path, not an agent's.
+unset CLAUDECODE
+
 # ---- Source-level invariants ----
 
 @test "T-1766: lib/render_surface.sh exists and exports RENDER_SURFACE_PATTERNS" {
@@ -239,7 +242,7 @@ EOF
 
     run env PROJECT_ROOT="$proj" "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-RSGATE-A \
         --status work-completed \
-        --skip-acceptance-criteria --skip-verification --skip-recommendation --skip-rca
+        --skip-acceptance-criteria --skip-verification --skip-recommendation --skip-rca --reason "T-3586 fixture: operator bypass"
     [ "$status" -ne 0 ]
     echo "$output" | grep -q "render surface"
 }
@@ -280,7 +283,7 @@ EOF
 
     run env PROJECT_ROOT="$proj" "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-RSGATE-B \
         --status work-completed \
-        --skip-acceptance-criteria --skip-verification --skip-recommendation --skip-rca
+        --skip-acceptance-criteria --skip-verification --skip-recommendation --skip-rca --reason "T-3586 fixture: operator bypass"
     # Should NOT exit on render-surface gate (may exit on other reasons if the
     # task is partial-complete; we only care that the render-surface ERROR
     # message does not appear)
@@ -320,7 +323,7 @@ EOF
 
     run env PROJECT_ROOT="$proj" "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-RSGATE-C \
         --status work-completed \
-        --skip-acceptance-criteria --skip-verification --skip-recommendation --skip-rca
+        --skip-acceptance-criteria --skip-verification --skip-recommendation --skip-rca --reason "T-3586 fixture: operator bypass"
     ! echo "$output" | grep -q "touches render surface"
 }
 
@@ -357,7 +360,7 @@ EOF
 
     run env PROJECT_ROOT="$proj" "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-RSGATE-D \
         --status work-completed \
-        --skip-acceptance-criteria --skip-verification --skip-recommendation --skip-rca \
+        --skip-acceptance-criteria --skip-verification --skip-recommendation --skip-rca --reason "T-3586 fixture: operator bypass" \
         --skip-render-review "tiny CSS tweak, no visual impact"
     # Gate should not block — bypass logged
     ! echo "$output" | grep -q "ERROR: Cannot complete build task — touches render surface"
@@ -399,7 +402,7 @@ EOF
 
     run env PROJECT_ROOT="$proj" "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-RSGATE-E \
         --status work-completed \
-        --skip-acceptance-criteria --skip-verification --skip-recommendation --skip-rca
+        --skip-acceptance-criteria --skip-verification --skip-recommendation --skip-rca --reason "T-3586 fixture: operator bypass"
     [ "$status" -ne 0 ]
     echo "$output" | grep -q "render surface"
 }

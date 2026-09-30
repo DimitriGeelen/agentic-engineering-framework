@@ -79,9 +79,55 @@ _print_move_next_hint() {
     printf "  \xe2\x86\xb3 next: git add .context/episodic/%s.yaml && git commit -m '%s: close ...' && git push\n" "$tid" "$tid"
 }
 
+# Bypass policy (T-3586). Runs at the moment a --skip-* flag is CONSUMED — i.e. a gate
+# would have refused and the flag is what lets the call through — not at parse time,
+# so a flag an internal caller passes on a path where its gate never fires stays inert.
+#
+# Two rules:
+#   1. Every consumed --skip-* needs a non-empty reason (--reason "..." or the flag's
+#      own argument). Humans included: an unexplained bypass is not auditable.
+#   2. A flag whose gate protects a criterion or ownership is refused under
+#      CLAUDECODE=1 (agent sessions and dispatched workers) unless --i-am-human.
+#      Origin: T-3583's worker closed with --skip-acceptance-criteria and reason ''
+#      leaving two criteria unbuilt, against its prompt.
+# Agent-usable with a reason: the flags whose skip is a ruled agent path
+# (--skip-render-review under T-3557 until T-3580 lands) or whose gate guards an
+# artefact's shape rather than a criterion or ownership. Table: T-3586 task file.
+# Env-var bypasses (FW_*) are unchanged: they have no reason surface.
+_BYPASS_AGENT_REFUSED=" --skip-acceptance-criteria --skip-verification --skip-sovereignty --skip-human-ownership --skip-rca --skip-recommendation --skip-inception-decision "
+_BYPASS_REASON_REQUIRED=" --skip-acceptance-criteria --skip-verification --skip-sovereignty --skip-human-ownership --skip-rca --skip-recommendation --skip-inception-decision --skip-render-review --skip-evolution --skip-disposition-gate --skip-inception-scope-trace "
+enforce_bypass_policy() {
+    local flag="$1" reason="$2"
+    case "$_BYPASS_REASON_REQUIRED" in *" $flag "*) ;; *) return 0 ;; esac
+    if [ -z "${reason//[[:space:]]/}" ]; then
+        echo -e "${RED}ERROR: $flag needs a reason — an unexplained bypass is refused (T-3586)${NC}" >&2
+        echo "  Add --reason \"why this gate should not apply\" (logged to .context/working/.gate-bypass-log.yaml)." >&2
+        exit 1
+    fi
+    case "$_BYPASS_AGENT_REFUSED" in *" $flag "*) ;; *) return 0 ;; esac
+    if [ "${CLAUDECODE:-}" = "1" ] && [ "$I_AM_HUMAN" != true ]; then
+        echo -e "${RED}ERROR: $flag is refused in an agent session (CLAUDECODE=1) — T-3586${NC}" >&2
+        echo "  This gate protects a criterion or the operator's ownership; an agent does not waive it." >&2
+        echo "  Instead:" >&2
+        echo "    1. Finish the work, tick each criterion as it is met, and retry." >&2
+        echo "    2. If part of it genuinely belongs elsewhere: file it as its own task" >&2
+        echo "       (bin/fw task create --name \"...\"), then ask the operator to rule on" >&2
+        echo "       narrowing this one. Do not narrow it yourself." >&2
+        echo "    3. Otherwise stop and report what refused and why — that is a valid outcome." >&2
+        echo "  The operator can pass --i-am-human with --reason from their own terminal." >&2
+        exit 1
+    fi
+}
+
 # Gate bypass audit log (T-1142)
 log_gate_bypass() {
     local flag="$1" caller="${2:-manual}"
+    local _policy_reason="$REASON"
+    [ "$flag" = "--skip-render-review" ] && _policy_reason="${SKIP_RENDER_REVIEW_REASON:-$REASON}"
+    enforce_bypass_policy "$flag" "$_policy_reason"
+    if [ "$I_AM_HUMAN" = true ] && [ "${CLAUDECODE:-}" = "1" ]; then
+        caller="$caller [--i-am-human under CLAUDECODE=1]"
+    fi
     local log_file="$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml"
     local timestamp
     timestamp=$(date -u +"%Y-%m-%dT%H:%M:%SZ")
@@ -276,7 +322,7 @@ check_acceptance_criteria() {
             fi
             echo "Options:" >&2
             echo "  1. Check the criteria in the task file, then retry" >&2
-            echo "  2. Use --skip-acceptance-criteria to bypass (logged)" >&2
+            echo "  2. Operator only: --skip-acceptance-criteria --reason \"...\" (refused for agents, T-3586)" >&2
             # T-2624 read-value wiring: this gate IS the tl_archive edge of the
             # task-lifecycle map — point the tripping agent at the process picture.
             if [ -f "$PROJECT_ROOT/.context/designer/projects/aef-task-lifecycle/meta.json" ]; then
@@ -419,7 +465,7 @@ PYREC
             echo "" >&2
             echo "Options:" >&2
             echo "  1. Add the Recommendation block, then retry" >&2
-            echo "  2. Bypass via flag (logged Tier 2): --skip-recommendation" >&2
+            echo "  2. Operator only: --skip-recommendation --reason \"...\" (refused for agents, T-3586)" >&2
             echo "  3. Bypass via env var (logged Tier 2, T-1890 parity):" >&2
             echo "       FW_ALLOW_EMPTY_RECOMMENDATION=1 bin/fw task update T-XXX --status work-completed" >&2
             exit 1
@@ -530,7 +576,7 @@ PYRCA
             echo "" >&2
             echo "Options:" >&2
             echo "  1. Add the RCA block, then retry" >&2
-            echo "  2. Use --skip-rca to bypass (logged, T-1550)" >&2
+            echo "  2. Operator only: --skip-rca --reason \"...\" (refused for agents, T-3586)" >&2
             exit 1
             ;;
     esac
@@ -664,7 +710,7 @@ check_inception_decision() {
     echo "" >&2
     echo "Options:" >&2
     echo "  1. Record the decision: bin/fw inception decide $(basename "$TASK_FILE" .md | grep -oE '^T-[0-9]+') go|no-go|defer --rationale '...'" >&2
-    echo "  2. Use --skip-inception-decision to bypass (logged, T-1626)" >&2
+    echo "  2. Operator only: --skip-inception-decision --reason \"...\" (refused for agents, T-3586)" >&2
     exit 1
 }
 
@@ -1396,7 +1442,7 @@ run_verification_commands() {
             echo "Options:" >&2
             echo "  1. Fix the issues and retry" >&2
             echo "  2. Update ## Verification commands if they are wrong" >&2
-            echo "  3. Use --skip-verification to bypass (logged)" >&2
+            echo "  3. Operator only: --skip-verification --reason \"...\" (refused for agents, T-3586)" >&2
             exit 1
         fi
     else
@@ -1435,6 +1481,7 @@ SKIP_INCEPTION_DECISION=false
 SKIP_INCEPTION_SCOPE_TRACE=false
 SKIP_RENDER_REVIEW=false
 SKIP_RENDER_REVIEW_REASON=""
+I_AM_HUMAN=false  # T-3586: operator override for agent-refused --skip-* flags
 SCOPE_REDUCTION_ACK=""  # T-1762/P-012: --scope-reduction-acknowledged "rationale"
 # T-1719 A2: retrieval-happiness signal. Feeds the embeddings routing loop —
 # the rating is the outcome half of "recall returned chunks → was that useful?".
@@ -1476,8 +1523,13 @@ while [[ $# -gt 0 ]]; do
             shift ;;
         --skip-render-review)
             SKIP_RENDER_REVIEW=true
-            SKIP_RENDER_REVIEW_REASON="${2:-no rationale}"
-            shift 2 ;;
+            # T-3586: no "no rationale" default — a missing reason is refused when consumed.
+            if [ -n "${2:-}" ] && [[ "${2:-}" != --* ]] && [[ "${2:-}" != T-* ]]; then
+                SKIP_RENDER_REVIEW_REASON="$2"
+                shift
+            fi
+            shift ;;
+        --i-am-human) I_AM_HUMAN=true; shift ;;
         --scope-reduction-acknowledged)
             SCOPE_REDUCTION_ACK="$2"
             if [ -z "$SCOPE_REDUCTION_ACK" ]; then
@@ -1525,6 +1577,8 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-inception-scope-trace \"...\"  Bypass GO-scope trace gate (T-1984, G-066)"
             echo "  --scope-reduction-acknowledged \"...\"   Bypass task-pair §ACD gate (P-012, T-1762, G-066)"
             echo "  --skip-human-ownership       Bypass human ownership reassignment"
+            echo "  --i-am-human  Operator override: allows the criterion/ownership --skip-* flags"
+            echo "                under CLAUDECODE=1 (T-3586). Every consumed --skip-* needs --reason."
             echo "  --force, -f   (DEPRECATED) Sets all --skip-* flags"
             echo "  -h, --help    Show this help"
             echo ""

@@ -974,7 +974,11 @@ def complete_batch():
                  "--skip-sovereignty", "--skip-verification", "--skip-acceptance-criteria",
                  "--reason", "Batch completed via Watchtower UI (human action)"],
                 capture_output=True, text=True, timeout=30,
-                cwd=str(PROJECT_ROOT)
+                cwd=str(PROJECT_ROOT),
+                # T-3586: strip the CLAUDECODE Flask inherits from an agent shell (same
+                # defence as T-1193 above) — update-task.sh refuses these --skip-* flags
+                # under CLAUDECODE=1, and this is the operator's own click.
+                env={k: v for k, v in os.environ.items() if k != "CLAUDECODE"},
             )
             if result.returncode == 0:
                 completed.append(task_id)

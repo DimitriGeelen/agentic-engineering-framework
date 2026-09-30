@@ -18,6 +18,9 @@
 
 load ../test_helper
 
+# T-3586: these fixtures exercise the operator's bypass path, not an agent's.
+unset CLAUDECODE
+
 _make_inception() {
     local project_dir="$1" task_id="${2:-T-9007}"
     cat > "$project_dir/.tasks/active/${task_id}-test.md" <<EOF
@@ -57,7 +60,7 @@ EOF
     _make_inception "$PROJECT"
     cd "$PROJECT"
     PROJECT_ROOT="$PROJECT" run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" \
-        T-9007 --status work-completed --skip-acceptance-criteria --skip-inception-decision
+        T-9007 --status work-completed --skip-acceptance-criteria --skip-inception-decision --reason "T-3586 fixture: operator bypass"
     [ "$status" -eq 0 ]
 }
 
@@ -68,7 +71,7 @@ EOF
     _make_inception "$PROJECT" T-9008
     cd "$PROJECT"
     PROJECT_ROOT="$PROJECT" run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" \
-        T-9008 --status work-completed --skip-acceptance-criteria --skip-inception-decision
+        T-9008 --status work-completed --skip-acceptance-criteria --skip-inception-decision --reason "T-3586 fixture: operator bypass"
     [[ "$output" != *"ModuleNotFoundError"* ]]
     [[ "$output" != *"Traceback"* ]]
 }
@@ -80,7 +83,7 @@ EOF
     _make_inception "$PROJECT" T-9009
     cd "$FRAMEWORK_ROOT"
     PROJECT_ROOT="$PROJECT" run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" \
-        T-9009 --status work-completed --skip-acceptance-criteria --skip-inception-decision
+        T-9009 --status work-completed --skip-acceptance-criteria --skip-inception-decision --reason "T-3586 fixture: operator bypass"
     [ "$status" -eq 0 ]
     [[ "$output" != *"ModuleNotFoundError"* ]]
 }

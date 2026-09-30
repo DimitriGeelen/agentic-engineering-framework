@@ -11,6 +11,7 @@
 load ../test_helper
 
 setup() {
+    unset CLAUDECODE  # T-3586: these fixtures exercise the operator's bypass path
     TEST_TEMP_DIR="$(mktemp -d)"
     export PROJECT_ROOT="$TEST_TEMP_DIR"
     guard_project_root
@@ -91,7 +92,7 @@ EOF
     body="$(_body_minimal)"
     _make_task "T-9001" "Fix the broken thing" "build" "[bug]" "$body" >/dev/null
     run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9001 \
-        --status work-completed --skip-acceptance-criteria
+        --status work-completed --skip-acceptance-criteria --reason "T-3586 fixture: operator bypass"
     [ "$status" -ne 0 ]
     [[ "$output" == *"## RCA section is missing"* ]]
 }
@@ -106,7 +107,7 @@ EOF
     body="$(_body_minimal "$rca_section")"
     _make_task "T-9002" "Fix something else" "build" "[bug]" "$body" >/dev/null
     run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9002 \
-        --status work-completed --skip-acceptance-criteria
+        --status work-completed --skip-acceptance-criteria --reason "T-3586 fixture: operator bypass"
     [ "$status" -ne 0 ]
     [[ "$output" == *"## RCA section is empty"* ]]
 }
@@ -124,7 +125,7 @@ EOF
     body="$(_body_minimal "$rca_section")"
     _make_task "T-9003" "Fix the regression" "build" "[bug]" "$body" >/dev/null
     run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9003 \
-        --status work-completed --skip-acceptance-criteria
+        --status work-completed --skip-acceptance-criteria --reason "T-3586 fixture: operator bypass"
     [ "$status" -eq 0 ]
     [[ "$output" == *"RCA: substantive"* ]]
 }
@@ -140,7 +141,7 @@ EOF
     # (that the RCA gate EXCLUDES inceptions). Scoping the unrelated gate out
     # keeps the RCA assertion meaningful rather than passing on a wrong reason.
     run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9004 \
-        --status work-completed --skip-acceptance-criteria --skip-inception-decision
+        --status work-completed --skip-acceptance-criteria --skip-inception-decision --reason "T-3586 fixture: operator bypass"
     [ "$status" -eq 0 ]
     [[ "$output" != *"## RCA section is"* ]]
 }
@@ -151,7 +152,7 @@ EOF
     body="$(_body_minimal)"
     _make_task "T-9005" "Add new dashboard widget" "build" "[ui]" "$body" >/dev/null
     run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9005 \
-        --status work-completed --skip-acceptance-criteria
+        --status work-completed --skip-acceptance-criteria --reason "T-3586 fixture: operator bypass"
     [ "$status" -eq 0 ]
     [[ "$output" != *"## RCA section is"* ]]
 }
@@ -164,7 +165,7 @@ EOF
     body="$(_body_minimal)"
     _make_task "T-9010" "Upstream fix request: fw hook-enable --script" "build" "[]" "$body" >/dev/null
     run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9010 \
-        --status work-completed --skip-acceptance-criteria
+        --status work-completed --skip-acceptance-criteria --reason "T-3586 fixture: operator bypass"
     [ "$status" -eq 0 ]
     [[ "$output" != *"## RCA section is"* ]]
 }
@@ -175,7 +176,7 @@ EOF
     body="$(_body_minimal)"
     _make_task "T-9011" "Feature request: add baz support" "build" "[]" "$body" >/dev/null
     run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9011 \
-        --status work-completed --skip-acceptance-criteria
+        --status work-completed --skip-acceptance-criteria --reason "T-3586 fixture: operator bypass"
     [ "$status" -eq 0 ]
     [[ "$output" != *"## RCA section is"* ]]
 }
@@ -186,7 +187,7 @@ EOF
     body="$(_body_minimal)"
     _make_task "T-9012" "Fix the broken widget" "request" "[]" "$body" >/dev/null
     run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9012 \
-        --status work-completed --skip-acceptance-criteria
+        --status work-completed --skip-acceptance-criteria --reason "T-3586 fixture: operator bypass"
     [ "$status" -eq 0 ]
     [[ "$output" != *"## RCA section is"* ]]
 }
@@ -197,7 +198,7 @@ EOF
     body="$(_body_minimal)"
     _make_task "T-9013" "Fix the broken widget" "build" "[feature]" "$body" >/dev/null
     run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9013 \
-        --status work-completed --skip-acceptance-criteria
+        --status work-completed --skip-acceptance-criteria --reason "T-3586 fixture: operator bypass"
     [ "$status" -eq 0 ]
     [[ "$output" != *"## RCA section is"* ]]
 }
@@ -208,7 +209,7 @@ EOF
     body="$(_body_minimal)"
     _make_task "T-9014" "Fix: crash on empty input" "build" "[]" "$body" >/dev/null
     run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9014 \
-        --status work-completed --skip-acceptance-criteria
+        --status work-completed --skip-acceptance-criteria --reason "T-3586 fixture: operator bypass"
     [ "$status" -ne 0 ]
     [[ "$output" == *"## RCA section is missing"* ]]
 }
@@ -219,7 +220,7 @@ EOF
     body="$(_body_minimal)"
     _make_task "T-9015" "Hotfix for prod CSS regression" "build" "[]" "$body" >/dev/null
     run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9015 \
-        --status work-completed --skip-acceptance-criteria
+        --status work-completed --skip-acceptance-criteria --reason "T-3586 fixture: operator bypass"
     [ "$status" -ne 0 ]
     [[ "$output" == *"## RCA section is missing"* ]]
 }
@@ -230,7 +231,7 @@ EOF
     body="$(_body_minimal)"
     _make_task "T-9006" "Fix the bypass case" "build" "[bug]" "$body" >/dev/null
     run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9006 \
-        --status work-completed --skip-acceptance-criteria --skip-rca
+        --status work-completed --skip-acceptance-criteria --skip-rca --reason "T-3586 fixture: operator bypass"
     [ "$status" -eq 0 ]
     [[ "$output" == *"--skip-rca bypass"* ]]
     [ -f "$CONTEXT_DIR/working/.gate-bypass-log.yaml" ]

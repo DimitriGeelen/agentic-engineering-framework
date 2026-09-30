@@ -10,6 +10,7 @@ load ../test_helper
 UPDATE_TASK="$FRAMEWORK_ROOT/agents/task-create/update-task.sh"
 
 setup() {
+    unset CLAUDECODE  # T-3586: these fixtures exercise the operator's bypass path
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
     export PROJECT_ROOT="$TEST_TEMP_DIR"
@@ -113,7 +114,7 @@ EOF
 @test "F6 trigger: --skip-recommendation bypass works on needs-human signal" {
     _make_no_partial_task "T-9986" "risk: high
 "
-    run "$UPDATE_TASK" T-9986 --status work-completed --skip-recommendation
+    run "$UPDATE_TASK" T-9986 --status work-completed --skip-recommendation --reason "T-3586 fixture: operator bypass"
     [ "$status" -eq 0 ]
     [[ "$output" == *"WARNING"* ]]
     [ -f "$PROJECT_ROOT/.tasks/completed/T-9986-test-task.md" ]
