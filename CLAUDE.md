@@ -455,14 +455,23 @@ own hook source before being written down (OBS-138).
 
 **Tier 0 approvals name an ACTION, not a command hash (T-3593).** When a blocked command
 maps cleanly to one or more actions — `force-push {remote, ref}`, `branch-delete {remote,
-ref}` (also local `git branch -D`), `hard-reset {repo, branch}`, `recursive-delete {path}`
-— the block lists them in plain words, `fw tier0 approve` (human-only: refused under
-`CLAUDECODE=1` unless `--i-am-human`) approves each one once, for the grant TTL, and a retry
-whose incidental text differs (`| tail -12` vs `| tail -14`, flag order, `2>&1`) matches.
-A different ref, remote, branch or path does not. A command the classifier cannot read with
-certainty (a `$VAR`, `$(...)`, `--all`, an unknown cwd, a flagged segment it has no verb
-for) is **unmapped** and keeps the old exact-text hash approval, unchanged; the bypass log
-records which path matched (`match_path: action|command-hash`). This fixes the incentive
+ref}` (also local `git branch -D`), `hard-reset {repo, branch, target commit}`,
+`recursive-delete {path}` — the block lists them in plain words, `fw tier0 approve` approves
+each one once, for the grant TTL, and a retry whose incidental text differs (`| tail -12` vs
+`| tail -14`, flag order, `2>&1`) matches. A different ref, remote, branch, target commit or
+path does not. A command the classifier cannot read with certainty (a `$VAR`, `$(...)`,
+`--all`, `git -c …`, an unknown cwd — a `cd` carries only across `&&` — or a flagged segment
+matched by a pattern its verb does not cover, e.g. `--no-verify` riding on a force push) is
+**unmapped** and keeps the old exact-text hash approval, unchanged; the bypass log records
+which path matched (`match_path: action|command-hash`) and who approved (`authorized_by`,
+copied from the approval record). **Who may approve:** the module itself refuses
+`approve-pending` under `CLAUDECODE=1`; `--i-am-human` overrides it and the record says
+`approved_by: agent-override`, not `human`, and typed, both the direct module call and
+`fw tier0 approve --i-am-human` are Tier 0. **What this does NOT claim:** every agent here
+runs as the same user with write access to the repo, so an agent can write an approval record
+into `.context/working/tier0-action-approvals.json` directly, and the gate cannot distinguish
+a record fabricated that way from a genuine one (the same residual T-3581 names). The check
+is fail-closed against accidents and unsophisticated self-approval, not forgery-resistant. This fixes the incentive
 that pushed agents toward script indirection; it does not widen what the text gate sees —
 everything above about scripts still holds. `rm -rf` inside a script has no equivalent
 control.

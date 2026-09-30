@@ -7863,7 +7863,10 @@ DEPLOYEOF
                     echo "  A retry with different incidental text (pipes, tail -N, flag order)"
                     echo "  matches; a different ref, remote, branch or path does not."
                     echo ""
-                    if ! _t0_hash=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$T0_ACTION_PY" approve-pending "$TIER0_TTL_RESOLVED" 2>&1 >/dev/null); then
+                    _t0_override=""
+                    [ "$_t0_human" = true ] && _t0_override="--i-am-human"
+                    # shellcheck disable=SC2086  # empty or one flag, by construction
+                    if ! _t0_hash=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$T0_ACTION_PY" approve-pending "$TIER0_TTL_RESOLVED" $_t0_override 2>&1 >/dev/null); then
                         echo -e "${RED}Approval failed — nothing was approved:${NC} ${_t0_hash}" >&2
                         exit 1
                     fi

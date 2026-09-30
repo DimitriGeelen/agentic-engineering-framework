@@ -96,7 +96,7 @@ fi
 # Only invoke Python if the command MIGHT be destructive.
 # This keeps the hook fast (<5ms) for the 95%+ of safe commands.
 if ! echo "$COMMAND" | grep -qEi \
-    'git\s+(push|reset|clean|checkout|restore|branch)\s|--no-verify|rm\s+-|DROP\s|TRUNCATE\s|docker\s+system|kubectl\s+delete|find\s.*-delete|dd\s+if=|chmod\s.*\s000|mkfs|pkill\s|fw\s.*--force|fw\s.*inception\s.*decide'; then
+    'git\s+(push|reset|clean|checkout|restore|branch)\s|git\s+-[cC]\s|hooksPath|tier0_action|tier0\s+approve|--no-verify|rm\s+-|DROP\s|TRUNCATE\s|docker\s+system|kubectl\s+delete|find\s.*-delete|dd\s+if=|chmod\s.*\s000|mkfs|pkill\s|fw\s.*--force|fw\s.*inception\s.*decide'; then
     exit 0
 fi
 
@@ -140,16 +140,20 @@ command_stripped = strip_comments(command_stripped)
 
 # Tier 0 destructive patterns — high confidence, low false positive
 # Each tuple: (regex_pattern, risk_description)
+# T-3594 A2: 'git -C dir push' and 'git -c k=v push' are pushes too; the push
+# patterns below match them as well as a plain git push.
+GIT_PUSH = r'\bgit\s+(?:-[cC]\s*\S+\s+|--[\w-]+(?:=\S+)?\s+)*push\b'
+
 PATTERNS = [
     # === Git destructive operations ===
-    (r'\bgit\s+push\b[^;|&]*(-f\b|--force\b|--force-with-lease\b)',
+    (GIT_PUSH + r'[^;|&]*(-f\b|--force\b|--force-with-lease\b)',
      'FORCE PUSH: Can overwrite remote commit history'),
     # T-3593: forced refspec (+ref) and remote ref deletion are the same class
     # as --force; they were not matched before. The pre-push hook (T-3594)
     # enforces both at the ref level regardless of how the push was typed.
-    (r'\bgit\s+push\b[^;|&]*\s\+[^\s;|&]',
+    (GIT_PUSH + r'[^;|&]*\s\+[^\s;|&]',
      'FORCE PUSH: +refspec overwrites remote commit history'),
-    (r'\bgit\s+push\b[^;|&]*(\s-d\b|--delete\b|\s:[^\s;|&])',
+    (GIT_PUSH + r'[^;|&]*(\s-d\b|--delete\b|\s:[^\s;|&])',
      'REMOTE REF DELETE: Deletes a branch or tag on the remote'),
     (r'\bgit\s+reset\s+--hard\b',
      'HARD RESET: Permanently discards all uncommitted changes'),
@@ -180,6 +184,20 @@ PATTERNS = [
     # === Hook/enforcement bypass ===
     (r'\bgit\b[^;|&]*--no-verify\b',
      'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'),
+    # T-3594 A2: a core.hooksPath override skips every hook as surely as
+    # --no-verify, including the pre-push forced-update guard. Reads pass.
+    (r'\bgit\b[^;|&]*-c\s*core\.hooksPath\s*=',
+     'HOOK BYPASS: -c core.hooksPath overrides the hook directory (skips pre-push and all other hooks)'),
+    (r'\bgit\s+config\b(?![^;|&]*--(get|list|show|get-all|get-regexp)\b)[^;|&]*\bcore\.hooksPath\s+\S',
+     'HOOK BYPASS: setting core.hooksPath redirects every git hook (skips pre-push and all other hooks)'),
+
+    # === Tier 0 self-approval (T-3593 R2) ===
+    # Approval is the operator's. The module refuses under CLAUDECODE=1 unless
+    # overridden; the override is recorded as agent-override. Typed, both are Tier 0.
+    (r'\btier0_action\.py\b[^;|&]*\bapprove-pending\b',
+     'TIER 0 SELF-APPROVAL: approving a Tier 0 action is human-only (direct module path)'),
+    (r'\bfw\s+tier0\s+approve\b[^;|&]*--i-am-human\b',
+     'TIER 0 SELF-APPROVAL: fw tier0 approve --i-am-human from an agent session approves its own block'),
 
     # === Destructive file operations (B-003) ===
     (r'\bfind\b[^;|&]*-delete\b',
@@ -221,8 +239,10 @@ for pattern, description in PATTERNS:
             sys.path.insert(0, os.environ.get('T0_FRAMEWORK_ROOT', '') + '/lib')
             import tier0_action
             def is_flagged(seg):
+                # Every matching pattern, so the module can require that ALL of
+                # them are covered by the action verb (T-3593 R1).
                 t = strip_comments(strip_quotes(strip_heredocs(seg)))
-                return any(re.search(p, t) for p, _ in PATTERNS)
+                return [d for p, d in PATTERNS if re.search(p, t)]
             acts = tier0_action.classify(strip_heredocs(command), is_flagged,
                                          os.environ.get('T0_CWD') or None)
             if acts:

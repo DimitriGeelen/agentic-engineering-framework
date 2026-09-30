@@ -227,3 +227,126 @@ _events() { cat "$FX/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
     [ "$status" -eq 0 ]
     [[ "$output" == *"FORCE-PUSH ref 'main'"* ]]
 }
+
+# ── Review fixes (docs/reports/T-3593-T-3594-review.md) ──────────────────────
+
+_store() { cat "$FX/.context/working/tier0-action-approvals.json" 2>/dev/null; }
+_mod() { PROJECT_ROOT="$FX" python3 "$FRAMEWORK_ROOT/lib/tier0_action.py" "$@"; }
+
+@test "R1: --no-verify inside a force push is NOT folded into a force-push action" {
+    run _hook "git push -f --no-verify origin main"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"Not mapped to an action"* ]]
+    [[ "$output" != *"FORCE-PUSH ref 'main'"* ]]
+    [ ! -f "$FX/.context/working/.tier0-action.pending.json" ]
+    _approve >/dev/null
+    # the operator's approval went to the exact-text path: no reusable action record
+    ! _store | grep -q '"verb": "force-push"'
+    # a later forced push of the same ref (e.g. from a script, at pre-push) finds nothing
+    run _mod use pre-push '[{"verb":"force-push","targets":{"remote":"origin","ref":"main"}}]'
+    [ "$status" -ne 0 ]
+}
+
+@test "R1 CONTROL: the same push without --no-verify still maps to the action" {
+    run _hook "git push -f origin main"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
+}
+
+@test "R1: every pattern on a segment must be covered — git -c config is never mapped" {
+    run _hook "git -c core.hooksPath=/dev/null push -f origin main"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"Not mapped to an action"* ]]
+}
+
+@test "R2: the module refuses approve-pending under CLAUDECODE=1 without a recorded override" {
+    _hook "git push --force origin main" 2>/dev/null || true
+    run env CLAUDECODE=1 PROJECT_ROOT="$FX" python3 "$FRAMEWORK_ROOT/lib/tier0_action.py" approve-pending 300
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"human-only"* ]]
+    ! _store | grep -q '"state": "approved"'
+    run _hook "git push --force origin main"
+    [ "$status" -eq 2 ]
+}
+
+@test "R2: an override under CLAUDECODE=1 is recorded as agent-override and carried to the bypass log" {
+    _hook "git push --force origin main" 2>/dev/null || true
+    run env CLAUDECODE=1 PROJECT_ROOT="$FX" python3 "$FRAMEWORK_ROOT/lib/tier0_action.py" approve-pending 300 --i-am-human
+    [ "$status" -eq 0 ]
+    _store | grep -q '"approved_by": "agent-override"'
+    run _hook "git push --force origin main"
+    [ "$status" -eq 0 ]
+    grep -q "authorized_by: agent-override" "$FX/.context/bypass-log.yaml"
+    ! grep -q "authorized_by: human" "$FX/.context/bypass-log.yaml"
+}
+
+@test "R2 CONTROL: an operator approval (CLAUDECODE unset) is recorded as human" {
+    _hook "git push --force origin main" 2>/dev/null || true
+    _approve >/dev/null
+    _store | grep -q '"approved_by": "human"'
+    _hook "git push --force origin main"
+    grep -q "authorized_by: human" "$FX/.context/bypass-log.yaml"
+}
+
+@test "R2: the text gate blocks the direct module path and fw tier0 approve --i-am-human" {
+    run _hook "python3 lib/tier0_action.py approve-pending 300"
+    [ "$status" -eq 2 ]
+    run _hook "bin/fw tier0 approve --i-am-human"
+    [ "$status" -eq 2 ]
+    # control: status is a read and passes
+    run _hook "bin/fw tier0 status"
+    [ "$status" -eq 0 ]
+}
+
+@test "R3: cd does not carry over a ';' — relative target becomes unmapped" {
+    run _hook "cd /nonexistent; rm -rf ."
+    [ "$status" -eq 2 ]
+    [[ "$output" != *"RECURSIVELY DELETE /nonexistent"* ]]
+    [[ "$output" == *"Not mapped to an action"* ]]
+}
+
+@test "R3: cd does not carry over '||', '|', '&' or a newline" {
+    local sep
+    for sep in " || " " | " " & " $'\n'; do
+        run _hook "cd /nonexistent${sep}rm -rf ."
+        [ "$status" -eq 2 ]
+        [[ "$output" != *"RECURSIVELY DELETE /nonexistent"* ]]
+    done
+    # a cd on the left of a pipe runs in a subshell, even when && follows
+    run _hook "true | cd /nonexistent && rm -rf ."
+    [ "$status" -eq 2 ]
+    [[ "$output" != *"RECURSIVELY DELETE /nonexistent"* ]]
+}
+
+@test "R3 CONTROL: cd carries over '&&'" {
+    run _hook "cd /nonexistent && rm -rf ."
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"RECURSIVELY DELETE /nonexistent"* ]]
+}
+
+@test "R4: hard-reset names the resolved target commit; a different target does not match" {
+    git -C "$FX" -c user.email=t@l -c user.name=t commit -q --allow-empty -m "T-3593: second"
+    local head prev
+    head=$(git -C "$FX" rev-parse HEAD); prev=$(git -C "$FX" rev-parse HEAD~1)
+    run _hook "git reset --hard HEAD"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"to commit ${head:0:12}"* ]]
+    _approve >/dev/null
+    run _hook "git reset --hard HEAD~1"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"to commit ${prev:0:12}"* ]]
+    # control: the approved target still matches
+    run _hook "git reset --hard HEAD | tail -1"
+    [ "$status" -eq 0 ]
+}
+
+@test "hook safety: the double-quoted python3 -c block contains no backtick or \$( (bash would execute it)" {
+    # A backtick in a comment inside `python3 -c "..."` is command substitution:
+    # during this fix a comment naming a git push executed a real push from the
+    # hook's cwd (killed before it landed). Pin it.
+    run awk '/^MATCH_RESULT=\$\(echo/{f=1;next} f&&/^" 2>\/dev\/null\)/{f=0} f' "$HOOK"
+    [ "$status" -eq 0 ]
+    [ -n "$output" ]
+    [[ "$output" != *'`'* ]]
+    [[ "$output" != *'$('* ]]
+}

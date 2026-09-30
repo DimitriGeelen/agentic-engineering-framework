@@ -10,11 +10,14 @@ An approval here names what the operator actually decided about:
 
     force-push        {remote, ref}          (git push --force / +ref)
     branch-delete     {remote, ref[, repo]}  (git push --delete / :ref, git branch -D)
-    hard-reset        {repo, branch}         (git reset --hard)
+    hard-reset        {repo, branch, target} (git reset --hard [<commit>])
     recursive-delete  {path}                 (rm -r)
 
 A command maps to actions only when EVERY segment the Tier 0 patterns flag is
-fully explained by this classifier. Anything it cannot read with certainty —
+fully explained by this classifier, and every PATTERN that flags a segment is
+covered by an action verb that segment produced (a ``--no-verify`` riding on a
+force push is a second decision the operator must see; it is never folded into
+the force-push approval). Anything it cannot read with certainty —
 a ``$(...)``, a variable, ``--all``, an unknown cwd, an unmapped verb — makes the
 whole command *unmapped*, and the hook falls back to the legacy command-hash path
 unchanged. The failure direction is always "less can be approved", never "more
@@ -83,6 +86,13 @@ class Unmappable(Exception):
 
 def split_segments(cmd: str) -> list[str]:
     """Split on ; && || | & and newlines that sit OUTSIDE quotes."""
+    return [s for s, _ in split_segments_seps(cmd)]
+
+
+def split_segments_seps(cmd: str) -> list[tuple[str, str]]:
+    """Like :func:`split_segments`, keeping the separator that FOLLOWS each
+    segment (``""`` for the last). ``cd`` only carries across ``&&`` (T-3593 R3),
+    so the classifier needs to know which separator it was."""
     segs, cur, i, n = [], [], 0, len(cmd)
     sq = dq = False
     while i < n:
@@ -117,17 +127,26 @@ def split_segments(cmd: str) -> list[str]:
             if c == "&" and (prev in "<>" or (i + 1 < n and cmd[i + 1] == ">")):
                 cur.append(c)
             else:
-                segs.append("".join(cur))
-                cur = []
+                sep = c
                 if i + 1 < n and cmd[i + 1] == c and c in "|&":
+                    sep = c + c
                     i += 1
+                segs.append(("".join(cur), "\n" if c == "\n" else sep))
+                cur = []
         else:
             cur.append(c)
         i += 1
     if sq or dq:
         raise Unmappable("unbalanced quotes")
-    segs.append("".join(cur))
-    return [s.strip() for s in segs if s.strip()]
+    segs.append(("".join(cur), ""))
+    # An empty segment still owns its separator (`a ; ; b`); keep the weakest.
+    out: list[tuple[str, str]] = []
+    for s, sep in segs:
+        if s.strip():
+            out.append((s.strip(), sep))
+        elif out and sep != "&&":
+            out[-1] = (out[-1][0], sep or out[-1][1])
+    return out
 
 
 def tokenize(seg: str) -> list[str]:
@@ -291,8 +310,9 @@ def describe(a: dict) -> str:
             return f"DELETE local branch '{t['ref']}' in {t.get('repo', '?')} (even if unmerged)"
         return f"DELETE ref '{t['ref']}' on remote '{t['remote']}'"
     if v == "hard-reset":
-        return (f"HARD-RESET branch '{t['branch']}' in {t['repo']} "
-                "(discards uncommitted changes)")
+        return (f"HARD-RESET branch '{t['branch']}' in {t['repo']} to commit "
+                f"{t.get('target', '?')[:12]} (moves the branch there and discards "
+                "uncommitted changes)")
     if v == "recursive-delete":
         return f"RECURSIVELY DELETE {t['path']}"
     return action_key(a)
@@ -313,6 +333,10 @@ def _classify_push(args: list[str], cwd: str | None) -> list[dict]:
                 force = True
             elif name == "--delete":
                 delete = True
+            elif name == "--no-verify":
+                # A second Tier 0 decision (HOOK BYPASS) — and it would skip the
+                # pre-push hook that consumes this approval (T-3593 R1).
+                raise Unmappable("push --no-verify")
             elif name in ("--all", "--mirror", "--tags", "--prune", "--branches"):
                 raise Unmappable(f"push {name} targets are not enumerable from the text")
             elif name in ("--repo", "--receive-pack", "--exec", "--push-option") and "=" not in a:
@@ -374,8 +398,10 @@ def _classify_git(words: list[str], cwd: str | None) -> tuple[list[dict], str | 
             else:
                 cwd = os.path.normpath(os.path.join(cwd or "/", target))
             i += 2
-        elif opt == "-c" and i + 1 < len(words):
-            i += 2
+        elif opt == "-c" or opt.startswith("--config-env") or opt == "--exec-path":
+            # Any config (core.hooksPath, alias.*, ...) can change what runs or
+            # skip the hook that consumes the approval (T-3593 R1, T-3594 A2).
+            raise Unmappable(f"git {opt}")
         elif opt in ("--no-pager", "--no-replace-objects", "-P"):
             i += 1
         else:
@@ -383,6 +409,8 @@ def _classify_git(words: list[str], cwd: str | None) -> tuple[list[dict], str | 
     if i >= len(words):
         raise Unmappable("bare git")
     sub, args = words[i], words[i + 1:]
+    if "--no-verify" in args:
+        raise Unmappable("--no-verify is its own Tier 0 decision")
     if sub == "push":
         return _classify_push(args, cwd), cwd
     if sub == "reset":
@@ -390,7 +418,20 @@ def _classify_git(words: list[str], cwd: str | None) -> tuple[list[dict], str | 
             return [], cwd
         if cwd is None:
             raise Unmappable("reset with unknown cwd")
-        return [action("hard-reset", repo=_toplevel(cwd), branch=_current_branch(cwd))], cwd
+        revs = []
+        for a in args:
+            if a in ("--hard", "-q", "--quiet"):
+                continue
+            if a.startswith("-"):
+                raise Unmappable(f"reset option {a}")
+            revs.append(a)
+        if len(revs) > 1:
+            raise Unmappable("reset with more than one revision")
+        rev = revs[0] if revs else "HEAD"
+        # T-3593 R4: the approval names WHERE the branch moves to, resolved now.
+        target = _git(cwd, "rev-parse", "--verify", "-q", rev + "^{commit}")
+        return [action("hard-reset", repo=_toplevel(cwd), branch=_current_branch(cwd),
+                       target=target)], cwd
     if sub == "branch":
         force_del = any(a == "-D" or (a.startswith("-") and not a.startswith("--") and "D" in a)
                         for a in args)
@@ -463,39 +504,72 @@ def classify_segment(seg: str, cwd: str | None) -> tuple[list[dict], str | None]
     raise Unmappable(f"{head} is not an action verb")
 
 
+# Which verb explains which Tier 0 pattern (by its description prefix, from
+# check-tier0.sh PATTERNS). A flagged segment whose patterns are not ALL covered
+# by the verbs it produced is unmapped (T-3593 R1).
+PATTERN_COVERAGE = {
+    "FORCE PUSH": ("force-push",),
+    "REMOTE REF DELETE": ("branch-delete",),
+    "HARD RESET": ("hard-reset",),
+    "FORCE DELETE BRANCH": ("branch-delete",),
+    "RECURSIVE DELETE": ("recursive-delete",),
+}
+
+
+def _covered(descriptions, acts: list[dict]) -> bool:
+    verbs = {a["verb"] for a in acts}
+    for d in descriptions:
+        prefix = str(d).split(":", 1)[0].strip()
+        if not verbs.intersection(PATTERN_COVERAGE.get(prefix, ())):
+            return False
+    return True
+
+
 def classify(command: str, is_flagged, cwd: str | None) -> list[dict] | None:
     """Map a blocked command to actions, or None when it is unmapped.
 
-    ``is_flagged(segment_text) -> bool`` is the hook's own Tier 0 pattern test,
-    passed in so the pattern list stays single-sourced in check-tier0.sh. Every
-    flagged segment must classify to at least one action; one that does not
-    makes the WHOLE command unmapped. Segments that are not flagged still update
-    the cwd (``cd``) but never contribute actions.
+    ``is_flagged(segment_text)`` is the hook's own Tier 0 pattern test, passed in
+    so the pattern list stays single-sourced in check-tier0.sh. It returns the
+    list of matching pattern descriptions (a bare bool is accepted for older
+    callers, but then pattern coverage cannot be checked). Every flagged segment
+    must classify to at least one action, and every pattern flagging it must be
+    covered by those actions' verbs; otherwise the WHOLE command is unmapped.
+
+    cwd tracking (T-3593 R3): a segment's cwd change carries to the next segment
+    only across ``&&`` and only when the segment is not in a pipeline. After
+    ``;``, ``||``, ``|``, ``&`` or a newline — where a failed ``cd`` leaves the
+    old cwd in place — and after any segment this module cannot read, the cwd
+    becomes unknown, so a relative target is unmapped.
     """
     try:
-        segs = split_segments(command)
+        segs = split_segments_seps(command)
     except Unmappable:
         return None
     actions: list[dict] = []
     saw_flagged = False
-    for seg in segs:
+    prev_sep = ""
+    for seg, sep in segs:
         flagged = is_flagged(seg)
         try:
             acts, new_cwd = classify_segment(seg, cwd)
         except Unmappable:
             if flagged:
                 return None
-            # An unreadable, unflagged segment may still change the cwd.
-            words0 = seg.split()
-            if words0 and words0[0] in ("cd", "pushd", "popd"):
-                cwd = None
+            # An unreadable segment (`source x`, `{ cd x; }`, `eval ...`) may
+            # change the cwd in ways the text does not show.
+            cwd, prev_sep = None, sep
             continue
-        cwd = new_cwd
         if flagged:
             saw_flagged = True
             if not acts:
                 return None
+            if not isinstance(flagged, bool) and not _covered(flagged, acts):
+                return None
             actions.extend(acts)
+        if new_cwd != cwd:
+            carries = sep == "&&" and prev_sep != "|"
+            cwd = new_cwd if carries else None
+        prev_sep = sep
     if not saw_flagged or not actions:
         return None
     # De-duplicate, stable.
@@ -549,7 +623,8 @@ def log_event(root: str, event: str, **fields) -> None:
         pass
 
 
-def _bypass_log(root: str, a: dict, layer: str, preview: str = "") -> None:
+def _bypass_log(root: str, a: dict, layer: str, preview: str = "",
+                approved_by: str = "unknown") -> None:
     try:
         import yaml
     except Exception:
@@ -561,7 +636,8 @@ def _bypass_log(root: str, a: dict, layer: str, preview: str = "") -> None:
         "risk": describe(a),
         "action_key": action_key(a),
         "command_preview": preview[:120],
-        "authorized_by": "human",
+        # Carried from the approval record, never asserted here (T-3593 R2).
+        "authorized_by": approved_by,
         "mechanism": "fw tier0 approve (action)",
         "match_path": "action",
         "layer": layer,
@@ -648,7 +724,7 @@ def use(root: str, actions: list[dict], layer: str, preview: str = "",
             else:
                 r["state"], r["consumed_at"], r["consumed_by"] = "consumed", now, layer
                 log_event(root, "consumed", id=r["id"], action_key=r["key"], layer=layer)
-            _bypass_log(root, a, layer, preview)
+            _bypass_log(root, a, layer, preview, r.get("approved_by", "unknown"))
         _save(root, recs)
     return True
 
@@ -697,11 +773,23 @@ def _main(argv: list[str]) -> int:
             print(describe(a))
         return 0
     if cmd == "approve-pending":
-        ttl = int(argv[1]) if len(argv) > 1 else 300
+        # approve-pending [ttl] [--i-am-human]. The human check lives HERE, not
+        # only in bin/fw, so the direct module path cannot skip it (T-3593 R2).
+        rest = [a for a in argv[1:] if a != "--i-am-human"]
+        override = "--i-am-human" in argv[1:]
+        ttl = int(rest[0]) if rest else 300
+        if os.environ.get("CLAUDECODE") == "1":
+            if not override:
+                print("Refused: Tier 0 approval is human-only (CLAUDECODE=1). An agent "
+                      "may not approve its own Tier 0 action.", file=sys.stderr)
+                return 3
+            approved_by = "agent-override"
+        else:
+            approved_by = "human"
         p = read_pending(root)
         if not p or not p.get("actions"):
             return 1
-        for rec in approve(root, p["actions"], ttl):
+        for rec in approve(root, p["actions"], ttl, approved_by=approved_by):
             print(f"{rec['id']}  {describe(rec)}")
         os.remove(pending_path(root))
         print(p.get("command_hash", ""), file=sys.stderr)
