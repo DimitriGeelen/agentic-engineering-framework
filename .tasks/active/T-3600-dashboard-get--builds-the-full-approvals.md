@@ -98,10 +98,10 @@ Peer ring20-dashboard (conversation T-2382, their series 0043) found the counts-
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The dashboard tile gets its counts from a counts-only `approval_summary()` that shares the badge arithmetic with the page (one `_approval_counts()`), so the tile and the page cannot drift. Regression test: the tile's counts equal `_build_approvals_context()`'s on a fixture corpus.
-- [ ] The close-ready-arcs and GO-decision loaders stop re-scanning the corpus per arc or per task: `get_all_task_metadata` (or its callers) is memoised per request or per build. Test: the call count during one `_build_approvals_context()` is bounded (≤ 3), asserted with a counting wrapper.
-- [ ] Measured before and after: cold `_build_approvals_context()` and `approval_summary()` wall time on the live corpus, recorded in the task's Decisions (target: summary < 1.5s cold).
-- [ ] The /approvals page and / return 200 and show the same total as before the change (`curl` against `bin/fw watchtower url` after `bin/fw watchtower restart`); `bin/fw watchtower current` passes.
+- [x] The dashboard tile gets its counts from a counts-only `approval_summary()` that shares the badge arithmetic with the page (one `_approval_counts()`), so the tile and the page cannot drift. Regression test: the tile's counts equal `_build_approvals_context()`'s on a fixture corpus.
+- [x] The close-ready-arcs and GO-decision loaders stop re-scanning the corpus per arc or per task: `get_all_task_metadata` (or its callers) is memoised per request or per build. Test: the call count during one `_build_approvals_context()` is bounded (≤ 3), asserted with a counting wrapper.
+- [x] Measured before and after: cold `_build_approvals_context()` and `approval_summary()` wall time on the live corpus, recorded in the task's Decisions (target: summary < 1.5s cold).
+- [x] The /approvals page and / return 200 and show the same total as before the change (`curl` against `bin/fw watchtower url` after `bin/fw watchtower restart`); `bin/fw watchtower current` passes.
 - [ ] Existing web tests for approvals, core and arcs stay green; `bin/fw vendor self --check` is clean.
 
 ## Verification
@@ -331,6 +331,7 @@ bin/fw vendor self --check
   | `_build_approvals_context()`, warm process | 4.7s | 2.2–2.3s |
   | `approval_summary()`, warm process (the tile's 60s cache expiry in a running server) | n/a (tile built the page: 4.7s) | 0.89–0.91s |
   | `approval_summary()`, fresh process | n/a (13.2s) | 4.4–4.6s |
+- **Live server after restart (T-3600 AC4):** `/` 200 in 0.93–1.02s and `/approvals` 200 in 3.1–3.7s. Before the restart (old code, warm) they took 5.4s and 4.5–5.3s. The live total was 442 before and 447 after because the corpus moved in between. The pre-change code (`git archive 1c71f3b41~1`) run against the current corpus also gives 447, and the tile shows 447, the same as the page.
   The fresh-process figure is dominated by the one-time parse of all ~3,584 task files for the shared metadata cache (~2.5s real), which every page pays once per server start. The 1.5s target is met for the event the tile actually hits (0.9s), but not for a first request after a restart.
 
 ## Decision
