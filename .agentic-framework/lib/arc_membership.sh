@@ -138,7 +138,7 @@ task_has_arc_membership() {
     [ -f "$task_file" ] || return 1
     awk '
         /^---$/ { fm++; next }
-        fm == 1 && /^arc_id:[[:space:]]*["\047]?[A-Za-z0-9_-]+["\047]?[[:space:]]*$/ { found=1; exit }
+        fm == 1 && /^arc_id:[[:space:]]*["\047]?[A-Za-z0-9_-]+["\047]?[[:space:]]*(#.*)?$/ { found=1; exit }
         fm == 1 && /^tags:.*arc:[A-Za-z0-9_-]+/ { found=1; exit }
         fm >= 2 { exit }
         END { exit (found ? 0 : 1) }

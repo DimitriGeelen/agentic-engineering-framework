@@ -646,7 +646,13 @@ except ValueError:
     fm_end = len(text)
 head = text[:fm_end]
 m = re.search(r'^arc_id:\s*(\S.*?)\s*$', head, re.MULTILINE)
-print(m.group(1).strip().strip('"').strip("'") if m else "")
+v = m.group(1).strip() if m else ""
+if v[:1] in ('"', "'"):
+    e = v.find(v[0], 1)
+    v = v[1:e] if e != -1 else v[1:]
+else:  # T-3577: an unquoted trailing ' # comment' is not part of the value
+    v = re.sub(r"(^|\s+)#.*$", "", v).strip()
+print(v)
 PY
 )"
     if [ -n "$existing_arc_id" ]; then
@@ -728,7 +734,12 @@ fn, arc_id = sys.argv[1], sys.argv[2]
 text = open(fn).read()
 m = re.search(r'^arc_id:[ \t]*(.*)$', text, re.MULTILINE)
 if m:
-    cur = m.group(1).strip().strip('"').strip("'")
+    cur = m.group(1).strip()
+    if cur[:1] in ('"', "'"):
+        _e = cur.find(cur[0], 1)
+        cur = cur[1:_e] if _e != -1 else cur[1:]
+    else:  # T-3577: drop an unquoted trailing ' # comment'
+        cur = re.sub(r"(^|\s+)#.*$", "", cur).strip()
     if cur == arc_id:
         print(f"Task already has arc_id: {arc_id} — skipping")
     elif cur:

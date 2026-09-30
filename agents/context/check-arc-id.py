@@ -61,7 +61,12 @@ def extract_arc_id(text: str) -> str | None:
     arc_match = _ARC_ID_RE.search(fm_match.group(1))
     if not arc_match:
         return None
-    val = arc_match.group(1).strip().strip('"').strip("'")
+    val = arc_match.group(1).strip()
+    if val[:1] in ('"', "'"):
+        end = val.find(val[0], 1)
+        val = val[1:end] if end != -1 else val[1:]
+    else:  # T-3577: an unquoted trailing ' # comment' is not part of the value
+        val = re.sub(r"(^|\s+)#.*$", "", val).strip()
     # Treat empty, null, '~', commented-out as "not set"
     if not val or val.lower() in ("null", "~", "none"):
         return None

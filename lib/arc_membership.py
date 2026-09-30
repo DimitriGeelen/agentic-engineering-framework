@@ -41,6 +41,25 @@ from pathlib import Path
 
 # Frontmatter regexes — same patterns previously inline in arcs.py.
 _ARC_ID_LINE_RE = re.compile(r"^arc_id:\s*(.+?)\s*$", re.MULTILINE)
+
+_TRAILING_COMMENT_RE = re.compile(r"(^|\s+)#.*$")
+
+
+def parse_arc_id_value(raw: str) -> str:
+    """Normalise the raw text after `arc_id:` to the value YAML would give.
+
+    T-3577: a trailing ` # comment` is not part of an unquoted value, and a
+    `#` inside a quoted value is not a comment. Returns "" for empty/null.
+    """
+    v = (raw or "").strip()
+    if v[:1] in ('"', "'"):
+        end = v.find(v[0], 1)
+        v = v[1:end] if end != -1 else v[1:]
+    else:
+        v = _TRAILING_COMMENT_RE.sub("", v).strip()
+    return "" if v in ("null", "~") else v
+
+
 _ID_LINE_RE = re.compile(r"^id:\s*(T-\d+)\s*$", re.MULTILINE)
 _TAGS_LINE_RE = re.compile(r"^tags:\s*(.+?)\s*$", re.MULTILINE)
 _TAG_ARC_RE = re.compile(r"arc:([A-Za-z0-9\-_]+)")
@@ -165,8 +184,8 @@ def scan_tasks_by_arc_membership(
         tid = id_m.group(1).strip()
         aid_m = _ARC_ID_LINE_RE.search(head)
         if aid_m is not None:
-            aid = aid_m.group(1).strip().strip('"').strip("'")
-            if aid and aid not in ("null", "~"):
+            aid = parse_arc_id_value(aid_m.group(1))
+            if aid:
                 by_arc_id.setdefault(aid, []).append(tid)
         tags_m = _TAGS_LINE_RE.search(head)
         if tags_m is not None:
@@ -190,8 +209,8 @@ def scan_tasks_by_arc_id(project_root: Path | str) -> dict[str, list[str]]:
         m = _ARC_ID_LINE_RE.search(head)
         if not m:
             continue
-        aid = m.group(1).strip().strip('"').strip("'")
-        if not aid or aid in ("null", "~"):
+        aid = parse_arc_id_value(m.group(1))
+        if not aid:
             continue
         try:
             rel = str(md.relative_to(root))
@@ -255,8 +274,7 @@ def task_has_arc_membership(task_file: Path | str) -> bool:
     fm = parts[1] if len(parts) >= 3 else head
     aid_m = _ARC_ID_LINE_RE.search(fm)
     if aid_m is not None:
-        aid = aid_m.group(1).strip().strip('"').strip("'")
-        if aid and aid not in ("null", "~"):
+        if parse_arc_id_value(aid_m.group(1)):
             return True
     tags_m = _TAGS_LINE_RE.search(fm)
     if tags_m is not None and _TAG_ARC_RE.search(tags_m.group(1)):

@@ -5292,3 +5292,24 @@ concerns:
     goes unanswered past its retry ladder.
   related_tasks:
   - T-3442
+- id: G-107
+  type: gap
+  title: An arc_id with a trailing YAML comment silently drops the task from its arc, and nothing flagged
+    the departure
+  description: 'lib/arc_membership.py _ARC_ID_LINE_RE captured `arc-001   # T-3440: ...` whole, so
+    .tasks/completed/T-3440 was filed under a junk key and absent from arc-001 (dispatch-safety) BVP
+    membership and everything built on scan_tasks_by_arc_membership. Sibling readers (lib/arc.sh, check-arc-id.py,
+    arc_membership.sh awk) had the same shape. Found by the independent T-3574 review, not by any framework
+    check.'
+  spec_reference: docs/reports/T-3574-T-3575-render-review.md
+  severity: medium
+  status: open
+  detected_in: T-3577
+  observed: '2026-09-30'
+  reported_by: self (T-3577, from the T-3574 independent review)
+  blast_radius: arc membership, BVP, coherence, stale-arc audit, arc pages
+  detection_gap: Nothing compares a task's declared arc_id to the arc it resolves to. A value that resolves
+    to no arc YAML is invisible unless the arc_id write hook fires on that very edit.
+  what_remains: Fix is T-3577. A corpus check that every arc_id resolves to an arc is not built.
+  related_tasks:
+  - T-3577

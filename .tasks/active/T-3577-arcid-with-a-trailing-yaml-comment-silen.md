@@ -1,10 +1,17 @@
 ---
 id: T-3577
-name: "arc_id with a trailing YAML comment silently drops the task from its arc - _ARC_ID_LINE_RE captures the comment"
+name: "arc_id with a trailing YAML comment silently drops the task from its arc -
+  _ARC_ID_LINE_RE captures the comment"
 description: >
-  lib/arc_membership.py:43 _ARC_ID_LINE_RE = ^arc_id:\s*(.+?)\s*$ keeps a trailing '# comment' in the value, so 'arc_id: arc-001  # T-3440: ...' resolves to no arc. Confirmed on .tasks/completed/T-3440 (dropped from dispatch-safety BVP membership and anything built on scan_tasks_by_arc_membership). Found by the independent T-3574 review, docs/reports/T-3574-T-3575-render-review.md. Fix: strip an unquoted trailing ' #...' before resolving (YAML semantics); test with the T-3440 shape; count how many tasks change membership after the fix.
+  lib/arc_membership.py:43 _ARC_ID_LINE_RE = ^arc_id:\s*(.+?)\s*$ keeps a trailing
+  '# comment' in the value, so 'arc_id: arc-001  # T-3440: ...' resolves to no arc.
+  Confirmed on .tasks/completed/T-3440 (dropped from dispatch-safety BVP membership
+  and anything built on scan_tasks_by_arc_membership). Found by the independent T-3574
+  review, docs/reports/T-3574-T-3575-render-review.md. Fix: strip an unquoted trailing
+  ' #...' before resolving (YAML semantics); test with the T-3440 shape; count how
+  many tasks change membership after the fix.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T03:18:22Z
-last_update: 2026-09-30T03:18:22Z
-date_finished: null
+last_update: 2026-09-30T03:22:04Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,11 +57,36 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-09-30T03:19:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3577: arc_id with a trailing YAML comment silently drops the task from its arc - _ARC_ID_LINE_RE captures the comment
 
 ## Context
+
+Membership before/after (scan_tasks_by_arc_membership, whole corpus): 23 arcs / 481 entries both
+sides. One task file changes: T-3440 moves from the junk key `arc-001   # T-3440: dispatch-safety ...`
+(1 -> 0) to `arc-001` (0 -> 1). Only 1 task file in the corpus has a trailing comment on arc_id.
+Readers fixed: lib/arc_membership.py (shared `parse_arc_id_value`), lib/arc.sh (2 inline parsers + awk),
+lib/arc_membership.sh awk, agents/context/check-arc-id.py. audit.sh and verify-acs.sh already stop at
+whitespace. Registered as G-107.
 
 Found by the independent review of T-3574 (docs/reports/T-3574-T-3575-render-review.md).
 `lib/arc_membership.py:43` captures a trailing `# comment` into the arc_id value.
@@ -62,11 +94,11 @@ Found by the independent review of T-3574 (docs/reports/T-3574-T-3575-render-rev
 ## Acceptance Criteria
 
 ### Agent
-- [ ] An unquoted trailing ` # …` comment is stripped before an arc_id resolves (YAML semantics; a `#` inside a quoted value is not a comment); every other arc_id reader in lib/ web/ agents/ that parses the line by regex gets the same treatment, or reuses the one fixed function
-- [ ] Test: the T-3440 shape (`arc_id: arc-001   # note`) resolves to arc-001; a value with no comment is unchanged; a quoted value containing `#` is unchanged
-- [ ] Measured and recorded: how many task files change arc membership after the fix, listed by arc (before/after counts)
-- [ ] Registered in `.context/concerns.yaml` (register first, fix second) with the detection-gap note: nothing flagged a task silently leaving its arc
-- [ ] Existing arc-membership tests pass; `bin/fw vendor self --check` clean
+- [x] An unquoted trailing ` # …` comment is stripped before an arc_id resolves (YAML semantics; a `#` inside a quoted value is not a comment); every other arc_id reader in lib/ web/ agents/ that parses the line by regex gets the same treatment, or reuses the one fixed function
+- [x] Test: the T-3440 shape (`arc_id: arc-001   # note`) resolves to arc-001; a value with no comment is unchanged; a quoted value containing `#` is unchanged
+- [x] Measured and recorded: how many task files change arc membership after the fix, listed by arc (before/after counts)
+- [x] Registered in `.context/concerns.yaml` (register first, fix second) with the detection-gap note: nothing flagged a task silently leaving its arc
+- [x] Existing arc-membership tests pass; `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -100,6 +132,10 @@ Found by the independent review of T-3574 (docs/reports/T-3574-T-3575-render-rev
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_t3577_arc_id_trailing_comment.py tests/unit/test_arc_membership_frontmatter_read.py tests/unit/test_arc_membership_shared.py -q > /tmp/.t3577.out 2>&1 && grep -q passed /tmp/.t3577.out && ! grep -q failed /tmp/.t3577.out
+grep -q "id: G-107" .context/project/concerns.yaml
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -323,3 +359,6 @@ Found by the independent review of T-3574 (docs/reports/T-3574-T-3575-render-rev
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3577-arcid-with-a-trailing-yaml-comment-silen.md
 - **Context:** Initial task creation
+
+### 2026-09-30T03:19:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
