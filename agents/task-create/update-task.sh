@@ -110,7 +110,13 @@ log_gate_bypass() {
 # Runs BEFORE the R-033 sovereignty gate so an all-green task reaches it as owner: agent.
 apply_reviewer_verdicts() {
     [ "$NEW_STATUS" = "work-completed" ] || return 0
-    [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ] || return 0
+    # T-3581: a missing validator is a REFUSAL, never a skip — a tick this module wrote earlier
+    # would otherwise survive with nothing left to revalidate it.
+    if [ ! -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ]; then
+        echo -e "${RED}ERROR: lib/verdict_ledger.py is missing — reviewer-derived ticks cannot be revalidated; refusing to close${NC}" >&2
+        echo "  Restore it (bin/fw vendor self / fw upgrade) and retry." >&2
+        exit 1
+    fi
     local applied
     # T-3581: runs at EVERY close attempt and also WITHDRAWS reviewer-derived ticks whose
     # verdict no longer validates. A crash here must refuse the close, not skip the check:

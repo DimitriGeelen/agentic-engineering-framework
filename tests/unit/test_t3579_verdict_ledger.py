@@ -18,6 +18,8 @@ TASTE = ("- [ ] [REVIEW] The summary paragraph reads clearly\n"
          "  **Steps:**\n  1. Read it\n  **Expected:** reads as a peer briefing\n  **If not:** note it\n")
 TIER0 = ("- [ ] [REVIEW] Approve the force push via `fw tier0 approve`\n"
          "  **Steps:**\n  1. Run it\n  **Expected:** approved\n  **If not:** ask\n")
+RENDERED = ("- [ ] [REVIEW] The review page layout reads clearly when rendered\n"
+            "  **Steps:**\n  1. Open the page\n  **Expected:** the layout is tidy\n  **If not:** note it\n")
 WORLD = ("- [ ] [REVIEW] Publish the release to the public mirror and confirm consumers pick it up\n"
          "  **Steps:**\n  1. Publish\n  **Expected:** consumers upgrade\n  **If not:** roll back\n")
 
@@ -629,7 +631,7 @@ def test_hand_ticked_criterion_without_annotation_is_left_alone(root):
 # ── OpenAI H4: the render gate did not reclassify ────────────────────────────────
 
 def _two_criteria(root):
-    _task(root, TIER0 + TASTE)
+    _task(root, TIER0 + RENDERED)
     _produce_render(root)
 
 
@@ -652,16 +654,31 @@ def test_control_green_on_the_render_surface_criterion_satisfies_the_gate(root):
 
 
 def test_amber_on_the_render_criterion_is_not_rescued_by_a_green_on_another(root):
-    _task(root, TASTE + TASTE.replace("summary paragraph", "second paragraph"))
+    _task(root, TASTE + RENDERED)
     _produce_render(root)
-    _rec(root, ac=1)
-    _rec(root, "amber", ac=2)
-    assert [r["ac"] for r in vl.render_verdicts(TASK, root)] == [1]
+    _rec(root, ac=1)                                  # unrelated prose criterion: GREEN
+    _rec(root, "amber", ac=2)                         # the render criterion: AMBER
+    assert vl.render_verdicts(TASK, root) == []       # negative control (T-3581 round 3)
     assert vl.apply(TASK, root)["owner_after"] == "human"
 
 
+def test_control_unrelated_green_plus_render_green_satisfies_the_gate(root):
+    _task(root, TASTE + RENDERED)
+    _produce_render(root)
+    _rec(root, ac=1)
+    r = _rec(root, ac=2)
+    assert [x["id"] for x in vl.render_verdicts(TASK, root)] == [r["id"]]
+
+
+def test_render_task_with_no_render_criterion_cannot_be_satisfied_by_a_verdict(root):
+    _task(root, TASTE)                                # prose only — nothing asks about rendering
+    _produce_render(root)
+    _rec(root)
+    assert vl.render_verdicts(TASK, root) == []
+
+
 def test_continuation_edit_that_adds_risk_vocabulary_voids_the_render_verdict(root):
-    _task(root, TASTE)
+    _task(root, RENDERED)
     _produce_render(root)
     _rec(root)
     _edit(root, "**If not:** note it", "**If not:** publish the release to the public mirror")

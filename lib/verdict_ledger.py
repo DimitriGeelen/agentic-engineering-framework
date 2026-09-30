@@ -51,10 +51,11 @@ check-render and `fw audit`:
   * the row is a well-formed judge_verdict/1 record whose outcome, verdict and judgement
     agree, whose evidence is non-empty, relative, inside the repo and still exists, and whose
     digest (title + Steps/Expected/If-not, generated annotations excluded) is the current one;
-  * the criterion is REVIEWER-JUDGES NOW; the render gate accepts only a green on a
-    render-surface criterion;
+  * the criterion is REVIEWER-JUDGES NOW; the render gate needs a valid green on EVERY criterion that asks about rendering;
   * no torn line in the ledger can concern the task (torn lines fail closed and leave a
-    `torn-ledger-line` refusal row).
+    `torn-ledger-line` refusal row);
+  * the ledger is append-only as verified against git history (`load_ledger`): modified,
+    deleted, duplicated or replaced rows refuse everything; rows are validated before selection.
 
 The LATEST row for (task, criterion, current digest) decides. `apply` runs at every close
 attempt and WITHDRAWS reviewer-derived ticks that no longer validate.
@@ -62,7 +63,7 @@ attempt and WITHDRAWS reviewer-derived ticks that no longer validate.
 What this does not claim: every agent here is the same OS user with write access to the
 repo. One that reads .context/secrets/review-dispatch.key can sign a registry row, and one
 that sets a different git identity can commit a ledger row. The path is fail-closed,
-tamper-evident and audited — not forgery-proof. It separates identities, not ROLES, and the
+audited — not forgery-proof, and `fw audit` cannot tell a coherently fabricated same-user provenance chain from a real one. It separates identities, not ROLES, and the
 `rung` field records the independence the review claims (IW-3). Accepting that residual gap
 is the operator's call (T-3581 Human criterion).
 
@@ -401,40 +402,133 @@ def _dispatch_is_producer(dispatch_id: str, produced_by: set[str]) -> str:
     return next((p for p in produced_by if d in _norm(p)), "")
 
 
-def introducing_commit(root: Path, row_id: str) -> tuple[dict | None, str]:
-    """The commit that first added ledger row `row_id`, as {sha, ids}; (None, reason) if none.
+_ROW_ID_RE = re.compile(r"^T-\d+$")
 
-    Uncommitted rows have no introducing commit and therefore do not count."""
+
+class Ledger:
+    """verdicts.jsonl as VERIFIED against the accepted history (T-3581 round 3).
+
+    The file is append-only, and git is what proves it. For every commit on HEAD that touched
+    the file, the previous content must be an exact line-prefix of the new content: a row that
+    was modified, deleted (a withdrawal included) or replaced breaks the chain and the whole
+    ledger refuses. The working file must have the committed content as its exact prefix; the
+    lines beyond it are UNCOMMITTED and never count. A row's introducing commit is the commit
+    whose diff first contains its bytes — established by the walk, not by a text search.
+
+      committed  [(row, intro)]  intro = {"sha", "ids"}; in ledger order
+      pending    [row]           in the working file, not in HEAD
+      torn       [line]          committed or pending, not a JSON object
+      faults     [str]           integrity failures — non-empty means nothing is trustworthy
+    """
+
+    def __init__(self) -> None:
+        self.committed: list[tuple[dict, dict]] = []
+        self.pending: list[dict] = []
+        self.torn: list[str] = []
+        self.faults: list[str] = []
+
+    def entries(self):
+        for row, intro in self.committed:
+            yield row, intro
+        for row in self.pending:
+            yield row, None
+
+    def intro(self, row_id: str) -> dict | None:
+        return next((i for r, i in self.committed if r.get("id") == row_id), None)
+
+
+def _git_out(root: Path, *args: str) -> tuple[int, str]:
+    cp = subprocess.run(["git", *args], cwd=str(root), capture_output=True, text=True, timeout=60)
+    return cp.returncode, cp.stdout
+
+
+def _nonblank(text: str) -> list[str]:
+    return [ln for ln in text.split("\n") if ln.strip()]
+
+
+def load_ledger(root: Path) -> Ledger:
+    led = Ledger()
+    cur = _nonblank((root / VERDICTS).read_text(encoding="utf-8", errors="replace")) \
+        if (root / VERDICTS).is_file() else []
     try:
-        cp = subprocess.run(
-            ["git", "log", "--all", "--reverse", f'-S"id":"{row_id}"',
-             "--format=%x1e%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%B%x1d", "--", str(VERDICTS)],
-            cwd=str(root), capture_output=True, text=True, timeout=60)
+        rc, _ = _git_out(root, "rev-parse", "-q", "--verify", "HEAD")
+        if rc == 128:
+            led.faults.append("git cannot answer (not a repository) — ledger history is unverifiable")
+            return led
+        history = ""
+        if rc == 0:
+            rc, history = _git_out(
+                root, "log", "--reverse", "--format=%x1e%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%B%x1d",
+                "HEAD", "--", str(VERDICTS))
+            if rc != 0:
+                led.faults.append(f"git log failed (rc={rc}) — ledger history is unverifiable")
+                return led
+        prev: list[str] = []
+        seen: set[str] = set()
+        for rec in history.split("\x1e"):
+            if "\x1d" not in rec:
+                continue
+            parts = rec.split("\x1d", 1)[0].split("\x1f")
+            if len(parts) < 6:
+                continue
+            sha = parts[0].strip()
+            rc, blob = _git_out(root, "show", f"{sha}:{VERDICTS}")
+            lines = _nonblank(blob) if rc == 0 else []
+            if lines[:len(prev)] != prev:
+                led.faults.append(
+                    f"commit {sha[:9]} modified, deleted or replaced committed ledger rows — "
+                    f"the ledger is append-only")
+                return led
+            intro = {"sha": sha, "ids": _identities(parts[1:5], parts[5])}
+            for ln in lines[len(prev):]:
+                obj = _parse(ln)
+                if obj is None:
+                    led.torn.append(ln)
+                    continue
+                rid = obj.get("id")
+                if isinstance(rid, str) and rid in seen:
+                    led.faults.append(f"duplicate row id {rid!r} (again in {sha[:9]})")
+                    return led
+                if isinstance(rid, str):
+                    seen.add(rid)
+                led.committed.append((obj, intro))
+            prev = lines
     except (OSError, subprocess.SubprocessError) as e:
-        return None, f"git failed: {e}"
-    if cp.returncode != 0:
-        return None, f"git log failed (rc={cp.returncode})"
-    for rec in cp.stdout.split("\x1e"):
-        if "\x1d" not in rec:
+        led.faults.append(f"git failed: {e} — ledger history is unverifiable")
+        return led
+    if cur[:len(prev)] != prev:
+        led.faults.append("the working ledger does not contain the committed rows unchanged — a "
+                          "committed row was modified, deleted or replaced")
+        return led
+    for ln in cur[len(prev):]:
+        obj = _parse(ln)
+        if obj is None:
+            led.torn.append(ln)
             continue
-        parts = rec.split("\x1d", 1)[0].split("\x1f")
-        if len(parts) >= 6:
-            return {"sha": parts[0].strip(), "ids": _identities(parts[1:5], parts[5])}, ""
-    return None, f"row {row_id} was never committed (no commit introduces it)"
+        rid = obj.get("id")
+        if isinstance(rid, str) and any(r.get("id") == rid for r, _ in led.entries()):
+            led.faults.append(f"duplicate row id {rid!r} in the uncommitted rows")
+            return led
+        led.pending.append(obj)
+    return led
+
+
+def _parse(line: str) -> dict | None:
+    try:
+        obj = json.loads(line)
+    except ValueError:
+        return None
+    return obj if isinstance(obj, dict) else None
 
 
 # ── eligibility — ONE validator for record, apply, check-render and audit ────
 
 
-class _Ctx:
-    """Everything a verdict is judged against, computed once per call."""
+class _Base:
+    """What a row is judged against that does not depend on the CURRENT criterion text."""
 
-    def __init__(self, root: Path, task_id: str, path: Path, text: str):
-        self.root, self.task_id, self.path, self.text = root, task_id, path, text
-        fm = frontmatter(text)
-        self.workflow = str(fm.get("workflow_type") or "").strip().lower()
-        self.owner = str(fm.get("owner") or "")
-        self.render = _render_surface(root, path)
+    def __init__(self, root: Path, task_id: str, text: str):
+        self.root, self.task_id, self.text = root, task_id, text
         self._prod: tuple[set[str], str] | None = None
 
     @property
@@ -442,6 +536,25 @@ class _Ctx:
         if self._prod is None:
             self._prod = producers_checked(self.root, self.task_id, self.text)
         return self._prod
+
+
+class _Ctx(_Base):
+    """Everything a verdict is judged against for one task, computed once per call."""
+
+    def __init__(self, root: Path, task_id: str, path: Path, text: str):
+        super().__init__(root, task_id, text)
+        self.path = path
+        fm = frontmatter(text)
+        self.workflow = str(fm.get("workflow_type") or "").strip().lower()
+        self.owner = str(fm.get("owner") or "")
+        self.render = _render_surface(root, path)
+        self._ledger: Ledger | None = None
+
+    @property
+    def ledger(self) -> Ledger:
+        if self._ledger is None:
+            self._ledger = load_ledger(self.root)
+        return self._ledger
 
     def classify(self, crit):
         return classify(crit, workflow_type=self.workflow, render_surface=self.render)
@@ -467,69 +580,105 @@ _REQUIRED = ("id", "task", "ac", "ac_digest", "outcome", "verdict", "reviewer", 
              "dispatch_id", "evidence", "judgement")
 
 
-def _fault(ctx: _Ctx, row: dict, crit, *, need_commit: bool = True) -> tuple[str, str] | None:
-    """(class, reason) when `row` may NOT satisfy `crit` right now; None when it may.
-
-    A green must clear every check; a non-green only needs to be attributable, because
-    all a non-green can do is keep a criterion open."""
+def _structural_fault(row: dict) -> str:
+    """'' when `row` is a well-formed verdict record; else why not. Independent of any task."""
     miss = [k for k in _REQUIRED if k not in row]
     if miss:
-        return "schema", f"row is missing {', '.join(miss)}"
-    if row["outcome"] not in OUTCOMES or not isinstance(row["evidence"], list):
-        return "schema", "row has an unknown outcome or a non-list evidence field"
+        return f"row is missing {', '.join(miss)}"
+    for k in ("id", "task", "ac_digest", "reviewer", "rung", "dispatch_id", "verdict"):
+        if not isinstance(row[k], str) or not row[k].strip():
+            return f"row field {k} is not a non-empty string"
+    if not _ROW_ID_RE.match(row["task"]):
+        return f"row task {row['task']!r} is not a task id"
+    if isinstance(row["ac"], bool) or not isinstance(row["ac"], int):
+        return "row ac is not an integer"
+    if row["outcome"] not in OUTCOMES:
+        return f"row has an unknown outcome {row['outcome']!r}"
+    if not isinstance(row["evidence"], list):
+        return "row has a non-list evidence field"
     jv = row["judgement"]
     if (not isinstance(jv, dict) or jv.get("contract") != "judge_verdict/1"
             or jv.get("judge") != row["reviewer"]
             or jv.get("state") != _STATE.get(row["outcome"])):
-        return "schema", "judgement block is not a judge_verdict/1 record agreeing with the row"
+        return "judgement block is not a judge_verdict/1 record agreeing with the row"
+    if jv.get("judged") != f"{row['task']}#AC{row['ac']}":
+        return "judgement block judges a different criterion than the row names"
     if row["verdict"] != jv.get("state"):
-        return "schema", "row verdict disagrees with its judgement"
-    if row["task"] != ctx.task_id or row["ac"] != crit.index:
-        return "schema", "row does not name this task/criterion"
-    if row["ac_digest"] != criterion_digest(crit):
-        return "digest-mismatch", "the criterion changed after the reviewer read it"
-    why = _provenance_fault(ctx.root, ctx.task_id, row)
+        return "row verdict disagrees with its judgement"
+    return ""
+
+
+def _row_fault(base: _Base, row: dict, intro: dict | None, *, need_commit: bool = True
+               ) -> tuple[str, str] | None:
+    """(class, reason) when `row` is not a valid, attributable record for base.task_id.
+
+    HISTORICAL integrity — nothing here depends on the criterion's CURRENT text, so a
+    verdict that was later superseded by an edit still passes. Used by apply AND audit
+    (one validator, T-3581). A green must clear every check; a non-green only needs to be
+    attributable, because all a non-green can do is keep a criterion open."""
+    why = _structural_fault(row)
+    if why:
+        return "schema", why
+    if row["task"] != base.task_id:
+        return "schema", "row does not name this task"
+    why = _provenance_fault(base.root, base.task_id, row)
     if why:
         return "no-provenance", why
     if row["outcome"] != GREEN:
         return None
-    cl = ctx.classify(crit)
-    if cl.delegation_class != REVIEWER_JUDGES:
-        return "not-reviewer-judged", (
-            f"AC#{crit.index} is {cl.cls} ({cl.delegation_class}): only the operator may "
-            f"answer it, so no reviewer verdict can satisfy or escalate it — {cl.reason}")
     if not row["evidence"] or not all(isinstance(e, str) and e.strip() for e in row["evidence"]):
         return "no-evidence", "a green verdict needs at least one evidence path"
     for e in row["evidence"]:
-        why = _evidence_fault(ctx.root, e)
+        why = _evidence_fault(base.root, e)
         if why:
             return "evidence", why
-    prod, err = ctx.prod
+    prod, err = base.prod
     if err:
         return "no-producer-provenance", f"{err} — producer provenance unavailable, refusing"
     if not prod:
         return "no-producer-provenance", (
-            f"no commit references {ctx.task_id}, so who produced it is unknown — a verdict "
+            f"no commit references {base.task_id}, so who produced it is unknown — a verdict "
             f"cannot prove independence from an unknown producer")
     hit = is_producer(str(row["reviewer"]), prod)
     if hit:
         return "reviewer-is-producer", (
             f"reviewer {row['reviewer']!r} matches {hit!r}, who committed work for "
-            f"{ctx.task_id}; the reviewer is never the producer")
+            f"{base.task_id}; the reviewer is never the producer")
     hit = _dispatch_is_producer(str(row["dispatch_id"]), prod)
     if hit:
         return "reviewer-is-producer", (
             f"dispatch {row['dispatch_id']!r} worker identity {hit!r} committed work for "
-            f"{ctx.task_id}; the reviewer is never the producer")
+            f"{base.task_id}; the reviewer is never the producer")
     if need_commit:
-        ic, why = introducing_commit(ctx.root, str(row["id"]))
-        if ic is None:
-            return "uncommitted", why
-        hit = next((p for i in ic["ids"] if (p := is_producer(i, prod))), "")
+        if intro is None:
+            return "uncommitted", f"row {row['id']} was never committed (no commit introduces it)"
+        hit = next((p for i in intro["ids"] if (p := is_producer(i, prod))), "")
         if hit:
             return "introduced-by-producer", (
-                f"the commit that added this row ({ic['sha'][:9]}) was authored by "
-                f"{hit!r}, a producer of {ctx.task_id}")
+                f"the commit that added this row ({intro['sha'][:9]}) was authored by "
+                f"{hit!r}, a producer of {base.task_id}")
+    return None
+
+
+def _fault(ctx: _Ctx, row: dict, crit, intro: dict | None, *, need_commit: bool = True
+           ) -> tuple[str, str] | None:
+    """(class, reason) when `row` may NOT satisfy `crit` right now: historical integrity
+    (`_row_fault`) PLUS current eligibility — the row names this criterion, the criterion text
+    is unchanged, and the criterion is still reviewer-judged."""
+    if not _structural_fault(row):
+        if row["ac"] != crit.index:
+            return "schema", "row does not name this criterion"
+        if row["ac_digest"] != criterion_digest(crit):
+            return "digest-mismatch", "the criterion changed after the reviewer read it"
+    f = _row_fault(ctx, row, intro, need_commit=need_commit)
+    if f:
+        return f
+    if row["outcome"] == GREEN:
+        cl = ctx.classify(crit)
+        if cl.delegation_class != REVIEWER_JUDGES:
+            return "not-reviewer-judged", (
+                f"AC#{crit.index} is {cl.cls} ({cl.delegation_class}): only the operator may "
+                f"answer it, so no reviewer verdict can satisfy or escalate it — {cl.reason}")
     return None
 
 
@@ -570,24 +719,46 @@ def _note_torn(root: Path, task_id: str, lines: list[str]) -> None:
 def satisfying_verdict(ctx: _Ctx, crit) -> tuple[dict | None, str]:
     """(green row, '') that satisfies `crit`, else (None, why).
 
-    The LATEST row for (task, criterion, current digest) decides: a later red withdraws an
-    earlier green and an invalid latest green is not replaced by an older valid one. A row
-    for other criterion text never counts. Any torn line that may concern this task fails
-    closed."""
-    rows, torn = _read_strict(VERDICTS, ctx.root)
-    bad = _torn_for(ctx.root, ctx.task_id, torn)
+    Order matters (T-3581 round 3): the ledger's integrity first; then every row that could
+    concern this criterion is VALIDATED before anything is selected by digest, so a malformed
+    row cannot be filtered out and thereby resurrect an older green. The LATEST committed row
+    for (task, criterion, current digest) decides: a later red withdraws an earlier green and
+    an invalid latest green is not replaced by an older valid one. A row for other criterion
+    text never counts. Torn lines, uncommitted rows for this criterion and rows that name no
+    legible task all fail closed."""
+    led = ctx.ledger
+    if led.faults:
+        return None, f"ledger-integrity: {led.faults[0]}"
+    bad = _torn_for(ctx.root, ctx.task_id, led.torn)
     if bad:
         _note_torn(ctx.root, ctx.task_id, bad)
         return None, "the verdict ledger has an unparseable line — refusing until repaired"
     dg = criterion_digest(crit)
-    mine = [r for r in rows if r.get("task") == ctx.task_id and r.get("ac") == crit.index
-            and r.get("ac_digest") == dg]
+    mine: list[dict] = []
+    for row, intro in led.entries():
+        t = row.get("task")
+        if not isinstance(t, str) or not _ROW_ID_RE.match(t):
+            return None, (f"schema: row {row.get('id', '?')!r} names no legible task — "
+                          f"refusing until the ledger is repaired")
+        if t != ctx.task_id:
+            continue
+        a = row.get("ac")
+        if isinstance(a, int) and not isinstance(a, bool) and a != crit.index:
+            continue                                  # names another criterion of this task
+        why = _structural_fault(row)
+        if why:
+            return None, f"schema: malformed row {row.get('id', '?')!r} names this criterion — {why}"
+        if row["ac_digest"] != dg:
+            continue
+        if intro is None:
+            return None, f"uncommitted: row {row['id']} for this criterion is not in the accepted history"
+        mine.append(row)
     if not mine:
         return None, "no verdict for the current criterion text"
     last = mine[-1]
     if last.get("outcome") != GREEN:
         return None, f"latest verdict is {last.get('outcome')!r}"
-    f = _fault(ctx, last, crit)
+    f = _fault(ctx, last, crit, led.intro(last["id"]))
     if f:
         return None, f"{f[0]}: {f[1]}"
     return last, ""
@@ -693,9 +864,12 @@ def record(task_id: str, ac_index: int, outcome: str, *, reviewer: str, rung: st
         "evidence": evidence,
         "judgement": jv,
     }
-    f = _fault(ctx, rec, crit, need_commit=False)  # the row cannot be committed yet
+    f = _fault(ctx, rec, crit, None, need_commit=False)  # the row cannot be committed yet
     if f:
         refuse(*f)
+    if ctx.ledger.faults:
+        refuse("ledger-integrity", f"{ctx.ledger.faults[0]} — no row is appended to a ledger "
+                                   f"whose history does not verify")
     _append(VERDICTS, rec, root)
     if outcome != GREEN:
         _refuse_row(root, task_id, f"verdict-{outcome}", jv["guidance"],
@@ -728,22 +902,40 @@ def _route_to_operator(root: Path, path: Path, text: str, crit, rec: dict) -> No
 # ── read side (the closer only ever calls these) ─────────────────────────────
 
 
-def render_verdicts(task_id: str, root: Path | None = None) -> list[dict]:
-    """Valid green verdicts on a RENDER-SURFACE Human criterion (open OR already ticked).
+#: Vocabulary of a criterion that asks about what RENDERS. On a render-surface task the
+#: classifier calls every non-risk criterion render-surface (lib/delegation.py — task-level,
+#: T-1766); the P-013 question is narrower: did a reviewer look at the rendered output?
+_RENDER_REVIEW_RE = re.compile(
+    r"\b(render(?:s|ed|ing)?|page|layout|watchtower|screen(?:shot)?|visual(?:ly)?|ui|css|"
+    r"template|browser|display(?:s|ed)?|typography|spacing|looks?)\b", re.IGNORECASE)
 
-    The P-013 gate asks whether a human looked at what renders; a green on an unrelated
-    taste criterion does not answer that. Same validator as `apply` (T-3581)."""
+
+def render_review_criteria(ctx: _Ctx) -> list:
+    """The Human criteria that ARE the render review: render-surface class AND about rendering."""
+    return [c for c in human_criteria(ctx.text)
+            if ctx.classify(c).cls == "render-surface"
+            and _RENDER_REVIEW_RE.search(criterion_body(c))]
+
+
+def render_verdicts(task_id: str, root: Path | None = None) -> list[dict]:
+    """Valid green verdicts, one per render-review criterion — ALL of them, or nothing.
+
+    The P-013 gate asks whether a human looked at what renders. A green on an unrelated
+    criterion does not answer that, and neither does a green on one render criterion while
+    another is amber: every criterion that is about rendering needs its own valid approval,
+    and a task with no such criterion cannot be satisfied by a verdict (T-3581 round 3).
+    Same validator as `apply`."""
     root = root or _root()
     ctx = _task_ctx(root, task_id)
     if ctx is None:
         return []
+    crits = render_review_criteria(ctx)
     out = []
-    for c in human_criteria(ctx.text):
-        if ctx.classify(c).cls != "render-surface":
-            continue
+    for c in crits:
         r, _ = satisfying_verdict(ctx, c)
-        if r:
-            out.append(r)
+        if not r:
+            return []
+        out.append(r)
     return out
 
 
@@ -847,62 +1039,42 @@ def apply(task_id: str, root: Path | None = None) -> dict:
 
 
 def audit(root: Path | None = None) -> tuple[int, list[str]]:
-    """Cross-check every verdicts.jsonl row. (exit code, lines): 0 clean, 2 on any failure.
+    """Cross-check the ledger's history AND every row. (exit code, lines): 0 clean, 2 on failure.
 
-    Per row: schema, registered+signed review dispatch for that task, and — for greens —
-    evidence paths, a producer set that is non-empty and does not include the reviewer, and
-    an introducing commit that exists and is not a producer's. Torn lines are failures."""
+    History: the file must be append-only against the accepted history (no modified, deleted,
+    duplicated or replaced row). Rows: EVERY row — green or not — goes through the same
+    `_row_fault` validator `apply` uses: structure, signed review dispatch for its task and,
+    for greens, evidence, non-empty producer set excluding the reviewer, and an introducing
+    commit that is not a producer's. Historical integrity only: a verdict superseded by a later
+    criterion edit stays auditable and does not fail here. Uncommitted rows and torn lines fail."""
     root = root or _root()
-    rows, torn = _read_strict(VERDICTS, root)
-    if not rows and not torn:
+    led = load_ledger(root)
+    n = len(led.committed) + len(led.pending)
+    if not n and not led.torn and not led.faults:
         return 0, ["verdict ledger: empty or absent (path is off until a review dispatch writes rows)"]
     out, bad = [], 0
-    for ln in torn:
+    for f in led.faults:
+        bad += 1
+        out.append(f"FAIL ledger integrity: {f}")
+    for ln in led.torn:
         bad += 1
         out.append(f"FAIL torn/non-object line in verdicts.jsonl: {ln[:80]!r}")
-    for r in rows:
+    bases: dict[str, _Base] = {}
+    for r, intro in led.entries():
         rid, task = str(r.get("id", "?")), str(r.get("task", "?"))
-        miss = [k for k in _REQUIRED if k not in r]
-        if miss:
-            bad += 1
-            out.append(f"FAIL {rid} ({task}): schema — missing {', '.join(miss)}")
-            continue
-        why = _provenance_fault(root, task, r)
+        why = _structural_fault(r)
         if why:
             bad += 1
-            out.append(f"FAIL {rid} ({task}): provenance — {why}")
+            out.append(f"FAIL {rid} ({task}): schema — {why}")
             continue
-        if r["outcome"] != GREEN:
-            continue
-        _, text = ("", "")
-        tp, _sub = _find_task(root, task)
-        text = tp.read_text(encoding="utf-8", errors="replace") if tp else ""
-        prod, err = producers_checked(root, task, text)
-        if err or not prod:
+        if task not in bases:
+            tp, _sub = _find_task(root, task)
+            bases[task] = _Base(root, task, tp.read_text(encoding="utf-8", errors="replace") if tp else "")
+        f = _row_fault(bases[task], r, intro)
+        if f:
             bad += 1
-            out.append(f"FAIL {rid} ({task}): no producer provenance — {err or 'no commit references the task'}")
-            continue
-        hit = is_producer(str(r["reviewer"]), prod) or _dispatch_is_producer(str(r["dispatch_id"]), prod)
-        if hit:
-            bad += 1
-            out.append(f"FAIL {rid} ({task}): reviewer {r['reviewer']!r} is a producer ({hit!r})")
-            continue
-        ev = [_evidence_fault(root, e) for e in r["evidence"] if isinstance(e, str)]
-        ev = [x for x in ev if x] or ([] if r["evidence"] else ["no evidence"])
-        if ev:
-            bad += 1
-            out.append(f"FAIL {rid} ({task}): evidence — {ev[0]}")
-            continue
-        ic, why = introducing_commit(root, rid)
-        if ic is None:
-            bad += 1
-            out.append(f"FAIL {rid} ({task}): {why}")
-            continue
-        hit = next((p for i in ic["ids"] if (p := is_producer(i, prod))), "")
-        if hit:
-            bad += 1
-            out.append(f"FAIL {rid} ({task}): introduced by producer {hit!r} in {ic['sha'][:9]}")
-    out.append(f"verdict ledger: {len(rows)} row(s), {bad} failure(s)")
+            out.append(f"FAIL {rid} ({task}): {f[0].replace('-', ' ')} — {f[1]}")
+    out.append(f"verdict ledger: {n} row(s), {bad} failure(s)")
     return (2 if bad else 0), out
 
 

@@ -239,3 +239,32 @@ PY
     [ "$status" -eq 1 ]
     [ ! -f "$PROJECT_ROOT/.context/reviews/verdicts.jsonl" ]
 }
+
+@test "T-3581 round 3: a missing verdict module REFUSES the close instead of skipping revalidation" {
+    _make_render_task >/dev/null
+    run _record green --evidence evidence.md
+    [ "$status" -eq 0 ]
+    # A framework tree identical to this one except lib/verdict_ledger.py is absent.
+    local fake="$TEST_TEMP_DIR/fake-fw" e
+    mkdir -p "$fake/lib"
+    for e in "$FRAMEWORK_ROOT"/* "$FRAMEWORK_ROOT"/.[!.]*; do
+        [ "$(basename "$e")" = lib ] || [ "$(basename "$e")" = .git ] || ln -s "$e" "$fake/$(basename "$e")"
+    done
+    for e in "$FRAMEWORK_ROOT"/lib/* "$FRAMEWORK_ROOT"/lib/.[!.]*; do
+        [ "$(basename "$e")" = verdict_ledger.py ] || ln -s "$e" "$fake/lib/$(basename "$e")"
+    done
+    [ ! -e "$fake/lib/verdict_ledger.py" ]
+    FRAMEWORK_ROOT="$fake" run "$fake/agents/task-create/update-task.sh" T-9200 --status work-completed
+    [ "$status" -ne 0 ]
+    echo "$output" | grep -q "verdict_ledger.py is missing"
+    [ "$(ls "$PROJECT_ROOT/.tasks/active" | grep -c '^T-9200-')" -eq 1 ]
+    # control: the real tree closes the same task
+    run "$UPDATE_TASK" T-9200 --status work-completed
+    [ "$status" -eq 0 ]
+}
+
+@test "T-3581 round 3: fw audit reports a failure, not a skip, when the verdict module is missing" {
+    # Pin: the audit block has an else-branch that calls fail, never a bare fi.
+    awk '/verdict_ledger.py" \]; then/{f=1} f&&/^else/{e=1} f&&e&&/fail "Reviewer-verdict ledger: lib\/verdict_ledger.py is missing/{ok=1} END{exit !ok}' \
+        "$BATS_TEST_DIRNAME/../../agents/audit/audit.sh"
+}
