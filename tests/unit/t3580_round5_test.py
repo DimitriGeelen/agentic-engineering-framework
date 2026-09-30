@@ -160,68 +160,67 @@ class TestVendorMapping:
 
 
 # ── 2. the never-run dispatch ────────────────────────────────────────────────────────────────
+# Round 6 (codex second-family MEDIUM): the round-5 control here called `_never_ran`, then the
+# Python start()/complete() directly, and expected a tick — a signed start proved nothing about a
+# reviewer running. Registration now issues no secret; `start` issues it and authenticates its
+# caller in the shared implementation. The refusal tests are below and in
+# t3580_round6_test.TestRuntimeCapability; the positive control launches a worker (real run.sh).
 
 def _never_ran(root, did="rv-1"):
-    """Registered, never run: the caller reads the LEFTOVER secret file (no start), writes a row,
-    commits it under the worker identity, and fakes the exit state and result stream."""
+    """Registered, never run: the caller writes a row, commits it under the worker identity, and
+    fakes the exit state and result stream. There is no secret to read (round 6)."""
     rt.dispatch(root, did, TID)
-    secret = rt.take_secret(root, did, start=False)
     _record(root, did)
     _commit_as(root, f"reviewer-{did}")
     w = rt.wdir_for(root, did)
     (w / "exit_code").write_text("0\n")
     (w / "result.jsonl").write_text('{"type":"result","result":"VERDICT: green"}\n')
-    return w, secret
+    return w
 
 
 class TestNeverRun:
-    def test_negative_never_run_leftover_secret_fake_files_complete_is_refused_at_apply(self, prod):
-        w, secret = _never_ran(prod)
-        assert secret                                               # the secret WAS readable
+    def test_negative_never_run_fake_files_complete_is_refused_at_apply(self, prod):
+        w = _never_ran(prod)
+        assert not any(p.name.startswith(".completion") for p in w.iterdir())   # nothing to read
         with pytest.raises(vl.VerdictRefused, match="no runtime start record"):
-            vl.complete("rv-1", wdir=str(w), exit_code=0, secret=secret, root=prod)
+            vl.complete("rv-1", wdir=str(w), exit_code=0, secret="0" * 64, root=prod)
         r = subprocess.run([sys.executable, str(LEDGER), "complete", "--dispatch-id", "rv-1",
-                            "--wdir", str(w), "--exit-code", "0", "--secret-stdin"], input=secret,
+                            "--wdir", str(w), "--exit-code", "0", "--secret-stdin"], input="0" * 64,
                            capture_output=True, text=True, cwd=prod,
                            env={**os.environ, "PROJECT_ROOT": str(prod)})
         assert r.returncode == 1 and "no runtime start record" in r.stderr
         assert _ticked(prod) == [] and "no-completion" in _why(prod)
 
     def test_negative_the_start_cli_refuses_a_caller_that_is_not_run_sh(self, prod):
-        w, secret = _never_ran(prod)
+        w = _never_ran(prod)
         r = subprocess.run([sys.executable, str(LEDGER), "start", "--dispatch-id", "rv-1",
-                            "--wdir", str(w), "--secret-stdin"], input=secret,
-                           capture_output=True, text=True, cwd=prod,
+                            "--wdir", str(w)], capture_output=True, text=True, cwd=prod,
                            env={**os.environ, "PROJECT_ROOT": str(prod)})
-        assert r.returncode == 1 and "not this command's parent" in r.stderr
-        assert vl._starts_for(prod, "rv-1") == []
+        assert r.returncode == 1 and "cannot be started here" in r.stderr
+        assert r.stdout.strip() == "" and vl._starts_for(prod, "rv-1") == []
 
     def test_negative_the_start_window_closes(self, prod, monkeypatch):
-        w, secret = _never_ran(prod)
+        w = _never_ran(prod)
         t = time.time() + vl.START_WINDOW + 5
         monkeypatch.setattr(vl, "_clock", lambda: t)
-        with pytest.raises(vl.VerdictRefused, match="start window"):
-            vl.start("rv-1", wdir=str(w), secret=secret, root=prod)
+        with rt.as_runtime(), pytest.raises(vl.VerdictRefused, match="start window"):
+            vl.start("rv-1", wdir=str(w), root=prod)
 
     def test_negative_the_secret_expires_at_the_ttl(self, prod, monkeypatch):
-        w, secret = _never_ran(prod)
-        vl.start("rv-1", wdir=str(w), secret=secret, root=prod)
+        w = _never_ran(prod)
+        with rt.as_runtime():
+            _st, secret = vl.start("rv-1", wdir=str(w), root=prod)
         t = time.time() + vl.DEFAULT_TTL + 5
         monkeypatch.setattr(vl, "_clock", lambda: t)
-        with pytest.raises(vl.VerdictRefused, match="past its TTL"):
+        with rt.as_runtime(), pytest.raises(vl.VerdictRefused, match="past its TTL"):
             vl.complete("rv-1", wdir=str(w), exit_code=0, secret=secret, root=prod)
 
-    def test_control_started_in_window_completes_and_ticks(self, prod):
-        w, secret = _never_ran(prod)
-        vl.start("rv-1", wdir=str(w), secret=secret, root=prod)
-        vl.complete("rv-1", wdir=str(w), exit_code=0, secret=secret, root=prod)
-        assert _ticked(prod) == [1]
-
     def test_negative_a_dispatch_starts_once(self, prod):
-        w, secret = _never_ran(prod)
-        vl.start("rv-1", wdir=str(w), secret=secret, root=prod)
-        with pytest.raises(vl.VerdictRefused, match="already started"):
-            vl.start("rv-1", wdir=str(w), secret=secret, root=prod)
+        w = _never_ran(prod)
+        with rt.as_runtime():
+            vl.start("rv-1", wdir=str(w), root=prod)
+            with pytest.raises(vl.VerdictRefused, match="already started"):
+                vl.start("rv-1", wdir=str(w), root=prod)
 
     def test_negative_apply_refuses_a_completion_whose_start_is_gone(self, prod):
         rt.dispatch(prod, "rv-1", TID)
@@ -241,31 +240,19 @@ class TestNeverRun:
         _write_rows(prod, vl.COMPLETIONS, rows)
         assert _ticked(prod) == [] and "expired" in _why(prod)
 
-    def test_the_dispatcher_reaps_a_secret_run_sh_never_took(self, tmp_path):
-        (tmp_path / ".completion-secret").write_text("s\n")
-        r = subprocess.run(["bash", "-c", _shell_fn("_reap_unstarted_secret")
-                            + f'_reap_unstarted_secret "{tmp_path}"'],
-                           capture_output=True, text=True,
-                           env={**os.environ, "TERMLINK_REVIEW_START_WAIT": "1"})
-        assert r.returncode == 1 and "did not start" in r.stderr
-        assert not (tmp_path / ".completion-secret").exists()
-        # control: a secret already taken by run.sh is not an error
-        r = subprocess.run(["bash", "-c", _shell_fn("_reap_unstarted_secret")
-                            + f'_reap_unstarted_secret "{tmp_path}"'], capture_output=True, text=True)
-        assert r.returncode == 0
-
-    def test_cmd_dispatch_reaps_on_every_path(self):
+    def test_no_secret_file_is_written_or_read_anywhere(self):
+        """Round 6: the round-5 reaper and traps guarded a registration secret that no longer
+        exists; the runtime gets its secret from its own start, in memory."""
         src = TERMLINK.read_text()
-        body = src[src.index("\ncmd_dispatch() {"):src.index("\ncmd_wait() {")]
-        assert "trap \"rm -f '$wdir/.completion-secret'\" EXIT" in body     # die inside cmd_spawn
-        assert '_reap_unstarted_secret "$wdir"' in body                    # run.sh never started
-        run_sh = body[body.index("<<'RUNEOF'"):]
-        assert "trap 'rm -f \"$WDIR/.completion-secret\"' EXIT" in run_sh
+        assert ".completion-secret" not in src and "_reap_unstarted_secret" not in src
+        run_sh = src[src.index("<<'RUNEOF'"):]
+        assert 'COMPLETION_SECRET=$(env -u FW_SIDECAR_AGENT_ID' in run_sh
+        assert "--secret-stdin" in run_sh[run_sh.index("verdict_ledger.py\" complete"):]
 
     def test_real_run_sh_records_its_start_before_the_worker(self, rtrepo):
         did, wdir, out = _run_worker(rtrepo)
         starts = vl._starts_for(rtrepo, did)
-        assert len(starts) == 1 and starts[0]["pid"] > 0, out
+        assert len(starts) == 1 and starts[0]["pid"] > 0 and starts[0]["secret_sha256"], out
         comp = vl._completions_for(rtrepo, did)[0]
         assert starts[0]["epoch"] <= comp["epoch"]
         assert _ticked(rtrepo) == [1]

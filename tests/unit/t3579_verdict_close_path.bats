@@ -89,16 +89,22 @@ _finish() {
     local w="$TEST_TEMP_DIR.tl/${1:-rv-1}"
     echo '{"type":"result"}' > "$w/result.jsonl"
     echo 0 > "$w/exit_code"
-    # T-3580 round 4: run.sh holds the per-dispatch completion secret and passes it on stdin.
-    # Round 5: run.sh also records a signed START first, and the ledger CLI accepts that only from
-    # `<wdir>/run.sh` itself — so this runtime double IS a run.sh in the worker directory.
-    local ledger="$BATS_TEST_DIRNAME/../../lib/verdict_ledger.py" did="${1:-rv-1}"
-    printf '%s\n' \
-        'S=$(cat "$W/.completion-secret"); rm -f "$W/.completion-secret"' \
-        'printf "%s" "$S" | env -u FW_SIDECAR_AGENT_ID python3 "$LEDGER" start --dispatch-id "$DID" --wdir "$W" --secret-stdin >/dev/null || exit 1' \
-        'printf "%s" "$S" | env -u FW_SIDECAR_AGENT_ID python3 "$LEDGER" complete --dispatch-id "$DID" --session "$DID" --wdir "$W" --exit-code 0 --secret-stdin >/dev/null' \
-        > "$w/run.sh"
-    W="$w" DID="$did" LEDGER="$ledger" PROJECT_ROOT="$PROJECT_ROOT" bash "$w/run.sh"
+    # T-3580 round 6: the runtime's START issues the completion secret, and `start`/`complete`
+    # authenticate their caller as the canonical `<wdir>/run.sh` (which would launch a real
+    # worker). This close-path suite tests the CLOSE, so the runtime is played by the shared test
+    # double (tests/unit/_review_runtime.as_runtime); the real run.sh is exercised by
+    # t3580_round3/5/6 `_run_worker`.
+    W="$w" DID="${1:-rv-1}" PROJECT_ROOT="$PROJECT_ROOT" \
+        PYTHONPATH="$BATS_TEST_DIRNAME/../..:$BATS_TEST_DIRNAME" python3 - <<'PY'
+import os
+from pathlib import Path
+from lib import verdict_ledger as vl
+import _review_runtime as rt
+root, w, did = Path(os.environ["PROJECT_ROOT"]), os.environ["W"], os.environ["DID"]
+with rt.as_runtime():
+    _st, secret = vl.start(did, wdir=w, root=root)
+    vl.complete(did, wdir=w, exit_code=0, session=did, secret=secret, root=root)
+PY
 }
 
 _as() {

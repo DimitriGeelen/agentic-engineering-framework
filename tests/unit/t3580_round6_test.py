@@ -268,3 +268,99 @@ class TestOnePolicy:
         assert run["ceiling_decision"]["due"] == 5 and run["ceiling_decision"]["granted"] == 3
         assert res["outcomes"] == {1: "green"}
         assert _ticked(hi) == [1]
+
+
+# ── 2. MEDIUM: the completion capability is issued by the runtime, and authenticated there ───
+
+import os  # noqa: E402
+import subprocess  # noqa: E402
+
+from t3580_round3_test import _run_sh, _run_worker, prod, rtrepo  # noqa: E402,F401
+
+LEDGER = _HERE / "lib" / "verdict_ledger.py"
+
+
+def _registered_never_ran(root, did="rv-1"):
+    """The round-5 attack's setup: a dispatch registered through the public command, a row
+    written and committed under the worker identity, exit/result files faked. Never launched."""
+    rt.dispatch(root, did, TID)
+    _record(root, did)
+    _commit_as(root, f"reviewer-{did}")
+    w = rt.wdir_for(root, did)
+    (w / "exit_code").write_text("0\n")
+    (w / "result.jsonl").write_text('{"type":"result","result":"VERDICT: green"}\n')
+    return w
+
+
+def _env(root):
+    return {**{k: v for k, v in os.environ.items() if k != vl._WORKER_ENV}, "PROJECT_ROOT": str(root)}
+
+
+class TestRuntimeCapability:
+    def test_negative_registration_hands_the_caller_nothing(self, prod):
+        w = _registered_never_ran(prod)
+        assert sorted(p.name for p in w.iterdir()) == ["exit_code", "result.jsonl"]
+        assert "secret" not in (prod / vl.DISPATCHES).read_text()
+
+    def test_negative_the_round5_control_python_start_then_complete_is_refused(self, prod):
+        """The review's finding verbatim: `_never_ran`, then the Python start()/complete() — the
+        shared implementation now authenticates its caller, so neither runs and nothing ticks."""
+        w = _registered_never_ran(prod)
+        with pytest.raises(vl.VerdictRefused, match="cannot be started here: the parent process"):
+            vl.start("rv-1", wdir=str(w), root=prod)
+        with pytest.raises(vl.VerdictRefused, match="no runtime start record"):
+            vl.complete("rv-1", wdir=str(w), exit_code=0, secret="0" * 64, root=prod)
+        assert vl._starts_for(prod, "rv-1") == [] and vl._completions_for(prod, "rv-1") == []
+        assert _ticked(prod) == [] and "no-completion" in _why(prod)
+
+    def test_negative_complete_is_authenticated_too(self, prod):
+        """Even holding a genuinely issued secret, a caller that is not the runtime cannot sign."""
+        w = _registered_never_ran(prod)
+        secret = rt.take_secret(prod, "rv-1")               # issued by a (double) runtime start
+        assert secret
+        with pytest.raises(vl.VerdictRefused, match="cannot be completed here: the parent process"):
+            vl.complete("rv-1", wdir=str(w), exit_code=0, secret=secret, root=prod)
+        assert _ticked(prod) == []
+
+    def test_negative_a_shell_that_only_names_run_sh_is_not_the_runtime(self, prod):
+        w = _registered_never_ran(prod)
+        (w / "run.sh").write_text(_run_sh())                 # even the canonical file
+        r = subprocess.run(["bash", "-c", f'"{sys.executable}" "{LEDGER}" start --dispatch-id rv-1 '
+                            f'--wdir "{w}"', str(w / "run.sh")], capture_output=True, text=True,
+                           cwd=prod, env=_env(prod))
+        assert r.returncode == 1 and "is not a shell running" in r.stderr, r.stderr
+        assert r.stdout.strip() == "" and vl._starts_for(prod, "rv-1") == []
+
+    def test_negative_a_run_sh_that_is_not_the_canonical_runtime(self, prod):
+        w = _registered_never_ran(prod)
+        (w / "run.sh").write_text(f'#!/bin/bash\nexec "{sys.executable}" "{LEDGER}" start '
+                                  f'--dispatch-id rv-1 --wdir "{w}"\n')
+        r = subprocess.run(["bash", str(w / "run.sh")], capture_output=True, text=True, cwd=prod,
+                           env=_env(prod))
+        # exec replaces the shell: the parent is the test, not run.sh
+        assert r.returncode == 1 and "cannot be started here" in r.stderr, r.stderr
+        (w / "run.sh").write_text(f'#!/bin/bash\n"{sys.executable}" "{LEDGER}" start '
+                                  f'--dispatch-id rv-1 --wdir "{w}"\n')
+        r = subprocess.run(["bash", str(w / "run.sh")], capture_output=True, text=True, cwd=prod,
+                           env=_env(prod))
+        assert r.returncode == 1 and "is not the dispatch runtime termlink.sh writes" in r.stderr, r.stderr
+        assert vl._starts_for(prod, "rv-1") == [] and _ticked(prod) == []
+
+    def test_control_a_launched_worker_starts_signs_and_ticks(self, rtrepo):
+        """Positive control that actually launches a worker: the real run.sh from termlink.sh runs
+        a stub `claude` that follows the brief; the runtime's authenticated start issues the
+        secret, the worker records and commits, the runtime completes, apply ticks."""
+        did, wdir, out = _run_worker(rtrepo)
+        st = vl._starts_for(rtrepo, did)
+        assert len(st) == 1 and st[0]["secret_sha256"] and st[0]["pid"] > 0, out
+        comps = vl._completions_for(rtrepo, did)
+        assert len(comps) == 1 and comps[0]["exit_code"] == 0
+        assert (wdir / "finalised").read_text().startswith("signed:")
+        assert not any(p.name.startswith(".completion") for p in wdir.iterdir())
+        assert _ticked(rtrepo) == [1]
+
+    def test_the_worker_never_holds_the_secret(self, rtrepo):
+        did, wdir, out = _run_worker(rtrepo, mode="peek")
+        log = (wdir / "stderr.log").read_text()
+        assert "PEEK file=0 env=0" in log, log
+        assert _ticked(rtrepo) == [1]

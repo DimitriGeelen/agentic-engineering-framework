@@ -604,20 +604,6 @@ _worker_vendor() {
         | awk -v k="$k" '$1 == k { print $2; exit }'
 }
 
-# Wait up to TERMLINK_REVIEW_START_WAIT seconds (default 60) for run.sh to take the completion
-# secret; delete it if it is still there. Returns 1 when the runtime did not start.
-_reap_unstarted_secret() {
-    local wdir="$1" i=0 limit="${TERMLINK_REVIEW_START_WAIT:-60}"
-    [ -f "$wdir/.completion-secret" ] || return 0
-    while [ -f "$wdir/.completion-secret" ] && [ "$i" -lt "$limit" ]; do sleep 1; i=$((i + 1)); done
-    if [ -f "$wdir/.completion-secret" ]; then
-        rm -f "$wdir/.completion-secret"
-        echo "  WARNING: review worker did not start within ${limit}s — its secret was deleted; its verdicts will not count" >&2
-        return 1
-    fi
-    return 0
-}
-
 cmd_worker_kinds() {
     local k
     if [ "${1:-}" = "--vendors" ]; then
@@ -990,16 +976,10 @@ WORKER_NAME="$1"; PROJECT_DIR="$2"; WDIR="$3"; TIMEOUT="$4"; MODEL="$5"
 TASK_TYPE="$6"; FW_BIN="$7"
 cd "$PROJECT_DIR" || { echo "FATAL: cd $PROJECT_DIR failed" > "$WDIR/stderr.log"; exit 1; }
 
-# T-3580 round 4: take the per-dispatch completion secret and delete its file BEFORE anything
-# else runs, so the worker never sees it. Deliberately NOT exported; it reaches `complete` only on
-# stdin, after the worker has exited.
+# T-3580 round 6: the completion secret is ISSUED to this runtime by its authenticated start
+# (below), never written to disk by registration. Deliberately NOT exported; it reaches
+# `complete` only on stdin, after the worker has exited.
 COMPLETION_SECRET=""
-if [ -f "$WDIR/.completion-secret" ]; then
-    COMPLETION_SECRET=$(cat "$WDIR/.completion-secret")
-    rm -f "$WDIR/.completion-secret"
-fi
-# Round 5: whatever happens below, no secret file survives this runtime.
-trap 'rm -f "$WDIR/.completion-secret"' EXIT
 
 # T-792: Export PROJECT_ROOT so hooks skip git resolution and use the correct project
 export PROJECT_ROOT="$PROJECT_DIR"
@@ -1024,14 +1004,15 @@ else
 fi
 
 # T-3580 round 5: evidence that THIS runtime started for the dispatch — a signed start record,
-# written before the worker runs and within the registration's start window. `complete` and the
-# ledger refuse a completion without it, so a dispatch that never ran cannot be completed later
-# from a leftover secret. The ledger's CLI checks that its parent is this run.sh.
+# written before the worker runs and within the registration's start window. Round 6: the start
+# also ISSUES the completion secret (printed once, to this command substitution only), and the
+# ledger authenticates the caller itself: its parent must be this very run.sh, byte-identical to
+# the runtime termlink.sh writes. A dispatch that never ran has no start and so no secret.
 if [ "$TASK_TYPE" = "review" ] && [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ]; then
-    printf '%s' "$COMPLETION_SECRET" | env -u FW_SIDECAR_AGENT_ID PROJECT_ROOT="$PROJECT_DIR" \
+    COMPLETION_SECRET=$(env -u FW_SIDECAR_AGENT_ID PROJECT_ROOT="$PROJECT_DIR" \
         python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" start \
-        --dispatch-id "$WORKER_NAME" --wdir "$WDIR" --secret-stdin > "$WDIR/start.json" 2>> "$WDIR/stderr.log" \
-        || echo "WARNING: review start not recorded — this worker's verdicts will not count"
+        --dispatch-id "$WORKER_NAME" --wdir "$WDIR" 2>> "$WDIR/stderr.log") \
+        || { COMPLETION_SECRET=""; echo "WARNING: review start not recorded — this worker's verdicts will not count"; }
 fi
 
 # T-576: Unset CLAUDECODE to allow nested claude sessions from within Claude Code
@@ -1267,8 +1248,6 @@ RUNEOF
 
     # Spawn terminal session — propagate task_type so the long-lived session
     # carries the task-type:X tag (T-1643/W2).
-    # T-3580 round 5: if spawning dies (cmd_spawn exits via die), take the secret with it.
-    [ -f "$wdir/.completion-secret" ] && trap "rm -f '$wdir/.completion-secret'" EXIT
     cmd_spawn ${task:+--task "$task"} ${task_type:+--task-type "$task_type"} --name "$name"
 
     # Inject worker script via pty inject (fire-and-forget, NOT interact — claude takes minutes)
@@ -1279,10 +1258,6 @@ RUNEOF
     [ -x "$fw_bin" ] || fw_bin=""
     termlink pty inject "$name" "bash $wdir/run.sh '$name' '$project_dir' '$wdir' '$timeout' '$model' '$task_type' '$fw_bin'" --enter >/dev/null 2>&1
 
-    # T-3580 round 5: a secret must not outlive its purpose. run.sh takes (and deletes) it as its
-    # first act; if it has not within the wait (spawn or inject failed, run.sh never started),
-    # delete it here so a dispatch that never ran leaves nothing to recover.
-    _reap_unstarted_secret "$wdir" || true
 
     echo "Worker spawned: $name (wdir: $wdir)"
 }

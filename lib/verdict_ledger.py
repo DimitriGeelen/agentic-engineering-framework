@@ -150,7 +150,6 @@ DISPATCH_KEY = Path(".context/secrets/review-dispatch.key")
 #: the worker directory and registers only its sha256; run.sh reads it and deletes the file BEFORE
 #: the worker starts, never exports it, and hands it to `start` and `complete` on stdin. Holding it
 #: is not enough (round 5): `complete` also needs the signed runtime start and must beat the TTL.
-COMPLETION_SECRET_FILE = ".completion-secret"
 #: T-3580 round 5 — the secret must not outlive its purpose. A review dispatch is registered with
 #: two signed deadlines: `start_by` (registration + START_WINDOW), by which run.sh must have
 #: recorded a signed START (`start`), and `complete_by` (registration + the dispatch TTL), after
@@ -338,8 +337,9 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
     through the one mapping in policy/review-backends.yaml (T-3580 round 5), never taken from the
     caller: `vendor`, if given, is only an assertion, and a mismatch is refused. A review dispatch
     whose kind the mapping does not know is refused. A review dispatch with a worker directory
-    also gets a fresh completion secret in `wdir/.completion-secret` (0600; only its hash is
-    registered) and two signed deadlines: `start_by` and `complete_by` (registration + `ttl`).
+    gets two signed deadlines: `start_by` and `complete_by` (registration + `ttl`). It gets NO
+    secret (round 6): registration is caller-accessible, so the completion capability is issued
+    by the runtime's authenticated `start`, never here.
 
     `run_id` + `seat` (round 6) bind the dispatch to the signed review run the judge registered
     BEFORE the worker is launched: the run must exist, be for this task and have that seat, and a
@@ -384,13 +384,6 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
         raise ValueError(f"vendor {vendor.strip()!r} is not the one {BACKENDS} maps worker kind "
                          f"{row['worker_kind']!r} to ({row['vendor'] or 'none'!r}) — refused")
     if row["task_type"] == REVIEW_TASK_TYPE and row["wdir"]:
-        secret = secrets.token_hex(32)
-        sp = Path(row["wdir"]) / COMPLETION_SECRET_FILE
-        sp.parent.mkdir(parents=True, exist_ok=True)
-        fd = os.open(str(sp), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
-        with os.fdopen(fd, "w") as fh:
-            fh.write(secret + "\n")
-        row["completion_secret_sha256"] = hashlib.sha256(secret.encode()).hexdigest()
         now = int(_clock())
         row["start_by"] = now + START_WINDOW
         row["complete_by"] = now + max(int(ttl), START_WINDOW)
@@ -518,8 +511,10 @@ def _worker_session(wdir: Path) -> str:
     return ""
 
 
-def _secret_ok(drec: dict, secret: str) -> bool:
-    want = str(drec.get("completion_secret_sha256") or "")
+def _secret_ok(start_rec: dict, secret: str) -> bool:
+    """`secret` is the one the runtime's authenticated start issued (its hash is in the signed
+    start record — round 6; registrations carry none)."""
+    want = str(start_rec.get("secret_sha256") or "")
     got = hashlib.sha256((secret or "").strip().encode()).hexdigest()
     return bool(want) and bool((secret or "").strip()) and hmac.compare_digest(got, want)
 
@@ -529,12 +524,17 @@ def _starts_for(root: Path, dispatch_id: str) -> list[dict]:
             if c.get("dispatch_id") == dispatch_id and c.get("kind") == "start"]
 
 
-def start(dispatch_id: str, *, wdir: str, secret: str = "", pid: int = 0,
-          root: Path | None = None) -> dict:
-    """(run.sh, its first act) record — signed — that the dispatch runtime actually started for
-    this dispatch (T-3580 round 5). Needs the per-dispatch secret, the registered worker
-    directory, and to happen before the registration's `start_by`; a dispatch starts once. The
-    CLI additionally refuses unless its parent process is `<wdir>/run.sh` (an honesty check)."""
+def start(dispatch_id: str, *, wdir: str, pid: int = 0,
+          root: Path | None = None) -> tuple[dict, str]:
+    """(run.sh, its first act) record — signed — that the dispatch runtime started for this
+    dispatch, and ISSUE the completion capability (T-3580 round 6). Returns (record, secret).
+
+    The secret is born here, in the runtime, and returned only to the caller (run.sh keeps it in
+    memory, never on disk); the start record carries its hash. Registration, which any caller can
+    reach, issues nothing. The call is AUTHENTICATED in this shared implementation, not only in the
+    CLI: `_runtime_fault` refuses unless this process's parent is `bash <registered wdir>/run.sh`
+    and that file is byte-for-byte the runtime termlink.sh writes. It also needs the registered
+    worker directory and to happen before the registration's `start_by`; a dispatch starts once."""
     root = root or _root()
     did = (dispatch_id or "").strip()
     drec, why = dispatch_record(root, did)
@@ -545,42 +545,84 @@ def start(dispatch_id: str, *, wdir: str, secret: str = "", pid: int = 0,
     if os.environ.get(_WORKER_ENV, "").strip() == did:
         raise VerdictRefused("a start is recorded by the dispatch runtime, never from inside the "
                              "worker's own environment")
-    if not _secret_ok(drec, secret):
-        raise VerdictRefused(f"no valid completion secret for dispatch {did!r}")
     here = str(Path(wdir).resolve()) if (wdir or "").strip() else ""
     if not here or here != str(drec.get("wdir") or ""):
         raise VerdictRefused(f"worker directory {here or '(none)'} is not the one registered for "
                              f"dispatch {did!r}")
+    bad = _runtime_fault(here)
+    if bad:
+        raise VerdictRefused(f"dispatch {did!r} cannot be started here: {bad}")
     now = int(_clock())
     if not drec.get("start_by") or now > int(drec["start_by"]):
         raise VerdictRefused(f"dispatch {did!r} was not started within its start window — a "
                              f"dispatch that did not run in time cannot be started later")
     if _starts_for(root, did):
         raise VerdictRefused(f"dispatch {did!r} has already started — a dispatch starts once")
+    secret = secrets.token_hex(32)
     body = {"kind": "start", "source": "runtime", "dispatch_id": did, "task": drec["task"],
-            "wdir": here, "pid": int(pid or 0), "epoch": now, "ts": _now()}
+            "wdir": here, "pid": int(pid or os.getppid()), "epoch": now,
+            "secret_sha256": hashlib.sha256(secret.encode()).hexdigest(), "ts": _now()}
     body["sig"] = _sign_row(_dispatch_key(root), body)
     _append(COMPLETIONS, body, root)
-    return body
+    return body, secret
 
 
-def _parent_cmdline() -> str:
+_RUNTIME_OPEN = "cat > \"$wdir/run.sh\" <<'RUNEOF'\n"
+
+
+def _canonical_runtime() -> str | None:
+    """The dispatch runtime exactly as agents/termlink/termlink.sh (this framework's copy) writes
+    it into `<wdir>/run.sh`; None when that file cannot be read."""
+    try:
+        src = (_HERE.parent / "agents" / "termlink" / "termlink.sh").read_text()
+        i = src.index(_RUNTIME_OPEN) + len(_RUNTIME_OPEN)
+        return src[i:src.index("\nRUNEOF\n", i)] + "\n"
+    except (OSError, ValueError):
+        return None
+
+
+def _parent_argv() -> list[str]:
     ppid = os.getppid()
     try:
-        return Path(f"/proc/{ppid}/cmdline").read_bytes().replace(b"\0", b" ").decode(errors="replace")
+        raw = Path(f"/proc/{ppid}/cmdline").read_bytes()
+        return [a.decode(errors="replace") for a in raw.split(b"\0") if a]
     except OSError:
         try:
             return subprocess.run(["ps", "-o", "args=", "-p", str(ppid)], capture_output=True,
-                                  text=True, timeout=10).stdout
+                                  text=True, timeout=10).stdout.split()
         except (OSError, subprocess.SubprocessError):
-            return ""
+            return []
 
 
-def _launched_by_runtime(wdir: str) -> bool:
-    """True when this process's parent is the dispatch runtime `<wdir>/run.sh`."""
-    cmd = _parent_cmdline()
-    raw = str(Path(wdir) / "run.sh")
-    return bool(wdir) and (raw in cmd or str(Path(wdir).resolve() / "run.sh") in cmd)
+def _runtime_fault(wdir: str) -> str:
+    """'' when this process was launched by the dispatch runtime of `wdir`: its parent is a shell
+    running `<wdir>/run.sh` as its script (argv[1], not a `-c` string that merely mentions it), and
+    that file is the canonical runtime. Shared by `start` and `complete` (round 6), so a Python
+    caller cannot skip it the way it could skip the round-5 CLI-only check. Same-user limit: a
+    caller that writes the canonical runtime into the registered directory and runs it IS running
+    the dispatch (it launches the worker); one that patches this function in its own process, or
+    fakes its parent, is outside what a check in that process can see (T-3581 residual)."""
+    argv = _parent_argv()
+    want = Path(wdir) / "run.sh"
+    if len(argv) < 2 or Path(argv[0]).name not in ("bash", "sh") or argv[1].startswith("-"):
+        return (f"the parent process is not a shell running {want} (argv: "
+                f"{' '.join(argv[:3]) or 'unreadable'})")
+    try:
+        same = Path(argv[1]).resolve() == want.resolve()
+    except OSError:
+        same = False
+    if not same:
+        return f"the parent process runs {argv[1]!r}, not the runtime {want}"
+    canon = _canonical_runtime()
+    if canon is None:
+        return "the canonical dispatch runtime (agents/termlink/termlink.sh) cannot be read"
+    try:
+        body = want.read_text()
+    except OSError:
+        return f"{want} cannot be read"
+    if body != canon:
+        return f"{want} is not the dispatch runtime termlink.sh writes"
+    return ""
 
 
 def complete(dispatch_id: str, *, wdir: str, exit_code: int, session: str = "",
@@ -597,7 +639,10 @@ def complete(dispatch_id: str, *, wdir: str, exit_code: int, session: str = "",
 
     `secret` is the per-dispatch completion secret (round 4) that only run.sh holds; without it
     the call is refused, so the public command cannot be driven by a caller that merely wrote an
-    exit_code file. `worker_kind` is the kind run.sh actually ran; it must be the registered one."""
+    exit_code file. `worker_kind` is the kind run.sh actually ran; it must be the registered one.
+
+    Round 6: the secret is the one the runtime's authenticated `start` issued (not a registration
+    file any caller could read), and this call is authenticated like `start` (`_runtime_fault`)."""
     root = root or _root()
     did = (dispatch_id or "").strip()
     drec, why = dispatch_record(root, did)
@@ -610,19 +655,16 @@ def complete(dispatch_id: str, *, wdir: str, exit_code: int, session: str = "",
                              "exits, never from inside the worker's own environment")
     if session and session.strip() != did:
         raise VerdictRefused(f"runtime session {session!r} is not dispatch {did!r}")
-    if not str(drec.get("completion_secret_sha256") or ""):
-        raise VerdictRefused(f"dispatch {did!r} was registered without a completion secret — no "
-                             f"caller can complete it")
-    if not _secret_ok(drec, secret):
+    starts = _starts_for(root, did)
+    if len(starts) != 1 or not _signed_ok(root, starts[0]) or not starts[0].get("secret_sha256"):
+        raise VerdictRefused(f"no runtime start record for dispatch {did!r}: run.sh never started "
+                             f"for it, so there is nothing to complete")
+    if not _secret_ok(starts[0], secret):
         raise VerdictRefused(f"no valid completion secret for dispatch {did!r}: a completion is "
-                             f"signed only by the runtime that launched the worker")
+                             f"signed only by the runtime that started the worker")
     now = int(_clock())
     if not drec.get("complete_by") or now > int(drec["complete_by"]):
         raise VerdictRefused(f"dispatch {did!r} is past its TTL — its secret has expired")
-    starts = _starts_for(root, did)
-    if len(starts) != 1 or not _signed_ok(root, starts[0]):
-        raise VerdictRefused(f"no runtime start record for dispatch {did!r}: run.sh never started "
-                             f"for it, so there is nothing to complete")
     kind = (worker_kind or "").strip() or "claude"
     if kind != (drec.get("worker_kind") or "claude"):
         raise VerdictRefused(f"the runtime ran worker kind {kind!r}, not the registered "
@@ -632,6 +674,9 @@ def complete(dispatch_id: str, *, wdir: str, exit_code: int, session: str = "",
     if not reg or here != reg:
         raise VerdictRefused(f"worker directory {here or '(none)'} is not the one registered for "
                              f"dispatch {did!r} ({reg or 'none registered'})")
+    bad = _runtime_fault(here)
+    if bad:
+        raise VerdictRefused(f"dispatch {did!r} cannot be completed here: {bad}")
     ec_file = Path(here) / "exit_code"
     try:
         written = int(ec_file.read_text().strip())
@@ -1141,7 +1186,8 @@ def _completion_fault(base: _Base, row: dict) -> tuple[str, str] | None:
     drec, _ = dispatch_record(root, did)
     starts = _starts_for(root, did)
     if len(starts) != 1 or not _signed_ok(root, starts[0]) \
-            or starts[0].get("wdir") != (drec or {}).get("wdir"):
+            or starts[0].get("wdir") != (drec or {}).get("wdir") \
+            or not starts[0].get("secret_sha256"):
         return "no-start", (f"dispatch {did!r} has no single valid runtime start record — run.sh "
                             f"never started for it, so its completion does not count")
     st = starts[0]
@@ -2041,8 +2087,6 @@ def _cli(argv: list[str] | None = None) -> int:
                         "runtime started for this dispatch")
     st.add_argument("--dispatch-id", required=True)
     st.add_argument("--wdir", required=True)
-    st.add_argument("--secret-stdin", action="store_true",
-                    help="read the per-dispatch completion secret from stdin (never argv or env)")
 
     sub.add_parser("kind-vendors", help="print `<worker kind> <vendor>` from the one mapping "
                    "(policy/review-backends.yaml)")
@@ -2106,18 +2150,12 @@ def _cli(argv: list[str] | None = None) -> int:
             print(f"{k} {v}")
         return 0
     if args.cmd == "start":
-        if not _launched_by_runtime(args.wdir):
-            print(f"REFUSED: a start is recorded only by the dispatch runtime "
-                  f"({Path(args.wdir) / 'run.sh'}), which is not this command's parent",
-                  file=sys.stderr)
-            return 1
         try:
-            b = start(args.dispatch_id, wdir=args.wdir, pid=os.getppid(),
-                      secret=sys.stdin.read() if args.secret_stdin else "")
+            _b, secret = start(args.dispatch_id, wdir=args.wdir, pid=os.getppid())
         except VerdictRefused as e:
             print(f"REFUSED: {e}", file=sys.stderr)
             return 1
-        print(json.dumps({"dispatch_id": b["dispatch_id"], "started": b["ts"]}))
+        print(secret)      # to run.sh's command substitution only; it keeps it in memory
         return 0
     if args.cmd == "complete":
         try:

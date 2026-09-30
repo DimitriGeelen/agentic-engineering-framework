@@ -59,15 +59,16 @@ class TestCompletionSecret:
 
     def test_fake_exit_files_and_complete_without_the_secret_is_refused_and_apply_refuses(self, prod):
         w = self._never_ran(prod)
-        with pytest.raises(vl.VerdictRefused, match="no valid completion secret"):
+        # Round 6: a never-started dispatch has no secret anywhere; the start record is missing.
+        with pytest.raises(vl.VerdictRefused, match="no runtime start record"):
             vl.complete("rv-1", wdir=str(w), exit_code=0, root=prod)
-        with pytest.raises(vl.VerdictRefused, match="no valid completion secret"):
+        with pytest.raises(vl.VerdictRefused, match="no runtime start record"):
             vl.complete("rv-1", wdir=str(w), exit_code=0, secret="f" * 64, root=prod)
         r = subprocess.run([sys.executable, str(LEDGER), "complete", "--dispatch-id", "rv-1",
                             "--wdir", str(w), "--exit-code", "0", "--secret-stdin"], input="guess",
                            capture_output=True, text=True, cwd=prod,
                            env={**os.environ, "PROJECT_ROOT": str(prod)})
-        assert r.returncode == 1 and "no valid completion secret" in r.stderr
+        assert r.returncode == 1 and "no runtime start record" in r.stderr
         assert not (prod / vl.COMPLETIONS).exists()
         assert _ticked(prod) == [] and "no-completion" in _why(prod)
         rc, lines = vl.audit(prod)
@@ -78,29 +79,41 @@ class TestCompletionSecret:
         run.sh makes. The never-ran path (secret read from a leftover file, no start) is the
         negative control in t3580_round5_test.TestNeverRun."""
         w = self._never_ran(prod)
-        assert vl.complete("rv-1", wdir=str(w), exit_code=0, root=prod,
-                           secret=rt.take_secret(prod, "rv-1"))
+        secret = rt.take_secret(prod, "rv-1")
+        with rt.as_runtime():
+            assert vl.complete("rv-1", wdir=str(w), exit_code=0, root=prod, secret=secret)
         assert _ticked(prod) == [1]
 
-    def test_only_the_hash_is_registered_and_the_file_is_0600(self, prod):
-        rt.dispatch(prod, "rv-1", TID)
-        f = rt.wdir_for(prod, "rv-1") / vl.COMPLETION_SECRET_FILE
-        assert stat.S_IMODE(f.stat().st_mode) == 0o600
-        secret = f.read_text().strip()
-        reg = (prod / vl.DISPATCHES).read_text()
-        assert secret not in reg
-        assert hashlib.sha256(secret.encode()).hexdigest() in reg
+    def test_negative_a_wrong_secret_after_a_real_start(self, prod):
+        w = self._never_ran(prod)
+        rt.take_secret(prod, "rv-1")
+        with rt.as_runtime(), pytest.raises(vl.VerdictRefused, match="no valid completion secret"):
+            vl.complete("rv-1", wdir=str(w), exit_code=0, root=prod, secret="f" * 64)
 
-    def test_a_dispatch_registered_without_a_secret_cannot_be_completed(self, prod):
+    def test_registration_issues_no_secret_the_start_records_only_its_hash(self, prod):
+        """Round 6 (replaces 'only the hash is registered'): registration is caller-accessible, so
+        it writes no secret file and registers no hash; the runtime's start issues the secret."""
         rt.dispatch(prod, "rv-1", TID)
-        rows = [json.loads(l) for l in (prod / vl.DISPATCHES).read_text().splitlines()]
-        rows[0].pop("completion_secret_sha256")
-        rows[0]["sig"] = vl._sign(vl._dispatch_key(prod), rows[0])     # a re-signed legacy row
-        (prod / vl.DISPATCHES).write_text("".join(json.dumps(r) + "\n" for r in rows))
+        w = rt.wdir_for(prod, "rv-1")
+        assert list(w.iterdir()) == []
+        assert "secret" not in (prod / vl.DISPATCHES).read_text()
+        secret = rt.take_secret(prod, "rv-1")
+        comps = (prod / vl.COMPLETIONS).read_text()
+        assert secret and secret not in comps
+        assert hashlib.sha256(secret.encode()).hexdigest() in comps
+
+    def test_a_start_record_without_a_secret_hash_cannot_be_completed(self, prod):
+        """A round-5-shaped start (no issued secret), re-signed with the key: refused."""
+        rt.dispatch(prod, "rv-1", TID)
+        secret = rt.take_secret(prod, "rv-1")
+        rows = [json.loads(l) for l in (prod / vl.COMPLETIONS).read_text().splitlines()]
+        rows[0].pop("secret_sha256")
+        rows[0]["sig"] = vl._sign_row(vl._dispatch_key(prod), {k: v for k, v in rows[0].items() if k != "sig"})
+        (prod / vl.COMPLETIONS).write_text("".join(json.dumps(r) + "\n" for r in rows))
         (rt.wdir_for(prod, "rv-1") / "exit_code").write_text("0\n")
-        with pytest.raises(vl.VerdictRefused, match="without a completion secret"):
+        with rt.as_runtime(), pytest.raises(vl.VerdictRefused, match="no runtime start record"):
             vl.complete("rv-1", wdir=str(rt.wdir_for(prod, "rv-1")), exit_code=0,
-                        secret=rt.take_secret(prod, "rv-1"), root=prod)
+                        secret=secret, root=prod)
 
     def test_real_runtime_the_worker_never_sees_the_secret(self, rtrepo):
         did, wdir, out = _run_worker(rtrepo, mode="peek")
@@ -120,9 +133,10 @@ class TestCompletionSecret:
         rt.dispatch(prod, "rv-1", TID, worker_kind="claude")
         w = rt.wdir_for(prod, "rv-1")
         (w / "exit_code").write_text("0\n")
-        with pytest.raises(vl.VerdictRefused, match="worker kind"):
+        secret = rt.take_secret(prod, "rv-1")
+        with rt.as_runtime(), pytest.raises(vl.VerdictRefused, match="worker kind"):
             vl.complete("rv-1", wdir=str(w), exit_code=0, worker_kind="ollama-loop",
-                        secret=rt.take_secret(prod, "rv-1"), root=prod)
+                        secret=secret, root=prod)
 
 
 # ── 2. HIGH: a panel counts registered vendors, not backend ids ──────────────────────────────
@@ -219,8 +233,6 @@ class TestFinalisedWait:
         prod, did, w, fw = tl
         vl.register_dispatch(did, TID, "review", revision="", wdir=str(w), worker_kind="claude",
                              vendor="anthropic", root=prod)
-        secret = (w / vl.COMPLETION_SECRET_FILE).read_text().strip()
-        (w / vl.COMPLETION_SECRET_FILE).unlink()
         (w / "finalise_required").write_text("")
         _record(prod, did)
         _commit_as(prod, f"reviewer-{did}")
@@ -235,9 +247,9 @@ class TestFinalisedWait:
         crit = [{"index": 1, "ac_index": 1}]
         assert judge_cli._collect(prod, TID, did, crit)[0]["outcome"] == "unknown"  # not yet
 
-        os.environ.pop(vl._WORKER_ENV, None)               # ... and the runtime signs, late
-        vl.start(did, wdir=str(w), secret=secret, root=prod)   # round 5: (normally run.sh's first act)
-        c = vl.complete(did, wdir=str(w), exit_code=0, session=did, secret=secret, root=prod)
+        with rt.as_runtime():                               # ... and the runtime signs, late
+            _st, secret = vl.start(did, wdir=str(w), root=prod)    # round 6: start issues it
+            c = vl.complete(did, wdir=str(w), exit_code=0, session=did, secret=secret, root=prod)
         (w / "completion.json").write_text(json.dumps({"sig": c["sig"]}))
         (w / "finalised").write_text(f"signed:{c['sig']}\n")
         t.join(15)

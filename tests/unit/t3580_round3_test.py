@@ -93,16 +93,19 @@ class TestRuntimeCompletion:
         _record(prod, "rv-1")
         w = rt.wdir_for(prod, "rv-1")
         (w / "exit_code").write_text("0\n")
+        secret = rt.take_secret(prod, "rv-1")
+        monkeypatch.setattr(vl, "_runtime_fault", lambda wdir: "")   # round 6: runtime double
         monkeypatch.setenv(vl._WORKER_ENV, "rv-1")
         with pytest.raises(vl.VerdictRefused, match="never from inside the worker"):
-            vl.complete("rv-1", wdir=str(w), exit_code=0, secret=rt.take_secret(prod, "rv-1"), root=prod)
+            vl.complete("rv-1", wdir=str(w), exit_code=0, secret=secret, root=prod)
         monkeypatch.delenv(vl._WORKER_ENV)
-        assert vl.complete("rv-1", wdir=str(w), exit_code=0, secret=rt.take_secret(prod, "rv-1"), root=prod)      # control
+        assert vl.complete("rv-1", wdir=str(w), exit_code=0, secret=secret, root=prod)      # control
 
     def test_complete_refuses_before_the_worker_exited(self, prod):
         _dispatch(prod, "rv-1")
-        with pytest.raises(vl.VerdictRefused, match="has not exited"):
-            vl.complete("rv-1", wdir=str(rt.wdir_for(prod, "rv-1")), exit_code=0, secret=rt.take_secret(prod, "rv-1"), root=prod)
+        secret = rt.take_secret(prod, "rv-1")
+        with rt.as_runtime(), pytest.raises(vl.VerdictRefused, match="has not exited"):
+            vl.complete("rv-1", wdir=str(rt.wdir_for(prod, "rv-1")), exit_code=0, secret=secret, root=prod)
 
     def test_complete_refuses_a_worker_dir_other_than_the_registered_one(self, prod, tmp_path):
         _dispatch(prod, "rv-1")
@@ -185,10 +188,11 @@ if mode == "forge-noenv":   # round 4: strip the worker marker and try without t
                         "--wdir", os.environ["WDIR_EXPECTED"], "--exit-code", "0", "--secret-stdin"],
                        input="", capture_output=True, text=True, env=env)
     print("FORGE rc=%d %s" % (r.returncode, r.stderr.strip()), file=sys.stderr)
-if mode == "peek":   # round 4: can the worker see the completion secret?
+if mode == "peek":   # round 4: can the worker see the completion secret? (round 6: issued at start)
     import hashlib, json as _j
-    want = next(_j.loads(l)["completion_secret_sha256"]
-                for l in open(".context/reviews/review-dispatches.jsonl") if did in l)
+    want = next(_j.loads(l)["secret_sha256"]
+                for l in open(".context/reviews/review-completions.jsonl")
+                if did in l and '"start"' in l)
     f = os.path.join(os.environ["WDIR_EXPECTED"], ".completion-secret")
     in_env = any(hashlib.sha256(v.strip().encode()).hexdigest() == want for v in os.environ.values())
     print("PEEK file=%d env=%d" % (os.path.exists(f), in_env), file=sys.stderr)
