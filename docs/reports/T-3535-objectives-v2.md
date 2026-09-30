@@ -174,18 +174,21 @@ since the three reviews ran is marked **(new)**.
    measures. The arc is stale; park it (horizon later) rather than abandon it.
    *Agrees with Anthropic and Z.ai.*
 2. **ewcr-arc0-contract-evidence → O-1.** **(new)** The arc YAML says it was
-   "authorized by the human on 2026-08-26" in this repo, and it is the current focused
-   arc. Its headline mechanic (a finding traced to a contract, a refusal scenario, a
+   "authorized by the human on 2026-08-26" in this repo, and the handovers carry it as
+   the current arc (`fw arc focus`). Its headline mechanic (a finding traced to a contract, a refusal scenario, a
    component and an executable verification fence) is O-1's substance: traceable
    changes and gates that cannot be skipped. *Agrees with OpenAI.* **Flip to NONE only
    if** ewcr-v1 is someone else's initiative that this repo merely hosts; that fact is
    yours alone.
 3. **inception-review-loop → abandon, as superseded.** **(new)** Its headline, "operator
    decides an inception in two clicks", is replaced by your T-3557 GO (2026-09-30):
-   inception decisions are reviewer-judged, and the path that lets a reviewer's verdict
-   close one is being built in T-3580 slice 3. Re-scoping would duplicate T-3580. Its one
-   durable idea, operator feedback that survives into later sessions (OpenAI's O-2
-   point), is captured as a note on T-3580, not kept as an arc.
+   inception decisions go to the agent reviewer (IW-2), which first judges whether a
+   given inception needs a human at all. *Corrected after the Z.ai check:* that routing
+   is not built in T-3580, which covers task criteria only; it now has its own build task,
+   T-3618, on top of the shared verdict path (T-3579/T-3580). Re-scoping this arc would
+   duplicate T-3618. Its one durable idea, operator feedback that survives into later
+   sessions (OpenAI's O-2 point), goes into T-3618's context before the abandonment is
+   filed.
 4. **Add O-6, cost.** **(new)** The reviewers found no source; there is one now. On
    2026-09-30 you ruled that every review or dispatch records its cost, that internal
    means low-cost and never free, and that paid use needs your per-request approval. It
