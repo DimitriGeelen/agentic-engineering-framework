@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T10:19:30Z
-last_update: '2026-09-30T10:30:19Z'
+last_update: 2026-09-30T10:40:39Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -355,6 +355,13 @@ bin/fw vendor self --check
 - **Chose:** Pygments `HtmlFormatter(linespans="L")` rewritten to `id="LNNN"`, with CSS counters for line numbers and a `:target` highlight.
 - **Why:** Pygments splits multi-line tokens per line itself; splitting highlight.js output would break spans across lines. Its `<pre>` has no `<code>`, so highlight.js leaves it alone.
 - **Rejected:** client-side JS wrapping after highlight.js (fragile, anchor unavailable until JS runs). Markdown files are rendered as Markdown and have no line anchors — `x.md:NN` links land at the top of the document.
+
+### 2026-09-30 — round 2 (render review AMBER, docs/reports/T-3587-render-review.md)
+- **Bare-filename rule (Guidance 3):** a bare name (no `/`) is resolved only when its shape names this project's artefact: task-scoped (`T-NNNN…`, any viewable ext), a numbered root doc (`NNN-Name.md`), or a name with exactly one match in the index that sits under `docs/reports/`. Everything else — `Cargo.toml`, `tsconfig.json`, `settings.json`, `AGENT.md`, `snake_case_name.md` — stays plain text: not linked, not marked.
+- **"Dead" only when certain (Guidance 2):** a task-shaped bare name is dead only if no file of that name exists anywhere in the tree (`.git`, `node_modules`, `__pycache__` skipped); if it exists outside the viewer it stays plain. A path with a directory is dead only if its top-level directory exists here (`src/main.py` in a repo with no `src/` is plain — another repo or an example). A path that exists but is not served (`.claude/settings.json`) is `unserved` (grey), never dead.
+- **Root docs:** numbered root docs (`NNN-Name.md`) are now viewable — a shape, not a generic depth-0 rule, so T-2281's "allowlist, not depth-0" test still holds and scratch root files stay unserved.
+- **Code is quiet (Guidance 5):** no dead/ambiguous/unserved marks inside `<pre>` or `<code>`; live links still added. Exception: a code span whose entire text is the reference (a backticked citation) still shows dead.
+- **Viewer palette (Guidance 1):** Pygments `default` under `html:not([data-theme="dark"]) .file-lines`, `github-dark` under `html[data-theme="dark"] .file-lines`, only the scoped token/background rules (the bare `pre {}` / `.linenos` rules are dropped). `./` stripped (4); `docs/adr/`, `docs/runbooks/` added to the allowlist (6).
 
 ## Decision
 

@@ -38,6 +38,16 @@ FIXTURE_FILES = [
     "tests/unit/test_fixture_thing.py",
     ".agentic-framework/lib/vendored.sh",
     "README.md",
+    # round 2 (render review AMBER)
+    "001-Vision.md",
+    ".claude/settings.json",
+    "lib/ts/tsconfig.json",
+    "docs/reports/T-9003-twin.md",
+    "docs/plans/T-9003-twin.md",
+    ".agentic-framework/docs/T-9004-vendored-only.md",
+    "docs/adr/0001-thing.md",
+    "docs/runbooks/restart.md",
+    "agents/context/checkpoint.sh",
 ]
 
 
@@ -126,10 +136,16 @@ def test_bare_filename_with_no_match_is_marked_dead(proj):
 
 
 def test_bare_filename_with_several_matches_is_marked_ambiguous(proj):
-    out = render_markdown_safe("see AGENT.md")
+    out = render_markdown_safe("see T-9003-twin.md")
     assert hrefs(out) == []
     assert 'class="file-ref-ambiguous"' in out
-    assert "agents/one/AGENT.md" in out and "agents/two/AGENT.md" in out  # in the title
+    assert "docs/plans/T-9003-twin.md" in out and "docs/reports/T-9003-twin.md" in out  # title
+
+
+def test_generic_bare_name_with_several_matches_is_plain(proj):
+    # control for the above: AGENT.md is generic, so it is not judged at all
+    assert "file-ref" not in render_markdown_safe("see AGENT.md") and hrefs(
+        render_markdown_safe("see AGENT.md")) == []
 
 
 def test_path_tail_is_not_mistaken_for_a_bare_name(proj):
@@ -331,3 +347,140 @@ def test_emitters_do_not_hard_code_a_host_or_port():
         assert not live, f"{rel}: {live}"
     assert "watchtower url" in (REPO / "agents/handover/handover.sh").read_text()
     assert "watchtower.url" in (REPO / "lib/reviewer/judge_cli.py").read_text()
+
+
+# ── round 2: render review AMBER (docs/reports/T-3587-render-review.md) ──────
+
+# Item 1 — source-viewer palette follows the theme.
+
+def test_file_view_palette_is_scoped_per_theme():
+    from web.app import app
+    body = app.test_client().get("/file/web/shared.py").get_data(as_text=True)
+    light = 'html:not([data-theme="dark"]) .file-lines'
+    dark = 'html[data-theme="dark"] .file-lines'
+    assert f"{light} {{ background: #f8f8f8; }}" in body
+    assert f"{dark} {{ background: #0d1117;" in body
+    # the near-white dark-theme name colour exists only under the dark scope
+    near_white = [l for l in body.splitlines() if "#E6EDF3" in l.upper() and ".file-lines" in l]
+    assert near_white and all(l.startswith(dark) for l in near_white)
+    # control: no unscoped rule that would restyle every <pre> on the page
+    style = body[body.index("<style>"):body.index("</style>")]
+    assert not re.search(r"^\s*pre\s*\{", style, re.M)
+    assert "span.linenos" not in style
+
+
+def test_file_view_light_theme_token_colours_are_dark_enough():
+    from web.blueprints.docs import _source_theme_css
+    light = 'html:not([data-theme="dark"]) .file-lines'
+    for line in _source_theme_css().splitlines():
+        m = re.match(re.escape(light) + r" \.\w+ \{ color: #([0-9A-Fa-f]{3,6})", line)
+        if not m:
+            continue
+        h = m.group(1)
+        h = "".join(c * 2 for c in h) if len(h) == 3 else h
+        lum = sum(int(h[i:i + 2], 16) for i in (0, 2, 4)) / 3
+        assert lum < 200, line  # nothing near-white on the #f8f8f8 background
+    # control: the dark palette really is light-on-dark
+    assert 'html[data-theme="dark"] .file-lines { color: #e6edf3; }' in _source_theme_css()
+
+
+# Item 2 — refs to files that exist never look broken.
+
+def test_numbered_root_doc_links(proj):
+    assert hrefs(render_markdown_safe("see 001-Vision.md")) == ["/file/001-Vision.md"]
+    assert is_viewable_path("001-Vision.md") and is_viewable_path("040-ValueDrivers.md")
+
+
+def test_root_doc_rule_is_numbered_markdown_only(proj):
+    # control: depth-0 viewability is the numbered-doc shape only (T-2281)
+    assert not is_viewable_path("setup.py")
+    assert not is_viewable_path("scratch.md")
+    assert not is_viewable_path("001-x.py")
+    assert not is_viewable_path(".001-x.md")
+
+
+def test_live_root_docs_are_served():
+    from web.app import app
+    c = app.test_client()
+    for name in ("001-Vision.md", "040-ValueDrivers.md"):
+        if (REPO / name).is_file():
+            assert c.get(f"/file/{name}").status_code == 200, name
+            assert hrefs(render_markdown_safe(f"see {name}")) == [f"/file/{name}"]
+
+
+def test_dotdir_file_that_exists_is_not_dead(proj):
+    out = render_markdown_safe("hook is in .claude/settings.json:100")
+    assert "file-ref-dead" not in out
+    assert 'class="file-ref-unserved"' in out  # exists, honestly not served
+
+
+def test_task_name_that_exists_only_outside_viewer_is_plain(proj):
+    out = render_markdown_safe("see T-9004-vendored-only.md")
+    assert "file-ref" not in out and hrefs(out) == []
+    # control: a task-shaped name that exists nowhere is dead
+    assert "file-ref-dead" in render_markdown_safe("see T-9005-nowhere.md")
+
+
+def test_path_under_a_directory_the_project_lacks_is_plain(proj):
+    assert "file-ref" not in render_markdown_safe("see src/main.py")
+    # control: a missing file under a directory the project has is dead
+    assert "file-ref-dead" in render_markdown_safe("see lib/omega.py")
+
+
+# Item 3 — generic filenames in prose are left alone.
+
+@pytest.mark.parametrize("name", ["Cargo.toml", "tsconfig.json", "settings.json",
+                                  "snake_case_name.md", "pom.json"])
+def test_generic_bare_names_are_neither_linked_nor_marked(proj, name):
+    out = render_markdown_safe(f"If you edited {name}, rebuild.")
+    assert hrefs(out) == [] and "file-ref" not in out, out
+
+
+def test_generic_names_inside_html_comment_template_stay_plain(proj):
+    out = render_markdown_safe("# *.go, Cargo.toml, tsconfig.json, or pom.xml")
+    assert hrefs(out) == [] and "file-ref" not in out
+    # control: a generic name WITH a directory is still resolved
+    assert hrefs(render_markdown_safe("lib/ts/tsconfig.json")) == ["/file/lib/ts/tsconfig.json"]
+
+
+def test_unique_report_basename_still_links(proj):
+    # control: the project-specific shapes keep resolving
+    assert hrefs(render_markdown_safe("T-9002-unique-report.md")) == [
+        "/file/docs/reports/T-9002-unique-report.md"]
+
+
+# Item 4 — a leading ./ is stripped.
+
+def test_dot_slash_prefix_resolves(proj):
+    out = render_markdown_safe("run ./agents/context/checkpoint.sh now")
+    assert hrefs(out) == ["/file/agents/context/checkpoint.sh"]
+    assert "file-ref" not in out
+    # control: ./ of a missing file is still dead, not unserved
+    assert "file-ref-dead" in render_markdown_safe("run ./agents/context/nope.sh")
+
+
+# Item 5 — no marks inside code; live links there are fine.
+
+def test_fenced_block_rendered_as_p_code_marks_nothing(proj):
+    out = render_markdown_safe("```\nERROR lib/omega.py failed\nsee lib/alpha.py\n```")
+    assert "file-ref" not in out
+    assert "/file/lib/alpha.py" in hrefs(out)
+
+
+def test_inline_code_log_marks_nothing(proj):
+    out = render_markdown_safe("`grep: lib/omega.py: No such file or directory`")
+    assert "file-ref" not in out
+
+
+def test_code_span_that_is_the_ref_still_shows_dead(proj):
+    # control: a backticked citation of a stale path is a claim, not a log
+    assert "file-ref-dead" in render_markdown_safe("`lib/omega.py`")
+
+
+# Item 6 — docs/adr/ and docs/runbooks/ are served.
+
+def test_adr_and_runbooks_are_viewable(proj):
+    out = render_markdown_safe("docs/adr/0001-thing.md docs/runbooks/restart.md")
+    assert hrefs(out) == ["/file/docs/adr/0001-thing.md", "/file/docs/runbooks/restart.md"]
+    # control: a sibling docs/ directory not on the list stays unserved
+    assert not is_viewable_path("docs/secret/x.md")

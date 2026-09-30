@@ -288,9 +288,9 @@ def _render_source_with_line_anchors(content: str, ext: str) -> str:
             lexer = get_lexer_by_name(_EXT_TO_LANG.get(ext, "text") or "text", stripnl=False)
         except ClassNotFound:
             lexer = get_lexer_by_name("text", stripnl=False)
-        fmt = HtmlFormatter(linespans="L", cssclass="file-lines", style="github-dark")
+        fmt = HtmlFormatter(linespans="L", cssclass="file-lines")
         body = _LINE_ID_RE.sub(r'<span id="L\1" class="line">', highlight(content, lexer, fmt))
-        css = fmt.get_style_defs(".file-lines")
+        css = _source_theme_css()
     if body is None:  # no pygments: plain escaped lines, same anchors
         lines = content.split("\n")
         body = '<div class="file-lines"><pre>' + "".join(
@@ -300,8 +300,33 @@ def _render_source_with_line_anchors(content: str, ext: str) -> str:
     return f"<style>{css}\n{_LINE_ANCHOR_CSS}</style>{body}"
 
 
+# T-3587 round 2: the palette follows the page theme. One fixed dark style on a
+# light page left identifiers near-white on white (#E6EDF3 on the light
+# background). Both palettes are emitted, each scoped under its theme, so the
+# client-side toggle in base.html switches them without a reload. Only the
+# scoped token/background rules are used — get_style_defs() also emits bare
+# `pre { … }` and `.linenos` rules that would restyle every <pre> on the page.
+_SOURCE_THEMES = (
+    ('html:not([data-theme="dark"]) .file-lines', "default", "#1f2328"),
+    ('html[data-theme="dark"] .file-lines', "github-dark", "#e6edf3"),
+)
+
+
+def _source_theme_css() -> str:
+    from pygments.formatters import HtmlFormatter
+    out = []
+    for scope, style, fg in _SOURCE_THEMES:
+        fmt = HtmlFormatter(style=style)
+        out.extend(fmt.get_background_style_defs(scope))
+        out.extend(fmt.get_token_style_defs(scope))
+        out.append(f"{scope} {{ color: {fg}; }}")
+    return "\n".join(out)
+
+
 _LINE_ANCHOR_CSS = """
-.file-lines pre { counter-reset: line; overflow-x: auto; padding: 0.75rem 0; }
+.file-lines { border-radius: 6px; }
+.file-lines pre { counter-reset: line; overflow-x: auto; padding: 0.75rem 0;
+  margin: 0; line-height: 125%; background: transparent; color: inherit; }
 .file-lines span.line { display: block; padding-right: 1rem; scroll-margin-top: 30vh; }
 .file-lines span.line::before { counter-increment: line; content: counter(line);
   display: inline-block; width: 4.5em; padding-right: 1em; text-align: right;

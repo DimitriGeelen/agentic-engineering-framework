@@ -559,6 +559,8 @@ VIEWABLE_DIR_PREFIXES = (
     "docs/articles/",
     "docs/plans/",
     "docs/dispatch-templates/",
+    "docs/adr/",       # T-3587: cited as evidence on /approvals
+    "docs/runbooks/",  # T-3587: cited as evidence on /approvals
     ".tasks/active/",
     ".tasks/completed/",
     ".context/handovers/",
@@ -598,6 +600,20 @@ ROOT_FILES = frozenset({
 })
 
 
+_ROOT_DOC_RE = re_mod.compile(r"^\d{3}-[A-Za-z0-9][A-Za-z0-9_-]*\.md$")
+
+
+def is_root_doc(filepath: str) -> bool:
+    """T-3587: a numbered depth-0 doc (001-Vision.md, 040-ValueDrivers.md, …).
+
+    The numbered root docs are cited as evidence like any report; before this
+    they were marked "not found" because nothing at depth 0 but ROOT_FILES was
+    servable. A shape, not a generic depth-0 rule (T-2281 keeps that out):
+    `NNN-Name.md` only, so stray root scratch files stay unserved.
+    """
+    return bool(_ROOT_DOC_RE.match(filepath))
+
+
 def is_viewable_path(filepath: str) -> bool:
     """Return True iff `filepath` (relative to PROJECT_ROOT) is servable by /file/.
 
@@ -616,7 +632,7 @@ def is_viewable_path(filepath: str) -> bool:
         return False
     if ".." in filepath:
         return False
-    if filepath in ROOT_FILES:
+    if filepath in ROOT_FILES or is_root_doc(filepath):
         return True
     if not any(filepath.startswith(d) for d in VIEWABLE_DIR_PREFIXES):
         return False
@@ -694,6 +710,8 @@ _A_OPEN_RE = re_mod.compile(r"<a(?=[\s/>])", re_mod.IGNORECASE)
 _A_CLOSE_RE = re_mod.compile(r"</a(?=[\s>])", re_mod.IGNORECASE)
 _PRE_OPEN_RE = re_mod.compile(r"<pre(?=[\s>])", re_mod.IGNORECASE)
 _PRE_CLOSE_RE = re_mod.compile(r"</pre(?=[\s>])", re_mod.IGNORECASE)
+_CODE_OPEN_RE = re_mod.compile(r"<code(?=[\s>])", re_mod.IGNORECASE)
+_CODE_CLOSE_RE = re_mod.compile(r"</code(?=[\s>])", re_mod.IGNORECASE)
 
 
 # T-3587: the reference shapes agents actually write in Evidence, beyond the
@@ -769,9 +787,50 @@ def _basename_index(force_fresh: bool = False) -> dict:
     for f in ROOT_FILES:
         if (PROJECT_ROOT / f).is_file():
             idx.setdefault(f, []).insert(0, f)
+    try:
+        root_docs = [e.name for e in os.scandir(PROJECT_ROOT)
+                     if e.is_file() and is_root_doc(e.name)]
+    except OSError:
+        root_docs = []
+    for f in root_docs:
+        if f not in ROOT_FILES:
+            idx.setdefault(f, []).insert(0, f)
     _BASENAME_INDEX["index"] = idx
     _BASENAME_INDEX["built"] = now
     return idx
+
+
+_TREE_NAMES: dict = {"built": 0.0, "names": frozenset()}
+_TREE_SKIP_DIRS = frozenset({".git", "node_modules", "__pycache__"})
+
+# T-3587 round 2: which bare filenames are resolved at all. A bare name is only
+# judged when its shape says it names THIS project's artefact: a task-scoped
+# name (T-NNNN…, e.g. a report or an episodic card), a numbered or otherwise
+# present depth-0 doc, or a name that is unique under docs/reports/. Generic
+# names — Cargo.toml, tsconfig.json, settings.json, AGENT.md, a template's
+# snake_case_name.md — stay plain text: in prose they are usually an example,
+# and linking them to whichever file happens to share the basename (or marking
+# them dead) makes a claim the renderer cannot back.
+_PROJECT_NAME_RE = re_mod.compile(r"^T-\d+")
+
+
+def _exists_anywhere(name: str) -> bool:
+    """True iff a file called `name` exists anywhere under PROJECT_ROOT (not .git).
+
+    Built only on a miss of a task-shaped bare name, and cached like the
+    basename index. It is the evidence behind "dead": a name the viewer cannot
+    serve but that exists somewhere is left as plain text, never marked.
+    """
+    import time as _t
+    now = _t.monotonic()
+    if now - _TREE_NAMES["built"] >= _BASENAME_MISS_TTL:
+        names = set()
+        for _root, dirs, files in os.walk(PROJECT_ROOT):
+            dirs[:] = [d for d in dirs if d not in _TREE_SKIP_DIRS]
+            names.update(files)
+        _TREE_NAMES["names"] = frozenset(names)
+        _TREE_NAMES["built"] = now
+    return name in _TREE_NAMES["names"]
 
 
 def _resolve_ref(path: str):
@@ -779,37 +838,57 @@ def _resolve_ref(path: str):
 
     Returns (state, target, detail):
       ("ok", rel, None)            servable — link to /file/<rel>
-      ("dead", None, reason)       names nothing that exists
-      ("ambiguous", None, [paths]) a bare name matching several files
+      ("dead", None, reason)       certainly names nothing in this project
+      ("ambiguous", None, [paths]) a task-shaped bare name matching several files
       ("unserved", rel, None)      exists, but outside the viewer's allowlist
-      (None, None, None)           not ours to judge (absolute path elsewhere)
+      (None, None, None)           not ours to judge — left as plain text
+
+    The rule the operator set (round 2): a live reference must never look
+    broken. When in doubt the answer is (None, …), plain text — "dead" is
+    returned only when the path certainly does not exist.
     """
+    while path.startswith("./"):
+        path = path[2:]
     if path.startswith("/"):
         root = str(PROJECT_ROOT).rstrip("/") + "/"
         if not path.startswith(root):
             return (None, None, None)
         path = path[len(root):]
-    if ".." in path.split("/"):
+    if not path or ".." in path.split("/"):
         return (None, None, None)
     if path in ROOT_FILES and not (PROJECT_ROOT / path).is_file():
         # Extensionless root names (CHANGELOG, VERSION) are ordinary words in
         # prose; an absent one is not a stale reference, just a word.
         return (None, None, None)
     if "/" not in path and path not in ROOT_FILES:
-        matches = _basename_index().get(path)
-        if not matches:
-            matches = _basename_index(force_fresh=True).get(path)
-        if not matches:
-            return ("dead", None, f"No file named {path} in the viewable directories")
-        if len(matches) > 1:
-            return ("ambiguous", None, matches)
-        return ("ok", matches[0], None)
+        return _resolve_bare_name(path)
     fp = PROJECT_ROOT / path
     if not fp.is_file():
+        if not (PROJECT_ROOT / path.split("/", 1)[0]).is_dir():
+            # `src/main.rs`, `path/to/x.md`: a directory this project does not
+            # have — another repo, or an example. Not provably stale.
+            return (None, None, None)
         return ("dead", None, f"{path} does not exist in this project")
     if not is_viewable_path(path):
         return ("unserved", path, None)
     return ("ok", path, None)
+
+
+def _resolve_bare_name(name: str):
+    matches = _basename_index().get(name) or _basename_index(force_fresh=True).get(name) or []
+    if name in matches:  # a depth-0 doc: the name IS the path
+        return ("ok", name, None)
+    if _PROJECT_NAME_RE.match(name):
+        if len(matches) == 1:
+            return ("ok", matches[0], None)
+        if len(matches) > 1:
+            return ("ambiguous", None, matches)
+        if _exists_anywhere(name):
+            return (None, None, None)
+        return ("dead", None, f"No file named {name} anywhere in this project")
+    if len(matches) == 1 and matches[0].startswith("docs/reports/"):
+        return ("ok", matches[0], None)
+    return (None, None, None)
 
 
 def _ref_markup(text: str, path: str, line, in_pre: bool) -> str | None:
@@ -918,12 +997,17 @@ def _auto_link_files(html: str) -> str:
     parts = _TAG_SPLIT_RE.split(html)
     anchor_depth = 0
     pre_depth = 0  # T-3587: inside <pre>, add live links only (see _ref_markup)
+    code_depth = 0
     for i, seg in enumerate(parts):
         if i % 2:  # odd indices are the tags themselves — never rewritten
             if _PRE_OPEN_RE.match(seg):
                 pre_depth += 1
             elif _PRE_CLOSE_RE.match(seg):
                 pre_depth = max(0, pre_depth - 1)
+            elif _CODE_OPEN_RE.match(seg):
+                code_depth += 1
+            elif _CODE_CLOSE_RE.match(seg):
+                code_depth = max(0, code_depth - 1)
             elif _A_OPEN_RE.match(seg):
                 anchor_depth += 1
             elif _A_CLOSE_RE.match(seg):
@@ -932,8 +1016,16 @@ def _auto_link_files(html: str) -> str:
                 # the next real anchor.
                 anchor_depth = max(0, anchor_depth - 1)
         elif anchor_depth == 0:
-            in_pre = pre_depth > 0
-            parts[i] = _REF_RE.sub(lambda m: _link_ref_match(m, in_pre), seg)
+            # T-3587 round 2: code is quiet. markdown2 (no fenced-code extra)
+            # renders a ``` block as <p><code>, not <pre>, and an inline span
+            # may hold a pasted log — neither gets a dead/ambiguous/unserved
+            # mark. The one exception is a span that IS the reference
+            # (`lib/x.sh`): that is a citation, and a stale one should show.
+            whole = seg.strip()
+            parts[i] = _REF_RE.sub(
+                lambda m: _link_ref_match(
+                    m, pre_depth > 0 or (code_depth > 0 and m.group(0).strip() != whole)),
+                seg)
     return "".join(parts)
 
 
