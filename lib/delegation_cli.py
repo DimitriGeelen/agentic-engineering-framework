@@ -291,12 +291,6 @@ def cmd_delegate(args) -> int:
     text = path.read_text(encoding="utf-8", errors="replace")
     meta = frontmatter(text)
     workflow = str(meta.get("workflow_type") or "")
-    if workflow.strip().lower() == "inception":
-        print(f"{RED}ERROR: {task_id} is workflow_type: inception — the go/no-go is "
-              f"reviewer-judged (T-3557 IW-2), not converted by this verb{NC}", file=sys.stderr)
-        print(f"Hand it over instead: bin/fw task review {task_id}", file=sys.stderr)
-        return 2
-
     rs = _render_surface(path)
     criteria = [c for c in human_criteria(text) if not c.ticked]
 
@@ -347,6 +341,7 @@ def cmd_delegate(args) -> int:
         "reviewer_judgeable": [r["index"] for r in refused
                                if r["delegation_class"] == REVIEWER_JUDGES],
     }
+    record["reviewer_judged_count"] = len(record["reviewer_judgeable"])
 
     if args.dry_run:
         if args.json:
@@ -416,7 +411,9 @@ def cmd_delegate(args) -> int:
 
 
 def _print_outcome(converted, refused, owner, new_owner, task_id, remaining_human) -> None:
-    print(f"  converted {len(converted)}, left human {len(refused)}")
+    judged = sum(1 for r in refused if r["delegation_class"] == REVIEWER_JUDGES)
+    print(f"  converted {len(converted)}, reviewer-judged {judged}, "
+          f"left human {len(refused) - judged}")
     if new_owner != owner:
         print(f"  owner: {owner} → {new_owner}")
         print(f"  next: bin/fw reviewer {task_id}   (PASS auto-ticks the converted criteria)")

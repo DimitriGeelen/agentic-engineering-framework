@@ -117,7 +117,7 @@ _make_task() {
 
     run "$FW" task delegate T-9001
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q "converted 2, left human 0"
+    echo "$output" | grep -q "converted 2, reviewer-judged 0, left human 0"
     echo "$output" | grep -q "owner: human → agent"
 
     grep -q "^owner: agent" "$f"
@@ -200,7 +200,7 @@ _make_task() {
 
     run "$FW" task delegate T-9002
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q "converted 2, left human 1"
+    echo "$output" | grep -q "converted 2, reviewer-judged 1, left human 0"
     echo "$output" | grep -q "taste"
 
     grep -q "^owner: human" "$f"
@@ -258,18 +258,38 @@ _make_task() {
     awk '/^### Human/{f=1;next} /^## /{f=0} f' "$f" | grep -q '^- \[ \].*reads clearly'
 }
 
-@test "delegate refuses an inception task with exit 2" {
+@test "delegate classifies an inception task (dry-run --json): valid JSON, no mutation, none converted" {
     local f="$PROJECT_ROOT/.tasks/active/T-9003-inception.md"
-    printf -- '---\nid: T-9003\nname: "inception fixture"\nstatus: started-work\nworkflow_type: inception\nowner: human\nhorizon: now\ncreated: 2026-09-24T00:00:00Z\nlast_update: 2026-09-24T00:00:00Z\n---\n\n## Acceptance Criteria\n\n### Agent\n\n### Human\n- [ ] [REVIEW] Doctor names the key\n  **Expected:** exit code 0\n\n## Verification\n' > "$f"
+    printf -- '---\nid: T-9003\nname: "inception fixture"\nstatus: started-work\nworkflow_type: inception\nowner: human\nhorizon: now\ncreated: 2026-09-24T00:00:00Z\nlast_update: 2026-09-24T00:00:00Z\n---\n\n## Acceptance Criteria\n\n### Agent\n\n### Human\n- [ ] [REVIEW] Doctor names the key\n  **Expected:** exit code 0\n- [ ] [REVIEW] Force push the release branch\n  **Expected:** remote updated\n\n## Verification\n' > "$f"
+    local before; before="$(cksum < "$f")"
 
-    run "$FW" task delegate T-9003
-    [ "$status" -eq 2 ]
-    echo "$output" | grep -q "inception"
+    run "$FW" task delegate T-9003 --dry-run --json
+    [ "$status" -eq 0 ]
+    echo "$output" | python3 -c '
+import json, sys
+r = json.load(sys.stdin)
+assert r["task"] == "T-9003"
+assert r["dry_run"] is True
+assert r["converted"] == [], r["converted"]
+assert len(r["refused"]) == 2, r["refused"]
+# routine criterion: reviewer-judged (inception-decision), never converted
+assert r["refused"][0]["delegation_class"] == "REVIEWER-JUDGES", r["refused"][0]
+# risky criterion: risk class outranks the inception routing, stays operator-only
+assert r["refused"][1]["delegation_class"] == "OPERATOR-ONLY", r["refused"][1]
+assert r["reviewer_judged_count"] == 1
+'
+    [ "$(cksum < "$f")" = "$before" ]
+}
 
-    # Nothing was written.
-    local converted
-    converted="$(grep -c 'REVIEWER' "$f" || true)"
-    [ "$converted" -eq 0 ]
+@test "delegate on an inception task (real run) converts nothing and writes nothing" {
+    local f="$PROJECT_ROOT/.tasks/active/T-9004-inception.md"
+    printf -- '---\nid: T-9004\nname: "inception fixture 2"\nstatus: started-work\nworkflow_type: inception\nowner: human\nhorizon: now\ncreated: 2026-09-24T00:00:00Z\nlast_update: 2026-09-24T00:00:00Z\n---\n\n## Acceptance Criteria\n\n### Agent\n\n### Human\n- [ ] [REVIEW] Doctor names the key\n  **Expected:** exit code 0\n\n## Verification\n' > "$f"
+    local before; before="$(cksum < "$f")"
+
+    run "$FW" task delegate T-9004
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q "reviewer-judged 1"
+    [ "$(cksum < "$f")" = "$before" ]
 }
 
 @test "delegate refuses a completed task with exit 2" {
@@ -287,7 +307,7 @@ _make_task() {
 
     run "$FW" task delegate T-9001 --dry-run
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q "converted 2, left human 1"
+    echo "$output" | grep -q "converted 2, reviewer-judged 1, left human 0"
     echo "$output" | grep -q "nothing written"
 
     local after; after="$(md5sum "$f" | cut -d' ' -f1)"

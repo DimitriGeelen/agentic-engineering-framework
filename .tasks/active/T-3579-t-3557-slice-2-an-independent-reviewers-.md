@@ -1,10 +1,17 @@
 ---
 id: T-3579
-name: "T-3557 slice 2: an independent reviewer's recorded verdict closes a task through the normal path - no --skip-render-review, no ownership bypass"
+name: "T-3557 slice 2: an independent reviewer's recorded verdict closes a task through
+  the normal path - no --skip-render-review, no ownership bypass"
 description: >
-  T-3557 GO. Today closing on an independent verdict needs FW_ALLOW_PARTIAL_COMPLETE_EDIT + a hand-moved criterion + --skip-render-review (used 7 times on 2026-09-29/30). Build: a verdict record (task, criterion, verdict green/amber/red/escalate, guidance, reviewer identity != producer, rung, evidence paths) written by the reviewer; the render gate (P-013) and R-033 accept a GREEN verdict record for the criterion as satisfying it; amber/red/escalate keep it open and land on the refusal ledger (T-3555). Logged, auditable, no bypass flag.
+  T-3557 GO. Today closing on an independent verdict needs FW_ALLOW_PARTIAL_COMPLETE_EDIT
+  + a hand-moved criterion + --skip-render-review (used 7 times on 2026-09-29/30).
+  Build: a verdict record (task, criterion, verdict green/amber/red/escalate, guidance,
+  reviewer identity != producer, rung, evidence paths) written by the reviewer; the
+  render gate (P-013) and R-033 accept a GREEN verdict record for the criterion as
+  satisfying it; amber/red/escalate keep it open and land on the refusal ledger (T-3555).
+  Logged, auditable, no bypass flag.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T07:53:29Z
-last_update: 2026-09-30T07:53:29Z
-date_finished: null
+last_update: 2026-09-30T08:01:08Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-30T08:00:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=277,acs=10)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-30T08:00:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3579: T-3557 slice 2: an independent reviewer's recorded verdict closes a task through the normal path - no --skip-render-review, no ownership bypass
@@ -328,3 +363,11 @@ Seven logged bypasses in two days for something the operator has ruled is normal
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3579-t-3557-slice-2-an-independent-reviewers-.md
 - **Context:** Initial task creation
+
+### 2026-09-30T08:01:08Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-09-30 — slice-1 review fixes (docs/reports/T-3578-code-review.md, AMBER)
+- **1.** `lib/delegation_cli.py` `cmd_delegate`: removed the early return for inception tasks; they now go through the shared classifier (routine criteria → reviewer-judged, risky → operator-only; none convert). Refusal test replaced by dry-run --json and real-run tests asserting valid JSON and no mutation.
+- **2.** Delegate summary now reports the reviewer-judged count (text: `reviewer-judged N`; JSON: `reviewer_judged_count`); `left human` now means operator-only.
+- **3.** CLAUDE.md delegation paragraph: WARN condition reads "reviewer-closeable and reviewer-judges are both zero".
