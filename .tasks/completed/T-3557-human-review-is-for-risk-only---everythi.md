@@ -7,16 +7,16 @@ description: >
   enough to delegate) with an independent agent reviewer as the default, keeping the
   human for risk.
 
-status: work-completed
+status: started-work
 workflow_type: inception
 owner: human
-horizon: null
+horizon: now
 tags: []
 components: []
 related_tasks: [T-3445, T-3554, T-3555, T-1443]
 created: 2026-09-29T11:17:54Z
-last_update: 2026-09-30T07:51:15Z
-date_finished: 2026-09-30T07:51:15Z
+last_update: '2026-09-29T11:30:29Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -194,15 +194,15 @@ yes by the operator; rewriting existing tasks' criteria text.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [x] Problem statement validated
+- [ ] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [x] Assumptions tested
+- [ ] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [x] Recommendation written with rationale
+- [ ] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [x] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -273,11 +273,7 @@ yes by the operator; rewriting existing tasks' criteria text.
 
 ## Decision
 
-**Decision**: GO
-
-**Rationale**: Operator direction 2026-09-29: rubber-stamping is friction with no value; human-in-the-loop only for Tier 0 and high risk; everything else an independent agent reviewer evaluates interpretively (good+why / not good+what is needed / escalate). The verdict contract already exists (lib/judge_verdict.py green/amber/red/unknown, guidance mandatory on non-green); what is missing is an interpretive agent behind it - every current judge is a static script. Measured: 353 open Human criteria, of which only 11 are tier-0/bypass.
-
-**Date**: 2026-09-30T07:51:14Z
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
@@ -287,43 +283,3 @@ yes by the operator; rewriting existing tasks' criteria text.
 ### 2026-09-29 — ruling applied before the build (operator, verbatim)
 "as always use the external reviewer. These are not things I need to decide on review, right? That's low risk stuff. Why are we still using it and not applying our changed approach here?"
 — Asked about T-3552/T-3553/T-3544, three render-only [REVIEW] criteria. The agent had routed them to the operator because the D-626 classifier still carves out render surfaces (T-1766) and `fw task delegate` has no route for them. IW-1 already rules UX/render out of the human set; the gap is that nothing applies it yet. Interim path per task: independent agent reviewer on live screenshots → report in docs/reports/T-3557-render-review-2026-09-29.md → on green, criterion moved to Agent with the verdict cited, owner → agent, close with a logged --skip-render-review naming this ruling. The build of T-3557 must remove the need for that bypass.
-
-### 2026-09-30T07:51:14Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** Operator direction 2026-09-29: rubber-stamping is friction with no value; human-in-the-loop only for Tier 0 and high risk; everything else an independent agent reviewer evaluates interpretively (good+why / not good+what is needed / escalate). The verdict contract already exists (lib/judge_verdict.py green/amber/red/unknown, guidance mandatory on non-green); what is missing is an interpretive agent behind it - every current judge is a static script. Measured: 353 open Human criteria, of which only 11 are tier-0/bypass.
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-5cf95f19
-- **Timestamp:** 2026-09-30T07:51:16Z
-- **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
-- **Needs Human:** no
-- **Findings:** 2
-
-**Verification-level findings:**
-
-  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
-     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-5
-     - evidence: `IW-5 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-
-## Recommendation Verdict (v1.0)
-
-- **Scan ID:** RC-ace1dea8
-- **Timestamp:** 2026-09-30T07:51:16Z
-- **Overall:** CONFIRMED
-- **Claims:** 5
-
-| Claim | Type | Status |
-|-------|------|--------|
-| `T-3544` | task | ✓ pass |
-| `T-3552` | task | ✓ pass |
-| `T-3553` | task | ✓ pass |
-| `T-3571` | task | ✓ pass |
-| `T-3564` | task | ✓ pass |
-
-### 2026-09-30T07:51:15Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-- **Reason:** Inception decision: GO
