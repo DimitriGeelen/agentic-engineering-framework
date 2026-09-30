@@ -104,7 +104,7 @@ works (warm 0.22s) but the 30s TTL makes most visits cold (3.35s), and the page 
 - [x] The default /tasks payload is cut substantially (e.g. active tasks in full, completed paged or loaded on demand) without removing any filter, search or view the page offers today; measured bytes before/after recorded in the task
 - [x] Measured on this host with curl and a browser navigation timing: cold and warm server time, bytes, DOMContentLoaded, before and after, recorded in the task; warm DOMContentLoaded under 500ms
 - [x] Existing tasks-page web tests pass; `bin/fw watchtower current` passes after restart; `bin/fw vendor self --check` clean
-- [ ] Render review by an independent agent reviewer on live screenshots (operator ruling, T-3557 IW-1)
+- [x] Render review by an independent agent reviewer on live screenshots (operator ruling, T-3557 IW-1). Round 1 RED (board hid current work; signature cost regressed the arc page); round 2 GREEN, plus an observed persistence check on a throwaway task. Trail: docs/reports/T-3574-T-3575-render-review.md
 
 ### Results (measured 2026-09-30, host load 20-28 on 24 cores)
 

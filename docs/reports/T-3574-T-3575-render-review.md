@@ -79,3 +79,91 @@ Host load at measurement time: 3-7 (the builder measured at 20-28).
 3. **Should: preserve active filters in the `+N more` link** (owner, horizon, tag, q, type, component, sort), so overflow from a filtered board lands on the same filtered list.
 4. **Should: put real, guarded commands in `## Verification`** (pytest for `test_t3575_tasks_page_perf.py`, `bin/fw watchtower current`, `bin/fw vendor self --check`).
 5. The cache design is sound. Keep it, together with the cost fix in item 2.
+
+---
+
+## Re-review (round 2)
+
+Reviewer: `perf-rereview` (independent; not the builder). Read-only except this file.
+Measured 2026-09-30 05:55-06:10, load average 3.0-3.9. `bin/fw watchtower current` → current (pid 2195812 newer than every file under `web/`).
+Commits reviewed: `fe0da3a23` (T-3577), `95df5e0d2` (T-3575), `c6c293e23` (T-3574). Probe script: `/tmp/rr2/check.py` (headless Chromium, POSTs intercepted and fulfilled locally, so **no task file was written**).
+
+### T-3574: arc page
+
+**VERDICT: GREEN.** Every round-1 item is closed. The warm criterion is now met live, the coherence test is real, and the page renders the same as before, apart from one intended change: T-3440 now appears on dispatch-safety.
+
+#### WHAT I CHECKED
+
+1. **Warm time (curl, 6 runs each):**
+
+   | route | warm | round 1 | criterion |
+   |---|---|---|---|
+   | `/arcs/continuous-run` | **0.40-0.49s** | 1.65-1.83s | <1s |
+   | `/arcs/dispatch-safety` | 0.19-0.25s | 0.49-0.77s | — |
+   | `/arcs/readme-first-run` | 0.18-0.23s (one outlier at 0.55s) | 0.21-0.38s | — |
+
+   This agrees with the builder's 0.40-0.46s. I could not reproduce a true cold request without writing a task file or restarting the server, which is outside my remit. **The cold figure (0.99s) is the builder's alone.**
+2. **The signature memo** (`web/shared.py:_task_files_signature`) is keyed in `flask.g`, applies to GET/HEAD only, and is recomputed outside a request. Correct: a POST that writes a task file and then reads it back still re-stats, and the next request always re-stats.
+3. **Render:**
+   - `/arcs/continuous-run` is 200 at 152,851 bytes, byte-count identical to round 1.
+   - BVP_norm is still 0.233.
+   - `/arcs/dispatch-safety` now lists T-3440. This is the intended T-3577 effect, not a regression.
+4. **Tests:** `test_t3574_arc_page_perf.py` and `test_t3575_tasks_page_perf.py` pass, 14 in 92s. I did not repeat the builder's old-parser control run (red with the old parser). The test design now matches my round-1 cross-check, which went red on exactly that arc.
+
+#### GUIDANCE
+
+- Tick the warm criterion. Recommendation GO.
+- The one visible change (T-3440 joining dispatch-safety, so its member count rises by one) should be mentioned in the T-3577 or T-3574 review handoff, so the operator is not surprised by it.
+
+### T-3575: tasks page
+
+**VERDICT: GREEN (with one should-fix on blank selects).** The RED item is resolved: current work is on the board. The lazy selects work and post the same payload as before. The 500ms DCL budget holds.
+
+#### WHAT I CHECKED
+
+1. **Board contents** (default `/tasks`, live):
+   - T-3575, T-3557, T-3576, T-3573 and T-3574 are all on the board.
+   - In Progress shows **47 of 47**, uncapped, starting T-3575, T-3535, T-3557.
+   - Issues is uncapped.
+   - Captured shows 20 of 170, newest first (T-3576, T-3573, T-3572 …).
+   - Completed shows 10 of 3343, newest first (T-3574, T-3577 …).
+   - Only Captured and Completed carry `+N more`.
+2. **Filters kept:** on `/tasks?owner=human&horizon=now`, the overflow link is `/tasks?view=list&status=work-completed&owner=human&horizon=now`.
+3. **Lazy dropdowns still work.** I tested them on T-3573 with POSTs intercepted.
+   - Each select starts with 1 `<option>`.
+     - On `mousedown` (owner, type) the full list appears: owner gives 3 options and type gives 7.
+     - On keyboard `focus` (horizon) the full list also appears, with 3 options.
+     - The current value stays selected in both cases.
+   - Changing a select fires `POST /api/task/T-3573/<field>` with body `<field>=<value>`, `Content-Type: application/x-www-form-urlencoded` and an `X-CSRF-Token` header. I checked this for owner, horizon, type and status.
+   - That matches what the endpoints read (`request.form.get("owner")` etc., `web/blueprints/tasks.py:1037-1128`). `csrf_protect` accepts the header (`web/app.py:155-156`), so dropping the hidden `_csrf_token` input is safe.
+   - The builder's Playwright test also passes (`test_tasks_board_lazy_selects.py`, 2 tests), but only with `FW_TEST_PORT=3187`: port 3099 is occupied on this host. That is an environment issue, not a fault in the test.
+   - **Not verified: end-to-end persistence against a real file.** No throwaway task exists and this review is read-only. The endpoint code is unchanged, and the request it receives is field-for-field the same as before, so I rate persistence as very likely. It is not proven by me.
+   - `htmx:afterRequest` now handles `elt` being the select itself, so the board still reloads after a status change (read from code, not observed).
+4. **Blank select** (for example T-3568, which has an empty `owner:`, and completed tasks with `horizon: null`, 10 on the default board):
+   - It renders as a narrow pill containing only a chevron (`/tmp/rr2/blankcard.png`).
+   - It is more honest than round 1, which showed the first option as if it were the value. It is still **mildly confusing**: nothing says which field it is or that it is unset.
+   - On the Completed column most cards show a bare chevron for horizon, which reads as visual noise.
+5. **Speed:**
+   - curl `/tasks` returns 293,886 bytes in 0.17-0.22s warm (6 runs).
+   - Headless Chromium from about:blank, 10 navigations: DCL was 605ms on the first load, then 423, 428, 421, 482, 415, 421, 445, 401 and 400ms. The **warm median is ~421ms, and all 9 warm runs are under 500ms.** TTFB was 169-243ms.
+   - The builder's 454ms median is plausible, and if anything conservative at today's load.
+   - I could not independently force a cold request, for the same reason as T-3574.
+6. **Markup trade-offs, noted but acceptable:**
+   - The delegated `change` listener and the `WT_LAZY_OPTIONS` guard live on `document` for the page lifetime. They are guarded against re-registration on htmx swaps and scoped to `.kanban-card[data-task-id]`.
+   - `content-visibility: auto` on cards is fine.
+   - The list view is unchanged.
+
+#### GUIDANCE
+
+- **Should:** give an unset board select a visible label instead of a bare chevron. For example, render the lazy option as a muted `—` or `owner?` with `value=""`, which keeps today's honest "unset" semantics. Alternatively, skip the horizon select on work-completed cards, where horizon is meaningless. This is cosmetic and fits the render-review Human AC. It is not a blocker.
+- **Before close:** do one real persistence check on a throwaway task (change owner on the board, reload, confirm the file changed). This is the only claim in this review that rests on code reading rather than observation.
+- **Minor, from round 1 and still open:** `_TASK_FM_CACHE` never evicts deleted paths, and nested `tags` lists are shared, not copied.
+- Recommendation GO. The render-review Human AC stays with the operator.
+
+### Persistence check (parent session, as the re-review asked before close)
+- Throwaway task T-3578 created. On the live /tasks board, its lazy owner select was
+  clicked and changed from agent to human.
+- The task file then read `owner: human`. That is observed, not code-read. T-3578 was
+  never committed and was removed afterwards.
+- Open should-fix, not a blocker: give an unset select a visible label. It is
+  cosmetic and was left for a follow-up.
