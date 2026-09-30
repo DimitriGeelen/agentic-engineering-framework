@@ -22,6 +22,10 @@ setup() {
     LOG_BAK="$(mktemp)"
     cp "$POLICY" "$POLICY_BAK"
     cp "$LOG" "$LOG_BAK" 2>/dev/null || echo "entries: []" > "$LOG_BAK"
+    # The live log is mutable corpus (T-1932 enable/disable events land in it,
+    # c3165673a committed 8), so "no writes" is asserted against this baseline
+    # count rather than an absolute zero.
+    LOG_BASE_COUNT=$(python3 -c "import yaml; print(len((yaml.safe_load(open('$LOG_BAK')) or {}).get('entries') or []))")
 
     PROBE_ID="T-99970"
     PROBE_FILE=".tasks/active/${PROBE_ID}-bvp-autopromote-probe.md"
@@ -44,9 +48,9 @@ teardown() {
 
 @test "OFF default: no log writes occur" {
     bin/fw bvp auto-promote >/dev/null 2>&1
-    # Log file unchanged versus baseline (entries still empty).
+    # Log file unchanged versus baseline (no entries added).
     run python3 -c "import yaml; d=yaml.safe_load(open('$LOG')); print(len(d.get('entries') or []))"
-    [ "$output" = "0" ]
+    [ "$output" = "$LOG_BASE_COUNT" ]
 }
 
 @test "--dry-run with enabled=true lists candidates without promotion" {
@@ -95,9 +99,9 @@ PY
 
     # Probe still captured (no promotion).
     grep -q "^status: captured" "$PROBE_FILE"
-    # Log still has no entries.
+    # Log still has no new entries.
     run python3 -c "import yaml; print(len(yaml.safe_load(open('$LOG')).get('entries') or []))"
-    [ "$output" = "0" ]
+    [ "$output" = "$LOG_BASE_COUNT" ]
 }
 
 @test "enabled=true promotes HV/LC task + writes R4 log entry" {
