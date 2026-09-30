@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3584: Re-pin the vendored designer to 0.14.0 (832 release designer-v0.14.0, sha256 0b5ae3a7...)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-30T15:41:03Z
+# ============================================================================
+
+task_id: T-3584
+task_name: "Re-pin the vendored designer to 0.14.0 (832 release designer-v0.14.0, sha256 0b5ae3a7...)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-30T10:01:29Z
+completed: 2026-09-30T15:40:47Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-09-30T12:03:00+02:00
+last_commit: 2026-09-30T17:40:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file designer 0.14.0 re-pin; T-3585: fw release status misreports prefixed tags (832 @20). designer re-pinned to 0.14.0 (latest) — pull-at-tag, sha matches the MANIFEST, the pin and 832's announce; served bytes verified; rung-1 check GREEN. vendored copy of the 0.14.0 pin
+
+# Key outcomes
+outcomes:
+  - 'policy/designer-pin.yaml updated to 0.14.0 from the announce, following the header comment''s documented flow (`fw designer sync --from-tag`); no hand-editing of the artifact'
+  - 'The vendored `vendor/designer/aef-workflow-designer-0.14.0.html` sha256 equals the announced 0b5ae3a7…d3e6f2 and its size is 1043238 bytes; `fw designer status` reports it present and valid'
+  - 'Watchtower /designer serves 0.14.0 after restart (HTTP 200, version string present); the one expected console 404 for the optional `/api/instances` probe is documented, and any console-error check we run over the vendored artifact whitelists it'
+  - 'Older vendored builds are kept or removed per the existing retention rule in the pin policy (read it; do not invent one)'
+  - '`bin/fw watchtower current`; `bin/fw vendor self --check` clean'
+  - 'Render review of /designer by an independent internal reviewer (operator ruling, T-3557). GREEN at rung 1: docs/reports/T-3584-check.md'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'file designer 0.14.0 re-pin; T-3585: fw release status misreports prefixed tags (832 @20)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/designer-pin.yaml'
+  - '.agentic-framework/vendor/designer/aef-workflow-designer-0.14.0.html'
+  - '.agentic-framework/VERSION'
+  - '.context/costs/reviews.jsonl'
+  - '.context/episodic/T-3576.yaml'
+  - 'docs/reports/T-3584-check.md'
+  - 'policy/designer-pin.yaml'
+  - '.tasks/active/T-3584-re-pin-the-vendored-designer-to-0140-832.md'
+  - '.tasks/active/T-3585-fw-release-status-reports-latest-tag-non.md'
+  - '.tasks/completed/T-3576-tier-0-approval-keyed-to-the-exact-comma.md'
+  - 'vendor/designer/aef-workflow-designer-0.14.0.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-30T12:03:00'
+    action: 'T-3584: file designer 0.14.0 re-pin; T-3585: fw release status misreports prefixed tags (832 @20)'
+  - time: '2026-09-30T17:39:56'
+    action: 'T-3584: designer re-pinned to 0.14.0 (latest) — pull-at-tag, sha matches the MANIFEST, the pin and 832''s announce; served bytes verified; rung-1 check GREEN'
+  - time: '2026-09-30T17:40:35'
+    action: 'T-3584: vendored copy of the 0.14.0 pin'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 339 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 339
+  commits: 3
+  files_changed: 11
+  lines_added: 13096
+  lines_removed: 197
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3584-re-pin-the-vendored-designer-to-0140-832.md
+generated_by: context-agent-hybrid

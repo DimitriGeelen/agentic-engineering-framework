@@ -1,15 +1,16 @@
 ---
-id: T-3584
-name: "Re-pin the vendored designer to 0.14.0 (832 release designer-v0.14.0, sha256
-  0b5ae3a7...)"
+id: T-3593
+name: "T-3576 build A: Tier 0 approvals keyed to the ACTION (verb + ref + remote /
+  target) instead of the exact command hash; honest block message"
 description: >
-  832 @20 (2026-09-30): designer 0.14.0 released, tag designer-v0.14.0 -> 75196215,
-  artifact dist/aef-workflow-designer-0.14.0.html, 1043238 bytes, sha256 0b5ae3a7f9b519c78b76a0784278ca4d68279fece220cc041d947a25b3d8e6f2.
-  Our pin (policy/designer-pin.yaml) is 0.13.0. Flow: update the pin from the announce,
-  then fw designer sync --from-tag (fetch by TAG). Expect one new benign console 404
-  for /api/instances when served statically (optional probe, T-884 on their side);
-  if we have a console-error check over the vendored artifact, whitelist it. Verify
-  the sha256 matches the announce.
+  T-3576 GO (operator 2026-09-30, option a). check-tier0.sh:245 hashes the whole command,
+  so a cosmetic retry (tail -12 vs -14) voids the operator's approval and pushes agents
+  toward script indirection, which Tier 0 cannot see (T-2742). Build: an approval
+  names an action (e.g. force-push ref X to remote Y; hard-reset branch X; rm -rf
+  path P), matched regardless of incidental command text; one approval covers one
+  action for a bounded time and is consumed on use; the block message states plainly
+  that the text gate is a speed bump and names what enforces for real (the pre-push
+  check, build B). Keep fw tier0 approve human-only.
 
 status: started-work
 workflow_type: build
@@ -44,8 +45,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-30T10:01:29Z
-last_update: 2026-09-30T15:37:10Z
+created: 2026-09-30T15:41:21Z
+last_update: 2026-09-30T15:42:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -57,18 +58,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-09-30T10:15:18Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-09-30T10:15:28Z'
+  - ts: '2026-09-30T15:42:46Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -87,23 +78,22 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3584: Re-pin the vendored designer to 0.14.0 (832 release designer-v0.14.0, sha256 0b5ae3a7...)
+# T-3593: T-3576 build A: Tier 0 approvals keyed to the ACTION (verb + ref + remote / target) instead of the exact command hash; honest block message
 
 ## Context
 
-Announce (832 @20, 2026-09-30): tag designer-v0.14.0 -> 75196215, artifact
-dist/aef-workflow-designer-0.14.0.html, 1043238 bytes, sha256
-0b5ae3a7f9b519c78b76a0784278ca4d68279fece220cc041d947a25b3d8e6f2. Fetch by TAG.
+Inception: .tasks/completed/T-3576-*.md (GO 2026-09-30). Origin: 832 OBS-449 via sidecar @16.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] policy/designer-pin.yaml updated to 0.14.0 from the announce, following the header comment's documented flow (`fw designer sync --from-tag`); no hand-editing of the artifact
-- [x] The vendored `vendor/designer/aef-workflow-designer-0.14.0.html` sha256 equals the announced 0b5ae3a7…d3e6f2 and its size is 1043238 bytes; `fw designer status` reports it present and valid
-- [x] Watchtower /designer serves 0.14.0 after restart (HTTP 200, version string present); the one expected console 404 for the optional `/api/instances` probe is documented, and any console-error check we run over the vendored artifact whitelists it
-- [x] Older vendored builds are kept or removed per the existing retention rule in the pin policy (read it; do not invent one)
-- [x] `bin/fw watchtower current`; `bin/fw vendor self --check` clean
-- [x] Render review of /designer by an independent internal reviewer (operator ruling, T-3557). GREEN at rung 1: docs/reports/T-3584-check.md
+- [ ] An approval is an ACTION record, not a command hash: `{verb, target(s), scope, approved_by, ts, expires, consumed}`, with at least the verbs force-push (ref + remote), branch-delete (ref + remote), hard-reset (branch) and recursive-delete (path); `check-tier0.sh` maps a blocked command to its action, so a retry whose incidental text differs (pipes, tail -N, whitespace, flag order) matches the same approval; a DIFFERENT target (other ref, other remote, other path) does not match
+- [ ] Approvals are single-use and time-bounded (consumed on first matching use; expire; both logged); `fw tier0 approve` stays human-only (agent-refused under CLAUDECODE=1, `--i-am-human`), and it shows the operator the ACTION being approved in plain words
+- [ ] The existing command-hash path keeps working for commands that map to no known action (backward compatible), and the audit logs which path matched
+- [ ] The block message states the limit honestly: the text gate sees only the typed command; a script or indirection is not seen by it; force-push is enforced for real at git pre-push (T-3594); rm -rf inside a script has no equivalent control and is not covered. The message names how to request approval for the action
+- [ ] CLAUDE.md §Enforcement Tiers is updated to match (no claim of coverage the gate lacks)
+- [ ] Tests: the tail-12 vs tail-14 retry matches one approval; a different ref does not; single-use (second use refused); expiry; agent cannot approve; the legacy hash path still works; each with a negative control
+- [ ] Independent review (IW-7: security-relevant, so two internal reviewers: codex + opencode/Z.ai, cost logged) returns at least amber with no high findings; `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -356,19 +346,10 @@ dist/aef-workflow-designer-0.14.0.html, 1043238 bytes, sha256
 
 ## Updates
 
-### 2026-09-30T10:01:29Z — task-created [task-create-agent]
+### 2026-09-30T15:41:21Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3584-re-pin-the-vendored-designer-to-0140-832.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3593-t-3576-build-a-tier-0-approvals-keyed-to.md
 - **Context:** Initial task creation
 
-### 2026-09-30T14:40:48Z — status-update [task-update-agent]
+### 2026-09-30T15:42:45Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
-
-### 2026-09-30T14:45:24Z — status-update [task-update-agent]
-- **Change:** horizon: now → next
-- **Change:** status: started-work → captured (auto-sync)
-
-### 2026-09-30T15:37:10Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
