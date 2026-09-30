@@ -96,12 +96,12 @@ Inception: .tasks/completed/T-3576-*.md (GO 2026-09-30). Depends on T-3593 (the 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The pre-push hook (installed by `fw git install-hooks`) reads git's ref-update lines on stdin and detects, per ref: a non-fast-forward update (the remote sha is not an ancestor of the local sha) and a branch delete (local sha all zeros)
-- [ ] Such an update is refused unless a matching T-3593 action approval exists (force-push or branch-delete, same ref and same remote), which is then consumed and logged; the refusal names the ref and remote and how to request approval
-- [ ] It works regardless of how the push was launched: a test pushes via a script (`bash push.sh` containing `git push --force`) to a fixture bare remote and is refused; the same with an approval succeeds
-- [ ] Normal fast-forward pushes, `fw handover --commit` pushes, tag pushes and the mirror sync are unaffected (tests or verified runs); new-branch creation (remote sha all zeros) is allowed
-- [ ] `--no-verify` still skips the hook (a git limitation); this is stated honestly in the block message and CLAUDE.md, and the server-side protection option (OneDev branch protection) is named as the stronger control for the operator to decide on
-- [ ] Consumer projects receive the hook through `fw upgrade`/`fw git install-hooks` (tests/unit/upgrade_fresh_machine_simulation.bats stays green)
+- [x] The pre-push hook (installed by `fw git install-hooks`) reads git's ref-update lines on stdin and detects, per ref: a non-fast-forward update (the remote sha is not an ancestor of the local sha) and a branch delete (local sha all zeros)
+- [x] Such an update is refused unless a matching T-3593 action approval exists (force-push or branch-delete, same ref and same remote), which is then consumed and logged; the refusal names the ref and remote and how to request approval
+- [x] It works regardless of how the push was launched: a test pushes via a script (`bash push.sh` containing `git push --force`) to a fixture bare remote and is refused; the same with an approval succeeds
+- [x] Normal fast-forward pushes, `fw handover --commit` pushes, tag pushes and the mirror sync are unaffected (tests or verified runs); new-branch creation (remote sha all zeros) is allowed
+- [x] `--no-verify` still skips the hook (a git limitation); this is stated honestly in the block message and CLAUDE.md, and the server-side protection option (OneDev branch protection) is named as the stronger control for the operator to decide on
+- [x] Consumer projects receive the hook through `fw upgrade`/`fw git install-hooks` (tests/unit/upgrade_fresh_machine_simulation.bats stays green)
 - [ ] Independent review (two internal reviewers, cost logged) returns at least amber with no high findings; `bin/fw vendor self --check` clean
 
 ### Human
@@ -262,6 +262,12 @@ Inception: .tasks/completed/T-3576-*.md (GO 2026-09-30). Depends on T-3593 (the 
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+bats tests/unit/t3594_prepush_forced_update_guard.bats
+bats tests/unit/t3593_tier0_action_approvals.bats
+bats tests/unit/hook_version_marker_parity.bats tests/unit/t3126_prepush_audit_gate_scope.bats tests/unit/t3125_prepush_self_vendor_judges_pushed_ref.bats
+bats tests/unit/upgrade_fresh_machine_simulation.bats
+bin/fw vendor self --check
 
 ## RCA
 
