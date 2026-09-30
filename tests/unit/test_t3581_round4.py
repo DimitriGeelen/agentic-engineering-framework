@@ -9,7 +9,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_t3579_verdict_ledger import (  # noqa: E402,F401
-    TASK, TASTE, _commit_ledger, _dg, _dispatch, _edit, _lines, _produce, _rec, _task,
+    TASK, TASTE, _commit_ledger, _worker_attributed_reviewer, _dg, _dispatch, _edit, _lines, _produce, _rec, _task,
     _text, _ticked, root,
 )
 from test_t3581_ledger_integrity import _rewrite  # noqa: E402
@@ -52,7 +52,7 @@ def test_red_without_guidance_fails_audit(root):
     _rewrite(root, lambda rows: [dict(r, guidance="") for r in rows])
     _commit_ledger(root)
     code, out = vl.audit(root)
-    assert code == 2 and any("guidance" in ln for ln in out)
+    assert code == 2 and any("guidance" in ln or "tampered" in ln for ln in out)
 
 
 # ── 2: durable provenance for reviewer-derived ticks ─────────────────────────

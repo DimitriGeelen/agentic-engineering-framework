@@ -75,15 +75,35 @@ def _has_commit(root):
                           capture_output=True).returncode == 0
 
 
-def _commit_ledger(root, author="Reviewer Worker"):
+@pytest.fixture(autouse=True)
+def _worker_attributed_reviewer(monkeypatch):
+    """T-3580 round 2: a reviewer identity must be attributed to the worker session of its
+    dispatch. The tests keep their model labels; the label is prefixed with the worker."""
+    real = vl.record
+
+    def rec(task_id, ac, outcome, *, reviewer, dispatch_id="", **kw):
+        w = vl.worker_identity(dispatch_id) if dispatch_id else ""
+        if w and vl._norm(w) not in vl._norm(reviewer):
+            reviewer = f"{w}:{reviewer}"
+        return real(task_id, ac, outcome, reviewer=reviewer, dispatch_id=dispatch_id, **kw)
+    monkeypatch.setattr(vl, "record", rec)
+
+
+def _last_worker(root):
+    rows = _lines(root, vl.VERDICTS)
+    return rows[-1]["worker"] if rows else "Reviewer Worker"
+
+
+def _commit_ledger(root, author=None):
     """Commit .context/reviews as the reviewer worker (its own identity, not the producer's)."""
+    author = author or _last_worker(root)
     _git(root, "add", ".context/reviews")
     _git(root, "commit", "-q", "-m", f"{TASK}: reviewer verdict",
          env={"GIT_AUTHOR_NAME": author, "GIT_AUTHOR_EMAIL": "reviewer@x.y",
               "GIT_COMMITTER_NAME": author, "GIT_COMMITTER_EMAIL": "reviewer@x.y"})
 
 
-def _rec(root, outcome="green", ac=1, reviewer="openai/gpt-5", commit=True, **kw):
+def _rec(root, outcome="green", ac=1, reviewer="openai/gpt-5", commit=True, render=False, **kw):
     """A verdict as the shipped path produces it: producer commit exists, the reviewer
     submits the digest it read, names a registered review dispatch, and commits the row."""
     if not _has_commit(root):
@@ -96,12 +116,32 @@ def _rec(root, outcome="green", ac=1, reviewer="openai/gpt-5", commit=True, **kw
             next(c for c in human_criteria(f.read_text()) if c.index == ac))
     kw.setdefault("rung", "cross-vendor")
     kw.setdefault("evidence", ["evidence.md"] if outcome == "green" else [])
+    if render and outcome == "green":
+        kw.update(_render_run(root, ac, kw["dispatch_id"], kw["evidence"]))
     if outcome != "green":
         kw.setdefault("guidance", "tighten the second sentence")
     rec = vl.record(TASK, ac, outcome, reviewer=reviewer, root=root, **kw)
+    if kw.get("run_id"):
+        vl.bind_dispatch(kw["run_id"], "claude", kw["dispatch_id"], "claude", root=root)
     if commit:
         _commit_ledger(root)
     return rec
+
+
+def _render_run(root, ac, did, evidence, pages=("/review",), ok=True):
+    """The judge's side of a render review: a signed run naming the required pages with the
+    capture result of each. Returns the extra kwargs `record` needs to cite the screenshots."""
+    shots, caps = [], []
+    for i, pg in enumerate(pages):
+        f = root / f"shot-{did}-{i}.png"
+        f.write_bytes(b"png-" + pg.encode())
+        shots.append(f.name)
+        caps.append({"page": pg, "ok": ok, "sha256": vl._hash_path(f) if ok else "",
+                     "error": "" if ok else "browser down"})
+    vl.register_run(f"run-{did}", TASK, acs=[ac], rung="rung-1-same-vendor-independent",
+                    seats=[{"seat": "claude", "vendor": "claude"}], required_vendors=1,
+                    pages={str(ac): list(pages)}, captures=caps, root=root)
+    return {"run_id": f"run-{did}", "evidence": list(evidence) + shots}
 
 
 def _lines(root, rel):
@@ -436,7 +476,7 @@ def test_control_same_pseudonym_with_a_registered_review_dispatch_passes_the_ide
 def test_record_before_any_commit_is_refused(root):
     """Z.ai repro #3: nothing committed yet, so who produced the task is unknown."""
     _task(root, TASTE)
-    with pytest.raises(vl.VerdictRefused, match="no commit references"):
+    with pytest.raises(vl.VerdictRefused, match="no commit"):
         vl.record(TASK, 1, "green", reviewer="openai/gpt-5", rung="x", evidence=["evidence.md"],
                   digest=_dg(root), dispatch_id=_dispatch(root), root=root)
 
@@ -637,7 +677,7 @@ def _two_criteria(root):
 
 def test_green_on_an_operator_only_criterion_does_not_satisfy_the_render_gate(root):
     _two_criteria(root)
-    _rec(root, ac=2, commit=False)                    # a genuine green on AC2 (taste/render)
+    _rec(root, ac=2, commit=False, render=True)       # a genuine green on AC2 (taste/render)
     p = root / vl.VERDICTS
     row = json.loads(p.read_text())
     row.update(ac=1, ac_digest=_dg(root, 1), id="V-tier0-forged")
@@ -649,7 +689,7 @@ def test_green_on_an_operator_only_criterion_does_not_satisfy_the_render_gate(ro
 
 def test_control_green_on_the_render_surface_criterion_satisfies_the_gate(root):
     _two_criteria(root)
-    rec = _rec(root, ac=2)
+    rec = _rec(root, ac=2, render=True)
     assert [r["id"] for r in vl.render_verdicts(TASK, root)] == [rec["id"]]
 
 
@@ -666,7 +706,7 @@ def test_control_unrelated_green_plus_render_green_satisfies_the_gate(root):
     _task(root, TASTE + RENDERED)
     _produce_render(root)
     _rec(root, ac=1)
-    r = _rec(root, ac=2)
+    r = _rec(root, ac=2, render=True)
     assert [x["id"] for x in vl.render_verdicts(TASK, root)] == [r["id"]]
 
 
@@ -680,7 +720,7 @@ def test_render_task_with_no_render_criterion_cannot_be_satisfied_by_a_verdict(r
 def test_continuation_edit_that_adds_risk_vocabulary_voids_the_render_verdict(root):
     _task(root, RENDERED)
     _produce_render(root)
-    _rec(root)
+    _rec(root, render=True)
     _edit(root, "**If not:** note it", "**If not:** publish the release to the public mirror")
     assert vl.render_verdicts(TASK, root) == []
 
@@ -765,7 +805,7 @@ def test_audit_fails_on_a_row_introduced_by_a_producer(root):
     _rec(root, commit=False)
     _produce(root)
     code, out = vl.audit(root)
-    assert code == 2 and any("introduced by producer" in ln for ln in out)
+    assert code == 2 and any("introduced by" in ln for ln in out)
 
 
 def test_audit_fails_on_a_torn_line(root):

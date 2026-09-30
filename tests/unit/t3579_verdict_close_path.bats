@@ -98,15 +98,36 @@ _produce() {
 
 _record() {
     # The shipped path: the producer has committed, the reviewer submits the digest it read,
-    # names a registered review dispatch, and commits its own row.
+    # names a registered review dispatch, and commits its own row as its own worker identity.
+    # A render criterion also needs a signed review run that recorded the pages required and a
+    # verified screenshot of each (T-3580 round 2): the judge's part, played here in python.
     git -C "$PROJECT_ROOT" rev-parse -q --verify HEAD >/dev/null 2>&1 || _produce
     _dispatch rv-1
-    local dg
+    local dg extra=()
     dg=$("$FW" reviewer verdict digest T-9200 --ac 1)
-    "$FW" reviewer verdict record T-9200 --ac 1 --outcome "$1" --reviewer "openai/gpt-5" \
-        --rung cross-vendor --dispatch-id rv-1 --digest "$dg" "${@:2}" || return $?
+    if [ "$1" = green ]; then
+        printf 'png' > "$PROJECT_ROOT/shot-rv-1.png"
+        PYTHONPATH="$BATS_TEST_DIRNAME/../.." PROJECT_ROOT="$PROJECT_ROOT" python3 - <<'PY'
+import os
+from pathlib import Path
+from lib import verdict_ledger as vl
+root = Path(os.environ["PROJECT_ROOT"])
+vl.register_run("run-rv-1", "T-9200", acs=[1], rung="rung-1-same-vendor-independent",
+                seats=[{"seat": "claude", "vendor": "claude"}], required_vendors=1,
+                pages={"1": ["/review"]},
+                captures=[{"page": "/review", "ok": True, "sha256": vl._hash_path(root / "shot-rv-1.png"), "error": ""}],
+                root=root)
+PY
+        extra=(--run-id run-rv-1 --evidence shot-rv-1.png)
+    fi
+    "$FW" reviewer verdict record T-9200 --ac 1 --outcome "$1" --reviewer "reviewer-rv-1:openai/gpt-5" \
+        --rung cross-vendor --dispatch-id rv-1 --digest "$dg" "${extra[@]}" "${@:2}" || return $?
+    if [ "$1" = green ]; then
+        PYTHONPATH="$BATS_TEST_DIRNAME/../.." PROJECT_ROOT="$PROJECT_ROOT" python3 -c \
+            "from lib import verdict_ledger as vl; vl.bind_dispatch('run-rv-1','claude','rv-1','claude')"
+    fi
     git -C "$PROJECT_ROOT" add .context/reviews
-    _as "Reviewer Worker" commit -q -m "T-9200: reviewer verdict"
+    _as "reviewer-rv-1" commit -q -m "T-9200: reviewer verdict"
 }
 
 @test "without a verdict the render task is refused by the sovereignty gate" {
@@ -163,7 +184,7 @@ _record() {
     _make_render_task >/dev/null
     _produce
     _dispatch rv-1
-    run "$FW" reviewer verdict record T-9200 --ac 1 --outcome green --reviewer "Builder Bot" \
+    run "$FW" reviewer verdict record T-9200 --ac 1 --outcome green --reviewer "reviewer-rv-1:Builder Bot" \
         --rung same-agent --dispatch-id rv-1 --digest "$("$FW" reviewer verdict digest T-9200 --ac 1)" \
         --evidence evidence.md
     [ "$status" -eq 1 ]
@@ -205,7 +226,7 @@ PY
 
     # An independent reviewer now returns red. The tick must not survive it.
     _dispatch rv-2
-    run "$FW" reviewer verdict record T-9200 --ac 1 --outcome red --reviewer "zai/glm-5" \
+    run "$FW" reviewer verdict record T-9200 --ac 1 --outcome red --reviewer "reviewer-rv-2:zai/glm-5" \
         --rung cross-vendor --dispatch-id rv-2 --guidance "contradicts itself" \
         --digest "$("$FW" reviewer verdict digest T-9200 --ac 1)"
     [ "$status" -eq 0 ]

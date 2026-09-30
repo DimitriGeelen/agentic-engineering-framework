@@ -3,6 +3,7 @@
 
 import json
 import os
+import re
 import sys
 import tempfile
 from pathlib import Path
@@ -247,22 +248,28 @@ def _cli(root, *args, env_extra=None):
 class FakeWorker:
     """A fake dispatcher whose 'worker' does what the brief tells a real one to do: registers
     nothing itself except what the dispatcher wrapper would, then runs the REAL `verdict record`
-    CLI and commits under its own identity. `behaviour` picks what it does per criterion."""
+    CLI (which signs the worker's completion) and commits under its own identity
+    `reviewer-<dispatch id>`. `behaviour` picks what it does per dispatch (a string, or a list
+    indexed by dispatch number); `cite_shots=False` makes it omit the screenshots."""
 
-    def __init__(self, behaviour="green", identity="Reviewer Worker", write=True):
+    def __init__(self, behaviour="green", identity=None, write=True, cite_shots=True):
         self.behaviour, self.identity, self.write = behaviour, identity, write
+        self.cite_shots = cite_shots
         self.calls: list[dict] = []
         self.n = 0
 
-    def __call__(self, *, task_id, brief, root, name):
+    def __call__(self, *, task_id, brief, root, name, vendor="claude"):
         self.n += 1
         did = f"{name}-{self.n:012x}"
-        self.calls.append({"name": name, "brief": brief, "did": did})
+        self.calls.append({"name": name, "brief": brief, "did": did, "vendor": vendor})
         vl.register_dispatch(did, task_id, "review", issuer_session="S-x", issuer_identity="dispatcher",
                              root=root)
         if not self.write:
             return did
         outcome = self.behaviour if isinstance(self.behaviour, str) else self.behaviour[self.n - 1]
+        run = re.search(r"--run-id (\S+)", brief)
+        rung = re.search(r"--rung (\S+)", brief).group(1)
+        shots = re.findall(r"^- `([^`]+\.png)`$", brief, re.M) if self.cite_shots else []
         f = next((root / ".tasks" / "active").glob(f"{task_id}-*.md"))
         for c in vl.human_criteria(f.read_text()):
             if c.ticked:
@@ -271,16 +278,26 @@ class FakeWorker:
             ev_dir.mkdir(parents=True, exist_ok=True)
             rep = ev_dir / f"AC{c.index}-{did}.md"
             rep.write_text("checked it\n")
+            evidence = [str(rep.relative_to(root))]
+            for sh in shots:
+                cp = ev_dir / f"AC{c.index}-{did}-{Path(sh).name}"
+                cp.write_bytes((root / sh).read_bytes())
+                evidence.append(str(cp.relative_to(root)))
             dg = vl.criterion_digest(c)
             args = ["record", task_id, "--ac", str(c.index), "--outcome", outcome,
-                    "--reviewer", f"reviewer:{did}", "--rung", "rung-1-same-vendor-independent",
-                    "--dispatch-id", did, "--digest", dg, "--evidence", str(rep.relative_to(root))]
+                    "--reviewer", f"reviewer-{did}:{vendor}", "--rung", rung,
+                    "--dispatch-id", did, "--digest", dg]
+            for e in evidence:
+                args += ["--evidence", e]
+            if run:
+                args += ["--run-id", run.group(1)]
             if outcome != "green":
                 args += ["--guidance", "needs work"]
             r = _cli(root, *args)
             assert r.returncode == 0, r.stderr
         _git(root, "add", ".context/reviews")
-        _git(root, "commit", "-q", "-m", f"{task_id}: reviewer verdict", env=_ident(self.identity))
+        _git(root, "commit", "-q", "-m", f"{task_id}: reviewer verdict",
+             env=_ident(self.identity or f"reviewer-{did}"))
         return did
 
 
@@ -414,11 +431,13 @@ class TestScreenshots:
         assert "SCREENSHOT CAPTURE FAILED: browser down" in b and "MUST NOT return green" in b
         assert res["evidence"]["error"] == "browser down"
 
-    def test_green_on_unseen_page_is_not_accepted(self, repo):
+    def test_green_on_unseen_page_is_refused_by_the_worker_record(self, repo):
+        """The ledger refuses the green at `record`, so the worker's attempt leaves no row."""
         self._render_task(repo)
         res = _judge(repo, dispatcher=FakeWorker("green"), capture=lambda u, p, o: ([], "browser down"))
         r = res["dispatches"][0]["results"][0]
-        assert r["outcome"] == "unknown" and "unseen" in r["flag"]
+        assert r["outcome"] == "unknown" and res["outcomes"] == {1: "unknown"}
+        assert not vl._read(vl.VERDICTS, repo)
 
     def test_capture_crash_is_a_failed_capture(self, repo):
         self._render_task(repo)
@@ -433,13 +452,16 @@ class TestScreenshots:
 class TestSpendCeiling:
     HI = "cost_estimate:\n  blast_radius: 9\n"
 
-    def test_due_rung_5_is_a_panel_of_three_when_under_ceiling(self, repo):
+    def test_due_rung_5_is_a_panel_of_three_when_under_ceiling(self, repo, monkeypatch):
+        monkeypatch.setattr(judge_cli, "AVAILABLE_VENDORS", judge_cli.PANEL_SEATS)
         _mk_task(repo, TASTE, extra_fm=self.HI)
         _produce(repo)
         w = FakeWorker("green")
         res = _judge(repo, dispatcher=w)
         assert res["rung"] == 5 and len(w.calls) == 3
         assert all("rung-5-panel" in c["brief"] for c in w.calls)
+        assert [c["vendor"] for c in w.calls] == ["claude", "codex", "opencode"]
+        assert res["outcomes"] == {1: "green"} and not res["degraded"]
 
     def test_ceiling_reached_drops_rung_and_says_so(self, repo, monkeypatch):
         monkeypatch.setenv("FW_REVIEWER_JUDGE_WEEKLY_SPEND_CEILING", "10")
@@ -448,8 +470,8 @@ class TestSpendCeiling:
         judge_cli._log_spend(repo, "T-1", 5, 9.0)
         w = FakeWorker("green")
         res = _judge(repo, dispatcher=w)
-        assert res["rung_due"] == 5 and res["rung"] == 2 and len(w.calls) == 1
-        assert "reviewed at rung 2, weekly spend ceiling reached" in res["ceiling_note"]
+        assert res["rung_due"] == 5 and res["rung"] == 3 and len(w.calls) == 1
+        assert "reviewed at rung 3, weekly spend ceiling reached" in res["ceiling_note"]
         assert "rung 5 was due" in w.calls[0]["brief"] and "RUNG DROPPED" in w.calls[0]["brief"]
         rows = vl._read(vl.VERDICTS, repo)
         assert rows  # not skipped
@@ -467,7 +489,8 @@ class TestSpendCeiling:
     def test_under_ceiling_no_note(self):
         assert judge_cli._apply_ceiling(5, "x", 0, 100)[2] == ""
 
-    def test_panel_stops_at_first_non_green_seat(self, repo):
+    def test_panel_stops_at_first_non_green_seat(self, repo, monkeypatch):
+        monkeypatch.setattr(judge_cli, "AVAILABLE_VENDORS", judge_cli.PANEL_SEATS)
         _mk_task(repo, TASTE, extra_fm=self.HI)
         _produce(repo)
         w = FakeWorker(["green", "red", "green"])
@@ -510,6 +533,9 @@ class TestDryRunAndRealDispatcher:
         d = calls[0]
         assert d[1:3] == ["termlink", "dispatch"] and "--task-type" in d and d[d.index("--task-type") + 1] == "review"
         assert calls[1][1:3] == ["termlink", "wait"]
+        # the wrapper takes --project (not --project-dir) and --worker-kind for the vendor
+        assert "--project-dir" not in d and d[d.index("--project") + 1] == str(repo)
+        assert d[d.index("--worker-kind") + 1] == "claude"
 
     def test_real_dispatcher_failure_is_unknown(self, repo, monkeypatch):
         _mk_task(repo, TASTE)

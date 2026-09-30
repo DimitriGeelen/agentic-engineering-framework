@@ -14,9 +14,23 @@ Hard human classes (tier0-or-bypass, act-in-the-world, sovereignty-field) are ne
 they are reported as operator-only.
 
 Rung follows IW-7 (docs/reports/T-3557-agent-reviewer-default.md): impact = max(cost_if_wrong,
-value_at_stake) picks rung 1 (same-vendor independent agent) or 5 (panel of 3). A weekly spend
-ceiling (config REVIEWER_JUDGE_WEEKLY_SPEND_CEILING) drops the rung one step, and the brief and
-the result say so.
+value_at_stake) over reversibility, blast radius, audience, value and uncertainty picks rung 1
+(low: same-vendor independent agent), 3 (medium: one TermLink-dispatched reviewer) or 5 (high:
+panel of 3 vendors). A weekly spend ceiling (config REVIEWER_JUDGE_WEEKLY_SPEND_CEILING) drops the
+rung one step, and the brief and the result say so.
+
+THE LEDGER ENFORCES, NOT THIS CLI (T-3580 round 2). Anything promised here is refused by
+lib/verdict_ledger.py's shared validator or it does not exist: the worker's signed completion
+(session, revision, digest, evidence hashes, verdict hash, introducing commit), the pages a render
+criterion needs with the capture result of each, and a panel's required seats are all registered
+in a signed review run BEFORE dispatch, and `apply` / `check-render` / `audit` read them.
+
+SINGLE-VENDOR HONESTY. Only the claude worker kind exists until T-3582 builds codex/opencode
+seats. A rung-5 run is therefore dispatched as ONE seat, reported "degraded: single-vendor
+panel", and registered as demanding three vendors, so the ledger refuses to let it satisfy the
+criterion. We chose "leave the criterion open" over "downgrade the requirement": a high-impact
+criterion is not quietly closed on a weaker review than the impact model asked for. The
+reviewer's verdict is still recorded and reported (red/amber/escalate keep it open and say why).
 """
 
 from __future__ import annotations
@@ -27,6 +41,7 @@ import os
 import re
 import subprocess
 import sys
+import uuid
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 from typing import Callable
@@ -48,8 +63,12 @@ REPORT_DIR = ".context/reviews/evidence"
 CEILING_KEY = "REVIEWER_JUDGE_WEEKLY_SPEND_CEILING"
 DEFAULT_CEILING = 10000.0
 #: Estimated USD per dispatched reviewer, by rung. A panel is three seats.
-RUNG_COST = {1: 2.0, 2: 2.0, 5: 6.0}
+RUNG_COST = {1: 2.0, 2: 2.0, 3: 3.0, 5: 6.0}
+#: The vendors a full rung-5 panel needs, and the ones this checkout can actually dispatch.
+#: `AVAILABLE_VENDORS` grows when T-3582 builds real codex/opencode worker kinds.
 PANEL_SEATS = ("claude", "codex", "opencode")
+AVAILABLE_VENDORS = ("claude",)
+DEGRADED_SINGLE_VENDOR = "degraded: single-vendor panel"
 UNKNOWN = "unknown"
 
 
@@ -119,21 +138,81 @@ def _select_criteria(task_data: dict, criterion_n: int | None = None,
 
 # ── rung (IW-7) ──────────────────────────────────────────────────────────────
 
-def _calculate_rung(task_data: dict) -> tuple[int, str]:
-    """impact = max(cost_if_wrong, value_at_stake) -> rung 1 (low) or 5 (high). Returns (rung, reason)."""
+_IRREVERSIBLE_RE = re.compile(
+    r"\b(publish(?:es|ed|ing)?|deploy(?:s|ed|ing)?|production|credential[s]?|secret[s]?|payment|"
+    r"drop\s+table|force[- ]push|delete[sd]?\s+(?:data|branch))\b", re.I)
+_CONSUMER_PATH_RE = re.compile(r"(?:^|[\s`'\"(])((?:lib|agents|policy|web|seeds)/[\w./-]+|bin/fw)\b")
+_CROSS_PROJECT_RE = re.compile(r"\b(cross[- ]project|peer projects?|consumer projects?|other projects?|external users?)\b", re.I)
+_CONSUMER_RE = re.compile(r"\b(consumers?|fw upgrade|vendored|install surface)\b", re.I)
+_SECURITY_RE = re.compile(r"\b(security|vulnerab\w*|auth(?:entication|orization)?|sandbox)\b", re.I)
+_OBJECTIVE_RE = re.compile(r"\bproject[- ]objectives?\b", re.I)
+
+
+def _impact(task_data: dict, criteria: list[dict] | None = None) -> dict:
+    """IW-7 impact = max(cost_if_wrong, value_at_stake). Returns {'tier', 'inputs', 'reasons'}
+    where inputs records what each axis saw, so the selection is auditable."""
     fm = task_data["frontmatter"]
+    crit_text = "\n".join(c.get("body", "") for c in (criteria or []))
+    # What the change is ABOUT (title, description, the criteria under review) - not the whole
+    # task body, which mentions "consumers" and "security" in passing on almost every task.
+    scan = f"{fm.get('name', '')}\n{fm.get('description', '')}\n{crit_text}"
     ce = fm.get("cost_estimate") or {}
     blast = ce.get("blast_radius")
+    comps = fm.get("components") or []
+    comps = comps if isinstance(comps, list) else [comps]
+    paths = sorted({m for m in _CONSUMER_PATH_RE.findall(scan)} | {str(c) for c in comps
+                    if re.match(r"(lib|agents|policy|web|seeds)/|bin/fw", str(c))})
     bvp = fm.get("bvp_scores") or {}
     voi = fm.get("voi_score")
-    why = []
+    conf = fm.get("iw_confidence", fm.get("confidence"))
+    tags = [str(t).lower() for t in (fm.get("tags") or [])] if isinstance(fm.get("tags"), list) else []
+    inputs = {
+        "reversibility": "leaves-repo" if _IRREVERSIBLE_RE.search(scan) else "git-only",
+        "blast_radius": blast, "components": len(comps), "consumer_paths": paths[:6],
+        "audience": ("cross-project" if _CROSS_PROJECT_RE.search(scan)
+                     else "consumers" if (paths or _CONSUMER_RE.search(scan)) else "internal"),
+        "value": {"bvp": {k: bvp.get(k) for k in ("D1", "D2") if k in bvp}, "voi_score": voi,
+                  "project_objective": bool(_OBJECTIVE_RE.search(scan) or "objective" in tags)},
+        "uncertainty": {"confidence": conf,
+                        "inception": str(fm.get("workflow_type")) == "inception"},
+        "security": bool(_SECURITY_RE.search(scan) or "security" in tags),
+    }
+    high, medium = [], []
     if isinstance(blast, (int, float)) and blast > 5:
-        why.append(f"blast_radius={blast}")
+        high.append(f"blast_radius={blast}")
+    elif isinstance(blast, (int, float)) and blast >= 3:
+        medium.append(f"blast_radius={blast}")
+    if len(comps) >= 5:
+        high.append(f"components={len(comps)}")
     if isinstance(voi, (int, float)) and voi >= 0.6:
-        why.append(f"voi_score={voi}")
+        high.append(f"voi_score={voi}")
     if bvp and (bvp.get("D1", 0) > 3 or bvp.get("D2", 0) > 3):
-        why.append("D1/D2 > 3")
-    return (5, "; ".join(why)) if why else (1, "default")
+        high.append("D1/D2 > 3")
+    if inputs["value"]["project_objective"]:
+        high.append("project objective")
+    if inputs["security"]:
+        high.append("security")
+    if inputs["audience"] == "cross-project":
+        high.append("cross-project audience")
+    if inputs["reversibility"] == "leaves-repo":
+        high.append("not undone by git revert")
+    if isinstance(conf, (int, float)) and conf <= 1:
+        high.append(f"confidence={conf}")
+    if inputs["audience"] == "consumers":
+        medium.append("consumer-facing code (" + (paths[0] if paths else "consumer text") + ")")
+    if inputs["uncertainty"]["inception"]:
+        medium.append("inception GO")
+    if len(comps) >= 3:
+        medium.append(f"components={len(comps)}")
+    tier = "high" if high else "medium" if medium else "low"
+    return {"tier": tier, "inputs": inputs, "reasons": high if high else medium}
+
+
+def _calculate_rung(task_data: dict, criteria: list[dict] | None = None) -> tuple[int, str]:
+    """IW-7: low -> rung 1, medium -> rung 3, high -> rung 5. Returns (rung, reason)."""
+    imp = _impact(task_data, criteria)
+    rung = {"low": 1, "medium": 3, "high": 5}[imp["tier"]]
+    return rung, "; ".join(imp["reasons"]) if imp["reasons"] else "default"
 
 
 def _config_value(root: Path, key: str, default: str) -> str:
@@ -178,24 +257,24 @@ def _weekly_spend(root: Path, now: datetime | None = None) -> float:
 
 
 def _apply_ceiling(rung: int, reason: str, spent: float, ceiling: float) -> tuple[int, str, str]:
-    """Drop one rung when the due rung would take the week past the ceiling. Returns
-    (rung, reason, note); note is '' when nothing was dropped."""
+    """Drop one rung (5 -> 3 -> 1) when the due rung would take the week past the ceiling.
+    Returns (rung, reason, note); note is '' when nothing was dropped."""
     if spent + RUNG_COST.get(rung, 2.0) <= ceiling:
         return rung, reason, ""
-    lower = 2 if rung >= 5 else 1
-    if lower == rung:
+    lower = 3 if rung >= 5 else 1
+    if lower == rung or rung <= 1:
         note = (f"weekly spend ceiling reached (spent {spent:g} of {ceiling:g}); rung {rung} is "
                 f"already the lowest, so it runs at rung {rung} and is not skipped")
-    else:
-        note = (f"reviewed at rung {lower}, weekly spend ceiling reached (spent {spent:g} of "
-                f"{ceiling:g}); rung {rung} was due")
+        return rung, reason, note
+    note = (f"reviewed at rung {lower}, weekly spend ceiling reached (spent {spent:g} of "
+            f"{ceiling:g}); rung {rung} was due")
     return lower, reason, note
 
 
 def _rung_label(rung: int, seat: str = "") -> str:
-    base = "rung-1-same-vendor-independent" if rung <= 2 else "rung-5-panel"
-    if rung == 2:
-        base = "rung-2-same-vendor-independent"
+    base = ("rung-1-same-vendor-independent" if rung <= 1 else
+            "rung-2-same-vendor-independent" if rung == 2 else
+            "rung-3-termlink-single-reviewer" if rung <= 4 else "rung-5-panel")
     return f"{base}:{seat}" if seat else base
 
 
@@ -246,8 +325,13 @@ def _watchtower_url(root: Path) -> str:
     return f.read_text().strip() if f.exists() else ""
 
 
+def _shot_name(i: int, page: str) -> str:
+    return f"{i + 1:02d}-{re.sub(r'[^a-z0-9]+', '-', page.lower()).strip('-') or 'root'}.png"
+
+
 def _capture_playwright(base_url: str, pages: list[str], outdir: Path) -> tuple[list[Path], str]:
-    """Real capturer. Returns (paths, error); error != '' means nothing usable was captured."""
+    """Real capturer. Returns (paths, error); shots are named `_shot_name(i, page)` so each page's
+    result can be told apart, and a partial failure comes back as 'partial: <page>: <why>; ...'."""
     if not base_url:
         return [], "no running Watchtower (.context/working/watchtower.url missing)"
     if not pages:
@@ -269,7 +353,7 @@ def _capture_playwright(base_url: str, pages: list[str], outdir: Path) -> tuple[
                     if resp is None or resp.status >= 400:
                         errs.append(f"{p}: HTTP {getattr(resp, 'status', '?')}")
                         continue
-                    f = outdir / f"{i + 1:02d}-{re.sub(r'[^a-z0-9]+', '-', p.lower()).strip('-') or 'root'}.png"
+                    f = outdir / _shot_name(i, p)
                     page.screenshot(path=str(f), full_page=True)
                     shots.append(f)
                 except Exception as e:  # noqa: BLE001
@@ -287,9 +371,13 @@ Capturer = Callable[[str, list[str], Path], "tuple[list[Path], str]"]
 
 def _gather_evidence(root: Path, task_id: str, task_data: dict, criteria: list[dict],
                      capture: Capturer, *, dry_run: bool) -> dict:
-    """{'pages': [...], 'shots': [rel paths], 'error': str, 'needed': bool}."""
+    """{'needed', 'pages', 'shots', 'error', 'captures', 'partial'}.
+
+    `captures` is the per-page result the ledger will be given: {'page', 'ok', 'sha256', 'path',
+    'error'}. A page with no verified screenshot is `ok: False` whatever else was captured, so a
+    partial capture is preserved rather than collapsed into a single pass/fail."""
     needed = any(c["render"] for c in criteria)
-    ev = {"needed": needed, "pages": [], "shots": [], "error": ""}
+    ev = {"needed": needed, "pages": [], "shots": [], "error": "", "captures": [], "partial": []}
     if not needed:
         return ev
     ev["pages"] = _pages_for(root, task_id, task_data["text"], [c for c in criteria if c["render"]])
@@ -299,8 +387,19 @@ def _gather_evidence(root: Path, task_id: str, task_data: dict, criteria: list[d
         shots, err = capture(_watchtower_url(root), ev["pages"], root / EVIDENCE_DIR / task_id)
     except Exception as e:  # noqa: BLE001
         shots, err = [], f"capture crashed: {e}"
-    ev["shots"] = [str(Path(s).resolve().relative_to(root.resolve())) for s in shots if Path(s).exists()]
-    ev["error"] = err if (err and (not ev["shots"] or not err.startswith("partial"))) else ""
+    by_name = {Path(x).name: Path(x) for x in shots if Path(x).exists()}
+    errs = err[len("partial: "):].split("; ") if err.startswith("partial: ") else []
+    for i, pg in enumerate(ev["pages"]):
+        f = by_name.get(_shot_name(i, pg))
+        if f is not None:
+            ev["captures"].append({"page": pg, "ok": True, "sha256": vl._hash_path(f),
+                                   "path": str(f.resolve().relative_to(root.resolve())), "error": ""})
+        else:
+            why = next((e for e in errs if e.startswith(f"{pg}:")), err or "not captured")
+            ev["captures"].append({"page": pg, "ok": False, "sha256": "", "path": "", "error": why})
+    ev["shots"] = [c["path"] for c in ev["captures"] if c["ok"]]
+    ev["partial"] = [c["page"] for c in ev["captures"] if not c["ok"]]
+    ev["error"] = err if (err and not ev["shots"]) else ""
     if not ev["shots"] and not ev["error"]:
         ev["error"] = "no screenshot captured"
     return ev
@@ -310,8 +409,10 @@ def _gather_evidence(root: Path, task_id: str, task_data: dict, criteria: list[d
 
 def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reason: str = "",
                  ceiling_note: str = "", evidence: dict | None = None, seat: str = "",
-                 operator_only: list[dict] | None = None) -> str:
-    ev = evidence or {"needed": False, "shots": [], "error": "", "pages": []}
+                 operator_only: list[dict] | None = None, run_id: str = "",
+                 degraded: str = "") -> str:
+    ev = {"needed": False, "shots": [], "error": "", "pages": [], "partial": [],
+          **(evidence or {})}
     lines = [
         "You are an INDEPENDENT REVIEWER for the Agentic Engineering Framework.",
         "You did not produce any of the work below and owe its authors nothing.",
@@ -336,6 +437,10 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
     ]
     if seat:
         lines.append(f"You hold panel seat `{seat}`.")
+    if degraded:
+        lines.append(f"**{degraded}.** Only one vendor is available, so this run cannot satisfy a "
+                     "multi-vendor requirement: your verdict is recorded and reported, and the "
+                     "criterion stays open. Say so in your evidence report.")
     if ceiling_note:
         lines += ["", f"**RUNG DROPPED: {ceiling_note}.** State this in your evidence report."]
     lines += ["", "## The criteria", "", f"Task: {task_id}", ""]
@@ -347,8 +452,13 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
         if ev["shots"]:
             lines.append("Screenshots of the pages the task touched (open each with Read):")
             lines += [f"- `{s}`" for s in ev["shots"]]
-            if ev["error"]:
-                lines.append(f"Capture was partial: {ev['error']}. Pages you did not see are unjudged.")
+            if ev["partial"]:
+                lines.append("**Capture was PARTIAL. You did NOT see: " +
+                             ", ".join(f"`{p}`" for p in ev["partial"]) +
+                             ".** You MUST NOT return green for a criterion that depends on a "
+                             "page you did not see; the ledger refuses such a green.")
+            lines.append("Cite EVERY screenshot above as `--evidence` (the copy in your report "
+                         "directory); the ledger checks each required page's screenshot hash.")
         else:
             lines += [
                 f"**SCREENSHOT CAPTURE FAILED: {ev['error'] or 'no screenshot captured'}.**",
@@ -372,15 +482,20 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
         "3. Record it, citing your report (and screenshots) as `--evidence`:",
         "",
         f"   `bin/fw reviewer verdict record {task_id} --ac <N> --outcome green|amber|red|escalate "
-        f"--reviewer '{seat or 'reviewer'}:$FW_SIDECAR_AGENT_ID' --rung {_rung_label(rung, seat)} "
-        "--dispatch-id $FW_SIDECAR_AGENT_ID --digest <digest> --evidence <report> "
-        "[--evidence <png> ...] [--guidance '...']`",
+        f"--reviewer 'reviewer-$FW_SIDECAR_AGENT_ID:{seat or 'reviewer'}' --rung {_rung_label(rung, seat)} "
+        f"--dispatch-id $FW_SIDECAR_AGENT_ID{f' --run-id {run_id}' if run_id else ''} "
+        "--digest <digest> --evidence <report> [--evidence <png> ...] [--guidance '...']`",
+        "",
+        "   `record` signs your completion (your session, the revision you reviewed, the digest, "
+        "the evidence hashes and the exact verdict). Your row counts only if it is committed by "
+        "exactly that session identity.",
         "",
         "   `--guidance` is mandatory unless green.",
         "4. Commit your own rows, staging by name, under your own identity:",
         "",
-        "   `git add .context/reviews && git -c user.name=reviewer-$FW_SIDECAR_AGENT_ID "
-        f"-c user.email=reviewer@aef.local commit -m '{task_id}: reviewer verdict'`",
+        "   `git add .context/reviews && GIT_AUTHOR_NAME=reviewer-$FW_SIDECAR_AGENT_ID "
+        "GIT_COMMITTER_NAME=reviewer-$FW_SIDECAR_AGENT_ID GIT_AUTHOR_EMAIL=reviewer@aef.local "
+        f"GIT_COMMITTER_EMAIL=reviewer@aef.local git commit -m '{task_id}: reviewer verdict'`",
         "",
         "Do not edit the task file, do not tick anything, do not touch any file outside "
         f"`{REPORT_DIR}/{task_id}/` and the ledger. Never use a bypass flag.",
@@ -408,16 +523,26 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
 Dispatcher = Callable[..., str]
 
 
-def _dispatch_real(*, task_id: str, brief: str, root: Path, name: str, timeout: int = 900) -> str:
+def _dispatch_argv(fw: Path, *, task_id: str, name: str, prompt_file: Path, root: Path,
+                   vendor: str, timeout: int) -> list[str]:
+    """The exact `fw termlink dispatch` argv: the wrapper takes --project (not --project-dir) and
+    --worker-kind for the vendor. A vendor with no worker kind yet (codex/opencode, T-3582) makes
+    the wrapper refuse loudly rather than silently run another vendor's worker."""
+    return [str(fw), "termlink", "dispatch", "--name", name, "--task", task_id,
+            "--task-type", "review", "--worker-kind", vendor, "--prompt-file", str(prompt_file),
+            "--timeout", str(timeout), "--project", str(root)]
+
+
+def _dispatch_real(*, task_id: str, brief: str, root: Path, name: str, vendor: str = "claude",
+                   timeout: int = 900) -> str:
     """Spawn the review worker via `fw termlink dispatch --task-type review`, wait for it, and
     return its dispatch id (the wrapper appends a random suffix and registers it)."""
     fw = Path(os.environ.get("FRAMEWORK_ROOT") or root) / "bin" / "fw"
     pf = root / ".context/working" / f"judge-brief-{name}.md"
     pf.parent.mkdir(parents=True, exist_ok=True)
     pf.write_text(brief)
-    r = subprocess.run([str(fw), "termlink", "dispatch", "--name", name, "--task", task_id,
-                        "--task-type", "review", "--prompt-file", str(pf),
-                        "--timeout", str(timeout), "--project-dir", str(root)],
+    r = subprocess.run(_dispatch_argv(fw, task_id=task_id, name=name, prompt_file=pf, root=root,
+                                      vendor=vendor, timeout=timeout),
                        cwd=root, capture_output=True, text=True, timeout=120)
     m = re.search(r"Worker spawned:\s*(\S+)", r.stdout)
     if r.returncode != 0 or not m:
@@ -429,11 +554,12 @@ def _dispatch_real(*, task_id: str, brief: str, root: Path, name: str, timeout: 
 
 
 def _dispatch_reviewer(task_id: str, brief: str, rung: int, dry_run: bool, root: Path,
-                       dispatcher: Dispatcher | None = None, name: str | None = None) -> str | None:
+                       dispatcher: Dispatcher | None = None, name: str | None = None,
+                       vendor: str = "claude") -> str | None:
     if dry_run:
         return None
     dispatcher = dispatcher or _dispatch_real
-    return dispatcher(task_id=task_id, brief=brief, root=root,
+    return dispatcher(task_id=task_id, brief=brief, root=root, vendor=vendor,
                       name=name or f"judge-{task_id.lower()}-r{rung}")
 
 
@@ -452,48 +578,65 @@ def _parse_printed(output: str, criteria: list[dict]) -> dict[int, str]:
 
 def _collect(root: Path, task_id: str, dispatch_id: str, criteria: list[dict],
              printed: dict[int, str] | None = None) -> list[dict]:
-    """One result per criterion, read from the ledger. green only when the row would pass
-    `apply` (`satisfying_verdict`) AND names this dispatch; a missing/malformed row is unknown."""
+    """One result per criterion, read from the ledger and validated by the ledger's own
+    validator (`vl._fault`) for EVERY outcome: a row that is not a valid, attributable record
+    for this criterion is `unknown` whatever it says, so a malformed amber cannot be reported as
+    amber and a green the ledger would refuse cannot be reported as green."""
     printed = printed or {}
     path, _sub = vl._find_task(root, task_id)
     if path is None:
         return [{"ac": c["ac_index"], "outcome": UNKNOWN, "source": "no-task"} for c in criteria]
     ctx = vl._Ctx(root, task_id, path, path.read_text(encoding="utf-8", errors="replace"))
     crits = {c.index: c for c in human_criteria(ctx.text)}
-    rows = [r for r in vl._read(vl.VERDICTS, root)
+    led = ctx.ledger
+    rows = [(r, i) for r, i in led.entries()
             if r.get("task") == task_id and r.get("dispatch_id") == dispatch_id]
     out = []
     for c in criteria:
-        mine = [r for r in rows if r.get("ac") == c["ac_index"]]
+        mine = [(r, i) for r, i in rows if r.get("ac") == c["ac_index"]]
         res = {"ac": c["ac_index"], "outcome": UNKNOWN, "source": "no-ledger-row",
                "printed": printed.get(c["index"], UNKNOWN), "verdict_id": ""}
-        if mine:
-            row = mine[-1]
-            oc = row.get("outcome")
-            res.update(source="ledger", verdict_id=row.get("id", ""), rung=row.get("rung", ""))
-            if oc == vl.GREEN:
-                good, why = vl.satisfying_verdict(ctx, crits[c["ac_index"]]) if c["ac_index"] in crits else (None, "gone")
-                if good and good.get("id") == row.get("id"):
-                    res["outcome"] = vl.GREEN
-                else:
-                    res.update(outcome=UNKNOWN, source="ledger-row-invalid", why=why or "")
-            elif oc in vl.OUTCOMES:
-                res["outcome"] = oc
+        if led.faults:
+            res.update(source="ledger-integrity", why=led.faults[0])
+        elif mine:
+            row, intro = mine[-1]
+            res.update(source="ledger", verdict_id=str(row.get("id", "")), rung=row.get("rung", ""))
+            crit = crits.get(c["ac_index"])
+            if crit is None:
+                res.update(source="ledger-row-invalid", why="criterion gone")
             else:
-                res.update(source="ledger-row-malformed")
+                f = vl._fault(ctx, row, crit, intro)
+                if f is None:
+                    res["outcome"] = row["outcome"]
+                else:
+                    res.update(source="ledger-row-invalid", why=f"{f[0]}: {f[1]}")
+                    if f[0] == "unseen-page":
+                        res["flag"] = f"green-on-unseen-page: {f[1]}"
         out.append(res)
     return out
 
 
-def _flag_unseen_green(results: list[dict], criteria: list[dict], evidence: dict) -> None:
-    """A green on a render criterion whose capture failed contradicts the brief: flag it."""
-    if not (evidence.get("needed") and not evidence.get("shots")):
-        return
-    render_acs = {c["ac_index"] for c in criteria if c["render"]}
-    for r in results:
-        if r["ac"] in render_acs and r["outcome"] == vl.GREEN:
-            r["flag"] = "green-on-unseen-page: capture failed, so this verdict is not accepted"
-            r["outcome"] = UNKNOWN
+def _final(root: Path, task_id: str, judged: list[dict], dispatches: list[dict]) -> tuple[dict, dict]:
+    """(outcomes, why) per criterion AFTER the whole run: green only if `satisfying_verdict` - the
+    check `apply` uses, which requires every required seat and vendor - accepts it."""
+    path, _ = vl._find_task(root, task_id)
+    ctx = vl._Ctx(root, task_id, path, path.read_text(encoding="utf-8", errors="replace")) if path else None
+    crits = {c.index: c for c in human_criteria(ctx.text)} if ctx else {}
+    outcomes, whys = {}, {}
+    for c in judged:
+        seat_res = [r for d in dispatches for r in d["results"] if r["ac"] == c["ac_index"]]
+        last = seat_res[-1] if seat_res else {"outcome": UNKNOWN}
+        if last["outcome"] == vl.GREEN:
+            good, why = (vl.satisfying_verdict(ctx, crits[c["ac_index"]])
+                         if ctx and c["ac_index"] in crits else (None, "criterion gone"))
+            outcomes[c["ac_index"]] = vl.GREEN if good else UNKNOWN
+            if not good:
+                whys[c["ac_index"]] = why
+        else:
+            outcomes[c["ac_index"]] = last["outcome"]
+            if last.get("why"):
+                whys[c["ac_index"]] = last["why"]
+    return outcomes, whys
 
 
 def _log_spend(root: Path, task_id: str, rung: int, cost: float) -> None:
@@ -520,42 +663,69 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
         res.update(error=f"No REVIEWER_JUDGES criteria found for {task_id}", code=1)
         return res
 
-    due, reason = _calculate_rung(task_data)
+    imp = _impact(task_data, judged)
+    due = {"low": 1, "medium": 3, "high": 5}[imp["tier"]]
+    reason = "; ".join(imp["reasons"]) if imp["reasons"] else "default"
     spent, ceiling = _weekly_spend(root, now), _ceiling(root)
     rung, reason, note = _apply_ceiling(due, reason, spent, ceiling)
     res.update(rung_due=due, rung=rung, rung_reason=reason, ceiling_note=note,
-               weekly_spend=spent, ceiling=ceiling)
+               impact=imp, weekly_spend=spent, ceiling=ceiling)
+
+    # Seats: a rung-5 panel wants three vendors; only the available ones can be dispatched.
+    if rung >= 5:
+        seats = [v for v in PANEL_SEATS if v in AVAILABLE_VENDORS]
+        required = len(PANEL_SEATS)
+    else:
+        seats, required = ["claude"], 1
+    degraded = DEGRADED_SINGLE_VENDOR if len(seats) < required else ""
+    res.update(seats=seats, required_vendors=required, degraded=degraded)
 
     evidence = _gather_evidence(root, task_id, task_data, judged, capture or _capture_playwright,
                                 dry_run=dry_run)
     res["evidence"] = evidence
-    seats = PANEL_SEATS if rung >= 5 else ("",)
+    run_id = f"run-{task_id.lower()}-{uuid.uuid4().hex[:10]}"
     briefs = {s: _build_brief(task_id, judged, rung=rung, rung_reason=reason, ceiling_note=note,
-                              evidence=evidence, seat=s, operator_only=operator) for s in seats}
+                              evidence=evidence, seat=s, operator_only=operator,
+                              run_id=run_id, degraded=degraded) for s in seats}
     res["brief"] = briefs[seats[0]]
     if dry_run:
         res["code"] = 0
         return res
 
+    # Register the run BEFORE any dispatch: what it requires (seats, vendors, the pages each
+    # render criterion needs and how each capture went) is what the ledger later enforces.
+    try:
+        vl.register_run(
+            run_id, task_id, acs=[c["ac_index"] for c in judged], rung=_rung_label(rung),
+            seats=[{"seat": s, "vendor": s} for s in seats], required_vendors=required,
+            pages={str(c["ac_index"]): evidence["pages"] for c in judged if c["render"]},
+            captures=evidence["captures"],
+            inputs=imp["inputs"], reason=reason + (f"; {note}" if note else ""),
+            degraded=degraded, root=root)
+    except Exception as e:  # noqa: BLE001
+        res.update(error=f"could not register the review run: {e}", code=1)
+        return res
+    res["run_id"] = run_id
+
     res["dispatches"] = []
     for seat in seats:
         try:
-            did = _dispatch_reviewer(task_id, briefs[seat], rung, False, root, dispatcher,
-                                     name=f"judge-{task_id.lower()}-r{rung}" + (f"-{seat}" if seat else ""))
+            did = _dispatch_reviewer(
+                task_id, briefs[seat], rung, False, root, dispatcher,
+                name=f"judge-{task_id.lower()}-r{rung}" + (f"-{seat}" if len(seats) > 1 else ""),
+                vendor=seat)
+            vl.bind_dispatch(run_id, seat, did, seat, root=root)
         except Exception as e:  # noqa: BLE001
             res["dispatches"].append({"seat": seat, "error": str(e), "results": [
                 {"ac": c["ac_index"], "outcome": UNKNOWN, "source": "dispatch-failed"} for c in judged]})
             break
         results = _collect(root, task_id, did, judged)
-        _flag_unseen_green(results, judged, evidence)
-        _log_spend(root, task_id, rung, RUNG_COST.get(rung, 2.0) / len(seats))
+        _log_spend(root, task_id, rung, RUNG_COST.get(rung, 2.0) / (3 if rung >= 5 else 1))
         res["dispatches"].append({"seat": seat, "dispatch_id": did, "results": results})
-        # A panel is sequential and stops at the first seat that does not clear every criterion:
-        # the ledger's LATEST row decides, so a later seat must never paper over an earlier one.
+        # A panel is sequential and stops at the first seat that does not clear every criterion.
         if any(r["outcome"] != vl.GREEN for r in results):
             break
-    last = res["dispatches"][-1]["results"] if res["dispatches"] else []
-    res["outcomes"] = {r["ac"]: r["outcome"] for r in last}
+    res["outcomes"], res["why"] = _final(root, task_id, judged, res["dispatches"])
     res["code"] = 0
     return res
 
@@ -566,6 +736,9 @@ def _print_result(res: dict) -> None:
     for o in res["operator_only"]:
         print(f"  operator-only (never dispatched): AC#{o['ac']} [{o['class']}]")
     print(f"Rung: {res['rung']} ({res['rung_reason']})")
+    if res.get("degraded"):
+        print(f"  {res['degraded']}: {', '.join(res['seats'])} of {res['required_vendors']} vendors "
+              f"(T-3582); its verdict cannot satisfy the criterion")
     if res.get("ceiling_note"):
         print(f"  {res['ceiling_note']}")
     ev = res.get("evidence", {})
@@ -580,6 +753,8 @@ def _print_result(res: dict) -> None:
               + (f" FAILED: {d['error']}" if d.get("error") else ""))
         for r in d["results"]:
             print(f"  AC#{r['ac']}: {r['outcome']} ({r['source']}){' ' + r['flag'] if r.get('flag') else ''}")
+    for ac, why in sorted((res.get("why") or {}).items()):
+        print(f"  final AC#{ac}: {res['outcomes'][ac]} - {why}")
 
 
 def main(argv: list[str] | None = None, *, dispatcher: Dispatcher | None = None,
