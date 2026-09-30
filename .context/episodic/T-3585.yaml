@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3585: fw release status reports 'Latest tag: none' and 'Commits since: 0' when tags use a prefixed pattern (designer-vX.Y.Z)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-30T14:50:22Z
+# ============================================================================
+
+task_id: T-3585
+task_name: "fw release status reports 'Latest tag: none' and 'Commits since: 0' when tags use a prefixed pattern (designer-vX.Y.Z)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-30T10:02:12Z
+completed: 2026-09-30T14:50:04Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-30T16:40:30+02:00
+last_commit: 2026-09-30T16:43:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  criteria for T-3584/T-3585/T-3569 and a shared parallel-batch worker prompt. fw release status honours a tag pattern, recognises prefixed semver, never reports 0 for no baseline. vendor sync of release-status tag pattern
+
+# Key outcomes
+outcomes:
+  - '`fw release status` finds the latest release tag under a configurable pattern (config key in BOTH registries, default matching this repo''s existing tags) and also recognises prefixed semver such as `designer-vX.Y.Z`'
+  - 'When no tag matches, it prints "no tag matching <pattern>" and the commit count as UNKNOWN or since the root, labelled as such, and never "Commits since: 0"'
+  - 'Tests on fixture repos: plain vX.Y.Z tags; prefixed designer-vX.Y.Z tags with commits after the latest; no tags. Each asserts the printed tag and count; a negative control proves "0" is never printed when commits exist'
+  - 'config-registry parity passes; `bin/fw vendor self --check` clean (vendor check verified clean by the parent 2026-09-30 once the parallel workers had committed)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fw release status honours a tag pattern, recognises prefixed semver, never reports 0 for no baseline'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/release.sh'
+  - '.agentic-framework/web/blueprints/config.py'
+  - 'docs/reports/parallel-batch-2026-09-30-prompt.md'
+  - 'lib/config.sh'
+  - 'lib/release.sh'
+  - '.tasks/active/T-3569-c-001-audit-counts-research-preserved-in.md'
+  - '.tasks/active/T-3584-re-pin-the-vendored-designer-to-0140-832.md'
+  - '.tasks/active/T-3585-fw-release-status-reports-latest-tag-non.md'
+  - 'tests/unit/t3585_release_status_tag_pattern.bats'
+  - 'web/blueprints/config.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-30T16:40:30'
+    action: 'T-3585: criteria for T-3584/T-3585/T-3569 and a shared parallel-batch worker prompt'
+  - time: '2026-09-30T16:42:55'
+    action: 'T-3585: fw release status honours a tag pattern, recognises prefixed semver, never reports 0 for no baseline'
+  - time: '2026-09-30T16:43:13'
+    action: 'T-3585: vendor sync of release-status tag pattern'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 287 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 287
+  commits: 4
+  files_changed: 11
+  lines_added: 879
+  lines_removed: 34
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3585-fw-release-status-reports-latest-tag-non.md
+generated_by: context-agent-hybrid

@@ -1,21 +1,21 @@
 ---
-id: T-3591
-name: "/tasks/<id> shows a Complete Task button on tasks that are not ready - tasks.py:865
-  decides with _parse_acceptance_criteria, not the canonical predicate"
+id: T-3585
+name: "fw release status reports 'Latest tag: none' and 'Commits since: 0' when tags
+  use a prefixed pattern (designer-vX.Y.Z)"
 description: >
-  Found by the independent T-3590 review (docs/reports/T-3590-review.md GUIDANCE 3):
-  the same root cause as T-3590 on another surface. tasks.py:865 can_complete = all(ac['checked']
-  ...) uses the display parser, so live /tasks/T-2200 and /tasks/T-2202 each show
-  a Complete Task button although their Human criteria are unticked. Fix: use web/shared.py
-  is_ready_for_batch_completion (or its criteria core) for can_complete; add a test
-  with the T-2200 shape.
+  832 OBS-451 (@20): on a project with 16 tags named designer-vX.Y.Z, fw release status
+  reported 'Latest tag: <none>' and 'Commits since: 0' while 11 commits had touched
+  src/. 'Commits since: 0' is the most misleading value available: it says nothing
+  is due. Fix: support a tag pattern (config key, or detect prefixed semver), and
+  when no tag matches, report 'no matching tag (pattern X)' and the commit count since
+  the root or UNKNOWN, never 0. Verify on a fixture repo with prefixed tags.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/config.sh, lib/release.sh, web/blueprints/config.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,9 +43,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-30T11:17:50Z
-last_update: 2026-09-30T13:40:04Z
-date_finished:
+created: 2026-09-30T10:02:12Z
+last_update: 2026-09-30T14:50:04Z
+date_finished: 2026-09-30T14:50:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,8 +56,18 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-30T10:15:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-09-30T11:24:23Z'
+  - ts: '2026-09-30T10:15:28Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -74,33 +84,21 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-09-30T11:30:19Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=276,acs=6)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3591: /tasks/<id> shows a Complete Task button on tasks that are not ready - tasks.py:865 decides with _parse_acceptance_criteria, not the canonical predicate
+# T-3585: fw release status reports 'Latest tag: none' and 'Commits since: 0' when tags use a prefixed pattern (designer-vX.Y.Z)
 
 ## Context
 
-Same root cause as T-3590, on /tasks/<id>. Not dangerous: update-task.sh:249-257 refuses a
-`### Human` block outside `## Acceptance Criteria`, so a click errors. But a button that
-cannot succeed should not be offered.
+832 OBS-451 via sidecar @20. `lib/release.sh:454` prints `Latest tag: ${latest:-<none>}`.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `can_complete` on /tasks/<id> (web/blueprints/tasks.py:865) uses the canonical Human-criteria count behind `is_ready_for_batch_completion` (web/shared.py), not `_parse_acceptance_criteria`
-- [x] Test: the T-2200 shape (a `### Human` block after an intervening `## ` heading, unticked) shows no Complete Task button; control: a task whose criteria are all ticked shows it
-- [x] Live /tasks/T-2200 and /tasks/T-2202 show no Complete Task button after restart; `bin/fw watchtower current`; `bin/fw vendor self --check` clean
-- [x] Render review by an independent internal reviewer (operator ruling, T-3557). GREEN at rung 1: docs/reports/T-3591-review.md
+- [x] `fw release status` finds the latest release tag under a configurable pattern (config key in BOTH registries, default matching this repo's existing tags) and also recognises prefixed semver such as `designer-vX.Y.Z`
+- [x] When no tag matches, it prints "no tag matching <pattern>" and the commit count as UNKNOWN or since the root, labelled as such, and never "Commits since: 0"
+- [x] Tests on fixture repos: plain vX.Y.Z tags; prefixed designer-vX.Y.Z tags with commits after the latest; no tags. Each asserts the printed tag and count; a negative control proves "0" is never printed when commits exist
+- [x] config-registry parity passes; `bin/fw vendor self --check` clean (vendor check verified clean by the parent 2026-09-30 once the parallel workers had committed)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -261,12 +259,6 @@ cannot succeed should not be offered.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-python3 -m pytest tests/web/test_t3591_task_detail_complete_button.py tests/web/test_t3590_batch_ready_predicate.py -q > /tmp/.t3591.out 2>&1 && grep -q passed /tmp/.t3591.out
-bin/fw watchtower current
-curl -sf "$(bin/fw watchtower url)/tasks/T-2200" -o /tmp/.t3591.2200 && ! grep -q "/api/task/T-2200/complete" /tmp/.t3591.2200
-curl -sf "$(bin/fw watchtower url)/tasks/T-2202" -o /tmp/.t3591.2202 && ! grep -q "/api/task/T-2202/complete" /tmp/.t3591.2202
-bin/fw vendor self --check
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -359,11 +351,24 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-09-30T11:17:50Z — task-created [task-create-agent]
+### 2026-09-30T10:02:12Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3591-tasksid-shows-a-complete-task-button-on-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3585-fw-release-status-reports-latest-tag-non.md
 - **Context:** Initial task creation
 
-### 2026-09-30T11:24:23Z — status-update [task-update-agent]
+### 2026-09-30T14:40:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b2791837
+- **Timestamp:** 2026-09-30T14:50:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-30T14:50:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** operator ruling 2026-09-29 (T-3557 IW-1): the /config row was checked live by an independent reviewer, GREEN (docs/reports/T-3585-render-review.md)
