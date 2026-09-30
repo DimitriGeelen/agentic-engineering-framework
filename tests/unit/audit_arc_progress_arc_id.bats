@@ -156,8 +156,12 @@ MD
     [[ "$output" == *"T-8006"* ]]
 }
 
-@test "production audit.sh contains the union regex" {
+@test "production audit.sh unions arc membership via lib/arc_membership.py" {
+    # T-3507 (9e4bbebf2) deleted the inline tag/arc_id regexes from the
+    # arc-progress block and delegated to the canonical membership helper,
+    # which emits both arc_id keys and arc:<slug> tag keys for the union.
     FRAMEWORK_ROOT="$(cd "${BATS_TEST_DIRNAME}/../.." && pwd)"
-    grep -q "arc_id_re" "${FRAMEWORK_ROOT}/agents/audit/audit.sh"
-    grep -q "re.escape(arc_slug)" "${FRAMEWORK_ROOT}/agents/audit/audit.sh"
+    grep -q "from arc_membership import scan_tasks_by_arc_membership" "${FRAMEWORK_ROOT}/agents/audit/audit.sh"
+    grep -q "list(by_arc_id.items()) + list(by_tag.items())" "${FRAMEWORK_ROOT}/agents/audit/audit.sh"
+    grep -q "_ARC_ID_LINE_RE" "${FRAMEWORK_ROOT}/lib/arc_membership.py"
 }
