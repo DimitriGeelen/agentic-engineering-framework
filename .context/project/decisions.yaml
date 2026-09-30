@@ -4676,3 +4676,73 @@ decisions:
     date: 2026-09-30
     task: T-3580
     rationale: "Operator 2026-09-30, verbatim: 'we need to record the cost for it anyway ... it's never free but it's relatively low cost ... My local GPU is also internal ... you have a subscription harness, it's always internal ... when it goes to open router, it costs money and I need to approve that. That's not a reason not to request it. But if you think it's high value or high risk, then just propose it and do an assessment of the cost and get my approval.'"
+
+  - id: D-669
+    decision: "keep the text, wrap it in a `<span class=\"file-ref-dead|ambiguous|unserved\" title=\"…\">` (wavy underline, ✗ / ? suffix, help cursor), CSS in a new web/static/css/file-refs.css linked from base.html and the standalone review.html."
+    scope: project
+    date: 2026-09-30
+    task: T-3587
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-670
+    decision: "Pygments `HtmlFormatter(linespans=\"L\")` rewritten to `id=\"LNNN\"`, with CSS counters for line numbers and a `:target` highlight."
+    scope: project
+    date: 2026-09-30
+    task: T-3587
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-671
+    decision: "`web.shared.is_ready_for_batch_completion(status, body)`: `status == work-completed` (partial-complete) AND at least one Human criterion AND none unchecked, counted by `count_human_acs` (the same T-3139 scoping as `count_unchecked_human_acs`). Used by `_load_batch_ready_tasks` (the page's ready count and the ids the form posts) and by `complete_batch` at POST time. Admission stays `needs_human_review` over the same counter, so the two lists are disjoint by construction."
+    scope: project
+    date: 2026-09-30
+    task: T-3590
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-672
+    decision: "at consumption (`log_gate_bypass`), not at argument parsing"
+    scope: project
+    date: 2026-09-30
+    task: T-3586
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-673
+    decision: "new `lib/review_cost.py`, retire `lib/cost.sh` and its tests"
+    scope: project
+    date: 2026-09-30
+    task: T-3586
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-674
+    decision: "the producer set is allowed to register (issue) the review dispatch. The producer-independence checks bind the REVIEWER identity, the dispatch's worker identity and the row-introducing commit; they do not forbid the issuer being a producer."
+    scope: project
+    date: 2026-09-30
+    task: T-3581
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-675
+    decision: "verdicts.jsonl is append-only as verified against the accepted history (HEAD): every commit that touched it must preserve the previous content as an exact line-prefix; the working file must contain the committed content unchanged; uncommitted lines never count; duplicate ids, modified, deleted (withdrawal included) or replaced rows make the whole ledger refuse. `fw audit` runs the same check plus the apply validator on every row."
+    scope: project
+    date: 2026-09-30
+    task: T-3581
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-676
+    decision: "400, the middle of the empty band. 832's 400 happens to sit in it; the number was checked here, not copied."
+    scope: project
+    date: 2026-09-30
+    task: T-3569
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-677
+    decision: "also count headings starting \"Candidate\" and \"Investigation\"."
+    scope: project
+    date: 2026-09-30
+    task: T-3569
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-678
+    decision: "codex and opencode (Z.ai coding plan) run on the operator's flat-rate subscriptions: internal, no approval needed, cost still logged. The agent must not pause them on a billing doubt again; the setup under /opt holds them."
+    scope: project
+    date: 2026-09-30
+    task: T-3580
+    rationale: "Operator 2026-09-30, verbatim: 'ZAI Codec, use our flat rate subscription, we have that. They're there. If you read in opt, you can find them.'"
