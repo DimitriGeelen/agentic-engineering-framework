@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T09:52:23Z
-last_update: 2026-09-30T09:53:07Z
+last_update: '2026-09-30T10:00:22Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -77,6 +77,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-30T10:00:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=286,acs=11)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3583: Codify the review/dispatch cost ruling: a backend registry (internal subscription or local vs paid OpenRouter), a cost record for every review, and propose-then-approve for paid
@@ -97,6 +107,7 @@ Origin: the agent ran 13 external-harness reviews in one session without a writt
 
 ### Agent
 - [ ] `policy/review-backends.yaml` is the single source. Per backend: id, harness/command, class (`internal` or `paid`), approval_required, cost unit and estimate method. Seeded with: claude-code (subscription, internal), codex (subscription, internal), opencode/zai-coding-plan (subscription, internal), local-gpu (internal), openrouter (paid, approval_required). A comment says the ladder will be expanded by the operator
+- [ ] The registry is EXTENSIBLE and operator-owned (operator 2026-09-30: "this can change ... OpenRouter is always paid, but those internal subscriptions we can get extra"): adding a backend is a data edit, not a code change (no vendor list hardcoded anywhere else, test proves an added fake backend is picked up by cost logging and by the judge's reviewer selection); `openrouter` is pinned `paid` and cannot be reclassified internal (test); changing any backend's `class` or `approval_required` is an operator action (agent-refused under CLAUDECODE=1, `--i-am-human` override, logged), while adding a new INTERNAL subscription entry is allowed but logged for the operator to see
 - [ ] A cost record is written for EVERY review or dispatch, internal included: timestamp, task, backend, class, purpose, and tokens/cost where the harness reports them, else "unmetered (subscription)". Written to a committed ledger (e.g. `.context/costs/reviews.jsonl`) through one helper (`fw review cost log ...`); unknown backend ids are refused
 - [ ] Paid backends cannot be dispatched without an approval: `fw review propose --backend openrouter --task T-XXX --why ... --estimate ...` writes a pending proposal the operator approves (Watchtower /approvals and CLI with --i-am-human, agent-refused under CLAUDECODE=1, same pattern as tier0); dispatching a paid backend without a matching approved proposal is refused
 - [ ] A PreToolUse guard (or wrapper) catches direct invocation of a paid backend from Bash (e.g. an openrouter URL or CLI) with no approved proposal and blocks it, naming `fw review propose`; internal harnesses (codex, opencode, claude -p) are allowed but reminded to log cost if the command is not wrapped
