@@ -413,3 +413,52 @@ class TestFullHistory:
         assert "blast_radius: 9" not in f.read_text()                  # HEAD is TREESAME to main
         fms = vl._task_history_fms(repo, TID)
         assert any((fm.get("cost_estimate") or {}).get("blast_radius") == 9 for _s, fm in fms)
+
+
+# ── 4. codex 2: judge planning and the ledger disagree on the rung ───────────────────────────
+
+from lib.reviewer import judge_cli  # noqa: E402
+from t3580_judge_cli_test import FakeWorker, _all_kinds, _judge  # noqa: E402
+from t3580_round7_test import CEIL, _cost  # noqa: E402
+
+
+class TestOneRequirement:
+    def test_probe_codex2_judge_plans_the_history_aware_rung(self, hi):
+        """codex 2: current blast radius 0, historical 9 -> judge rung 1, ledger rung 5."""
+        _lower(hi)
+        res = _judge(hi, dry_run=True)
+        assert res["rung_due"] == 5 and "committed history" in res["rung_reason"], res
+        ctx = vl._task_ctx(hi, TID)
+        crit = next(c for c in vl.human_criteria(ctx.text) if c.index == 1)
+        assert vl.required_strength(ctx, crit)[0] == res["rung_due"]
+
+    def test_registration_refuses_a_due_rung_below_the_requirement(self, hi):
+        _lower(hi)
+        with pytest.raises(ValueError, match="requires rung 5"):
+            rt.register_run("run-l", TID, acs=[1], rung="rung-1-same-vendor-independent",
+                            seats=[{"seat": "claude", "vendor": "c"}], rung_due=1, root=hi)
+
+    def test_judge_lowered_and_left_lowered_with_a_legitimate_step_down(self, hi, monkeypatch):
+        """Judge-level: history requires rung 5; a committed spend over a valid ceiling steps it
+        to rung 3 at registration, the dispatch runs, and the ledger accepts that same decision."""
+        _all_kinds(monkeypatch, hi)
+        _lower(hi)
+        monkeypatch.setenv(CEIL, "200")
+        _stepdown_spend(hi, monkeypatch)
+        res = _judge(hi, dispatcher=FakeWorker("green"))
+        assert (res["rung_due"], res["rung"]) == (5, 3), res
+        assert res.get("error") is None and res["outcomes"] == {1: "green"}, res
+        run = vl._verified_run(hi, res["run_id"])[0]
+        assert (run["ceiling_decision"]["due"], run["ceiling_decision"]["granted"]) == (5, 3)
+        assert [t["ac"] for t in vl.apply(TID, hi)["ticked"]] == [1]
+
+    def test_control_judge_without_spend_plans_and_registers_rung_5(self, hi, monkeypatch):
+        _all_kinds(monkeypatch, hi)
+        _lower(hi)
+        res = _judge(hi, dry_run=True)
+        assert (res["rung_due"], res["rung"]) == (5, 5)
+
+
+def _stepdown_spend(root, monkeypatch):
+    """Committed judge spend that justifies a step-down at ceiling 200 (199 spent)."""
+    _cost(root, 199)

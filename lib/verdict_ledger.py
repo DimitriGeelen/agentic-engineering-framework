@@ -1103,6 +1103,14 @@ def register_run(run_id: str, task_id: str, *, acs: list[int], rung: str, seats:
     row["revision"] = (revision or "").strip() or _head_sha(root)
     row["registry"] = registry_pin(root, row["revision"])
     if rung_due is not None:
+        # Round 8 (codex 2): the due rung is checked against THE requirement, history included —
+        # a judge that planned from the current frontmatter alone cannot register a run the
+        # ledger would refuse at record.
+        need, nwhy = _run_requirement(root, task_id, acs, row["revision"])
+        if int(rung_due) < need:
+            raise ValueError(f"run {run_id!r} is due rung {int(rung_due)}, but {task_id} requires rung "
+                             f"{need} ({nwhy}) — the due rung is the ledger's requirement, not the "
+                             f"caller's")
         now = datetime.strptime(row["ts"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
         dec = review_policy.ceiling_decision(root, int(rung_due), reason, now)
         if review_policy.rung_number(rung) != dec["granted"]:
@@ -1113,6 +1121,21 @@ def register_run(run_id: str, task_id: str, *, acs: list[int], rung: str, seats:
     row["sig"] = _sign_row(key, row)
     _append(RUNS, row, root)
     return row
+
+
+def _run_requirement(root: Path, task_id: str, acs: list[int], revision: str) -> tuple[int, str]:
+    """The highest `required_strength` over the run's criteria (round 8)."""
+    path, _sub = _find_task(root, task_id)
+    if path is None:
+        raise ValueError(f"{task_id} not found — a review run is registered for an existing task")
+    ctx = _Ctx(root, task_id, path, path.read_text(encoding="utf-8", errors="replace"))
+    need, why = 1, "default"
+    for crit in human_criteria(ctx.text):
+        if crit.index in set(acs):
+            r, w = required_strength(ctx, crit, revision)
+            if r > need:
+                need, why = r, w
+    return need, why
 
 
 def _verified_run(root: Path, run_id: str) -> tuple[dict | None, str]:
@@ -1785,24 +1808,34 @@ def _task_history_fms(root: Path, task_id: str) -> list[tuple[str, dict]]:
     return out
 
 
-def required_strength(ctx: "_Ctx", crit, revision: str = "") -> tuple[int, str]:
-    """(rung, reason) IW-7 requires for `crit`, from lib/review_policy.py — the function `judge`
-    uses to choose its rung. Scored on the task as it is NOW, as it stood at the reviewed
-    revision, and (round 7, Claude F4) on EVERY committed version of the task file: the highest
-    wins. So lowering the task's risk fields — after the review, before it in an uncommitted
-    edit, or before it in a commit that stays lowered — does not lower what the verdict needs."""
-    body = [criterion_body(crit)]
-    rung, why = review_policy.required_rung(frontmatter(ctx.text), body)
-    then = _task_text_at(ctx.root, revision, ctx.task_id) if revision else ""
+def task_required_strength(root: Path, task_id: str, bodies: list[str], current_text: str,
+                           revision: str = "") -> tuple[int, str]:
+    """(rung, reason) IW-7 requires for criteria `bodies` of `task_id` — THE requirement (round 8,
+    codex 2): `fw reviewer judge` plans with it, `register_run` validates a run's due rung with it,
+    and `record` / `apply` enforce it (`required_strength`). Scored with lib/review_policy.py on
+    the task as it is NOW (`current_text`), as it stood at the reviewed `revision`, and (round 7,
+    Claude F4) on EVERY committed version of the task file: the highest wins. So lowering the
+    task's risk fields — after the review, before it in an uncommitted edit, or before it in a
+    commit that stays lowered — does not lower what the verdict needs, and the judge asks for
+    what the ledger will demand. Raises HistoryUnreadable when git cannot answer (codex 3)."""
+    rung, why = review_policy.required_rung(frontmatter(current_text), bodies)
+    then = _task_text_at(root, revision, task_id) if revision else ""
     if then:
-        r2, w2 = review_policy.required_rung(frontmatter(then), body)
+        r2, w2 = review_policy.required_rung(frontmatter(then), bodies)
         if r2 > rung:
             rung, why = r2, f"{w2} (at reviewed revision {revision[:9]})"
-    for sha, fm in _task_history_fms(ctx.root, ctx.task_id):
-        r3, w3 = review_policy.required_rung(fm, body)
+    for sha, fm in _task_history_fms(root, task_id):
+        r3, w3 = review_policy.required_rung(fm, bodies)
         if r3 > rung:
             rung, why = r3, f"{w3} (in the task's committed history at {sha[:9]})"
     return rung, why
+
+
+def required_strength(ctx: "_Ctx", crit, revision: str = "") -> tuple[int, str]:
+    """(rung, reason) IW-7 requires for `crit` — `task_required_strength` for this one
+    criterion (the judge scores all the criteria it dispatches together, which by the policy's
+    monotonicity is never less)."""
+    return task_required_strength(ctx.root, ctx.task_id, [criterion_body(crit)], ctx.text, revision)
 
 
 def _strength_fault(ctx: "_Ctx", row: dict, crit) -> tuple[str, str] | None:

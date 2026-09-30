@@ -711,7 +711,16 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
     # the weekly ceiling steps it down — the decision. This is a PREVIEW: the ledger computes the
     # binding decision itself when it registers the run (round 7) and refuses a mismatch.
     imp = _impact(task_data, judged)
-    due, reason = _calculate_rung(task_data, judged)
+    # Round 8 (codex 2): THE requirement the ledger enforces at registration, record and apply —
+    # history-aware (every committed version of the task file, and HEAD, the revision this run
+    # will review) — not the current frontmatter alone.
+    revision = vl._head_sha(root)
+    try:
+        due, reason = vl.task_required_strength(root, task_id, [c.get("body", "") for c in judged],
+                                                task_data.get("text") or "", revision)
+    except vl.HistoryUnreadable as e:
+        res.update(error=str(e), code=1)
+        return res
     decision = review_policy.ceiling_decision(root, due, reason, now)
     rung, note = decision["granted"], decision["note"]
     spent, ceiling = decision["spent"], decision["ceiling"]
@@ -732,9 +741,8 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
                unfilled=[s["seat"] for s in plan["unfilled"]], required_vendors=required,
                dispatch_vendors=plan["vendors"], degraded=degraded)
 
-    # The revision under review is captured HERE, before any worker exists, and handed to the
+    # The revision under review is captured above, before any worker exists, and handed to the
     # dispatcher, which registers it with the dispatch (round 3).
-    revision = vl._head_sha(root)
     res["revision"] = revision
     evidence = _gather_evidence(root, task_id, task_data, judged, capture or _capture_playwright,
                                 dry_run=dry_run)

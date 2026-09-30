@@ -260,7 +260,10 @@ class TestOnePolicy:
         judge_cli._calculate_rung({"frontmatter": {"name": "x"}}, [])
         assert calls
         import inspect
-        assert "review_policy.required_rung" in inspect.getsource(vl.required_strength)
+        # Round 8 (codex 2): judge planning and the ledger share ONE history-aware requirement.
+        assert "review_policy.required_rung" in inspect.getsource(vl.task_required_strength)
+        assert "task_required_strength(" in inspect.getsource(vl.required_strength)
+        assert "vl.task_required_strength(" in inspect.getsource(judge_cli.judge)
         assert "_IRREVERSIBLE_RE" not in inspect.getsource(judge_cli)
 
     def test_application_judge_at_the_ceiling_records_a_decision_that_the_ledger_accepts(
