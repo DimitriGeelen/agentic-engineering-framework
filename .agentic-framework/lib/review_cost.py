@@ -44,6 +44,8 @@ PINNED_PAID = ("openrouter",)
 CLASSES = ("internal", "paid")
 REQUIRED = ("id", "name", "harness_class", "cost_class", "approval_required", "cost_estimate_method")
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
+#: T-3580 round 8: a pinned worker model name (an alias or full id: letters, digits, . _ : / -).
+MODEL_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/-]*$")
 UNMETERED_SUB = "unmetered (subscription)"
 
 
@@ -141,6 +143,11 @@ def validate(backends: object) -> list[str]:
             errs.append(f"{bid}: vendor must match {ID_RE.pattern}")
         if kind and not vend:
             errs.append(f"{bid}: worker_kind {kind!r} has no vendor")
+        # T-3580 round 8 (N2): the ONE model a review worker of this kind is launched with. Absent
+        # means the worker's own default; a review dispatch cannot choose another.
+        mdl = b.get("model")
+        if mdl is not None and (not isinstance(mdl, str) or not MODEL_RE.match(mdl)):
+            errs.append(f"{bid}: model must match {MODEL_RE.pattern}")
     kv: dict = {}
     for b in backends:
         if isinstance(b, dict) and b.get("worker_kind") and b.get("vendor"):
@@ -176,6 +183,13 @@ def worker_vendors(path: Path | None = None) -> dict[str, str]:
     dispatch's vendor from it; free text never names a vendor."""
     return {b["worker_kind"]: b["vendor"] for b in load_registry(path)
             if b.get("worker_kind") and b.get("vendor")}
+
+
+def worker_models(path: Path | None = None) -> dict[str, str]:
+    """{worker kind: model} for the kinds whose registry entry pins one (T-3580 round 8). A review
+    dispatch of that kind is launched with exactly that model; a kind with none uses its default."""
+    return {b["worker_kind"]: b["model"] for b in load_registry(path)
+            if b.get("worker_kind") and b.get("model")}
 
 
 def get_backend(bid: str) -> dict:

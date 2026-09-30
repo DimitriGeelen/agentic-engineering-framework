@@ -180,7 +180,7 @@ def _money(v, *, number: bool = False) -> float | None:
         return None
     try:
         f = float(v)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):   # round 8 (codex 4): float(10**400) overflows
         return None
     return f if math.isfinite(f) and f >= 0 else None
 
@@ -217,11 +217,47 @@ def _committed_lines(root: Path, rev: str) -> tuple[list[str] | None, str]:
     return [ln for ln in blob.splitlines() if ln.strip()], ""
 
 
-def _spent(lines: list[str], now: datetime) -> tuple[float | None, str]:
+#: The purpose `fw reviewer judge` logs for a dispatched seat (judge_cli._log_seat_cost).
+_JUDGE_ROW_RE = re.compile(r"^reviewer-judge (\S+) seat (\S+) dispatch (\S+)$")
+
+
+def _judge_row_cost(root: Path, r: dict, amount: float) -> tuple[float, str]:
+    """(round 8, Claude N4) What one committed judge cost row contributes to the weekly spend:
+    its amount only when it names a SIGNED review run and a SIGNED dispatch registered for that
+    run's seat, for the row's task, that the dispatch runtime actually STARTED — capped at that
+    run's per-seat cost (RUNG_COST of the run's rung, split over a panel). Anything else counts
+    0: a free-text `reviewer-judge ...` row (any purpose, any --cost, via `fw review cost log`)
+    is not evidence that a review was paid for, so it cannot push a rung down. Returns
+    (counted, dispatch id or '' when it does not count)."""
+    from lib import verdict_ledger as vl  # lazy: verdict_ledger imports this module
+
+    m = _JUDGE_ROW_RE.match(str(r.get("purpose") or "").strip())
+    if not m:
+        return 0.0, ""
+    run_id, seat, did = m.groups()
+    run, _why = vl._verified_run(Path(root), run_id)
+    drec, _why = vl.dispatch_record(Path(root), did)
+    if run is None or drec is None:
+        return 0.0, ""
+    if (drec.get("run_id"), drec.get("seat")) != (run_id, seat) or run.get("task") != drec.get("task") \
+            or str(r.get("task") or "") != str(run.get("task") or ""):
+        return 0.0, ""
+    starts = vl._starts_for(Path(root), did)
+    if len(starts) != 1 or not vl._signed_ok(Path(root), starts[0]):
+        return 0.0, ""
+    rung = rung_number(run.get("rung")) or 1
+    cap = RUNG_COST.get(rung, 2.0) / (PANEL_SIZE if rung >= 5 else 1)
+    return min(amount, cap), did
+
+
+def _spent(lines: list[str], now: datetime, root: Path | None = None) -> tuple[float | None, str]:
     """(estimated USD the judge spent in the 7 days up to `now`, '') from cost-ledger lines; (None,
-    why) when a judge record in them is malformed — malformed spend refuses a step-down."""
+    why) when a judge record in them is malformed — malformed spend refuses a step-down.
+    Round 8 (N4): a judge row counts only as `_judge_row_cost` allows — bound to a signed, started
+    run seat and capped — and each dispatch at most once."""
     since = now - timedelta(days=7)
     total = 0.0
+    counted: set[str] = set()
     for n, line in enumerate(lines, 1):
         try:
             r = json.loads(line)
@@ -240,7 +276,13 @@ def _spent(lines: list[str], now: datetime) -> tuple[float | None, str]:
         amt = _money(r.get("cost_amount"), number=True)
         if amt is None:
             return None, f"cost-ledger line {n} has cost_amount {r.get('cost_amount')!r}, not a finite amount >= 0"
-        total += amt
+        got, did = _judge_row_cost(root or Path("."), r, amt)
+        if not did or did in counted:
+            continue
+        counted.add(did)
+        total += got
+        if not math.isfinite(total):          # round 8 (codex 4): an aggregate that overflows
+            return None, "the weekly judge spend overflows — not a finite amount"
     return total, ""
 
 
@@ -255,7 +297,7 @@ def weekly_spend(root: Path, now: datetime | None = None) -> float | None:
     lines, _why = _committed_lines(root, "HEAD")
     if lines is None or _ledger_fault(root):
         return None
-    return _spent(lines, now or datetime.now(timezone.utc))[0]
+    return _spent(lines, now or datetime.now(timezone.utc), root)[0]
 
 
 def apply_ceiling(rung: int, reason: str, spent, ceil) -> tuple[int, str, str]:
@@ -290,7 +332,7 @@ def ceiling_decision(root: Path, due: int, reason: str = "", now: datetime | Non
     rc, head = _git(root, "rev-parse", "-q", "--verify", "HEAD")
     head = head.strip() if rc == 0 else ""
     lines, lwhy = _committed_lines(root, head) if head else (None, "the repository has no commit")
-    spent, swhy = _spent(lines, now) if lines is not None else (None, lwhy)
+    spent, swhy = _spent(lines, now, root) if lines is not None else (None, lwhy)
     hist = _ledger_fault(root) if head else ""
     dec.update(ceiling=ceil, spent=spent, ledger_rev=head, spend_lines=len(lines or []))
     why = why or swhy or (f"cost ledger: {hist}" if hist else "")
@@ -334,7 +376,7 @@ def verify_ceiling_decision(root: Path, dec, run_ts: str = "") -> str:
     if len(lines) != n:
         return (f"the decision cites {n} committed cost-ledger lines at {rev[:9]}; that commit has "
                 f"{len(lines)}")
-    spent, why = _spent(lines, now)
+    spent, why = _spent(lines, now, root)
     if spent is None:
         return why
     if abs(spent - recorded) > 1e-6:
