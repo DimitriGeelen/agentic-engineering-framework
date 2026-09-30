@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+load ../git_fence  # T-3610: git discovery must not escape a fixture into a repo above the temp dir
 # T-2844: an empty cron registry is not drift.
 #
 # `fw init` seeds `.context/cron-registry.yaml` with `jobs: []`. Both `fw doctor`

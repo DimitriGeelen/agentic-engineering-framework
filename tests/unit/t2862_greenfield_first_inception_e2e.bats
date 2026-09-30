@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+load ../git_fence  # T-3610: git discovery must not escape a fixture into a repo above the temp dir
 # ── What the live run established (2026-08-11, S-2026-0811) ──────────────────
 # On a fresh `fw init` greenfield project, doing only the work the seed asks:
 #   1. AC preflight            PASS  (T-2862's fix works — no self-gating AC)

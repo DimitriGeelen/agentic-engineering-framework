@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+load ../git_fence  # T-3610: git discovery must not escape a fixture into a repo above the temp dir
 # T-2813: `fw git install-hooks` printed "=== Hooks Installed ===" and exited 0
 # even when every hook write failed (cat > "$hook" << 'EOF' fails silently at
 # the redirect, before the heredoc body runs; the subsequent chmod failure was

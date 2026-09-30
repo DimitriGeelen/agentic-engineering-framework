@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+load ../git_fence  # T-3610: git discovery must not escape a fixture into a repo above the temp dir
 # T-2850 — greenfield onboarding integration coverage.
 #
 # WHY THIS FILE EXISTS

@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+load ../git_fence  # T-3610: git discovery must not escape a fixture into a repo above the temp dir
 # T-3125: the self-vendor pre-push gate must judge the tree being PUSHED, not
 # the working tree.
 #

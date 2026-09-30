@@ -1,0 +1,21 @@
+id: tests/lint/bats-git-discovery-fence.bats
+name: bats-git-discovery-fence
+type: script
+subsystem: tests
+location: tests/lint/bats-git-discovery-fence.bats
+tags: []
+
+purpose: "T-3610 — a bats file that installs framework hooks or runs `fw init` must fence git discovery, so the write cannot land in a repo ABOVE its temp dir."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-30
+created_by: unknown

@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T22:27:01Z
-last_update: 2026-09-30T22:29:01Z
+last_update: '2026-09-30T22:30:28Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -73,6 +73,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-30T22:30:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=276,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3610: A test still writes to filesystem root: /.git/config user t@t and /.git/hooks/commit-msg rewritten 2026-09-30 22:30
@@ -87,9 +97,9 @@ That was during worker test runs. 72 test files set `user.email t@t`. The root r
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The test (or tests) that wrote `/.git/config` and `/.git/hooks/commit-msg` is identified with evidence: a run that reproduces the write against a sandboxed fake root, or a code path showing a cwd/variable that resolves to `/`. Named in the RCA
+- [x] The test (or tests) that wrote `/.git/config` and `/.git/hooks/commit-msg` is identified with evidence: a run that reproduces the write against a sandboxed fake root, or a code path showing a cwd/variable that resolves to `/`. Named in the RCA
 - [ ] The leak is fixed at its source, and every sibling with the same pattern (for example `cd "$UNSET"` / `git -C "$UNSET"` followed by `git config` or `fw git install-hooks`) is fixed too
-- [ ] A structural guard stops any test fixture from targeting `/`: for example, a shared test-helper check that refuses `git init`, `git config` or hook installation when the resolved target is `/` or outside `$BATS_TEST_TMPDIR` / `$TMPDIR`, or a lint in `bin/fw test lint`. It must be proven to bite with a negative control
+- [x] A structural guard stops any test fixture from targeting `/`: for example, a shared test-helper check that refuses `git init`, `git config` or hook installation when the resolved target is `/` or outside `$BATS_TEST_TMPDIR` / `$TMPDIR`, or a lint in `bin/fw test lint`. It must be proven to bite with a negative control
 - [ ] The fixed tests pass in isolation; nothing new is written to `/` during those runs (mtimes on `/.git/config` and `/.git/hooks/*` are unchanged before and after)
 
 ### Human
@@ -251,21 +261,24 @@ That was during worker test runs. 72 test files set `user.email t@t`. The root r
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 300 bats tests/lint/bats-git-discovery-fence.bats > /tmp/.t3610-lint.out 2>&1 && ! grep -q "^not ok" /tmp/.t3610-lint.out
+test "$(grep -c '# skip' /tmp/.t3610-lint.out)" -eq 0
+grep -q 'source "$(dirname "${BASH_SOURCE\[0\]}")/git_fence.bash"' tests/test_helper.bash
+
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `/.git/config` gained `[user] email = t@t, name = T` at 2026-09-30 22:30:22 (+0200) and `/.git/hooks/{commit-msg,pre-commit,post-commit,pre-merge-commit,pre-push}` were rewritten at 22:30:59. Also `/.git/worktrees/fresh-wt*` accumulates one entry per run of `init_head_bootstrap.bats` (fresh-wt … fresh-wt11, 2026-09-26 to 2026-09-30).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause: two writers, one mechanism.** git finds "the repo" by walking up from cwd. A fixture dir under /tmp that is not itself a repo resolves to the stray `/.git` (created 2026-09-05, T-2787), and both writes succeed against the wrong repo.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+1. **22:30:22, config.** Not a framework test. TermLink worker `worker2-t1647` (project `/opt/1409-sprind`, T-1647) ran `bash .claude/hooks/tests/run-pruefstand-tests.sh 2>&1 | head -20` from 20:30:21.19Z to 20:30:23.94Z (log: `/tmp/tl-dispatch/worker2-t1647/result.jsonl`). Each case does `cd "$TMPTEST/r$n"; git init; git config user.email 't@t' 2>/dev/null; git config user.name 'T' 2>/dev/null`. Once `head` closed the pipe, the next `git init` (which prints hints to the pipe) died of SIGPIPE before creating `.git`. The silent `git config` calls survived, found no local repo, and wrote `/.git/config`. **Reproduced** against a fake root (a tmp dir with its own `.git`, TMPDIR under it): the script's config writes landed in the fake root's `.git/config` only when piped to `| head -20`, and not when run without the pipe.
+2. **22:30:59, hooks.** `tests/unit/init_head_bootstrap.bats`, run on its own by the T-3601 worker (`xargs -P4 … bats "$f"` over the failing-file list, `/tmp/t3601-runs/init_head_bootstrap.bats.tap`, finished 22:31:22.9), called `fw init "$HDIR/fresh"` on a /tmp fixture. With `/.git` above it, the fixture was "a subdirectory of an existing repo": no fresh repo, and the hooks went to `/.git/hooks`. The tap shows `not ok 5 … [ -x "$HDIR/fresh/.git/hooks/commit-msg" ] failed`, and `/.git/worktrees/fresh-wt8` (gitdir `/tmp/bats-run-OHH67U/file/1/t2821/fresh-wt/.git`) was created at 22:31:18 by the same run. **Reproduced** against a fake root with the pre-fence version (`559f48591^`): all five hooks installed into the fake root's `.git/hooks`, with sizes identical to `/`'s (commit-msg 10729, pre-commit 10382, post-commit 6243, pre-merge-commit 2038; `VERSION=1.17`), plus a `fresh-wt` worktree. T-3603 fenced this file at 2026-10-01 00:34 (559f48591), after the write.
+
+**Why structurally allowed:** nothing in the test harness bounded git discovery. `guard_project_root` (T-2788) checks `$PROJECT_ROOT` paths, not where git resolves a repo, and a discovery escape needs no unset variable at all: a fixture that simply is not (yet) a repo is enough. The T-2787 guard detects markers at `/` after the fact and has been red, so it no longer distinguishes a new write from the old pollution.
+
+**Prevention:** `tests/git_fence.bash` sets `GIT_CEILING_DIRECTORIES` at the temp roots (`/tmp`, `$TMPDIR`, the bats run base). `tests/test_helper.bash` sources it, so all 389 helper-loading bats files are fenced. `tests/lint/bats-git-discovery-fence.bats` (run by `fw test invariants`) fails any bats file that runs `fw init` or installs hooks without a fence, with an explicit, shrinking grandfather list. Its negative controls prove that the lint flags an unfenced writer, and that the fence stops `git config` and `rev-parse --show-toplevel` escaping to a repo above the temp dir while a repo inside the temp dir is still found.
+
+**Not fixed here (cross-boundary):** the sprind script lives in `/opt/1409-sprind` (T-559 project boundary). Its fix (`GIT_CEILING_DIRECTORIES="$TMPTEST"`, or `git -C "$repo" init … || exit`) belongs in that project (gap homing, T-1333).
 
 ## Evolution
 
@@ -322,14 +335,10 @@ That was during worker test runs. 72 test files set `user.email t@t`. The root r
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-10-01 — guard shape: fence git discovery centrally + lint, not a refusal helper
+- **Chose:** `tests/git_fence.bash` (GIT_CEILING_DIRECTORIES at the temp roots), sourced by `tests/test_helper.bash`, plus a `tests/lint/` rule requiring a fence in every bats file that runs `fw init` or installs hooks.
+- **Why:** the class is git discovery escaping a fixture, and neither observed write involved an unset variable or a `/` target that a path-check helper could see. Both targets were valid /tmp paths that were simply not repos. A ceiling works at the git layer, whatever the call site (`git config`, `fw init`, `install-hooks`, `worktree add`), and needs no per-call opt-in. One line in the shared helper covers 389 files, and the lint covers the files that do not load the helper.
+- **Rejected:** (a) a `refuse_root_target` helper called before each git write: opt-in per call site, and blind to the real mechanism (target is a /tmp path, the repo resolved is `/`). (b) A refusal in `install-hooks` when toplevel is `/`: it lives in `agents/git/lib/hooks.sh` (owned by concurrent T-3593 work), and it would not stop the `git config` write. Worth a separate task. (c) Setting the fence only in the `fw test` runner: ad-hoc `bats file` runs, which caused both writes, bypass it.
 
 ## Decision
 

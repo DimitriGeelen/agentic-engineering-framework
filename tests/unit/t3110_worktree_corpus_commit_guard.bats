@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+load ../git_fence  # T-3610: git discovery must not escape a fixture into a repo above the temp dir
 # T-3110: task-corpus commit guard in the SHARED pre-commit hook (R7 leg L1).
 #
 # Fixture is a REAL `git worktree add` driving a REAL `git commit` through the

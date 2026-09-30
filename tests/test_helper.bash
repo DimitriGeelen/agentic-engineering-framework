@@ -17,6 +17,10 @@ export FRAMEWORK_ROOT="$(_find_framework_root)"
 # Ensure fw is on PATH
 export PATH="$FRAMEWORK_ROOT/bin:$PATH"
 
+# Git discovery must not escape a fixture into a repo above the temp dir (T-3610)
+# shellcheck source=tests/git_fence.bash
+source "$(dirname "${BASH_SOURCE[0]}")/git_fence.bash"
+
 # Create a temporary directory for each test (auto-cleaned)
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"

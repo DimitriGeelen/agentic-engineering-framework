@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+load ../git_fence  # T-3610: git discovery must not escape a fixture into a repo above the temp dir
 # T-3297 / OBS-305: the pre-push audit gate must survive cron audit pileup
 # without weakening the T-2930 no-false-pass rule.
 #

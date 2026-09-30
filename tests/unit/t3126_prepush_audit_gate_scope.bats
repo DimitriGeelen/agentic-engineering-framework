@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+load ../git_fence  # T-3610: git discovery must not escape a fixture into a repo above the temp dir
 # T-3126: the pre-push audit gate must act on REF-scoped failures only.
 #
 # Origin (observed live 2026-08-23, immediately downstream of T-3125): the gate

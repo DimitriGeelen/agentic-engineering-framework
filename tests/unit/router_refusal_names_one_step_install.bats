@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+load ../git_fence  # T-3610: git discovery must not escape a fixture into a repo above the temp dir
 # T-2810 — the router's refusals must name a command that still exists.
 #
 # Since T-2800/T-2809 (D-377 total isolation) install.sh puts framework bytes in

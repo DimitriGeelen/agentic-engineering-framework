@@ -1,0 +1,21 @@
+id: tests/git_fence.bash
+name: git_fence
+type: script
+subsystem: tests
+location: tests/git_fence.bash
+tags: []
+
+purpose: "tests/git_fence.bash — stop git discovery from escaping a test fixture (T-3610)"
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-30
+created_by: unknown

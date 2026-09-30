@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+load ../git_fence  # T-3610: git discovery must not escape a fixture into a repo above the temp dir
 # T-2726 — the #@init: manifest and the validator's evaluator `case` are two
 # representations of one rule set. Nothing joined them.
 #
