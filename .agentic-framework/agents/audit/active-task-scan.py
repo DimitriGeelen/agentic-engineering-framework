@@ -24,6 +24,17 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
 from task_satisfaction import analyse_text  # noqa: E402
 
+# T-3569: "the task record itself preserves the research" — one definition,
+# shared with completed-task-scan.py. Missing module degrades to location-only
+# (never to universal coverage) and says so in the output.
+try:
+    from research_preserved import research_preserved as _research_preserved  # noqa: E402
+    RESEARCH_PREDICATE_NOTE = ""
+except ImportError:
+    _research_preserved = None
+    RESEARCH_PREDICATE_NOTE = ("lib/research_preserved.py unavailable - C-001 judged "
+                               "by docs/reports location only")
+
 _FRAMEWORK_ROOT = Path(__file__).resolve().parents[2]
 
 # T-3073: cheap Python pre-filter for "this inception looks like it carries a
@@ -97,6 +108,7 @@ def scan_active_tasks(tasks_dir, reports_dir):
     c001_missing = 0
     c001_missing_started = 0
     c001_missing_recommendation = 0
+    c001_in_task_record = 0
     inception_active = 0
     inception_recommendation = 0
 
@@ -247,6 +259,8 @@ def scan_active_tasks(tasks_dir, reports_dir):
             if reason:
                 has_artifact = False
                 artifact_name = ""
+                # T-3569: research written into the task's own sections counts.
+                in_task_record = _research_preserved is not None and _research_preserved(content)
 
                 for rb in report_basenames:
                     if task_id.lower() in rb:
@@ -254,7 +268,9 @@ def scan_active_tasks(tasks_dir, reports_dir):
                         artifact_name = rb
                         break
 
-                if not has_artifact:
+                if not has_artifact and in_task_record:
+                    c001_in_task_record += 1
+                elif not has_artifact:
                     research_issues.append({"id": task_id, "type": "missing", "reason": reason})
                     c001_missing += 1
                     if reason == "started-work":
@@ -262,8 +278,9 @@ def scan_active_tasks(tasks_dir, reports_dir):
                     else:
                         c001_missing_recommendation += 1
                 else:
-                    # Check if referenced in task
-                    if "docs/reports/" not in content:
+                    # Check if referenced in task. An in-task record is the
+                    # research itself, so an unlinked report is not a gap (T-3569).
+                    if "docs/reports/" not in content and not in_task_record:
                         research_issues.append({"id": task_id, "type": "unreferenced", "reason": reason, "artifact": artifact_name})
 
         # ============ Loop 11: Unclosed-but-satisfied (T-3061, OBS-316/317) ============
@@ -324,6 +341,9 @@ def scan_active_tasks(tasks_dir, reports_dir):
             "c001_missing_recommendation": c001_missing_recommendation,
             "inception_active": inception_active,
             "inception_recommendation": inception_recommendation,
+            # T-3569: inceptions covered by their own task record, not a report.
+            "c001_in_task_record": c001_in_task_record,
+            "predicate_note": RESEARCH_PREDICATE_NOTE,
         },
         "ownership": {
             "issues": ownership_issues,
@@ -349,4 +369,6 @@ if __name__ == "__main__":
         sys.exit(1)
 
     result = scan_active_tasks(sys.argv[1], sys.argv[2])
+    if RESEARCH_PREDICATE_NOTE:
+        print(f"NOTE: {RESEARCH_PREDICATE_NOTE}", file=sys.stderr)
     json.dump(result, sys.stdout)

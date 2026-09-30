@@ -1,0 +1,21 @@
+id: lib/research_preserved.py
+name: research_preserved
+type: script
+subsystem: framework-core
+location: lib/research_preserved.py
+tags: []
+
+purpose: "Does a task file itself carry its research? (T-3569, C-001)"
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-30
+created_by: unknown

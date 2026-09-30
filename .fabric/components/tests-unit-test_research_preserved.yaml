@@ -1,0 +1,21 @@
+id: tests/unit/test_research_preserved.py
+name: test_research_preserved
+type: script
+subsystem: tests
+location: tests/unit/test_research_preserved.py
+tags: []
+
+purpose: "T-3569 — C-001 counts research preserved in the task file itself."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-30
+created_by: unknown
