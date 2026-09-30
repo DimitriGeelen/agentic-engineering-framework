@@ -15,6 +15,7 @@ from web.shared import (
     extract_recommendation, extract_reviewer_verdict, render_markdown_safe,
     protect_path_underscores,
     _auto_link_files,
+    count_human_acs,
 )
 from web.subprocess_utils import run_fw_command
 
@@ -862,10 +863,15 @@ def task_detail(task_id):
                 artifacts.append({"name": f.name, "path": f"docs/reports/{f.name}"})
 
     # Compute whether "Complete Task" button should show (T-640)
+    # T-3591: Human criteria are counted with count_human_acs, the scoping behind
+    # is_ready_for_batch_completion. _parse_acceptance_criteria stops at an
+    # intervening `## ` heading, so a `### Human` block past one (T-2200/T-2202)
+    # was invisible here and an unticked [REVIEW] criterion still got the button.
     can_complete = False
     if ac_items and task_data.get("status") != "work-completed":
         all_checked = all(ac["checked"] for ac in ac_items)
-        can_complete = all_checked
+        _, human_unchecked = count_human_acs(task_content)
+        can_complete = all_checked and human_unchecked == 0
 
     # T-1584: Surface Recommendation + Reviewer Verdict cards (cross-surface parity
     # with /review T-1575/T-1583 and /approvals T-1531/T-1569). Same drift class as
