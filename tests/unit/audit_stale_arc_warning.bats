@@ -86,7 +86,8 @@ MD
     git commit -q -m "fresh commit"
     run "$AUDIT" --section structure
     [ "$status" -le 1 ]
-    [[ "$output" == *"in-progress arc"*"30 days"* ]] || [[ "$output" == *"fresh"*"30 days"* ]]
+    # T-3105 (92deaef0c): the PASS line reports the examined set via pass_over.
+    [[ "$output" == *"[PASS] All assessed arcs had task commits within 30 days — examined 1 in-progress arc(s)"* ]]
     [[ "$output" != *"no task commits"* ]]
 }
 
