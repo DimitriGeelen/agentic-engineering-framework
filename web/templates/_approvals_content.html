@@ -469,15 +469,21 @@
     {% endif %}
 </div>
 
-<!-- Batch completion button (T-846) — only for tasks with ALL ACs checked -->
+<!-- Batch completion button (T-846). T-3590: offered only for partial-complete tasks
+     whose every Human criterion is ticked (web.shared.is_ready_for_batch_completion);
+     the form posts exactly the ids listed here and the handler re-checks each one. -->
 {% if ready_count is defined and ready_count > 0 %}
+{% set batch_ids = batch_ready | map(attribute='task_id') | list %}
 <div id="batch-complete-result" style="margin-bottom:0.5rem;">
     <form hx-post="/api/approvals/complete-batch" hx-target="#batch-complete-result" hx-swap="innerHTML"
-          hx-confirm="Complete {{ ready_count }} task(s) with all Human ACs checked?" style="display:inline;">
+          hx-confirm="Complete {{ ready_count }} task(s) with all Human ACs checked: {{ batch_ids | join(', ') }}?" style="display:inline;">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+        {% for tid in batch_ids %}<input type="hidden" name="task_id" value="{{ tid }}">
+        {% endfor %}
         <button type="submit" style="background:var(--wt-success); border-color:var(--wt-success); color:white; padding:0.3rem 0.8rem; font-size:0.75rem; margin:0;">
             Complete {{ ready_count }} Ready Task{{ 's' if ready_count != 1 }}
         </button>
+        <small style="color:var(--pico-muted-color); margin-left:0.4rem;">{{ batch_ids | join(', ') }}</small>
     </form>
 </div>
 {% endif %}
@@ -646,7 +652,15 @@ function filterACs(filter) {
             <span class="status-badge badge-{{ t.status|replace('-','') }}">{{ t.status }}</span>
         </div>
     </div>
-    {% set unchecked_count = t.human_acs | rejectattr('checked') | list | length %}
+    {# T-3590: canonical count from web.shared, not the display list (which misses a Human block after a `## ` heading) #}
+    {% set unchecked_count = t.unchecked_count %}
+    {% set shown_unchecked = t.human_acs | rejectattr('checked') | list | length %}
+    {% if unchecked_count > shown_unchecked %}
+    <p class="human-ac-hidden-note" style="margin:0.3rem 0; font-size:0.8rem; color:var(--pico-muted-color);">
+        {{ unchecked_count - shown_unchecked }} unticked Human criteri{{ 'on' if unchecked_count - shown_unchecked == 1 else 'a' }} sit outside the Acceptance Criteria section and are not shown here —
+        <a href="/tasks/{{ t.task_id }}">open the task</a>.
+    </p>
+    {% endif %}
     {% for ac in t.human_acs %}
     <details class="human-ac-card" {% if not ac.checked %}open{% endif %}
              style="margin:0.3rem 0; padding:0.4rem 0.6rem; border-radius:4px; background:var(--pico-code-background-color);">

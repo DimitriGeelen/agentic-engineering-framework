@@ -51,9 +51,11 @@ def test_pending_human_acs_uses_cache_filter():
     for r in results:
         assert "task_id" in r
         assert "human_acs" in r
-        # At least one Human AC must be unchecked (else not in results)
-        unchecked = [ac for ac in r["human_acs"] if not ac["checked"]]
-        assert unchecked, f"task {r['task_id']} has no unchecked Human ACs but appeared in results"
+        # At least one Human AC must be unchecked (else not in results). T-3590:
+        # judged by the canonical count (every `### Human` block, T-3139), not the
+        # display list — that parser stops at an intervening `## ` heading and
+        # sees none on T-2200-shaped tasks, which are correctly admitted.
+        assert r["unchecked_count"] > 0, f"task {r['task_id']} has no unchecked Human ACs but appeared in results"
 
 
 def test_cache_filter_skips_completed_tasks():

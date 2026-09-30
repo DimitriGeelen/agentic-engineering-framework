@@ -1376,6 +1376,68 @@ def needs_human_review(body: str) -> bool:
     return count_unchecked_human_acs(body) > 0
 
 
+def count_human_acs(body: str) -> tuple[int, int]:
+    """Return ``(total, unchecked)`` Human criteria, scoped exactly as
+    `count_unchecked_human_acs` scopes them (every `### Human` block, comments
+    stripped — T-3139). ``unchecked`` always equals that function's result.
+
+    T-3590: the batch-complete "ready" test needs the total as well as the
+    unchecked count, because "no unchecked Human criteria" is vacuously true of a
+    task whose Human block the parser failed to find.
+    """
+    if not body:
+        return 0, 0
+    text = _strip_html_comments(body)
+    total = unchecked = 0
+    for m in re_mod.finditer(
+        r"^### Human\s*$(.*?)(?=^#{1,3} |\Z)",
+        text, re_mod.MULTILINE | re_mod.DOTALL,
+    ):
+        total += len(re_mod.findall(r"^\s*-\s*\[[ xX]\]", m.group(1), re_mod.MULTILINE))
+        unchecked += len(re_mod.findall(r"^\s*-\s*\[ \]", m.group(1), re_mod.MULTILINE))
+    return total, unchecked
+
+
+def has_unchecked_review_ac(body: str) -> bool:
+    """True iff an unchecked `[REVIEW]` criterion sits in any `### Human` block
+    (same scoping as `count_unchecked_human_acs`). Sort-priority signal for
+    /approvals (T-3590 — was read from `_parse_acceptance_criteria`, which stops
+    at an intervening `## ` heading)."""
+    if not body:
+        return False
+    text = _strip_html_comments(body)
+    for m in re_mod.finditer(
+        r"^### Human\s*$(.*?)(?=^#{1,3} |\Z)",
+        text, re_mod.MULTILINE | re_mod.DOTALL,
+    ):
+        if re_mod.search(r"^\s*-\s*\[ \]\s*\[REVIEW\]", m.group(1), re_mod.MULTILINE):
+            return True
+    return False
+
+
+def is_ready_for_batch_completion(status: str, body: str) -> bool:
+    """The ONE predicate for "the /approvals batch button may close this task" (T-3590).
+
+    Ready means all three:
+      - ``status == "work-completed"`` — partial-complete (Agent criteria and
+        gates already passed, task held in active/ for the human). Batch-complete
+        runs with ``--skip-acceptance-criteria --skip-verification``, so a
+        ``started-work`` task must never qualify, whatever its Human boxes say.
+      - at least one Human criterion exists (no vacuous "all ticked"), and
+      - none is unchecked, counted by `count_human_acs` (T-3139 scoping).
+
+    Admission to the pending list (`needs_human_review`), the page's ready count
+    and `complete_batch` all use this scoping; do not reimplement it with
+    `_parse_acceptance_criteria` — that parser stops at an intervening `## `
+    heading, which is how T-2200/T-2202 were offered as "ready" while carrying an
+    unticked [REVIEW] criterion.
+    """
+    if str(status or "").strip() != "work-completed":
+        return False
+    total, unchecked = count_human_acs(body)
+    return total > 0 and unchecked == 0
+
+
 def extract_reviewer_verdict(body: str) -> dict:
     """Extract the reviewer agent's verdict from `## Reviewer Verdict (vX.Y)`.
 

@@ -48,6 +48,7 @@ def _fake_pending_acs(n: int):
                 "expected": "",
                 "if_not": "",
             }],
+            "unchecked_count": 1,  # T-3590: canonical count the badge/card read
             "age_days": 1,
             "is_stale": False,
             "sort_priority": 2,
