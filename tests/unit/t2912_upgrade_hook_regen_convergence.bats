@@ -82,9 +82,13 @@ YAML
 
 fresh_run() {
     local proj="$1"; shift
+    # T-3604: fence git discovery above the temp dir — the consumer is not a git
+    # repo, and a stray repo above /tmp (seen: /.git on this host) otherwise
+    # becomes "the target's git", failing the vendor-visibility check.
     (cd "$proj" && env -i \
         PATH="/usr/local/bin:/usr/bin:/bin" \
         HOME="$TEST_TEMP_DIR/home" \
+        GIT_CEILING_DIRECTORIES="$(dirname "$TEST_TEMP_DIR")" \
         "$proj/.agentic-framework/bin/fw" "$@")
 }
 
