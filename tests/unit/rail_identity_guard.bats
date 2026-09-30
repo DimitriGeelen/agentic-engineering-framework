@@ -30,6 +30,18 @@ teardown() {
     [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
 }
 
+# T-3604: the framework repo itself configures RAIL_IDENTITY_FILE in
+# .framework.yaml (since 2026-08-15), so "unconfigured" can no longer be
+# simulated by unsetting the env tier in $FRAMEWORK_ROOT. Legs that need the
+# host state run in a scratch project with an empty .framework.yaml instead —
+# which also keeps the bypass leg from logging into the real repo.
+_unconfigured_project() {
+    UNCONF="$TEST_TEMP_DIR/unconfigured"
+    mkdir -p "$UNCONF/.context/working"
+    : > "$UNCONF/.framework.yaml"
+    export UNCONF
+}
+
 # --- (f) non-vacuity: identity resolution works at all -----------------------
 
 @test "rail-identity: the host fingerprint resolves (else every other leg is vacuous)" {
@@ -43,17 +55,20 @@ teardown() {
 # --- (a)/(b) state classification --------------------------------------------
 
 @test "rail-identity: unconfigured project reports state=host" {
-    cd "$FRAMEWORK_ROOT"
-    run env -u FW_RAIL_IDENTITY_FILE bin/fw rail identity
+    _unconfigured_project
+    cd "$UNCONF"
+    run env -u FW_RAIL_IDENTITY_FILE PROJECT_ROOT="$UNCONF" "$FRAMEWORK_ROOT/bin/fw" rail identity
     [ "$status" -eq 0 ]
     echo "$output" | grep -q "state:       host"
 }
 
 @test "rail-identity: a project-owned key reports state=project with a DIFFERENT fingerprint" {
-    cd "$FRAMEWORK_ROOT"
-    host_fp="$(env -u FW_RAIL_IDENTITY_FILE bin/fw rail identity | awk '/fingerprint:/{print $2}')"
+    _unconfigured_project
+    cd "$UNCONF"
+    host_fp="$(env -u FW_RAIL_IDENTITY_FILE PROJECT_ROOT="$UNCONF" "$FRAMEWORK_ROOT/bin/fw" rail identity | awk '/fingerprint:/{print $2}')"
+    [ -n "$host_fp" ]
 
-    run env FW_RAIL_IDENTITY_FILE="$TEST_TEMP_DIR/proj.key" bin/fw rail identity
+    run env PROJECT_ROOT="$UNCONF" FW_RAIL_IDENTITY_FILE="$TEST_TEMP_DIR/proj.key" "$FRAMEWORK_ROOT/bin/fw" rail identity
     [ "$status" -eq 0 ]
     echo "$output" | grep -q "state:       project"
 
@@ -66,8 +81,9 @@ teardown() {
 # --- (c)/(d)/(e) the guard ----------------------------------------------------
 
 @test "rail-identity: post is BLOCKED (exit 2) when it would be host-signed" {
-    cd "$FRAMEWORK_ROOT"
-    run bash -c 'echo body | env -u FW_RAIL_IDENTITY_FILE bin/fw rail post --hub 127.0.0.1:9 sink-topic'
+    _unconfigured_project
+    cd "$UNCONF"
+    run bash -c 'echo body | env -u FW_RAIL_IDENTITY_FILE PROJECT_ROOT="$UNCONF" "$FRAMEWORK_ROOT/bin/fw" rail post --hub 127.0.0.1:9 sink-topic'
     [ "$status" -eq 2 ]
     echo "$output" | grep -q "BLOCKED"
     # The block message must name the way out, or the agent invents one (L-399).
@@ -84,8 +100,9 @@ teardown() {
 }
 
 @test "rail-identity: FW_ALLOW_HOST_SIGNED_RAIL=1 bypasses, and says so on stderr" {
-    cd "$FRAMEWORK_ROOT"
-    run bash -c 'source lib/rail-identity.sh; env -u FW_RAIL_IDENTITY_FILE FW_ALLOW_HOST_SIGNED_RAIL=1 bash -c "source lib/rail-identity.sh; rail_identity_guard" 2>&1'
+    _unconfigured_project
+    cd "$UNCONF"
+    run bash -c 'env -u FW_RAIL_IDENTITY_FILE PROJECT_ROOT="$UNCONF" FW_ALLOW_HOST_SIGNED_RAIL=1 bash -c "source \"\$FRAMEWORK_ROOT/lib/rail-identity.sh\"; rail_identity_guard" 2>&1'
     [ "$status" -eq 0 ]
     echo "$output" | grep -q "FW_ALLOW_HOST_SIGNED_RAIL"
 }
