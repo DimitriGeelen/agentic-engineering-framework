@@ -5759,6 +5759,7 @@ case "$cmd" in
             echo "  fw reviewer T-XXX [--json] [--no-write]                      Scan one task (inline)"
             echo "  fw reviewer T-XXX --dispatch [--timeout N] [--json]         Scan via isolated TermLink worker (T-1951)"
             echo "  fw reviewer surface [--json] [--warn-threshold N]           Delegation surface (D-626 / T-3445)"
+            echo "  fw reviewer judge T-XXX [--criterion N] [--dry-run]              Dispatch independent reviewer on criterion (T-3580)"
             echo "  fw reviewer verdict record T-XXX --ac N --outcome green|amber|red|escalate --reviewer ID --rung R --dispatch-id ID --digest D"
             echo "                    [--guidance '...'] [--evidence PATH]... [--digest D]   (T-3579)"
             echo "  fw reviewer verdict apply|check-render|list|digest|audit          Independent verdict ledger"
@@ -5820,6 +5821,13 @@ case "$cmd" in
                 PYTHONPATH="$FRAMEWORK_ROOT" \
                 FW_DELEGATION_SURFACE_WARN="$(fw_config_int DELEGATION_SURFACE_WARN)" \
                 python3 -m lib.delegation_cli surface "$@"
+        fi
+        # T-3580 (T-3557 slice 3): dispatch independent reviewer on REVIEWER_JUDGES criteria
+        if [ "${1:-}" = "judge" ]; then
+            shift
+            exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                PYTHONPATH="$FRAMEWORK_ROOT" \
+                python3 -m lib.reviewer.judge_cli "$@"
         fi
         # T-3579 (T-3557 slice 2): an independent reviewer's recorded verdict — the
         # writer slice 3 (`fw reviewer judge`) calls. record | apply | check-render | list.
