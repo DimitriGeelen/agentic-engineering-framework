@@ -1,0 +1,141 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3581: Verdict close path trusts a self-asserted reviewer string and hand-appended ledger rows - bind verdicts to review-dispatch provenance, audit the ledger, revalidate at every close (T-3579 cross-vendor review RED)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-30T14:21:12Z
+# ============================================================================
+
+task_id: T-3581
+task_name: "Verdict close path trusts a self-asserted reviewer string and hand-appended ledger rows - bind verdicts to review-dispatch provenance, audit the ledger, revalidate at every close (T-3579 cross-vendor review RED)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-30T08:20:26Z
+completed: 2026-09-30T14:20:07Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-30T10:22:01+02:00
+last_commit: 2026-09-30T11:08:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  slice-2 cross-vendor reviews both RED (self-asserted reviewer, hand-appended rows honoured) — hardening task with containment first; operator owns the residual-gap call. containment — a verdict row counts only with a signed review-dispatch record; hand-appended green rows are refused. harden verdict close path — shared validator, introducing-commit + producer provenance, revalidate every close, body digest, torn-line fail-closed, fw audit cross-check. vendor sync of hardened verdict ledger. OpenAI re-review RED (4 prior findings closed; content substitution open); Z.ai re-review cut off, repo verified unpolluted; round-3 prompt. round-3 hardening — ledger append-only verified against git history, one validator for apply+audit, validate-before-select, render criteria required individually, missing verdict module refuses close and fails audit. record producer-issuer decision and ledger-integrity decision; CLAUDE.md states exactly what audit catches; T-3580 gets worker-attribution requirements. vendor sync of round-3 hardened verdict ledger. round-3 reviews — OpenAI AMBER, Z.ai AMBER, no high findings (re-review criterion met); round-4 prompt for the remaining fixable items. round-4 hardening — non-green rows fully validated, reviewer ticks tied to applied-log provenance (release is an operator action), short dispatch ids checked, deleted uncommitted verdicts detected, single registration + random review dispatch ids, evidence content hashes. vendor sync of round-4 verdict ledger hardening. provenance criterion amended with its moved clause; recommendation for the operator's risk call
+
+# Key outcomes
+outcomes:
+  - 'CONTAINMENT FIRST (own commit): a ledger row counts only if it carries a review-dispatch provenance id that resolves to a real record (see next AC); until slice 3 writes such rows, no row qualifies, so the path is off, and a test proves a hand-appended green row is refused'
+  - 'Provenance: each verdict row must carry the dispatch id of the reviewer worker (from `fw termlink dispatch` meta / `.context/dispatches.jsonl`); apply refuses a row whose dispatch record is missing or whose worker task-type is not a review. **Amended 2026-09-30 (parent session):** the original third clause, "or whose dispatch was issued by a producer identity/session", was deliberately NOT built. Slice 3 has the producer session dispatch its own reviewer, so that clause would forbid the design. Independence is enforced on the worker identity and the row''s introducing commit instead (## Decisions, producer-issuer exception). Both round-3 reviewers called the exception reasonable, provided the verdict is bound to the worker. That binding is now a requirement on T-3580 (its Context lists six requirements). The clause moved; it was not dropped.'
+  - 'Introducing-commit check: at apply, the commit that added the row must exist and must not be authored by a producer identity; uncommitted rows do not count'
+  - 'Refuse when the producer set is empty or git fails (no producer provenance means refuse, never pass)'
+  - 'Every reviewer-derived tick is revalidated at every close attempt (including already-ticked criteria): a later red, a digest change or a producer collision withdraws the tick and restores ownership before the completion gates run'
+  - 'One shared eligibility validator is used by record, apply and check-render: current REVIEWER_JUDGES classification and a matching digest; the render gate is satisfied only by a green on a render-surface criterion'
+  - 'The digest covers the canonical substantive criterion body (title plus Steps/Expected/If-not), excluding generated verdict annotations and checkbox state'
+  - 'Malformed or torn ledger lines fail closed for the affected task/criterion and write a diagnostic refusal row; evidence paths must be relative and resolve inside the repo'
+  - '`fw audit` gains a line that cross-checks every verdicts.jsonl row (provenance, introducing commit, schema) and WARNs/FAILs on any that do not verify'
+  - 'Adversarial tests for every finding in both reviews, each with a negative control, including Z.ai''s sandbox reproductions (pseudonym, hand-appended row, pre-commit record, --no-verify commit without the task id)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'round-3 reviews — OpenAI AMBER, Z.ai AMBER, no high findings (re-review criterion met); round-4 prompt for the remaining fixable items'
+    source: git-mined
+  - description: 'record producer-issuer decision and ledger-integrity decision; CLAUDE.md states exactly what audit catches; T-3580 gets worker-attribution requirements'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-30 — Producer may issue the review dispatch'
+    chose: 'the producer set is allowed to register (issue) the review dispatch. The producer-independence checks bind the REVIEWER identity, the dispatch''s worker identity and the row-introducing commit; they do not forbid the issuer being a producer.'
+    rationale: 'the producing session is the one that runs `fw reviewer ... --dispatch`; forbidding it would forbid the normal path. What the operator''s principle ("the reviewer is not a creator or producer") constrains is who JUDGES, not who asked.'
+    alternatives_rejected: ['requiring issuer != producer — would make the path unusable for the session that owns the task, and would not stop a same-user agent, which can sign a registry row itself. - **Consequence, stated plainly:** a registered dispatch proves the dispatcher registered it for this task. It does not prove the named worker authored the verdict. That attribution gap is closed only by slice 3 (see T-3580 Context, "Worker attribution requirements").']
+  - decision: '2026-09-30 — Ledger integrity is verified against git, not asserted'
+    chose: 'verdicts.jsonl is append-only as verified against the accepted history (HEAD): every commit that touched it must preserve the previous content as an exact line-prefix; the working file must contain the committed content unchanged; uncommitted lines never count; duplicate ids, modified, deleted (withdrawal included) or replaced rows make the whole ledger refuse. `fw audit` runs the same check plus the apply validator on every row.'
+    alternatives_rejected: ['binding only the row id to its introducing commit (round 2) — content substitution kept the id and the dispatch and passed both apply and audit.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - 'agents/audit/audit.sh'
+  - 'agents/task-create/update-task.sh'
+  - 'agents/termlink/termlink.sh'
+  - 'bin/fw'
+  - 'CLAUDE.md'
+  - 'docs/reports/T-3579-code-review-brief.md'
+  - 'docs/reports/T-3579-code-review-openai.md'
+  - 'docs/reports/T-3579-code-review-zai.md'
+  - 'docs/reports/T-3581-build-prompt.md'
+  - 'docs/reports/T-3581-rereview-brief.md'
+  - 'docs/reports/T-3581-rereview-openai.md'
+  - 'docs/reports/T-3581-round3-prompt.md'
+  - 'docs/reports/T-3581-round3-review-brief.md'
+  - 'docs/reports/T-3581-round3-review-openai.md'
+  - 'docs/reports/T-3581-round3-review-zai.md'
+  - 'docs/reports/T-3581-round4-prompt.md'
+  - 'lib/verdict_ledger.py'
+  - '.tasks/active/T-3580-t-3557-slice-3-fw-reviewer-judge---dispa.md'
+  - '.tasks/active/T-3581-verdict-close-path-trusts-a-self-asserte.md'
+  - 'tests/unit/t3579_verdict_close_path.bats'
+  - 'tests/unit/test_t3579_verdict_ledger.py'
+  - 'tests/unit/test_t3581_ledger_integrity.py'
+  - 'tests/unit/test_t3581_round4.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-30T10:22:01'
+    action: 'T-3581: slice-2 cross-vendor reviews both RED (self-asserted reviewer, hand-appended rows honoured) — hardening task with containment first; operator owns the residual-gap call'
+  - time: '2026-09-30T10:25:05'
+    action: 'T-3581: containment — a verdict row counts only with a signed review-dispatch record; hand-appended green rows are refused'
+  - time: '2026-09-30T10:33:05'
+    action: 'T-3581: harden verdict close path — shared validator, introducing-commit + producer provenance, revalidate every close, body digest, torn-line fail-closed, fw audit cross-check'
+  - time: '2026-09-30T10:33:23'
+    action: 'T-3581: vendor sync of hardened verdict ledger'
+  - time: '2026-09-30T10:42:44'
+    action: 'T-3581: OpenAI re-review RED (4 prior findings closed; content substitution open); Z.ai re-review cut off, repo verified unpolluted; round-3 prompt'
+  - time: '2026-09-30T10:49:31'
+    action: 'T-3581: round-3 hardening — ledger append-only verified against git history, one validator for apply+audit, validate-before-select, render criteria required individually, missing verdict module refuses close and fails audit'
+  - time: '2026-09-30T10:49:47'
+    action: 'T-3581: record producer-issuer decision and ledger-integrity decision; CLAUDE.md states exactly what audit catches; T-3580 gets worker-attribution requirements'
+  - time: '2026-09-30T10:49:59'
+    action: 'T-3581: vendor sync of round-3 hardened verdict ledger'
+  - time: '2026-09-30T11:00:32'
+    action: 'T-3581: round-3 reviews — OpenAI AMBER, Z.ai AMBER, no high findings (re-review criterion met); round-4 prompt for the remaining fixable items'
+  - time: '2026-09-30T11:06:00'
+    action: 'T-3581: round-4 hardening — non-green rows fully validated, reviewer ticks tied to applied-log provenance (release is an operator action), short dispatch ids checked, deleted uncommitted verdicts detected, single registration + random review dispatch ids, evidence content hashes'
+  - time: '2026-09-30T11:06:18'
+    action: 'T-3581: vendor sync of round-4 verdict ledger hardening'
+  - time: '2026-09-30T11:08:14'
+    action: 'T-3581: provenance criterion amended with its moved clause; recommendation for the operator''s risk call'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 12 commit(s), 359 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 359
+  commits: 12
+  files_changed: 28
+  lines_added: 4324
+  lines_removed: 620
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3581-verdict-close-path-trusts-a-self-asserte.md
+generated_by: context-agent-hybrid

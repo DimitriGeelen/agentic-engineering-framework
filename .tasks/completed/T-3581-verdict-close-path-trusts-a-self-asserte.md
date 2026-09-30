@@ -12,12 +12,12 @@ description: >
   (5) digest covers the title only; (6) torn lines fail open; (7) absolute evidence
   paths accepted; (8) test gaps. Contain first, then fix.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/audit.sh, agents/task-create/update-task.sh, agents/termlink/termlink.sh, bin/fw, lib/review.sh, lib/verdict_ledger.py, tests/unit/t3579_verdict_close_path.bats, tests/unit/test_t3579_verdict_ledger.py, tests/unit/test_t3587_file_refs.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T08:20:26Z
-last_update: '2026-09-30T08:30:18Z'
-date_finished:
+last_update: 2026-09-30T14:20:07Z
+date_finished: 2026-09-30T14:20:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -116,7 +116,7 @@ the operator's call (Human AC below).
 - [x] Re-review by both vendors (OpenAI + Z.ai) returns at least amber with no high findings; `bin/fw vendor self --check` clean. Round 3: OpenAI AMBER, Z.ai AMBER, zero high findings (docs/reports/T-3581-round3-review-{openai,zai}.md). Rounds 1-2 were RED. Remaining mediums and lows are either round 4 or slice 3 (T-3580), except the same-user forgery boundary, which is the Human criterion below.
 
 ### Human
-- [ ] [REVIEW] Accept or reject the residual gap: verdicts are tamper-evident, audited and fail-closed, but not forgery-proof against an agent with full write access to the repo
+- [x] [REVIEW] Accept or reject the residual gap: verdicts are tamper-evident, audited and fail-closed, but not forgery-proof against an agent with full write access to the repo
   **Steps:**
   1. Read the "Threat model" paragraph above and the two reviews' OVERALL lines.
   2. Decide whether an audited, fail-closed ledger is enough for render/taste/unclassified criteria to close on an independent verdict (tier0, external acts and sovereignty stay human regardless).
@@ -396,3 +396,20 @@ regardless.
 
 ### 2026-09-30T08:21:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4726a6bb
+- **Timestamp:** 2026-09-30T14:20:57Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Provenance: each verdict row must carry the dispatch id of the reviewer worker (from `fw termlink dispatch` meta / `.context/dispatches.jsonl`); apply refuses a row whose dispatch record is missing or
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/dispatches.jsonl in: Provenance: each verdict row must carry the dispatch id of the reviewer worker (from `fw termlink dispatch` meta / `.context/dispatches.jsonl`); apply`
+
+### 2026-09-30T14:20:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
