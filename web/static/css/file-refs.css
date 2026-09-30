@@ -1,0 +1,18 @@
+/* T-3587: file references that do NOT resolve. The renderer (web/shared.py
+   _auto_link_files) wraps them in a titled span so a stale or ambiguous ref
+   can never pass for a live link. Distinct from link styling on purpose:
+   no link colour, a wavy underline, and a help cursor pointing at the title. */
+.file-ref-dead,
+.file-ref-ambiguous,
+.file-ref-unserved {
+    cursor: help;
+    text-decoration-line: underline;
+    text-decoration-style: wavy;
+    text-decoration-thickness: 1px;
+    text-underline-offset: 3px;
+}
+.file-ref-dead { text-decoration-color: var(--wt-danger, #d9534f); }
+.file-ref-dead::after { content: " \2717"; color: var(--wt-danger, #d9534f); font-size: 0.85em; }
+.file-ref-ambiguous { text-decoration-color: var(--wt-warn, #d29922); }
+.file-ref-ambiguous::after { content: " ?"; color: var(--wt-warn, #d29922); font-size: 0.85em; }
+.file-ref-unserved { text-decoration-color: var(--wt-muted, #8b949e); }

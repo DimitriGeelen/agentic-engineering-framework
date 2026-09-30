@@ -188,7 +188,8 @@
             {{ t.rec_decision }}
             {% endif %}
         </summary>
-        <div style="font-size:0.85rem; margin-top:0.4rem; white-space:pre-wrap; line-height:1.5;">{{ t.recommendation }}</div>
+        {# T-3587: rendered Markdown (shared renderer) — refs link or show as dead #}
+        <div class="rendered-md" style="font-size:0.85rem; margin-top:0.4rem; line-height:1.5;">{{ t.recommendation_html | safe }}</div>
     </details>
     {% else %}
     {# T-1214: Fallback context when agent recommendation is missing #}

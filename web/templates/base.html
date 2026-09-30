@@ -16,6 +16,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='pico.min.css') }}">
     <!-- arc-007 S0 (T-1991): foundation tokens + Pico-bridge. MUST load after pico. -->
     <link rel="stylesheet" href="{{ url_for('static', filename='css/foundations.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/file-refs.css') }}">
     {#- T-2033 F4b: preload all type-pairing webfonts so switching a preset/type does
         NOT trigger a font-swap reflow (font-display:swap renders fallback first, then
         re-lays-out when the woff2 arrives — the "layout switches several times" the

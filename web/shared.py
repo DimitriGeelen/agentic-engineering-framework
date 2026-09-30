@@ -692,14 +692,203 @@ _TAG_SPLIT_RE = re_mod.compile(r"(<[^>]*>)")
 # `<a` must not also match `<abbr`/`<article`, so require a delimiter after it.
 _A_OPEN_RE = re_mod.compile(r"<a(?=[\s/>])", re_mod.IGNORECASE)
 _A_CLOSE_RE = re_mod.compile(r"</a(?=[\s>])", re_mod.IGNORECASE)
+_PRE_OPEN_RE = re_mod.compile(r"<pre(?=[\s>])", re_mod.IGNORECASE)
+_PRE_CLOSE_RE = re_mod.compile(r"</pre(?=[\s>])", re_mod.IGNORECASE)
+
+
+# T-3587: the reference shapes agents actually write in Evidence, beyond the
+# exact `<prefix>/<path>.<ext>` form T-1722 recognised. Measured on the live
+# /review/T-3581 before this change: 8 refs linked, 3 left as plain text —
+# a brace group (`docs/reports/T-3579-code-review-{openai,zai}.md`), a bare
+# brace group, and a bare filename (`T-3581-rereview-openai.md`). Plain text
+# is the failure that matters: a ref the reader cannot follow looks exactly
+# like one nobody checked, and a DEAD ref looked exactly like a live one.
+#
+# One token grammar, classified after matching:
+#   - optional leading `/` (absolute path; linked only when under PROJECT_ROOT)
+#   - path body with optional `{a,b}` brace groups
+#   - a viewable extension, then an optional `:NNN` / `:NNN-MMM` line ref
+# The lookbehind refuses a start inside another token (`foo/bar.md` never
+# yields `bar.md`), which is also what keeps `http://host/x.md` text inert.
+_REF_BRACE = r"\{[A-Za-z0-9_.,/-]*,[A-Za-z0-9_.,/-]*\}"
+_REF_CHAR = r"[A-Za-z0-9_.-]"
+
+
+def _build_ref_re():
+    exts = "|".join(re_mod.escape(e) for e in sorted(VIEWABLE_EXTENSIONS, key=len, reverse=True))
+    roots = "|".join(re_mod.escape(f) for f in sorted(ROOT_FILES))
+    return re_mod.compile(
+        r"(`?)"
+        r"(?<![A-Za-z0-9_/.{}:~-])"
+        r"("
+            r"/?(?:" + _REF_CHAR + r"|" + _REF_BRACE + r")"
+            r"(?:[A-Za-z0-9_./-]|" + _REF_BRACE + r")*"
+            r"\.(?:" + exts + r")"
+            r"|(?:" + roots + r")"
+        r")"
+        r"(?::(\d+)(?:-\d+)?)?"
+        r"(?![A-Za-z0-9_/{])"
+        r"(`?)"
+    )
+
+
+_REF_RE = _build_ref_re()
+_BRACE_GROUP_RE = re_mod.compile(r"\{([^{}]*)\}")
+
+_BASENAME_INDEX: dict = {"built": 0.0, "index": {}}
+_BASENAME_TTL = 30.0       # a new report becomes resolvable within this window
+_BASENAME_MISS_TTL = 3.0   # …or sooner: a miss forces a rebuild at most this often
+
+
+def _basename_index(force_fresh: bool = False) -> dict:
+    """basename -> sorted repo-relative paths, over the viewable directories only.
+
+    Scoped to VIEWABLE_DIR_PREFIXES on purpose: a bare name that resolves to a
+    file the viewer will not serve would produce a link that 404s, which is the
+    T-1764 drift this module exists to prevent. ~14.5K files, ~0.14s to build.
+    """
+    import time as _t
+    now = _t.monotonic()
+    age = now - _BASENAME_INDEX["built"]
+    if age < _BASENAME_TTL and not (force_fresh and age >= _BASENAME_MISS_TTL):
+        return _BASENAME_INDEX["index"]
+    idx: dict = {}
+    suffixes = tuple("." + e for e in VIEWABLE_EXTENSIONS)
+    for prefix in VIEWABLE_DIR_PREFIXES:
+        base = PROJECT_ROOT / prefix
+        if not base.is_dir():
+            continue
+        for root, dirs, files in os.walk(base):
+            dirs[:] = [d for d in dirs if d not in ("__pycache__", "node_modules", ".git")]
+            for f in files:
+                if f.endswith(suffixes):
+                    rel = os.path.relpath(os.path.join(root, f), PROJECT_ROOT)
+                    idx.setdefault(f, []).append(rel)
+    for v in idx.values():
+        v.sort()
+    for f in ROOT_FILES:
+        if (PROJECT_ROOT / f).is_file():
+            idx.setdefault(f, []).insert(0, f)
+    _BASENAME_INDEX["index"] = idx
+    _BASENAME_INDEX["built"] = now
+    return idx
+
+
+def _resolve_ref(path: str):
+    """Classify one (brace-free) reference.
+
+    Returns (state, target, detail):
+      ("ok", rel, None)            servable — link to /file/<rel>
+      ("dead", None, reason)       names nothing that exists
+      ("ambiguous", None, [paths]) a bare name matching several files
+      ("unserved", rel, None)      exists, but outside the viewer's allowlist
+      (None, None, None)           not ours to judge (absolute path elsewhere)
+    """
+    if path.startswith("/"):
+        root = str(PROJECT_ROOT).rstrip("/") + "/"
+        if not path.startswith(root):
+            return (None, None, None)
+        path = path[len(root):]
+    if ".." in path.split("/"):
+        return (None, None, None)
+    if path in ROOT_FILES and not (PROJECT_ROOT / path).is_file():
+        # Extensionless root names (CHANGELOG, VERSION) are ordinary words in
+        # prose; an absent one is not a stale reference, just a word.
+        return (None, None, None)
+    if "/" not in path and path not in ROOT_FILES:
+        matches = _basename_index().get(path)
+        if not matches:
+            matches = _basename_index(force_fresh=True).get(path)
+        if not matches:
+            return ("dead", None, f"No file named {path} in the viewable directories")
+        if len(matches) > 1:
+            return ("ambiguous", None, matches)
+        return ("ok", matches[0], None)
+    fp = PROJECT_ROOT / path
+    if not fp.is_file():
+        return ("dead", None, f"{path} does not exist in this project")
+    if not is_viewable_path(path):
+        return ("unserved", path, None)
+    return ("ok", path, None)
+
+
+def _ref_markup(text: str, path: str, line, in_pre: bool) -> str | None:
+    """HTML for one brace-free reference, or None to leave `text` untouched."""
+    import html as _html
+    state, target, detail = _resolve_ref(path)
+    if state == "ok":
+        frag = f"#L{line}" if line else ""
+        return f'<a href="/file/{target}{frag}">{text}</a>'
+    if in_pre or state is None:
+        # Inside a code block only live links are added; marking every
+        # unresolved token in a pasted log or diff would bury the code.
+        return None
+    if state == "dead":
+        title = f"Not found: {detail}. This reference is stale or mistyped."
+        cls = "file-ref-dead"
+    elif state == "ambiguous":
+        shown = ", ".join(detail[:5]) + (f" (+{len(detail) - 5} more)" if len(detail) > 5 else "")
+        title = f"Ambiguous: {len(detail)} files are named {path}: {shown}. Cite the full path."
+        cls = "file-ref-ambiguous"
+    else:
+        title = (f"{target} exists but is outside the file viewer's allowlist "
+                 "(VIEWABLE_DIR_PREFIXES in web/shared.py).")
+        cls = "file-ref-unserved"
+    return f'<span class="{cls}" title="{_html.escape(title)}">{text}</span>'
+
+
+def _link_ref_match(m, in_pre: bool) -> str:
+    tick1, raw, line, tick2 = m.group(1), m.group(2), m.group(3), m.group(4)
+    whole = m.group(0)
+    suffix = whole[len(tick1) + len(raw):len(whole) - len(tick2)]  # ":NNN" or ""
+    groups = list(_BRACE_GROUP_RE.finditer(raw))
+    if not groups:
+        text = raw + suffix
+        body = f"<code>{text}</code>" if (tick1 and tick2) else text
+        out = _ref_markup(body, raw, line, in_pre)
+        if out is None:
+            return whole
+        if tick1 and tick2:
+            return out
+        return f"{tick1}{out}{tick2}"
+    if len(groups) == 1:
+        # Keep the text readable: the group stays a group, each member is linked
+        # to its own expansion (or marked, if that expansion does not resolve).
+        g = groups[0]
+        head, tail = raw[:g.start()], raw[g.end():]
+        pieces = []
+        for member in g.group(1).split(","):
+            out = _ref_markup(member, head + member + tail, line, in_pre)
+            pieces.append(out if out is not None else member)
+        return f"{tick1}{head}{{{','.join(pieces)}}}{tail}{suffix}{tick2}"
+    # Several groups: expand the cartesian product and list each expansion.
+    import itertools
+    parts, last = [], 0
+    for g in groups:
+        parts.append([raw[last:g.start()]])
+        parts.append(g.group(1).split(","))
+        last = g.end()
+    parts.append([raw[last:]])
+    links = []
+    for combo in itertools.product(*parts):
+        exp = "".join(combo)
+        out = _ref_markup(exp, exp, line, in_pre)
+        links.append(out if out is not None else exp)
+    return f"{tick1}{raw}{suffix}{tick2} ({', '.join(links)})"
 
 
 def _auto_link_files(html: str) -> str:
     """Convert artefact-path references in rendered HTML to clickable /file/ links.
 
-    Existence-gated: only paths that resolve under PROJECT_ROOT become anchors;
-    non-matching prose stays untouched. Backticks (``code spans``) are preserved
-    around the link, mirroring the T-1575 contract for backticked URLs.
+    Existence-gated: only paths that resolve under PROJECT_ROOT become anchors.
+    Backticks (``code spans``) are preserved around the link, mirroring the
+    T-1575 contract for backticked URLs.
+
+    T-3587 widened what counts as a reference and stopped leaving the misses
+    silent: brace groups expand, bare filenames resolve against the viewable
+    directories, `path:NNN` links to `#LNNN`, and a reference that resolves to
+    nothing (or to several files, or to a file the viewer will not serve) is
+    wrapped in a titled span so it cannot pass for a live link.
 
     Origin: T-633 (introduced in web/blueprints/docs.py for component-doc pages).
     Promoted here in T-1722 so /review, /tasks, /approvals, /inception — every
@@ -707,17 +896,6 @@ def _auto_link_files(html: str) -> str:
     """
     if not html:
         return html
-
-    def _replace(m):
-        tick1, path, tick2 = m.group(1), m.group(2), m.group(3)
-        if (PROJECT_ROOT / path).exists():
-            inner = f"{tick1}{path}{tick2}" if (tick1 or tick2) else path
-            # Wrap inside <code>…</code> when backticked, mirroring the
-            # T-1575 codified shape for backticked URLs.
-            if tick1 and tick2:
-                return f'<a href="/file/{path}"><code>{path}</code></a>'
-            return f'<a href="/file/{path}">{inner}</a>'
-        return m.group(0)
 
     # T-3368: substitute in TEXT ONLY — never inside a tag, never inside an <a>.
     #
@@ -739,9 +917,14 @@ def _auto_link_files(html: str) -> str:
     # would nest from the inside instead. Hence the anchor depth counter.
     parts = _TAG_SPLIT_RE.split(html)
     anchor_depth = 0
+    pre_depth = 0  # T-3587: inside <pre>, add live links only (see _ref_markup)
     for i, seg in enumerate(parts):
         if i % 2:  # odd indices are the tags themselves — never rewritten
-            if _A_OPEN_RE.match(seg):
+            if _PRE_OPEN_RE.match(seg):
+                pre_depth += 1
+            elif _PRE_CLOSE_RE.match(seg):
+                pre_depth = max(0, pre_depth - 1)
+            elif _A_OPEN_RE.match(seg):
                 anchor_depth += 1
             elif _A_CLOSE_RE.match(seg):
                 # Clamp: malformed markup can close more anchors than it opened,
@@ -749,7 +932,31 @@ def _auto_link_files(html: str) -> str:
                 # the next real anchor.
                 anchor_depth = max(0, anchor_depth - 1)
         elif anchor_depth == 0:
-            parts[i] = _ARTEFACT_PATH_RE.sub(_replace, seg)
+            in_pre = pre_depth > 0
+            parts[i] = _REF_RE.sub(lambda m: _link_ref_match(m, in_pre), seg)
+    return "".join(parts)
+
+
+# T-3587: markdown2 reads `task_pair_acd.sh` as `task<em>pair</em>acd.sh`, which
+# splits the path across three text nodes before the linker ever sees it — the
+# reason `lib/task_pair_acd.sh` on /review/T-3581 was plain text. Escaping the
+# underscores of path-shaped tokens (outside code, where markdown does not
+# emphasise and a backslash would show literally) keeps each path one token.
+_PATH_UNDERSCORE_TOKEN_RE = re_mod.compile(
+    r"[A-Za-z0-9_./{},~-]*_[A-Za-z0-9_./{},~-]*\.(?:"
+    + "|".join(sorted(VIEWABLE_EXTENSIONS, key=len, reverse=True))
+    + r")(?![A-Za-z0-9_])"
+)
+_MD_CODE_SPLIT_RE = re_mod.compile(r"(```.*?```|~~~.*?~~~|`[^`\n]*`)", re_mod.DOTALL)
+
+
+def protect_path_underscores(text: str) -> str:
+    if not text or "_" not in text:
+        return text
+    parts = _MD_CODE_SPLIT_RE.split(text)
+    for i in range(0, len(parts), 2):  # even indices: outside code
+        parts[i] = _PATH_UNDERSCORE_TOKEN_RE.sub(
+            lambda m: m.group(0).replace("_", "\\_"), parts[i])
     return "".join(parts)
 
 
@@ -773,6 +980,7 @@ def render_markdown_safe(text: str) -> str:
     except ImportError:
         return text  # graceful degradation
     text = _TASK_REF_RE_SHARED.sub(r"[\1](/tasks/\1)", text)
+    text = protect_path_underscores(text)
     text = _BARE_URL_RE_SHARED.sub(lambda m: f"[{m.group(1).rstrip('.,;:!?')}]({m.group(1).rstrip('.,;:!?')})", text)
     html = markdown2.markdown(text, safe_mode="escape").strip()
     # T-1575 codification: backticked URLs (`<code>http://...</code>`) are also
