@@ -87,3 +87,13 @@ backends:
       - 'https?://([a-z0-9-]+\.)*openrouter\.ai'
       - '(^|[;&|]\s*|/)openrouter\s'
       - '\$\{?OPENROUTER_API_KEY'
+
+  - id: antigravity
+    name: "Google Antigravity (agy CLI)"
+    harness_class: "subscription"
+    cost_class: "internal"
+    approval_required: false
+    cost_estimate_method: "unmetered"
+    description: "Antigravity 1.1.15 CLI on the operator's Google account; runs as user dimitri-mint-dev via sudo -n -u dimitri-mint-dev -H agy -p ... --mode plan --sandbox (operator approved 2026-09-30). No dispatch worker_kind yet."
+    match:
+      - "\\bagy\\b"
