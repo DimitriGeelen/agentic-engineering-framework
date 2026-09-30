@@ -110,7 +110,11 @@ setup() {
 
 @test "fw_config_registry shows default source when no override" {
     unset FW_CONTEXT_WINDOW
-    result=$(fw_config_registry | grep "CONTEXT_WINDOW")
+    # Hermetic: this repo's own .framework.yaml sets CONTEXT_WINDOW (operator
+    # ruling, 8193dfaa8/T-3455 onward), which is a file override, not a default.
+    local empty; empty="$(mktemp -d)"
+    result=$(PROJECT_ROOT="$empty" fw_config_registry | grep "CONTEXT_WINDOW")
+    rm -rf "$empty"
     [[ "$result" == *"|default|"* ]]
 }
 
@@ -124,7 +128,11 @@ setup() {
 
 @test "CONTEXT_WINDOW default is 300000" {
     unset FW_CONTEXT_WINDOW
-    result=$(fw_config_int "CONTEXT_WINDOW" 300000)
+    # Hermetic: the registry default, not this repo's .framework.yaml override
+    # (set since 8193dfaa8/T-3455; 975000 at the time of writing).
+    local empty; empty="$(mktemp -d)"
+    result=$(PROJECT_ROOT="$empty" fw_config_int "CONTEXT_WINDOW" 300000)
+    rm -rf "$empty"
     [ "$result" = "300000" ]
 }
 
