@@ -241,7 +241,8 @@ _mod() { PROJECT_ROOT="$FX" python3 "$FRAMEWORK_ROOT/lib/tier0_action.py" "$@"; 
     [ ! -f "$FX/.context/working/.tier0-action.pending.json" ]
     _approve >/dev/null
     # the operator's approval went to the exact-text path: no reusable action record
-    ! _store | grep -q '"verb": "force-push"'
+    run bash -c "cat '$FX/.context/working/tier0-action-approvals.json' 2>/dev/null | grep -q '\"verb\": \"force-push\"'"
+    [ "$status" -ne 0 ]
     # a later forced push of the same ref (e.g. from a script, at pre-push) finds nothing
     run _mod use pre-push '[{"verb":"force-push","targets":{"remote":"origin","ref":"main"}}]'
     [ "$status" -ne 0 ]
@@ -264,7 +265,8 @@ _mod() { PROJECT_ROOT="$FX" python3 "$FRAMEWORK_ROOT/lib/tier0_action.py" "$@"; 
     run env CLAUDECODE=1 PROJECT_ROOT="$FX" python3 "$FRAMEWORK_ROOT/lib/tier0_action.py" approve-pending 300
     [ "$status" -ne 0 ]
     [[ "$output" == *"human-only"* ]]
-    ! _store | grep -q '"state": "approved"'
+    run bash -c "cat '$FX/.context/working/tier0-action-approvals.json' 2>/dev/null | grep -q '\"state\": \"approved\"'"
+    [ "$status" -ne 0 ]
     run _hook "git push --force origin main"
     [ "$status" -eq 2 ]
 }
