@@ -39,7 +39,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T21:18:23Z
-last_update: 2026-09-30T21:21:21Z
+last_update: '2026-09-30T21:30:24Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -69,6 +69,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-30T21:30:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 1
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=1 
+      (workflow:test); effort=8 (lines=273,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3603: OBS-587 triage A: red unit suites approvals..lib_review (25 bats files)
@@ -80,10 +90,10 @@ OBS-587, half A. T-3601 found these files red on HEAD, re-run in isolation: appr
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Every file in the list has a verdict in `docs/reports/T-3603-triage.md`: its failing tests, the commit that broke them, and whether it is a STALE TEST (the code changed on purpose) or a CODE REGRESSION, with the evidence for each
-- [ ] Every stale test is fixed by editing test files only; each fixed file passes in isolation with no skips
-- [ ] Every code regression has its own bug task (one bug, one task), created with `fw task create`, with the evidence and the breaking commit, and is listed in the report. None is fixed here
-- [ ] No source file outside `tests/` is modified by this task
+- [x] Every file in the list has a verdict in `docs/reports/T-3603-triage.md`: its failing tests, the commit that broke them, and whether it is a STALE TEST (the code changed on purpose) or a CODE REGRESSION, with the evidence for each
+- [x] Every stale test is fixed by editing test files only; each fixed file passes in isolation with no skips
+- [x] Every code regression has its own bug task (one bug, one task), created with `fw task create`, with the evidence and the breaking commit, and is listed in the report. None is fixed here
+- [x] No source file outside `tests/` is modified by this task
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
