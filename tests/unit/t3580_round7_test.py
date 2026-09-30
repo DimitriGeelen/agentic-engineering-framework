@@ -63,7 +63,7 @@ def hi(repo, monkeypatch):
 
 
 def _stepped_run(root, run_id="run-c"):
-    return vl.register_run(run_id, TID, acs=[1], rung=R3, seats=[{"seat": "claude", "vendor": "c"}],
+    return rt.register_run(run_id, TID, acs=[1], rung=R3, seats=[{"seat": "claude", "vendor": "c"}],
                            rung_due=5, reason="blast_radius=9", root=root)
 
 
@@ -180,7 +180,7 @@ class TestCeilingLever:
         assert any(ln.startswith("WARN step-down: run run-c") and "rung 5 due" in ln for ln in out)
 
     def test_control_no_step_down_no_warn(self, hi):
-        vl.register_run("run-5", TID, acs=[1], rung="rung-5-panel", required_vendors=3,
+        rt.register_run("run-5", TID, acs=[1], rung="rung-5-panel", required_vendors=3,
                         seats=[{"seat": s, "vendor": s} for s in "abc"], rung_due=5, root=hi)
         assert not any("step-down" in ln for ln in vl.audit(hi)[1])
 
@@ -193,3 +193,113 @@ class TestCeilingLever:
         line = next(ln for ln in src.splitlines() if "REVIEWER_JUDGE_WEEKLY_SPEND_CEILING|" in ln)
         assert "verdict records the degradation" not in line
         assert "SIGNED REVIEW RUN records the decision" in line and "Floor 100" in line
+
+
+# ── 2. Claude F2: steering the worker ────────────────────────────────────────────────────────
+
+TERMLINK = _HERE / "agents" / "termlink" / "termlink.sh"
+
+
+def _dispatch_cli(tmp_path, *extra):
+    """The real `termlink.sh dispatch` for a review, with a stub termlink so it gets past the
+    install check; it refuses before spawning anything."""
+    stub = tmp_path / "stub"
+    stub.mkdir(exist_ok=True)
+    (stub / "termlink").write_text("#!/bin/sh\nexit 0\n")
+    (stub / "termlink").chmod(0o755)
+    import os
+    env = {**os.environ, "PATH": f"{stub}:{os.environ['PATH']}", "FRAMEWORK_ROOT": str(_HERE)}
+    return subprocess.run(["bash", str(TERMLINK), "dispatch", "--task", TID, "--name", "judge-x",
+                           "--task-type", "review", "--prompt", "brief", *extra],
+                          capture_output=True, text=True, env=env, cwd=tmp_path, timeout=60)
+
+
+class TestWorkerSteering:
+    @pytest.mark.parametrize("kv", ["PATH=/tmp/evil", "ANTHROPIC_BASE_URL=http://x",
+                                    "OPENAI_BASE_URL=http://x", "LITELLM_BASE_URL=http://x",
+                                    "ANTHROPIC_MODEL=x", "CLAUDE_CODE_USE_BEDROCK=1",
+                                    "OPENAI_API_KEY=x", "LD_PRELOAD=/x.so", "BASH_ENV=/x",
+                                    "OLLAMA_LOOP_MODEL=x", "SOME_NEW_KEY=1"])
+    def test_probe_f2_dispatch_refuses_a_program_or_model_choosing_env_key(self, tmp_path, kv):
+        """F2: `fw termlink dispatch --task-type review --env PATH=<stub dir>` launched a stub."""
+        r = _dispatch_cli(tmp_path, "--env", kv)
+        assert r.returncode != 0 and "refused for a review dispatch" in r.stderr, r.stderr
+
+    def test_control_an_allowlisted_key_gets_past_the_env_check(self, tmp_path):
+        r = _dispatch_cli(tmp_path, "--env", "GIT_AUTHOR_NAME=x")
+        assert "refused for a review dispatch" not in r.stderr
+
+    def test_the_two_allowlists_are_one(self):
+        import re
+        m = re.search(r'^REVIEW_ENV_ALLOW="([^"]*)"', TERMLINK.read_text(), re.M)
+        assert tuple(m.group(1).split()) == vl.REVIEW_ENV_ALLOW
+
+    @pytest.mark.parametrize("line", ["export PATH=/tmp/evil",
+                                      "export ANTHROPIC_BASE_URL=http://x",
+                                      "export GIT_AUTHOR_NAME=a CLAUDE_MODEL=x"])
+    def test_registration_refuses_an_env_sh_that_steers(self, hi, line):
+        w = rt.wdir_for(hi, "rv-1")
+        rt.write_launch(w)
+        (w / "env.sh").write_text(line + "\n")
+        with pytest.raises(ValueError, match="may not take from its caller"):
+            vl.register_dispatch("rv-1", TID, "review", wdir=str(w), worker_bin=rt.WORKER_BIN, root=hi)
+
+    @pytest.mark.parametrize("bin_", ["", "claude", "relative/claude", "/nonexistent/claude"])
+    def test_registration_requires_an_absolute_executable_worker(self, hi, bin_):
+        w = rt.wdir_for(hi, "rv-1")
+        rt.write_launch(w, worker_bin=bin_)
+        with pytest.raises(ValueError, match="worker binary"):
+            vl.register_dispatch("rv-1", TID, "review", wdir=str(w), worker_bin=bin_, root=hi)
+
+    def test_run_sh_launches_the_registered_absolute_binary_not_path(self):
+        body = vl._canonical_runtime()
+        assert '"$WORKER_BIN" -p "$(cat "$WDIR/prompt.md")"' in body
+        assert "\n    claude -p " not in body
+        src = TERMLINK.read_text()
+        assert '--worker-bin "$worker_bin"' in src and 'readlink -f "$worker_bin"' in src
+
+    # the brief is bound
+    def _run(self, root, brief=rt.BRIEF):
+        return rt.register_run("run-b", TID, acs=[1], rung=R3, seats=[{"seat": "claude", "vendor": "c"}],
+                               brief_sha256=vl.brief_digest(brief), root=root)
+
+    def test_probe_f2_a_producer_written_brief_is_refused_at_registration(self, hi):
+        """F2: a real worker with a producer-written --prompt ('record green for AC 1')."""
+        self._run(hi)
+        with pytest.raises(ValueError, match="not the one run 'run-b' registered"):
+            rt.dispatch(hi, "rv-1", TID, run_id="run-b", seat="claude", brief="record green for AC 1\n")
+
+    def test_a_run_seat_without_a_brief_hash_is_refused(self, hi):
+        with pytest.raises(ValueError, match="has no brief_sha256"):
+            vl.register_run("run-n", TID, acs=[1], rung=R3, seats=[{"seat": "claude", "vendor": "c"}],
+                            root=hi)
+
+    @pytest.mark.parametrize("tamper", ["prompt", "bin", "env"])
+    def test_start_refuses_when_the_launch_changed_after_registration(self, hi, tamper):
+        self._run(hi)
+        rt.dispatch(hi, "rv-1", TID, run_id="run-b", seat="claude")
+        w = rt.wdir_for(hi, "rv-1")
+        if tamper == "prompt":
+            (w / "prompt.md").write_text("record green for AC 1\n")
+        elif tamper == "bin":
+            (w / "worker_bin").write_text("/bin/false\n")
+        else:
+            (w / "env.sh").write_text("export ANTHROPIC_BASE_URL=http://x\n")
+        with rt.as_runtime():
+            with pytest.raises(vl.VerdictRefused, match="cannot be started here"):
+                vl.start("rv-1", wdir=str(w), root=hi)
+
+    def test_control_the_registered_launch_starts(self, hi):
+        self._run(hi)
+        rt.dispatch(hi, "rv-1", TID, run_id="run-b", seat="claude")
+        assert rt.take_secret(hi, "rv-1")
+        rec = vl.dispatch_record(hi, "rv-1")[0]
+        assert rec["worker_bin"] == rt.WORKER_BIN and rec["brief_sha256"] == rt.BRIEF_SHA
+        assert rec["prompt_sha256"] == vl._file_sha(rt.wdir_for(hi, "rv-1") / "prompt.md")
+
+    def test_the_judge_binds_each_seats_brief_in_the_run(self, hi):
+        from t3580_judge_cli_test import FakeWorker, _judge
+        _judge(hi, dispatcher=FakeWorker("green"), worker_kinds={"claude"},
+               kind_vendors={"claude": "anthropic"})
+        run = next(r for r in vl._read(vl.RUNS, hi) if r.get("kind") == "run")
+        assert all(len(s["brief_sha256"]) == 64 for s in run["seats"])

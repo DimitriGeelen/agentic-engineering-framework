@@ -40,17 +40,40 @@ def as_runtime():
             os.environ[vl._WORKER_ENV] = saved_env
 
 
+#: Round 7: every run seat binds the brief it is dispatched with; fixtures use this one.
+BRIEF = "fixture review brief\n"
+BRIEF_SHA = vl.brief_digest(BRIEF)
+#: Round 7: a review worker is launched by an absolute, executable path resolved at dispatch.
+WORKER_BIN = "/bin/true"
+
+
+def register_run(*args, **kw):
+    """vl.register_run with the fixture brief bound to every seat (round 7)."""
+    kw.setdefault("brief_sha256", BRIEF_SHA)
+    return vl.register_run(*args, **kw)
+
+
+def write_launch(w: Path, brief: str = BRIEF, worker_bin: str = WORKER_BIN) -> None:
+    """What cmd_dispatch writes before it registers: prompt.md (consult stanza + brief), brief.md
+    (the caller's brief verbatim) and worker_bin (round 7)."""
+    w.mkdir(parents=True, exist_ok=True)
+    (w / "prompt.md").write_text("[PEER CONSULTS]\n\n" + brief.rstrip("\n") + "\n")
+    (w / "brief.md").write_text(brief.rstrip("\n") + "\n")
+    (w / "worker_bin").write_text(worker_bin + "\n")
+
+
 def dispatch(root, did, task, *, task_type="review", issuer_session="S-test",
              issuer_identity="dispatcher", revision="", worker_kind="claude", vendor="",
-             run_id="", seat=""):
+             run_id="", seat="", brief=BRIEF, worker_bin=WORKER_BIN):
     """Register a dispatch exactly as the dispatcher does: with its worker dir, revision and worker
-    kind (round 5: the ledger derives the vendor; `vendor` is only an assertion)."""
+    kind (round 5: the ledger derives the vendor; `vendor` is only an assertion), and (round 7) the
+    brief and absolute worker binary it launches."""
     w = wdir_for(root, did)
-    w.mkdir(parents=True, exist_ok=True)
+    write_launch(w, brief, worker_bin)
     vl.register_dispatch(did, task, task_type, issuer_session=issuer_session,
                          issuer_identity=issuer_identity, revision=revision, wdir=str(w),
                          worker_kind=worker_kind, vendor=vendor, run_id=run_id, seat=seat,
-                         root=Path(root))
+                         worker_bin=worker_bin, root=Path(root))
     return did
 
 

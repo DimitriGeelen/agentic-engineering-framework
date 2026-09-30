@@ -314,18 +314,94 @@ def _sign(key: bytes, row: dict) -> str:
     for k in ("revision", "wdir",           # T-3580 round 3: bound at dispatch time
               "worker_kind", "vendor", "completion_secret_sha256",    # round 4
               "start_by", "complete_by",                              # round 5
-              "run_id", "seat"):                                      # round 6: bound pre-launch
+              "run_id", "seat",                                       # round 6: bound pre-launch
+              "worker_bin", "prompt_sha256", "brief_sha256"):         # round 7: what is launched
         if k in row:
             body[k] = row[k]
     return hmac.new(key, json.dumps(body, sort_keys=True, separators=(",", ":")).encode(),
                     hashlib.sha256).hexdigest()
 
 
+#: Round 7 (Claude F2): the ONLY caller `--env` keys a review dispatch accepts — deny by default.
+#: Nothing that chooses the program or the model is on it: PATH, *_BASE_URL, ANTHROPIC_*, OPENAI_*,
+#: CLAUDE_*, LD_*, BASH_ENV, model and binary overrides are all refused because they are absent.
+#: Mirrored by REVIEW_ENV_ALLOW in agents/termlink/termlink.sh (a test pins the two equal).
+REVIEW_ENV_ALLOW = ("GIT_AUTHOR_NAME", "GIT_AUTHOR_EMAIL", "GIT_COMMITTER_NAME", "GIT_COMMITTER_EMAIL")
+#: Keys the dispatcher itself writes into a review worker's env.sh.
+_RUNTIME_ENV_KEYS = ("FW_SIDECAR_AGENT_ID", "FW_REVIEW_REVISION", "FW_SESSION_SCOPED_FOCUS",
+                     "FW_FOCUS_SESSION_KEY")
+
+
+def brief_digest(text: str) -> str:
+    """sha256 of a review brief, normalised the way the dispatcher stores it (`$(cat file)` drops
+    trailing newlines; brief.md gets exactly one back)."""
+    return hashlib.sha256(((text or "").rstrip("\n") + "\n").encode()).hexdigest()
+
+
+def _file_sha(path: Path) -> str:
+    try:
+        return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    except OSError:
+        return ""
+
+
+def _env_fault(wdir: Path) -> str:
+    """'' when the worker's env.sh sets only allowed keys (REVIEW_ENV_ALLOW + the runtime's own)."""
+    import shlex
+
+    p = Path(wdir) / "env.sh"
+    try:
+        text = p.read_text()
+    except OSError:
+        return ""
+    allowed = set(REVIEW_ENV_ALLOW) | set(_RUNTIME_ENV_KEYS)
+    for n, line in enumerate(text.splitlines(), 1):
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        try:
+            toks = shlex.split(line)
+        except ValueError:
+            return f"env.sh line {n} does not parse"
+        if not toks or toks[0] != "export" or len(toks) < 2:
+            return f"env.sh line {n} is not an export"
+        for t in toks[1:]:
+            key = t.split("=", 1)[0]
+            if "=" not in t or key not in allowed:
+                return (f"env.sh sets {key!r}, which a review worker may not take from its caller "
+                        f"(allowed: {', '.join(REVIEW_ENV_ALLOW)}) — it could choose the program or model")
+    return ""
+
+
+def _bin_fault(path: str) -> str:
+    wb = (path or "").strip()
+    if not wb.startswith("/"):
+        return f"the worker binary {wb or '(none)'!r} is not an absolute path resolved at dispatch"
+    if not (os.path.isfile(wb) and os.access(wb, os.X_OK)):
+        return f"the worker binary {wb!r} is not an executable file"
+    return ""
+
+
+def _launch_fault(drec: dict, wdir: Path) -> str:
+    """(start, round 7) '' when what run.sh is about to launch is what was registered: the same
+    prompt.md, the same absolute worker binary, and an env.sh with no program- or model-choosing
+    key."""
+    if _file_sha(Path(wdir) / "prompt.md") != str(drec.get("prompt_sha256") or "-"):
+        return "prompt.md is not the brief registered with the dispatch"
+    try:
+        wb = (Path(wdir) / "worker_bin").read_text().strip()
+    except OSError:
+        wb = ""
+    if wb != str(drec.get("worker_bin") or "") or _bin_fault(wb):
+        return (f"the worker binary {wb or '(none)'!r} is not the registered "
+                f"{drec.get('worker_bin') or '(none)'!r} — {_bin_fault(wb) or 'changed after dispatch'}")
+    return _env_fault(Path(wdir))
+
+
 def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
                       issuer_session: str = "", issuer_identity: str = "",
                       revision: str = "", wdir: str = "", worker_kind: str = "",
                       vendor: str = "", ttl: int = DEFAULT_TTL, run_id: str = "",
-                      seat: str = "", root: Path | None = None) -> dict:
+                      seat: str = "", worker_bin: str = "", root: Path | None = None) -> dict:
     """Record a dispatch. Called by the dispatcher, for every task-type, at spawn time.
 
     `revision` is the commit the reviewer is asked to review, captured BEFORE the worker starts
@@ -344,7 +420,13 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
     `run_id` + `seat` (round 6) bind the dispatch to the signed review run the judge registered
     BEFORE the worker is launched: the run must exist, be for this task and have that seat, and a
     seat is dispatched once. The binding is part of the signed registration; there is no later
-    bind step a caller could skip or redo."""
+    bind step a caller could skip or redo.
+
+    Round 7 (Claude F2): a review dispatch with a worker directory also signs WHAT is launched —
+    `worker_bin` (the absolute worker binary the dispatcher resolved), `prompt_sha256` (the
+    prompt.md it wrote) and, for a run seat, `brief_sha256`, which must be the brief the run
+    registered for that seat (and prompt.md must end with it). Its env.sh may set only
+    REVIEW_ENV_ALLOW keys. `start` re-checks all of it before the worker runs."""
     root = root or _root()
     if not (dispatch_id or "").strip() or not (task_id or "").strip():
         raise ValueError("dispatch_id and task are required")
@@ -384,6 +466,30 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
                for r in _read(DISPATCHES, root)):
             raise ValueError(f"seat {seat.strip()!r} of run {run_id.strip()!r} is already dispatched")
         row["run_id"], row["seat"] = run_id.strip(), seat.strip()
+    if row["task_type"] == REVIEW_TASK_TYPE and row["wdir"]:
+        w = Path(row["wdir"])
+        if not (w / "prompt.md").is_file():
+            raise ValueError(f"no prompt.md in {w} — a review dispatch's brief is registered with it")
+        bad = _bin_fault(worker_bin) or _env_fault(w)
+        if bad:
+            raise ValueError(f"review dispatch refused: {bad}")
+        row["worker_bin"] = worker_bin.strip()
+        row["prompt_sha256"] = _file_sha(w / "prompt.md")
+        if row.get("run_id"):
+            want = next((str(x.get("brief_sha256") or "") for x in run.get("seats") or []
+                         if x.get("seat") == row["seat"]), "")
+            try:
+                brief = (w / "brief.md").read_text()
+                prompt = (w / "prompt.md").read_text()
+            except OSError:
+                raise ValueError(f"no brief.md in {w} — a run seat's brief must be the one its run registered")
+            if not want or brief_digest(brief) != want:
+                raise ValueError(f"the brief in {w} is not the one run {row['run_id']!r} registered for "
+                                 f"seat {row['seat']!r} — a review worker runs the judge's brief, not "
+                                 f"the caller's")
+            if not prompt.rstrip("\n").endswith(brief.rstrip("\n")):
+                raise ValueError(f"prompt.md in {w} does not carry the registered brief")
+            row["brief_sha256"] = want
     if (vendor or "").strip() and vendor.strip() != row["vendor"]:
         raise ValueError(f"vendor {vendor.strip()!r} is not the one {BACKENDS} maps worker kind "
                          f"{row['worker_kind']!r} to ({row['vendor'] or 'none'!r}) — refused")
@@ -602,7 +708,7 @@ def start(dispatch_id: str, *, wdir: str, pid: int = 0,
     if not here or here != str(drec.get("wdir") or ""):
         raise VerdictRefused(f"worker directory {here or '(none)'} is not the one registered for "
                              f"dispatch {did!r}")
-    bad = _runtime_fault(here)
+    bad = _runtime_fault(here) or _launch_fault(drec, Path(here))
     if bad:
         raise VerdictRefused(f"dispatch {did!r} cannot be started here: {bad}")
     now = int(_clock())
@@ -791,7 +897,8 @@ def _tracked(root: Path, rel: Path) -> bool:
 def register_run(run_id: str, task_id: str, *, acs: list[int], rung: str, seats: list[dict],
                  required_vendors: int = 1, pages: dict | None = None, captures: list | None = None,
                  inputs: dict | None = None, reason: str = "", degraded: str = "",
-                 rung_due: int | None = None, root: Path | None = None) -> dict:
+                 rung_due: int | None = None, brief_sha256: str = "",
+                 root: Path | None = None) -> dict:
     """(judge, before dispatching) record a review run: the seats it requires, how many distinct
     vendors it demands, and for render criteria the pages that must have been seen with the
     capture result of each. Signed; a partial capture failure is kept, never discarded.
@@ -799,13 +906,21 @@ def register_run(run_id: str, task_id: str, *, acs: list[int], rung: str, seats:
     `rung_due` (round 7) is the rung IW-7 requires. The ledger itself computes the ceiling
     decision HERE, as of this run's registration time, from the committed cost ledger
     (lib/review_policy.ceiling_decision), and refuses a run whose `rung` is not the rung that
-    decision grants. A caller never supplies a decision, so no run can carry an old one."""
+    decision grants. A caller never supplies a decision, so no run can carry an old one.
+
+    Every seat carries the `brief_sha256` of the brief the judge wrote for it (round 7); a dispatch
+    for the seat is registered only with that brief (`register_dispatch`)."""
     root = root or _root()
     if any(r.get("kind") == "run" and r.get("run_id") == run_id for r in _read(RUNS, root)):
         raise ValueError(f"run {run_id!r} is already registered")
+    for x in seats:
+        if not re.fullmatch(r"[0-9a-f]{64}", str(x.get("brief_sha256") or brief_sha256 or "")):
+            raise ValueError(f"seat {x.get('seat')!r} of run {run_id!r} has no brief_sha256 — a run "
+                             f"binds the brief each seat is dispatched with")
     key = _dispatch_key(root, create=True)
     row = {"kind": "run", "run_id": run_id, "task": task_id, "acs": sorted(acs), "rung": rung,
-           "seats": [{"seat": s["seat"], "vendor": s["vendor"]} for s in seats],
+           "seats": [{"seat": s["seat"], "vendor": s["vendor"],
+                      "brief_sha256": str(s.get("brief_sha256") or brief_sha256 or "")} for s in seats],
            "required_vendors": int(required_vendors),
            "pages": {str(k): list(v) for k, v in (pages or {}).items()},
            "captures": [dict(c) for c in (captures or [])], "inputs": inputs or {},
@@ -2158,6 +2273,8 @@ def _cli(argv: list[str] | None = None) -> int:
     g.add_argument("--run-id", default="", help="the signed review run this dispatch is authorised "
                    "under (bound here, before launch)")
     g.add_argument("--seat", default="", help="the run seat this dispatch fills")
+    g.add_argument("--worker-bin", default="", help="(review) the absolute worker binary the "
+                   "dispatcher resolved; run.sh launches exactly this")
 
     st = sub.add_parser("start", help="(dispatch runtime, first act of run.sh) record that the "
                         "runtime started for this dispatch")
@@ -2217,7 +2334,7 @@ def _cli(argv: list[str] | None = None) -> int:
                                 issuer_identity=args.issuer_identity,
                                 revision=args.revision, wdir=args.wdir,
                                 worker_kind=args.worker_kind, ttl=args.ttl,
-                                run_id=args.run_id, seat=args.seat)
+                                run_id=args.run_id, seat=args.seat, worker_bin=args.worker_bin)
         print(json.dumps({k: row[k] for k in ("dispatch_id", "task", "task_type", "revision",
                                               "worker_kind", "vendor")}))
         return 0

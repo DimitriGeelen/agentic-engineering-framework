@@ -75,7 +75,7 @@ teardown() {
 }
 
 @test "t8: claude -p invocation includes both flags" {
-    grep -qE 'claude -p .*\$MCP_CONFIG_FLAG .*\$STRICT_MCP_FLAG' \
+    grep -qE '(claude|"\$WORKER_BIN") -p .*\$MCP_CONFIG_FLAG .*\$STRICT_MCP_FLAG' \
         "$FRAMEWORK_ROOT/agents/termlink/termlink.sh"
 }
 

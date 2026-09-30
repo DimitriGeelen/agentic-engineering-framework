@@ -53,7 +53,7 @@ teardown() {
 }
 
 @test "t5: claude -p invocation includes PERMISSION_MODE_FLAG" {
-    grep -qE 'claude -p .*\$PERMISSION_MODE_FLAG' \
+    grep -qE '(claude|"\$WORKER_BIN") -p .*\$PERMISSION_MODE_FLAG' \
         "$FRAMEWORK_ROOT/agents/termlink/termlink.sh"
 }
 

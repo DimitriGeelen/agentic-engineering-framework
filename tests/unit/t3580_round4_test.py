@@ -95,7 +95,8 @@ class TestCompletionSecret:
         it writes no secret file and registers no hash; the runtime's start issues the secret."""
         rt.dispatch(prod, "rv-1", TID)
         w = rt.wdir_for(prod, "rv-1")
-        assert list(w.iterdir()) == []
+        # round 7: only the dispatcher's own launch files (brief, prompt, worker binary)
+        assert sorted(x.name for x in w.iterdir()) == ["brief.md", "prompt.md", "worker_bin"]
         assert "secret" not in (prod / vl.DISPATCHES).read_text()
         secret = rt.take_secret(prod, "rv-1")
         comps = (prod / vl.COMPLETIONS).read_text()
@@ -146,7 +147,7 @@ SEATS = [{"seat": "alias-a", "vendor": "alias-a"}, {"seat": "alias-b", "vendor":
 
 
 def _alias_panel(root, vendors):
-    vl.register_run("run-p", TID, acs=[1], rung="rung-5-panel", seats=SEATS, required_vendors=3,
+    rt.register_run("run-p", TID, acs=[1], rung="rung-5-panel", seats=SEATS, required_vendors=3,
                     root=root)
     for s, v in zip(SEATS, vendors):
         did = f"rv-{s['seat']}"
@@ -231,8 +232,9 @@ class TestFinalisedWait:
 
     def test_wait_holds_past_exit_code_until_the_delayed_signing_finalises(self, tl):
         prod, did, w, fw = tl
+        rt.write_launch(w)                                   # round 7: brief + worker binary
         vl.register_dispatch(did, TID, "review", revision="", wdir=str(w), worker_kind="claude",
-                             vendor="anthropic", root=prod)
+                             vendor="anthropic", worker_bin=rt.WORKER_BIN, root=prod)
         (w / "finalise_required").write_text("")
         _record(prod, did)
         _commit_as(prod, f"reviewer-{did}")

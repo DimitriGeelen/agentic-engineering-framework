@@ -761,7 +761,8 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
     try:
         vl.register_run(
             run_id, task_id, acs=[c["ac_index"] for c in judged], rung=_rung_label(rung),
-            seats=[{"seat": s["seat"], "vendor": s["vendor"]} for s in seats],
+            seats=[{"seat": s["seat"], "vendor": s["vendor"],
+                    "brief_sha256": vl.brief_digest(briefs[s["seat"]])} for s in seats],
             required_vendors=required,
             pages={str(c["ac_index"]): evidence["pages"] for c in judged if c["render"]},
             captures=evidence["captures"],

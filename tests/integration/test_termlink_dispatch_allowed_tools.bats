@@ -60,7 +60,7 @@ teardown() {
 }
 
 @test "t6: claude -p invocation includes \$ALLOWED_TOOLS_FLAG between \$STRICT_MCP_FLAG and --output-format" {
-    grep -qE 'claude -p .*\$STRICT_MCP_FLAG \$ALLOWED_TOOLS_FLAG --output-format' \
+    grep -qE '(claude|"\$WORKER_BIN") -p .*\$STRICT_MCP_FLAG \$ALLOWED_TOOLS_FLAG --output-format' \
         "$FRAMEWORK_ROOT/agents/termlink/termlink.sh"
 }
 

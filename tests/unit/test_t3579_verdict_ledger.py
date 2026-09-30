@@ -157,7 +157,7 @@ def _render_run(root, ac, did, evidence, pages=("/review",), ok=True, render=Tru
         shots.append(f.name)
         caps.append({"page": pg, "ok": ok, "sha256": vl._hash_path(f) if ok else "",
                      "error": "" if ok else "browser down"})
-    vl.register_run(f"run-{did}", TASK, acs=[ac], rung=rung,
+    rt.register_run(f"run-{did}", TASK, acs=[ac], rung=rung,
                     seats=[{"seat": "claude", "vendor": "claude"}], required_vendors=1,
                     pages={str(ac): list(pages)} if render else {}, captures=caps, root=root)
     return {"run_id": f"run-{did}", "evidence": list(evidence) + shots}

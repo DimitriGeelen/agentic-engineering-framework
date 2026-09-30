@@ -271,7 +271,8 @@ class FakeWorker:
                            "revision": revision})
         rt.dispatch(root, did, task_id, issuer_session="S-x", revision=revision,
                     worker_kind=vendor,   # round 5: the ledger derives the vendor from the kind
-                    run_id=run_id, seat=seat)   # round 6: bound to its run before launch
+                    run_id=run_id, seat=seat,   # round 6: bound to its run before launch
+                    brief=brief)                # round 7: the brief the run registered
         if not self.write:
             if self.runtime:
                 rt.finish(root, did, self.exit_code)

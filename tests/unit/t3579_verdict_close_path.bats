@@ -77,10 +77,14 @@ TASK
 _dispatch() {
     # Register a review dispatch the way the dispatcher does (T-3581): with the runtime's worker
     # directory, and the revision under review (HEAD now, before the worker runs — T-3580 round 3).
+    # T-3580 round 7: it also writes the brief (prompt.md) and the absolute worker binary.
     mkdir -p "$TEST_TEMP_DIR.tl/${1:-rv-1}"
+    echo "fixture review brief" > "$TEST_TEMP_DIR.tl/${1:-rv-1}/prompt.md"
+    echo "fixture review brief" > "$TEST_TEMP_DIR.tl/${1:-rv-1}/brief.md"
+    echo "/bin/true" > "$TEST_TEMP_DIR.tl/${1:-rv-1}/worker_bin"
     PROJECT_ROOT="$PROJECT_ROOT" python3 "$BATS_TEST_DIRNAME/../../lib/verdict_ledger.py" \
         register-dispatch --dispatch-id "${1:-rv-1}" --task T-9200 --task-type review \
-        --wdir "$TEST_TEMP_DIR.tl/${1:-rv-1}" --worker-kind claude "${@:2}" >/dev/null
+        --wdir "$TEST_TEMP_DIR.tl/${1:-rv-1}" --worker-kind claude --worker-bin /bin/true "${@:2}" >/dev/null
 }
 
 _finish() {
@@ -144,7 +148,8 @@ ctx = vl._task_ctx(root, "T-9200")
 crit = next(c for c in vl.human_criteria(ctx.text) if c.index == 1)
 label = review_policy.rung_label(vl.required_strength(ctx, crit)[0])
 vl.register_run("run-rv-1", "T-9200", acs=[1], rung=label,
-                seats=[{"seat": "claude", "vendor": "claude"}], required_vendors=1,
+                seats=[{"seat": "claude", "vendor": "claude",
+                        "brief_sha256": vl.brief_digest("fixture review brief")}], required_vendors=1,
                 pages={"1": ["/review"]},
                 captures=[{"page": "/review", "ok": True, "sha256": vl._hash_path(root / "shot-rv-1.png"), "error": ""}],
                 root=root)

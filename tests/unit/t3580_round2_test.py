@@ -304,7 +304,7 @@ def _render_green(root, mp, *, pages, caps, cite, did="rv-1", bypass=True):
     captures = [{"page": p, "ok": bool(ok), "sha256": vl._hash_path(files[p]) if ok else "",
                  "error": "" if ok else "HTTP 500"} for p, ok in caps.items()]
     # Round 6: the fixture criterion names web/blueprints/review.py — IW-7 medium, so rung 3.
-    vl.register_run(f"run-{did}", TID, acs=[1], rung="rung-3-termlink-single-reviewer",
+    rt.register_run(f"run-{did}", TID, acs=[1], rung="rung-3-termlink-single-reviewer",
                     seats=[{"seat": "claude", "vendor": "claude"}], required_vendors=1,
                     pages={"1": list(pages)}, captures=captures, root=root)
     cited = [files[p].name for p in cite]
@@ -359,7 +359,7 @@ class TestUnseenPages:
         assert vl.render_verdicts(TID, rprod) == []
 
     def test_a_row_claiming_a_run_its_dispatch_is_not_bound_to(self, rprod, monkeypatch):
-        vl.register_run("run-x", TID, acs=[1], rung="r", seats=[{"seat": "claude", "vendor": "claude"}],
+        rt.register_run("run-x", TID, acs=[1], rung="r", seats=[{"seat": "claude", "vendor": "claude"}],
                         pages={"1": ["/review"]}, captures=[], root=rprod)
         _green_bypassing_run_checks(rprod, monkeypatch, run_id="run-x")   # never bound
         assert _closed(rprod).startswith("under-strength")               # round 6: fires first
@@ -419,7 +419,7 @@ def _panel(root, outcomes, vendors=("claude", "codex", "opencode"), required=3):
     """Register a 3-seat run and let each seat record `outcomes[seat]` (None = seat never records).
     Round 5: `vendors` are worker KINDS, mapped to vendors by a fixture registry."""
     rt.commit_registry(root, _THREE_KINDS)     # round 6: committed, not the working tree
-    vl.register_run("run-p", TID, acs=[1], rung="rung-5-panel", seats=SEATS,
+    rt.register_run("run-p", TID, acs=[1], rung="rung-5-panel", seats=SEATS,
                     required_vendors=required, root=root)
     for s, v in zip(SEATS, vendors):
         oc = outcomes.get(s["seat"])

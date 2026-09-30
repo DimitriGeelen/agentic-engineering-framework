@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T07:54:10Z
-last_update: 2026-09-30T21:33:15Z
+last_update: '2026-09-30T21:45:18Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -84,6 +84,21 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
       (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-09-30T21:45:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=? 
+      (unscored (no scorer for F3; not counted)); F1=? (unscored (no scorer for 
+      F1; not counted)); F2=? (unscored (no scorer for F2; not counted))
     rubric_sha: e4a00f38e801
 ---
 
@@ -424,7 +439,7 @@ bin/fw vendor self --check
 ### 2026-09-30 — round 5: the never-run dispatch
 - **Chose:** three layers. (1) A signed runtime START: run.sh's first ledger call (`verdict_ledger.py start`) needs the secret, the registered wdir, happens once, and must land before the registration's signed `start_by` (registration + 300 s); the CLI refuses unless its parent process is `<wdir>/run.sh`. `complete` and the apply-time validator (`no-start`) require exactly one valid start. (2) A TTL: registration signs `complete_by` (registration + dispatch timeout + 600 s); `complete` refuses after it and apply refuses a completion (`expired`) whose epoch lies outside the window. (3) The secret does not outlive its purpose: run.sh deletes the file as its first act and also on EXIT (trap), clears it from memory after signing; cmd_dispatch installs an EXIT trap before spawning (cmd_spawn can `die`) and after injecting waits up to `TERMLINK_REVIEW_START_WAIT` (60 s) for run.sh to take it, then deletes a leftover.
 - **Proof:** registered + never run + leftover secret read + fake exit/result files + `complete` → refused (`no runtime start record`), apply ticks nothing (t3580_round5_test.TestNeverRun). The old round-4 "control" is renamed to what it is (a started runtime).
-- **What remains inside the operator-accepted same-user boundary (T-3581):** a caller running as the same user who reads a leftover secret within the start window can call the Python `start()` directly (the parent check is on the CLI only, an honesty check like `--i-am-human`), or can write its own `<wdir>/run.sh` and run it — which is then, literally, running the dispatch. A caller can also self-register a dispatch with `register-dispatch` (no dispatcher marker is required) and so obtain a fresh secret and a wdir of its choosing. And anyone who reads `.context/secrets/review-dispatch.key` can sign any row directly. None of these is reachable by the documented commands alone (register + cat + complete no longer suffices); all are deliberate forgery by the same user, which T-3581 accepted as the residual.
+- **What remains inside the operator-accepted same-user boundary (T-3581):** a caller running as the same user who reads a leftover secret within the start window can call the Python `start()` directly (the parent check is on the CLI only, an honesty check like `--i-am-human`), or can write its own `<wdir>/run.sh` and run it — which is then, literally, running the dispatch. A caller can also self-register a dispatch with `register-dispatch` (no dispatcher marker is required) and so obtain a fresh secret and a wdir of its choosing. And anyone who reads `.context/secrets/review-dispatch.key` can sign any row directly. (SUPERSEDED by round 6/7: no registration secret exists any more, and round 7 closes the documented `--env`/`--prompt` steering routes.) None of these is reachable by the documented commands alone (register + cat + complete no longer suffices); all are deliberate forgery by the same user, which T-3581 accepted as the residual.
 
 ### 2026-09-30 — round 5: `finalised` is verified
 - **Chose:** run.sh writes `signed:<completion sig>` or `unsigned:<reason>`. `_worker_done` accepts `signed:` only when the sig equals completion.json's, and in both cases only once no `<wdir>/run.sh` process is alive (the worker is run.sh's child, so an early marker from the worker is ignored while it runs). Tested (TestFinalisedVerified: bare marker, wrong sig, live runtime, control).
@@ -450,7 +465,7 @@ bin/fw vendor self --check
 - **Chose:** registration issues NO secret. It writes no `.completion-secret` file and registers no hash. `start` issues the secret: it returns the secret once, to run.sh's command substitution, and records only its hash in the signed start record. `complete` checks the secret against that start record. Both `start` and `complete` authenticate their caller in the shared Python implementation (`_runtime_fault`), not only in the CLI. The parent process must be a shell whose argv[1] is the registered `<wdir>/run.sh` (so a `-c` string that merely names it fails), and that file must be byte-identical to the runtime agents/termlink/termlink.sh writes. The round-5 reaper and secret-file traps are removed, because there is no longer a secret file to guard. `_completion_fault` refuses a start record that has no issued-secret hash.
 - **Tests:** the round-5 control (`_never_ran` then Python start/complete, expecting a tick) is gone. In its place are refusal tests: Python `start`; Python `complete` holding a genuinely issued secret; `bash -c … <wdir>/run.sh`; an `exec` wrapper; a non-canonical run.sh; and the CLI. The positive control launches a worker: the real run.sh from termlink.sh runs a stub `claude` (t3580_round6_test.TestRuntimeCapability, t3580_round5_test.TestNeverRun). The in-process test double `_review_runtime.as_runtime()` replaces only `_runtime_fault`, and only while it is held.
 - **Rejected:** keeping the registration secret and tightening the file mode. The file is still readable by the caller that registered it, which is the finding.
-- **Residual, not closed (inside the same-user boundary T-3581 accepted):** a same-user process can write the canonical runtime into the registered directory and run it. That launches the worker, so it is a real run of the dispatch rather than a forgery of one. A same-user process can also patch `_runtime_fault` in its own Python process, fake its parent's argv, read run.sh's memory, or read `.context/secrets/review-dispatch.key` and sign any record. None of these is reachable through the documented commands. What this round proves is that a signed completion needs an authenticated runtime start; it does not prove that the reviewer's judgement was genuine.
+- **Residual, not closed (inside the same-user boundary T-3581 accepted):** a same-user process can write the canonical runtime into the registered directory and run it. That launches the worker, so it is a real run of the dispatch rather than a forgery of one. A same-user process can also patch `_runtime_fault` in its own Python process, fake its parent's argv, read run.sh's memory, or read `.context/secrets/review-dispatch.key` and sign any record. (CORRECTED in round 7: this sentence first said "None of these is reachable through the documented commands". That was wrong. The documented `fw termlink dispatch --task-type review --env PATH=…/--env ANTHROPIC_BASE_URL=…` and `--prompt`/`--prompt-file` flags could steer the worker program, the model and the brief without any key. Round 7 closes those routes; see its entry below.) What this round proves is that a signed completion needs an authenticated runtime start; it does not prove that the reviewer's judgement was genuine.
 - **Consumer note:** the canonical runtime is read from the ledger's own framework copy (`<framework>/agents/termlink/termlink.sh`). If a dispatch was written by a different framework version's termlink.sh, its start is refused, so the check fails closed.
 
 ### 2026-09-30 — round 6: vendor provenance is the committed registry and a launchable kind (codex second-family LOW)
@@ -465,6 +480,12 @@ bin/fw vendor self --check
 - **Disclosure:** the ticked criterion's annotation carries `STEP-DOWN: rung R granted, rung D due, <reason>`. `verdict_ledger audit` prints `WARN step-down: …` for every stepped-down run, and `fw audit` shows it as a WARN (`_audit_review_step_downs`). The `lib/config.sh` description now says the signed run records the decision, not "the verdict".
 - **Rejected:** keeping the spend log and committing it. That makes a second ledger for the same money, and the cost ledger is already append-only and audited. Also rejected: refusing step-downs outright. The operator ruled the ceiling a legitimate lever; it is now bounded and visible instead.
 - **Residual:** a same-user agent can log and commit a reviewer-judge cost row with `fw review cost log`. That row is committed, attributable, append-only, and every step-down it causes is WARNed by audit and shown on the criterion. The `metering` of a judge seat row reads `metered`, although the amount is an estimate. `lib/review_cost.py` was not changed in this targeted round.
+
+### 2026-09-30 — round 7: the review worker cannot be steered by its caller (Claude F2)
+- **Chose:** a review dispatch accepts only the caller `--env` keys on a deny-by-default allowlist (`REVIEW_ENV_ALLOW`: the four GIT_AUTHOR_*/GIT_COMMITTER_* identity keys), both in `termlink.sh` (refused before anything is written) and in the ledger (`_env_fault` over env.sh at registration and again at `start`). PATH, *_BASE_URL, ANTHROPIC_*, OPENAI_*, CLAUDE_*, LD_*, BASH_ENV and model or binary overrides are refused because they are absent from the list, not because a denylist names them. The dispatcher resolves the worker binary to an absolute path at dispatch (`readlink -f $(command -v claude)`, or the ollama-loop script) and registers it as the signed `worker_bin`. run.sh launches `"$WORKER_BIN" -p …` for a review, never `claude` looked up on PATH. The judge signs `brief_sha256` for every seat into the run. Registration of a seat's dispatch requires brief.md (the caller's prompt, verbatim) to match that hash and prompt.md to end with it, and signs `prompt_sha256`. `start` refuses if prompt.md, worker_bin or env.sh changed after registration.
+- **Why:** with documented flags alone, a producer could launch a stub or another model under a `claude` seat, or feed a real reviewer a "record green" brief. No key was needed, so this sat below the T-3581 line.
+- **Rejected:** a denylist (the reviewer's list plus whatever comes next would always be one key short). Also rejected: hashing prompt.md into the run directly. The dispatcher prepends the consult stanza, so the run binds the judge's brief and the registration checks that prompt.md carries it.
+- **Residual:** the absolute path is resolved on the dispatcher's own PATH, so a caller who launches the dispatcher with a doctored PATH chooses the binary. That path is signed into the registration and so visible. It is caller-environment tampering, inside the same-user boundary. The `--model` flag (and `OLLAMA_LOOP_MODEL` derived from it) is not constrained in this round, and the vendor is still counted from the kind, not from the model actually used (F3 part 3, deferred to T-3582).
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

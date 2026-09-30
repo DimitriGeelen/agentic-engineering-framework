@@ -595,6 +595,12 @@ cmd_cleanup() {
 # (pinned by tests/unit/t3580_round3_test.py).
 DISPATCH_WORKER_KINDS="claude ollama-loop"
 
+# T-3580 round 7 (Claude F2): the ONLY caller --env keys a REVIEW dispatch accepts — deny by
+# default. Anything that chooses the program or the model (PATH, *_BASE_URL, ANTHROPIC_*,
+# OPENAI_*, CLAUDE_*, LD_*, BASH_ENV, model/binary overrides) is refused by being absent.
+# Mirrors REVIEW_ENV_ALLOW in lib/verdict_ledger.py (pinned equal by t3580_round7_test.py).
+REVIEW_ENV_ALLOW="GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL"
+
 # T-3580 round 5: the VENDOR each worker kind runs comes from ONE mapping — `worker_kind` +
 # `vendor` in policy/review-backends.yaml, read through lib/verdict_ledger.py kind-vendors. The
 # ledger derives every review dispatch's vendor from the same mapping; this is only a printer.
@@ -738,6 +744,17 @@ cmd_dispatch() {
     esac
 
     [ -z "$name" ] && die "Missing --name"
+    if [ "$task_type" = "review" ]; then
+        # T-3580 round 7: a review worker's program and model are not the caller's to choose.
+        local _kv _k
+        for _kv in "${envs[@]}"; do
+            _k="${_kv%%=*}"
+            case " $REVIEW_ENV_ALLOW " in
+                *" $_k "*) : ;;
+                *) die "--env $_k refused for a review dispatch: only $REVIEW_ENV_ALLOW may be set (a key that could choose the worker program or model is never accepted)" ;;
+            esac
+        done
+    fi
     # T-3581: a review dispatch id is registered once and must not be guessable (task+role).
     [ "$task_type" = "review" ] && name="${name}-$(od -An -N6 -tx1 /dev/urandom | tr -d ' \n')"
     [ -z "$task" ] && die "Missing --task — TermLink workers require a task reference for governance (T-652, T-630)"
@@ -777,6 +794,28 @@ cmd_dispatch() {
     project_dir="${project_dir:-$(pwd)}"
     local wdir="$DISPATCH_DIR/$name"
     mkdir -p "$wdir"
+
+    # T-3580 round 7: a review worker runs the binary resolved HERE, by absolute path (run.sh
+    # never looks it up on PATH), and the caller's brief is kept verbatim in brief.md so the
+    # ledger can check it is the one the review run registered for the seat.
+    local worker_bin=""
+    if [ "$task_type" = "review" ]; then
+        if [ "${worker_kind:-claude}" = "ollama-loop" ]; then
+            local _cand
+            for _cand in "$FRAMEWORK_ROOT/tools/ollama-tool-loop.py" "$project_dir/tools/ollama-tool-loop.py"; do
+                [ -x "$_cand" ] && { worker_bin="$_cand"; break; }
+            done
+        else
+            worker_bin=$(command -v claude 2>/dev/null || true)
+        fi
+        [ -n "$worker_bin" ] && worker_bin=$(readlink -f "$worker_bin" 2>/dev/null || true)
+        case "$worker_bin" in
+            /*) [ -x "$worker_bin" ] || die "review dispatch: worker binary $worker_bin is not executable" ;;
+            *) die "review dispatch: cannot resolve the ${worker_kind:-claude} worker binary to an absolute path" ;;
+        esac
+        printf '%s\n' "$worker_bin" > "$wdir/worker_bin"
+        printf '%s\n' "$prompt" > "$wdir/brief.md"
+    fi
 
     # T-3407 / arc-011 slice 5: every dispatched worker is addressable by its
     # --name and is told, once, how a peer consult reaches it. Workers spawn
@@ -962,7 +1001,7 @@ METAEOF
             --dispatch-id "$name" --task "$task" --task-type review \
             --revision "$review_revision" --wdir "$wdir" \
             --worker-kind "${worker_kind:-claude}" --ttl "$((timeout + 600))" \
-            --run-id "$review_run" --seat "$review_seat" \
+            --run-id "$review_run" --seat "$review_seat" --worker-bin "$worker_bin" \
             --issuer-session "${_issuer_session:-}" --issuer-identity "${GIT_AUTHOR_NAME:-$(git -C "$project_dir" config user.name 2>/dev/null)}" \
             >/dev/null || echo "  WARNING: review dispatch not registered — its verdicts will not count" >&2
         : > "$wdir/finalise_required"
@@ -980,6 +1019,14 @@ cd "$PROJECT_DIR" || { echo "FATAL: cd $PROJECT_DIR failed" > "$WDIR/stderr.log"
 # (below), never written to disk by registration. Deliberately NOT exported; it reaches
 # `complete` only on stdin, after the worker has exited.
 COMPLETION_SECRET=""
+
+# T-3580 round 7: a review worker is launched by the ABSOLUTE path the dispatcher resolved and
+# registered (worker_bin), never looked up on PATH; `start` refuses if it changed.
+WORKER_BIN="claude"
+if [ "$TASK_TYPE" = "review" ]; then
+    WORKER_BIN=$(cat "$WDIR/worker_bin" 2>/dev/null)
+    case "$WORKER_BIN" in /*) : ;; *) WORKER_BIN="" ;; esac
+fi
 
 # T-792: Export PROJECT_ROOT so hooks skip git resolution and use the correct project
 export PROJECT_ROOT="$PROJECT_DIR"
@@ -1088,6 +1135,7 @@ if [ "$WORKER_KIND" = "ollama-loop" ]; then
     for cand in "$FRAMEWORK_ROOT/tools/ollama-tool-loop.py" "$PROJECT_DIR/tools/ollama-tool-loop.py"; do
         if [ -x "$cand" ]; then LOOP_BIN="$cand"; break; fi
     done
+    [ "$TASK_TYPE" = "review" ] && LOOP_BIN="$WORKER_BIN"
     if [ -z "$LOOP_BIN" ]; then
         echo "FATAL: ollama-tool-loop.py not found" > "$WDIR/stderr.log"
         echo 1 > "$WDIR/exit_code"
@@ -1110,13 +1158,22 @@ else
     # buffers everything until completion, leaving an empty result.md on timeout (T-1643 found
     # this twice consecutively on U-005 dispatches). result.jsonl is the live trail; result.md
     # carries the final assistant text extracted on clean exit (backward-compat with `fw termlink result`).
-    claude -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG $TOOLS_FLAG $PERMISSION_MODE_FLAG $MCP_CONFIG_FLAG $STRICT_MCP_FLAG $ALLOWED_TOOLS_FLAG --output-format stream-json --verbose > "$WDIR/result.jsonl" 2>"$WDIR/stderr.log" &
-    CLAUDE_PID=$!
+    if [ -z "$WORKER_BIN" ]; then
+        echo "FATAL: review worker binary not resolved to an absolute path" >> "$WDIR/stderr.log"
+        CLAUDE_PID=""
+    else
+        "$WORKER_BIN" -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG $TOOLS_FLAG $PERMISSION_MODE_FLAG $MCP_CONFIG_FLAG $STRICT_MCP_FLAG $ALLOWED_TOOLS_FLAG --output-format stream-json --verbose > "$WDIR/result.jsonl" 2>"$WDIR/stderr.log" &
+        CLAUDE_PID=$!
+    fi
+    if [ -z "$CLAUDE_PID" ]; then
+        EXIT_CODE=1
+    else
     (sleep "$TIMEOUT" && kill "$CLAUDE_PID" 2>/dev/null && echo "TIMEOUT" >> "$WDIR/stderr.log") &
     WATCHDOG_PID=$!
     wait "$CLAUDE_PID" 2>/dev/null
     EXIT_CODE=$?
     kill "$WATCHDOG_PID" 2>/dev/null || true
+    fi
 
     # Extract final assistant text into result.md for backward-compat. On timeout the result event
     # never arrived, result.md stays empty — operators read result.jsonl directly for forensic trail.

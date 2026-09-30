@@ -94,7 +94,7 @@ SEATS = [{"seat": s, "vendor": s} for s in ("seat-a", "seat-b", "seat-c")]
 
 
 def _panel(root, kinds):
-    vl.register_run("run-p", TID, acs=[1], rung="rung-5-panel", seats=SEATS, required_vendors=3,
+    rt.register_run("run-p", TID, acs=[1], rung="rung-5-panel", seats=SEATS, required_vendors=3,
                     root=root)
     for s, k in zip(SEATS, kinds):
         did = f"rv-{s['seat']}"

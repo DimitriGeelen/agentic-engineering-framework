@@ -230,6 +230,13 @@ def _run_worker(root, mode="green"):
                                    revision=_head(root))
     (wdir / "prompt.md").write_text(brief)
     (wdir / "task").write_text(TID)
+    stub_dir = root.parent / f"{root.name}-stub"
+    stub_dir.mkdir()
+    (stub_dir / "claude").write_text(_STUB)
+    (stub_dir / "claude").chmod(0o755)
+    # Round 7: the worker binary is resolved to an absolute path AT DISPATCH and registered; run.sh
+    # launches exactly that (the stub here), never whatever `claude` PATH finds at run time.
+    (wdir / "worker_bin").write_text(f"{stub_dir / 'claude'}\n")
     (wdir / "env.sh").write_text(f"export FW_SIDECAR_AGENT_ID={did}\n"
                                  f"export FW_REVIEW_REVISION={_head(root)}\n"
                                  f"export GIT_AUTHOR_NAME='fw worker' GIT_AUTHOR_EMAIL=w@x.y "
@@ -237,13 +244,10 @@ def _run_worker(root, mode="green"):
     (wdir / "run.sh").write_text(_run_sh())
     r = subprocess.run([sys.executable, str(_HERE / "lib/verdict_ledger.py"), "register-dispatch",
                         "--dispatch-id", did, "--task", TID, "--task-type", "review",
-                        "--revision", _head(root), "--wdir", str(wdir)],
+                        "--revision", _head(root), "--wdir", str(wdir),
+                        "--worker-bin", str(stub_dir / "claude")],
                        cwd=root, env={**os.environ, "PROJECT_ROOT": str(root)}, capture_output=True, text=True)
     assert r.returncode == 0, r.stderr
-    stub_dir = root.parent / f"{root.name}-stub"
-    stub_dir.mkdir()
-    (stub_dir / "claude").write_text(_STUB)
-    (stub_dir / "claude").chmod(0o755)
     (stub_dir / "termlink").write_text("#!/bin/sh\nexit 0\n")
     (stub_dir / "termlink").chmod(0o755)
     env = {k: v for k, v in os.environ.items() if not k.startswith(("FW_", "GIT_"))}
@@ -456,7 +460,7 @@ class TestSevenPages:
             shots[p] = f
         caps = [{"page": p, "ok": True, "sha256": vl._hash_path(shots[p]), "error": ""} for p in SEVEN[:6]]
         caps.append({"page": "/p7", "ok": False, "sha256": "", "error": "not captured: capped"})
-        vl.register_run("run-7", TID, acs=[1], rung="rung-3-termlink-single-reviewer",
+        rt.register_run("run-7", TID, acs=[1], rung="rung-3-termlink-single-reviewer",
                         seats=[{"seat": "claude", "vendor": "claude"}], pages={"1": SEVEN},
                         captures=caps, root=r7)
         rt.dispatch(r7, "rv-1", TID, run_id="run-7", seat="claude")     # round 6: bound pre-launch

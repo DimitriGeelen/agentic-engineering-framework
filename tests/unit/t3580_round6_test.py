@@ -83,7 +83,7 @@ class TestRequiredRung:
         assert "under-strength" in _why(hi) and "requires rung 5" in _why(hi)
 
     def test_negative_a_run_below_the_required_rung_without_a_ceiling_decision(self, hi):
-        vl.register_run("run-3", TID, acs=[1], rung=R3, seats=[{"seat": "claude", "vendor": "c"}],
+        rt.register_run("run-3", TID, acs=[1], rung=R3, seats=[{"seat": "claude", "vendor": "c"}],
                         root=hi)
         rt.dispatch(hi, "rv-1", TID, run_id="run-3", seat="claude")
         with pytest.raises(vl.VerdictRefused, match="is rung 3 with no ceiling decision"):
@@ -92,7 +92,7 @@ class TestRequiredRung:
     def test_negative_the_row_claims_a_rung_its_run_did_not_authorise(self, repo):
         _mk_task(repo, TASTE)          # low impact: rung 1 required
         _produce(repo)
-        vl.register_run("run-1", TID, acs=[1], rung=R1, seats=[{"seat": "claude", "vendor": "c"}],
+        rt.register_run("run-1", TID, acs=[1], rung=R1, seats=[{"seat": "claude", "vendor": "c"}],
                         root=repo)
         rt.dispatch(repo, "rv-1", TID, run_id="run-1", seat="claude")
         with pytest.raises(vl.VerdictRefused, match="claims rung 5; its run 'run-1' authorised rung 1"):
@@ -100,7 +100,7 @@ class TestRequiredRung:
 
     def test_negative_a_panel_run_that_asks_for_one_vendor(self, hi):
         seats = [{"seat": s, "vendor": s} for s in "abc"]
-        vl.register_run("run-p", TID, acs=[1], rung="rung-5-panel", seats=seats, required_vendors=1,
+        rt.register_run("run-p", TID, acs=[1], rung="rung-5-panel", seats=seats, required_vendors=1,
                         root=hi)
         rt.dispatch(hi, "rv-a", TID, run_id="run-p", seat="a")
         with pytest.raises(vl.VerdictRefused, match="requires 1 vendor"):
@@ -124,7 +124,7 @@ class TestRequiredRung:
 
 class TestBoundBeforeLaunch:
     def _run(self, root, run_id="run-3", seats=("claude",)):
-        vl.register_run(run_id, TID, acs=[1], rung=R3,
+        rt.register_run(run_id, TID, acs=[1], rung=R3,
                         seats=[{"seat": s, "vendor": s} for s in seats], root=root)
 
     def test_the_binding_is_in_the_signed_registration(self, hi):
@@ -154,7 +154,7 @@ class TestBoundBeforeLaunch:
             rt.dispatch(hi, "rv-1", TID, run_id=run_id, seat=seat)
 
     def test_negative_a_run_for_another_task(self, hi):
-        vl.register_run("run-o", "T-1", acs=[1], rung=R3, seats=[{"seat": "claude", "vendor": "c"}],
+        rt.register_run("run-o", "T-1", acs=[1], rung=R3, seats=[{"seat": "claude", "vendor": "c"}],
                         root=hi)
         with pytest.raises(ValueError, match="is for 'T-1'"):
             rt.dispatch(hi, "rv-1", TID, run_id="run-o", seat="claude")
@@ -190,7 +190,7 @@ class TestCeilingDecision:
         _spend(root, spent)
         import os
         os.environ[f"FW_{review_policy.CEILING_KEY}"] = ceiling
-        run = vl.register_run("run-c", TID, acs=[1], rung=R3, seats=[{"seat": "claude", "vendor": "c"}],
+        run = rt.register_run("run-c", TID, acs=[1], rung=R3, seats=[{"seat": "claude", "vendor": "c"}],
                               rung_due=5, reason="blast_radius=9", root=root)
         dec = run["ceiling_decision"]
         assert dec["granted"] == 3
@@ -228,7 +228,7 @@ class TestCeilingDecision:
 
     def test_negative_a_hand_written_decision_that_does_not_re_derive(self, hi, monkeypatch):
         self._steer(monkeypatch, granted=3)                   # nothing spent, claimed as a step-down
-        vl.register_run("run-f", TID, acs=[1], rung=R3, seats=[{"seat": "claude", "vendor": "c"}],
+        rt.register_run("run-f", TID, acs=[1], rung=R3, seats=[{"seat": "claude", "vendor": "c"}],
                         rung_due=5, root=hi)
         monkeypatch.undo()
         rt.dispatch(hi, "rv-1", TID, run_id="run-f", seat="claude")
@@ -238,7 +238,7 @@ class TestCeilingDecision:
     def test_negative_a_decision_that_steps_down_twice(self, hi, monkeypatch):
         self._stepped(hi, spent=999)
         self._steer(monkeypatch, granted=1)
-        vl.register_run("run-1", TID, acs=[1], rung=R1, seats=[{"seat": "claude", "vendor": "c"}],
+        rt.register_run("run-1", TID, acs=[1], rung=R1, seats=[{"seat": "claude", "vendor": "c"}],
                         rung_due=5, root=hi)
         monkeypatch.undo()
         import os
@@ -307,7 +307,10 @@ def _env(root):
 class TestRuntimeCapability:
     def test_negative_registration_hands_the_caller_nothing(self, prod):
         w = _registered_never_ran(prod)
-        assert sorted(p.name for p in w.iterdir()) == ["exit_code", "result.jsonl"]
+        # Round 7: brief.md / prompt.md / worker_bin are the DISPATCHER's launch files, not
+        # anything registration issues; there is still no secret among them.
+        assert sorted(p.name for p in w.iterdir()) == ["brief.md", "exit_code", "prompt.md",
+                                                       "result.jsonl", "worker_bin"]
         assert "secret" not in (prod / vl.DISPATCHES).read_text()
 
     def test_negative_the_round5_control_python_start_then_complete_is_refused(self, prod):
@@ -382,7 +385,7 @@ PANEL = [{"seat": s, "vendor": s} for s in ("seat-a", "seat-b", "seat-c")]
 
 
 def _three_seat_panel(root, kinds=("claude", "codex", "opencode")):
-    vl.register_run("run-p", TID, acs=[1], rung="rung-5-panel", seats=PANEL, required_vendors=3,
+    rt.register_run("run-p", TID, acs=[1], rung="rung-5-panel", seats=PANEL, required_vendors=3,
                     root=root)
     for s, k in zip(PANEL, kinds):
         did = f"rv-{s['seat']}"
