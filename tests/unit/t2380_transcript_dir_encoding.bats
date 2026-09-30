@@ -42,6 +42,11 @@ _mk_fixture() {  # dir-name
 
 @test "costs: _costs_jsonl_dir resolves the dot-encoded dir, not the dotted one" {
     export FRAMEWORK_ROOT="$REAL" PROJECT_ROOT="$DOTTED" HOME="$TMP/home"
+    # T-3604: since T-2425 (b2ad63d4b) _costs_jsonl_dir delegates to
+    # fw_claude_project_dirs, which emits only dirs that EXIST — seed both the
+    # correct and the old-broken name so the lookup has a real choice to make.
+    _mk_fixture "$CORRECT"
+    _mk_fixture "$OLDBROKEN"
     run bash -c 'source "$FRAMEWORK_ROOT/lib/colors.sh"; source "$FRAMEWORK_ROOT/lib/costs.sh"; _costs_jsonl_dir'
     [ "$status" -eq 0 ]
     [ "$output" = "$HOME/.claude/projects/$CORRECT" ]
