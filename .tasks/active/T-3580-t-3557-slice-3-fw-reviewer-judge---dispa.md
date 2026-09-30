@@ -493,6 +493,10 @@ bin/fw vendor self --check
 - **Rejected:** keeping per-seat derivation and checking the revisions agree only at apply. Registration is the earlier gate, and the judge already knows the one revision.
 - **Not done here (preconditions of T-3582):** run.sh still routes every kind except ollama-loop to the claude binary, and the vendor is counted from the kind, not from the model actually used. Both must change before a codex or opencode seat can count.
 
+### 2026-09-30 — round 7: cleanup waits for a review to finalise (codex MEDIUM-3)
+- **Chose:** `cmd_cleanup` treats a worker dir with `exit_code` as finished only when `_worker_done` says so: the same check `fw termlink wait` uses (for a review, `finalised` present and matching completion.json's sig, or `unsigned:`, and run.sh no longer alive). A review dir between `exit_code` and `finalised` is KEPT. So is one whose runtime died without finalising. That is a leak an operator removes by hand, not a silent deletion of evidence. Ordinary workers (no `finalise_required`) are unchanged. Proven by tests/unit/t3580_round7_cleanup.bats (runtime paused in the window; the pre-fix script deletes it).
+- **Rejected:** a time-based grace period. It would still race a slow signing step.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:

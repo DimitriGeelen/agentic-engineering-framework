@@ -459,9 +459,17 @@ cmd_cleanup() {
         local wname
         wname=$(basename "$wdir")
 
-        # Finished workers
+        # Finished workers. T-3580 round 7 (codex MEDIUM-3): a REVIEW worker is finished only
+        # once its runtime has finalised it — `exit_code` is written BEFORE the completion is
+        # signed, so deleting in that window destroyed the result and the signing. Same test
+        # `_worker_done` applies for `fw termlink wait`.
         if [ -f "$wdir/exit_code" ]; then
-            remove+=("$wdir")
+            if _worker_done "$wdir"; then
+                remove+=("$wdir")
+            else
+                echo -e "${YELLOW}KEPT${NC}    Worker '$wname' exited but its review completion is not finalised yet — not removed"
+                kept_count=$((kept_count + 1))
+            fi
             continue
         fi
 
