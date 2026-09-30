@@ -264,6 +264,11 @@ Inception: .tasks/completed/T-3576-*.md (GO 2026-09-30). Origin: 832 OBS-449 via
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bats tests/unit/t3593_tier0_action_approvals.bats
+bats tests/unit/tier0_hash_normalization.bats tests/unit/tier0_idempotency.bats tests/unit/tier0_grant_ttl.bats tests/unit/tier0_scope_boundary.bats tests/unit/check_tier0_comment_stripping.bats tests/unit/tier0_card_provenance.bats
+python3 -c "import sys; sys.path.insert(0,'lib'); import tier0_action"
+bin/fw vendor self --check
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
