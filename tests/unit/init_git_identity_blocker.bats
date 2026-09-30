@@ -32,6 +32,13 @@ setup_file() {
     export IDDIR
     rm -rf "$IDDIR"; mkdir -p "$IDDIR/home" "$IDDIR/missing" "$IDDIR/present"
 
+    # Hermeticity (T-3603): identity also resolves from GIT_AUTHOR_*/GIT_COMMITTER_*
+    # (exported by dispatch workers) and from any enclosing repo's .git/config (a
+    # stray /.git turns every /tmp fixture into a subdirectory of it). Neither is
+    # the state under test, so remove both routes for the whole file.
+    unset GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL EMAIL
+    export GIT_CEILING_DIRECTORIES="$IDDIR"
+
     # State A: no identity resolvable. GIT_CONFIG_GLOBAL points at a file that does
     # not exist, which is how git represents "no global config" without touching the
     # host's real one.
