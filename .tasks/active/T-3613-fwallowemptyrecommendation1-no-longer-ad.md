@@ -1,22 +1,19 @@
 ---
-id: T-3609
-name: "FW_ALLOW_EMPTY_RECOMMENDATION no longer bypasses fw task review for inceptions
-  (T-3549 predicate runs first)"
+id: T-3613
+name: "FW_ALLOW_EMPTY_RECOMMENDATION=1 no longer admits single-task emit_review for
+  inceptions (T-3549 gate runs first)"
 description: >
-  Red: tests/unit/review_pipefail.bats t5 ('T-2206 bypass: FW_ALLOW_EMPTY_RECOMMENDATION=1
-  -> exit 0 + NOTE + log') and, per T-3603 commit 8597cc8a0, tests/unit/audit_inception_recommendation.bats
-  t10 (same class; T-3603 said 'filed separately' but no task existed at 2026-10-01
-  — link rather than duplicate). Breaking commit 7a24ba133 (T-3549): the handoff-ready
-  predicate inception_handoff_blockers in lib/review.sh (~lines 174-184) refuses an
-  inception with empty/template Recommendation before the T-2206 check (~354+) runs;
-  only FW_ALLOW_UNREADY_HANDOFF=1 passes it. So the documented Consumer-leg bypass
-  FW_ALLOW_EMPTY_RECOMMENDATION=1 (CLAUDE.md Recommendation-completeness gate table)
-  is now inert for inceptions: rc=1, no NOTE, no review marker, no Tier-2 log entry
-  — an L-399/T-1890 bypass-contract parity break. Evidence: FW_ALLOW_EMPTY_RECOMMENDATION=1
-  bin/fw task review T-9001 on the review_pipefail fixture prints the T-3549 BLOCKED
-  message, rc=1. Found by OBS-587 triage T-3604. Decide: honour the documented env
-  in the predicate for [empty-recommendation], or retire it from CLAUDE.md + tests
-  deliberately.
+  OBS-587 triage (T-3603). Failing: tests/unit/audit_inception_recommendation.bats
+  test 10, tests/unit/lib_review.bats tests 10 and 11 (all: FW_ALLOW_EMPTY_RECOMMENDATION=1
+  emit_review ... exits 1). Breaking commit: 7a24ba133 (T-3549). lib/review.sh:173-184
+  runs inception_handoff_blockers first and returns 1 on [empty-recommendation] unless
+  FW_ALLOW_UNREADY_HANDOFF=1, so the T-2206 consumer-leg gate at lib/review.sh:376
+  (and its documented bypass FW_ALLOW_EMPTY_RECOMMENDATION=1, CLAUDE.md Recommendation-completeness
+  table) is unreachable for empty Recommendations. emit_review_batch still honours
+  FW_ALLOW_EMPTY_RECOMMENDATION (audit_inception_recommendation test 14 green) — single
+  vs batch now disagree. L-399 bypass-contract parity break. Decide: honour FW_ALLOW_EMPTY_RECOMMENDATION
+  for the empty-recommendation blocker, or retire it everywhere (docs + batch + tests)
+  in one change.
 
 status: captured
 workflow_type: build
@@ -51,8 +48,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-30T22:22:19Z
-last_update: '2026-09-30T22:30:46Z'
+created: 2026-09-30T22:38:03Z
+last_update: '2026-09-30T22:45:40Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -65,7 +62,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-09-30T22:30:28Z'
+  - ts: '2026-09-30T22:45:24Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -75,7 +72,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-09-30T22:30:46Z'
+  - ts: '2026-09-30T22:45:40Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -94,7 +91,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3609: FW_ALLOW_EMPTY_RECOMMENDATION no longer bypasses fw task review for inceptions (T-3549 predicate runs first)
+# T-3613: FW_ALLOW_EMPTY_RECOMMENDATION=1 no longer admits single-task emit_review for inceptions (T-3549 gate runs first)
 
 ## Context
 
@@ -358,10 +355,10 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-09-30T22:22:19Z — task-created [task-create-agent]
+### 2026-09-30T22:38:03Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3609-fwallowemptyrecommendation-no-longer-byp.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3613-fwallowemptyrecommendation1-no-longer-ad.md
 - **Context:** Initial task creation
 
-### 2026-10-01 — additional evidence [T-3603 triage]
-- Same bug also reds tests/unit/lib_review.bats tests 10 and 11 (T-1492 fixtures run `FW_ALLOW_EMPTY_RECOMMENDATION=1 emit_review` on an inception with no/commented Recommendation → exit 1, "BLOCKED: this inception is not handoff-ready"). T-3603 filed T-3613 before seeing this task; T-3613 is marked a duplicate of this one. Report: docs/reports/T-3603-triage.md.
+### 2026-10-01 — duplicate [T-3603 triage]
+- **DUPLICATE of T-3609** (filed earlier by T-3604 for the same bug: T-3549's handoff-ready predicate makes FW_ALLOW_EMPTY_RECOMMENDATION=1 unreachable in single-task emit_review). One bug, one task — work it under T-3609; this task carries no separate scope and can be closed as a duplicate by whoever owns T-3609.
