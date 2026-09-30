@@ -311,15 +311,19 @@ def test_watchtower_url_follows_triple_file_on_non_default_port(tmp_path):
                   f'unset WATCHTOWER_URL; source "{REPO}/lib/config.sh" 2>/dev/null; '
                   f'_watchtower_our_root() {{ echo "{root}"; }}; '
                   f'source "{REPO}/lib/watchtower.sh"; '
-                  f'_watchtower_our_root() {{ echo "{root}"; }}; _watchtower_url')
+                  f'_watchtower_our_root() {{ echo "{root}"; }}; _watchtower_url; '
+                  f'fw_task_review_url T-9001; fw_task_review_url T-9002')
+        (root / ".tasks/active").mkdir(parents=True)
+        (root / ".tasks/active/T-9002-x.md").write_text("---\nworkflow_type: inception\n---\n")
         r = subprocess.run(["bash", "-c", script], capture_output=True, text=True, timeout=30)
-        assert r.stdout.strip() == f"http://127.0.0.1:{port}", r.stderr
+        base = f"http://127.0.0.1:{port}"
+        assert r.stdout.split() == [base, f"{base}/review/T-9001", f"{base}/inception/T-9002"], r.stderr
     finally:
         srv.shutdown()
 
 
 def test_emitters_do_not_hard_code_a_host_or_port():
-    for rel in ("agents/handover/handover.sh", "lib/reviewer/judge_cli.py"):
+    for rel in ("agents/handover/handover.sh", "lib/reviewer/judge_cli.py", "lib/review.sh"):
         src = (REPO / rel).read_text()
         live = [l for l in src.splitlines()
                 if re.search(r"https?://(localhost|127\.0\.0\.1|[\d.]+):\d+", l)

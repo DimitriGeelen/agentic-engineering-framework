@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T10:19:30Z
-last_update: 2026-09-30T10:22:21Z
+last_update: '2026-09-30T10:30:19Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -77,6 +77,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-30T10:30:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=11)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3587: Evidence references on review pages silently stay plain text - brace-grouped paths, bare filenames, tests/ and :line refs are not linked, and dead refs look like live ones
@@ -97,14 +107,14 @@ text emitted OUTSIDE Watchtower (CLI, handover, chat), via `fw watchtower url`.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Brace groups expand: `docs/reports/T-3579-code-review-{openai,zai}.md` renders one link per expansion that exists (text stays readable, e.g. the group with each member linked)
-- [ ] Bare filenames resolve: a bare `T-NNNN-*.md` (or any basename with a viewable extension) that matches exactly one file under the viewable directories links to it; zero or several matches stay unlinked but are marked (see next)
-- [ ] Dead references are visible: a path-shaped reference that does not resolve renders with a distinct "not found" style and a title, so a stale ref never looks like a live one (e.g. `lib/task_pair_acd.sh` on /review/T-3581)
-- [ ] `path:NNN` links to the line: `/file/<path>#LNNN`, and the /file view renders line anchors (check web/blueprints/docs.py and its template; add them if absent) so the browser lands on the line
-- [ ] The viewable allowlist covers the directories evidence actually cites (tests/, web/, bin/, policy/, lib/, agents/, docs/reports/), in ONE list shared by the renderer and the /file route, so a rendered link never 404s on the allowlist
-- [ ] Every Markdown surface uses the same renderer: /review, /inception, /tasks, /approvals, /arcs story sections; grep proves no surface renders Recommendation or Evidence without it
-- [ ] Text emitted outside Watchtower that names a Watchtower page (fw task review, review-batch, handover, fw reviewer judge output) builds absolute URLs from `fw watchtower url` (triple-file), never a hard-coded host or port; test with a non-default port
-- [ ] Tests cover each shape above (link, dead, brace, bare, line, allowlist), with negative controls; measured on live /review/T-3581 after restart: 0 unlinked path-shaped refs except those marked dead
+- [x] Brace groups expand: `docs/reports/T-3579-code-review-{openai,zai}.md` renders one link per expansion that exists (text stays readable, e.g. the group with each member linked)
+- [x] Bare filenames resolve: a bare `T-NNNN-*.md` (or any basename with a viewable extension) that matches exactly one file under the viewable directories links to it; zero or several matches stay unlinked but are marked (see next)
+- [x] Dead references are visible: a path-shaped reference that does not resolve renders with a distinct "not found" style and a title, so a stale ref never looks like a live one (e.g. `lib/task_pair_acd.sh` on /review/T-3581)
+- [x] `path:NNN` links to the line: `/file/<path>#LNNN`, and the /file view renders line anchors (check web/blueprints/docs.py and its template; add them if absent) so the browser lands on the line
+- [x] The viewable allowlist covers the directories evidence actually cites (tests/, web/, bin/, policy/, lib/, agents/, docs/reports/), in ONE list shared by the renderer and the /file route, so a rendered link never 404s on the allowlist
+- [x] Every Markdown surface uses the same renderer: /review, /inception, /tasks, /approvals, /arcs story sections; grep proves no surface renders Recommendation or Evidence without it
+- [x] Text emitted outside Watchtower that names a Watchtower page (fw task review, review-batch, handover, fw reviewer judge output) builds absolute URLs from `fw watchtower url` (triple-file), never a hard-coded host or port; test with a non-default port
+- [x] Tests cover each shape above (link, dead, brace, bare, line, allowlist), with negative controls; measured on live /review/T-3581 after restart: 0 unlinked path-shaped refs except those marked dead
 - [ ] Render review by an independent internal reviewer on live screenshots (operator ruling, T-3557); `bin/fw watchtower current`; `bin/fw vendor self --check` clean
 
 ### Human
@@ -266,21 +276,20 @@ text emitted OUTSIDE Watchtower (CLI, handover, chat), via `fw watchtower url`.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/test_t3587_file_refs.py -q > /tmp/.t3587.out 2>&1 && grep -q passed /tmp/.t3587.out
+python3 -m pytest tests/unit/test_render_artefact_paths.py tests/unit/test_auto_link_root_and_articles.py tests/unit/test_file_route_extensions.py tests/unit/test_file_viewer_unservable.py tests/unit/test_extract_recommendation.py -q > /tmp/.t3587b.out 2>&1 && grep -q passed /tmp/.t3587b.out
+bin/fw watchtower current
+bin/fw vendor self --check
+
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** On live /review/T-3581, 3 of the evidence references (5 target files) rendered as plain text while 8 rendered as links: two brace groups (`docs/reports/T-3579-code-review-{openai,zai}.md`, `T-3581-round3-review-{openai,zai}.md`) and one bare filename (`T-3581-rereview-openai.md`). Separately, a reference that resolves to nothing rendered exactly like one that was never checked.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `_auto_link_files` (web/shared.py) only recognised `<allowlisted-prefix>/<path>.<ext>` and silently returned everything else unchanged — no brace expansion, no basename resolution, no `:NNN`, and the existence gate's "no" answer was indistinguishable from "not a path". A second, pre-existing cause: markdown2 turns `task_pair_acd.sh` into `task<em>pair</em>acd.sh` before the linker runs, so underscore paths were split across text nodes and never matched. The `/file` view had no line ids, so even a correct `#L640` would land at the top. The approvals card printed the Recommendation as raw text.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** The linker's failure mode was silence — a miss produced output identical to a non-path — so nothing and nobody could see the misses. Tests only asserted the positive exact-path shape and "non-existent stays unlinked", which pinned the silence as the contract.
+
+**Prevention:** tests/unit/test_t3587_file_refs.py pins each shape with negative controls, a template scan that fails if any Recommendation/Rationale/Evidence value is printed raw, a route-parity test that every emitted /file/ href is served, and a non-default-port test for the CLI URL helpers. Misses are now visible by construction (dead / ambiguous / unserved spans with titles), so a future gap shows up on the page instead of hiding.
 
 ## Evolution
 
@@ -337,14 +346,15 @@ text emitted OUTSIDE Watchtower (CLI, handover, chat), via `fw watchtower url`.
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-09-30 — how an unresolvable reference renders
+- **Chose:** keep the text, wrap it in a `<span class="file-ref-dead|ambiguous|unserved" title="…">` (wavy underline, ✗ / ? suffix, help cursor), CSS in a new web/static/css/file-refs.css linked from base.html and the standalone review.html.
+- **Why:** the operator's complaint is refs that look fine and aren't; a titled span says why (not found / N candidates / outside the viewer allowlist) without inventing a link.
+- **Rejected:** linking dead refs to /file anyway (a 404 click is worse than a visible mark); marking inside `<pre>` code blocks (pasted logs would drown in marks — only live links are added there).
+
+### 2026-09-30 — line anchors on /file
+- **Chose:** Pygments `HtmlFormatter(linespans="L")` rewritten to `id="LNNN"`, with CSS counters for line numbers and a `:target` highlight.
+- **Why:** Pygments splits multi-line tokens per line itself; splitting highlight.js output would break spans across lines. Its `<pre>` has no `<code>`, so highlight.js leaves it alone.
+- **Rejected:** client-side JS wrapping after highlight.js (fragile, anchor unavailable until JS runs). Markdown files are rendered as Markdown and have no line anchors — `x.md:NN` links land at the top of the document.
 
 ## Decision
 
@@ -365,3 +375,9 @@ text emitted OUTSIDE Watchtower (CLI, handover, chat), via `fw watchtower url`.
 
 ### 2026-09-30T10:22:21Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-09-30 — live measurement, /review/T-3581 (T-3587 worker)
+- **Before** (pid 2195812, stale): 8 `/file/` links; unlinked rendered refs: `docs/reports/T-3579-code-review-{openai,zai}.md`, `T-3581-rereview-openai.md`, `T-3581-round3-review-{openai,zai}.md` (3 refs, 5 target files).
+- **After** (restart, pid 2394128, `fw watchtower current` rc=0): 13 `/file/` links (10 distinct files), 0 unlinked path-shaped refs, 0 dead marks; every emitted href returned 200.
+- The filing's `lib/task_pair_acd.sh` example: the file exists. The plain-text occurrence on that page is inside a CSS comment in web/templates/review.html, not rendered task content. In rendered content, underscore paths were broken by markdown2's emphasis, now fixed and tested.
+- `/file/web/shared.py` now carries `id="L640"`.
