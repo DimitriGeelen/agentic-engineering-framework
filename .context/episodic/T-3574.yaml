@@ -1,0 +1,101 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3574: Arc page takes 12-108s per request - _bvp_signals re-parses ~3,600 task frontmatters on every load
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-30T07:08:15Z
+# ============================================================================
+
+task_id: T-3574
+task_name: "Arc page takes 12-108s per request - _bvp_signals re-parses ~3,600 task frontmatters on every load"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-29T22:36:00Z
+completed: 2026-09-30T03:53:17Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-09-30T01:22:55+02:00
+last_commit: 2026-09-30T05:53:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  acceptance criteria for arc page speed; T-3575 filed with criteria for tasks page speed. perf worker prompt (T-3574 then T-3575, sequential, one focus owner). arc page 12-108s -> <1.1s cold — cached task index, members/coherence parse only the arc's own files, libyaml loader. vendor sync — arc page perf. fabric card, render-surface Human AC (gate requires one for web/blueprints). recommendation block. recommendation + verification commands. real cross-arc coherence equivalence test (fails without T-3577), guarded Verification, Round 2 numbers; perf notes Round 2
+
+# Key outcomes
+outcomes:
+  - 'Each task file''s frontmatter is parsed at most once per arc-page request (or served from a cache invalidated by file change); profile shows `_parse_fm_from_path` calls reduced from ~3,556 to the arc''s own members or a cached index'
+  - '`/arcs/continuous-run` and `/arcs/readme-first-run` each respond in under 3s cold and under 1s warm on this host, measured with curl before and after; numbers recorded in the task'
+  - 'BVP numbers on the arc page are unchanged: a test compares arc BVP_norm/BVP_raw and per-driver contributions before and after the change for at least two arcs'
+  - 'Existing arc/BVP web tests pass; `bin/fw watchtower current` passes after restart; `bin/fw vendor self --check` clean'
+  - '[AGENT-REVIEWED] Arc pages render unchanged and load fast'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/arcs.py'
+  - '.agentic-framework/web/blueprints/bvp.py'
+  - 'docs/reports/T-3574-T-3575-perf-notes.md'
+  - 'docs/reports/T-3574-T-3575-perf-prompt.md'
+  - '.fabric/components/tests-web-test_t3574_arc_page_perf.yaml'
+  - '.tasks/active/T-3574-arc-page-takes-12-108s-per-request---bvp.md'
+  - '.tasks/active/T-3575-tasks-page-slow-at-3600-tasks---30s-ttl-.md'
+  - 'tests/web/test_t3574_arc_page_perf.py'
+  - 'web/blueprints/arcs.py'
+  - 'web/blueprints/bvp.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-30T01:22:55'
+    action: 'T-3574: acceptance criteria for arc page speed; T-3575 filed with criteria for tasks page speed'
+  - time: '2026-09-30T01:23:16'
+    action: 'T-3574: perf worker prompt (T-3574 then T-3575, sequential, one focus owner)'
+  - time: '2026-09-30T01:32:28'
+    action: 'T-3574: arc page 12-108s -> <1.1s cold — cached task index, members/coherence parse only the arc''s own files, libyaml loader'
+  - time: '2026-09-30T01:32:47'
+    action: 'T-3574: vendor sync — arc page perf'
+  - time: '2026-09-30T01:33:01'
+    action: 'T-3574: fabric card, render-surface Human AC (gate requires one for web/blueprints)'
+  - time: '2026-09-30T01:33:07'
+    action: 'T-3574: recommendation block'
+  - time: '2026-09-30T01:33:20'
+    action: 'T-3574: recommendation + verification commands'
+  - time: '2026-09-30T05:53:17'
+    action: 'T-3574: real cross-arc coherence equivalence test (fails without T-3577), guarded Verification, Round 2 numbers; perf notes Round 2'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 8 commit(s), 317 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 317
+  commits: 8
+  files_changed: 10
+  lines_added: 885
+  lines_removed: 155
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3574-arc-page-takes-12-108s-per-request---bvp.md
+generated_by: context-agent-hybrid

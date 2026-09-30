@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3577: arc_id with a trailing YAML comment silently drops the task from its arc - _ARC_ID_LINE_RE captures the comment
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-30T03:22:47Z
+# ============================================================================
+
+task_id: T-3577
+task_name: "arc_id with a trailing YAML comment silently drops the task from its arc - _ARC_ID_LINE_RE captures the comment"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-30T03:18:22Z
+completed: 2026-09-30T03:22:29Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-30T05:19:31+02:00
+last_commit: 2026-09-30T05:22:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed (arc_id trailing comment drops tasks from arcs) with criteria; T-3574 AMBER / T-3575 RED review saved; fix worker prompt. strip trailing YAML comment from arc_id in every reader (T-3440 rejoins arc-001); G-107 registered
+
+# Key outcomes
+outcomes:
+  - 'An unquoted trailing ` # …` comment is stripped before an arc_id resolves (YAML semantics; a `#` inside a quoted value is not a comment); every other arc_id reader in lib/ web/ agents/ that parses the line by regex gets the same treatment, or reuses the one fixed function'
+  - 'Test: the T-3440 shape (`arc_id: arc-001   # note`) resolves to arc-001; a value with no comment is unchanged; a quoted value containing `#` is unchanged'
+  - 'Measured and recorded: how many task files change arc membership after the fix, listed by arc (before/after counts)'
+  - 'Registered in `.context/concerns.yaml` (register first, fix second) with the detection-gap note: nothing flagged a task silently leaving its arc'
+  - 'Existing arc-membership tests pass; `bin/fw vendor self --check` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'filed (arc_id trailing comment drops tasks from arcs) with criteria; T-3574 AMBER / T-3575 RED review saved; fix worker prompt'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-arc-id.py'
+  - '.agentic-framework/lib/arc_membership.py'
+  - '.agentic-framework/lib/arc_membership.sh'
+  - '.agentic-framework/lib/arc.sh'
+  - 'agents/context/check-arc-id.py'
+  - '.context/project/concerns.yaml'
+  - 'docs/reports/T-3574-T-3575-render-review.md'
+  - 'docs/reports/T-3577-3574-3575-fix-prompt.md'
+  - 'lib/arc_membership.py'
+  - 'lib/arc_membership.sh'
+  - 'lib/arc.sh'
+  - '.tasks/active/T-3577-arcid-with-a-trailing-yaml-comment-silen.md'
+  - 'tests/unit/test_t3577_arc_id_trailing_comment.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-30T05:19:31'
+    action: 'T-3577: filed (arc_id trailing comment drops tasks from arcs) with criteria; T-3574 AMBER / T-3575 RED review saved; fix worker prompt'
+  - time: '2026-09-30T05:22:04'
+    action: 'T-3577: strip trailing YAML comment from arc_id in every reader (T-3440 rejoins arc-001); G-107 registered'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4
+  commits: 3
+  files_changed: 15
+  lines_added: 656
+  lines_removed: 37
+  footprint_refreshed_at: '2026-09-30T03:53:57Z'
+  footprint_refreshed_by_commit: ad540bfd3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3577-arcid-with-a-trailing-yaml-comment-silen.md
+generated_by: context-agent-hybrid

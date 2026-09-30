@@ -1,0 +1,108 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3575: Tasks page slow at ~3,600 tasks - 30s TTL cache means most visits are cold (3.4s) and the page ships 1MB of markup
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-30T07:07:55Z
+# ============================================================================
+
+task_id: T-3575
+task_name: "Tasks page slow at ~3,600 tasks - 30s TTL cache means most visits are cold (3.4s) and the page ships 1MB of markup"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-29T23:21:25Z
+completed: 2026-09-30T07:07:29Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-09-30T01:45:20+02:00
+last_commit: 2026-09-30T09:07:29+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  change-driven task cache, capped board columns, trimmed markup (1.04MB -> 305KB, cold 3.35s -> 0.18s). vendor sync + fabric card. independent render review prompt for both perf fixes. board shows current work newest-first (only Captured/Completed capped), per-request signature memo, filtered overflow links, lighter card markup; warm DCL 454ms. task file sync; T-3577: completion record. round-2 re-review prompt. independent re-review GREEN; observed persistence check on a throwaway task
+
+# Key outcomes
+outcomes:
+  - 'The task metadata cache in web/shared.py is invalidated when a task file changes (reuse `mtime_cached_get` or an equivalent directory-mtime check) rather than every 30s; a safety TTL may remain but is minutes, not seconds; a test proves a changed task file is reflected on the next request'
+  - 'The default /tasks payload is cut substantially (e.g. active tasks in full, completed paged or loaded on demand) without removing any filter, search or view the page offers today; measured bytes before/after recorded in the task'
+  - 'Measured on this host with curl and a browser navigation timing: cold and warm server time, bytes, DOMContentLoaded, before and after, recorded in the task; warm DOMContentLoaded under 500ms'
+  - 'Existing tasks-page web tests pass; `bin/fw watchtower current` passes after restart; `bin/fw vendor self --check` clean'
+  - 'Render review by an independent agent reviewer on live screenshots (operator ruling, T-3557 IW-1). Round 1 RED (board hid current work; signature cost regressed the arc page); round 2 GREEN, plus an observed persistence check on a throwaway task. Trail: docs/reports/T-3574-T-3575-render-review.md'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'independent render review prompt for both perf fixes'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/tasks.py'
+  - '.agentic-framework/web/shared.py'
+  - '.agentic-framework/web/templates/_partials/inline_select.html'
+  - '.agentic-framework/web/templates/tasks.html'
+  - 'docs/reports/T-3574-T-3575-perf-notes.md'
+  - 'docs/reports/T-3574-T-3575-render-review.md'
+  - 'docs/reports/T-3574-T-3575-rereview-prompt.md'
+  - 'docs/reports/T-3574-T-3575-review-prompt.md'
+  - '.fabric/components/tests-playwright-test_tasks_board_lazy_selects.yaml'
+  - '.fabric/components/tests-web-test_t3575_tasks_page_perf.yaml'
+  - '.tasks/active/T-3575-tasks-page-slow-at-3600-tasks---30s-ttl-.md'
+  - '.tasks/completed/T-3577-arcid-with-a-trailing-yaml-comment-silen.md'
+  - 'tests/playwright/test_tasks_board_lazy_selects.py'
+  - 'tests/web/test_t3575_tasks_page_perf.py'
+  - 'web/blueprints/tasks.py'
+  - 'web/shared.py'
+  - 'web/templates/_partials/inline_select.html'
+  - 'web/templates/tasks.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-30T01:45:20'
+    action: 'T-3575: change-driven task cache, capped board columns, trimmed markup (1.04MB -> 305KB, cold 3.35s -> 0.18s)'
+  - time: '2026-09-30T01:45:46'
+    action: 'T-3575: vendor sync + fabric card'
+  - time: '2026-09-30T04:55:55'
+    action: 'T-3575: independent render review prompt for both perf fixes'
+  - time: '2026-09-30T05:42:07'
+    action: 'T-3575: board shows current work newest-first (only Captured/Completed capped), per-request signature memo, filtered overflow links, lighter card markup; warm DCL 454ms'
+  - time: '2026-09-30T05:53:56'
+    action: 'T-3575: task file sync; T-3577: completion record'
+  - time: '2026-09-30T05:54:43'
+    action: 'T-3575: round-2 re-review prompt'
+  - time: '2026-09-30T09:07:29'
+    action: 'T-3575: independent re-review GREEN; observed persistence check on a throwaway task'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 466 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 466
+  commits: 7
+  files_changed: 19
+  lines_added: 957
+  lines_removed: 119
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3575-tasks-page-slow-at-3600-tasks---30s-ttl-.md
+generated_by: context-agent-hybrid
