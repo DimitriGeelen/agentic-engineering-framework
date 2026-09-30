@@ -51,17 +51,17 @@ def _commit_as(root, who):
     _git(root, "commit", "-q", "-m", f"{TID}: reviewer verdict", env=_ident(who))
 
 
-def _dispatch(root, did, issuer_identity="dispatcher", revision=""):
+def _dispatch(root, did, issuer_identity="dispatcher", revision="", vendor="anthropic"):
     return rt.dispatch(root, did, TID, issuer_session="S-x", issuer_identity=issuer_identity,
-                       revision=revision)
+                       revision=revision, vendor=vendor)
 
 
 def _green(root, did="rv-1", ac=1, commit=True, outcome="green", issuer_identity="dispatcher",
            extra_evidence=(), rung="rung-1-same-vendor-independent", run_id="", reviewer=None,
-           report=True, finish=True):
+           report=True, finish=True, vendor="anthropic"):
     """A verdict exactly as the worker's `record` writes it; `finish` = the worker then exits and
     the runtime signs its completion."""
-    _dispatch(root, did, issuer_identity)
+    _dispatch(root, did, issuer_identity, vendor=vendor)
     rep = root / f".context/reviews/evidence/{TID}/AC{ac}-{did}.md"
     rep.parent.mkdir(parents=True, exist_ok=True)
     rep.write_text(f"checked {did}\n")
@@ -402,9 +402,10 @@ def _panel(root, outcomes, vendors=("claude", "codex", "opencode"), required=3):
         oc = outcomes.get(s["seat"])
         did = f"rv-{s['seat']}"
         if oc is None:
-            _dispatch(root, did)
+            _dispatch(root, did, vendor=v)
         else:
-            _green(root, did=did, outcome=oc, rung=f"rung-5-panel:{s['seat']}", run_id="run-p")
+            _green(root, did=did, outcome=oc, rung=f"rung-5-panel:{s['seat']}", run_id="run-p",
+                   vendor=v)
         vl.bind_dispatch("run-p", s["seat"], did, v, root=root)
 
 
@@ -450,6 +451,7 @@ class TestJudgePanels:
 
     def test_full_panel_dispatches_each_vendor_and_the_ledger_accepts_it(self, repo, monkeypatch):
         monkeypatch.setattr(judge_cli, "_dispatchable_kinds", lambda root: ALL_KINDS)
+        monkeypatch.setattr(judge_cli, "_kind_vendors", lambda root: {k: k for k in ALL_KINDS})
         _mk_task(repo, TASTE, extra_fm=self.HI)
         _produce(repo)
         w = FakeWorker("green")
@@ -611,6 +613,7 @@ class TestRealDispatcherArguments:
 
     def test_judge_hands_each_seat_its_vendor(self, repo, monkeypatch):
         monkeypatch.setattr(judge_cli, "_dispatchable_kinds", lambda root: ALL_KINDS)
+        monkeypatch.setattr(judge_cli, "_kind_vendors", lambda root: {k: k for k in ALL_KINDS})
         _mk_task(repo, TASTE, extra_fm="cost_estimate:\n  blast_radius: 9\n")
         _produce(repo)
         seen = []

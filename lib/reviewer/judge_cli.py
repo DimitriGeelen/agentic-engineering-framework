@@ -201,6 +201,20 @@ def _dispatchable_kinds(root: Path) -> set[str]:
     return {w for w in out.split() if w}
 
 
+def _kind_vendors(root: Path) -> dict[str, str]:
+    """{worker kind: vendor} from the dispatcher's own table (`fw termlink worker-kinds
+    --vendors`, T-3580 round 4). The same table registers each review dispatch's vendor, which is
+    what the ledger counts; a kind the table does not know has no vendor."""
+    sh = _HERE.parent / "agents" / "termlink" / "termlink.sh"
+    try:
+        out = subprocess.run(["bash", str(sh), "worker-kinds", "--vendors"], capture_output=True,
+                             text=True, timeout=30).stdout
+    except (OSError, subprocess.SubprocessError):
+        return {}
+    pairs = (ln.split() for ln in out.splitlines())
+    return {p[0]: p[1] for p in pairs if len(p) == 2}
+
+
 def _log_seat_cost(root: Path, task_id: str, backend: str, purpose: str, evidence: str) -> str:
     """One cost record per dispatched seat via the helper. '' on success, else the refusal."""
     try:
@@ -287,7 +301,9 @@ def _impact(task_data: dict, criteria: list[dict] | None = None) -> dict:
     if isinstance(conf, (int, float)) and conf <= 1:
         high.append(f"confidence={conf}")
     if inputs["audience"] == "consumers":
-        medium.append("consumer-facing code (" + (paths[0] if paths else "consumer text") + ")")
+        medium.append("consumer-facing code (" + (paths[0] if paths else "consumer text") + ")"
+                      " [held at medium: IW-7's blast-radius row would count the install surface "
+                      "high; see T-3580 Decisions]")
     if inputs["uncertainty"]["inception"]:
         medium.append("inception GO")
     if len(comps) >= 3:
@@ -646,7 +662,15 @@ def _dispatch_argv(fw: Path, *, task_id: str, name: str, prompt_file: Path, root
     return argv
 
 
-def _dispatch_real(*, task_id: str, brief: str, root: Path, name: str, vendor: str = "claude",
+def _await_worker(fw: Path, did: str, root: Path, timeout: int) -> int:
+    """Wait through `fw termlink wait`, which for a review dispatch returns only once the runtime
+    has FINALISED it (completion signed or refused), not merely exited (round 4)."""
+    r = subprocess.run([str(fw), "termlink", "wait", "--name", did, "--timeout", str(timeout)],
+                       cwd=root, capture_output=True, text=True, timeout=timeout + 60)
+    return r.returncode
+
+
+def _dispatch_real(*, task_id: str, brief: str, root: Path, name: str, vendor: str,
                    timeout: int = 900, revision: str = "") -> str:
     """Spawn the review worker via `fw termlink dispatch --task-type review`, wait for it, and
     return its dispatch id (the wrapper appends a random suffix and registers it)."""
@@ -661,16 +685,17 @@ def _dispatch_real(*, task_id: str, brief: str, root: Path, name: str, vendor: s
     if r.returncode != 0 or not m:
         raise RuntimeError(f"dispatch failed (exit {r.returncode}): {(r.stderr or r.stdout)[-300:]}")
     did = m.group(1)
-    subprocess.run([str(fw), "termlink", "wait", "--name", did, "--timeout", str(timeout)],
-                   cwd=root, capture_output=True, text=True, timeout=timeout + 60)
+    _await_worker(fw, did, root, timeout)
     return did
 
 
 def _dispatch_reviewer(task_id: str, brief: str, rung: int, dry_run: bool, root: Path,
                        dispatcher: Dispatcher | None = None, name: str | None = None,
-                       vendor: str = "claude", revision: str = "") -> str | None:
+                       vendor: str = "", revision: str = "") -> str | None:
     if dry_run:
         return None
+    if not vendor:
+        raise ValueError("no worker kind: the registry's seat backend names none")
     dispatcher = dispatcher or _dispatch_real
     return dispatcher(task_id=task_id, brief=brief, root=root, vendor=vendor, revision=revision,
                       name=name or f"judge-{task_id.lower()}-r{rung}")
@@ -762,7 +787,7 @@ def _log_spend(root: Path, task_id: str, rung: int, cost: float) -> None:
 
 # ── orchestration ────────────────────────────────────────────────────────────
 
-def _plan_seats(root: Path, rung: int, kinds: set[str]) -> dict:
+def _plan_seats(root: Path, rung: int, kinds: set[str], kind_vendors: dict | None = None) -> dict:
     """Which registry backends sit this run. {'seats': [...], 'required': N, 'dispatch': [...],
     'unfilled': [...], 'paid': [...]} — seats are {'seat', 'vendor', 'backend', 'kind'}."""
     seat_backends, paid = _backends(root)
@@ -772,19 +797,25 @@ def _plan_seats(root: Path, rung: int, kinds: set[str]) -> dict:
         chosen = seat_backends[:want]        # the panel's vendors, in registry order
     else:
         chosen = (runnable or seat_backends)[:1]
-    seats = [{"seat": b["id"], "vendor": b["id"], "backend": b["id"], "kind": b["kind"]} for b in chosen]
+    kv = kind_vendors or {}
+    seats = [{"seat": b["id"], "vendor": b["id"], "backend": b["id"], "kind": b["kind"],
+              "worker_vendor": kv.get(b["kind"], "")} for b in chosen]
     dispatch = [s for s in seats if s["kind"] in kinds]
     unfilled = [s for s in seats if s["kind"] not in kinds]
     for i in range(len(seats), want):     # the registry has fewer seat backends than the rung needs
         unfilled.append({"seat": f"seat-{i + 1}", "vendor": f"seat-{i + 1}", "backend": "", "kind": ""})
         seats.append(unfilled[-1])
+    # Round 4: distinct VENDORS the dispatchable seats run, from the dispatcher's table — three
+    # registry aliases for one worker kind are one vendor, whatever their backend ids.
+    vendors = {s["worker_vendor"] for s in dispatch if s["worker_vendor"]}
     return {"seats": seats, "required": want, "dispatch": dispatch, "unfilled": unfilled,
-            "paid": [b["id"] for b in paid]}
+            "paid": [b["id"] for b in paid], "vendors": sorted(vendors)}
 
 
 def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: bool = False,
           dispatcher: Dispatcher | None = None, capture: Capturer | None = None,
-          now: datetime | None = None, worker_kinds: set[str] | None = None) -> dict:
+          now: datetime | None = None, worker_kinds: set[str] | None = None,
+          kind_vendors: dict | None = None) -> dict:
     """Run one judgement. Returns a result dict; never writes a verdict."""
     task_data = _load_task(task_id, root)
     if not task_data:
@@ -806,15 +837,18 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
                impact=imp, weekly_spend=spent, ceiling=ceiling)
 
     try:
-        plan = _plan_seats(root, rung, _dispatchable_kinds(root) if worker_kinds is None else set(worker_kinds))
+        plan = _plan_seats(root, rung,
+                           _dispatchable_kinds(root) if worker_kinds is None else set(worker_kinds),
+                           _kind_vendors(root) if kind_vendors is None else dict(kind_vendors))
     except Exception as e:  # noqa: BLE001 - an unreadable registry is a refusal, not a default
         res.update(error=f"review backend registry unavailable: {e}", code=1)
         return res
     seats, required = plan["seats"], plan["required"]
-    degraded = DEGRADED_SINGLE_VENDOR if len(plan["dispatch"]) < required and rung >= 5 else ""
+    degraded = (DEGRADED_SINGLE_VENDOR if rung >= 5 and (len(plan["dispatch"]) < required
+                                                         or len(plan["vendors"]) < required) else "")
     res.update(seats=[s["seat"] for s in seats], dispatchable=[s["seat"] for s in plan["dispatch"]],
                unfilled=[s["seat"] for s in plan["unfilled"]], required_vendors=required,
-               degraded=degraded)
+               dispatch_vendors=plan["vendors"], degraded=degraded)
 
     # The revision under review is captured HERE, before any worker exists, and handed to the
     # dispatcher, which registers it with the dispatch (round 3).

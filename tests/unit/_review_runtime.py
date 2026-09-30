@@ -16,15 +16,30 @@ def wdir_for(root: Path, did: str) -> Path:
     return Path(root).parent / f"{Path(root).name}-tl-dispatch" / did
 
 
+#: What run.sh holds in memory after it took the completion secret and deleted its file (round 4).
+_HELD: dict = {}
+
+
 def dispatch(root, did, task, *, task_type="review", issuer_session="S-test",
-             issuer_identity="dispatcher", revision=""):
-    """Register a dispatch exactly as the dispatcher does: with its worker dir and revision."""
+             issuer_identity="dispatcher", revision="", worker_kind="claude", vendor="anthropic"):
+    """Register a dispatch exactly as the dispatcher does: with its worker dir, revision, worker
+    kind and the vendor the dispatcher's table maps that kind to."""
     w = wdir_for(root, did)
     w.mkdir(parents=True, exist_ok=True)
     vl.register_dispatch(did, task, task_type, issuer_session=issuer_session,
                          issuer_identity=issuer_identity, revision=revision, wdir=str(w),
-                         root=Path(root))
+                         worker_kind=worker_kind, vendor=vendor, root=Path(root))
     return did
+
+
+def take_secret(root, did) -> str:
+    """run.sh's first act: read the completion secret and delete its file."""
+    key = (str(Path(root).resolve()), did)
+    if key not in _HELD:
+        f = wdir_for(root, did) / vl.COMPLETION_SECRET_FILE
+        _HELD[key] = f.read_text().strip() if f.is_file() else ""
+        f.unlink(missing_ok=True)
+    return _HELD[key]
 
 
 def finish(root, did, exit_code=0, result=b'{"type":"result","result":"done"}\n'):
@@ -34,9 +49,12 @@ def finish(root, did, exit_code=0, result=b'{"type":"result","result":"done"}\n'
     w.mkdir(parents=True, exist_ok=True)
     (w / "result.jsonl").write_bytes(result)
     (w / "exit_code").write_text(f"{exit_code}\n")
+    secret = take_secret(root, did)
+    rec, _ = vl.dispatch_record(Path(root), did)
     saved = os.environ.pop(vl._WORKER_ENV, None)
     try:
-        return vl.complete(did, wdir=str(w), exit_code=exit_code, session=did, root=Path(root))
+        return vl.complete(did, wdir=str(w), exit_code=exit_code, session=did, secret=secret,
+                           worker_kind=(rec or {}).get("worker_kind") or "claude", root=Path(root))
     finally:
         if saved is not None:
             os.environ[vl._WORKER_ENV] = saved

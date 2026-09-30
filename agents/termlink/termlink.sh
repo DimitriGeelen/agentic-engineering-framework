@@ -571,8 +571,31 @@ cmd_cleanup() {
 # (pinned by tests/unit/t3580_round3_test.py).
 DISPATCH_WORKER_KINDS="claude ollama-loop"
 
+# T-3580 round 4: the VENDOR each worker kind runs, from the runtime's own knowledge of what
+# it launches. A review dispatch registers it (signed); a panel counts distinct registered
+# vendors, never registry backend ids, so three aliases for one kind are one vendor.
+_worker_vendor() {
+    case "$1" in
+        claude|"") echo "anthropic" ;;
+        ollama-loop) echo "ollama-local" ;;
+        *) echo "" ;;
+    esac
+}
+
 cmd_worker_kinds() {
+    local k
+    if [ "${1:-}" = "--vendors" ]; then
+        for k in $DISPATCH_WORKER_KINDS; do printf '%s %s\n' "$k" "$(_worker_vendor "$k")"; done
+        return 0
+    fi
     printf '%s\n' $DISPATCH_WORKER_KINDS
+}
+
+# T-3580 round 4: a review dispatch is finished only when the runtime has FINALISED it (signed its
+# completion, or recorded that it could not), not when exit_code appears — run.sh writes
+# exit_code first and signs after. Non-review dispatches carry no finalise_required marker.
+_worker_done() {
+    [ -f "$1/exit_code" ] && { [ ! -f "$1/finalise_required" ] || [ -f "$1/finalised" ]; }
 }
 
 cmd_dispatch() {
@@ -889,8 +912,10 @@ METAEOF
         PROJECT_ROOT="$project_dir" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" register-dispatch \
             --dispatch-id "$name" --task "$task" --task-type review \
             --revision "$review_revision" --wdir "$wdir" \
+            --worker-kind "${worker_kind:-claude}" --vendor "$(_worker_vendor "$worker_kind")" \
             --issuer-session "${_issuer_session:-}" --issuer-identity "${GIT_AUTHOR_NAME:-$(git -C "$project_dir" config user.name 2>/dev/null)}" \
             >/dev/null || echo "  WARNING: review dispatch not registered — its verdicts will not count" >&2
+        : > "$wdir/finalise_required"
     fi
 
     # Worker script runs inside the spawned terminal
@@ -900,6 +925,15 @@ METAEOF
 WORKER_NAME="$1"; PROJECT_DIR="$2"; WDIR="$3"; TIMEOUT="$4"; MODEL="$5"
 TASK_TYPE="$6"; FW_BIN="$7"
 cd "$PROJECT_DIR" || { echo "FATAL: cd $PROJECT_DIR failed" > "$WDIR/stderr.log"; exit 1; }
+
+# T-3580 round 4: take the per-dispatch completion secret and delete its file BEFORE anything
+# else runs, so the worker never sees it. Deliberately NOT exported; it reaches `complete` only on
+# stdin, after the worker has exited.
+COMPLETION_SECRET=""
+if [ -f "$WDIR/.completion-secret" ]; then
+    COMPLETION_SECRET=$(cat "$WDIR/.completion-secret")
+    rm -f "$WDIR/.completion-secret"
+fi
 
 # T-792: Export PROJECT_ROOT so hooks skip git resolution and use the correct project
 export PROJECT_ROOT="$PROJECT_DIR"
@@ -1043,12 +1077,29 @@ echo "$FINISHED_AT" > "$WDIR/finished_at"
 # here, after the worker has exited: its session, exit state, result-stream hash and the exact
 # rows it left. The worker cannot write it (`record` never does, and `complete` refuses inside
 # the worker's environment, so FW_SIDECAR_AGENT_ID is stripped for this one call).
-if [ "$TASK_TYPE" = "review" ] && [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ]; then
-    env -u FW_SIDECAR_AGENT_ID PROJECT_ROOT="$PROJECT_DIR" \
+# Round 4: the secret goes in on stdin, and `finalised` is written after signing succeeds or
+# fails, so a review wait never returns between exit_code and the completion.
+if [ "$TASK_TYPE" = "review" ]; then
+    FINAL="unsigned"
+    if [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ] && \
+        printf '%s' "$COMPLETION_SECRET" | env -u FW_SIDECAR_AGENT_ID PROJECT_ROOT="$PROJECT_DIR" \
         python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" complete \
         --dispatch-id "$WORKER_NAME" --session "$WORKER_NAME" --wdir "$WDIR" \
-        --exit-code "$(cat "$WDIR/exit_code")" > "$WDIR/completion.json" 2>> "$WDIR/stderr.log" \
-        || echo "WARNING: review completion not signed — this worker's verdicts will not count"
+        --worker-kind "${WORKER_KIND:-claude}" --secret-stdin \
+        --exit-code "$(cat "$WDIR/exit_code")" > "$WDIR/completion.json" 2>> "$WDIR/stderr.log"; then
+        FINAL="signed"
+    else
+        echo "WARNING: review completion not signed — this worker's verdicts will not count"
+    fi
+    COMPLETION_SECRET=""
+    echo "$FINAL" > "$WDIR/finalised"
+fi
+
+# Round 4: /tmp/tl-dispatch is not durable (a wdir vanished before its result was collected).
+# Keep a copy of the worker's result in the project, where `fw termlink result` also looks.
+if [ -s "$WDIR/result.md" ]; then
+    mkdir -p "$PROJECT_DIR/.context/dispatch-results" 2>/dev/null \
+        && cp "$WDIR/result.md" "$PROJECT_DIR/.context/dispatch-results/$WORKER_NAME.md" 2>/dev/null || true
 fi
 
 # T-1681: rewrite meta.json post-exit so `fw termlink dispatch_status` reflects
@@ -1170,7 +1221,7 @@ cmd_wait() {
             local all_done=true
             for wdir in "$DISPATCH_DIR"/*/; do
                 [ -d "$wdir" ] || continue
-                [ -f "$wdir/exit_code" ] || { all_done=false; break; }
+                _worker_done "$wdir" || { all_done=false; break; }
             done
             [ "$all_done" = true ] && { echo "All workers complete."; return 0; }
             sleep 2
@@ -1187,9 +1238,9 @@ cmd_wait() {
             termlink event wait "$name" --topic worker.done --timeout "$timeout" >/dev/null 2>&1 || true
 
         local deadline=$(($(date +%s) + timeout))
-        while [ ! -f "$wdir/exit_code" ] && [ "$(date +%s)" -lt "$deadline" ]; do sleep 2; done
+        while ! _worker_done "$wdir" && [ "$(date +%s)" -lt "$deadline" ]; do sleep 1; done
 
-        if [ -f "$wdir/exit_code" ]; then
+        if _worker_done "$wdir"; then
             local ec
             ec=$(cat "$wdir/exit_code")
             echo "Worker $name finished (exit: $ec)"
@@ -1205,7 +1256,12 @@ cmd_result() {
     [ -z "$name" ] && die "Usage: fw termlink result <worker-name>"
 
     local wdir="$DISPATCH_DIR/$name"
-    [ -d "$wdir" ] || die "No dispatch directory for worker '$name'"
+    if [ ! -d "$wdir" ]; then
+        # T-3580 round 4: run.sh keeps a durable copy in the project; use it once /tmp is gone.
+        local kept="${PROJECT_ROOT:-$(pwd)}/.context/dispatch-results/$name.md"
+        [ -f "$kept" ] && { cat "$kept"; return 0; }
+        die "No dispatch directory for worker '$name'"
+    fi
 
     # T-3440: lead with the close verdict. A worker that ended its turn waiting
     # on a background job exits 0 with a perfectly readable result and an open

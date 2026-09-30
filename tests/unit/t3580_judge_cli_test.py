@@ -257,18 +257,20 @@ class FakeWorker:
     list indexed by dispatch number); `cite_shots=False` makes it omit the screenshots."""
 
     def __init__(self, behaviour="green", identity=None, write=True, cite_shots=True,
-                 runtime=True, exit_code=0):
+                 runtime=True, exit_code=0, vendors=None):
+        self.vendors = vendors or {}      # worker kind -> vendor the fake dispatcher registers
         self.behaviour, self.identity, self.write = behaviour, identity, write
         self.cite_shots, self.runtime, self.exit_code = cite_shots, runtime, exit_code
         self.calls: list[dict] = []
         self.n = 0
 
-    def __call__(self, *, task_id, brief, root, name, vendor="claude", revision=""):
+    def __call__(self, *, task_id, brief, root, name, vendor, revision=""):
         self.n += 1
         did = f"{name}-{self.n:012x}"
         self.calls.append({"name": name, "brief": brief, "did": did, "vendor": vendor,
                            "revision": revision})
-        rt.dispatch(root, did, task_id, issuer_session="S-x", revision=revision)
+        rt.dispatch(root, did, task_id, issuer_session="S-x", revision=revision,
+                    worker_kind=vendor, vendor=self.vendors.get(vendor, vendor))
         if not self.write:
             if self.runtime:
                 rt.finish(root, did, self.exit_code)
@@ -466,6 +468,7 @@ class TestSpendCeiling:
 
     def test_due_rung_5_is_a_panel_of_three_when_under_ceiling(self, repo, monkeypatch):
         monkeypatch.setattr(judge_cli, "_dispatchable_kinds", lambda root: ALL_KINDS)
+        monkeypatch.setattr(judge_cli, "_kind_vendors", lambda root: {k: k for k in ALL_KINDS})
         _mk_task(repo, TASTE, extra_fm=self.HI)
         _produce(repo)
         w = FakeWorker("green")
@@ -503,6 +506,7 @@ class TestSpendCeiling:
 
     def test_panel_stops_at_first_non_green_seat(self, repo, monkeypatch):
         monkeypatch.setattr(judge_cli, "_dispatchable_kinds", lambda root: ALL_KINDS)
+        monkeypatch.setattr(judge_cli, "_kind_vendors", lambda root: {k: k for k in ALL_KINDS})
         _mk_task(repo, TASTE, extra_fm=self.HI)
         _produce(repo)
         w = FakeWorker(["green", "red", "green"])
@@ -540,7 +544,8 @@ class TestDryRunAndRealDispatcher:
                 stderr = ""
             return R()
         monkeypatch.setattr(judge_cli.subprocess, "run", fake_run)
-        did = judge_cli._dispatch_real(task_id=TID, brief="b", root=repo, name="judge-t-9200-r1")
+        did = judge_cli._dispatch_real(task_id=TID, brief="b", root=repo, name="judge-t-9200-r1",
+                                       vendor="claude")
         assert did == "judge-t-9200-r1-abc123"
         d = calls[0]
         assert d[1:3] == ["termlink", "dispatch"] and "--task-type" in d and d[d.index("--task-type") + 1] == "review"

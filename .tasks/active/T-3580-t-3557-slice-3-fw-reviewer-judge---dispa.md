@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T07:54:10Z
-last_update: 2026-09-30T13:39:37Z
+last_update: 2026-09-30T16:23:02Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -303,7 +303,7 @@ dispatching: `fw review propose --backend openrouter --task T-XXX --why "..."`.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-python3 -m pytest tests/unit/t3580_judge_cli_test.py tests/unit/t3580_round2_test.py tests/unit/t3580_round3_test.py tests/unit/test_t3579_verdict_ledger.py tests/unit/test_t3581_ledger_integrity.py tests/unit/test_t3581_round4.py -q > /tmp/.t3580-py.out 2>&1 && grep -q passed /tmp/.t3580-py.out
+python3 -m pytest tests/unit/t3580_judge_cli_test.py tests/unit/t3580_round2_test.py tests/unit/t3580_round3_test.py tests/unit/t3580_round4_test.py tests/unit/test_t3579_verdict_ledger.py tests/unit/test_t3581_ledger_integrity.py tests/unit/test_t3581_round4.py -q > /tmp/.t3580-py.out 2>&1 && grep -q passed /tmp/.t3580-py.out
 timeout 600 bats tests/unit/t3579_verdict_close_path.bats > /tmp/.t3580-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3580-bats.out
 test "$(grep -c '# skip' /tmp/.t3580-bats.out)" -eq 0
 bin/fw vendor self --check
@@ -391,6 +391,30 @@ bin/fw vendor self --check
 ### 2026-09-30 — round 3: seats and paid backends
 - **Chose:** seats are the registry's internal backends that declare a `--worker-kind` match; the ones `fw termlink worker-kinds` accepts run, each logging one cost record. A seat no internal backend can fill gets a `fw review propose` on the registry's paid backend and waits; the judge never dispatches it. All seats stay required in the signed run, so the ledger keeps the criterion open.
 - **Rejected:** a new registry field for worker kinds (the registry is operator-owned; its `match:` already names the worker kind).
+
+### 2026-09-30 — round 4: completion needs a per-dispatch runtime secret
+- **Chose:** `register_dispatch` writes a fresh secret (0600) to `<wdir>/.completion-secret` and registers only its sha256 (signed). run.sh reads it and deletes the file as its first act, never exports it, and passes it to `complete --secret-stdin` after the worker exits. `complete` refuses without it, with a wrong one, or for a dispatch registered without one. It also refuses a worker kind other than the registered one.
+- **Why:** round-3 OpenAI HIGH: `complete` is public, and any caller holding a hand-written exit_code file could get a signed completion without the key.
+- **Residual (stated, not closed):** a same-user process that reads the wdir between registration and run.sh's first line, or that reads run.sh's memory, can still act. So can one that reads `.context/secrets/review-dispatch.key` and signs a completion itself. This is inside the same-user boundary the operator accepted on T-3581. The secret removes the zero-effort path (write exit_code, call the public command), not a determined same-user forger.
+- **Rejected:** a secret in the worker's env or argv (visible to the worker and in `ps`).
+
+### 2026-09-30 — round 4: a vendor is what the dispatcher registered
+- **Chose:** termlink.sh maps each worker kind to a vendor (`_worker_vendor`, printed by `worker-kinds --vendors`), and cmd_dispatch registers kind + vendor (signed) with every review dispatch. `_panel_fault` counts distinct VERIFIED registered vendors and refuses a seat with none (`panel-unverified-vendor`). The judge reports `degraded` when the dispatchable seats span fewer vendors than required.
+- **Why:** round-3 OpenAI HIGH: three registry backend ids with one `--worker-kind` counted as three vendors.
+- **Rejected:** counting worker kinds (two kinds may run one vendor); trusting the bind row's vendor argument (caller-supplied).
+
+### 2026-09-30 — round 4: review waits require a finalised runtime
+- **Chose:** cmd_dispatch writes `finalise_required` for review dispatches. run.sh writes `finalised` (signed|unsigned) after `complete` succeeds or fails, and `fw termlink wait` treats a review dispatch as done only when that marker exists. Non-review dispatches are unchanged.
+- **Why:** round-3 OpenAI MEDIUM: `wait` returned on exit_code, before signing, so the judge could collect `unknown`.
+
+### 2026-09-30 — round 4: Z.ai lows
+- **Completion not committed (low 1) — not addressed:** a runtime commit into the shared main checkout races the parent session's index and hooks. A lost completions file fails closed: the rows become `unknown`, and audit reports no-completion. Left as is. The worker's committed rows plus the signed registry are the durable record.
+- **Session binding nominal (low 2) — partly addressed:** `complete` now records `worker_session` from the result stream's `session_id`. It is not required, because the ollama-loop worker emits none; freshness still rests on the dispatch id's random suffix.
+- **Consumer paths score medium (low 3) — held, recorded in the reason:** scoring every `lib/`/`agents/` path High would put nearly every framework task at rung 5. That needs a three-vendor panel, which cannot be dispatched until T-3582, so every such task would run degraded. The reason string now says the calibration is held at medium and points here. Changing it is the operator's call.
+- **Default vendor (low 4) — fixed:** `_dispatch_real` has no default, and `_dispatch_reviewer` refuses an empty kind. `"claude"` is added to the no-hardcoded-vendor pin.
+
+### 2026-09-30 — round 4: durable worker results
+- **Chose:** run.sh copies a non-empty `result.md` to `<project>/.context/dispatch-results/<name>.md`. `fw termlink result` falls back to that copy when the /tmp wdir is gone. It is not committed automatically.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

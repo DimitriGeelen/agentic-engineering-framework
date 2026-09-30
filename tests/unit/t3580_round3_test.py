@@ -95,14 +95,14 @@ class TestRuntimeCompletion:
         (w / "exit_code").write_text("0\n")
         monkeypatch.setenv(vl._WORKER_ENV, "rv-1")
         with pytest.raises(vl.VerdictRefused, match="never from inside the worker"):
-            vl.complete("rv-1", wdir=str(w), exit_code=0, root=prod)
+            vl.complete("rv-1", wdir=str(w), exit_code=0, secret=rt.take_secret(prod, "rv-1"), root=prod)
         monkeypatch.delenv(vl._WORKER_ENV)
-        assert vl.complete("rv-1", wdir=str(w), exit_code=0, root=prod)      # control
+        assert vl.complete("rv-1", wdir=str(w), exit_code=0, secret=rt.take_secret(prod, "rv-1"), root=prod)      # control
 
     def test_complete_refuses_before_the_worker_exited(self, prod):
         _dispatch(prod, "rv-1")
         with pytest.raises(vl.VerdictRefused, match="has not exited"):
-            vl.complete("rv-1", wdir=str(rt.wdir_for(prod, "rv-1")), exit_code=0, root=prod)
+            vl.complete("rv-1", wdir=str(rt.wdir_for(prod, "rv-1")), exit_code=0, secret=rt.take_secret(prod, "rv-1"), root=prod)
 
     def test_complete_refuses_a_worker_dir_other_than_the_registered_one(self, prod, tmp_path):
         _dispatch(prod, "rv-1")
@@ -110,7 +110,7 @@ class TestRuntimeCompletion:
         other.mkdir()
         (other / "exit_code").write_text("0\n")
         with pytest.raises(vl.VerdictRefused, match="is not the one registered"):
-            vl.complete("rv-1", wdir=str(other), exit_code=0, root=prod)
+            vl.complete("rv-1", wdir=str(other), exit_code=0, secret=rt.take_secret(prod, "rv-1"), root=prod)
 
     def test_a_second_completion_voids_both(self, prod):
         """A worker that forges its own completion before exiting only invalidates itself."""
@@ -178,10 +178,24 @@ if mode == "forge":   # try to sign its own completion from inside the worker
                         "--wdir", os.environ["WDIR_EXPECTED"], "--exit-code", "0"],
                        capture_output=True, text=True)
     print("FORGE rc=%d %s" % (r.returncode, r.stderr.strip()), file=sys.stderr)
+if mode == "forge-noenv":   # round 4: strip the worker marker and try without the secret
+    env = {k: v for k, v in os.environ.items() if k != "FW_SIDECAR_AGENT_ID"}
+    open(os.path.join(os.environ["WDIR_EXPECTED"], "exit_code"), "w").write("0\n")
+    r = subprocess.run([sys.executable, os.environ["LEDGER"], "complete", "--dispatch-id", did,
+                        "--wdir", os.environ["WDIR_EXPECTED"], "--exit-code", "0", "--secret-stdin"],
+                       input="", capture_output=True, text=True, env=env)
+    print("FORGE rc=%d %s" % (r.returncode, r.stderr.strip()), file=sys.stderr)
+if mode == "peek":   # round 4: can the worker see the completion secret?
+    import hashlib, json as _j
+    want = next(_j.loads(l)["completion_secret_sha256"]
+                for l in open(".context/reviews/review-dispatches.jsonl") if did in l)
+    f = os.path.join(os.environ["WDIR_EXPECTED"], ".completion-secret")
+    in_env = any(hashlib.sha256(v.strip().encode()).hexdigest() == want for v in os.environ.values())
+    print("PEEK file=%d env=%d" % (os.path.exists(f), in_env), file=sys.stderr)
 line = (rec.replace("<N>", "1").replace("<OUTCOME>", "green").replace("<DIGEST>", dg)
            .replace("<REPORT>", rep))
-subprocess.run(["bash", "-c", line], check=True)
-subprocess.run(["bash", "-c", com], check=True)
+subprocess.run(["bash", "-c", line], check=True, stdout=sys.stderr)   # keep the stream JSON-only
+subprocess.run(["bash", "-c", com], check=True, stdout=sys.stderr)
 print('{"type":"result","result":"1. [AC] x\\nVERDICT: green"}')
 sys.exit(3 if mode == "fail" else 0)
 '''
@@ -536,11 +550,12 @@ class TestCostIntegration:
         src = (_HERE / "lib" / "reviewer" / "judge_cli.py").read_text()
         code = re.sub(r'(?s)""".*?"""', "", src)
         code = "\n".join(l.split("#", 1)[0] for l in code.splitlines())
-        for vendor in ("codex", "opencode", "openrouter", "claude-code", "anthropic"):
+        for vendor in ("claude", "codex", "opencode", "openrouter", "claude-code", "anthropic"):
             assert f'"{vendor}"' not in code, vendor
 
     def test_one_cost_record_per_dispatched_seat(self, repo, monkeypatch):
         monkeypatch.setattr(judge_cli, "_dispatchable_kinds", lambda root: ALL_KINDS)
+        monkeypatch.setattr(judge_cli, "_kind_vendors", lambda root: {k: k for k in ALL_KINDS})
         _mk_task(repo, TASTE, extra_fm=HI)
         _produce(repo)
         w = FakeWorker("green")

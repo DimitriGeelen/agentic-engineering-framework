@@ -80,7 +80,7 @@ _dispatch() {
     mkdir -p "$TEST_TEMP_DIR.tl/${1:-rv-1}"
     PROJECT_ROOT="$PROJECT_ROOT" python3 "$BATS_TEST_DIRNAME/../../lib/verdict_ledger.py" \
         register-dispatch --dispatch-id "${1:-rv-1}" --task T-9200 --task-type review \
-        --wdir "$TEST_TEMP_DIR.tl/${1:-rv-1}" >/dev/null
+        --wdir "$TEST_TEMP_DIR.tl/${1:-rv-1}" --worker-kind claude --vendor anthropic >/dev/null
 }
 
 _finish() {
@@ -89,8 +89,11 @@ _finish() {
     local w="$TEST_TEMP_DIR.tl/${1:-rv-1}"
     echo '{"type":"result"}' > "$w/result.jsonl"
     echo 0 > "$w/exit_code"
-    env -u FW_SIDECAR_AGENT_ID PROJECT_ROOT="$PROJECT_ROOT" python3 "$BATS_TEST_DIRNAME/../../lib/verdict_ledger.py" \
-        complete --dispatch-id "${1:-rv-1}" --session "${1:-rv-1}" --wdir "$w" --exit-code 0 >/dev/null
+    # T-3580 round 4: run.sh holds the per-dispatch completion secret and passes it on stdin.
+    local secret=""
+    [ -f "$w/.completion-secret" ] && { secret=$(cat "$w/.completion-secret"); rm -f "$w/.completion-secret"; }
+    printf '%s' "$secret" | env -u FW_SIDECAR_AGENT_ID PROJECT_ROOT="$PROJECT_ROOT" python3 "$BATS_TEST_DIRNAME/../../lib/verdict_ledger.py" \
+        complete --dispatch-id "${1:-rv-1}" --session "${1:-rv-1}" --wdir "$w" --exit-code 0 --secret-stdin >/dev/null
 }
 
 _as() {
