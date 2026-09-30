@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3569: C-001 audit counts research preserved in the task file itself, not only docs/reports location (832 offer, offset 14)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-30T14:47:16Z
+# ============================================================================
+
+task_id: T-3569
+task_name: "C-001 audit counts research preserved in the task file itself, not only docs/reports location (832 offer, offset 14)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-29T21:00:46Z
+completed: 2026-09-30T14:46:56Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-09-29T23:01:54+02:00
+last_commit: 2026-09-30T16:46:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  drain 832 inbox @12-@14 — _t770 is 832-local, delegation_cli normative; C-001 location-only defect filed upstream. C-001 counts research preserved in the task file itself. vendor sync and fabric cards for research_preserved
+
+# Key outcomes
+outcomes:
+  - '`lib/research_preserved.py`: one predicate — does the task file carry substantive prose in research-bearing sections (Problem Statement, Open Questions, Exploration Plan, Technical Constraints, Hypothesis, Findings, Evidence, Dialogue Log, Scope Fence, Spikes, Prior Art, Assumptions); NOT counted: Acceptance Criteria, Verification, Updates, Recommendation, Decision(s), Go/No-Go; HTML comments and `[placeholder]` brackets stripped before measuring — proof: `tests/unit/test_research_preserved.py` (test_research_sections_count, test_excluded_sections_never_count, test_comments_and_placeholders_are_stripped)'
+  - 'Threshold calibrated on OUR corpus, not copied: measure the section-prose length of this repo''s completed inceptions, read the boundary cases (the smallest genuine one, the largest filled-in-template one), record both with their numbers in the task, and set the threshold between them — proof: `python3 lib/research_preserved.py .tasks/completed/*.md` over 421 inceptions; boundary cases recorded in ## Decisions (largest filler T-567 = 316, smallest genuine T-178 = 506, nothing in between); THRESHOLD = 400'
+  - 'Both `agents/audit/completed-task-scan.py` and `agents/audit/active-task-scan.py` import it (a teeth test asserts neither carries its own section list); an in-task record does not trip the "has artefact but not referenced" branch; ImportError falls back to location-only with a visible note, never universal coverage — proof: test_scanner_imports_predicate_and_carries_no_section_list, test_active_scan_in_task_record_is_not_missing_nor_unreferenced, test_*_import_error_falls_back_to_location_only (note in JSON + stderr; `fw audit` WARNs on it)'
+  - 'Measured before/after on this repo: C-001 findings in both scans, with the inception_count unchanged (coverage must not shrink); each remaining finding read and confirmed genuine — proof: completed 11 → 8 (inception_count 421 → 421), active 16 → 12 issues (inception_active 4, inception_recommendation 29 unchanged); every remaining finding read, see ## Decisions'
+  - 'Tests on fixtures, including a filled-in template with empty sections (must still be flagged) and a genuine short hypothesis (must pass); `bin/fw vendor self --check` clean — proof: tests/fixtures/t3569/{filled-template,short-hypothesis}.md, 33 pytest passes; vendor check run at close'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-30 — threshold 400, calibrated on this corpus'
+    chose: '400, the middle of the empty band. 832''s 400 happens to sit in it; the number was checked here, not copied.'
+    alternatives_rejected: ['250 (admits T-1212/T-567-class stubs), 500 (one char from excluding T-178).']
+  - decision: '2026-09-30 — two headings added to 832''s list'
+    chose: 'also count headings starting "Candidate" and "Investigation".'
+    rationale: 'reading the remaining findings, active T-3240 carried 2,011 chars of candidate analysis under `## Candidate Answers` and measured 0 against 832''s list; our corpus also uses `## Candidates` and `## Investigation Findings`. Re-running the calibration after the change left the 316/506 boundary unchanged.'
+    alternatives_rejected: ['`## Context` (24 inceptions) — it is also the default build template''s heading and routinely holds a one-line pointer.']
+  - decision: '2026-09-30 — before/after on this repo'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/active-task-scan.py'
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/audit/completed-task-scan.py'
+  - '.agentic-framework/lib/research_preserved.py'
+  - 'agents/audit/active-task-scan.py'
+  - 'agents/audit/audit.sh'
+  - 'agents/audit/completed-task-scan.py'
+  - '.context/sidecar/sent/2026-09-29-832-boundary-c001.txt'
+  - '.fabric/components/lib-research_preserved.yaml'
+  - '.fabric/components/tests-unit-test_research_preserved.yaml'
+  - 'lib/research_preserved.py'
+  - '.tasks/active/T-3569-c-001-audit-counts-research-preserved-in.md'
+  - 'tests/fixtures/t3569/filled-template.md'
+  - 'tests/fixtures/t3569/short-hypothesis.md'
+  - 'tests/unit/test_research_preserved.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-29T23:01:54'
+    action: 'T-3569: drain 832 inbox @12-@14 — _t770 is 832-local, delegation_cli normative; C-001 location-only defect filed upstream'
+  - time: '2026-09-30T16:46:01'
+    action: 'T-3569: C-001 counts research preserved in the task file itself'
+  - time: '2026-09-30T16:46:35'
+    action: 'T-3569: vendor sync and fabric cards for research_preserved'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1066 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1066
+  commits: 3
+  files_changed: 15
+  lines_added: 1037
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3569-c-001-audit-counts-research-preserved-in.md
+generated_by: context-agent-hybrid

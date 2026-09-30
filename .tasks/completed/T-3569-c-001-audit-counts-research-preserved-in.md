@@ -15,12 +15,12 @@ description: >
   Our inception template headings are all in their list. Measure on our corpus before
   adopting the threshold.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/active-task-scan.py, agents/audit/audit.sh, agents/audit/completed-task-scan.py, lib/research_preserved.py, tests/unit/test_research_preserved.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -49,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-29T21:00:46Z
-last_update: 2026-09-30T14:40:53Z
-date_finished:
+last_update: 2026-09-30T14:46:56Z
+date_finished: 2026-09-30T14:46:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -388,3 +388,20 @@ bin/fw vendor self --check
 ### 2026-09-30T14:40:53Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-540b5408
+- **Timestamp:** 2026-09-30T14:47:02Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — Both `agents/audit/completed-task-scan.py` and `agents/audit/active-task-scan.py` import it (a teeth test asserts neither carries its own section list); an in-task record does not trip the "has artefa
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/audit/completed-task-scan.py in: Both `agents/audit/completed-task-scan.py` and `agents/audit/active-task-scan.py` import it (a teeth test asserts neither carries its own section list`
+
+### 2026-09-30T14:46:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
