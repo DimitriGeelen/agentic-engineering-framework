@@ -26,7 +26,7 @@ setup() {
 }
 
 teardown() {
-    [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
+    [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR" "$TEST_TEMP_DIR.tl"
 }
 
 _make_render_task() {
@@ -75,9 +75,22 @@ TASK
 }
 
 _dispatch() {
-    # Register a review dispatch the way the dispatcher does (T-3581).
+    # Register a review dispatch the way the dispatcher does (T-3581): with the runtime's worker
+    # directory, and the revision under review (HEAD now, before the worker runs — T-3580 round 3).
+    mkdir -p "$TEST_TEMP_DIR.tl/${1:-rv-1}"
     PROJECT_ROOT="$PROJECT_ROOT" python3 "$BATS_TEST_DIRNAME/../../lib/verdict_ledger.py" \
-        register-dispatch --dispatch-id "${1:-rv-1}" --task T-9200 --task-type review >/dev/null
+        register-dispatch --dispatch-id "${1:-rv-1}" --task T-9200 --task-type review \
+        --wdir "$TEST_TEMP_DIR.tl/${1:-rv-1}" >/dev/null
+}
+
+_finish() {
+    # The worker exited: the dispatch runtime (run.sh) writes its exit state and signs the
+    # completion. The real CLI, outside the worker's environment.
+    local w="$TEST_TEMP_DIR.tl/${1:-rv-1}"
+    echo '{"type":"result"}' > "$w/result.jsonl"
+    echo 0 > "$w/exit_code"
+    env -u FW_SIDECAR_AGENT_ID PROJECT_ROOT="$PROJECT_ROOT" python3 "$BATS_TEST_DIRNAME/../../lib/verdict_ledger.py" \
+        complete --dispatch-id "${1:-rv-1}" --session "${1:-rv-1}" --wdir "$w" --exit-code 0 >/dev/null
 }
 
 _as() {
@@ -128,6 +141,7 @@ PY
     fi
     git -C "$PROJECT_ROOT" add .context/reviews
     _as "reviewer-rv-1" commit -q -m "T-9200: reviewer verdict"
+    _finish rv-1
 }
 
 @test "without a verdict the render task is refused by the sovereignty gate" {

@@ -7,7 +7,7 @@ import pytest
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 from test_t3579_verdict_ledger import (  # noqa: E402,F401
-    RENDERED, TASK, TASTE, _commit_ledger, _dg, _dispatch, _edit, _lines, _produce,
+    RENDERED, TASK, TASTE, _commit_ledger, _worker_attributed_reviewer, _dg, _dispatch, _edit, _lines, _produce,
     _rec, _task, _ticked, root,
 )
 from lib import verdict_ledger as vl  # noqa: E402

@@ -13,6 +13,9 @@ sys.path.insert(0, str(ROOT))
 from lib import verdict_ledger as vl  # noqa: E402
 from lib.delegation import frontmatter, human_criteria  # noqa: E402
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _review_runtime as rt  # noqa: E402
+
 TASK = "T-9100"
 TASTE = ("- [ ] [REVIEW] The summary paragraph reads clearly\n"
          "  **Steps:**\n  1. Read it\n  **Expected:** reads as a peer briefing\n  **If not:** note it\n")
@@ -59,10 +62,9 @@ def _produce(root, author="Builder Bot", trailer=""):
 
 
 def _dispatch(root, did="rv-1", task=TASK, task_type="review"):
-    """Register a dispatch exactly as the dispatcher does (T-3581)."""
-    vl.register_dispatch(did, task, task_type, issuer_session="S-test",
-                         issuer_identity="dispatcher", root=root)
-    return did
+    """Register a dispatch exactly as the dispatcher does (T-3581): with the runtime's worker
+    directory and the revision under review (T-3580 round 3)."""
+    return rt.dispatch(root, did, task, task_type=task_type)
 
 
 def _dg(root, ac=1):
@@ -103,9 +105,11 @@ def _commit_ledger(root, author=None):
               "GIT_COMMITTER_NAME": author, "GIT_COMMITTER_EMAIL": "reviewer@x.y"})
 
 
-def _rec(root, outcome="green", ac=1, reviewer="openai/gpt-5", commit=True, render=False, **kw):
+def _rec(root, outcome="green", ac=1, reviewer="openai/gpt-5", commit=True, render=False,
+         finish=True, **kw):
     """A verdict as the shipped path produces it: producer commit exists, the reviewer
-    submits the digest it read, names a registered review dispatch, and commits the row."""
+    submits the digest it read, names a registered review dispatch, and commits the row; then
+    it exits and the dispatch runtime signs its completion (`finish=False`: it never does)."""
     if not _has_commit(root):
         _produce(root)
     if "dispatch_id" not in kw:
@@ -125,6 +129,8 @@ def _rec(root, outcome="green", ac=1, reviewer="openai/gpt-5", commit=True, rend
         vl.bind_dispatch(kw["run_id"], "claude", kw["dispatch_id"], "claude", root=root)
     if commit:
         _commit_ledger(root)
+    if finish:
+        rt.finish(root, kw["dispatch_id"])
     return rec
 
 
@@ -474,9 +480,11 @@ def test_control_same_pseudonym_with_a_registered_review_dispatch_passes_the_ide
 
 
 def test_record_before_any_commit_is_refused(root):
-    """Z.ai repro #3: nothing committed yet, so who produced the task is unknown."""
+    """Z.ai repro #3, EMPTY repository: the dispatch could bind no revision, so the specific
+    refusal is the missing reviewed revision (the no-producer case is the next test)."""
     _task(root, TASTE)
-    with pytest.raises(vl.VerdictRefused, match="no commit"):
+    assert not _has_commit(root)
+    with pytest.raises(vl.VerdictRefused, match="names no reviewed revision — the repository had no commit"):
         vl.record(TASK, 1, "green", reviewer="openai/gpt-5", rung="x", evidence=["evidence.md"],
                   digest=_dg(root), dispatch_id=_dispatch(root), root=root)
 
@@ -800,12 +808,28 @@ def test_audit_fails_on_a_hand_appended_row(root):
     assert code == 2 and any("V-FORGED" in ln and "FAIL" in ln for ln in out)
 
 
-def test_audit_fails_on_a_row_introduced_by_a_producer(root):
+def test_audit_fails_on_a_row_committed_by_someone_other_than_its_worker(root):
+    """The producer commits the reviewer's row: exact-worker attribution refuses it."""
     _task(root, TASTE)
     _rec(root, commit=False)
     _produce(root)
     code, out = vl.audit(root)
-    assert code == 2 and any("introduced by" in ln for ln in out)
+    assert code == 2 and any("introduced by other" in ln for ln in out)
+
+
+def test_audit_fails_on_a_row_introduced_by_a_producer(root):
+    """Producer exclusion on its own: the commit IS made, author and committer, by exactly the
+    worker (so exact-worker attribution passes), but it carries the producer as a co-author."""
+    _task(root, TASTE)
+    rec = _rec(root, commit=False)
+    _git(root, "add", ".context/reviews")
+    _git(root, "commit", "-q", "-m",
+         f"{TASK}: reviewer verdict\n\nCo-Authored-By: Builder Bot <b@x.y>",
+         env={"GIT_AUTHOR_NAME": rec["worker"], "GIT_AUTHOR_EMAIL": "reviewer@x.y",
+              "GIT_COMMITTER_NAME": rec["worker"], "GIT_COMMITTER_EMAIL": "reviewer@x.y"})
+    code, out = vl.audit(root)
+    assert code == 2 and any("introduced by producer" in ln for ln in out), out
+    assert vl.apply(TASK, root)["ticked"] == []
 
 
 def test_audit_fails_on_a_torn_line(root):

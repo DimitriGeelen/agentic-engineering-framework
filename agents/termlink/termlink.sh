@@ -565,9 +565,19 @@ cmd_cleanup() {
         || echo "All workers cleaned up."
 }
 
+# T-3580 round 3: the worker kinds `dispatch --worker-kind` accepts, printed by
+# `fw termlink worker-kinds` so a caller (fw reviewer judge) learns what can actually be
+# dispatched instead of hardcoding it. Must match the case statement in cmd_dispatch
+# (pinned by tests/unit/t3580_round3_test.py).
+DISPATCH_WORKER_KINDS="claude ollama-loop"
+
+cmd_worker_kinds() {
+    printf '%s\n' $DISPATCH_WORKER_KINDS
+}
+
 cmd_dispatch() {
     ensure_termlink
-    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model="" task_type="" tools="" worker_kind="" permission_mode="" mcp_config="" strict_mcp="" allowed_tools=""
+    local task="" name="" prompt="" prompt_file="" project_dir="" timeout="$TERMLINK_WORKER_TIMEOUT" model="" task_type="" tools="" worker_kind="" permission_mode="" mcp_config="" strict_mcp="" allowed_tools="" review_revision=""
     # T-1700: workflow `env:` plumb-through. Repeatable --env KEY=VAL pairs are
     # injected into the spawned worker's shell so `claude -p` honors per-workflow
     # overrides like ANTHROPIC_BASE_URL=http://localhost:4000 (litellm proxy)
@@ -586,6 +596,11 @@ cmd_dispatch() {
             --timeout) timeout="$2"; shift 2 ;;
             --model) model="$2"; shift 2 ;;
             --task-type) task_type="$2"; shift 2 ;;
+            --review-revision)
+                # T-3580 round 3: the commit a review worker is asked to review, captured by
+                # the caller BEFORE dispatch. Registered with the dispatch; the verdict ledger
+                # binds every verdict to it instead of HEAD at record time.
+                review_revision="$2"; shift 2 ;;
             --env)
                 # Validate KEY=VALUE shape early; KEY must match [A-Z_][A-Z0-9_]*
                 if [[ ! "$2" =~ ^[A-Z_][A-Z0-9_]*= ]]; then
@@ -731,6 +746,11 @@ $prompt"
     # second naming scheme. Written before caller --env pairs so an explicit
     # --env FW_SIDECAR_AGENT_ID=... still wins (later export overrides).
     printf 'export FW_SIDECAR_AGENT_ID=%q\n' "$name" >> "$wdir/env.sh"
+    # T-3580 round 3: a review worker is told which revision it reviews (the one registered).
+    if [ "$task_type" = "review" ]; then
+        [ -z "$review_revision" ] && review_revision=$(git -C "$project_dir" rev-parse -q --verify HEAD 2>/dev/null)
+        printf 'export FW_REVIEW_REVISION=%q\n' "$review_revision" >> "$wdir/env.sh"
+    fi
 
     # T-3038 (OBS-291): give every dispatched worker its own focus file.
     #
@@ -868,6 +888,7 @@ METAEOF
         _issuer_session=$(sed -n 's/^session_id:[[:space:]]*//p' "$project_dir/.context/working/session.yaml" 2>/dev/null | head -1)
         PROJECT_ROOT="$project_dir" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" register-dispatch \
             --dispatch-id "$name" --task "$task" --task-type review \
+            --revision "$review_revision" --wdir "$wdir" \
             --issuer-session "${_issuer_session:-}" --issuer-identity "${GIT_AUTHOR_NAME:-$(git -C "$project_dir" config user.name 2>/dev/null)}" \
             >/dev/null || echo "  WARNING: review dispatch not registered — its verdicts will not count" >&2
     fi
@@ -1017,6 +1038,18 @@ else
 fi
 FINISHED_AT="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 echo "$FINISHED_AT" > "$WDIR/finished_at"
+
+# T-3580 round 3: a review worker's verdicts count only with a completion the RUNTIME signs
+# here, after the worker has exited: its session, exit state, result-stream hash and the exact
+# rows it left. The worker cannot write it (`record` never does, and `complete` refuses inside
+# the worker's environment, so FW_SIDECAR_AGENT_ID is stripped for this one call).
+if [ "$TASK_TYPE" = "review" ] && [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ]; then
+    env -u FW_SIDECAR_AGENT_ID PROJECT_ROOT="$PROJECT_DIR" \
+        python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" complete \
+        --dispatch-id "$WORKER_NAME" --session "$WORKER_NAME" --wdir "$WDIR" \
+        --exit-code "$(cat "$WDIR/exit_code")" > "$WDIR/completion.json" 2>> "$WDIR/stderr.log" \
+        || echo "WARNING: review completion not signed — this worker's verdicts will not count"
+fi
 
 # T-1681: rewrite meta.json post-exit so `fw termlink dispatch_status` reflects
 # reality. Pre-patch behaviour: meta.json was written at spawn with
@@ -1275,6 +1308,7 @@ cmd_help() {
                                      [--allowed-tools <list>]
                                        (T-2288: pre-approve tools for non-interactive workers
                                         e.g. \"mcp__fw__work_on mcp__fw__task_update Read Write Bash\")"
+    echo -e "  ${GREEN}worker-kinds${NC}                   List the --worker-kind values dispatch accepts"
     echo -e "  ${GREEN}wait${NC} --name N [--timeout S]   Wait for worker completion"
     echo -e "  ${GREEN}result${NC} <worker-name>          Read worker result file"
     echo -e "  ${GREEN}update${NC} [--quiet]              Pull latest + rebuild (daily cron uses --quiet)"
@@ -1320,6 +1354,7 @@ if [ "${BASH_SOURCE[0]}" = "$0" ]; then
         exec)     cmd_exec "$@" ;;
         status)   cmd_status "$@" ;;
         cleanup)  cmd_cleanup "$@" ;;
+        worker-kinds) cmd_worker_kinds "$@" ;;
         dispatch) cmd_dispatch "$@" ;;
         wait)     cmd_wait "$@" ;;
         result)   cmd_result "$@" ;;

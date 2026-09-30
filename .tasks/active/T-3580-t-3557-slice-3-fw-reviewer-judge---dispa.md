@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T07:54:10Z
-last_update: 2026-09-30T08:12:12Z
+last_update: 2026-09-30T13:39:37Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -303,6 +303,11 @@ dispatching: `fw review propose --backend openrouter --task T-XXX --why "..."`.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/t3580_judge_cli_test.py tests/unit/t3580_round2_test.py tests/unit/t3580_round3_test.py tests/unit/test_t3579_verdict_ledger.py tests/unit/test_t3581_ledger_integrity.py tests/unit/test_t3581_round4.py -q > /tmp/.t3580-py.out 2>&1 && grep -q passed /tmp/.t3580-py.out
+timeout 600 bats tests/unit/t3579_verdict_close_path.bats > /tmp/.t3580-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3580-bats.out
+test "$(grep -c '# skip' /tmp/.t3580-bats.out)" -eq 0
+bin/fw vendor self --check
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -373,6 +378,19 @@ dispatching: `fw review propose --backend openrouter --task T-XXX --why "..."`.
 -->
 
 ## Decisions
+
+### 2026-09-30 — round 3: who signs the worker completion
+- **Chose:** the dispatch runtime (run.sh in agents/termlink/termlink.sh) calls `verdict_ledger.py complete` after `exit_code` is written; it binds session, exit state, result-stream hash, the revision registered at dispatch, and every row the worker left. `record` signs nothing. `complete` refuses inside the worker's environment and before exit; a second completion for a dispatch voids both.
+- **Why:** round-2 review (HIGH): a completion built by `record` from its own row is self-asserted.
+- **Rejected:** signing inside `record` with a stricter check (still the worker's own act).
+
+### 2026-09-30 — round 3: work that lands after the reviewed revision
+- **Chose:** the revision is captured by the judge before dispatch, registered with the dispatch, and used by `record`; a green is refused (at record and at every read) when a commit for the task touching anything outside `.context/` and `.tasks/` landed after it.
+- **Rejected:** only re-binding the row to the reviewed sha (a green about code that no longer ships would still close the criterion).
+
+### 2026-09-30 — round 3: seats and paid backends
+- **Chose:** seats are the registry's internal backends that declare a `--worker-kind` match; the ones `fw termlink worker-kinds` accepts run, each logging one cost record. A seat no internal backend can fill gets a `fw review propose` on the registry's paid backend and waits; the judge never dispatches it. All seats stay required in the signed run, so the ledger keeps the criterion open.
+- **Rejected:** a new registry field for worker kinds (the registry is operator-owned; its `match:` already names the worker kind).
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

@@ -20,8 +20,9 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from lib import verdict_ledger as vl  # noqa: E402
 from lib.reviewer import judge_cli  # noqa: E402
+import _review_runtime as rt  # noqa: E402
 from t3580_judge_cli_test import (  # noqa: E402,F401
-    NOCAP, RENDER, TASTE, TID, FakeWorker, _cli, _git, _ident, _judge, _mk_task, _produce, repo,
+    ALL_KINDS, NOCAP, RENDER, TASTE, TID, FakeWorker, _cli, _git, _ident, _judge, _mk_task, _produce, repo,
 )
 
 
@@ -38,7 +39,11 @@ def _ctx(root):
 
 
 def _why(root, ac=1):
-    return vl.satisfying_verdict(_ctx(root), _crit(root, ac))[1]
+    """The ledger's reason, without the round-3 `unknown: the latest verdict … is invalid — `
+    wrapper (pinned on its own in t3580_round3_test.py), so the fault class leads."""
+    import re
+    why = vl.satisfying_verdict(_ctx(root), _crit(root, ac))[1]
+    return re.sub(r"^unknown: the latest verdict \S+ is invalid — ", "", why)
 
 
 def _commit_as(root, who):
@@ -46,16 +51,16 @@ def _commit_as(root, who):
     _git(root, "commit", "-q", "-m", f"{TID}: reviewer verdict", env=_ident(who))
 
 
-def _dispatch(root, did, issuer_identity="dispatcher"):
-    vl.register_dispatch(did, TID, "review", issuer_session="S-x", issuer_identity=issuer_identity,
-                         root=root)
-    return did
+def _dispatch(root, did, issuer_identity="dispatcher", revision=""):
+    return rt.dispatch(root, did, TID, issuer_session="S-x", issuer_identity=issuer_identity,
+                       revision=revision)
 
 
 def _green(root, did="rv-1", ac=1, commit=True, outcome="green", issuer_identity="dispatcher",
            extra_evidence=(), rung="rung-1-same-vendor-independent", run_id="", reviewer=None,
-           report=True):
-    """A verdict exactly as the worker's `record` writes it."""
+           report=True, finish=True):
+    """A verdict exactly as the worker's `record` writes it; `finish` = the worker then exits and
+    the runtime signs its completion."""
     _dispatch(root, did, issuer_identity)
     rep = root / f".context/reviews/evidence/{TID}/AC{ac}-{did}.md"
     rep.parent.mkdir(parents=True, exist_ok=True)
@@ -67,6 +72,8 @@ def _green(root, did="rv-1", ac=1, commit=True, outcome="green", issuer_identity
                     evidence=evidence, run_id=run_id, root=root, **kw)
     if commit:
         _commit_as(root, f"reviewer-{did}")
+    if finish:
+        rt.finish(root, did)
     return rec
 
 
@@ -79,22 +86,22 @@ def _green_bypassing_run_checks(root, mp, **kw):
 
 def _forge(root, mutate_row=None, mutate_comp=None, did="rv-1", commit_as=None, **kw):
     """Record a valid green, then rewrite it as an attacker who holds the dispatch key would:
-    `mutate_row` edits the row and the completion is re-signed to agree with it (so only the
-    binding under test can fail); `mutate_comp` then edits the completion and re-signs it."""
-    _green(root, did=did, commit=False, **kw)
+    `mutate_row` edits the row BEFORE the runtime signs (so the completion agrees with it and only
+    the binding under test can fail); `mutate_comp` then edits the completion and re-signs it."""
+    _green(root, did=did, commit=False, finish=False, **kw)
     rows = vl._read(vl.VERDICTS, root)
     row = rows[-1]
     if mutate_row:
         mutate_row(row)
-    comp = vl.make_completion(root, row)
+    (root / vl.VERDICTS).write_text("".join(json.dumps(r, separators=(",", ":"), sort_keys=True) + "\n"
+                                           for r in rows))
+    _commit_as(root, commit_as or f"reviewer-{did}")
+    comp = rt.finish(root, did)
     if mutate_comp:
         mutate_comp(comp)
         comp.pop("sig")
         comp["sig"] = vl._sign_row(vl._dispatch_key(root), comp)
-    (root / vl.VERDICTS).write_text("".join(json.dumps(r, separators=(",", ":"), sort_keys=True) + "\n"
-                                           for r in rows))
-    (root / vl.COMPLETIONS).write_text(json.dumps(comp, separators=(",", ":"), sort_keys=True) + "\n")
-    _commit_as(root, commit_as or f"reviewer-{did}")
+        (root / vl.COMPLETIONS).write_text(json.dumps(comp, separators=(",", ":"), sort_keys=True) + "\n")
     return row
 
 
@@ -126,25 +133,23 @@ class TestWorkerAttribution:
 
     def test_row_without_a_signed_completion_fails(self, prod):
         """FakeWorker-shaped row, completion removed: a registration is not a completion."""
-        _green(prod, commit=False)
-        (prod / vl.COMPLETIONS).unlink()
-        _commit_as(prod, "reviewer-rv-1")
+        _green(prod, finish=False)                  # the worker never exited / runtime never signed
+        assert not (prod / vl.COMPLETIONS).exists()  # record wrote none
         assert _closed(prod).startswith("no-completion")
         assert vl.audit(prod)[0] == 2
 
     def test_completion_with_a_bad_signature_fails(self, prod):
-        _green(prod, commit=False)
+        _green(prod)
         comp = json.loads((prod / vl.COMPLETIONS).read_text())
         comp["sig"] = "0" * 64
         (prod / vl.COMPLETIONS).write_text(json.dumps(comp) + "\n")
-        _commit_as(prod, "reviewer-rv-1")
         assert _closed(prod).startswith("bad-completion")
 
     def test_exact_verdict_contents_a_changed_row_is_refused(self, prod):
         """5. The row's bytes differ from what the worker reported."""
-        _green(prod, commit=False)
+        _green(prod, commit=False)                  # the runtime has signed the row as left
         rows = vl._read(vl.VERDICTS, prod)
-        rows[-1]["guidance"] = "edited after the worker signed"
+        rows[-1]["guidance"] = "edited after the worker exited"
         (prod / vl.VERDICTS).write_text(json.dumps(rows[-1]) + "\n")
         _commit_as(prod, "reviewer-rv-1")
         assert _closed(prod).startswith("verdict-tampered")
@@ -166,8 +171,7 @@ class TestWorkerAttribution:
             return (dict(rec, issuer_identity="", issuer_session="") if rec else rec), why
         with monkeypatch.context() as m:
             m.setattr(vl, "dispatch_record", blind)
-            _green(prod, did="rv-2", issuer_identity="reviewer-rv-2", commit=False)
-        _commit_as(prod, "reviewer-rv-2")
+            _green(prod, did="rv-2", issuer_identity="reviewer-rv-2")
         assert _closed(prod).startswith("worker-not-fresh")
 
     def test_row_reviewer_must_be_attributed_to_the_worker(self, prod):
@@ -184,17 +188,29 @@ class TestWorkerAttribution:
 
     def test_reviewed_revision_unknown_commit(self, prod):
         _forge(prod, mutate_row=lambda r: r.update(revision="0" * 40))
-        assert _closed(prod).startswith("revision")
+        assert _closed(prod).startswith("revision: the row names revision 000000000")
 
-    def test_reviewed_revision_where_the_criterion_was_different(self, prod):
-        """2. The revision the worker names holds another version of the criterion."""
+    def test_reviewed_revision_where_the_criterion_was_different(self, prod, monkeypatch):
+        """2. The dispatch was issued for a revision holding another version of the criterion:
+        record refuses, and if record is bypassed the shared validator still does."""
         early = subprocess.run(["git", "rev-parse", "HEAD"], cwd=prod, capture_output=True,
                                text=True).stdout.strip()
         f = _task_file(prod)
         f.write_text(f.read_text().replace("reads as a peer briefing", "reads as an executive briefing"))
         _git(prod, "add", "-A")
         _git(prod, "commit", "-q", "-m", f"{TID}: reword the criterion", env=_ident("Builder Bot"))
-        _forge(prod, mutate_row=lambda r: r.update(revision=early))
+        _dispatch(prod, "rv-1", revision=early)
+        with pytest.raises(vl.VerdictRefused, match="at reviewed revision"):
+            vl.record(TID, 1, "green", reviewer="reviewer-rv-1:x", rung="r", dispatch_id="rv-1",
+                      digest=vl.criterion_digest(_crit(prod)), evidence=["notes.md"], root=prod)
+        real = vl._criterion_at
+        with monkeypatch.context() as m:
+            m.setattr(vl, "_criterion_at", lambda root, rev, t, ac: vl.criterion_digest(_crit(prod)))
+            vl.record(TID, 1, "green", reviewer="reviewer-rv-1:x", rung="r", dispatch_id="rv-1",
+                      digest=vl.criterion_digest(_crit(prod)), evidence=["notes.md"], root=prod)
+        assert vl._criterion_at is real
+        _commit_as(prod, "reviewer-rv-1")
+        rt.finish(prod, "rv-1")
         assert "not the text the worker digested" in _closed(prod)
 
     def test_record_refuses_a_criterion_edited_since_the_revision(self, prod):
@@ -215,27 +231,27 @@ class TestWorkerAttribution:
 
     def test_criterion_digest_in_the_completion_must_equal_the_rows(self, prod):
         """3."""
-        _forge(prod, mutate_comp=lambda c: c.update(ac_digest="deadbeef0000"))
-        assert _closed(prod).startswith("completion-mismatch")
+        _forge(prod, mutate_comp=lambda c: c["verdicts"][0].update(ac_digest="deadbeef0000"))
+        assert "completion-mismatch" in _closed(prod)
 
     def test_evidence_hashes_in_the_completion_must_equal_the_rows(self, prod):
         """4."""
-        _forge(prod, mutate_comp=lambda c: c.update(evidence_sha256={}))
+        _forge(prod, mutate_comp=lambda c: c["verdicts"][0].update(evidence_sha256={}))
         assert "evidence hashes" in _closed(prod)
 
     def test_verdict_hash_in_the_completion_must_equal_the_rows(self, prod):
-        _forge(prod, mutate_comp=lambda c: c.update(verdict_sha256="0" * 64))
-        assert _closed(prod).startswith("verdict-tampered")
+        _forge(prod, mutate_comp=lambda c: c["verdicts"][0].update(verdict_sha256="0" * 64))
+        assert "verdict-tampered" in _closed(prod)
 
     def test_completion_for_another_dispatch_is_refused(self, prod):
         _forge(prod, mutate_comp=lambda c: c.update(dispatch_id="rv-2"))
-        assert _closed(prod).startswith("completion-mismatch")
+        assert "no-completion" in _closed(prod)
 
     def test_introducing_commit_must_be_by_exactly_the_worker(self, prod):
         """6. Any non-producer identity is no longer enough."""
         _forge(prod, commit_as="Some Other Reviewer")
         why = _closed(prod)
-        assert why.startswith("introduced-by-other") and "not by its worker" in why
+        assert "introduced-by-other" in why and "not by its worker" in why
         assert vl.audit(prod)[0] == 2
 
     def test_committer_and_author_must_both_be_the_worker(self, prod):
@@ -244,11 +260,11 @@ class TestWorkerAttribution:
         env = {**_ident("reviewer-rv-1"), "GIT_COMMITTER_NAME": "Committer Elsewhere",
                "GIT_COMMITTER_EMAIL": "c@x.y"}
         _git(prod, "commit", "-q", "-m", f"{TID}: reviewer verdict", env=env)
-        assert _closed(prod).startswith("introduced-by-other")
+        assert "introduced-by-other" in _closed(prod)
 
     def test_a_producer_identity_is_never_a_worker(self, prod):
         _forge(prod, commit_as="Builder Bot")
-        assert _closed(prod).startswith(("introduced-by", "reviewer-is-producer"))
+        assert "introduced-by-other" in _closed(prod)
 
 
 # ── 2. unseen pages: the shared validator, not the display ──────────────────────────────────
@@ -297,6 +313,7 @@ def _render_green(root, mp, *, pages, caps, cite, did="rv-1", bypass=True):
                   evidence=[str(rep.relative_to(root))] + cited, run_id=f"run-{did}", root=root)
     vl.bind_dispatch(f"run-{did}", "claude", did, "claude", root=root)
     _commit_as(root, f"reviewer-{did}")
+    rt.finish(root, did)
 
 
 class TestUnseenPages:
@@ -432,7 +449,7 @@ class TestJudgePanels:
     HI = "cost_estimate:\n  blast_radius: 9\n"
 
     def test_full_panel_dispatches_each_vendor_and_the_ledger_accepts_it(self, repo, monkeypatch):
-        monkeypatch.setattr(judge_cli, "AVAILABLE_VENDORS", judge_cli.PANEL_SEATS)
+        monkeypatch.setattr(judge_cli, "_dispatchable_kinds", lambda root: ALL_KINDS)
         _mk_task(repo, TASTE, extra_fm=self.HI)
         _produce(repo)
         w = FakeWorker("green")
@@ -449,11 +466,12 @@ class TestJudgePanels:
         res = _judge(repo, dispatcher=w)
         assert res["rung"] == 5 and res["degraded"] == "degraded: single-vendor panel"
         assert [c["vendor"] for c in w.calls] == ["claude"]
-        assert res["outcomes"] == {1: "unknown"} and "single-vendor panel" in res["why"][1]
+        assert res["outcomes"] == {1: "unknown"} and "panel-incomplete" in res["why"][1]
         run = next(r for r in vl._read(vl.RUNS, repo) if r.get("kind") == "run")
         assert run["required_vendors"] == 3 and run["degraded"]
+        assert [s["seat"] for s in run["seats"]] == ["claude-code", "codex", "opencode"]
         assert vl._read(vl.VERDICTS, repo)                      # the verdict itself is recorded
-        assert _closed(repo).startswith("degraded")             # ... and applies to nothing
+        assert _closed(repo).startswith("panel-incomplete")     # ... and applies to nothing
         judge_cli._print_result(res)
         assert "degraded: single-vendor panel" in capsys.readouterr().out
 
@@ -592,7 +610,7 @@ class TestRealDispatcherArguments:
             assert f"{flag})" in sh, f"termlink.sh dispatch does not parse {flag}"
 
     def test_judge_hands_each_seat_its_vendor(self, repo, monkeypatch):
-        monkeypatch.setattr(judge_cli, "AVAILABLE_VENDORS", judge_cli.PANEL_SEATS)
+        monkeypatch.setattr(judge_cli, "_dispatchable_kinds", lambda root: ALL_KINDS)
         _mk_task(repo, TASTE, extra_fm="cost_estimate:\n  blast_radius: 9\n")
         _produce(repo)
         seen = []

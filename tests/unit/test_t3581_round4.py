@@ -15,6 +15,7 @@ from test_t3579_verdict_ledger import (  # noqa: E402,F401
 from test_t3581_ledger_integrity import _rewrite  # noqa: E402
 from lib import verdict_ledger as vl  # noqa: E402
 from lib.delegation import human_criteria  # noqa: E402
+import _review_runtime as rt  # noqa: E402
 
 ROOT = Path(__file__).resolve().parents[2]
 
@@ -47,12 +48,27 @@ def test_uncommitted_red_fails_audit(root):
 
 
 def test_red_without_guidance_fails_audit(root):
+    """The guidance check itself: the runtime completion is signed over the guidance-less row as
+    the worker left it, so the completion MATCHES and only the missing guidance can fail."""
     _task(root, TASTE)
-    _rec(root, "red", commit=False)
+    rec = _rec(root, "red", commit=False, finish=False)
+    _rewrite(root, lambda rows: [dict(r, guidance="") for r in rows])
+    _commit_ledger(root)
+    rt.finish(root, rec["dispatch_id"])
+    code, out = vl.audit(root)
+    assert code == 2 and any("no guidance" in ln for ln in out), out
+    assert not any("tampered" in ln for ln in out)
+
+
+def test_red_guidance_removed_after_the_worker_exited_is_tampering(root):
+    """Separate: the completion was signed over the row WITH guidance; editing it afterwards
+    breaks the exact-contents hash."""
+    _task(root, TASTE)
+    _rec(root, "red", commit=False)                    # runtime signs the row as left
     _rewrite(root, lambda rows: [dict(r, guidance="") for r in rows])
     _commit_ledger(root)
     code, out = vl.audit(root)
-    assert code == 2 and any("guidance" in ln or "tampered" in ln for ln in out)
+    assert code == 2 and any("verdict tampered" in ln for ln in out), out
 
 
 # ── 2: durable provenance for reviewer-derived ticks ─────────────────────────

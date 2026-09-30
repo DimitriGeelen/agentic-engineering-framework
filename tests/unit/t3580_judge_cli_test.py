@@ -192,6 +192,9 @@ from datetime import datetime, timezone  # noqa: E402
 
 from lib import verdict_ledger as vl  # noqa: E402
 
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import _review_runtime as rt  # noqa: E402
+
 TID = "T-9200"
 TASTE = ("- [ ] [REVIEW] The summary paragraph reads clearly\n"
          "  **Steps:**\n  1. Read it\n  **Expected:** reads as a peer briefing\n  **If not:** note it\n")
@@ -246,25 +249,29 @@ def _cli(root, *args, env_extra=None):
 
 
 class FakeWorker:
-    """A fake dispatcher whose 'worker' does what the brief tells a real one to do: registers
-    nothing itself except what the dispatcher wrapper would, then runs the REAL `verdict record`
-    CLI (which signs the worker's completion) and commits under its own identity
-    `reviewer-<dispatch id>`. `behaviour` picks what it does per dispatch (a string, or a list
-    indexed by dispatch number); `cite_shots=False` makes it omit the screenshots."""
+    """A fake dispatcher that plays all three parts of a real review dispatch: the WRAPPER
+    registers the dispatch (worker dir + the revision the judge passed), the WORKER does what the
+    brief says — runs the REAL `verdict record` CLI (which signs nothing) and commits under its
+    own identity `reviewer-<dispatch id>` — and the RUNTIME signs the completion after the worker
+    exits (`runtime=False` skips that). `behaviour` picks the outcome per dispatch (a string, or a
+    list indexed by dispatch number); `cite_shots=False` makes it omit the screenshots."""
 
-    def __init__(self, behaviour="green", identity=None, write=True, cite_shots=True):
+    def __init__(self, behaviour="green", identity=None, write=True, cite_shots=True,
+                 runtime=True, exit_code=0):
         self.behaviour, self.identity, self.write = behaviour, identity, write
-        self.cite_shots = cite_shots
+        self.cite_shots, self.runtime, self.exit_code = cite_shots, runtime, exit_code
         self.calls: list[dict] = []
         self.n = 0
 
-    def __call__(self, *, task_id, brief, root, name, vendor="claude"):
+    def __call__(self, *, task_id, brief, root, name, vendor="claude", revision=""):
         self.n += 1
         did = f"{name}-{self.n:012x}"
-        self.calls.append({"name": name, "brief": brief, "did": did, "vendor": vendor})
-        vl.register_dispatch(did, task_id, "review", issuer_session="S-x", issuer_identity="dispatcher",
-                             root=root)
+        self.calls.append({"name": name, "brief": brief, "did": did, "vendor": vendor,
+                           "revision": revision})
+        rt.dispatch(root, did, task_id, issuer_session="S-x", revision=revision)
         if not self.write:
+            if self.runtime:
+                rt.finish(root, did, self.exit_code)
             return did
         outcome = self.behaviour if isinstance(self.behaviour, str) else self.behaviour[self.n - 1]
         run = re.search(r"--run-id (\S+)", brief)
@@ -298,8 +305,13 @@ class FakeWorker:
         _git(root, "add", ".context/reviews")
         _git(root, "commit", "-q", "-m", f"{task_id}: reviewer verdict",
              env=_ident(self.identity or f"reviewer-{did}"))
+        if self.runtime:
+            rt.finish(root, did, self.exit_code)
         return did
 
+
+#: Every worker kind the registry's seat backends name — as if T-3582 had built them all.
+ALL_KINDS = {"claude", "codex", "opencode"}
 
 NOCAP = lambda url, pages, out: ([], "no capture in this test")  # noqa: E731
 
@@ -453,7 +465,7 @@ class TestSpendCeiling:
     HI = "cost_estimate:\n  blast_radius: 9\n"
 
     def test_due_rung_5_is_a_panel_of_three_when_under_ceiling(self, repo, monkeypatch):
-        monkeypatch.setattr(judge_cli, "AVAILABLE_VENDORS", judge_cli.PANEL_SEATS)
+        monkeypatch.setattr(judge_cli, "_dispatchable_kinds", lambda root: ALL_KINDS)
         _mk_task(repo, TASTE, extra_fm=self.HI)
         _produce(repo)
         w = FakeWorker("green")
@@ -490,7 +502,7 @@ class TestSpendCeiling:
         assert judge_cli._apply_ceiling(5, "x", 0, 100)[2] == ""
 
     def test_panel_stops_at_first_non_green_seat(self, repo, monkeypatch):
-        monkeypatch.setattr(judge_cli, "AVAILABLE_VENDORS", judge_cli.PANEL_SEATS)
+        monkeypatch.setattr(judge_cli, "_dispatchable_kinds", lambda root: ALL_KINDS)
         _mk_task(repo, TASTE, extra_fm=self.HI)
         _produce(repo)
         w = FakeWorker(["green", "red", "green"])
