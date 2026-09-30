@@ -230,3 +230,102 @@ class TestRealRuntimeModel:
     def test_control_run_sh_with_the_registered_model_starts(self, rtrepo):
         did, _w, _out = _run_worker(rtrepo)
         assert len(vl._starts_for(rtrepo, did)) == 1
+
+
+# ── 3. codex 1: env.sh values are shell-evaluated ────────────────────────────────────────────
+
+_SUBST = "$(printf ENV_CODE_EXECUTED >&2)"
+
+
+class TestEnvironmentIsData:
+    def test_probe_codex1_a_shell_env_file_is_refused_at_registration(self, hi):
+        """codex 1: `export GIT_AUTHOR_NAME="$(printf ENV_CODE_EXECUTED >&2)"` in env.sh was
+        accepted, and run.sh sourced (executed) it after start's checks."""
+        w = rt.wdir_for(hi, "rv-1")
+        rt.write_launch(w)
+        (w / "env.sh").write_text(f'export GIT_AUTHOR_NAME="{_SUBST}"\n')
+        with pytest.raises(ValueError, match="environment is data"):
+            vl.register_dispatch("rv-1", TID, "review", wdir=str(w), worker_bin=rt.WORKER_BIN, root=hi)
+
+    def test_an_env_sh_appearing_after_registration_is_refused_at_start(self, hi):
+        _run(hi)
+        rt.dispatch(hi, "rv-1", TID, run_id="run-b", seat="claude")
+        w = rt.wdir_for(hi, "rv-1")
+        (w / "env.sh").write_text("export GIT_AUTHOR_NAME=x\n")
+        with rt.as_runtime():
+            with pytest.raises(vl.VerdictRefused, match="environment is data"):
+                vl.start("rv-1", wdir=str(w), root=hi)
+
+    @pytest.mark.parametrize("bad", ['["GIT_AUTHOR_NAME"]', '{"GIT_AUTHOR_NAME": 5}', "not json",
+                                     '{"lower_key": "x"}'])
+    def test_env_json_must_be_a_flat_string_object(self, hi, bad):
+        w = rt.wdir_for(hi, "rv-1")
+        rt.write_launch(w)
+        (w / "env.json").write_text(bad)
+        with pytest.raises(ValueError, match="env.json"):
+            vl.register_dispatch("rv-1", TID, "review", wdir=str(w), worker_bin=rt.WORKER_BIN, root=hi)
+
+    def test_env_json_is_bound_at_registration_and_rechecked_at_start_and_load(self, hi):
+        _run(hi)
+        w = rt.wdir_for(hi, "rv-1")
+        rt.write_launch(w)
+        (w / "env.json").write_text('{"GIT_AUTHOR_NAME": "a"}')
+        rt.dispatch(hi, "rv-1", TID, run_id="run-b", seat="claude")      # rewrites prompt only
+        assert vl.review_env("rv-1", wdir=str(w), root=hi) == {"GIT_AUTHOR_NAME": "a"}
+        (w / "env.json").write_text('{"GIT_AUTHOR_NAME": "b"}')          # changed after start
+        with pytest.raises(vl.VerdictRefused, match="not the environment registered"):
+            vl.review_env("rv-1", wdir=str(w), root=hi)
+        with rt.as_runtime():
+            with pytest.raises(vl.VerdictRefused, match="cannot be started here"):
+                vl.start("rv-1", wdir=str(w), root=hi)
+
+    def test_review_env_cli_emits_nul_records_and_an_end_marker(self, hi):
+        _run(hi)
+        w = rt.wdir_for(hi, "rv-1")
+        rt.write_launch(w)
+        (w / "env.json").write_text(json.dumps({"GIT_AUTHOR_NAME": _SUBST}))
+        rt.dispatch(hi, "rv-1", TID, run_id="run-b", seat="claude")
+        r = subprocess.run([sys.executable, str(_HERE / "lib/verdict_ledger.py"), "review-env",
+                            "--dispatch-id", "rv-1", "--wdir", str(w)], capture_output=True,
+                           env={**os.environ, "PROJECT_ROOT": str(hi)}, timeout=60)
+        assert r.returncode == 0, r.stderr
+        assert r.stdout == f"GIT_AUTHOR_NAME={_SUBST}\0__FW_ENV_END__\0".encode()
+
+    def test_real_run_sh_negative_control_a_command_substitution_is_not_executed(self, rtrepo):
+        mark = rtrepo.parent / "ENV_CODE_EXECUTED"
+        did, _w, out = _run_worker(rtrepo, env={"GIT_AUTHOR_NAME": f"w $(touch {mark})"})
+        assert not mark.exists(), out
+        assert Path(str(_w) + ".seen_author").read_text() == f"w $(touch {mark})", out
+
+    def test_real_run_sh_positive_control_a_literal_with_metacharacters_survives(self, rtrepo):
+        lit = "fw worker ; a|b & c 'q' \"d\" `e` $HOME \\x"
+        did, _w, out = _run_worker(rtrepo, env={"GIT_AUTHOR_NAME": lit})
+        assert Path(str(_w) + ".seen_author").read_text() == lit, out
+        assert len(vl._starts_for(rtrepo, did)) == 1
+
+    def test_real_run_sh_launches_no_worker_when_the_env_changed_after_start(self, rtrepo):
+        """A process that edits env.json between start and load gets no worker at all."""
+        did, w, out = _run_worker(rtrepo, env={"FW_REVIEW_WORKER": "1"}, tamper_env_after_start=True)
+        assert "environment refused" in out and "FATAL" in (w / "stderr.log").read_text()
+
+    def test_the_dispatcher_writes_env_json_and_no_env_sh_for_a_review(self, tmp_path):
+        stub = tmp_path / "stub"
+        stub.mkdir()
+        (stub / "termlink").write_text("#!/bin/sh\nexit 0\n")
+        (stub / "termlink").chmod(0o755)
+        (stub / "sleep").write_text("#!/bin/sh\nexit 0\n")
+        (stub / "sleep").chmod(0o755)
+        proj = tmp_path / "proj"
+        proj.mkdir()
+        dd = tmp_path / "dd"
+        env = {**os.environ, "PATH": f"{stub}:{os.environ['PATH']}", "FRAMEWORK_ROOT": str(_HERE),
+               "FW_DISPATCH_DIR": str(dd)}
+        r = subprocess.run(["bash", str(TERMLINK), "dispatch", "--task", TID, "--name", "judge-x",
+                            "--task-type", "review", "--prompt", "brief", "--project", str(proj)],
+                           capture_output=True, text=True, env=env, cwd=proj, timeout=120)
+        [w] = list(dd.iterdir())
+        assert not (w / "env.sh").exists(), r.stderr
+        data = json.loads((w / "env.json").read_text())
+        assert data["FW_SIDECAR_AGENT_ID"] == w.name and data["FW_REVIEW_WORKER"] == "1"
+        assert data["GIT_AUTHOR_NAME"].startswith("fw worker")
+        assert (w / "prompt.md").read_text() == vl.review_prompt("brief")

@@ -168,6 +168,8 @@ import os, re, subprocess, sys
 prompt = sys.argv[sys.argv.index("-p") + 1]
 mode = os.environ.get("STUB_MODE", "green")
 did = os.environ["FW_SIDECAR_AGENT_ID"]
+# Round 8: what the worker's environment actually holds (beside, not inside, its wdir).
+open(os.environ["WDIR_EXPECTED"].rstrip("/") + ".seen_author", "w").write(os.environ.get("GIT_AUTHOR_NAME", ""))
 task = re.search(r"^Task: (T-\d+)$", prompt, re.M).group(1)
 rec = next(l.strip() for l in prompt.splitlines() if l.strip().startswith("bin/fw reviewer verdict record"))
 com = next(l.strip() for l in prompt.splitlines() if l.strip().startswith("git add .context/reviews"))
@@ -221,7 +223,7 @@ def rtrepo(repo):
     return repo
 
 
-def _run_worker(root, mode="green", model=""):
+def _run_worker(root, mode="green", model="", env=None, tamper_env_after_start=False):
     """Register exactly as cmd_dispatch does, then execute the real run.sh with the stub claude."""
     did = "judge-t-9200-r1-a1b2c3d4e5f6"
     wdir = root.parent / f"{root.name}-tl" / did
@@ -239,10 +241,11 @@ def _run_worker(root, mode="green", model=""):
     # Round 7: the worker binary is resolved to an absolute path AT DISPATCH and registered; run.sh
     # launches exactly that (the stub here), never whatever `claude` PATH finds at run time.
     (wdir / "worker_bin").write_text(f"{stub_dir / 'claude'}\n")
-    (wdir / "env.sh").write_text(f"export FW_SIDECAR_AGENT_ID={did}\n"
-                                 f"export FW_REVIEW_REVISION={_head(root)}\n"
-                                 f"export GIT_AUTHOR_NAME='fw worker' GIT_AUTHOR_EMAIL=w@x.y "
-                                 f"GIT_COMMITTER_NAME='fw worker' GIT_COMMITTER_EMAIL=w@x.y\n")
+    # Round 8 (codex 1): a review worker's environment is data (env.json), never a sourced env.sh.
+    (wdir / "env.json").write_text(json.dumps({
+        "FW_SIDECAR_AGENT_ID": did, "FW_REVIEW_REVISION": _head(root), "FW_REVIEW_WORKER": "1",
+        "GIT_AUTHOR_NAME": "fw worker", "GIT_AUTHOR_EMAIL": "w@x.y",
+        "GIT_COMMITTER_NAME": "fw worker", "GIT_COMMITTER_EMAIL": "w@x.y", **(env or {})}))
     (wdir / "run.sh").write_text(_run_sh())
     r = subprocess.run([sys.executable, str(_HERE / "lib/verdict_ledger.py"), "register-dispatch",
                         "--dispatch-id", did, "--task", TID, "--task-type", "review",
@@ -252,6 +255,14 @@ def _run_worker(root, mode="green", model=""):
     assert r.returncode == 0, r.stderr
     (stub_dir / "termlink").write_text("#!/bin/sh\nexit 0\n")
     (stub_dir / "termlink").chmod(0o755)
+    if tamper_env_after_start:
+        # Round 8: a process that rewrites env.json AFTER start's checks, right before run.sh
+        # loads it (simulated by a python3 on PATH that edits it first when asked for review-env).
+        (stub_dir / "python3").write_text(
+            f'#!/bin/bash\ncase " $* " in *" review-env "*) '
+            f'echo \'{{"GIT_AUTHOR_NAME": "$(id)"}}\' > "{wdir}/env.json" ;; esac\n'
+            f'exec {sys.executable} "$@"\n')
+        (stub_dir / "python3").chmod(0o755)
     env = {k: v for k, v in os.environ.items() if not k.startswith(("FW_", "GIT_"))}
     env.update(PATH=f"{stub_dir}:{os.environ['PATH']}", STUB_MODE=mode,
                LEDGER=str(_HERE / "lib/verdict_ledger.py"), WDIR_EXPECTED=str(wdir))

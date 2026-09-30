@@ -376,30 +376,44 @@ def _file_sha(path: Path) -> str:
         return ""
 
 
-def _env_fault(wdir: Path) -> str:
-    """'' when the worker's env.sh sets only allowed keys (REVIEW_ENV_ALLOW + the runtime's own)."""
-    import shlex
+_ENV_KEY_RE = re.compile(r"^[A-Z_][A-Z0-9_]*$")
 
-    p = Path(wdir) / "env.sh"
+
+def _env_data(wdir: Path) -> tuple[dict | None, str]:
+    """(round 8, codex 1) A review worker's environment is DATA: `<wdir>/env.json`, a flat JSON
+    object of string keys and string values, loaded by run.sh without shell evaluation
+    (`review-env`). ({}, '') when there is none; (None, why) when it is not that shape. A shell
+    env.sh in a review worker directory is refused: sourcing it would evaluate its values."""
+    w = Path(wdir)
+    if (w / "env.sh").exists():
+        return None, (f"env.sh in {w} — a review worker's environment is data (env.json), never "
+                      f"shell that run.sh would evaluate")
+    p = w / "env.json"
+    if not p.exists():
+        return {}, ""
     try:
-        text = p.read_text()
-    except OSError:
-        return ""
+        data = json.loads(p.read_text())
+    except (OSError, ValueError):
+        return None, f"env.json in {w} is not JSON"
+    if not isinstance(data, dict) or not all(isinstance(k, str) and isinstance(v, str)
+                                             for k, v in data.items()):
+        return None, f"env.json in {w} is not an object of string keys and string values"
+    for k, v in data.items():
+        if not _ENV_KEY_RE.match(k) or "\0" in v:
+            return None, f"env.json in {w} has an invalid key or value ({k!r})"
+    return data, ""
+
+
+def _env_fault(wdir: Path) -> str:
+    """'' when the worker's env.json sets only allowed keys (REVIEW_ENV_ALLOW + the runtime's own)."""
+    data, why = _env_data(Path(wdir))
+    if data is None:
+        return why
     allowed = set(REVIEW_ENV_ALLOW) | set(_RUNTIME_ENV_KEYS)
-    for n, line in enumerate(text.splitlines(), 1):
-        if not line.strip() or line.lstrip().startswith("#"):
-            continue
-        try:
-            toks = shlex.split(line)
-        except ValueError:
-            return f"env.sh line {n} does not parse"
-        if not toks or toks[0] != "export" or len(toks) < 2:
-            return f"env.sh line {n} is not an export"
-        for t in toks[1:]:
-            key = t.split("=", 1)[0]
-            if "=" not in t or key not in allowed:
-                return (f"env.sh sets {key!r}, which a review worker may not take from its caller "
-                        f"(allowed: {', '.join(REVIEW_ENV_ALLOW)}) — it could choose the program or model")
+    for key in data:
+        if key not in allowed:
+            return (f"env.json sets {key!r}, which a review worker may not take from its caller "
+                    f"(allowed: {', '.join(REVIEW_ENV_ALLOW)}) — it could choose the program or model")
     return ""
 
 
@@ -422,6 +436,8 @@ def _launch_fault(drec: dict, wdir: Path) -> str:
     """(start, round 7) '' when what run.sh is about to launch is what was registered: the same
     prompt.md, the same absolute worker binary, and an env.sh with no program- or model-choosing
     key. Round 8: and no launch flag file in the worker directory."""
+    if _file_sha(Path(wdir) / "env.json") != str(drec.get("env_sha256") or ""):
+        return "env.json is not the environment registered with the dispatch"
     extra = [f for f in _LAUNCH_FLAG_FILES if (Path(wdir) / f).exists()]
     if extra:
         return (f"launch flag file(s) {', '.join(extra)} in {wdir} — a review worker takes no "
@@ -534,6 +550,7 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
                              f"{row['worker_kind']!r} ({want_model or 'the worker default'!r}) — a review "
                              f"worker's model is not the caller's to choose")
         row["model"] = want_model
+        row["env_sha256"] = _file_sha(w / "env.json")      # round 8: '' = no env.json
         row["worker_bin"] = worker_bin.strip()
         row["prompt_sha256"] = _file_sha(w / "prompt.md")
         brief = (w / "brief.md").read_text()
@@ -954,6 +971,29 @@ def complete(dispatch_id: str, *, wdir: str, exit_code: int, session: str = "",
     body["sig"] = _sign_row(_dispatch_key(root), body)
     _append(COMPLETIONS, body, root)
     return body
+
+
+def review_env(dispatch_id: str, *, wdir: str, root: Path | None = None) -> dict[str, str]:
+    """(run.sh, after `start`) the review worker's environment as verified data: the registered
+    dispatch's env.json, byte-for-byte the one signed at registration, with only allowed keys.
+    run.sh exports each pair literally (`export "$kv"`), so no value is ever shell-evaluated
+    (round 8, codex 1). Raises VerdictRefused on any mismatch; run.sh then launches no worker."""
+    root = root or _root()
+    did = (dispatch_id or "").strip()
+    drec, why = dispatch_record(root, did)
+    if drec is None:
+        raise VerdictRefused(why)
+    here = str(Path(wdir).resolve()) if (wdir or "").strip() else ""
+    if drec.get("task_type") != REVIEW_TASK_TYPE or not here or here != str(drec.get("wdir") or ""):
+        raise VerdictRefused(f"{here or '(none)'} is not the worker directory of review dispatch {did!r}")
+    raw = (Path(here) / "env.json").read_bytes() if (Path(here) / "env.json").is_file() else None
+    got = hashlib.sha256(raw).hexdigest() if raw is not None else ""
+    if got != str(drec.get("env_sha256") or ""):
+        raise VerdictRefused(f"env.json in {here} is not the environment registered with {did!r}")
+    bad = _env_fault(Path(here))
+    if bad:
+        raise VerdictRefused(bad)
+    return json.loads(raw) if raw is not None else {}
 
 
 def _consult_reader(topic: str, cursor: int, limit: int) -> list[dict]:
@@ -2475,6 +2515,11 @@ def _cli(argv: list[str] | None = None) -> int:
                          "is launched with: the fixed review preamble and the brief")
     rp_.add_argument("--brief-file", required=True)
 
+    re_ = sub.add_parser("review-env", help="(run.sh) print the verified review-worker environment "
+                         "as NUL-delimited KEY=VALUE records, then a final __FW_ENV_END__ record")
+    re_.add_argument("--dispatch-id", required=True)
+    re_.add_argument("--wdir", required=True)
+
     km = sub.add_parser("kind-model", help="(dispatcher) print the model the committed registry pins "
                         "for a worker kind ('' = worker default); exit 2 when no valid registry")
     km.add_argument("--kind", default="claude")
@@ -2534,6 +2579,14 @@ def _cli(argv: list[str] | None = None) -> int:
                                 model=args.model)
         print(json.dumps({k: row[k] for k in ("dispatch_id", "task", "task_type", "revision",
                                               "worker_kind", "vendor")}))
+        return 0
+    if args.cmd == "review-env":
+        try:
+            data = review_env(args.dispatch_id, wdir=args.wdir)
+        except VerdictRefused as e:
+            print(f"REFUSED: {e}", file=sys.stderr)
+            return 3
+        sys.stdout.write("".join(f"{k}={v}\0" for k, v in sorted(data.items())) + "__FW_ENV_END__\0")
         return 0
     if args.cmd == "kind-model":
         models = kind_models(revision=args.revision)

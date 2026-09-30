@@ -902,7 +902,7 @@ $prompt"
     printf 'export FW_SIDECAR_AGENT_ID=%q\n' "$name" >> "$wdir/env.sh"
     # T-3580 round 3: a review worker is told which revision it reviews (the one registered).
     if [ "$task_type" = "review" ]; then
-        [ -z "$review_revision" ] && review_revision=$(git -C "$project_dir" rev-parse -q --verify HEAD 2>/dev/null)
+        [ -n "$review_revision" ] || review_revision=$(git -C "$project_dir" rev-parse -q --verify HEAD 2>/dev/null || true)
         printf 'export FW_REVIEW_REVISION=%q\n' "$review_revision" >> "$wdir/env.sh"
         # Round 8 (N1): marks a review worker, so the sidecar-inbox prompt hook stays silent in it.
         printf 'export FW_REVIEW_WORKER=%q\n' "1" >> "$wdir/env.sh"
@@ -952,6 +952,21 @@ $prompt"
             _key_list+="\"$k\","
         done
         env_keys_json="[${_key_list%,}]"
+    fi
+
+    # T-3580 round 8 (codex 1): a REVIEW worker's environment is data, not shell. The env.sh
+    # built above (our own %q output) is turned into env.json — later assignments win, as they
+    # did when sourced — and removed. The ledger signs env.json's hash at registration, refuses
+    # a review wdir holding an env.sh, and run.sh loads the pairs through `verdict_ledger.py
+    # review-env` and exports each one literally: no value is ever evaluated by a shell.
+    if [ "$task_type" = "review" ]; then
+        local -a _env_keys=()
+        mapfile -t _env_keys < <(sed -n 's/^export \([A-Z_][A-Z0-9_]*\)=.*/\1/p' "$wdir/env.sh" | awk '!seen[$0]++')
+        env -i PATH="$PATH" bash -c 'set -e; . "$1"; shift; for k in "$@"; do printf "%s=%s\0" "$k" "${!k}"; done' \
+            _ "$wdir/env.sh" "${_env_keys[@]}" \
+            | python3 -c 'import json,sys; d=dict(r.split("=",1) for r in sys.stdin.read().split("\0") if r); json.dump(d, open(sys.argv[1],"w"), sort_keys=True)' "$wdir/env.json" \
+            || die "review dispatch: cannot write the worker environment as data"
+        rm -f "$wdir/env.sh"
     fi
 
     # T-1706: worker_kind selection. Empty/claude → claude -p. ollama-loop →
@@ -1115,7 +1130,23 @@ unset CLAUDECODE 2>/dev/null || true
 # File contains `export KEY=value` lines, one per --env arg, escaped with %q.
 # Empty when no --env passed. Sourced AFTER PROJECT_ROOT/FRAMEWORK_ROOT so those
 # can be overridden too if a workflow needs it.
+# T-3580 round 8 (codex 1): NOT for a review worker, whose environment is data (env.json),
+# verified against its signed registration by `review-env` and exported pair by pair with no
+# shell evaluation. A refusal (env changed after registration or start) launches no worker.
+if [ "$TASK_TYPE" = "review" ]; then
+    _ENV_OK=""
+    while IFS= read -r -d '' _KV; do
+        if [ "$_KV" = "__FW_ENV_END__" ]; then _ENV_OK=1; break; fi
+        case "$_KV" in [A-Z_]*=*) export "$_KV" ;; *) _ENV_OK=""; break ;; esac
+    done < <(env -u FW_SIDECAR_AGENT_ID PROJECT_ROOT="$PROJECT_DIR" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" \
+                review-env --dispatch-id "$WORKER_NAME" --wdir "$WDIR" 2>> "$WDIR/stderr.log")
+    if [ -z "$_ENV_OK" ]; then
+        echo "WARNING: review worker environment refused — the worker is not launched"
+        WORKER_BIN=""
+    fi
+else
 [ -f "$WDIR/env.sh" ] && . "$WDIR/env.sh"
+fi
 
 # T-1065: Build model flag if specified
 MODEL_FLAG=""

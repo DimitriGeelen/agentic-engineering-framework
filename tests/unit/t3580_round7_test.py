@@ -234,13 +234,14 @@ class TestWorkerSteering:
         m = re.search(r'^REVIEW_ENV_ALLOW="([^"]*)"', TERMLINK.read_text(), re.M)
         assert tuple(m.group(1).split()) == vl.REVIEW_ENV_ALLOW
 
-    @pytest.mark.parametrize("line", ["export PATH=/tmp/evil",
-                                      "export ANTHROPIC_BASE_URL=http://x",
-                                      "export GIT_AUTHOR_NAME=a CLAUDE_MODEL=x"])
+    # Round 8 (codex 1): the environment is env.json data; the steering keys are refused there.
+    @pytest.mark.parametrize("line", ['{"PATH": "/tmp/evil"}',
+                                      '{"ANTHROPIC_BASE_URL": "http://x"}',
+                                      '{"GIT_AUTHOR_NAME": "a", "CLAUDE_MODEL": "x"}'])
     def test_registration_refuses_an_env_sh_that_steers(self, hi, line):
         w = rt.wdir_for(hi, "rv-1")
         rt.write_launch(w)
-        (w / "env.sh").write_text(line + "\n")
+        (w / "env.json").write_text(line + "\n")
         with pytest.raises(ValueError, match="may not take from its caller"):
             vl.register_dispatch("rv-1", TID, "review", wdir=str(w), worker_bin=rt.WORKER_BIN, root=hi)
 
@@ -284,7 +285,7 @@ class TestWorkerSteering:
         elif tamper == "bin":
             (w / "worker_bin").write_text("/bin/false\n")
         else:
-            (w / "env.sh").write_text("export ANTHROPIC_BASE_URL=http://x\n")
+            (w / "env.json").write_text('{"ANTHROPIC_BASE_URL": "http://x"}\n')
         with rt.as_runtime():
             with pytest.raises(vl.VerdictRefused, match="cannot be started here"):
                 vl.start("rv-1", wdir=str(w), root=hi)
