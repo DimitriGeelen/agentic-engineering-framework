@@ -161,3 +161,50 @@ out_of_scope:
 4. **Missing objective?** All three agree that no source supports an "efficient model
    use / cost" objective. That is why orchestrator-rethink maps to NONE. If you want one,
    it is yours to add; the reviewers declined to invent it.
+
+## 4. Recommendations: one ratification instead of four questions
+
+Added 2026-10-01 by the parent session, so that §3 can be settled in one pass. Each item
+is a recommendation with its evidence; a reply of "accept" takes all four. New evidence
+since the three reviews ran is marked **(new)**.
+
+1. **capability-overlay → NONE.** Portability across agent runtimes is Directive D4:
+   every objective is *judged by* it, so it is not an objective of its own. Mapping it
+   to O-4 would widen O-4 ("install and upgrade") into a portability goal no test
+   measures. The arc is stale; park it (horizon later) rather than abandon it.
+   *Agrees with Anthropic and Z.ai.*
+2. **ewcr-arc0-contract-evidence → O-1.** **(new)** The arc YAML says it was
+   "authorized by the human on 2026-08-26" in this repo, and it is the current focused
+   arc. Its headline mechanic (a finding traced to a contract, a refusal scenario, a
+   component and an executable verification fence) is O-1's substance: traceable
+   changes and gates that cannot be skipped. *Agrees with OpenAI.* **Flip to NONE only
+   if** ewcr-v1 is someone else's initiative that this repo merely hosts; that fact is
+   yours alone.
+3. **inception-review-loop → abandon, as superseded.** **(new)** Its headline, "operator
+   decides an inception in two clicks", is replaced by your T-3557 GO (2026-09-30):
+   inception decisions are reviewer-judged, and the path that lets a reviewer's verdict
+   close one is being built in T-3580 slice 3. Re-scoping would duplicate T-3580. Its one
+   durable idea, operator feedback that survives into later sessions (OpenAI's O-2
+   point), is captured as a note on T-3580, not kept as an arc.
+4. **Add O-6, cost.** **(new)** The reviewers found no source; there is one now. On
+   2026-09-30 you ruled that every review or dispatch records its cost, that internal
+   means low-cost and never free, and that paid use needs your per-request approval. It
+   is codified in T-3583/T-3586 (CLAUDE.md §Review and Dispatch Cost Ruling, a hook, and
+   an audit line). The IW-7 spend ceiling (T-3557) also ties review strength to spend.
+   ```yaml
+     - id: O-6
+       text: >-
+         Every agent review and dispatch has a recorded cost, paid use happens only with
+         the operator's per-request approval, and review strength follows risk within a
+         stated spend ceiling.
+       measure: >-
+         `fw review cost report` (cost per week by backend and class); `fw audit` WARNs
+         on paid records with no approved proposal and on every ceiling step-down.
+         Coverage is only as good as logging discipline: unlogged use is invisible.
+   ```
+   orchestrator-rethink stays NONE: its own non_goals defer cost-aware routing.
+
+**If you accept:** the agent writes `.context/project/objectives.yaml` from §1 plus O-6,
+sets `supports:` on each arc per §2 and this section, parks capability-overlay, and
+files the inception-review-loop abandonment through `fw arc` (the Watchtower arc page is
+the operator surface for that). Any item you reject, say which, and it stays open.
