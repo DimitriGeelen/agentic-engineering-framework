@@ -138,7 +138,11 @@ PY
     ! grep -qE '^\*\*Decision\*\*: *GO' "$TASK"
 }
 
-@test "t2862: anti-vacuity — the pre-fix verification line fails the gate it shipped in" {
+# T-3604: this leg used to assert the pre-fix line FAILED — it pinned defect A
+# (the P-011 extractor eating `<!--`/`-->` literals). T-2921 (c03759959) fixed
+# the extractor the next day, so the same line now runs verbatim and passes.
+# The leg now pins that fix end-to-end instead of the bug.
+@test "t2862: the pre-fix verification line runs verbatim through the gate (T-2921 extractor fix)" {
     do_the_agent_work
     python3 - "$TASK" <<'PY'
 import sys
@@ -150,11 +154,12 @@ open(p, 'w').write(s)
 PY
     grep -q "sed '/<!--/,/-->/d'" "$TASK"   # the swap actually landed
     in_proj task review T-002 >/dev/null
-    # `|| true` is load-bearing: these legs REQUIRE decide to block, and under
-    # bats' set -e a non-zero command substitution kills the test before the
-    # assertion runs — the leg would go red for asserting nothing.
+    # `|| true`: the assertion below is about the gate's transcript, not the
+    # decide exit code (see header note on decide's post-record exit status).
     output=$(in_proj inception decide T-002 go --rationale "scope is clear") || true
-    echo "$output" | grep -q 'verification(s) failed'
+    # The command reached the gate with its comment delimiters intact, and ran.
+    echo "$output" | grep -qF "PASS: sed '/<!--/,/-->/d'"
+    echo "$output" | grep -q 'Verification: 2/2 passed'
 }
 
 @test "t2862: the shipped verification block passes on a properly-done inception" {
