@@ -1586,11 +1586,40 @@ def _task_text_at(root: Path, rev: str, task_id: str) -> str:
     return blob if rc == 0 else ""
 
 
+_HISTORY_FM: dict = {}
+
+
+def _task_history_fms(root: Path, task_id: str) -> list[tuple[str, dict]]:
+    """[(sha, frontmatter)] of every committed version of the task file (active or completed,
+    any slug) reachable from HEAD — round 7 (Claude F4). Cached per (root, task, HEAD)."""
+    head = _head_sha(root)
+    key = (str(root), task_id, head)
+    if key in _HISTORY_FM:
+        return _HISTORY_FM[key]
+    out: list[tuple[str, dict]] = []
+    if head:
+        rc, log = _git_out(root, "log", "--format=%x1e%H", "--name-only", "HEAD", "--",
+                           f":(glob).tasks/*/{task_id}-*.md", f":(glob).tasks/*/{task_id}.md")
+        for rec in (log.split("\x1e") if rc == 0 else []):
+            lines = [ln.strip() for ln in rec.splitlines() if ln.strip()]
+            if not lines:
+                continue
+            sha = lines[0]
+            for name in lines[1:]:
+                rc2, blob = _git_out(root, "show", f"{sha}:{name}")
+                if rc2 == 0 and blob:
+                    out.append((sha, frontmatter(blob)))
+    _HISTORY_FM.clear() if len(_HISTORY_FM) > 64 else None
+    _HISTORY_FM[key] = out
+    return out
+
+
 def required_strength(ctx: "_Ctx", crit, revision: str = "") -> tuple[int, str]:
     """(rung, reason) IW-7 requires for `crit`, from lib/review_policy.py — the function `judge`
-    uses to choose its rung. Scored on the task as it is NOW and as it stood at the reviewed
-    revision; the higher wins, so lowering the task's risk fields after the review, or before it
-    in an uncommitted edit, does not lower what the verdict must have been."""
+    uses to choose its rung. Scored on the task as it is NOW, as it stood at the reviewed
+    revision, and (round 7, Claude F4) on EVERY committed version of the task file: the highest
+    wins. So lowering the task's risk fields — after the review, before it in an uncommitted
+    edit, or before it in a commit that stays lowered — does not lower what the verdict needs."""
     body = [criterion_body(crit)]
     rung, why = review_policy.required_rung(frontmatter(ctx.text), body)
     then = _task_text_at(ctx.root, revision, ctx.task_id) if revision else ""
@@ -1598,6 +1627,10 @@ def required_strength(ctx: "_Ctx", crit, revision: str = "") -> tuple[int, str]:
         r2, w2 = review_policy.required_rung(frontmatter(then), body)
         if r2 > rung:
             rung, why = r2, f"{w2} (at reviewed revision {revision[:9]})"
+    for sha, fm in _task_history_fms(ctx.root, ctx.task_id):
+        r3, w3 = review_policy.required_rung(fm, body)
+        if r3 > rung:
+            rung, why = r3, f"{w3} (in the task's committed history at {sha[:9]})"
     return rung, why
 
 

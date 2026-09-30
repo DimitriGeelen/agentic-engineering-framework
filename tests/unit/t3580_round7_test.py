@@ -421,3 +421,30 @@ class TestOneBinding:
         monkeypatch.setattr(vl, "_registry_blob",
                             lambda r, rev: (real(r, rev)[0] + "# moved\n", "elsewhere"))
         assert "no longer hashes to the blob the run pinned" in _why(hi)
+
+
+# ── 5. Claude F4: the required rung is the highest over the task file's committed history ────
+
+class TestRiskHistory:
+    def _lower(self, root):
+        f = next((root / ".tasks" / "active").glob(f"{TID}-*.md"))
+        f.write_text(f.read_text().replace("blast_radius: 9", "blast_radius: 0"))
+        _git(root, "add", str(f.relative_to(root)))
+        _git(root, "commit", "-q", "-m", f"{TID}: lower the estimate")
+
+    def test_probe_f4_risk_lowered_in_a_commit_before_dispatch_and_left_lowered(self, hi):
+        """F4: commit blast_radius 0 before the dispatch and leave it: rung 1 was accepted."""
+        self._lower(hi)
+        rt.dispatch(hi, "rv-1", TID)
+        assert rp.required_rung(vl.frontmatter(_ctx(hi).text), [""])[0] == 1   # now: low
+        with pytest.raises(vl.VerdictRefused, match="requires rung 5 .*committed history"):
+            _record(hi, "rv-1")
+
+    def test_control_a_task_that_was_never_high_needs_rung_1(self, repo):
+        _mk_task(repo, TASTE)
+        _produce(repo)
+        rt.dispatch(repo, "rv-1", TID)
+        _record(repo, "rv-1")
+        _commit_as(repo, "reviewer-rv-1")
+        rt.finish(repo, "rv-1")
+        assert _ticked(repo) == [1]
