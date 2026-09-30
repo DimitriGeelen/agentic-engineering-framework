@@ -93,7 +93,17 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Scope addition 2026-09-30 (832 @17, their T-939): secrets in REACHABLE HISTORY, not just the index.**
+Every secret scanner judges `git ls-files` ("is a secret tracked now"), which is not the
+population a clone receives. `git rm --cached` goes green while history still carries the
+blob, and a stale clone pushing a merge resurrects it. 832's `tools/tracked-secret-artifacts.py
+--history` judges `git rev-list --objects --all` with the same `classify()` (one encoding).
+Severity split, adopted as-is: live-tracked FAILS; historical residue WARNS and names
+rotation as the closer; history rewrite stays Tier 0, operator-only. 832's words: "A red
+that cannot be cleared is a red people learn to bypass." Proof shape: the same fixture must
+make index mode exit 0 and history mode exit 1; that divergence is the check.
+Checked here 2026-09-30: `git rev-list --objects --all` shows no `.fw-secret-key` and no
+key-shaped paths in our reachable history, but we had no scanner of either kind.
 
 ## Acceptance Criteria
 
