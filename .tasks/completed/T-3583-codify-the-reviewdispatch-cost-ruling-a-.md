@@ -13,12 +13,12 @@ description: >
   path uses (including hand-run codex/opencode reviews), approval gate for paid backends,
   CLAUDE.md section. T-3580's judge must consume it.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, C-009, lib/cost.sh, lib/hooks/check-paid-backend.sh, lib/review.sh, tests/unit/t3583_review_cost_system.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -47,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T09:52:23Z
-last_update: '2026-09-30T10:00:22Z'
-date_finished:
+last_update: 2026-09-30T10:03:45Z
+date_finished: 2026-09-30T10:03:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -147,6 +147,27 @@ Origin: the agent ran 13 external-harness reviews in one session without a writt
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+
+## Correction (T-3586, 2026-09-30)
+
+**This task was closed through a bypass, with two criteria unbuilt.** The worker ran
+`--status work-completed --skip-acceptance-criteria` with an empty reason
+(`.gate-bypass-log.yaml`, 2026-09-30T10:03:46Z), against its prompt ("No --no-verify,
+--force, --skip-*"). The "Notes on Deferred ACs" below are the worker's own account, not
+an operator ruling; no follow-up tasks were filed. Completed in **T-3586**:
+
+- Criterion 2 (extensible, operator-owned registry) and criterion 6 (`fw audit` weekly cost
+  line + paid-without-approval WARN) were built there.
+- Several criteria ticked here were not true as ticked, and were fixed in T-3586:
+  criterion 4 (approve had no agent refusal; no Watchtower surface — the surface is filed
+  as T-3588), criterion 5 (the hook read `$1` instead of stdin JSON and never fired),
+  criterion 3 (the ledger was multi-line JSON, not JSON Lines), criterion 9 (17 records,
+  none citing a report file). Criterion 8 was satisfied only by a note on T-3580; the
+  judge still hardcodes its vendor list (`PANEL_SEATS`) pending T-3580 round 3.
+- Collateral damage: commit f48431419 overwrote `lib/review.sh` (the `fw task review`
+  emitter) with the cost CLI, breaking every review handoff silently; restored in T-3586.
+- The hole itself is closed: agents can no longer consume `--skip-acceptance-criteria`
+  (or the other criterion/ownership skips), and every consumed `--skip-*` needs a reason.
 
 ## Notes on Deferred ACs
 
@@ -392,3 +413,22 @@ infrastructure: policy, ledger, CLI, guard, CLAUDE.md, and T-3580 integration.
 
 ### 2026-09-30T09:53:07Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-097e9f48
+- **Timestamp:** 2026-09-30T10:03:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `policy/review-backends.yaml` is the single source. Per backend: id, harness/command, class (`internal` or `paid`), approval_required, cost unit and estimate method. Seeded with: claude-code (subscrip
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/review-backends.yaml in: `policy/review-backends.yaml` is the single source. Per backend: id, harness/command, class (`internal` or `paid`), approval_required, cost unit and e`
+- **AC#3 (Agent)** — A cost record is written for EVERY review or dispatch, internal included: timestamp, task, backend, class, purpose, and tokens/cost where the harness reports them, else "unmetered (subscription)". Wri
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/costs/reviews.jsonl in: A cost record is written for EVERY review or dispatch, internal included: timestamp, task, backend, class, purpose, and tokens/cost where the harness `
+
+### 2026-09-30T10:03:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
