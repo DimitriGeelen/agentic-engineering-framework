@@ -185,7 +185,7 @@ _stale_iso() { date -u -d '60 hours ago' +%FT%TZ; }
     python3 - "$WORK/reports/LATEST.yaml" <<'PY'
 import sys, yaml
 d = yaml.safe_load(open(sys.argv[1]))
-assert d["schema"] == "unit-suite-report-v1"
+assert d["schema"] == "unit-suite-report-v2"  # T-3602: per-file fields
 for k in ("started", "finished", "runner_exit", "timeout_seconds", "timed_out"):
     assert k in d, k
 for leg in ("bats", "pytest"):
@@ -212,7 +212,8 @@ import sys, yaml
 d = yaml.safe_load(open(sys.argv[1]))
 assert d["runner_exit"] == 1
 assert d["legs"]["bats"]["failed_count"] == 1
-assert "fixture bats red" in d["legs"]["bats"]["failed"]
+# T-3602: names are "<file>: <test>" now that files run as separate jobs
+assert "red.bats: fixture bats red" in d["legs"]["bats"]["failed"]
 assert d["legs"]["pytest"]["failed_count"] == 1
 assert any("test_fixture_py_red" in n for n in d["legs"]["pytest"]["failed"])
 PY
@@ -277,7 +278,7 @@ PY
     _write_report "$WORK/red.yaml" 2 1 "$(_now_iso)"
     _run_audit_check "$WORK/red.yaml"
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q '^FAIL|Unit suite (tests/unit): 2 of 6800 unit test(s) RED (T-3302)'
+    echo "$output" | grep -q '^FAIL|Unit suite (tests/unit): 2 of 6800 unit test(s) RED (T-3302'
     echo "$output" | grep -q 'fixture red one'
     ! echo "$output" | grep -q '^PASS|'
 }
@@ -289,33 +290,33 @@ PY
     ! echo "$output" | grep -q '^PASS|'
 }
 
-# ── 3b. OBS-392: a timed-out run is NOT a verdict ────────────────────────────
+# ── 3b. OBS-392 → T-3602: a timed-out run's RECORDED reds are verdicts ──────
 #
-# The runner has always emitted `timed_out`; the audit never read it, so a run
-# killed at its ceiling rendered its casualty list as RED. That FAIL exited the
-# audit 2, which reds tests/unit/audit.bats, whose reds enter the next nightly
-# report — a loop that stranded 32 commits behind the pre-push gate over three
-# days (OBS-394/395). WARN is the honest verdict: nothing was proven either way.
+# OBS-392 (T-3357) made a timed-out run WARN as a whole, reading its failure
+# list as a casualty list. That premise was wrong: a test killed by the ceiling
+# never prints `not ok`, so every listed failure finished and failed. With a
+# corpus that never completed, the WARN hid 46 red files for three weeks
+# (OBS-587). T-3602: recorded reds FAIL; only the unrun remainder is WARN.
+# Full contract: tests/unit/t3602_unit_suite_partial_run.bats.
 
-@test "t3302 audit WARNs (never FAILs) when the run timed out, listed reds and all" {
+@test "t3302 audit FAILs a timed-out run on the reds it recorded (T-3602 supersedes OBS-392)" {
     _write_report "$WORK/timeout.yaml" 2 1 "$(_now_iso)" true
     _run_audit_check "$WORK/timeout.yaml"
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q '^WARN|Unit suite (tests/unit) COULD NOT DETERMINE'
-    ! echo "$output" | grep -qE '^(PASS|FAIL)\|'
+    echo "$output" | grep -q '^FAIL|Unit suite (tests/unit): 2 of 6800 unit test(s) RED'
+    echo "$output" | grep -q 'fixture red one'
+    echo "$output" | grep -q 'fixture red two'
+    run grep -q '^PASS|' <<< "$output"
+    [ "$status" -ne 0 ]
 }
 
-@test "t3302 timed-out WARN says UNMEASURED, names the ceiling, and is not 'just re-run'" {
-    _write_report "$WORK/timeout2.yaml" 2 1 "$(_now_iso)" true
+@test "t3302 timed-out run with no reds says UNMEASURED, names the ceiling" {
+    _write_report "$WORK/timeout2.yaml" 0 1 "$(_now_iso)" true
     _run_audit_check "$WORK/timeout2.yaml"
     # names the ceiling that was hit, so the reader knows which knob to turn
     echo "$output" | grep -q '7200s ceiling'
     # the corpus is unknown, not green — the WARN must not read as reassurance
     echo "$output" | grep -q 'UNMEASURED, not green'
-    # still surfaces the count, but labelled as a casualty list rather than a verdict
-    echo "$output" | grep -q 'casualty list, not a verdict'
-    # and must not send the reader back into the run that cannot terminate
-    echo "$output" | grep -q 'unchanged just re-times-out'
 }
 
 @test "t3302 timed-out with ZERO listed failures is still WARN, never PASS" {
@@ -332,7 +333,7 @@ PY
     # report except timed_out: false — this one must still block.
     _write_report "$WORK/completed-red.yaml" 2 1 "$(_now_iso)" false
     _run_audit_check "$WORK/completed-red.yaml"
-    echo "$output" | grep -q '^FAIL|Unit suite (tests/unit): 2 of 6800 unit test(s) RED (T-3302)'
+    echo "$output" | grep -q '^FAIL|Unit suite (tests/unit): 2 of 6800 unit test(s) RED (T-3302'
     ! echo "$output" | grep -q 'COULD NOT DETERMINE'
 }
 
