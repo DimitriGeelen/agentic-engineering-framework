@@ -20,7 +20,14 @@
 # ---------------------------------------------------------------------------
 release_latest_tag() {
     local root="${1:-${PROJECT_ROOT:-$(pwd)}}"
-    git -C "$root" describe --tags --match 'v[0-9]*' --abbrev=0 2>/dev/null || true
+    local pattern="${2:-v[0-9]*}"
+    git -C "$root" describe --tags --match "$pattern" --abbrev=0 2>/dev/null || true
+}
+
+# release_tag_pattern  — the configured release-tag glob (FW_RELEASE_TAG_PATTERN,
+# T-3585). Default is this repo's own v* tags.
+release_tag_pattern() {
+    echo "${FW_RELEASE_TAG_PATTERN:-v[0-9]*}"
 }
 
 # ---------------------------------------------------------------------------
@@ -447,13 +454,28 @@ release_tag_and_release() {
 # ---------------------------------------------------------------------------
 release_status() {
     local root="${PROJECT_ROOT:-$(pwd)}"
-    local latest
-    latest="$(release_latest_tag "$root")"
-    local commits=0
-    [ -n "$latest" ] && commits="$(release_commits_since "$latest" "$root")"
-    echo "Latest tag:       ${latest:-<none>}"
-    echo "Commits since:    $commits"
+    local pattern latest commits used
+    pattern="$(release_tag_pattern)"
+    used="$pattern"
+    latest="$(release_latest_tag "$root" "$pattern")"
+    # Prefixed semver (designer-v1.2.3, T-3585): when the configured pattern
+    # matches nothing, recognise <prefix>v<semver> before giving up.
+    if [ -z "$latest" ]; then
+        latest="$(release_latest_tag "$root" '*-v[0-9]*.[0-9]*.[0-9]*')"
+        [ -n "$latest" ] && used='*-v[0-9]*.[0-9]*.[0-9]*'
+    fi
     if [ -n "$latest" ]; then
+        commits="$(release_commits_since "$latest" "$root")"
+        echo "Latest tag:       $latest (pattern $used)"
+        echo "Commits since:    $commits"
+    else
+        # Never print 0 here: with no baseline, "nothing is due" is unknown.
+        local total
+        total="$(git -C "$root" rev-list --count HEAD 2>/dev/null)"
+        echo "Latest tag:       no tag matching $pattern"
+        echo "Commits since:    UNKNOWN (no matching tag; ${total:-unknown} commits since the root)"
+    fi
+    if [ -n "$latest" ] && [[ "$latest" =~ ^v[0-9] ]]; then
         echo "Would bump to:    $(release_bump_version "$latest" patch) (patch)"
     fi
     echo "Remotes:"

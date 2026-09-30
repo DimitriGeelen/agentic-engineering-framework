@@ -253,6 +253,7 @@ FW_CONFIG_REGISTRY=(
     # the question the release train exists to answer.
     "DEV_BRANCH|bleeding-edge|The sanctioned development branch — what the persistent session commits to, what branch-hygiene measures 'landed' against, and the only writer of RELEASE_BRANCH (lib/branch-hygiene.sh). T-3185/T-3187/T-3188."
     "RELEASE_BRANCH|master|The consumer install surface — the branch fw release tag-and-release fast-forwards before cutting the tag. Nothing authors it directly (lib/release.sh, agents/git/lib/master-guard.sh). T-3185/T-3190."
+    "RELEASE_TAG_PATTERN|v[0-9]*|Glob for release tags read by fw release status (lib/release.sh). If it matches nothing, prefixed semver such as designer-vX.Y.Z is tried, and failing that status reports no matching tag and UNKNOWN commits, never 0. T-3585."
     "RETIRE_WHEN_ADVISORY|1|Enable the audit retire_when advisory rail for free drivers; 0 silences the section entirely (agents/audit/audit.sh). T-2169."
     # T-3445 (mechanism for D-626). The conjunction is the signal, not either
     # half: zero reviewer-closeable criteria is unremarkable in a small corpus,
