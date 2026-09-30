@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3576: Tier 0 approval keyed to the exact command hash pushes agents into script indirection, which Tier 0 cannot see - key approvals to the action and gate force-push at git pre-push (832 OBS-449)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-30T15:37:35Z
+# ============================================================================
+
+task_id: T-3576
+task_name: "Tier 0 approval keyed to the exact command hash pushes agents into script indirection, which Tier 0 cannot see - key approvals to the action and gate force-push at git pre-push (832 OBS-449)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-29T23:23:52Z
+completed: 2026-09-30T15:37:20Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-09-30T01:25:00+02:00
+last_commit: 2026-09-30T01:25:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file 832's Tier 0 finding (OBS-449) — approval hash-exactness drives agents into script indirection; pre-push does not gate forced updates
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3576-tier-0-approval-keyed-to-the-exact-comma.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-30T01:25:00'
+    action: 'T-3576: file 832''s Tier 0 finding (OBS-449) — approval hash-exactness drives agents into script indirection; pre-push does not gate forced updates'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 973 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 973
+  commits: 1
+  files_changed: 1
+  lines_added: 137
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3576-tier-0-approval-keyed-to-the-exact-comma.md
+generated_by: context-agent-hybrid
