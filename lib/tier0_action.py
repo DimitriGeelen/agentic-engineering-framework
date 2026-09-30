@@ -52,6 +52,10 @@ import uuid
 VERBS = ("force-push", "branch-delete", "hard-reset", "recursive-delete")
 PUSH_VERBS = ("force-push", "branch-delete")
 LOCAL_REMOTE = "(local)"
+# OBS-568: an ADMITTED push approval is the text gate saying "the push you just
+# typed may run". Its pre-push consumption follows within seconds; left for the
+# whole grant TTL it is a second use waiting for any later push (the R1 chain).
+ADMIT_TTL = int(os.environ.get("TIER0_ADMIT_TTL", "60"))
 
 
 # ── Paths ─────────────────────────────────────────────────────────────────────
@@ -318,36 +322,90 @@ def describe(a: dict) -> str:
     return action_key(a)
 
 
+_OPTS_CACHE: dict[str, dict[str, bool] | None] = {}
+
+
+def _git_long_options(sub: str) -> dict[str, bool] | None:
+    """Every long option ``git <sub>`` accepts, as {name: takes_required_arg},
+    read from git itself (``--git-completion-helper-all`` lists hidden options
+    and every ``no-`` negation). None when git cannot tell us — callers then
+    treat every long option as unreadable (T-3593 round 3)."""
+    if sub not in _OPTS_CACHE:
+        try:
+            out = subprocess.run(["git", sub, "--git-completion-helper-all"],
+                                 capture_output=True, text=True, timeout=5)
+            words = out.stdout.split() if out.returncode == 0 else []
+        except Exception:  # pragma: no cover - environment
+            words = []
+        opts = {w[2:].rstrip("="): w.endswith("=")
+                for w in words if w.startswith("--") and len(w) > 2}
+        _OPTS_CACHE[sub] = opts or None
+    return _OPTS_CACHE[sub]
+
+
+def resolve_long(sub: str, arg: str) -> tuple[str, bool]:
+    """Resolve ``--name[=v]`` the way git's parse-options does: an exact match
+    wins, otherwise a prefix of exactly one known option is that option (git
+    accepts ``--no-verif`` for ``--no-verify``, ``--force-w`` for
+    ``--force-with-lease``, ``--h`` for ``reset --hard``). Unknown or ambiguous
+    → :class:`Unmappable`, never a guess. Returns (name, takes_required_arg).
+
+    The option list comes from the installed git, not a hand list: the round-2
+    fix denied the exact string ``--no-verify`` and silently skipped every other
+    long option, so one abbreviation reopened R1 (T-3593 round 3)."""
+    opts = _git_long_options(sub)
+    name = arg[2:].split("=", 1)[0]
+    if not opts or not name:
+        raise Unmappable(f"git {sub} {arg}: option list unavailable")
+    if name in opts:
+        return name, opts[name]
+    hits = [o for o in opts if o.startswith(name)]
+    if len(hits) != 1:
+        raise Unmappable(f"git {sub} {arg}: {'ambiguous' if hits else 'unknown'} option")
+    return hits[0], opts[hits[0]]
+
+
+# Push options that neither change which refs move nor skip a hook. Everything
+# not named here or handled explicitly (--no-verify, --repo, --receive-pack,
+# --exec, --all, --no-force, ...) makes the push unmapped.
+_PUSH_BENIGN = {"verbose", "quiet", "dry-run", "porcelain", "thin", "set-upstream",
+                "progress", "follow-tags", "signed", "atomic", "ipv4", "ipv6",
+                "verify", "recurse-submodules", "push-option", "force-if-includes"}
+_PUSH_BENIGN |= {"no-" + o for o in _PUSH_BENIGN if o != "verify"}
+_PUSH_SHORT = {"v", "q", "n", "u", "4", "6", "f", "d", "o"}
+
+
 def _classify_push(args: list[str], cwd: str | None) -> list[dict]:
     force = delete = False
     positional: list[str] = []
     i = 0
     while i < len(args):
         a = args[i]
-        if a == "--":
+        if a in ("--", "--end-of-options"):
             positional.extend(args[i + 1:])
             break
         if a.startswith("--"):
-            name = a.split("=", 1)[0]
-            if name in ("--force", "--force-with-lease"):
+            name, takes_arg = resolve_long("push", a)
+            if name in ("force", "force-with-lease"):
                 force = True
-            elif name == "--delete":
+            elif name == "delete":
                 delete = True
-            elif name == "--no-verify":
+            elif name == "no-verify":
                 # A second Tier 0 decision (HOOK BYPASS) — and it would skip the
                 # pre-push hook that consumes this approval (T-3593 R1).
                 raise Unmappable("push --no-verify")
-            elif name in ("--all", "--mirror", "--tags", "--prune", "--branches"):
-                raise Unmappable(f"push {name} targets are not enumerable from the text")
-            elif name in ("--repo", "--receive-pack", "--exec", "--push-option") and "=" not in a:
-                if name == "--repo":
-                    raise Unmappable("push --repo")
-                i += 1
-            elif name == "--repo":
-                raise Unmappable("push --repo")
+            elif name in ("all", "mirror", "tags", "prune", "branches"):
+                raise Unmappable(f"push --{name} targets are not enumerable from the text")
+            elif name in _PUSH_BENIGN:
+                if takes_arg and "=" not in a:
+                    i += 1
+            else:
+                raise Unmappable(f"push --{name}")
         elif a.startswith("-") and len(a) > 1:
             flags = a[1:]
             for j, f in enumerate(flags):
+                if f not in _PUSH_SHORT:
+                    raise Unmappable(f"push -{f}")
                 if f == "f":
                     force = True
                 elif f == "d":
@@ -383,8 +441,36 @@ def _classify_push(args: list[str], cwd: str | None) -> list[dict]:
         if any(ch in dst for ch in "*?["):
             raise Unmappable("wildcard refspec")
         if force or plus:
-            out.append(action("force-push", remote=remote, ref=normalize_ref(dst)))
+            out.append(action("force-push", remote=remote, ref=_push_key(dst, src, cwd)))
     return out
+
+
+def _ref_exists(cwd: str, ref: str) -> bool | None:
+    """True/False for a local ref, None when cwd is not a readable repo."""
+    try:
+        out = subprocess.run(["git", "-C", cwd, "show-ref", "--verify", "--quiet", ref],
+                             capture_output=True, timeout=5)
+    except Exception:  # pragma: no cover - environment
+        return None
+    return {0: True, 1: False}.get(out.returncode)
+
+
+def _push_key(dst: str, src: str, cwd: str | None) -> str:
+    """The ref key pre-push will see. Pre-push reports full names and strips
+    only ``refs/heads/``, so a short name that git resolves to a local TAG must
+    be keyed ``refs/tags/<t>`` here too — otherwise the operator approves
+    ``v1`` and pre-push refuses ``refs/tags/v1`` (T-3594 round 3 (a))."""
+    if dst.startswith("refs/") or cwd is None:
+        return normalize_ref(dst)
+    tag = _ref_exists(cwd, "refs/tags/" + dst)
+    head = _ref_exists(cwd, "refs/heads/" + dst)
+    if tag and head:
+        raise Unmappable(f"'{dst}' is both a branch and a tag")
+    if tag and src in ("", dst):
+        return "refs/tags/" + dst
+    if src and src != dst and _ref_exists(cwd, "refs/tags/" + src):
+        raise Unmappable(f"tag {src} pushed to short name {dst}")
+    return normalize_ref(dst)
 
 
 def _classify_git(words: list[str], cwd: str | None) -> tuple[list[dict], str | None]:
@@ -414,13 +500,15 @@ def _classify_git(words: list[str], cwd: str | None) -> tuple[list[dict], str | 
     if sub == "push":
         return _classify_push(args, cwd), cwd
     if sub == "reset":
-        if "--hard" not in args:
+        # Long options resolve as git resolves them: `--har` and `--h` are --hard.
+        longs = {a: resolve_long("reset", a)[0] for a in args if a.startswith("--") and a != "--"}
+        if "hard" not in longs.values():
             return [], cwd
         if cwd is None:
             raise Unmappable("reset with unknown cwd")
         revs = []
         for a in args:
-            if a in ("--hard", "-q", "--quiet"):
+            if a == "-q" or longs.get(a) in ("hard", "quiet"):
                 continue
             if a.startswith("-"):
                 raise Unmappable(f"reset option {a}")
@@ -433,12 +521,14 @@ def _classify_git(words: list[str], cwd: str | None) -> tuple[list[dict], str | 
         return [action("hard-reset", repo=_toplevel(cwd), branch=_current_branch(cwd),
                        target=target)], cwd
     if sub == "branch":
-        force_del = any(a == "-D" or (a.startswith("-") and not a.startswith("--") and "D" in a)
-                        for a in args)
-        force_del = force_del or (("-d" in args or "--delete" in args)
-                                  and ("-f" in args or "--force" in args))
+        longs = {a: resolve_long("branch", a)[0] for a in args if a.startswith("--") and a != "--"}
+        shorts = "".join(a[1:] for a in args if a.startswith("-") and not a.startswith("--"))
+        force_del = "D" in shorts or (("d" in shorts or "delete" in longs.values())
+                                      and ("f" in shorts or "force" in longs.values()))
         if not force_del:
             return [], cwd
+        if "remotes" in longs.values() or "r" in shorts:
+            raise Unmappable("branch delete of remote-tracking refs")
         names = [a for a in args if not a.startswith("-")]
         if not names:
             raise Unmappable("branch -D without a name")
@@ -536,10 +626,14 @@ def classify(command: str, is_flagged, cwd: str | None) -> list[dict] | None:
     covered by those actions' verbs; otherwise the WHOLE command is unmapped.
 
     cwd tracking (T-3593 R3): a segment's cwd change carries to the next segment
-    only across ``&&`` and only when the segment is not in a pipeline. After
-    ``;``, ``||``, ``|``, ``&`` or a newline — where a failed ``cd`` leaves the
-    old cwd in place — and after any segment this module cannot read, the cwd
-    becomes unknown, so a relative target is unmapped.
+    only across ``&&``, only when the segment is not in a pipeline, and only
+    when the separator BEFORE it is not ``||`` (``true || cd x && rm -rf .``
+    skips the cd and runs the rm in the old cwd — round 3). And a cwd changed
+    inside an and-chain does not survive the chain's end: at ``;``, ``||``,
+    ``&`` or a newline a failed ``cd`` (or a short-circuit) may have left the
+    old cwd in place, so it becomes unknown (``cd x && true ; rm -rf .``).
+    After any segment this module cannot read, the cwd becomes unknown too.
+    Unknown means a relative target is unmapped.
     """
     try:
         segs = split_segments_seps(command)
@@ -548,6 +642,7 @@ def classify(command: str, is_flagged, cwd: str | None) -> list[dict] | None:
     actions: list[dict] = []
     saw_flagged = False
     prev_sep = ""
+    chain_cwd = cwd          # the cwd at the start of the current and-chain
     for seg, sep in segs:
         flagged = is_flagged(seg)
         try:
@@ -557,7 +652,8 @@ def classify(command: str, is_flagged, cwd: str | None) -> list[dict] | None:
                 return None
             # An unreadable segment (`source x`, `{ cd x; }`, `eval ...`) may
             # change the cwd in ways the text does not show.
-            cwd, prev_sep = None, sep
+            cwd = chain_cwd = None
+            prev_sep = sep
             continue
         if flagged:
             saw_flagged = True
@@ -567,8 +663,14 @@ def classify(command: str, is_flagged, cwd: str | None) -> list[dict] | None:
                 return None
             actions.extend(acts)
         if new_cwd != cwd:
-            carries = sep == "&&" and prev_sep != "|"
+            carries = sep == "&&" and prev_sep not in ("|", "||")
             cwd = new_cwd if carries else None
+        if sep not in ("&&", "|"):
+            # End of an and-chain: a cd inside it may not have run.
+            if cwd != chain_cwd:
+                cwd = None
+            if sep != "||":
+                chain_cwd = cwd
         prev_sep = sep
     if not saw_flagged or not actions:
         return None
@@ -659,14 +761,16 @@ def _bypass_log(root: str, a: dict, layer: str, preview: str = "",
 def _expire(root: str, recs: list[dict], now: float) -> bool:
     changed = False
     for r in recs:
-        if r.get("state") in ("approved", "admitted") and now >= r.get("expires", 0):
+        admit_over = (r.get("state") == "admitted"
+                      and now >= r.get("admitted_at", now) + ADMIT_TTL)
+        if r.get("state") in ("approved", "admitted") and (now >= r.get("expires", 0) or admit_over):
             r["state"] = "expired"
             changed = True
             log_event(root, "expired", id=r["id"], action_key=r["key"])
     return changed
 
 
-def approve(root: str, actions: list[dict], ttl: int, approved_by: str = "human",
+def approve(root: str, actions: list[dict], ttl: int, approved_by: str = "unknown",
             now: float | None = None) -> list[dict]:
     now = time.time() if now is None else now
     new = []

@@ -296,3 +296,79 @@ _gate() {
     [ "$status" -eq 0 ]
     [ "$(_remote_sha main)" = "$(git rev-parse HEAD)" ]
 }
+
+# ── Round 3 (re-review "## Re-review after fixes") ───────────────────────────
+
+@test "R1 round 3 end to end: 'git push -f --no-verif' approval is not a reusable force-push action" {
+    _diverge
+    # 1. blocked, and shown as a hook bypass, not as a bare force-push action
+    run _gate "git push -f --no-verif origin main"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"HOOK BYPASS"* ]]
+    [[ "$output" != *"FORCE-PUSH ref 'main'"* ]]
+    # 2. the operator approves: it lands on the exact-text path, no action record
+    run _approve
+    [ "$status" -eq 0 ]
+    run bash -c "cat '$W/.context/working/tier0-action-approvals.json' 2>/dev/null | grep -q '\"force-push\"'"
+    [ "$status" -ne 0 ]
+    # 3. the text gate admits that exact text once; the typed push then skips pre-push (git property)
+    run _gate "git push -f --no-verif origin main"
+    [ "$status" -eq 0 ]
+    run git push -q -f --no-verif origin main
+    [ "$status" -eq 0 ]
+    # 4. a later script force-push finds nothing to consume at pre-push
+    _diverge
+    printf '#!/bin/bash\ngit push --force origin main\n' > "$FX/push.sh"
+    run bash "$FX/push.sh"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"Push blocked"* ]]
+    # 5. and the typed text is not admitted a second time. Step past the T-1508
+    #    duplicate-hook-fire grace first: for 5s after a consume, the SAME text is
+    #    allowed so a hook registered twice does not block its own sibling fire.
+    #    That 5s window is a known residual, not what this step tests.
+    local sentinel="$W/.context/working/.tier0-approval.consumed"
+    [ -f "$sentinel" ] && printf '%s %s\n' "$(awk '{print $1}' "$sentinel")" "$(( $(date +%s) - 10 ))" > "$sentinel"
+    run _gate "git push -f --no-verif origin main"
+    [ "$status" -eq 2 ]
+}
+
+@test "round 3 (a): a typed tag move approved at the TEXT GATE is consumed by pre-push (one key)" {
+    git tag -a v1 -m "fixture v1"
+    git push -q origin v1 2>/dev/null
+    local old; old=$(_remote_sha refs/tags/v1)
+    echo "next $RANDOM" > g.txt && git add g.txt && git commit -q -m "fixture: descendant"
+    git tag -f -a v1 -m "fixture v1 moved" >/dev/null
+    run _gate "git push -f origin v1"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"FORCE-PUSH ref 'refs/tags/v1' to remote 'origin'"* ]]
+    run _approve
+    [ "$status" -eq 0 ]
+    run _gate "git push -f origin v1"
+    [ "$status" -eq 0 ]
+    run git push -f origin v1
+    [ "$status" -eq 0 ]
+    [ "$(_remote_sha refs/tags/v1)" != "$old" ]
+    _events | grep '"event": "consumed"' | grep -q 'refs/tags/v1'
+}
+
+@test "round 3 (a) CONTROL: a branch push keeps the short branch key" {
+    run _gate "git push -f origin main"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
+}
+
+@test "round 3 (b): core.hooksPath overrides are caught in any case and via --config-env / GIT_CONFIG_*" {
+    local c
+    for c in "git -c core.hookspath=/dev/null push origin main" \
+             "git -c CORE.HOOKSPATH=/dev/null push origin main" \
+             "git --config-env=core.hooksPath=HP push origin main" \
+             "GIT_CONFIG_PARAMETERS=\"'core.hooksPath=/dev/null'\" git push origin main" \
+             "GIT_CONFIG_COUNT=1 GIT_CONFIG_KEY_0=core.hookspath GIT_CONFIG_VALUE_0=/dev/null git push origin main" \
+             "git config core.HooksPath /dev/null"; do
+        run _gate "$c"
+        [ "$status" -eq 2 ]
+        [[ "$output" == *"HOOK BYPASS"* ]]
+    done
+    run _gate "git config --get core.hookspath"
+    [ "$status" -eq 0 ]
+}

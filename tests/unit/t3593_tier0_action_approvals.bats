@@ -352,3 +352,146 @@ _mod() { PROJECT_ROOT="$FX" python3 "$FRAMEWORK_ROOT/lib/tier0_action.py" "$@"; 
     [[ "$output" != *'`'* ]]
     [[ "$output" != *'$('* ]]
 }
+
+# ── Round 3 (re-review "## Re-review after fixes") ───────────────────────────
+# The builder's round-2 tests pinned the reviewer's exact spelling; these pin the
+# PROPERTY: any spelling git would accept for a flagged option is that option.
+
+@test "R1 round 3: abbreviated and quoted --no-verify spellings are HOOK BYPASS and never a bare force-push action" {
+    local sp
+    for sp in "--no-verif" "--no-veri" "--no-ver" "--no-v" "'--no-verify'" '"--no-verify"' "--no-'verify'" "--no-verify=1"; do
+        run _hook "git push -f $sp origin main"
+        [ "$status" -eq 2 ]
+        [[ "$output" == *"HOOK BYPASS"* ]]
+        [[ "$output" == *"Not mapped to an action"* ]]
+        [[ "$output" != *"FORCE-PUSH ref 'main'"* ]]
+        [ ! -f "$FX/.context/working/.tier0-action.pending.json" ]
+    done
+    # the text gate sees it on any git verb, not only push
+    run _hook "git commit --no-verif -m x"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"HOOK BYPASS"* ]]
+}
+
+@test "R1 round 3: the classifier resolves long options the way git does (unique prefix, from git's own option list)" {
+    # unique prefix of --force-with-lease maps to the force-push action
+    run _hook "git push --force-w origin main"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
+    # abbreviated --delete maps to the delete action
+    run _hook "git push --dele origin old"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"DELETE ref 'old' on remote 'origin'"* ]]
+    # an option git does not know (or an ambiguous prefix) is never mapped
+    local sp
+    for sp in "--frobnicate -f" "--forc" "--fo -f" "--receive-pack=/bin/true -f"; do
+        run _hook "git push $sp origin main"
+        [ "$status" -eq 2 ]
+        [[ "$output" == *"Not mapped to an action"* ]]
+    done
+    # --verify (the opposite of --no-verify) is harmless and still maps
+    run _hook "git push --verif -f origin main"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
+}
+
+@test "R1 round 3: abbreviated --hard, and branch --delete --force, are blocked and mapped" {
+    run _hook "git reset --har HEAD"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"HARD-RESET branch 'main'"* ]]
+    run _hook "git reset --h"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"HARD-RESET branch 'main'"* ]]
+    run _hook "git branch --del --forc gone"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"DELETE local branch 'gone'"* ]]
+    run _hook "git branch -d -f gone"
+    [ "$status" -eq 2 ]
+    # controls: a soft reset and a safe branch delete pass
+    run _hook "git reset --soft HEAD"
+    [ "$status" -eq 0 ]
+    run _hook "git branch -d gone"
+    [ "$status" -eq 0 ]
+}
+
+@test "R3 round 3: a cd on the right of '||' does not carry (separator BEFORE the cd)" {
+    # `cd .` is a segment the classifier can read, so these exercise the chain
+    # rule itself, not the unreadable-segment rule
+    run _hook "cd . || cd /nonexistent && rm -rf ."
+    [ "$status" -eq 2 ]
+    [[ "$output" != *"RECURSIVELY DELETE /nonexistent"* ]]
+    [[ "$output" == *"Not mapped to an action"* ]]
+    run _hook "true || cd /nonexistent && rm -rf ."
+    [ "$status" -eq 2 ]
+    [[ "$output" != *"RECURSIVELY DELETE /nonexistent"* ]]
+    # a cd earlier in an && chain does not survive a later ';' or '||' either
+    run _hook "cd /nonexistent && cd . ; rm -rf ."
+    [ "$status" -eq 2 ]
+    [[ "$output" != *"RECURSIVELY DELETE /nonexistent"* ]]
+    run _hook "cd /nonexistent && cd . || rm -rf ."
+    [ "$status" -eq 2 ]
+    [[ "$output" != *"RECURSIVELY DELETE /nonexistent"* ]]
+}
+
+@test "R3 round 3 CONTROL: a cd inside a pure && chain still carries" {
+    run _hook "cd /nonexistent && cd . && rm -rf ."
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"RECURSIVELY DELETE /nonexistent"* ]]
+    run _hook "cd /nonexistent && cd sub && rm -rf ."
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"RECURSIVELY DELETE /nonexistent/sub"* ]]
+}
+
+@test "OBS-568: an ADMITTED push approval expires within the admit window, not the grant TTL" {
+    _hook "git push --force origin main" 2>/dev/null || true
+    _approve >/dev/null
+    run _hook "git push --force origin main"
+    [ "$status" -eq 0 ]
+    _store | grep -q '"state": "admitted"'
+    local acts='[{"verb":"force-push","targets":{"remote":"origin","ref":"main"}}]'
+    run env PROJECT_ROOT="$FX" python3 -c "
+import sys, time; sys.path.insert(0, '$FRAMEWORK_ROOT/lib'); import tier0_action as t
+sys.exit(0 if t.use('$FX', t.json.loads(sys.argv[1]), 'pre-push', now=time.time() + t.ADMIT_TTL + 1) else 1)" "$acts"
+    [ "$status" -ne 0 ]
+    _events | grep -q '"event": "expired"'
+}
+
+@test "OBS-568 CONTROL: inside the admit window pre-push consumes the admitted approval" {
+    _hook "git push --force origin main" 2>/dev/null || true
+    _approve >/dev/null
+    _hook "git push --force origin main"
+    run _mod use pre-push '[{"verb":"force-push","targets":{"remote":"origin","ref":"main"}}]'
+    [ "$status" -eq 0 ]
+}
+
+@test "R2 residue: env-strip and python-module self-approval routes are Tier 0 when typed" {
+    local c
+    for c in "CLAUDECODE= bin/fw tier0 approve" \
+             "env -u CLAUDECODE bin/fw tier0 approve" \
+             "unset CLAUDECODE; bin/fw tier0 approve" \
+             "python3 -m tier0_action approve-pending" \
+             "cd lib && python3 -c 'import tier0_action; tier0_action.approve(\".\", [], 300)'"; do
+        run _hook "$c"
+        [ "$status" -eq 2 ]
+        [[ "$output" == *"TIER 0 SELF-APPROVAL"* ]]
+    done
+    # control: the plain verb passes the text gate (the module refuses it under CLAUDECODE=1)
+    run _hook "bin/fw tier0 approve"
+    [ "$status" -eq 0 ]
+}
+
+@test "R2 residue: approve() called without approved_by records 'unknown', never 'human'" {
+    run env PROJECT_ROOT="$FX" python3 -c "
+import sys; sys.path.insert(0, '$FRAMEWORK_ROOT/lib'); import tier0_action as t
+t.approve('$FX', [t.action('force-push', remote='origin', ref='main')], 300)"
+    [ "$status" -eq 0 ]
+    _store | grep -q '"approved_by": "unknown"'
+    run bash -c "cat '$FX/.context/working/tier0-action-approvals.json' | grep -q '\"approved_by\": \"human\"'"
+    [ "$status" -ne 0 ]
+}
+
+@test "fast path: git --no-pager push -f reaches the detailed patterns" {
+    run _hook "git --no-pager push -f origin main"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
+}

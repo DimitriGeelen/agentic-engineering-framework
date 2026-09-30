@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T15:41:21Z
-last_update: 2026-09-30T16:01:00Z
+last_update: 2026-09-30T20:00:23Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -348,6 +348,20 @@ bin/fw vendor self --check
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-09-30 — Option spellings: resolve against git's own option list, not a denylist (re-review R1)
+- **Chose:** `lib/tier0_action.py:resolve_long` resolves every long option the way git's parse-options does (exact match, else a unique prefix), against the list the installed git prints for `git <sub> --git-completion-helper-all`. An unknown or ambiguous option, or a git that cannot print its list, makes the command unmapped. Push options are an **allowlist**: anything not handled explicitly or named in `_PUSH_BENIGN` makes the push unmapped (including `--receive-pack`/`--exec`, which previously had their argument skipped). The text gate matches every prefix of the flagged options (`ab()` in `check-tier0.sh`), reads a quoted single word as the argument the shell passes (`'--no-verify'`, `--no-'verify'`), and lists **every** matching risk, not only the first.
+- **Why:** round 2 denied the exact string `--no-verify` and let any other long option through, so `--no-verif` reopened R1 one keystroke from the fix. A hand list of abbreviations is the same mistake one level up; a list read from git follows the git that will actually parse the command.
+- **Rejected:** widening the denylist to known abbreviations (breaks on the next git release or the next option); the reviewer's regex `--no-v(e(r(i(f(y)?)?)?)?)?` alone (text gate only; the classifier would still silently skip an unknown option).
+
+### 2026-09-30 — R2 residue: same-user self-approval routes (documented, partly gated)
+- **Chose:** typed forms are now Tier 0 in the text gate: `CLAUDECODE= … fw tier0 approve`, `env … fw tier0 approve` / `env -u CLAUDECODE`, `unset CLAUDECODE; …approve`, `python3 -m tier0_action approve…`, and a direct `tier0_action.approve(` call inside quoted code. `approve()` now defaults `approved_by` to `"unknown"`, so a caller that names nobody is never recorded as `human`.
+- **Residue, stated:** every agent here runs as the operator's user. A script (`bash x.sh` that strips `CLAUDECODE` and approves), an edited copy of the module, or a direct write to `.context/working/tier0-action-approvals.json` still produces a record the gate cannot tell from the operator's. The text gate sees only typed text (T-2742), so it cannot close this; only a credential the agent does not hold (an operator-side signature, or approvals held by a different OS user) can. `CLAUDE.md` §Enforcement Tiers now names the env-strip route next to the file-forgery residual.
+- **Rejected:** trying to detect human-ness from the process tree inside the module (the same user can fake any ancestry it controls); refusing approval whenever `CLAUDECODE` is absent (breaks the operator's own terminal).
+
+### 2026-09-30 — OBS-568 pulled forward: admitted records expire after 60 s
+- **Chose:** `ADMIT_TTL = 60` (env `TIER0_ADMIT_TTL`). An `admitted` push approval expires 60 s after admission, independent of the grant TTL.
+- **Why:** the R1 chain needed an admitted record to live long enough for a second push to consume it. Pre-push follows the typed push within seconds, so 60 s removes that second-use window whatever spelling comes next.
 
 ## Decision
 

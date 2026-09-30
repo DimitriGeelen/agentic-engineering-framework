@@ -96,7 +96,7 @@ fi
 # Only invoke Python if the command MIGHT be destructive.
 # This keeps the hook fast (<5ms) for the 95%+ of safe commands.
 if ! echo "$COMMAND" | grep -qEi \
-    'git\s+(push|reset|clean|checkout|restore|branch)\s|git\s+-[cC]\s|hooksPath|tier0_action|tier0\s+approve|--no-verify|rm\s+-|DROP\s|TRUNCATE\s|docker\s+system|kubectl\s+delete|find\s.*-delete|dd\s+if=|chmod\s.*\s000|mkfs|pkill\s|fw\s.*--force|fw\s.*inception\s.*decide'; then
+    'git\s+(push|reset|clean|checkout|restore|branch)\s|git\s+-[cC]\s|git\s+--[a-z]|git\s+commit\s[^;|&]*\s-[a-z]*n|hooksPath|tier0_action|tier0\s+approve|--no-v|rm\s+-|DROP\s|TRUNCATE\s|docker\s+system|kubectl\s+delete|find\s.*-delete|dd\s+if=|chmod\s.*\s000|mkfs|pkill\s|fw\s.*--force|fw\s.*inception\s.*decide'; then
     exit 0
 fi
 
@@ -120,10 +120,24 @@ def strip_heredocs(cmd):
 
 # Strip quoted string contents to avoid false positives on commit messages,
 # echo arguments, and embedded Python/test code.
+# T-3593 round 3: but a quoted WORD with no whitespace inside is what the shell
+# passes as one argument - quoting an option name hides nothing from git:
+# '--no-verify', --no-'verify', \"--force\" are all the option. Such words are
+# dequoted instead of blanked; multi-word strings (messages, code) are blanked.
+SQ, DQ = chr(39), chr(34)
+_QPART = SQ + '([^' + SQ + ']*)' + SQ + '|' + DQ + '([^' + DQ + ']*)' + DQ
+_QWORD = re.compile(r'(?:[^\s' + SQ + DQ + ']|' + SQ + '[^' + SQ + ']*' + SQ + '|' + DQ + '[^' + DQ + ']*' + DQ + ')+')
 def strip_quotes(cmd):
-    cmd = re.sub(r\"'[^']*'\", \"''\", cmd)
-    cmd = re.sub(r'\"[^\"]*\"', '\"\"', cmd)
-    return cmd
+    def word(m):
+        w = m.group(0)
+        if SQ not in w and DQ not in w:
+            return w
+        inner = re.sub(_QPART, lambda q: q.group(1) if q.group(1) is not None else q.group(2), w)
+        if not re.search(r'\s', inner):
+            return inner
+        w = re.sub(SQ + '[^' + SQ + ']*' + SQ, SQ + SQ, w)
+        return re.sub(DQ + '[^' + DQ + ']*' + DQ, DQ + DQ, w)
+    return _QWORD.sub(word, cmd)
 
 # T-1427: Strip bash comments (# through end-of-line) so that commented-out
 # references to Tier 0 phrases in diagnostic/exploratory commands don't
@@ -142,27 +156,46 @@ command_stripped = strip_comments(command_stripped)
 # Each tuple: (regex_pattern, risk_description)
 # T-3594 A2: 'git -C dir push' and 'git -c k=v push' are pushes too; the push
 # patterns below match them as well as a plain git push.
-GIT_PUSH = r'\bgit\s+(?:-[cC]\s*\S+\s+|--[\w-]+(?:=\S+)?\s+)*push\b'
+GIT_PRE = r'\bgit\s+(?:-[cC]\s*\S+\s+|--[\w-]+(?:=\S+)?\s+)*'
+GIT_PUSH = GIT_PRE + r'push\b'
+
+# T-3593 round 3: git's parse-options accepts any unambiguous PREFIX of a long
+# option (--no-verif is --no-verify, --force-w is --force-with-lease, reset --h
+# is --hard). ab(name) matches every prefix of --name from the first keep
+# characters on, and nothing longer; over-matching a prefix git would reject as
+# ambiguous only blocks a command that would have failed anyway.
+def ab(name, keep=1):
+    tail = ''
+    for ch in reversed(name[keep:]):
+        tail = '(?:' + re.escape(ch) + tail + ')?'
+    return '--' + re.escape(name[:keep]) + tail + r'(?![\w-])'
+
+OPT_FORCE = ab('force-with-lease')
+OPT_DELETE = ab('delete')
+OPT_NO_VERIFY = ab('no-verify', 4)
+APPROVE_VERB = r'(?:\bfw\s+tier0\s+approve\b|\btier0_action\b)'
 
 PATTERNS = [
     # === Git destructive operations ===
-    (GIT_PUSH + r'[^;|&]*(-f\b|--force\b|--force-with-lease\b)',
+    (GIT_PUSH + r'[^;|&]*(\s-[a-zA-Z0-9]*f[a-zA-Z0-9]*\b|' + OPT_FORCE + ')',
      'FORCE PUSH: Can overwrite remote commit history'),
     # T-3593: forced refspec (+ref) and remote ref deletion are the same class
     # as --force; they were not matched before. The pre-push hook (T-3594)
     # enforces both at the ref level regardless of how the push was typed.
     (GIT_PUSH + r'[^;|&]*\s\+[^\s;|&]',
      'FORCE PUSH: +refspec overwrites remote commit history'),
-    (GIT_PUSH + r'[^;|&]*(\s-d\b|--delete\b|\s:[^\s;|&])',
+    (GIT_PUSH + r'[^;|&]*(\s-[a-zA-Z0-9]*d[a-zA-Z0-9]*\b|' + OPT_DELETE + r'|\s:[^\s;|&])',
      'REMOTE REF DELETE: Deletes a branch or tag on the remote'),
-    (r'\bgit\s+reset\s+--hard\b',
+    (GIT_PRE + r'reset\b[^;|&]*' + ab('hard'),
      'HARD RESET: Permanently discards all uncommitted changes'),
     (r'\bgit\s+clean\b[^;|&]*-[a-zA-Z]*f',
      'GIT CLEAN: Permanently removes untracked files'),
     (r'\bgit\s+(checkout|restore)\s+\.\s*(\s*$|[;&|])',
      'RESTORE ALL: Discards all unstaged changes in working directory'),
-    (r'\bgit\s+branch\s+[^;|&]*-D\b',
+    (GIT_PRE + r'branch\b[^;|&]*\s-[a-zA-Z]*D',
      'FORCE DELETE BRANCH: Deletes branch even if changes are unmerged'),
+    (GIT_PRE + r'branch\b(?=[^;|&]*(?:\s-[a-zA-Z]*d|' + OPT_DELETE + r'))(?=[^;|&]*(?:\s-[a-zA-Z]*f|' + ab('force') + r'))',
+     'FORCE DELETE BRANCH: --delete --force deletes a branch even if changes are unmerged'),
 
     # === Catastrophic file deletion ===
     # rm with recursive flag targeting dangerous paths
@@ -182,20 +215,34 @@ PATTERNS = [
      'SQL TRUNCATE: Permanent data destruction'),
 
     # === Hook/enforcement bypass ===
-    (r'\bgit\b[^;|&]*--no-verify\b',
+    (r'\bgit\b[^;|&]*' + OPT_NO_VERIFY,
      'HOOK BYPASS: --no-verify skips ALL git hooks (task ref, inception gate, audit)'),
+    (GIT_PRE + r'commit\b[^;|&]*\s-[a-zA-Z]*n',
+     'HOOK BYPASS: git commit -n is --no-verify (skips pre-commit and commit-msg hooks)'),
     # T-3594 A2: a core.hooksPath override skips every hook as surely as
     # --no-verify, including the pre-push forced-update guard. Reads pass.
-    (r'\bgit\b[^;|&]*-c\s*core\.hooksPath\s*=',
+    # Round 3: config keys are case-insensitive (core.hookspath works), and
+    # --config-env / GIT_CONFIG_* set the same key without -c.
+    (r'\bgit\b[^;|&]*(?:-c\s*|--config-env[=\s]\s*)(?i:core\.hookspath)\s*=',
      'HOOK BYPASS: -c core.hooksPath overrides the hook directory (skips pre-push and all other hooks)'),
-    (r'\bgit\s+config\b(?![^;|&]*--(get|list|show|get-all|get-regexp)\b)[^;|&]*\bcore\.hooksPath\s+\S',
+    (r'\bgit\s+config\b(?![^;|&]*--(get|list|show|get-all|get-regexp)\b)[^;|&]*\b(?i:core\.hookspath)\s+\S',
      'HOOK BYPASS: setting core.hooksPath redirects every git hook (skips pre-push and all other hooks)'),
+    (r'\bGIT_CONFIG_(?:PARAMETERS|KEY_\d+)=\S*(?i:core\.hookspath)',
+     'HOOK BYPASS: GIT_CONFIG_* sets core.hooksPath for git (skips pre-push and all other hooks)'),
 
     # === Tier 0 self-approval (T-3593 R2) ===
     # Approval is the operator's. The module refuses under CLAUDECODE=1 unless
     # overridden; the override is recorded as agent-override. Typed, both are Tier 0.
-    (r'\btier0_action\.py\b[^;|&]*\bapprove-pending\b',
+    (r'\btier0_action\b[^;|&]*\bapprove',
      'TIER 0 SELF-APPROVAL: approving a Tier 0 action is human-only (direct module path)'),
+    # Round 3 (R2 residue): stripping CLAUDECODE makes the module record
+    # approved_by: human. Typed, the env-strip route is Tier 0.
+    (r'\bCLAUDECODE=[\s\S]*' + APPROVE_VERB,
+     'TIER 0 SELF-APPROVAL: CLAUDECODE= in front of an approval makes an agent look human'),
+    (r'\benv\b[^;|&]*' + APPROVE_VERB,
+     'TIER 0 SELF-APPROVAL: env-wrapped approval (env -u CLAUDECODE / env -i) makes an agent look human'),
+    (r'\bunset\b[^;|&]*\bCLAUDECODE\b[\s\S]*' + APPROVE_VERB,
+     'TIER 0 SELF-APPROVAL: unset CLAUDECODE before an approval makes an agent look human'),
     (r'\bfw\s+tier0\s+approve\b[^;|&]*--i-am-human\b',
      'TIER 0 SELF-APPROVAL: fw tier0 approve --i-am-human from an agent session approves its own block'),
 
@@ -227,29 +274,43 @@ PATTERNS = [
      'INCEPTION DECISION: GO/NO-GO decisions require human authority. Present your recommendation and rationale, then ask the human to run: fw inception decide T-XXX go|no-go --rationale \"...\"'),
 ]
 
-for pattern, description in PATTERNS:
-    if re.search(pattern, command_stripped):
-        print(f'BLOCKED|{description}')
-        # T-3593: map the command to ACTIONS (verb + target) so an approval
-        # survives incidental retry text. Pattern list stays here; the module
-        # only asks this list whether a segment is flagged. Any failure → no
-        # ACTIONS line → the legacy command-hash path, unchanged.
-        try:
-            import json, os
-            sys.path.insert(0, os.environ.get('T0_FRAMEWORK_ROOT', '') + '/lib')
-            import tier0_action
-            def is_flagged(seg):
-                # Every matching pattern, so the module can require that ALL of
-                # them are covered by the action verb (T-3593 R1).
-                t = strip_comments(strip_quotes(strip_heredocs(seg)))
-                return [d for p, d in PATTERNS if re.search(p, t)]
-            acts = tier0_action.classify(strip_heredocs(command), is_flagged,
-                                         os.environ.get('T0_CWD') or None)
-            if acts:
-                print('ACTIONS ' + json.dumps(acts, sort_keys=True))
-        except Exception:
-            pass
-        sys.exit(0)
+# Matched against the command with only heredocs stripped: the call lives in
+# quoted code (python3 -c '... tier0_action.approve(...)'), which strip_quotes
+# blanks (round 3, R2 residue).
+RAW_PATTERNS = [
+    (r'\btier0_action\b[^|&]{0,80}?\bapprove\b',
+     'TIER 0 SELF-APPROVAL: calling tier0_action.approve() directly records an approval no human gave'),
+]
+
+def matches(raw):
+    t = strip_comments(strip_quotes(raw))
+    return ([d for p, d in PATTERNS if re.search(p, t)]
+            + [d for p, d in RAW_PATTERNS if re.search(p, raw)])
+
+found = matches(strip_heredocs(command))
+if found:
+    # Every matching risk is shown, not only the first: a force push that also
+    # skips hooks must say so (round 3).
+    print('BLOCKED|' + ' + '.join(found))
+    # T-3593: map the command to ACTIONS (verb + target) so an approval
+    # survives incidental retry text. Pattern list stays here; the module
+    # only asks this list whether a segment is flagged. Any failure → no
+    # ACTIONS line → the legacy command-hash path, unchanged.
+    try:
+        import json, os
+        sys.path.insert(0, os.environ.get('T0_FRAMEWORK_ROOT', '') + '/lib')
+        import tier0_action
+        def is_flagged(seg):
+            # Every matching pattern, so the module can require that ALL of
+            # them are covered by the action verb (T-3593 R1).
+            return matches(strip_heredocs(seg))
+        acts = tier0_action.classify(strip_heredocs(command), is_flagged,
+                                     os.environ.get('T0_CWD') or None)
+        if acts:
+            print('ACTIONS ' + json.dumps(acts, sort_keys=True))
+    except Exception:
+        pass
+    sys.exit(0)
 
 print('SAFE')
 " 2>/dev/null)
