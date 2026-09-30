@@ -74,11 +74,13 @@ EOF
 
     run "$FRAMEWORK_ROOT/bin/fw" task review T-9001
     [ "$status" -eq 1 ]
-    # The new BLOCK message must name the env-var bypass.
-    [[ "$output" == *"BLOCKED: Inception T-9001 has empty"* ]]
-    [[ "$output" == *"FW_ALLOW_EMPTY_RECOMMENDATION=1"* ]]
-    # Origin cross-refs must be present (T-679 governance + T-2204 chain).
-    [[ "$output" == *"T-679"* ]] || [[ "$output" == *"T-2204"* ]]
+    # T-3549 (7a24ba133): the one handoff predicate (inception_handoff_blockers)
+    # runs before the T-2206 block and refuses an empty Recommendation as
+    # [empty-recommendation]. The block message must name its bypass (T-1890).
+    [[ "$output" == *"BLOCKED: this inception is not handoff-ready"* ]]
+    [[ "$output" == *"[empty-recommendation]"* ]]
+    [[ "$output" == *"No handoff link has been emitted"* ]]
+    [[ "$output" == *"FW_ALLOW_UNREADY_HANDOFF=1"* ]]
     # No review marker on a blocked emission.
     [ ! -f "$PROJECT_ROOT/.context/working/.reviewed-T-9001" ]
 }
@@ -94,7 +96,9 @@ EOF
 
     run "$FRAMEWORK_ROOT/bin/fw" task review T-9002
     [ "$status" -eq 1 ]
-    [[ "$output" == *"BLOCKED: Inception T-9002 has empty"* ]]
+    # T-3549 (7a24ba133): refused by the handoff predicate, see test above.
+    [[ "$output" == *"BLOCKED: this inception is not handoff-ready"* ]]
+    [[ "$output" == *"[empty-recommendation]"* ]]
     [ ! -f "$PROJECT_ROOT/.context/working/.reviewed-T-9002" ]
 }
 

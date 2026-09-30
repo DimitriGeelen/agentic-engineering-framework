@@ -156,7 +156,10 @@ _run_emit() {
     _run_emit "T-9007" "$f"
     [ "$status" -ne 0 ]
     [[ "$output" == *"BLOCKED"* ]]
-    [[ "$output" == *"Inception"* ]]
+    # T-3549 (7a24ba133): inceptions are now refused first by the handoff
+    # predicate (inception_handoff_blockers), not by the T-2206 wording.
+    [[ "$output" == *"not handoff-ready"* ]]
+    [[ "$output" == *"[empty-recommendation]"* ]]
 }
 
 # ── update-task.sh env-var parity test ────────────────────────────────────────
