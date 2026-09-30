@@ -462,3 +462,71 @@ class TestOneRequirement:
 def _stepdown_spend(root, monkeypatch):
     """Committed judge spend that justifies a step-down at ceiling 200 (199 spent)."""
     _cost(root, 199)
+
+
+# ── 6. Claude N3: components are empty when the rung is chosen ───────────────────────────────
+
+def _touch_components(root, n, *, registered=True, commit_msg=None, prefix="mod"):
+    """A commit referencing the task that changes `n` source files, each (optionally) a
+    fabric-registered component — the frontmatter's `components:` stays empty, as it does until
+    close fills it."""
+    cards = root / ".fabric" / "components"
+    cards.mkdir(parents=True, exist_ok=True)
+    for i in range(n):
+        m = f"{prefix}{i}"
+        src = root / "lib" / f"{m}.py"
+        src.parent.mkdir(exist_ok=True)
+        src.write_text(f"# module {i}\n")
+        if registered:
+            (cards / f"{m}.yaml").write_text(f"id: {m}\nname: {m}\nlocation: lib/{m}.py\n")
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", commit_msg or f"{TID}: touch {n} modules")
+
+
+class TestComponentsFromGit:
+    def _need(self, root):
+        vl._HISTORY_FM.clear()
+        vl._GIT_COMPONENTS.clear()
+        ctx = vl._task_ctx(root, TID)
+        crit = next(c for c in vl.human_criteria(ctx.text) if c.index == 1)
+        return vl.required_strength(ctx, crit)
+
+    def test_probe_n3_five_components_touched_with_empty_frontmatter_is_high(self, repo):
+        """N3: `components: []` until close; the rung was chosen as if nothing were touched."""
+        _mk_task(repo, TASTE)
+        _produce(repo)
+        _touch_components(repo, 5)
+        rung, why = self._need(repo)
+        assert rung == 5 and "components=5" in why, why
+
+    def test_three_components_is_medium(self, repo):
+        _mk_task(repo, TASTE)
+        _produce(repo)
+        _touch_components(repo, 3)
+        assert self._need(repo)[0] == 3
+
+    def test_control_unregistered_files_or_other_tasks_do_not_count(self, repo):
+        _mk_task(repo, TASTE)
+        _produce(repo)
+        _touch_components(repo, 5, registered=False)
+        assert self._need(repo)[0] == 1
+        _touch_components(repo, 5, commit_msg="T-1: someone else's work", prefix="other")
+        assert self._need(repo)[0] == 1
+
+    def test_a_working_tree_fabric_edit_does_not_lower_the_count(self, repo):
+        """The cards are read as committed at HEAD, not from the working tree."""
+        _mk_task(repo, TASTE)
+        _produce(repo)
+        _touch_components(repo, 5)
+        for card in (repo / ".fabric" / "components").glob("*.yaml"):
+            card.unlink()
+        assert self._need(repo)[0] == 5
+
+    def test_git_failure_refuses(self, repo, monkeypatch):
+        _mk_task(repo, TASTE)
+        _produce(repo)
+        real = vl._git_out
+        monkeypatch.setattr(vl, "_git_out", lambda r, *a: (128, "") if "--grep" in " ".join(a)
+                            and "--name-only" in a else real(r, *a))
+        with pytest.raises(vl.HistoryUnreadable):
+            self._need(repo)

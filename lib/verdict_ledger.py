@@ -1808,6 +1808,48 @@ def _task_history_fms(root: Path, task_id: str) -> list[tuple[str, dict]]:
     return out
 
 
+_GIT_COMPONENTS: dict = {}
+#: Paths close's component resolution skips too (update-task.sh, T-224): metadata, not work.
+_NOT_COMPONENT = (".context/", ".tasks/", ".fabric/", "docs/")
+
+
+def _git_components(root: Path, task_id: str) -> list[str]:
+    """(round 8, Claude N3) The fabric components the task's commits changed, read from git —
+    not the frontmatter `components:` that close fills only after the last `apply`. The same
+    resolution close uses (update-task.sh T-224: every commit whose message names the task, on
+    any branch; metadata paths skipped; path -> id through each card's `location:`), except that
+    the cards are read AS COMMITTED at HEAD, so deleting or editing a card in the working tree
+    does not lower the count. Cached per (root, task, HEAD). Raises HistoryUnreadable when git
+    cannot answer."""
+    head = _head_sha(root)
+    key = (str(root), task_id, head)
+    if key in _GIT_COMPONENTS:
+        return _GIT_COMPONENTS[key]
+    if not head:
+        return []
+    rc, out = _git_out(root, "log", "--all", "-E", f"--grep={re.escape(task_id)}([^0-9]|$)",
+                       "--name-only", "--format=")
+    if rc != 0:
+        raise HistoryUnreadable(f"could not list the files {task_id}'s commits changed (git log "
+                                f"rc={rc}) — its component count cannot be established")
+    paths = {p.strip() for p in out.splitlines() if p.strip() and not p.startswith(_NOT_COMPONENT)}
+    rc, cards = _git_out(root, "grep", "-e", "^id:", "-e", "^location:", "HEAD", "--",
+                         ".fabric/components/")
+    if rc not in (0, 1):                       # 1 = no match (no fabric): an answer, not an error
+        raise HistoryUnreadable(f"could not read the committed fabric cards (git grep rc={rc})")
+    by_card: dict[str, dict] = {}
+    for line in cards.splitlines():
+        # HEAD:.fabric/components/x.yaml:id: foo
+        parts = line.split(":", 3)
+        if len(parts) == 4:
+            by_card.setdefault(parts[1], {})[parts[2].strip()] = parts[3].strip()
+    loc = {c["location"]: c["id"] for c in by_card.values() if c.get("location") and c.get("id")}
+    comps = sorted({loc[p] for p in paths if p in loc})
+    _GIT_COMPONENTS.clear() if len(_GIT_COMPONENTS) > 64 else None
+    _GIT_COMPONENTS[key] = comps
+    return comps
+
+
 def task_required_strength(root: Path, task_id: str, bodies: list[str], current_text: str,
                            revision: str = "") -> tuple[int, str]:
     """(rung, reason) IW-7 requires for criteria `bodies` of `task_id` — THE requirement (round 8,
@@ -1828,6 +1870,16 @@ def task_required_strength(root: Path, task_id: str, bodies: list[str], current_
         r3, w3 = review_policy.required_rung(fm, bodies)
         if r3 > rung:
             rung, why = r3, f"{w3} (in the task's committed history at {sha[:9]})"
+    # Round 8 (Claude N3): the components the task's commits actually changed, from git.
+    gc = _git_components(root, task_id)
+    if gc:
+        fm = dict(frontmatter(current_text))
+        have = fm.get("components") or []
+        have = have if isinstance(have, list) else [have]
+        fm["components"] = sorted({str(c) for c in have} | set(gc))
+        r4, w4 = review_policy.required_rung(fm, bodies)
+        if r4 > rung:
+            rung, why = r4, f"{w4} (components the task's commits changed, from git)"
     return rung, why
 
 
