@@ -101,6 +101,23 @@ log_gate_bypass() {
     echo "  reason: '${_esc_reason:-}'" >> "$log_file"
 }
 
+# Reviewer-verdict application (T-3579, T-3557 slice 2)
+# An independent reviewer's GREEN verdict, recorded in .context/reviews/verdicts.jsonl
+# for the current text of a REVIEWER-JUDGES Human criterion, ticks that criterion and,
+# when nothing is left for the operator to answer, hands ownership to the agent. This is
+# the NORMAL path — no flag, no bypass. The closer only reads the ledger; verdicts are
+# written by `fw reviewer verdict record`, by a reviewer who is not the producer.
+# Runs BEFORE the R-033 sovereignty gate so an all-green task reaches it as owner: agent.
+apply_reviewer_verdicts() {
+    [ "$NEW_STATUS" = "work-completed" ] || return 0
+    [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ] || return 0
+    local applied
+    applied=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" apply "$TASK_ID" 2>/dev/null) || return 0
+    if echo "$applied" | grep -q '"verdict_id"'; then
+        echo -e "${GREEN}Reviewer verdict applied: $applied${NC}"
+    fi
+}
+
 # Human Sovereignty Gate (R-033/T-198)
 # Block agent from completing human-owned tasks without human interaction.
 check_human_sovereignty() {
@@ -544,6 +561,15 @@ check_render_surface_human_ac() {
     # T-1719's close. Logic lives in lib/human_review_state.py so bats can pin it.
     local review_state
     review_state=$(python3 "$FRAMEWORK_ROOT/lib/human_review_state.py" "$TASK_FILE" 2>/dev/null || echo "error")
+
+    # T-3579: a green verdict from an independent reviewer satisfies the gate in place of
+    # an unticked [REVIEW]. No bypass flag — this is the normal path. The gate names the
+    # verdict that satisfied it.
+    local verdict_line
+    if verdict_line=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" check-render "$TASK_ID" 2>/dev/null); then
+        echo -e "${GREEN}Render-surface gate: satisfied by ${verdict_line} ✓${NC}"
+        return 0
+    fi
 
     case "$review_state" in
         has_review)
@@ -1897,6 +1923,7 @@ PY
 
         # === Human Sovereignty Gate (R-033/T-198) ===
         if [ "$NEW_STATUS" = "work-completed" ]; then
+            apply_reviewer_verdicts
             check_human_sovereignty
         fi
 

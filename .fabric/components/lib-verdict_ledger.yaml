@@ -1,0 +1,21 @@
+id: lib/verdict_ledger.py
+name: verdict_ledger
+type: script
+subsystem: framework-core
+location: lib/verdict_ledger.py
+tags: []
+
+purpose: "verdict_ledger.py — an independent reviewer's recorded verdict closes a criterion (T-3579)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-30
+created_by: unknown

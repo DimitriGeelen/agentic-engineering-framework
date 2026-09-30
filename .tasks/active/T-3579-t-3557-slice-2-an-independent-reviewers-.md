@@ -99,13 +99,13 @@ Seven logged bypasses in two days for something the operator has ruled is normal
 ## Acceptance Criteria
 
 ### Agent
-- [ ] A verdict record format is defined and appended to a committed ledger (e.g. `.context/reviews/verdicts.jsonl`): task, criterion index, criterion digest (as T-1985 auto-tick uses), verdict (green/amber/red/escalate), guidance (mandatory unless green), reviewer identity (session/model/vendor), rung, evidence paths, timestamp
-- [ ] A GREEN record whose digest matches the current criterion text satisfies that criterion: it is ticked with the verdict cited, and a task whose only open Human criteria are all green-judged moves ownership to agent automatically, without `--skip-human-ownership`, logged
-- [ ] The render-surface gate (P-013) accepts a green verdict record for a render criterion in place of an unticked [REVIEW]; no `--skip-render-review` is needed, and the gate says which verdict satisfied it
-- [ ] Amber, red and escalate keep the criterion open and append to the refusal ledger (T-3555 if built, else a documented interim file); escalate re-routes the criterion to the operator with the reviewer's reason shown on /review
-- [ ] Only REVIEWER_JUDGES criteria can be satisfied this way: a green record for a tier0, act-in-the-world or sovereignty criterion is refused, with a test
-- [ ] A record whose reviewer identity equals the task's producer (the session or agent that committed the work) is refused, with a test (the operator's principle: the reviewer is never the producer)
-- [ ] If the criterion text changes after the verdict (digest mismatch), the verdict no longer applies (fresh consent, as T-1985)
+- [x] A verdict record format is defined and appended to a committed ledger (e.g. `.context/reviews/verdicts.jsonl`): task, criterion index, criterion digest (as T-1985 auto-tick uses), verdict (green/amber/red/escalate), guidance (mandatory unless green), reviewer identity (session/model/vendor), rung, evidence paths, timestamp
+- [x] A GREEN record whose digest matches the current criterion text satisfies that criterion: it is ticked with the verdict cited, and a task whose only open Human criteria are all green-judged moves ownership to agent automatically, without `--skip-human-ownership`, logged
+- [x] The render-surface gate (P-013) accepts a green verdict record for a render criterion in place of an unticked [REVIEW]; no `--skip-render-review` is needed, and the gate says which verdict satisfied it
+- [x] Amber, red and escalate keep the criterion open and append to the refusal ledger (T-3555 if built, else a documented interim file); escalate re-routes the criterion to the operator with the reviewer's reason shown on /review
+- [x] Only REVIEWER_JUDGES criteria can be satisfied this way: a green record for a tier0, act-in-the-world or sovereignty criterion is refused, with a test
+- [x] A record whose reviewer identity equals the task's producer (the session or agent that committed the work) is refused, with a test (the operator's principle: the reviewer is never the producer)
+- [x] If the criterion text changes after the verdict (digest mismatch), the verdict no longer applies (fresh consent, as T-1985)
 - [ ] Tests cover each rule above; `bin/fw vendor self --check` clean
 
 ### Human
@@ -140,6 +140,12 @@ Seven logged bypasses in two days for something the operator has ruled is normal
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_t3579_verdict_ledger.py -q > /tmp/.t3579-py.out 2>&1 && grep -q passed /tmp/.t3579-py.out && ! grep -q failed /tmp/.t3579-py.out
+timeout 300 bats tests/unit/t3579_verdict_close_path.bats > /tmp/.t3579-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3579-bats.out
+test "$(grep -c '# skip' /tmp/.t3579-bats.out)" -eq 0
+timeout 300 bats tests/unit/t3445_delegation_close_path.bats > /tmp/.t3579-bats2.out 2>&1 && ! grep -q "^not ok" /tmp/.t3579-bats2.out
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
