@@ -152,16 +152,30 @@ inside a build script, with the variable pointing at the repo root.
 **Approvals name the action (T-3593).** A blocked command that maps cleanly to actions
 (force-push, branch-delete, hard-reset, recursive-delete — each with its target) is
 approved per action, once, for a bounded time, so a retry with different incidental text
-still matches while a different target does not. Anything the classifier cannot read with
-certainty — including a segment that also carries `--no-verify` or a `git -c` override —
-keeps the exact-text approval. Approval is refused to an agent session unless overridden,
-and the override is recorded as `agent-override`; a record written straight into the
-approval store by a same-user agent cannot be told apart from a genuine one. This does not
+still matches while a different target does not. A push ref is keyed as pre-push sees it (a
+branch by short name, a tag as `refs/tags/<t>`), and a short name that local refs cannot
+resolve to exactly one of the two is not mapped. Anything the classifier cannot read with
+certainty keeps the exact-text approval: a segment that also carries `--no-verify`, any
+variable assignment or `env`/`sudo` wrapper in front of the command (`HOME=`,
+`GIT_CONFIG_GLOBAL=`, anything), a segment after `export`/`source`/`eval`/`alias`, any git
+global option other than `-C` (same repo), `-P` and `--no-pager`, and a relative `cd` while
+`CDPATH` is set. An admitted push approval not consumed by pre-push within 60 s expires. A
+hook registered twice is deduplicated by the tool call's `tool_use_id`, not by time, so an
+approved command runs once. Approval is refused to an agent session unless overridden, and
+the override is recorded as `agent-override`; a record written straight into the approval
+store by a same-user agent, or an approval run with the agent-session marker stripped from
+the environment inside a script, cannot be told apart from a genuine one. This does not
 widen what the text gate sees.
 Force-push, tag moves and ref deletion are additionally enforced at git pre-push, for any
 push that runs that hook. Any path that skips client-side hooks skips it too — `git push
---no-verify`, a `core.hooksPath` override, plumbing (`git send-pack`) or forge-API ref
-updates — so server-side branch and tag protection remains the stronger control.
+--no-verify`, a `core.hooksPath` set through `-c`, `--config-env`, an included file, a
+config file chosen by `HOME`, `XDG_CONFIG_HOME`, `GIT_CONFIG_GLOBAL`, `GIT_CONFIG_SYSTEM` or
+`GIT_CONFIG`, or `GIT_CONFIG_PARAMETERS`/`GIT_CONFIG_COUNT`; another repository's own
+configuration (`-C`, `--git-dir`, `GIT_DIR`); plumbing (`git send-pack`) or forge-API ref
+updates. Typed, the text gate labels the first group a hook bypass (the environment forms
+when a hook-running git command follows); it does not label another repository's own
+configuration, `sudo`, or git aliases. Server-side branch and tag protection remains the
+stronger control.
 
 ## Working with Tasks
 

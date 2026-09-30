@@ -6,9 +6,10 @@
 # consumes the approval (rm -f $APPROVAL_FILE) and exits 0; without a sentinel, the
 # second invocation finds no approval and BLOCKS, so every approve+retry ends in BLOCK.
 #
-# Fix: on consume, write ${APPROVAL_FILE}.consumed (hash + timestamp). Subsequent
-# invocations within 5s for the same command short-circuit to allow. Stale sentinels
-# (>=5s) are cleaned up so they cannot silently re-allow later commands.
+# Fix: on consume, write ${APPROVAL_FILE}.consumed (hash + timestamp + tool_use_id).
+# T-3593 round 4: a later fire is let through only when it is the SAME tool call
+# (same PreToolUse tool_use_id). Until then "same text within 5 s" was the key,
+# which let an approved non-idempotent command (git reset --hard HEAD~1) run twice.
 
 load ../test_helper
 
@@ -26,10 +27,17 @@ teardown() {
     [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
 }
 
+# $2 = tool_use_id (T-3593 round 4: duplicate fires of ONE tool call share it;
+# absent = the field is not in the payload).
 _run_hook() {
-    local cmd="$1"
+    local cmd="$1" id="${2:-}"
     local json
-    json=$(python3 -c "import json,sys; print(json.dumps({'tool_input':{'command': sys.argv[1]}}))" "$cmd")
+    json=$(python3 -c "
+import json, sys
+d = {'tool_input': {'command': sys.argv[1]}}
+if sys.argv[2]:
+    d['tool_use_id'] = sys.argv[2]
+print(json.dumps(d))" "$cmd" "$id")
     echo "$json" | bash "$HOOK"
 }
 
@@ -59,20 +67,38 @@ _pre_approve() {
     grep -q "^$expected_hash " "$CONSUMED_FILE"
 }
 
-@test "tier0_idempotency: second call within 5s short-circuits to allow (no new pending block)" {
+@test "tier0_idempotency: duplicate fire of the SAME tool call short-circuits to allow (no new pending block)" {
     local cmd="git push --force-with-lease onedev master"
     _pre_approve "$cmd"
 
-    run _run_hook "$cmd"
+    run _run_hook "$cmd" toolu_same
     [ "$status" -eq 0 ]
 
-    # Second invocation — sentinel must short-circuit
-    run _run_hook "$cmd"
+    # Second fire of the same call — sentinel must short-circuit
+    run _run_hook "$cmd" toolu_same
     [ "$status" -eq 0 ]
     # CRITICAL: no new pending block file written by the duplicate fire
     [ ! -f "${APPROVAL_FILE}.pending" ]
     # No approvals/pending-*.yaml written either
     [ -z "$(ls "$TEST_TEMP_DIR/.context/approvals" 2>/dev/null | grep '^pending-' || true)" ]
+}
+
+@test "tier0_idempotency: a SECOND tool call with the identical text, immediately after, is refused" {
+    local cmd="git push --force-with-lease onedev master"
+    _pre_approve "$cmd"
+    run _run_hook "$cmd" toolu_one
+    [ "$status" -eq 0 ]
+    run _run_hook "$cmd" toolu_two
+    [ "$status" -eq 2 ]
+}
+
+@test "tier0_idempotency: without a tool_use_id there is no grace at all" {
+    local cmd="git push --force-with-lease onedev master"
+    _pre_approve "$cmd"
+    run _run_hook "$cmd"
+    [ "$status" -eq 0 ]
+    run _run_hook "$cmd"
+    [ "$status" -eq 2 ]
 }
 
 @test "tier0_idempotency: stale sentinel (age>=5s) does NOT silently re-allow" {

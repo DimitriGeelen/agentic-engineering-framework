@@ -202,9 +202,10 @@ _events() { cat "$FX/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
     run _hook "git push origin +main"
     [ "$status" -eq 2 ]
     [[ "$output" == *"FORCE-PUSH ref 'main'"* ]]
+    git -C "$FX" branch old    # round 4: a short delete name needs local evidence it is a branch
     run _hook "git push origin --delete old"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"DELETE ref 'old' on remote 'origin'"* ]]
+    [[ "$output" == *"DELETE branch 'old' on remote 'origin'"* ]]
     # control: a plain push is not touched
     run _hook "git push origin main"
     [ "$status" -eq 0 ]
@@ -379,9 +380,10 @@ _mod() { PROJECT_ROOT="$FX" python3 "$FRAMEWORK_ROOT/lib/tier0_action.py" "$@"; 
     [ "$status" -eq 2 ]
     [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
     # abbreviated --delete maps to the delete action
+    git -C "$FX" branch old    # round 4: local evidence that 'old' is a branch
     run _hook "git push --dele origin old"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"DELETE ref 'old' on remote 'origin'"* ]]
+    [[ "$output" == *"DELETE branch 'old' on remote 'origin'"* ]]
     # an option git does not know (or an ambiguous prefix) is never mapped
     local sp
     for sp in "--frobnicate -f" "--forc" "--fo -f" "--receive-pack=/bin/true -f"; do

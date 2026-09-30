@@ -87,6 +87,19 @@ except Exception:
 " 2>/dev/null)
 [ -n "$T0_CWD" ] || T0_CWD="$PWD"
 
+# T-3593 round 4: the id of THIS tool call. A hook registered twice fires twice
+# for one call with the same id; two calls never share one. Deduplication of
+# duplicate fires is bound to it (see the T-1508 block below). Absent → "",
+# and a duplicate fire then gets no grace (fails closed).
+T0_CALL_ID=$(echo "$INPUT" | python3 -c "
+import sys, json
+try:
+    print(json.load(sys.stdin).get('tool_use_id', '') or '')
+except Exception:
+    print('')
+" 2>/dev/null)
+case "$T0_CALL_ID" in *[!A-Za-z0-9_-]*) T0_CALL_ID="" ;; esac
+
 # If no command extracted, allow (defensive — don't block on parse failure)
 if [ -z "$COMMAND" ]; then
     exit 0
@@ -96,12 +109,12 @@ fi
 # Only invoke Python if the command MIGHT be destructive.
 # This keeps the hook fast (<5ms) for the 95%+ of safe commands.
 if ! echo "$COMMAND" | grep -qEi \
-    'git\s+(push|reset|clean|checkout|restore|branch)\s|git\s+-[cC]\s|git\s+--[a-z]|git\s+commit\s[^;|&]*\s-[a-z]*n|hooksPath|tier0_action|tier0\s+approve|--no-v|rm\s+-|DROP\s|TRUNCATE\s|docker\s+system|kubectl\s+delete|find\s.*-delete|dd\s+if=|chmod\s.*\s000|mkfs|pkill\s|fw\s.*--force|fw\s.*inception\s.*decide'; then
+    'git\s+(push|reset|clean|checkout|restore|branch)\s|git\s+-|git\s+commit\b[^;|&]*\s-[a-z]*n|(HOME|XDG_CONFIG_HOME|GIT_CONFIG[A-Z0-9_]*)=|hooksPath|tier0|--no-v|rm\s+-|DROP\s|TRUNCATE\s|docker\s+system|kubectl\s+delete|find\s.*-delete|dd\s+if=|chmod\s.*\s000|mkfs|pkill\s|fw\s.*--force|fw\s.*inception\s.*decide'; then
     exit 0
 fi
 
 # ── Detailed pattern matching (Python — only reached for suspicious commands) ──
-MATCH_RESULT=$(echo "$COMMAND" | T0_CWD="$T0_CWD" T0_FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 -c "
+MATCH_RESULT=$(echo "$COMMAND" | T0_CWD="$T0_CWD" T0_ROOT="$PROJECT_ROOT" T0_FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 -c "
 import re, sys
 
 command = sys.stdin.read().strip()
@@ -156,7 +169,9 @@ command_stripped = strip_comments(command_stripped)
 # Each tuple: (regex_pattern, risk_description)
 # T-3594 A2: 'git -C dir push' and 'git -c k=v push' are pushes too; the push
 # patterns below match them as well as a plain git push.
-GIT_PRE = r'\bgit\s+(?:-[cC]\s*\S+\s+|--[\w-]+(?:=\S+)?\s+)*'
+# Round 4: any short global option (-P, -p) and a long option with a separate
+# argument (--git-dir /x) too — 'git -P push -f' escaped every push pattern.
+GIT_PRE = r'\bgit\s+(?:-[cC]\s*\S+\s+|-[a-zA-Z]+\s+|--[\w-]+(?:=\S+|\s+[^-\s]\S*)?\s+)*'
 GIT_PUSH = GIT_PRE + r'push\b'
 
 # T-3593 round 3: git's parse-options accepts any unambiguous PREFIX of a long
@@ -199,13 +214,14 @@ PATTERNS = [
 
     # === Catastrophic file deletion ===
     # rm with recursive flag targeting dangerous paths
-    (r'\brm\s+[^;|&]*-[a-zA-Z]*[rR][a-zA-Z]*[^;|&]*\s+/(\s|$|;|&|\*)',
+    # Round 4: a closing ')' ends the target too — '(cd sub && rm -rf *)'.
+    (r'\brm\s+[^;|&]*-[a-zA-Z]*[rR][a-zA-Z]*[^;|&]*\s+/(\s|$|;|&|\)|\*)',
      'RECURSIVE DELETE: Targets root filesystem (/)'),
-    (r'\brm\s+[^;|&]*-[a-zA-Z]*[rR][a-zA-Z]*[^;|&]*\s+(~|\\\$HOME)(\s|$|;|&|/)',
+    (r'\brm\s+[^;|&]*-[a-zA-Z]*[rR][a-zA-Z]*[^;|&]*\s+(~|\\\$HOME)(\s|$|;|&|\)|/)',
      'RECURSIVE DELETE: Targets home directory'),
-    (r'\brm\s+[^;|&]*-[a-zA-Z]*[rR][a-zA-Z]*[^;|&]*\s+\.\s*($|[;&|])',
+    (r'\brm\s+[^;|&]*-[a-zA-Z]*[rR][a-zA-Z]*[^;|&]*\s+\.\s*($|[;&|)])',
      'RECURSIVE DELETE: Targets current directory (.)'),
-    (r'\brm\s+[^;|&]*-[a-zA-Z]*[rR][a-zA-Z]*[^;|&]*\s+\*(\s|$|;|&)',
+    (r'\brm\s+[^;|&]*-[a-zA-Z]*[rR][a-zA-Z]*[^;|&]*\s+\*(\s|$|;|&|\))',
      'RECURSIVE DELETE: Targets everything via wildcard (*)'),
 
     # === Database destructive ===
@@ -223,12 +239,22 @@ PATTERNS = [
     # --no-verify, including the pre-push forced-update guard. Reads pass.
     # Round 3: config keys are case-insensitive (core.hookspath works), and
     # --config-env / GIT_CONFIG_* set the same key without -c.
-    (r'\bgit\b[^;|&]*(?:-c\s*|--config-env[=\s]\s*)(?i:core\.hookspath)\s*=',
-     'HOOK BYPASS: -c core.hooksPath overrides the hook directory (skips pre-push and all other hooks)'),
+    # Round 4: include.path / includeIf pull config (hooksPath included) from a
+    # file; a -c value that strip_quotes blanked ('' / \"\") cannot be read.
+    (r'\bgit\b[^;|&]*(?:-c\s*|--config-env[=\s]\s*)(?:(?i:core\.hookspath|include\.path)\s*=|(?i:includeif)\.|' + SQ + SQ + '|' + DQ + DQ + ')',
+     'HOOK BYPASS: -c core.hooksPath / include.path overrides the hook directory (skips pre-push and all other hooks)'),
     (r'\bgit\s+config\b(?![^;|&]*--(get|list|show|get-all|get-regexp)\b)[^;|&]*\b(?i:core\.hookspath)\s+\S',
      'HOOK BYPASS: setting core.hooksPath redirects every git hook (skips pre-push and all other hooks)'),
     (r'\bGIT_CONFIG_(?:PARAMETERS|KEY_\d+)=\S*(?i:core\.hookspath)',
-     'HOOK BYPASS: GIT_CONFIG_* sets core.hooksPath for git (skips pre-push and all other hooks)'),
+     'HOOK BYPASS: GIT_CONFIG_PARAMETERS / GIT_CONFIG_KEY_n sets core.hooksPath for git (skips pre-push and all other hooks)'),
+    # Round 4 (N1): every environment variable that selects a config file git
+    # reads, or carries config itself, can set core.hooksPath — whatever its
+    # value says, which strip_quotes may have blanked (a multi-setting
+    # GIT_CONFIG_PARAMETERS). Labelled whenever a hook-running git command
+    # follows it anywhere in the command (prefix, env, export; ...).
+    (r'\b(?:HOME|XDG_CONFIG_HOME|GIT_CONFIG|GIT_CONFIG_GLOBAL|GIT_CONFIG_SYSTEM|GIT_CONFIG_PARAMETERS|GIT_CONFIG_COUNT|GIT_CONFIG_KEY_\d+|GIT_CONFIG_VALUE_\d+)=[\s\S]*?'
+     + GIT_PRE + r'(?:push|commit|merge|pull|rebase|am|cherry-pick|revert)\b',
+     'HOOK BYPASS: HOME / XDG_CONFIG_HOME / GIT_CONFIG* select or carry git config, which can set core.hooksPath (skips pre-push and all other hooks)'),
 
     # === Tier 0 self-approval (T-3593 R2) ===
     # Approval is the operator's. The module refuses under CLAUDECODE=1 unless
@@ -282,10 +308,20 @@ RAW_PATTERNS = [
      'TIER 0 SELF-APPROVAL: calling tier0_action.approve() directly records an approval no human gave'),
 ]
 
+# Round 4 (R2 residue): matched against the command with every quote and
+# backslash REMOVED, so a spelling the shell reassembles is seen: bash -c '...',
+# appr\"\"ove, appro\\ve. A variable in the verb slot (tier0 \$V) is refused too.
+DEQUOTED_PATTERNS = [
+    (r'(?:\bCLAUDECODE=|\benv\b|\bunset\b[^;|&]*\bCLAUDECODE\b)[\s\S]*\btier0\s+(?:approve\b|\\\$)',
+     'TIER 0 SELF-APPROVAL: environment-stripped approval (CLAUDECODE= / env / unset, quoted or split) makes an agent look human'),
+]
+
 def matches(raw):
     t = strip_comments(strip_quotes(raw))
+    dq = re.sub('[' + SQ + DQ + chr(92) * 2 + ']', '', raw)
     return ([d for p, d in PATTERNS if re.search(p, t)]
-            + [d for p, d in RAW_PATTERNS if re.search(p, raw)])
+            + [d for p, d in RAW_PATTERNS if re.search(p, raw)]
+            + [d for p, d in DEQUOTED_PATTERNS if re.search(p, dq)])
 
 found = matches(strip_heredocs(command))
 if found:
@@ -305,7 +341,8 @@ if found:
             # them are covered by the action verb (T-3593 R1).
             return matches(strip_heredocs(seg))
         acts = tier0_action.classify(strip_heredocs(command), is_flagged,
-                                     os.environ.get('T0_CWD') or None)
+                                     os.environ.get('T0_CWD') or None,
+                                     os.environ.get('T0_ROOT') or None)
         if acts:
             print('ACTIONS ' + json.dumps(acts, sort_keys=True))
     except Exception:
@@ -364,34 +401,41 @@ APPROVAL_TTL="${TIER0_WATCHTOWER_TTL:-$(fw_config_int TIER0_APPROVAL_TTL)}"
 COMMAND_NORMALIZED=$(printf '%s' "$COMMAND" | tr -s '[:space:]' ' ' | sed 's/^ //; s/ $//')
 COMMAND_HASH=$(printf '%s' "$COMMAND_NORMALIZED" | sha256sum | awk '{print $1}')
 
-# ── T-1508: Idempotency sentinel — short-circuit duplicate hook firings ──
+# ── T-1508 duplicate hook fires — bound to the TOOL CALL (T-3593 round 4) ──
 # When the same hook is registered in both .claude/settings.json (project) and
 # ~/.claude/settings.json (user), each Bash call fires every hook twice. The
-# first invocation consumes the approval (rm -f $APPROVAL_FILE) and exits 0;
-# without this sentinel, the second invocation finds no approval and BLOCKS,
-# defeating the gate entirely. T-1506 RCA confirmed live (see L-XXX).
+# first fire consumes the approval; without deduplication the second finds no
+# approval and BLOCKS its own call (T-1506 RCA).
 #
-# Mechanism: on consume, write ${APPROVAL_FILE}.consumed (hash + timestamp).
-# Before any block path runs, check if a recent (<5s) sentinel matches this
-# command's hash. If so, allow without re-blocking. 5s is short enough that
-# the next legitimate destructive command in this terminal still requires a
-# fresh approval, but long enough to absorb every plausible duplicate-fire.
+# Until round 4 the second fire was recognised by "same command text within 5 s".
+# That is not single use: an approved `git reset --hard HEAD~1` typed twice in
+# 5 s ran twice, the second time to a commit nobody approved (review N3). The
+# key is now the PreToolUse `tool_use_id`: identical across duplicate fires of
+# ONE call, distinct across calls. The sentinel records hash + call id; it lets
+# through only the same call. No call id → no grace (a duplicate fire blocks its
+# own call; that is the fail-closed direction, and no time window replaces it).
+# The action path does the same inside lib/tier0_action.py, under its lock.
 CONSUMED_FILE="${APPROVAL_FILE}.consumed"
-if [ -f "$CONSUMED_FILE" ]; then
-    CONSUMED_HASH=$(awk '{print $1}' "$CONSUMED_FILE" 2>/dev/null)
-    CONSUMED_TIME=$(awk '{print $2}' "$CONSUMED_FILE" 2>/dev/null)
-    CURRENT_TIME=$(date +%s)
-    if [ "$CONSUMED_HASH" = "$COMMAND_HASH" ]; then
-        AGE=$((CURRENT_TIME - ${CONSUMED_TIME:-0}))
-        if [ "$AGE" -lt 5 ]; then
-            # Same command, just consumed by a sibling hook fire — allow without re-blocking.
-            exit 0
-        fi
-    fi
-    # Stale sentinel — clean up so we don't accumulate cruft.
-    if [ -n "${CONSUMED_TIME:-}" ] && [ "$((${CURRENT_TIME:-$(date +%s)} - CONSUMED_TIME))" -ge 5 ]; then
-        rm -f "$CONSUMED_FILE"
-    fi
+_t0_same_call() {
+    [ -n "$T0_CALL_ID" ] && [ -f "$CONSUMED_FILE" ] || return 1
+    local h t c
+    read -r h t c < "$CONSUMED_FILE" 2>/dev/null || return 1
+    [ "$h" = "$COMMAND_HASH" ] && [ "$c" = "$T0_CALL_ID" ]
+}
+_t0_mark_consumed() { echo "$COMMAND_HASH $(date +%s) ${T0_CALL_ID:-}" > "$CONSUMED_FILE"; }
+# Serialise the legacy check-and-consume so concurrent sibling fires cannot both
+# miss (one removes the approval before the other has written the sentinel).
+# flock is util-linux; without it the race is the pre-round-4 one.
+# The lock is released before anything is spawned in the background and before
+# the block path, so no child can inherit fd 8 and hold it (bounded wait anyway).
+_t0_unlock() { flock -u 8 2>/dev/null; exec 8>&-; return 0; }
+if command -v flock >/dev/null 2>&1 && [ -d "${APPROVAL_FILE%/*}" ]; then
+    { exec 8>"${APPROVAL_FILE}.lock"; } 2>/dev/null && flock -w 10 8 2>/dev/null
+else
+    _t0_unlock() { return 0; }
+fi
+if _t0_same_call; then
+    exit 0
 fi
 
 # ── T-3593: ACTION approval path ─────────────────────────────────────────────
@@ -400,8 +444,8 @@ fi
 # below still gets its turn (so a Watchtower card approved for this exact text
 # keeps working). Push verbs are ADMITTED here and CONSUMED by git pre-push.
 if [ -n "$ACTIONS_JSON" ] && [ -f "$T0_ACTION_PY" ]; then
-    if PROJECT_ROOT="$PROJECT_ROOT" python3 "$T0_ACTION_PY" use text-gate "$ACTIONS_JSON" "${COMMAND:0:120}" 2>/dev/null; then
-        echo "$COMMAND_HASH $(date +%s)" > "$CONSUMED_FILE"
+    if PROJECT_ROOT="$PROJECT_ROOT" python3 "$T0_ACTION_PY" use text-gate "$ACTIONS_JSON" "${COMMAND:0:120}" "$T0_CALL_ID" 2>/dev/null; then
+        _t0_mark_consumed
         exit 0
     fi
 fi
@@ -417,9 +461,9 @@ if [ -f "$APPROVAL_FILE" ]; then
         if [ "$AGE" -lt "$APPROVAL_TTL" ]; then
             # Valid approval — consume it and allow
             rm -f "$APPROVAL_FILE"
-            # T-1508: write idempotency sentinel so duplicate hook firings
-            # for the same command short-circuit instead of re-blocking.
-            echo "$COMMAND_HASH $(date +%s)" > "$CONSUMED_FILE"
+            # T-1508 / round 4: sentinel so the duplicate fire of THIS call passes.
+            _t0_mark_consumed
+            _t0_unlock
 
             # Log to bypass-log for audit trail (fire-and-forget)
             # Data passed via env vars to avoid shell interpolation into source code (T-595)
@@ -527,6 +571,8 @@ with open(tmp_path, 'w') as fh:
     yaml.dump(data, fh, default_flow_style=False, sort_keys=False)
 os.replace(tmp_path, f)
 " 2>/dev/null
+        _t0_mark_consumed
+        _t0_unlock
 
         # Log to bypass-log for audit trail (fire-and-forget)
         T0_LOG_FILE="$PROJECT_ROOT/.context/bypass-log.yaml" \
@@ -565,6 +611,8 @@ except:
         exit 0
     fi
 fi
+
+_t0_unlock
 
 # ── Check for prior rejection feedback (T-641) ──
 REJECTION_FEEDBACK=""

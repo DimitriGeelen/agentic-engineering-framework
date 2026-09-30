@@ -29,7 +29,12 @@ Each approval is consumed on first matching use and expires after the grant TTL
 enforcement points — the text gate (check-tier0.sh) and git's pre-push hook
 (T-3594) — so the text gate only *admits* a push approval (it cannot be admitted
 twice) and the pre-push hook *consumes* it. A push launched from a script never
-passes the text gate and consumes the approval at pre-push directly.
+passes the text gate and consumes the approval at pre-push directly. An
+admitted push approval that pre-push has not consumed within ADMIT_TTL expires.
+
+"Once" means one TOOL CALL (round 4): a hook registered twice fires twice for
+one call, and the second fire is recognised by the PreToolUse ``tool_use_id``
+stamped on the records the first fire used — never by text or time.
 
 Every state change (approve, admit, consume, expire) is appended to
 ``.context/working/tier0-action-events.jsonl``; admissions and consumptions also
@@ -250,16 +255,50 @@ def tokenize(seg: str) -> list[str]:
     return words
 
 
-_ENV_ASSIGN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*=")
-_PREFIX_WORDS = {"sudo", "command", "nohup", "time", "exec"}
+class EnvChange(Unmappable):
+    """The segment may change the shell's environment, cwd resolution or the
+    meaning of a command name for every LATER segment (an assignment, export,
+    source, eval, alias, a function definition, ...). After one, no later
+    flagged segment can be mapped (T-3593 round 4)."""
+
+
+_ENV_ASSIGN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(?:\[[^\]]*\])?\+?=")
+# Words that only wrap the command without changing its environment. `sudo`,
+# `env`, `doas` DO change it (HOME, a cleared or edited environment) and are
+# therefore not here: they make the segment unmapped (T-3593 round 4).
+_PREFIX_WORDS = {"command", "nohup", "time", "exec"}
+# Shell builtins/keywords whose effect outlives their own segment.
+_ENV_BUILTINS = {"export", "unset", "set", "declare", "typeset", "local", "readonly",
+                 "source", ".", "eval", "alias", "unalias", "shopt", "enable",
+                 "builtin", "hash", "trap", "function", "{", "exec"}
 
 
 def _strip_prefix(words: list[str]) -> list[str]:
+    """Drop wrapper words that leave the environment alone. ANY variable
+    assignment in front of the command is refused, not stripped — one rule, not
+    a denylist: GIT_CONFIG_GLOBAL=, HOME=, XDG_CONFIG_HOME=, GIT_DIR=, CDPATH=,
+    GIT_CONFIG_PARAMETERS= all change what git reads or where it runs, and a
+    list of the dangerous ones is exactly what round 3 got wrong (N1). The
+    command then takes the exact-text approval path."""
     while words and (_ENV_ASSIGN.match(words[0]) or words[0] in _PREFIX_WORDS):
-        if words[0] in _PREFIX_WORDS and len(words) > 1 and words[1].startswith("-"):
+        if _ENV_ASSIGN.match(words[0]):
+            raise Unmappable(f"environment assignment {words[0].split('=', 1)[0]}= before the command")
+        if len(words) > 1 and words[1].startswith("-"):
             raise Unmappable(f"{words[0]} with options")
         words = words[1:]
     return words
+
+
+def env_effect(seg: str) -> bool:
+    """True when ``seg`` may change the environment of LATER segments. Read from
+    the raw first word, because the segments that do this are often the ones
+    :func:`tokenize` refuses (``export X=$(...)``, ``f() { ...; }``)."""
+    m = re.match(r"\s*(\S+)", seg)
+    if not m:
+        return False
+    w = m.group(1)
+    return bool(_ENV_ASSIGN.match(w) or w in _ENV_BUILTINS or w.startswith("{")
+                or "()" in w or w in ("env", "sudo", "doas"))
 
 
 # ── Git helpers ───────────────────────────────────────────────────────────────
@@ -312,7 +351,12 @@ def describe(a: dict) -> str:
     if v == "branch-delete":
         if t["remote"] == LOCAL_REMOTE:
             return f"DELETE local branch '{t['ref']}' in {t.get('repo', '?')} (even if unmerged)"
-        return f"DELETE ref '{t['ref']}' on remote '{t['remote']}'"
+        # The key says which namespace; so does the text (T-3594 round 4).
+        if t["ref"].startswith("refs/tags/"):
+            return f"DELETE tag '{t['ref'][len('refs/tags/'):]}' on remote '{t['remote']}'"
+        if t["ref"].startswith("refs/"):
+            return f"DELETE ref '{t['ref']}' on remote '{t['remote']}'"
+        return f"DELETE branch '{t['ref']}' on remote '{t['remote']}'"
     if v == "hard-reset":
         return (f"HARD-RESET branch '{t['branch']}' in {t['repo']} to commit "
                 f"{t.get('target', '?')[:12]} (moves the branch there and discards "
@@ -375,7 +419,7 @@ _PUSH_BENIGN |= {"no-" + o for o in _PUSH_BENIGN if o != "verify"}
 _PUSH_SHORT = {"v", "q", "n", "u", "4", "6", "f", "d", "o"}
 
 
-def _classify_push(args: list[str], cwd: str | None) -> list[dict]:
+def _classify_push(args: list[str], cwd: str | None, root: str | None = None) -> list[dict]:
     force = delete = False
     positional: list[str] = []
     i = 0
@@ -420,28 +464,35 @@ def _classify_push(args: list[str], cwd: str | None) -> list[dict]:
     if len(positional) < 2:
         raise Unmappable("push without an explicit remote and refspec")
     remote, specs = positional[0], positional[1:]
+    if cwd is None:
+        raise Unmappable("push with unknown cwd")
+    if root is not None and _toplevel(cwd) != _toplevel(root):
+        # The approval store and the pre-push hook that consumes it belong to
+        # the PROJECT repo; a push from another repo (git -C, cd elsewhere,
+        # GIT_DIR) would be admitted here and checked (or not) there.
+        raise Unmappable("push from a repository other than the project")
     out: list[dict] = []
     for spec in specs:
         plus = spec.startswith("+")
         body = spec[1:] if plus else spec
+        if any(ch in body for ch in "*?["):
+            raise Unmappable("wildcard refspec")
         if delete:
             if ":" in body:
                 raise Unmappable("--delete with a src:dst refspec")
-            out.append(action("branch-delete", remote=remote, ref=normalize_ref(body)))
+            out.append(action("branch-delete", remote=remote,
+                              ref=_remote_ref_key(remote, body, "", cwd, deleting=True)))
             continue
         if body.startswith(":"):
-            out.append(action("branch-delete", remote=remote, ref=normalize_ref(body[1:])))
+            out.append(action("branch-delete", remote=remote,
+                              ref=_remote_ref_key(remote, body[1:], "", cwd, deleting=True)))
             continue
         src, _, dst = body.partition(":")
         dst = dst or src
         if dst in ("HEAD", "@") or dst == "":
-            if cwd is None:
-                raise Unmappable("HEAD refspec with unknown cwd")
             dst = _current_branch(cwd)
-        if any(ch in dst for ch in "*?["):
-            raise Unmappable("wildcard refspec")
         if force or plus:
-            out.append(action("force-push", remote=remote, ref=_push_key(dst, src, cwd)))
+            out.append(action("force-push", remote=remote, ref=_remote_ref_key(remote, dst, src, cwd)))
     return out
 
 
@@ -455,25 +506,49 @@ def _ref_exists(cwd: str, ref: str) -> bool | None:
     return {0: True, 1: False}.get(out.returncode)
 
 
-def _push_key(dst: str, src: str, cwd: str | None) -> str:
-    """The ref key pre-push will see. Pre-push reports full names and strips
-    only ``refs/heads/``, so a short name that git resolves to a local TAG must
-    be keyed ``refs/tags/<t>`` here too — otherwise the operator approves
-    ``v1`` and pre-push refuses ``refs/tags/v1`` (T-3594 round 3 (a))."""
-    if dst.startswith("refs/") or cwd is None:
+def _remote_ref_key(remote: str, dst: str, src: str, cwd: str, deleting: bool = False) -> str:
+    """The ref key pre-push will see, for a force-push OR a delete — one
+    function for both, so the two layers cannot drift (T-3594 round 4).
+
+    Pre-push reports full names and strips only ``refs/heads/``: a branch keys
+    by its short name, a tag as ``refs/tags/<t>``, anything else in full. A
+    short name typed at the text gate is resolved from LOCAL evidence only:
+    ``refs/tags/<n>`` → tag; ``refs/heads/<n>`` or ``refs/remotes/<remote>/<n>``
+    → branch. Both, or neither, is unmapped rather than guessed, so a tag-delete
+    approval can never be keyed as (and later authorize) a branch delete. When
+    local evidence is wrong about the remote the keys differ and pre-push
+    refuses: the failure direction is closed."""
+    if dst.startswith("refs/"):
         return normalize_ref(dst)
     tag = _ref_exists(cwd, "refs/tags/" + dst)
-    head = _ref_exists(cwd, "refs/heads/" + dst)
-    if tag and head:
+    branch_l = _ref_exists(cwd, "refs/heads/" + dst)
+    branch_r = _ref_exists(cwd, f"refs/remotes/{remote}/{dst}")
+    if tag is None or branch_l is None or branch_r is None:
+        raise Unmappable(f"cannot read refs in {cwd}")
+    branch = branch_l or branch_r
+    if tag and branch:
         raise Unmappable(f"'{dst}' is both a branch and a tag")
-    if tag and src in ("", dst):
+    if not tag and not branch:
+        raise Unmappable(f"no local evidence whether '{dst}' is a branch or a tag")
+    if tag:
         return "refs/tags/" + dst
-    if src and src != dst and _ref_exists(cwd, "refs/tags/" + src):
-        raise Unmappable(f"tag {src} pushed to short name {dst}")
+    if not deleting and src and src != dst and not src.startswith("refs/heads/") \
+            and _ref_exists(cwd, "refs/tags/" + src):
+        raise Unmappable(f"tag {src} pushed to branch name {dst}")
     return normalize_ref(dst)
 
 
-def _classify_git(words: list[str], cwd: str | None) -> tuple[list[dict], str | None]:
+def _classify_git(words: list[str], cwd: str | None,
+                  root: str | None = None) -> tuple[list[dict], str | None]:
+    # Global options: an ALLOWLIST, default unmapped (T-3593 round 4). Kept:
+    #   -C <dir>      moves the command, nothing else; for a push the repo must
+    #                 still be the project's (checked in _classify_push)
+    #   -P, --no-pager  pager only
+    # Everything else is unmapped: -c / --config-env (any config, incl.
+    # core.hooksPath and include.path), --git-dir / --work-tree / --bare
+    # (another repo's hooks and config), --namespace (different ref names),
+    # --exec-path, --no-replace-objects (rev resolution differs from ours),
+    # -p / --paginate and anything git adds later.
     i = 1
     while i < len(words) and words[i].startswith("-"):
         opt = words[i]
@@ -484,11 +559,7 @@ def _classify_git(words: list[str], cwd: str | None) -> tuple[list[dict], str | 
             else:
                 cwd = os.path.normpath(os.path.join(cwd or "/", target))
             i += 2
-        elif opt == "-c" or opt.startswith("--config-env") or opt == "--exec-path":
-            # Any config (core.hooksPath, alias.*, ...) can change what runs or
-            # skip the hook that consumes the approval (T-3593 R1, T-3594 A2).
-            raise Unmappable(f"git {opt}")
-        elif opt in ("--no-pager", "--no-replace-objects", "-P"):
+        elif opt in ("-P", "--no-pager"):
             i += 1
         else:
             raise Unmappable(f"git global option {opt}")
@@ -498,7 +569,7 @@ def _classify_git(words: list[str], cwd: str | None) -> tuple[list[dict], str | 
     if "--no-verify" in args:
         raise Unmappable("--no-verify is its own Tier 0 decision")
     if sub == "push":
-        return _classify_push(args, cwd), cwd
+        return _classify_push(args, cwd, root), cwd
     if sub == "reset":
         # Long options resolve as git resolves them: `--har` and `--h` are --hard.
         longs = {a: resolve_long("reset", a)[0] for a in args if a.startswith("--") and a != "--"}
@@ -570,8 +641,12 @@ def _classify_rm(args: list[str], cwd: str | None) -> list[dict]:
     return out
 
 
-def classify_segment(seg: str, cwd: str | None) -> tuple[list[dict], str | None]:
-    """Return (actions, new_cwd). Raises Unmappable when not certain."""
+def classify_segment(seg: str, cwd: str | None, cdpath: bool = False,
+                     root: str | None = None) -> tuple[list[dict], str | None]:
+    """Return (actions, new_cwd). Raises Unmappable when not certain, and
+    :class:`EnvChange` when the segment may alter the environment of later ones."""
+    if env_effect(seg):
+        raise EnvChange(f"segment may change the environment: {seg[:40]!r}")
     words = _strip_prefix(tokenize(seg))
     if not words:
         return [], cwd
@@ -582,12 +657,18 @@ def classify_segment(seg: str, cwd: str | None) -> tuple[list[dict], str | None]
         target = os.path.expanduser(words[1])
         if os.path.isabs(target):
             return [], os.path.normpath(target)
+        # N2 (round 4): bash consults CDPATH for a relative target that does not
+        # start with ./ or ../ (or is not . / ..). With CDPATH anywhere in play,
+        # where such a cd lands is not knowable from the text.
+        anchored = target in (".", "..") or target.startswith(("./", "../"))
+        if cdpath and not anchored:
+            return [], None
         return [], (os.path.normpath(os.path.join(cwd, target)) if cwd else None)
     if head in ("pushd", "popd"):
         return [], None
     if head == "git":
         # `git -C dir` scopes to this one command; the shell cwd is unchanged.
-        acts, _ = _classify_git(words, cwd)
+        acts, _ = _classify_git(words, cwd, root)
         return acts, cwd
     if head == "rm":
         return _classify_rm(words[1:], cwd), cwd
@@ -615,7 +696,8 @@ def _covered(descriptions, acts: list[dict]) -> bool:
     return True
 
 
-def classify(command: str, is_flagged, cwd: str | None) -> list[dict] | None:
+def classify(command: str, is_flagged, cwd: str | None,
+             root: str | None = None) -> list[dict] | None:
     """Map a blocked command to actions, or None when it is unmapped.
 
     ``is_flagged(segment_text)`` is the hook's own Tier 0 pattern test, passed in
@@ -634,22 +716,36 @@ def classify(command: str, is_flagged, cwd: str | None) -> list[dict] | None:
     old cwd in place, so it becomes unknown (``cd x && true ; rm -rf .``).
     After any segment this module cannot read, the cwd becomes unknown too.
     Unknown means a relative target is unmapped.
+
+    Environment (round 4): a flagged segment with ANY assignment or env/sudo
+    wrapper in front is unmapped, and once any segment may have changed the
+    environment (export, unset, source, eval, alias, a function definition, a
+    bare assignment) no later flagged segment is mapped either. CDPATH anywhere
+    in the command, or in this process's environment, makes a bare relative
+    ``cd`` land somewhere unknown (N2). ``root`` is the project root: a push
+    from any other repository is unmapped.
     """
     try:
         segs = split_segments_seps(command)
     except Unmappable:
         return None
+    cdpath = bool(re.search(r"\bCDPATH\b", command) or os.environ.get("CDPATH"))
     actions: list[dict] = []
     saw_flagged = False
+    env_tainted = False
     prev_sep = ""
     chain_cwd = cwd          # the cwd at the start of the current and-chain
     for seg, sep in segs:
         flagged = is_flagged(seg)
+        if flagged and env_tainted:
+            return None
         try:
-            acts, new_cwd = classify_segment(seg, cwd)
-        except Unmappable:
+            acts, new_cwd = classify_segment(seg, cwd, cdpath, root)
+        except Unmappable as exc:
             if flagged:
                 return None
+            if isinstance(exc, EnvChange):
+                env_tainted = True
             # An unreadable segment (`source x`, `{ cd x; }`, `eval ...`) may
             # change the cwd in ways the text does not show.
             cwd = chain_cwd = None
@@ -798,15 +894,36 @@ def approve(root: str, actions: list[dict], ttl: int, approved_by: str = "unknow
 
 
 def use(root: str, actions: list[dict], layer: str, preview: str = "",
-        now: float | None = None) -> bool:
+        now: float | None = None, call_id: str = "") -> bool:
     """All-or-nothing: every action needs a live approval, else nothing changes.
 
     layer='text-gate': push verbs are ADMITTED (pre-push consumes them later);
     other verbs are consumed. layer='pre-push': consumes approved or admitted.
+
+    ``call_id`` (round 4, replaces the T-1508 5 s same-text window): the
+    PreToolUse ``tool_use_id``. A hook registered twice fires twice for ONE tool
+    call; the second fire finds the records the first one used, stamped with the
+    same call id, and is allowed without using anything. A different call — or
+    no call id at all — gets no such grace, so an approved reset or rm runs
+    once. Checked under the store lock, so concurrent sibling fires are safe.
     """
     now = time.time() if now is None else now
     with _locked(root):
         recs = _load(root)
+        if call_id and layer == "text-gate":
+            dup, seen = True, set()
+            for a in actions:
+                key = action_key(a)
+                hit = next((r for r in recs if r["key"] == key and r.get("call_id") == call_id
+                            and r["state"] in ("admitted", "consumed") and r["id"] not in seen), None)
+                if hit is None:
+                    dup = False
+                    break
+                seen.add(hit["id"])
+            if dup:
+                log_event(root, "duplicate-fire", call_id=call_id,
+                          action_keys=[action_key(a) for a in actions])
+                return True
         changed = _expire(root, recs, now)
         picks = []
         taken = set()
@@ -822,6 +939,8 @@ def use(root: str, actions: list[dict], layer: str, preview: str = "",
             picks.append((a, hit))
             taken.add(hit["id"])
         for a, r in picks:
+            if call_id and layer == "text-gate":
+                r["call_id"] = call_id
             if layer == "text-gate" and a["verb"] in PUSH_VERBS:
                 r["state"], r["admitted_at"] = "admitted", now
                 log_event(root, "admitted", id=r["id"], action_key=r["key"], layer=layer)
@@ -899,9 +1018,10 @@ def _main(argv: list[str]) -> int:
         print(p.get("command_hash", ""), file=sys.stderr)
         return 0
     if cmd == "use":
-        # use <layer> <actions-json> [preview]
+        # use <layer> <actions-json> [preview] [call-id]
         acts = json.loads(argv[2])
-        return 0 if use(root, acts, argv[1], argv[3] if len(argv) > 3 else "") else 1
+        return 0 if use(root, acts, argv[1], argv[3] if len(argv) > 3 else "",
+                        call_id=argv[4] if len(argv) > 4 else "") else 1
     if cmd == "write-pending":
         # write-pending <source> <actions-json> [preview] [hash]
         write_pending(root, json.loads(argv[2]), argv[1],

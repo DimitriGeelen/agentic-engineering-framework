@@ -794,9 +794,12 @@ _stdin_buf=$(cat)
 # `fw tier0 approve`. Fails CLOSED when the approval module cannot be found.
 # LIMIT, stated plainly: any path that skips client-side hooks skips this one
 # too — `git push --no-verify`, a `core.hooksPath` override (`git -c
-# core.hooksPath=… push`), and ref updates through plumbing (`git send-pack`) or
-# a forge API. Typed, --no-verify and core.hooksPath are Tier 0 in the text gate;
-# inside a script none of them is seen. Server-side branch and tag protection is
+# core.hooksPath=… push`, an included file, or a config file selected by HOME,
+# XDG_CONFIG_HOME, GIT_CONFIG_GLOBAL/SYSTEM, or carried by GIT_CONFIG_PARAMETERS
+# / GIT_CONFIG_COUNT), another repo's own config (-C, --git-dir, GIT_DIR), and
+# ref updates through plumbing (`git send-pack`) or a forge API. Typed, the text
+# gate labels --no-verify and the hooksPath/config-file overrides HOOK BYPASS
+# (T-3593 round 4; CLAUDE.md lists exactly which); inside a script none is seen. Server-side branch and tag protection is
 # the stronger control and is the operator's decision.
 _t3594_root="$(git rev-parse --show-toplevel 2>/dev/null)"
 _t3594_remote="${1:-}"
@@ -856,7 +859,8 @@ if [ -n "$_t3594_args" ]; then
         fi
         echo "" >&2
         echo "  Limit: any path that skips client-side hooks skips this one too —" >&2
-        echo "  'git push --no-verify', a core.hooksPath override, plumbing (send-pack) or" >&2
+        echo "  'git push --no-verify', a core.hooksPath override (-c, an included file, or" >&2
+        echo "  a config file chosen by HOME / XDG_CONFIG_HOME / GIT_CONFIG_*), plumbing (send-pack) or" >&2
         echo "  forge-API ref updates. Typed, --no-verify and core.hooksPath are Tier 0;" >&2
         echo "  inside a script none of them is seen. Server-side branch and tag" >&2
         echo "  protection (e.g. OneDev) is the stronger control — an operator decision." >&2

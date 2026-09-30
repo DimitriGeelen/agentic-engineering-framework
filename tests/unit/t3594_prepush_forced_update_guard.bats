@@ -170,7 +170,7 @@ _events() { cat "$W/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
     [[ "$output" == *"branch-delete: refs/heads/old on remote 'origin'"* ]]
     [ -n "$(_remote_sha old)" ]
     run _approve
-    [[ "$output" == *"DELETE ref 'old' on remote 'origin'"* ]]
+    [[ "$output" == *"DELETE branch 'old' on remote 'origin'"* ]]
     run git push origin --delete old
     [ "$status" -eq 0 ]
     [ -z "$(_remote_sha old)" ]
@@ -322,12 +322,10 @@ _gate() {
     run bash "$FX/push.sh"
     [ "$status" -ne 0 ]
     [[ "$output" == *"Push blocked"* ]]
-    # 5. and the typed text is not admitted a second time. Step past the T-1508
-    #    duplicate-hook-fire grace first: for 5s after a consume, the SAME text is
-    #    allowed so a hook registered twice does not block its own sibling fire.
-    #    That 5s window is a known residual, not what this step tests.
-    local sentinel="$W/.context/working/.tier0-approval.consumed"
-    [ -f "$sentinel" ] && printf '%s %s\n' "$(awk '{print $1}' "$sentinel")" "$(( $(date +%s) - 10 ))" > "$sentinel"
+    # 5. and the typed text is not admitted a second time. Since T-3593 round 4
+    #    the T-1508 duplicate-fire grace is bound to the tool call (tool_use_id),
+    #    not to a 5 s same-text window; this payload carries no id, so there is
+    #    no grace at all and no sentinel ageing is needed.
     run _gate "git push -f --no-verif origin main"
     [ "$status" -eq 2 ]
 }

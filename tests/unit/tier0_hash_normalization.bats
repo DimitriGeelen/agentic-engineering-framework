@@ -26,10 +26,17 @@ teardown() {
     [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
 }
 
+# $2 = tool_use_id (T-3593 round 4: duplicate fires of ONE tool call share it;
+# absent = the field is not in the payload).
 _run_hook() {
-    local cmd="$1"
+    local cmd="$1" id="${2:-}"
     local json
-    json=$(python3 -c "import json,sys; print(json.dumps({'tool_input':{'command': sys.argv[1]}}))" "$cmd")
+    json=$(python3 -c "
+import json, sys
+d = {'tool_input': {'command': sys.argv[1]}}
+if sys.argv[2]:
+    d['tool_use_id'] = sys.argv[2]
+print(json.dumps(d))" "$cmd" "$id")
     echo "$json" | bash "$HOOK"
 }
 
@@ -97,13 +104,13 @@ _pre_approve_normalized() {
     _pre_approve_normalized "$approved"
 
     # First fire (canonical form) — consume approval, write sentinel
-    run _run_hook "$retry_a"
+    run _run_hook "$retry_a" toolu_dup
     [ "$status" -eq 0 ]
     [ -f "${APPROVAL_FILE}.consumed" ]
 
-    # Second fire from duplicate hook reg, but with whitespace variant —
-    # sentinel must short-circuit (normalized hashes match)
-    run _run_hook "$retry_b"
+    # Second fire of the SAME tool call (duplicate hook registration), whitespace
+    # variant — sentinel must short-circuit (normalized hashes match, same call id)
+    run _run_hook "$retry_b" toolu_dup
     [ "$status" -eq 0 ]
     # No new pending block created
     [ ! -f "${APPROVAL_FILE}.pending" ]

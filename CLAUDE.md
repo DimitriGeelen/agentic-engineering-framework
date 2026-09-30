@@ -459,22 +459,42 @@ ref}` (also local `git branch -D`), `hard-reset {repo, branch, target commit}`,
 `recursive-delete {path}` — the block lists them in plain words, `fw tier0 approve` approves
 each one once, for the grant TTL, and a retry whose incidental text differs (`| tail -12` vs
 `| tail -14`, flag order, `2>&1`) matches. A different ref, remote, branch, target commit or
-path does not. A command the classifier cannot read with certainty (a `$VAR`, `$(...)`,
-`--all`, `git -c …`, an unknown cwd — a `cd` carries only across `&&` — or a flagged segment
-matched by a pattern its verb does not cover, e.g. `--no-verify` riding on a force push) is
-**unmapped** and keeps the old exact-text hash approval, unchanged; the bypass log records
-which path matched (`match_path: action|command-hash`) and who approved (`authorized_by`,
-copied from the approval record). **Who may approve:** the module itself refuses
-`approve-pending` under `CLAUDECODE=1`; `--i-am-human` overrides it and the record says
-`approved_by: agent-override`, not `human`, and typed, both the direct module call and
-`fw tier0 approve --i-am-human` are Tier 0. **What this does NOT claim:** every agent here
-runs as the same user with write access to the repo, so an agent can write an approval record
-into `.context/working/tier0-action-approvals.json` directly, and the gate cannot distinguish
-a record fabricated that way from a genuine one (the same residual T-3581 names). The check
-is fail-closed against accidents and unsophisticated self-approval, not forgery-resistant. This fixes the incentive
-that pushed agents toward script indirection; it does not widen what the text gate sees —
-everything above about scripts still holds. `rm -rf` inside a script has no equivalent
-control.
+path does not. A push ref is keyed the way pre-push sees it: a branch by its short name, a
+tag as `refs/tags/<t>` (for `-f`, `--delete`, `:ref` and `src:dst` alike), resolved from
+local refs; a short name that is both, or neither, is unmapped. **Unmapped** — the old
+exact-text hash approval, unchanged — is anything the classifier cannot read with certainty:
+a `$VAR`, `$(...)`, `--all`, an unknown cwd (a `cd` carries only across `&&`; a relative,
+non-`./` `cd` with `CDPATH` in the command or the environment has none), **any variable
+assignment or `env`/`sudo` wrapper in front of the command** (`HOME=`, `XDG_CONFIG_HOME=`,
+`GIT_CONFIG_GLOBAL=`, `GIT_DIR=`, `LC_ALL=`, anything), any segment after one that may change
+the environment (`export`, `unset`, `source`, `eval`, `alias`, a function definition, a bare
+assignment), any git global option other than `-C` (and for a push, `-C`/`cd` must still name
+the project repo), `-P` and `--no-pager`, and a flagged segment matched by a pattern its verb
+does not cover (e.g. `--no-verify` riding on a force push). The bypass log records which path
+matched (`match_path: action|command-hash`) and who approved (`authorized_by`, copied from
+the approval record). **Push approvals have two clocks:** the text gate *admits* a push, and
+an admitted approval not consumed by pre-push within 60 s (`TIER0_ADMIT_TTL`) expires.
+**Duplicate hook fires (T-1508) are bound to the tool call:** the second fire of the same
+PreToolUse `tool_use_id` is let through; a second tool call with identical text is not, and a
+payload with no `tool_use_id` gets no grace. There is no time window — an approved `git reset
+--hard HEAD~1` runs once. **Who may approve:** the module itself refuses `approve-pending`
+under `CLAUDECODE=1`; `--i-am-human` overrides it and the record says `approved_by:
+agent-override`, not `human`, and typed, both the direct module call and `fw tier0 approve
+--i-am-human` are Tier 0. **What this does NOT claim:** every agent here runs as the same user
+with write access to the repo, so an agent can write an approval record into
+`.context/working/tier0-action-approvals.json` directly (`echo … >`, `python3 -c` calling
+`_save` or `getattr(t, "appr"+"ove")`), and the gate cannot distinguish a record fabricated
+that way from a genuine one (the same residual T-3581 names). The same holds for the
+**environment-strip route**: `CLAUDECODE= fw tier0 approve` makes the module record
+`approved_by: human`. What the text gate matches, typed: `CLAUDECODE=`, `env …`, `unset
+CLAUDECODE` before `fw tier0 approve` or `tier0_action`, also inside `bash -c '…'`/`sh -c
+'…'`, with the verb split by quotes or backslashes (`appr""ove`, `appro\ve`), or with a
+variable in the verb slot (`tier0 $V`). What it does not see: the same inside a script or a
+file, `eval` of a constructed string, or any spelling not listed. The check is fail-closed
+against accidents and unsophisticated self-approval, not forgery-resistant. This fixes the
+incentive that pushed agents toward script indirection; it does not widen what the text gate
+sees — everything above about scripts still holds. `rm -rf` inside a script has no
+equivalent control.
 
 **Force-push and ref deletion are enforced at git pre-push (T-3594).** The pre-push hook
 (installed by `fw git install-hooks`, delivered to consumers by `fw upgrade`) reads git's
@@ -484,11 +504,23 @@ update under `refs/tags/` whose remote value exists) counts as a forced update. 
 any push that runs the hook — typed, `bash push.sh`, make. New refs and fast-forwards (handover
 pushes, mirror sync, tag creation) pass untouched. The text gate only *admits* a push
 approval; pre-push consumes it, so one approval covers one push. **Limit:** any path that
-skips client-side hooks skips this one too — `git push --no-verify`, a `core.hooksPath`
-override (`git -c core.hooksPath=… push`), plumbing (`git send-pack`) or forge-API ref
-updates. Typed, `--no-verify` and a `core.hooksPath` override are Tier 0 (as are `git -C/-c …
-push` with force, `+ref` or delete); inside a script none of them is seen. Server-side branch
-and tag protection (OneDev) is the stronger control and is the operator's decision.
+skips client-side hooks skips this one too — `git push --no-verify`; a `core.hooksPath`
+override from `-c`, `--config-env`, an `include.path`/`includeIf` file, or a config file
+selected by `HOME`, `XDG_CONFIG_HOME`, `GIT_CONFIG_GLOBAL`, `GIT_CONFIG_SYSTEM` or
+`GIT_CONFIG`, or carried by `GIT_CONFIG_PARAMETERS` / `GIT_CONFIG_COUNT`+`KEY_n`/`VALUE_n`;
+another repository's own configuration (`-C`, `--git-dir`, `GIT_DIR`); plumbing (`git
+send-pack`) or forge-API ref updates. **Typed, the text gate labels HOOK BYPASS:**
+`--no-verify` (any abbreviation git accepts, quoted or not) and `git commit -n` (separate or
+combined, e.g. `-anm`) on any git command; `-c`/`--config-env` setting `core.hooksPath` (any
+case), `include.path` or `includeIf.*`, or with a quoted value containing whitespace; `git
+config core.hooksPath <v>`; `GIT_CONFIG_PARAMETERS`/`GIT_CONFIG_KEY_n` whose visible value
+names `core.hooksPath`; and any assignment of `HOME`, `XDG_CONFIG_HOME` or a `GIT_CONFIG*`
+variable listed above anywhere before a hook-running `git push|commit|merge|pull|rebase|am|
+cherry-pick|revert`. **Not labelled** (it is still unmapped, so it can only be approved as
+exact text): `-C`/`--git-dir`/`GIT_DIR` pointing at a repository whose own config sets
+`hooksPath`, `sudo` (root's config), and `git -c alias.x='push -f' x` (pre-push still
+refuses the forced update). Inside a script none of these is seen. Server-side branch and tag
+protection (OneDev) is the stronger control and is the operator's decision.
 
 ## Working with Tasks
 
