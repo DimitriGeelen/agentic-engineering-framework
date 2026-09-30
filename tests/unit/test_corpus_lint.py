@@ -448,12 +448,20 @@ def test_live_corpus_all_versions_census():
     about: `test_live_corpus_current_findings` was left red by T-2984 earlier the
     same day - the corpus was changed and its pin was not re-derived, exactly as
     happened before `a25497afe`. The discipline was written here and still not
-    followed. Cheap to fix, worth not hiding."""
+    followed. Cheap to fix, worth not hiding.
+
+    T-3604 baseline move (42 -> 47 versions, flagged held at 14), 2026-09-30.
+    Red since a4f13ccc1 (T-3159, 2026-08-26) added `draft-continuous-run-loop`
+    v1-v5 without re-deriving this pin — the same lapse, a third time. Checked
+    by construction: `git diff --name-status 4e2ddff11 HEAD` over the store is
+    six ADDs and nothing else, `tools/corpus_lint.py` has no commits since the
+    pin, and none of the five new versions is in the flagged set. The 14
+    flagged names are the 14 the T-2989 paragraph describes."""
     store = REPO_ROOT / ".context" / "designer" / "projects"
     idx = corpus_lint.store_index(store)
     ghosts = corpus_lint._registry_ghost_uuids(store)
     targets = corpus_lint.collect_all_versions(store)
-    assert len(targets) == 42, [n for n, _ in targets]
+    assert len(targets) == 47, [n for n, _ in targets]
 
     findings, typed = [], []
     for name, xml_text in targets:
