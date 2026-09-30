@@ -651,6 +651,8 @@ cmd_dispatch() {
     esac
 
     [ -z "$name" ] && die "Missing --name"
+    # T-3581: a review dispatch id is registered once and must not be guessable (task+role).
+    [ "$task_type" = "review" ] && name="${name}-$(od -An -N6 -tx1 /dev/urandom | tr -d ' \n')"
     [ -z "$task" ] && die "Missing --task — TermLink workers require a task reference for governance (T-652, T-630)"
     [ -z "$prompt" ] && [ -z "$prompt_file" ] && die "Missing --prompt or --prompt-file"
 

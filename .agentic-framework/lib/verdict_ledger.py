@@ -115,6 +115,9 @@ APPLIED = Path(".context/reviews/applied.jsonl")
 #: Review dispatches, written by the dispatcher (`fw termlink dispatch --task-type review`)
 #: at spawn time and HMAC-signed. A verdict row counts only if it names one (T-3581).
 DISPATCHES = Path(".context/reviews/review-dispatches.jsonl")
+#: Journal of every verdict `record` wrote. A row deleted from the working ledger before it is
+#: committed leaves no trace in git; the journal is what shows it existed (T-3581 round 4).
+RECORDED = Path(".context/reviews/recorded.jsonl")
 DISPATCH_KEY = Path(".context/secrets/review-dispatch.key")
 REVIEW_TASK_TYPE = "review"
 
@@ -278,6 +281,11 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
     root = root or _root()
     if not (dispatch_id or "").strip() or not (task_id or "").strip():
         raise ValueError("dispatch_id and task are required")
+    if not _norm(dispatch_id):
+        raise ValueError("dispatch_id has no alphanumeric characters")
+    if any(r.get("dispatch_id") == dispatch_id.strip() for r in _read(DISPATCHES, root)):
+        raise ValueError(f"dispatch {dispatch_id.strip()!r} is already registered — a dispatch "
+                         f"id is registered once")
     row = {"dispatch_id": dispatch_id.strip(), "task": task_id.strip(),
            "task_type": (task_type or "").strip().lower(),
            "issuer_session": issuer_session, "issuer_identity": issuer_identity, "ts": _now()}
@@ -397,7 +405,7 @@ def is_producer(identity: str, produced_by: set[str]) -> str:
 def _dispatch_is_producer(dispatch_id: str, produced_by: set[str]) -> str:
     """A worker commits as `dispatch+<id>@…`; if that identity produced work, it is no reviewer."""
     d = _norm(dispatch_id)
-    if len(d) < 4:
+    if not d:
         return ""
     return next((p for p in produced_by if d in _norm(p)), "")
 
@@ -419,6 +427,8 @@ class Ledger:
       pending    [row]           in the working file, not in HEAD
       torn       [line]          committed or pending, not a JSON object
       faults     [str]           integrity failures — non-empty means nothing is trustworthy
+      missing    [(id, task)]    journalled by `record` but absent from the ledger: deleted
+                                 before it was committed. Blocks that task's criteria.
     """
 
     def __init__(self) -> None:
@@ -426,6 +436,7 @@ class Ledger:
         self.pending: list[dict] = []
         self.torn: list[str] = []
         self.faults: list[str] = []
+        self.missing: list[tuple[str, str]] = []   # (verdict id, task) recorded but gone
 
     def entries(self):
         for row, intro in self.committed:
@@ -510,6 +521,10 @@ def load_ledger(root: Path) -> Ledger:
             led.faults.append(f"duplicate row id {rid!r} in the uncommitted rows")
             return led
         led.pending.append(obj)
+    have = {r.get("id") for r, _ in led.entries()}
+    for j in _read(RECORDED, root):
+        if j.get("verdict_id") not in have:
+            led.missing.append((str(j.get("verdict_id")), str(j.get("task"))))
     return led
 
 
@@ -576,6 +591,20 @@ def _evidence_fault(root: Path, e: str) -> str:
     return ""
 
 
+def _hash_path(target: Path) -> str:
+    """sha256 of a file, or of a directory's sorted (relative path, content hash) listing."""
+    h = hashlib.sha256()
+    if target.is_dir():
+        for f in sorted(x for x in target.rglob("*") if x.is_file() and ".git" not in x.parts):
+            h.update(str(f.relative_to(target)).encode() + b"\0")
+            h.update(hashlib.sha256(f.read_bytes()).digest())
+    elif target.is_file():
+        h.update(target.read_bytes())
+    else:
+        return ""
+    return h.hexdigest()
+
+
 _REQUIRED = ("id", "task", "ac", "ac_digest", "outcome", "verdict", "reviewer", "rung",
              "dispatch_id", "evidence", "judgement")
 
@@ -625,6 +654,11 @@ def _row_fault(base: _Base, row: dict, intro: dict | None, *, need_commit: bool 
     if why:
         return "no-provenance", why
     if row["outcome"] != GREEN:
+        g = row.get("guidance")
+        if not isinstance(g, str) or not g.strip():
+            return "no-guidance", "a non-green verdict needs guidance"
+        if need_commit and intro is None:
+            return "uncommitted", f"row {row['id']} was never committed (no commit introduces it)"
         return None
     if not row["evidence"] or not all(isinstance(e, str) and e.strip() for e in row["evidence"]):
         return "no-evidence", "a green verdict needs at least one evidence path"
@@ -632,6 +666,13 @@ def _row_fault(base: _Base, row: dict, intro: dict | None, *, need_commit: bool 
         why = _evidence_fault(base.root, e)
         if why:
             return "evidence", why
+    hashes = row.get("evidence_sha256")
+    if not isinstance(hashes, dict):
+        return "evidence-hash", "a green verdict must record a content hash per evidence file"
+    for e in row["evidence"]:
+        if hashes.get(e) != _hash_path((base.root / e).resolve()):
+            return "evidence-hash", (f"evidence {e!r} changed since the reviewer recorded it "
+                                     f"(content hash mismatch)")
     prod, err = base.prod
     if err:
         return "no-producer-provenance", f"{err} — producer provenance unavailable, refusing"
@@ -729,6 +770,10 @@ def satisfying_verdict(ctx: _Ctx, crit) -> tuple[dict | None, str]:
     led = ctx.ledger
     if led.faults:
         return None, f"ledger-integrity: {led.faults[0]}"
+    gone = [v for v, t in led.missing if t == ctx.task_id]
+    if gone:
+        return None, (f"deleted-verdict: {gone[0]} was recorded for this task but is not in the "
+                      f"ledger — a verdict was removed before it was committed; refusing")
     bad = _torn_for(ctx.root, ctx.task_id, led.torn)
     if bad:
         _note_torn(ctx.root, ctx.task_id, bad)
@@ -862,6 +907,8 @@ def record(task_id: str, ac_index: int, outcome: str, *, reviewer: str, rung: st
         "dispatch_id": dispatch_id.strip(),
         "rung": rung.strip(),
         "evidence": evidence,
+        "evidence_sha256": {e: _hash_path((root / e).resolve()) for e in evidence
+                            if not _evidence_fault(root, e)},
         "judgement": jv,
     }
     f = _fault(ctx, rec, crit, None, need_commit=False)  # the row cannot be committed yet
@@ -871,6 +918,8 @@ def record(task_id: str, ac_index: int, outcome: str, *, reviewer: str, rung: st
         refuse("ledger-integrity", f"{ctx.ledger.faults[0]} — no row is appended to a ledger "
                                    f"whose history does not verify")
     _append(VERDICTS, rec, root)
+    _append(RECORDED, {"ts": _now(), "verdict_id": rec["id"], "task": task_id, "ac": ac_index,
+                       "outcome": outcome}, root)
     if outcome != GREEN:
         _refuse_row(root, task_id, f"verdict-{outcome}", jv["guidance"],
                     ac=ac_index, reviewer=rec["reviewer"], verdict_id=rec["id"])
@@ -939,7 +988,72 @@ def render_verdicts(task_id: str, root: Path | None = None) -> list[dict]:
     return out
 
 
-_ANNOT_RE = re.compile(r"^\s*\*\*Reviewer verdict:\*\* green (V-[\w-]+)")
+_ANNOT_RE = re.compile(r"^\s*\*\*Reviewer verdict:\*\* green (V-[\w-]+)", re.IGNORECASE)
+
+
+def applied_ticks(root: Path, task_id: str) -> dict[int, str]:
+    """{ac: verdict id} for every criterion the applied log says a reviewer verdict ticked and
+    that nothing has since withdrawn or an operator released. Durable provenance: it does not
+    depend on the Markdown annotation, which anyone can edit (T-3581 round 4)."""
+    state: dict[int, str] = {}
+    for r in _read(APPLIED, root):
+        if r.get("task") != task_id:
+            continue
+        for w in r.get("withdrawn") or []:
+            if isinstance(w, dict):
+                state.pop(w.get("ac"), None)
+        if r.get("kind") == "operator-release":
+            state.pop(r.get("ac"), None)
+        for t in (r.get("ticked") or []) + (r.get("recited") or []):
+            if isinstance(t, dict) and isinstance(t.get("ac"), int):
+                state[t["ac"]] = str(t.get("verdict_id"))
+    return state
+
+
+def provenance_mismatches(root: Path, task_id: str, text: str) -> list[dict]:
+    """Ticked criteria the applied log says a reviewer ticked, whose annotation is missing or
+    names a different verdict. Cross-checks the two records (close and audit)."""
+    prov = applied_ticks(root, task_id)
+    if not prov:
+        return []
+    lines = text.split("\n")
+    out = []
+    for c in human_criteria(text):
+        vid = prov.get(c.index)
+        if vid is None or not c.ticked:
+            continue
+        ann = _annotation(lines, c)
+        if ann is None:
+            out.append({"ac": c.index, "verdict_id": vid, "why": "the reviewer-verdict annotation is missing"})
+        elif ann[1] != vid:
+            out.append({"ac": c.index, "verdict_id": vid,
+                        "why": f"the annotation names {ann[1]}, the applied log says {vid}"})
+    return out
+
+
+def release(task_id: str, ac: int, reason: str, root: Path | None = None) -> dict:
+    """Operator action: convert a reviewer-derived tick into a manual approval. Removes the
+    annotation and records the release in the applied log. The CLI refuses agents."""
+    root = root or _root()
+    ctx = _task_ctx(root, task_id)
+    if ctx is None:
+        raise VerdictRefused(f"{task_id} is not an active task")
+    if not (reason or "").strip():
+        raise VerdictRefused("a reason is required")
+    lines = ctx.text.split("\n")
+    crit = next((c for c in human_criteria(ctx.text) if c.index == ac), None)
+    if crit is None:
+        raise VerdictRefused(f"{task_id} has no Human criterion #{ac}")
+    ann = _annotation(lines, crit)
+    vid = applied_ticks(root, task_id).get(ac) or (ann[1] if ann else "")
+    if not vid:
+        raise VerdictRefused(f"AC#{ac} of {task_id} is not reviewer-derived — nothing to release")
+    if ann:
+        del lines[ann[0]]
+        ctx.path.write_text("\n".join(lines), encoding="utf-8")
+    _append(APPLIED, {"ts": _now(), "task": task_id, "kind": "operator-release", "ac": ac,
+                      "verdict_id": vid, "reason": reason.strip()}, root)
+    return {"task": task_id, "ac": ac, "verdict_id": vid, "released": True}
 
 
 def _annotation(lines: list[str], crit) -> tuple[int, str] | None:
@@ -969,7 +1083,7 @@ def apply(task_id: str, root: Path | None = None) -> dict:
     Reads the ledger, writes only the task file and the applied ledger. Idempotent.
     """
     root = root or _root()
-    result = {"task": task_id, "ticked": [], "withdrawn": [], "owner_before": "",
+    result = {"task": task_id, "ticked": [], "withdrawn": [], "refused": [], "recited": [], "owner_before": "",
               "owner_after": "", "skipped": ""}
     ctx = _task_ctx(root, task_id)
     if ctx is None:
@@ -978,6 +1092,10 @@ def apply(task_id: str, root: Path | None = None) -> dict:
     path, text = ctx.path, ctx.text
     owner = ctx.owner
     result["owner_before"] = result["owner_after"] = owner
+    mism = provenance_mismatches(root, task_id, text)
+    if mism:
+        result["refused"] = mism
+        return result
     if ctx.workflow == "inception":
         # The go/no-go gates (T-1259 / decision line) are rewired by their own slice;
         # a verdict must not tick around them.
@@ -994,6 +1112,7 @@ def apply(task_id: str, root: Path | None = None) -> dict:
         if r is not None:
             if r["id"] != ann[1]:
                 lines[ann[0]] = _cite(r)
+                result["recited"].append({"ac": c.index, "verdict_id": r["id"]})
             continue
         del lines[ann[0]]
         lines[c.start] = re.sub(r"\[[xX]\]", "[ ]", lines[c.start], count=1)
@@ -1015,7 +1134,7 @@ def apply(task_id: str, root: Path | None = None) -> dict:
         result["ticked"].append({"ac": c.index, "verdict_id": r["id"], "reviewer": r["reviewer"]})
     result["ticked"].sort(key=lambda t: t["ac"])
     result["withdrawn"].sort(key=lambda t: t["ac"])
-    if not hits and not result["withdrawn"]:
+    if not hits and not result["withdrawn"] and not result["recited"]:
         return result
     new_text = "\n".join(lines)
 
@@ -1027,10 +1146,10 @@ def apply(task_id: str, root: Path | None = None) -> dict:
         new_text = re.sub(r"(?m)^owner:.*$", "owner: agent", new_text, count=1)
         result["owner_after"] = "agent"
     path.write_text(new_text, encoding="utf-8")
-    kind = "verdict-apply" if hits else "verdict-withdraw"
+    kind = "verdict-apply" if hits else ("verdict-withdraw" if result["withdrawn"] else "verdict-recite")
     _append(APPLIED, {"ts": _now(), "task": task_id, "kind": kind,
                       "ticked": result["ticked"], "withdrawn": result["withdrawn"],
-                      "owner_before": owner, "owner_after": result["owner_after"],
+                      "recited": result["recited"], "owner_before": owner, "owner_after": result["owner_after"],
                       "open_human_remaining": len(still_open)}, root)
     return result
 
@@ -1050,7 +1169,8 @@ def audit(root: Path | None = None) -> tuple[int, list[str]]:
     root = root or _root()
     led = load_ledger(root)
     n = len(led.committed) + len(led.pending)
-    if not n and not led.torn and not led.faults:
+    if not n and not led.torn and not led.faults and not led.missing \
+            and not _read(APPLIED, root):
         return 0, ["verdict ledger: empty or absent (path is off until a review dispatch writes rows)"]
     out, bad = [], 0
     for f in led.faults:
@@ -1059,6 +1179,16 @@ def audit(root: Path | None = None) -> tuple[int, list[str]]:
     for ln in led.torn:
         bad += 1
         out.append(f"FAIL torn/non-object line in verdicts.jsonl: {ln[:80]!r}")
+    for vid, task in led.missing:
+        bad += 1
+        out.append(f"FAIL {vid} ({task}): deleted verdict — recorded but absent from the ledger")
+    for task in sorted({str(r.get("task")) for r in _read(APPLIED, root) if r.get("task")}):
+        tp, sub = _find_task(root, task)
+        if tp is None or sub != "active":
+            continue
+        for m in provenance_mismatches(root, task, tp.read_text(encoding="utf-8", errors="replace")):
+            bad += 1
+            out.append(f"FAIL {m['verdict_id']} ({task}): annotation mismatch on AC#{m['ac']} — {m['why']}")
     bases: dict[str, _Base] = {}
     for r, intro in led.entries():
         rid, task = str(r.get("id", "?")), str(r.get("task", "?"))
@@ -1116,6 +1246,12 @@ def _cli(argv: list[str] | None = None) -> int:
     d.add_argument("task_id")
     d.add_argument("--ac", type=int, required=True)
 
+    rl = sub.add_parser("release", help="(operator) convert a reviewer-derived tick into a manual approval")
+    rl.add_argument("task_id")
+    rl.add_argument("--ac", type=int, required=True)
+    rl.add_argument("--reason", required=True)
+    rl.add_argument("--i-am-human", action="store_true")
+
     sub.add_parser("audit", help="cross-check every ledger row; exit 2 on any failure")
 
     ls = sub.add_parser("list", help="verdicts recorded for a task")
@@ -1141,6 +1277,21 @@ def _cli(argv: list[str] | None = None) -> int:
     if args.cmd == "apply":
         res = apply(args.task_id)
         print(json.dumps(res))
+        if res.get("refused"):
+            print("REFUSED: reviewer-derived tick(s) no longer match the applied log — restore the "
+                  "annotation, or an operator runs `fw reviewer verdict release`", file=sys.stderr)
+            return 1
+        return 0
+    if args.cmd == "release":
+        if os.environ.get("CLAUDECODE") == "1" and not args.i_am_human:
+            print("REFUSED: converting a reviewer verdict into a manual approval is an operator "
+                  "action (--i-am-human)", file=sys.stderr)
+            return 1
+        try:
+            print(json.dumps(release(args.task_id, args.ac, args.reason)))
+        except VerdictRefused as e:
+            print(f"REFUSED: {e}", file=sys.stderr)
+            return 1
         return 0
     if args.cmd == "check-render":
         vs = render_verdicts(args.task_id)
