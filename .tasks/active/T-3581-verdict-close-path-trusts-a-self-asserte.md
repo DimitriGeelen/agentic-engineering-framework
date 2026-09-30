@@ -113,7 +113,7 @@ the operator's call (Human AC below).
 - [x] Malformed or torn ledger lines fail closed for the affected task/criterion and write a diagnostic refusal row; evidence paths must be relative and resolve inside the repo
 - [x] `fw audit` gains a line that cross-checks every verdicts.jsonl row (provenance, introducing commit, schema) and WARNs/FAILs on any that do not verify
 - [x] Adversarial tests for every finding in both reviews, each with a negative control, including Z.ai's sandbox reproductions (pseudonym, hand-appended row, pre-commit record, --no-verify commit without the task id)
-- [ ] Re-review by both vendors (OpenAI + Z.ai) returns at least amber with no high findings; `bin/fw vendor self --check` clean
+- [x] Re-review by both vendors (OpenAI + Z.ai) returns at least amber with no high findings; `bin/fw vendor self --check` clean. Round 3: OpenAI AMBER, Z.ai AMBER, zero high findings (docs/reports/T-3581-round3-review-{openai,zai}.md). Rounds 1-2 were RED. Remaining mediums and lows are either round 4 or slice 3 (T-3580), except the same-user forgery boundary, which is the Human criterion below.
 
 ### Human
 - [ ] [REVIEW] Accept or reject the residual gap: verdicts are tamper-evident, audited and fail-closed, but not forgery-proof against an agent with full write access to the repo
