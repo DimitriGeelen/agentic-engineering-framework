@@ -132,9 +132,12 @@ class TestVendorMapping:
         _panel(prod, ["claude"] * 3)
         assert _closed(prod).startswith("degraded") and "span 1" in _closed(prod)
 
-    def test_control_three_distinct_registered_kinds_satisfy_the_panel(self, prod):
-        (prod / "policy").mkdir()
-        (prod / "policy" / "review-backends.yaml").write_text(_THREE_KINDS)
+    def test_control_three_distinct_registered_kinds_satisfy_the_panel(self, prod, monkeypatch):
+        """Round 6: the registry is COMMITTED and the three kinds are launchable (as if T-3582
+        had shipped). The same registry uncommitted, or with kinds the dispatcher cannot run, is
+        the negative control in t3580_round6_test.TestVendorProvenance."""
+        rt.commit_registry(prod, _THREE_KINDS)
+        rt.launchable(monkeypatch, {"codex", "opencode"})
         _panel(prod, ["claude", "codex", "opencode"])
         assert [r["vendor"] for r in _rows(prod, vl.DISPATCHES)] == ["anthropic", "openai", "zai"]
         assert _ticked(prod) == [1]

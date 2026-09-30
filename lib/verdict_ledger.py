@@ -359,12 +359,16 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
            "revision": (revision or "").strip() or _head_sha(root),
            "wdir": str(Path(wdir).resolve()) if (wdir or "").strip() else "",
            "worker_kind": (worker_kind or "").strip(), "vendor": ""}
-    table = kind_vendors(root)
+    # Round 6: the mapping as COMMITTED at the reviewed revision, restricted to the kinds the
+    # dispatcher can launch — an uncommitted or unlaunchable declaration names no vendor.
+    table = verified_kind_vendors(root, row["revision"])
     if row["task_type"] == REVIEW_TASK_TYPE:
         row["worker_kind"] = row["worker_kind"] or "claude"
         if not table.get(row["worker_kind"]):
-            raise ValueError(f"worker kind {row['worker_kind']!r} has no vendor in {BACKENDS} — a "
-                             f"review dispatch's vendor comes from that mapping, never free text")
+            raise ValueError(f"worker kind {row['worker_kind']!r} has no vendor in {BACKENDS} as "
+                             f"committed at {row['revision'][:9] or 'HEAD'}, or the dispatcher cannot "
+                             f"launch it — a review dispatch's vendor comes from that mapping, never "
+                             f"free text")
     row["vendor"] = table.get(row["worker_kind"], "")
     if (run_id or "").strip() or (seat or "").strip():
         if row["task_type"] != REVIEW_TASK_TYPE:
@@ -392,17 +396,66 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
     return row
 
 
-def kind_vendors(root: Path | None = None) -> dict[str, str]:
-    """{worker kind: vendor} from policy/review-backends.yaml — the project's copy, else the
-    framework's. {} when the registry is missing or invalid: no vendor is then verifiable."""
+def _registry_blob(root: Path, revision: str) -> tuple[str, str]:
+    """(yaml text, where) of the backend registry as COMMITTED — never the working tree (T-3580
+    round 6). The project's own policy/review-backends.yaml at `revision` (default HEAD) when it is
+    tracked there; else the vendored copy under the project at `revision`; else this framework's
+    committed copy at its HEAD. ('', why) when none is committed."""
+    rev = (revision or "").strip() or "HEAD"
+    cands = [(root, rev, str(BACKENDS))]
+    fw = _HERE.parent.resolve()
+    try:
+        cands.append((root, rev, str((fw / BACKENDS).relative_to(Path(root).resolve()))))
+    except ValueError:
+        cands.append((fw, "HEAD", str(BACKENDS)))
+    for repo, r, rel in cands:
+        rc, blob = _git_out(repo, "show", f"{r}:{rel}")
+        if rc == 0 and blob.strip():
+            return blob, f"{repo}@{r}:{rel}"
+    return "", f"no committed {BACKENDS} at {rev}"
+
+
+def kind_vendors(root: Path | None = None, revision: str = "") -> dict[str, str]:
+    """{worker kind: vendor} from policy/review-backends.yaml AS COMMITTED at `revision` (default
+    HEAD; see `_registry_blob`). An uncommitted edit of the registry declares nothing. {} when no
+    committed registry exists or it is invalid: no vendor is then verifiable."""
+    import tempfile
+
     root = root or _root()
-    for p in (root / BACKENDS, _HERE.parent / BACKENDS):
-        if p.is_file():
-            try:
-                return review_cost.worker_vendors(p)
-            except (review_cost.CostError, OSError, ValueError):
-                return {}
-    return {}
+    blob, _where = _registry_blob(root, revision)
+    if not blob:
+        return {}
+    with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as fh:
+        fh.write(blob)
+        tmp = Path(fh.name)
+    try:
+        return review_cost.worker_vendors(tmp)
+    except (review_cost.CostError, OSError, ValueError):
+        return {}
+    finally:
+        tmp.unlink(missing_ok=True)
+
+
+_KINDS_RE = re.compile(r'^DISPATCH_WORKER_KINDS="([^"]*)"', re.M)
+
+
+def launchable_kinds() -> set[str]:
+    """The worker kinds the dispatch runtime can actually launch: DISPATCH_WORKER_KINDS in this
+    framework's agents/termlink/termlink.sh (`fw termlink worker-kinds`). A registry entry naming
+    a kind the dispatcher cannot run (antigravity, codex and opencode until T-3582) is a
+    declaration, not a worker."""
+    try:
+        m = _KINDS_RE.search((_HERE.parent / "agents" / "termlink" / "termlink.sh").read_text())
+    except OSError:
+        return set()
+    return set(m.group(1).split()) if m else set()
+
+
+def verified_kind_vendors(root: Path | None = None, revision: str = "") -> dict[str, str]:
+    """The kind->vendor pairs a review dispatch may be registered under and a panel may count:
+    committed in the registry at `revision` AND launchable by the dispatcher (round 6)."""
+    live = launchable_kinds()
+    return {k: v for k, v in kind_vendors(root, revision).items() if k in live}
 
 
 def dispatch_record(root: Path, dispatch_id: str) -> tuple[dict | None, str]:
@@ -1572,14 +1625,14 @@ def _panel_fault(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> str:
     needs its own valid, completed green for this criterion, and the seats must span the run's
     required number of distinct vendors (a single-vendor panel cannot satisfy a three-vendor one).
     A vendor is derived from each seat's registered worker KIND through the one mapping in
-    policy/review-backends.yaml (round 5); a registered vendor that disagrees with it makes the
+    policy/review-backends.yaml (round 5) AS COMMITTED at the dispatch's reviewed revision, for a
+    kind the dispatcher can launch (round 6); a registered vendor that disagrees with it makes the
     seat unverified. Three registry aliases, or three vendor strings, for one kind are one vendor."""
     root, led = ctx.root, ctx.ledger
     run, _bind, _why = run_for_dispatch(root, str(last["dispatch_id"]))
     if run is None:
         return ""
     vendors: set[str] = set()
-    table = kind_vendors(root)
     for s in run["seats"]:
         seat_rows = []
         for r in mine:
@@ -1597,12 +1650,14 @@ def _panel_fault(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> str:
             return f"panel-incomplete: seat {s['seat']!r} of run {run['run_id']} is {r.get('outcome')!r}"
         drec, _ = dispatch_record(root, str(r["dispatch_id"]))
         kind = str((drec or {}).get("worker_kind") or "claude")
-        v = table.get(kind, "")
+        # Round 6: re-derived from the registry COMMITTED at the dispatch's reviewed revision and
+        # the kinds the dispatcher can launch — never the working tree.
+        v = verified_kind_vendors(root, str((drec or {}).get("revision") or "")).get(kind, "")
         if not v or str((drec or {}).get("vendor") or "") != v:
             return (f"panel-unverified-vendor: seat {s['seat']!r} of run {run['run_id']} registered "
                     f"vendor {(drec or {}).get('vendor')!r} for worker kind {kind!r}, but "
-                    f"{BACKENDS} maps that kind to {v or 'nothing'!r} — a vendor is derived from "
-                    f"the worker kind, never taken from free text")
+                    f"{BACKENDS} as committed (for a launchable kind) maps it to {v or 'nothing'!r} "
+                    f"— a vendor is derived from the worker kind, never taken from free text")
         vendors.add(v)
     if len(vendors) < int(run.get("required_vendors") or 1):
         return (f"degraded: run {run['run_id']} demands {run.get('required_vendors')} vendor(s), "

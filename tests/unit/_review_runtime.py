@@ -80,3 +80,25 @@ def finish(root, did, exit_code=0, result=b'{"type":"result","result":"done"}\n'
     with as_runtime():
         return vl.complete(did, wdir=str(w), exit_code=exit_code, session=did, secret=secret,
                            worker_kind=(rec or {}).get("worker_kind") or "claude", root=Path(root))
+
+
+def commit_registry(root, text: str) -> None:
+    """Write a fixture policy/review-backends.yaml AND commit it (round 6: the ledger reads the
+    registry as committed, never the working tree). Committed by a non-producer identity, with
+    no task id, so it is neither the task's work nor a producer commit."""
+    import subprocess
+    p = Path(root) / "policy" / "review-backends.yaml"
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(text)
+    env = {**os.environ, "GIT_AUTHOR_NAME": "Operator", "GIT_AUTHOR_EMAIL": "op@x.y",
+           "GIT_COMMITTER_NAME": "Operator", "GIT_COMMITTER_EMAIL": "op@x.y"}
+    for args in (["add", "policy/review-backends.yaml"], ["commit", "-q", "-m", "fixture: backend registry"]):
+        subprocess.run(["git", "-c", "core.hooksPath=/dev/null", *args], cwd=root, check=True,
+                       capture_output=True, env=env)
+
+
+def launchable(monkeypatch, kinds) -> None:
+    """Pretend the dispatcher can launch `kinds` (as if T-3582 had built codex/opencode workers).
+    The ledger's own check reads DISPATCH_WORKER_KINDS; this replaces only that answer."""
+    real = vl.launchable_kinds
+    monkeypatch.setattr(vl, "launchable_kinds", lambda: set(kinds) | real())

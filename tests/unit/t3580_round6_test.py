@@ -364,3 +364,95 @@ class TestRuntimeCapability:
         log = (wdir / "stderr.log").read_text()
         assert "PEEK file=0 env=0" in log, log
         assert _ticked(rtrepo) == [1]
+
+
+# ── 3. LOW: vendor provenance = the COMMITTED registry + a launchable worker kind ───────────
+
+from t3580_round5_test import _THREE_KINDS  # noqa: E402
+
+PANEL = [{"seat": s, "vendor": s} for s in ("seat-a", "seat-b", "seat-c")]
+
+
+def _three_seat_panel(root, kinds=("claude", "codex", "opencode")):
+    vl.register_run("run-p", TID, acs=[1], rung="rung-5-panel", seats=PANEL, required_vendors=3,
+                    root=root)
+    for s, k in zip(PANEL, kinds):
+        did = f"rv-{s['seat']}"
+        rt.dispatch(root, did, TID, worker_kind=k, run_id="run-p", seat=s["seat"])
+        _record(root, did, run_id="run-p", rung=f"rung-5-panel:{s['seat']}")
+        _commit_as(root, f"reviewer-{did}")
+        rt.finish(root, did)
+
+
+class TestVendorProvenance:
+    def test_negative_an_uncommitted_registry_declares_nothing(self, prod, monkeypatch):
+        """The review's case: the round-5 three-vendor control used a working-tree registry."""
+        (prod / "policy").mkdir()
+        (prod / "policy" / "review-backends.yaml").write_text(_THREE_KINDS)    # NOT committed
+        rt.launchable(monkeypatch, {"codex", "opencode"})
+        assert "codex" not in vl.kind_vendors(prod)
+        with pytest.raises(ValueError, match="'codex' has no vendor .* as committed"):
+            rt.dispatch(prod, "rv-x", TID, worker_kind="codex")
+
+    def test_negative_an_uncommitted_edit_does_not_change_a_committed_vendor(self, prod):
+        rt.commit_registry(prod, _THREE_KINDS)
+        (prod / "policy" / "review-backends.yaml").write_text(
+            _THREE_KINDS.replace("vendor: anthropic", "vendor: someone-else"))
+        assert vl.kind_vendors(prod)["claude"] == "anthropic"
+
+    def test_negative_a_committed_but_unlaunchable_kind_is_refused_at_registration(self, prod):
+        rt.commit_registry(prod, _THREE_KINDS)
+        assert vl.kind_vendors(prod)["codex"] == "openai"           # declared and committed ...
+        assert "codex" not in vl.launchable_kinds()                  # ... but no worker can run
+        with pytest.raises(ValueError, match="or the dispatcher cannot launch it"):
+            rt.dispatch(prod, "rv-x", TID, worker_kind="codex")
+
+    def test_negative_at_apply_an_unlaunchable_seat_does_not_count(self, hi, monkeypatch):
+        """Registered while (pretend) launchable; at apply the dispatcher cannot launch the kind:
+        the seat's vendor is unverified and the panel does not tick."""
+        rt.commit_registry(hi, _THREE_KINDS)
+        with monkeypatch.context() as m:
+            rt.launchable(m, {"codex", "opencode"})
+            _three_seat_panel(hi)
+            assert _ticked(hi) == [1]                                # control while launchable
+        f = next((hi / ".tasks" / "active").glob(f"{TID}-*.md"))
+        f.write_text(f.read_text().replace("- [x] [REVIEW]", "- [ ] [REVIEW]"))
+        (hi / vl.APPLIED).unlink(missing_ok=True)
+        ctx, crit = _ctx(hi), _crit(hi)
+        good, why = vl.satisfying_verdict(ctx, crit)
+        assert good is None and "panel-unverified-vendor" in why and "launchable" in why
+
+    def test_negative_the_registry_is_read_at_the_reviewed_revision(self, prod, monkeypatch):
+        """A kind committed only AFTER the reviewed revision names no vendor for that review."""
+        early = subprocess.run(["git", "rev-parse", "HEAD"], cwd=prod, capture_output=True,
+                               text=True).stdout.strip()
+        rt.commit_registry(prod, _THREE_KINDS)
+        rt.launchable(monkeypatch, {"codex"})
+        with pytest.raises(ValueError, match="'codex' has no vendor"):
+            rt.dispatch(prod, "rv-x", TID, worker_kind="codex", revision=early)
+        rt.dispatch(prod, "rv-y", TID, worker_kind="codex")                  # control: at HEAD
+        assert vl.dispatch_record(prod, "rv-y")[0]["vendor"] == "openai"
+
+    def test_control_committed_and_launchable_three_vendors_tick(self, hi, monkeypatch):
+        rt.commit_registry(hi, _THREE_KINDS)
+        rt.launchable(monkeypatch, {"codex", "opencode"})
+        _three_seat_panel(hi)
+        assert _ticked(hi) == [1]
+
+    def test_antigravity_has_no_worker_kind_and_counts_for_nothing(self):
+        """policy/review-backends.yaml's antigravity backend (operator-approved 2026-09-30) names
+        no worker_kind: it maps to no vendor, is no judge seat, and no kind is invented for it."""
+        import yaml
+        reg = yaml.safe_load((_HERE / "policy" / "review-backends.yaml").read_text())["backends"]
+        agy = next(b for b in reg if b["id"] == "antigravity")
+        assert "worker_kind" not in agy and "vendor" not in agy
+        table = vl.kind_vendors(_HERE)
+        assert "antigravity" not in table and not any("google" in v for v in table.values())
+        seats, _paid = judge_cli._backends(_HERE)
+        assert "antigravity" not in {s["id"] for s in seats}
+        assert set(vl.verified_kind_vendors(_HERE)) <= vl.launchable_kinds()
+
+    def test_launchable_kinds_are_what_the_dispatcher_prints(self):
+        out = subprocess.run(["bash", str(_HERE / "agents/termlink/termlink.sh"), "worker-kinds"],
+                             capture_output=True, text=True).stdout.split()
+        assert set(out) == vl.launchable_kinds() and out

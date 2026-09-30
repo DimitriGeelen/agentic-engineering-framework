@@ -418,8 +418,7 @@ _THREE_KINDS = "backends:\n" + "".join(
 def _panel(root, outcomes, vendors=("claude", "codex", "opencode"), required=3):
     """Register a 3-seat run and let each seat record `outcomes[seat]` (None = seat never records).
     Round 5: `vendors` are worker KINDS, mapped to vendors by a fixture registry."""
-    (root / "policy").mkdir(exist_ok=True)
-    (root / "policy" / "review-backends.yaml").write_text(_THREE_KINDS)
+    rt.commit_registry(root, _THREE_KINDS)     # round 6: committed, not the working tree
     vl.register_run("run-p", TID, acs=[1], rung="rung-5-panel", seats=SEATS,
                     required_vendors=required, root=root)
     for s, v in zip(SEATS, vendors):
@@ -437,6 +436,10 @@ def _ticked_nothing(root):
 
 
 class TestPanels:
+    @pytest.fixture(autouse=True)
+    def _t3582(self, monkeypatch):
+        rt.launchable(monkeypatch, {"codex", "opencode"})    # round 6: as if T-3582 had shipped
+
     def test_control_all_seats_green_across_three_vendors(self, prod):
         _panel(prod, {"claude": "green", "codex": "green", "opencode": "green"})
         assert [t["ac"] for t in vl.apply(TID, prod)["ticked"]] == [1]

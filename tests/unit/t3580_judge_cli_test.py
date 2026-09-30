@@ -329,8 +329,10 @@ def _all_kinds(monkeypatch, root):
             b["worker_kind"] = b["vendor"] = kinds[b["id"]]
         elif b.get("worker_kind"):
             b.pop("worker_kind")
-    (root / "policy").mkdir(exist_ok=True)
-    (root / "policy" / "review-backends.yaml").write_text(yaml.safe_dump(reg, sort_keys=False))
+    # Round 6: committed (the ledger ignores the working tree) and launchable (the ledger checks
+    # the dispatcher's kinds) — as if T-3582 had shipped.
+    rt.commit_registry(root, yaml.safe_dump(reg, sort_keys=False))
+    rt.launchable(monkeypatch, ALL_KINDS)
     monkeypatch.setattr(judge_cli, "_dispatchable_kinds", lambda r: ALL_KINDS)
     monkeypatch.setattr(judge_cli, "_kind_vendors", lambda r: {k: k for k in ALL_KINDS})
 

@@ -533,8 +533,11 @@ HI = "cost_estimate:\n  blast_radius: 9\n"
 
 
 class TestCostIntegration:
-    def test_seats_are_read_from_the_registry_not_hardcoded(self, repo):
-        """A fixture registry with a new internal backend: the judge dispatches IT."""
+    def test_seats_are_read_from_the_registry_not_hardcoded(self, repo, monkeypatch):
+        """A fixture registry with a new internal backend: the judge dispatches IT. (Round 6: the
+        registry is committed by _produce, and the kind is made launchable — a registry entry
+        alone is not a worker.)"""
+        rt.launchable(monkeypatch, {"acme"})
         (repo / "policy").mkdir()
         (repo / "policy" / "review-backends.yaml").write_text(
             "backends:\n"
