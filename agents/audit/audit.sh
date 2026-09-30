@@ -2799,6 +2799,29 @@ elif [ -f "$_cron_registry" ]; then
     fi
 fi
 
+# T-3581: the reviewer-verdict ledger is a SOVEREIGNTY-relevant close path (a green row
+# ticks a Human criterion and hands ownership to the agent), so it needs a consumer that
+# is not the closer. Every row is cross-checked for schema, a signed review-dispatch
+# record for the row's task, a producer set that is non-empty and excludes the reviewer,
+# evidence paths inside the repo, and an introducing commit that exists and is not a
+# producer's. A torn line is a failure. FAIL, not WARN: an unverifiable row is exactly what
+# a forged close looks like, and it is a property of committed content.
+if [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ]; then
+    _vl_out=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" audit 2>&1)
+    _vl_rc=$?
+    if [ "$_vl_rc" -eq 0 ]; then
+        pass "Reviewer-verdict ledger: $(echo "$_vl_out" | tail -1)"
+    elif [ "$_vl_rc" -eq 2 ]; then
+        fail "Reviewer-verdict ledger: rows that do not verify" \
+             "$(echo "$_vl_out" | grep '^FAIL' | head -3 | tr '\n' ';')" \
+             "Inspect: python3 lib/verdict_ledger.py audit — a row with no signed review dispatch, an introducing commit by a producer, or a torn line must be removed or re-recorded by a real review dispatch"
+    else
+        fail "Reviewer-verdict ledger: audit could not run (rc=$_vl_rc) — the ledger is UNVERIFIED" \
+             "$(echo "$_vl_out" | tail -2 | tr '\n' ';')" \
+             "Run: python3 lib/verdict_ledger.py audit"
+    fi
+fi
+
 # T-3282 (G-104): the RUNNING Watchtower is a deployment surface of its own —
 # source can be fixed, tested, and closed green while the process serves the
 # pre-fix bytes (Flask debug=False, no reloader). The T-2938 detector fired

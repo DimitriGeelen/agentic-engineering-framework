@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T08:20:26Z
-last_update: 2026-09-30T08:21:09Z
+last_update: '2026-09-30T08:30:18Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -76,6 +76,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-30T08:30:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=294,acs=14)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3581: Verdict close path trusts a self-asserted reviewer string and hand-appended ledger rows - bind verdicts to review-dispatch provenance, audit the ledger, revalidate at every close (T-3579 cross-vendor review RED)
@@ -93,16 +103,16 @@ the operator's call (Human AC below).
 ## Acceptance Criteria
 
 ### Agent
-- [ ] CONTAINMENT FIRST (own commit): a ledger row counts only if it carries a review-dispatch provenance id that resolves to a real record (see next AC); until slice 3 writes such rows, no row qualifies, so the path is off, and a test proves a hand-appended green row is refused
+- [x] CONTAINMENT FIRST (own commit): a ledger row counts only if it carries a review-dispatch provenance id that resolves to a real record (see next AC); until slice 3 writes such rows, no row qualifies, so the path is off, and a test proves a hand-appended green row is refused
 - [ ] Provenance: each verdict row must carry the dispatch id of the reviewer worker (from `fw termlink dispatch` meta / `.context/dispatches.jsonl`); apply refuses a row whose dispatch record is missing, whose worker task-type is not a review, or whose dispatch was issued by a producer identity/session of the task
-- [ ] Introducing-commit check: at apply, the commit that added the row must exist and must not be authored by a producer identity; uncommitted rows do not count
-- [ ] Refuse when the producer set is empty or git fails (no producer provenance means refuse, never pass)
-- [ ] Every reviewer-derived tick is revalidated at every close attempt (including already-ticked criteria): a later red, a digest change or a producer collision withdraws the tick and restores ownership before the completion gates run
-- [ ] One shared eligibility validator is used by record, apply and check-render: current REVIEWER_JUDGES classification and a matching digest; the render gate is satisfied only by a green on a render-surface criterion
-- [ ] The digest covers the canonical substantive criterion body (title plus Steps/Expected/If-not), excluding generated verdict annotations and checkbox state
-- [ ] Malformed or torn ledger lines fail closed for the affected task/criterion and write a diagnostic refusal row; evidence paths must be relative and resolve inside the repo
-- [ ] `fw audit` gains a line that cross-checks every verdicts.jsonl row (provenance, introducing commit, schema) and WARNs/FAILs on any that do not verify
-- [ ] Adversarial tests for every finding in both reviews, each with a negative control, including Z.ai's sandbox reproductions (pseudonym, hand-appended row, pre-commit record, --no-verify commit without the task id)
+- [x] Introducing-commit check: at apply, the commit that added the row must exist and must not be authored by a producer identity; uncommitted rows do not count
+- [x] Refuse when the producer set is empty or git fails (no producer provenance means refuse, never pass)
+- [x] Every reviewer-derived tick is revalidated at every close attempt (including already-ticked criteria): a later red, a digest change or a producer collision withdraws the tick and restores ownership before the completion gates run
+- [x] One shared eligibility validator is used by record, apply and check-render: current REVIEWER_JUDGES classification and a matching digest; the render gate is satisfied only by a green on a render-surface criterion
+- [x] The digest covers the canonical substantive criterion body (title plus Steps/Expected/If-not), excluding generated verdict annotations and checkbox state
+- [x] Malformed or torn ledger lines fail closed for the affected task/criterion and write a diagnostic refusal row; evidence paths must be relative and resolve inside the repo
+- [x] `fw audit` gains a line that cross-checks every verdicts.jsonl row (provenance, introducing commit, schema) and WARNs/FAILs on any that do not verify
+- [x] Adversarial tests for every finding in both reviews, each with a negative control, including Z.ai's sandbox reproductions (pseudonym, hand-appended row, pre-commit record, --no-verify commit without the task id)
 - [ ] Re-review by both vendors (OpenAI + Z.ai) returns at least amber with no high findings; `bin/fw vendor self --check` clean
 
 ### Human
@@ -148,6 +158,11 @@ the operator's call (Human AC below).
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
+python3 -m pytest tests/unit/test_t3579_verdict_ledger.py -q
+command -v bats >/dev/null && bats tests/unit/t3579_verdict_close_path.bats
+python3 -c "import subprocess,sys,os; sys.exit(subprocess.run(['python3','lib/verdict_ledger.py','audit'],env={**os.environ,'PROJECT_ROOT':os.getcwd()}).returncode)"
+bash -n agents/task-create/update-task.sh && bash -n agents/audit/audit.sh && bash -n agents/termlink/termlink.sh
+bin/fw vendor self --check
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 #
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;

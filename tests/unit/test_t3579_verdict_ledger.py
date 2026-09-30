@@ -63,14 +63,43 @@ def _dispatch(root, did="rv-1", task=TASK, task_type="review"):
     return did
 
 
-def _rec(root, outcome="green", ac=1, reviewer="openai/gpt-5", **kw):
+def _dg(root, ac=1):
+    f = next((root / ".tasks" / "active").glob(f"{TASK}-*.md"))
+    return vl.criterion_digest(next(c for c in human_criteria(f.read_text()) if c.index == ac))
+
+
+def _has_commit(root):
+    return subprocess.run(["git", "rev-parse", "-q", "--verify", "HEAD"], cwd=root,
+                          capture_output=True).returncode == 0
+
+
+def _commit_ledger(root, author="Reviewer Worker"):
+    """Commit .context/reviews as the reviewer worker (its own identity, not the producer's)."""
+    _git(root, "add", ".context/reviews")
+    _git(root, "commit", "-q", "-m", f"{TASK}: reviewer verdict",
+         env={"GIT_AUTHOR_NAME": author, "GIT_AUTHOR_EMAIL": "reviewer@x.y",
+              "GIT_COMMITTER_NAME": author, "GIT_COMMITTER_EMAIL": "reviewer@x.y"})
+
+
+def _rec(root, outcome="green", ac=1, reviewer="openai/gpt-5", commit=True, **kw):
+    """A verdict as the shipped path produces it: producer commit exists, the reviewer
+    submits the digest it read, names a registered review dispatch, and commits the row."""
+    if not _has_commit(root):
+        _produce(root)
     if "dispatch_id" not in kw:
         kw["dispatch_id"] = _dispatch(root, f"rv-{len(_lines(root, vl.DISPATCHES)) + 1}")
+    if "digest" not in kw:
+        f = next((root / ".tasks" / "active").glob(f"{TASK}-*.md"))
+        kw["digest"] = vl.criterion_digest(
+            next(c for c in human_criteria(f.read_text()) if c.index == ac))
     kw.setdefault("rung", "cross-vendor")
     kw.setdefault("evidence", ["evidence.md"] if outcome == "green" else [])
     if outcome != "green":
         kw.setdefault("guidance", "tighten the second sentence")
-    return vl.record(TASK, ac, outcome, reviewer=reviewer, root=root, **kw)
+    rec = vl.record(TASK, ac, outcome, reviewer=reviewer, root=root, **kw)
+    if commit:
+        _commit_ledger(root)
+    return rec
 
 
 def _lines(root, rel):
@@ -96,17 +125,18 @@ def test_record_shape_and_ledger(root):
     assert rec["id"] == row["id"]
 
 
-def test_digest_is_the_t1985_digest():
+def test_title_digest_is_the_t1985_digest():
     from lib.reviewer.static_scan import _compute_ac_text_digest
     t = "[REVIEW] The summary paragraph reads clearly"
-    assert vl.criterion_digest(t) == _compute_ac_text_digest(t)
+    assert vl.title_digest(t) == _compute_ac_text_digest(t)
 
 
 def test_nongreen_requires_guidance(root):
     _task(root, TASTE)
     with pytest.raises(vl.VerdictRefused, match="guidance"):
+        _produce(root)
         vl.record(TASK, 1, "amber", reviewer="openai/gpt-5", rung="r", root=root,
-                  dispatch_id=_dispatch(root))
+                  dispatch_id=_dispatch(root), digest=_dg(root))
     assert not (root / vl.VERDICTS).exists()
 
 
@@ -194,7 +224,7 @@ def test_forged_green_for_operator_only_criterion_never_applies(root):
     f = _task(root, TIER0)
     c = _humans(f)[0]
     vl._append(vl.VERDICTS, {"id": "V-forged", "task": TASK, "ac": 1,
-                             "ac_digest": vl.criterion_digest(c.title), "outcome": "green",
+                             "ac_digest": vl.criterion_digest(c), "outcome": "green",
                              "reviewer": "openai/gpt-5", "rung": "x", "evidence": ["evidence.md"]}, root)
     assert vl.apply(TASK, root)["ticked"] == []
     assert not _humans(f)[0].ticked
@@ -272,7 +302,7 @@ def _forge(root, outcome="green", **over):
     _task_file = next((root / ".tasks" / "active").glob(f"{TASK}-*.md"))
     crit = human_criteria(_task_file.read_text())[0]
     row = {"id": "V-FORGED", "ts": "2026-09-30T00:00:00Z", "task": TASK, "ac": 1,
-           "ac_digest": vl.criterion_digest(crit.title), "outcome": outcome, "verdict": outcome,
+           "ac_digest": vl.criterion_digest(crit), "outcome": outcome, "verdict": outcome,
            "reviewer": "independent-reviewer-session-7", "rung": "cross-vendor",
            "evidence": ["evidence.md"]}
     row.update(over)
@@ -297,8 +327,7 @@ def test_control_the_same_row_with_a_registered_review_dispatch_is_honoured(root
     f = _task(root, TASTE)
     _produce(root)
     rec = _rec(root)
-    assert [r["id"] for r in vl.render_verdicts(TASK, root)] == [rec["id"]]
-    assert vl.apply(TASK, root)["ticked"]
+    assert vl.apply(TASK, root)["ticked"][0]["verdict_id"] == rec["id"]
 
 
 @pytest.mark.parametrize("did", ["", "no-such-dispatch"])
@@ -347,3 +376,384 @@ def test_tampering_with_a_registry_row_after_signing_invalidates_it(root):
     with pytest.raises(vl.VerdictRefused, match="signature"):
         vl.record(TASK, 1, "green", reviewer="openai/gpt-5", rung="r",
                   evidence=["evidence.md"], dispatch_id=did, root=root)
+
+
+# ═══ T-3581: adversarial tests, one per finding in the two cross-vendor reviews ═══════
+# Each refusal test is paired with a control that shows the same setup passing when the
+# one property under test is right — a refusal that also fires on good input proves nothing.
+
+def _text(root):
+    return next((root / ".tasks" / "active").glob(f"{TASK}-*.md")).read_text()
+
+
+def _ticked(root, ac=1):
+    return next(c for c in human_criteria(_text(root)) if c.index == ac).ticked
+
+
+def _owner(root):
+    return frontmatter(_text(root))["owner"]
+
+
+def _edit(root, old, new):
+    f = next((root / ".tasks" / "active").glob(f"{TASK}-*.md"))
+    f.write_text(f.read_text().replace(old, new))
+
+
+def _refusals(root, cls):
+    return [r for r in _lines(root, vl.REFUSALS) if r.get("class") == cls]
+
+
+RENDER_TASK_FILES = ("web/templates/fixture.html",)
+
+
+def _produce_render(root):
+    (root / "web" / "templates").mkdir(parents=True)
+    (root / "web" / "templates" / "fixture.html").write_text("<p>x</p>\n")
+    _produce(root)
+
+
+# ── OpenAI H1 / Z.ai H1: independence was a self-asserted string ─────────────────
+
+def test_pseudonym_without_a_review_dispatch_is_refused(root):
+    """Z.ai sandbox repro #1: producer 'Claude Sonnet 5.5' records as 'independent-reviewer-session-7'."""
+    _task(root, TASTE)
+    _produce(root, author="Claude Sonnet 5.5")
+    with pytest.raises(vl.VerdictRefused, match="dispatch"):
+        vl.record(TASK, 1, "green", reviewer="independent-reviewer-session-7", rung="x",
+                  evidence=["evidence.md"], digest=_dg(root), dispatch_id="", root=root)
+    assert not (root / vl.VERDICTS).exists()
+
+
+def test_control_same_pseudonym_with_a_registered_review_dispatch_passes_the_identity_check(root):
+    _task(root, TASTE)
+    _produce(root, author="Claude Sonnet 5.5")
+    _rec(root, reviewer="independent-reviewer-session-7")
+    assert vl.apply(TASK, root)["ticked"]
+
+
+def test_record_before_any_commit_is_refused(root):
+    """Z.ai repro #3: nothing committed yet, so who produced the task is unknown."""
+    _task(root, TASTE)
+    with pytest.raises(vl.VerdictRefused, match="no commit references"):
+        vl.record(TASK, 1, "green", reviewer="openai/gpt-5", rung="x", evidence=["evidence.md"],
+                  digest=_dg(root), dispatch_id=_dispatch(root), root=root)
+
+
+def test_commit_without_the_task_id_leaves_no_producer_so_greens_are_refused(root):
+    """Z.ai repro #4: `--no-verify` commit that never names the task — producers() sees nothing."""
+    _task(root, TASTE)
+    _git(root, "add", "-A")
+    _git(root, "commit", "-q", "-m", "wip: sneaky",
+         env={"GIT_AUTHOR_NAME": "Claude Sonnet 5.5", "GIT_AUTHOR_EMAIL": "c@x.y",
+              "GIT_COMMITTER_NAME": "Claude Sonnet 5.5", "GIT_COMMITTER_EMAIL": "c@x.y"})
+    with pytest.raises(vl.VerdictRefused, match="no commit references"):
+        vl.record(TASK, 1, "green", reviewer="claude-sonnet-5-5", rung="x", evidence=["evidence.md"],
+                  digest=_dg(root), dispatch_id=_dispatch(root), root=root)
+
+
+def test_git_failure_refuses_rather_than_passing(root, monkeypatch):
+    _task(root, TASTE)
+    _produce(root)
+    did = _dispatch(root)
+    real = subprocess.run
+
+    def broken(cmd, *a, **k):
+        if cmd and cmd[0] == "git" and "log" in cmd:
+            return subprocess.CompletedProcess(cmd, 128, "", "fatal: not a git repository")
+        return real(cmd, *a, **k)
+
+    monkeypatch.setattr(vl.subprocess, "run", broken)
+    with pytest.raises(vl.VerdictRefused, match="producer provenance unavailable"):
+        vl.record(TASK, 1, "green", reviewer="openai/gpt-5", rung="x", evidence=["evidence.md"],
+                  digest=_dg(root), dispatch_id=did, root=root)
+    monkeypatch.setattr(vl.subprocess, "run", real)      # control: same call passes when git answers
+    vl.record(TASK, 1, "green", reviewer="openai/gpt-5", rung="x", evidence=["evidence.md"],
+              digest=_dg(root), dispatch_id=did, root=root)
+
+
+def test_worker_identity_that_committed_for_the_task_is_not_a_reviewer(root):
+    _task(root, TASTE)
+    _produce(root, author="Builder Bot")
+    _git(root, "commit", "-q", "--allow-empty", "-m", f"{TASK}: more work",
+         env={"GIT_AUTHOR_NAME": "w", "GIT_AUTHOR_EMAIL": "dispatch+rv-77@aef.local",
+              "GIT_COMMITTER_NAME": "w", "GIT_COMMITTER_EMAIL": "dispatch+rv-77@aef.local"})
+    did = _dispatch(root, "rv-77")
+    with pytest.raises(vl.VerdictRefused, match="never the producer"):
+        vl.record(TASK, 1, "green", reviewer="someone-else", rung="x", evidence=["evidence.md"],
+                  digest=_dg(root), dispatch_id=did, root=root)
+
+
+# ── introducing-commit check (Z.ai fix 2) ────────────────────────────────────────
+
+def test_uncommitted_row_does_not_count(root):
+    f = _task(root, TASTE)
+    _rec(root, commit=False)
+    assert vl.apply(TASK, root)["ticked"] == []
+    assert not _ticked(root)
+
+
+def test_row_introduced_by_a_producer_commit_does_not_count(root):
+    _task(root, TASTE)
+    _rec(root, commit=False)
+    _produce(root, author="Builder Bot")            # the producer sweeps the row into its commit
+    assert vl.apply(TASK, root)["ticked"] == []
+
+
+def test_control_row_introduced_by_a_non_producer_counts(root):
+    _task(root, TASTE)
+    _rec(root)
+    assert vl.apply(TASK, root)["ticked"]
+
+
+# ── OpenAI H2 / Z.ai H2: hand-appended rows and row-shape validation ─────────────
+
+def test_hand_appended_row_with_a_full_judgement_block_but_no_dispatch_is_refused(root):
+    _task(root, TASTE)
+    _produce(root)
+    _forge(root, judgement={"contract": "judge_verdict/1", "judge": "x", "state": "green"},
+           dispatch_id="")
+    assert vl.apply(TASK, root)["ticked"] == []
+
+
+def test_hand_appended_row_naming_an_unregistered_dispatch_is_refused(root):
+    _task(root, TASTE)
+    _produce(root)
+    _forge(root, dispatch_id="rv-made-up",
+           judgement={"contract": "judge_verdict/1", "judge": "independent-reviewer-session-7",
+                      "state": "green"})
+    assert vl.apply(TASK, root)["ticked"] == []
+
+
+def test_green_with_unknown_verdict_or_missing_judgement_is_not_a_green(root):
+    _task(root, TASTE)
+    _rec(root, commit=False)
+    p = root / vl.VERDICTS
+    row = json.loads(p.read_text())
+    row["verdict"] = "unknown"
+    p.write_text(json.dumps(row) + "\n")
+    _commit_ledger(root)
+    assert vl.apply(TASK, root)["ticked"] == []
+    row.pop("judgement")
+    row["verdict"] = "green"
+    p.write_text(json.dumps(row) + "\n")
+    _commit_ledger(root)
+    assert vl.apply(TASK, root)["ticked"] == []
+
+
+def test_empty_evidence_green_is_not_honoured(root):
+    _task(root, TASTE)
+    _rec(root, commit=False)
+    p = root / vl.VERDICTS
+    row = json.loads(p.read_text())
+    row["evidence"] = []
+    p.write_text(json.dumps(row) + "\n")
+    _commit_ledger(root)
+    assert vl.apply(TASK, root)["ticked"] == []
+
+
+def test_evidence_deleted_after_record_withdraws_the_tick(root):
+    _task(root, TASTE)
+    _rec(root)
+    assert vl.apply(TASK, root)["ticked"]
+    (root / "evidence.md").unlink()
+    res = vl.apply(TASK, root)
+    assert [w["ac"] for w in res["withdrawn"]] == [1] and not _ticked(root)
+
+
+@pytest.mark.parametrize("ev,match", [("/etc/passwd", "absolute"), ("../outside.md", "outside")])
+def test_evidence_must_be_relative_and_inside_the_repo(root, ev, match):
+    _task(root, TASTE)
+    _produce(root)
+    with pytest.raises(vl.VerdictRefused, match=match):
+        _rec(root, evidence=[ev])
+
+
+# ── OpenAI H3: ticks were permanent ──────────────────────────────────────────────
+
+def test_a_valid_tick_survives_repeated_close_attempts(root):
+    """Control for the withdrawal tests."""
+    _task(root, TASTE)
+    _rec(root)
+    vl.apply(TASK, root)
+    for _ in range(3):
+        assert vl.apply(TASK, root)["withdrawn"] == []
+    assert _ticked(root) and _owner(root) == "agent"
+
+
+def test_later_red_after_apply_withdraws_the_tick_and_restores_ownership(root):
+    _task(root, TASTE)
+    _rec(root)
+    vl.apply(TASK, root)
+    assert _ticked(root) and _owner(root) == "agent"
+    _rec(root, "red", reviewer="zai/glm-5", guidance="the summary contradicts itself")
+    res = vl.apply(TASK, root)
+    assert [w["ac"] for w in res["withdrawn"]] == [1]
+    assert not _ticked(root) and _owner(root) == "human"
+    assert "Reviewer verdict:" not in _text(root)
+
+
+def test_criterion_edit_after_apply_withdraws_the_tick(root):
+    _task(root, TASTE)
+    _rec(root)
+    vl.apply(TASK, root)
+    _edit(root, "reads as a peer briefing", "reads as a legal contract")
+    assert [w["ac"] for w in vl.apply(TASK, root)["withdrawn"]] == [1]
+    assert not _ticked(root) and _owner(root) == "human"
+
+
+def test_reviewer_becoming_a_producer_after_apply_withdraws_the_tick(root):
+    _task(root, TASTE)
+    _rec(root, reviewer="Reviewer Worker")
+    _git(root, "commit", "-q", "--allow-empty", "-m", f"{TASK}: reviewer now writes code",
+         env={"GIT_AUTHOR_NAME": "Reviewer Worker", "GIT_AUTHOR_EMAIL": "r@x.y",
+              "GIT_COMMITTER_NAME": "Reviewer Worker", "GIT_COMMITTER_EMAIL": "r@x.y"})
+    assert vl.apply(TASK, root)["ticked"] == [] and not _ticked(root)
+
+
+def test_a_fabricated_tick_annotation_with_no_ledger_row_is_withdrawn(root):
+    _task(root, TASTE)
+    _produce(root)
+    _edit(root, "- [ ] [REVIEW] The summary", "- [x] [REVIEW] The summary")
+    _edit(root, "  **Steps:**", "  **Reviewer verdict:** green V-FAKE — me (rung x), digest 0; evidence: e; ledger l\n  **Steps:**")
+    res = vl.apply(TASK, root)
+    assert [w["ac"] for w in res["withdrawn"]] == [1] and not _ticked(root)
+
+
+def test_hand_ticked_criterion_without_annotation_is_left_alone(root):
+    _task(root, TASTE)
+    _produce(root)
+    _edit(root, "- [ ] [REVIEW] The summary", "- [x] [REVIEW] The summary")
+    assert vl.apply(TASK, root)["withdrawn"] == [] and _ticked(root)
+
+
+# ── OpenAI H4: the render gate did not reclassify ────────────────────────────────
+
+def _two_criteria(root):
+    _task(root, TIER0 + TASTE)
+    _produce_render(root)
+
+
+def test_green_on_an_operator_only_criterion_does_not_satisfy_the_render_gate(root):
+    _two_criteria(root)
+    _rec(root, ac=2, commit=False)                    # a genuine green on AC2 (taste/render)
+    p = root / vl.VERDICTS
+    row = json.loads(p.read_text())
+    row.update(ac=1, ac_digest=_dg(root, 1), id="V-tier0-forged")
+    row["judgement"]["judged"] = f"{TASK}#AC1"
+    p.write_text(json.dumps(row) + "\n")              # only the tier0 (operator-only) row remains
+    _commit_ledger(root)
+    assert vl.render_verdicts(TASK, root) == []
+
+
+def test_control_green_on_the_render_surface_criterion_satisfies_the_gate(root):
+    _two_criteria(root)
+    rec = _rec(root, ac=2)
+    assert [r["id"] for r in vl.render_verdicts(TASK, root)] == [rec["id"]]
+
+
+def test_amber_on_the_render_criterion_is_not_rescued_by_a_green_on_another(root):
+    _task(root, TASTE + TASTE.replace("summary paragraph", "second paragraph"))
+    _produce_render(root)
+    _rec(root, ac=1)
+    _rec(root, "amber", ac=2)
+    assert [r["ac"] for r in vl.render_verdicts(TASK, root)] == [1]
+    assert vl.apply(TASK, root)["owner_after"] == "human"
+
+
+def test_continuation_edit_that_adds_risk_vocabulary_voids_the_render_verdict(root):
+    _task(root, TASTE)
+    _produce_render(root)
+    _rec(root)
+    _edit(root, "**If not:** note it", "**If not:** publish the release to the public mirror")
+    assert vl.render_verdicts(TASK, root) == []
+
+
+# ── digest covers the body ───────────────────────────────────────────────────────
+
+def test_editing_steps_or_expected_voids_the_verdict(root):
+    _task(root, TASTE)
+    _rec(root)
+    _edit(root, "1. Read it", "1. Skim it")
+    assert vl.apply(TASK, root)["ticked"] == []
+
+
+def test_digest_ignores_generated_annotations_checkbox_state_and_trailing_space(root):
+    f = _task(root, TASTE)
+    before = vl.criterion_digest(_humans(f)[0])
+    txt = f.read_text().replace("**Steps:**", "**Steps:**   ").replace(
+        "  **If not:** note it\n",
+        "  **If not:** note it\n  **Reviewer verdict:** green V-x — y\n  **Reviewer escalation (V-z):** because\n")
+    f.write_text(txt.replace("- [ ] [REVIEW]", "- [x] [REVIEW]"))
+    assert vl.criterion_digest(_humans(f)[0]) == before
+
+
+def test_record_requires_the_digest_the_reviewer_read(root):
+    _task(root, TASTE)
+    _produce(root)
+    with pytest.raises(vl.VerdictRefused, match="digest"):
+        vl.record(TASK, 1, "green", reviewer="openai/gpt-5", rung="x", evidence=["evidence.md"],
+                  dispatch_id=_dispatch(root), root=root)
+
+
+# ── torn / malformed ledger lines fail closed ────────────────────────────────────
+
+def test_torn_trailing_line_fails_closed_and_leaves_a_diagnostic(root):
+    _task(root, TASTE)
+    _rec(root)
+    with (root / vl.VERDICTS).open("a") as fh:
+        fh.write('{"id":"V-x","task":"' + TASK + '","ac":1,"outcome":"re')      # the torn RED
+    res = vl.apply(TASK, root)
+    assert res["ticked"] == [] and not _ticked(root)
+    assert _refusals(root, "torn-ledger-line")
+    vl.apply(TASK, root)
+    assert len(_refusals(root, "torn-ledger-line")) == 1                        # deduplicated
+
+
+def test_torn_line_naming_another_task_does_not_block_this_one(root):
+    _task(root, TASTE)
+    _rec(root)
+    with (root / vl.VERDICTS).open("a") as fh:
+        fh.write('{"id":"V-y","task":"T-4242","ac":1,"outcome":"re\n')
+    assert vl.apply(TASK, root)["ticked"]
+
+
+def test_non_object_json_line_counts_as_torn(root):
+    _task(root, TASTE)
+    _rec(root)
+    with (root / vl.VERDICTS).open("a") as fh:
+        fh.write('["not","an","object"]\n')
+    assert vl.apply(TASK, root)["ticked"] == []
+
+
+# ── fw audit ─────────────────────────────────────────────────────────────────────
+
+def test_audit_is_clean_for_a_verified_ledger_and_empty_for_none(root):
+    assert vl.audit(root)[0] == 0
+    _task(root, TASTE)
+    _rec(root)
+    code, out = vl.audit(root)
+    assert code == 0, out
+
+
+def test_audit_fails_on_a_hand_appended_row(root):
+    _task(root, TASTE)
+    _produce(root)
+    _forge(root)
+    code, out = vl.audit(root)
+    assert code == 2 and any("V-FORGED" in ln and "FAIL" in ln for ln in out)
+
+
+def test_audit_fails_on_a_row_introduced_by_a_producer(root):
+    _task(root, TASTE)
+    _rec(root, commit=False)
+    _produce(root)
+    code, out = vl.audit(root)
+    assert code == 2 and any("introduced by producer" in ln for ln in out)
+
+
+def test_audit_fails_on_a_torn_line(root):
+    _task(root, TASTE)
+    _rec(root)
+    with (root / vl.VERDICTS).open("a") as fh:
+        fh.write("{oops\n")
+    assert vl.audit(root)[0] == 2
