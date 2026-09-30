@@ -16,6 +16,11 @@ PATHS_LIB="$FRAMEWORK_ROOT/lib/paths.sh"
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
+    # Hermeticity (T-3603): fw_claude_project_dirs adds the git main-repo root of
+    # PROJECT_ROOT as a candidate. A stray repo above the temp dir (seen: /.git on
+    # this host) makes that "/", whose missing projects dir leaves a non-zero
+    # status on an otherwise correct listing. Fence discovery above the temp dir.
+    export GIT_CEILING_DIRECTORIES="$(dirname "$TEST_TEMP_DIR")"
     # Two fake projects dirs simulating worktree + main-repo case
     export FAKE_HOME="$TEST_TEMP_DIR/home"
     mkdir -p "$FAKE_HOME/.claude/projects/-tmp-worktree"

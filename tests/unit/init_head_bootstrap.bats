@@ -25,6 +25,14 @@ setup_file() {
     export HDIR
     rm -rf "$HDIR"; mkdir -p "$HDIR/home" "$HDIR/fresh"
 
+    # Hermeticity (T-3603): a stray repo above the temp dir (seen: /.git on this
+    # host) makes `fw init` treat the fixture as a subdirectory of it — no fresh
+    # repo, bootstrap commit aimed at the foreign repo. Fence discovery at $HDIR.
+    # GIT_AUTHOR_*/GIT_COMMITTER_* (dispatch workers export them) would supply the
+    # identity this file's "no identity anywhere" case depends on being absent.
+    export GIT_CEILING_DIRECTORIES="$HDIR"
+    unset GIT_AUTHOR_NAME GIT_AUTHOR_EMAIL GIT_COMMITTER_NAME GIT_COMMITTER_EMAIL EMAIL
+
     # No global git identity resolvable — the common case (T-2818), and the
     # harder path for the fix (a bootstrap commit must succeed WITHOUT any
     # identity anywhere).
