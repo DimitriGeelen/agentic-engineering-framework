@@ -12,7 +12,8 @@ path.
 
 A verdict is DATA written by a reviewer who is not the producer. The closing agent never
 writes one; `apply` and `check-render` only READ the ledger. `record` is the writer —
-slice 3 (`fw reviewer judge`) calls it, and so may a human-run reviewer.
+slice 3 (`fw reviewer judge`) calls it from inside the reviewer worker, with that worker's
+dispatch id.
 
     .context/reviews/verdicts.jsonl         one line per accepted verdict (committed)
     .context/reviews/refusals-interim.jsonl every non-green verdict AND every refused
@@ -33,21 +34,37 @@ fourth colour — it is a ROUTE: the judge could not conclude and the operator m
 answer. It is stored as contract state `unknown` (which `may_proceed` already refuses)
 with `outcome: escalate`. `outcome` is what callers switch on.
 
-── THE PRODUCER CHECK ──────────────────────────────────────────────────────────
+── PROVENANCE, AND WHAT IT DOES NOT PROVE (T-3581) ─────────────────────────────
 
-The producer is whoever committed work for the task, derived from git and NOT from
-anything the reviewer says: every commit whose message references the task id
-contributes its author name/email, committer name/email, and every `Co-Authored-By:`
-trailer; a `producer:` / `producers:` frontmatter field adds to the set. Identities are
-normalised (case and punctuation folded, so "Claude Sonnet 5.5" == "claude-sonnet-5-5")
-and compared on the full string and on the model part after `/` or `:`. The check runs
-at `record` time AND again at `apply` time — a reviewer who later commits work for the
-same task is no longer independent of it, and their earlier verdict stops applying.
+Two independent reviewers (OpenAI, Z.ai) returned RED on the first cut: the reviewer was a
+string the producer typed, and a hand-appended JSONL line was honoured. A row now counts
+only when ALL of these hold — one validator (`_fault`) is used by record, apply,
+check-render and `fw audit`:
 
-What this does not claim: it separates identities, not ROLES. A reviewer that names
-itself differently from the producer while being the same agent passes. The `rung`
-field records how independent the review claims to be (IW-3); the ladder is chosen by
-the impact model (IW-7), not policed here.
+  * it names a review dispatch that the dispatcher registered (HMAC-signed row in
+    review-dispatches.jsonl, task-type review, issued for this task);
+  * the producer set — every commit referencing the task, minus commits touching only
+    .context/reviews/ — is derivable (git answered) and NON-EMPTY, and contains neither the
+    reviewer string nor the dispatch's worker identity;
+  * the commit that introduced the row exists (uncommitted rows do not count) and none of
+    its identities is a producer;
+  * the row is a well-formed judge_verdict/1 record whose outcome, verdict and judgement
+    agree, whose evidence is non-empty, relative, inside the repo and still exists, and whose
+    digest (title + Steps/Expected/If-not, generated annotations excluded) is the current one;
+  * the criterion is REVIEWER-JUDGES NOW; the render gate accepts only a green on a
+    render-surface criterion;
+  * no torn line in the ledger can concern the task (torn lines fail closed and leave a
+    `torn-ledger-line` refusal row).
+
+The LATEST row for (task, criterion, current digest) decides. `apply` runs at every close
+attempt and WITHDRAWS reviewer-derived ticks that no longer validate.
+
+What this does not claim: every agent here is the same OS user with write access to the
+repo. One that reads .context/secrets/review-dispatch.key can sign a registry row, and one
+that sets a different git identity can commit a ledger row. The path is fail-closed,
+tamper-evident and audited — not forgery-proof. It separates identities, not ROLES, and the
+`rung` field records the independence the review claims (IW-3). Accepting that residual gap
+is the operator's call (T-3581 Human criterion).
 
 ── WHAT A GREEN VERDICT CAN SATISFY ────────────────────────────────────────────
 
@@ -58,14 +75,17 @@ against it is refused outright — not merely ignored at apply time.
 
 ── DIGEST ──────────────────────────────────────────────────────────────────────
 
-Keyed on the criterion's checkbox-line text, sha256[:12], the same function T-1985's
-auto-tick uses. Edit the criterion and the verdict no longer applies: fresh consent.
+sha256[:12] of the canonical criterion body (title + Steps/Expected/If-not; checkbox state and
+generated verdict annotations excluded). The reviewer submits the digest it read
+(`fw reviewer verdict digest`). Edit the criterion and the verdict no longer applies: fresh
+consent. `title_digest` is the T-1985 title-only function, kept for its pin test.
 """
 
 from __future__ import annotations
 
 import argparse
 import hashlib
+import hmac
 import json
 import os
 import re
@@ -91,6 +111,11 @@ from lib.delegation import (  # noqa: E402
 VERDICTS = Path(".context/reviews/verdicts.jsonl")
 REFUSALS = Path(".context/reviews/refusals-interim.jsonl")
 APPLIED = Path(".context/reviews/applied.jsonl")
+#: Review dispatches, written by the dispatcher (`fw termlink dispatch --task-type review`)
+#: at spawn time and HMAC-signed. A verdict row counts only if it names one (T-3581).
+DISPATCHES = Path(".context/reviews/review-dispatches.jsonl")
+DISPATCH_KEY = Path(".context/secrets/review-dispatch.key")
+REVIEW_TASK_TYPE = "review"
 
 GREEN, AMBER, RED, ESCALATE = "green", "amber", "red", "escalate"
 OUTCOMES = (GREEN, AMBER, RED, ESCALATE)
@@ -139,6 +164,25 @@ def _read(rel: Path, root: Path) -> list[dict]:
     return out
 
 
+def _read_strict(rel: Path, root: Path) -> tuple[list[dict], list[str]]:
+    """(rows, torn) — torn is every non-blank line that is not a JSON object."""
+    p = root / rel
+    if not p.is_file():
+        return [], []
+    rows, torn = [], []
+    for line in p.read_text(encoding="utf-8", errors="replace").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        try:
+            obj = json.loads(line)
+        except ValueError:
+            torn.append(line)
+            continue
+        (rows if isinstance(obj, dict) else torn).append(obj if isinstance(obj, dict) else line)
+    return rows, torn
+
+
 def _refuse_row(root: Path, task: str, cls: str, reason: str, **extra) -> None:
     """The ONE place a refusal is written — redirect here when T-3555 lands."""
     row = {"ts": _now(), "gate": GATE, "task": task, "class": cls, "reason": reason}
@@ -146,9 +190,31 @@ def _refuse_row(root: Path, task: str, cls: str, reason: str, **extra) -> None:
     _append(REFUSALS, row, root)
 
 
-def criterion_digest(title: str) -> str:
-    """Same as lib.reviewer.static_scan._compute_ac_text_digest (T-1985); pinned by a test."""
+def title_digest(title: str) -> str:
+    """Same as lib.reviewer.static_scan._compute_ac_text_digest (T-1985); pinned by a test.
+
+    Title only — kept for that pin. Verdicts use `criterion_digest` (title + body)."""
     return hashlib.sha256(title.encode()).hexdigest()[:12]
+
+
+#: Lines the framework writes UNDER a criterion. Not part of what a reviewer judged.
+_GENERATED_RE = re.compile(r"^\s*\*\*Reviewer (verdict|escalation)\b")
+
+
+def criterion_body(crit) -> str:
+    """Canonical substantive text of a criterion: title plus Steps/Expected/If-not.
+
+    Excludes checkbox state (the title is the text after the box), the generated
+    verdict/escalation annotations, blank lines and trailing whitespace (T-3581)."""
+    lines = [crit.title.strip()]
+    lines += [ln.rstrip() for ln in crit.lines[1:]
+              if ln.strip() and not _GENERATED_RE.match(ln)]
+    return "\n".join(lines)
+
+
+def criterion_digest(crit) -> str:
+    """sha256[:12] of the canonical criterion body — the digest a reviewer must submit."""
+    return hashlib.sha256(criterion_body(crit).encode()).hexdigest()[:12]
 
 
 def _find_task(root: Path, task_id: str) -> tuple[Path | None, str]:
@@ -173,6 +239,72 @@ def _render_surface(root: Path, task_file: Path) -> bool:
             os.environ["PROJECT_ROOT"] = old
 
 
+# ── review-dispatch provenance (T-3581) ─────────────────────────────────────────
+#
+# A verdict row is only DATA until it names a review dispatch the framework itself
+# registered. The dispatcher writes the registry row when it spawns a worker with
+# task-type `review`, signed with a key under .context/secrets/ (untracked). The
+# reviewer's identity is then something the dispatch record says, not a string the
+# producer types. Same-user honesty: an agent that can read the key can sign a row —
+# this makes that a deliberate act with a trail, not a one-line append.
+
+
+def _dispatch_key(root: Path, create: bool = False) -> bytes | None:
+    p = root / DISPATCH_KEY
+    if p.is_file():
+        return p.read_bytes().strip() or None
+    if not create:
+        return None
+    p.parent.mkdir(parents=True, exist_ok=True)
+    key = uuid.uuid4().hex.encode() + uuid.uuid4().hex.encode()
+    fd = os.open(str(p), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(fd, "wb") as fh:
+        fh.write(key + b"\n")
+    return key
+
+
+def _sign(key: bytes, row: dict) -> str:
+    body = {k: row[k] for k in ("dispatch_id", "task", "task_type", "issuer_session",
+                                "issuer_identity", "ts")}
+    return hmac.new(key, json.dumps(body, sort_keys=True, separators=(",", ":")).encode(),
+                    hashlib.sha256).hexdigest()
+
+
+def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
+                      issuer_session: str = "", issuer_identity: str = "",
+                      root: Path | None = None) -> dict:
+    """Record a dispatch. Called by the dispatcher, for every task-type, at spawn time."""
+    root = root or _root()
+    if not (dispatch_id or "").strip() or not (task_id or "").strip():
+        raise ValueError("dispatch_id and task are required")
+    row = {"dispatch_id": dispatch_id.strip(), "task": task_id.strip(),
+           "task_type": (task_type or "").strip().lower(),
+           "issuer_session": issuer_session, "issuer_identity": issuer_identity, "ts": _now()}
+    row["sig"] = _sign(_dispatch_key(root, create=True), row)
+    _append(DISPATCHES, row, root)
+    return row
+
+
+def dispatch_record(root: Path, dispatch_id: str) -> tuple[dict | None, str]:
+    """(record, '') for a registered, correctly signed dispatch; else (None, reason)."""
+    if not (dispatch_id or "").strip():
+        return None, "no dispatch id — a verdict must name the review dispatch that produced it"
+    rows = [r for r in _read(DISPATCHES, root) if r.get("dispatch_id") == dispatch_id]
+    if not rows:
+        return None, f"dispatch {dispatch_id!r} is not in the review-dispatch registry"
+    key = _dispatch_key(root)
+    if key is None:
+        return None, "no dispatch signing key — no dispatch can be verified"
+    rec = rows[0]  # first registration wins; a later row cannot re-type an earlier dispatch
+    try:
+        good = hmac.compare_digest(str(rec.get("sig", "")), _sign(key, rec))
+    except KeyError:
+        good = False
+    if not good:
+        return None, f"dispatch {dispatch_id!r} has an invalid signature — the registry row was not written by the dispatcher"
+    return rec, ""
+
+
 # ── identity / producer ──────────────────────────────────────────────────────
 
 
@@ -191,34 +323,52 @@ def _identity_keys(identity: str) -> set[str]:
 
 
 _TRAILER_RE = re.compile(r"^\s*Co-Authored-By:\s*(.+?)\s*$", re.IGNORECASE | re.MULTILINE)
+#: A commit touching only these paths is a reviewer's record, not the task's work.
+_REVIEW_DIR = ".context/reviews/"
 
 
-def producers(root: Path, task_id: str, task_text: str = "") -> set[str]:
-    """Identities that produced the task's work — derived, never self-reported.
+def _identities(parts: list[str], message: str) -> set[str]:
+    found = {p.strip() for p in parts if p.strip()}
+    for t in _TRAILER_RE.findall(message):
+        found.add(t)
+        m = re.match(r"(.*?)\s*<([^>]*)>", t)
+        if m:
+            found.update(x.strip() for x in m.groups() if x.strip())
+    return found
 
-    See the module docstring. Returns raw identity strings; compare with `_identity_keys`.
-    """
+
+def producers_checked(root: Path, task_id: str, task_text: str = "") -> tuple[set[str], str]:
+    """(identities, error). Derived from git, never self-reported.
+
+    Every commit whose message references the task id contributes its author and
+    committer name/email and every Co-Authored-By trailer; a `producer:` /
+    `producers:` frontmatter field adds to the set. A commit whose every changed path
+    is under .context/reviews/ is a reviewer's record, not work, and is skipped.
+
+    `error` is non-empty when git could not answer — callers treat that as REFUSE, never
+    as "no producers" (T-3581: an empty set is not evidence of independence)."""
     found: set[str] = set()
-    sep_f, sep_r = "\x1f", "\x1e"
     try:
-        out = subprocess.run(
-            ["git", "log", "--all", f"--grep={task_id}",
-             f"--format=%an{sep_f}%ae{sep_f}%cn{sep_f}%ce{sep_f}%B{sep_r}"],
-            cwd=str(root), capture_output=True, text=True, timeout=60,
-        ).stdout
-    except (OSError, subprocess.SubprocessError):
-        out = ""
+        cp = subprocess.run(
+            ["git", "log", "--all", f"--grep={task_id}", "--name-only",
+             "--format=%x1e%an%x1f%ae%x1f%cn%x1f%ce%x1f%B%x1d"],
+            cwd=str(root), capture_output=True, text=True, timeout=60)
+    except (OSError, subprocess.SubprocessError) as e:
+        return set(), f"git failed: {e}"
+    if cp.returncode != 0:
+        return set(), f"git log failed (rc={cp.returncode}): {cp.stderr.strip()[:120]}"
     ref = re.compile(rf"(?<![A-Za-z0-9-]){re.escape(task_id)}(?![0-9])")
-    for rec in out.split(sep_r):
-        parts = rec.strip("\n").split(sep_f)
+    for rec in cp.stdout.split("\x1e"):
+        if "\x1d" not in rec:
+            continue
+        head, files = rec.split("\x1d", 1)
+        parts = head.split("\x1f")
         if len(parts) < 5 or not ref.search(parts[4]):
             continue
-        found.update(p.strip() for p in parts[:4] if p.strip())
-        for t in _TRAILER_RE.findall(parts[4]):
-            found.add(t)
-            m = re.match(r"(.*?)\s*<([^>]*)>", t)
-            if m:
-                found.update(x.strip() for x in m.groups() if x.strip())
+        paths = [f for f in files.splitlines() if f.strip()]
+        if paths and all(f.startswith(_REVIEW_DIR) for f in paths):
+            continue
+        found |= _identities(parts[:4], parts[4])
     fm = frontmatter(task_text) if task_text else {}
     for key in ("producer", "producers"):
         v = fm.get(key)
@@ -226,7 +376,12 @@ def producers(root: Path, task_id: str, task_text: str = "") -> set[str]:
             found.update(str(x) for x in v if str(x).strip())
         elif v:
             found.update(x.strip() for x in re.split(r"[,\[\]]", str(v)) if x.strip())
-    return found
+    return found, ""
+
+
+def producers(root: Path, task_id: str, task_text: str = "") -> set[str]:
+    """Identities that produced the task's work (see `producers_checked`)."""
+    return producers_checked(root, task_id, task_text)[0]
 
 
 def is_producer(identity: str, produced_by: set[str]) -> str:
@@ -238,22 +393,231 @@ def is_producer(identity: str, produced_by: set[str]) -> str:
     return ""
 
 
+def _dispatch_is_producer(dispatch_id: str, produced_by: set[str]) -> str:
+    """A worker commits as `dispatch+<id>@…`; if that identity produced work, it is no reviewer."""
+    d = _norm(dispatch_id)
+    if len(d) < 4:
+        return ""
+    return next((p for p in produced_by if d in _norm(p)), "")
+
+
+def introducing_commit(root: Path, row_id: str) -> tuple[dict | None, str]:
+    """The commit that first added ledger row `row_id`, as {sha, ids}; (None, reason) if none.
+
+    Uncommitted rows have no introducing commit and therefore do not count."""
+    try:
+        cp = subprocess.run(
+            ["git", "log", "--all", "--reverse", f'-S"id":"{row_id}"',
+             "--format=%x1e%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%B%x1d", "--", str(VERDICTS)],
+            cwd=str(root), capture_output=True, text=True, timeout=60)
+    except (OSError, subprocess.SubprocessError) as e:
+        return None, f"git failed: {e}"
+    if cp.returncode != 0:
+        return None, f"git log failed (rc={cp.returncode})"
+    for rec in cp.stdout.split("\x1e"):
+        if "\x1d" not in rec:
+            continue
+        parts = rec.split("\x1d", 1)[0].split("\x1f")
+        if len(parts) >= 6:
+            return {"sha": parts[0].strip(), "ids": _identities(parts[1:5], parts[5])}, ""
+    return None, f"row {row_id} was never committed (no commit introduces it)"
+
+
+# ── eligibility — ONE validator for record, apply, check-render and audit ────
+
+
+class _Ctx:
+    """Everything a verdict is judged against, computed once per call."""
+
+    def __init__(self, root: Path, task_id: str, path: Path, text: str):
+        self.root, self.task_id, self.path, self.text = root, task_id, path, text
+        fm = frontmatter(text)
+        self.workflow = str(fm.get("workflow_type") or "").strip().lower()
+        self.owner = str(fm.get("owner") or "")
+        self.render = _render_surface(root, path)
+        self._prod: tuple[set[str], str] | None = None
+
+    @property
+    def prod(self) -> tuple[set[str], str]:
+        if self._prod is None:
+            self._prod = producers_checked(self.root, self.task_id, self.text)
+        return self._prod
+
+    def classify(self, crit):
+        return classify(crit, workflow_type=self.workflow, render_surface=self.render)
+
+
+def _evidence_fault(root: Path, e: str) -> str:
+    if os.path.isabs(e) or e.startswith(("~", "\\")):
+        return f"evidence path {e!r} is absolute — must be relative to the repo"
+    try:
+        rp = root.resolve()
+        target = (root / e).resolve()
+        inside = target == rp or rp in target.parents
+    except (OSError, RuntimeError):
+        return f"evidence path {e!r} cannot be resolved"
+    if not inside:
+        return f"evidence path {e!r} resolves outside the repo"
+    if not target.exists():
+        return f"evidence path {e!r} does not exist under the repo"
+    return ""
+
+
+_REQUIRED = ("id", "task", "ac", "ac_digest", "outcome", "verdict", "reviewer", "rung",
+             "dispatch_id", "evidence", "judgement")
+
+
+def _fault(ctx: _Ctx, row: dict, crit, *, need_commit: bool = True) -> tuple[str, str] | None:
+    """(class, reason) when `row` may NOT satisfy `crit` right now; None when it may.
+
+    A green must clear every check; a non-green only needs to be attributable, because
+    all a non-green can do is keep a criterion open."""
+    miss = [k for k in _REQUIRED if k not in row]
+    if miss:
+        return "schema", f"row is missing {', '.join(miss)}"
+    if row["outcome"] not in OUTCOMES or not isinstance(row["evidence"], list):
+        return "schema", "row has an unknown outcome or a non-list evidence field"
+    jv = row["judgement"]
+    if (not isinstance(jv, dict) or jv.get("contract") != "judge_verdict/1"
+            or jv.get("judge") != row["reviewer"]
+            or jv.get("state") != _STATE.get(row["outcome"])):
+        return "schema", "judgement block is not a judge_verdict/1 record agreeing with the row"
+    if row["verdict"] != jv.get("state"):
+        return "schema", "row verdict disagrees with its judgement"
+    if row["task"] != ctx.task_id or row["ac"] != crit.index:
+        return "schema", "row does not name this task/criterion"
+    if row["ac_digest"] != criterion_digest(crit):
+        return "digest-mismatch", "the criterion changed after the reviewer read it"
+    why = _provenance_fault(ctx.root, ctx.task_id, row)
+    if why:
+        return "no-provenance", why
+    if row["outcome"] != GREEN:
+        return None
+    cl = ctx.classify(crit)
+    if cl.delegation_class != REVIEWER_JUDGES:
+        return "not-reviewer-judged", (
+            f"AC#{crit.index} is {cl.cls} ({cl.delegation_class}): only the operator may "
+            f"answer it, so no reviewer verdict can satisfy or escalate it — {cl.reason}")
+    if not row["evidence"] or not all(isinstance(e, str) and e.strip() for e in row["evidence"]):
+        return "no-evidence", "a green verdict needs at least one evidence path"
+    for e in row["evidence"]:
+        why = _evidence_fault(ctx.root, e)
+        if why:
+            return "evidence", why
+    prod, err = ctx.prod
+    if err:
+        return "no-producer-provenance", f"{err} — producer provenance unavailable, refusing"
+    if not prod:
+        return "no-producer-provenance", (
+            f"no commit references {ctx.task_id}, so who produced it is unknown — a verdict "
+            f"cannot prove independence from an unknown producer")
+    hit = is_producer(str(row["reviewer"]), prod)
+    if hit:
+        return "reviewer-is-producer", (
+            f"reviewer {row['reviewer']!r} matches {hit!r}, who committed work for "
+            f"{ctx.task_id}; the reviewer is never the producer")
+    hit = _dispatch_is_producer(str(row["dispatch_id"]), prod)
+    if hit:
+        return "reviewer-is-producer", (
+            f"dispatch {row['dispatch_id']!r} worker identity {hit!r} committed work for "
+            f"{ctx.task_id}; the reviewer is never the producer")
+    if need_commit:
+        ic, why = introducing_commit(ctx.root, str(row["id"]))
+        if ic is None:
+            return "uncommitted", why
+        hit = next((p for i in ic["ids"] if (p := is_producer(i, prod))), "")
+        if hit:
+            return "introduced-by-producer", (
+                f"the commit that added this row ({ic['sha'][:9]}) was authored by "
+                f"{hit!r}, a producer of {ctx.task_id}")
+    return None
+
+
+def _provenance_fault(root: Path, task_id: str, row: dict) -> str:
+    """'' when the row names a registered review dispatch for this task, else why not."""
+    drec, why = dispatch_record(root, str(row.get("dispatch_id") or ""))
+    if drec is None:
+        return why
+    if drec.get("task_type") != REVIEW_TASK_TYPE:
+        return f"dispatch task-type is {drec.get('task_type')!r}, not {REVIEW_TASK_TYPE!r}"
+    if drec.get("task") != task_id:
+        return f"dispatch was issued for {drec.get('task')!r}"
+    return ""
+
+
+def _torn_for(root: Path, task_id: str, torn: list[str]) -> list[str]:
+    """Torn lines that could concern `task_id`: it is named in them, or no task is legible."""
+    hits = []
+    for line in torn:
+        m = re.search(r'"task"\s*:\s*"(T-\d+)"', line)
+        if m is None or m.group(1) == task_id:
+            hits.append(line)
+    return hits
+
+
+def _note_torn(root: Path, task_id: str, lines: list[str]) -> None:
+    """Diagnostic refusal row per distinct torn line (deduplicated on its sha)."""
+    seen = {r.get("line_sha") for r in _read(REFUSALS, root) if r.get("class") == "torn-ledger-line"}
+    for ln in lines:
+        sha = hashlib.sha256(ln.encode()).hexdigest()[:12]
+        if sha not in seen:
+            _refuse_row(root, task_id, "torn-ledger-line",
+                        "unparseable line in verdicts.jsonl — verdicts for the affected task "
+                        "are refused until it is repaired", line_sha=sha, line=ln[:200])
+            seen.add(sha)
+
+
+def satisfying_verdict(ctx: _Ctx, crit) -> tuple[dict | None, str]:
+    """(green row, '') that satisfies `crit`, else (None, why).
+
+    The LATEST row for (task, criterion, current digest) decides: a later red withdraws an
+    earlier green and an invalid latest green is not replaced by an older valid one. A row
+    for other criterion text never counts. Any torn line that may concern this task fails
+    closed."""
+    rows, torn = _read_strict(VERDICTS, ctx.root)
+    bad = _torn_for(ctx.root, ctx.task_id, torn)
+    if bad:
+        _note_torn(ctx.root, ctx.task_id, bad)
+        return None, "the verdict ledger has an unparseable line — refusing until repaired"
+    dg = criterion_digest(crit)
+    mine = [r for r in rows if r.get("task") == ctx.task_id and r.get("ac") == crit.index
+            and r.get("ac_digest") == dg]
+    if not mine:
+        return None, "no verdict for the current criterion text"
+    last = mine[-1]
+    if last.get("outcome") != GREEN:
+        return None, f"latest verdict is {last.get('outcome')!r}"
+    f = _fault(ctx, last, crit)
+    if f:
+        return None, f"{f[0]}: {f[1]}"
+    return last, ""
+
+
+def _task_ctx(root: Path, task_id: str) -> _Ctx | None:
+    path, sub = _find_task(root, task_id)
+    if path is None or sub != "active":
+        return None
+    return _Ctx(root, task_id, path, path.read_text(encoding="utf-8", errors="replace"))
+
+
 # ── record ───────────────────────────────────────────────────────────────────
 
 
 def record(task_id: str, ac_index: int, outcome: str, *, reviewer: str, rung: str,
            guidance: str = "", evidence: list[str] | None = None,
-           digest: str = "", root: Path | None = None) -> dict:
+           digest: str = "", dispatch_id: str = "", root: Path | None = None) -> dict:
     """Append a verdict for Human criterion `ac_index` of `task_id`, or raise VerdictRefused.
 
-    Every refusal is written to the refusal ledger before it is raised.
+    Every refusal is written to the refusal ledger before it is raised. `digest` is what the
+    reviewer read (`fw reviewer verdict digest`); it is required.
     """
     root = root or _root()
     evidence = [e for e in (evidence or []) if e and e.strip()]
     outcome = (outcome or "").strip().lower()
 
     def refuse(cls: str, reason: str) -> NoReturn:
-        _refuse_row(root, task_id, cls, reason, ac=ac_index, reviewer=reviewer)
+        _refuse_row(root, task_id, cls, reason, ac=ac_index, reviewer=reviewer,
+                    dispatch_id=dispatch_id)
         raise VerdictRefused(reason)
 
     if outcome not in OUTCOMES:
@@ -263,49 +627,50 @@ def record(task_id: str, ac_index: int, outcome: str, *, reviewer: str, rung: st
     if not (rung or "").strip():
         refuse("no-rung", "rung is required — how independent this review claims to be (IW-3)")
 
+    drec, why = dispatch_record(root, dispatch_id)
+    if drec is None:
+        refuse("no-dispatch", why)
+    if drec.get("task_type") != REVIEW_TASK_TYPE:
+        refuse("not-review-dispatch",
+               f"dispatch {dispatch_id!r} has task-type {drec.get('task_type')!r}, not "
+               f"{REVIEW_TASK_TYPE!r} — only a review dispatch may write a verdict")
+    if drec.get("task") != task_id:
+        refuse("dispatch-task-mismatch",
+               f"dispatch {dispatch_id!r} was issued for {drec.get('task')!r}, not {task_id}")
+
     path, sub = _find_task(root, task_id)
     if path is None:
         refuse("no-task", f"task {task_id} not found")
     if sub != "active":
         refuse("task-closed", f"{task_id} is in .tasks/{sub}; a settled task is not re-judged")
-    text = path.read_text(encoding="utf-8", errors="replace")
-    fm = frontmatter(text)
+    ctx = _Ctx(root, task_id, path, path.read_text(encoding="utf-8", errors="replace"))
+    text = ctx.text
 
     crit = next((c for c in human_criteria(text) if c.index == ac_index), None)
     if crit is None:
         refuse("no-criterion", f"{task_id} has no Human criterion #{ac_index}")
-    if crit.ticked:
+    if crit.ticked and outcome == GREEN:
+        # A non-green stays recordable on a ticked criterion: it is how a tick is withdrawn.
         refuse("already-ticked", f"{task_id} Human AC#{ac_index} is already ticked")
 
-    dg = criterion_digest(crit.title)
-    if digest and digest != dg:
+    dg = criterion_digest(crit)
+    if not digest:
+        refuse("no-digest", "the digest of the criterion the reviewer read is required "
+                            "(fw reviewer verdict digest TASK --ac N)")
+    if digest != dg:
         refuse("digest-mismatch",
                f"the reviewer judged text with digest {digest} but AC#{ac_index} now has "
                f"digest {dg} — the criterion changed after it was read")
 
-    cl = classify(crit, workflow_type=str(fm.get("workflow_type") or ""),
-                  render_surface=_render_surface(root, path))
+    cl = ctx.classify(crit)
     if cl.delegation_class != REVIEWER_JUDGES:
         refuse("not-reviewer-judged",
                f"AC#{ac_index} is {cl.cls} ({cl.delegation_class}): only the operator may "
                f"answer it, so no reviewer verdict can satisfy or escalate it — {cl.reason}")
 
-    hit = is_producer(reviewer, producers(root, task_id, text))
-    if hit:
-        refuse("reviewer-is-producer",
-               f"reviewer {reviewer!r} matches {hit!r}, who committed work for {task_id}; "
-               f"the reviewer is never the producer")
-
-    if outcome == GREEN:
-        if not evidence:
-            refuse("no-evidence", "a green verdict needs at least one evidence path")
-        missing = [e for e in evidence if not (root / e).exists()]
-        if missing:
-            refuse("evidence-missing", f"evidence path(s) not found under the repo: {missing}")
-
     try:
         jv = judge_verdict.verdict(_STATE[outcome], guidance,
-                                   judged=f"{task_id}#AC{ac_index}", judge=reviewer,
+                                   judged=f"{task_id}#AC{ac_index}", judge=reviewer.strip(),
                                    evidence=evidence)
     except judge_verdict.VerdictError as e:
         refuse("no-guidance", str(e))
@@ -323,10 +688,14 @@ def record(task_id: str, ac_index: int, outcome: str, *, reviewer: str, rung: st
         "verdict": jv["state"],
         "guidance": jv["guidance"],
         "reviewer": reviewer.strip(),
+        "dispatch_id": dispatch_id.strip(),
         "rung": rung.strip(),
         "evidence": evidence,
         "judgement": jv,
     }
+    f = _fault(ctx, rec, crit, need_commit=False)  # the row cannot be committed yet
+    if f:
+        refuse(*f)
     _append(VERDICTS, rec, root)
     if outcome != GREEN:
         _refuse_row(root, task_id, f"verdict-{outcome}", jv["guidance"],
@@ -340,8 +709,7 @@ def _route_to_operator(root: Path, path: Path, text: str, crit, rec: dict) -> No
     """Escalate: put the reviewer's reason ON the criterion and make the operator the owner.
 
     /review renders the criterion body, so a line under it is what the operator reads
-    there. The line is a continuation, not part of the checkbox text, so it does not
-    disturb the digest.
+    there. The line is generated (see `_GENERATED_RE`), so it does not disturb the digest.
     """
     lines = text.split("\n")
     note = (f"  **Reviewer escalation ({rec['id']}, {rec['reviewer']}, rung {rec['rung']}):** "
@@ -360,111 +728,182 @@ def _route_to_operator(root: Path, path: Path, text: str, crit, rec: dict) -> No
 # ── read side (the closer only ever calls these) ─────────────────────────────
 
 
-def satisfying(task_id: str, crit, produced_by: set[str], root: Path) -> dict | None:
-    """The green record that satisfies `crit`, or None.
-
-    The LATEST record for (task, ac, digest) decides — a later red withdraws an earlier
-    green. A record for other text (digest mismatch) never counts. A reviewer who has
-    since become a producer no longer counts.
-    """
-    dg = criterion_digest(crit.title)
-    mine = [r for r in _read(VERDICTS, root)
-            if r.get("task") == task_id and r.get("ac") == crit.index
-            and r.get("ac_digest") == dg
-            and not is_producer(str(r.get("reviewer", "")), produced_by)]
-    if mine and mine[-1].get("outcome") == GREEN:
-        return mine[-1]
-    return None
-
-
-def _task_context(root: Path, task_id: str):
-    path, sub = _find_task(root, task_id)
-    if path is None or sub != "active":
-        return None
-    text = path.read_text(encoding="utf-8", errors="replace")
-    fm = frontmatter(text)
-    return path, text, fm
-
-
 def render_verdicts(task_id: str, root: Path | None = None) -> list[dict]:
-    """Green verdicts that satisfy a Human criterion of this task (open OR already ticked).
+    """Valid green verdicts on a RENDER-SURFACE Human criterion (open OR already ticked).
 
-    Ticked ones count: `apply` ticks the criterion, and the gate runs after it.
-    """
+    The P-013 gate asks whether a human looked at what renders; a green on an unrelated
+    taste criterion does not answer that. Same validator as `apply` (T-3581)."""
     root = root or _root()
-    ctx = _task_context(root, task_id)
+    ctx = _task_ctx(root, task_id)
     if ctx is None:
         return []
-    path, text, fm = ctx
-    prod = producers(root, task_id, text)
     out = []
-    for c in human_criteria(text):
-        r = satisfying(task_id, c, prod, root)
+    for c in human_criteria(ctx.text):
+        if ctx.classify(c).cls != "render-surface":
+            continue
+        r, _ = satisfying_verdict(ctx, c)
         if r:
             out.append(r)
     return out
 
 
+_ANNOT_RE = re.compile(r"^\s*\*\*Reviewer verdict:\*\* green (V-[\w-]+)")
+
+
+def _annotation(lines: list[str], crit) -> tuple[int, str] | None:
+    """(line index, verdict id) of the reviewer-verdict annotation under `crit`, if any."""
+    for i in range(crit.start + 1, min(crit.end + 1, len(lines))):
+        m = _ANNOT_RE.match(lines[i])
+        if m:
+            return i, m.group(1)
+    return None
+
+
+def _cite(r: dict) -> str:
+    return (f"  **Reviewer verdict:** green {r['id']} — {r['reviewer']} (rung {r['rung']}), "
+            f"digest {r['ac_digest']}; dispatch {r['dispatch_id']}; "
+            f"evidence: {', '.join(r['evidence'])}; ledger {VERDICTS}")
+
+
 def apply(task_id: str, root: Path | None = None) -> dict:
-    """Tick every Human criterion a valid green verdict satisfies; hand ownership over
-    to the agent when nothing is left for the operator to answer.
+    """Revalidate every reviewer-derived tick, then tick what a valid green satisfies.
+
+    Runs at EVERY close attempt, before the completion gates. A tick this module wrote is
+    withdrawn — box unticked, annotation removed, ownership restored to the operator — when
+    its verdict no longer validates: a later red, an edited criterion, a producer collision,
+    missing evidence, a torn ledger. Ticks are never permanent (T-3581). Hand-ticked
+    criteria carry no annotation and are not touched.
 
     Reads the ledger, writes only the task file and the applied ledger. Idempotent.
     """
     root = root or _root()
-    result = {"task": task_id, "ticked": [], "owner_before": "", "owner_after": "",
-              "skipped": ""}
-    ctx = _task_context(root, task_id)
+    result = {"task": task_id, "ticked": [], "withdrawn": [], "owner_before": "",
+              "owner_after": "", "skipped": ""}
+    ctx = _task_ctx(root, task_id)
     if ctx is None:
         result["skipped"] = "task not active"
         return result
-    path, text, fm = ctx
-    workflow = str(fm.get("workflow_type") or "").strip().lower()
-    owner = str(fm.get("owner") or "")
+    path, text = ctx.path, ctx.text
+    owner = ctx.owner
     result["owner_before"] = result["owner_after"] = owner
-    if workflow == "inception":
+    if ctx.workflow == "inception":
         # The go/no-go gates (T-1259 / decision line) are rewired by their own slice;
         # a verdict must not tick around them.
         result["skipped"] = "inception: decision gates are outside this slice (T-3580)"
         return result
 
-    prod = producers(root, task_id, text)
-    rs = _render_surface(root, path)
     lines = text.split("\n")
+    # 1. withdraw stale reviewer-derived ticks (bottom-up: indices stay valid)
+    for c in sorted(human_criteria(text), key=lambda c: -c.start):
+        ann = _annotation(lines, c)
+        if ann is None or not c.ticked:
+            continue
+        r, why = satisfying_verdict(ctx, c)
+        if r is not None:
+            if r["id"] != ann[1]:
+                lines[ann[0]] = _cite(r)
+            continue
+        del lines[ann[0]]
+        lines[c.start] = re.sub(r"\[[xX]\]", "[ ]", lines[c.start], count=1)
+        result["withdrawn"].append({"ac": c.index, "verdict_id": ann[1], "why": why})
+    new_text = "\n".join(lines)
+
+    # 2. tick what a valid green now satisfies
+    lines = new_text.split("\n")
     hits = []
-    for c in human_criteria(text):
-        if c.ticked:
+    for c in human_criteria(new_text):
+        if c.ticked or ctx.classify(c).delegation_class != REVIEWER_JUDGES:
             continue
-        cl = classify(c, workflow_type=workflow, render_surface=rs)
-        if cl.delegation_class != REVIEWER_JUDGES:
-            continue
-        r = satisfying(task_id, c, prod, root)
+        r, _ = satisfying_verdict(ctx, c)
         if r:
             hits.append((c, r))
-    if not hits:
-        return result
-
-    # Bottom-up so earlier line numbers stay valid while lines are inserted.
     for c, r in sorted(hits, key=lambda h: -h[0].start):
         lines[c.start] = re.sub(r"\[ \]", "[x]", lines[c.start], count=1)
-        cite = (f"  **Reviewer verdict:** green {r['id']} — {r['reviewer']} (rung {r['rung']}), "
-                f"digest {r['ac_digest']}; evidence: {', '.join(r['evidence'])}; "
-                f"ledger {VERDICTS}")
-        lines.insert(c.end, cite)
+        lines.insert(c.end, _cite(r))
         result["ticked"].append({"ac": c.index, "verdict_id": r["id"], "reviewer": r["reviewer"]})
     result["ticked"].sort(key=lambda t: t["ac"])
+    result["withdrawn"].sort(key=lambda t: t["ac"])
+    if not hits and not result["withdrawn"]:
+        return result
     new_text = "\n".join(lines)
 
     still_open = [c for c in human_criteria(new_text) if not c.ticked]
-    if owner == "human" and not still_open:
+    if result["withdrawn"] and owner != "human":
+        new_text = re.sub(r"(?m)^owner:.*$", "owner: human", new_text, count=1)
+        result["owner_after"] = "human"
+    elif owner == "human" and not still_open:
         new_text = re.sub(r"(?m)^owner:.*$", "owner: agent", new_text, count=1)
         result["owner_after"] = "agent"
     path.write_text(new_text, encoding="utf-8")
-    _append(APPLIED, {"ts": _now(), "task": task_id, "kind": "verdict-apply",
-                      "ticked": result["ticked"], "owner_before": owner,
-                      "owner_after": result["owner_after"],
+    kind = "verdict-apply" if hits else "verdict-withdraw"
+    _append(APPLIED, {"ts": _now(), "task": task_id, "kind": kind,
+                      "ticked": result["ticked"], "withdrawn": result["withdrawn"],
+                      "owner_before": owner, "owner_after": result["owner_after"],
                       "open_human_remaining": len(still_open)}, root)
     return result
+
+
+# ── audit (fw audit) ─────────────────────────────────────────────────────────
+
+
+def audit(root: Path | None = None) -> tuple[int, list[str]]:
+    """Cross-check every verdicts.jsonl row. (exit code, lines): 0 clean, 2 on any failure.
+
+    Per row: schema, registered+signed review dispatch for that task, and — for greens —
+    evidence paths, a producer set that is non-empty and does not include the reviewer, and
+    an introducing commit that exists and is not a producer's. Torn lines are failures."""
+    root = root or _root()
+    rows, torn = _read_strict(VERDICTS, root)
+    if not rows and not torn:
+        return 0, ["verdict ledger: empty or absent (path is off until a review dispatch writes rows)"]
+    out, bad = [], 0
+    for ln in torn:
+        bad += 1
+        out.append(f"FAIL torn/non-object line in verdicts.jsonl: {ln[:80]!r}")
+    for r in rows:
+        rid, task = str(r.get("id", "?")), str(r.get("task", "?"))
+        miss = [k for k in _REQUIRED if k not in r]
+        if miss:
+            bad += 1
+            out.append(f"FAIL {rid} ({task}): schema — missing {', '.join(miss)}")
+            continue
+        why = _provenance_fault(root, task, r)
+        if why:
+            bad += 1
+            out.append(f"FAIL {rid} ({task}): provenance — {why}")
+            continue
+        if r["outcome"] != GREEN:
+            continue
+        _, text = ("", "")
+        tp, _sub = _find_task(root, task)
+        text = tp.read_text(encoding="utf-8", errors="replace") if tp else ""
+        prod, err = producers_checked(root, task, text)
+        if err or not prod:
+            bad += 1
+            out.append(f"FAIL {rid} ({task}): no producer provenance — {err or 'no commit references the task'}")
+            continue
+        hit = is_producer(str(r["reviewer"]), prod) or _dispatch_is_producer(str(r["dispatch_id"]), prod)
+        if hit:
+            bad += 1
+            out.append(f"FAIL {rid} ({task}): reviewer {r['reviewer']!r} is a producer ({hit!r})")
+            continue
+        ev = [_evidence_fault(root, e) for e in r["evidence"] if isinstance(e, str)]
+        ev = [x for x in ev if x] or ([] if r["evidence"] else ["no evidence"])
+        if ev:
+            bad += 1
+            out.append(f"FAIL {rid} ({task}): evidence — {ev[0]}")
+            continue
+        ic, why = introducing_commit(root, rid)
+        if ic is None:
+            bad += 1
+            out.append(f"FAIL {rid} ({task}): {why}")
+            continue
+        hit = next((p for i in ic["ids"] if (p := is_producer(i, prod))), "")
+        if hit:
+            bad += 1
+            out.append(f"FAIL {rid} ({task}): introduced by producer {hit!r} in {ic['sha'][:9]}")
+    out.append(f"verdict ledger: {len(rows)} row(s), {bad} failure(s)")
+    return (2 if bad else 0), out
 
 
 # ── CLI ──────────────────────────────────────────────────────────────────────
@@ -482,13 +921,30 @@ def _cli(argv: list[str] | None = None) -> int:
     r.add_argument("--rung", required=True, help="independence rung, e.g. cross-vendor")
     r.add_argument("--guidance", default="", help="mandatory unless green")
     r.add_argument("--evidence", action="append", default=[], help="repo path; repeatable")
-    r.add_argument("--digest", default="", help="digest of the criterion text the reviewer read")
+    r.add_argument("--digest", default="", required=True,
+                   help="digest of the criterion the reviewer read (`verdict digest`)")
+    r.add_argument("--dispatch-id", default="", help="id of the review dispatch that produced this "
+                   "verdict — must be in the dispatch registry with task-type review")
+
+    g = sub.add_parser("register-dispatch", help="(dispatcher) register a dispatch for later provenance checks")
+    g.add_argument("--dispatch-id", required=True)
+    g.add_argument("--task", required=True)
+    g.add_argument("--task-type", default="")
+    g.add_argument("--issuer-session", default="")
+    g.add_argument("--issuer-identity", default="")
 
     a = sub.add_parser("apply", help="tick green-judged criteria; hand ownership over if none left")
     a.add_argument("task_id")
 
     c = sub.add_parser("check-render", help="exit 0 when a green verdict satisfies the render gate")
     c.add_argument("task_id")
+
+    d = sub.add_parser("digest", help="print the digest of a Human criterion's current text "
+                       "(the reviewer submits it with `record --digest`)")
+    d.add_argument("task_id")
+    d.add_argument("--ac", type=int, required=True)
+
+    sub.add_parser("audit", help="cross-check every ledger row; exit 2 on any failure")
 
     ls = sub.add_parser("list", help="verdicts recorded for a task")
     ls.add_argument("task_id")
@@ -498,11 +954,17 @@ def _cli(argv: list[str] | None = None) -> int:
         try:
             rec = record(args.task_id, args.ac, args.outcome, reviewer=args.reviewer,
                          rung=args.rung, guidance=args.guidance, evidence=args.evidence,
-                         digest=args.digest)
+                         digest=args.digest, dispatch_id=args.dispatch_id)
         except VerdictRefused as e:
             print(f"REFUSED: {e}", file=sys.stderr)
             return 1
         print(json.dumps({k: rec[k] for k in ("id", "task", "ac", "ac_digest", "outcome")}))
+        return 0
+    if args.cmd == "register-dispatch":
+        row = register_dispatch(args.dispatch_id, args.task, args.task_type,
+                                issuer_session=args.issuer_session,
+                                issuer_identity=args.issuer_identity)
+        print(json.dumps({k: row[k] for k in ("dispatch_id", "task", "task_type")}))
         return 0
     if args.cmd == "apply":
         res = apply(args.task_id)
@@ -516,6 +978,18 @@ def _cli(argv: list[str] | None = None) -> int:
         print(f"green verdict {v['id']} by {v['reviewer']} (rung {v['rung']}) on "
               f"AC#{v['ac']} of {args.task_id}")
         return 0
+    if args.cmd == "digest":
+        ctx = _task_ctx(_root(), args.task_id)
+        crit = next((c for c in human_criteria(ctx.text) if c.index == args.ac), None) if ctx else None
+        if crit is None:
+            print(f"no active Human criterion #{args.ac} on {args.task_id}", file=sys.stderr)
+            return 1
+        print(criterion_digest(crit))
+        return 0
+    if args.cmd == "audit":
+        code, lines = audit()
+        print("\n".join(lines))
+        return code
     if args.cmd == "list":
         for row in _read(VERDICTS, _root()):
             if row.get("task") == args.task_id:

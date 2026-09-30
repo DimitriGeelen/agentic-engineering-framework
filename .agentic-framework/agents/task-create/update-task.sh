@@ -112,7 +112,17 @@ apply_reviewer_verdicts() {
     [ "$NEW_STATUS" = "work-completed" ] || return 0
     [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ] || return 0
     local applied
-    applied=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" apply "$TASK_ID" 2>/dev/null) || return 0
+    # T-3581: runs at EVERY close attempt and also WITHDRAWS reviewer-derived ticks whose
+    # verdict no longer validates. A crash here must refuse the close, not skip the check:
+    # a stale tick that survives a broken revalidation is the hole this closes.
+    if ! applied=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" apply "$TASK_ID" 2>&1); then
+        echo -e "${RED}ERROR: reviewer-verdict revalidation failed — refusing to close${NC}" >&2
+        echo "$applied" | tail -5 >&2
+        exit 1
+    fi
+    if echo "$applied" | grep -q '"withdrawn": \[{'; then
+        echo -e "${YELLOW}Reviewer verdict WITHDRAWN (no longer valid): $applied${NC}"
+    fi
     if echo "$applied" | grep -q '"verdict_id"'; then
         echo -e "${GREEN}Reviewer verdict applied: $applied${NC}"
     fi

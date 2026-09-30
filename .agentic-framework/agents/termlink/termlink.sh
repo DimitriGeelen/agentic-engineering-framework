@@ -858,6 +858,18 @@ $prompt"
 }
 METAEOF
 
+    # T-3581: a review dispatch is registered (HMAC-signed) so a verdict row can prove
+    # which dispatch produced it. `$name` is the dispatch id. Only task-type review is
+    # registered: the verdict ledger refuses any row whose dispatch is not in this registry.
+    if [ "$task_type" = "review" ] && [ -n "$task" ] && [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ]; then
+        local _issuer_session
+        _issuer_session=$(sed -n 's/^session_id:[[:space:]]*//p' "$project_dir/.context/working/session.yaml" 2>/dev/null | head -1)
+        PROJECT_ROOT="$project_dir" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" register-dispatch \
+            --dispatch-id "$name" --task "$task" --task-type review \
+            --issuer-session "${_issuer_session:-}" --issuer-identity "${GIT_AUTHOR_NAME:-$(git -C "$project_dir" config user.name 2>/dev/null)}" \
+            >/dev/null || echo "  WARNING: review dispatch not registered — its verdicts will not count" >&2
+    fi
+
     # Worker script runs inside the spawned terminal
     # Adapted from tl-dispatch.sh — battle-tested with 3 parallel workers
     cat > "$wdir/run.sh" <<'RUNEOF'
