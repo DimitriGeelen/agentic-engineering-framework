@@ -126,3 +126,85 @@ class TestNoChannelToTheReviewer:
         _run(hi)
         rt.dispatch(hi, "rv-1", TID, run_id="run-b", seat="claude")
         assert rt.finish(hi, "rv-1")["consults"] == {"read": True, "count": 0, "messages": []}
+
+
+# ── 2. Claude N2: model, endpoint and extra programs ─────────────────────────────────────────
+
+_MODEL_REG = ("backends:\n"
+              "  - {id: claude-code, name: c, harness_class: subscription, cost_class: internal, "
+              "approval_required: false, cost_estimate_method: unmetered, description: x, "
+              "worker_kind: claude, vendor: anthropic, model: claude-pinned}\n"
+              "  - {id: openrouter, name: OR, harness_class: pay_per_use, cost_class: paid, "
+              "approval_required: true, cost_estimate_method: tokens_estimated, description: x}\n")
+
+
+class TestWorkerLaunchIsPinned:
+    @pytest.mark.parametrize("flag", [["--mcp-config", "/tmp/evil.json"], ["--strict-mcp-config"],
+                                      ["--allowed-tools", "Bash"], ["--tools", "Bash"],
+                                      ["--permission-mode", "bypassPermissions"]])
+    def test_probe_n2b_dispatch_refuses_caller_launch_flags(self, tmp_path, flag):
+        """N2(b): --mcp-config ran a caller-chosen program inside the reviewer."""
+        r = _dispatch_cli(tmp_path, *flag)
+        assert r.returncode != 0 and f"{flag[0]} refused for a review dispatch" in r.stderr, r.stderr
+
+    def test_probe_n2a_dispatch_refuses_a_model_that_is_not_the_committed_one(self, tmp_path):
+        """N2(a): --model was accepted for review dispatches and not signed."""
+        r = _dispatch_cli(tmp_path, "--model", "some-other-model")
+        assert r.returncode != 0 and "--model refused for a review dispatch" in r.stderr, r.stderr
+
+    def test_registration_signs_the_committed_model_and_refuses_another(self, hi):
+        with pytest.raises(ValueError, match="model 'x' is not the one"):
+            w = rt.wdir_for(hi, "rv-1")
+            rt.write_launch(w)
+            vl.register_dispatch("rv-1", TID, "review", wdir=str(w), worker_bin=rt.WORKER_BIN,
+                                 model="x", root=hi)
+        rt.commit_registry(hi, _MODEL_REG)
+        assert vl.kind_models(hi)["claude"] == "claude-pinned"
+        with pytest.raises(ValueError, match="model '' is not the one"):
+            vl.register_dispatch("rv-1", TID, "review", wdir=str(w), worker_bin=rt.WORKER_BIN, root=hi)
+        rec = vl.register_dispatch("rv-1", TID, "review", wdir=str(w), worker_bin=rt.WORKER_BIN,
+                                   model="claude-pinned", root=hi)
+        assert rec["model"] == "claude-pinned"
+        assert vl.dispatch_record(hi, "rv-1")[0]["model"] == "claude-pinned"     # signature verifies
+        rows = [json.loads(x) for x in (hi / vl.DISPATCHES).read_text().splitlines()]
+        rows[-1]["model"] = "other"
+        (hi / vl.DISPATCHES).write_text("".join(json.dumps(r) + "\n" for r in rows))
+        assert vl.dispatch_record(hi, "rv-1")[0] is None                        # the model is signed
+
+    def test_the_registry_validates_a_model(self):
+        from lib import review_cost as rc
+        errs = rc.validate([{"id": "a", "cost_class": "internal", "approval_required": False,
+                             "model": "bad model; rm -rf"}])
+        assert any("model" in e for e in errs)
+
+    @pytest.mark.parametrize("f", ["tools.txt", "permission_mode.txt", "mcp_config.txt",
+                                   "strict_mcp", "allowed_tools.txt"])
+    def test_start_refuses_a_launch_flag_file_in_the_worker_dir(self, hi, f):
+        _run(hi)
+        rt.dispatch(hi, "rv-1", TID, run_id="run-b", seat="claude")
+        w = rt.wdir_for(hi, "rv-1")
+        (w / f).write_text("x\n")
+        with rt.as_runtime():
+            with pytest.raises(vl.VerdictRefused, match="launch flag"):
+                vl.start("rv-1", wdir=str(w), root=hi)
+
+    def test_runtime_fault_checks_the_model_run_sh_was_given(self, hi, monkeypatch):
+        """run.sh's argv[5] is the model it passes to the worker; start refuses another."""
+        w = rt.wdir_for(hi, "rv-1")
+        rt.write_launch(w)
+        (w / "run.sh").write_text(vl._canonical_runtime(hi) or "")
+        monkeypatch.setattr(vl, "_parent_argv", lambda: ["bash", str(w / "run.sh"), "rv-1",
+                                                         str(hi), str(w), "60", "evil", "review", ""])
+        assert "model 'evil'" in vl._runtime_fault(str(w), hi, "", model="")
+        monkeypatch.setattr(vl, "_parent_argv", lambda: ["bash", str(w / "run.sh"), "rv-1",
+                                                         str(hi), str(w), "60", "", "review", ""])
+        assert vl._runtime_fault(str(w), hi, "", model="") == ""
+
+    def test_run_sh_restricts_setting_sources_and_ignores_flag_files_for_review(self):
+        src = TERMLINK.read_text()
+        i = src.index("cat > \"$wdir/run.sh\" <<'RUNEOF'\n")
+        body = src[i:src.index("\nRUNEOF\n", i)]
+        assert "--setting-sources user,project" in body
+        assert 'if [ "$TASK_TYPE" = "review" ]; then\n    TOOLS_FLAG=""; PERMISSION_MODE_FLAG=""' in body
+        assert "$MODEL_FLAG $SETTING_SOURCES_FLAG" in body
+        assert "Workers spawn\n# --bare" not in src and "Workers spawn --bare" not in src

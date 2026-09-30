@@ -315,7 +315,8 @@ def _sign(key: bytes, row: dict) -> str:
               "worker_kind", "vendor", "completion_secret_sha256",    # round 4
               "start_by", "complete_by",                              # round 5
               "run_id", "seat",                                       # round 6: bound pre-launch
-              "worker_bin", "prompt_sha256", "brief_sha256"):         # round 7: what is launched
+              "worker_bin", "prompt_sha256", "brief_sha256",          # round 7: what is launched
+              "model", "env_sha256"):                                 # round 8: model, env data
         if k in row:
             body[k] = row[k]
     return hmac.new(key, json.dumps(body, sort_keys=True, separators=(",", ":")).encode(),
@@ -411,10 +412,20 @@ def _bin_fault(path: str) -> str:
     return ""
 
 
+#: Round 8 (N2): the per-dispatch files run.sh turns into worker flags (--tools, --permission-mode,
+#: --mcp-config, --strict-mcp-config, --allowed-tools). A review dispatch takes none from its caller.
+_LAUNCH_FLAG_FILES = ("tools.txt", "permission_mode.txt", "mcp_config.txt", "strict_mcp",
+                      "allowed_tools.txt")
+
+
 def _launch_fault(drec: dict, wdir: Path) -> str:
     """(start, round 7) '' when what run.sh is about to launch is what was registered: the same
     prompt.md, the same absolute worker binary, and an env.sh with no program- or model-choosing
-    key."""
+    key. Round 8: and no launch flag file in the worker directory."""
+    extra = [f for f in _LAUNCH_FLAG_FILES if (Path(wdir) / f).exists()]
+    if extra:
+        return (f"launch flag file(s) {', '.join(extra)} in {wdir} — a review worker takes no "
+                f"--tools/--permission-mode/--mcp-config/--allowed-tools from its caller")
     if _file_sha(Path(wdir) / "prompt.md") != str(drec.get("prompt_sha256") or "-"):
         return "prompt.md is not the brief registered with the dispatch"
     bad = _prompt_fault(Path(wdir))
@@ -436,7 +447,8 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
                       issuer_session: str = "", issuer_identity: str = "",
                       revision: str = "", wdir: str = "", worker_kind: str = "",
                       vendor: str = "", ttl: int = DEFAULT_TTL, run_id: str = "",
-                      seat: str = "", worker_bin: str = "", root: Path | None = None) -> dict:
+                      seat: str = "", worker_bin: str = "", model: str = "",
+                      root: Path | None = None) -> dict:
     """Record a dispatch. Called by the dispatcher, for every task-type, at spawn time.
 
     `revision` is the commit the reviewer is asked to review, captured BEFORE the worker starts
@@ -513,6 +525,15 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
         bad = _bin_fault(worker_bin) or _env_fault(w) or _prompt_fault(w)
         if bad:
             raise ValueError(f"review dispatch refused: {bad}")
+        # Round 8 (N2): the model is the registry's, as committed at the reviewed revision.
+        models = kind_models(root, row["revision"])
+        want_model = (models or {}).get(row["worker_kind"], "")
+        if models is None or (model or "").strip() != want_model:
+            raise ValueError(f"review dispatch refused: model {(model or '').strip()!r} is not the one "
+                             f"{BACKENDS} (as committed at {row['revision'][:9]}) pins for worker kind "
+                             f"{row['worker_kind']!r} ({want_model or 'the worker default'!r}) — a review "
+                             f"worker's model is not the caller's to choose")
+        row["model"] = want_model
         row["worker_bin"] = worker_bin.strip()
         row["prompt_sha256"] = _file_sha(w / "prompt.md")
         brief = (w / "brief.md").read_text()
@@ -572,25 +593,37 @@ def registry_pin(root: Path, revision: str) -> dict:
     return {"where": where, "sha256": hashlib.sha256(blob.encode()).hexdigest() if blob else ""}
 
 
-def kind_vendors(root: Path | None = None, revision: str = "") -> dict[str, str]:
-    """{worker kind: vendor} from policy/review-backends.yaml AS COMMITTED at `revision` (default
-    HEAD; see `_registry_blob`). An uncommitted edit of the registry declares nothing. {} when no
-    committed registry exists or it is invalid: no vendor is then verifiable."""
+def _committed_registry_map(reader, root: Path | None, revision: str):
+    """`reader(path)` over policy/review-backends.yaml AS COMMITTED at `revision`; None when no
+    committed registry exists or it is invalid."""
     import tempfile
 
-    root = root or _root()
-    blob, _where = _registry_blob(root, revision)
+    blob, _where = _registry_blob(root or _root(), revision)
     if not blob:
-        return {}
+        return None
     with tempfile.NamedTemporaryFile("w", suffix=".yaml", delete=False) as fh:
         fh.write(blob)
         tmp = Path(fh.name)
     try:
-        return review_cost.worker_vendors(tmp)
+        return reader(tmp)
     except (review_cost.CostError, OSError, ValueError):
-        return {}
+        return None
     finally:
         tmp.unlink(missing_ok=True)
+
+
+def kind_vendors(root: Path | None = None, revision: str = "") -> dict[str, str]:
+    """{worker kind: vendor} from policy/review-backends.yaml AS COMMITTED at `revision` (default
+    HEAD; see `_registry_blob`). An uncommitted edit of the registry declares nothing. {} when no
+    committed registry exists or it is invalid: no vendor is then verifiable."""
+    return _committed_registry_map(review_cost.worker_vendors, root, revision) or {}
+
+
+def kind_models(root: Path | None = None, revision: str = "") -> dict[str, str] | None:
+    """(round 8, Claude N2) {worker kind: model} pinned in the registry AS COMMITTED at `revision`.
+    A review dispatch of a kind is launched with exactly that model ('' = the worker's default);
+    None when no valid committed registry exists (then no model can be verified)."""
+    return _committed_registry_map(review_cost.worker_models, root, revision)
 
 
 _KINDS_RE = re.compile(r'^DISPATCH_WORKER_KINDS="([^"]*)"', re.M)
@@ -759,7 +792,8 @@ def start(dispatch_id: str, *, wdir: str, pid: int = 0,
     if not here or here != str(drec.get("wdir") or ""):
         raise VerdictRefused(f"worker directory {here or '(none)'} is not the one registered for "
                              f"dispatch {did!r}")
-    bad = _runtime_fault(here, root, str(drec.get("revision") or "")) or _launch_fault(drec, Path(here))
+    bad = (_runtime_fault(here, root, str(drec.get("revision") or ""), model=str(drec.get("model") or ""))
+           or _launch_fault(drec, Path(here)))
     if bad:
         raise VerdictRefused(f"dispatch {did!r} cannot be started here: {bad}")
     now = int(_clock())
@@ -805,7 +839,8 @@ def _parent_argv() -> list[str]:
             return []
 
 
-def _runtime_fault(wdir: str, root: Path | None = None, revision: str = "") -> str:
+def _runtime_fault(wdir: str, root: Path | None = None, revision: str = "",
+                   model: str | None = None) -> str:
     """'' when this process was launched by the dispatch runtime of `wdir`: its parent is a shell
     running `<wdir>/run.sh` as its script (argv[1], not a `-c` string that merely mentions it), and
     that file is the canonical runtime. Shared by `start` and `complete` (round 6), so a Python
@@ -834,6 +869,12 @@ def _runtime_fault(wdir: str, root: Path | None = None, revision: str = "") -> s
         return f"{want} cannot be read"
     if body != canon:
         return f"{want} is not the dispatch runtime termlink.sh writes"
+    # Round 8 (N2): run.sh's 5th argument is the model it launches the worker with.
+    if model is not None:
+        got = argv[6] if len(argv) > 6 else ""
+        if got != model:
+            return (f"run.sh was started with model {got!r}, not the registered "
+                    f"{model or 'worker default'!r}")
     return ""
 
 
@@ -886,7 +927,7 @@ def complete(dispatch_id: str, *, wdir: str, exit_code: int, session: str = "",
     if not reg or here != reg:
         raise VerdictRefused(f"worker directory {here or '(none)'} is not the one registered for "
                              f"dispatch {did!r} ({reg or 'none registered'})")
-    bad = _runtime_fault(here, root, str(drec.get("revision") or ""))
+    bad = _runtime_fault(here, root, str(drec.get("revision") or ""), model=str(drec.get("model") or ""))
     if bad:
         raise VerdictRefused(f"dispatch {did!r} cannot be completed here: {bad}")
     ec_file = Path(here) / "exit_code"
@@ -2414,6 +2455,8 @@ def _cli(argv: list[str] | None = None) -> int:
     g.add_argument("--seat", default="", help="the run seat this dispatch fills")
     g.add_argument("--worker-bin", default="", help="(review) the absolute worker binary the "
                    "dispatcher resolved; run.sh launches exactly this")
+    g.add_argument("--model", default="", help="(review) the model run.sh launches the worker with; "
+                   "must be the one the committed registry pins for the kind ('' = worker default)")
 
     st = sub.add_parser("start", help="(dispatch runtime, first act of run.sh) record that the "
                         "runtime started for this dispatch")
@@ -2426,6 +2469,11 @@ def _cli(argv: list[str] | None = None) -> int:
     rp_ = sub.add_parser("review-prompt", help="(dispatcher) print the exact prompt a review worker "
                          "is launched with: the fixed review preamble and the brief")
     rp_.add_argument("--brief-file", required=True)
+
+    km = sub.add_parser("kind-model", help="(dispatcher) print the model the committed registry pins "
+                        "for a worker kind ('' = worker default); exit 2 when no valid registry")
+    km.add_argument("--kind", default="claude")
+    km.add_argument("--revision", default="")
 
     cp = sub.add_parser("complete", help="(dispatch runtime, after the worker exits) sign what the "
                         "review worker left behind")
@@ -2477,9 +2525,17 @@ def _cli(argv: list[str] | None = None) -> int:
                                 issuer_identity=args.issuer_identity,
                                 revision=args.revision, wdir=args.wdir,
                                 worker_kind=args.worker_kind, ttl=args.ttl,
-                                run_id=args.run_id, seat=args.seat, worker_bin=args.worker_bin)
+                                run_id=args.run_id, seat=args.seat, worker_bin=args.worker_bin,
+                                model=args.model)
         print(json.dumps({k: row[k] for k in ("dispatch_id", "task", "task_type", "revision",
                                               "worker_kind", "vendor")}))
+        return 0
+    if args.cmd == "kind-model":
+        models = kind_models(revision=args.revision)
+        if models is None:
+            print(f"no valid {BACKENDS} committed at {args.revision or 'HEAD'}", file=sys.stderr)
+            return 2
+        print(models.get(args.kind, ""))
         return 0
     if args.cmd == "review-prompt":
         sys.stdout.write(review_prompt(Path(args.brief_file).read_text()))

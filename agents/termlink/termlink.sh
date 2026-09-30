@@ -762,6 +762,14 @@ cmd_dispatch() {
                 *) die "--env $_k refused for a review dispatch: only $REVIEW_ENV_ALLOW may be set (a key that could choose the worker program or model is never accepted)" ;;
             esac
         done
+        # Round 8 (Claude N2): nor are its tools, permission mode or MCP servers — an MCP config
+        # runs a program of the caller's choosing inside the reviewer. None is taken from the
+        # caller; a kind that ever needs one gets it from committed config, not a flag.
+        [ -n "$mcp_config" ] && die "--mcp-config refused for a review dispatch: a review worker runs no MCP server its caller chooses"
+        [ -n "$strict_mcp" ] && die "--strict-mcp-config refused for a review dispatch: a review worker takes no MCP flags from its caller"
+        [ -n "$allowed_tools" ] && die "--allowed-tools refused for a review dispatch: a review worker's tool trust is not its caller's to grant"
+        [ -n "$tools" ] && die "--tools refused for a review dispatch: a review worker's tool catalogue is not its caller's to choose"
+        [ -n "$permission_mode" ] && die "--permission-mode refused for a review dispatch: a review worker's permission mode is not its caller's to choose"
     fi
     # T-3581: a review dispatch id is registered once and must not be guessable (task+role).
     [ "$task_type" = "review" ] && name="${name}-$(od -An -N6 -tx1 /dev/urandom | tr -d ' \n')"
@@ -782,10 +790,25 @@ cmd_dispatch() {
     # Pre-T-1669: env-var lookup only.
     # T-1669: route_cache.best_model_for(task_type) consulted FIRST, env-var as fallback.
     # Returns "<model>|<fallback_used>|<source>".
-    local _resolved
-    _resolved=$(_resolve_dispatch_model_and_fallback "$model" "$task_type")
-    local resolution_source
-    IFS='|' read -r model fallback_used resolution_source <<< "$_resolved"
+    local _resolved resolution_source
+    if [ "$task_type" = "review" ]; then
+        # T-3580 round 8 (Claude N2): a review worker's model is the one the backend registry,
+        # as committed at the reviewed revision, pins for its kind ('' = the worker's default).
+        # Never the route cache, DISPATCH_MODEL_* config or a caller --model; the ledger signs
+        # it into the registration and start checks run.sh was given exactly it.
+        [ -n "$review_revision" ] || review_revision=$(git -C "${project_dir:-$(pwd)}" rev-parse -q --verify HEAD 2>/dev/null || true)
+        local _pinned
+        _pinned=$(PROJECT_ROOT="${project_dir:-$(pwd)}" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" \
+            kind-model --kind "${worker_kind:-claude}" --revision "$review_revision") \
+            || die "review dispatch: no valid committed policy/review-backends.yaml to pin the worker model"
+        if [ -n "$model" ] && [ "$model" != "$_pinned" ]; then
+            die "--model refused for a review dispatch: the ${worker_kind:-claude} review worker runs '${_pinned:-its default model}' (policy/review-backends.yaml, committed); a caller cannot choose another"
+        fi
+        model="$_pinned"; fallback_used="false"; resolution_source="review-registry"
+    else
+        _resolved=$(_resolve_dispatch_model_and_fallback "$model" "$task_type")
+        IFS='|' read -r model fallback_used resolution_source <<< "$_resolved"
+    fi
     # JSON-safe: empty resolution → null (not the string "null"); non-empty model → quoted string.
     local model_used_json
     if [ -n "$model" ]; then
@@ -826,9 +849,10 @@ cmd_dispatch() {
     fi
 
     # T-3407 / arc-011 slice 5: every dispatched worker is addressable by its
-    # --name and is told, once, how a peer consult reaches it. Workers spawn
-    # --bare (no CLAUDE.md, no hooks), so the prompt is the only channel this
-    # can ride on. Kept short: an empty inbox costs the worker one command.
+    # --name and is told, once, how a peer consult reaches it. (Workers are NOT
+    # launched --bare: run.sh passes no such flag, so CLAUDE.md, project hooks and
+    # settings do load — round 8 corrected the old "--bare" claim here.) Kept
+    # short: an empty inbox costs the worker one command.
     # T-3580 round 8 (Claude N1): NOT for a review dispatch. The stanza told every reviewer to
     # read and obey its inbox, which is a channel the task's producer can write to; a review
     # worker's prompt is exactly the ledger's fixed review preamble plus the brief, and the
@@ -1022,7 +1046,7 @@ METAEOF
             --dispatch-id "$name" --task "$task" --task-type review \
             --revision "$review_revision" --wdir "$wdir" \
             --worker-kind "${worker_kind:-claude}" --ttl "$((timeout + 600))" \
-            --run-id "$review_run" --seat "$review_seat" --worker-bin "$worker_bin" \
+            --run-id "$review_run" --seat "$review_seat" --worker-bin "$worker_bin" --model "$model" \
             --issuer-session "${_issuer_session:-}" --issuer-identity "${GIT_AUTHOR_NAME:-$(git -C "$project_dir" config user.name 2>/dev/null)}" \
             >/dev/null || echo "  WARNING: review dispatch not registered — its verdicts will not count" >&2
         : > "$wdir/finalise_required"
@@ -1142,6 +1166,17 @@ if [ -f "$WDIR/allowed_tools.txt" ] && [ -s "$WDIR/allowed_tools.txt" ]; then
     ALLOWED_TOOLS_FLAG="--allowed-tools $(cat "$WDIR/allowed_tools.txt")"
 fi
 
+# T-3580 round 8 (Claude N2): a review worker takes none of the flags above from its worker
+# directory (start already refused if one was there; this closes the window after start), and
+# loads only user and project settings: never the untracked .claude/settings.local.json, whose
+# env block (ANTHROPIC_BASE_URL, ANTHROPIC_MODEL) and hooks would choose its endpoint, model
+# and extra programs. `--setting-sources` is claude's documented flag (claude --help).
+SETTING_SOURCES_FLAG=""
+if [ "$TASK_TYPE" = "review" ]; then
+    TOOLS_FLAG=""; PERMISSION_MODE_FLAG=""; MCP_CONFIG_FLAG=""; STRICT_MCP_FLAG=""; ALLOWED_TOOLS_FLAG=""
+    SETTING_SOURCES_FLAG="--setting-sources user,project"
+fi
+
 # T-1706: worker_kind dispatch routing. If worker_kind.txt requests ollama-loop,
 # run the thin tool-loop worker (curated litellm direct, ~150 LOC python). The
 # python worker writes result.jsonl + result.md + exit_code itself, so we skip
@@ -1183,7 +1218,7 @@ else
         echo "FATAL: review worker binary not resolved to an absolute path" >> "$WDIR/stderr.log"
         CLAUDE_PID=""
     else
-        "$WORKER_BIN" -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG $TOOLS_FLAG $PERMISSION_MODE_FLAG $MCP_CONFIG_FLAG $STRICT_MCP_FLAG $ALLOWED_TOOLS_FLAG --output-format stream-json --verbose > "$WDIR/result.jsonl" 2>"$WDIR/stderr.log" &
+        "$WORKER_BIN" -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG $SETTING_SOURCES_FLAG $TOOLS_FLAG $PERMISSION_MODE_FLAG $MCP_CONFIG_FLAG $STRICT_MCP_FLAG $ALLOWED_TOOLS_FLAG --output-format stream-json --verbose > "$WDIR/result.jsonl" 2>"$WDIR/stderr.log" &
         CLAUDE_PID=$!
     fi
     if [ -z "$CLAUDE_PID" ]; then
