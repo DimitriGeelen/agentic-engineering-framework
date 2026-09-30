@@ -126,6 +126,13 @@ an agent that reads .context/secrets/review-dispatch.key can still sign a cohere
 this list makes that a deliberate forgery rather than an unattributed append, and is not a
 claim of forgery resistance. Do not build this in T-3581.
 
+### Cost system integration (T-3583, for round 3)
+
+The judge must read backends from `policy/review-backends.yaml` (no hardcoded vendor list)
+and log a cost record for each seat via `fw review cost log --task T-XXX --backend ID ...`.
+When the chosen rung requires a paid backend (OpenRouter), emit a proposal instead of
+dispatching: `fw review propose --backend openrouter --task T-XXX --why "..."`.
+
 ## Acceptance Criteria
 
 ### Agent
