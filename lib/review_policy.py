@@ -180,7 +180,7 @@ def _money(v, *, number: bool = False) -> float | None:
         return None
     try:
         f = float(v)
-    except (TypeError, ValueError):
+    except (TypeError, ValueError, OverflowError):   # round 8 (codex 4): float(10**400) overflows
         return None
     return f if math.isfinite(f) and f >= 0 else None
 
@@ -281,6 +281,8 @@ def _spent(lines: list[str], now: datetime, root: Path | None = None) -> tuple[f
             continue
         counted.add(did)
         total += got
+        if not math.isfinite(total):          # round 8 (codex 4): an aggregate that overflows
+            return None, "the weekly judge spend overflows — not a finite amount"
     return total, ""
 
 

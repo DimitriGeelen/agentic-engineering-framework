@@ -578,3 +578,34 @@ class TestSpendIsBound:
                .strftime("%Y-%m-%dT%H:%M:%SZ"), "task": "T-1", "backend": "claude-code",
                "purpose": p, "cost_amount": 3}
         assert rp._judge_row_cost(hi, row, 3.0) == (0.0, "")
+
+
+# ── 8. codex 4 (low): oversized numbers are a controlled refusal ─────────────────────────────
+
+class TestOversizedNumbers:
+    def test_probe_codex4_money_refuses_an_int_too_large_for_a_float(self):
+        """codex 4: float(10**400) raised OverflowError out of _money."""
+        assert rp._money(10 ** 400) is None and rp._money(10 ** 400, number=True) is None
+
+    def test_an_oversized_cost_row_refuses_a_step_down(self, hi, monkeypatch):
+        monkeypatch.setenv(CEIL, "100")
+        _cost(hi, 10 ** 400)
+        dec = rp.ceiling_decision(hi, 5)
+        assert dec["granted"] == 5 and "not a finite amount" in dec["why"], dec
+
+    def test_an_oversized_spend_in_a_decision_is_a_controlled_refusal(self, hi):
+        dec = {"due": 5, "granted": 3, "spend_lines": 0, "as_of": "2026-01-01T00:00:00Z",
+               "ledger_rev": "0" * 40, "spent": 10 ** 400}
+        assert "malformed" in rp.verify_ceiling_decision(hi, dec, "2026-01-01T00:00:00Z")
+
+    def test_an_overflowing_aggregate_spend_refuses(self, hi, monkeypatch):
+        monkeypatch.setattr(rp, "_judge_row_cost", lambda root, r, amt: (1e308, r["purpose"]))
+        _cost(hi, 1, purpose="reviewer-judge a")
+        _cost(hi, 1, purpose="reviewer-judge b")
+        spent, why = rp._spent(rp._committed_lines(hi, "HEAD")[0],
+                               __import__("datetime").datetime.now(__import__("datetime").timezone.utc), hi)
+        assert spent is None and "overflow" in why
+
+    def test_an_oversized_ceiling_config_is_not_a_ceiling(self, hi, monkeypatch):
+        monkeypatch.setenv(CEIL, "1" + "0" * 400)
+        assert rp.ceiling_status(hi)[0] is None
