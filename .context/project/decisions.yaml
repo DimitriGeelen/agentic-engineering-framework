@@ -4634,3 +4634,45 @@ decisions:
     date: 2026-09-27
     task: T-3524
     rationale: "Not specified"
+
+  - id: D-663
+    decision: "an immutable id in `.framework.yaml`, minted once at `fw init`. Instances of a"
+    scope: project
+    date: 2026-09-28
+    task: T-3534
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-664
+    decision: "`project=<project-id>` replaces `project=<path>` in the V9 address. This task"
+    scope: project
+    date: 2026-09-28
+    task: T-3534
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-665
+    decision: "move `election` and `governor` out of level 3's `keywords:` and rely on the"
+    scope: project
+    date: 2026-09-28
+    task: T-3547
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-666
+    decision: "one inline `scoring:` block per driver entry; `.context/arcs/scoring/*.yaml`"
+    scope: project
+    date: 2026-09-28
+    task: T-3547
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-667
+    decision: "measure discrimination WITHIN arc-020 only."
+    scope: project
+    date: 2026-09-28
+    task: T-3547
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-668
+    decision: "Review and dispatch cost ruling: every review or dispatch records its cost, even internal ones (never free, but relatively low cost). INTERNAL, no approval needed: subscription harnesses (Claude Code, codex, opencode on the Z.ai coding plan) and the operator's local GPU. PAID: OpenRouter; it needs the operator's approval per request. The agent should still propose an OpenRouter review when value or risk is high, with a cost assessment, and wait for approval. The ladder will be expanded later as the operator adds options."
+    scope: project
+    date: 2026-09-30
+    task: T-3580
+    rationale: "Operator 2026-09-30, verbatim: 'we need to record the cost for it anyway ... it's never free but it's relatively low cost ... My local GPU is also internal ... you have a subscription harness, it's always internal ... when it goes to open router, it costs money and I need to approve that. That's not a reason not to request it. But if you think it's high value or high risk, then just propose it and do an assessment of the cost and get my approval.'"
