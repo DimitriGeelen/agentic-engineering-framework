@@ -5759,6 +5759,9 @@ case "$cmd" in
             echo "  fw reviewer T-XXX [--json] [--no-write]                      Scan one task (inline)"
             echo "  fw reviewer T-XXX --dispatch [--timeout N] [--json]         Scan via isolated TermLink worker (T-1951)"
             echo "  fw reviewer surface [--json] [--warn-threshold N]           Delegation surface (D-626 / T-3445)"
+            echo "  fw reviewer verdict record T-XXX --ac N --outcome green|amber|red|escalate --reviewer ID --rung R"
+            echo "                    [--guidance '...'] [--evidence PATH]... [--digest D]   (T-3579)"
+            echo "  fw reviewer verdict apply|check-render|list T-XXX             Independent verdict ledger"
             echo "  fw reviewer audit [--pass-a [--baseline [--force]] | --pass-b]"
             echo "                    [--limit N] [--quiet] [--timeout N]"
             echo "                                                               Layer 3 daily corpus re-scan"
@@ -5817,6 +5820,14 @@ case "$cmd" in
                 PYTHONPATH="$FRAMEWORK_ROOT" \
                 FW_DELEGATION_SURFACE_WARN="$(fw_config_int DELEGATION_SURFACE_WARN)" \
                 python3 -m lib.delegation_cli surface "$@"
+        fi
+        # T-3579 (T-3557 slice 2): an independent reviewer's recorded verdict — the
+        # writer slice 3 (`fw reviewer judge`) calls. record | apply | check-render | list.
+        if [ "${1:-}" = "verdict" ]; then
+            shift
+            exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                PYTHONPATH="$FRAMEWORK_ROOT" \
+                python3 -m lib.verdict_ledger "$@"
         fi
         if [ "${1:-}" = "audit" ]; then
             shift

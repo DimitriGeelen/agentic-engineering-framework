@@ -1,0 +1,21 @@
+id: tests/unit/test_t3579_verdict_ledger.py
+name: test_t3579_verdict_ledger
+type: script
+subsystem: tests
+location: tests/unit/test_t3579_verdict_ledger.py
+tags: []
+
+purpose: "T-3579 — independent reviewer verdicts (T-3557 slice 2). One test per rule in the task."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-30
+created_by: unknown
