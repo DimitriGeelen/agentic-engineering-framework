@@ -314,18 +314,94 @@ def _sign(key: bytes, row: dict) -> str:
     for k in ("revision", "wdir",           # T-3580 round 3: bound at dispatch time
               "worker_kind", "vendor", "completion_secret_sha256",    # round 4
               "start_by", "complete_by",                              # round 5
-              "run_id", "seat"):                                      # round 6: bound pre-launch
+              "run_id", "seat",                                       # round 6: bound pre-launch
+              "worker_bin", "prompt_sha256", "brief_sha256"):         # round 7: what is launched
         if k in row:
             body[k] = row[k]
     return hmac.new(key, json.dumps(body, sort_keys=True, separators=(",", ":")).encode(),
                     hashlib.sha256).hexdigest()
 
 
+#: Round 7 (Claude F2): the ONLY caller `--env` keys a review dispatch accepts — deny by default.
+#: Nothing that chooses the program or the model is on it: PATH, *_BASE_URL, ANTHROPIC_*, OPENAI_*,
+#: CLAUDE_*, LD_*, BASH_ENV, model and binary overrides are all refused because they are absent.
+#: Mirrored by REVIEW_ENV_ALLOW in agents/termlink/termlink.sh (a test pins the two equal).
+REVIEW_ENV_ALLOW = ("GIT_AUTHOR_NAME", "GIT_AUTHOR_EMAIL", "GIT_COMMITTER_NAME", "GIT_COMMITTER_EMAIL")
+#: Keys the dispatcher itself writes into a review worker's env.sh.
+_RUNTIME_ENV_KEYS = ("FW_SIDECAR_AGENT_ID", "FW_REVIEW_REVISION", "FW_SESSION_SCOPED_FOCUS",
+                     "FW_FOCUS_SESSION_KEY")
+
+
+def brief_digest(text: str) -> str:
+    """sha256 of a review brief, normalised the way the dispatcher stores it (`$(cat file)` drops
+    trailing newlines; brief.md gets exactly one back)."""
+    return hashlib.sha256(((text or "").rstrip("\n") + "\n").encode()).hexdigest()
+
+
+def _file_sha(path: Path) -> str:
+    try:
+        return hashlib.sha256(Path(path).read_bytes()).hexdigest()
+    except OSError:
+        return ""
+
+
+def _env_fault(wdir: Path) -> str:
+    """'' when the worker's env.sh sets only allowed keys (REVIEW_ENV_ALLOW + the runtime's own)."""
+    import shlex
+
+    p = Path(wdir) / "env.sh"
+    try:
+        text = p.read_text()
+    except OSError:
+        return ""
+    allowed = set(REVIEW_ENV_ALLOW) | set(_RUNTIME_ENV_KEYS)
+    for n, line in enumerate(text.splitlines(), 1):
+        if not line.strip() or line.lstrip().startswith("#"):
+            continue
+        try:
+            toks = shlex.split(line)
+        except ValueError:
+            return f"env.sh line {n} does not parse"
+        if not toks or toks[0] != "export" or len(toks) < 2:
+            return f"env.sh line {n} is not an export"
+        for t in toks[1:]:
+            key = t.split("=", 1)[0]
+            if "=" not in t or key not in allowed:
+                return (f"env.sh sets {key!r}, which a review worker may not take from its caller "
+                        f"(allowed: {', '.join(REVIEW_ENV_ALLOW)}) — it could choose the program or model")
+    return ""
+
+
+def _bin_fault(path: str) -> str:
+    wb = (path or "").strip()
+    if not wb.startswith("/"):
+        return f"the worker binary {wb or '(none)'!r} is not an absolute path resolved at dispatch"
+    if not (os.path.isfile(wb) and os.access(wb, os.X_OK)):
+        return f"the worker binary {wb!r} is not an executable file"
+    return ""
+
+
+def _launch_fault(drec: dict, wdir: Path) -> str:
+    """(start, round 7) '' when what run.sh is about to launch is what was registered: the same
+    prompt.md, the same absolute worker binary, and an env.sh with no program- or model-choosing
+    key."""
+    if _file_sha(Path(wdir) / "prompt.md") != str(drec.get("prompt_sha256") or "-"):
+        return "prompt.md is not the brief registered with the dispatch"
+    try:
+        wb = (Path(wdir) / "worker_bin").read_text().strip()
+    except OSError:
+        wb = ""
+    if wb != str(drec.get("worker_bin") or "") or _bin_fault(wb):
+        return (f"the worker binary {wb or '(none)'!r} is not the registered "
+                f"{drec.get('worker_bin') or '(none)'!r} — {_bin_fault(wb) or 'changed after dispatch'}")
+    return _env_fault(Path(wdir))
+
+
 def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
                       issuer_session: str = "", issuer_identity: str = "",
                       revision: str = "", wdir: str = "", worker_kind: str = "",
                       vendor: str = "", ttl: int = DEFAULT_TTL, run_id: str = "",
-                      seat: str = "", root: Path | None = None) -> dict:
+                      seat: str = "", worker_bin: str = "", root: Path | None = None) -> dict:
     """Record a dispatch. Called by the dispatcher, for every task-type, at spawn time.
 
     `revision` is the commit the reviewer is asked to review, captured BEFORE the worker starts
@@ -344,7 +420,13 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
     `run_id` + `seat` (round 6) bind the dispatch to the signed review run the judge registered
     BEFORE the worker is launched: the run must exist, be for this task and have that seat, and a
     seat is dispatched once. The binding is part of the signed registration; there is no later
-    bind step a caller could skip or redo."""
+    bind step a caller could skip or redo.
+
+    Round 7 (Claude F2): a review dispatch with a worker directory also signs WHAT is launched —
+    `worker_bin` (the absolute worker binary the dispatcher resolved), `prompt_sha256` (the
+    prompt.md it wrote) and, for a run seat, `brief_sha256`, which must be the brief the run
+    registered for that seat (and prompt.md must end with it). Its env.sh may set only
+    REVIEW_ENV_ALLOW keys. `start` re-checks all of it before the worker runs."""
     root = root or _root()
     if not (dispatch_id or "").strip() or not (task_id or "").strip():
         raise ValueError("dispatch_id and task are required")
@@ -380,10 +462,39 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
             raise ValueError(f"run {run_id.strip()!r} is for {run.get('task')!r}, not {row['task']}")
         if (seat or "").strip() not in {s["seat"] for s in run.get("seats") or []}:
             raise ValueError(f"seat {(seat or '').strip()!r} is not a seat of run {run_id.strip()!r}")
+        if row["revision"] != str(run.get("revision") or ""):
+            raise ValueError(f"run {run_id.strip()!r} is pinned to revision "
+                             f"{str(run.get('revision') or 'none')[:9]}; a seat dispatched at "
+                             f"{row['revision'][:9]} would be judged against another registry — "
+                             f"every seat of a run uses the run's one binding")
         if any(r.get("run_id") == run_id.strip() and r.get("seat") == seat.strip()
                for r in _read(DISPATCHES, root)):
             raise ValueError(f"seat {seat.strip()!r} of run {run_id.strip()!r} is already dispatched")
         row["run_id"], row["seat"] = run_id.strip(), seat.strip()
+    if row["task_type"] == REVIEW_TASK_TYPE and row["wdir"]:
+        w = Path(row["wdir"])
+        if not (w / "prompt.md").is_file():
+            raise ValueError(f"no prompt.md in {w} — a review dispatch's brief is registered with it")
+        bad = _bin_fault(worker_bin) or _env_fault(w)
+        if bad:
+            raise ValueError(f"review dispatch refused: {bad}")
+        row["worker_bin"] = worker_bin.strip()
+        row["prompt_sha256"] = _file_sha(w / "prompt.md")
+        if row.get("run_id"):
+            want = next((str(x.get("brief_sha256") or "") for x in run.get("seats") or []
+                         if x.get("seat") == row["seat"]), "")
+            try:
+                brief = (w / "brief.md").read_text()
+                prompt = (w / "prompt.md").read_text()
+            except OSError:
+                raise ValueError(f"no brief.md in {w} — a run seat's brief must be the one its run registered")
+            if not want or brief_digest(brief) != want:
+                raise ValueError(f"the brief in {w} is not the one run {row['run_id']!r} registered for "
+                                 f"seat {row['seat']!r} — a review worker runs the judge's brief, not "
+                                 f"the caller's")
+            if not prompt.rstrip("\n").endswith(brief.rstrip("\n")):
+                raise ValueError(f"prompt.md in {w} does not carry the registered brief")
+            row["brief_sha256"] = want
     if (vendor or "").strip() and vendor.strip() != row["vendor"]:
         raise ValueError(f"vendor {vendor.strip()!r} is not the one {BACKENDS} maps worker kind "
                          f"{row['worker_kind']!r} to ({row['vendor'] or 'none'!r}) — refused")
@@ -396,23 +507,40 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
     return row
 
 
-def _registry_blob(root: Path, revision: str) -> tuple[str, str]:
-    """(yaml text, where) of the backend registry as COMMITTED — never the working tree (T-3580
-    round 6). The project's own policy/review-backends.yaml at `revision` (default HEAD) when it is
-    tracked there; else the vendored copy under the project at `revision`; else this framework's
-    committed copy at its HEAD. ('', why) when none is committed."""
+TERMLINK_SH = Path("agents/termlink/termlink.sh")
+
+
+def _committed_blob(root: Path, revision: str, rel: Path) -> tuple[str, str]:
+    """(text, where) of framework file `rel` as COMMITTED — never the working tree (T-3580 round
+    6 for the registry, round 7 for termlink.sh). The project's own `rel` at `revision` (default
+    HEAD) when it is tracked there; else the vendored copy under the project at `revision`; else
+    this framework's committed copy at its HEAD, pinned to that commit's sha in `where`. ('', why)
+    when none is committed."""
     rev = (revision or "").strip() or "HEAD"
-    cands = [(root, rev, str(BACKENDS))]
+    cands = [(root, rev, str(rel))]
     fw = _HERE.parent.resolve()
     try:
-        cands.append((root, rev, str((fw / BACKENDS).relative_to(Path(root).resolve()))))
+        cands.append((root, rev, str((fw / rel).relative_to(Path(root).resolve()))))
     except ValueError:
-        cands.append((fw, "HEAD", str(BACKENDS)))
-    for repo, r, rel in cands:
-        rc, blob = _git_out(repo, "show", f"{r}:{rel}")
+        rc, sha = _git_out(fw, "rev-parse", "-q", "--verify", "HEAD")
+        cands.append((fw, sha.strip() if rc == 0 else "HEAD", str(rel)))
+    for repo, r, rel_s in cands:
+        rc, blob = _git_out(repo, "show", f"{r}:{rel_s}")
         if rc == 0 and blob.strip():
-            return blob, f"{repo}@{r}:{rel}"
-    return "", f"no committed {BACKENDS} at {rev}"
+            rc2, sha = _git_out(repo, "rev-parse", "-q", "--verify", f"{r}^{{commit}}")
+            return blob, f"{repo}@{sha.strip() if rc2 == 0 else r}:{rel_s}"
+    return "", f"no committed {rel} at {rev}"
+
+
+def _registry_blob(root: Path, revision: str) -> tuple[str, str]:
+    """policy/review-backends.yaml as committed (see `_committed_blob`)."""
+    return _committed_blob(root, revision, BACKENDS)
+
+
+def registry_pin(root: Path, revision: str) -> dict:
+    """(round 7) The registry blob a review run is pinned to: where it was read and its sha256."""
+    blob, where = _registry_blob(root, revision)
+    return {"where": where, "sha256": hashlib.sha256(blob.encode()).hexdigest() if blob else ""}
 
 
 def kind_vendors(root: Path | None = None, revision: str = "") -> dict[str, str]:
@@ -439,22 +567,22 @@ def kind_vendors(root: Path | None = None, revision: str = "") -> dict[str, str]
 _KINDS_RE = re.compile(r'^DISPATCH_WORKER_KINDS="([^"]*)"', re.M)
 
 
-def launchable_kinds() -> set[str]:
-    """The worker kinds the dispatch runtime can actually launch: DISPATCH_WORKER_KINDS in this
-    framework's agents/termlink/termlink.sh (`fw termlink worker-kinds`). A registry entry naming
-    a kind the dispatcher cannot run (antigravity, codex and opencode until T-3582) is a
+def launchable_kinds(root: Path | None = None, revision: str = "") -> set[str]:
+    """The worker kinds the dispatch runtime can actually launch: DISPATCH_WORKER_KINDS in
+    agents/termlink/termlink.sh AS COMMITTED at `revision` (round 7; `_committed_blob`) — an
+    uncommitted edit of the list launches nothing the ledger counts. A registry entry naming a
+    kind the dispatcher cannot run (antigravity, codex and opencode until T-3582) is a
     declaration, not a worker."""
-    try:
-        m = _KINDS_RE.search((_HERE.parent / "agents" / "termlink" / "termlink.sh").read_text())
-    except OSError:
-        return set()
+    text, _where = _committed_blob(root or _root(), revision, TERMLINK_SH)
+    m = _KINDS_RE.search(text)
     return set(m.group(1).split()) if m else set()
 
 
 def verified_kind_vendors(root: Path | None = None, revision: str = "") -> dict[str, str]:
     """The kind->vendor pairs a review dispatch may be registered under and a panel may count:
-    committed in the registry at `revision` AND launchable by the dispatcher (round 6)."""
-    live = launchable_kinds()
+    committed in the registry at `revision` AND launchable by the dispatcher as committed at the
+    same revision (rounds 6, 7)."""
+    live = launchable_kinds(root, revision)
     return {k: v for k, v in kind_vendors(root, revision).items() if k in live}
 
 
@@ -602,7 +730,7 @@ def start(dispatch_id: str, *, wdir: str, pid: int = 0,
     if not here or here != str(drec.get("wdir") or ""):
         raise VerdictRefused(f"worker directory {here or '(none)'} is not the one registered for "
                              f"dispatch {did!r}")
-    bad = _runtime_fault(here)
+    bad = _runtime_fault(here, root, str(drec.get("revision") or "")) or _launch_fault(drec, Path(here))
     if bad:
         raise VerdictRefused(f"dispatch {did!r} cannot be started here: {bad}")
     now = int(_clock())
@@ -623,14 +751,15 @@ def start(dispatch_id: str, *, wdir: str, pid: int = 0,
 _RUNTIME_OPEN = "cat > \"$wdir/run.sh\" <<'RUNEOF'\n"
 
 
-def _canonical_runtime() -> str | None:
-    """The dispatch runtime exactly as agents/termlink/termlink.sh (this framework's copy) writes
-    it into `<wdir>/run.sh`; None when that file cannot be read."""
+def _canonical_runtime(root: Path | None = None, revision: str = "") -> str | None:
+    """The dispatch runtime exactly as agents/termlink/termlink.sh writes it into `<wdir>/run.sh`,
+    from termlink.sh AS COMMITTED at `revision` (round 7: never the working tree); None when no
+    committed copy can be read."""
+    src, _where = _committed_blob(root or _root(), revision, TERMLINK_SH)
     try:
-        src = (_HERE.parent / "agents" / "termlink" / "termlink.sh").read_text()
         i = src.index(_RUNTIME_OPEN) + len(_RUNTIME_OPEN)
         return src[i:src.index("\nRUNEOF\n", i)] + "\n"
-    except (OSError, ValueError):
+    except ValueError:
         return None
 
 
@@ -647,7 +776,7 @@ def _parent_argv() -> list[str]:
             return []
 
 
-def _runtime_fault(wdir: str) -> str:
+def _runtime_fault(wdir: str, root: Path | None = None, revision: str = "") -> str:
     """'' when this process was launched by the dispatch runtime of `wdir`: its parent is a shell
     running `<wdir>/run.sh` as its script (argv[1], not a `-c` string that merely mentions it), and
     that file is the canonical runtime. Shared by `start` and `complete` (round 6), so a Python
@@ -666,9 +795,10 @@ def _runtime_fault(wdir: str) -> str:
         same = False
     if not same:
         return f"the parent process runs {argv[1]!r}, not the runtime {want}"
-    canon = _canonical_runtime()
+    canon = _canonical_runtime(root, revision)
     if canon is None:
-        return "the canonical dispatch runtime (agents/termlink/termlink.sh) cannot be read"
+        return (f"the canonical dispatch runtime (agents/termlink/termlink.sh as committed at "
+                f"{(revision or 'HEAD')[:9]}) cannot be read")
     try:
         body = want.read_text()
     except OSError:
@@ -727,7 +857,7 @@ def complete(dispatch_id: str, *, wdir: str, exit_code: int, session: str = "",
     if not reg or here != reg:
         raise VerdictRefused(f"worker directory {here or '(none)'} is not the one registered for "
                              f"dispatch {did!r} ({reg or 'none registered'})")
-    bad = _runtime_fault(here)
+    bad = _runtime_fault(here, root, str(drec.get("revision") or ""))
     if bad:
         raise VerdictRefused(f"dispatch {did!r} cannot be completed here: {bad}")
     ec_file = Path(here) / "exit_code"
@@ -791,26 +921,48 @@ def _tracked(root: Path, rel: Path) -> bool:
 def register_run(run_id: str, task_id: str, *, acs: list[int], rung: str, seats: list[dict],
                  required_vendors: int = 1, pages: dict | None = None, captures: list | None = None,
                  inputs: dict | None = None, reason: str = "", degraded: str = "",
-                 ceiling_decision: dict | None = None, root: Path | None = None) -> dict:
+                 rung_due: int | None = None, brief_sha256: str = "", revision: str = "",
+                 root: Path | None = None) -> dict:
     """(judge, before dispatching) record a review run: the seats it requires, how many distinct
     vendors it demands, and for render criteria the pages that must have been seen with the
     capture result of each. Signed; a partial capture failure is kept, never discarded.
 
-    `ceiling_decision` (round 6, lib/review_policy.ceiling_decision) is the judge's due/granted
-    rung with the spend it was computed from; the ledger re-derives it before it accepts a run
-    whose rung is below what IW-7 requires."""
+    `rung_due` (round 7) is the rung IW-7 requires. The ledger itself computes the ceiling
+    decision HERE, as of this run's registration time, from the committed cost ledger
+    (lib/review_policy.ceiling_decision), and refuses a run whose `rung` is not the rung that
+    decision grants. A caller never supplies a decision, so no run can carry an old one.
+
+    Every seat carries the `brief_sha256` of the brief the judge wrote for it (round 7); a dispatch
+    for the seat is registered only with that brief (`register_dispatch`).
+
+    The run also pins ONE reviewed `revision` (default HEAD now) and the registry blob committed at
+    it (`registry`: where + sha256). Every seat's dispatch must be registered at that revision, and
+    the panel's vendors are derived once, from that blob (round 7, codex MEDIUM-4 / Claude F3)."""
     root = root or _root()
     if any(r.get("kind") == "run" and r.get("run_id") == run_id for r in _read(RUNS, root)):
         raise ValueError(f"run {run_id!r} is already registered")
+    for x in seats:
+        if not re.fullmatch(r"[0-9a-f]{64}", str(x.get("brief_sha256") or brief_sha256 or "")):
+            raise ValueError(f"seat {x.get('seat')!r} of run {run_id!r} has no brief_sha256 — a run "
+                             f"binds the brief each seat is dispatched with")
     key = _dispatch_key(root, create=True)
     row = {"kind": "run", "run_id": run_id, "task": task_id, "acs": sorted(acs), "rung": rung,
-           "seats": [{"seat": s["seat"], "vendor": s["vendor"]} for s in seats],
+           "seats": [{"seat": s["seat"], "vendor": s["vendor"],
+                      "brief_sha256": str(s.get("brief_sha256") or brief_sha256 or "")} for s in seats],
            "required_vendors": int(required_vendors),
            "pages": {str(k): list(v) for k, v in (pages or {}).items()},
            "captures": [dict(c) for c in (captures or [])], "inputs": inputs or {},
            "reason": reason, "degraded": degraded, "ts": _now()}
-    if ceiling_decision is not None:
-        row["ceiling_decision"] = dict(ceiling_decision)
+    row["revision"] = (revision or "").strip() or _head_sha(root)
+    row["registry"] = registry_pin(root, row["revision"])
+    if rung_due is not None:
+        now = datetime.strptime(row["ts"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        dec = review_policy.ceiling_decision(root, int(rung_due), reason, now)
+        if review_policy.rung_number(rung) != dec["granted"]:
+            raise ValueError(f"run {run_id!r} asks for {rung!r}; with rung {dec['due']} due the "
+                             f"ceiling decision at registration grants rung {dec['granted']} "
+                             f"({dec['why'] or 'no step-down'})")
+        row["ceiling_decision"] = dec
     row["sig"] = _sign_row(key, row)
     _append(RUNS, row, root)
     return row
@@ -1434,11 +1586,40 @@ def _task_text_at(root: Path, rev: str, task_id: str) -> str:
     return blob if rc == 0 else ""
 
 
+_HISTORY_FM: dict = {}
+
+
+def _task_history_fms(root: Path, task_id: str) -> list[tuple[str, dict]]:
+    """[(sha, frontmatter)] of every committed version of the task file (active or completed,
+    any slug) reachable from HEAD — round 7 (Claude F4). Cached per (root, task, HEAD)."""
+    head = _head_sha(root)
+    key = (str(root), task_id, head)
+    if key in _HISTORY_FM:
+        return _HISTORY_FM[key]
+    out: list[tuple[str, dict]] = []
+    if head:
+        rc, log = _git_out(root, "log", "--format=%x1e%H", "--name-only", "HEAD", "--",
+                           f":(glob).tasks/*/{task_id}-*.md", f":(glob).tasks/*/{task_id}.md")
+        for rec in (log.split("\x1e") if rc == 0 else []):
+            lines = [ln.strip() for ln in rec.splitlines() if ln.strip()]
+            if not lines:
+                continue
+            sha = lines[0]
+            for name in lines[1:]:
+                rc2, blob = _git_out(root, "show", f"{sha}:{name}")
+                if rc2 == 0 and blob:
+                    out.append((sha, frontmatter(blob)))
+    _HISTORY_FM.clear() if len(_HISTORY_FM) > 64 else None
+    _HISTORY_FM[key] = out
+    return out
+
+
 def required_strength(ctx: "_Ctx", crit, revision: str = "") -> tuple[int, str]:
     """(rung, reason) IW-7 requires for `crit`, from lib/review_policy.py — the function `judge`
-    uses to choose its rung. Scored on the task as it is NOW and as it stood at the reviewed
-    revision; the higher wins, so lowering the task's risk fields after the review, or before it
-    in an uncommitted edit, does not lower what the verdict must have been."""
+    uses to choose its rung. Scored on the task as it is NOW, as it stood at the reviewed
+    revision, and (round 7, Claude F4) on EVERY committed version of the task file: the highest
+    wins. So lowering the task's risk fields — after the review, before it in an uncommitted
+    edit, or before it in a commit that stays lowered — does not lower what the verdict needs."""
     body = [criterion_body(crit)]
     rung, why = review_policy.required_rung(frontmatter(ctx.text), body)
     then = _task_text_at(ctx.root, revision, ctx.task_id) if revision else ""
@@ -1446,6 +1627,10 @@ def required_strength(ctx: "_Ctx", crit, revision: str = "") -> tuple[int, str]:
         r2, w2 = review_policy.required_rung(frontmatter(then), body)
         if r2 > rung:
             rung, why = r2, f"{w2} (at reviewed revision {revision[:9]})"
+    for sha, fm in _task_history_fms(ctx.root, ctx.task_id):
+        r3, w3 = review_policy.required_rung(fm, body)
+        if r3 > rung:
+            rung, why = r3, f"{w3} (in the task's committed history at {sha[:9]})"
     return rung, why
 
 
@@ -1481,13 +1666,13 @@ def _strength_fault(ctx: "_Ctx", row: dict, crit) -> tuple[str, str] | None:
                                  f"authorised rung {granted}")
     if granted < need:
         dec = run.get("ceiling_decision")
-        if not isinstance(dec, dict) or int(dec.get("granted", -1)) != granted \
-                or int(dec.get("due", 0)) < need:
+        if not review_policy.is_step_down(dec) or int(dec["granted"]) != granted \
+                or int(dec["due"]) < need:
             return "under-strength", (
                 f"{ctx.task_id} AC#{crit.index} requires rung {need} ({why}); run "
                 f"{run['run_id']!r} is rung {granted} with no ceiling decision that steps down "
                 f"from rung {need}")
-        bad = review_policy.verify_ceiling_decision(root, dec)
+        bad = review_policy.verify_ceiling_decision(root, dec, str(run.get("ts") or ""))
         if bad:
             return "ceiling-unverified", (f"run {run['run_id']!r} steps rung {dec.get('due')} down to "
                                           f"{granted}, but {bad}")
@@ -1632,6 +1817,17 @@ def _panel_fault(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> str:
     run, _bind, _why = run_for_dispatch(root, str(last["dispatch_id"]))
     if run is None:
         return ""
+    # Round 7: ONE binding for the whole run — its pinned revision and registry blob. The table
+    # is derived once; a seat at another revision, or a registry that no longer hashes to the
+    # pinned blob (an external framework checkout that moved), is refused.
+    run_rev = str(run.get("revision") or "")
+    pin = run.get("registry") or {}
+    if not run_rev or not pin.get("sha256"):
+        return f"panel-unverified-vendor: run {run['run_id']} pins no revision or registry blob"
+    if registry_pin(root, run_rev).get("sha256") != pin.get("sha256"):
+        return (f"panel-unverified-vendor: the registry at run {run['run_id']}'s revision "
+                f"{run_rev[:9]} no longer hashes to the blob the run pinned ({pin.get('where')})")
+    table = verified_kind_vendors(root, run_rev)
     vendors: set[str] = set()
     for s in run["seats"]:
         seat_rows = []
@@ -1650,9 +1846,13 @@ def _panel_fault(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> str:
             return f"panel-incomplete: seat {s['seat']!r} of run {run['run_id']} is {r.get('outcome')!r}"
         drec, _ = dispatch_record(root, str(r["dispatch_id"]))
         kind = str((drec or {}).get("worker_kind") or "claude")
-        # Round 6: re-derived from the registry COMMITTED at the dispatch's reviewed revision and
-        # the kinds the dispatcher can launch — never the working tree.
-        v = verified_kind_vendors(root, str((drec or {}).get("revision") or "")).get(kind, "")
+        if str((drec or {}).get("revision") or "") != run_rev:
+            return (f"panel-unverified-vendor: seat {s['seat']!r} of run {run['run_id']} was "
+                    f"dispatched at revision {str((drec or {}).get('revision') or 'none')[:9]}, not the "
+                    f"run's pinned {run_rev[:9]} — every seat uses the run's one binding")
+        # Round 6/7: derived from the registry COMMITTED at the run's ONE pinned revision and the
+        # kinds the dispatcher can launch as committed there — never the working tree.
+        v = table.get(kind, "")
         if not v or str((drec or {}).get("vendor") or "") != v:
             return (f"panel-unverified-vendor: seat {s['seat']!r} of run {run['run_id']} registered "
                     f"vendor {(drec or {}).get('vendor')!r} for worker kind {kind!r}, but "
@@ -1945,10 +2145,18 @@ def _annotation(lines: list[str], crit) -> tuple[int, str] | None:
     return None
 
 
-def _cite(r: dict) -> str:
+def _step_down_of(root: Path, r: dict) -> str:
+    """'rung R granted, rung D due, reason' when the row's run stepped down (round 7); else ''."""
+    run, _bind, _why = run_for_dispatch(root, str(r.get("dispatch_id") or ""))
+    return review_policy.disclosure((run or {}).get("ceiling_decision"))
+
+
+def _cite(r: dict, root: Path | None = None) -> str:
+    down = _step_down_of(root, r) if root is not None else ""
     return (f"  **Reviewer verdict:** green {r['id']} — {r['reviewer']} (rung {r['rung']}), "
             f"digest {r['ac_digest']}; dispatch {r['dispatch_id']}; "
-            f"evidence: {', '.join(r['evidence'])}; ledger {VERDICTS}")
+            + (f"STEP-DOWN: {down}; " if down else "")
+            + f"evidence: {', '.join(r['evidence'])}; ledger {VERDICTS}")
 
 
 def apply(task_id: str, root: Path | None = None) -> dict:
@@ -1991,7 +2199,7 @@ def apply(task_id: str, root: Path | None = None) -> dict:
         r, why = satisfying_verdict(ctx, c)
         if r is not None:
             if r["id"] != ann[1]:
-                lines[ann[0]] = _cite(r)
+                lines[ann[0]] = _cite(r, root)
                 result["recited"].append({"ac": c.index, "verdict_id": r["id"]})
             continue
         del lines[ann[0]]
@@ -2010,7 +2218,7 @@ def apply(task_id: str, root: Path | None = None) -> dict:
             hits.append((c, r))
     for c, r in sorted(hits, key=lambda h: -h[0].start):
         lines[c.start] = re.sub(r"\[ \]", "[x]", lines[c.start], count=1)
-        lines.insert(c.end, _cite(r))
+        lines.insert(c.end, _cite(r, root))
         result["ticked"].append({"ac": c.index, "verdict_id": r["id"], "reviewer": r["reviewer"]})
     result["ticked"].sort(key=lambda t: t["ac"])
     result["withdrawn"].sort(key=lambda t: t["ac"])
@@ -2050,9 +2258,14 @@ def audit(root: Path | None = None) -> tuple[int, list[str]]:
     led = load_ledger(root)
     n = len(led.committed) + len(led.pending)
     comps_exist = (root / COMPLETIONS).is_file()
+    # Round 7: every step-down is reported as a WARN, whether or not a verdict has used it yet.
+    downs = [f"WARN step-down: run {run.get('run_id')} ({run.get('task')}): "
+             f"{review_policy.disclosure(run['ceiling_decision'])}"
+             for run in _read(RUNS, root)
+             if run.get("kind") == "run" and review_policy.is_step_down(run.get("ceiling_decision"))]
     if not n and not led.torn and not led.faults and not led.missing \
             and not _read(APPLIED, root) and not comps_exist:
-        return 0, ["verdict ledger: empty or absent (path is off until a review dispatch writes rows)"]
+        return 0, downs + ["verdict ledger: empty or absent (path is off until a review dispatch writes rows)"]
     out, bad = [], 0
     if comps_exist:
         # T-3580 round 5: the completions file is under the same append-only history check as the
@@ -2096,6 +2309,7 @@ def audit(root: Path | None = None) -> tuple[int, list[str]]:
         if f:
             bad += 1
             out.append(f"FAIL {rid} ({task}): {f[0].replace('-', ' ')} — {f[1]}")
+    out += downs
     out.append(f"verdict ledger: {n} row(s), {bad} failure(s)")
     return (2 if bad else 0), out
 
@@ -2137,6 +2351,8 @@ def _cli(argv: list[str] | None = None) -> int:
     g.add_argument("--run-id", default="", help="the signed review run this dispatch is authorised "
                    "under (bound here, before launch)")
     g.add_argument("--seat", default="", help="the run seat this dispatch fills")
+    g.add_argument("--worker-bin", default="", help="(review) the absolute worker binary the "
+                   "dispatcher resolved; run.sh launches exactly this")
 
     st = sub.add_parser("start", help="(dispatch runtime, first act of run.sh) record that the "
                         "runtime started for this dispatch")
@@ -2196,7 +2412,7 @@ def _cli(argv: list[str] | None = None) -> int:
                                 issuer_identity=args.issuer_identity,
                                 revision=args.revision, wdir=args.wdir,
                                 worker_kind=args.worker_kind, ttl=args.ttl,
-                                run_id=args.run_id, seat=args.seat)
+                                run_id=args.run_id, seat=args.seat, worker_bin=args.worker_bin)
         print(json.dumps({k: row[k] for k in ("dispatch_id", "task", "task_type", "revision",
                                               "worker_kind", "vendor")}))
         return 0

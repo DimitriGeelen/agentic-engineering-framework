@@ -64,7 +64,7 @@ from lib.delegation import (  # noqa: E402
     human_criteria,
 )
 
-SPEND_LOG = review_policy.SPEND_LOG
+COST_LEDGER = review_policy.COST_LEDGER
 EVIDENCE_DIR = Path(".context/working/judge-evidence")
 REPORT_DIR = ".context/reviews/evidence"
 CEILING_KEY = review_policy.CEILING_KEY
@@ -78,7 +78,7 @@ PANEL_SIZE = review_policy.PANEL_SIZE
 MAX_CAPTURE_PAGES = 6
 DEGRADED_SINGLE_VENDOR = "degraded: single-vendor panel"
 UNKNOWN = "unknown"
-COST_PURPOSE = "reviewer-judge"
+COST_PURPOSE = review_policy.SPEND_PURPOSE
 
 
 def _root() -> Path:
@@ -215,11 +215,14 @@ def _kind_vendors(root: Path) -> dict[str, str]:
     return {p[0]: p[1] for p in pairs if len(p) == 2}
 
 
-def _log_seat_cost(root: Path, task_id: str, backend: str, purpose: str, evidence: str) -> str:
-    """One cost record per dispatched seat via the helper. '' on success, else the refusal."""
+def _log_seat_cost(root: Path, task_id: str, backend: str, purpose: str, evidence: str,
+                   cost: float | None = None) -> str:
+    """One cost record per dispatched seat via the helper. '' on success, else the refusal.
+    `cost` is the seat's ESTIMATED USD (RUNG_COST); once committed, it is the spend the weekly
+    ceiling reads (round 7: the cost ledger replaced the untracked judge-spend log)."""
     try:
         with _Env(root) as rc:
-            rc.log_cost(task=task_id, backend=backend, purpose=purpose, tokens=None, cost=None,
+            rc.log_cost(task=task_id, backend=backend, purpose=purpose, tokens=None, cost=cost,
                         proposal_id=None, evidence=evidence)
         return ""
     except Exception as e:  # noqa: BLE001 - reported, never swallowed
@@ -661,13 +664,6 @@ def _final(root: Path, task_id: str, judged: list[dict], dispatches: list[dict])
     return outcomes, whys
 
 
-def _log_spend(root: Path, task_id: str, rung: int, cost: float) -> None:
-    p = root / SPEND_LOG
-    p.parent.mkdir(parents=True, exist_ok=True)
-    with p.open("a") as f:
-        f.write(json.dumps({"ts": _now(), "task": task_id, "rung": rung, "cost": cost}) + "\n")
-
-
 # ── orchestration ────────────────────────────────────────────────────────────
 
 def _plan_seats(root: Path, rung: int, kinds: set[str], kind_vendors: dict | None = None) -> dict:
@@ -712,7 +708,8 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
         return res
 
     # The SAME policy the ledger enforces at record and apply (round 6): the due rung, and — when
-    # the weekly ceiling steps it down — a decision the ledger re-derives from the spend log.
+    # the weekly ceiling steps it down — the decision. This is a PREVIEW: the ledger computes the
+    # binding decision itself when it registers the run (round 7) and refuses a mismatch.
     imp = _impact(task_data, judged)
     due, reason = _calculate_rung(task_data, judged)
     decision = review_policy.ceiling_decision(root, due, reason, now)
@@ -764,12 +761,13 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
     try:
         vl.register_run(
             run_id, task_id, acs=[c["ac_index"] for c in judged], rung=_rung_label(rung),
-            seats=[{"seat": s["seat"], "vendor": s["vendor"]} for s in seats],
+            seats=[{"seat": s["seat"], "vendor": s["vendor"],
+                    "brief_sha256": vl.brief_digest(briefs[s["seat"]])} for s in seats],
             required_vendors=required,
             pages={str(c["ac_index"]): evidence["pages"] for c in judged if c["render"]},
             captures=evidence["captures"],
             inputs=imp["inputs"], reason=reason + (f"; {note}" if note else ""),
-            degraded=degraded, ceiling_decision=decision, root=root)
+            degraded=degraded, rung_due=due, revision=revision, root=root)
     except Exception as e:  # noqa: BLE001
         res.update(error=f"could not register the review run: {e}", code=1)
         return res
@@ -791,11 +789,10 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
                 {"ac": c["ac_index"], "outcome": UNKNOWN, "source": "dispatch-failed"} for c in judged]})
             break
         err = _log_seat_cost(root, task_id, s["backend"],
-                             f"{COST_PURPOSE} {run_id} seat {seat} dispatch {did}", did)
+                             f"{COST_PURPOSE} {run_id} seat {seat} dispatch {did}", did, per_seat)
         if err:
             res["cost_log_errors"].append({"seat": seat, "error": err})
         results = _collect(root, task_id, did, judged)
-        _log_spend(root, task_id, rung, per_seat)
         res["dispatches"].append({"seat": seat, "backend": s["backend"], "dispatch_id": did,
                                   "results": results})
         # A panel is sequential and stops at the first seat that does not clear every criterion.

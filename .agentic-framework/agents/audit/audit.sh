@@ -2827,6 +2827,19 @@ else
          "Restore it: bin/fw vendor self (or fw upgrade)"
 fi
 
+# T-3580 round 7: every spend-ceiling step-down (a review run registered one rung below what IW-7
+# requires) is a WARN — the lever must be visible even when it was exercised legitimately.
+_audit_review_step_downs() {
+    [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ] || return 0
+    local _sd
+    _sd=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" audit 2>/dev/null | grep '^WARN step-down' || true)
+    [ -z "$_sd" ] && return 0
+    warn "Reviewer spend-ceiling step-downs: $(echo "$_sd" | wc -l | tr -d ' ') review run(s) granted a lower rung than IW-7 requires" \
+         "$(echo "$_sd" | head -3 | tr '\n' ';')" \
+         "Inspect: python3 lib/verdict_ledger.py audit — raise REVIEWER_JUDGE_WEEKLY_SPEND_CEILING to withdraw a step-down"
+}
+_audit_review_step_downs
+
 # T-3282 (G-104): the RUNNING Watchtower is a deployment surface of its own —
 # source can be fixed, tested, and closed green while the process serves the
 # pre-fix bytes (Flask debug=False, no reloader). The T-2938 detector fired
@@ -3474,12 +3487,16 @@ check_dead_negation_lint
 # heavy to run from this audit (and its suites themselves spawn
 # `audit.sh --section structure`, contending this very lock), so the run is
 # nightly and this check only READS the report it leaves behind:
-#   FAIL — a COMPLETED run listed failures or exited non-zero
-#   WARN — report missing, unparsable, timed out mid-run (OBS-392), or finished
-#          >48h ago (two nightlies)
-#   PASS — fresh clean report, named over the set it examined
-# The timed-out case is the one that is easy to get wrong in both directions: it
-# is not a PASS (nothing was proven) and not a FAIL (nothing was disproven).
+#   FAIL — the run RECORDED failures (complete or not — T-3602), or a complete
+#          run exited non-zero
+#   WARN — report missing, unparsable, finished >48h ago (two nightlies), or a
+#          partial run (ceiling hit, per-file timeout, files never reached) that
+#          recorded no failure — "N of M file(s) ran", the rest undetermined
+#   PASS — fresh clean complete report, named over the set it examined
+# The partial case is the one that is easy to get wrong in both directions. The
+# unrun remainder is not a PASS (nothing was proven), but a recorded `not ok` is
+# a verdict whether or not the run later hit its ceiling (OBS-587 — treating the
+# whole list as unproven hid 46 red files for three weeks).
 # The line text names its corpus ("unit suite (tests/unit)") — the whole point
 # of OBS-361 is that a green line must not answer a broader question than the
 # one it examined (same family as the invariant-suite rewording above).
@@ -3492,6 +3509,9 @@ check_unit_suite_report() {
         return 0
     fi
 
+    # T-3602: fields 8-10 carry run completeness — "<ran> of <expected> file(s)
+    # ran", the per-file timeouts by name, and 1 when anything was left
+    # undetermined (run ceiling hit, a file killed, or files never reached).
     local _parsed
     _parsed=$(python3 - "$_report" <<'PYEOF' 2>/dev/null
 import sys, yaml, datetime
@@ -3500,6 +3520,9 @@ try:
     legs = d.get("legs") or {}
     total = failed = 0
     names = []
+    files = completed = not_run = 0
+    per_file = True
+    ftimed = []
     for leg in ("bats", "pytest"):
         l = legs.get(leg) or {}
         total += int(l.get("tests") or 0)
@@ -3507,10 +3530,17 @@ try:
         names += ["%s: %s" % (leg, n) for n in (l.get("failed") or [])]
         if l.get("error"):
             names.append("%s: %s" % (leg, l["error"]))
+        files += int(l.get("files") or 0)
+        if "files_completed" in l:
+            completed += int(l.get("files_completed") or 0)
+            not_run += int(l.get("files_not_run") or 0)
+            ftimed += ["%s: %s" % (leg, f) for f in (l.get("files_timed_out") or [])]
+        else:
+            per_file = False   # pre-T-3602 (v1) report: completion unknown
     rc = d.get("runner_exit")
     rc = 1 if rc is None else int(rc)
-    # OBS-392: a run killed at its ceiling produced no verdict. An absent field
-    # (pre-T-3302 report shape) reads false, preserving the existing behaviour.
+    # OBS-392: a run killed at its ceiling. An absent field (pre-T-3302 report
+    # shape) reads false, preserving the existing behaviour.
     to = 1 if d.get("timed_out") else 0
     tos = int(d.get("timeout_seconds") or 0)
     age_h = -1
@@ -3523,8 +3553,17 @@ try:
                         .total_seconds() // 3600)
         except Exception:
             pass
-    print("%d|%d|%d|%d|%d|%d|%s" % (total, failed, rc, age_h, to, tos,
-                                    ";".join(names[:3]).replace("|", "/")))
+    ran = ("%d of %d file(s) ran" % (completed, files)) if per_file \
+        else ("unknown of %d file(s) ran (pre-T-3602 report: no per-file completion)" % files)
+    partial = 1 if (to or ftimed or not_run or (per_file and completed < files)) else 0
+    # Name EVERY recorded failure, up to a bound that keeps the line readable.
+    shown = names[:25]
+    if len(names) > 25:
+        shown.append("... +%d more in the report" % (len(names) - 25))
+    print("%d|%d|%d|%d|%d|%d|%s|%s|%s|%d" % (
+        total, failed, rc, age_h, to, tos,
+        "; ".join(shown).replace("|", "/"), ran,
+        ", ".join(ftimed).replace("|", "/"), partial))
 except Exception:
     pass
 PYEOF
@@ -3538,36 +3577,46 @@ PYEOF
     fi
 
     local _us_total _us_failed _us_rc _us_age _us_timedout _us_timeout_s _us_names
-    IFS='|' read -r _us_total _us_failed _us_rc _us_age _us_timedout _us_timeout_s _us_names <<< "$_parsed"
+    local _us_ran _us_ftimed _us_partial
+    IFS='|' read -r _us_total _us_failed _us_rc _us_age _us_timedout _us_timeout_s _us_names \
+        _us_ran _us_ftimed _us_partial <<< "$_parsed"
 
-    # OBS-392 / L-622: a run that hit its ceiling produced NO VERDICT. Its
-    # failure list is a CASUALTY list — the runner was killed mid-corpus, so a
-    # named test may be genuinely red or merely unlucky about when the axe fell,
-    # and the tests it never reached are unmeasured, not silent-because-green.
-    # FAILing on that list is the false-RED mirror of the false-GREEN family this
-    # check belongs to (T-3302/T-3328): the assertion cannot tell "looked and
-    # found a problem" from "could not look".
-    #
-    # It also deadlocks. The FAIL makes this audit exit 2, which reds
-    # tests/unit/audit.bats, whose reds land in the next nightly report, which
-    # sustains the FAIL. Measured 2026-09-07..10: 32 commits stranded behind a
-    # pre-push gate reading a report that could not come clean on its own
-    # (OBS-394/395). The FAIL's own mitigation — re-run unit-suite.sh — is
-    # exactly the run that times out, so it cannot terminate.
-    #
-    # So: WARN, never PASS. The corpus is UNMEASURED, not green, and the text has
-    # to say so — a WARN that read as reassurance would just move the false-green
-    # down one tier instead of removing it.
-    if [ "${_us_timedout:-0}" -eq 1 ]; then
-        local _us_ceiling_txt="its timeout ceiling"
-        [ "${_us_timeout_s:-0}" -gt 0 ] && _us_ceiling_txt="its ${_us_timeout_s}s ceiling"
-        warn "Unit suite (tests/unit) COULD NOT DETERMINE — nightly run hit $_us_ceiling_txt (T-3302, OBS-392)" \
-             "timed_out=true, runner_exit=$_us_rc, report ${_us_age}h old. It lists $_us_failed of $_us_total test(s) as failed, but a run killed mid-corpus yields a casualty list, not a verdict — and the tests it never reached are UNMEASURED, not green. First listed: ${_us_names:-none listed}" \
-             "Make a run COMPLETE before trusting any count: raise FW_UNIT_SUITE_TIMEOUT, or split/shard the corpus (OBS-388 covers the nested tests/lint suite). Re-running unit-suite.sh unchanged just re-times-out. Until one completes, treat tests/unit as UNKNOWN"
+    local _us_ceiling_txt="its timeout ceiling"
+    [ "${_us_timeout_s:-0}" -gt 0 ] && _us_ceiling_txt="its ${_us_timeout_s}s ceiling"
+    local _us_incomplete=""
+    if [ "${_us_partial:-0}" -eq 1 ]; then
+        _us_incomplete="Run INCOMPLETE: $_us_ran"
+        [ "${_us_timedout:-0}" -eq 1 ] && _us_incomplete="$_us_incomplete; run hit $_us_ceiling_txt"
+        [ -n "$_us_ftimed" ] && _us_incomplete="$_us_incomplete; per-file timeout: $_us_ftimed"
+        _us_incomplete="$_us_incomplete. Tests in files that did not finish are not determined, not green. "
+    fi
+
+    # T-3602 (OBS-587) — recorded failures are verdicts, even from a partial
+    # run. A test killed by a ceiling never prints `not ok` (bats) or a FAILED
+    # summary line (pytest); every failure in the report FINISHED and failed.
+    # OBS-392 (T-3357) discarded the whole list of a timed-out run as a
+    # "casualty list". Because the corpus never completed inside its ceiling,
+    # that WARN was the only branch that ever ran: 46 bats + 6 pytest files sat
+    # red and unreported from 2026-09-08 to 2026-09-30. Only the tests the run
+    # never reached are undetermined, and the WARN below still covers them.
+    if [ "$_us_failed" -gt 0 ]; then
+        fail "Unit suite (tests/unit): $_us_failed of $_us_total unit test(s) RED (T-3302, T-3602)" \
+             "${_us_incomplete}runner_exit=$_us_rc; $_us_ran; recorded failures: ${_us_names:-none listed}" \
+             "Read the report (.context/audits/unit-suite/LATEST.yaml), fix or file per red (one bug = one task), re-run: agents/audit/unit-suite.sh"
         return 0
     fi
 
-    if [ "$_us_failed" -gt 0 ] || [ "$_us_rc" -ne 0 ]; then
+    # No recorded reds, but part of the corpus produced no verdict: WARN, never
+    # PASS. The unmeasured remainder is UNKNOWN, not green (OBS-392 still holds
+    # for the tests that did not run).
+    if [ "${_us_partial:-0}" -eq 1 ]; then
+        warn "Unit suite (tests/unit) COULD NOT DETERMINE — $_us_ran, no failures recorded (T-3302, T-3602)" \
+             "${_us_incomplete}timed_out=$([ "${_us_timedout:-0}" -eq 1 ] && echo true || echo false), runner_exit=$_us_rc, report ${_us_age}h old. The tests that ran recorded no failure; the rest are UNMEASURED, not green" \
+             "Get the named files under their per-file cap (FW_UNIT_SUITE_FILE_TIMEOUT) or raise the run budget (FW_UNIT_SUITE_TIMEOUT / FW_UNIT_SUITE_JOBS). Until a run completes, treat the unrun part of tests/unit as UNKNOWN"
+        return 0
+    fi
+
+    if [ "$_us_rc" -ne 0 ]; then
         fail "Unit suite (tests/unit): $_us_failed of $_us_total unit test(s) RED (T-3302)" \
              "runner_exit=$_us_rc; first failures: ${_us_names:-none listed}" \
              "Read the report (.context/audits/unit-suite/LATEST.yaml), fix or file per red (one bug = one task), re-run: agents/audit/unit-suite.sh"
