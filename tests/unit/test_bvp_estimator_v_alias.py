@@ -182,18 +182,19 @@ def test_dispatch_f2_calls_v_component_fabric_handler(estimator, tmp_path):
                for a in arrows), f"F2 arrows look generic: {arrows}"
 
 
-def test_dispatch_unknown_driver_falls_back_to_score_free_driver(estimator, tmp_path):
-    """A custom free driver with no name matching any handler must fall through
-    to the generic score_free_driver — not crash or skip."""
+def test_dispatch_unknown_driver_is_unscored_not_generic_fallback(estimator, tmp_path):
+    """A custom free driver with no name matching any handler (and no scoring:
+    spec) must not crash. Since T-3427 (491733d90) it is UNSCORED: omitted from
+    scores (so it cannot drag the denominator) with an evidence line saying so,
+    instead of falling through to the generic score_free_driver."""
     _seed_policy(tmp_path / "value-drivers.yaml", [
         {"id": "F-CUSTOM", "name": "Custom Driver", "weight": 4},
     ])
     path = _seed_task(tmp_path, "T-CUSTOM")
     drivers = estimator._load_drivers()
     result = estimator.estimate_task(path, drivers)
-    # Score exists; evidence comes from the generic fallback
-    assert "F-CUSTOM" in result["scores"]
-    assert "F-CUSTOM" in result["evidence"]
+    assert "F-CUSTOM" not in result["scores"]
+    assert any("unscored" in line for line in result["evidence"]["F-CUSTOM"])
 
 
 def test_dispatch_explicit_v_prompt_quality_id_still_works(estimator, tmp_path):

@@ -44,20 +44,24 @@ free_drivers:
   - {id: F2, name: V_BETA, weight: 4, protected: false, rationale: "scratch seed row whose referent never moves during these tests"}
 """
 
+# T-3604: proposed names are drivers the estimator has a handler for. Since
+# T-3427 (491733d90) `driver --add` refuses a driver with no scorer before any
+# drop-identity check runs, so unscorable names (the original V_NEW / V_OK /
+# V_LEGACY) never reached the guard this file tests.
 PROPOSALS = [
     # Filed when F1 meant V_ALPHA. V_ALPHA has since left and F1 was reallocated.
     {"id": "P-aa11bb22", "ts": "2026-08-17T10:00:00Z", "state": "pending",
-     "name": "V_NEW", "weight": 6,
+     "name": "V_CONTEXT_FABRIC", "weight": 6,
      "rationale": "filed while F1 denoted V_ALPHA; the slot has since changed hands",
      "drop": "F1", "drop_name": "V_ALPHA", "task": None, "author": "agent:test"},
     # Pre-T-3066 shape: a slot with no record of what was in it.
     {"id": "P-cc33dd44", "ts": "2026-08-17T10:01:00Z", "state": "pending",
-     "name": "V_LEGACY", "weight": 5,
+     "name": "V_PROMPT_QUALITY", "weight": 5,
      "rationale": "a pre-T-3066 row: records the slot but never recorded the name",
      "drop": "F1", "task": None, "author": "agent:test"},
     # Nothing moved — must still work, or the guard has made the cap unusable.
     {"id": "P-ee55ff66", "ts": "2026-08-17T10:02:00Z", "state": "pending",
-     "name": "V_OK", "weight": 3,
+     "name": "V_COMPONENT_FABRIC", "weight": 3,
      "rationale": "a proposal whose referent has not moved at all, so it must still work",
      "drop": "F2", "drop_name": "V_BETA", "task": None, "author": "agent:test"},
 ]
@@ -131,7 +135,7 @@ def test_recycled_slot_is_refused_and_nothing_changes(client, scratch):
     # silently corrupted Sovereignty boundary.
     assert _driver_names(scratch) == before
     assert "V_DIFFERENT" in _driver_names(scratch)
-    assert "V_NEW" not in _driver_names(scratch)
+    assert "V_CONTEXT_FABRIC" not in _driver_names(scratch)
 
 
 def test_legacy_row_without_drop_name_is_refused(client, scratch):
@@ -155,7 +159,7 @@ def test_unchanged_referent_still_applies(client, scratch):
     assert r.status_code == 200, r.get_data(as_text=True)[:400]
 
     names = _driver_names(scratch)
-    assert "V_OK" in names          # added
+    assert "V_COMPONENT_FABRIC" in names          # added
     assert "V_BETA" not in names    # dropped, as proposed
 
     # The success line names the driver, not just the slot — "dropped F2" alone
