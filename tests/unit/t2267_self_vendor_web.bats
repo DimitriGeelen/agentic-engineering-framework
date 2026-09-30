@@ -50,7 +50,8 @@ make_synthetic_fw_with_web_diff() {
     echo "old" > "$syn_fw/.agentic-framework/web/blueprints/x.py"
     # new — missing in vendored, should be synced (recursive at root level)
     echo "echo smoke" > "$syn_fw/web/smoke.sh"
-    # excluded — filter is *.sh + *.py only
+    # new render-surface file — synced since T-2412 (b79a058cc) widened the
+    # filter from *.sh/*.py to the full render surface (html/css/js/…) (T-3604)
     echo "<html></html>" > "$syn_fw/web/templates/page.html"
     echo "$syn_fw"
 }
@@ -98,7 +99,7 @@ YAML
 # Helper sync behaviour
 # ─────────────────────────────────────────────────────────────────────────
 
-@test "t2267 t3: helper syncs diffed + new files recursively, skips matches + non-{sh,py}" {
+@test "t2267 t3: helper syncs diffed + new files recursively (render surface included), skips matches" {
     local syn_fw
     syn_fw=$(make_synthetic_fw_with_web_diff)
     local saved="$FRAMEWORK_ROOT"
@@ -107,13 +108,13 @@ YAML
     FRAMEWORK_ROOT="$saved"
 
     [ "$status" -eq 0 ]
-    # synced 2 files (blueprints/x.py + smoke.sh); app.py skipped, templates/page.html filtered
-    [[ "$output" == *"synced 2 web/ file(s)"* ]]
+    # synced 3 files (blueprints/x.py + smoke.sh + templates/page.html); app.py skipped
+    [[ "$output" == *"synced 3 web/ file(s)"* ]]
     diff -q "$syn_fw/web/blueprints/x.py" "$syn_fw/.agentic-framework/web/blueprints/x.py"
     [ -f "$syn_fw/.agentic-framework/web/smoke.sh" ]
     diff -q "$syn_fw/web/smoke.sh" "$syn_fw/.agentic-framework/web/smoke.sh"
-    # html NOT mirrored (filter excludes)
-    [ ! -f "$syn_fw/.agentic-framework/web/templates/page.html" ]
+    # html mirrored too (T-2412 render surface)
+    diff -q "$syn_fw/web/templates/page.html" "$syn_fw/.agentic-framework/web/templates/page.html"
 }
 
 @test "t2267 t4: helper dry-run reports 'would sync N web/ file(s)' without copying" {
@@ -125,8 +126,8 @@ YAML
     FRAMEWORK_ROOT="$saved"
 
     [ "$status" -eq 0 ]
-    [[ "$output" == *"would sync 2 web/ file(s)"* ]]
-    [[ "$output" != *"Self-vendor:"*" synced 2 web/"* ]]
+    [[ "$output" == *"would sync 3 web/ file(s)"* ]]
+    [[ "$output" != *"Self-vendor:"*" synced 3 web/"* ]]
     if diff -q "$syn_fw/web/blueprints/x.py" "$syn_fw/.agentic-framework/web/blueprints/x.py" >/dev/null 2>&1; then false; fi
     [ ! -f "$syn_fw/.agentic-framework/web/smoke.sh" ]
 }
