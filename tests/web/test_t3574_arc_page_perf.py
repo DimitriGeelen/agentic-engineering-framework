@@ -44,8 +44,25 @@ def _legacy_members(arc_slug, arc_id_str):
     return members
 
 
-def _legacy_coherence(arc, arc_slug, arc_numeric):
-    """Verbatim pre-T-3574 algorithm (whole-corpus safe_load)."""
+_LEGACY_CORPUS = []
+
+
+def _legacy_corpus():
+    """Whole-corpus yaml.safe_load walk, done once per test session (the legacy cost)."""
+    if not _LEGACY_CORPUS:
+        for sub in ("active", "completed"):
+            for p in (PROJECT_ROOT / ".tasks" / sub).glob("T-*.md"):
+                m = _FM_RE.match(p.read_text())
+                if m:
+                    _LEGACY_CORPUS.append(yaml.safe_load(m.group(1)) or {})
+    return _LEGACY_CORPUS
+
+
+def _legacy_coherence(arc, arc_slug, arc_numeric, inject=None):
+    """Verbatim pre-T-3574 algorithm (whole-corpus safe_load).
+
+    `inject`: bvp_scores forced onto every parsed frontmatter, mirroring the same
+    injection on the new path so the comparison is not empty==empty."""
     arc_min = int(os.environ.get("BVP_COHERENCE_ARC_MIN", "4"))
     task_max = int(os.environ.get("BVP_COHERENCE_TASK_MAX", "1"))
     fraction = float(os.environ.get("BVP_COHERENCE_FRACTION", "0.70"))
@@ -65,15 +82,12 @@ def _legacy_coherence(arc, arc_slug, arc_numeric):
         if v >= arc_min:
             claims[str(did)] = v
     fms = []
-    for sub in ("active", "completed"):
-        for p in (PROJECT_ROOT / ".tasks" / sub).glob("T-*.md"):
-            m = _FM_RE.match(p.read_text())
-            if not m:
-                continue
-            fm = yaml.safe_load(m.group(1)) or {}
-            aid = str(fm.get("arc_id") or "").strip()
-            if aid and (aid == arc_slug or (arc_numeric and aid == arc_numeric)):
-                fms.append(fm)
+    for fm in _legacy_corpus():
+        if inject is not None:
+            fm = dict(fm, bvp_scores=dict(inject))
+        aid = str(fm.get("arc_id") or "").strip()
+        if aid and (aid == arc_slug or (arc_numeric and aid == arc_numeric)):
+            fms.append(fm)
     out = []
     for driver_id, claim_val in claims.items():
         scores = []
@@ -127,37 +141,54 @@ def test_members_and_bvp_match_legacy(slug):
             assert row["contrib"] == (int(s) * row["weight"] if s is not None else None)
 
 
-@pytest.mark.parametrize("slug", ["continuous-run", "value-prioritisation", "dispatch-safety"])
-def test_coherence_matches_legacy_with_findings(slug, monkeypatch):
-    arc = arcs._read_arc(slug)
-    if arc is None:
-        pytest.skip("arc not present")
-    arc = dict(arc, status="in-progress", bvp_scores={"D1": 5, "D2": 5, "D3": 5, "D4": 5})
-    # Thresholds forced open so findings actually fire: an empty==empty
-    # comparison would prove nothing about the new membership path.
+def _all_arc_slugs():
+    return sorted(p.stem for p in (PROJECT_ROOT / ".context" / "arcs").glob("*.yaml"))
+
+
+def test_coherence_matches_legacy_on_every_arc(monkeypatch):
+    """Score injection on BOTH sides, across every arc on disk.
+
+    No task in the corpus carries confirmed bvp_scores, so comparing the two
+    implementations on live data is empty==empty. Forcing the same low scores
+    onto every parsed frontmatter -- the legacy yaml.safe_load walk on one side,
+    bvp._parse_frontmatter on the other -- makes each side report the member
+    count it resolved. The legacy expected count comes from the whole-corpus
+    walk, NOT from bvp._task_index(), so a membership difference between the two
+    (T-3577: a trailing '# comment' on arc_id dropped T-3440 from arc-001) fails.
+    """
+    inject = {"D1": 0}
     monkeypatch.setenv("BVP_COHERENCE_ARC_MIN", "0")
     monkeypatch.setenv("BVP_COHERENCE_TASK_MAX", "5")
     monkeypatch.setenv("BVP_COHERENCE_FRACTION", "0.0")
-    num = str(arc.get("id") or "")
-    new = arcs._bvp_coherence_for_arc(arc, slug, num)
-    old = _legacy_coherence(arc, slug, num)
-    strip = lambda rows: [{k: r[k] for k in ("driver", "claim", "n_low", "n_total")} for r in rows]
-    assert strip(new) == old
-
-
-def test_coherence_fires_on_synthetic_low_scores(monkeypatch):
-    """Control leg: no task in the corpus carries confirmed bvp_scores, so the
-    legacy comparison above is empty==empty. Inject low scores into the members
-    the new path resolves and require the finding to fire with the right count."""
-    slug = "continuous-run"
-    arc = dict(arcs._read_arc(slug), status="in-progress", bvp_scores={"D1": 5})
     real = bvp._parse_frontmatter
-    monkeypatch.setattr(bvp, "_parse_frontmatter", lambda p: dict(real(p) or {}, bvp_scores={"D1": 0}))
-    found = arcs._bvp_coherence_for_arc(arc, slug, str(arc.get("id") or ""))
-    n_members = len(bvp._task_index()["by_arc_id"].get(slug, [])) + len(
-        bvp._task_index()["by_arc_id"].get(str(arc.get("id") or ""), []))
-    assert found and found[0]["driver"] == "D1"
-    assert found[0]["n_total"] == found[0]["n_low"] == n_members > 0
+    monkeypatch.setattr(bvp, "_parse_frontmatter", lambda p: dict(real(p) or {}, bvp_scores=dict(inject)))
+
+    compared = with_findings = 0
+    for slug in _all_arc_slugs():
+        arc = arcs._read_arc(slug)
+        if not arc:
+            continue
+        arc = dict(arc, status="in-progress", bvp_scores={"D1": 5}, scoped_drivers=[])
+        num = str(arc.get("id") or "")
+        strip = lambda rows: [{k: r[k] for k in ("driver", "claim", "n_low", "n_total")} for r in rows]
+        new = strip(arcs._bvp_coherence_for_arc(arc, slug, num))
+        old = _legacy_coherence(arc, slug, num, inject=inject)
+        assert new == old, f"arc {slug}: new {new} != legacy {old}"
+        compared += 1
+        with_findings += bool(old)
+    assert compared >= 10, "expected the arc corpus on disk"
+    assert with_findings >= 3, "injection produced no findings: the comparison was vacuous"
+
+
+def test_trailing_comment_arc_id_task_is_a_member(tmp_path):
+    """T-3577 regression at the index level: 'arc_id: arc-001   # note' is in arc-001."""
+    from lib.arc_membership import scan_tasks_by_arc_membership
+
+    d = tmp_path / ".tasks" / "active"
+    d.mkdir(parents=True)
+    (d / "T-1-x.md").write_text("---\nid: T-1\nname: x\narc_id: arc-001   # T-3440: note\n---\n")
+    by_arc, _ = scan_tasks_by_arc_membership(tmp_path)
+    assert by_arc == {"arc-001": ["T-1"]}
 
 
 def test_warm_arc_page_does_not_reparse_corpus(monkeypatch):

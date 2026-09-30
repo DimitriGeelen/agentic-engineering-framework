@@ -11,12 +11,12 @@ description: >
   task/approvals cache), and scope member lookup to the arc instead of the whole corpus.
   Profile: rerun the cProfile snippet in the T-3564 session notes.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [tests/web/test_t3574_arc_page_perf.py, web/blueprints/arcs.py, web/blueprints/bvp.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-29T22:36:00Z
-last_update: 2026-09-29T23:23:26Z
-date_finished:
+last_update: 2026-09-30T03:53:17Z
+date_finished: 2026-09-29T23:33:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -120,6 +120,21 @@ frontmatter reader, which now uses libyaml's CSafeLoader. Equality test: tests/w
 (new vs inlined legacy on the live corpus: members, per-driver scores, raw/norm, coherence). Before/after
 `_bvp_signals` JSON for 4 arcs byte-identical.
 
+### Round 2 (independent review, measured 2026-09-30 05:51, load average 2.9-3.5)
+
+- The review's "warm <1s" finding was right: T-3575's per-call task-file signature (~29ms x 53 constituents) put
+  `/arcs/continuous-run` warm at 1.65-1.83s between that commit and the fix. Fixed in T-3575's second commit
+  (signature memoised per GET request in flask.g).
+- Fresh measurement after the fix, curl, live server after restart: continuous-run cold 0.99s, warm 0.40-0.46s (6 runs);
+  readme-first-run cold 0.19s, warm 0.18-0.22s; dispatch-safety cold 0.29s, warm 0.19-0.24s. Criterion met.
+- Coherence equivalence test is now real: `test_coherence_matches_legacy_on_every_arc` injects the same
+  `bvp_scores` into the legacy whole-corpus `yaml.safe_load` walk and into `bvp._parse_frontmatter`, and compares all
+  arcs on disk (expected counts come from the legacy walk, not `_task_index()`). Control: with the pre-T-3577
+  `arc_id` parser it fails on dispatch-safety (new n_total 11, legacy 12); with the T-3577 fix it passes.
+  The synthetic test that checked the new code against itself was removed.
+- `## Verification` now holds the real guarded commands (the earlier ones had been spliced into the template comment).
+
+
 ### Human
 - [ ] [REVIEW] Arc pages render unchanged and load fast
   **Steps:**
@@ -134,13 +149,7 @@ frontmatter reader, which now uses libyaml's CSafeLoader. Equality test: tests/w
      ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
      If your Expected clause is grep-able / file-exists / structural (a deterministic
      shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification
-
-python3 -m pytest tests/web/test_t3574_arc_page_perf.py -q -k "synthetic or warm"
-bin/fw vendor self --check
-bin/fw watchtower current
-
- instead of a Human AC here. Only keep [REVIEW] if
+     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
      verification genuinely needs human taste (tone, feel, layout rhythm).
      See CLAUDE.md §AC Classification Guidance for the conversion rule.
 
@@ -164,6 +173,10 @@ bin/fw watchtower current
 -->
 
 ## Verification
+
+python3 -m pytest tests/web/test_t3574_arc_page_perf.py -q > /tmp/.t3574.out 2>&1 && grep -q passed /tmp/.t3574.out && ! grep -q failed /tmp/.t3574.out
+bin/fw watchtower current
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -402,3 +415,15 @@ bin/fw watchtower current
 ### 2026-09-29T23:22:12Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d28801f2
+- **Timestamp:** 2026-09-29T23:33:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-29T23:33:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
