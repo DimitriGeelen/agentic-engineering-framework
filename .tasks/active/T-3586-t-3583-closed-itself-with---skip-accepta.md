@@ -108,7 +108,7 @@ and does not refuse agents.
 - [x] T-3583's missing criterion 6 is built: `fw audit` reports review cost per week by backend and class, and WARNs on any paid-class record with no approved proposal
 - [x] What the T-3583 worker DID build is re-verified, not trusted: `lib/hooks/check-paid-backend.sh` is registered and fires on an OpenRouter URL (and not on codex/opencode/claude -p); `bin/fw enforcement baseline` is current; its 14 tests test properties with negative controls; the CLAUDE.md section is accurate. Defects found are fixed here
 - [x] T-3583's task file gets a correction note: it was closed via a bypass with two criteria unbuilt, completed here in T-3586
-- [ ] `bin/fw vendor self --check` clean
+- [x] `bin/fw vendor self --check` clean (verified by the parent 2026-09-30 after T-3587's round 2 committed: "vendored .agentic-framework/ in sync with source")
 
 ### Human
 - [ ] [REVIEW] Watchtower batch-complete on /approvals still completes a ready task
