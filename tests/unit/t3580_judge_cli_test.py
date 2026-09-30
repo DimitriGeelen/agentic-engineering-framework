@@ -500,11 +500,13 @@ class TestSpendCeiling:
         assert res["outcomes"] == {1: "green"} and not res["degraded"]
 
     def test_ceiling_reached_drops_rung_and_says_so(self, repo, monkeypatch):
-        monkeypatch.setenv("FW_REVIEWER_JUDGE_WEEKLY_SPEND_CEILING", "200")
+        monkeypatch.setenv("FW_REVIEWER_JUDGE_WEEKLY_SPEND_CEILING", "100")
         _mk_task(repo, TASTE, extra_fm=self.HI)
         _produce(repo)
-        from t3580_round7_test import _cost    # round 7: spend = the COMMITTED cost ledger
-        _cost(repo, 199.0)
+        # Round 7: spend = the COMMITTED cost ledger. Round 8 (N4): rows that genuinely count —
+        # signed, started seats (96 against the floor ceiling 100); the worker's record runs in a
+        # subprocess the suite's unbound-spend patch does not reach.
+        rt.bound_spend(repo, 32)
         w = FakeWorker("green")
         res = _judge(repo, dispatcher=w)
         assert res["rung_due"] == 5 and res["rung"] == 3 and len(w.calls) == 1
@@ -584,3 +586,11 @@ class TestDryRunAndRealDispatcher:
             raise RuntimeError("no termlink")
         res = _judge(repo, dispatcher=bad)
         assert res["dispatches"][0]["results"][0]["outcome"] == "unknown"
+
+
+@pytest.fixture(autouse=True)
+def _unbound_spend(monkeypatch):
+    """Round 8 (N4): this suite exercises the ceiling arithmetic with hand-written judge rows; the
+    binding of a row to a signed, started run seat is proven in t3580_round8_test.TestSpendIsBound
+    (see _review_runtime.unbound_spend)."""
+    rt.unbound_spend(monkeypatch)

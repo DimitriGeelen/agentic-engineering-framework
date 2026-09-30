@@ -36,12 +36,12 @@ def _git(root, *args):
                         "PATH": "/usr/bin:/bin"})
 
 
-def _cost(root, amount, *, ts=None, commit=True, purpose="reviewer-judge run-x seat claude"):
+def _cost(root, amount, *, ts=None, commit=True, purpose="reviewer-judge run-x seat claude", task="T-1"):
     """One reviewer-judge row in the cost ledger, committed (by a non-producer, no task id)."""
     p = root / rp.COST_LEDGER
     p.parent.mkdir(parents=True, exist_ok=True)
     with p.open("a") as f:
-        f.write(json.dumps({"ts": ts or datetime.now(timezone.utc).strftime(_TS), "task": "T-1",
+        f.write(json.dumps({"ts": ts or datetime.now(timezone.utc).strftime(_TS), "task": task,
                             "backend": "claude-code", "purpose": purpose,
                             "cost_amount": amount}) + "\n")
     if commit:
@@ -449,3 +449,11 @@ class TestRiskHistory:
         _commit_as(repo, "reviewer-rv-1")
         rt.finish(repo, "rv-1")
         assert _ticked(repo) == [1]
+
+
+@pytest.fixture(autouse=True)
+def _unbound_spend(monkeypatch):
+    """Round 8 (N4): this suite exercises the ceiling arithmetic with hand-written judge rows; the
+    binding of a row to a signed, started run seat is proven in t3580_round8_test.TestSpendIsBound
+    (see _review_runtime.unbound_spend)."""
+    rt.unbound_spend(monkeypatch)

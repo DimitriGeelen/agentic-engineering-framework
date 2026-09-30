@@ -129,3 +129,46 @@ def launchable(monkeypatch, kinds) -> None:
     The ledger's own check reads DISPATCH_WORKER_KINDS; this replaces only that answer."""
     real = vl.launchable_kinds
     monkeypatch.setattr(vl, "launchable_kinds", lambda *a, **k: set(kinds) | real(*a, **k))
+
+
+def unbound_spend(monkeypatch) -> None:
+    """Round 8 (Claude N4): a judge cost row counts toward the weekly spend only when it names a
+    signed, started run seat, capped at the run's per-seat cost — proven in t3580_round8_test
+    (TestSpendIsBound). Suites that exercise only the ceiling ARITHMETIC with hand-written rows
+    (clock, floor, NaN, append-only history, withdrawal) use this to count every judge row at its
+    amount, as before round 8. It replaces the binding and nothing else."""
+    import itertools
+    from lib import review_policy as rp
+    n = itertools.count()
+    monkeypatch.setattr(rp, "_judge_row_cost", lambda root, r, amt: (amt, f"unbound-{next(n)}"))
+
+
+def bound_spend(root, seats: int, *, task: str = "T-1") -> float:
+    """Round 8 (N4): committed judge spend that COUNTS — `seats` signed rung-3 runs, each with a
+    registered dispatch the runtime started, and one cost row per seat naming them (3.0 each, the
+    rung-3 cap). For flows whose ledger calls run in a subprocess, where rt.unbound_spend cannot
+    reach. Filed under another task, so the task under review gains no runs. Returns the spend."""
+    import json
+    import subprocess
+    from datetime import datetime, timezone
+    from lib import review_policy as rp
+    rows = []
+    for i in range(seats):
+        run_id, did = f"run-spend-{i}", f"rv-spend-{i}"
+        register_run(run_id, task, acs=[1], rung="rung-3-termlink-single-reviewer",
+                     seats=[{"seat": "claude", "vendor": "c"}], root=Path(root))
+        dispatch(root, did, task, run_id=run_id, seat="claude")
+        assert take_secret(root, did)
+        rows.append({"ts": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "task": task,
+                     "backend": "claude-code", "cost_amount": rp.RUNG_COST[3],
+                     "purpose": f"{rp.SPEND_PURPOSE} {run_id} seat claude dispatch {did}"})
+    p = Path(root) / rp.COST_LEDGER
+    p.parent.mkdir(parents=True, exist_ok=True)
+    with p.open("a") as f:
+        f.writelines(json.dumps(r) + "\n" for r in rows)
+    env = {**os.environ, "GIT_AUTHOR_NAME": "Cost Clerk", "GIT_AUTHOR_EMAIL": "c@x",
+           "GIT_COMMITTER_NAME": "Cost Clerk", "GIT_COMMITTER_EMAIL": "c@x"}
+    for args in (["add", str(rp.COST_LEDGER)], ["commit", "-q", "-m", "cost ledger"]):
+        subprocess.run(["git", "-c", "core.hooksPath=/dev/null", *args], cwd=root, check=True,
+                       capture_output=True, env=env)
+    return seats * rp.RUNG_COST[3]

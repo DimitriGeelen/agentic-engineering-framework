@@ -443,8 +443,8 @@ class TestOneRequirement:
         to rung 3 at registration, the dispatch runs, and the ledger accepts that same decision."""
         _all_kinds(monkeypatch, hi)
         _lower(hi)
-        monkeypatch.setenv(CEIL, "200")
-        _stepdown_spend(hi, monkeypatch)
+        monkeypatch.setenv(CEIL, "100")
+        rt.bound_spend(hi, 32)                 # 96 of 100: genuinely bound, started seats (N4)
         res = _judge(hi, dispatcher=FakeWorker("green"))
         assert (res["rung_due"], res["rung"]) == (5, 3), res
         assert res.get("error") is None and res["outcomes"] == {1: "green"}, res
@@ -458,10 +458,6 @@ class TestOneRequirement:
         res = _judge(hi, dry_run=True)
         assert (res["rung_due"], res["rung"]) == (5, 5)
 
-
-def _stepdown_spend(root, monkeypatch):
-    """Committed judge spend that justifies a step-down at ceiling 200 (199 spent)."""
-    _cost(root, 199)
 
 
 # ── 6. Claude N3: components are empty when the rung is chosen ───────────────────────────────
@@ -530,3 +526,55 @@ class TestComponentsFromGit:
                             and "--name-only" in a else real(r, *a))
         with pytest.raises(vl.HistoryUnreadable):
             self._need(repo)
+
+
+# ── 7. Claude N4: free-text spend rows ───────────────────────────────────────────────────────
+
+class TestSpendIsBound:
+    @pytest.fixture(autouse=True)
+    def _real_binding(self, monkeypatch):
+        monkeypatch.delenv(CEIL, raising=False)
+
+    def test_probe_n4_one_free_text_row_no_longer_steps_rung_5_down(self, hi):
+        """N4 (probe P4): `fw review cost log --purpose "reviewer-judge x" --cost 9995` + a commit
+        stepped every rung-5 run down to rung 3 at the default ceiling."""
+        _cost(hi, 9995, purpose="reviewer-judge x")
+        dec = rp.ceiling_decision(hi, 5)
+        assert (dec["spent"], dec["granted"]) == (0.0, 5), dec
+
+    def _seat(self, root, run_id="run-s", did="rv-s", start=True, rung=R3):
+        rt.register_run(run_id, TID, acs=[1], rung=rung, seats=[{"seat": "claude", "vendor": "c"}],
+                        root=root)
+        rt.dispatch(root, did, TID, run_id=run_id, seat="claude")
+        if start:
+            assert rt.take_secret(root, did)
+        return f"reviewer-judge {run_id} seat claude dispatch {did}"
+
+    def test_a_row_bound_to_a_signed_started_seat_counts_capped_at_its_rung(self, hi):
+        _cost(hi, 9995, purpose=self._seat(hi), task=TID)
+        assert rp.weekly_spend(hi) == rp.RUNG_COST[3]
+
+    def test_a_row_for_a_seat_that_never_started_counts_nothing(self, hi):
+        _cost(hi, 3, purpose=self._seat(hi, start=False), task=TID)
+        assert rp.weekly_spend(hi) == 0.0
+
+    @pytest.mark.parametrize("purpose", ["reviewer-judge run-nope seat claude dispatch rv-s",
+                                         "reviewer-judge run-s seat other dispatch rv-s",
+                                         "reviewer-judge run-s seat claude dispatch rv-nope"])
+    def test_a_row_naming_an_unknown_run_seat_or_dispatch_counts_nothing(self, hi, purpose):
+        self._seat(hi)
+        _cost(hi, 3, purpose=purpose, task=TID)
+        assert rp.weekly_spend(hi) == 0.0
+
+    def test_a_dispatch_is_counted_once(self, hi):
+        p = self._seat(hi)
+        _cost(hi, 3, purpose=p, task=TID)
+        _cost(hi, 3, purpose=p, task=TID)
+        assert rp.weekly_spend(hi) == rp.RUNG_COST[3]
+
+    def test_a_row_for_another_task_counts_nothing(self, hi):
+        p = self._seat(hi)
+        row = {"ts": __import__("datetime").datetime.now(__import__("datetime").timezone.utc)
+               .strftime("%Y-%m-%dT%H:%M:%SZ"), "task": "T-1", "backend": "claude-code",
+               "purpose": p, "cost_amount": 3}
+        assert rp._judge_row_cost(hi, row, 3.0) == (0.0, "")

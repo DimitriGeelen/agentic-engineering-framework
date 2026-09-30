@@ -241,6 +241,7 @@ class TestCeilingDecision:
         rt.register_run("run-1", TID, acs=[1], rung=R1, seats=[{"seat": "claude", "vendor": "c"}],
                         rung_due=5, root=hi)
         monkeypatch.undo()
+        rt.unbound_spend(monkeypatch)       # round 8: undo() dropped the suite's row binding patch
         import os
         os.environ[f"FW_{review_policy.CEILING_KEY}"] = "200"
         rt.dispatch(hi, "rv-1", TID, run_id="run-1", seat="claude")
@@ -270,12 +271,14 @@ class TestOnePolicy:
             self, hi, monkeypatch):
         """End to end: the judge steps rung 5 down to 3 at the ceiling, the run carries the
         decision, the worker's green is accepted by record and ticks at apply."""
-        _spend(hi, 199.0)
-        monkeypatch.setenv(f"FW_{review_policy.CEILING_KEY}", "200")
+        # Round 8 (N4): the worker records through a CLI subprocess, so the spend must genuinely
+        # count: 32 signed, started rung-3 seats (96) against the floor ceiling 100.
+        rt.bound_spend(hi, 32)
+        monkeypatch.setenv(f"FW_{review_policy.CEILING_KEY}", "100")
         res = _judge(hi, dispatcher=FakeWorker("green"), worker_kinds={"claude"},
                      kind_vendors={"claude": "anthropic"})
         assert res["rung_due"] == 5 and res["rung"] == 3, res.get("ceiling_note")
-        run = next(r for r in vl._read(vl.RUNS, hi) if r.get("kind") == "run")
+        run = next(r for r in vl._read(vl.RUNS, hi) if r.get("kind") == "run" and r.get("task") == TID)
         assert run["ceiling_decision"]["due"] == 5 and run["ceiling_decision"]["granted"] == 3
         assert res["outcomes"] == {1: "green"}
         assert _ticked(hi) == [1]
@@ -470,3 +473,11 @@ class TestVendorProvenance:
         out = subprocess.run(["bash", str(_HERE / "agents/termlink/termlink.sh"), "worker-kinds"],
                              capture_output=True, text=True).stdout.split()
         assert set(out) == vl.launchable_kinds() and out
+
+
+@pytest.fixture(autouse=True)
+def _unbound_spend(monkeypatch):
+    """Round 8 (N4): this suite exercises the ceiling arithmetic with hand-written judge rows; the
+    binding of a row to a signed, started run seat is proven in t3580_round8_test.TestSpendIsBound
+    (see _review_runtime.unbound_spend)."""
+    rt.unbound_spend(monkeypatch)
