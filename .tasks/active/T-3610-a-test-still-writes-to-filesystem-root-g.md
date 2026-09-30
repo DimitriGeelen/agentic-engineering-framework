@@ -99,8 +99,10 @@ That was during worker test runs. 72 test files set `user.email t@t`. The root r
 ### Agent
 - [x] The test (or tests) that wrote `/.git/config` and `/.git/hooks/commit-msg` is identified with evidence: a run that reproduces the write against a sandboxed fake root, or a code path showing a cwd/variable that resolves to `/`. Named in the RCA
 - [ ] The leak is fixed at its source, and every sibling with the same pattern (for example `cd "$UNSET"` / `git -C "$UNSET"` followed by `git config` or `fw git install-hooks`) is fixed too
+      → OPEN. Framework source (`init_head_bootstrap.bats`) was fenced by T-3603 (559f48591). 12 siblings fenced here, and all helper-loaders are fenced via `test_helper.bash`. Still open: 8 grandfathered files owned by T-3603/T-3593/T-3594 (listed in `tests/lint/bats-git-discovery-fence.bats`), and the config writer `/opt/1409-sprind/.claude/hooks/tests/run-pruefstand-tests.sh`, which is behind the project boundary and must be fixed in that project.
 - [x] A structural guard stops any test fixture from targeting `/`: for example, a shared test-helper check that refuses `git init`, `git config` or hook installation when the resolved target is `/` or outside `$BATS_TEST_TMPDIR` / `$TMPDIR`, or a lint in `bin/fw test lint`. It must be proven to bite with a negative control
 - [ ] The fixed tests pass in isolation; nothing new is written to `/` during those runs (mtimes on `/.git/config` and `/.git/hooks/*` are unchanged before and after)
+      → Root unchanged across every run (config 22:30:22.871, hooks 22:30:59.16x; worktrees 12 → 12). 11/13 touched files are green. `fw_onboarding_greenfield.bats` is red on host doctor WARNs (the doctor subshell dies under `set -e` before writing doctor.rc); at HEAD it was red earlier, on its /.git precondition. `t2922` test 7 is red at HEAD too (live Watchtower); its test 5 turned green with the fence. Sample of 10 helper-loading git suites: 0 new failures, and `upgrade_fresh_machine_simulation` went from 8 red at HEAD (in a /tmp copy) to 8 green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
