@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3595: termlink cleanup rm -rf's the whole /tmp/tl-dispatch including ACTIVE workers' dirs, and tests/unit/termlink.bats runs the real cleanup
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-30T18:37:00Z
+# ============================================================================
+
+task_id: T-3595
+task_name: "termlink cleanup rm -rf's the whole /tmp/tl-dispatch including ACTIVE workers' dirs, and tests/unit/termlink.bats runs the real cleanup"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-30T17:11:10Z
+completed: 2026-09-30T18:36:13Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-09-30T19:30:06+02:00
+last_commit: 2026-09-30T20:05:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  stop the bleeding — termlink.bats ran the REAL cleanup, which rm -rf's /tmp/tl-dispatch incl. live workers' dirs; sandboxed (canary in the real dir survives). cleanup deletes per worker — active dirs kept, finished/orphan removed, root only when empty; FW_DISPATCH_DIR override; sandbox tests + lint. vendor sync (termlink.sh, termlink_worker.py)
+
+# Key outcomes
+outcomes:
+  - 'Mitigation (own commit, first; verified: a canary dir in the real /tmp/tl-dispatch survived the test): tests/unit/termlink.bats no longer runs cleanup against the real /tmp/tl-dispatch; it sources termlink.sh with DISPATCH_DIR pointed at a test tmp dir (the t3440_close_state.bats pattern)'
+  - '`DISPATCH_DIR` honours an env override (e.g. `FW_DISPATCH_DIR`), default unchanged'
+  - 'cmd_cleanup deletes only the worker dirs it has decided are finished (exit_code present) or orphaned-and-terminated; an ACTIVE worker''s dir is never removed; the top-level dir is removed only if empty'
+  - 'Tests on a sandbox dir: an active fake worker (a process with the wdir in its args, spawning a child named claude) keeps its dir; a finished one is removed; an orphan is terminated and removed; a control shows the old behaviour would have removed the active dir'
+  - 'A lint or test asserts no test in tests/ invokes `termlink.sh cleanup` without a DISPATCH_DIR override'
+  - '`bin/fw vendor self --check` clean (verified by the parent after the parallel workers committed)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/lib/termlink_worker.py'
+  - 'agents/termlink/termlink.sh'
+  - 'lib/termlink_worker.py'
+  - '.tasks/active/T-3595-termlink-cleanup-rm--rfs-the-whole-tmptl.md'
+  - 'tests/unit/t3595_cleanup_scope.bats'
+  - 'tests/unit/termlink.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-30T19:30:06'
+    action: 'T-3595: stop the bleeding — termlink.bats ran the REAL cleanup, which rm -rf''s /tmp/tl-dispatch incl. live workers'' dirs; sandboxed (canary in the real dir survives)'
+  - time: '2026-09-30T20:05:02'
+    action: 'T-3595: cleanup deletes per worker — active dirs kept, finished/orphan removed, root only when empty; FW_DISPATCH_DIR override; sandbox tests + lint'
+  - time: '2026-09-30T20:05:36'
+    action: 'T-3595: vendor sync (termlink.sh, termlink_worker.py)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 85 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 85
+  commits: 3
+  files_changed: 7
+  lines_added: 870
+  lines_removed: 181
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3595-termlink-cleanup-rm--rfs-the-whole-tmptl.md
+generated_by: context-agent-hybrid

@@ -6,12 +6,12 @@ description: >
   termlink cleanup rm -rf's the whole /tmp/tl-dispatch including ACTIVE workers' dirs,
   and tests/unit/termlink.bats runs the real cleanup
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/termlink/termlink.sh, lib/termlink_worker.py, tests/unit/termlink.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T17:11:10Z
-last_update: 2026-09-30T17:36:29Z
-date_finished:
+last_update: 2026-09-30T18:36:13Z
+date_finished: 2026-09-30T18:36:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -103,7 +103,7 @@ exit markers and completion signing (T-3580) do not. Also reported by consumer r
 - [x] cmd_cleanup deletes only the worker dirs it has decided are finished (exit_code present) or orphaned-and-terminated; an ACTIVE worker's dir is never removed; the top-level dir is removed only if empty
 - [x] Tests on a sandbox dir: an active fake worker (a process with the wdir in its args, spawning a child named claude) keeps its dir; a finished one is removed; an orphan is terminated and removed; a control shows the old behaviour would have removed the active dir
 - [x] A lint or test asserts no test in tests/ invokes `termlink.sh cleanup` without a DISPATCH_DIR override
-- [ ] `bin/fw vendor self --check` clean
+- [x] `bin/fw vendor self --check` clean (verified by the parent after the parallel workers committed)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -361,3 +361,15 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3595-termlink-cleanup-rm--rfs-the-whole-tmptl.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-13dd4548
+- **Timestamp:** 2026-09-30T18:36:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-30T18:36:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
