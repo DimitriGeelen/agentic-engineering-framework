@@ -18,6 +18,11 @@ setup() {
     cp "$FRAMEWORK_ROOT/.tasks/templates/zzz-default.md" "$TEST_DIR/templates/default.md" 2>/dev/null || true
     export TASKS_DIR="$TEST_DIR"
     export PROJECT_ROOT="$FRAMEWORK_ROOT"
+    # Hermeticity (T-3604): the allocator asks `git -C "$(dirname "$TASKS_DIR")"
+    # worktree list` for the main checkout. With a stray repo above the temp dir
+    # (seen: /.git on this host) that resolves to it and unions ITS .tasks/, so
+    # IDs mint from a foreign corpus. Fence discovery above $BATS_TMPDIR.
+    export GIT_CEILING_DIRECTORIES="$(dirname "$BATS_TMPDIR")"
     # Hermeticity (T-100185 sibling): strip inherited session env so the
     # inception recommendation gate never arms during --type build creation.
     unset CLAUDECODE FW_ALLOW_EMPTY_RECOMMENDATION FW_INCEPTION_PRE_GATED
