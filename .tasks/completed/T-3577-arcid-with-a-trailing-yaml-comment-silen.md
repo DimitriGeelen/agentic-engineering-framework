@@ -11,12 +11,12 @@ description: >
   ' #...' before resolving (YAML semantics); test with the T-3440 shape; count how
   many tasks change membership after the fix.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/check-arc-id.py, lib/arc_membership.py, lib/arc_membership.sh, lib/arc.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T03:18:22Z
-last_update: 2026-09-30T03:22:04Z
-date_finished:
+last_update: 2026-09-30T03:22:29Z
+date_finished: 2026-09-30T03:22:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -362,3 +362,20 @@ bin/fw vendor self --check
 
 ### 2026-09-30T03:19:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2a43f38a
+- **Timestamp:** 2026-09-30T03:22:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — Registered in `.context/concerns.yaml` (register first, fix second) with the detection-gap note: nothing flagged a task silently leaving its arc
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/concerns.yaml in: Registered in `.context/concerns.yaml` (register first, fix second) with the detection-gap note: nothing flagged a task silently leaving its arc`
+
+### 2026-09-30T03:22:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
