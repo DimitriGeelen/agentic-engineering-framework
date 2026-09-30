@@ -1,0 +1,21 @@
+id: lib/hooks/check-paid-backend.sh
+name: check-paid-backend
+type: script
+subsystem: framework-core
+location: lib/hooks/check-paid-backend.sh
+tags: []
+
+purpose: "PreToolUse hook: check-paid-backend Blocks direct bash invocation of paid review backends without an approved proposal. T-3583: OpenRouter requires approval before dispatch."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-30
+created_by: unknown
