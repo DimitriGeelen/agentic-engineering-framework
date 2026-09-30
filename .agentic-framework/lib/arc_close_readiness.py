@@ -139,21 +139,28 @@ def task_cost(fm: dict, bvp):
 
 
 def corpus_medians(project_root: Path | str, *, framework_root=None,
-                   parse_frontmatter=None) -> dict:
+                   parse_frontmatter=None, open_fms=None) -> dict:
     """Value and cost medians over OPEN tasks — everything in .tasks/active/.
 
     See the module docstring: this population deliberately differs from
     `fw bvp`'s. Returns the medians plus `value_degenerate`, T-3485's guard for
     a median that has collapsed onto the corpus floor and therefore cannot
     separate anything.
+
+    `open_fms` (T-3600): the active tasks' frontmatter, already parsed by a
+    caller that holds a cache. Without it every active task is re-read and
+    re-parsed here — ~9.5s on a cold /approvals build.
     """
     bvp = bvp_py.load(framework_root)
     policy = bvp.load_policy()
     weights = bvp.driver_weights(policy)
 
+    if open_fms is None:
+        open_fms = (_read_fm(p, parse_frontmatter) for p in
+                    glob.glob(str(Path(project_root) / ".tasks" / "active" / "T-*.md")))
+
     vals, costs = [], []
-    for p in glob.glob(str(Path(project_root) / ".tasks" / "active" / "T-*.md")):
-        fm = _read_fm(p, parse_frontmatter)
+    for fm in open_fms:
         if not fm:
             continue
         v, _ = task_value(fm, weights, bvp)

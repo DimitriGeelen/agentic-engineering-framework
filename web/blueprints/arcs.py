@@ -389,9 +389,10 @@ def _task_meta_index() -> dict[str, dict[str, Any]]:
     reference costs one pointer and makes the comparison mean what it reads as.
     """
     global _TASK_META_INDEX
-    from web.shared import get_all_task_metadata
+    from web.shared import request_task_metadata
 
-    rows = get_all_task_metadata()
+    # T-3600: once per request — _resolve_constituents asks per constituent.
+    rows = request_task_metadata()
     if _TASK_META_INDEX is not None and _TASK_META_INDEX[0] is rows:
         return _TASK_META_INDEX[1]
 

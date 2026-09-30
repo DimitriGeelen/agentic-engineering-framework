@@ -300,8 +300,10 @@ def _get_approval_qr():
     if _qr_cache["data"] is not None and (now - _qr_cache["ts"]) < _DASHBOARD_CACHE_TTL:
         return _qr_cache["data"]
     try:
-        from web.blueprints.approvals import _build_approvals_context
-        ctx = _build_approvals_context()
+        # T-3600: counts only — building the whole page for four integers cost
+        # 13s cold and ~5s warm inside whichever request found the cache expired.
+        from web.blueprints import approvals
+        ctx = approvals.approval_summary()
         total = ctx.get("total_count", 0)
         if total == 0:
             _qr_cache["data"] = (None, None, None)

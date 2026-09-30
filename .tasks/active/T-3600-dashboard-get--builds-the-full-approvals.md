@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T20:07:31Z
-last_update: 2026-09-30T20:09:19Z
+last_update: '2026-09-30T20:15:20Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -70,6 +70,16 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-30T20:15:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=256,acs=5)
     rubric_sha: e4a00f38e801
 ---
 
@@ -308,6 +318,20 @@ bin/fw vendor self --check
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-09-30 — where the cost was, and how it was removed
+- **Chose:** (a) the counts-only `approval_summary()` plus the shared `_approval_counts()`, per the peer's design; (b) the arc readiness legs read frontmatter from the shared task cache: `corpus_medians(open_fms=...)` and the per-member lookup through `_active_task_fms()`; (c) `web.shared.request_task_metadata()` memoises the rows in `flask.g` per GET/HEAD, and both approvals and `arcs._task_meta_index` go through it.
+- **Why:** under cProfile inside `test_request_context('/')`, the dominant cost was not `get_all_task_metadata`. Its 554 calls from `arcs._task_meta_index` cost only 5ms in total, because the cache was already warm. The dominant cost was `lib/arc_close_readiness._read_fm` re-parsing task files with pure-Python `yaml.safe_load`: 440 parses for the medians (9.5s cold) and 156 for arc members (3.8s on every build).
+- **Rejected:** a background refresh of the 60s tile cache (the peer's residual). It is a separate class and is not needed once the rebuild is cheap.
+- **Semantics:** a before/after script over the live corpus compared the counts (all 11 context counts), the close-ready arcs (with legs), the GO ids, the corpus medians, and the L1–L4 legs for all 18 in-progress arcs. All were identical (total 442, 2 close-ready arcs).
+- **Timings (live corpus, same host, wall time):**
+  | measure | before | after |
+  |---|---:|---:|
+  | `_build_approvals_context()`, fresh process | 13.2–15.0s | 5.8–6.1s |
+  | `_build_approvals_context()`, warm process | 4.7s | 2.2–2.3s |
+  | `approval_summary()`, warm process (the tile's 60s cache expiry in a running server) | n/a (tile built the page: 4.7s) | 0.89–0.91s |
+  | `approval_summary()`, fresh process | n/a (13.2s) | 4.4–4.6s |
+  The fresh-process figure is dominated by the one-time parse of all ~3,584 task files for the shared metadata cache (~2.5s real), which every page pays once per server start. The 1.5s target is met for the event the tile actually hits (0.9s), but not for a first request after a restart.
 
 ## Decision
 

@@ -1644,6 +1644,25 @@ def get_all_task_metadata():
     return all_tasks
 
 
+def request_task_metadata(loader=None):
+    """`get_all_task_metadata()` at most once per GET/HEAD request (T-3600).
+
+    The shared cache makes each call cheap, not free: a builder that asks per
+    arc member (arcs._task_meta_index, ~550 calls on one /approvals build) still
+    pays the validity check each time. Memoised in flask.g like
+    `_task_files_signature`; outside a request it always calls through.
+    `loader` lets a module pass its own binding (tests substitute it there).
+    """
+    loader = loader or get_all_task_metadata
+    if has_request_context() and request.method in ("GET", "HEAD"):
+        memo = g.__dict__.setdefault("_task_meta_rows", {})
+        key = (PROJECT_ROOT, loader)
+        if key not in memo:
+            memo[key] = loader()
+        return memo[key]
+    return loader()
+
+
 def get_task_names():
     """Return {task_id: name} dict. Uses task cache."""
     get_all_task_metadata()  # validates the cache, rebuilds only on change

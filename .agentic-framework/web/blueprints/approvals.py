@@ -17,7 +17,7 @@ from pathlib import Path
 import yaml
 from flask import Blueprint, request
 
-from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, render_markdown_safe, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict, count_unchecked_human_acs, needs_human_review, mtime_cached_get, has_unchecked_review_ac, is_ready_for_batch_completion
+from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, render_markdown_safe, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict, count_unchecked_human_acs, needs_human_review, mtime_cached_get, has_unchecked_review_ac, request_task_metadata, is_ready_for_batch_completion
 
 # T-1808: paused-dispatch surface — needs lib/ on the path so the helper imports cleanly.
 # T-2645 (832 G-004 sibling): lib/ is FRAMEWORK-owned — PROJECT_ROOT resolution broke
@@ -213,6 +213,25 @@ def _count_body_assumptions(body: str) -> int:
     return len(_INLINE_ASSUMPTION_RE.findall(section))
 
 
+def _task_meta():
+    """Task frontmatter rows, fetched once per request (T-3600).
+
+    Passes this module's `get_all_task_metadata` binding so tests that
+    substitute it here keep working.
+    """
+    return request_task_metadata(get_all_task_metadata)
+
+
+def _active_task_fms() -> dict:
+    """{task_id: frontmatter} for tasks in .tasks/active/, from the shared cache."""
+    out = {}
+    for fm in _task_meta():
+        tid = fm.get("id")
+        if tid and fm.get("_location") == "active":
+            out.setdefault(tid, fm)
+    return out
+
+
 def _load_pending_go_decisions():
     """Scan active inception tasks where decision is still pending.
 
@@ -227,7 +246,7 @@ def _load_pending_go_decisions():
     # T-1244: Use shared task metadata cache to filter to active+inception tasks
     # before reading bodies. Avoids re-globbing 100+ active tasks per request.
     candidates = [
-        fm for fm in get_all_task_metadata()
+        fm for fm in _task_meta()
         if fm.get("_location") == "active" and fm.get("workflow_type") == "inception"
     ]
     candidates.sort(key=lambda fm: task_id_sort_key(fm.get("_path", "")))
@@ -373,7 +392,7 @@ def _load_pending_human_acs():
     # T-1244: Pull active-task frontmatter from shared cache instead of
     # re-globbing per request. Body still required for AC parse.
     candidates = [
-        fm for fm in get_all_task_metadata()
+        fm for fm in _task_meta()
         if fm.get("_location") == "active"
     ]
     candidates.sort(key=lambda fm: task_id_sort_key(fm.get("_path", "")))
@@ -478,7 +497,7 @@ def _load_batch_ready_tasks():
     these ids; complete_batch re-checks each against the same predicate.
     """
     out = []
-    candidates = [fm for fm in get_all_task_metadata() if fm.get("_location") == "active"]
+    candidates = [fm for fm in _task_meta() if fm.get("_location") == "active"]
     candidates.sort(key=lambda fm: task_id_sort_key(fm.get("_path", "")))
     for fm in candidates:
         path = fm.get("_path")
@@ -498,7 +517,7 @@ def _count_deferred_inceptions():
     hint when /approvals has no pending decisions.
     """
     count = 0
-    for fm in get_all_task_metadata():
+    for fm in _task_meta():
         if fm.get("_location") != "active" or fm.get("workflow_type") != "inception":
             continue
         path = fm.get("_path")
@@ -646,8 +665,14 @@ def _arc_readiness_legs(arc: dict, constituents) -> dict | None:
         return None
 
     try:
+        # T-3600: frontmatter comes from the shared task cache. Both the medians
+        # and the per-member reads used to re-parse the files with pure-Python
+        # yaml.safe_load — 9.5s cold for the medians, 3.8s on every build for
+        # the members.
+        active = _active_task_fms()
         if not _READINESS_MEDIANS:
-            _READINESS_MEDIANS.update(_acr.corpus_medians(PROJECT_ROOT))
+            _READINESS_MEDIANS.update(
+                _acr.corpus_medians(PROJECT_ROOT, open_fms=list(active.values())))
 
         open_members: list[tuple[str, dict]] = []
         for c in constituents or []:
@@ -655,12 +680,9 @@ def _arc_readiness_legs(arc: dict, constituents) -> dict | None:
             # partial-complete, which is most of them. See the module docstring
             # in lib/arc_close_readiness.py for why that population is right.
             tid = c.get("id") if isinstance(c, dict) else str(c)
-            if not tid:
+            if not tid or tid not in active:
                 continue
-            matches = list((PROJECT_ROOT / ".tasks" / "active").glob(f"{tid}-*.md"))
-            if not matches:
-                continue
-            open_members.append((tid, _acr._read_fm(matches[0])))
+            open_members.append((tid, active[tid]))
 
         rec = _anchor(arc) or {}
         legs = _acr.evaluate(
@@ -752,13 +774,62 @@ def _load_decided_unclosed():
         return []
 
     candidates = [
-        fm for fm in get_all_task_metadata()
+        fm for fm in _task_meta()
         if fm.get("_location") == "active" and fm.get("workflow_type") == "inception"
     ]
     try:
         return decided_unclosed.scan(candidates, _get_body_cached)
     except Exception:
         return []
+
+
+def _approval_counts(pending_tier0, pending_go, ac_task_count, paused_dispatches,
+                     arcs_close_ready, bvp_proposals, decided_unclosed) -> dict:
+    """The badge arithmetic, shared by the page and the dashboard tile (T-3600).
+
+    One function so the two cannot drift. A ripe DEFER revisit is deliberately
+    not counted. T-3175: a decided-but-unclosed inception is one outstanding
+    operator action, so it counts toward the badge like every other section.
+    Omitting it from the total was how the queue read "complete" while three of
+    these sat open.
+    """
+    tier0_count = sum(1 for a in pending_tier0 if a.get("status") == "pending")
+    go_count = len(pending_go)
+    total = (tier0_count + go_count + ac_task_count + len(paused_dispatches)
+             + len(arcs_close_ready) + len(bvp_proposals) + len(decided_unclosed))
+    return {"total_count": total, "tier0_count": tier0_count,
+            "go_count": go_count, "ac_task_count": ac_task_count}
+
+
+def _count_pending_human_ac_tasks() -> int:
+    """How many cards `_load_pending_human_acs()` would render, without rendering them.
+
+    Same candidates and the same admission predicate; skips the per-criterion
+    parse and markdown render, which is display-only (T-3600).
+    """
+    count = 0
+    for fm in _task_meta():
+        if fm.get("_location") != "active" or not fm.get("_path"):
+            continue
+        body = _get_body_cached(fm["_path"])
+        if body and needs_human_review(body):
+            count += 1
+    return count
+
+
+def approval_summary() -> dict:
+    """Counts-only view of /approvals for the dashboard tile (T-3600)."""
+    from web.blueprints.bvp import _load_proposals
+
+    return _approval_counts(
+        _load_pending_approvals(),
+        _load_pending_go_decisions(),
+        _count_pending_human_ac_tasks(),
+        _load_paused_dispatches(),
+        _load_close_ready_arcs(),
+        _load_proposals(),
+        _load_decided_unclosed(),
+    )
 
 
 def _build_approvals_context(expand_overflow: bool = False):
@@ -785,20 +856,18 @@ def _build_approvals_context(expand_overflow: bool = False):
 
     bvp_proposals = _load_proposals()
 
-    tier0_count = sum(1 for a in pending_tier0 if a.get("status") == "pending")
+    counts = _approval_counts(pending_tier0, pending_go, len(pending_acs),
+                              paused_dispatches, arcs_close_ready, bvp_proposals,
+                              decided_unclosed)
+    tier0_count = counts["tier0_count"]
     tier0_origin_summary = _tier0_origin_summary(pending_tier0)  # T-3078
-    go_count = len(pending_go)
+    go_count = counts["go_count"]
     ac_count = sum(t["unchecked_count"] for t in pending_acs)  # T-3590: canonical
     paused_count = len(paused_dispatches)  # T-1808
     arc_close_count = len(arcs_close_ready)  # T-1961
     bvp_proposal_count = len(bvp_proposals)  # T-2335
-    # T-3175: a decided-but-unclosed inception is one outstanding operator
-    # action, so it counts toward the badge like every other section. Omitting
-    # it from the total was how the queue read "complete" while three of these
-    # sat open.
     decided_unclosed_count = len(decided_unclosed)
-    total = (tier0_count + go_count + len(pending_acs) + paused_count
-             + arc_close_count + bvp_proposal_count + decided_unclosed_count)
+    total = counts["total_count"]
 
     # T-3590: tasks the batch button may close, by the ONE canonical predicate.
     # Disjoint from pending_acs by construction (admission requires an unchecked
