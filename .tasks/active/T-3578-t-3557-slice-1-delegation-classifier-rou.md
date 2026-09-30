@@ -92,13 +92,13 @@ unclassified to OPERATOR_ONLY: 297 of 352 open criteria. Only 55 are in the risk
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `lib/delegation.py` gains a routing value for "an independent agent reviewer judges; it may escalate" (e.g. REVIEWER_JUDGES), distinct from REVIEWER_CLOSEABLE (static scan) and OPERATOR_ONLY
-- [ ] render-surface, taste, unclassified and inception-decision route to it; tier0-or-bypass, act-in-the-world and sovereignty-field stay OPERATOR_ONLY; deterministic stays REVIEWER_CLOSEABLE
-- [ ] The carve-out order still puts the risk classes first, so a render-touching criterion that is also tier0 or act-in-the-world stays human (test with such a criterion)
-- [ ] `fw task delegate` and `fw reviewer surface` report the new bucket with its count; the surface WARN and the audit/doctor facts line are updated coherently (one encoding, read by all three)
-- [ ] `fw task delegate` does NOT convert or tick reviewer-judged criteria (that is slice 2/3's job); it only reports them as judgeable, so nothing closes without a verdict
-- [ ] CLAUDE.md §AC Classification Guidance and §Human Task Completion Rule describe the new routing, citing T-3557; the config-registry parity lint and existing delegation tests pass
-- [ ] `bin/fw vendor self --check` clean
+- [x] `lib/delegation.py` gains a routing value for "an independent agent reviewer judges; it may escalate" (e.g. REVIEWER_JUDGES), distinct from REVIEWER_CLOSEABLE (static scan) and OPERATOR_ONLY
+- [x] render-surface, taste, unclassified and inception-decision route to it; tier0-or-bypass, act-in-the-world and sovereignty-field stay OPERATOR_ONLY; deterministic stays REVIEWER_CLOSEABLE
+- [x] The carve-out order still puts the risk classes first, so a render-touching criterion that is also tier0 or act-in-the-world stays human (test with such a criterion)
+- [x] `fw task delegate` and `fw reviewer surface` report the new bucket with its count; the surface WARN and the audit/doctor facts line are updated coherently (one encoding, read by all three)
+- [x] `fw task delegate` does NOT convert or tick reviewer-judged criteria (that is slice 2/3's job); it only reports them as judgeable, so nothing closes without a verdict
+- [x] CLAUDE.md §AC Classification Guidance and §Human Task Completion Rule describe the new routing, citing T-3557; the config-registry parity lint and existing delegation tests pass
+- [x] `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -132,6 +132,11 @@ unclassified to OPERATOR_ONLY: 297 of 352 open criteria. Only 55 are in the risk
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_delegation_classifier.py -q > /tmp/.t3578-py.out 2>&1 && grep -q passed /tmp/.t3578-py.out && ! grep -q failed /tmp/.t3578-py.out
+timeout 300 bats tests/unit/t3445_delegation_close_path.bats tests/lint/config-registry-parity.bats > /tmp/.t3578-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3578-bats.out && test "$(grep -c '# skip' /tmp/.t3578-bats.out)" -eq 0
+bin/fw reviewer surface --facts > /tmp/.t3578-facts.out 2>&1 && test "$(awk -F'\t' '{print NF}' /tmp/.t3578-facts.out)" -ge 8
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.

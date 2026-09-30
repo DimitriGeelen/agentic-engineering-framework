@@ -240,6 +240,24 @@ _make_task() {
 
 # ── Refusals ─────────────────────────────────────────────────────────────────
 
+@test "T-3557: a reviewer-judged criterion is reported judgeable, never converted or ticked" {
+    local f; f="$(_make_task T-9002 taste)"
+    local before; before="$(md5sum < "$f")"
+
+    run "$FW" task delegate T-9002 --dry-run
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q "reviewer-judgeable (not converted)"
+    [ "$(md5sum < "$f")" = "$before" ]
+
+    run "$FW" task delegate T-9002 --dry-run --json
+    echo "$output" | python3 -c "import json,sys; d=json.load(sys.stdin); assert d['reviewer_judgeable']==[3], d"
+
+    # The judged criterion stays unticked under ### Human after a real run.
+    run "$FW" task delegate T-9002
+    [ "$status" -eq 0 ]
+    awk '/^### Human/{f=1;next} /^## /{f=0} f' "$f" | grep -q '^- \[ \].*reads clearly'
+}
+
 @test "delegate refuses an inception task with exit 2" {
     local f="$PROJECT_ROOT/.tasks/active/T-9003-inception.md"
     printf -- '---\nid: T-9003\nname: "inception fixture"\nstatus: started-work\nworkflow_type: inception\nowner: human\nhorizon: now\ncreated: 2026-09-24T00:00:00Z\nlast_update: 2026-09-24T00:00:00Z\n---\n\n## Acceptance Criteria\n\n### Agent\n\n### Human\n- [ ] [REVIEW] Doctor names the key\n  **Expected:** exit code 0\n\n## Verification\n' > "$f"

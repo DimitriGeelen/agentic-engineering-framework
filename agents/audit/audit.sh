@@ -4010,16 +4010,16 @@ check_delegation_surface() {
              python3 -m lib.delegation_cli surface --facts 2>/dev/null || true)
     [ -n "$_facts" ] || return 0
 
-    local _level _rc _as _oo _tasks _thr _delegable
-    IFS=$'\t' read -r _level _rc _as _oo _tasks _thr _delegable <<< "$_facts"
+    local _level _rc _rj _as _oo _tasks _thr _delegable
+    IFS=$'\t' read -r _level _rc _rj _as _oo _tasks _thr _delegable <<< "$_facts"
     [ -n "${_level:-}" ] || return 0
 
     if [ "$_level" = "WARN" ]; then
-        warn "Delegation surface: 0 reviewer-closeable criteria while $_oo are operator-only (threshold $_thr)" \
-             "$_tasks active task(s) carry open Human criteria; reviewer-closeable $_rc, agent-self $_as, operator-only $_oo — the D-626 delegation reaches nothing" \
+        warn "Delegation surface: 0 reviewer-closeable or reviewer-judges criteria while $_oo are operator-only (threshold $_thr)" \
+             "$_tasks active task(s) carry open Human criteria; reviewer-closeable $_rc, reviewer-judges $_rj, agent-self $_as, operator-only $_oo — the D-626 delegation reaches nothing" \
              "Run: bin/fw reviewer surface — then 'bin/fw task delegate <id> --dry-run' on anything it lists; if nothing is delegable, the criteria are written [REVIEW] where they should be [REVIEWER] (CLAUDE.md §AC Classification Guidance)"
     else
-        pass "Delegation surface: reviewer-closeable $_rc, agent-self $_as, operator-only $_oo across $_tasks active task(s) with open Human criteria"
+        pass "Delegation surface: reviewer-closeable $_rc, reviewer-judges $_rj, agent-self $_as, operator-only $_oo across $_tasks active task(s) with open Human criteria"
     fi
 }
 check_delegation_surface

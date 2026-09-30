@@ -19,6 +19,7 @@ from lib.delegation import (  # noqa: E402
     CLASS_TO_DELEGATION,
     OPERATOR_ONLY,
     REVIEWER_CLOSEABLE,
+    REVIEWER_JUDGES,
     classify,
     classify_task,
     human_criteria,
@@ -92,7 +93,7 @@ TASTE = [
 def test_taste(c):
     cl = classify(c)
     assert cl.cls == "taste", cl
-    assert cl.delegation_class == OPERATOR_ONLY
+    assert cl.delegation_class == REVIEWER_JUDGES
     assert not cl.convertible
 
 
@@ -109,7 +110,7 @@ def test_inception_decision_from_workflow_type():
     )
     cl = classify(c, workflow_type="inception")
     assert cl.cls == "inception-decision", cl
-    assert cl.delegation_class == OPERATOR_ONLY
+    assert cl.delegation_class == REVIEWER_JUDGES
 
 
 def test_inception_decision_from_criterion_text():
@@ -224,11 +225,12 @@ RENDER = [
 
 
 @pytest.mark.parametrize("c", RENDER)
-def test_render_surface_outranks_everything(c):
-    """Even an author-declared mechanical criterion stays human on a render surface."""
+def test_render_surface_is_reviewer_judged_and_outranks_deterministic(c):
+    """An author-declared mechanical criterion is reviewer-judged, not static-closed, on a render surface."""
     cl = classify(c, render_surface=True)
     assert cl.cls == "render-surface", cl
-    assert cl.delegation_class == OPERATOR_ONLY
+    assert cl.delegation_class == REVIEWER_JUDGES
+    assert not cl.convertible
     # And the same criterion off a render surface is NOT render-surface — the
     # control leg, so this test measures the flag rather than the fixture text.
     assert classify(c, render_surface=False).cls != "render-surface"
@@ -264,16 +266,16 @@ def test_agent_self(c):
 # ── the tie-break ────────────────────────────────────────────────────────────
 
 
-def test_ambiguous_resolves_to_the_human_side():
-    """No Expected clause, no vocabulary hit — the operator keeps it.
+def test_ambiguous_routes_to_the_reviewer_not_the_closer():
+    """No Expected clause, no vocabulary hit — an independent reviewer judges it (T-3557).
 
-    This is the fixture the whole module is calibrated against. A criterion the
-    classifier cannot read must not become the agent's by default.
+    A criterion the classifier cannot read must not be STATICALLY closed; it goes
+    to the judging bucket, which can escalate, and is never convertible.
     """
     c = crit("[REVIEW] The change is right", "  **Steps:**\n  1. Look at it")
     cl = classify(c)
     assert cl.cls == "unclassified", cl
-    assert cl.delegation_class == OPERATOR_ONLY
+    assert cl.delegation_class == REVIEWER_JUDGES
     assert not cl.convertible
 
 
@@ -284,7 +286,7 @@ def test_expected_with_no_mechanical_signal_is_not_deterministic():
         "  **Expected:** it is right",
         IFNOT,
     )
-    assert classify(c).delegation_class == OPERATOR_ONLY
+    assert classify(c).delegation_class == REVIEWER_JUDGES
 
 
 def test_strategic_marker_suppresses_deterministic():
@@ -295,7 +297,7 @@ def test_strategic_marker_suppresses_deterministic():
         "  **Expected:** exit code 0",
         IFNOT,
     )
-    assert classify(c).delegation_class == OPERATOR_ONLY
+    assert classify(c).delegation_class != REVIEWER_CLOSEABLE
 
 
 # ── taxonomy invariants ──────────────────────────────────────────────────────
@@ -304,11 +306,33 @@ def test_strategic_marker_suppresses_deterministic():
 def test_every_class_maps_to_exactly_one_delegation_class():
     assert set(CLASS_TO_DELEGATION.values()) == {
         REVIEWER_CLOSEABLE,
+        REVIEWER_JUDGES,
         AGENT_SELF,
         OPERATOR_ONLY,
     }
     for c in CARVE_OUTS:
         assert CLASS_TO_DELEGATION[c] == OPERATOR_ONLY, c
+    assert set(CARVE_OUTS) == {"tier0-or-bypass", "act-in-the-world", "sovereignty-field"}
+    for c in ("render-surface", "taste", "unclassified", "inception-decision"):
+        assert CLASS_TO_DELEGATION[c] == REVIEWER_JUDGES, c
+    assert CLASS_TO_DELEGATION["deterministic"] == REVIEWER_CLOSEABLE
+
+
+@pytest.mark.parametrize("risk", [ACT[1], TIER0[0], SOVEREIGN[0]])
+@pytest.mark.parametrize("wt", ["build", "inception"])
+def test_risk_classes_outrank_render_surface_and_inception(risk, wt):
+    """A render-touching / inception criterion that is also risky stays human."""
+    cl = classify(risk, workflow_type=wt, render_surface=True)
+    assert cl.delegation_class == OPERATOR_ONLY, cl
+    # Control leg: the same criterion without the risk text is judged, not human.
+    calm = crit("[REVIEW] Table columns line up", STEPS, "  **Expected:** exit code 0", IFNOT)
+    assert classify(calm, workflow_type=wt, render_surface=True).delegation_class == REVIEWER_JUDGES
+
+
+def test_judged_bucket_is_never_convertible():
+    for k, v in CLASS_TO_DELEGATION.items():
+        if v == REVIEWER_JUDGES:
+            assert not classify_convertible(k), k
 
 
 def test_only_deterministic_is_convertible():
@@ -369,6 +393,12 @@ def test_surface_verdict_warns_only_on_the_conjunction():
     }
     assert surface_verdict(warn, 50)[0] == "WARN"
     # Same operator-only count, one delegable criterion → not the signal.
+    judged = {
+        "by_delegation": {REVIEWER_CLOSEABLE: 0, REVIEWER_JUDGES: 1, AGENT_SELF: 0, OPERATOR_ONLY: 51},
+        "tasks_with_open_human_criteria": 40,
+    }
+    assert surface_verdict(judged, 50)[0] == "OK"
+    assert "reviewer-judges 1" in surface_verdict(judged, 50)[1]
     ok = {
         "by_delegation": {REVIEWER_CLOSEABLE: 1, AGENT_SELF: 0, OPERATOR_ONLY: 51},
         "tasks_with_open_human_criteria": 40,
@@ -398,4 +428,6 @@ def test_surface_scan_counts_sum(tmp_path):
     assert sum(rep["by_delegation"].values()) == rep["open_criteria"]
     assert sum(rep["by_class"].values()) == rep["open_criteria"]
     assert rep["by_delegation"][REVIEWER_CLOSEABLE] == 1
+    assert rep["by_delegation"][REVIEWER_JUDGES] == 1
+    # Judged criteria are reported, never delegable: only convertible ones list the task.
     assert rep["delegable_tasks"] == ["T-1"]
