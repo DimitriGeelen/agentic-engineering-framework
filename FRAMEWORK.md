@@ -154,6 +154,9 @@ inside a build script, with the variable pointing at the repo root.
 approved per action, once, for a bounded time, so a retry with different incidental text
 still matches while a different target does not. Anything the classifier cannot read with
 certainty keeps the exact-text approval. This does not widen what the text gate sees.
+Force-push and ref deletion are additionally enforced at git pre-push, whichever way the
+push is launched; `git push --no-verify` skips that hook (a git property), so server-side
+branch protection remains the stronger control.
 
 ## Working with Tasks
 

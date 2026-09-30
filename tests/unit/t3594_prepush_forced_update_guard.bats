@@ -1,0 +1,227 @@
+#!/usr/bin/env bats
+# T-3594 (T-3576 GO): git pre-push refuses a non-fast-forward update or a ref
+# deletion unless a matching Tier 0 ACTION approval (T-3593) exists.
+#
+# SAFETY: everything happens in a fixture work repo pushing to a fixture BARE
+# remote, both under a tmpdir. No real repo, branch or remote is touched.
+#
+# The hook under test is GENERATED into the fixture by the real `install-hooks`
+# from agents/git/lib/hooks.sh, so this measures the source, not whatever sits
+# in the live repo's .git/hooks. Only pre-push is kept (moved into a private
+# core.hooksPath); the fixture's own commits therefore run no commit hooks,
+# while every push runs the real pre-push.
+#
+# Approvals go through the real `fw tier0 approve`, with CLAUDECODE unset,
+# acting as the operator inside the fixture only.
+
+FRAMEWORK_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+
+setup() {
+    FX="$(mktemp -d -t fw-t3594-XXXXXX)"
+    FX="$(cd "$FX" && pwd -P)"
+    REMOTE="$FX/remote.git"
+    W="$FX/work"
+    git init -q --bare "$REMOTE"
+    git init -q -b main "$W"
+    cd "$W"
+    git config user.email "t3594@local"
+    git config user.name "T-3594 fixture"
+    git config commit.gpgsign false
+    mkdir -p .tasks/active .context/working agents/audit lib
+    _install_audit_stub
+    cp "$FRAMEWORK_ROOT/lib/tier0_action.py" lib/
+    echo "1.0.0" > VERSION
+    printf '.context/\n' > .gitignore
+    git add -A
+    git commit -q -m "T-3594: fixture init"
+
+    PROJECT_ROOT="$W" bash "$FRAMEWORK_ROOT/agents/git/git.sh" install-hooks >/dev/null 2>&1
+    [ -x .git/hooks/pre-push ]
+    mkdir -p "$FX/hooks"
+    mv .git/hooks/pre-push "$FX/hooks/pre-push"
+    git config core.hooksPath "$FX/hooks"
+
+    git remote add origin "$REMOTE"
+    git push -q origin main 2>/dev/null
+    unset CLAUDE_PROJECT_DIR TIER0_WATCHTOWER_TTL
+    export FX REMOTE W
+}
+
+teardown() {
+    cd /
+    [ -n "${FX:-}" ] && [ -d "$FX" ] && rm -rf "${FX:?}"
+    return 0
+}
+
+_install_audit_stub() {
+    cat > agents/audit/audit.sh <<'STUB'
+#!/bin/bash
+echo "=== STRUCTURE CHECKS ==="
+echo "AUDIT-SCOPE: fails=0 ref=0 worktree=0"
+exit 0
+STUB
+    chmod +x agents/audit/audit.sh
+}
+
+_remote_sha() { git --git-dir="$REMOTE" rev-parse -q --verify "$1" 2>/dev/null; }
+
+# Rewrite the tip so the next push of main is NOT a fast-forward.
+_diverge() {
+    echo "rewritten $RANDOM" > f.txt
+    git add f.txt
+    git commit -q --amend -m "T-3594: rewritten tip"
+}
+
+_approve() {
+    (cd "$W" && env -u CLAUDECODE -u CLAUDE_PROJECT_DIR PROJECT_ROOT="$W" "$FRAMEWORK_ROOT/bin/fw" tier0 approve "$@")
+}
+
+_events() { cat "$W/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
+
+# ── consumer delivery ─────────────────────────────────────────────────────────
+
+@test "install-hooks writes the forced-update guard into pre-push" {
+    grep -q "T-3594" "$FX/hooks/pre-push"
+    grep -q "merge-base --is-ancestor" "$FX/hooks/pre-push"
+    grep -q "^# VERSION=1.9" "$FX/hooks/pre-push"
+}
+
+# ── unaffected pushes ─────────────────────────────────────────────────────────
+
+@test "fast-forward push is allowed (same shape as fw handover --commit and mirror sync)" {
+    echo more > g.txt; git add g.txt; git commit -q -m "T-3594: ff"
+    run git push origin main
+    [ "$status" -eq 0 ]
+    [ "$(_remote_sha main)" = "$(git rev-parse HEAD)" ]
+    [[ "$output" != *"T-3594"* ]]
+}
+
+@test "new branch creation (remote sha all zeros) is allowed" {
+    git checkout -q -b feature
+    echo f > h.txt; git add h.txt; git commit -q -m "T-3594: feature"
+    run git push origin feature
+    [ "$status" -eq 0 ]
+    [ "$(_remote_sha feature)" = "$(git rev-parse HEAD)" ]
+}
+
+@test "new annotated tag push is allowed" {
+    git tag -a v9.9.9 -m "Release v9.9.9"
+    run git push origin v9.9.9
+    [ "$status" -eq 0 ]
+    [ -n "$(_remote_sha v9.9.9)" ]
+}
+
+# ── refusals ──────────────────────────────────────────────────────────────────
+
+@test "typed forced push is refused and the remote is unchanged" {
+    before="$(_remote_sha main)"
+    _diverge
+    run git push --force origin main
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"Push blocked"* ]]
+    [[ "$output" == *"force-push: refs/heads/main on remote 'origin'"* ]]
+    [ "$(_remote_sha main)" = "$before" ]
+}
+
+@test "forced push launched from a SCRIPT is refused the same way" {
+    before="$(_remote_sha main)"
+    _diverge
+    printf '#!/bin/bash\ngit push --force origin main\n' > "$FX/push.sh"
+    run bash "$FX/push.sh"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"Push blocked"* ]]
+    [ "$(_remote_sha main)" = "$before" ]
+}
+
+@test "the same script succeeds after an operator approval, which is consumed once" {
+    _diverge
+    printf '#!/bin/bash\ngit push --force origin main\n' > "$FX/push.sh"
+    bash "$FX/push.sh" 2>/dev/null || true
+    run _approve
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
+    run bash "$FX/push.sh"
+    [ "$status" -eq 0 ]
+    [ "$(_remote_sha main)" = "$(git rev-parse HEAD)" ]
+    _events | grep '"event": "consumed"' | grep -q '"layer": "pre-push"'
+    # single use: the next forced update needs a fresh approval
+    _diverge
+    run bash "$FX/push.sh"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"Push blocked"* ]]
+}
+
+@test "an approval for a DIFFERENT ref does not admit the push" {
+    git push -q origin main:other 2>/dev/null
+    _diverge
+    run git push --force origin main:other      # refused; records the request for 'other'
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"refs/heads/other"* ]]
+    _approve >/dev/null
+    run git push --force origin main
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"Push blocked"* ]]
+}
+
+@test "remote branch deletion is refused, then allowed once approved" {
+    git push -q origin main:old 2>/dev/null
+    run git push origin --delete old
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"branch-delete: refs/heads/old on remote 'origin'"* ]]
+    [ -n "$(_remote_sha old)" ]
+    run _approve
+    [[ "$output" == *"DELETE ref 'old' on remote 'origin'"* ]]
+    run git push origin --delete old
+    [ "$status" -eq 0 ]
+    [ -z "$(_remote_sha old)" ]
+}
+
+@test "text-gate admission then pre-push consumption: one approval, both layers" {
+    _diverge
+    git push --force origin main 2>/dev/null || true
+    _approve >/dev/null
+    # simulate the PreToolUse gate admitting the typed command
+    json=$(python3 -c "import json,sys; print(json.dumps({'tool_input':{'command':'git push --force origin main | tail -3'},'cwd':sys.argv[1]}))" "$W")
+    run bash -c "printf '%s' '$json' | PROJECT_ROOT='$W' bash '$FRAMEWORK_ROOT/agents/context/check-tier0.sh'"
+    [ "$status" -eq 0 ]
+    run git push --force origin main
+    [ "$status" -eq 0 ]
+    _events | grep -q '"event": "admitted"'
+    _events | grep '"event": "consumed"' | grep -q '"layer": "pre-push"'
+}
+
+@test "fail closed: with no approval module a forced push is refused" {
+    rm -f lib/tier0_action.py
+    _diverge
+    run git push --force origin main
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"was not found"* ]]
+}
+
+@test "consumer layout: the module is found under .agentic-framework/lib" {
+    mkdir -p .agentic-framework/lib
+    mv lib/tier0_action.py .agentic-framework/lib/
+    _diverge
+    run git push --force origin main
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"tier0 approve"* ]]
+    _approve >/dev/null
+    run git push --force origin main
+    [ "$status" -eq 0 ]
+}
+
+@test "block message names the limit (--no-verify) and the stronger server-side control" {
+    _diverge
+    run git push --force origin main
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"--no-verify' skips this hook"* ]]
+    [[ "$output" == *"Server-side branch"* ]]
+    [[ "$output" == *"operator decision"* ]]
+}
+
+@test "LIMIT (characterization): --no-verify skips the hook — a git property" {
+    _diverge
+    run git push --force --no-verify origin main
+    [ "$status" -eq 0 ]
+    [ "$(_remote_sha main)" = "$(git rev-parse HEAD)" ]
+}

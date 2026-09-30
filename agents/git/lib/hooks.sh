@@ -24,7 +24,7 @@
 # PL-078 still applies: when you change the CONTENT of any hook template below,
 # bump this constant AND the `# VERSION=` literal in the commit-msg heredoc
 # together, so consumers' next install-hooks redeploys all four.
-COMMIT_MSG_HOOK_VERSION="1.16"
+COMMIT_MSG_HOOK_VERSION="1.17"
 
 # T-2813: verify a hook actually landed by reading state back from disk,
 # rather than trusting that the `cat`/`chmod` calls that wrote it didn't
@@ -103,7 +103,7 @@ do_install_hooks() {
 # commit-msg hook - Task Reference Enforcement
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.16
+# VERSION=1.17
 
 COMMIT_MSG_FILE="$1"
 COMMIT_MSG=$(cat "$COMMIT_MSG_FILE")
@@ -757,10 +757,10 @@ HOOK_EOF
     # Create pre-push hook for audit enforcement
     cat > "$pre_push_hook" << 'HOOK_EOF'
 #!/bin/bash
-# pre-push hook - Audit Enforcement + lightweight-tag rejection + VERSION monotonicity + self-vendor drift (T-1593, T-1603, T-1829, T-2240, T-3125, T-3126, T-3297)
+# pre-push hook - Audit Enforcement + forced-update guard + lightweight-tag rejection + VERSION monotonicity + self-vendor drift (T-1593, T-1603, T-1829, T-2240, T-3125, T-3126, T-3297, T-3594)
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.8
+# VERSION=1.9
 
 # T-1603: VERSION monotonicity check.
 # Origin: T-1602 surfaced silent VERSION rollback in cc38e98f5 (1.5.463 → 1.5.19,
@@ -777,6 +777,85 @@ _block_lines=""
 # Need to capture stdin once; tee to FD 9 so the lightweight-tag loop below
 # can re-read it via /dev/fd/9 (mkfifo not portable enough across hosts).
 _stdin_buf=$(cat)
+
+# T-3594 (T-3576 GO): forced ref updates and ref deletions need a Tier 0 ACTION
+# approval (T-3593) — enforced HERE, at the ref level, so it holds however the
+# push was launched: typed, `bash push.sh`, make, python. The PreToolUse text
+# gate only sees typed commands (T-2742); this hook sees what git is about to do.
+#   delete         local sha all zeros                      → branch-delete
+#   new ref        remote sha all zeros                     → allowed
+#   fast-forward   remote sha is an ancestor of local sha   → allowed
+#   anything else  (incl. remote sha unknown locally)       → force-push
+# A matching approval (same verb, same ref, same remote) is consumed and logged;
+# otherwise the whole push is refused and a pending request is written for
+# `fw tier0 approve`. Fails CLOSED when the approval module cannot be found.
+# LIMIT, stated plainly: `git push --no-verify` skips every client-side hook,
+# this one included (a git property). The typed flag is Tier 0 in the text gate;
+# inside a script it is not seen. Server-side branch protection is the stronger
+# control and is the operator's decision.
+_t3594_root="$(git rev-parse --show-toplevel 2>/dev/null)"
+_t3594_remote="${1:-}"
+_t3594_args=""
+_t3594_lines=""
+while IFS=' ' read -r _l_ref _l_sha _r_ref _r_sha; do
+    [ -z "$_l_ref" ] && continue
+    _verb=""
+    if [ "$_l_sha" = "$_zero" ]; then
+        [ "$_r_sha" = "$_zero" ] && continue
+        _verb="branch-delete"
+    elif [ "$_r_sha" = "$_zero" ] || [ "$_l_sha" = "$_r_sha" ]; then
+        continue
+    elif git cat-file -e "$_r_sha" 2>/dev/null \
+         && git merge-base --is-ancestor "$_r_sha" "$_l_sha" 2>/dev/null; then
+        continue
+    else
+        _verb="force-push"
+    fi
+    _t3594_args="${_t3594_args} ${_verb} ${_r_ref}"
+    _t3594_lines="${_t3594_lines}${_t3594_lines:+
+}  ${_verb}: ${_r_ref} on remote '${_t3594_remote}'"
+done <<EOF
+${_stdin_buf}
+EOF
+if [ -n "$_t3594_args" ]; then
+    _t3594_py=""
+    _t3594_fwp=$(grep "^framework_path:" "$_t3594_root/.framework.yaml" 2>/dev/null | sed 's/framework_path:[[:space:]]*//')
+    for _c in "${_t3594_fwp:+$_t3594_fwp/lib/tier0_action.py}" \
+              "$_t3594_root/.agentic-framework/lib/tier0_action.py" \
+              "$_t3594_root/lib/tier0_action.py"; do
+        [ -n "$_c" ] && [ -f "$_c" ] && { _t3594_py="$_c"; break; }
+    done
+    _t3594_fw="fw"
+    if [ -x "$_t3594_root/bin/fw" ]; then _t3594_fw="bin/fw"
+    elif [ -x "$_t3594_root/.agentic-framework/bin/fw" ]; then _t3594_fw=".agentic-framework/bin/fw"; fi
+    # shellcheck disable=SC2086  # _t3594_args is a verb/ref word list by construction
+    if [ -n "$_t3594_py" ] && _t3594_ok=$(PROJECT_ROOT="$_t3594_root" python3 "$_t3594_py" prepush "$_t3594_remote" $_t3594_args 2>&1); then
+        echo "Tier 0 action approval consumed (T-3594):" >&2
+        printf '%s\n' "$_t3594_ok" | sed 's/^/  /' >&2
+    else
+        echo "" >&2
+        echo "ERROR: Push blocked — forced update or ref deletion without a Tier 0 approval (T-3594):" >&2
+        printf '%s\n' "$_t3594_lines" >&2
+        echo "" >&2
+        if [ -z "$_t3594_py" ]; then
+            echo "  The approval module (lib/tier0_action.py) was not found, so no approval" >&2
+            echo "  can be checked — refusing (fail closed). Run 'fw upgrade' / 'fw vendor'." >&2
+        else
+            echo "  This is enforced at git pre-push, so it applies however the push was" >&2
+            echo "  launched (typed, script, make). A request has been recorded; to approve" >&2
+            echo "  it, the operator (human-only) runs:" >&2
+            echo "    cd $_t3594_root && $_t3594_fw tier0 approve" >&2
+            echo "  then push again. One approval covers one ref update, once, for a bounded time." >&2
+        fi
+        echo "" >&2
+        echo "  Limit: 'git push --no-verify' skips this hook (a git property). Typed, it is" >&2
+        echo "  a Tier 0 command; inside a script it is not seen. Server-side branch" >&2
+        echo "  protection (e.g. OneDev) is the stronger control — an operator decision." >&2
+        echo "" >&2
+        exit 1
+    fi
+fi
+
 while IFS=' ' read -r _local_ref _local_sha _remote_ref _remote_sha; do
     [ -z "$_local_ref" ] && continue
     # Skip deletions (local_sha is all zeros)

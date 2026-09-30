@@ -726,13 +726,21 @@ def _main(argv: list[str]) -> int:
             print(f"{r['id']}  {r['state']:<8}  {left:>4}s left  {describe(r)}")
         return 0
     if cmd == "prepush":
-        # prepush <verb> <remote> <ref> — consume a matching approval, or write
-        # a pending request and fail.
-        a = action(argv[1], remote=argv[2], ref=normalize_ref(argv[3]))
-        if use(root, [a], "pre-push", f"git push ({argv[1]}) {argv[2]} {argv[3]}"):
-            print(describe(a))
+        # prepush <remote> <verb> <ref> [<verb> <ref> ...] (T-3594). All-or-
+        # nothing: consume one approval per ref update, or consume none, write
+        # the whole set as a pending request and fail.
+        remote, rest = argv[1], argv[2:]
+        if not rest or len(rest) % 2:
+            print("usage: prepush <remote> <verb> <ref> [<verb> <ref> ...]", file=sys.stderr)
+            return 2
+        acts = [action(rest[i], remote=remote, ref=normalize_ref(rest[i + 1]))
+                for i in range(0, len(rest), 2)]
+        preview = f"git push {remote} " + " ".join(rest[i + 1] for i in range(0, len(rest), 2))
+        if use(root, acts, "pre-push", preview):
+            for a in acts:
+                print(describe(a))
             return 0
-        write_pending(root, [a], "pre-push", f"git push {argv[2]} {argv[3]}")
+        write_pending(root, acts, "pre-push", preview)
         return 1
     print(f"unknown subcommand {cmd}", file=sys.stderr)
     return 2

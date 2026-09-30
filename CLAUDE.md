@@ -465,7 +465,18 @@ for) is **unmapped** and keeps the old exact-text hash approval, unchanged; the 
 records which path matched (`match_path: action|command-hash`). This fixes the incentive
 that pushed agents toward script indirection; it does not widen what the text gate sees —
 everything above about scripts still holds. `rm -rf` inside a script has no equivalent
-control. The push verbs get a real enforcement point at git pre-push (T-3594).
+control.
+
+**Force-push and ref deletion are enforced at git pre-push (T-3594).** The pre-push hook
+(installed by `fw git install-hooks`, delivered to consumers by `fw upgrade`) reads git's
+ref-update lines and refuses a non-fast-forward update or a ref deletion unless a matching
+action approval exists (same verb, ref, remote), which it then consumes. That holds however
+the push was launched — typed, `bash push.sh`, make. New refs and fast-forwards (handover
+pushes, mirror sync, tag creation) pass untouched. The text gate only *admits* a push
+approval; pre-push consumes it, so one approval covers one push. **Limit:** `git push
+--no-verify` skips every client-side hook, this one included — typed, it is Tier 0; inside a
+script it is not seen. Server-side branch protection (OneDev) is the stronger control and is
+the operator's decision.
 
 ## Working with Tasks
 
