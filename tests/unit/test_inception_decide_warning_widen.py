@@ -36,6 +36,14 @@ INCEPTION_BP = (
 )
 
 
+# T-3604: the htmx side-effect warning was reworded by T-3280 (122655001) to
+# "Your decision is saved…", and T-3284 (7ef84ca56) left the literal
+# "side-effect warning" only on the non-htmx redirect path (which truncates to
+# [:300] by design, see test_non_htmx_redirect_paths_unchanged). Anchoring on
+# that literal therefore inspected the wrong block. Anchor on the htmx text.
+HTMX_WARNING_ANCHOR = "Your decision is saved"
+
+
 def _read_source() -> str:
     assert INCEPTION_BP.is_file(), f"missing source: {INCEPTION_BP}"
     return INCEPTION_BP.read_text(encoding="utf-8")
@@ -58,7 +66,7 @@ def test_side_effect_warning_truncation_widened_to_1500():
     # The narrow 150 literal MUST NOT remain on the side-effect-warning path.
     # We allow [:150] elsewhere (none expected, but defensive — the narrow
     # form must not be associated with the "side-effect warning" string).
-    side_block = _extract_block_around(src, "side-effect warning", radius=400)
+    side_block = _extract_block_around(src, HTMX_WARNING_ANCHOR, radius=400)
     assert "[:150]" not in side_block, (
         f"side-effect warning still uses [:150]; got block:\n{side_block}"
     )
@@ -72,7 +80,7 @@ def test_side_effect_warning_html_escaped():
     interpolation. Origin: defensive — fw subprocess stderr is trusted, but
     XSS hygiene + future-proofing against renderer changes."""
     src = _read_source()
-    side_block = _extract_block_around(src, "side-effect warning", radius=400)
+    side_block = _extract_block_around(src, HTMX_WARNING_ANCHOR, radius=400)
     # The side-effect warning fragment must wrap (stderr or stdout) in
     # _html.escape(...).
     assert "_html.escape" in side_block, (
@@ -85,7 +93,7 @@ def test_side_effect_warning_uses_pre_wrap_style():
     bullet list / option list in gate block messages survives — instead of
     collapsing to one wrapped line."""
     src = _read_source()
-    side_block = _extract_block_around(src, "side-effect warning", radius=400)
+    side_block = _extract_block_around(src, HTMX_WARNING_ANCHOR, radius=400)
     # Match `white-space:pre-wrap` or `white-space: pre-wrap` (with optional
     # whitespace after the colon).
     assert re.search(r"white-space\s*:\s*pre-wrap", side_block), (
