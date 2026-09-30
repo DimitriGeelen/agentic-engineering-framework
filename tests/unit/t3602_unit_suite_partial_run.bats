@@ -216,3 +216,40 @@ print("ok")
 PY
     [ "$status" -eq 0 ]
 }
+
+@test "T-3602: a run killed from outside still writes a report naming what it did not reach" {
+    for i in 1 2 3; do
+        printf '@test "slow %s" { sleep 30; }\n' "$i" > "$WORK/suite/s$i.bats"
+    done
+    printf '@test "quick" { true; }\n' > "$WORK/suite/a_quick.bats"
+    env FW_UNIT_SUITE_DIR="$WORK/suite" FW_UNIT_SUITE_REPORT_DIR="$WORK/reports" \
+        FW_UNIT_SUITE_LOCK="$WORK/lock" FW_UNIT_SUITE_TIMEOUT=300 \
+        FW_UNIT_SUITE_FILE_TIMEOUT=120 FW_UNIT_SUITE_JOBS=1 \
+        "$RUNNER" > "$WORK/runner.out" 2>&1 &
+    local pid=$!
+    local i=0
+    until [ -f "$BATS_TEST_TMPDIR/t3602/lock" ] && [ "$i" -ge 4 ]; do sleep 1; i=$((i+1)); done
+    kill -TERM "$pid"
+    wait "$pid" || true
+    run python3 - "$WORK/reports/LATEST.yaml" <<'PY'
+import sys, yaml
+d = yaml.safe_load(open(sys.argv[1]))
+b = d["legs"]["bats"]
+assert d["interrupted"] is True, d
+assert d["timed_out"] is True, d
+assert b["files"] == 4, b
+assert b["files_completed"] == 1, b          # a_quick.bats finished
+assert b["files_not_run"] == 2, b            # s2, s3 never reached
+assert "s3.bats" in b["files_not_run_names"], b
+# s1 was in flight: named as interrupted, and NOT reported as a red test —
+# stopping the pool must not make bats emit `not ok` for the killed test.
+assert b["files_timed_out"] == ["s1.bats (interrupted)"], b["files_timed_out"]
+assert b["failed_count"] == 0, b["failed"]
+print("ok")
+PY
+    [ "$status" -eq 0 ]
+    grep -q 'INTERRUPTED' "$WORK/reports/runs.log"
+    # no orphaned per-file jobs survive the kill
+    run pgrep -f "$WORK/suite/s"
+    [ "$status" -ne 0 ]
+}

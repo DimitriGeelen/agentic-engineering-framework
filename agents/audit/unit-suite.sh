@@ -130,7 +130,9 @@ _run_one() {
             < /dev/null > "$out" 2>&1 || rc=$?
     fi
     st=done
-    if [ "$rc" -eq 124 ] || [ "$rc" -eq 137 ]; then
+    # 143 = TERM from outside (the runner's signal trap stopping the pool).
+    if [ "$rc" -eq 143 ]; then st=interrupted
+    elif [ "$rc" -eq 124 ] || [ "$rc" -eq 137 ]; then
         if [ "$cap" -lt "$FILE_TIMEOUT" ]; then st=run-ceiling; else st=file-timeout; fi
     fi
     echo "$st $rc $(( $(date +%s) - t0 ))" > "$meta"
@@ -159,34 +161,65 @@ sys.stdout.write("".join(f + "\n" for f in files))
     | xargs -d '\n' -r -P "$JOBS" -n 1 bash -c '_run_one "$0" "$1" "$2"' "$leg" "$deadline"
 }
 
-# ── Leg 1: bats (tests/unit/*.bats) ─────────────────────────────────────────
-BATS_LIST=()
-while IFS= read -r _f; do BATS_LIST+=("$_f"); done < <(ls "$SUITE_DIR"/*.bats 2>/dev/null)
-BATS_FILES=${#BATS_LIST[@]}
-BATS_RC=0 BATS_ERROR=""
-if [ "$BATS_FILES" -eq 0 ]; then
-    BATS_ERROR="no *.bats files in $SUITE_DIR"
-elif ! command -v bats >/dev/null 2>&1; then
-    BATS_ERROR="bats not installed"
-else
-    BATS_BUDGET="$(_remaining_reserved)"
-    _run_leg bats $(( $(date +%s) + BATS_BUDGET )) "${BATS_LIST[@]}"
-fi
+# _descendants <pid> — every descendant pid, parents before children.
+_descendants() {
+    local c
+    for c in $(ps -o pid= --ppid "$1" 2>/dev/null); do echo "$c"; _descendants "$c"; done
+}
 
-# ── Leg 2: pytest (tests/unit/test_*.py) ────────────────────────────────────
-PY_LIST=()
-while IFS= read -r _f; do PY_LIST+=("$_f"); done < <(ls "$SUITE_DIR"/test_*.py 2>/dev/null)
-PY_FILES=${#PY_LIST[@]}
-PY_RC=0 PY_ERROR=""
-if [ "$PY_FILES" -eq 0 ]; then
-    PY_ERROR="no test_*.py files in $SUITE_DIR"
-elif ! python3 -c 'import pytest' >/dev/null 2>&1; then
-    PY_ERROR="pytest not installed"
-else
-    PY_BUDGET="$(_remaining)"
-    _run_leg pytest $(( $(date +%s) + PY_BUDGET )) "${PY_LIST[@]}"
-fi
+# _stop_pool — stop a running leg the way its own timeouts would. Order
+# matters: xargs first, so it cannot start the next file; then each per-file
+# `timeout` wrapper, which forwards TERM to its whole process group. Killing the
+# bats processes one by one instead lets bats' formatter report the in-flight
+# test as `not ok` — a false red. Measured: under a real `timeout` kill bats
+# prints no line for the in-flight test.
+_stop_pool() {
+    local all p comm
+    all=$(_descendants "$1")
+    for p in $all; do
+        comm=$(ps -o comm= -p "$p" 2>/dev/null)
+        [ "$comm" = xargs ] && kill -TERM "$p" 2>/dev/null
+    done
+    kill -TERM "$1" 2>/dev/null
+    for p in $all; do
+        comm=$(ps -o comm= -p "$p" 2>/dev/null)
+        [ "$comm" = timeout ] && kill -TERM "$p" 2>/dev/null
+    done
+    # Let each _run_one write its record (timeout -k 10 bounds this).
+    local i=0
+    for p in $all; do
+        while kill -0 "$p" 2>/dev/null && [ "$i" -lt 150 ]; do sleep 0.2; i=$((i+1)); done
+    done
+}
 
+INTERRUPTED=0
+LEG_PID=""
+BATS_FILES=0 BATS_RC=0 BATS_ERROR="" PY_FILES=0 PY_RC=0 PY_ERROR=""
+_on_signal() {
+    trap '' TERM INT
+    INTERRUPTED=1
+    [ -n "$LEG_PID" ] && _stop_pool "$LEG_PID"
+    wait 2>/dev/null
+    # Every file with no verdict record was never reached (or was in flight):
+    # record it as not-run so the report names it.
+    local f leg
+    for f in "$SUITE_DIR"/*.bats "$SUITE_DIR"/test_*.py; do
+        [ -f "$f" ] || continue
+        case "$f" in *.bats) leg=bats ;; *) leg=pytest ;; esac
+        [ -f "$RESULTS/$leg/$(basename "$f").meta" ] || echo "not-run 0 0" > "$RESULTS/$leg/$(basename "$f").meta"
+    done
+    BATS_FILES=$(ls "$SUITE_DIR"/*.bats 2>/dev/null | wc -l | tr -d ' ')
+    PY_FILES=$(ls "$SUITE_DIR"/test_*.py 2>/dev/null | wc -l | tr -d ' ')
+    echo "$(date -u +%FT%TZ) INTERRUPTED by signal — writing partial report" >> "$RUN_LOG"
+    _finish
+}
+trap _on_signal TERM INT
+
+# _finish — aggregate per-file records, write the report, exit. Runs at the
+# end of a normal run AND from the signal trap (T-3602): a run killed from
+# outside (operator, harness, OOM) still leaves a report naming what it did
+# not reach, instead of silently leaving yesterday's report as LATEST.
+_finish() {
 # Leg exit codes from the per-file records: 124 when any file produced no
 # verdict (timed out or never reached), else 1 on any failing file, else 0.
 _leg_rc() {
@@ -220,7 +253,7 @@ T3302_BATS_FILES="$BATS_FILES" T3302_BATS_RC="$BATS_RC" T3302_BATS_ERROR="$BATS_
 T3302_PY_FILES="$PY_FILES" T3302_PY_RC="$PY_RC" T3302_PY_ERROR="$PY_ERROR" \
 T3302_BATS_BUDGET="$BATS_BUDGET" T3302_PY_BUDGET="$PY_BUDGET" \
 T3302_PY_RESERVE="$PY_RESERVE" T3602_JOBS="$JOBS" T3602_FILE_TIMEOUT="$FILE_TIMEOUT" \
-T3302_REPORT_DIR="$REPORT_DIR" T3602_WALL=$(( $(date +%s) - START_EPOCH )) \
+T3302_REPORT_DIR="$REPORT_DIR" T3602_INTERRUPTED="$INTERRUPTED" T3602_WALL=$(( $(date +%s) - START_EPOCH )) \
 python3 - "$RESULTS" <<'PY'
 import glob, os, re, sys, yaml, datetime
 
@@ -246,6 +279,8 @@ def _leg(leg):
             s["timed_out"].append(name)
         elif st == "run-ceiling":
             s["timed_out"].append(name + " (killed at run ceiling)")
+        elif st == "interrupted":
+            s["timed_out"].append(name + " (interrupted)")
         else:
             s["completed"] += 1
         try:
@@ -285,7 +320,8 @@ B, P = _leg("bats"), _leg("pytest")
 # timed_out = the RUN ceiling cut something off (a file killed by it, or never
 # reached). A per-file cap alone is not a run timeout; it is named per file.
 timed_out = any(B["not_run"] or P["not_run"]) or any(
-    t.endswith("(killed at run ceiling)") for t in B["timed_out"] + P["timed_out"])
+    t.endswith(("(killed at run ceiling)", "(interrupted)"))
+    for t in B["timed_out"] + P["timed_out"])
 
 def _leg_report(s, leg):
     return {
@@ -320,6 +356,8 @@ report = {
     "file_timeout_seconds": _int("T3602_FILE_TIMEOUT"),
     "wall_seconds": _int("T3602_WALL"),
     "timed_out": timed_out,
+    # T-3602: killed from outside before it could finish (signal trap).
+    "interrupted": env.get("T3602_INTERRUPTED") == "1",
     "runner_exit": _int("T3302_RUNNER_EXIT"),
     "legs": {
         "bats": _leg_report(B, "BATS"),
@@ -348,3 +386,36 @@ fi
 echo "$FINISHED DONE runner_exit=$RUNNER_EXIT bats_rc=$BATS_RC pytest_rc=$PY_RC wall=$(( $(date +%s) - START_EPOCH ))s jobs=$JOBS" >> "$RUN_LOG"
 echo "unit-suite: done runner_exit=$RUNNER_EXIT (bats: $BATS_FILES file(s) rc=$BATS_RC; pytest: $PY_FILES file(s) rc=$PY_RC) — report: $REPORT_DIR/LATEST.yaml"
 exit "$RUNNER_EXIT"
+}
+
+# ── Leg 1: bats (tests/unit/*.bats) ─────────────────────────────────────────
+BATS_LIST=()
+while IFS= read -r _f; do BATS_LIST+=("$_f"); done < <(ls "$SUITE_DIR"/*.bats 2>/dev/null)
+BATS_FILES=${#BATS_LIST[@]}
+BATS_RC=0 BATS_ERROR=""
+if [ "$BATS_FILES" -eq 0 ]; then
+    BATS_ERROR="no *.bats files in $SUITE_DIR"
+elif ! command -v bats >/dev/null 2>&1; then
+    BATS_ERROR="bats not installed"
+else
+    BATS_BUDGET="$(_remaining_reserved)"
+    _run_leg bats $(( $(date +%s) + BATS_BUDGET )) "${BATS_LIST[@]}" &
+    LEG_PID=$!; wait "$LEG_PID"; LEG_PID=""
+fi
+
+# ── Leg 2: pytest (tests/unit/test_*.py) ────────────────────────────────────
+PY_LIST=()
+while IFS= read -r _f; do PY_LIST+=("$_f"); done < <(ls "$SUITE_DIR"/test_*.py 2>/dev/null)
+PY_FILES=${#PY_LIST[@]}
+PY_RC=0 PY_ERROR=""
+if [ "$PY_FILES" -eq 0 ]; then
+    PY_ERROR="no test_*.py files in $SUITE_DIR"
+elif ! python3 -c 'import pytest' >/dev/null 2>&1; then
+    PY_ERROR="pytest not installed"
+else
+    PY_BUDGET="$(_remaining)"
+    _run_leg pytest $(( $(date +%s) + PY_BUDGET )) "${PY_LIST[@]}" &
+    LEG_PID=$!; wait "$LEG_PID"; LEG_PID=""
+fi
+
+_finish
