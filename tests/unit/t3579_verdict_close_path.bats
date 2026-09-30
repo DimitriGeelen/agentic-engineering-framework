@@ -74,9 +74,16 @@ TASK
     echo "$f"
 }
 
+_dispatch() {
+    # Register a review dispatch the way the dispatcher does (T-3581).
+    PROJECT_ROOT="$PROJECT_ROOT" python3 "$BATS_TEST_DIRNAME/../../lib/verdict_ledger.py" \
+        register-dispatch --dispatch-id "${1:-rv-1}" --task T-9200 --task-type review >/dev/null
+}
+
 _record() {
+    _dispatch rv-1
     "$FW" reviewer verdict record T-9200 --ac 1 --outcome "$1" --reviewer "openai/gpt-5" \
-        --rung cross-vendor "${@:2}"
+        --rung cross-vendor --dispatch-id rv-1 "${@:2}"
 }
 
 @test "without a verdict the render task is refused by the sovereignty gate" {
@@ -138,9 +145,27 @@ _record() {
         GIT_COMMITTER_NAME="Builder Bot" GIT_COMMITTER_EMAIL=b@x.y \
         git -C "$PROJECT_ROOT" -c core.hooksPath=/dev/null commit -q -m "T-9200: build it"
 
+    _dispatch rv-1
     run "$FW" reviewer verdict record T-9200 --ac 1 --outcome green --reviewer "Builder Bot" \
-        --rung same-agent --evidence evidence.md
+        --rung same-agent --dispatch-id rv-1 --evidence evidence.md
     [ "$status" -eq 1 ]
     echo "$output" | grep -q "never the producer"
     [ ! -f "$PROJECT_ROOT/.context/reviews/verdicts.jsonl" ]
+}
+
+@test "T-3581 containment: a hand-appended green row does not close the render task" {
+    local f; f="$(_make_render_task)"
+    mkdir -p "$PROJECT_ROOT/.context/reviews"
+    local dg
+    dg=$(PROJECT_ROOT="$PROJECT_ROOT" python3 -c "
+import sys; sys.path.insert(0,'$BATS_TEST_DIRNAME/../..')
+from lib import verdict_ledger as v; from lib.delegation import human_criteria
+t=open('$f').read(); print(v.criterion_digest(human_criteria(t)[0].title))")
+    printf '{"id":"V-FORGED","task":"T-9200","ac":1,"ac_digest":"%s","outcome":"green","verdict":"green","reviewer":"independent-reviewer-session-7","rung":"x","evidence":["evidence.md"]}\n' "$dg" \
+        > "$PROJECT_ROOT/.context/reviews/verdicts.jsonl"
+
+    run "$UPDATE_TASK" T-9200 --status work-completed
+    [ "$status" -ne 0 ]
+    [ "$(ls "$PROJECT_ROOT/.tasks/active" | grep -c '^T-9200-')" -eq 1 ]
+    ! echo "$output" | grep -q "Render-surface gate: satisfied"
 }

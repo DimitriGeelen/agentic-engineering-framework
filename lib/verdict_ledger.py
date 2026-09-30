@@ -66,6 +66,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import hmac
 import json
 import os
 import re
@@ -91,6 +92,11 @@ from lib.delegation import (  # noqa: E402
 VERDICTS = Path(".context/reviews/verdicts.jsonl")
 REFUSALS = Path(".context/reviews/refusals-interim.jsonl")
 APPLIED = Path(".context/reviews/applied.jsonl")
+#: Review dispatches, written by the dispatcher (`fw termlink dispatch --task-type review`)
+#: at spawn time and HMAC-signed. A verdict row counts only if it names one (T-3581).
+DISPATCHES = Path(".context/reviews/review-dispatches.jsonl")
+DISPATCH_KEY = Path(".context/secrets/review-dispatch.key")
+REVIEW_TASK_TYPE = "review"
 
 GREEN, AMBER, RED, ESCALATE = "green", "amber", "red", "escalate"
 OUTCOMES = (GREEN, AMBER, RED, ESCALATE)
@@ -173,6 +179,72 @@ def _render_surface(root: Path, task_file: Path) -> bool:
             os.environ["PROJECT_ROOT"] = old
 
 
+# ── review-dispatch provenance (T-3581) ─────────────────────────────────────────
+#
+# A verdict row is only DATA until it names a review dispatch the framework itself
+# registered. The dispatcher writes the registry row when it spawns a worker with
+# task-type `review`, signed with a key under .context/secrets/ (untracked). The
+# reviewer's identity is then something the dispatch record says, not a string the
+# producer types. Same-user honesty: an agent that can read the key can sign a row —
+# this makes that a deliberate act with a trail, not a one-line append.
+
+
+def _dispatch_key(root: Path, create: bool = False) -> bytes | None:
+    p = root / DISPATCH_KEY
+    if p.is_file():
+        return p.read_bytes().strip() or None
+    if not create:
+        return None
+    p.parent.mkdir(parents=True, exist_ok=True)
+    key = uuid.uuid4().hex.encode() + uuid.uuid4().hex.encode()
+    fd = os.open(str(p), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(fd, "wb") as fh:
+        fh.write(key + b"\n")
+    return key
+
+
+def _sign(key: bytes, row: dict) -> str:
+    body = {k: row[k] for k in ("dispatch_id", "task", "task_type", "issuer_session",
+                                "issuer_identity", "ts")}
+    return hmac.new(key, json.dumps(body, sort_keys=True, separators=(",", ":")).encode(),
+                    hashlib.sha256).hexdigest()
+
+
+def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
+                      issuer_session: str = "", issuer_identity: str = "",
+                      root: Path | None = None) -> dict:
+    """Record a dispatch. Called by the dispatcher, for every task-type, at spawn time."""
+    root = root or _root()
+    if not (dispatch_id or "").strip() or not (task_id or "").strip():
+        raise ValueError("dispatch_id and task are required")
+    row = {"dispatch_id": dispatch_id.strip(), "task": task_id.strip(),
+           "task_type": (task_type or "").strip().lower(),
+           "issuer_session": issuer_session, "issuer_identity": issuer_identity, "ts": _now()}
+    row["sig"] = _sign(_dispatch_key(root, create=True), row)
+    _append(DISPATCHES, row, root)
+    return row
+
+
+def dispatch_record(root: Path, dispatch_id: str) -> tuple[dict | None, str]:
+    """(record, '') for a registered, correctly signed dispatch; else (None, reason)."""
+    if not (dispatch_id or "").strip():
+        return None, "no dispatch id — a verdict must name the review dispatch that produced it"
+    rows = [r for r in _read(DISPATCHES, root) if r.get("dispatch_id") == dispatch_id]
+    if not rows:
+        return None, f"dispatch {dispatch_id!r} is not in the review-dispatch registry"
+    key = _dispatch_key(root)
+    if key is None:
+        return None, "no dispatch signing key — no dispatch can be verified"
+    rec = rows[0]  # first registration wins; a later row cannot re-type an earlier dispatch
+    try:
+        good = hmac.compare_digest(str(rec.get("sig", "")), _sign(key, rec))
+    except KeyError:
+        good = False
+    if not good:
+        return None, f"dispatch {dispatch_id!r} has an invalid signature — the registry row was not written by the dispatcher"
+    return rec, ""
+
+
 # ── identity / producer ──────────────────────────────────────────────────────
 
 
@@ -243,7 +315,7 @@ def is_producer(identity: str, produced_by: set[str]) -> str:
 
 def record(task_id: str, ac_index: int, outcome: str, *, reviewer: str, rung: str,
            guidance: str = "", evidence: list[str] | None = None,
-           digest: str = "", root: Path | None = None) -> dict:
+           digest: str = "", dispatch_id: str = "", root: Path | None = None) -> dict:
     """Append a verdict for Human criterion `ac_index` of `task_id`, or raise VerdictRefused.
 
     Every refusal is written to the refusal ledger before it is raised.
@@ -262,6 +334,17 @@ def record(task_id: str, ac_index: int, outcome: str, *, reviewer: str, rung: st
         refuse("no-reviewer", "reviewer identity is required (session/model/vendor)")
     if not (rung or "").strip():
         refuse("no-rung", "rung is required — how independent this review claims to be (IW-3)")
+
+    drec, why = dispatch_record(root, dispatch_id)
+    if drec is None:
+        refuse("no-dispatch", why)
+    if drec.get("task_type") != REVIEW_TASK_TYPE:
+        refuse("not-review-dispatch",
+               f"dispatch {dispatch_id!r} has task-type {drec.get('task_type')!r}, not "
+               f"{REVIEW_TASK_TYPE!r} — only a review dispatch may write a verdict")
+    if drec.get("task") != task_id:
+        refuse("dispatch-task-mismatch",
+               f"dispatch {dispatch_id!r} was issued for {drec.get('task')!r}, not {task_id}")
 
     path, sub = _find_task(root, task_id)
     if path is None:
@@ -323,6 +406,7 @@ def record(task_id: str, ac_index: int, outcome: str, *, reviewer: str, rung: st
         "verdict": jv["state"],
         "guidance": jv["guidance"],
         "reviewer": reviewer.strip(),
+        "dispatch_id": dispatch_id.strip(),
         "rung": rung.strip(),
         "evidence": evidence,
         "judgement": jv,
@@ -372,9 +456,23 @@ def satisfying(task_id: str, crit, produced_by: set[str], root: Path) -> dict | 
             if r.get("task") == task_id and r.get("ac") == crit.index
             and r.get("ac_digest") == dg
             and not is_producer(str(r.get("reviewer", "")), produced_by)]
+    if mine and mine[-1].get("outcome") == GREEN and _provenance_fault(root, task_id, mine[-1]):
+        return None  # CONTAINMENT: an unattributable green never counts (T-3581)
     if mine and mine[-1].get("outcome") == GREEN:
         return mine[-1]
     return None
+
+
+def _provenance_fault(root: Path, task_id: str, row: dict) -> str:
+    """'' when the row names a registered review dispatch for this task, else why not."""
+    drec, why = dispatch_record(root, str(row.get("dispatch_id") or ""))
+    if drec is None:
+        return why
+    if drec.get("task_type") != REVIEW_TASK_TYPE:
+        return f"dispatch task-type is {drec.get('task_type')!r}, not {REVIEW_TASK_TYPE!r}"
+    if drec.get("task") != task_id:
+        return f"dispatch was issued for {drec.get('task')!r}"
+    return ""
 
 
 def _task_context(root: Path, task_id: str):
@@ -483,6 +581,15 @@ def _cli(argv: list[str] | None = None) -> int:
     r.add_argument("--guidance", default="", help="mandatory unless green")
     r.add_argument("--evidence", action="append", default=[], help="repo path; repeatable")
     r.add_argument("--digest", default="", help="digest of the criterion text the reviewer read")
+    r.add_argument("--dispatch-id", default="", help="id of the review dispatch that produced this "
+                   "verdict — must be in the dispatch registry with task-type review")
+
+    g = sub.add_parser("register-dispatch", help="(dispatcher) register a dispatch for later provenance checks")
+    g.add_argument("--dispatch-id", required=True)
+    g.add_argument("--task", required=True)
+    g.add_argument("--task-type", default="")
+    g.add_argument("--issuer-session", default="")
+    g.add_argument("--issuer-identity", default="")
 
     a = sub.add_parser("apply", help="tick green-judged criteria; hand ownership over if none left")
     a.add_argument("task_id")
@@ -498,11 +605,17 @@ def _cli(argv: list[str] | None = None) -> int:
         try:
             rec = record(args.task_id, args.ac, args.outcome, reviewer=args.reviewer,
                          rung=args.rung, guidance=args.guidance, evidence=args.evidence,
-                         digest=args.digest)
+                         digest=args.digest, dispatch_id=args.dispatch_id)
         except VerdictRefused as e:
             print(f"REFUSED: {e}", file=sys.stderr)
             return 1
         print(json.dumps({k: rec[k] for k in ("id", "task", "ac", "ac_digest", "outcome")}))
+        return 0
+    if args.cmd == "register-dispatch":
+        row = register_dispatch(args.dispatch_id, args.task, args.task_type,
+                                issuer_session=args.issuer_session,
+                                issuer_identity=args.issuer_identity)
+        print(json.dumps({k: row[k] for k in ("dispatch_id", "task", "task_type")}))
         return 0
     if args.cmd == "apply":
         res = apply(args.task_id)
