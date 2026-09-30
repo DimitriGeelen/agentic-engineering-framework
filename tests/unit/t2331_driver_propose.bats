@@ -18,7 +18,10 @@ setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
     # Seed a minimal policy file so PROJECT_ROOT resolves cleanly.
-    mkdir -p "$TEST_TEMP_DIR/policy"
+    # T-3604: the .tasks marker is required since T-2391 (67893ed78) — bin/fw
+    # treats a markerless PROJECT_ROOT as stale and re-resolves it (to the real
+    # repo), which made every write here land in the live .context/.
+    mkdir -p "$TEST_TEMP_DIR/policy" "$TEST_TEMP_DIR/.tasks"
     env PROJECT_ROOT="$TEST_TEMP_DIR" "$FRAMEWORK_ROOT/bin/fw" bvp driver --init >/dev/null 2>&1 || true
 }
 

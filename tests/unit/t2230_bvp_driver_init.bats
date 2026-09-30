@@ -15,6 +15,10 @@ setup() {
     unset PROJECT_ROOT  # T-2185 / L-456: avoid project-root leak from parent shell
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
+    # T-3604: a project marker is required since T-2391 (67893ed78) — bin/fw
+    # treats a markerless PROJECT_ROOT as stale and re-resolves it to the real
+    # repo, so --init/--force ran against the live policy/ files.
+    mkdir -p "$TEST_TEMP_DIR/.tasks"
 
     # Framework template MUST exist for these tests to be meaningful.
     [ -f "$FRAMEWORK_ROOT/policy/value-drivers.yaml" ] || \
