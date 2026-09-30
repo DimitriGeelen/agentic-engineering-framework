@@ -21,7 +21,7 @@ from lib import verdict_ledger as vl  # noqa: E402
 import _review_runtime as rt  # noqa: E402
 from t3580_judge_cli_test import TASTE, TID, _mk_task, _produce, repo  # noqa: E402,F401
 from t3580_round2_test import _commit_as  # noqa: E402
-from t3580_round3_test import HI, _record  # noqa: E402
+from t3580_round3_test import HI, _record, _run_worker, rtrepo  # noqa: E402,F401
 from t3580_round7_test import R3, _dispatch_cli, _git, hi  # noqa: E402,F401
 
 TERMLINK = _HERE / "agents" / "termlink" / "termlink.sh"
@@ -208,3 +208,25 @@ class TestWorkerLaunchIsPinned:
         assert 'if [ "$TASK_TYPE" = "review" ]; then\n    TOOLS_FLAG=""; PERMISSION_MODE_FLAG=""' in body
         assert "$MODEL_FLAG $SETTING_SOURCES_FLAG" in body
         assert "Workers spawn\n# --bare" not in src and "Workers spawn --bare" not in src
+
+    def test_parent_argv_keeps_an_empty_model_argument(self, tmp_path):
+        """run.sh is invoked with '' for the model (worker default); /proc cmdline must keep it."""
+        out = tmp_path / "argv.json"
+        code = ("import json,sys; sys.path.insert(0, sys.argv[1]); from lib import verdict_ledger as vl; "
+                "json.dump(vl._parent_argv(), open(sys.argv[2], 'w'))")
+        subprocess.run(["bash", "-c", 'python3 -c "$0" "$1" "$2"; :', code, str(_HERE), str(out),
+                        "", "review"], check=True, timeout=60)
+        argv = json.loads(out.read_text())
+        assert argv[-2:] == ["", "review"], argv
+
+
+class TestRealRuntimeModel:
+    def test_real_run_sh_started_with_another_model_is_refused(self, rtrepo):
+        """N2(a), end to end: the dispatcher registered the committed model ('' here); a run.sh
+        started with `evil` as its model argument gets no start, so nothing it records counts."""
+        did, _w, out = _run_worker(rtrepo, model="evil")
+        assert vl._starts_for(rtrepo, did) == [] and "start not recorded" in out
+
+    def test_control_run_sh_with_the_registered_model_starts(self, rtrepo):
+        did, _w, _out = _run_worker(rtrepo)
+        assert len(vl._starts_for(rtrepo, did)) == 1

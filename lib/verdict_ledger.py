@@ -830,7 +830,12 @@ def _parent_argv() -> list[str]:
     ppid = os.getppid()
     try:
         raw = Path(f"/proc/{ppid}/cmdline").read_bytes()
-        return [a.decode(errors="replace") for a in raw.split(b"\0") if a]
+        # Round 8: keep EMPTY arguments — run.sh's positional model may be '' (worker default),
+        # and dropping it would shift every later position.
+        parts = raw.split(b"\0")
+        if parts and parts[-1] == b"":
+            parts = parts[:-1]
+        return [a.decode(errors="replace") for a in parts]
     except OSError:
         try:
             return subprocess.run(["ps", "-o", "args=", "-p", str(ppid)], capture_output=True,

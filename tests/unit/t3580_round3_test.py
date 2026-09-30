@@ -221,7 +221,7 @@ def rtrepo(repo):
     return repo
 
 
-def _run_worker(root, mode="green"):
+def _run_worker(root, mode="green", model=""):
     """Register exactly as cmd_dispatch does, then execute the real run.sh with the stub claude."""
     did = "judge-t-9200-r1-a1b2c3d4e5f6"
     wdir = root.parent / f"{root.name}-tl" / did
@@ -258,7 +258,7 @@ def _run_worker(root, mode="green"):
     env.pop("PROJECT_ROOT", None)
     # Output to a file, not a pipe: run.sh's watchdog `sleep` outlives it and would hold a pipe open.
     with (wdir.parent / f"{did}.out").open("w") as fh:
-        out = subprocess.run(["bash", str(wdir / "run.sh"), did, str(root), str(wdir), "60", "",
+        out = subprocess.run(["bash", str(wdir / "run.sh"), did, str(root), str(wdir), "60", model,
                               "review", ""], stdout=fh, stderr=subprocess.STDOUT, env=env, timeout=120)
     return did, wdir, (wdir.parent / f"{did}.out").read_text()
 
