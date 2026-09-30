@@ -10752,8 +10752,10 @@ YAMLEOF
         esac
         ;;
     review)
-        source "$FW_LIB_DIR/review.sh"
-        review_main "$@"
+        # T-3583/T-3586: review and dispatch cost (registry, ledger, paid proposals).
+        # lib/review.sh is the `fw task review` emitter — T-3583 overwrote it; do not reuse the name.
+        PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 "$FW_LIB_DIR/review_cost.py" "$@"
+        exit $?
         ;;
     config)
         source "$FW_LIB_DIR/config-file.sh"

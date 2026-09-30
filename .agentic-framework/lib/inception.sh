@@ -787,7 +787,9 @@ EOF
                 return "$_uts_rc"
             fi
         fi
-        "$AGENTS_DIR/task-create/update-task.sh" "$task_id" --status work-completed --skip-sovereignty --reason "Inception decision: $decision_upper" 2>&1
+        # T-3586: --i-am-human — decide already refused agents (T-1259) before reaching here,
+        # and a Watchtower-driven decide inherits CLAUDECODE=1 from the Flask process.
+        "$AGENTS_DIR/task-create/update-task.sh" "$task_id" --status work-completed --skip-sovereignty --i-am-human --reason "Inception decision: $decision_upper" 2>&1
         _uts_rc=$?
         if [ "$_uts_rc" -ne 0 ]; then
             echo "" >&2
