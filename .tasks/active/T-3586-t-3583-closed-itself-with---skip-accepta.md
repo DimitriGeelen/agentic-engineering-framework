@@ -361,6 +361,10 @@ bin/fw vendor self --check
 - `fw audit` enforcement section prints the weekly cost lines and the registry PASS
 - Follow-ups filed: T-3588 (Watchtower approvals surface), T-3589 (consumer hook rollout)
 
+## What this does not claim
+
+- **A Watchtower POST is not proof of a human (added by T-3590 from the independent review, docs/reports/T-3586-T-3587-review.md A.6).** The batch-complete path strips `CLAUDECODE` because a Watchtower click is the operator's act. But any local agent can fetch a CSRF token with curl and POST `/api/approvals/complete-batch` (or T-1193's `/api/approvals/decide`). The bypass log then records "Batch completed via Watchtower UI (human action)", and nothing tells an agent-originated POST apart from a real click. The refusal of `--skip-*` under `CLAUDECODE=1` therefore does not cover the Watchtower routes. T-3590 limits the damage (only posted ids, each re-checked as partial-complete with every Human criterion ticked); it does not close this gap.
+
 ## Decisions
 
 ### 2026-09-30 — where the skip policy is enforced

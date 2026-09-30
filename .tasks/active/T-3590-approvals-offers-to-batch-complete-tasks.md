@@ -50,7 +50,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T10:54:02Z
-last_update: 2026-09-30T10:54:45Z
+last_update: '2026-09-30T11:00:22Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -80,6 +80,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-30T11:00:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=276,acs=8)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3590: /approvals offers to batch-complete tasks that are NOT ready - the button's ready test and the list's admission test use different Human-criteria parsers
@@ -92,11 +102,11 @@ The operator has been told not to click the batch button until this lands.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] ONE canonical "ready for batch completion" predicate (all Human criteria ticked, counting every `### Human` block as T-3139 does, AND at least one Human criterion exists) lives in one function; admission, the page's ready count and `complete_batch` all call it; grep proves `_parse_acceptance_criteria` is no longer used for any decision on /approvals
-- [ ] Live: after restart, /approvals no longer offers T-2200 or T-2202 as ready (they stay listed as pending review); a test reproduces their shape (a `### Human` block after an intervening `## ` heading, unticked) and proves it is not ready, with a control that a genuinely ready task is
-- [ ] Batch-complete completes only the task ids the page displayed: the form posts them, and the handler refuses any id that is not ready by the canonical predicate at POST time (no "complete everything that happens to be ready now")
-- [ ] The agent-can-POST residual (any local agent can fetch a CSRF token and POST) is written into this task's Decisions and into T-3586's "what this does not claim"; not fixed here
-- [ ] `bin/fw watchtower current`; `bin/fw vendor self --check` clean
+- [x] ONE canonical "ready for batch completion" predicate (all Human criteria ticked, counting every `### Human` block as T-3139 does, AND at least one Human criterion exists) lives in one function; admission, the page's ready count and `complete_batch` all call it; grep proves `_parse_acceptance_criteria` is no longer used for any decision on /approvals
+- [x] Live: after restart, /approvals no longer offers T-2200 or T-2202 as ready (they stay listed as pending review); a test reproduces their shape (a `### Human` block after an intervening `## ` heading, unticked) and proves it is not ready, with a control that a genuinely ready task is
+- [x] Batch-complete completes only the task ids the page displayed: the form posts them, and the handler refuses any id that is not ready by the canonical predicate at POST time (no "complete everything that happens to be ready now")
+- [x] The agent-can-POST residual (any local agent can fetch a CSRF token and POST) is written into this task's Decisions and into T-3586's "what this does not claim"; not fixed here
+- [x] `bin/fw watchtower current`; `bin/fw vendor self --check` clean
 - [ ] Render review by an independent internal reviewer on live screenshots of /approvals (operator ruling, T-3557)
 
 ### Human
@@ -258,7 +268,19 @@ The operator has been told not to click the batch button until this lands.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 300 python3 -m pytest tests/web/test_t3590_batch_ready_predicate.py tests/web/test_approvals_cache.py tests/unit/test_approvals_expand_overflow.py -q -p no:cacheprovider > /tmp/.t3590 2>&1 && grep -q passed /tmp/.t3590
+bin/fw watchtower current
+bin/fw vendor self --check
+
 ## RCA
+
+**Symptom:** live /approvals offered "Complete 2 Ready Tasks" for T-2200 and T-2202. Both are started-work, and each has an unticked [REVIEW] Human criterion. One click would have closed both with `--skip-sovereignty --skip-verification --skip-acceptance-criteria`.
+
+**Root cause:** two parsers answered one question. Admission (`needs_human_review`, T-3139) counts every `### Human` block. The ready test (`ready_count` and `complete_batch`) re-derived readiness from `_parse_acceptance_criteria`, which stops at the first `## ` heading after `## Acceptance Criteria`. In T-2200/T-2202 the Human block sits under `## Status: COMPLETED`, so the parser saw zero Human criteria and "all ticked" was vacuously true. `complete_batch` also never checked status and took no ids: it completed whatever it judged ready at POST time.
+
+**Why structurally allowed:** T-2075 centralised the admission predicate but left the ready test and the per-card Complete button on the old parser. Since admission requires an unchecked criterion, the old ready test over admitted rows could only ever be true when the parser was wrong, so the button had no legitimate trigger left. No test covered the ready path with a heading between the sections.
+
+**Prevention:** one predicate (`is_ready_for_batch_completion`) plus `tests/web/test_t3590_batch_ready_predicate.py`, which pins the T-2200 shape, the root-cause parser behaviour, the started-work refusal, the posted-ids-only handler, and a grep guard that `_parse_acceptance_criteria` is used on /approvals for display only.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -328,6 +350,14 @@ The operator has been told not to click the batch button until this lands.
 -->
 
 ## Decisions
+
+### 2026-09-30 — what "ready" means, and where the predicate lives
+- **Chose:** `web.shared.is_ready_for_batch_completion(status, body)`: `status == work-completed` (partial-complete) AND at least one Human criterion AND none unchecked, counted by `count_human_acs` (the same T-3139 scoping as `count_unchecked_human_acs`). Used by `_load_batch_ready_tasks` (the page's ready count and the ids the form posts) and by `complete_batch` at POST time. Admission stays `needs_human_review` over the same counter, so the two lists are disjoint by construction.
+- **Why:** batch-complete runs with `--skip-acceptance-criteria --skip-verification`, so a `started-work` task must never qualify whatever its Human boxes say (T-2200 and T-2202 are started-work). The T-1568 comment already said "partial-complete only"; the code never checked it.
+- **Rejected:** changing `_parse_acceptance_criteria`'s scoping. It feeds the AC toggle endpoints via `line_idx`, plus review.py and cockpit.py, which is too wide a blast radius for an urgent fix. It stays on /approvals for display only, and cards now say when unticked Human criteria sit outside what it shows. Also rejected: filtering `pending_acs` with the canonical predicate, which is always empty because admission requires an unchecked criterion. That is also why the old button could only ever appear when the parser was wrong.
+
+### 2026-09-30 — residual: an agent can POST the endpoint (documented, not fixed)
+- Any local agent can fetch a CSRF token with curl and POST `/api/approvals/complete-batch`. The bypass log then records "human action", and nothing tells an agent-originated POST apart from a click. Same posture as T-1193's `/api/approvals/decide`. This task limits the blast radius (only posted ids, each re-judged ready at POST time) but does not close the gap. Also recorded in T-3586 under "What this does not claim".
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
