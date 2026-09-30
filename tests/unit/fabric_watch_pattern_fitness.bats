@@ -59,7 +59,8 @@ _require_audit_ran() {
     [[ "$out" != *"point at files no watch pattern covers"* ]]
     [[ "$out" != *"matches 0 files while"* ]]
     # and the fitting case must actually reach the PASS, not fall out earlier
-    echo "$out" | grep -q "Fabric drift: all 1 watched file(s) registered"
+    # T-3105 (92deaef0c): the PASS reports the examined set via pass_over.
+    echo "$out" | grep -q "Fabric drift: all watched files registered — examined 1 watched file(s)"
 }
 
 @test "T-2737: a card outside every pattern raises the coverage-denominator WARN" {
@@ -90,8 +91,9 @@ _require_audit_ran() {
     # like coverage over 15 files when it was coverage over zero.
     _project "$TEST_TEMP_DIR/p"
     local out; out="$(_audit "$TEST_TEMP_DIR/p")"; _require_audit_ran "$out"
-    echo "$out" | grep -q "all 1 watched file(s) registered"
-    ! echo "$out" | grep -q "All watched source files registered"
+    # T-3105 (92deaef0c): pass_over appends "— examined N <set>".
+    echo "$out" | grep -q "all watched files registered — examined 1 watched file(s)"
+    [[ "$out" != *"All watched source files registered"* ]]
 }
 
 @test "T-2737: both new signals are WARN, never FAIL" {
