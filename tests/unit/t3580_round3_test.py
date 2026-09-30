@@ -25,7 +25,7 @@ from lib import verdict_ledger as vl  # noqa: E402
 from lib.reviewer import judge_cli  # noqa: E402
 import _review_runtime as rt  # noqa: E402
 from t3580_judge_cli_test import (  # noqa: E402,F401
-    ALL_KINDS, NOCAP, TASTE, TID, FakeWorker, _git, _ident, _judge, _mk_task, _produce, repo,
+    ALL_KINDS, NOCAP, _all_kinds, TASTE, TID, FakeWorker, _git, _ident, _judge, _mk_task, _produce, repo,
 )
 from t3580_round2_test import (  # noqa: E402
     _commit_as, _crit, _ctx, _dispatch, _task_file,
@@ -537,6 +537,7 @@ class TestCostIntegration:
             "  - id: acme-review\n    name: Acme\n    harness_class: subscription\n"
             "    cost_class: internal\n    approval_required: false\n    cost_estimate_method: unmetered\n"
             "    description: x\n    match:\n      - '--worker-kind[= ]acme\\b'\n"
+            "    worker_kind: acme\n    vendor: acme-corp\n"      # round 5: the one kind→vendor mapping
             "  - id: openrouter\n    name: OR\n    harness_class: pay_per_use\n    cost_class: paid\n"
             "    approval_required: true\n    cost_estimate_method: tokens_estimated\n    description: x\n")
         _mk_task(repo, TASTE)
@@ -554,8 +555,7 @@ class TestCostIntegration:
             assert f'"{vendor}"' not in code, vendor
 
     def test_one_cost_record_per_dispatched_seat(self, repo, monkeypatch):
-        monkeypatch.setattr(judge_cli, "_dispatchable_kinds", lambda root: ALL_KINDS)
-        monkeypatch.setattr(judge_cli, "_kind_vendors", lambda root: {k: k for k in ALL_KINDS})
+        _all_kinds(monkeypatch, repo)
         _mk_task(repo, TASTE, extra_fm=HI)
         _produce(repo)
         w = FakeWorker("green")

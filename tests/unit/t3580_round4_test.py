@@ -73,7 +73,10 @@ class TestCompletionSecret:
         rc, lines = vl.audit(prod)
         assert rc != 0 and any("no completion" in ln for ln in lines)
 
-    def test_control_the_same_call_with_the_runtimes_secret_is_accepted(self, prod):
+    def test_control_a_started_runtime_with_its_secret_is_accepted(self, prod):
+        """Renamed in round 5: this is the RUNTIME path — `take_secret` records the signed start
+        run.sh makes. The never-ran path (secret read from a leftover file, no start) is the
+        negative control in t3580_round5_test.TestNeverRun."""
         w = self._never_ran(prod)
         assert vl.complete("rv-1", wdir=str(w), exit_code=0, root=prod,
                            secret=rt.take_secret(prod, "rv-1"))
@@ -143,7 +146,8 @@ def _alias_panel(root, vendors):
 _ALIASES = ("backends:\n" + "".join(
     f"  - id: alias-{x}\n    name: A{x}\n    harness_class: subscription\n    cost_class: internal\n"
     f"    approval_required: false\n    cost_estimate_method: unmetered\n    description: x\n"
-    f"    match:\n      - '--worker-kind[= ]claude\\b'\n" for x in "abc")
+    f"    match:\n      - '--worker-kind[= ]claude\\b'\n    worker_kind: claude\n    vendor: anthropic\n"
+    for x in "abc")
     + "  - id: openrouter\n    name: OR\n    harness_class: pay_per_use\n    cost_class: paid\n"
       "    approval_required: true\n    cost_estimate_method: tokens_estimated\n    description: x\n")
 
@@ -154,13 +158,9 @@ class TestVendorDiversity:
         assert _ticked(prod) == []
         assert _closed(prod).startswith("degraded") and "span 1" in _closed(prod)
 
-    def test_control_three_registered_vendors_do(self, prod):
-        _alias_panel(prod, ["anthropic", "vendor-2", "vendor-3"])
-        assert _ticked(prod) == [1]
-
-    def test_a_seat_whose_dispatch_registered_no_vendor_is_unverified(self, prod):
-        _alias_panel(prod, ["anthropic", "vendor-2", ""])
-        assert _ticked(prod) == [] and "panel-unverified-vendor" in _closed(prod)
+    # Round 5: the round-4 "control" (three claude dispatches registered as anthropic / vendor-2 /
+    # vendor-3) was the attack itself. Its replacement, with three distinct registered KINDS, and
+    # the inconsistent-registration negative controls live in t3580_round5_test.TestVendorMapping.
 
     def test_judge_with_three_registry_aliases_for_one_worker_kind(self, repo):
         """Application negative control: the real dispatcher table (not monkeypatched) maps all
@@ -186,7 +186,8 @@ class TestVendorDiversity:
 
     def test_cmd_dispatch_registers_kind_and_vendor(self):
         src = TERMLINK.read_text()
-        assert '--worker-kind "${worker_kind:-claude}" --vendor "$(_worker_vendor "$worker_kind")"' in src
+        assert '--worker-kind "${worker_kind:-claude}" --ttl' in src     # round 5: no free-text vendor
+        assert '--vendor' not in src.split("register-dispatch", 1)[1].split("finalise_required", 1)[0]
 
 
 # ── 3. MEDIUM: a review wait returns only once the runtime has finalised ─────────────────────
@@ -235,8 +236,10 @@ class TestFinalisedWait:
         assert judge_cli._collect(prod, TID, did, crit)[0]["outcome"] == "unknown"  # not yet
 
         os.environ.pop(vl._WORKER_ENV, None)               # ... and the runtime signs, late
-        vl.complete(did, wdir=str(w), exit_code=0, session=did, secret=secret, root=prod)
-        (w / "finalised").write_text("signed\n")
+        vl.start(did, wdir=str(w), secret=secret, root=prod)   # round 5: (normally run.sh's first act)
+        c = vl.complete(did, wdir=str(w), exit_code=0, session=did, secret=secret, root=prod)
+        (w / "completion.json").write_text(json.dumps({"sig": c["sig"]}))
+        (w / "finalised").write_text(f"signed:{c['sig']}\n")
         t.join(15)
         assert not t.is_alive() and rc["v"] == 0
         assert judge_cli._collect(prod, TID, did, crit)[0]["outcome"] == "green"
@@ -245,7 +248,7 @@ class TestFinalisedWait:
         prod, did, w, fw = tl
         (w / "finalise_required").write_text("")
         (w / "exit_code").write_text("0\n")
-        (w / "finalised").write_text("unsigned\n")
+        (w / "finalised").write_text("unsigned:completion-refused\n")
         assert judge_cli._await_worker(fw, did, prod, 10) == 0
 
     def test_control_a_non_review_dispatch_returns_on_exit_code(self, tl):
@@ -256,7 +259,8 @@ class TestFinalisedWait:
 
     def test_real_run_sh_writes_finalised_after_the_completion(self, rtrepo):
         did, wdir, out = _run_worker(rtrepo)
-        assert (wdir / "finalised").read_text().strip() == "signed"
+        sig = json.loads((wdir / "completion.json").read_text())["sig"]
+        assert (wdir / "finalised").read_text().strip() == f"signed:{sig}"
         assert (wdir / "finalised").stat().st_mtime_ns >= (wdir / "completion.json").stat().st_mtime_ns
 
 

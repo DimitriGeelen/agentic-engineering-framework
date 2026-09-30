@@ -80,7 +80,7 @@ _dispatch() {
     mkdir -p "$TEST_TEMP_DIR.tl/${1:-rv-1}"
     PROJECT_ROOT="$PROJECT_ROOT" python3 "$BATS_TEST_DIRNAME/../../lib/verdict_ledger.py" \
         register-dispatch --dispatch-id "${1:-rv-1}" --task T-9200 --task-type review \
-        --wdir "$TEST_TEMP_DIR.tl/${1:-rv-1}" --worker-kind claude --vendor anthropic >/dev/null
+        --wdir "$TEST_TEMP_DIR.tl/${1:-rv-1}" --worker-kind claude >/dev/null
 }
 
 _finish() {
@@ -90,10 +90,15 @@ _finish() {
     echo '{"type":"result"}' > "$w/result.jsonl"
     echo 0 > "$w/exit_code"
     # T-3580 round 4: run.sh holds the per-dispatch completion secret and passes it on stdin.
-    local secret=""
-    [ -f "$w/.completion-secret" ] && { secret=$(cat "$w/.completion-secret"); rm -f "$w/.completion-secret"; }
-    printf '%s' "$secret" | env -u FW_SIDECAR_AGENT_ID PROJECT_ROOT="$PROJECT_ROOT" python3 "$BATS_TEST_DIRNAME/../../lib/verdict_ledger.py" \
-        complete --dispatch-id "${1:-rv-1}" --session "${1:-rv-1}" --wdir "$w" --exit-code 0 --secret-stdin >/dev/null
+    # Round 5: run.sh also records a signed START first, and the ledger CLI accepts that only from
+    # `<wdir>/run.sh` itself — so this runtime double IS a run.sh in the worker directory.
+    local ledger="$BATS_TEST_DIRNAME/../../lib/verdict_ledger.py" did="${1:-rv-1}"
+    printf '%s\n' \
+        'S=$(cat "$W/.completion-secret"); rm -f "$W/.completion-secret"' \
+        'printf "%s" "$S" | env -u FW_SIDECAR_AGENT_ID python3 "$LEDGER" start --dispatch-id "$DID" --wdir "$W" --secret-stdin >/dev/null || exit 1' \
+        'printf "%s" "$S" | env -u FW_SIDECAR_AGENT_ID python3 "$LEDGER" complete --dispatch-id "$DID" --session "$DID" --wdir "$W" --exit-code 0 --secret-stdin >/dev/null' \
+        > "$w/run.sh"
+    W="$w" DID="$did" LEDGER="$ledger" PROJECT_ROOT="$PROJECT_ROOT" bash "$w/run.sh"
 }
 
 _as() {

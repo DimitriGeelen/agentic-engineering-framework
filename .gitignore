@@ -25,6 +25,9 @@ __pycache__/
 .context/working/.tier0-approval.pending
 .context/working/.reviewed-*
 .context/bus/
+# T-3580 round 5: durable copies of dispatch-worker results (run.sh). Kept on disk, never
+# committed: the worker's own commits carry its real output, under its own identity.
+.context/dispatch-results/
 .context/locks/
 .context/user-preferences/
 # Orchestrator v1 runtime telemetry (T-1696 dispatches, T-1697 outcomes):

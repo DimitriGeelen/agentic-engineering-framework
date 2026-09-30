@@ -22,6 +22,11 @@
 # cost_estimate_method, description, and optional match: — regexes tried against a
 # Bash command by the hook, case-sensitive (default: the id as a whole word). A paid backend must
 # have approval_required: true.
+#
+# Optional worker_kind + vendor (T-3580 round 5): the ONE kind→vendor mapping. `worker_kind` is a
+# `fw termlink dispatch --worker-kind` value; `vendor` is who runs it. The dispatcher prints it
+# (`fw termlink worker-kinds --vendors`) and the verdict ledger derives every review dispatch's
+# vendor from it, so a panel counts vendors this file names, never free text. One kind, one vendor.
 
 backends:
   - id: claude-code
@@ -31,6 +36,8 @@ backends:
     approval_required: false
     cost_estimate_method: unmetered
     description: "Claude Code session with subscription harness"
+    worker_kind: claude
+    vendor: anthropic
     match:
       - '\bclaude\s+(-p|--print)\b'
       - '--worker-kind[= ]claude\b'
@@ -42,6 +49,7 @@ backends:
     approval_required: false
     cost_estimate_method: unmetered
     description: "Codex review via subscription account"
+    vendor: openai
     match:
       - '(^|[;&|]\s*|/)codex\s'
       - '--worker-kind[= ]codex\b'
@@ -53,6 +61,7 @@ backends:
     approval_required: false
     cost_estimate_method: unmetered
     description: "Z.ai opencode via subscription coding plan"
+    vendor: zai
     match:
       - '(^|[;&|]\s*|/)opencode\s'
       - '--worker-kind[= ]opencode\b'
@@ -64,6 +73,8 @@ backends:
     approval_required: false
     cost_estimate_method: zero
     description: "Review run on the operator's local hardware"
+    worker_kind: ollama-loop
+    vendor: ollama-local
 
   - id: openrouter
     name: "OpenRouter (pay-per-use)"

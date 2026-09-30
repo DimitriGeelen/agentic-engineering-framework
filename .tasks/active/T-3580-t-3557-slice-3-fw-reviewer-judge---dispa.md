@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T07:54:10Z
-last_update: 2026-09-30T16:23:02Z
+last_update: 2026-09-30T17:40:16Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -303,7 +303,7 @@ dispatching: `fw review propose --backend openrouter --task T-XXX --why "..."`.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-python3 -m pytest tests/unit/t3580_judge_cli_test.py tests/unit/t3580_round2_test.py tests/unit/t3580_round3_test.py tests/unit/t3580_round4_test.py tests/unit/test_t3579_verdict_ledger.py tests/unit/test_t3581_ledger_integrity.py tests/unit/test_t3581_round4.py -q > /tmp/.t3580-py.out 2>&1 && grep -q passed /tmp/.t3580-py.out
+python3 -m pytest tests/unit/t3580_judge_cli_test.py tests/unit/t3580_round2_test.py tests/unit/t3580_round3_test.py tests/unit/t3580_round4_test.py tests/unit/t3580_round5_test.py tests/unit/test_t3579_verdict_ledger.py tests/unit/test_t3581_ledger_integrity.py tests/unit/test_t3581_round4.py -q > /tmp/.t3580-py.out 2>&1 && grep -q passed /tmp/.t3580-py.out
 timeout 600 bats tests/unit/t3579_verdict_close_path.bats > /tmp/.t3580-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3580-bats.out
 test "$(grep -c '# skip' /tmp/.t3580-bats.out)" -eq 0
 bin/fw vendor self --check
@@ -415,6 +415,29 @@ bin/fw vendor self --check
 
 ### 2026-09-30 — round 4: durable worker results
 - **Chose:** run.sh copies a non-empty `result.md` to `<project>/.context/dispatch-results/<name>.md`. `fw termlink result` falls back to that copy when the /tmp wdir is gone. It is not committed automatically.
+
+### 2026-09-30 — round 5: the vendor is derived from the kind, through ONE mapping
+- **Chose:** `worker_kind` + `vendor` fields in policy/review-backends.yaml are the only kind→vendor mapping (validated by `lib/review_cost.py`: a kind needs a vendor; one kind never maps to two vendors). `register_dispatch` derives the vendor from the registered worker kind; `vendor=` is only an assertion and a mismatch is refused; a review kind the mapping does not know is refused. `register-dispatch` has no `--vendor` flag. `_panel_fault` re-derives the vendor at apply time and treats any row whose registered vendor differs as `panel-unverified-vendor`. termlink.sh's `_worker_vendor` / `worker-kinds --vendors` only print the mapping (`verdict_ledger.py kind-vendors`). The file is added to the self-vendored policy list so consumers carry it.
+- **Why:** round-4 MEDIUM: free text passed to register-dispatch was counted; the round-4 "control" (three claude dispatches registered as anthropic / vendor-2 / vendor-3) was the attack. It is now a negative control (refused at registration; re-signed inconsistent rows unverified at apply), and the control uses three distinct registered kinds from a fixture registry (t3580_round5_test.TestVendorMapping).
+- **Rejected:** a table inside verdict_ledger.py (the reviewer's suggestion) — the operator named policy/review-backends.yaml as the source, and it already is the backend registry.
+
+### 2026-09-30 — round 5: the never-run dispatch
+- **Chose:** three layers. (1) A signed runtime START: run.sh's first ledger call (`verdict_ledger.py start`) needs the secret, the registered wdir, happens once, and must land before the registration's signed `start_by` (registration + 300 s); the CLI refuses unless its parent process is `<wdir>/run.sh`. `complete` and the apply-time validator (`no-start`) require exactly one valid start. (2) A TTL: registration signs `complete_by` (registration + dispatch timeout + 600 s); `complete` refuses after it and apply refuses a completion (`expired`) whose epoch lies outside the window. (3) The secret does not outlive its purpose: run.sh deletes the file as its first act and also on EXIT (trap), clears it from memory after signing; cmd_dispatch installs an EXIT trap before spawning (cmd_spawn can `die`) and after injecting waits up to `TERMLINK_REVIEW_START_WAIT` (60 s) for run.sh to take it, then deletes a leftover.
+- **Proof:** registered + never run + leftover secret read + fake exit/result files + `complete` → refused (`no runtime start record`), apply ticks nothing (t3580_round5_test.TestNeverRun). The old round-4 "control" is renamed to what it is (a started runtime).
+- **What remains inside the operator-accepted same-user boundary (T-3581):** a caller running as the same user who reads a leftover secret within the start window can call the Python `start()` directly (the parent check is on the CLI only, an honesty check like `--i-am-human`), or can write its own `<wdir>/run.sh` and run it — which is then, literally, running the dispatch. A caller can also self-register a dispatch with `register-dispatch` (no dispatcher marker is required) and so obtain a fresh secret and a wdir of its choosing. And anyone who reads `.context/secrets/review-dispatch.key` can sign any row directly. None of these is reachable by the documented commands alone (register + cat + complete no longer suffices); all are deliberate forgery by the same user, which T-3581 accepted as the residual.
+
+### 2026-09-30 — round 5: `finalised` is verified
+- **Chose:** run.sh writes `signed:<completion sig>` or `unsigned:<reason>`. `_worker_done` accepts `signed:` only when the sig equals completion.json's, and in both cases only once no `<wdir>/run.sh` process is alive (the worker is run.sh's child, so an early marker from the worker is ignored while it runs). Tested (TestFinalisedVerified: bare marker, wrong sig, live runtime, control).
+
+### 2026-09-30 — round 5: dispatch results are gitignored
+- **Chose:** `.context/dispatch-results/` is in .gitignore: durable on disk (where `fw termlink result` falls back to it), never committed. The worker's own commits carry its real output under its own identity; the parent never commits worker output.
+- **Rejected:** committing the copies under the worker's identity — run.sh would have to commit into the shared main checkout after the worker exits, racing the parent's index.
+
+### 2026-09-30 — round 5: traceability note (converging write)
+- The round-5 edits to agents/termlink/termlink.sh (_worker_vendor via the one mapping, start record in run.sh, secret trap/reap, verified finalised) were committed inside ba35b3559 ("T-3595: cleanup deletes per worker"), by a concurrent T-3595 worker that staged the whole file while this round was editing it; its vendor sync 581c7556a carries them too. Not rewritten (no history rewrite); recorded here so the T-3580 content of that commit is traceable.
+
+### 2026-09-30 — round 5: the completions file under the append-only history check
+- **Chose:** `history_fault` runs the same git-history walk `load_ledger` makes (each commit keeps the previous committed lines as a prefix; the working file keeps the last committed lines as its prefix) on review-completions.jsonl. Apply refuses (`completion-history`) and audit FAILs (`completions integrity`) when it breaks. Uncommitted rows are allowed — run.sh writes the completion after the worker's last commit and does not commit (same index-race reason as above) — and audit names that state as `WARN completions file untracked` instead of leaving it silent. Start records live in the same file, so they are covered too.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

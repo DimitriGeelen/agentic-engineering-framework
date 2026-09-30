@@ -22,7 +22,7 @@ from lib import verdict_ledger as vl  # noqa: E402
 from lib.reviewer import judge_cli  # noqa: E402
 import _review_runtime as rt  # noqa: E402
 from t3580_judge_cli_test import (  # noqa: E402,F401
-    ALL_KINDS, NOCAP, RENDER, TASTE, TID, FakeWorker, _cli, _git, _ident, _judge, _mk_task, _produce, repo,
+    ALL_KINDS, NOCAP, _all_kinds, RENDER, TASTE, TID, FakeWorker, _cli, _git, _ident, _judge, _mk_task, _produce, repo,
 )
 
 
@@ -51,17 +51,18 @@ def _commit_as(root, who):
     _git(root, "commit", "-q", "-m", f"{TID}: reviewer verdict", env=_ident(who))
 
 
-def _dispatch(root, did, issuer_identity="dispatcher", revision="", vendor="anthropic"):
+def _dispatch(root, did, issuer_identity="dispatcher", revision="", kind="claude"):
+    # T-3580 round 5: a dispatch names its worker KIND; the ledger derives the vendor from it.
     return rt.dispatch(root, did, TID, issuer_session="S-x", issuer_identity=issuer_identity,
-                       revision=revision, vendor=vendor)
+                       revision=revision, worker_kind=kind)
 
 
 def _green(root, did="rv-1", ac=1, commit=True, outcome="green", issuer_identity="dispatcher",
            extra_evidence=(), rung="rung-1-same-vendor-independent", run_id="", reviewer=None,
-           report=True, finish=True, vendor="anthropic"):
+           report=True, finish=True, kind="claude"):
     """A verdict exactly as the worker's `record` writes it; `finish` = the worker then exits and
     the runtime signs its completion."""
-    _dispatch(root, did, issuer_identity, vendor=vendor)
+    _dispatch(root, did, issuer_identity, kind=kind)
     rep = root / f".context/reviews/evidence/{TID}/AC{ac}-{did}.md"
     rep.parent.mkdir(parents=True, exist_ok=True)
     rep.write_text(f"checked {did}\n")
@@ -101,7 +102,9 @@ def _forge(root, mutate_row=None, mutate_comp=None, did="rv-1", commit_as=None, 
         mutate_comp(comp)
         comp.pop("sig")
         comp["sig"] = vl._sign_row(vl._dispatch_key(root), comp)
-        (root / vl.COMPLETIONS).write_text(json.dumps(comp, separators=(",", ":"), sort_keys=True) + "\n")
+        rows = [r for r in vl._read(vl.COMPLETIONS, root) if r.get("kind") == "start"]  # round 5: keep the start
+        (root / vl.COMPLETIONS).write_text("".join(json.dumps(r, separators=(",", ":"), sort_keys=True) + "\n"
+                                                   for r in rows + [comp]))
     return row
 
 
@@ -140,9 +143,9 @@ class TestWorkerAttribution:
 
     def test_completion_with_a_bad_signature_fails(self, prod):
         _green(prod)
-        comp = json.loads((prod / vl.COMPLETIONS).read_text())
-        comp["sig"] = "0" * 64
-        (prod / vl.COMPLETIONS).write_text(json.dumps(comp) + "\n")
+        rows = vl._read(vl.COMPLETIONS, prod)            # round 5: [start, completion]
+        rows[-1]["sig"] = "0" * 64
+        (prod / vl.COMPLETIONS).write_text("".join(json.dumps(r) + "\n" for r in rows))
         assert _closed(prod).startswith("bad-completion")
 
     def test_exact_verdict_contents_a_changed_row_is_refused(self, prod):
@@ -394,18 +397,30 @@ SEATS = [{"seat": "claude", "vendor": "claude"}, {"seat": "codex", "vendor": "co
          {"seat": "opencode", "vendor": "opencode"}]
 
 
+_THREE_KINDS = "backends:\n" + "".join(
+    f"  - {{id: k-{k}, name: {k}, harness_class: subscription, cost_class: internal, "
+    f"approval_required: false, cost_estimate_method: unmetered, description: x, "
+    f"worker_kind: {k}, vendor: {v}}}\n"
+    for k, v in (("claude", "anthropic"), ("codex", "openai"), ("opencode", "zai"))) + (
+    "  - {id: openrouter, name: OR, harness_class: pay_per_use, cost_class: paid, "
+    "approval_required: true, cost_estimate_method: tokens_estimated, description: x}\n")
+
+
 def _panel(root, outcomes, vendors=("claude", "codex", "opencode"), required=3):
-    """Register a 3-seat run and let each seat record `outcomes[seat]` (None = seat never records)."""
+    """Register a 3-seat run and let each seat record `outcomes[seat]` (None = seat never records).
+    Round 5: `vendors` are worker KINDS, mapped to vendors by a fixture registry."""
+    (root / "policy").mkdir(exist_ok=True)
+    (root / "policy" / "review-backends.yaml").write_text(_THREE_KINDS)
     vl.register_run("run-p", TID, acs=[1], rung="rung-5-panel", seats=SEATS,
                     required_vendors=required, root=root)
     for s, v in zip(SEATS, vendors):
         oc = outcomes.get(s["seat"])
         did = f"rv-{s['seat']}"
         if oc is None:
-            _dispatch(root, did, vendor=v)
+            _dispatch(root, did, kind=v)
         else:
             _green(root, did=did, outcome=oc, rung=f"rung-5-panel:{s['seat']}", run_id="run-p",
-                   vendor=v)
+                   kind=v)
         vl.bind_dispatch("run-p", s["seat"], did, v, root=root)
 
 
@@ -450,8 +465,7 @@ class TestJudgePanels:
     HI = "cost_estimate:\n  blast_radius: 9\n"
 
     def test_full_panel_dispatches_each_vendor_and_the_ledger_accepts_it(self, repo, monkeypatch):
-        monkeypatch.setattr(judge_cli, "_dispatchable_kinds", lambda root: ALL_KINDS)
-        monkeypatch.setattr(judge_cli, "_kind_vendors", lambda root: {k: k for k in ALL_KINDS})
+        _all_kinds(monkeypatch, repo)
         _mk_task(repo, TASTE, extra_fm=self.HI)
         _produce(repo)
         w = FakeWorker("green")
@@ -612,8 +626,7 @@ class TestRealDispatcherArguments:
             assert f"{flag})" in sh, f"termlink.sh dispatch does not parse {flag}"
 
     def test_judge_hands_each_seat_its_vendor(self, repo, monkeypatch):
-        monkeypatch.setattr(judge_cli, "_dispatchable_kinds", lambda root: ALL_KINDS)
-        monkeypatch.setattr(judge_cli, "_kind_vendors", lambda root: {k: k for k in ALL_KINDS})
+        _all_kinds(monkeypatch, repo)
         _mk_task(repo, TASTE, extra_fm="cost_estimate:\n  blast_radius: 9\n")
         _produce(repo)
         seen = []

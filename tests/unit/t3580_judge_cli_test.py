@@ -270,7 +270,7 @@ class FakeWorker:
         self.calls.append({"name": name, "brief": brief, "did": did, "vendor": vendor,
                            "revision": revision})
         rt.dispatch(root, did, task_id, issuer_session="S-x", revision=revision,
-                    worker_kind=vendor, vendor=self.vendors.get(vendor, vendor))
+                    worker_kind=vendor)   # round 5: the ledger derives the vendor from the kind
         if not self.write:
             if self.runtime:
                 rt.finish(root, did, self.exit_code)
@@ -314,6 +314,24 @@ class FakeWorker:
 
 #: Every worker kind the registry's seat backends name — as if T-3582 had built them all.
 ALL_KINDS = {"claude", "codex", "opencode"}
+
+
+def _all_kinds(monkeypatch, root):
+    """Pretend every internal backend has a worker kind (T-3582 not built): the dispatchable kinds,
+    and — round 5 — the ONE kind→vendor mapping, written as a fixture registry the ledger reads
+    (vendor = kind name, so a panel over the three kinds spans three vendors)."""
+    import yaml
+    reg = yaml.safe_load((_HERE / "policy" / "review-backends.yaml").read_text())
+    kinds = {"claude-code": "claude", "codex": "codex", "opencode": "opencode"}
+    for b in reg["backends"]:
+        if b["id"] in kinds:
+            b["worker_kind"] = b["vendor"] = kinds[b["id"]]
+        elif b.get("worker_kind"):
+            b.pop("worker_kind")
+    (root / "policy").mkdir(exist_ok=True)
+    (root / "policy" / "review-backends.yaml").write_text(yaml.safe_dump(reg, sort_keys=False))
+    monkeypatch.setattr(judge_cli, "_dispatchable_kinds", lambda r: ALL_KINDS)
+    monkeypatch.setattr(judge_cli, "_kind_vendors", lambda r: {k: k for k in ALL_KINDS})
 
 NOCAP = lambda url, pages, out: ([], "no capture in this test")  # noqa: E731
 
@@ -467,8 +485,7 @@ class TestSpendCeiling:
     HI = "cost_estimate:\n  blast_radius: 9\n"
 
     def test_due_rung_5_is_a_panel_of_three_when_under_ceiling(self, repo, monkeypatch):
-        monkeypatch.setattr(judge_cli, "_dispatchable_kinds", lambda root: ALL_KINDS)
-        monkeypatch.setattr(judge_cli, "_kind_vendors", lambda root: {k: k for k in ALL_KINDS})
+        _all_kinds(monkeypatch, repo)
         _mk_task(repo, TASTE, extra_fm=self.HI)
         _produce(repo)
         w = FakeWorker("green")
@@ -505,8 +522,7 @@ class TestSpendCeiling:
         assert judge_cli._apply_ceiling(5, "x", 0, 100)[2] == ""
 
     def test_panel_stops_at_first_non_green_seat(self, repo, monkeypatch):
-        monkeypatch.setattr(judge_cli, "_dispatchable_kinds", lambda root: ALL_KINDS)
-        monkeypatch.setattr(judge_cli, "_kind_vendors", lambda root: {k: k for k in ALL_KINDS})
+        _all_kinds(monkeypatch, repo)
         _mk_task(repo, TASTE, extra_fm=self.HI)
         _produce(repo)
         w = FakeWorker(["green", "red", "green"])
