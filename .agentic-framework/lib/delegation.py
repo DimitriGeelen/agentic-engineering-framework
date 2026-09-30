@@ -13,9 +13,14 @@ so the delegation the operator granted classified zero criteria as delegable
 agent may take it.
 
 WHAT THIS IS NOT. It does not change what the reviewer checks, and it does not
-weaken a carve-out. Six classes stay human — always, with no bypass flag in this
-module — and the tie-break is `unclassified` → OPERATOR-ONLY, i.e. **when in
-doubt, human**.
+weaken a risk class. Three classes stay human — always, with no bypass flag in
+this module: tier0-or-bypass, act-in-the-world, sovereignty-field.
+
+T-3557 (GO 2026-09-30, IW-1/IW-5) changed the tie-break: "deterministic" is no
+longer the delegation test. render-surface, taste, inception-decision and
+unclassified route to REVIEWER-JUDGES — an independent agent reviewer judges
+them and may escalate to the human. This module only ROUTES and REPORTS; it
+never ticks or closes a criterion because of that bucket (T-3579, T-3580).
 
 REUSE, NOT REBUILD. The vocabularies are imported from the reviewer's own
 detectors so there is exactly one definition of each:
@@ -73,19 +78,31 @@ RULING = "D-626"
 # reason to refuse delegation would make the verb unable to ever fire.
 
 REVIEWER_CLOSEABLE = "REVIEWER-CLOSEABLE"
+# T-3557 (IW-1/IW-2/IW-5): an independent agent reviewer judges the criterion
+# and may escalate it to the human. Distinct from REVIEWER_CLOSEABLE (a static
+# scan settles it) and from OPERATOR_ONLY (risk: only the human may answer).
+# Routing and reporting only — nothing in this module closes or ticks a
+# criterion because it lands here; closing needs an independent verdict
+# (T-3579, T-3580).
+REVIEWER_JUDGES = "REVIEWER-JUDGES"
 AGENT_SELF = "AGENT-SELF"
 OPERATOR_ONLY = "OPERATOR-ONLY"
 
+# Report order; every counter dict is built from this so a new bucket cannot be
+# added to the map and forgotten by a reader.
+DELEGATION_CLASSES = (REVIEWER_CLOSEABLE, REVIEWER_JUDGES, AGENT_SELF, OPERATOR_ONLY)
+
+# THE one encoding of class -> routing. Every reader imports it (T-3557).
 CLASS_TO_DELEGATION = {
     "deterministic": REVIEWER_CLOSEABLE,
     "agent-self": AGENT_SELF,
-    "taste": OPERATOR_ONLY,
-    "inception-decision": OPERATOR_ONLY,
+    "taste": REVIEWER_JUDGES,
+    "inception-decision": REVIEWER_JUDGES,
+    "render-surface": REVIEWER_JUDGES,
+    "unclassified": REVIEWER_JUDGES,
     "act-in-the-world": OPERATOR_ONLY,
     "tier0-or-bypass": OPERATOR_ONLY,
     "sovereignty-field": OPERATOR_ONLY,
-    "render-surface": OPERATOR_ONLY,
-    "unclassified": OPERATOR_ONLY,
 }
 
 # Only `deterministic` converts. `agent-self` is a ROUTING defect (the criterion
@@ -94,13 +111,11 @@ CLASS_TO_DELEGATION = {
 # it alone.
 CONVERTIBLE_CLASSES = frozenset({"deterministic"})
 
+# The risk classes: the only ones that stay human (T-3557 IW-1/IW-5).
 CARVE_OUTS = (
-    "taste",
-    "inception-decision",
     "act-in-the-world",
     "tier0-or-bypass",
     "sovereignty-field",
-    "render-surface",
 )
 
 # ── Carve-out vocabularies ───────────────────────────────────────────────────
@@ -460,6 +475,15 @@ class Classification:
     def convertible(self) -> bool:
         return self.cls in CONVERTIBLE_CLASSES
 
+    @property
+    def reviewer_judges(self) -> bool:
+        return self.delegation_class == REVIEWER_JUDGES
+
+
+def _classified(cls: str, reason: str) -> Classification:
+    """Build a Classification whose routing comes from CLASS_TO_DELEGATION only."""
+    return Classification(cls, CLASS_TO_DELEGATION[cls], reason)
+
 
 def _m(rx: re.Pattern, s: str) -> str:
     m = rx.search(s)
@@ -474,77 +498,74 @@ def classify(
 ) -> Classification:
     """Put one criterion in exactly one class.
 
-    PRECEDENCE — every carve-out outranks `deterministic`, so a criterion that
-    is both grep-able and act-in-the-world stays human. The order within the
-    carve-outs is by severity of getting it wrong: an approval you cannot undo
-    outranks prose you can re-word.
+    PRECEDENCE (T-3557) — the risk classes come FIRST, so a render-touching or
+    inception criterion that is also tier-0 / sovereignty / act-in-the-world stays
+    human. Routing for each class is CLASS_TO_DELEGATION, nowhere else.
 
-      1. render-surface     (task-level; no test settles layout — T-1766)
-      2. tier0-or-bypass    (the tier the human owns by definition)
-      3. sovereignty-field  (the write whose point is that a human made it)
-      4. inception-decision (go/no-go is the operator's, always)
-      5. act-in-the-world   (irreversible, outside this repo)
-      6. taste              (T-1947 vocabulary — the reviewer cannot read prose)
-      7. deterministic      (same five gates as the reviewer's own detector)
+      1. tier0-or-bypass    (OPERATOR-ONLY — the tier the human owns by definition)
+      2. sovereignty-field  (OPERATOR-ONLY — a human made this write, on purpose)
+      3. act-in-the-world   (OPERATOR-ONLY — outside this repo / the operator's machine)
+      4. render-surface     (REVIEWER-JUDGES — task-level, T-1766)
+      5. inception-decision (REVIEWER-JUDGES — the reviewer judges if a human is needed)
+      6. taste              (REVIEWER-JUDGES — T-1947 vocabulary)
+      7. deterministic      (REVIEWER-CLOSEABLE — same five gates as the reviewer's detector)
       8. agent-self         (T-2143: wrong audience, not a delegation question)
-      9. unclassified       → OPERATOR-ONLY. The tie-break. When in doubt, human.
+      9. unclassified       (REVIEWER-JUDGES — no longer the human tie-break)
     """
     title = criterion.title
     body = criterion.body_text
 
-    if render_surface:
-        return Classification(
-            "render-surface", OPERATOR_ONLY,
-            "task touches a render surface (T-1766): layout is settled by eyes, not tests",
-        )
-
     hit = _m(_TIER0_OR_BYPASS_RE, body)
     if hit:
-        return Classification("tier0-or-bypass", OPERATOR_ONLY,
-                              f"tier-0 / bypass approval ({hit!r})")
+        return _classified("tier0-or-bypass", f"tier-0 / bypass approval ({hit!r})")
 
     hit = _m(_SOVEREIGNTY_FIELD_RE, body)
     if hit:
-        return Classification("sovereignty-field", OPERATOR_ONLY,
-                              f"sovereignty field ({hit!r})")
-
-    if str(workflow_type).strip().lower() == "inception":
-        return Classification("inception-decision", OPERATOR_ONLY,
-                              "task is workflow_type: inception — go/no-go is the operator's")
-    hit = _m(_INCEPTION_DECISION_RE, body)
-    if hit:
-        return Classification("inception-decision", OPERATOR_ONLY,
-                              f"asks for a go/no-go decision ({hit!r})")
+        return _classified("sovereignty-field", f"sovereignty field ({hit!r})")
 
     hit = _m(_ACT_IN_THE_WORLD_RE, body)
     if hit:
-        # T-3457: the reason names the actual test, because this class now holds
+        # T-3457: the reason names the actual test, because this class holds
         # two families and "irreversible external action" was true of only one.
-        # An operator reading `Install pi -> irreversible external action` has
-        # been told something false about their own criterion.
-        return Classification("act-in-the-world", OPERATOR_ONLY,
-                              f"the agent cannot perform it and no scan can verify it "
-                              f"happened ({hit!r})")
+        return _classified("act-in-the-world",
+                           f"the agent cannot perform it and no scan can verify it "
+                           f"happened ({hit!r})")
+
+    if render_surface:
+        return _classified(
+            "render-surface",
+            "task touches a render surface (T-1766): an independent reviewer judges "
+            "it on the rendered page and may escalate",
+        )
+
+    if str(workflow_type).strip().lower() == "inception":
+        return _classified("inception-decision",
+                           "task is workflow_type: inception — the reviewer judges whether "
+                           "this go/no-go needs a human (T-3557 IW-2)")
+    hit = _m(_INCEPTION_DECISION_RE, body)
+    if hit:
+        return _classified("inception-decision",
+                           f"asks for a go/no-go decision ({hit!r}) — the reviewer judges "
+                           f"whether it needs a human (T-3557 IW-2)")
 
     # Taste before deterministic, per T-1947: prose vocabulary in the criterion
     # wins over incidental mechanical vocabulary in its Expected clause. This is
     # static_scan's Gate 2b, applied as a class rather than as a suppression.
     hit = _m(_HUMAN_AC_TASTE_RE, title)
     if hit:
-        return Classification("taste", OPERATOR_ONLY,
-                              f"taste vocabulary in the criterion ({hit!r})")
+        return _classified("taste", f"taste vocabulary in the criterion ({hit!r})")
 
     det = _deterministic_reason(criterion)
     if det:
-        return Classification("deterministic", REVIEWER_CLOSEABLE, det)
+        return _classified("deterministic", det)
 
     if _is_agent_self(criterion):
-        return Classification("agent-self", AGENT_SELF,
-                              "subject is agent experience (T-2143) — belongs under ### Agent, "
-                              "not delegated from ### Human")
+        return _classified("agent-self",
+                           "subject is agent experience (T-2143) — belongs under ### Agent, "
+                           "not delegated from ### Human")
 
-    return Classification("unclassified", OPERATOR_ONLY,
-                          "no deterministic signal — tie-break is human")
+    return _classified("unclassified",
+                       "no deterministic signal — an independent reviewer judges it (T-3557)")
 
 
 def _deterministic_reason(criterion: Criterion) -> str:
@@ -625,7 +646,7 @@ class TaskClassification:
     rows: list[tuple[Criterion, Classification]]
 
     def by_delegation(self) -> dict[str, int]:
-        counts = {REVIEWER_CLOSEABLE: 0, AGENT_SELF: 0, OPERATOR_ONLY: 0}
+        counts = {k: 0 for k in DELEGATION_CLASSES}
         for _, cl in self.rows:
             counts[cl.delegation_class] += 1
         return counts
@@ -681,7 +702,7 @@ def surface_scan(project_root: Path, framework_root: Optional[Path] = None) -> d
     """
     tasks_dir = Path(project_root) / ".tasks" / "active"
     by_class: dict[str, int] = {k: 0 for k in CLASS_TO_DELEGATION}
-    by_delegation = {REVIEWER_CLOSEABLE: 0, AGENT_SELF: 0, OPERATOR_ONLY: 0}
+    by_delegation = {k: 0 for k in DELEGATION_CLASSES}
     tasks_with_open = 0
     total_tasks = 0
     delegable_tasks: list[str] = []
@@ -715,19 +736,21 @@ def surface_scan(project_root: Path, framework_root: Optional[Path] = None) -> d
 def surface_verdict(report: dict, threshold: int) -> tuple[str, str]:
     """(level, message) for the audit/doctor line.
 
-    WARN when REVIEWER-CLOSEABLE is 0 while OPERATOR-ONLY exceeds the threshold.
-    That conjunction — and not either half alone — is the signal 832 asked for:
-    a corpus with no delegable criteria is unremarkable if it has few criteria,
-    and a corpus with many operator-only criteria is unremarkable if some of
-    them are being delegated. Both at once means the ruling reaches nothing.
+    WARN when nothing is reviewer-closeable or reviewer-judged while
+    OPERATOR-ONLY exceeds the threshold. That conjunction — and not either half
+    alone — is the signal 832 asked for: a corpus with no delegable criteria is
+    unremarkable if it has few criteria, and a corpus with many operator-only
+    criteria is unremarkable if some of them are being delegated. Both at once
+    means the ruling reaches nothing. Reviewer-judged counts as reach (T-3557).
     """
     d = report["by_delegation"]
     rc, oo = d[REVIEWER_CLOSEABLE], d[OPERATOR_ONLY]
+    rj, sf = d.get(REVIEWER_JUDGES, 0), d[AGENT_SELF]
     base = (
-        f"reviewer-closeable {rc}, agent-self {d[AGENT_SELF]}, operator-only {oo} "
+        f"reviewer-closeable {rc}, reviewer-judges {rj}, agent-self {sf}, operator-only {oo} "
         f"(open Human criteria across {report['tasks_with_open_human_criteria']} active task(s))"
     )
-    if rc == 0 and oo > threshold:
+    if rc + rj == 0 and oo > threshold:
         return "WARN", (
             f"Delegation surface: {base} — the {RULING} delegation reaches nothing"
         )

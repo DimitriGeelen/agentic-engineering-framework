@@ -39,6 +39,7 @@ from lib.delegation import (  # noqa: E402
     AGENT_SELF,
     OPERATOR_ONLY,
     REVIEWER_CLOSEABLE,
+    REVIEWER_JUDGES,
     RULING,
     Criterion,
     classify,
@@ -235,7 +236,8 @@ def _update_entry(task_id: str, converted: list[dict], refused: list[dict]) -> l
         f"### {_now()} — delegate [fw-task-delegate]",
         f"- **Ruling:** {RULING} — reviewer-closeable delegation (operator ruling 2026-09-23)",
         f"- **Converted to [REVIEWER] Agent criteria:** {conv}",
-        f"- **Left under ### Human (carve-outs):** {ref}",
+        f"- **Left under ### Human:** {ref} (reviewer-judgeable ones are reported, "
+        f"not converted — T-3557; nothing closes without an independent verdict)",
         f"- **Close path:** `bin/fw reviewer {task_id}` PASS auto-ticks the converted "
         f"criteria (T-1985); the normal close gates do the rest.",
     ]
@@ -290,8 +292,8 @@ def cmd_delegate(args) -> int:
     meta = frontmatter(text)
     workflow = str(meta.get("workflow_type") or "")
     if workflow.strip().lower() == "inception":
-        print(f"{RED}ERROR: {task_id} is workflow_type: inception — the go/no-go is the "
-              f"operator's ({RULING} carve-out){NC}", file=sys.stderr)
+        print(f"{RED}ERROR: {task_id} is workflow_type: inception — the go/no-go is "
+              f"reviewer-judged (T-3557 IW-2), not converted by this verb{NC}", file=sys.stderr)
         print(f"Hand it over instead: bin/fw task review {task_id}", file=sys.stderr)
         return 2
 
@@ -313,12 +315,14 @@ def cmd_delegate(args) -> int:
         print(f"{BOLD}Delegation scan — {task_id}{NC} "
               f"({len(rows)} open Human criterion/criteria; ruling {RULING})")
         if rs:
-            print(f"  {YELLOW}task touches a render surface (T-1766) — every criterion "
-                  f"stays human{NC}")
+            print(f"  {YELLOW}task touches a render surface (T-1766) — criteria are "
+                  f"reviewer-judged, not converted{NC}")
         for c, cl in rows:
             mark = f"{GREEN}→ REVIEWER{NC}" if cl.convertible else f"{YELLOW}stays human{NC}"
             if cl.delegation_class == AGENT_SELF:
                 mark = f"{CYAN}agent-self{NC}"
+            elif cl.delegation_class == REVIEWER_JUDGES:
+                mark = f"{CYAN}reviewer-judgeable (not converted){NC}"
             print(f"  AC#{c.index:<3} {cl.cls:<18} {mark}  {c.title[:72]}")
             print(f"        {cl.reason}")
         if not rows:
@@ -340,6 +344,8 @@ def cmd_delegate(args) -> int:
         "owner_after": new_owner,
         "converted": converted,
         "refused": refused,
+        "reviewer_judgeable": [r["index"] for r in refused
+                               if r["delegation_class"] == REVIEWER_JUDGES],
     }
 
     if args.dry_run:
@@ -448,7 +454,7 @@ def cmd_surface(args) -> int:
         d = report["by_delegation"]
         print("\t".join(str(x) for x in (
             level,
-            d[REVIEWER_CLOSEABLE], d[AGENT_SELF], d[OPERATOR_ONLY],
+            d[REVIEWER_CLOSEABLE], d[REVIEWER_JUDGES], d[AGENT_SELF], d[OPERATOR_ONLY],
             report["tasks_with_open_human_criteria"], threshold,
             ",".join(report["delegable_tasks"][:5]),
         )))
@@ -458,6 +464,7 @@ def cmd_surface(args) -> int:
     print(f"  {colour}{level}{NC}  {message}")
     d = report["by_delegation"]
     print(f"  {REVIEWER_CLOSEABLE:<20} {d[REVIEWER_CLOSEABLE]}")
+    print(f"  {REVIEWER_JUDGES:<20} {d[REVIEWER_JUDGES]}")
     print(f"  {AGENT_SELF:<20} {d[AGENT_SELF]}")
     print(f"  {OPERATOR_ONLY:<20} {d[OPERATOR_ONLY]}")
     print("  by class:")
