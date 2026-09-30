@@ -222,6 +222,24 @@ PY
     [ "$(ls "$PROJECT_ROOT/.tasks/active" | grep -c '^T-9200-')" -eq 1 ]
 }
 
+@test "T-3581 round 4: stripping the annotation from a reviewer-derived tick refuses the close (control: intact annotation revalidates)" {
+    local f; f="$(_make_render_task)"
+    run _record green --evidence evidence.md
+    [ "$status" -eq 0 ]
+    run "$FW" reviewer verdict apply T-9200
+    [ "$status" -eq 0 ]
+    grep -q "Reviewer verdict:" "$f"
+    run "$FW" reviewer verdict apply T-9200                       # control: intact annotation is fine
+    [ "$status" -eq 0 ]
+    grep -v "Reviewer verdict:" "$f" > "$f.new" && mv "$f.new" "$f"
+    run "$FW" reviewer verdict apply T-9200
+    [ "$status" -eq 1 ]
+    run "$UPDATE_TASK" T-9200 --status work-completed
+    [ "$status" -ne 0 ]
+    echo "$output" | grep -q "revalidation failed"
+    grep -q "\\[x\\] \\[REVIEW\\]" "$f"
+}
+
 @test "T-3581: a green recorded under a pseudonym with no review dispatch cannot be recorded, and a forged registry row does not help" {
     _make_render_task >/dev/null
     _produce
