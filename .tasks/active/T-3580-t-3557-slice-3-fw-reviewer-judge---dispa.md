@@ -1,10 +1,17 @@
 ---
 id: T-3580
-name: "T-3557 slice 3: fw reviewer judge - dispatch an independent interpreting reviewer on a criterion, rung chosen by the IW-7 impact-risk model"
+name: "T-3557 slice 3: fw reviewer judge - dispatch an independent interpreting reviewer
+  on a criterion, rung chosen by the IW-7 impact-risk model"
 description: >
-  T-3557 GO. The interpreting reviewer used by hand 2026-09-29/30 (render reviews, escalation spike 10/10 per key) becomes a verb: fw reviewer judge T-XXX [--criterion N] dispatches a TermLink reviewer that is not the producer, gives it the criterion + evidence (screenshots for render criteria), and writes the slice-2 verdict record. Rung per IW-7: hard human gate recognised and escalated; else impact=max(cost_if_wrong, value_at_stake) picks rung 1-2 (same-vendor independent) / 3-4 (different model) / 5-7 (3-vendor panel); weekly spend ceiling degrades one rung and says so.
+  T-3557 GO. The interpreting reviewer used by hand 2026-09-29/30 (render reviews,
+  escalation spike 10/10 per key) becomes a verb: fw reviewer judge T-XXX [--criterion
+  N] dispatches a TermLink reviewer that is not the producer, gives it the criterion
+  + evidence (screenshots for render criteria), and writes the slice-2 verdict record.
+  Rung per IW-7: hard human gate recognised and escalated; else impact=max(cost_if_wrong,
+  value_at_stake) picks rung 1-2 (same-vendor independent) / 3-4 (different model)
+  / 5-7 (3-vendor panel); weekly spend ceiling degrades one rung and says so.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T07:54:10Z
-last_update: 2026-09-30T07:54:10Z
-date_finished: null
+last_update: 2026-09-30T08:12:12Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-30T08:00:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=277,acs=9)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-30T08:00:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3580: T-3557 slice 3: fw reviewer judge - dispatch an independent interpreting reviewer on a criterion, rung chosen by the IW-7 impact-risk model
@@ -61,6 +96,35 @@ the manual reviews of 2026-09-29/30 into a verb: render reviews (docs/reports/T-
 review-2026-09-29.md, T-3564-render-review.md, T-3574-T-3575-render-review.md) and the
 escalation spike (T-3557-spike-prompt.md / -verdicts.md). The spike prompt is the proven
 reviewer brief; reuse it rather than writing a new one.
+
+### Worker attribution requirements (from T-3581 round 3; slice 3 must meet these)
+
+T-3581 proves that a verdict row names a review dispatch the dispatcher registered for this
+task, that the reviewer/worker/introducing-commit identities are not producers, and that the
+ledger history is append-only. It does NOT prove the registered worker authored the verdict:
+a registration is evidence of registration. Slice 3 must bind the following to the dispatch
+RESULT (the completion the worker itself posts, e.g. on the fw bus), and `verdict record`
+/ `_row_fault` must verify them before a row can count:
+
+1. **Fresh worker/session identity** — the session that ran the review is new (not the
+   producer's or issuer's session), recorded in the dispatch result, and matches the identity
+   the row's `reviewer` and the commit that introduces the row are attributed to.
+2. **Reviewed revision** — the git revision (HEAD sha) of the repo the worker reviewed,
+   recorded in the result and in the row; the row is refused if the task's criterion or the
+   evidence it cites is not at that revision.
+3. **Criterion digest** — the digest the worker read, in the result, equal to the row's `ac_digest`.
+4. **Evidence** — the evidence paths (with content hashes) in the result equal the row's evidence.
+5. **Exact verdict contents** — a hash over the canonical row body (outcome, guidance,
+   evidence, digest, revision) is part of the signed dispatch result; a row whose bytes differ
+   from what the worker reported is refused.
+6. **Completion and commit attribution** — the dispatch is recorded as COMPLETED by that
+   worker (a registration alone is not enough), and the commit introducing the row is
+   attributed to that worker identity, not merely to a non-producer.
+
+The producer may still be the dispatch ISSUER (T-3581 Decisions). Same-user residual gap:
+an agent that reads .context/secrets/review-dispatch.key can still sign a coherent result;
+this list makes that a deliberate forgery rather than an unattributed append, and is not a
+claim of forgery resistance. Do not build this in T-3581.
 
 ## Acceptance Criteria
 
@@ -328,3 +392,6 @@ reviewer brief; reuse it rather than writing a new one.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3580-t-3557-slice-3-fw-reviewer-judge---dispa.md
 - **Context:** Initial task creation
+
+### 2026-09-30T08:12:12Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

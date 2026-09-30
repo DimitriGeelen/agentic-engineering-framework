@@ -367,6 +367,16 @@ bin/fw vendor self --check
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-09-30 — Producer may issue the review dispatch
+- **Chose:** the producer set is allowed to register (issue) the review dispatch. The producer-independence checks bind the REVIEWER identity, the dispatch's worker identity and the row-introducing commit; they do not forbid the issuer being a producer.
+- **Why:** the producing session is the one that runs `fw reviewer ... --dispatch`; forbidding it would forbid the normal path. What the operator's principle ("the reviewer is not a creator or producer") constrains is who JUDGES, not who asked.
+- **Rejected:** requiring issuer != producer — would make the path unusable for the session that owns the task, and would not stop a same-user agent, which can sign a registry row itself.
+- **Consequence, stated plainly:** a registered dispatch proves the dispatcher registered it for this task. It does not prove the named worker authored the verdict. That attribution gap is closed only by slice 3 (see T-3580 Context, "Worker attribution requirements").
+
+### 2026-09-30 — Ledger integrity is verified against git, not asserted
+- **Chose:** verdicts.jsonl is append-only as verified against the accepted history (HEAD): every commit that touched it must preserve the previous content as an exact line-prefix; the working file must contain the committed content unchanged; uncommitted lines never count; duplicate ids, modified, deleted (withdrawal included) or replaced rows make the whole ledger refuse. `fw audit` runs the same check plus the apply validator on every row.
+- **Rejected:** binding only the row id to its introducing commit (round 2) — content substitution kept the id and the dispatch and passed both apply and audit.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
