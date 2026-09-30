@@ -499,10 +499,11 @@ class TestSpendCeiling:
         assert res["outcomes"] == {1: "green"} and not res["degraded"]
 
     def test_ceiling_reached_drops_rung_and_says_so(self, repo, monkeypatch):
-        monkeypatch.setenv("FW_REVIEWER_JUDGE_WEEKLY_SPEND_CEILING", "10")
+        monkeypatch.setenv("FW_REVIEWER_JUDGE_WEEKLY_SPEND_CEILING", "200")
         _mk_task(repo, TASTE, extra_fm=self.HI)
         _produce(repo)
-        judge_cli._log_spend(repo, "T-1", 5, 9.0)
+        from t3580_round7_test import _cost    # round 7: spend = the COMMITTED cost ledger
+        _cost(repo, 199.0)
         w = FakeWorker("green")
         res = _judge(repo, dispatcher=w)
         assert res["rung_due"] == 5 and res["rung"] == 3 and len(w.calls) == 1
@@ -512,13 +513,14 @@ class TestSpendCeiling:
         assert rows  # not skipped
 
     def test_old_spend_does_not_count(self, repo):
-        p = repo / judge_cli.SPEND_LOG
-        p.parent.mkdir(parents=True)
-        p.write_text(json.dumps({"ts": "2020-01-01T00:00:00Z", "cost": 999}) + "\n")
+        _produce_empty = (repo / "x").write_text("x")  # noqa: F841 - a first commit
+        _produce(repo)
+        from t3580_round7_test import _cost
+        _cost(repo, 999, ts="2020-01-01T00:00:00Z")
         assert judge_cli._weekly_spend(repo) == 0.0
 
     def test_lowest_rung_at_ceiling_still_runs(self):
-        r, _, note = judge_cli._apply_ceiling(1, "default", 100, 10)
+        r, _, note = judge_cli._apply_ceiling(1, "default", 1000, 100)
         assert r == 1 and "not skipped" in note
 
     def test_under_ceiling_no_note(self):

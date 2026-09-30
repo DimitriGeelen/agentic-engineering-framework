@@ -53,11 +53,9 @@ def _seat_green(root, did, *, run_id="", seat="", rung=R1):
 
 
 def _spend(root, cost, ts=None):
-    p = root / review_policy.SPEND_LOG
-    p.parent.mkdir(parents=True, exist_ok=True)
-    with p.open("a") as f:
-        f.write(json.dumps({"ts": ts or datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
-                            "task": "T-1", "rung": 5, "cost": cost}) + "\n")
+    """Round 7: spend is read from the COMMITTED cost ledger (the untracked spend log is gone)."""
+    from t3580_round7_test import _cost
+    _cost(root, cost, ts=ts)
 
 
 # ── 1. HIGH: the ledger enforces the required rung ───────────────────────────────────────────
@@ -186,15 +184,16 @@ class TestBoundBeforeLaunch:
 class TestCeilingDecision:
     """A step-down is allowed only through a recorded decision the ledger re-derives."""
 
-    def _stepped(self, root, *, spent=9.0, ceiling="10"):
-        """The judge's path: ceiling reached, rung 5 due, rung 3 granted, decision in the run."""
+    def _stepped(self, root, *, spent=199.0, ceiling="200"):
+        """The judge's path: ceiling reached, rung 5 due, rung 3 granted, decision in the run
+        (round 7: computed BY THE LEDGER at registration, from the committed cost ledger)."""
         _spend(root, spent)
         import os
         os.environ[f"FW_{review_policy.CEILING_KEY}"] = ceiling
-        dec = review_policy.ceiling_decision(root, 5, "blast_radius=9")
+        run = vl.register_run("run-c", TID, acs=[1], rung=R3, seats=[{"seat": "claude", "vendor": "c"}],
+                              rung_due=5, reason="blast_radius=9", root=root)
+        dec = run["ceiling_decision"]
         assert dec["granted"] == 3
-        vl.register_run("run-c", TID, acs=[1], rung=R3, seats=[{"seat": "claude", "vendor": "c"}],
-                        ceiling_decision=dec, root=root)
         return dec
 
     @pytest.fixture(autouse=True)
@@ -209,9 +208,9 @@ class TestCeilingDecision:
 
     def test_negative_a_decision_the_spend_log_does_not_back(self, hi):
         dec = self._stepped(hi)
-        (hi / review_policy.SPEND_LOG).write_text("")           # the spend it cited is gone
+        (hi / review_policy.COST_LEDGER).write_text("")        # the spend it cited is gone
         rt.dispatch(hi, "rv-1", TID, run_id="run-c", seat="claude")
-        with pytest.raises(vl.VerdictRefused, match="ceiling-unverified|spend-log lines"):
+        with pytest.raises(vl.VerdictRefused, match="steps rung 5 down to 3, but cost ledger"):
             _record(hi, "rv-1", rung=R3, run_id="run-c")
         assert dec["spend_lines"] == 1
 
@@ -221,20 +220,29 @@ class TestCeilingDecision:
         monkeypatch.setenv(f"FW_{review_policy.CEILING_KEY}", "1000")
         assert _ticked(hi) == [] and "ceiling-unverified" in _why(hi)
 
-    def test_negative_a_hand_written_decision_that_does_not_re_derive(self, hi):
-        dec = review_policy.ceiling_decision(hi, 5)          # nothing spent: rung 5 granted
-        dec.update(granted=3)                                 # ... claimed as a step-down
+    def _steer(self, monkeypatch, **fields):
+        """Round 7: a caller cannot pass a decision, so steer the one the ledger computes."""
+        real = review_policy.ceiling_decision
+        monkeypatch.setattr(review_policy, "ceiling_decision",
+                            lambda *a, **k: dict(real(*a, **k), **fields))
+
+    def test_negative_a_hand_written_decision_that_does_not_re_derive(self, hi, monkeypatch):
+        self._steer(monkeypatch, granted=3)                   # nothing spent, claimed as a step-down
         vl.register_run("run-f", TID, acs=[1], rung=R3, seats=[{"seat": "claude", "vendor": "c"}],
-                        ceiling_decision=dec, root=hi)
+                        rung_due=5, root=hi)
+        monkeypatch.undo()
         rt.dispatch(hi, "rv-1", TID, run_id="run-f", seat="claude")
         with pytest.raises(vl.VerdictRefused, match="is granted 5, not the recorded 3"):
             _record(hi, "rv-1", rung=R3, run_id="run-f")
 
-    def test_negative_a_decision_that_steps_down_twice(self, hi):
-        dec = self._stepped(hi, spent=99)
-        dec2 = dict(dec, granted=1)
+    def test_negative_a_decision_that_steps_down_twice(self, hi, monkeypatch):
+        self._stepped(hi, spent=999)
+        self._steer(monkeypatch, granted=1)
         vl.register_run("run-1", TID, acs=[1], rung=R1, seats=[{"seat": "claude", "vendor": "c"}],
-                        ceiling_decision=dec2, root=hi)
+                        rung_due=5, root=hi)
+        monkeypatch.undo()
+        import os
+        os.environ[f"FW_{review_policy.CEILING_KEY}"] = "200"
         rt.dispatch(hi, "rv-1", TID, run_id="run-1", seat="claude")
         with pytest.raises(vl.VerdictRefused, match="granted 3, not the recorded 1"):
             _record(hi, "rv-1", rung=R1, run_id="run-1")
@@ -259,8 +267,8 @@ class TestOnePolicy:
             self, hi, monkeypatch):
         """End to end: the judge steps rung 5 down to 3 at the ceiling, the run carries the
         decision, the worker's green is accepted by record and ticks at apply."""
-        _spend(hi, 9.0)
-        monkeypatch.setenv(f"FW_{review_policy.CEILING_KEY}", "10")
+        _spend(hi, 199.0)
+        monkeypatch.setenv(f"FW_{review_policy.CEILING_KEY}", "200")
         res = _judge(hi, dispatcher=FakeWorker("green"), worker_kinds={"claude"},
                      kind_vendors={"claude": "anthropic"})
         assert res["rung_due"] == 5 and res["rung"] == 3, res.get("ceiling_note")

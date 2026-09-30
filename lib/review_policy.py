@@ -11,8 +11,8 @@ IW-7 (docs/reports/T-3557-agent-reviewer-default.md): impact = max(cost_if_wrong
 over reversibility, blast radius, audience, value and uncertainty. low -> rung 1 (same-vendor
 independent agent), medium -> rung 3 (one TermLink-dispatched reviewer), high -> rung 5 (panel of
 three vendors). The weekly spend ceiling may drop the rung one step; that step-down is a
-DECISION recorded in the signed review run (`ceiling_decision`) and re-verified by the ledger
-(`verify_ceiling_decision`), never a free-text claim.
+DECISION the ledger computes when it registers the review run (round 7), from the committed cost
+ledger, and re-verifies (`verify_ceiling_decision`) at record and apply — never a caller's claim.
 
 Impact is monotonic in the criteria it reads: adding criteria can only raise the tier. So the
 judge, which scores all the criteria it dispatches together, never asks for less than the ledger
@@ -22,16 +22,13 @@ demands for any one of them.
 from __future__ import annotations
 
 import json
+import math
 import os
 import re
+import subprocess
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-SPEND_LOG = Path(".context/working/judge-spend.jsonl")
-CEILING_KEY = "REVIEWER_JUDGE_WEEKLY_SPEND_CEILING"
-DEFAULT_CEILING = 10000.0
-#: Estimated USD per dispatched reviewer, by rung. A panel is three seats.
-RUNG_COST = {1: 2.0, 2: 2.0, 3: 3.0, 5: 6.0}
 #: IW-7: a rung-5 panel is three reviewers from three different vendors.
 PANEL_SIZE = 3
 TIER_RUNG = {"low": 1, "medium": 3, "high": 5}
@@ -135,6 +132,29 @@ def step_down(rung: int) -> int:
 
 
 # ── the weekly spend ceiling ─────────────────────────────────────────────────
+#
+# Round 7 (T-3580; codex HIGH-1 / MEDIUM-2, Claude F1). The step-down is a lever that takes a
+# high-impact criterion from rung 5 to rung 3, so every input to it is pinned:
+#   * the decision is computed BY THE LEDGER AT REGISTRATION (verdict_ledger.register_run), as of
+#     the run's own signed registration time; `verify_ceiling_decision` refuses a decision whose
+#     clock is not its run's, so no new run can reuse an old one;
+#   * spend comes from the COMMITTED cost ledger (.context/costs/reviews.jsonl at a commit that is
+#     an ancestor of HEAD, append-only against git), never from an untracked working file;
+#   * ceiling and spend must be finite and >= 0, and the ceiling must be at least CEILING_FLOOR.
+#     Anything else — NaN, infinity, negative, malformed, below the floor — means NO step-down.
+
+COST_LEDGER = Path(".context/costs/reviews.jsonl")
+#: Cost-ledger purpose prefix of a judge-dispatched seat (judge_cli.COST_PURPOSE).
+SPEND_PURPOSE = "reviewer-judge"
+CEILING_KEY = "REVIEWER_JUDGE_WEEKLY_SPEND_CEILING"
+DEFAULT_CEILING = 10000.0
+#: Estimated USD per dispatched reviewer run, by rung. A panel is three seats.
+RUNG_COST = {1: 2.0, 2: 2.0, 3: 3.0, 5: 6.0}
+#: The lowest ceiling that can step anything down, in the cost ledger's unit (estimated USD, the
+#: unit of RUNG_COST). 100 USD funds sixteen rung-5 panels a week; a ceiling below it cannot be a
+#: budget for the reviews IW-7 asks for, only a switch that turns every high-impact review into a
+#: rung-3 one — so a ceiling below the floor (0 and negatives included) means "no step-down".
+CEILING_FLOOR = 100.0
 
 
 def config_value(root: Path, key: str, default: str) -> str:
@@ -153,88 +173,192 @@ def config_value(root: Path, key: str, default: str) -> str:
     return default
 
 
-def ceiling(root: Path) -> float:
+def _money(v, *, number: bool = False) -> float | None:
+    """A finite, non-negative amount; None for anything else (NaN, inf, negative, bool, garbage).
+    `number=True` (recorded values: cost-ledger rows, a decision's spend) also refuses text."""
+    if isinstance(v, bool) or (number and not isinstance(v, (int, float))):
+        return None
     try:
-        return float(config_value(root, CEILING_KEY, str(DEFAULT_CEILING)))
-    except ValueError:
-        return DEFAULT_CEILING
+        f = float(v)
+    except (TypeError, ValueError):
+        return None
+    return f if math.isfinite(f) and f >= 0 else None
 
 
-def _spend_lines(root: Path) -> list[str]:
-    p = Path(root) / SPEND_LOG
+def ceiling_status(root: Path) -> tuple[float | None, str]:
+    """(ceiling, '') when the configured ceiling can step a rung down; (None, why) when it cannot."""
+    raw = config_value(root, CEILING_KEY, str(DEFAULT_CEILING))
+    c = _money(raw)
+    if c is None:
+        return None, f"ceiling {raw!r} is not a finite amount >= 0"
+    if c < CEILING_FLOOR:
+        return None, f"ceiling {c:g} is below the floor {CEILING_FLOOR:g}"
+    return c, ""
+
+
+def ceiling(root: Path) -> float | None:
+    return ceiling_status(root)[0]
+
+
+def _git(root: Path, *args: str) -> tuple[int, str]:
     try:
-        return p.read_text().splitlines()
-    except OSError:
-        return []
+        p = subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True, timeout=30)
+    except (OSError, subprocess.SubprocessError):
+        return 128, ""
+    return p.returncode, p.stdout
 
 
-def _spent(lines: list[str], now: datetime) -> float:
+def _committed_lines(root: Path, rev: str) -> tuple[list[str] | None, str]:
+    """The cost ledger's non-blank lines as committed at `rev`; ([], '') when it was not there."""
+    rc, blob = _git(root, "show", f"{rev}:{COST_LEDGER}")
+    if rc != 0:
+        rc2, _ = _git(root, "rev-parse", "-q", "--verify", f"{rev}^{{commit}}")
+        return ([], "") if rc2 == 0 else (None, f"revision {rev[:9]!r} is not a commit")
+    return [ln for ln in blob.splitlines() if ln.strip()], ""
+
+
+def _spent(lines: list[str], now: datetime) -> tuple[float | None, str]:
+    """(estimated USD the judge spent in the 7 days up to `now`, '') from cost-ledger lines; (None,
+    why) when a judge record in them is malformed — malformed spend refuses a step-down."""
     since = now - timedelta(days=7)
     total = 0.0
-    for line in lines:
+    for n, line in enumerate(lines, 1):
         try:
             r = json.loads(line)
-            ts = datetime.strptime(r["ts"], _TS).replace(tzinfo=timezone.utc)
-            if since <= ts <= now:
-                total += float(r.get("cost", 0))
-        except Exception:
+        except ValueError:
+            return None, f"cost-ledger line {n} is not JSON"
+        if not isinstance(r, dict) or not str(r.get("purpose") or "").startswith(SPEND_PURPOSE):
             continue
-    return total
+        try:
+            ts = datetime.strptime(str(r.get("ts")), _TS).replace(tzinfo=timezone.utc)
+        except ValueError:
+            return None, f"cost-ledger line {n} has a malformed ts {r.get('ts')!r}"
+        if not since <= ts <= now:
+            continue
+        if r.get("cost_amount") is None:
+            continue                      # an unmetered seat adds nothing it can prove
+        amt = _money(r.get("cost_amount"), number=True)
+        if amt is None:
+            return None, f"cost-ledger line {n} has cost_amount {r.get('cost_amount')!r}, not a finite amount >= 0"
+        total += amt
+    return total, ""
 
 
-def weekly_spend(root: Path, now: datetime | None = None) -> float:
-    return _spent(_spend_lines(root), now or datetime.now(timezone.utc))
+def _ledger_fault(root: Path) -> str:
+    from lib import verdict_ledger  # lazy: verdict_ledger imports this module
+    return verdict_ledger.history_fault(Path(root), COST_LEDGER)
 
 
-def apply_ceiling(rung: int, reason: str, spent: float, ceil: float) -> tuple[int, str, str]:
+def weekly_spend(root: Path, now: datetime | None = None) -> float | None:
+    """Judge spend over the last 7 days from the cost ledger as committed at HEAD; None when it
+    cannot be established."""
+    lines, _why = _committed_lines(root, "HEAD")
+    if lines is None or _ledger_fault(root):
+        return None
+    return _spent(lines, now or datetime.now(timezone.utc))[0]
+
+
+def apply_ceiling(rung: int, reason: str, spent, ceil) -> tuple[int, str, str]:
     """Drop one rung (5 -> 3 -> 1) when the due rung would take the week past the ceiling.
-    Returns (rung, reason, note); note is '' when nothing was dropped."""
-    if spent + RUNG_COST.get(rung, 2.0) <= ceil:
+    Returns (rung, reason, note); note is '' when nothing was dropped. A spend or ceiling that is
+    not a finite amount >= 0, or a ceiling below CEILING_FLOOR, never drops anything."""
+    s, c = _money(spent), _money(ceil)
+    if s is None or c is None or c < CEILING_FLOOR:
+        return rung, reason, ""
+    if s + RUNG_COST.get(rung, 2.0) <= c:
         return rung, reason, ""
     lower = step_down(rung)
     if lower == rung or rung <= 1:
-        note = (f"weekly spend ceiling reached (spent {spent:g} of {ceil:g}); rung {rung} is "
+        note = (f"weekly spend ceiling reached (spent {s:g} of {c:g}); rung {rung} is "
                 f"already the lowest, so it runs at rung {rung} and is not skipped")
         return rung, reason, note
-    note = (f"reviewed at rung {lower}, weekly spend ceiling reached (spent {spent:g} of "
-            f"{ceil:g}); rung {rung} was due")
+    note = (f"reviewed at rung {lower}, weekly spend ceiling reached (spent {s:g} of "
+            f"{c:g}); rung {rung} was due")
     return lower, reason, note
 
 
 def ceiling_decision(root: Path, due: int, reason: str = "", now: datetime | None = None) -> dict:
-    """The judge's rung decision, in a form the ledger can re-derive: the due rung, the granted
-    one, and exactly which spend-log lines and clock the spend was computed from."""
+    """The rung decision for a run registered at `now`: the due rung, the granted one, and exactly
+    which committed cost-ledger lines (commit + count) the spend was computed from. Called by
+    `verdict_ledger.register_run` with the run's registration time; the judge calls it only to
+    preview. Any fault in the inputs grants the due rung, with the fault in `why`."""
     now = (now or datetime.now(timezone.utc)).replace(microsecond=0)
-    lines = _spend_lines(root)
-    spent, ceil = _spent(lines, now), ceiling(root)
+    dec = {"due": int(due), "granted": int(due), "spent": None, "ceiling": None,
+           "floor": CEILING_FLOOR, "cost": RUNG_COST.get(due, 2.0), "as_of": now.strftime(_TS),
+           "ledger_rev": "", "spend_lines": 0, "note": "", "why": ""}
+    ceil, why = ceiling_status(root)
+    rc, head = _git(root, "rev-parse", "-q", "--verify", "HEAD")
+    head = head.strip() if rc == 0 else ""
+    lines, lwhy = _committed_lines(root, head) if head else (None, "the repository has no commit")
+    spent, swhy = _spent(lines, now) if lines is not None else (None, lwhy)
+    hist = _ledger_fault(root) if head else ""
+    dec.update(ceiling=ceil, spent=spent, ledger_rev=head, spend_lines=len(lines or []))
+    why = why or swhy or (f"cost ledger: {hist}" if hist else "")
+    if why:
+        dec["why"] = f"no step-down: {why}"
+        return dec
     granted, _r, note = apply_ceiling(due, reason, spent, ceil)
-    return {"due": int(due), "granted": int(granted), "spent": spent, "ceiling": ceil,
-            "cost": RUNG_COST.get(due, 2.0), "as_of": now.strftime(_TS),
-            "spend_lines": len(lines), "note": note}
+    dec.update(granted=int(granted), note=note, why=note)
+    return dec
 
 
-def verify_ceiling_decision(root: Path, dec) -> str:
-    """'' when `dec` (a run's recorded ceiling decision) re-derives: the spend recomputed from the
-    same spend-log lines at the same clock, run through `apply_ceiling` with the ceiling configured
-    NOW, grants exactly the recorded rung. Else why not. A raised ceiling therefore withdraws a
+def verify_ceiling_decision(root: Path, dec, run_ts: str = "") -> str:
+    """'' when `dec` (the ceiling decision in a signed run registered at `run_ts`) re-derives: its
+    clock IS the run's registration time; its cost-ledger commit is an ancestor of HEAD and the
+    ledger is append-only against git; the spend recomputed from exactly those committed lines at
+    that clock matches; and `apply_ceiling` with the ceiling configured NOW (finite, >= floor)
+    grants exactly the recorded rung. Else why not. A raised ceiling therefore withdraws a
     step-down: the review is again owed at full strength."""
     if not isinstance(dec, dict):
         return "the run records no ceiling decision"
     try:
         due, granted, n = int(dec["due"]), int(dec["granted"]), int(dec["spend_lines"])
         now = datetime.strptime(str(dec["as_of"]), _TS).replace(tzinfo=timezone.utc)
-    except (KeyError, TypeError, ValueError):
+        rev = str(dec["ledger_rev"])
+    except (KeyError, TypeError, ValueError, OverflowError):
         return "the ceiling decision is malformed"
-    lines = _spend_lines(root)
-    if n > len(lines):
-        return (f"the ceiling decision cites {n} spend-log lines; the log has {len(lines)} — the "
-                f"spend it was based on is gone")
-    spent = _spent(lines[:n], now)
-    if abs(spent - float(dec.get("spent", -1))) > 1e-6:
-        return f"the ceiling decision records spend {dec.get('spent')}, the spend log says {spent:g}"
-    ceil = ceiling(root)
+    recorded = _money(dec.get("spent"), number=True)
+    if n < 0 or recorded is None or not re.fullmatch(r"[0-9a-f]{40}", rev):
+        return "the ceiling decision is malformed (spend, line count or ledger commit)"
+    if not run_ts or str(dec["as_of"]) != str(run_ts):
+        return (f"the decision was computed as of {dec['as_of']}, not at its run's registration "
+                f"({run_ts or 'unknown'}) — a run's step-down is decided when it is registered")
+    if _git(root, "merge-base", "--is-ancestor", rev, "HEAD")[0] != 0:
+        return f"its cost-ledger commit {rev[:9]} is not in this history"
+    hist = _ledger_fault(root)
+    if hist:
+        return f"cost ledger: {hist}"
+    lines, why = _committed_lines(root, rev)
+    if lines is None:
+        return why
+    if len(lines) != n:
+        return (f"the decision cites {n} committed cost-ledger lines at {rev[:9]}; that commit has "
+                f"{len(lines)}")
+    spent, why = _spent(lines, now)
+    if spent is None:
+        return why
+    if abs(spent - recorded) > 1e-6:
+        return f"the ceiling decision records spend {dec.get('spent')}, the cost ledger says {spent:g}"
+    ceil, why = ceiling_status(root)
+    if ceil is None:
+        return f"the configured {why} — no step-down"
     got, _r, _n = apply_ceiling(due, "", spent, ceil)
     if got != granted:
         return (f"with spend {spent:g} and the configured ceiling {ceil:g}, rung {due} is granted "
                 f"{got}, not the recorded {granted}")
     return ""
+
+
+def is_step_down(dec) -> bool:
+    try:
+        return isinstance(dec, dict) and int(dec["granted"]) < int(dec["due"])
+    except (KeyError, TypeError, ValueError):
+        return False
+
+
+def disclosure(dec) -> str:
+    """'rung R granted, rung D due, <reason>' for a step-down; '' otherwise."""
+    if not is_step_down(dec):
+        return ""
+    return (f"rung {dec['granted']} granted, rung {dec['due']} due, "
+            f"{dec.get('note') or dec.get('why') or 'weekly spend ceiling'}")

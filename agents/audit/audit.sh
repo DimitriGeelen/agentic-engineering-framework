@@ -2827,6 +2827,19 @@ else
          "Restore it: bin/fw vendor self (or fw upgrade)"
 fi
 
+# T-3580 round 7: every spend-ceiling step-down (a review run registered one rung below what IW-7
+# requires) is a WARN — the lever must be visible even when it was exercised legitimately.
+_audit_review_step_downs() {
+    [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ] || return 0
+    local _sd
+    _sd=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" audit 2>/dev/null | grep '^WARN step-down' || true)
+    [ -z "$_sd" ] && return 0
+    warn "Reviewer spend-ceiling step-downs: $(echo "$_sd" | wc -l | tr -d ' ') review run(s) granted a lower rung than IW-7 requires" \
+         "$(echo "$_sd" | head -3 | tr '\n' ';')" \
+         "Inspect: python3 lib/verdict_ledger.py audit — raise REVIEWER_JUDGE_WEEKLY_SPEND_CEILING to withdraw a step-down"
+}
+_audit_review_step_downs
+
 # T-3282 (G-104): the RUNNING Watchtower is a deployment surface of its own —
 # source can be fixed, tested, and closed green while the process serves the
 # pre-fix bytes (Flask debug=False, no reloader). The T-2938 detector fired

@@ -253,3 +253,16 @@ PY
     run pgrep -f "$WORK/suite/s"
     [ "$status" -ne 0 ]
 }
+
+@test "T-3602: a daemon leaked by a test does not keep holding the overlap lock" {
+    cat > "$WORK/suite/leak.bats" <<EOF2
+@test "leaks a daemon" { ( setsid sleep 60 >/dev/null 2>&1 3>&- & ) ; true; }
+EOF2
+    run env FW_UNIT_SUITE_DIR="$WORK/suite" FW_UNIT_SUITE_REPORT_DIR="$WORK/reports" \
+            FW_UNIT_SUITE_LOCK="$WORK/lock" FW_UNIT_SUITE_TIMEOUT=60 "$RUNNER"
+    [ "$status" -eq 0 ]
+    # the runner has exited; the leaked sleep must not hold the lock fd
+    run flock -n "$WORK/lock" true
+    pkill -f "^sleep 60$" || true
+    [ "$status" -eq 0 ]
+}

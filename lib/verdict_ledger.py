@@ -791,14 +791,15 @@ def _tracked(root: Path, rel: Path) -> bool:
 def register_run(run_id: str, task_id: str, *, acs: list[int], rung: str, seats: list[dict],
                  required_vendors: int = 1, pages: dict | None = None, captures: list | None = None,
                  inputs: dict | None = None, reason: str = "", degraded: str = "",
-                 ceiling_decision: dict | None = None, root: Path | None = None) -> dict:
+                 rung_due: int | None = None, root: Path | None = None) -> dict:
     """(judge, before dispatching) record a review run: the seats it requires, how many distinct
     vendors it demands, and for render criteria the pages that must have been seen with the
     capture result of each. Signed; a partial capture failure is kept, never discarded.
 
-    `ceiling_decision` (round 6, lib/review_policy.ceiling_decision) is the judge's due/granted
-    rung with the spend it was computed from; the ledger re-derives it before it accepts a run
-    whose rung is below what IW-7 requires."""
+    `rung_due` (round 7) is the rung IW-7 requires. The ledger itself computes the ceiling
+    decision HERE, as of this run's registration time, from the committed cost ledger
+    (lib/review_policy.ceiling_decision), and refuses a run whose `rung` is not the rung that
+    decision grants. A caller never supplies a decision, so no run can carry an old one."""
     root = root or _root()
     if any(r.get("kind") == "run" and r.get("run_id") == run_id for r in _read(RUNS, root)):
         raise ValueError(f"run {run_id!r} is already registered")
@@ -809,8 +810,14 @@ def register_run(run_id: str, task_id: str, *, acs: list[int], rung: str, seats:
            "pages": {str(k): list(v) for k, v in (pages or {}).items()},
            "captures": [dict(c) for c in (captures or [])], "inputs": inputs or {},
            "reason": reason, "degraded": degraded, "ts": _now()}
-    if ceiling_decision is not None:
-        row["ceiling_decision"] = dict(ceiling_decision)
+    if rung_due is not None:
+        now = datetime.strptime(row["ts"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        dec = review_policy.ceiling_decision(root, int(rung_due), reason, now)
+        if review_policy.rung_number(rung) != dec["granted"]:
+            raise ValueError(f"run {run_id!r} asks for {rung!r}; with rung {dec['due']} due the "
+                             f"ceiling decision at registration grants rung {dec['granted']} "
+                             f"({dec['why'] or 'no step-down'})")
+        row["ceiling_decision"] = dec
     row["sig"] = _sign_row(key, row)
     _append(RUNS, row, root)
     return row
@@ -1481,13 +1488,13 @@ def _strength_fault(ctx: "_Ctx", row: dict, crit) -> tuple[str, str] | None:
                                  f"authorised rung {granted}")
     if granted < need:
         dec = run.get("ceiling_decision")
-        if not isinstance(dec, dict) or int(dec.get("granted", -1)) != granted \
-                or int(dec.get("due", 0)) < need:
+        if not review_policy.is_step_down(dec) or int(dec["granted"]) != granted \
+                or int(dec["due"]) < need:
             return "under-strength", (
                 f"{ctx.task_id} AC#{crit.index} requires rung {need} ({why}); run "
                 f"{run['run_id']!r} is rung {granted} with no ceiling decision that steps down "
                 f"from rung {need}")
-        bad = review_policy.verify_ceiling_decision(root, dec)
+        bad = review_policy.verify_ceiling_decision(root, dec, str(run.get("ts") or ""))
         if bad:
             return "ceiling-unverified", (f"run {run['run_id']!r} steps rung {dec.get('due')} down to "
                                           f"{granted}, but {bad}")
@@ -1945,10 +1952,18 @@ def _annotation(lines: list[str], crit) -> tuple[int, str] | None:
     return None
 
 
-def _cite(r: dict) -> str:
+def _step_down_of(root: Path, r: dict) -> str:
+    """'rung R granted, rung D due, reason' when the row's run stepped down (round 7); else ''."""
+    run, _bind, _why = run_for_dispatch(root, str(r.get("dispatch_id") or ""))
+    return review_policy.disclosure((run or {}).get("ceiling_decision"))
+
+
+def _cite(r: dict, root: Path | None = None) -> str:
+    down = _step_down_of(root, r) if root is not None else ""
     return (f"  **Reviewer verdict:** green {r['id']} — {r['reviewer']} (rung {r['rung']}), "
             f"digest {r['ac_digest']}; dispatch {r['dispatch_id']}; "
-            f"evidence: {', '.join(r['evidence'])}; ledger {VERDICTS}")
+            + (f"STEP-DOWN: {down}; " if down else "")
+            + f"evidence: {', '.join(r['evidence'])}; ledger {VERDICTS}")
 
 
 def apply(task_id: str, root: Path | None = None) -> dict:
@@ -1991,7 +2006,7 @@ def apply(task_id: str, root: Path | None = None) -> dict:
         r, why = satisfying_verdict(ctx, c)
         if r is not None:
             if r["id"] != ann[1]:
-                lines[ann[0]] = _cite(r)
+                lines[ann[0]] = _cite(r, root)
                 result["recited"].append({"ac": c.index, "verdict_id": r["id"]})
             continue
         del lines[ann[0]]
@@ -2010,7 +2025,7 @@ def apply(task_id: str, root: Path | None = None) -> dict:
             hits.append((c, r))
     for c, r in sorted(hits, key=lambda h: -h[0].start):
         lines[c.start] = re.sub(r"\[ \]", "[x]", lines[c.start], count=1)
-        lines.insert(c.end, _cite(r))
+        lines.insert(c.end, _cite(r, root))
         result["ticked"].append({"ac": c.index, "verdict_id": r["id"], "reviewer": r["reviewer"]})
     result["ticked"].sort(key=lambda t: t["ac"])
     result["withdrawn"].sort(key=lambda t: t["ac"])
@@ -2050,9 +2065,14 @@ def audit(root: Path | None = None) -> tuple[int, list[str]]:
     led = load_ledger(root)
     n = len(led.committed) + len(led.pending)
     comps_exist = (root / COMPLETIONS).is_file()
+    # Round 7: every step-down is reported as a WARN, whether or not a verdict has used it yet.
+    downs = [f"WARN step-down: run {run.get('run_id')} ({run.get('task')}): "
+             f"{review_policy.disclosure(run['ceiling_decision'])}"
+             for run in _read(RUNS, root)
+             if run.get("kind") == "run" and review_policy.is_step_down(run.get("ceiling_decision"))]
     if not n and not led.torn and not led.faults and not led.missing \
             and not _read(APPLIED, root) and not comps_exist:
-        return 0, ["verdict ledger: empty or absent (path is off until a review dispatch writes rows)"]
+        return 0, downs + ["verdict ledger: empty or absent (path is off until a review dispatch writes rows)"]
     out, bad = [], 0
     if comps_exist:
         # T-3580 round 5: the completions file is under the same append-only history check as the
@@ -2096,6 +2116,7 @@ def audit(root: Path | None = None) -> tuple[int, list[str]]:
         if f:
             bad += 1
             out.append(f"FAIL {rid} ({task}): {f[0].replace('-', ' ')} — {f[1]}")
+    out += downs
     out.append(f"verdict ledger: {n} row(s), {bad} failure(s)")
     return (2 if bad else 0), out
 

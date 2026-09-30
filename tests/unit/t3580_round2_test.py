@@ -556,9 +556,9 @@ class TestImpactTiers:
         assert rung == 5 and "voi_score" in why
 
     def test_ceiling_steps_high_to_medium_to_low(self):
-        assert judge_cli._apply_ceiling(5, "r", 99, 10)[0] == 3
-        assert judge_cli._apply_ceiling(3, "r", 99, 10)[0] == 1
-        assert "not skipped" in judge_cli._apply_ceiling(1, "r", 99, 10)[2]
+        assert judge_cli._apply_ceiling(5, "r", 999, 100)[0] == 3
+        assert judge_cli._apply_ceiling(3, "r", 999, 100)[0] == 1
+        assert "not skipped" in judge_cli._apply_ceiling(1, "r", 999, 100)[2]
 
     def test_inputs_and_reason_are_recorded_in_the_run(self, repo):
         _mk_task(repo, TASTE, extra_fm="components:\n  - lib/verdict_ledger.py\n")

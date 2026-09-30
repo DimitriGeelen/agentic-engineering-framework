@@ -158,7 +158,11 @@ except Exception:
 files.sort(key=lambda f: -float(dur.get(os.path.basename(f), 0) or 0))
 sys.stdout.write("".join(f + "\n" for f in files))
 ' \
-    | xargs -d '\n' -r -P "$JOBS" -n 1 bash -c '_run_one "$0" "$1" "$2"' "$leg" "$deadline"
+    | xargs -d '\n' -r -P "$JOBS" -n 1 bash -c '_run_one "$0" "$1" "$2"' "$leg" "$deadline" 9>&-
+    # 9>&- : the jobs must not inherit the overlap-lock fd. A test that leaks a
+    # daemon (measured: 10 fixture watchtowers orphaned by one run) would
+    # otherwise hold the lock after the runner exits, and every later nightly
+    # would SKIP as "lock held" — silently, forever (T-3602).
 }
 
 # _descendants <pid> — every descendant pid, parents before children.
