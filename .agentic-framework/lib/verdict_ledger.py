@@ -107,6 +107,7 @@ import os
 import re
 import subprocess
 import sys
+import secrets
 import uuid
 from typing import NoReturn
 from datetime import datetime, timezone
@@ -142,6 +143,11 @@ RUNS = Path(".context/reviews/review-runs.jsonl")
 #: of its dispatch lists it with the same contents. `record` never writes here.
 COMPLETIONS = Path(".context/reviews/review-completions.jsonl")
 DISPATCH_KEY = Path(".context/secrets/review-dispatch.key")
+#: Per-dispatch completion secret (T-3580 round 4). `register_dispatch` writes it (mode 0600) into
+#: the worker directory and registers only its sha256; run.sh reads it and deletes the file BEFORE
+#: the worker starts, never exports it, and hands it to `complete` on stdin. `complete` refuses
+#: without it, so a caller with a hand-written exit_code file cannot obtain a signed completion.
+COMPLETION_SECRET_FILE = ".completion-secret"
 REVIEW_TASK_TYPE = "review"
 
 GREEN, AMBER, RED, ESCALATE = "green", "amber", "red", "escalate"
@@ -293,7 +299,8 @@ def _dispatch_key(root: Path, create: bool = False) -> bytes | None:
 def _sign(key: bytes, row: dict) -> str:
     body = {k: row[k] for k in ("dispatch_id", "task", "task_type", "issuer_session",
                                 "issuer_identity", "ts")}
-    for k in ("revision", "wdir"):          # T-3580 round 3: bound at dispatch time
+    for k in ("revision", "wdir",           # T-3580 round 3: bound at dispatch time
+              "worker_kind", "vendor", "completion_secret_sha256"):   # round 4
         if k in row:
             body[k] = row[k]
     return hmac.new(key, json.dumps(body, sort_keys=True, separators=(",", ":")).encode(),
@@ -302,14 +309,19 @@ def _sign(key: bytes, row: dict) -> str:
 
 def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
                       issuer_session: str = "", issuer_identity: str = "",
-                      revision: str = "", wdir: str = "",
-                      root: Path | None = None) -> dict:
+                      revision: str = "", wdir: str = "", worker_kind: str = "",
+                      vendor: str = "", root: Path | None = None) -> dict:
     """Record a dispatch. Called by the dispatcher, for every task-type, at spawn time.
 
     `revision` is the commit the reviewer is asked to review, captured BEFORE the worker starts
     (default: HEAD now, which is before the worker exists). `wdir` is the runtime's worker
     directory, where it writes the worker's exit state: only a completion from that directory
-    counts (T-3580 round 3)."""
+    counts (T-3580 round 3).
+
+    `worker_kind` is the kind the dispatcher actually launches and `vendor` the vendor the
+    dispatcher's own table says that kind runs (T-3580 round 4): a panel counts these signed
+    values, never a registry backend id. A review dispatch with a worker directory also gets a
+    fresh completion secret in `wdir/.completion-secret` (0600); only its hash is registered."""
     root = root or _root()
     if not (dispatch_id or "").strip() or not (task_id or "").strip():
         raise ValueError("dispatch_id and task are required")
@@ -322,7 +334,16 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
            "task_type": (task_type or "").strip().lower(),
            "issuer_session": issuer_session, "issuer_identity": issuer_identity, "ts": _now(),
            "revision": (revision or "").strip() or _head_sha(root),
-           "wdir": str(Path(wdir).resolve()) if (wdir or "").strip() else ""}
+           "wdir": str(Path(wdir).resolve()) if (wdir or "").strip() else "",
+           "worker_kind": (worker_kind or "").strip(), "vendor": (vendor or "").strip()}
+    if row["task_type"] == REVIEW_TASK_TYPE and row["wdir"]:
+        secret = secrets.token_hex(32)
+        sp = Path(row["wdir"]) / COMPLETION_SECRET_FILE
+        sp.parent.mkdir(parents=True, exist_ok=True)
+        fd = os.open(str(sp), os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+        with os.fdopen(fd, "w") as fh:
+            fh.write(secret + "\n")
+        row["completion_secret_sha256"] = hashlib.sha256(secret.encode()).hexdigest()
     row["sig"] = _sign(_dispatch_key(root, create=True), row)
     _append(DISPATCHES, row, root)
     return row
@@ -417,8 +438,25 @@ def _result_sha(wdir: Path) -> str:
     return ""
 
 
+def _worker_session(wdir: Path) -> str:
+    """The worker's own session id from its stream-json result, '' when the stream carries none
+    (the ollama-loop worker, or a stream cut short). Recorded, not required (round 4)."""
+    f = wdir / "result.jsonl"
+    try:
+        for line in f.read_text(errors="replace").splitlines():
+            try:
+                ev = json.loads(line)
+            except ValueError:
+                continue
+            if isinstance(ev, dict) and str(ev.get("session_id") or "").strip():
+                return str(ev["session_id"]).strip()
+    except OSError:
+        pass
+    return ""
+
+
 def complete(dispatch_id: str, *, wdir: str, exit_code: int, session: str = "",
-             root: Path | None = None) -> dict:
+             secret: str = "", worker_kind: str = "", root: Path | None = None) -> dict:
     """(the dispatch runtime, after the worker exits) sign what the worker left behind.
 
     Called by run.sh (agents/termlink/termlink.sh) once `exit_code` is written, never by the
@@ -427,7 +465,11 @@ def complete(dispatch_id: str, *, wdir: str, exit_code: int, session: str = "",
     verdict row the worker wrote — the row's digest, evidence hashes and exact-contents hash.
     Rows appended after this point are not in it, so they never count. It always appends: a
     second completion for the same dispatch makes BOTH void (see `_completion_fault`), so a
-    worker that forges one before exiting only invalidates its own verdicts."""
+    worker that forges one before exiting only invalidates its own verdicts.
+
+    `secret` is the per-dispatch completion secret (round 4) that only run.sh holds; without it
+    the call is refused, so the public command cannot be driven by a caller that merely wrote an
+    exit_code file. `worker_kind` is the kind run.sh actually ran; it must be the registered one."""
     root = root or _root()
     did = (dispatch_id or "").strip()
     drec, why = dispatch_record(root, did)
@@ -440,6 +482,18 @@ def complete(dispatch_id: str, *, wdir: str, exit_code: int, session: str = "",
                              "exits, never from inside the worker's own environment")
     if session and session.strip() != did:
         raise VerdictRefused(f"runtime session {session!r} is not dispatch {did!r}")
+    want = str(drec.get("completion_secret_sha256") or "")
+    if not want:
+        raise VerdictRefused(f"dispatch {did!r} was registered without a completion secret — no "
+                             f"caller can complete it")
+    got = hashlib.sha256((secret or "").strip().encode()).hexdigest()
+    if not (secret or "").strip() or not hmac.compare_digest(got, want):
+        raise VerdictRefused(f"no valid completion secret for dispatch {did!r}: a completion is "
+                             f"signed only by the runtime that launched the worker")
+    kind = (worker_kind or "").strip() or "claude"
+    if kind != (drec.get("worker_kind") or "claude"):
+        raise VerdictRefused(f"the runtime ran worker kind {kind!r}, not the registered "
+                             f"{drec.get('worker_kind') or 'claude'!r}")
     reg = str(drec.get("wdir") or "")
     here = str(Path(wdir).resolve()) if (wdir or "").strip() else ""
     if not reg or here != reg:
@@ -458,6 +512,7 @@ def complete(dispatch_id: str, *, wdir: str, exit_code: int, session: str = "",
                 for r in _read(VERDICTS, root) if r.get("dispatch_id") == did]
     body = {"kind": "completion", "source": "runtime", "dispatch_id": did, "task": drec["task"],
             "session": did, "worker": worker_identity(did), "wdir": reg, "exit_code": written,
+            "worker_kind": kind, "worker_session": _worker_session(Path(here)),
             "result_sha256": _result_sha(Path(here)), "revision": drec.get("revision", ""),
             "verdicts": verdicts, "ts": _now()}
     body["sig"] = _sign_row(_dispatch_key(root), body)
@@ -933,6 +988,9 @@ def _completion_fault(base: _Base, row: dict) -> tuple[str, str] | None:
             or not comp.get("wdir") or comp.get("wdir") != (drec or {}).get("wdir"):
         return "bad-completion", ("the completion was not emitted by the runtime of this dispatch "
                                   "(session or worker directory differs from the registration)")
+    if comp.get("worker_kind") != ((drec or {}).get("worker_kind") or "claude"):
+        return "bad-completion", ("the completion's worker kind is not the one registered for the "
+                                  "dispatch")
     for k, want in (("task", row.get("task")), ("worker", row.get("worker")),
                     ("revision", row.get("revision"))):
         if comp.get(k) != want:
@@ -1219,7 +1277,9 @@ def satisfying_verdict(ctx: _Ctx, crit) -> tuple[dict | None, str]:
 def _panel_fault(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> str:
     """'' unless `last` belongs to a run whose requirements are not all met: every required seat
     needs its own valid, completed green for this criterion, and the seats must span the run's
-    required number of distinct vendors (a single-vendor panel cannot satisfy a three-vendor one)."""
+    required number of distinct vendors (a single-vendor panel cannot satisfy a three-vendor one).
+    A vendor is the one the dispatcher registered, signed, with each seat's dispatch (round 4):
+    three registry aliases for one worker kind are one vendor."""
     root, led = ctx.root, ctx.ledger
     run, _bind, _why = run_for_dispatch(root, str(last["dispatch_id"]))
     if run is None:
@@ -1240,7 +1300,12 @@ def _panel_fault(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> str:
                     f"latest verdict is invalid) — {f[0]}: {f[1]}")
         if r.get("outcome") != GREEN:
             return f"panel-incomplete: seat {s['seat']!r} of run {run['run_id']} is {r.get('outcome')!r}"
-        vendors.add(str(bb.get("vendor")))
+        drec, _ = dispatch_record(root, str(r["dispatch_id"]))
+        v = str((drec or {}).get("vendor") or "").strip()
+        if not v:
+            return (f"panel-unverified-vendor: seat {s['seat']!r} of run {run['run_id']} has no vendor "
+                    f"registered with its dispatch — a seat label or backend id is not a vendor")
+        vendors.add(v)
     if len(vendors) < int(run.get("required_vendors") or 1):
         return (f"degraded: run {run['run_id']} demands {run.get('required_vendors')} vendor(s), "
                 f"its seats span {len(vendors)} ({', '.join(sorted(vendors))}) — a single-vendor "
@@ -1700,6 +1765,8 @@ def _cli(argv: list[str] | None = None) -> int:
     g.add_argument("--issuer-identity", default="")
     g.add_argument("--revision", default="", help="commit the reviewer is asked to review (default HEAD)")
     g.add_argument("--wdir", default="", help="the runtime's worker directory")
+    g.add_argument("--worker-kind", default="", help="the worker kind the dispatcher launches")
+    g.add_argument("--vendor", default="", help="the vendor the dispatcher's table maps that kind to")
 
     cp = sub.add_parser("complete", help="(dispatch runtime, after the worker exits) sign what the "
                         "review worker left behind")
@@ -1707,6 +1774,9 @@ def _cli(argv: list[str] | None = None) -> int:
     cp.add_argument("--wdir", required=True)
     cp.add_argument("--exit-code", type=int, required=True)
     cp.add_argument("--session", default="")
+    cp.add_argument("--worker-kind", default="", help="the worker kind the runtime actually ran")
+    cp.add_argument("--secret-stdin", action="store_true",
+                    help="read the per-dispatch completion secret from stdin (never argv or env)")
 
     a = sub.add_parser("apply", help="tick green-judged criteria; hand ownership over if none left")
     a.add_argument("task_id")
@@ -1746,13 +1816,15 @@ def _cli(argv: list[str] | None = None) -> int:
         row = register_dispatch(args.dispatch_id, args.task, args.task_type,
                                 issuer_session=args.issuer_session,
                                 issuer_identity=args.issuer_identity,
-                                revision=args.revision, wdir=args.wdir)
+                                revision=args.revision, wdir=args.wdir,
+                                worker_kind=args.worker_kind, vendor=args.vendor)
         print(json.dumps({k: row[k] for k in ("dispatch_id", "task", "task_type", "revision")}))
         return 0
     if args.cmd == "complete":
         try:
             c = complete(args.dispatch_id, wdir=args.wdir, exit_code=args.exit_code,
-                         session=args.session)
+                         session=args.session, worker_kind=args.worker_kind,
+                         secret=sys.stdin.read() if args.secret_stdin else "")
         except VerdictRefused as e:
             print(f"REFUSED: {e}", file=sys.stderr)
             return 1
