@@ -92,7 +92,9 @@ append_backend() {  # $1 id  $2 class  $3 approval  [$4 match regex]
     CLAUDECODE=1 run rc backend add --id p2 --name P2 --class paid
     [ "$status" -ne 0 ]
     [[ "$output" == *"operator action"* ]]
-    ! grep -q "id: p2$" "$POLICY"
+    # T-3592: a bare `! cmd` never fails a bats test (errexit ignores it); assert the status.
+    run grep -q "id: p2$" "$POLICY"
+    [ "$status" -ne 0 ]
     CLAUDECODE=1 run rc backend add --id p2 --name P2 --class paid --i-am-human
     [ "$status" -eq 0 ]
     grep -q "id: p2$" "$POLICY"

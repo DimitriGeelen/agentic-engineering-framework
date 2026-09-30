@@ -79,7 +79,9 @@ _closed() { [ -n "$(find "$PROJECT_ROOT/.tasks/completed" -name "$1-*.md")" ]; }
     CLAUDECODE=1 run "$UPDATE_TASK" T-9901 --status work-completed --skip-acceptance-criteria --reason "deferred"
     [ "$status" -ne 0 ]
     [[ "$output" == *"refused in an agent session"* ]]
-    ! _closed T-9901
+    # T-3592: a bare `! cmd` never fails a bats test (errexit ignores it); assert the status.
+    run _closed T-9901
+    [ "$status" -ne 0 ]
     [ ! -s "$LOG" ]
 }
 
