@@ -77,29 +77,29 @@ cost_estimate_proposed:
 ## Open Questions
 
 - **IW-1: What is authored and what is derived?** Authored intent (headline, goals, objectives, explicit out-of-scope) versus derived progress (which arcs serve which objective, completion ratios, staleness, what shipped, arcs serving nothing). Get this wrong and the page becomes the next stale artefact — the CLAUDE.md 300K threshold sat wrong for months because nothing rendered it beside reality.
-  confidence: 2
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: Authored = `.context/project/objectives.yaml` (headline, objectives each with a measure, out_of_scope); derived = arc `supports:` mapping, completion, staleness and the audit rails (arc serving nothing AND stale; objective with no arc). Evergreen comes from the derived side, never from rewriting prose (2026-09-30 rollout ruling; docs/reports/T-3535-objectives-v2.md §1-§2).
 
 - **IW-2: Is "feature" a new first-class record, or a VIEW over closed arcs?** `fw arc create` already requires `--headline-mechanic` in the form "<who> does what, observes what user-visible result" — which is feature-shaped by construction. Deriving the feature list from closed arcs' headline mechanics would make it a free consequence of G-062 rather than a fifth thing to maintain.
   confidence: 1
-  disposition:
-  rationale:
+  disposition: deferred
+  rationale: Not needed to author or enforce objectives. Decide it when the objectives page is built: a view over closed arcs' headline mechanics is the default candidate, because it adds nothing to maintain. Nothing in the dialogue or reviews settled it.
 
 - **IW-3: Does 002 already have a working shape this template should come FROM?** Operator reports it does something like this and is unsure it is maintained. The T-559 project-boundary gate refuses the cross-project read, so this needs the operator to surface it. If 002 has drifted, that drift is evidence about what decays in practice and should shape the design.
-  confidence: 0
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: Resolved 2026-09-30 with the operator: "002" is the greenfield seed lib/seeds/tasks/greenfield/T-002-define-project-goals.md. It writes free prose nothing re-reads (the same decay as 001-Vision.md), so the seed should write the structured objectives file instead (see Evidence).
 
 - **IW-4: Where does this land — fold the surface into arc-007 (Watchtower redesign, in flight) with the data model as build slices, or open a new arc?** Opening a 21st arc against a diagnosis of "20 in progress, 5 stale, nothing can be declined" asks the problem to solve itself.
   confidence: 2
-  disposition:
-  rationale:
+  disposition: answered
+  rationale: No new arc. The operator set the page shape on 2026-09-29 (055's arc-007 page, a task overview on top, anchor quick links), and the arc page built it first (T-3564). The objectives page reuses it as build slices; the data model and seeds are build tasks under this inception's GO.
 
 - **IW-5: Is `serves_objective:` optional on arcs, and what does an arc serving NO objective trigger?** Optional matches the operator's ruling on arc goals (mandatory fields get filled to unblock the verb, which is worse than absent because it reads as considered). But an arc declaring nothing AND stale past 30 days is precisely what an audit rail should surface — that pairing is what makes work declinable.
-  confidence: 2
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: Optional, named `supports:` in the v2 draft. An arc supporting nothing AND stale past 30 days gets an audit WARN, which is what makes work declinable. Coverage is reported, not targeted, because maximising it would reward forced mappings (all three reviewers; v2 O-3 measure).
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
@@ -193,6 +193,12 @@ Selection is specified top-down but no objectives artefact exists, so 'anything 
   "absolute tops quick links to the sections which should be anchors". The arc page
   builds that shape first (T-3564); the project objectives page reuses it rather than
   inventing a second layout.
+- **What you ratify: docs/reports/T-3535-objectives-v2.md.** It was agent-drafted from
+  the sources and reviewed by three vendors (OpenAI, Z.ai, Anthropic; all amber, with
+  corrections applied). §4 turns the four split calls into recommendations, checked by
+  Z.ai (amber, corrected): capability-overlay → none; ewcr-arc0 → O-1;
+  inception-review-loop → abandoned as superseded (its routing is T-3618); add O-6
+  (cost, per your 2026-09-30 ruling). "Accept", or name the items you reject.
 - IW-3 resolved 2026-09-30. The operator's "002" is the greenfield onboarding seed
   `lib/seeds/tasks/greenfield/T-002-define-project-goals.md` ("Define goals and
   architecture"), not a project. Findings:
