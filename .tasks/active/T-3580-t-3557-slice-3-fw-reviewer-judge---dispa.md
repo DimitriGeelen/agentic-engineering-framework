@@ -56,14 +56,22 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Build slice 3 of T-3557. Depends on T-3578 (routing) and T-3579 (verdict records). It turns
+the manual reviews of 2026-09-29/30 into a verb: render reviews (docs/reports/T-3557-render-
+review-2026-09-29.md, T-3564-render-review.md, T-3574-T-3575-render-review.md) and the
+escalation spike (T-3557-spike-prompt.md / -verdicts.md). The spike prompt is the proven
+reviewer brief; reuse it rather than writing a new one.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw reviewer judge T-XXX [--criterion N] [--dry-run]` selects the task's open REVIEWER_JUDGES criteria, builds a reviewer brief (the spike prompt shape: role, the operator's risk rule, verdict contract, evidence), and dispatches it via `fw termlink dispatch` to a worker that is not the producer
+- [ ] For a render-surface criterion, the verb captures screenshots of the pages the task touched (Playwright) and hands them to the reviewer; if capture fails, the reviewer is told so, and it must not return green on a page it did not see
+- [ ] The reviewer's output is parsed into T-3579 verdict records, one per criterion; malformed output is recorded as `unknown`, never as green
+- [ ] Rung selection follows IW-7: criteria in the hard human classes are never dispatched (reported as operator-only); otherwise `impact = max(cost_if_wrong, value_at_stake)` from existing fields (reversibility/blast_radius/consumer paths, BVP/voi) picks rung 1-2 (same-vendor independent agent) or 5-7 (3-vendor panel via codex/opencode/claude, stdin closed); the chosen rung and its reason are in the record
+- [ ] A weekly spend ceiling is a config key in both registries (lib/config.sh and web/blueprints/config.py); when reached, the rung drops one step and the verdict says so; nothing is silently skipped
+- [ ] `--dry-run` prints criteria, rung and brief without dispatching; tests cover selection, rung choice, the ceiling and output parsing, with a fake dispatcher
+- [ ] Live proof: run it on one real open render criterion, and the resulting record closes it through T-3579 with no bypass flag; `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

@@ -56,14 +56,22 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Build slice 2 of T-3557. Depends on T-3578 (routing bucket REVIEWER_JUDGES). The manual path
+this replaces, used on T-3544/3552/3553/3564/3571/3574/3575: move the [REVIEW] criterion by
+hand, set owner agent, close with `--skip-render-review` and `FW_ALLOW_PARTIAL_COMPLETE_EDIT=1`.
+Seven logged bypasses in two days for something the operator has ruled is normal.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A verdict record format is defined and appended to a committed ledger (e.g. `.context/reviews/verdicts.jsonl`): task, criterion index, criterion digest (as T-1985 auto-tick uses), verdict (green/amber/red/escalate), guidance (mandatory unless green), reviewer identity (session/model/vendor), rung, evidence paths, timestamp
+- [ ] A GREEN record whose digest matches the current criterion text satisfies that criterion: it is ticked with the verdict cited, and a task whose only open Human criteria are all green-judged moves ownership to agent automatically, without `--skip-human-ownership`, logged
+- [ ] The render-surface gate (P-013) accepts a green verdict record for a render criterion in place of an unticked [REVIEW]; no `--skip-render-review` is needed, and the gate says which verdict satisfied it
+- [ ] Amber, red and escalate keep the criterion open and append to the refusal ledger (T-3555 if built, else a documented interim file); escalate re-routes the criterion to the operator with the reviewer's reason shown on /review
+- [ ] Only REVIEWER_JUDGES criteria can be satisfied this way: a green record for a tier0, act-in-the-world or sovereignty criterion is refused, with a test
+- [ ] A record whose reviewer identity equals the task's producer (the session or agent that committed the work) is refused, with a test (the operator's principle: the reviewer is never the producer)
+- [ ] If the criterion text changes after the verdict (digest mismatch), the verdict no longer applies (fresh consent, as T-1985)
+- [ ] Tests cover each rule above; `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
