@@ -30,7 +30,9 @@ YELLOW='\033[1;33m'
 BOLD='\033[1m'
 NC='\033[0m'
 
-DISPATCH_DIR="/tmp/tl-dispatch"
+# T-3595: FW_DISPATCH_DIR overrides the worker root (same name lib/dispatch_tokens.py reads),
+# so tests can point cleanup at a sandbox instead of the dir live workers keep state in.
+DISPATCH_DIR="${FW_DISPATCH_DIR:-/tmp/tl-dispatch}"
 TERMLINK_WORKER_TIMEOUT=$(fw_config_int "TERMLINK_WORKER_TIMEOUT" 600)
 
 die() { echo -e "${RED}ERROR:${NC} $1" >&2; exit 1; }
@@ -439,68 +441,7 @@ cmd_status() {
 }
 
 cmd_cleanup() {
-    local orphan_count=0
-
-    # T-577: Detect and kill orphaned dispatch processes
-    # An orphan = dispatch worker dir exists, no exit_code file, but process may still run
-    # This catches processes left behind by termlink run timeout (upstream bug) or crashes
-    if [ -d "$DISPATCH_DIR" ]; then
-        for wdir in "$DISPATCH_DIR"/*/; do
-            [ -d "$wdir" ] || continue
-            local wname
-            wname=$(basename "$wdir")
-
-            # Skip already-finished workers
-            [ -f "$wdir/exit_code" ] && continue
-
-            # Check if any processes are still running for this worker
-            local worker_pids=""
-            worker_pids=$(ps aux 2>/dev/null | grep "$wdir" | grep -v grep | awk '{print $2}' || true)
-
-            if [ -n "$worker_pids" ]; then
-                # T-843/T-972: Check if a claude process is actively running — if so, skip (not orphaned)
-                # Must check BOTH the matched PIDs AND their child processes, because
-                # run.sh (matched by grep $wdir) spawns claude -p as a child process
-                # whose args don't contain $wdir.
-                local has_claude=false
-                for pid in $worker_pids; do
-                    local cmd_line
-                    cmd_line=$(ps -p "$pid" -o args= 2>/dev/null || echo "")
-                    if echo "$cmd_line" | grep -q "claude"; then
-                        has_claude=true
-                        break
-                    fi
-                    # T-972: Also check child processes of this PID
-                    local child_pids
-                    child_pids=$(ps --ppid "$pid" -o pid= 2>/dev/null || true)
-                    for cpid in $child_pids; do
-                        local child_cmd
-                        child_cmd=$(ps -p "$cpid" -o args= 2>/dev/null || echo "")
-                        if echo "$child_cmd" | grep -q "claude"; then
-                            has_claude=true
-                            break 2
-                        fi
-                    done
-                done
-
-                if [ "$has_claude" = true ]; then
-                    echo -e "${GREEN}ACTIVE${NC}  Worker '$wname' has running claude process — skipping"
-                    continue
-                fi
-
-                echo -e "${YELLOW}ORPHAN${NC}  Worker '$wname' has running processes without TermLink session"
-                for pid in $worker_pids; do
-                    local cmd_line
-                    cmd_line=$(ps -p "$pid" -o args= 2>/dev/null || echo "unknown")
-                    echo "  PID $pid: $cmd_line"
-                    kill "$pid" 2>/dev/null && echo "  -> Sent SIGTERM to $pid" || true
-                done
-                orphan_count=$((orphan_count + 1))
-            fi
-        done
-    fi
-
-    [ "$orphan_count" -gt 0 ] && echo -e "${YELLOW}Cleaned $orphan_count orphaned worker(s)${NC}"
+    local orphan_count=0 removed_count=0 kept_count=0
 
     [ -d "$DISPATCH_DIR" ] || {
         echo "No dispatch workers to clean up."
@@ -508,10 +449,87 @@ cmd_cleanup() {
         return 0
     }
 
-    # Collect tracked window IDs (macOS only)
-    local window_ids=""
+    # T-3595: decide per worker, delete per worker. This used to end in
+    # `rm -rf "$DISPATCH_DIR"`, which took the dirs of the ACTIVE workers it had just
+    # skipped (result, exit_code, meta, completion signing). Only dirs listed in
+    # $remove are ever deleted: finished (exit_code present) or orphaned-and-terminated.
+    local remove=()
     for wdir in "$DISPATCH_DIR"/*/; do
         [ -d "$wdir" ] || continue
+        local wname
+        wname=$(basename "$wdir")
+
+        # Finished workers
+        if [ -f "$wdir/exit_code" ]; then
+            remove+=("$wdir")
+            continue
+        fi
+
+        # T-577: Detect and kill orphaned dispatch processes
+        # An orphan = dispatch worker dir exists, no exit_code file, but process may still run
+        # This catches processes left behind by termlink run timeout (upstream bug) or crashes
+        local worker_pids=""
+        worker_pids=$(ps aux 2>/dev/null | grep -F "$wdir" | grep -v grep | awk '{print $2}' || true)
+
+        if [ -z "$worker_pids" ]; then
+            # No exit_code and no process: crashed, or still being set up by cmd_dispatch.
+            # Not provably finished, so it is kept (T-3595).
+            echo -e "${YELLOW}KEPT${NC}    Worker '$wname' has no exit_code and no process — not removed"
+            kept_count=$((kept_count + 1))
+            continue
+        fi
+
+        # T-843/T-972: Check if a worker process is actively running — if so, skip (not orphaned)
+        # Must check BOTH the matched PIDs AND their child processes, because
+        # run.sh (matched by grep $wdir) spawns claude -p as a child process
+        # whose args don't contain $wdir. T-3595: the ollama-loop worker kind runs
+        # tools/ollama-tool-loop.py instead of claude — that is active too.
+        local active_re='claude|ollama-tool-loop'
+        local has_worker=false
+        for pid in $worker_pids; do
+            local cmd_line
+            cmd_line=$(ps -p "$pid" -o args= 2>/dev/null || echo "")
+            if echo "$cmd_line" | grep -qE "$active_re"; then
+                has_worker=true
+                break
+            fi
+            # T-972: Also check child processes of this PID
+            local child_pids
+            child_pids=$(ps --ppid "$pid" -o pid= 2>/dev/null || true)
+            for cpid in $child_pids; do
+                local child_cmd
+                child_cmd=$(ps -p "$cpid" -o args= 2>/dev/null || echo "")
+                if echo "$child_cmd" | grep -qE "$active_re"; then
+                    has_worker=true
+                    break 2
+                fi
+            done
+        done
+
+        if [ "$has_worker" = true ]; then
+            echo -e "${GREEN}ACTIVE${NC}  Worker '$wname' has running worker process — skipping"
+            kept_count=$((kept_count + 1))
+            continue
+        fi
+
+        echo -e "${YELLOW}ORPHAN${NC}  Worker '$wname' has running processes without TermLink session"
+        for pid in $worker_pids; do
+            local cmd_line
+            cmd_line=$(ps -p "$pid" -o args= 2>/dev/null || echo "unknown")
+            echo "  PID $pid: $cmd_line"
+            kill "$pid" 2>/dev/null && echo "  -> Sent SIGTERM to $pid" || true
+        done
+        orphan_count=$((orphan_count + 1))
+        remove+=("$wdir")
+    done
+
+    [ "$orphan_count" -gt 0 ] && echo -e "${YELLOW}Cleaned $orphan_count orphaned worker(s)${NC}"
+
+    # Collect tracked window IDs (macOS only) — of removed workers only: phase 1 below
+    # kill -9's everything on the window's TTY, which would take an active worker with it.
+    local window_ids=""
+    local wdir
+    for wdir in "${remove[@]}"; do
         [ -f "$wdir/window_id" ] && window_ids="${window_ids:+$window_ids }$(cat "$wdir/window_id")"
     done
 
@@ -559,10 +577,16 @@ cmd_cleanup() {
         fi
     fi
 
-    rm -rf "$DISPATCH_DIR"
-    [ "$orphan_count" -gt 0 ] \
-        && echo "All workers cleaned up ($orphan_count orphan(s) terminated)." \
-        || echo "All workers cleaned up."
+    for wdir in "${remove[@]}"; do
+        rm -rf "$wdir" && removed_count=$((removed_count + 1))
+    done
+    # The top-level dir goes only when nothing is left in it.
+    rmdir "$DISPATCH_DIR" 2>/dev/null || true
+
+    local summary="Cleaned up $removed_count worker(s)"
+    [ "$orphan_count" -gt 0 ] && summary="$summary ($orphan_count orphan(s) terminated)"
+    [ "$kept_count" -gt 0 ] && summary="$summary; kept $kept_count"
+    echo "$summary."
 }
 
 # T-3580 round 3: the worker kinds `dispatch --worker-kind` accepts, printed by
@@ -571,15 +595,27 @@ cmd_cleanup() {
 # (pinned by tests/unit/t3580_round3_test.py).
 DISPATCH_WORKER_KINDS="claude ollama-loop"
 
-# T-3580 round 4: the VENDOR each worker kind runs, from the runtime's own knowledge of what
-# it launches. A review dispatch registers it (signed); a panel counts distinct registered
-# vendors, never registry backend ids, so three aliases for one kind are one vendor.
+# T-3580 round 5: the VENDOR each worker kind runs comes from ONE mapping — `worker_kind` +
+# `vendor` in policy/review-backends.yaml, read through lib/verdict_ledger.py kind-vendors. The
+# ledger derives every review dispatch's vendor from the same mapping; this is only a printer.
 _worker_vendor() {
-    case "$1" in
-        claude|"") echo "anthropic" ;;
-        ollama-loop) echo "ollama-local" ;;
-        *) echo "" ;;
-    esac
+    local k="${1:-claude}"
+    python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" kind-vendors 2>/dev/null \
+        | awk -v k="$k" '$1 == k { print $2; exit }'
+}
+
+# Wait up to TERMLINK_REVIEW_START_WAIT seconds (default 60) for run.sh to take the completion
+# secret; delete it if it is still there. Returns 1 when the runtime did not start.
+_reap_unstarted_secret() {
+    local wdir="$1" i=0 limit="${TERMLINK_REVIEW_START_WAIT:-60}"
+    [ -f "$wdir/.completion-secret" ] || return 0
+    while [ -f "$wdir/.completion-secret" ] && [ "$i" -lt "$limit" ]; do sleep 1; i=$((i + 1)); done
+    if [ -f "$wdir/.completion-secret" ]; then
+        rm -f "$wdir/.completion-secret"
+        echo "  WARNING: review worker did not start within ${limit}s — its secret was deleted; its verdicts will not count" >&2
+        return 1
+    fi
+    return 0
 }
 
 cmd_worker_kinds() {
@@ -594,8 +630,30 @@ cmd_worker_kinds() {
 # T-3580 round 4: a review dispatch is finished only when the runtime has FINALISED it (signed its
 # completion, or recorded that it could not), not when exit_code appears — run.sh writes
 # exit_code first and signs after. Non-review dispatches carry no finalise_required marker.
+# Round 5: `finalised` is VERIFIED, not trusted — the worker can write into its wdir too. It must
+# read `signed:<sig>` with <sig> the sig in completion.json, or `unsigned:<reason>`; and run.sh
+# (the worker's parent) must no longer be running, so a worker that writes it early is ignored.
 _worker_done() {
-    [ -f "$1/exit_code" ] && { [ ! -f "$1/finalise_required" ] || [ -f "$1/finalised" ]; }
+    local w="${1%/}" f sig
+    [ -f "$w/exit_code" ] || return 1
+    [ -f "$w/finalise_required" ] || return 0
+    [ -f "$w/finalised" ] || return 1
+    f=$(head -1 "$w/finalised" 2>/dev/null)
+    case "$f" in
+        signed:?*)
+            sig="${f#signed:}"
+            python3 -c 'import json,sys; sys.exit(0 if json.load(open(sys.argv[1])).get("sig") == sys.argv[2] else 1)' \
+                "$w/completion.json" "$sig" 2>/dev/null || return 1 ;;
+        unsigned:?*) ;;
+        *) return 1 ;;
+    esac
+    ! _runtime_alive "$w"
+}
+
+# True while a `run.sh` for this worker directory is still running.
+_runtime_alive() {
+    command -v pgrep >/dev/null 2>&1 || return 1
+    pgrep -f -- "${1%/}/run.sh" >/dev/null 2>&1
 }
 
 cmd_dispatch() {
@@ -912,7 +970,7 @@ METAEOF
         PROJECT_ROOT="$project_dir" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" register-dispatch \
             --dispatch-id "$name" --task "$task" --task-type review \
             --revision "$review_revision" --wdir "$wdir" \
-            --worker-kind "${worker_kind:-claude}" --vendor "$(_worker_vendor "$worker_kind")" \
+            --worker-kind "${worker_kind:-claude}" --ttl "$((timeout + 600))" \
             --issuer-session "${_issuer_session:-}" --issuer-identity "${GIT_AUTHOR_NAME:-$(git -C "$project_dir" config user.name 2>/dev/null)}" \
             >/dev/null || echo "  WARNING: review dispatch not registered — its verdicts will not count" >&2
         : > "$wdir/finalise_required"
@@ -934,6 +992,8 @@ if [ -f "$WDIR/.completion-secret" ]; then
     COMPLETION_SECRET=$(cat "$WDIR/.completion-secret")
     rm -f "$WDIR/.completion-secret"
 fi
+# Round 5: whatever happens below, no secret file survives this runtime.
+trap 'rm -f "$WDIR/.completion-secret"' EXIT
 
 # T-792: Export PROJECT_ROOT so hooks skip git resolution and use the correct project
 export PROJECT_ROOT="$PROJECT_DIR"
@@ -955,6 +1015,17 @@ elif [ -d "$PROJECT_DIR/.agentic-framework" ]; then
 else
     # Bare project with no framework wiring: FRAMEWORK_ROOT==PROJECT_ROOT.
     export FRAMEWORK_ROOT="$PROJECT_DIR"
+fi
+
+# T-3580 round 5: evidence that THIS runtime started for the dispatch — a signed start record,
+# written before the worker runs and within the registration's start window. `complete` and the
+# ledger refuse a completion without it, so a dispatch that never ran cannot be completed later
+# from a leftover secret. The ledger's CLI checks that its parent is this run.sh.
+if [ "$TASK_TYPE" = "review" ] && [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ]; then
+    printf '%s' "$COMPLETION_SECRET" | env -u FW_SIDECAR_AGENT_ID PROJECT_ROOT="$PROJECT_DIR" \
+        python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" start \
+        --dispatch-id "$WORKER_NAME" --wdir "$WDIR" --secret-stdin > "$WDIR/start.json" 2>> "$WDIR/stderr.log" \
+        || echo "WARNING: review start not recorded — this worker's verdicts will not count"
 fi
 
 # T-576: Unset CLAUDECODE to allow nested claude sessions from within Claude Code
@@ -1080,14 +1151,17 @@ echo "$FINISHED_AT" > "$WDIR/finished_at"
 # Round 4: the secret goes in on stdin, and `finalised` is written after signing succeeds or
 # fails, so a review wait never returns between exit_code and the completion.
 if [ "$TASK_TYPE" = "review" ]; then
-    FINAL="unsigned"
+    FINAL="unsigned:completion-refused"
     if [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ] && \
         printf '%s' "$COMPLETION_SECRET" | env -u FW_SIDECAR_AGENT_ID PROJECT_ROOT="$PROJECT_DIR" \
         python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" complete \
         --dispatch-id "$WORKER_NAME" --session "$WORKER_NAME" --wdir "$WDIR" \
         --worker-kind "${WORKER_KIND:-claude}" --secret-stdin \
         --exit-code "$(cat "$WDIR/exit_code")" > "$WDIR/completion.json" 2>> "$WDIR/stderr.log"; then
-        FINAL="signed"
+        # Round 5: `finalised` carries the completion's own sig; `wait` checks it against
+        # completion.json, so a value the worker wrote early does not match.
+        FINAL="signed:$(python3 -c 'import json,sys; print(json.load(open(sys.argv[1]))["sig"])' "$WDIR/completion.json" 2>/dev/null)"
+        [ "$FINAL" = "signed:" ] && FINAL="unsigned:no-sig"
     else
         echo "WARNING: review completion not signed — this worker's verdicts will not count"
     fi
@@ -1187,6 +1261,8 @@ RUNEOF
 
     # Spawn terminal session — propagate task_type so the long-lived session
     # carries the task-type:X tag (T-1643/W2).
+    # T-3580 round 5: if spawning dies (cmd_spawn exits via die), take the secret with it.
+    [ -f "$wdir/.completion-secret" ] && trap "rm -f '$wdir/.completion-secret'" EXIT
     cmd_spawn ${task:+--task "$task"} ${task_type:+--task-type "$task_type"} --name "$name"
 
     # Inject worker script via pty inject (fire-and-forget, NOT interact — claude takes minutes)
@@ -1196,6 +1272,11 @@ RUNEOF
     local fw_bin="${FRAMEWORK_ROOT:-$(dirname "$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")")}/bin/fw"
     [ -x "$fw_bin" ] || fw_bin=""
     termlink pty inject "$name" "bash $wdir/run.sh '$name' '$project_dir' '$wdir' '$timeout' '$model' '$task_type' '$fw_bin'" --enter >/dev/null 2>&1
+
+    # T-3580 round 5: a secret must not outlive its purpose. run.sh takes (and deletes) it as its
+    # first act; if it has not within the wait (spawn or inject failed, run.sh never started),
+    # delete it here so a dispatch that never ran leaves nothing to recover.
+    _reap_unstarted_secret "$wdir" || true
 
     echo "Worker spawned: $name (wdir: $wdir)"
 }

@@ -43,7 +43,8 @@ from pathlib import Path
 from typing import Iterator, List, Optional
 
 
-DISPATCH_DIR = Path("/tmp/tl-dispatch")
+# T-3595: same override agents/termlink/termlink.sh and lib/dispatch_tokens.py honour.
+DISPATCH_DIR = Path(os.environ.get("FW_DISPATCH_DIR") or "/tmp/tl-dispatch")
 
 
 class TermLinkWorker:

@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T17:11:10Z
-last_update: '2026-09-30T17:15:27Z'
+last_update: 2026-09-30T17:36:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,10 +99,10 @@ exit markers and completion signing (T-3580) do not. Also reported by consumer r
 
 ### Agent
 - [x] Mitigation (own commit, first; verified: a canary dir in the real /tmp/tl-dispatch survived the test): tests/unit/termlink.bats no longer runs cleanup against the real /tmp/tl-dispatch; it sources termlink.sh with DISPATCH_DIR pointed at a test tmp dir (the t3440_close_state.bats pattern)
-- [ ] `DISPATCH_DIR` honours an env override (e.g. `FW_DISPATCH_DIR`), default unchanged
-- [ ] cmd_cleanup deletes only the worker dirs it has decided are finished (exit_code present) or orphaned-and-terminated; an ACTIVE worker's dir is never removed; the top-level dir is removed only if empty
-- [ ] Tests on a sandbox dir: an active fake worker (a process with the wdir in its args, spawning a child named claude) keeps its dir; a finished one is removed; an orphan is terminated and removed; a control shows the old behaviour would have removed the active dir
-- [ ] A lint or test asserts no test in tests/ invokes `termlink.sh cleanup` without a DISPATCH_DIR override
+- [x] `DISPATCH_DIR` honours an env override (e.g. `FW_DISPATCH_DIR`), default unchanged
+- [x] cmd_cleanup deletes only the worker dirs it has decided are finished (exit_code present) or orphaned-and-terminated; an ACTIVE worker's dir is never removed; the top-level dir is removed only if empty
+- [x] Tests on a sandbox dir: an active fake worker (a process with the wdir in its args, spawning a child named claude) keeps its dir; a finished one is removed; an orphan is terminated and removed; a control shows the old behaviour would have removed the active dir
+- [x] A lint or test asserts no test in tests/ invokes `termlink.sh cleanup` without a DISPATCH_DIR override
 - [ ] `bin/fw vendor self --check` clean
 
 ### Human
@@ -264,21 +264,22 @@ exit markers and completion signing (T-3580) do not. Also reported by consumer r
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 300 bats tests/unit/t3595_cleanup_scope.bats > /tmp/.t3595v1.out 2>&1 && ! grep -q "^not ok" /tmp/.t3595v1.out
+test "$(grep -c '# skip' /tmp/.t3595v1.out)" -eq 0
+timeout 300 bats tests/unit/termlink.bats > /tmp/.t3595v2.out 2>&1 && ! grep -q "^not ok" /tmp/.t3595v2.out
+timeout 300 bats tests/unit/t3440_close_state.bats > /tmp/.t3595v3.out 2>&1 && ! grep -q "^not ok" /tmp/.t3595v3.out
+python3 -m pytest tests/unit/t3580_round4_test.py tests/unit/test_termlink_worker.py -q > /tmp/.t3595v4.out 2>&1 && grep -q passed /tmp/.t3595v4.out
+bin/fw vendor self --check
+
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** live worker directories (result, exit_code, meta, completion signing) vanished from /tmp/tl-dispatch while those workers were still running.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** `cmd_cleanup` decided per worker (skipping ACTIVE ones, T-843/T-972) but deleted wholesale: it ended in `rm -rf "$DISPATCH_DIR"`, so the skip only spared the process, never its state. `tests/unit/termlink.bats` ran that real cleanup, so any worker running the unit suite wiped every other live worker.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** `DISPATCH_DIR` was a hard-coded literal with no override, so a test had no way to sandbox it; nothing checked that tests stay off the shared dir; and the only cleanup test asserted exit 0, which the destructive version satisfied.
+
+**Prevention:** `tests/unit/t3595_cleanup_scope.bats` — per-worker behaviour on a sandbox (active kept, finished removed, orphan terminated and removed, root removed only when empty) with a control running the pre-fix function to show the test bites, plus a lint that fails when any test invokes termlink cleanup without a DISPATCH_DIR override. Also fixed on the way: the ollama-loop worker kind has no `claude` child and was classed as an orphan and killed; it now counts as active.
 
 ## Evolution
 
