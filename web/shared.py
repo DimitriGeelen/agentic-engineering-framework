@@ -10,7 +10,7 @@ from pathlib import Path
 from typing import Callable, TypeVar
 
 import yaml
-from flask import render_template, request
+from flask import g, has_request_context, render_template, request
 
 logger = logging.getLogger(__name__)
 
@@ -1212,10 +1212,26 @@ def _dir_signature(directory, prefix, suffix):
 
 
 def _task_files_signature():
-    return tuple(
+    """Stat-signature of every task file, computed at most once per request.
+
+    T-3575 review: the walk stats ~3,600 files (~29ms), and callers that read
+    task metadata in a loop (arcs._read_task_meta x53 on /arcs/continuous-run)
+    paid it per call. Memoised in flask.g so a request pays once and the next
+    request re-stats; outside a request (tests, CLI) it is always computed.
+    """
+    memo = None
+    # GET/HEAD only: a mutating request may write a task file and re-read it.
+    if has_request_context() and request.method in ("GET", "HEAD"):
+        memo = g.__dict__.setdefault("_task_files_sig", {})
+        if PROJECT_ROOT in memo:
+            return memo[PROJECT_ROOT]
+    sig = tuple(
         (loc, _dir_signature(PROJECT_ROOT / ".tasks" / loc, "T-", ".md"))
         for loc in ("active", "completed")
     )
+    if memo is not None:
+        memo[PROJECT_ROOT] = sig
+    return sig
 
 
 def _parse_task_fm_file(path):

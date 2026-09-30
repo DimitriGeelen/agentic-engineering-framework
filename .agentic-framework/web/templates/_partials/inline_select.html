@@ -1,15 +1,25 @@
 {# Inline select form macro (T-429/H4) — replaces 12+ duplicated htmx select patterns #}
-{% macro inline_select(task_id, field, options, current, select_class='inline-status-select', hx_target=None, hx_swap='innerHTML', form_class='') %}
+{#- T-3575: lazy=True is the board-card form. No <form> wrapper and no hidden CSRF input (the
+    X-CSRF-Token header is injected for every htmx request by csrf-htmx.js); the select posts its
+    own name=value on change. Only the current <option> is rendered — the page's WT_LAZY_OPTIONS
+    script fills the rest on first focus/mousedown, and posts changes through ONE delegated
+    listener (htmx.ajax), so htmx does not register 4 listeners per card at load (44ms for 77 cards).
+    A board renders this 4x per card, so its bytes and DOM nodes are what the render budget buys. -#}
+{% macro inline_select(task_id, field, options, current, select_class='inline-status-select', hx_target=None, hx_swap='innerHTML', form_class='', lazy=False) %}
+{%- if lazy -%}
+<select name="{{ field }}" class="{{ select_class }}" data-lazy-options="{{ field }}"><option value="{{ current or '' }}" selected>{{ current or '' }}</option></select>
+{%- else -%}
 <form hx-post="/api/task/{{ task_id }}/{{ field }}"
       {% if hx_target %}hx-target="{{ hx_target }}"{% endif %}
       hx-swap="{{ hx_swap }}"
       {% if form_class %}class="{{ form_class }}"{% endif %}>
     <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
     <select name="{{ field }}" class="{{ select_class }}" onchange="this.form.requestSubmit()">
-        {#- T-3575: whitespace-trimmed — this macro renders 4x per board card and once per list row -#}
+        {#- T-3575: whitespace-trimmed — this macro renders once per list row -#}
         {%- for val in options -%}
         <option value="{{ val }}" {% if current == val %}selected{% endif %}>{{ val }}</option>
         {%- endfor %}
     </select>
 </form>
+{%- endif %}
 {% endmacro %}

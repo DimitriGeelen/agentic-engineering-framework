@@ -1,0 +1,21 @@
+id: tests/playwright/test_tasks_board_lazy_selects.py
+name: test_tasks_board_lazy_selects
+type: script
+subsystem: tests-playwright
+location: tests/playwright/test_tasks_board_lazy_selects.py
+tags: []
+
+purpose: "T-3575 - board cards render one <option> per select and fill the rest on interaction."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-30
+created_by: unknown

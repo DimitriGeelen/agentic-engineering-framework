@@ -1,6 +1,7 @@
 """Tasks blueprint — task list, detail, status API."""
 
 import re as re_mod
+from urllib.parse import urlencode
 from datetime import datetime, timezone
 
 import markdown2
@@ -657,8 +658,22 @@ def _build_active_filter_chips(active: dict, view: str) -> list[dict]:
     return chips
 
 
-# T-3575: cards shown per non-final board column before the "+N more" list link.
+# T-3575: cards shown per backlog/archive board column before the "+N more" list link.
 BOARD_COLUMN_CAP = 20
+# Only these columns are capped; In Progress / Issues always show every card so the
+# board never hides current work (T-3575 render review).
+BOARD_CAPPED_STATUSES = ("captured", "work-completed")
+
+
+def _board_order_key(t):
+    """Newest-first: last_update, then descending task number."""
+    lu = str(t.get("last_update") or "").replace("T", " ")[:19]
+    return (lu, task_id_sort_key_num(t.get("id", "")))
+
+
+def task_id_sort_key_num(tid):
+    m = re_mod.search(r"(\d+)", str(tid))
+    return int(m.group(1)) if m else -1
 
 
 @bp.route("/tasks")
@@ -741,6 +756,15 @@ def tasks():
         "specification", "design",
     ]
 
+    # Board columns: newest first, so a cap trims the stalest cards, not the current ones.
+    board_tasks = sorted(all_tasks, key=_board_order_key, reverse=True)
+    # "+N more" must land on the same filtered list the board came from.
+    overflow_qs = urlencode([(k, v) for k, v in (
+        ("owner", owner_filter), ("horizon", horizon_filter), ("tag", tag_filter),
+        ("q", search_query), ("type", type_filter), ("component", component_filter),
+        ("arc", arc_filter), ("sort", sort_by if sort_by != "id" else ""),
+    ) if v])
+
     # T-1982: attach BVP_norm per task so kanban cards + list view can render a chip.
     _attach_bvp_to_tasks(all_tasks)
 
@@ -761,7 +785,10 @@ def tasks():
         active_filter_chips=active_filter_chips,
         page_title="Tasks",
         tasks=all_tasks,
+        board_tasks=board_tasks,
         board_column_cap=BOARD_COLUMN_CAP,
+        board_capped_statuses=BOARD_CAPPED_STATUSES,
+        overflow_qs=overflow_qs,
         statuses=statuses,
         types=types,
         components=components,

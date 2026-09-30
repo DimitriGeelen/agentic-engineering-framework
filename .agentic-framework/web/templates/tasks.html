@@ -157,6 +157,9 @@ main.container:has(.tasks-toolbar) {
     border-radius: var(--pico-border-radius);
     border: 1px solid var(--pico-muted-border-color);
     background: var(--pico-background-color);
+    /* T-3575: skip style/layout/paint of cards below the fold until they scroll into view */
+    content-visibility: auto;
+    contain-intrinsic-size: auto 5.5rem;
 }
 .kanban-card:last-child { margin-bottom: 0; }
 
@@ -348,6 +351,17 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
     font-weight: 600;
 }
 
+/* Board meta selects are direct flex items (no <form> wrapper, T-3575): size to the shown value. */
+.kanban-card-meta select[data-lazy-options], .kanban-card-meta select[name] {
+    width: auto;
+    min-width: 0;
+    margin: 0;
+    padding: 0.15rem 1.5rem 0.15rem 0.35rem;
+    font-size: 0.7rem;
+    background-position: center right 0.4rem;
+    background-size: 0.8rem auto;
+}
+
 /* ── Dynamic status colors (T-1197/G-041) ─────────────── */
 /* Status → color mapping. Default is muted; known statuses get colors. */
 {% set status_colors = {
@@ -484,7 +498,7 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
 {% set _statuses = enum_statuses|default(['captured','started-work','issues','work-completed']) %}
 {% set tasks_by_status = {} %}
 {% for s in _statuses %}
-{% set _ = tasks_by_status.update({s: tasks|selectattr('status', 'equalto', s)|list}) %}
+{% set _ = tasks_by_status.update({s: board_tasks|selectattr('status', 'equalto', s)|list}) %}
 {% endfor %}
 
 <div class="kanban-board">
@@ -501,14 +515,14 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
                keeps the href as the no-JS full-page fallback (task-panel.js owns the click). #}
             <a href="/tasks/{{ task.id }}" class="kanban-card-id"
                data-task-panel="{{ task.id }}" hx-boost="false">{{ task.id }}</a>
-            {{ inline_select(task.id, 'status', enum_statuses|default(['captured','started-work','issues','work-completed']), task.status, select_class='inline-kanban-status-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
+            {{ inline_select(task.id, 'status', enum_statuses|default(['captured','started-work','issues','work-completed']), task.status, select_class='inline-kanban-status-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset', lazy=True) }}
         </div>
         <span class="kanban-card-name editable-kanban-name" title="{{ task.name }}"
               onclick="startKanbanNameEdit(this, '{{ task.id }}')">{{ task.name }}</span>
         <div class="kanban-card-meta">
-            {{ inline_select(task.id, 'type', enum_types, task.workflow_type, select_class='inline-type-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
-            {{ inline_select(task.id, 'horizon', enum_horizons, task.horizon, select_class='inline-horizon-select horizon-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
-            {{ inline_select(task.id, 'owner', enum_owners, task.owner, select_class='inline-owner-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset') }}
+            {{ inline_select(task.id, 'type', enum_types, task.workflow_type, select_class='inline-type-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset', lazy=True) }}
+            {{ inline_select(task.id, 'horizon', enum_horizons, task.horizon, select_class='inline-horizon-select horizon-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset', lazy=True) }}
+            {{ inline_select(task.id, 'owner', enum_owners, task.owner, select_class='inline-owner-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset', lazy=True) }}
             {{ arc_badge(task) }}
             {{ bvp_badge(task) }}
         </div>
@@ -523,10 +537,11 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
         <div class="kanban-column-header">
             {{ status_display.get(s, s|replace('-',' ')|title) }} <span class="count">({{ col_tasks|length }})</span>
         </div>
-        {# T-3575: every column is capped, not just the last. The board shipped all 170
-           captured cards (~4KB each, 1MB page); the overflow link is the existing
-           list-view status filter, so nothing becomes unreachable. #}
-        {% set _cap = 10 if is_last else board_column_cap %}
+        {# T-3575: backlog/archive columns (board_capped_statuses) are capped; the board shipped all 170
+           captured cards (~4KB each, 1MB page). In Progress / Issues are never capped: cards arrive
+           newest-first, and the overflow link keeps the active filters, so nothing is unreachable. #}
+        {% set _cap = (10 if is_last else board_column_cap) if s in board_capped_statuses else col_tasks|length %}
+        {% set _more_href = '/tasks?view=list&status=' ~ s ~ (('&' ~ overflow_qs) if overflow_qs else '') %}
         {% for task in col_tasks[:_cap] %}
         {{ kanban_card(task) }}
         {% else %}
@@ -534,8 +549,8 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
         {% endfor %}
         {% if col_tasks|length > _cap %}
         <div class="kanban-overflow-note">
-            <a href="/tasks?view=list&status={{ s }}"
-               hx-get="/tasks?view=list&status={{ s }}" hx-target="#content" hx-push-url="true">
+            <a href="{{ _more_href }}"
+               hx-get="{{ _more_href }}" hx-target="#content" hx-push-url="true">
                 +{{ col_tasks|length - _cap }} more &rarr;
             </a>
         </div>
@@ -601,13 +616,45 @@ function startKanbanNameEdit(span, taskId) {
     input.select();
 }
 
+/* T-3575: board selects render only their current <option>; fill the full list on first
+   interaction (mousedown for pointer, focusin for keyboard) so the dropdown looks the same. */
+window.WT_LAZY_OPTIONS = {{ {'status': enum_statuses|default(['captured','started-work','issues','work-completed']),
+    'type': enum_types, 'horizon': enum_horizons, 'owner': enum_owners}|tojson }};
+(function() {
+    if (window.__wtLazyOptions) return;
+    window.__wtLazyOptions = true;
+    function fill(e) {
+        var sel = e.target;
+        if (!sel || !sel.matches || !sel.matches('select[data-lazy-options]')) return;
+        var vals = window.WT_LAZY_OPTIONS[sel.getAttribute('data-lazy-options')] || [];
+        var cur = sel.value;
+        sel.removeAttribute('data-lazy-options');
+        if (!vals.length) return;
+        sel.textContent = '';
+        vals.forEach(function(v) { sel.add(new Option(v, v, false, v === cur)); });
+        if (vals.indexOf(cur) === -1) sel.add(new Option(cur, cur, false, true), 0);
+    }
+    document.addEventListener('mousedown', fill, true);
+    document.addEventListener('focusin', fill, true);
+    // One delegated change handler instead of an hx-post per select. htmx.ajax still runs the
+    // normal pipeline (CSRF header, toasts, htmx:afterRequest with elt = the select).
+    document.addEventListener('change', function(e) {
+        var sel = e.target, card = sel && sel.closest && sel.closest('.kanban-card');
+        if (!card || !sel.matches('select[name]') || !card.dataset.taskId) return;
+        var vals = {}; vals[sel.name] = sel.value;
+        htmx.ajax('POST', '/api/task/' + card.dataset.taskId + '/' + sel.name,
+                  {source: sel, target: sel, swap: 'none', values: vals});
+    });
+})();
+
 document.addEventListener('htmx:afterRequest', function(event) {
     var form = event.detail.elt;
     if (!form || !event.detail.successful) return;
 
     // Reload board after kanban inline selectors (status change moves cards between columns)
     if (form.closest && form.closest('.kanban-card')) {
-        var select = form.querySelector('select');
+        // T-3575: board selects post themselves (no <form> wrapper)
+        var select = form.matches('select') ? form : form.querySelector('select');
         if (select && select.name === 'status') {
             // Status change — reload whole board since card moves columns
             htmx.ajax('GET', '/tasks?view=board', {target: '#content', swap: 'innerHTML'}).then(function() {

@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-29T23:21:25Z
-last_update: 2026-09-29T23:33:41Z
+last_update: 2026-09-30T03:42:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -102,7 +102,7 @@ works (warm 0.22s) but the 30s TTL makes most visits cold (3.35s), and the page 
 ### Agent
 - [x] The task metadata cache in web/shared.py is invalidated when a task file changes (reuse `mtime_cached_get` or an equivalent directory-mtime check) rather than every 30s; a safety TTL may remain but is minutes, not seconds; a test proves a changed task file is reflected on the next request
 - [x] The default /tasks payload is cut substantially (e.g. active tasks in full, completed paged or loaded on demand) without removing any filter, search or view the page offers today; measured bytes before/after recorded in the task
-- [ ] Measured on this host with curl and a browser navigation timing: cold and warm server time, bytes, DOMContentLoaded, before and after, recorded in the task; warm DOMContentLoaded under 500ms
+- [x] Measured on this host with curl and a browser navigation timing: cold and warm server time, bytes, DOMContentLoaded, before and after, recorded in the task; warm DOMContentLoaded under 500ms
 - [x] Existing tasks-page web tests pass; `bin/fw watchtower current` passes after restart; `bin/fw vendor self --check` clean
 - [ ] Render review by an independent agent reviewer on live screenshots (operator ruling, T-3557 IW-1)
 
@@ -123,6 +123,30 @@ board columns capped at 20 cards (last column 10) with the existing "+N more" li
 inline_select macro and tag dropdown whitespace-trimmed. Filters/search/views untouched.
 Tests: tests/web/test_t3575_tasks_page_perf.py (5), existing unit/web/Playwright tasks tests pass.
 NOT MET: warm DOMContentLoaded under 500ms (527-592ms on a loaded host; ~200ms of it is TTFB). Board render surface: the independent render review AC is left for the parent.
+
+### Round 2 (after the independent review, measured 2026-09-30 05:41, load average 4.2 on 24 cores)
+
+| | round 1 | round 2 |
+|---|---|---|
+| /tasks warm, curl | 0.18-0.20s | 0.17-0.24s |
+| /tasks bytes (default board) | 304,676 (50 cards) | 293,886 (77 cards: In Progress is uncapped) |
+| browser warm DOMContentLoaded from about:blank | 527-592ms | median 454ms (14 warm runs, range 431-545; first load 582) |
+| /arcs/continuous-run warm, curl | 1.65-1.83s (after T-3575 landed) | 0.39-0.46s |
+
+Review fixes: (1) board columns ordered newest-first (last_update, then descending id) before any cap; only Captured
+and Completed are capped, In Progress and Issues never are; (2) `_task_files_signature()` memoised in flask.g for GET/HEAD
+requests (the arc page paid it 53x); (3) the "+N more" link carries owner/horizon/tag/q/type/component/arc/sort;
+(4) real guarded commands in `## Verification`.
+
+Getting under 500ms with 27 more cards required trimming per-card cost (the reviewer's suggestion), not moving the
+target. Measured on a routed copy of the page, the four per-card forms were about 40% of the render time. Board selects
+now render one `<option>` (the rest fill on first mousedown/focus), have no `<form>` wrapper and no hidden CSRF input
+(csrf-htmx.js sends the header), and post through one delegated listener via `htmx.ajax` instead of 4 hx-post
+elements per card (htmx's load-time processing was 44ms). Cards use `content-visibility: auto`. List view is unchanged.
+Visible change: board meta selects now size to their value, so type/horizon/owner text no longer clips at the card edge;
+a task with no owner/type/horizon shows a blank select where the old markup showed the first option.
+Tests: tests/web/test_t3575_tasks_page_perf.py (8), tests/playwright/test_tasks_board_lazy_selects.py (2); existing
+tasks/kanban-drag/inline Playwright suites (25) pass.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -156,6 +180,10 @@ NOT MET: warm DOMContentLoaded under 500ms (527-592ms on a loaded host; ~200ms o
 -->
 
 ## Verification
+
+python3 -m pytest tests/web/test_t3575_tasks_page_perf.py -q > /tmp/.t3575.out 2>&1 && grep -q passed /tmp/.t3575.out && ! grep -q failed /tmp/.t3575.out
+bin/fw watchtower current
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
