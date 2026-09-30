@@ -5371,6 +5371,14 @@ if [ -n "$COMPLETED_SCAN" ]; then
     done < <(echo "$COMPLETED_SCAN" | python3 -c "import sys,json; [print(x) for x in json.load(sys.stdin).get('missing_research',[])]" 2>/dev/null)
 fi
 
+# T-3569: the scanner degrades to location-only when lib/research_preserved.py
+# is missing; say so rather than let the degraded answer pass as the full one.
+_c001_note=$(echo "$COMPLETED_SCAN" | python3 -c "import sys,json; print(json.load(sys.stdin).get('research_predicate_note',''))" 2>/dev/null || echo "")
+if [ -n "$_c001_note" ]; then
+    warn "C-001: $_c001_note" "In-task research records are not being counted" \
+         "Restore lib/research_preserved.py (fw vendor self / fw upgrade)"
+fi
+
 if [ "$missing_research" -eq 0 ]; then
     inception_count=$(echo "$COMPLETED_SCAN" | python3 -c "import sys,json; print(json.load(sys.stdin).get('stats',{}).get('inception_count',0))" 2>/dev/null || echo "")
     # T-3105: "No completed inception tasks to check" used to be a PASS. It is

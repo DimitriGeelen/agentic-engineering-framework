@@ -15,10 +15,10 @@ description: >
   Our inception template headings are all in their list. Measure on our corpus before
   adopting the threshold.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-29T21:00:46Z
-last_update: '2026-09-29T21:15:30Z'
+last_update: 2026-09-30T14:40:53Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -101,11 +101,11 @@ description field) rather than wait. One shared predicate, both scanners import 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `lib/research_preserved.py`: one predicate — does the task file carry substantive prose in research-bearing sections (Problem Statement, Open Questions, Exploration Plan, Technical Constraints, Hypothesis, Findings, Evidence, Dialogue Log, Scope Fence, Spikes, Prior Art, Assumptions); NOT counted: Acceptance Criteria, Verification, Updates, Recommendation, Decision(s), Go/No-Go; HTML comments and `[placeholder]` brackets stripped before measuring
-- [ ] Threshold calibrated on OUR corpus, not copied: measure the section-prose length of this repo's completed inceptions, read the boundary cases (the smallest genuine one, the largest filled-in-template one), record both with their numbers in the task, and set the threshold between them
-- [ ] Both `agents/audit/completed-task-scan.py` and `agents/audit/active-task-scan.py` import it (a teeth test asserts neither carries its own section list); an in-task record does not trip the "has artefact but not referenced" branch; ImportError falls back to location-only with a visible note, never universal coverage
-- [ ] Measured before/after on this repo: C-001 findings in both scans, with the inception_count unchanged (coverage must not shrink); each remaining finding read and confirmed genuine
-- [ ] Tests on fixtures, including a filled-in template with empty sections (must still be flagged) and a genuine short hypothesis (must pass); `bin/fw vendor self --check` clean
+- [x] `lib/research_preserved.py`: one predicate — does the task file carry substantive prose in research-bearing sections (Problem Statement, Open Questions, Exploration Plan, Technical Constraints, Hypothesis, Findings, Evidence, Dialogue Log, Scope Fence, Spikes, Prior Art, Assumptions); NOT counted: Acceptance Criteria, Verification, Updates, Recommendation, Decision(s), Go/No-Go; HTML comments and `[placeholder]` brackets stripped before measuring — proof: `tests/unit/test_research_preserved.py` (test_research_sections_count, test_excluded_sections_never_count, test_comments_and_placeholders_are_stripped)
+- [x] Threshold calibrated on OUR corpus, not copied: measure the section-prose length of this repo's completed inceptions, read the boundary cases (the smallest genuine one, the largest filled-in-template one), record both with their numbers in the task, and set the threshold between them — proof: `python3 lib/research_preserved.py .tasks/completed/*.md` over 421 inceptions; boundary cases recorded in ## Decisions (largest filler T-567 = 316, smallest genuine T-178 = 506, nothing in between); THRESHOLD = 400
+- [x] Both `agents/audit/completed-task-scan.py` and `agents/audit/active-task-scan.py` import it (a teeth test asserts neither carries its own section list); an in-task record does not trip the "has artefact but not referenced" branch; ImportError falls back to location-only with a visible note, never universal coverage — proof: test_scanner_imports_predicate_and_carries_no_section_list, test_active_scan_in_task_record_is_not_missing_nor_unreferenced, test_*_import_error_falls_back_to_location_only (note in JSON + stderr; `fw audit` WARNs on it)
+- [x] Measured before/after on this repo: C-001 findings in both scans, with the inception_count unchanged (coverage must not shrink); each remaining finding read and confirmed genuine — proof: completed 11 → 8 (inception_count 421 → 421), active 16 → 12 issues (inception_active 4, inception_recommendation 29 unchanged); every remaining finding read, see ## Decisions
+- [x] Tests on fixtures, including a filled-in template with empty sections (must still be flagged) and a genuine short hypothesis (must pass); `bin/fw vendor self --check` clean — proof: tests/fixtures/t3569/{filled-template,short-hypothesis}.md, 33 pytest passes; vendor check run at close
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -139,6 +139,11 @@ description field) rather than wait. One shared predicate, both scanners import 
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_research_preserved.py -q > /tmp/.t3569.out 2>&1 && grep -q passed /tmp/.t3569.out && ! grep -q failed /tmp/.t3569.out
+python3 -c "import sys; sys.path.insert(0,'lib'); import research_preserved as r; assert 316 < r.THRESHOLD <= 506"
+bash -n agents/audit/audit.sh
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -337,6 +342,23 @@ description field) rather than wait. One shared predicate, both scanners import 
 
 ## Decisions
 
+### 2026-09-30 — threshold 400, calibrated on this corpus
+- **Measured:** `research_prose_chars` over all 421 completed inceptions (pickup imports excluded). 52 measure 0 (template kept, sections left as comments). The non-zero low end: T-563 124, T-566 134, T-564 159, T-837 168, T-570 247, T-578 254, T-568 275, T-1212 290, T-569 292, **T-567 316**, then **T-178 506**, T-697 566, T-835 577 — nothing between 316 and 506.
+- **Largest filled-in-template / filler (316, T-567):** "Superseded by parent evaluation T-549/T-678 … Research artifact: see docs/reports/T-549-…" — a pointer, no research. Everything at or below it is the same shape: pointer-to-report (T-563, T-837), superseded note (T-1212), or a one-paragraph question with no findings (T-578).
+- **Smallest genuine (506, T-178):** a Problem Statement carrying an observed finding ("fw bus has NEVER been used (empty results/blobs dirs). T-174's 3 agents all returned full results…").
+- **Chose:** 400, the middle of the empty band. 832's 400 happens to sit in it; the number was checked here, not copied.
+- **Rejected:** 250 (admits T-1212/T-567-class stubs), 500 (one char from excluding T-178).
+
+### 2026-09-30 — two headings added to 832's list
+- **Chose:** also count headings starting "Candidate" and "Investigation".
+- **Why:** reading the remaining findings, active T-3240 carried 2,011 chars of candidate analysis under `## Candidate Answers` and measured 0 against 832's list; our corpus also uses `## Candidates` and `## Investigation Findings`. Re-running the calibration after the change left the 316/506 boundary unchanged.
+- **Rejected:** `## Context` (24 inceptions) — it is also the default build template's heading and routinely holds a one-line pointer.
+
+### 2026-09-30 — before/after on this repo
+- completed-task-scan: missing_research 11 → 8; inception_count 421 → 421. Moved to research_in_task_record: T-2527 (732, Open Questions with IW answers), T-3400, T-3482.
+- active-task-scan: research issues 16 → 12 (missing 15 → 12, unreferenced 1 → 0); inception_active 4 and inception_recommendation 29 unchanged; c001_in_task_record 3 (T-1265, T-2899, T-3240). T-2323's "unreferenced" cleared because its own record carries the research.
+- **Remaining findings, each read:** completed T-2761, T-3081, T-3084, T-3100, T-3108, T-3114, T-3184, T-3256 and active T-2321, T-2963, T-3276, T-3331–T-3334, T-3496, T-3576, T-682, T-704 — all have every research section empty (comments only); their only prose is in Recommendation/Decision, which is excluded by design. Active T-1271 (226) is a "Duplicate of T-1270" stub. All genuine.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -362,3 +384,7 @@ description field) rather than wait. One shared predicate, both scanners import 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3569-c-001-audit-counts-research-preserved-in.md
 - **Context:** Initial task creation
+
+### 2026-09-30T14:40:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

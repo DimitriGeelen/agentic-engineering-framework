@@ -34,6 +34,9 @@ T-2202 (PL-212 closure): CTL-012 3-class taxonomy refinement.
           from the genuine AC-drift class so the auditor can render a different hint.
         - Class field on every entry: "drift" (default, real CTL-012) or "missing-decide"
           (new CTL-012-MISSING-DECIDE sub-class).
+T-3569: missing_research no longer fires for an inception whose own research-bearing
+        sections carry the research (lib/research_preserved.py, shared with
+        active-task-scan.py); those land in research_in_task_record instead.
 T-2385: missing-decide grandfather cutoff (MISSING_DECIDE_CUTOFF). Tasks whose
         date_finished predates the classifier's own ship date (2026-06-13) are
         skipped entirely rather than emitted as missing-decide — they are
@@ -46,6 +49,20 @@ import json
 import os
 import re
 import sys
+from pathlib import Path
+
+# T-3569: "the task record itself preserves the research" has ONE definition,
+# lib/research_preserved.py, shared with active-task-scan.py. parents[2] is the
+# framework root in both layouts (framework repo and vendored consumer).
+sys.path.insert(0, str(Path(__file__).resolve().parents[2] / "lib"))
+try:
+    from research_preserved import research_preserved as _research_preserved  # noqa: E402
+    RESEARCH_PREDICATE_NOTE = ""
+except ImportError:
+    # Degrade to location-only, never to universal coverage — and say so.
+    _research_preserved = None
+    RESEARCH_PREDICATE_NOTE = ("lib/research_preserved.py unavailable - C-001 judged "
+                               "by docs/reports location only")
 
 # T-2385: grandfather cutoff for the missing-decide sub-class. Tasks whose
 # date_finished predates the day the CTL-012-MISSING-DECIDE classifier
@@ -59,10 +76,11 @@ MISSING_DECIDE_CUTOFF = "2026-06-13"
 def scan_completed_tasks(tasks_dir, episodic_dir, reports_dir):
     completed_dir = os.path.join(tasks_dir, "completed")
     if not os.path.isdir(completed_dir):
-        return {"missing_episodic": [], "missing_research": [], "unchecked_ac": [], "status_desync": [], "horizon_drift": [], "stats": {"total": 0, "inception_count": 0}}
+        return {"missing_episodic": [], "missing_research": [], "research_in_task_record": [], "research_predicate_note": RESEARCH_PREDICATE_NOTE, "unchecked_ac": [], "status_desync": [], "horizon_drift": [], "stats": {"total": 0, "inception_count": 0}}
 
     missing_episodic = []
     missing_research = []
+    research_in_task_record = []  # T-3569: covered by the task file itself
     unchecked_ac = []
     status_desync = []
     horizon_drift = []
@@ -168,6 +186,12 @@ def scan_completed_tasks(tasks_dir, episodic_dir, reports_dir):
                 except (OSError, IOError):
                     pass
 
+            # T-3569: research written into the task's own research-bearing
+            # sections is preserved research too (832 offer @14).
+            if not has_artifact and _research_preserved is not None and _research_preserved(content):
+                has_artifact = True
+                research_in_task_record.append(task_id)
+
             if not has_artifact:
                 missing_research.append(task_id)
 
@@ -257,6 +281,8 @@ def scan_completed_tasks(tasks_dir, episodic_dir, reports_dir):
     return {
         "missing_episodic": missing_episodic,
         "missing_research": missing_research,
+        "research_in_task_record": research_in_task_record,
+        "research_predicate_note": RESEARCH_PREDICATE_NOTE,
         "unchecked_ac": unchecked_ac,
         "status_desync": status_desync,
         "horizon_drift": horizon_drift,
@@ -270,4 +296,6 @@ if __name__ == "__main__":
         sys.exit(1)
 
     result = scan_completed_tasks(sys.argv[1], sys.argv[2], sys.argv[3])
+    if RESEARCH_PREDICATE_NOTE:
+        print(f"NOTE: {RESEARCH_PREDICATE_NOTE}", file=sys.stderr)
     json.dump(result, sys.stdout)
