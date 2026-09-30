@@ -228,7 +228,9 @@ def _run_worker(root, mode="green"):
     wdir.mkdir(parents=True)
     brief = judge_cli._build_brief(TID, [{"index": 1, "ac_index": 1, "body": "x", "render": False}],
                                    revision=_head(root))
-    (wdir / "prompt.md").write_text(brief)
+    # Round 8: prompt.md is exactly the review preamble + the brief, as the dispatcher writes it.
+    (wdir / "brief.md").write_text(brief.rstrip("\n") + "\n")
+    (wdir / "prompt.md").write_text(vl.review_prompt(brief))
     (wdir / "task").write_text(TID)
     stub_dir = root.parent / f"{root.name}-stub"
     stub_dir.mkdir()

@@ -26,6 +26,11 @@ export FRAMEWORK_ROOT PROJECT_ROOT
 # Drain stdin (Claude Code sends hook input JSON); we do not need it.
 cat >/dev/null 2>&1 || true
 
+# T-3580 round 8 (N1): never in a review worker. Its prompt is exactly the review preamble and
+# the brief; a consult surfaced here would be a message from the task's producer to its reviewer.
+# (The completion records any consult traffic addressed to the worker instead.)
+[ -n "${FW_REVIEW_WORKER:-}" ] && exit 0
+
 FW_BIN="${FW_BIN:-$FRAMEWORK_ROOT/bin/fw}"
 [ -x "$FW_BIN" ] || exit 0
 command -v termlink >/dev/null 2>&1 || exit 0

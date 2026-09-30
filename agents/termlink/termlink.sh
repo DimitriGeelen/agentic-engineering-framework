@@ -829,6 +829,11 @@ cmd_dispatch() {
     # --name and is told, once, how a peer consult reaches it. Workers spawn
     # --bare (no CLAUDE.md, no hooks), so the prompt is the only channel this
     # can ride on. Kept short: an empty inbox costs the worker one command.
+    # T-3580 round 8 (Claude N1): NOT for a review dispatch. The stanza told every reviewer to
+    # read and obey its inbox, which is a channel the task's producer can write to; a review
+    # worker's prompt is exactly the ledger's fixed review preamble plus the brief, and the
+    # ledger checks that equality at registration and at start.
+    if [ "$task_type" != "review" ]; then
     local _consult_stanza="[PEER CONSULTS — arc-011 sidecar, T-3407]
 You are addressable as agent id '$name'. Other agents may send you a consult
 while you work. At each yield point (before a Write/Edit, and before you
@@ -839,9 +844,15 @@ then continue your task. An empty inbox costs nothing; do not poll in a loop."
     prompt="$_consult_stanza
 
 $prompt"
+    fi
 
     # Save prompt, task tag, and metadata (from tl-dispatch.sh pattern)
-    echo "$prompt" > "$wdir/prompt.md"
+    if [ "$task_type" = "review" ]; then
+        python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" review-prompt --brief-file "$wdir/brief.md" \
+            > "$wdir/prompt.md" || die "review dispatch: cannot build the review prompt"
+    else
+        echo "$prompt" > "$wdir/prompt.md"
+    fi
     [ -n "$task" ] && echo "$task" > "$wdir/task"
 
     # T-1700: workflow env: plumb-through. Write env.sh sourced by run.sh.
@@ -869,6 +880,8 @@ $prompt"
     if [ "$task_type" = "review" ]; then
         [ -z "$review_revision" ] && review_revision=$(git -C "$project_dir" rev-parse -q --verify HEAD 2>/dev/null)
         printf 'export FW_REVIEW_REVISION=%q\n' "$review_revision" >> "$wdir/env.sh"
+        # Round 8 (N1): marks a review worker, so the sidecar-inbox prompt hook stays silent in it.
+        printf 'export FW_REVIEW_WORKER=%q\n' "1" >> "$wdir/env.sh"
     fi
 
     # T-3038 (OBS-291): give every dispatched worker its own focus file.

@@ -54,10 +54,10 @@ def register_run(*args, **kw):
 
 
 def write_launch(w: Path, brief: str = BRIEF, worker_bin: str = WORKER_BIN) -> None:
-    """What cmd_dispatch writes before it registers: prompt.md (consult stanza + brief), brief.md
-    (the caller's brief verbatim) and worker_bin (round 7)."""
+    """What cmd_dispatch writes before it registers: prompt.md (round 8: exactly the review
+    preamble + brief), brief.md (the caller's brief verbatim) and worker_bin (round 7)."""
     w.mkdir(parents=True, exist_ok=True)
-    (w / "prompt.md").write_text("[PEER CONSULTS]\n\n" + brief.rstrip("\n") + "\n")
+    (w / "prompt.md").write_text(vl.review_prompt(brief))
     (w / "brief.md").write_text(brief.rstrip("\n") + "\n")
     (w / "worker_bin").write_text(worker_bin + "\n")
 

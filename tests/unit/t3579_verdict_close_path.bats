@@ -77,10 +77,12 @@ TASK
 _dispatch() {
     # Register a review dispatch the way the dispatcher does (T-3581): with the runtime's worker
     # directory, and the revision under review (HEAD now, before the worker runs — T-3580 round 3).
-    # T-3580 round 7: it also writes the brief (prompt.md) and the absolute worker binary.
+    # T-3580 round 7: it also writes the brief and the absolute worker binary; round 8: prompt.md
+    # is exactly the review preamble + the brief, built by the ledger as the dispatcher does.
     mkdir -p "$TEST_TEMP_DIR.tl/${1:-rv-1}"
-    echo "fixture review brief" > "$TEST_TEMP_DIR.tl/${1:-rv-1}/prompt.md"
     echo "fixture review brief" > "$TEST_TEMP_DIR.tl/${1:-rv-1}/brief.md"
+    python3 "$BATS_TEST_DIRNAME/../../lib/verdict_ledger.py" review-prompt \
+        --brief-file "$TEST_TEMP_DIR.tl/${1:-rv-1}/brief.md" > "$TEST_TEMP_DIR.tl/${1:-rv-1}/prompt.md"
     echo "/bin/true" > "$TEST_TEMP_DIR.tl/${1:-rv-1}/worker_bin"
     PROJECT_ROOT="$PROJECT_ROOT" python3 "$BATS_TEST_DIRNAME/../../lib/verdict_ledger.py" \
         register-dispatch --dispatch-id "${1:-rv-1}" --task T-9200 --task-type review \
