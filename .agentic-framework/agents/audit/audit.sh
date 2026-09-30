@@ -2820,6 +2820,11 @@ if [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ]; then
              "$(echo "$_vl_out" | tail -2 | tr '\n' ';')" \
              "Run: python3 lib/verdict_ledger.py audit"
     fi
+else
+    # T-3581: absent validation code is a failure, not a skip — nothing else checks the ledger.
+    fail "Reviewer-verdict ledger: lib/verdict_ledger.py is missing — the ledger is UNVERIFIED" \
+         "verdict validation code unavailable" \
+         "Restore it: bin/fw vendor self (or fw upgrade)"
 fi
 
 # T-3282 (G-104): the RUNNING Watchtower is a deployment surface of its own —
