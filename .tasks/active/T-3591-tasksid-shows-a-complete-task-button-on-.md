@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T11:17:50Z
-last_update: 2026-09-30T13:39:32Z
+last_update: 2026-09-30T13:40:04Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,9 +97,9 @@ cannot succeed should not be offered.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `can_complete` on /tasks/<id> (web/blueprints/tasks.py:865) uses the canonical Human-criteria count behind `is_ready_for_batch_completion` (web/shared.py), not `_parse_acceptance_criteria`
-- [ ] Test: the T-2200 shape (a `### Human` block after an intervening `## ` heading, unticked) shows no Complete Task button; control: a task whose criteria are all ticked shows it
-- [ ] Live /tasks/T-2200 and /tasks/T-2202 show no Complete Task button after restart; `bin/fw watchtower current`; `bin/fw vendor self --check` clean
+- [x] `can_complete` on /tasks/<id> (web/blueprints/tasks.py:865) uses the canonical Human-criteria count behind `is_ready_for_batch_completion` (web/shared.py), not `_parse_acceptance_criteria`
+- [x] Test: the T-2200 shape (a `### Human` block after an intervening `## ` heading, unticked) shows no Complete Task button; control: a task whose criteria are all ticked shows it
+- [x] Live /tasks/T-2200 and /tasks/T-2202 show no Complete Task button after restart; `bin/fw watchtower current`; `bin/fw vendor self --check` clean
 - [ ] Render review by an independent internal reviewer (operator ruling, T-3557)
 
 ### Human
@@ -260,6 +260,12 @@ cannot succeed should not be offered.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+python3 -m pytest tests/web/test_t3591_task_detail_complete_button.py tests/web/test_t3590_batch_ready_predicate.py -q > /tmp/.t3591.out 2>&1 && grep -q passed /tmp/.t3591.out
+bin/fw watchtower current
+curl -sf "$(bin/fw watchtower url)/tasks/T-2200" -o /tmp/.t3591.2200 && ! grep -q "/api/task/T-2200/complete" /tmp/.t3591.2200
+curl -sf "$(bin/fw watchtower url)/tasks/T-2202" -o /tmp/.t3591.2202 && ! grep -q "/api/task/T-2202/complete" /tmp/.t3591.2202
+bin/fw vendor self --check
 
 ## RCA
 
