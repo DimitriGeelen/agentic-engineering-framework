@@ -490,6 +490,24 @@ font-family: 'Outfit';
     pointer-events: none;
   }
   .canvas-overlay .status-mode { color: var(--accent); }
+  /* T-911: the aef:workflowMeta/@kind marker, shown on the canvas rather than only in the
+     properties panel. arc-005's headline mechanic is that an operator "SEES IT MARKED as a
+     template rather than an actionable work-plan" — behind a panel disclosure that is "can find
+     it if they look", which is a different claim. Rendered only when the marker is SET: UNSET is
+     legal and inert (T-213 IW-3), so an empty badge on the 24 maps that declare nothing would be
+     chrome for a non-event. Colour comes from the theme tokens, never a literal, so the badge
+     follows light/dark/contrast with the rest of the overlay. */
+  .canvas-overlay .status-kind {
+    color: var(--text-dim);
+    border: 1px solid var(--border, currentColor);
+    border-radius: 3px;
+    padding: 0 4px;
+    margin-left: 8px;
+    font-size: 10px;
+    letter-spacing: .02em;
+    white-space: nowrap;
+  }
+  .canvas-overlay .status-kind[data-kind="work-plan"] { color: var(--accent); }
 
   .clean-nudge {
     position: absolute;
@@ -613,6 +631,28 @@ font-family: 'Outfit';
   svg[data-lsize="l"] .lane-label { font-size: 11.5px; }
   .node-io-badge { fill: var(--text-dim); font-family: var(--mono); font-size: 8px; pointer-events: none; }
   .node-id-badge { fill: var(--text-faint); font-family: var(--mono); font-size: 9px; pointer-events: none; letter-spacing: 0.02em; }
+  /* T-893 (T-888 clause 4): authority marker on the element. Two classes for two states that
+     must read DIFFERENTLY — a differing authority is a choice (faint, like the id badge), a
+     missing one is a hole (the orange token, the same one AUTHORITY_LABEL_COLOR uses for
+     external). Tokens, never literals, so the marker follows the theme. */
+  .node-authority-badge   { fill: var(--text-faint); font-family: var(--mono); font-size: 8px; pointer-events: none; letter-spacing: 0.02em; }
+  .node-authority-missing { fill: var(--orange);     font-family: var(--mono); font-size: 8px; pointer-events: none; font-weight: 600; }
+  /* T-884 (arc-005 S4): instance overlay — where a governed entity IS on this template. Four
+     states drawn on the element, none written to the model: current (accent halo + "● T-XXX"),
+     done (faint halo + "✓", a DERIVED path — see the picker's title), refused (red halo +
+     "⛔ <rule>", the node a refusal fired on) and refused-target (red dashed halo, the node
+     the refused hop pointed at). Tokens, never literals. */
+  .node-instance-halo { fill: none; stroke: var(--accent); stroke-width: 2px; pointer-events: none; }
+  .node[data-instance="done"] .node-instance-halo { stroke: var(--green); stroke-width: 1px; opacity: .8; }
+  .node[data-instance="refused"] .node-instance-halo { stroke: var(--red); stroke-width: 2px; }
+  .node[data-instance="refused-target"] .node-instance-halo { stroke: var(--red); stroke-width: 1px; stroke-dasharray: 4 3; }
+  .node-instance-badge { fill: var(--accent); font-family: var(--mono); font-size: 8px; font-weight: 600; pointer-events: none; }
+  .node[data-instance="done"] .node-instance-badge { fill: var(--green); font-weight: 500; }
+  .node-instance-refused-badge { fill: var(--red); font-family: var(--mono); font-size: 8px; font-weight: 600; pointer-events: none; }
+  /* The badge sits above the top-right corner, where incoming edges cross; a surface-coloured pill
+     under the text keeps it legible over an edge line (read in the T-884 screenshots, not measured). */
+  .node-instance-pill { fill: var(--surface); stroke: var(--border-strong); stroke-width: .5px; pointer-events: none; }
+  #instancePicker { margin-left: 8px; font-size: 12px; max-width: 260px; background: var(--surface-2); color: var(--text); border: 1px solid var(--border); border-radius: 4px; padding: 1px 4px; }
   /* T-355: the real tag of a foreign (out-of-allowlist) flow node, drawn above the shape.
      Mono because it is a literal from the source document, not prose; --text-dim rather
      than --text-faint so it stays legible — this is the one mark that says what the
@@ -1201,6 +1241,12 @@ font-family: 'Outfit';
            badge; contract version stays editable in the properties "Workflow version" field). -->
       <!-- T-157: currently-loaded saved-version (snapshot) badge — hidden for new/unsaved maps -->
       <span id="map-saved-version" title="Currently-loaded saved version (snapshot). Click 🕘 Versions to browse." style="display:none;margin-left:8px;padding:1px 7px;border-radius:10px;background:rgba(122,184,255,.14);color:#7ab8ff;border:1px solid rgba(122,184,255,.35);font-size:12px;font-weight:600"></span>
+      <!-- T-884 (arc-005 S4): instance overlay picker. Lists the loaded template's live instances
+           from /api/instances (tools/instance-node.py snapshot) and draws where the chosen one is:
+           current node, DERIVED completed path, and the node a refusal fired on with its rule.
+           Present even when the API is absent — then it says so — because a picker that vanishes
+           cannot tell "no instances" from "no server". Writes nothing to the model. -->
+      <select id="instancePicker" title="Instance overlay (T-884): where a governed entity is on this template. ● current node · ✓ completed path (DERIVED: the shortest flow path from the start, not a recorded history) · ⛔ the node a refusal fired on, with the rule that refused it (from .context/audits/instance-refusals.jsonl). Reads /api/instances; writes nothing."><option value="">instances: loading…</option></select>
     </div>
     <div class="actions">
       <!-- T-245 view-chrome controls: per-panel hide/show (persisted in aefViewPrefs)
@@ -1459,7 +1505,7 @@ font-family: 'Outfit';
         <g id="g-preview"></g>
       </svg>
       <div class="canvas-overlay" id="status">
-        Mode: <span class="status-mode" id="status-mode">select</span><span id="status-selection"></span>
+        Mode: <span class="status-mode" id="status-mode">select</span><span id="status-selection"></span><span class="status-kind" id="status-kind" hidden></span>
       </div>
       <!-- T-310: shown when the imported map drew nodes outside their DECLARED lane
            and they were moved back into it. Reuses the clean-nudge chrome so advisory
@@ -1683,6 +1729,85 @@ const AUTHORITY_LABEL_COLOR = {
   external:    'var(--orange)',
   none:        'var(--text-faint)',
 };
+
+// T-893 (T-888 ruling clause 4): the authority marker's THREE states, decided in one place.
+// The picture is honest where the fact lives — on the element — and the three states must
+// not collapse into two:
+//   'none'    the element's own authority matches its lane's authoring default, OR it has an
+//             authority and the lane declares no default (nothing to differ from — T-894's
+//             grammar). The common case must not shout.
+//   'differs' the element has its own authority and it is not the lane's default: a legitimate
+//             authorial choice, made VISIBLE rather than silent (subtle marker).
+//   'missing' the element has no authority and its lane offers no default: not a choice but a
+//             hole, and a compile error — the louder marker.
+// Pure, so tests/t893-authority-marker-state.test.mjs runs it without a browser. It reads; it
+// never writes — the default never stamps (clause 3), it only changes what is flagged.
+function authorityMarkerState(own, laneDefault) {
+  const has = v => v != null && v !== '';
+  if (has(own)) return has(laneDefault) && own !== laneDefault ? 'differs' : 'none';
+  return has(laneDefault) ? 'none' : 'missing';
+}
+const AUTHORITY_ABBR = { sovereignty: 'sov', authority: 'aut', initiative: 'ini', external: 'ext', none: 'none' };
+// The lane's EFFECTIVE default while T-895's migration is pending: authoringDefault when the
+// lane declares one, else the lane's legacy authority-of-record (clause 2 is demoting it, but
+// today it is where the fact lives on all 24 corpus maps), and nothing for the retired 'none'
+// sentinel — which is exactly the lane whose elements carry no authority anywhere, so their
+// marker reads 'missing' truthfully. Decision recorded on T-893.
+function effectiveLaneDefault(lane) {
+  if (!lane) return null;
+  if (lane.authoringDefault) return lane.authoringDefault;
+  return lane.authority && lane.authority !== 'none' ? lane.authority : null;
+}
+
+// T-884 (arc-005 S4): the instance overlay state, decided in one pure function so
+// tests/t884-instance-overlay-state.test.mjs runs it without a browser. Inputs are plain data:
+// the template's node ids, its sequenceFlows as {source: [targets]}, its startEvent ids, one
+// instance {task, state, node} from `instance-node.py snapshot`, and that snapshot's refusal
+// lines. Output: {current, done, refused}. `done` is DERIVED — the shortest flow path from a
+// startEvent to the current node, excluding it (the prefix `walk` takes from NO-POSITION);
+// a loop the instance actually took is not recorded anywhere (T-878) and so is not drawn.
+// `refused` is the LATEST audit line for this task whose node is on this template, with its
+// rule and — when the refused hop named one and it is on this template — its target. Reads;
+// never writes.
+function instanceOverlayState(nodeIds, flows, startIds, instance, refusals) {
+  const ids = new Set(nodeIds || []);
+  const out = { current: null, done: [], refused: null };
+  if (!instance) return out;
+  if (instance.state === 'NODE' && ids.has(instance.node)) {
+    out.current = instance.node;
+    let best = null;
+    for (const s of (startIds || [])) {
+      if (!ids.has(s)) continue;
+      const prev = new Map([[s, null]]);
+      const queue = [s];
+      let found = s === instance.node;
+      while (queue.length && !found) {
+        const cur = queue.shift();
+        for (const nxt of ((flows && flows[cur]) || [])) {
+          if (prev.has(nxt)) continue;
+          prev.set(nxt, cur);
+          if (nxt === instance.node) { found = true; break; }
+          queue.push(nxt);
+        }
+      }
+      if (!found) continue;
+      const path = [];
+      for (let x = instance.node; x != null; x = prev.get(x)) path.push(x);
+      path.reverse();
+      if (best === null || path.length < best.length) best = path;
+    }
+    if (best) out.done = best.slice(0, -1);
+  }
+  if (Array.isArray(refusals)) {
+    for (let i = refusals.length - 1; i >= 0; i--) {
+      const r = refusals[i];
+      if (!r || r.task !== instance.task || !ids.has(r.node)) continue;
+      out.refused = { node: r.node, rule: r.rule || '?', target: r.target && ids.has(r.target) ? r.target : null };
+      break;
+    }
+  }
+  return out;
+}
 
 // Default lanes for a new workflow — mirror AEF's three-role authority model.
 function defaultLanes() {
@@ -1933,9 +2058,9 @@ const AEF_FIELDS = {
   // that can carry an implementation and therefore have code, tests and a fabric card to
   // point at. Both sit ABOVE `note` per the ordering rule stated above: they are
   // structured fields, and `note` stays last.
-  serviceTask:  ['horizon', 'workflowType', 'tier', 'determinism', 'agentType', 'endpoint', 'contextReads', 'artifactsWrites', 'sideEffect', 'fabricRef', 'links', 'note'],
-  userTask:     ['horizon', 'workflowType', 'tier', 'determinism', 'endpoint', 'decisionOutputs', 'fabricRef', 'links', 'note'],
-  scriptTask:   ['horizon', 'workflowType', 'tier', 'determinism', 'endpoint', 'contextReads', 'artifactsWrites', 'sideEffect', 'fabricRef', 'links', 'note'],
+  serviceTask:  ['authority', 'horizon', 'workflowType', 'tier', 'determinism', 'agentType', 'endpoint', 'contextReads', 'artifactsWrites', 'sideEffect', 'fabricRef', 'links', 'note'],
+  userTask:     ['authority', 'horizon', 'workflowType', 'tier', 'determinism', 'endpoint', 'decisionOutputs', 'fabricRef', 'links', 'note'],
+  scriptTask:   ['authority', 'horizon', 'workflowType', 'tier', 'determinism', 'endpoint', 'contextReads', 'artifactsWrites', 'sideEffect', 'fabricRef', 'links', 'note'],
   // T-810 (value review F-11): `decisionOutputs` is the THIRD authored-but-unshowable field
   // found here, after T-566 (305 values) and T-618 (215). The corpus carries
   // <aef:decisionOutputs> on exclusiveGateway 17 times and on userTask 6; the panel offered
@@ -1963,7 +2088,7 @@ const AEF_FIELDS = {
   eventError:   ['errorStatus', 'hostRef', 'boundaryPos', 'interrupting', 'note'],
   eventTimer:   ['timerSpec', 'hostRef', 'boundaryPos', 'interrupting', 'note'],
   eventMessage: ['busTopic', 'hostRef', 'boundaryPos', 'interrupting', 'note'],
-  subProcess:   ['horizon', 'workflowType', 'tier', 'determinism', 'endpoint', 'contextReads', 'artifactsWrites', 'sideEffect', 'scopeOf', 'fabricRef', 'links', 'note'],
+  subProcess:   ['authority', 'horizon', 'workflowType', 'tier', 'determinism', 'endpoint', 'contextReads', 'artifactsWrites', 'sideEffect', 'scopeOf', 'fabricRef', 'links', 'note'],
 };
 
 // T-308 (T-244 GO, path b): neutral presentation for a BARE catch event.
@@ -2018,6 +2143,50 @@ function ownerFromAuthority(authority) {
 // retired owner field). Used to render the read-only Owner readout.
 const OWNER_BEARING_TYPES = new Set(['serviceTask', 'userTask', 'scriptTask', 'subProcess']);
 
+// T-063 / T-573: the structured-LIST aef keys, as ONE module-scope vocabulary.
+// key -> [wrapper element, item element, item attribute]; in ratified parity with
+// STRUCTURED_LIST_KEYS in tools/yaml-to-bpmn.py and guarded by
+// tests/test_editor_bridge_structured_parity.py.
+//
+// WHY IT IS UP HERE. This triple was written out TWICE — once in buildBpmnXml's
+// emitter and once in the import reader — and T-573 needed a THIRD reader, the
+// properties panel, so that the ratified shape is reachable by an author at all.
+// A third copy is the T-322 defect (one module-scope vocabulary, never a second
+// copy) and it is the defect that produced T-573 in the first place: the panel
+// wrote a STRING while the exporter fired on Array.isArray, and nothing held the
+// two in correspondence because there was nothing for them to both read.
+const STRUCT_LIST_KEYS = {
+  emits:       ['emits', 'emit', 'value'],
+  compensates: ['compensates', 'compensate', 'ref'],
+};
+
+// T-573: parse an author's panel input for a structured-LIST key into the ratified
+// array shape. Comma-separated, matching the `contextReads`/`artifactsWrites` hint
+// convention and the `join(', ')` the dict emitter already round-trips.
+//
+// RETURNS null for empty input, and the caller DELETES the key rather than storing
+// `''` or `[]`. Neither emitter has to decide what an empty emits means, because it
+// never sees one.
+function parseStructList(text) {
+  const items = String(text == null ? '' : text).split(',').map(x => x.trim()).filter(Boolean);
+  return items.length ? items : null;
+}
+
+// T-573: is the author's input CONTENT-equal to what is already stored, whatever
+// shape that is in? A scalar `'a'` and an array `['a']` are content-equal.
+//
+// THIS IS THE T-242 GUARD, and it is about content rather than intent. T-242 ruled
+// against silent migration for targetWorkflow: promoting a shape rewrites bytes the
+// author did not touch. field()'s non-deferred path fires on every `input` event, so
+// without this a stray keystroke that leaves the text identical would promote a
+// document-supplied scalar into the structured form and move bytes on save. Deciding
+// by content needs no guess about what the author meant.
+function structListUnchanged(stored, parsed) {
+  const asList = v => v == null ? [] : (Array.isArray(v) ? v : [v]);
+  const a = asList(stored).map(String), b = asList(parsed).map(String);
+  return a.length === b.length && a.every((x, i) => x === b[i]);
+}
+
 const FIELD_META = {
   // T-566: free author prose. textarea because the content this exists to surface is
   // multi-line by nature — 001-CashWeb's 27 nodes carry API references, auth rules,
@@ -2026,7 +2195,9 @@ const FIELD_META = {
   triggeredBy:    { label: 'Triggered by',    hint: 'event or fw command', textarea: false },
   contextReads:   { label: 'Context reads',   hint: 'paths · comma-separated', textarea: true },
   artifactsWrites:{ label: 'Artifacts writes',hint: 'paths · comma-separated', textarea: true },
-  emits:          { label: 'Emits',           hint: 'event name(s)', textarea: false },
+  // T-573: the separator is load-bearing (it is what produces the ratified list shape),
+  // so the hint names it — same convention as contextReads/artifactsWrites above.
+  emits:          { label: 'Emits',           hint: 'event name(s) \u00b7 comma-separated', textarea: false },
   tier:           { label: 'Tier',            hint: '0=tier0 / 1 / 2 / 3', special: 'tier' },
   agentType:      { label: 'Agent type',      hint: 'primary | termlink-worker | human', special: 'select', options: ['primary', 'termlink-worker', 'human'] },
   // T-618: the vocabulary is NOT designed here — it is read off the corpus. Census over
@@ -2038,6 +2209,21 @@ const FIELD_META = {
   // agent-vs-code, it is whether the result can be checked without re-running the step,
   // and a human decision is the third case. It is why this is a select of the corpus's
   // three values and not a boolean.
+  // T-889 (T-888 ruling clause 2): THE ELEMENT CARRIES ITS AUTHORITY — one field, one
+  // home, the single semantic fact. This select is the editor's authority WRITER: before
+  // it existed nothing in the editor ever assigned node.aef.authority, so the key could
+  // only ever arrive from the source document and leave again by T-570 carriage. That is
+  // the discriminator AC 1 names — carriage re-emits, it cannot originate.
+  //
+  // `options` spreads the module-scope AUTHORITIES (src:1671) rather than re-typing the
+  // five values. A second copy of a governance vocabulary is how the one-form-only family
+  // reproduces itself one level down; the validator refuses to re-list it for exactly this
+  // reason (tools/validate-workflow.py, T-322/T-329) and so does this.
+  //
+  // `none` is offered because AUTHORITIES still holds it. The ruling retires it, but the
+  // retirement has its own blast radius across both forms and is T-901, not a quiet
+  // omission here.
+  authority:      { label: 'Authority',       hint: "the element's own governance authority (T-888 clause 2)", special: 'select', options: ['', ...AUTHORITIES] },
   determinism:    { label: 'Determinism',     hint: 'deterministic | stochastic | human', special: 'select', options: ['', 'deterministic', 'stochastic', 'human'] },
   // Prose, deliberately. It records WHAT the step already did to the world, and a runtime
   // that wants to know "may I retry this?" cannot infer that from `determinism`:
@@ -2851,6 +3037,7 @@ function renderAll() {
   renderProperties();
   syncCanvasSize();
   updateStatus();
+  updateKindBadge();    // T-911: the diagram-kind marker, refreshed with every full render
   scheduleAutosave();   // T-126/G-005: persist the live document so a reload/navigation can't lose work
   // T-258 (T-250 GO): re-handshake per render. renderNodes() just rebuilt the SVG
   // wholesale, wiping any annotation badges — the ratified contract is that the
@@ -3033,6 +3220,37 @@ function renameActiveWorkflow(newId) {
   return true;
 }
 
+// T-911: the diagram-kind badge. DELIBERATELY NOT folded into updateStatus() — that function has
+// several early returns (the endpoint-drag hint takes priority and returns), so a marker appended
+// after them would vanish mid-drag and reappear after, which reads as a bug in the marker rather
+// than as a property of the status line.
+//
+// The badge prints the ENUM VALUE VERBATIM. It is tempting to render `documentation` as "template",
+// since that is the word arc-005's headline mechanic uses — and that would be a second vocabulary
+// for one closed set, the T-322 defect, where the UI and the wire disagree about what a map is
+// called. The enum is the name; the parenthetical explains it.
+const KIND_GLOSS = { 'documentation': 'illustrative', 'work-plan': 'actionable' };
+function updateKindBadge() {
+  const el = $('status-kind');
+  if (!el) return;
+  const k = (state && state.workflowMeta && state.workflowMeta.kind) || null;
+  if (!k) {
+    // UNSET is legal and is not a warning (T-213 IW-3). Nothing to see, so nothing is shown.
+    el.hidden = true;
+    el.removeAttribute('data-kind');
+    el.textContent = '';
+    return;
+  }
+  el.hidden = false;
+  el.setAttribute('data-kind', k);
+  const gloss = KIND_GLOSS[k];
+  el.textContent = gloss ? `${k} · ${gloss}` : k;
+  // An out-of-enum value reaching here means the validator let it through; say so rather than
+  // rendering it as if it were legal.
+  el.title = gloss
+    ? `aef:workflowMeta/@kind — this map is marked ${k} (${gloss})`
+    : `aef:workflowMeta/@kind is "${k}", which is not in the ratified enum {documentation, work-plan}`;
+}
 function updateStatus() {
   const sel = $('status-selection');
   if (!sel) return;
@@ -3487,6 +3705,45 @@ function renderNodes() {
       const cbW = cbTxt.length * 6 + 8;
       g.appendChild(el('rect', { x: n.x + 3, y: n.y + def.h - 15, width: cbW, height: 12, rx: 2, fill: 'var(--purple-soft)', stroke: 'var(--purple)', 'stroke-width': '0.5' }));
       g.appendChild(el('text', { x: n.x + 3 + cbW / 2, y: n.y + def.h - 6, class: 'node-io-badge', 'text-anchor': 'middle' }, [text(cbTxt)]));
+    }
+    // T-893: authority marker on the element (clause 4). Top-left of the bounding box, above
+    // the shape so it is clear of the I/O badge (top-right) and the constituent badge
+    // (bottom-left). Reads n.aef.authority and the lane's authoringDefault; writes nothing.
+    {
+      const lane = findLane(n.lane);
+      const mstate = authorityMarkerState(n.aef?.authority, effectiveLaneDefault(lane));
+      if (mstate === 'differs') {
+        g.appendChild(el('text', { x: n.x + 2, y: n.y - 3, class: 'node-authority-badge', 'data-authority-marker': 'differs' }, [text('◆ ' + (AUTHORITY_ABBR[n.aef.authority] || n.aef.authority))]));
+      } else if (mstate === 'missing') {
+        g.appendChild(el('text', { x: n.x + 2, y: n.y - 3, class: 'node-authority-missing', 'data-authority-marker': 'missing' }, [text('⚠ no authority')]));
+      }
+    }
+    // T-884: instance overlay. A halo around the bounding box and a badge above its top-RIGHT
+    // corner (the T-893 marker owns the top-left). data-instance on the group is what the driver
+    // counts; the model is not touched. A node that is both current and the refusal's node keeps
+    // data-instance="current" and draws both badges — the refusal is never hidden by progress.
+    {
+      const ov = instanceView.overlay;
+      if (ov) {
+        const did = displayIdOf(n);
+        const isRefused = !!(ov.refused && ov.refused.node === did);
+        const istate = did === ov.current ? 'current' : isRefused ? 'refused'
+          : (ov.refused && ov.refused.target === did) ? 'refused-target' : ov.done.includes(did) ? 'done' : null;
+        if (istate) {
+          g.setAttribute('data-instance', istate);
+          g.appendChild(el('rect', { x: n.x - 4, y: n.y - 4, width: def.w + 8, height: def.h + 8, rx: 8, class: 'node-instance-halo' }));
+          const bx = n.x + def.w + 2, by = n.y - 6;
+          const pill = (cls, txt, y, key) => {   // pill first, text on top: legible over a crossing edge
+            const w = Math.round(txt.length * 5.1 + 8);
+            g.appendChild(el('rect', { x: bx - w, y: y - 8.5, width: w, height: 11.5, rx: 3, class: 'node-instance-pill', 'data-instance-pill': key }));
+            g.appendChild(el('text', { x: bx - 4, y: y, class: cls, 'text-anchor': 'end', 'data-instance-badge': key }, [text(txt)]));
+          };
+          if (istate === 'current') pill('node-instance-badge', '● ' + instanceView.selected, by, 'current');
+          else if (istate === 'done') pill('node-instance-badge', '✓', by, 'done');
+          else if (istate === 'refused-target') pill('node-instance-refused-badge', '✗ refused target', by, 'refused-target');
+          if (isRefused) pill('node-instance-refused-badge', '⛔ ' + ov.refused.rule, istate === 'current' ? by - 13 : by, 'refused');
+        }
+      }
     }
     gNodes.appendChild(g);
   }
@@ -5758,6 +6015,26 @@ function renderProperties() {
     sMeta.appendChild(field('Default tier', wm.tier_default || '2', v => {
       wm.tier_default = v;
     }, { mono: true, hint: '0–3 · applies to nodes without explicit tier' }));
+    // T-911: the diagram-kind marker. T-875 shipped the closed enum, the validator rules in both
+    // forms, the round-trip guarantee and a conformance case — and no way to set it, which made
+    // `kind` the only document-level attribute the editor read and wrote but could not author.
+    //
+    // The leading '' is UNSET and is the house convention for an optional select (see the
+    // `authority` field, T-888 clause 2). It is load-bearing here, not cosmetic: T-213 IW-3 kept
+    // the marker an EXPLICIT author decision, so a control without a way back to unset would
+    // silently reclassify every map an operator merely opened and glanced at. Writing null rather
+    // than '' matters for the same reason — the emitter only writes the attribute when truthy, so
+    // null exports byte-identically to a map that never had one.
+    sMeta.appendChild(selectField('Kind', wm.kind || '', ['', 'documentation', 'work-plan'], v => {
+      wm.kind = v || null;
+      updateKindBadge();
+      // Hint kept SHORT on purpose. The first version read "unset · documentation = illustrative ·
+      // work-plan = actionable" and the screenshot showed it wrapping mid-value, as "work-" /
+      // "plan = actionable" — rendering an enum value as a broken word, in the one control whose
+      // job is to present that enum. Invisible to DOM-rect math; only the rendered image showed
+      // it. Three words in option order, so each still maps to the entry beside it, and the full
+      // gloss lives on the canvas badge where there is room for it.
+    }, 'unset · illustrative · actionable'));
     props.appendChild(sMeta);
 
     // Recently-opened section — quick view of all loaded workflows (T-159: operator
@@ -5953,6 +6230,15 @@ function renderProperties() {
       lane.authority = v;
       renderAll();
     }, 'tints background · drives D1 validation'));
+    // T-892 (T-888 ruling clause 3, UI half): the lane's AUTHORING DEFAULT. Presentational:
+    // it pre-fills the authority of elements CREATED in this lane (createNodeAt) and changes
+    // which existing elements the T-893 marker flags — it never writes to an existing element.
+    // The default re-renders, it never re-stamps; that distinction is what survived review.
+    // Options are AUTHORITIES minus the retired 'none' sentinel (clause 2), reused not re-listed.
+    sBpmn.appendChild(selectField('Authoring default', lane.authoringDefault || '', ['', ...AUTHORITIES.filter(a => a !== 'none')], v => {
+      lane.authoringDefault = v || null;
+      renderAll();
+    }, 'pre-fills NEW elements · re-renders markers · never re-stamps'));
 
     // Height — small numeric stepper
     const heightWrap = document.createElement('div');
@@ -6245,7 +6531,26 @@ function renderProperties() {
         }
         sAef.appendChild(wrapLL);
       } else {
+        // T-573: a structured-LIST key is authored here in the ratified ARRAY shape.
+        // Before this, FIELD_META.emits took the plain field() path and wrote a STRING, so
+        // buildBpmnXml's `Array.isArray(aef.emits)` emitter never fired for an authored
+        // value and <aef:emits><aef:emit/></aef:emits> — the form the bridge and
+        // test_editor_bridge_structured_parity.py agree on — was UNREACHABLE from the panel.
+        // (T-570 made the string survive as <aef:meta emits="..."/>, so the data was safe
+        // and the SHAPE was still wrong; that is the defect this closes.)
+        //
+        // DISPLAY joins; WRITE parses; a content-equal write is DROPPED. The drop is the
+        // T-242 guard — see structListUnchanged() for why it decides by content.
+        if (STRUCT_LIST_KEYS[f]) {
+          const shown = Array.isArray(n.aef[f]) ? n.aef[f].join(', ') : (n.aef[f] || '');
+          sAef.appendChild(field(meta.label, shown, v => {
+            const parsed = parseStructList(v);
+            if (structListUnchanged(n.aef[f], parsed)) return;
+            if (parsed) n.aef[f] = parsed; else delete n.aef[f];
+          }, { mono: true, textarea: meta.textarea, hint: meta.hint }));
+        } else {
         sAef.appendChild(field(meta.label, n.aef[f] || '', v => { n.aef[f] = v; }, { mono: true, textarea: meta.textarea, hint: meta.hint }));
+        }
       }
     }
     // T-197 (IW-9 v1.1): read-only derived Owner. owner is no longer authored
@@ -8683,6 +8988,9 @@ function createNodeAt(type, x, y) {
     y: y - def.h / 2,
     aef: {},
   };
+  // T-892 (T-888 clause 3): a lane's authoring default pre-fills the NEW element's own
+  // authority — at creation only. Existing elements are never touched by the default.
+  { const ln = findLane(lane); if (ln && ln.authoringDefault) node.aef.authority = ln.authoringDefault; }
   state.nodes.push(node);
   // T-308: dropping a handoff from the palette IS the declaration of intent. Record
   // it in session state so the node keeps its handoff UI — and stays bindable —
@@ -8917,6 +9225,73 @@ function resolveWorkflowRef(n) {
 function effectiveJumpTarget(n) {
   return resolveWorkflowRef(n) || ((n && n.aef && n.aef.targetWorkflow || '').trim());
 }
+// ── T-884 (arc-005 S4): instance overlay — runtime half ──────────────────────
+// `instanceView` is VIEW state, never document state: nothing in it is exported or autosaved.
+// available: null (not asked yet) | true | false (endpoint absent — static hosting, 404, error).
+let instanceView = { available: null, template: null, instances: [], refusals: [], selected: null, pending: null, notFound: false, overlay: null };
+async function loadInstanceSnapshot() {
+  const tpl = (state && state.workflowMeta && state.workflowMeta.id) || null;
+  instanceView.template = tpl;
+  instanceView.instances = []; instanceView.refusals = [];
+  if (tpl) {
+    try {
+      const r = await fetch('/api/instances?template=' + encodeURIComponent(tpl), { cache: 'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+      if (!d || !Array.isArray(d.instances)) throw new Error('not a snapshot');
+      instanceView.available = true;
+      instanceView.instances = d.instances;
+      instanceView.refusals = Array.isArray(d.refusals) ? d.refusals : [];
+    } catch (e) {
+      instanceView.available = false;   // additive overlay: absence is a state, never a fault
+    }
+  }
+  const want = instanceView.pending != null ? instanceView.pending : instanceView.selected;
+  instanceView.pending = null;
+  selectInstance(want);
+}
+function selectInstance(task) {
+  // Without the endpoint there is nothing to select against: "unavailable" is the state, and a
+  // requested id is unknowable rather than "not found" (which would claim the corpus was read).
+  if (instanceView.available !== true) task = null;
+  instanceView.selected = task || null;
+  instanceView.notFound = !!task && !instanceView.instances.some(i => i.task === task);
+  computeInstanceOverlay();
+  renderInstancePicker();
+  if (state) renderNodes();
+}
+function computeInstanceOverlay() {
+  const inst = instanceView.selected ? instanceView.instances.find(i => i.task === instanceView.selected) : null;
+  if (!inst || !state) { instanceView.overlay = null; return; }
+  const idOf = new Map(state.nodes.map(n => [n.uid, displayIdOf(n)]));
+  const nodeIds = state.nodes.map(n => displayIdOf(n));
+  const flows = {};
+  for (const e of state.edges) {
+    const src = idOf.get(e.source), tgt = idOf.get(e.target);
+    if (src && tgt) (flows[src] = flows[src] || []).push(tgt);
+  }
+  const startIds = state.nodes.filter(n => n.type === 'startEvent').map(n => displayIdOf(n));
+  instanceView.overlay = instanceOverlayState(nodeIds, flows, startIds, inst, instanceView.refusals);
+}
+function renderInstancePicker() {
+  const sel = $('instancePicker');
+  if (!sel) return;
+  sel.innerHTML = '';
+  const opt = (value, label, selected) => { const o = document.createElement('option'); o.value = value; o.textContent = label; if (selected) o.selected = true; sel.appendChild(o); };
+  const v = instanceView;
+  if (v.available === false) opt('', 'instances: unavailable', !v.selected);
+  else if (v.available === null) opt('', 'instances: loading…', !v.selected);
+  else if (!v.instances.length) opt('', 'instances: none for ' + (v.template || 'this map'), !v.selected);
+  else opt('', 'instance: none (' + v.instances.length + ' on ' + (v.template || 'this map') + ')', !v.selected);
+  // Positioned instances first (they are what the overlay can draw), then STALE, then the
+  // NO-POSITION majority — the corpus predates the mechanism, so most entities have no node.
+  const rank = { NODE: 0, STALE: 1 };
+  const ordered = v.instances.slice().sort((a, b) => ((rank[a.state] ?? 2) - (rank[b.state] ?? 2)) || a.task.localeCompare(b.task, undefined, { numeric: true }));
+  for (const i of ordered) opt(i.task, i.task + ' · ' + (i.state === 'NODE' ? i.node : i.state) + (i.status ? ' · ' + i.status : ''), v.selected === i.task);
+  if (v.notFound) opt(v.selected, 'instance not found: ' + v.selected, true);
+  sel.disabled = v.available !== true && !v.notFound;
+}
+
 async function detectSaveApi() {
   try {
     const r = await fetch('/api/health', { cache: 'no-store' });
@@ -9416,6 +9791,7 @@ async function openProjectMap(m) {
     adoptImportedXml(text, { replace: true, userImport: true });
     // T-157: reflect the loaded snapshot (or clear for a rendered baseline).
     setLoadedSavedVersion(ot.kind === 'version' ? ot.v : null);
+    loadInstanceSnapshot();   // T-884: the overlay follows the loaded template
   } catch (e) {
     aefRecordFault('map-open', e);
     alert('Could not open “' + m.id + '”: ' + (e && e.message || e));
@@ -9928,16 +10304,19 @@ $('btn-load').onclick = () => {
 // Only useful when served over HTTP (fetch of file:// paths is blocked by browsers).
 (async () => {
   const src = new URLSearchParams(location.search).get('load');
-  if (!src) return;
+  // T-884: ?instance=T-XXX pre-selects an instance once the map (and its snapshot) is in.
+  instanceView.pending = new URLSearchParams(location.search).get('instance');
+  if (!src) { loadInstanceSnapshot(); return; }
   try {
     const res = await fetch(src);
     if (!res.ok) throw new Error(`HTTP ${res.status} fetching ${src}`);
     // B1: if autoLoadStored() already restored newer autosaved edits for THIS same
     // deep-link, don't let the fetched file overwrite them. The synchronous Init tail
     // (which runs autoLoadStored) always completes before this await resolves.
-    if (typeof _suppressDeepLink !== 'undefined' && _suppressDeepLink) return;
+    if (typeof _suppressDeepLink !== 'undefined' && _suppressDeepLink) { loadInstanceSnapshot(); return; }
     adoptImportedXml(await res.text(), { userImport: true });
     _loadSrcKey = activeKey;   // T-234: remember which map identity this ?load adopted
+    loadInstanceSnapshot();    // T-884: the overlay follows the loaded template
   } catch (e) {
     aefRecordFault('deeplink-load', e);
     console.error('Deep-link load failed:', e);
@@ -9945,6 +10324,7 @@ $('btn-load').onclick = () => {
   }
 })();
 $('btn-new-workflow').onclick = () => { createNewWorkflow(); };
+$('instancePicker').onchange = e => selectInstance(e.target.value || null);   // T-884
 $('btn-save-project').onclick = saveToProject;
 $('btn-versions').onclick = openVersionsModal;
 $('btn-open-project').onclick = openProjectModal;   // T-144 (moved to brand area in T-154)
@@ -10030,7 +10410,25 @@ function aefExtensionXml(node) {
     'external', 'exitCode', 'autoTrigger', 'trigger', 'gatewayKind', 'gate',
     'scopeOf',
     // T-177: task-governance scalars — horizon / workflow_type / owner.
-    'horizon', 'workflowType', 'owner'];
+    'horizon', 'workflowType', 'owner',
+    // T-889 (T-888 ruling clause 2): the element carries its authority. First-class,
+    // not T-570 carriage — carriage can only re-emit a key node.aef already holds, and
+    // before this task nothing in the editor ever WROTE the key onto a node, so the value of
+    // node.aef.authority could only ever have come from the source document. With a writer
+    // (setNodeAuthority) the key is authored here, which is the outcome carriage cannot produce.
+    'authority'];
+  // T-904: the sentence above spells node.aef.authority on purpose. Until T-904 the round-trip
+  // guard derived its denominator by regexing this function INCLUDING COMMENTS, so naming the
+  // accessor in prose masked the mutation leg that proves the key is guarded — T-889 had to write
+  // AROUND that defect with a comment explaining why it could not say the word. The denominator
+  // now strips comments, so prose is free to name what it describes, and the leg still bites.
+  //
+  // THIS COMMENT SITS OUTSIDE THE metaKeys LITERAL DELIBERATELY. Placed inside it, an apostrophe
+  // in ordinary English prose (guard-apostrophe-s) pairs with the next one and the parity checker
+  // in tests/test_editor_bridge_meta_parity.py — which scans the literal for quoted strings, also
+  // without stripping comments — reads the intervening sentence as a KEY NAME and reports a
+  // parity break against the bridge. Measured during T-904, filed as T-907: the defect this task
+  // fixed in the round-trip guard exists in the parity checker too. Keep prose out of the array.
 
   // T-570: CARRIAGE. Import reads EVERY <aef:meta> attribute into node.aef (:10255,
   // unconditional). Export emitted only the whitelist above. A key present in a source
@@ -10149,9 +10547,9 @@ function aefExtensionXml(node) {
   // bridge (STRUCTURED_LIST_KEYS / STRUCTURED_DICT_KEYS in tools/yaml-to-bpmn.py;
   // guarded by tests/test_editor_bridge_structured_parity.py). list-valued →
   // wrapper + one child per item; dict-valued → one element, attribute per field.
-  const structList = { emits: ['emits', 'emit', 'value'], compensates: ['compensates', 'compensate', 'ref'] };
-  for (const key in structList) {
-    const [wrap, item, attr] = structList[key];
+  // T-573: reads the module-scope STRUCT_LIST_KEYS rather than re-listing the triple.
+  for (const key in STRUCT_LIST_KEYS) {
+    const [wrap, item, attr] = STRUCT_LIST_KEYS[key];
     if (Array.isArray(aef[key]) && aef[key].length) {
       out += `        <aef:${wrap}>\n`;
       for (const v of aef[key]) out += `          <aef:${item} ${attr}="${escAttr(v)}"/>\n`;
@@ -10295,7 +10693,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.13.0';
+const APP_VERSION = '0.14.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's
@@ -10443,6 +10841,10 @@ function buildBpmnXml(s) {
   // T-255: authored page-width floor (pool right-edge drag). Additive-only, same
   // pattern as uuid — absent when unset, so untouched maps export byte-identically.
   if (wm.pageWidth) wmAttrs.push(`pageWidth="${escAttr(wm.pageWidth)}"`);
+  // T-875 (arc-005 S1): diagram-kind marker. Additive-only, same pattern as uuid
+  // and pageWidth — absent when unset, so every map that does not carry it
+  // exports byte-identically and the UNSET default stays genuinely inert.
+  if (wm.kind) wmAttrs.push(`kind="${escAttr(wm.kind)}"`);
   lines.push(`      <aef:workflowMeta ${wmAttrs.join(' ')}/>`);
   lines.push(`    </bpmn:extensionElements>`);
 
@@ -10452,7 +10854,10 @@ function buildBpmnXml(s) {
   for (const lane of lanesToEmit) {
     lines.push(`      <bpmn:lane id="${escAttr(lane.id)}" name="${escAttr(lane.name)}">`);
     lines.push(`        <bpmn:extensionElements>`);
-    lines.push(`          <aef:laneMeta abbr="${escAttr(lane.abbr || '')}" authority="${escAttr(lane.authority)}" height="${lane.height || 130}"/>`);
+    // T-890: additive, same shape as uuid/pageWidth/kind — absent when unset, so a map
+    // that declares no authoring default exports byte-identically.
+    const _ad = lane.authoringDefault ? ` authoringDefault="${escAttr(lane.authoringDefault)}"` : '';
+    lines.push(`          <aef:laneMeta abbr="${escAttr(lane.abbr || '')}" authority="${escAttr(lane.authority)}"${_ad} height="${lane.height || 130}"/>`);
     lines.push(`        </bpmn:extensionElements>`);
     for (const n of s.nodes.filter(x => x.lane === lane.id)) {
       lines.push(`        <bpmn:flowNodeRef>${escText(displayIdOf(n))}</bpmn:flowNodeRef>`);
@@ -10813,6 +11218,14 @@ function parseBpmnXml(text) {
     description: aefMetaEl?.getAttribute('description') || '',
     tier_default: aefMetaEl?.getAttribute('tier_default') || '2',
     pageWidth: parseInt(aefMetaEl?.getAttribute('pageWidth') || '0', 10) || null, // T-255: authored page-width floor; null = auto-fit
+    // T-875 (arc-005 S1): diagram-kind marker — is this map illustrative
+    // (documentation) or a plan of actionable work (work-plan)? null = UNSET,
+    // which is the default and is legal: T-213 IW-3 kept the marker an explicit
+    // author decision so nothing is silently reclassified. Read AND written
+    // (see the wmAttrs writer) because an attribute the editor imports but does
+    // not emit is dropped on the first save — which would make the marker worse
+    // than absent, since it would survive review and vanish in use.
+    kind: aefMetaEl?.getAttribute('kind') || null,
   };
 
   // ---- lanes ----
@@ -10826,6 +11239,13 @@ function parseBpmnXml(text) {
         name: laneEl.getAttribute('name') || laneEl.getAttribute('id') || 'lane',
         abbr: laneMeta?.getAttribute('abbr') || deriveLaneAbbr(laneEl.getAttribute('name') || laneEl.getAttribute('id') || 'lane'),
         authority: laneMeta?.getAttribute('authority') || 'none',
+        // T-890 (T-888 ruling clause 3): PRESENTATIONAL authoring default. Pre-fills the
+        // authority of elements newly created in this lane; never read by the compiler.
+        // null = the lane declares no default — deliberately no 'none' sentinel, since
+        // authority="none" is the value that caused the original defect. Read AND written
+        // (see the laneMeta emitter) because an attribute imported but not emitted is
+        // dropped on first save: worse than absent, as it survives review and vanishes in use.
+        authoringDefault: laneMeta?.getAttribute('authoringDefault') || null,
         height: parseInt(laneMeta?.getAttribute('height') || '130', 10),
       });
     }
@@ -10986,8 +11406,25 @@ function parseBpmnXml(text) {
         y = b.y;
       }
 
-      // Lane membership: look up which laneSet entry references this displayId
-      let laneId = lanes[0]?.id;
+      // Lane membership: look up which laneSet entry references this displayId.
+      //
+      // T-891: the initialiser used to be `lanes[0]?.id`, so a node that NO
+      // flowNodeRef claims silently inherited the FIRST-DECLARED lane's identity —
+      // and under lane-as-authority (frozen standard §3, "the Lane is the sole
+      // authority-of-record") that meant WHO OWNS A NODE was decided by laneSet
+      // declaration order. For an imported third-party file that is the order their
+      // exporter happened to serialise in. This project treats lane reordering
+      // elsewhere as a zero-semantic repair; it was not.
+      //
+      // Now: null when unclaimed. An absent lane is absent, not the first one.
+      // Downstream reads must handle null rather than receive a guess — which is
+      // the whole point, per the T-888 ruling (authority on the element) and
+      // W-XML-NODE-UNASSIGNED, which has been warning about exactly these nodes
+      // all along while the editor quietly assigned them anyway.
+      //
+      // This REMOVES a guess. It does not install a replacement: what the default
+      // should be is T-341's open [REVIEW] criterion and the operator's call.
+      let laneId = null;
       for (const laneEl of byBpmn(proc, 'lane')) {
         const refs = byBpmn(laneEl, 'flowNodeRef').map(r => r.textContent?.trim());
         if (refs.includes(displayId)) { laneId = laneEl.getAttribute('id'); break; }
@@ -11090,7 +11527,8 @@ function parseBpmnXml(text) {
 
       // T-063: structured aef values — read back the dedicated child elements the
       // bridge/buildBpmnXml emit (parity: test_editor_bridge_structured_parity.py).
-      for (const [key, item, attr] of [['emits', 'emit', 'value'], ['compensates', 'compensate', 'ref']]) {
+      // T-573: reads the module-scope STRUCT_LIST_KEYS rather than re-listing the triple.
+      for (const [key, item, attr] of Object.values(STRUCT_LIST_KEYS)) {
         const wrapEl = byAef(el, key)[0];
         if (wrapEl) aef[key] = byAef(wrapEl, item).map(c => c.getAttribute(attr) || '');
       }

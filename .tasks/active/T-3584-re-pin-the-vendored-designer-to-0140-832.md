@@ -11,10 +11,10 @@ description: >
   if we have a console-error check over the vendored artifact, whitelist it. Verify
   the sha256 matches the announce.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T10:01:29Z
-last_update: 2026-09-30T14:45:24Z
+last_update: 2026-09-30T15:37:10Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,12 +98,12 @@ dist/aef-workflow-designer-0.14.0.html, 1043238 bytes, sha256
 ## Acceptance Criteria
 
 ### Agent
-- [ ] policy/designer-pin.yaml updated to 0.14.0 from the announce, following the header comment's documented flow (`fw designer sync --from-tag`); no hand-editing of the artifact
-- [ ] The vendored `vendor/designer/aef-workflow-designer-0.14.0.html` sha256 equals the announced 0b5ae3a7…d3e6f2 and its size is 1043238 bytes; `fw designer status` reports it present and valid
-- [ ] Watchtower /designer serves 0.14.0 after restart (HTTP 200, version string present); the one expected console 404 for the optional `/api/instances` probe is documented, and any console-error check we run over the vendored artifact whitelists it
-- [ ] Older vendored builds are kept or removed per the existing retention rule in the pin policy (read it; do not invent one)
-- [ ] `bin/fw watchtower current`; `bin/fw vendor self --check` clean
-- [ ] Render review of /designer by an independent internal reviewer (operator ruling, T-3557)
+- [x] policy/designer-pin.yaml updated to 0.14.0 from the announce, following the header comment's documented flow (`fw designer sync --from-tag`); no hand-editing of the artifact
+- [x] The vendored `vendor/designer/aef-workflow-designer-0.14.0.html` sha256 equals the announced 0b5ae3a7…d3e6f2 and its size is 1043238 bytes; `fw designer status` reports it present and valid
+- [x] Watchtower /designer serves 0.14.0 after restart (HTTP 200, version string present); the one expected console 404 for the optional `/api/instances` probe is documented, and any console-error check we run over the vendored artifact whitelists it
+- [x] Older vendored builds are kept or removed per the existing retention rule in the pin policy (read it; do not invent one)
+- [x] `bin/fw watchtower current`; `bin/fw vendor self --check` clean
+- [x] Render review of /designer by an independent internal reviewer (operator ruling, T-3557). GREEN at rung 1: docs/reports/T-3584-check.md
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -368,3 +368,7 @@ dist/aef-workflow-designer-0.14.0.html, 1043238 bytes, sha256
 ### 2026-09-30T14:45:24Z — status-update [task-update-agent]
 - **Change:** horizon: now → next
 - **Change:** status: started-work → captured (auto-sync)
+
+### 2026-09-30T15:37:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
