@@ -133,14 +133,22 @@ sys.exit(0 if 'application' not in ls[-1] else 1)
     # Excludes .agentic-framework/ (self-vendored copy, refreshed by `fw vendor
     # self`), .claude/worktrees/ (checkouts of other branches) and tests/ (this
     # file names the strings on purpose) — none is an authoring surface.
+    #
+    # The leading "./" is normalised away first: some grep builds (ugrep, which is
+    # /usr/bin/grep on this host) print "lib/x.sh" not "./lib/x.sh" for `-r .`,
+    # and the exclusions below must not depend on which one is installed.
+    # Comment-only lines are dropped: lib/corpus-id.sh's T-2902 header
+    # (155aa703b) quotes `application: TBD` as incident prose; it writes nothing.
     cd "$FRAMEWORK_ROOT"
     run bash -c '
         grep -rn "application: *\"\?\(TBD\|\[Review and refine\]\|Apply when encountering similar\)" \
              --include="*.sh" --include="*.py" . 2>/dev/null \
-        | grep -v "^\./\.git" \
-        | grep -v "^\./\.agentic-framework/" \
-        | grep -v "^\./\.claude/worktrees/" \
-        | grep -v "^\./tests/"
+        | sed "s|^\./||" \
+        | grep -v "^[^:]*:[0-9]*:[[:space:]]*#" \
+        | grep -v "^\.git/" \
+        | grep -v "^\.agentic-framework/" \
+        | grep -v "^\.claude/worktrees/" \
+        | grep -v "^tests/"
     '
     [ -z "$output" ]
 }
