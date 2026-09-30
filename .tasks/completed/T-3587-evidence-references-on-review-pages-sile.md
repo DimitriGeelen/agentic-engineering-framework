@@ -13,12 +13,12 @@ description: >
   Probe: tests/unit/... not linked (prefix missing); lib/x.py:640 links the file but
   not the line.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/test_t3587_file_refs.py, web/blueprints/approvals.py, web/blueprints/docs.py, web/blueprints/inception.py, web/blueprints/tasks.py, web/shared.py, web/static/css/file-refs.css, web/templates/_approvals_content.html, web/templates/base.html, web/templates/review.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -47,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T10:19:30Z
-last_update: 2026-09-30T10:40:39Z
-date_finished:
+last_update: 2026-09-30T10:55:41Z
+date_finished: 2026-09-30T10:55:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -115,7 +115,7 @@ text emitted OUTSIDE Watchtower (CLI, handover, chat), via `fw watchtower url`.
 - [x] Every Markdown surface uses the same renderer: /review, /inception, /tasks, /approvals, /arcs story sections; grep proves no surface renders Recommendation or Evidence without it
 - [x] Text emitted outside Watchtower that names a Watchtower page (fw task review, review-batch, handover, fw reviewer judge output) builds absolute URLs from `fw watchtower url` (triple-file), never a hard-coded host or port; test with a non-default port
 - [x] Tests cover each shape above (link, dead, brace, bare, line, allowlist), with negative controls; measured on live /review/T-3581 after restart: 0 unlinked path-shaped refs except those marked dead
-- [ ] Render review by an independent internal reviewer on live screenshots (operator ruling, T-3557); `bin/fw watchtower current`; `bin/fw vendor self --check` clean
+- [x] Render review by an independent internal reviewer on live screenshots (operator ruling, T-3557); `bin/fw watchtower current`; `bin/fw vendor self --check` clean. Round 1 AMBER (viewer contrast, false not-found; docs/reports/T-3587-render-review.md); round 2 GREEN (docs/reports/T-3586-T-3587-review.md part B: contrast measured over 444 tokens in both themes, 0 false not-found on /review/T-3581, /inception/T-3576 and /approvals, generic names plain). Its optional minor item (the bare `check-tier0.sh:245` no longer links) is left as a follow-up.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -388,3 +388,21 @@ bin/fw vendor self --check
 - **After** (restart, pid 2394128, `fw watchtower current` rc=0): 13 `/file/` links (10 distinct files), 0 unlinked path-shaped refs, 0 dead marks; every emitted href returned 200.
 - The filing's `lib/task_pair_acd.sh` example: the file exists. The plain-text occurrence on that page is inside a CSS comment in web/templates/review.html, not rendered task content. In rendered content, underscore paths were broken by markdown2's emphasis, now fixed and tested.
 - `/file/web/shared.py` now carries `id="L640"`.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-396832d2
+- **Timestamp:** 2026-09-30T10:55:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — `path:NNN` links to the line: `/file/<path>#LNNN`, and the /file view renders line anchors (check web/blueprints/docs.py and its template; add them if absent) so the browser lands on the line
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/docs.py in: `path:NNN` links to the line: `/file/<path>#LNNN`, and the /file view renders line anchors (check web/blueprints/docs.py and its template; add them if`
+
+### 2026-09-30T10:55:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** operator ruling 2026-09-29 (T-3557 IW-1): render judged by an independent internal reviewer, GREEN on round 2 (docs/reports/T-3586-T-3587-review.md part B); verdict-ledger path not yet enabled (T-3581/T-3580)

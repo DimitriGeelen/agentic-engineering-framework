@@ -1,0 +1,131 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3587: Evidence references on review pages silently stay plain text - brace-grouped paths, bare filenames, tests/ and :line refs are not linked, and dead refs look like live ones
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-30T10:56:09Z
+# ============================================================================
+
+task_id: T-3587
+task_name: "Evidence references on review pages silently stay plain text - brace-grouped paths, bare filenames, tests/ and :line refs are not linked, and dead refs look like live ones"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-30T10:19:30Z
+completed: 2026-09-30T10:55:41Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-09-30T12:20:33+02:00
+last_commit: 2026-09-30T12:45:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  evidence refs on review pages — brace groups, bare filenames, :line, allowlist gaps and dead refs; criteria. started; worker prompt (parallel with T-3586: session-scoped focus, disjoint files). evidence refs link or show as dead — brace groups, bare filenames, path:NNN line anchors, underscore paths, approvals rendered. vendor sync of the file-ref renderer, /file line anchors and marker styles; fabric cards. criteria 1-8 ticked with proving tests; live before/after on /review/T-3581; CLI URL helpers tested on a non-default port. independent render review prompt. render review AMBER (viewer contrast; false not-found on existing files); round-2 prompt. round 2 — theme-scoped viewer palette; dead only when certain; generic bare names plain; ./ stripped; code quiet; adr/runbooks served. vendor sync of round-2 renderer and viewer palette
+
+# Key outcomes
+outcomes:
+  - 'Brace groups expand: `docs/reports/T-3579-code-review-{openai,zai}.md` renders one link per expansion that exists (text stays readable, e.g. the group with each member linked)'
+  - 'Bare filenames resolve: a bare `T-NNNN-*.md` (or any basename with a viewable extension) that matches exactly one file under the viewable directories links to it; zero or several matches stay unlinked but are marked (see next)'
+  - 'Dead references are visible: a path-shaped reference that does not resolve renders with a distinct "not found" style and a title, so a stale ref never looks like a live one (e.g. `lib/task_pair_acd.sh` on /review/T-3581)'
+  - '`path:NNN` links to the line: `/file/<path>#LNNN`, and the /file view renders line anchors (check web/blueprints/docs.py and its template; add them if absent) so the browser lands on the line'
+  - 'The viewable allowlist covers the directories evidence actually cites (tests/, web/, bin/, policy/, lib/, agents/, docs/reports/), in ONE list shared by the renderer and the /file route, so a rendered link never 404s on the allowlist'
+  - 'Every Markdown surface uses the same renderer: /review, /inception, /tasks, /approvals, /arcs story sections; grep proves no surface renders Recommendation or Evidence without it'
+  - 'Text emitted outside Watchtower that names a Watchtower page (fw task review, review-batch, handover, fw reviewer judge output) builds absolute URLs from `fw watchtower url` (triple-file), never a hard-coded host or port; test with a non-default port'
+  - 'Tests cover each shape above (link, dead, brace, bare, line, allowlist), with negative controls; measured on live /review/T-3581 after restart: 0 unlinked path-shaped refs except those marked dead'
+  - 'Render review by an independent internal reviewer on live screenshots (operator ruling, T-3557); `bin/fw watchtower current`; `bin/fw vendor self --check` clean. Round 1 AMBER (viewer contrast, false not-found; docs/reports/T-3587-render-review.md); round 2 GREEN (docs/reports/T-3586-T-3587-review.md part B: contrast measured over 444 tokens in both themes, 0 false not-found on /review/T-3581, /inception/T-3576 and /approvals, generic names plain). Its optional minor item (the bare `check-tier0.sh:245` no longer links) is left as a follow-up.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-30 — how an unresolvable reference renders'
+    chose: 'keep the text, wrap it in a `<span class="file-ref-dead|ambiguous|unserved" title="…">` (wavy underline, ✗ / ? suffix, help cursor), CSS in a new web/static/css/file-refs.css linked from base.html and the standalone review.html.'
+    rationale: 'the operator''s complaint is refs that look fine and aren''t; a titled span says why (not found / N candidates / outside the viewer allowlist) without inventing a link.'
+    alternatives_rejected: ['linking dead refs to /file anyway (a 404 click is worse than a visible mark); marking inside `<pre>` code blocks (pasted logs would drown in marks — only live links are added there).']
+  - decision: '2026-09-30 — line anchors on /file'
+    chose: 'Pygments `HtmlFormatter(linespans="L")` rewritten to `id="LNNN"`, with CSS counters for line numbers and a `:target` highlight.'
+    rationale: 'Pygments splits multi-line tokens per line itself; splitting highlight.js output would break spans across lines. Its `<pre>` has no `<code>`, so highlight.js leaves it alone.'
+    alternatives_rejected: ['client-side JS wrapping after highlight.js (fragile, anchor unavailable until JS runs). Markdown files are rendered as Markdown and have no line anchors — `x.md:NN` links land at the top of the document.']
+  - decision: '2026-09-30 — round 2 (render review AMBER, docs/reports/T-3587-render-review.md)'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/approvals.py'
+  - '.agentic-framework/web/blueprints/docs.py'
+  - '.agentic-framework/web/blueprints/inception.py'
+  - '.agentic-framework/web/blueprints/tasks.py'
+  - '.agentic-framework/web/shared.py'
+  - '.agentic-framework/web/static/css/file-refs.css'
+  - '.agentic-framework/web/templates/_approvals_content.html'
+  - '.agentic-framework/web/templates/base.html'
+  - '.agentic-framework/web/templates/review.html'
+  - 'docs/reports/T-3587-build-prompt.md'
+  - 'docs/reports/T-3587-render-review.md'
+  - 'docs/reports/T-3587-review-prompt.md'
+  - 'docs/reports/T-3587-round2-prompt.md'
+  - '.fabric/components/tests-unit-test_t3587_file_refs.yaml'
+  - '.fabric/components/web-static-css-file-refs.yaml'
+  - '.tasks/active/T-3587-evidence-references-on-review-pages-sile.md'
+  - 'tests/unit/test_t3587_file_refs.py'
+  - 'web/blueprints/approvals.py'
+  - 'web/blueprints/docs.py'
+  - 'web/blueprints/inception.py'
+  - 'web/blueprints/tasks.py'
+  - 'web/shared.py'
+  - 'web/static/css/file-refs.css'
+  - 'web/templates/_approvals_content.html'
+  - 'web/templates/base.html'
+  - 'web/templates/review.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-30T12:20:33'
+    action: 'T-3587: evidence refs on review pages — brace groups, bare filenames, :line, allowlist gaps and dead refs; criteria'
+  - time: '2026-09-30T12:22:41'
+    action: 'T-3587: started; worker prompt (parallel with T-3586: session-scoped focus, disjoint files)'
+  - time: '2026-09-30T12:32:05'
+    action: 'T-3587: evidence refs link or show as dead — brace groups, bare filenames, path:NNN line anchors, underscore paths, approvals rendered'
+  - time: '2026-09-30T12:33:48'
+    action: 'T-3587: vendor sync of the file-ref renderer, /file line anchors and marker styles; fabric cards'
+  - time: '2026-09-30T12:35:27'
+    action: 'T-3587: criteria 1-8 ticked with proving tests; live before/after on /review/T-3581; CLI URL helpers tested on a non-default port'
+  - time: '2026-09-30T12:36:55'
+    action: 'T-3587: independent render review prompt'
+  - time: '2026-09-30T12:40:29'
+    action: 'T-3587: render review AMBER (viewer contrast; false not-found on existing files); round-2 prompt'
+  - time: '2026-09-30T12:44:37'
+    action: 'T-3587: round 2 — theme-scoped viewer palette; dead only when certain; generic bare names plain; ./ stripped; code quiet; adr/runbooks served'
+  - time: '2026-09-30T12:45:28'
+    action: 'T-3587: vendor sync of round-2 renderer and viewer palette'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 9 commit(s), 36 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 36
+  commits: 9
+  files_changed: 26
+  lines_added: 1928
+  lines_removed: 124
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3587-evidence-references-on-review-pages-sile.md
+generated_by: context-agent-hybrid
