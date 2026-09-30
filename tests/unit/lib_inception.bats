@@ -129,6 +129,19 @@ EOF
 # === T-1259: CLAUDECODE guard tests ===
 
 @test "inception: CLAUDECODE=1 without --i-am-human is blocked (T-1259)" {
+    # T-2964 (5777bb52d): decide validates the target (exists, is an inception)
+    # BEFORE the sovereignty gate, so the gate is only reachable with a real
+    # inception task in active/.
+    cat > "$TEST_TEMP_DIR/.tasks/active/T-999-guard-fixture.md" <<'EOF'
+---
+id: T-999
+name: "Guard fixture"
+status: started-work
+workflow_type: inception
+owner: agent
+---
+# T-999: Guard fixture
+EOF
     CLAUDECODE=1 run do_inception_decide T-999 go --rationale "test"
     [ "$status" -ne 0 ]
     [[ "$output" == *"T-1259"* ]] || [[ "$output" == *"T-679"* ]]
