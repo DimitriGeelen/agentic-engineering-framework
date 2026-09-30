@@ -104,7 +104,7 @@ the operator's call (Human AC below).
 
 ### Agent
 - [x] CONTAINMENT FIRST (own commit): a ledger row counts only if it carries a review-dispatch provenance id that resolves to a real record (see next AC); until slice 3 writes such rows, no row qualifies, so the path is off, and a test proves a hand-appended green row is refused
-- [ ] Provenance: each verdict row must carry the dispatch id of the reviewer worker (from `fw termlink dispatch` meta / `.context/dispatches.jsonl`); apply refuses a row whose dispatch record is missing, whose worker task-type is not a review, or whose dispatch was issued by a producer identity/session of the task
+- [x] Provenance: each verdict row must carry the dispatch id of the reviewer worker (from `fw termlink dispatch` meta / `.context/dispatches.jsonl`); apply refuses a row whose dispatch record is missing or whose worker task-type is not a review. **Amended 2026-09-30 (parent session):** the original third clause, "or whose dispatch was issued by a producer identity/session", was deliberately NOT built. Slice 3 has the producer session dispatch its own reviewer, so that clause would forbid the design. Independence is enforced on the worker identity and the row's introducing commit instead (## Decisions, producer-issuer exception). Both round-3 reviewers called the exception reasonable, provided the verdict is bound to the worker. That binding is now a requirement on T-3580 (its Context lists six requirements). The clause moved; it was not dropped.
 - [x] Introducing-commit check: at apply, the commit that added the row must exist and must not be authored by a producer identity; uncommitted rows do not count
 - [x] Refuse when the producer set is empty or git fails (no producer provenance means refuse, never pass)
 - [x] Every reviewer-derived tick is revalidated at every close attempt (including already-ticked criteria): a later red, a digest change or a producer collision withdraws the tick and restores ownership before the completion gates run
@@ -329,32 +329,32 @@ bin/fw vendor self --check
 
 ## Recommendation
 
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
+**Recommendation:** GO (accept the residual gap), and enable only after T-3580 builds worker binding.
 
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
+**Rationale:** Four rounds of two-vendor review took this from RED to AMBER with zero high
+findings. Every concrete forgery the reviewers found is now refused or caught by `fw audit`:
+- a pseudonymous reviewer;
+- a hand-appended row;
+- a row recorded before any commit;
+- a commit made with --no-verify without the task id;
+- editing a committed red into green;
+- deleting a withdrawal;
+- a stripped or case-changed annotation;
+- swapped evidence.
 
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
+What remains is the same-user boundary. An agent running as the same OS user can read the
+signing key and commit under another git identity, and so can build a coherent fake
+provenance chain that audit cannot tell apart. No local scheme closes that, and every other
+gate in this framework has the same property (T-2742: Tier 0 cannot see inside scripts).
+The alternative is to keep ~286 render/taste criteria on your desk. That is the
+rubber-stamping T-3557 was GO'd to remove. Tier 0, external acts and sovereignty stay yours
+regardless.
 
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
-
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
+**Evidence:**
+- Reviews: docs/reports/T-3579-code-review-{openai,zai}.md (RED); T-3581-rereview-openai.md (RED); T-3581-round3-review-{openai,zai}.md (AMBER, no high).
+- Round 4 (637efa6bf) closed the six remaining fixable items; 111 pytest and 11 bats tests pass, each refusal with a control.
+- Containment is in force: no ledger row counts without signed review-dispatch provenance, and none exists yet. `.context/reviews/` is absent.
+- If you want more than this, the options are an operator-signed verdict, or server-side protection of the ledger file (OneDev path protection). Either replaces the same-user key with something agents cannot read.
 
 ## Decisions
 
