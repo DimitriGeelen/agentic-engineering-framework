@@ -94,7 +94,7 @@ class TestRuntimeCompletion:
         w = rt.wdir_for(prod, "rv-1")
         (w / "exit_code").write_text("0\n")
         secret = rt.take_secret(prod, "rv-1")
-        monkeypatch.setattr(vl, "_runtime_fault", lambda wdir: "")   # round 6: runtime double
+        monkeypatch.setattr(vl, "_runtime_fault", lambda *a, **k: "")   # round 6: runtime double
         monkeypatch.setenv(vl._WORKER_ENV, "rv-1")
         with pytest.raises(vl.VerdictRefused, match="never from inside the worker"):
             vl.complete("rv-1", wdir=str(w), exit_code=0, secret=secret, root=prod)

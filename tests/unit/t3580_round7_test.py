@@ -303,3 +303,121 @@ class TestWorkerSteering:
                kind_vendors={"claude": "anthropic"})
         run = next(r for r in vl._read(vl.RUNS, hi) if r.get("kind") == "run")
         assert all(len(s["brief_sha256"]) == 64 for s in run["seats"])
+
+
+# ── 3. Claude F3 / codex MEDIUM-4: committed launch surface; one binding per run ─────────────
+
+from t3580_round5_test import _THREE_KINDS  # noqa: E402
+
+PANEL = [{"seat": s, "vendor": s} for s in ("seat-a", "seat-b", "seat-c")]
+
+
+def _commit_file(root, rel, text, msg="framework file"):
+    p = root / rel
+    p.parent.mkdir(parents=True, exist_ok=True)
+    p.write_text(text)
+    _git(root, "add", str(rel))
+    _git(root, "commit", "-q", "-m", msg)
+
+
+def _head(root):
+    return subprocess.run(["git", "-C", str(root), "rev-parse", "HEAD"], capture_output=True,
+                          text=True).stdout.strip()
+
+
+class TestOneBinding:
+    def test_probe_f3_an_uncommitted_kinds_edit_launches_nothing_the_ledger_counts(self, hi):
+        """F3: an uncommitted DISPATCH_WORKER_KINDS edit + a committed `worker_kind: codex`
+        made a codex seat count (and run.sh would have run Claude under that name)."""
+        src = TERMLINK.read_text()
+        _commit_file(hi, vl.TERMLINK_SH, src)                          # the project's own copy
+        rt.commit_registry(hi, _THREE_KINDS)
+        (hi / vl.TERMLINK_SH).write_text(src.replace('DISPATCH_WORKER_KINDS="claude ollama-loop"',
+                                                     'DISPATCH_WORKER_KINDS="claude ollama-loop codex"'))
+        assert "codex" not in vl.launchable_kinds(hi)
+        assert "codex" not in vl.verified_kind_vendors(hi)
+        with pytest.raises(ValueError, match="or the dispatcher cannot launch it"):
+            rt.dispatch(hi, "rv-x", TID, worker_kind="codex")
+        _commit_file(hi, vl.TERMLINK_SH, (hi / vl.TERMLINK_SH).read_text())    # control: committed
+        assert "codex" in vl.launchable_kinds(hi)
+
+    def test_probe_f3_the_run_sh_template_is_read_as_committed(self, hi):
+        src = TERMLINK.read_text()
+        _commit_file(hi, vl.TERMLINK_SH, src)
+        committed = vl._canonical_runtime(hi)
+        (hi / vl.TERMLINK_SH).write_text(src.replace('"$WORKER_BIN" -p', 'claude -p'))
+        assert vl._canonical_runtime(hi) == committed and '"$WORKER_BIN" -p' in committed
+
+    def test_a_run_pins_one_revision_and_one_registry_blob(self, hi):
+        rt.commit_registry(hi, _THREE_KINDS)
+        run = rt.register_run("run-p", TID, acs=[1], rung="rung-5-panel", seats=PANEL,
+                              required_vendors=3, root=hi)
+        assert run["revision"] == _head(hi)
+        assert run["registry"]["sha256"] and "@" + _head(hi) in run["registry"]["where"]
+
+    def _mixed(self, hi, monkeypatch):
+        """Rev A maps opencode -> anthropic (the SAME vendor as claude); rev B remaps it to zai.
+        Seats a, b at rev A; seat c at rev B: one kind under two vendor names."""
+        rt.launchable(monkeypatch, {"codex", "opencode"})
+        rt.commit_registry(hi, _THREE_KINDS.replace("vendor: zai", "vendor: anthropic"))
+        rt.register_run("run-p", TID, acs=[1], rung="rung-5-panel", seats=PANEL,
+                        required_vendors=3, root=hi)
+        rev_a = _head(hi)
+        for s, k in zip(PANEL[:2], ("claude", "codex")):
+            did = f"rv-{s['seat']}"
+            rt.dispatch(hi, did, TID, worker_kind=k, run_id="run-p", seat=s["seat"])
+            _record(hi, did, run_id="run-p", rung=f"rung-5-panel:{s['seat']}")
+            _commit_as(hi, f"reviewer-{did}")
+            rt.finish(hi, did)
+        rt.commit_registry(hi, _THREE_KINDS)                       # rev B: opencode -> zai
+        return rev_a, _head(hi)
+
+    def test_negative_control_a_seat_at_another_revision_is_refused_at_registration(self, hi, monkeypatch):
+        rev_a, rev_b = self._mixed(hi, monkeypatch)
+        with pytest.raises(ValueError, match="is pinned to revision .* one binding"):
+            rt.dispatch(hi, "rv-seat-c", TID, worker_kind="opencode", run_id="run-p",
+                        seat="seat-c", revision=rev_b)
+
+    def test_negative_control_mixed_revisions_do_not_make_a_panel_at_apply(self, hi, monkeypatch):
+        """Registration check bypassed (the row re-signed with the key): the panel still refuses,
+        so one kind cannot count as anthropic at rev A and zai at rev B."""
+        rev_a, rev_b = self._mixed(hi, monkeypatch)
+        rt.dispatch(hi, "rv-seat-c", TID, worker_kind="opencode", run_id="run-p", seat="seat-c")
+        p = hi / vl.DISPATCHES
+        rows = [json.loads(x) for x in p.read_text().splitlines()]
+        rows[-1]["revision"], rows[-1]["vendor"] = rev_b, "zai"
+        rows[-1]["sig"] = vl._sign(vl._dispatch_key(hi), rows[-1])
+        p.write_text("".join(json.dumps(r) + "\n" for r in rows))
+        _record(hi, "rv-seat-c", run_id="run-p", rung="rung-5-panel:seat-c")
+        _commit_as(hi, "reviewer-rv-seat-c")
+        rt.finish(hi, "rv-seat-c")
+        assert _ticked(hi) == []
+        assert "panel-unverified-vendor" in _why(hi) and "run's one binding" in _why(hi)
+
+    def test_negative_control_the_pinned_table_counts_one_vendor_for_one_kind(self, hi, monkeypatch):
+        """Same run, all seats at rev A (the one binding): opencode is anthropic there, so the
+        panel spans two vendors and does not satisfy three."""
+        self._mixed(hi, monkeypatch)
+        rt.dispatch(hi, "rv-seat-c", TID, worker_kind="opencode", run_id="run-p", seat="seat-c")
+        _record(hi, "rv-seat-c", run_id="run-p", rung="rung-5-panel:seat-c")
+        _commit_as(hi, "reviewer-rv-seat-c")
+        rt.finish(hi, "rv-seat-c")
+        assert _ticked(hi) == [] and "span 2 (anthropic, openai)" in _why(hi)
+
+    def test_negative_a_registry_that_no_longer_hashes_to_the_pin(self, hi, monkeypatch):
+        rt.launchable(monkeypatch, {"codex", "opencode"})
+        rt.commit_registry(hi, _THREE_KINDS)
+        rt.register_run("run-p", TID, acs=[1], rung="rung-5-panel", seats=PANEL,
+                        required_vendors=3, root=hi)
+        for s, k in zip(PANEL, ("claude", "codex", "opencode")):
+            did = f"rv-{s['seat']}"
+            rt.dispatch(hi, did, TID, worker_kind=k, run_id="run-p", seat=s["seat"])
+            _record(hi, did, run_id="run-p", rung=f"rung-5-panel:{s['seat']}")
+            _commit_as(hi, f"reviewer-{did}")
+            rt.finish(hi, did)
+        assert _ticked(hi) == [1]                                           # control
+        vl.release(TID, 1, "reset for the negative", root=hi)
+        real = vl._registry_blob
+        monkeypatch.setattr(vl, "_registry_blob",
+                            lambda r, rev: (real(r, rev)[0] + "# moved\n", "elsewhere"))
+        assert "no longer hashes to the blob the run pinned" in _why(hi)

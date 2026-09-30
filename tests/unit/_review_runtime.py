@@ -31,7 +31,7 @@ def as_runtime():
     (t3580_round6_test.TestRuntimeCapability)."""
     saved_fault = vl._runtime_fault
     saved_env = os.environ.pop(vl._WORKER_ENV, None)
-    vl._runtime_fault = lambda wdir: ""
+    vl._runtime_fault = lambda *a, **k: ""
     try:
         yield
     finally:
@@ -70,6 +70,10 @@ def dispatch(root, did, task, *, task_type="review", issuer_session="S-test",
     brief and absolute worker binary it launches."""
     w = wdir_for(root, did)
     write_launch(w, brief, worker_bin)
+    if run_id and not revision:
+        # Round 7: like the judge, dispatch every seat at the run's ONE pinned revision.
+        run, _why = vl._verified_run(Path(root), run_id)
+        revision = str((run or {}).get("revision") or "")
     vl.register_dispatch(did, task, task_type, issuer_session=issuer_session,
                          issuer_identity=issuer_identity, revision=revision, wdir=str(w),
                          worker_kind=worker_kind, vendor=vendor, run_id=run_id, seat=seat,
@@ -124,4 +128,4 @@ def launchable(monkeypatch, kinds) -> None:
     """Pretend the dispatcher can launch `kinds` (as if T-3582 had built codex/opencode workers).
     The ledger's own check reads DISPATCH_WORKER_KINDS; this replaces only that answer."""
     real = vl.launchable_kinds
-    monkeypatch.setattr(vl, "launchable_kinds", lambda: set(kinds) | real())
+    monkeypatch.setattr(vl, "launchable_kinds", lambda *a, **k: set(kinds) | real(*a, **k))

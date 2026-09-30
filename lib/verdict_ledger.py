@@ -462,6 +462,11 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
             raise ValueError(f"run {run_id.strip()!r} is for {run.get('task')!r}, not {row['task']}")
         if (seat or "").strip() not in {s["seat"] for s in run.get("seats") or []}:
             raise ValueError(f"seat {(seat or '').strip()!r} is not a seat of run {run_id.strip()!r}")
+        if row["revision"] != str(run.get("revision") or ""):
+            raise ValueError(f"run {run_id.strip()!r} is pinned to revision "
+                             f"{str(run.get('revision') or 'none')[:9]}; a seat dispatched at "
+                             f"{row['revision'][:9]} would be judged against another registry — "
+                             f"every seat of a run uses the run's one binding")
         if any(r.get("run_id") == run_id.strip() and r.get("seat") == seat.strip()
                for r in _read(DISPATCHES, root)):
             raise ValueError(f"seat {seat.strip()!r} of run {run_id.strip()!r} is already dispatched")
@@ -502,23 +507,40 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
     return row
 
 
-def _registry_blob(root: Path, revision: str) -> tuple[str, str]:
-    """(yaml text, where) of the backend registry as COMMITTED — never the working tree (T-3580
-    round 6). The project's own policy/review-backends.yaml at `revision` (default HEAD) when it is
-    tracked there; else the vendored copy under the project at `revision`; else this framework's
-    committed copy at its HEAD. ('', why) when none is committed."""
+TERMLINK_SH = Path("agents/termlink/termlink.sh")
+
+
+def _committed_blob(root: Path, revision: str, rel: Path) -> tuple[str, str]:
+    """(text, where) of framework file `rel` as COMMITTED — never the working tree (T-3580 round
+    6 for the registry, round 7 for termlink.sh). The project's own `rel` at `revision` (default
+    HEAD) when it is tracked there; else the vendored copy under the project at `revision`; else
+    this framework's committed copy at its HEAD, pinned to that commit's sha in `where`. ('', why)
+    when none is committed."""
     rev = (revision or "").strip() or "HEAD"
-    cands = [(root, rev, str(BACKENDS))]
+    cands = [(root, rev, str(rel))]
     fw = _HERE.parent.resolve()
     try:
-        cands.append((root, rev, str((fw / BACKENDS).relative_to(Path(root).resolve()))))
+        cands.append((root, rev, str((fw / rel).relative_to(Path(root).resolve()))))
     except ValueError:
-        cands.append((fw, "HEAD", str(BACKENDS)))
-    for repo, r, rel in cands:
-        rc, blob = _git_out(repo, "show", f"{r}:{rel}")
+        rc, sha = _git_out(fw, "rev-parse", "-q", "--verify", "HEAD")
+        cands.append((fw, sha.strip() if rc == 0 else "HEAD", str(rel)))
+    for repo, r, rel_s in cands:
+        rc, blob = _git_out(repo, "show", f"{r}:{rel_s}")
         if rc == 0 and blob.strip():
-            return blob, f"{repo}@{r}:{rel}"
-    return "", f"no committed {BACKENDS} at {rev}"
+            rc2, sha = _git_out(repo, "rev-parse", "-q", "--verify", f"{r}^{{commit}}")
+            return blob, f"{repo}@{sha.strip() if rc2 == 0 else r}:{rel_s}"
+    return "", f"no committed {rel} at {rev}"
+
+
+def _registry_blob(root: Path, revision: str) -> tuple[str, str]:
+    """policy/review-backends.yaml as committed (see `_committed_blob`)."""
+    return _committed_blob(root, revision, BACKENDS)
+
+
+def registry_pin(root: Path, revision: str) -> dict:
+    """(round 7) The registry blob a review run is pinned to: where it was read and its sha256."""
+    blob, where = _registry_blob(root, revision)
+    return {"where": where, "sha256": hashlib.sha256(blob.encode()).hexdigest() if blob else ""}
 
 
 def kind_vendors(root: Path | None = None, revision: str = "") -> dict[str, str]:
@@ -545,22 +567,22 @@ def kind_vendors(root: Path | None = None, revision: str = "") -> dict[str, str]
 _KINDS_RE = re.compile(r'^DISPATCH_WORKER_KINDS="([^"]*)"', re.M)
 
 
-def launchable_kinds() -> set[str]:
-    """The worker kinds the dispatch runtime can actually launch: DISPATCH_WORKER_KINDS in this
-    framework's agents/termlink/termlink.sh (`fw termlink worker-kinds`). A registry entry naming
-    a kind the dispatcher cannot run (antigravity, codex and opencode until T-3582) is a
+def launchable_kinds(root: Path | None = None, revision: str = "") -> set[str]:
+    """The worker kinds the dispatch runtime can actually launch: DISPATCH_WORKER_KINDS in
+    agents/termlink/termlink.sh AS COMMITTED at `revision` (round 7; `_committed_blob`) — an
+    uncommitted edit of the list launches nothing the ledger counts. A registry entry naming a
+    kind the dispatcher cannot run (antigravity, codex and opencode until T-3582) is a
     declaration, not a worker."""
-    try:
-        m = _KINDS_RE.search((_HERE.parent / "agents" / "termlink" / "termlink.sh").read_text())
-    except OSError:
-        return set()
+    text, _where = _committed_blob(root or _root(), revision, TERMLINK_SH)
+    m = _KINDS_RE.search(text)
     return set(m.group(1).split()) if m else set()
 
 
 def verified_kind_vendors(root: Path | None = None, revision: str = "") -> dict[str, str]:
     """The kind->vendor pairs a review dispatch may be registered under and a panel may count:
-    committed in the registry at `revision` AND launchable by the dispatcher (round 6)."""
-    live = launchable_kinds()
+    committed in the registry at `revision` AND launchable by the dispatcher as committed at the
+    same revision (rounds 6, 7)."""
+    live = launchable_kinds(root, revision)
     return {k: v for k, v in kind_vendors(root, revision).items() if k in live}
 
 
@@ -708,7 +730,7 @@ def start(dispatch_id: str, *, wdir: str, pid: int = 0,
     if not here or here != str(drec.get("wdir") or ""):
         raise VerdictRefused(f"worker directory {here or '(none)'} is not the one registered for "
                              f"dispatch {did!r}")
-    bad = _runtime_fault(here) or _launch_fault(drec, Path(here))
+    bad = _runtime_fault(here, root, str(drec.get("revision") or "")) or _launch_fault(drec, Path(here))
     if bad:
         raise VerdictRefused(f"dispatch {did!r} cannot be started here: {bad}")
     now = int(_clock())
@@ -729,14 +751,15 @@ def start(dispatch_id: str, *, wdir: str, pid: int = 0,
 _RUNTIME_OPEN = "cat > \"$wdir/run.sh\" <<'RUNEOF'\n"
 
 
-def _canonical_runtime() -> str | None:
-    """The dispatch runtime exactly as agents/termlink/termlink.sh (this framework's copy) writes
-    it into `<wdir>/run.sh`; None when that file cannot be read."""
+def _canonical_runtime(root: Path | None = None, revision: str = "") -> str | None:
+    """The dispatch runtime exactly as agents/termlink/termlink.sh writes it into `<wdir>/run.sh`,
+    from termlink.sh AS COMMITTED at `revision` (round 7: never the working tree); None when no
+    committed copy can be read."""
+    src, _where = _committed_blob(root or _root(), revision, TERMLINK_SH)
     try:
-        src = (_HERE.parent / "agents" / "termlink" / "termlink.sh").read_text()
         i = src.index(_RUNTIME_OPEN) + len(_RUNTIME_OPEN)
         return src[i:src.index("\nRUNEOF\n", i)] + "\n"
-    except (OSError, ValueError):
+    except ValueError:
         return None
 
 
@@ -753,7 +776,7 @@ def _parent_argv() -> list[str]:
             return []
 
 
-def _runtime_fault(wdir: str) -> str:
+def _runtime_fault(wdir: str, root: Path | None = None, revision: str = "") -> str:
     """'' when this process was launched by the dispatch runtime of `wdir`: its parent is a shell
     running `<wdir>/run.sh` as its script (argv[1], not a `-c` string that merely mentions it), and
     that file is the canonical runtime. Shared by `start` and `complete` (round 6), so a Python
@@ -772,9 +795,10 @@ def _runtime_fault(wdir: str) -> str:
         same = False
     if not same:
         return f"the parent process runs {argv[1]!r}, not the runtime {want}"
-    canon = _canonical_runtime()
+    canon = _canonical_runtime(root, revision)
     if canon is None:
-        return "the canonical dispatch runtime (agents/termlink/termlink.sh) cannot be read"
+        return (f"the canonical dispatch runtime (agents/termlink/termlink.sh as committed at "
+                f"{(revision or 'HEAD')[:9]}) cannot be read")
     try:
         body = want.read_text()
     except OSError:
@@ -833,7 +857,7 @@ def complete(dispatch_id: str, *, wdir: str, exit_code: int, session: str = "",
     if not reg or here != reg:
         raise VerdictRefused(f"worker directory {here or '(none)'} is not the one registered for "
                              f"dispatch {did!r} ({reg or 'none registered'})")
-    bad = _runtime_fault(here)
+    bad = _runtime_fault(here, root, str(drec.get("revision") or ""))
     if bad:
         raise VerdictRefused(f"dispatch {did!r} cannot be completed here: {bad}")
     ec_file = Path(here) / "exit_code"
@@ -897,7 +921,7 @@ def _tracked(root: Path, rel: Path) -> bool:
 def register_run(run_id: str, task_id: str, *, acs: list[int], rung: str, seats: list[dict],
                  required_vendors: int = 1, pages: dict | None = None, captures: list | None = None,
                  inputs: dict | None = None, reason: str = "", degraded: str = "",
-                 rung_due: int | None = None, brief_sha256: str = "",
+                 rung_due: int | None = None, brief_sha256: str = "", revision: str = "",
                  root: Path | None = None) -> dict:
     """(judge, before dispatching) record a review run: the seats it requires, how many distinct
     vendors it demands, and for render criteria the pages that must have been seen with the
@@ -909,7 +933,11 @@ def register_run(run_id: str, task_id: str, *, acs: list[int], rung: str, seats:
     decision grants. A caller never supplies a decision, so no run can carry an old one.
 
     Every seat carries the `brief_sha256` of the brief the judge wrote for it (round 7); a dispatch
-    for the seat is registered only with that brief (`register_dispatch`)."""
+    for the seat is registered only with that brief (`register_dispatch`).
+
+    The run also pins ONE reviewed `revision` (default HEAD now) and the registry blob committed at
+    it (`registry`: where + sha256). Every seat's dispatch must be registered at that revision, and
+    the panel's vendors are derived once, from that blob (round 7, codex MEDIUM-4 / Claude F3)."""
     root = root or _root()
     if any(r.get("kind") == "run" and r.get("run_id") == run_id for r in _read(RUNS, root)):
         raise ValueError(f"run {run_id!r} is already registered")
@@ -925,6 +953,8 @@ def register_run(run_id: str, task_id: str, *, acs: list[int], rung: str, seats:
            "pages": {str(k): list(v) for k, v in (pages or {}).items()},
            "captures": [dict(c) for c in (captures or [])], "inputs": inputs or {},
            "reason": reason, "degraded": degraded, "ts": _now()}
+    row["revision"] = (revision or "").strip() or _head_sha(root)
+    row["registry"] = registry_pin(root, row["revision"])
     if rung_due is not None:
         now = datetime.strptime(row["ts"], "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
         dec = review_policy.ceiling_decision(root, int(rung_due), reason, now)
@@ -1754,6 +1784,17 @@ def _panel_fault(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> str:
     run, _bind, _why = run_for_dispatch(root, str(last["dispatch_id"]))
     if run is None:
         return ""
+    # Round 7: ONE binding for the whole run — its pinned revision and registry blob. The table
+    # is derived once; a seat at another revision, or a registry that no longer hashes to the
+    # pinned blob (an external framework checkout that moved), is refused.
+    run_rev = str(run.get("revision") or "")
+    pin = run.get("registry") or {}
+    if not run_rev or not pin.get("sha256"):
+        return f"panel-unverified-vendor: run {run['run_id']} pins no revision or registry blob"
+    if registry_pin(root, run_rev).get("sha256") != pin.get("sha256"):
+        return (f"panel-unverified-vendor: the registry at run {run['run_id']}'s revision "
+                f"{run_rev[:9]} no longer hashes to the blob the run pinned ({pin.get('where')})")
+    table = verified_kind_vendors(root, run_rev)
     vendors: set[str] = set()
     for s in run["seats"]:
         seat_rows = []
@@ -1772,9 +1813,13 @@ def _panel_fault(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> str:
             return f"panel-incomplete: seat {s['seat']!r} of run {run['run_id']} is {r.get('outcome')!r}"
         drec, _ = dispatch_record(root, str(r["dispatch_id"]))
         kind = str((drec or {}).get("worker_kind") or "claude")
-        # Round 6: re-derived from the registry COMMITTED at the dispatch's reviewed revision and
-        # the kinds the dispatcher can launch — never the working tree.
-        v = verified_kind_vendors(root, str((drec or {}).get("revision") or "")).get(kind, "")
+        if str((drec or {}).get("revision") or "") != run_rev:
+            return (f"panel-unverified-vendor: seat {s['seat']!r} of run {run['run_id']} was "
+                    f"dispatched at revision {str((drec or {}).get('revision') or 'none')[:9]}, not the "
+                    f"run's pinned {run_rev[:9]} — every seat uses the run's one binding")
+        # Round 6/7: derived from the registry COMMITTED at the run's ONE pinned revision and the
+        # kinds the dispatcher can launch as committed there — never the working tree.
+        v = table.get(kind, "")
         if not v or str((drec or {}).get("vendor") or "") != v:
             return (f"panel-unverified-vendor: seat {s['seat']!r} of run {run['run_id']} registered "
                     f"vendor {(drec or {}).get('vendor')!r} for worker kind {kind!r}, but "

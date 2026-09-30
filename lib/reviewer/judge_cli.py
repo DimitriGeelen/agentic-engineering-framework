@@ -767,7 +767,7 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
             pages={str(c["ac_index"]): evidence["pages"] for c in judged if c["render"]},
             captures=evidence["captures"],
             inputs=imp["inputs"], reason=reason + (f"; {note}" if note else ""),
-            degraded=degraded, rung_due=due, root=root)
+            degraded=degraded, rung_due=due, revision=revision, root=root)
     except Exception as e:  # noqa: BLE001
         res.update(error=f"could not register the review run: {e}", code=1)
         return res
