@@ -303,7 +303,7 @@ dispatching: `fw review propose --backend openrouter --task T-XXX --why "..."`.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-python3 -m pytest tests/unit/t3580_judge_cli_test.py tests/unit/t3580_round2_test.py tests/unit/t3580_round3_test.py tests/unit/t3580_round4_test.py tests/unit/t3580_round5_test.py tests/unit/test_t3579_verdict_ledger.py tests/unit/test_t3581_ledger_integrity.py tests/unit/test_t3581_round4.py -q > /tmp/.t3580-py.out 2>&1 && grep -q passed /tmp/.t3580-py.out
+python3 -m pytest tests/unit/t3580_judge_cli_test.py tests/unit/t3580_round2_test.py tests/unit/t3580_round3_test.py tests/unit/t3580_round4_test.py tests/unit/t3580_round5_test.py tests/unit/t3580_round6_test.py tests/unit/test_t3579_verdict_ledger.py tests/unit/test_t3581_ledger_integrity.py tests/unit/test_t3581_round4.py -q > /tmp/.t3580-py.out 2>&1 && grep -q passed /tmp/.t3580-py.out
 timeout 600 bats tests/unit/t3579_verdict_close_path.bats > /tmp/.t3580-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3580-bats.out
 test "$(grep -c '# skip' /tmp/.t3580-bats.out)" -eq 0
 bin/fw vendor self --check

@@ -1,0 +1,21 @@
+id: lib/review_policy.py
+name: review_policy
+type: script
+subsystem: framework-core
+location: lib/review_policy.py
+tags: []
+
+purpose: "review_policy.py — the ONE place the IW-7 review strength is computed (T-3580 round 6)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-30
+created_by: unknown
