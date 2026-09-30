@@ -23,6 +23,10 @@ setup() {
     export PROJECT_ROOT="$TEST_TEMP_DIR"
     mkdir -p "$TEST_TEMP_DIR/.context/project"
     mkdir -p "$TEST_TEMP_DIR/.context/audits"
+    # T-2391 (67893ed78): bin/fw only trusts an inherited PROJECT_ROOT that looks
+    # like a project (.framework.yaml or .tasks/); otherwise it falls back to its
+    # own checkout and the CLI legs would read the real concerns.yaml.
+    mkdir -p "$TEST_TEMP_DIR/.tasks"
     # Seed a minimal concerns.yaml with two gaps — one with gauge, one without.
     cat > "$TEST_TEMP_DIR/.context/project/concerns.yaml" <<'EOF'
 concerns:
