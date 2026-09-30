@@ -3601,7 +3601,7 @@ PYEOF
     # never reached are undetermined, and the WARN below still covers them.
     if [ "$_us_failed" -gt 0 ]; then
         fail "Unit suite (tests/unit): $_us_failed of $_us_total unit test(s) RED (T-3302, T-3602)" \
-             "${_us_incomplete}runner_exit=$_us_rc; $_us_ran; recorded failures: ${_us_names:-none listed}" \
+             "${_us_incomplete:-$_us_ran. }runner_exit=$_us_rc; recorded failures: ${_us_names:-none listed}" \
              "Read the report (.context/audits/unit-suite/LATEST.yaml), fix or file per red (one bug = one task), re-run: agents/audit/unit-suite.sh"
         return 0
     fi

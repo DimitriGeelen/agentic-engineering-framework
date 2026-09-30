@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T20:38:06Z
-last_update: 2026-09-30T20:39:46Z
+last_update: '2026-09-30T20:45:20Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -73,6 +73,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-30T20:45:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=280,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3602: Nightly unit suite blind since 2026-09-08: every run hits 7200s timeout and the audit discards its recorded failures
@@ -86,10 +96,10 @@ This task fixes the BLINDNESS, not the 47 red suites; those get triaged separate
 ## Acceptance Criteria
 
 ### Agent
-- [ ] A partial (timed-out) run reports every failure it did record as FAIL in `fw audit`. Only the tests that never ran are "not determined", and the report names how many ran versus how many were expected. Test: a fixture report with a timeout plus 2 recorded not-ok lines makes the audit FAIL and name both.
-- [ ] The nightly run completes within its budget on this host. Use measurement, not a guess: find where the time goes (per-file durations from the last report), then shard or parallelise the run, and/or give pathological files their own timeout and name them as timed-out. Record before and after wall time in Decisions.
-- [ ] One run of the fixed nightly on the live repo finishes, and its FAIL count matches the red set in OBS-587, allowing for drift from files changed since then.
-- [ ] Cron chain: if the registry or generator changed, `fw cron generate` and `fw cron install` run, and doctor is in sync. Vendored copies are synced; `bin/fw vendor self --check` is clean for this task's files.
+- [x] A partial (timed-out) run reports every failure it did record as FAIL in `fw audit`. Only the tests that never ran are "not determined", and the report names how many ran versus how many were expected. Test: a fixture report with a timeout plus 2 recorded not-ok lines makes the audit FAIL and name both.
+- [x] The nightly run completes within its budget on this host. Use measurement, not a guess: find where the time goes (per-file durations from the last report), then shard or parallelise the run, and/or give pathological files their own timeout and name them as timed-out. Record before and after wall time in Decisions.
+- [x] One run of the fixed nightly on the live repo finishes, and its FAIL count matches the red set in OBS-587, allowing for drift from files changed since then.
+- [x] Cron chain: if the registry or generator changed, `fw cron generate` and `fw cron install` run, and doctor is in sync. Vendored copies are synced; `bin/fw vendor self --check` is clean for this task's files.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -250,6 +260,11 @@ This task fixes the BLINDNESS, not the 47 red suites; those get triaged separate
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 900 bats tests/unit/t3602_unit_suite_partial_run.bats tests/unit/t3302_unit_suite_schedule.bats > /tmp/.t3602-verif 2>&1 && grep -q '^ok 1 ' /tmp/.t3602-verif && ! grep -q '^not ok' /tmp/.t3602-verif
+test "$(grep -c '# skip' /tmp/.t3602-verif)" -eq 0
+bash -n agents/audit/unit-suite.sh
+bin/fw vendor self --check
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -325,6 +340,27 @@ This task fixes the BLINDNESS, not the 47 red suites; those get triaged separate
 -->
 
 ## Decisions
+
+### 2026-10-01 — how to make the nightly fit its budget
+- **Chose:** every test file is its own job in a parallel pool (`xargs -P`, default nproc/2 capped at 12 = 12 here), each with its own `timeout` (default 900s). Files go longest-first using the previous report's `file_durations`. The two-leg reserve split (T-3359) is kept.
+- **Why (measured):** serial bats time on the live run adds up to **16,646s** (sum of per-file durations, host load 33–77 on 24 cores). The old single `bats tests/unit` process had a 5,400s cap and reached 3,599 of 6,118 bats tests (59%). Sharding by hand would not close a 3× gap, and a per-file cap alone leaves serial time far over budget. Distribution: 484 files <10s, 159 <60s, 34 <180s, 16 ≥180s. The top two (`audit.bats`, `t2332_bvp_propose_queue.bats`) hit the 900s cap and are named as timed out. pytest: 1,486s serial, and its slowest file is `test_orchestrator_status_terminal_events.py` at 307s.
+- **Rejected:** raising FW_UNIT_SUITE_TIMEOUT (OBS-392 already rejected it; 16.6ks serial doesn't fit a nightly), and a serial per-file runner (fixes attribution, not duration).
+- **Wall time:** before = >7,200s budget, never completed (23/23 nightlies bats_rc=124; last run killed after the bats leg's 5,400s cap, total 5,797s with 59% of bats reached). After = **2,180s**, complete: 939 of 941 files, 9,775 tests, 2 files named as per-file timeouts. That is 30% of the 7,200s budget, measured under heavy contention from concurrent workers.
+
+### 2026-10-01 — a recorded failure from a partial run is a verdict
+- **Chose:** FAIL on every recorded failure, whether or not the run completed. WARN "COULD NOT DETERMINE" only when nothing was recorded red and part of the corpus did not run. The line names "N of M file(s) ran" and the per-file timeouts.
+- **Why:** measured, `timeout 3 bats --tap` on a file whose second test sleeps prints `ok 1` and nothing for the killed test. A timeout kill leaves no `not ok` line, so OBS-392's "casualty list" premise did not hold. The one exception is a runner that kills bats processes one by one, which makes bats' formatter print `not ok` for the in-flight test. The signal trap therefore stops the pool through each `timeout` wrapper instead, and a pinned test asserts this.
+- **Rejected:** re-running every red file in isolation to confirm it. Measured: 19 of 20 sampled new bats reds are also red alone. Re-running the pytest leg with the same 12-way parallel shape reproduces only the 2 known reds, so parallelism did not produce false reds.
+
+### 2026-10-01 — two latent blind spots closed on the way
+- A run killed from outside (the harness killed my first live run at 40 min) lost all results and would have left yesterday's report as LATEST. Now a TERM/INT trap writes a partial report with the in-flight files as `interrupted` and the rest as not run.
+- Test-leaked daemons (10 orphaned `foreign_watchtower.py` fixtures from one run) inherited the lock fd and held `.context/locks/unit-suite.lock` after the runner exited, so every later nightly would SKIP as lock-held. The pool now runs with fd 9 closed. This fix landed inside commit fcc26c6e8 under a T-3580 message: that worker's concurrent commit picked up my staged files. The content is correct; history was not rewritten.
+
+### 2026-10-01 — live run vs OBS-587
+- Live FAIL set: 79 bats files (163 tests) + 7 pytest files (24 tests).
+- OBS-587's 46 bats files: 28 still red, and all 18 others were fixed by T-3603/T-3604 commits since 09-30.
+- 51 bats files are red but not in OBS-587. 31 sit past the point where the old run stopped (≈`t3061_*`), so they were never measured before. The other 20 are earlier in the alphabet; several fail on a stray `/.git` (mtime 2026-09-30 22:30) that T-3604 is already fencing.
+- pytest: 2 of OBS-587's 6 files are still red, and 4 were fixed by T-3604. The 5 new reds (bvp/driver files) pass alone and under the same 12-way parallel run afterwards. They were transient repo state from concurrent workers during the run, not parallelism.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
