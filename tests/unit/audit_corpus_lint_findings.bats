@@ -82,7 +82,8 @@ X
 @test "T-2985: a lint-clean store emits a PASS line carrying the map count" {
     _make_map fixture-clean
     run "$AUDIT" --section structure
-    [[ "$output" == *"All 1 corpus map(s) lint clean"* ]]
+    # T-3105 (92deaef0c): PASS lines report the set they examined via pass_over.
+    [[ "$output" == *"[PASS] Corpus maps lint clean — examined 1 corpus map(s)"* ]]
 }
 
 # --- findings surface ---

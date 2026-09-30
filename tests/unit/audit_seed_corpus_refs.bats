@@ -48,7 +48,8 @@ teardown() {
 **Go deeper:** `fw corpus explain aef-real-map` — what this step is really doing.
 MD
     run "$AUDIT" --section structure
-    [[ "$output" == *"All 1 onboarding-seed corpus references resolve"* ]]
+    # T-3105 (92deaef0c): PASS lines report the set they examined via pass_over.
+    [[ "$output" == *"[PASS] All onboarding-seed corpus references resolve to existing maps — examined 1 onboarding-seed corpus reference(s)"* ]]
 }
 
 # --- failure path: reference dangles ---
@@ -101,14 +102,16 @@ MD
 
 # --- silent when there is nothing to check ---
 
-@test "T-2980: no seed references → no PASS line (nothing was checked)" {
+@test "T-2980: no seed references → no PASS line, NOT EVALUATED WARN (nothing was checked)" {
     cat > "$TEST_ROOT/lib/seeds/tasks/greenfield/T-001-x.md" <<'MD'
 ## For the Operator
 Nothing routes anywhere from here.
 MD
     run "$AUDIT" --section structure
     [ "$status" -le 1 ]
-    [[ "$output" != *"onboarding-seed corpus references"* ]]
+    # T-3105 (92deaef0c): an empty candidate set is a WARN, never a PASS.
+    [[ "$output" != *"[PASS] All onboarding-seed corpus references"* ]]
+    [[ "$output" == *"onboarding-seed corpus references resolve to existing maps — NOT EVALUATED: candidate set empty"* ]]
 }
 
 # --- the check that guards the other checks ---
