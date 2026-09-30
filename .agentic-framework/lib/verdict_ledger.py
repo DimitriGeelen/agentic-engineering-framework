@@ -108,6 +108,7 @@ import re
 import subprocess
 import sys
 import secrets
+import time
 import uuid
 from typing import NoReturn
 from datetime import datetime, timezone
@@ -118,6 +119,7 @@ if str(_HERE.parent) not in sys.path:
     sys.path.insert(0, str(_HERE.parent))
 
 from lib import judge_verdict  # noqa: E402
+from lib import review_cost  # noqa: E402
 from lib.delegation import (  # noqa: E402
     REVIEWER_JUDGES,
     classify,
@@ -145,9 +147,19 @@ COMPLETIONS = Path(".context/reviews/review-completions.jsonl")
 DISPATCH_KEY = Path(".context/secrets/review-dispatch.key")
 #: Per-dispatch completion secret (T-3580 round 4). `register_dispatch` writes it (mode 0600) into
 #: the worker directory and registers only its sha256; run.sh reads it and deletes the file BEFORE
-#: the worker starts, never exports it, and hands it to `complete` on stdin. `complete` refuses
-#: without it, so a caller with a hand-written exit_code file cannot obtain a signed completion.
+#: the worker starts, never exports it, and hands it to `start` and `complete` on stdin. Holding it
+#: is not enough (round 5): `complete` also needs the signed runtime start and must beat the TTL.
 COMPLETION_SECRET_FILE = ".completion-secret"
+#: T-3580 round 5 — the secret must not outlive its purpose. A review dispatch is registered with
+#: two signed deadlines: `start_by` (registration + START_WINDOW), by which run.sh must have
+#: recorded a signed START (`start`), and `complete_by` (registration + the dispatch TTL), after
+#: which no completion is accepted. A dispatch that never ran has no start, so a caller who later
+#: reads a leftover secret file cannot complete it; and once the window closes nobody can start it.
+START_WINDOW = 300
+DEFAULT_TTL = 4500
+#: The kind→vendor mapping lives in policy/review-backends.yaml (`worker_kind` + `vendor`).
+BACKENDS = Path("policy/review-backends.yaml")
+_clock = time.time      # tests move time by patching this
 REVIEW_TASK_TYPE = "review"
 
 GREEN, AMBER, RED, ESCALATE = "green", "amber", "red", "escalate"
@@ -300,7 +312,8 @@ def _sign(key: bytes, row: dict) -> str:
     body = {k: row[k] for k in ("dispatch_id", "task", "task_type", "issuer_session",
                                 "issuer_identity", "ts")}
     for k in ("revision", "wdir",           # T-3580 round 3: bound at dispatch time
-              "worker_kind", "vendor", "completion_secret_sha256"):   # round 4
+              "worker_kind", "vendor", "completion_secret_sha256",    # round 4
+              "start_by", "complete_by"):                             # round 5
         if k in row:
             body[k] = row[k]
     return hmac.new(key, json.dumps(body, sort_keys=True, separators=(",", ":")).encode(),
@@ -310,7 +323,8 @@ def _sign(key: bytes, row: dict) -> str:
 def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
                       issuer_session: str = "", issuer_identity: str = "",
                       revision: str = "", wdir: str = "", worker_kind: str = "",
-                      vendor: str = "", root: Path | None = None) -> dict:
+                      vendor: str = "", ttl: int = DEFAULT_TTL,
+                      root: Path | None = None) -> dict:
     """Record a dispatch. Called by the dispatcher, for every task-type, at spawn time.
 
     `revision` is the commit the reviewer is asked to review, captured BEFORE the worker starts
@@ -318,10 +332,12 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
     directory, where it writes the worker's exit state: only a completion from that directory
     counts (T-3580 round 3).
 
-    `worker_kind` is the kind the dispatcher actually launches and `vendor` the vendor the
-    dispatcher's own table says that kind runs (T-3580 round 4): a panel counts these signed
-    values, never a registry backend id. A review dispatch with a worker directory also gets a
-    fresh completion secret in `wdir/.completion-secret` (0600); only its hash is registered."""
+    `worker_kind` is the kind the dispatcher actually launches. The vendor is DERIVED from it
+    through the one mapping in policy/review-backends.yaml (T-3580 round 5), never taken from the
+    caller: `vendor`, if given, is only an assertion, and a mismatch is refused. A review dispatch
+    whose kind the mapping does not know is refused. A review dispatch with a worker directory
+    also gets a fresh completion secret in `wdir/.completion-secret` (0600; only its hash is
+    registered) and two signed deadlines: `start_by` and `complete_by` (registration + `ttl`)."""
     root = root or _root()
     if not (dispatch_id or "").strip() or not (task_id or "").strip():
         raise ValueError("dispatch_id and task are required")
@@ -335,7 +351,17 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
            "issuer_session": issuer_session, "issuer_identity": issuer_identity, "ts": _now(),
            "revision": (revision or "").strip() or _head_sha(root),
            "wdir": str(Path(wdir).resolve()) if (wdir or "").strip() else "",
-           "worker_kind": (worker_kind or "").strip(), "vendor": (vendor or "").strip()}
+           "worker_kind": (worker_kind or "").strip(), "vendor": ""}
+    table = kind_vendors(root)
+    if row["task_type"] == REVIEW_TASK_TYPE:
+        row["worker_kind"] = row["worker_kind"] or "claude"
+        if not table.get(row["worker_kind"]):
+            raise ValueError(f"worker kind {row['worker_kind']!r} has no vendor in {BACKENDS} — a "
+                             f"review dispatch's vendor comes from that mapping, never free text")
+    row["vendor"] = table.get(row["worker_kind"], "")
+    if (vendor or "").strip() and vendor.strip() != row["vendor"]:
+        raise ValueError(f"vendor {vendor.strip()!r} is not the one {BACKENDS} maps worker kind "
+                         f"{row['worker_kind']!r} to ({row['vendor'] or 'none'!r}) — refused")
     if row["task_type"] == REVIEW_TASK_TYPE and row["wdir"]:
         secret = secrets.token_hex(32)
         sp = Path(row["wdir"]) / COMPLETION_SECRET_FILE
@@ -344,9 +370,25 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
         with os.fdopen(fd, "w") as fh:
             fh.write(secret + "\n")
         row["completion_secret_sha256"] = hashlib.sha256(secret.encode()).hexdigest()
+        now = int(_clock())
+        row["start_by"] = now + START_WINDOW
+        row["complete_by"] = now + max(int(ttl), START_WINDOW)
     row["sig"] = _sign(_dispatch_key(root, create=True), row)
     _append(DISPATCHES, row, root)
     return row
+
+
+def kind_vendors(root: Path | None = None) -> dict[str, str]:
+    """{worker kind: vendor} from policy/review-backends.yaml — the project's copy, else the
+    framework's. {} when the registry is missing or invalid: no vendor is then verifiable."""
+    root = root or _root()
+    for p in (root / BACKENDS, _HERE.parent / BACKENDS):
+        if p.is_file():
+            try:
+                return review_cost.worker_vendors(p)
+            except (review_cost.CostError, OSError, ValueError):
+                return {}
+    return {}
 
 
 def dispatch_record(root: Path, dispatch_id: str) -> tuple[dict | None, str]:
@@ -455,6 +497,71 @@ def _worker_session(wdir: Path) -> str:
     return ""
 
 
+def _secret_ok(drec: dict, secret: str) -> bool:
+    want = str(drec.get("completion_secret_sha256") or "")
+    got = hashlib.sha256((secret or "").strip().encode()).hexdigest()
+    return bool(want) and bool((secret or "").strip()) and hmac.compare_digest(got, want)
+
+
+def _starts_for(root: Path, dispatch_id: str) -> list[dict]:
+    return [c for c in _read(COMPLETIONS, root)
+            if c.get("dispatch_id") == dispatch_id and c.get("kind") == "start"]
+
+
+def start(dispatch_id: str, *, wdir: str, secret: str = "", pid: int = 0,
+          root: Path | None = None) -> dict:
+    """(run.sh, its first act) record — signed — that the dispatch runtime actually started for
+    this dispatch (T-3580 round 5). Needs the per-dispatch secret, the registered worker
+    directory, and to happen before the registration's `start_by`; a dispatch starts once. The
+    CLI additionally refuses unless its parent process is `<wdir>/run.sh` (an honesty check)."""
+    root = root or _root()
+    did = (dispatch_id or "").strip()
+    drec, why = dispatch_record(root, did)
+    if drec is None:
+        raise VerdictRefused(why)
+    if drec.get("task_type") != REVIEW_TASK_TYPE:
+        raise VerdictRefused(f"dispatch {did!r} is not a review dispatch")
+    if os.environ.get(_WORKER_ENV, "").strip() == did:
+        raise VerdictRefused("a start is recorded by the dispatch runtime, never from inside the "
+                             "worker's own environment")
+    if not _secret_ok(drec, secret):
+        raise VerdictRefused(f"no valid completion secret for dispatch {did!r}")
+    here = str(Path(wdir).resolve()) if (wdir or "").strip() else ""
+    if not here or here != str(drec.get("wdir") or ""):
+        raise VerdictRefused(f"worker directory {here or '(none)'} is not the one registered for "
+                             f"dispatch {did!r}")
+    now = int(_clock())
+    if not drec.get("start_by") or now > int(drec["start_by"]):
+        raise VerdictRefused(f"dispatch {did!r} was not started within its start window — a "
+                             f"dispatch that did not run in time cannot be started later")
+    if _starts_for(root, did):
+        raise VerdictRefused(f"dispatch {did!r} has already started — a dispatch starts once")
+    body = {"kind": "start", "source": "runtime", "dispatch_id": did, "task": drec["task"],
+            "wdir": here, "pid": int(pid or 0), "epoch": now, "ts": _now()}
+    body["sig"] = _sign_row(_dispatch_key(root), body)
+    _append(COMPLETIONS, body, root)
+    return body
+
+
+def _parent_cmdline() -> str:
+    ppid = os.getppid()
+    try:
+        return Path(f"/proc/{ppid}/cmdline").read_bytes().replace(b"\0", b" ").decode(errors="replace")
+    except OSError:
+        try:
+            return subprocess.run(["ps", "-o", "args=", "-p", str(ppid)], capture_output=True,
+                                  text=True, timeout=10).stdout
+        except (OSError, subprocess.SubprocessError):
+            return ""
+
+
+def _launched_by_runtime(wdir: str) -> bool:
+    """True when this process's parent is the dispatch runtime `<wdir>/run.sh`."""
+    cmd = _parent_cmdline()
+    raw = str(Path(wdir) / "run.sh")
+    return bool(wdir) and (raw in cmd or str(Path(wdir).resolve() / "run.sh") in cmd)
+
+
 def complete(dispatch_id: str, *, wdir: str, exit_code: int, session: str = "",
              secret: str = "", worker_kind: str = "", root: Path | None = None) -> dict:
     """(the dispatch runtime, after the worker exits) sign what the worker left behind.
@@ -482,14 +589,19 @@ def complete(dispatch_id: str, *, wdir: str, exit_code: int, session: str = "",
                              "exits, never from inside the worker's own environment")
     if session and session.strip() != did:
         raise VerdictRefused(f"runtime session {session!r} is not dispatch {did!r}")
-    want = str(drec.get("completion_secret_sha256") or "")
-    if not want:
+    if not str(drec.get("completion_secret_sha256") or ""):
         raise VerdictRefused(f"dispatch {did!r} was registered without a completion secret — no "
                              f"caller can complete it")
-    got = hashlib.sha256((secret or "").strip().encode()).hexdigest()
-    if not (secret or "").strip() or not hmac.compare_digest(got, want):
+    if not _secret_ok(drec, secret):
         raise VerdictRefused(f"no valid completion secret for dispatch {did!r}: a completion is "
                              f"signed only by the runtime that launched the worker")
+    now = int(_clock())
+    if not drec.get("complete_by") or now > int(drec["complete_by"]):
+        raise VerdictRefused(f"dispatch {did!r} is past its TTL — its secret has expired")
+    starts = _starts_for(root, did)
+    if len(starts) != 1 or not _signed_ok(root, starts[0]):
+        raise VerdictRefused(f"no runtime start record for dispatch {did!r}: run.sh never started "
+                             f"for it, so there is nothing to complete")
     kind = (worker_kind or "").strip() or "claude"
     if kind != (drec.get("worker_kind") or "claude"):
         raise VerdictRefused(f"the runtime ran worker kind {kind!r}, not the registered "
@@ -514,14 +626,47 @@ def complete(dispatch_id: str, *, wdir: str, exit_code: int, session: str = "",
             "session": did, "worker": worker_identity(did), "wdir": reg, "exit_code": written,
             "worker_kind": kind, "worker_session": _worker_session(Path(here)),
             "result_sha256": _result_sha(Path(here)), "revision": drec.get("revision", ""),
-            "verdicts": verdicts, "ts": _now()}
+            "verdicts": verdicts, "epoch": now, "ts": _now()}
     body["sig"] = _sign_row(_dispatch_key(root), body)
     _append(COMPLETIONS, body, root)
     return body
 
 
 def _completions_for(root: Path, dispatch_id: str) -> list[dict]:
-    return [c for c in _read(COMPLETIONS, root) if c.get("dispatch_id") == dispatch_id]
+    return [c for c in _read(COMPLETIONS, root)
+            if c.get("dispatch_id") == dispatch_id and c.get("kind", "completion") == "completion"]
+
+
+def history_fault(root: Path, rel: Path) -> str:
+    """'' when `rel` is append-only against git history: every commit that touched it keeps the
+    previous committed lines as an exact prefix, and the working file keeps the last committed
+    lines as its prefix. Uncommitted lines beyond that are allowed (T-3580 round 5 — the same
+    walk `load_ledger` makes for verdicts.jsonl, applied to the completions file)."""
+    rc, _ = _git_out(root, "rev-parse", "-q", "--verify", "HEAD")
+    if rc == 128:
+        return "git cannot answer (not a repository) — history is unverifiable"
+    history = ""
+    if rc == 0:
+        rc, history = _git_out(root, "log", "--reverse", "--format=%H", "HEAD", "--", str(rel))
+        if rc != 0:
+            return f"git log failed (rc={rc}) — history is unverifiable"
+    prev: list[str] = []
+    for sha in history.split():
+        rc, blob = _git_out(root, "show", f"{sha}:{rel}")
+        lines = _nonblank(blob) if rc == 0 else []
+        if lines[:len(prev)] != prev:
+            return (f"commit {sha[:9]} modified, deleted or replaced committed {rel.name} rows — "
+                    f"it is append-only")
+        prev = lines
+    cur = _nonblank((root / rel).read_text(encoding="utf-8", errors="replace")) \
+        if (root / rel).is_file() else []
+    if cur[:len(prev)] != prev:
+        return f"the working {rel.name} does not contain its committed rows unchanged"
+    return ""
+
+
+def _tracked(root: Path, rel: Path) -> bool:
+    return _git_out(root, "ls-files", "--error-unmatch", str(rel))[0] == 0
 
 
 def register_run(run_id: str, task_id: str, *, acs: list[int], rung: str, seats: list[dict],
@@ -980,10 +1125,28 @@ def _completion_fault(base: _Base, row: dict) -> tuple[str, str] | None:
     if len(comps) > 1:
         return "completion-duplicate", (f"dispatch {did!r} has {len(comps)} completions; the "
                                         f"runtime writes exactly one, so none is trusted")
+    hist = history_fault(root, COMPLETIONS)
+    if hist:
+        return "completion-history", hist
     comp = comps[0]
     if not _signed_ok(root, comp):
         return "bad-completion", "the runtime completion has an invalid signature"
     drec, _ = dispatch_record(root, did)
+    starts = _starts_for(root, did)
+    if len(starts) != 1 or not _signed_ok(root, starts[0]) \
+            or starts[0].get("wdir") != (drec or {}).get("wdir"):
+        return "no-start", (f"dispatch {did!r} has no single valid runtime start record — run.sh "
+                            f"never started for it, so its completion does not count")
+    st = starts[0]
+    try:
+        in_time = (int(st.get("epoch")) <= int((drec or {}).get("start_by"))
+                   and int(st.get("epoch")) <= int(comp.get("epoch"))
+                   <= int((drec or {}).get("complete_by")))
+    except (TypeError, ValueError):
+        in_time = False
+    if not in_time:
+        return "expired", (f"dispatch {did!r} started or completed outside its signed window "
+                           f"(start_by / complete_by) — its secret had expired")
     if comp.get("source") != "runtime" or comp.get("session") != did \
             or not comp.get("wdir") or comp.get("wdir") != (drec or {}).get("wdir"):
         return "bad-completion", ("the completion was not emitted by the runtime of this dispatch "
@@ -1278,13 +1441,15 @@ def _panel_fault(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> str:
     """'' unless `last` belongs to a run whose requirements are not all met: every required seat
     needs its own valid, completed green for this criterion, and the seats must span the run's
     required number of distinct vendors (a single-vendor panel cannot satisfy a three-vendor one).
-    A vendor is the one the dispatcher registered, signed, with each seat's dispatch (round 4):
-    three registry aliases for one worker kind are one vendor."""
+    A vendor is derived from each seat's registered worker KIND through the one mapping in
+    policy/review-backends.yaml (round 5); a registered vendor that disagrees with it makes the
+    seat unverified. Three registry aliases, or three vendor strings, for one kind are one vendor."""
     root, led = ctx.root, ctx.ledger
     run, _bind, _why = run_for_dispatch(root, str(last["dispatch_id"]))
     if run is None:
         return ""
     vendors: set[str] = set()
+    table = kind_vendors(root)
     for s in run["seats"]:
         seat_rows = []
         for r in mine:
@@ -1301,10 +1466,13 @@ def _panel_fault(ctx: _Ctx, crit, last: dict, mine: list[dict]) -> str:
         if r.get("outcome") != GREEN:
             return f"panel-incomplete: seat {s['seat']!r} of run {run['run_id']} is {r.get('outcome')!r}"
         drec, _ = dispatch_record(root, str(r["dispatch_id"]))
-        v = str((drec or {}).get("vendor") or "").strip()
-        if not v:
-            return (f"panel-unverified-vendor: seat {s['seat']!r} of run {run['run_id']} has no vendor "
-                    f"registered with its dispatch — a seat label or backend id is not a vendor")
+        kind = str((drec or {}).get("worker_kind") or "claude")
+        v = table.get(kind, "")
+        if not v or str((drec or {}).get("vendor") or "") != v:
+            return (f"panel-unverified-vendor: seat {s['seat']!r} of run {run['run_id']} registered "
+                    f"vendor {(drec or {}).get('vendor')!r} for worker kind {kind!r}, but "
+                    f"{BACKENDS} maps that kind to {v or 'nothing'!r} — a vendor is derived from "
+                    f"the worker kind, never taken from free text")
         vendors.add(v)
     if len(vendors) < int(run.get("required_vendors") or 1):
         return (f"degraded: run {run['run_id']} demands {run.get('required_vendors')} vendor(s), "
@@ -1696,10 +1864,22 @@ def audit(root: Path | None = None) -> tuple[int, list[str]]:
     root = root or _root()
     led = load_ledger(root)
     n = len(led.committed) + len(led.pending)
+    comps_exist = (root / COMPLETIONS).is_file()
     if not n and not led.torn and not led.faults and not led.missing \
-            and not _read(APPLIED, root):
+            and not _read(APPLIED, root) and not comps_exist:
         return 0, ["verdict ledger: empty or absent (path is off until a review dispatch writes rows)"]
     out, bad = [], 0
+    if comps_exist:
+        # T-3580 round 5: the completions file is under the same append-only history check as the
+        # ledger. It is written by run.sh AFTER the worker's last commit, so its newest rows are
+        # normally uncommitted; that is named here as a WARN rather than left silent.
+        hist = history_fault(root, COMPLETIONS)
+        if hist:
+            bad += 1
+            out.append(f"FAIL completions integrity: {hist}")
+        elif not _tracked(root, COMPLETIONS):
+            out.append(f"WARN completions file untracked: {COMPLETIONS} has no git history — its "
+                       f"rows are append-only-checked only once committed")
     for f in led.faults:
         bad += 1
         out.append(f"FAIL ledger integrity: {f}")
@@ -1765,8 +1945,20 @@ def _cli(argv: list[str] | None = None) -> int:
     g.add_argument("--issuer-identity", default="")
     g.add_argument("--revision", default="", help="commit the reviewer is asked to review (default HEAD)")
     g.add_argument("--wdir", default="", help="the runtime's worker directory")
-    g.add_argument("--worker-kind", default="", help="the worker kind the dispatcher launches")
-    g.add_argument("--vendor", default="", help="the vendor the dispatcher's table maps that kind to")
+    g.add_argument("--worker-kind", default="", help="the worker kind the dispatcher launches; "
+                   "its vendor is derived from policy/review-backends.yaml, never passed in")
+    g.add_argument("--ttl", type=int, default=DEFAULT_TTL,
+                   help="seconds after registration past which no completion is accepted")
+
+    st = sub.add_parser("start", help="(dispatch runtime, first act of run.sh) record that the "
+                        "runtime started for this dispatch")
+    st.add_argument("--dispatch-id", required=True)
+    st.add_argument("--wdir", required=True)
+    st.add_argument("--secret-stdin", action="store_true",
+                    help="read the per-dispatch completion secret from stdin (never argv or env)")
+
+    sub.add_parser("kind-vendors", help="print `<worker kind> <vendor>` from the one mapping "
+                   "(policy/review-backends.yaml)")
 
     cp = sub.add_parser("complete", help="(dispatch runtime, after the worker exits) sign what the "
                         "review worker left behind")
@@ -1817,8 +2009,27 @@ def _cli(argv: list[str] | None = None) -> int:
                                 issuer_session=args.issuer_session,
                                 issuer_identity=args.issuer_identity,
                                 revision=args.revision, wdir=args.wdir,
-                                worker_kind=args.worker_kind, vendor=args.vendor)
-        print(json.dumps({k: row[k] for k in ("dispatch_id", "task", "task_type", "revision")}))
+                                worker_kind=args.worker_kind, ttl=args.ttl)
+        print(json.dumps({k: row[k] for k in ("dispatch_id", "task", "task_type", "revision",
+                                              "worker_kind", "vendor")}))
+        return 0
+    if args.cmd == "kind-vendors":
+        for k, v in sorted(kind_vendors().items()):
+            print(f"{k} {v}")
+        return 0
+    if args.cmd == "start":
+        if not _launched_by_runtime(args.wdir):
+            print(f"REFUSED: a start is recorded only by the dispatch runtime "
+                  f"({Path(args.wdir) / 'run.sh'}), which is not this command's parent",
+                  file=sys.stderr)
+            return 1
+        try:
+            b = start(args.dispatch_id, wdir=args.wdir, pid=os.getppid(),
+                      secret=sys.stdin.read() if args.secret_stdin else "")
+        except VerdictRefused as e:
+            print(f"REFUSED: {e}", file=sys.stderr)
+            return 1
+        print(json.dumps({"dispatch_id": b["dispatch_id"], "started": b["ts"]}))
         return 0
     if args.cmd == "complete":
         try:
@@ -1829,7 +2040,7 @@ def _cli(argv: list[str] | None = None) -> int:
             print(f"REFUSED: {e}", file=sys.stderr)
             return 1
         print(json.dumps({"dispatch_id": c["dispatch_id"], "exit_code": c["exit_code"],
-                          "verdicts": len(c["verdicts"])}))
+                          "verdicts": len(c["verdicts"]), "sig": c["sig"]}))
         return 0
     if args.cmd == "apply":
         res = apply(args.task_id)

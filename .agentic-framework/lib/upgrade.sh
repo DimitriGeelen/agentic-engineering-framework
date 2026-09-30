@@ -396,7 +396,10 @@ _self_vendor_policy() {
     # lib/bvp.sh refusal messages both name by path. Omitting it would point
     # every consumer at a file that is not there — the same docs↔reality gap
     # T-3064 found for designer-pin.yaml, one list entry earlier.
-    for _svp_name in value-drivers.yaml bvp-scoring-rubric.md capability-overlay/tool-set.yaml anti-patterns.yaml escalation-patterns.yaml designer-pin.yaml driver-scoring-example.yaml; do
+    # T-3580 round 5: review-backends.yaml is the ONE worker-kind→vendor mapping the vendored
+    # lib/verdict_ledger.py derives every review dispatch's vendor from (it falls back to
+    # FRAMEWORK_ROOT/policy/, which in a consumer is .agentic-framework/policy/).
+    for _svp_name in value-drivers.yaml bvp-scoring-rubric.md capability-overlay/tool-set.yaml anti-patterns.yaml escalation-patterns.yaml designer-pin.yaml driver-scoring-example.yaml review-backends.yaml; do
         _svp_src="$FRAMEWORK_ROOT/policy/$_svp_name"
         _svp_dst="$_self_vendor/policy/$_svp_name"
         [ -f "$_svp_src" ] || continue

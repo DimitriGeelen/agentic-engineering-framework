@@ -132,6 +132,21 @@ def validate(backends: object) -> list[str]:
                 re.compile(pat)
             except re.error as e:
                 errs.append(f"{bid}: bad match regex {pat!r}: {e}")
+        # T-3580 round 5: `worker_kind` + `vendor` are the ONE kind→vendor mapping the dispatcher
+        # and the verdict ledger use. A kind needs a vendor; one kind never maps to two vendors.
+        kind, vend = b.get("worker_kind"), b.get("vendor")
+        if kind is not None and (not isinstance(kind, str) or not ID_RE.match(kind)):
+            errs.append(f"{bid}: worker_kind must match {ID_RE.pattern}")
+        if vend is not None and (not isinstance(vend, str) or not ID_RE.match(vend)):
+            errs.append(f"{bid}: vendor must match {ID_RE.pattern}")
+        if kind and not vend:
+            errs.append(f"{bid}: worker_kind {kind!r} has no vendor")
+    kv: dict = {}
+    for b in backends:
+        if isinstance(b, dict) and b.get("worker_kind") and b.get("vendor"):
+            if kv.setdefault(b["worker_kind"], b["vendor"]) != b["vendor"]:
+                errs.append(f"{b.get('id')}: worker_kind {b['worker_kind']!r} maps to two vendors "
+                            f"({kv[b['worker_kind']]!r} and {b['vendor']!r})")
     for pid in PINNED_PAID:
         b = next((x for x in backends if isinstance(x, dict) and x.get("id") == pid), None)
         if b is None:
@@ -153,6 +168,14 @@ def load_registry(path: Path | None = None) -> list[dict]:
         raise CostError("backend registry is invalid — refusing:\n  " + "\n  ".join(errs)
                         + f"\n  ({path})")
     return backends  # type: ignore[return-value]
+
+
+def worker_vendors(path: Path | None = None) -> dict[str, str]:
+    """{worker kind: vendor} — the ONE mapping (T-3580 round 5). The dispatcher prints it
+    (`fw termlink worker-kinds --vendors`) and the verdict ledger derives every review
+    dispatch's vendor from it; free text never names a vendor."""
+    return {b["worker_kind"]: b["vendor"] for b in load_registry(path)
+            if b.get("worker_kind") and b.get("vendor")}
 
 
 def get_backend(bid: str) -> dict:

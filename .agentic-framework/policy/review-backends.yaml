@@ -1,0 +1,89 @@
+# Review and dispatch backend registry (T-3583, T-3586)
+# Single source of truth for which review harnesses exist, their cost class
+# (internal vs paid) and whether a use needs operator approval first.
+#
+# Read by (lib/review_cost.py is the only parser):
+#   - fw review cost log / report     (cost ledger, .context/costs/reviews.jsonl)
+#   - fw review propose / approve     (paid-approval workflow)
+#   - fw audit                        (weekly cost by backend/class, paid-without-approval WARN)
+#   - PreToolUse hook check-paid-backend (blocks a paid call with no approved proposal)
+#
+# OPERATOR-OWNED AND EXTENSIBLE. The ladder will be expanded by the operator.
+# Adding a backend is a data edit — no code names a backend except the pin below.
+#   bin/fw review backend add --id X --name "..." --class internal [--match REGEX]...
+#     An agent may add an INTERNAL backend (logged to .context/costs/registry-changes.jsonl).
+#     Adding a PAID backend is an operator action (--i-am-human).
+#   bin/fw review backend set --id X --class ... --approval-required ... --i-am-human
+#     Changing class or approval_required is an operator action; agents are refused.
+#   openrouter is PINNED paid + approval_required (operator 2026-09-30: "OpenRouter is
+#   always paid"). A registry that reclassifies it does not load at all.
+#
+# Fields: id, name, harness_class, cost_class (internal|paid), approval_required,
+# cost_estimate_method, description, and optional match: — regexes tried against a
+# Bash command by the hook, case-sensitive (default: the id as a whole word). A paid backend must
+# have approval_required: true.
+#
+# Optional worker_kind + vendor (T-3580 round 5): the ONE kind→vendor mapping. `worker_kind` is a
+# `fw termlink dispatch --worker-kind` value; `vendor` is who runs it. The dispatcher prints it
+# (`fw termlink worker-kinds --vendors`) and the verdict ledger derives every review dispatch's
+# vendor from it, so a panel counts vendors this file names, never free text. One kind, one vendor.
+
+backends:
+  - id: claude-code
+    name: "Claude Code Subscription"
+    harness_class: subscription
+    cost_class: internal
+    approval_required: false
+    cost_estimate_method: unmetered
+    description: "Claude Code session with subscription harness"
+    worker_kind: claude
+    vendor: anthropic
+    match:
+      - '\bclaude\s+(-p|--print)\b'
+      - '--worker-kind[= ]claude\b'
+
+  - id: codex
+    name: "OpenAI Codex (GPT-4 turbo with code interpreter)"
+    harness_class: subscription
+    cost_class: internal
+    approval_required: false
+    cost_estimate_method: unmetered
+    description: "Codex review via subscription account"
+    vendor: openai
+    match:
+      - '(^|[;&|]\s*|/)codex\s'
+      - '--worker-kind[= ]codex\b'
+
+  - id: opencode
+    name: "Z.ai Coding Plan (opencode)"
+    harness_class: subscription
+    cost_class: internal
+    approval_required: false
+    cost_estimate_method: unmetered
+    description: "Z.ai opencode via subscription coding plan"
+    vendor: zai
+    match:
+      - '(^|[;&|]\s*|/)opencode\s'
+      - '--worker-kind[= ]opencode\b'
+
+  - id: local-gpu
+    name: "Local GPU (operator's machine)"
+    harness_class: local
+    cost_class: internal
+    approval_required: false
+    cost_estimate_method: zero
+    description: "Review run on the operator's local hardware"
+    worker_kind: ollama-loop
+    vendor: ollama-local
+
+  - id: openrouter
+    name: "OpenRouter (pay-per-use)"
+    harness_class: pay_per_use
+    cost_class: paid
+    approval_required: true
+    cost_estimate_method: tokens_estimated
+    description: "OpenRouter API for on-demand model access; requires approval per request"
+    match:
+      - 'https?://([a-z0-9-]+\.)*openrouter\.ai'
+      - '(^|[;&|]\s*|/)openrouter\s'
+      - '\$\{?OPENROUTER_API_KEY'
