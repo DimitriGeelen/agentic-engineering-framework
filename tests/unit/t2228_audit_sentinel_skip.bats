@@ -76,9 +76,18 @@ teardown() {
     [ "$status" -eq 0 ]
 }
 
-@test "audit.sh arc-membership loop has _is_test_sentinel guard" {
-    # The for tf loop at ~line 721 was patched with `_is_test_sentinel && continue`
-    run grep -q "_is_test_sentinel.*continue.*T-2228" "$FRAMEWORK_ROOT/agents/audit/audit.sh"
+@test "audit.sh arc-membership map skips T-Test- sentinels" {
+    # The shell `for tf` loop (patched with `_is_test_sentinel && continue`) was
+    # replaced by T-2298 (503058289) with one python pass building the
+    # task->arc map; the sentinel skip moved into it as `fn.startswith('T-Test-')`
+    # (T-3604). Assert the skip sits inside that map-building pass.
+    run python3 - "$FRAMEWORK_ROOT/agents/audit/audit.sh" <<'PY'
+import sys
+src = open(sys.argv[1]).read()
+anchor = src.index("pre-compute task→arc_id map")
+window = src[anchor:anchor + 4000]
+sys.exit(0 if "fn.startswith('T-Test-')" in window else 1)
+PY
     [ "$status" -eq 0 ]
 }
 
