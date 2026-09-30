@@ -87,6 +87,10 @@ _advance_origin_master() {
     grep -q '${BRANCH_DIVERGENCE}' "$h"
     # nudge rendered under Suggested First Action
     grep -q '${MERGEBACK_NUDGE}' "$h"
-    # nudge text names the landing verb
-    grep -q "fw integrate run master --push" "$h"
+    # nudge text names the landing verb — against the branch the scan measured,
+    # not a hard-coded master (T-3194 b4304ab0a; release train lands on the dev
+    # branch, never master — T-3604).
+    grep -qF 'fw integrate run ${_bd_devname} --push' "$h"
+    run grep -q "fw integrate run master --push" "$h"
+    [ "$status" -ne 0 ]
 }
