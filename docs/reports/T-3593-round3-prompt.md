@@ -8,7 +8,11 @@ The re-review is in docs/reports/T-3593-T-3594-review.md, section "## Re-review 
 
 SAFETY as before: fixtures only under a tmp dir. NEVER force-push, delete a branch or hard-reset in this repo or against any real remote. Never approve a real Tier 0 action.
 
-Another worker may soon edit lib/verdict_ledger.py, lib/reviewer/, lib/review_cost.py and agents/termlink/termlink.sh (T-3580). Do not touch those.
+Another worker may soon edit lib/verdict_ledger.py, lib/reviewer/, lib/review_cost.py and agents/termlink/termlink.sh (T-3580). Do not touch those. A second worker is concurrently fixing T-3598 in agents/context/budget-gate.sh, agents/context/checkpoint.sh and budget-related tests. Do not touch those either. When running `fw vendor self`, stage only the vendored copies of YOUR files.
+
+The previous attempt at this round (2026-09-30 18:49Z) did no work: the budget gate blocked it using the parent's cache (T-3598). Its read-only findings are in /tmp/tl-dispatch/t3593-round3/result.md; use them as a starting point. That included a quoted-option hole (`'--no-verify'` passes because the gate strips quoted strings). Fix it too, with a test. If the budget gate blocks you again, stop and report; do not work around it.
+
+Also: tests/unit/t3593_tier0_action_approvals.bats was just fixed by the parent (commit f5c2a7943) to remove two dead negations. Never write a bare `! cmd` as an assertion in bats; use `run …; [ "$status" -ne 0 ]`. The pre-push audit lints for it.
 
 Rules:
 - Stage by name only; commit messages start with the task id.
