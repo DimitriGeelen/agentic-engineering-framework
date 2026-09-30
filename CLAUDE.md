@@ -1572,6 +1572,49 @@ When communicating with agents on other machines via TermLink remote, choose the
 - **Max 5 parallel workers** — same limit as sub-agent dispatch protocol
 - **Leave 40K tokens headroom** before dispatching workers
 
+## Review and Dispatch Cost Ruling (T-3583)
+
+Every review or dispatch records its cost, even internal ones. Cost is never free; subscriptions and local GPUs are low-cost but not zero.
+
+**Cost Classes:**
+
+| Class | What it includes | Approval required? |
+|-------|------------------|--------------------|
+| **Internal** | Claude Code subscription harness, codex (OpenAI), opencode (Z.ai coding plan), local GPU | No |
+| **Paid** | OpenRouter (pay-per-use, per-request) | Yes |
+
+**The ruling:** when value or risk is high, propose a paid review with a cost assessment and wait for approval. Cost is not a reason not to ask — it is a reason to be clear about the value.
+
+**How it works:**
+
+1. **Log all costs** — Every review or dispatch writes a record to `.context/costs/reviews.jsonl` (timestamp, task, backend, class, purpose, cost if metered).
+   ```bash
+   fw review cost log --task T-XXX --backend claude-code --purpose "code-review"
+   fw review cost log --task T-XXX --backend openrouter --purpose "code-review" --cost 3.50
+   ```
+
+2. **Propose paid reviews** — Before dispatching an OpenRouter review:
+   ```bash
+   fw review propose --task T-XXX --backend openrouter --why "high-risk code, needs vendor check" --estimate-cost 5.00
+   ```
+   The proposal writes a pending entry the operator approves. Dispatching without approval is blocked.
+
+3. **List and manage** — See what's available and what's proposed:
+   ```bash
+   fw review list-backends          # Show cost classes and harnesses
+   fw review list-proposals         # Show pending + approved proposals
+   fw review cost report [START] [END]  # Weekly report by backend and class
+   ```
+
+4. **The operator approves** — Via Watchtower `/approvals` or CLI (when necessary):
+   ```bash
+   fw review approve --proposal-id RP-1234-abcd
+   ```
+
+**Policy file:** `policy/review-backends.yaml` is the single source of truth. Add new backends there as they come online (the ladder will be expanded by the operator).
+
+**Note:** The agent should still suggest OpenRouter reviews when value or risk is high. The operator's approval is a checkpoint, not a veto. Cost is a known and manageable expense — transparency, not a blocker.
+
 ## Auto-Restart (T-179)
 
 When context budget hits critical, `checkpoint.sh` auto-generates a handover and writes `.context/working/.restart-requested`. If the user started their session via `claude-fw` (instead of `claude`), the wrapper detects this signal on exit and auto-restarts with `claude -c`. The `SessionStart:resume` hook then injects handover context into the fresh session.

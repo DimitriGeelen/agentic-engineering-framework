@@ -1,0 +1,119 @@
+{
+  "ts": "2026-09-30T09:56:57Z",
+  "task": "T-3535",
+  "backend": "claude-code",
+  "class": "internal",
+  "purpose": "objectives-review"
+}
+{
+  "ts": "2026-09-30T09:56:57Z",
+  "task": "T-3535",
+  "backend": "codex",
+  "class": "internal",
+  "purpose": "objectives-review"
+}
+{
+  "ts": "2026-09-30T09:56:57Z",
+  "task": "T-3535",
+  "backend": "opencode",
+  "class": "internal",
+  "purpose": "objectives-review"
+}
+{
+  "ts": "2026-09-30T09:56:57Z",
+  "task": "T-3558",
+  "backend": "claude-code",
+  "class": "internal",
+  "purpose": "external-review"
+}
+{
+  "ts": "2026-09-30T09:56:57Z",
+  "task": "T-3558",
+  "backend": "codex",
+  "class": "internal",
+  "purpose": "external-review"
+}
+{
+  "ts": "2026-09-30T09:56:57Z",
+  "task": "T-3558",
+  "backend": "opencode",
+  "class": "internal",
+  "purpose": "external-review"
+}
+{
+  "ts": "2026-09-30T09:56:57Z",
+  "task": "T-3558",
+  "backend": "claude-code",
+  "class": "internal",
+  "purpose": "external-review-round2"
+}
+{
+  "ts": "2026-09-30T09:56:57Z",
+  "task": "T-3558",
+  "backend": "codex",
+  "class": "internal",
+  "purpose": "external-review-round2"
+}
+{
+  "ts": "2026-09-30T09:56:57Z",
+  "task": "T-3558",
+  "backend": "opencode",
+  "class": "internal",
+  "purpose": "external-review-round2"
+}
+{
+  "ts": "2026-09-30T09:56:57Z",
+  "task": "T-3579",
+  "backend": "codex",
+  "class": "internal",
+  "purpose": "code-review"
+}
+{
+  "ts": "2026-09-30T09:56:57Z",
+  "task": "T-3579",
+  "backend": "opencode",
+  "class": "internal",
+  "purpose": "code-review"
+}
+{
+  "ts": "2026-09-30T09:56:57Z",
+  "task": "T-3580",
+  "backend": "codex",
+  "class": "internal",
+  "purpose": "code-review"
+}
+{
+  "ts": "2026-09-30T09:56:57Z",
+  "task": "T-3581",
+  "backend": "codex",
+  "class": "internal",
+  "purpose": "code-review-rereview"
+}
+{
+  "ts": "2026-09-30T09:56:57Z",
+  "task": "T-3581",
+  "backend": "codex",
+  "class": "internal",
+  "purpose": "code-review-round3"
+}
+{
+  "ts": "2026-09-30T09:56:57Z",
+  "task": "T-3581",
+  "backend": "opencode",
+  "class": "internal",
+  "purpose": "code-review-round3"
+}
+{
+  "ts": "2026-09-30T09:56:57Z",
+  "task": "T-3581",
+  "backend": "opencode",
+  "class": "internal",
+  "purpose": "code-review-rereview"
+}
+{
+  "ts": "2026-09-30T09:56:57Z",
+  "task": "T-3580",
+  "backend": "opencode",
+  "class": "internal",
+  "purpose": "code-review-rereview"
+}

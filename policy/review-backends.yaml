@@ -1,0 +1,59 @@
+# Review and dispatch backend registry
+# Single source of truth for which review harnesses are available,
+# their cost classification (internal vs paid), and approval requirements.
+#
+# This file is read by:
+#   - fw review cost log (cost ledger writer)
+#   - fw review propose (paid approval workflow)
+#   - T-3580's judge (verdict ledger)
+#   - fw audit (cost reporting)
+#   - PreToolUse hook for paid-backend guards
+#
+# Cost classes:
+#   - internal: no approval required. Subscriptions and local resources.
+#   - paid: approval required per request via fw review propose.
+#
+# The operator may expand this ladder by adding new entries.
+# Each entry has the same required shape; the cost_estimate method is
+# informational (a hint for proposals) and does not affect gate logic.
+
+backends:
+  - id: claude-code
+    name: "Claude Code Subscription"
+    harness_class: subscription
+    cost_class: internal
+    approval_required: false
+    cost_estimate_method: unmetered
+    description: "Claude Code session with subscription harness"
+
+  - id: codex
+    name: "OpenAI Codex (GPT-4 turbo with code interpreter)"
+    harness_class: subscription
+    cost_class: internal
+    approval_required: false
+    cost_estimate_method: unmetered
+    description: "Codex review via subscription account"
+
+  - id: opencode
+    name: "Z.ai Coding Plan (opencode)"
+    harness_class: subscription
+    cost_class: internal
+    approval_required: false
+    cost_estimate_method: unmetered
+    description: "Z.ai opencode via subscription coding plan"
+
+  - id: local-gpu
+    name: "Local GPU (operator's machine)"
+    harness_class: local
+    cost_class: internal
+    approval_required: false
+    cost_estimate_method: zero
+    description: "Review run on the operator's local hardware"
+
+  - id: openrouter
+    name: "OpenRouter (pay-per-use)"
+    harness_class: pay_per_use
+    cost_class: paid
+    approval_required: true
+    cost_estimate_method: tokens_estimated
+    description: "OpenRouter API for on-demand model access; requires approval per request"
