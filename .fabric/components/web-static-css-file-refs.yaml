@@ -1,0 +1,21 @@
+id: web/static/css/file-refs.css
+name: file-refs
+type: script
+subsystem: watchtower
+location: web/static/css/file-refs.css
+tags: []
+
+purpose: "T-3587: file references that do NOT resolve. The renderer (web/shared.py _auto_link_files) wraps them in a titled span so a stale or ambiguous ref can never pass for a live link."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-30
+created_by: unknown

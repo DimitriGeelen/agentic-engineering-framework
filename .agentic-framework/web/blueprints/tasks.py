@@ -13,6 +13,7 @@ from web.shared import (
     FRAMEWORK_ROOT, PROJECT_ROOT, render_page, parse_frontmatter,
     get_all_task_metadata, get_episodic_tags, task_id_sort_key,
     extract_recommendation, extract_reviewer_verdict, render_markdown_safe,
+    protect_path_underscores,
     _auto_link_files,
 )
 from web.subprocess_utils import run_fw_command
@@ -374,6 +375,7 @@ def _render_md_inline(text):
     text = _auto_link_task_refs(text)
     text = _auto_link_bare_urls(text)
     text = _normalize_md_relative_links(text)
+    text = protect_path_underscores(text)  # T-3587
     html = markdown2.markdown(text, safe_mode='escape').strip()
     if html.startswith('<p>') and html.endswith('</p>'):
         html = html[3:-4]
@@ -391,6 +393,7 @@ def _render_md_block(text):
     text = _auto_link_task_refs(text)
     text = _auto_link_bare_urls(text)
     text = _normalize_md_relative_links(text)
+    text = protect_path_underscores(text)  # T-3587
     html = markdown2.markdown(text, safe_mode='escape').strip()
     html = _linkify_code_urls(html)
     # T-1722: artefact paths → /file/ anchors (existence-gated, idempotent).

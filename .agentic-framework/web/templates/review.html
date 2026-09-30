@@ -15,6 +15,7 @@
     <!-- T-2074: htmx error→toast handler. Standalone template (doesn't extend base.html)
          needed its own load — origin T-2063 (Complete button silent 4xx fail). -->
     <script src="/static/htmx-toast.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/file-refs.css') }}">{# T-3587 #}
     <style>
         /* Mobile-first: single column, large touch targets */
         * { box-sizing: border-box; }

@@ -1,0 +1,21 @@
+id: tests/unit/test_t3587_file_refs.py
+name: test_t3587_file_refs
+type: script
+subsystem: tests
+location: tests/unit/test_t3587_file_refs.py
+tags: []
+
+purpose: "T-3587: evidence references on review pages must be links, or visibly dead."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-30
+created_by: unknown

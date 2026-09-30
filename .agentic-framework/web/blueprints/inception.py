@@ -29,6 +29,8 @@ def _md(text):
     # Ensure blank line before lists so markdown parser recognizes them
     text = re_mod.sub(r"([^\n])\n(- )", r"\1\n\n\2", text)
     text = re_mod.sub(r"([^\n])\n(\d+\. )", r"\1\n\n\2", text)
+    from web.shared import protect_path_underscores
+    text = protect_path_underscores(text)  # T-3587
     html = markdown2.markdown(text, extras=["fenced-code-blocks", "tables"])
     # T-1723: artefact paths → /file/ anchors (existence-gated, idempotent).
     html = _auto_link_files(html)

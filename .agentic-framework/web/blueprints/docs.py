@@ -251,12 +251,9 @@ def file_viewer(filepath):
         if not first_line:
             first_line = file_path.name
     else:
-        # Source file — render as fenced code block with language hint
-        lang = _EXT_TO_LANG.get(ext, "")
-        fenced = f"```{lang}\n{content}\n```"
-        html_content = markdown2.markdown(
-            fenced, extras=["fenced-code-blocks", "code-friendly"]
-        )
+        # Source file — rendered with one anchor per line (T-3587) so a
+        # `path:NNN` reference lands on the line: /file/<path>#LNNN.
+        html_content = _render_source_with_line_anchors(content, ext)
         first_line = filepath  # show repo-relative path as title
 
     return render_page(
@@ -265,3 +262,50 @@ def file_viewer(filepath):
         card_name=file_path.stem,
         html_content=html_content,
     )
+
+
+# T-3587: `path:NNN` in Evidence links to /file/<path>#LNNN. That fragment only
+# works if the page has an element with id="LNNN" — the fenced-code rendering
+# this replaces had none, so the browser silently stayed at the top of a
+# 6000-line file. Pygments splits multi-line tokens per line itself (a naive
+# split of highlighted HTML would break a docstring's <span> across lines), and
+# its <pre> carries no <code>, so highlight.js leaves it alone.
+_LINE_ID_RE = re_mod.compile(r'<span id="L-(\d+)">')
+
+
+def _render_source_with_line_anchors(content: str, ext: str) -> str:
+    import html as _html
+    try:
+        from pygments import highlight
+        from pygments.formatters import HtmlFormatter
+        from pygments.lexers import get_lexer_by_name
+        from pygments.util import ClassNotFound
+    except ImportError:
+        highlight = None
+    body = None
+    if highlight is not None:
+        try:
+            lexer = get_lexer_by_name(_EXT_TO_LANG.get(ext, "text") or "text", stripnl=False)
+        except ClassNotFound:
+            lexer = get_lexer_by_name("text", stripnl=False)
+        fmt = HtmlFormatter(linespans="L", cssclass="file-lines", style="github-dark")
+        body = _LINE_ID_RE.sub(r'<span id="L\1" class="line">', highlight(content, lexer, fmt))
+        css = fmt.get_style_defs(".file-lines")
+    if body is None:  # no pygments: plain escaped lines, same anchors
+        lines = content.split("\n")
+        body = '<div class="file-lines"><pre>' + "".join(
+            f'<span id="L{i}" class="line">{_html.escape(l)}\n</span>'
+            for i, l in enumerate(lines, 1)) + "</pre></div>"
+        css = ""
+    return f"<style>{css}\n{_LINE_ANCHOR_CSS}</style>{body}"
+
+
+_LINE_ANCHOR_CSS = """
+.file-lines pre { counter-reset: line; overflow-x: auto; padding: 0.75rem 0; }
+.file-lines span.line { display: block; padding-right: 1rem; scroll-margin-top: 30vh; }
+.file-lines span.line::before { counter-increment: line; content: counter(line);
+  display: inline-block; width: 4.5em; padding-right: 1em; text-align: right;
+  color: #8b949e; user-select: none; }
+.file-lines span.line:target { background: rgba(210, 153, 34, 0.28);
+  outline: 1px solid rgba(210, 153, 34, 0.6); }
+"""

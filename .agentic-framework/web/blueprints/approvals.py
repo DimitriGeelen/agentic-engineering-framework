@@ -17,7 +17,7 @@ from pathlib import Path
 import yaml
 from flask import Blueprint, request
 
-from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict, count_unchecked_human_acs, needs_human_review, mtime_cached_get
+from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, render_markdown_safe, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict, count_unchecked_human_acs, needs_human_review, mtime_cached_get
 
 # T-1808: paused-dispatch surface — needs lib/ on the path so the helper imports cleanly.
 # T-2645 (832 G-004 sibling): lib/ is FRAMEWORK-owned — PROJECT_ROOT resolution broke
@@ -343,6 +343,9 @@ def _load_pending_go_decisions():
             "artifacts": artifacts,
             "rationale_hint": rationale_hint,
             "recommendation": rec_display,
+            # T-3587: rendered through the shared pipeline so Evidence refs are
+            # links (or visibly dead) here too, not raw Markdown in a pre-wrap div.
+            "recommendation_html": render_markdown_safe(rec_display),
             "rec_decision": rec_decision,
             "verdict": verdict,
             "go_nogo_criteria": go_nogo_raw,
