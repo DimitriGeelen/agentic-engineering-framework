@@ -453,6 +453,20 @@ Origin: 832 lost a working tree this way (their G-018, high) — a mutated build
 lost, purely on P-009 commit cadence. Our instance was verified independently against our
 own hook source before being written down (OBS-138).
 
+**Tier 0 approvals name an ACTION, not a command hash (T-3593).** When a blocked command
+maps cleanly to one or more actions — `force-push {remote, ref}`, `branch-delete {remote,
+ref}` (also local `git branch -D`), `hard-reset {repo, branch}`, `recursive-delete {path}`
+— the block lists them in plain words, `fw tier0 approve` (human-only: refused under
+`CLAUDECODE=1` unless `--i-am-human`) approves each one once, for the grant TTL, and a retry
+whose incidental text differs (`| tail -12` vs `| tail -14`, flag order, `2>&1`) matches.
+A different ref, remote, branch or path does not. A command the classifier cannot read with
+certainty (a `$VAR`, `$(...)`, `--all`, an unknown cwd, a flagged segment it has no verb
+for) is **unmapped** and keeps the old exact-text hash approval, unchanged; the bypass log
+records which path matched (`match_path: action|command-hash`). This fixes the incentive
+that pushed agents toward script indirection; it does not widen what the text gate sees —
+everything above about scripts still holds. `rm -rf` inside a script has no equivalent
+control. The push verbs get a real enforcement point at git pre-push (T-3594).
+
 ## Working with Tasks
 
 When starting work (**BEFORE reading code, editing files, or invoking skills**):

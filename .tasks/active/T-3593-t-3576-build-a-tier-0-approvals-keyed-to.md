@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T15:41:21Z
-last_update: 2026-09-30T15:42:45Z
+last_update: 2026-09-30T16:01:00Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -76,6 +76,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-09-30T15:45:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=276,acs=9)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3593: T-3576 build A: Tier 0 approvals keyed to the ACTION (verb + ref + remote / target) instead of the exact command hash; honest block message
@@ -87,12 +97,12 @@ Inception: .tasks/completed/T-3576-*.md (GO 2026-09-30). Origin: 832 OBS-449 via
 ## Acceptance Criteria
 
 ### Agent
-- [ ] An approval is an ACTION record, not a command hash: `{verb, target(s), scope, approved_by, ts, expires, consumed}`, with at least the verbs force-push (ref + remote), branch-delete (ref + remote), hard-reset (branch) and recursive-delete (path); `check-tier0.sh` maps a blocked command to its action, so a retry whose incidental text differs (pipes, tail -N, whitespace, flag order) matches the same approval; a DIFFERENT target (other ref, other remote, other path) does not match
-- [ ] Approvals are single-use and time-bounded (consumed on first matching use; expire; both logged); `fw tier0 approve` stays human-only (agent-refused under CLAUDECODE=1, `--i-am-human`), and it shows the operator the ACTION being approved in plain words
-- [ ] The existing command-hash path keeps working for commands that map to no known action (backward compatible), and the audit logs which path matched
-- [ ] The block message states the limit honestly: the text gate sees only the typed command; a script or indirection is not seen by it; force-push is enforced for real at git pre-push (T-3594); rm -rf inside a script has no equivalent control and is not covered. The message names how to request approval for the action
-- [ ] CLAUDE.md §Enforcement Tiers is updated to match (no claim of coverage the gate lacks)
-- [ ] Tests: the tail-12 vs tail-14 retry matches one approval; a different ref does not; single-use (second use refused); expiry; agent cannot approve; the legacy hash path still works; each with a negative control
+- [x] An approval is an ACTION record, not a command hash: `{verb, target(s), scope, approved_by, ts, expires, consumed}`, with at least the verbs force-push (ref + remote), branch-delete (ref + remote), hard-reset (branch) and recursive-delete (path); `check-tier0.sh` maps a blocked command to its action, so a retry whose incidental text differs (pipes, tail -N, whitespace, flag order) matches the same approval; a DIFFERENT target (other ref, other remote, other path) does not match
+- [x] Approvals are single-use and time-bounded (consumed on first matching use; expire; both logged); `fw tier0 approve` stays human-only (agent-refused under CLAUDECODE=1, `--i-am-human`), and it shows the operator the ACTION being approved in plain words
+- [x] The existing command-hash path keeps working for commands that map to no known action (backward compatible), and the audit logs which path matched
+- [x] The block message states the limit honestly: the text gate sees only the typed command; a script or indirection is not seen by it; force-push is enforced for real at git pre-push (T-3594); rm -rf inside a script has no equivalent control and is not covered. The message names how to request approval for the action
+- [x] CLAUDE.md §Enforcement Tiers is updated to match (no claim of coverage the gate lacks)
+- [x] Tests: the tail-12 vs tail-14 retry matches one approval; a different ref does not; single-use (second use refused); expiry; agent cannot approve; the legacy hash path still works; each with a negative control
 - [ ] Independent review (IW-7: security-relevant, so two internal reviewers: codex + opencode/Z.ai, cost logged) returns at least amber with no high findings; `bin/fw vendor self --check` clean
 
 ### Human

@@ -149,6 +149,12 @@ typed. This is a scope boundary rather than a defect, documented because its abs
 reads as coverage. Origin: a consumer project lost a working tree to a `rm -rf "$OUT"`
 inside a build script, with the variable pointing at the repo root.
 
+**Approvals name the action (T-3593).** A blocked command that maps cleanly to actions
+(force-push, branch-delete, hard-reset, recursive-delete — each with its target) is
+approved per action, once, for a bounded time, so a retry with different incidental text
+still matches while a different target does not. Anything the classifier cannot read with
+certainty keeps the exact-text approval. This does not widen what the text gate sees.
+
 ## Working with Tasks
 
 When starting work (**BEFORE reading code, editing files, or invoking external workflows**):

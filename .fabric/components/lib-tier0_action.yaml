@@ -1,0 +1,21 @@
+id: lib/tier0_action.py
+name: tier0_action
+type: script
+subsystem: framework-core
+location: lib/tier0_action.py
+tags: []
+
+purpose: "Tier 0 approvals keyed to the ACTION, not the command text (T-3593, T-3576 GO)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-09-30
+created_by: unknown

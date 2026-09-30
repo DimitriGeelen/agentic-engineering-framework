@@ -75,6 +75,18 @@ except:
     print('')
 " 2>/dev/null)
 
+# T-3593: the session cwd, so relative paths and the current branch in a blocked
+# command resolve to the same action the operator is shown. Absent → unknown,
+# and anything that depends on it stays on the legacy hash path.
+T0_CWD=$(echo "$INPUT" | python3 -c "
+import sys, json
+try:
+    print(json.load(sys.stdin).get('cwd', '') or '')
+except Exception:
+    print('')
+" 2>/dev/null)
+[ -n "$T0_CWD" ] || T0_CWD="$PWD"
+
 # If no command extracted, allow (defensive — don't block on parse failure)
 if [ -z "$COMMAND" ]; then
     exit 0
@@ -89,7 +101,7 @@ if ! echo "$COMMAND" | grep -qEi \
 fi
 
 # ── Detailed pattern matching (Python — only reached for suspicious commands) ──
-MATCH_RESULT=$(echo "$COMMAND" | python3 -c "
+MATCH_RESULT=$(echo "$COMMAND" | T0_CWD="$T0_CWD" T0_FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 -c "
 import re, sys
 
 command = sys.stdin.read().strip()
@@ -132,6 +144,13 @@ PATTERNS = [
     # === Git destructive operations ===
     (r'\bgit\s+push\b[^;|&]*(-f\b|--force\b|--force-with-lease\b)',
      'FORCE PUSH: Can overwrite remote commit history'),
+    # T-3593: forced refspec (+ref) and remote ref deletion are the same class
+    # as --force; they were not matched before. The pre-push hook (T-3594)
+    # enforces both at the ref level regardless of how the push was typed.
+    (r'\bgit\s+push\b[^;|&]*\s\+[^\s;|&]',
+     'FORCE PUSH: +refspec overwrites remote commit history'),
+    (r'\bgit\s+push\b[^;|&]*(\s-d\b|--delete\b|\s:[^\s;|&])',
+     'REMOTE REF DELETE: Deletes a branch or tag on the remote'),
     (r'\bgit\s+reset\s+--hard\b',
      'HARD RESET: Permanently discards all uncommitted changes'),
     (r'\bgit\s+clean\b[^;|&]*-[a-zA-Z]*f',
@@ -193,6 +212,23 @@ PATTERNS = [
 for pattern, description in PATTERNS:
     if re.search(pattern, command_stripped):
         print(f'BLOCKED|{description}')
+        # T-3593: map the command to ACTIONS (verb + target) so an approval
+        # survives incidental retry text. Pattern list stays here; the module
+        # only asks this list whether a segment is flagged. Any failure → no
+        # ACTIONS line → the legacy command-hash path, unchanged.
+        try:
+            import json, os
+            sys.path.insert(0, os.environ.get('T0_FRAMEWORK_ROOT', '') + '/lib')
+            import tier0_action
+            def is_flagged(seg):
+                t = strip_comments(strip_quotes(strip_heredocs(seg)))
+                return any(re.search(p, t) for p, _ in PATTERNS)
+            acts = tier0_action.classify(strip_heredocs(command), is_flagged,
+                                         os.environ.get('T0_CWD') or None)
+            if acts:
+                print('ACTIONS ' + json.dumps(acts, sort_keys=True))
+        except Exception:
+            pass
         sys.exit(0)
 
 print('SAFE')
@@ -204,7 +240,10 @@ if [ -z "$MATCH_RESULT" ] || [ "$MATCH_RESULT" = "SAFE" ]; then
 fi
 
 # ── Destructive pattern detected ──
+ACTIONS_JSON=$(printf '%s\n' "$MATCH_RESULT" | sed -n 's/^ACTIONS //p' | head -1)
+MATCH_RESULT=$(printf '%s\n' "$MATCH_RESULT" | head -1)
 DESCRIPTION="${MATCH_RESULT#BLOCKED|}"
+T0_ACTION_PY="$FRAMEWORK_ROOT/lib/tier0_action.py"
 
 # ── Grant TTL — ONE resolution point for BOTH approval legs (T-3080) ─────────
 # Resolved here, below the fast-path keyword filter, so a safe command never
@@ -274,7 +313,19 @@ if [ -f "$CONSUMED_FILE" ]; then
     fi
 fi
 
-# ── Check for valid approval token ──
+# ── T-3593: ACTION approval path ─────────────────────────────────────────────
+# Tried first when the command mapped to actions. All-or-nothing: every action
+# needs a live, unused approval or nothing is consumed and the legacy hash path
+# below still gets its turn (so a Watchtower card approved for this exact text
+# keeps working). Push verbs are ADMITTED here and CONSUMED by git pre-push.
+if [ -n "$ACTIONS_JSON" ] && [ -f "$T0_ACTION_PY" ]; then
+    if PROJECT_ROOT="$PROJECT_ROOT" python3 "$T0_ACTION_PY" use text-gate "$ACTIONS_JSON" "${COMMAND:0:120}" 2>/dev/null; then
+        echo "$COMMAND_HASH $(date +%s)" > "$CONSUMED_FILE"
+        exit 0
+    fi
+fi
+
+# ── Check for valid approval token (legacy command-hash path) ──
 if [ -f "$APPROVAL_FILE" ]; then
     APPROVAL_HASH=$(awk '{print $1}' "$APPROVAL_FILE" 2>/dev/null)
     APPROVAL_TIME=$(awk '{print $2}' "$APPROVAL_FILE" 2>/dev/null)
@@ -307,6 +358,7 @@ entry = {
     'command_hash': os.environ['T0_COMMAND_HASH'],
     'authorized_by': 'human',
     'mechanism': 'fw tier0 approve',
+    'match_path': 'command-hash',
 }
 try:
     if os.path.exists(log_file):
@@ -412,6 +464,7 @@ entry = {
     'command_hash': os.environ['T0_COMMAND_HASH'],
     'authorized_by': 'human',
     'mechanism': 'watchtower',
+    'match_path': 'command-hash',
 }
 try:
     if os.path.exists(log_file):
@@ -472,16 +525,36 @@ echo "" >&2
 echo "  This command is classified as Tier 0 (consequential)." >&2
 echo "  It requires explicit human approval before execution." >&2
 echo "" >&2
+if [ -n "$ACTIONS_JSON" ] && [ -f "$T0_ACTION_PY" ]; then
+echo "  Action(s) the operator would approve (T-3593):" >&2
+python3 "$T0_ACTION_PY" describe "$ACTIONS_JSON" 2>/dev/null | sed 's/^/    - /' >&2
+echo "  The approval is for the ACTION, single-use, for ${APPROVAL_TTL}s: a retry" >&2
+echo "  whose incidental text differs (pipes, tail -N, flag order) still matches;" >&2
+echo "  a different ref, remote, branch or path does not." >&2
+else
+echo "  Not mapped to an action — the approval covers this exact command text" >&2
+echo "  (whitespace-normalised) only." >&2
+fi
+echo "" >&2
+echo "  What this gate can and cannot see (T-2742, T-3593):" >&2
+echo "    - It reads only the command you typed. A script or other indirection" >&2
+echo "      (bash x.sh, make, python3 y.py) is NOT inspected by this gate." >&2
+echo "    - Force-push and remote ref deletion are enforced for real at git's" >&2
+echo "      pre-push hook (T-3594), whichever way the push is launched." >&2
+echo "    - rm -rf (and the other patterns) inside a script has no equivalent" >&2
+echo "      control and is not covered." >&2
+echo "" >&2
 if [ -n "$REJECTION_FEEDBACK" ]; then
 echo "  Previous rejection feedback:" >&2
 echo "    $REJECTION_FEEDBACK" >&2
 echo "" >&2
 fi
-echo "  Approve in Watchtower:" >&2
-echo "    ${WT_URL}/approvals" >&2
-echo "" >&2
-echo "  Or via CLI:" >&2
+echo "  To request approval, ask the operator (human-only) to run:" >&2
 echo "    $(_emit_user_command "tier0 approve")" >&2
+echo "  (approves the action(s) above when listed, else this exact command)" >&2
+echo "" >&2
+echo "  Or approve this exact command text in Watchtower:" >&2
+echo "    ${WT_URL}/approvals" >&2
 echo "" >&2
 echo "  Policy: 011-EnforcementConfig.md §Tier 0" >&2
 echo "══════════════════════════════════════════════════════════" >&2
@@ -489,6 +562,12 @@ echo "" >&2
 
 # Write the pending command hash so 'fw tier0 approve' can pick it up
 echo "$COMMAND_HASH $(date +%s) PENDING" > "${APPROVAL_FILE}.pending"
+# T-3593: and the pending ACTIONS, which 'fw tier0 approve' prefers when present.
+if [ -n "$ACTIONS_JSON" ] && [ -f "$T0_ACTION_PY" ]; then
+    PROJECT_ROOT="$PROJECT_ROOT" python3 "$T0_ACTION_PY" write-pending text-gate "$ACTIONS_JSON" "${COMMAND:0:200}" "$COMMAND_HASH" 2>/dev/null || true
+else
+    rm -f "$PROJECT_ROOT/.context/working/.tier0-action.pending.json"
+fi
 
 # Also write a human-readable YAML for Watchtower approval surface (T-611)
 APPROVAL_DIR="${APPROVAL_DIR:-$PROJECT_ROOT/.context/approvals}"

@@ -7839,6 +7839,42 @@ DEPLOYEOF
             approve)
                 PENDING_FILE="$PROJECT_ROOT/.context/working/.tier0-approval.pending"
                 APPROVAL_FILE="$PROJECT_ROOT/.context/working/.tier0-approval"
+                ACTION_PENDING="$PROJECT_ROOT/.context/working/.tier0-action.pending.json"
+                T0_ACTION_PY="$FRAMEWORK_ROOT/lib/tier0_action.py"
+                # T-3593: human-only, structurally. An agent approving its own
+                # Tier 0 block is the exact authority the gate withholds.
+                _t0_human=false
+                for _t0_arg in "$@"; do [ "$_t0_arg" = "--i-am-human" ] && _t0_human=true; done
+                if [ "${CLAUDECODE:-}" = "1" ] && [ "$_t0_human" != true ]; then
+                    echo -e "${RED}Refused: 'fw tier0 approve' is human-only (CLAUDECODE=1).${NC}" >&2
+                    _t0_fw="fw"
+                    if [ -x "$PROJECT_ROOT/bin/fw" ]; then _t0_fw="bin/fw"
+                    elif [ -x "$PROJECT_ROOT/.agentic-framework/bin/fw" ]; then _t0_fw=".agentic-framework/bin/fw"; fi
+                    echo "An agent may not approve its own Tier 0 action. Ask the operator to run:" >&2
+                    echo "  cd $PROJECT_ROOT && $_t0_fw tier0 approve" >&2
+                    exit 1
+                fi
+                if [ -f "$ACTION_PENDING" ] && [ -f "$T0_ACTION_PY" ]; then
+                    echo -e "${BOLD}Tier 0 Approval — action(s)${NC}"
+                    echo ""
+                    echo "  You are approving, each ONCE, for ${TIER0_TTL_HUMAN} (${TIER0_TTL_RESOLVED}s):"
+                    PROJECT_ROOT="$PROJECT_ROOT" python3 "$T0_ACTION_PY" pending-show | sed 's/^/    - /'
+                    echo ""
+                    echo "  A retry with different incidental text (pipes, tail -N, flag order)"
+                    echo "  matches; a different ref, remote, branch or path does not."
+                    echo ""
+                    if ! _t0_hash=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$T0_ACTION_PY" approve-pending "$TIER0_TTL_RESOLVED" 2>&1 >/dev/null); then
+                        echo -e "${RED}Approval failed — nothing was approved:${NC} ${_t0_hash}" >&2
+                        exit 1
+                    fi
+                    _t0_hash=$(printf '%s\n' "$_t0_hash" | tail -1)
+                    # The same block's legacy hash request is superseded by the action approval.
+                    if [ -f "$PENDING_FILE" ] && [ -n "$_t0_hash" ] && [ "$(awk '{print $1}' "$PENDING_FILE")" = "$_t0_hash" ]; then
+                        rm -f "$PENDING_FILE"
+                    fi
+                    echo -e "${GREEN}Approved.${NC} Logged to .context/working/tier0-action-events.jsonl. Retry now."
+                    exit 0
+                fi
                 if [ ! -f "$PENDING_FILE" ]; then
                     echo -e "${YELLOW}No pending Tier 0 block to approve${NC}"
                     echo "A Tier 0 block must occur first before you can approve it."
@@ -7871,6 +7907,15 @@ DEPLOYEOF
                 else
                     echo -e "  ${GREEN}Clean:${NC} No pending blocks or approvals"
                 fi
+                # T-3593: live action approvals (approved, or admitted by the text
+                # gate and awaiting consumption at git pre-push).
+                if [ -f "$FRAMEWORK_ROOT/lib/tier0_action.py" ]; then
+                    _t0_live=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/tier0_action.py" status 2>/dev/null)
+                    if [ -n "$_t0_live" ]; then
+                        echo -e "  ${GREEN}Live action approvals:${NC}"
+                        printf '%s\n' "$_t0_live" | sed 's/^/    /'
+                    fi
+                fi
                 echo ""
                 if [ -f "$LOG_FILE" ]; then
                     tier0_count=$(python3 -c "
@@ -7887,7 +7932,8 @@ print(len(tier0))
                 echo -e "${BOLD}fw tier0${NC} — Tier 0 enforcement management"
                 echo ""
                 echo "Subcommands:"
-                echo "  approve    Approve a pending Tier 0 blocked command"
+                echo "  approve    Approve a pending Tier 0 block (human-only; the ACTION when"
+                echo "             the block named one, else the exact command)"
                 echo "  status     Show Tier 0 enforcement status"
                 echo ""
                 echo "Tier 0 commands are destructive operations that require"
