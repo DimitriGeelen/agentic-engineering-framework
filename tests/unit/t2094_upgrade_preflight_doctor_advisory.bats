@@ -206,8 +206,12 @@ STUB
 
 @test "t2094 t7: F10 helper runs fw doctor with PROJECT_ROOT=target_dir" {
     local fw_src="$FRAMEWORK_ROOT/lib/upgrade.sh"
-    # Single line in the helper that runs doctor in the consumer's PROJECT_ROOT.
-    grep -qE 'PROJECT_ROOT="\$target_dir".*"\$FRAMEWORK_ROOT/bin/fw" doctor' "$fw_src"
+    # The helper runs doctor in the consumer's PROJECT_ROOT. Since T-2845
+    # (e81997f03, 5aecd951c) it runs the consumer's own fw ("$_doctor_fw", with
+    # FRAMEWORK_ROOT moved alongside) on a continuation line (T-3604).
+    grep -A1 -E 'PROJECT_ROOT="\$target_dir"' "$fw_src" > "$BATS_TEST_TMPDIR/doctor_call"
+    grep -q 'FRAMEWORK_ROOT="\$_doctor_fw_root"' "$BATS_TEST_TMPDIR/doctor_call"
+    grep -q '"\$_doctor_fw" doctor' "$BATS_TEST_TMPDIR/doctor_call"
 }
 
 # ─────────────────────────────────────────────────────────────────────────
