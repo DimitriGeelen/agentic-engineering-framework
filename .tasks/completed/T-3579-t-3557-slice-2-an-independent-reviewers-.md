@@ -11,12 +11,12 @@ description: >
   satisfying it; amber/red/escalate keep it open and land on the refusal ledger (T-3555).
   Logged, auditable, no bypass flag.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/task-create/update-task.sh, bin/fw, lib/delegation_cli.py, lib/verdict_ledger.py, tests/unit/t3445_delegation_close_path.bats, tests/unit/t3579_verdict_close_path.bats, tests/unit/test_t3579_verdict_ledger.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T07:53:29Z
-last_update: 2026-09-30T08:01:08Z
-date_finished:
+last_update: 2026-09-30T08:10:27Z
+date_finished: 2026-09-30T08:10:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -106,7 +106,7 @@ Seven logged bypasses in two days for something the operator has ruled is normal
 - [x] Only REVIEWER_JUDGES criteria can be satisfied this way: a green record for a tier0, act-in-the-world or sovereignty criterion is refused, with a test
 - [x] A record whose reviewer identity equals the task's producer (the session or agent that committed the work) is refused, with a test (the operator's principle: the reviewer is never the producer)
 - [x] If the criterion text changes after the verdict (digest mismatch), the verdict no longer applies (fresh consent, as T-1985)
-- [ ] Tests cover each rule above; `bin/fw vendor self --check` clean
+- [x] Tests cover each rule above; `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -377,3 +377,20 @@ bin/fw vendor self --check
 - **1.** `lib/delegation_cli.py` `cmd_delegate`: removed the early return for inception tasks; they now go through the shared classifier (routine criteria → reviewer-judged, risky → operator-only; none convert). Refusal test replaced by dry-run --json and real-run tests asserting valid JSON and no mutation.
 - **2.** Delegate summary now reports the reviewer-judged count (text: `reviewer-judged N`; JSON: `reviewer_judged_count`); `left human` now means operator-only.
 - **3.** CLAUDE.md delegation paragraph: WARN condition reads "reviewer-closeable and reviewer-judges are both zero".
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7638a92a
+- **Timestamp:** 2026-09-30T08:11:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — A verdict record format is defined and appended to a committed ledger (e.g. `.context/reviews/verdicts.jsonl`): task, criterion index, criterion digest (as T-1985 auto-tick uses), verdict (green/amber
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/reviews/verdicts.jsonl in: A verdict record format is defined and appended to a committed ledger (e.g. `.context/reviews/verdicts.jsonl`): task, criterion index, criterion diges`
+
+### 2026-09-30T08:10:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

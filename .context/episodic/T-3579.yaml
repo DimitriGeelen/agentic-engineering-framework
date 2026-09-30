@@ -1,0 +1,111 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3579: T-3557 slice 2: an independent reviewer's recorded verdict closes a task through the normal path - no --skip-render-review, no ownership bypass
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-30T08:11:13Z
+# ============================================================================
+
+task_id: T-3579
+task_name: "T-3557 slice 2: an independent reviewer's recorded verdict closes a task through the normal path - no --skip-render-review, no ownership bypass"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-09-30T07:53:29Z
+completed: 2026-09-30T08:10:27Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-09-30T09:56:38+02:00
+last_commit: 2026-09-30T10:10:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  acceptance criteria for slices 2 (verdict record closes a criterion) and 3 (fw reviewer judge). slice-1 cross-vendor review AMBER (no safety defects, 3 reporting fixes folded into slice 2); slice 2 build prompt. slice-1 review fixes — inception tasks classified not refused, reviewer-judged count in delegate summary, WARN wording. independent reviewer verdict ledger — green verdict ticks a REVIEWER-JUDGES criterion, satisfies P-013 and hands ownership over with no bypass flag. vendor sync of verdict ledger
+
+# Key outcomes
+outcomes:
+  - 'A verdict record format is defined and appended to a committed ledger (e.g. `.context/reviews/verdicts.jsonl`): task, criterion index, criterion digest (as T-1985 auto-tick uses), verdict (green/amber/red/escalate), guidance (mandatory unless green), reviewer identity (session/model/vendor), rung, evidence paths, timestamp'
+  - 'A GREEN record whose digest matches the current criterion text satisfies that criterion: it is ticked with the verdict cited, and a task whose only open Human criteria are all green-judged moves ownership to agent automatically, without `--skip-human-ownership`, logged'
+  - 'The render-surface gate (P-013) accepts a green verdict record for a render criterion in place of an unticked [REVIEW]; no `--skip-render-review` is needed, and the gate says which verdict satisfied it'
+  - 'Amber, red and escalate keep the criterion open and append to the refusal ledger (T-3555 if built, else a documented interim file); escalate re-routes the criterion to the operator with the reviewer''s reason shown on /review'
+  - 'Only REVIEWER_JUDGES criteria can be satisfied this way: a green record for a tier0, act-in-the-world or sovereignty criterion is refused, with a test'
+  - 'A record whose reviewer identity equals the task''s producer (the session or agent that committed the work) is refused, with a test (the operator''s principle: the reviewer is never the producer)'
+  - 'If the criterion text changes after the verdict (digest mismatch), the verdict no longer applies (fresh consent, as T-1985)'
+  - 'Tests cover each rule above; `bin/fw vendor self --check` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'slice-1 review fixes — inception tasks classified not refused, reviewer-judged count in delegate summary, WARN wording'
+    source: git-mined
+  - description: 'slice-1 cross-vendor review AMBER (no safety defects, 3 reporting fixes folded into slice 2); slice 2 build prompt'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/delegation_cli.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - 'agents/task-create/update-task.sh'
+  - 'bin/fw'
+  - 'CLAUDE.md'
+  - 'docs/reports/T-3578-code-review-brief.md'
+  - 'docs/reports/T-3578-code-review.md'
+  - 'docs/reports/T-3579-build-prompt.md'
+  - '.fabric/components/lib-verdict_ledger.yaml'
+  - '.fabric/components/tests-unit-t3579_verdict_close_path.yaml'
+  - '.fabric/components/tests-unit-test_t3579_verdict_ledger.yaml'
+  - 'lib/delegation_cli.py'
+  - 'lib/verdict_ledger.py'
+  - '.tasks/active/T-3579-t-3557-slice-2-an-independent-reviewers-.md'
+  - '.tasks/active/T-3580-t-3557-slice-3-fw-reviewer-judge---dispa.md'
+  - 'tests/unit/t3445_delegation_close_path.bats'
+  - 'tests/unit/t3579_verdict_close_path.bats'
+  - 'tests/unit/test_t3579_verdict_ledger.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-30T09:56:38'
+    action: 'T-3579: acceptance criteria for slices 2 (verdict record closes a criterion) and 3 (fw reviewer judge)'
+  - time: '2026-09-30T10:02:59'
+    action: 'T-3579: slice-1 cross-vendor review AMBER (no safety defects, 3 reporting fixes folded into slice 2); slice 2 build prompt'
+  - time: '2026-09-30T10:04:15'
+    action: 'T-3579: slice-1 review fixes — inception tasks classified not refused, reviewer-judged count in delegate summary, WARN wording'
+  - time: '2026-09-30T10:09:37'
+    action: 'T-3579: independent reviewer verdict ledger — green verdict ticks a REVIEWER-JUDGES criterion, satisfies P-013 and hands ownership over with no bypass flag'
+  - time: '2026-09-30T10:10:06'
+    action: 'T-3579: vendor sync of verdict ledger'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 16
+  commits: 5
+  files_changed: 20
+  lines_added: 1801
+  lines_removed: 49
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3579-t-3557-slice-2-an-independent-reviewers-.md
+generated_by: context-agent-hybrid
