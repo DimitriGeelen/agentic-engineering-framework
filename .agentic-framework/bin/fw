@@ -2766,6 +2766,13 @@ PY
             local _bs_tokens=""
             local _bs_f="$PROJECT_ROOT/.context/working/.budget-status"
             [ -f "$_bs_f" ] && _bs_tokens=$(grep -o '"tokens"[[:space:]]*:[[:space:]]*[0-9]*' "$_bs_f" 2>/dev/null | grep -o '[0-9]*$' || true)
+            # T-3598: the cache is shared by every Claude process in the project;
+            # do not print another session's figure as this one's budget.
+            local _bs_csid=""
+            [ -f "$_bs_f" ] && _bs_csid=$(grep -o '"claude_session_id"[[:space:]]*:[[:space:]]*"[^"]*"' "$_bs_f" 2>/dev/null | sed 's/.*"\([^"]*\)"$/\1/' || true)
+            if [ -n "$_bs_csid" ] && [ -n "${CLAUDE_CODE_SESSION_ID:-}" ] && [ "$_bs_csid" != "$CLAUDE_CODE_SESSION_ID" ]; then
+                _bs_tokens=""
+            fi
             echo -e "  ${YELLOW}WARN${NC}  Unsupervised session (not under claude-fw) — budget auto-restart will NOT fire"
             if [ -n "$_bs_tokens" ]; then
                 echo -e "         Current budget: ${_bs_tokens} tokens"
