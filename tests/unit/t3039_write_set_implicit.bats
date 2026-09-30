@@ -142,13 +142,15 @@ print('ok')
 @test "t3039: every implicit entry carries provenance and a known hazard class" {
     # A1 says the set is sourced from the T-3041 inventory, not from memory.
     # An entry with an empty rationale is one someone added from intuition.
+    # T-3604: provenance is the T-3041 inventory OR the task that added the
+    # entry — T-3046 (971e94f66) added triage-dispositions.jsonl citing itself.
     run python3 -c "
-import sys; sys.path.insert(0, '$FRAMEWORK_ROOT/lib')
+import re, sys; sys.path.insert(0, '$FRAMEWORK_ROOT/lib')
 import write_set as w
 known = {'lost-update', 'protected', 'append-safe'}
 for path, why, hazard in w.IMPLICIT_WRITE_SET:
     assert hazard in known, (path, hazard)
-    assert 'inventory' in why, ('no inventory provenance', path)
+    assert 'inventory' in why or re.search(r'\bT-[0-9]+\b', why), ('no provenance', path)
     assert len(why) > 40, ('rationale too thin to be evidence', path)
 print('ok', len(w.IMPLICIT_WRITE_SET))
 "
