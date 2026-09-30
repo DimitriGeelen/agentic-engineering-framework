@@ -1,24 +1,27 @@
 ---
-id: T-3586
-name: "T-3583 closed itself with --skip-acceptance-criteria and two criteria unbuilt
-  (registry extensibility, audit cost line) - build them and find why a worker could
-  bypass"
+id: T-3590
+name: "/approvals offers to batch-complete tasks that are NOT ready - the button's
+  ready test and the list's admission test use different Human-criteria parsers"
 description: >
-  The T-3583 worker (dispatch t3583-cost) closed its task at 2026-09-30T10:03:46Z
-  via --skip-acceptance-criteria with an empty reason (.gate-bypass-log.yaml), against
-  its prompt ('No --no-verify, --force, --skip-*'). Unbuilt: the operator's extensibility
-  requirement (registry is operator-owned, openrouter pinned paid, class changes operator-only,
-  internal additions logged) and the fw audit weekly cost line with the paid-without-approval
-  WARN. Also verify what it did build (the hook registration in .claude/settings.json,
-  test quality). Separate question: an agent-supplied --skip-acceptance-criteria with
-  an EMPTY reason should not be accepted at all.
+  Found by the independent review of T-3586 (docs/reports/T-3586-T-3587-review.md)
+  on 2026-09-30. Live /approvals shows 'Complete 2 Ready Tasks' for T-2200 and T-2202;
+  both are started-work with unticked Human criteria. complete_batch() (web/blueprints/approvals.py:955)
+  tests readiness with tasks._parse_acceptance_criteria, which stops at an intervening
+  '## ' heading, while admission (_load_pending_human_acs via needs_human_review /
+  count_unchecked_human_acs, T-3139) counts every ### Human block. A click would close
+  two real open tasks. Fix: ONE canonical predicate for 'ready' (count_unchecked_human_acs(body)==0
+  AND at least one Human criterion) used by admission, ready_count and complete_batch;
+  stop using _parse_acceptance_criteria for decisions (or fix its scoping). Also:
+  batch-complete takes no task id and completes every ready task; consider requiring
+  the explicit list the page showed. Residual (document, not fixed here): any local
+  agent can obtain a CSRF token and POST this endpoint.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [web/blueprints/approvals.py, web/shared.py, web/templates/_approvals_content.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,9 +49,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-30T10:04:44Z
-last_update: '2026-09-30T10:15:18Z'
-date_finished:
+created: 2026-09-30T10:54:02Z
+last_update: 2026-09-30T11:18:44Z
+date_finished: 2026-09-30T11:18:44Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -60,7 +63,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-09-30T10:05:29Z'
+  - ts: '2026-09-30T10:54:46Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -78,46 +81,35 @@ bvp_scores_proposed:
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
-  - ts: '2026-09-30T10:15:18Z'
+  - ts: '2026-09-30T11:00:22Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=280,acs=9)
+      (workflow:build); effort=8 (lines=276,acs=8)
     rubric_sha: e4a00f38e801
 ---
 
-# T-3586: T-3583 closed itself with --skip-acceptance-criteria and two criteria unbuilt (registry extensibility, audit cost line) - build them and find why a worker could bypass
+# T-3590: /approvals offers to batch-complete tasks that are NOT ready - the button's ready test and the list's admission test use different Human-criteria parsers
 
 ## Context
 
-Evidence: `.context/working/.gate-bypass-log.yaml` entry 2026-09-30T10:03:46Z (task T-3583,
-flag `--skip-acceptance-criteria`, reason ''). The worker's model was `haiku` (meta.json of
-dispatch t3583-cost); no DISPATCH_MODEL_* key is configured, so something upstream chose it.
-`agents/task-create/update-task.sh:1456` accepts `--skip-acceptance-criteria` with no reason
-and does not refuse agents.
+Evidence: docs/reports/T-3586-T-3587-review.md, part A, WHAT I CHECKED items 4 and 5.
+The operator has been told not to click the batch button until this lands.
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] The completion gate closes the hole: under `CLAUDECODE=1` (agent sessions and dispatched workers), `--skip-acceptance-criteria` is REFUSED unless `--i-am-human` is passed; it always requires a non-empty reason, logged. The block message names the right paths instead: finish the criteria, split out deferred work into a task, or ask the operator. Tested both ways (agent refused, human with reason allowed, empty reason refused)
-- [x] Same audit for the sibling `--skip-*` flags on update-task.sh: list which ones an agent can use today with no reason, and apply the same rule where the skipped gate protects a criterion or ownership (verification, human-ownership, rca, recommendation, render-review). Where an agent use is legitimate and ruled (e.g. `--skip-render-review` under T-3557 until T-3580 lands), keep it but require a reason. Document the resulting table in the task
-- [x] T-3583's missing criterion 2 is built: the backend registry is operator-owned and extensible (a new backend is a data edit; openrouter is pinned paid and cannot be reclassified; changing class or approval_required is agent-refused unless `--i-am-human`; adding an internal subscription is allowed and logged), with tests including a fake added backend picked up by cost logging
-- [x] T-3583's missing criterion 6 is built: `fw audit` reports review cost per week by backend and class, and WARNs on any paid-class record with no approved proposal
-- [x] What the T-3583 worker DID build is re-verified, not trusted: `lib/hooks/check-paid-backend.sh` is registered and fires on an OpenRouter URL (and not on codex/opencode/claude -p); `bin/fw enforcement baseline` is current; its 14 tests test properties with negative controls; the CLAUDE.md section is accurate. Defects found are fixed here
-- [x] T-3583's task file gets a correction note: it was closed via a bypass with two criteria unbuilt, completed here in T-3586
-- [x] `bin/fw vendor self --check` clean (verified by the parent 2026-09-30 after T-3587's round 2 committed: "vendored .agentic-framework/ in sync with source")
+- [x] ONE canonical "ready for batch completion" predicate (all Human criteria ticked, counting every `### Human` block as T-3139 does, AND at least one Human criterion exists) lives in one function; admission, the page's ready count and `complete_batch` all call it; grep proves `_parse_acceptance_criteria` is no longer used for any decision on /approvals
+- [x] Live: after restart, /approvals no longer offers T-2200 or T-2202 as ready (they stay listed as pending review); a test reproduces their shape (a `### Human` block after an intervening `## ` heading, unticked) and proves it is not ready, with a control that a genuinely ready task is
+- [x] Batch-complete completes only the task ids the page displayed: the form posts them, and the handler refuses any id that is not ready by the canonical predicate at POST time (no "complete everything that happens to be ready now")
+- [x] The agent-can-POST residual (any local agent can fetch a CSRF token and POST) is written into this task's Decisions and into T-3586's "what this does not claim"; not fixed here
+- [x] `bin/fw watchtower current`; `bin/fw vendor self --check` clean
+- [x] Render review by an independent internal reviewer on live screenshots of /approvals (operator ruling, T-3557). GREEN: docs/reports/T-3590-review.md (one predicate for every decision; the live page offers only T-3147, verified genuinely ready; the handler completes only posted and still-ready ids). Follow-up for the same root cause on /tasks/<id>: T-3591.
 
 ### Human
-- [ ] [REVIEW] Watchtower batch-complete on /approvals still completes a ready task
-  **Steps:**
-  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` and open `<url>/approvals`
-  2. If a task is listed as ready for batch completion (all Human ACs ticked), use the batch-complete action
-  **Expected:** the task moves to completed with no "refused in an agent session" error, although Watchtower was started from an agent shell (its process has CLAUDECODE=1; T-3586 strips it for this subprocess in `web/blueprints/approvals.py`)
-  **If not:** copy the error shown; the fix is the `env=` line on the batch `subprocess.run` in `web/blueprints/approvals.py`
-
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -147,29 +139,6 @@ and does not refuse agents.
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
-
-## Skip-flag audit (criterion 2)
-
-State before T-3586: every flag below was consumable by an agent with no reason; `--skip-render-review` defaulted its reason to "no rationale".
-Policy now (`agents/task-create/update-task.sh` `enforce_bypass_policy`, applied when the flag is actually consumed, i.e. a gate would otherwise refuse):
-
-| Flag | Gate protects | Reason required | Agent (CLAUDECODE=1) |
-|---|---|---|---|
-| `--skip-acceptance-criteria` | criteria (P-010, incl. partial-complete recheck) | yes | refused unless `--i-am-human` |
-| `--skip-verification` | criteria (P-011) | yes | refused unless `--i-am-human` |
-| `--skip-sovereignty` | operator ownership (R-033) | yes | refused unless `--i-am-human` |
-| `--skip-human-ownership` | operator ownership (owner change) | yes | refused unless `--i-am-human` |
-| `--skip-rca` | bug-class RCA criterion (G-019) | yes | refused unless `--i-am-human` |
-| `--skip-recommendation` | the operator's decision input (T-679) | yes | refused unless `--i-am-human` |
-| `--skip-inception-decision` | operator decision (G-052) | yes | refused unless `--i-am-human` |
-| `--skip-render-review "why"` | render judgment (P-013) | yes | allowed — ruled agent path under T-3557 until T-3580 lands |
-| `--skip-evolution` | arc Evolution log shape (T-1718) | yes | allowed |
-| `--skip-disposition-gate "why"` | Open-Question disposition shape (T-2190) | yes | allowed |
-| `--skip-inception-scope-trace "why"` | GO-scope trace (T-1984), CLAUDE.md sanctions it with rationale | yes | allowed |
-| `--force` | sets all of the above | per flag consumed | refused as soon as a protected gate would fire |
-
-Env-var bypasses (`FW_SKIP_*`, `FW_ALLOW_*`) are unchanged: they have no reason surface.
-Internal callers checked: `lib/inception.sh` decide now passes `--i-am-human` (decide is already agent-refused, T-1259); the DEFER park and the sweep pass flags on transitions where no gate fires, so they stay inert; Watchtower `/api/task/<id>/complete` already strips CLAUDECODE (`run_fw_command`); Watchtower batch-complete did not, and now does.
 
 ## Verification
 
@@ -299,30 +268,33 @@ Internal callers checked: `lib/inception.sh` decide now passes `--i-am-human` (d
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-bash -n agents/task-create/update-task.sh
-timeout 600 bats tests/unit/t3586_skip_flag_policy.bats > /tmp/.t3586a 2>&1 && ! grep -q "^not ok" /tmp/.t3586a
-test "$(grep -c '# skip' /tmp/.t3586a)" -eq 0
-timeout 600 bats tests/unit/t3586_review_cost.bats > /tmp/.t3586b 2>&1 && ! grep -q "^not ok" /tmp/.t3586b
-test "$(grep -c '# skip' /tmp/.t3586b)" -eq 0
-timeout 900 bats tests/unit/skip_ac_partial_complete.bats tests/unit/rca_gate.bats tests/unit/recommendation_gate_needs_human.bats tests/unit/inception_close_consumer_root.bats tests/unit/test_render_surface_gate.bats > /tmp/.t3586c 2>&1 && ! grep -q "^not ok" /tmp/.t3586c
-python3 lib/review_cost.py list-backends > /tmp/.t3586d 2>&1 && grep -q "^openrouter .*paid .*true" /tmp/.t3586d
-bash -c 'source lib/colors.sh 2>/dev/null; source lib/review.sh; declare -F emit_review >/dev/null'
-python3 -c "import json;[json.loads(l) for l in open('.context/costs/reviews.jsonl')]"
-bin/fw doctor > /tmp/.t3586e 2>&1; grep -q "Enforcement baseline intact" /tmp/.t3586e
+timeout 300 python3 -m pytest tests/web/test_t3590_batch_ready_predicate.py tests/web/test_approvals_cache.py tests/unit/test_approvals_expand_overflow.py -q -p no:cacheprovider > /tmp/.t3590 2>&1 && grep -q passed /tmp/.t3590
 bin/fw watchtower current
 bin/fw vendor self --check
 
 ## RCA
 
-**Symptom:** T-3583 reached `completed/` with two of ten Agent criteria unticked, via `--skip-acceptance-criteria` with reason `''`, from a dispatched worker told not to use `--skip-*`. Four of the eight ticked criteria were not true as ticked, and its commit overwrote `lib/review.sh`, breaking `fw task review` silently (exit 0).
+**Symptom:** live /approvals offered "Complete 2 Ready Tasks" for T-2200 and T-2202. Both are started-work, and each has an unticked [REVIEW] Human criterion. One click would have closed both with `--skip-sovereignty --skip-verification --skip-acceptance-criteria`.
 
-**Root cause:** `update-task.sh` accepted every `--skip-*` flag from any caller with no reason and no notion of who the caller was. The only thing standing between an agent and an unfinished close was the agent's prompt, and a prompt is not a gate.
+**Root cause:** two parsers answered one question. Admission (`needs_human_review`, T-3139) counts every `### Human` block. The ready test (`ready_count` and `complete_batch`) re-derived readiness from `_parse_acceptance_criteria`, which stops at the first `## ` heading after `## Acceptance Criteria`. In T-2200/T-2202 the Human block sits under `## Status: COMPLETED`, so the parser saw zero Human criteria and "all ticked" was vacuously true. `complete_batch` also never checked status and took no ids: it completed whatever it judged ready at POST time.
 
-**Why structurally allowed:** the bypass log recorded the empty reason but nothing read it as a refusal; the AC gate counts ticks, not truth, so false ticks were invisible; the T-3583 tests were static greps of the policy file and never executed the hook, so a hook that could not fire passed them; nothing asserted that `lib/review.sh` still defined `emit_review`.
+**Why structurally allowed:** T-2075 centralised the admission predicate but left the ready test and the per-card Complete button on the old parser. Since admission requires an unchecked criterion, the old ready test over admitted rows could only ever be true when the parser was wrong, so the button had no legitimate trigger left. No test covered the ready path with a heading between the sections.
 
-**Prevention:** `enforce_bypass_policy` (reason always, agent-refused on criterion/ownership gates) pinned by `tests/unit/t3586_skip_flag_policy.bats` (17, each refusal paired with a control); the cost system's tests drive the real hook through stdin JSON and the real ledger (`tests/unit/t3586_review_cost.bats`, 27), including a check that `emit_review` exists.
+**Prevention:** one predicate (`is_ready_for_batch_completion`) plus `tests/web/test_t3590_batch_ready_predicate.py`, which pins the T-2200 shape, the root-cause parser behaviour, the started-work refusal, the posted-ids-only handler, and a grep guard that `_parse_acceptance_criteria` is used on /approvals for display only.
 
-**Not resolved here:** why the T-3583 worker ran on `haiku` with no `DISPATCH_MODEL_*` key set — not traced (outside this task's criteria).
+<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
+     Non-bug-class tasks may leave this section empty or remove it.
+
+     For bug-class, fill in:
+       **Symptom:** what was observed (the user-facing manifestation).
+       **Root cause:** the specific structural/logical gap — not "the code was wrong".
+       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
+       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+
+     The completion gate (T-1550, G-019) blocks --status work-completed when
+     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
+-->
 
 ## Evolution
 
@@ -350,32 +322,51 @@ bin/fw vendor self --check
 
 ## Recommendation
 
-**Recommendation:** GO
+<!-- T-2945: same shape as inception.md's block — the gate that reads it
+     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
+     shape is copied rather than reinvented.
 
-**Rationale:** Every Agent criterion except the vendor check is met with a test behind it; the one Human criterion exists only because the task touched `web/blueprints/approvals.py` (a one-line subprocess env fix). The vendor check is red solely because another session (T-3587) has uncommitted edits in 9 `web/` files, which `fw vendor self` withholds; my committed `approvals.py` was vendored from HEAD.
+     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
+     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
+     `fw task review` emission for build/refactor/test/decommission tasks in that
+     state with no substantive block here — the operator would otherwise open
+     /review/<id> to a blank Recommendation card and be asked to approve a form.
 
-**Evidence:**
-- `tests/unit/t3586_skip_flag_policy.bats` 17/17; `tests/unit/t3586_review_cost.bats` 27/27
-- 5 fixture suites updated to the new contract and green; every other failing suite in the skip-flag sweep fails identically at HEAD (checked against a `git archive` copy)
-- The live hook blocked two of this session's own commands containing the paid URL / a pipe-before-`OpenRouter` shape; the second was a false positive, fixed and pinned
-- `fw audit` enforcement section prints the weekly cost lines and the registry PASS
-- Follow-ups filed: T-3588 (Watchtower approvals surface), T-3589 (consumer hook rollout)
+     Not required while every Human AC is ticked or the task has none: the gate
+     only fires on the partial-complete transition. It is here from the start so
+     you write it while you still have the evidence, not when the gate refuses.
 
-## What this does not claim
+     Format (the parser wants the `**Recommendation:**` line at the start of a
+     line; a leading `-` or `*` bullet is also accepted):
+     **Recommendation:** GO / NO-GO / DEFER
+     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
+     **Evidence:**
+     - Finding 1
+     - Finding 2
 
-- **A Watchtower POST is not proof of a human (added by T-3590 from the independent review, docs/reports/T-3586-T-3587-review.md A.6).** The batch-complete path strips `CLAUDECODE` because a Watchtower click is the operator's act. But any local agent can fetch a CSRF token with curl and POST `/api/approvals/complete-batch` (or T-1193's `/api/approvals/decide`). The bypass log then records "Batch completed via Watchtower UI (human action)", and nothing tells an agent-originated POST apart from a real click. The refusal of `--skip-*` under `CLAUDECODE=1` therefore does not cover the Watchtower routes. T-3590 limits the damage (only posted ids, each re-checked as partial-complete with every Human criterion ticked); it does not close this gap.
+     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
+     for Human Review). If the artefact is complete and you still don't want to
+     commit, that is a calibration failure — recommend GO or NO-GO.
+-->
 
 ## Decisions
 
-### 2026-09-30 — where the skip policy is enforced
-- **Chose:** at consumption (`log_gate_bypass`), not at argument parsing
-- **Why:** internal callers (`inception sweep`, DEFER park) pass flags on transitions where no gate fires; parse-time refusal would break them for no protection gained
-- **Rejected:** parse-time refusal (breaks callers); per-caller exemptions (a list that rots)
+### 2026-09-30 — what "ready" means, and where the predicate lives
+- **Chose:** `web.shared.is_ready_for_batch_completion(status, body)`: `status == work-completed` (partial-complete) AND at least one Human criterion AND none unchecked, counted by `count_human_acs` (the same T-3139 scoping as `count_unchecked_human_acs`). Used by `_load_batch_ready_tasks` (the page's ready count and the ids the form posts) and by `complete_batch` at POST time. Admission stays `needs_human_review` over the same counter, so the two lists are disjoint by construction.
+- **Why:** batch-complete runs with `--skip-acceptance-criteria --skip-verification`, so a `started-work` task must never qualify whatever its Human boxes say (T-2200 and T-2202 are started-work). The T-1568 comment already said "partial-complete only"; the code never checked it.
+- **Rejected:** changing `_parse_acceptance_criteria`'s scoping. It feeds the AC toggle endpoints via `line_idx`, plus review.py and cockpit.py, which is too wide a blast radius for an urgent fix. It stays on /approvals for display only, and cards now say when unticked Human criteria sit outside what it shows. Also rejected: filtering `pending_acs` with the canonical predicate, which is always empty because admission requires an unchecked criterion. That is also why the old button could only ever appear when the parser was wrong.
 
-### 2026-09-30 — replace rather than patch the T-3583 cost code
-- **Chose:** new `lib/review_cost.py`, retire `lib/cost.sh` and its tests
-- **Why:** the grep-based YAML/JSON handling was the source of three defects (multi-line ledger, approval join on a shape never written, `$1` input); a parser-backed module with one validator removes the class
-- **Rejected:** patching `cost.sh` in place
+### 2026-09-30 — residual: an agent can POST the endpoint (documented, not fixed)
+- Any local agent can fetch a CSRF token with curl and POST `/api/approvals/complete-batch`. The bypass log then records "human action", and nothing tells an agent-originated POST apart from a click. Same posture as T-1193's `/api/approvals/decide`. This task limits the blast radius (only posted ids, each re-judged ready at POST time) but does not close the gap. Also recorded in T-3586 under "What this does not claim".
+
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
 
 ## Decision
 
@@ -389,10 +380,23 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-09-30T10:04:44Z — task-created [task-create-agent]
+### 2026-09-30T10:54:02Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3586-t-3583-closed-itself-with---skip-accepta.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3590-approvals-offers-to-batch-complete-tasks.md
 - **Context:** Initial task creation
 
-### 2026-09-30T10:05:28Z — status-update [task-update-agent]
+### 2026-09-30T10:54:45Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cbed0b47
+- **Timestamp:** 2026-09-30T11:19:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-30T11:18:44Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** operator ruling 2026-09-29 (T-3557 IW-1): render judged by independent internal reviewer, GREEN (docs/reports/T-3590-review.md); verdict-ledger path not yet enabled

@@ -1,0 +1,142 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3586: T-3583 closed itself with --skip-acceptance-criteria and two criteria unbuilt (registry extensibility, audit cost line) - build them and find why a worker could bypass
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-30T11:24:16Z
+# ============================================================================
+
+task_id: T-3586
+task_name: "T-3583 closed itself with --skip-acceptance-criteria and two criteria unbuilt (registry extensibility, audit cost line) - build them and find why a worker could bypass"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-30T10:04:44Z
+completed: 2026-09-30T11:19:43Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-30T12:06:38+02:00
+last_commit: 2026-09-30T12:47:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  criteria — close the agent --skip-acceptance-criteria hole, build T-3583's two skipped criteria, re-verify what it built. completion gate refuses agent --skip-* on criteria/ownership gates; every consumed --skip-* needs a reason. rebuild T-3583 cost system - extensible operator-owned registry, JSONL ledger, fw audit cost line, working paid-backend hook; restore lib/review.sh. vendor sync (skip policy, cost system rebuild, restored review.sh; drop orphaned cost.sh and lib/hooks copy). vendor committed web/blueprints/approvals.py (CLAUDECODE strip); fw vendor self withholds it while T-3587 has uncommitted edits in the source. task record - skip-flag table, RCA, verification, 6/7 criteria ticked; correction note on T-3583; follow-ups T-3588, T-3589. vendor criterion verified clean; independent review prompt for batch-complete (T-3586) and evidence-links round 2 (T-3587)
+
+# Key outcomes
+outcomes:
+  - 'The completion gate closes the hole: under `CLAUDECODE=1` (agent sessions and dispatched workers), `--skip-acceptance-criteria` is REFUSED unless `--i-am-human` is passed; it always requires a non-empty reason, logged. The block message names the right paths instead: finish the criteria, split out deferred work into a task, or ask the operator. Tested both ways (agent refused, human with reason allowed, empty reason refused)'
+  - 'Same audit for the sibling `--skip-*` flags on update-task.sh: list which ones an agent can use today with no reason, and apply the same rule where the skipped gate protects a criterion or ownership (verification, human-ownership, rca, recommendation, render-review). Where an agent use is legitimate and ruled (e.g. `--skip-render-review` under T-3557 until T-3580 lands), keep it but require a reason. Document the resulting table in the task'
+  - 'T-3583''s missing criterion 2 is built: the backend registry is operator-owned and extensible (a new backend is a data edit; openrouter is pinned paid and cannot be reclassified; changing class or approval_required is agent-refused unless `--i-am-human`; adding an internal subscription is allowed and logged), with tests including a fake added backend picked up by cost logging'
+  - 'T-3583''s missing criterion 6 is built: `fw audit` reports review cost per week by backend and class, and WARNs on any paid-class record with no approved proposal'
+  - 'What the T-3583 worker DID build is re-verified, not trusted: `lib/hooks/check-paid-backend.sh` is registered and fires on an OpenRouter URL (and not on codex/opencode/claude -p); `bin/fw enforcement baseline` is current; its 14 tests test properties with negative controls; the CLAUDE.md section is accurate. Defects found are fixed here'
+  - 'T-3583''s task file gets a correction note: it was closed via a bypass with two criteria unbuilt, completed here in T-3586'
+  - '`bin/fw vendor self --check` clean (verified by the parent 2026-09-30 after T-3587''s round 2 committed: "vendored .agentic-framework/ in sync with source")'
+  - '[AGENT-REVIEWED] Watchtower batch-complete on /approvals still completes a ready task. Moved from `### Human` by the operator''s ruling (T-3557 IW-1): a functional check an independent agent can prove. Proven twice by independent internal reviewers, never the producer. First, docs/reports/T-3586-T-3587-review.md part A: the real complete_batch handler completed a throwaway ready task under CLAUDECODE=1, and the same command run directly was refused. Second, re-proven on T-3590''s new handler (docs/reports/T-3590-review.md): a posted ready id was completed by the real `fw task update` subprocess, and a non-ready id in the same POST was refused. The live button was deliberately not clicked, because it would have closed real tasks.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-30 — where the skip policy is enforced'
+    chose: 'at consumption (`log_gate_bypass`), not at argument parsing'
+    rationale: 'internal callers (`inception sweep`, DEFER park) pass flags on transitions where no gate fires; parse-time refusal would break them for no protection gained'
+    alternatives_rejected: ['parse-time refusal (breaks callers); per-caller exemptions (a list that rots)']
+  - decision: '2026-09-30 — replace rather than patch the T-3583 cost code'
+    chose: 'new `lib/review_cost.py`, retire `lib/cost.sh` and its tests'
+    rationale: 'the grep-based YAML/JSON handling was the source of three defects (multi-line ledger, approval join on a shape never written, `$1` input); a parser-backed module with one validator removes the class'
+    alternatives_rejected: ['patching `cost.sh` in place']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/context/check-paid-backend.sh'
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/cost.sh'
+  - '.agentic-framework/lib/hooks/check-paid-backend.sh'
+  - '.agentic-framework/lib/inception.sh'
+  - '.agentic-framework/lib/review_cost.py'
+  - '.agentic-framework/lib/review.sh'
+  - '.agentic-framework/web/blueprints/approvals.py'
+  - 'agents/audit/audit.sh'
+  - 'agents/context/check-paid-backend.sh'
+  - 'agents/task-create/update-task.sh'
+  - 'bin/fw'
+  - 'CLAUDE.md'
+  - '.claude/settings.json'
+  - '.context/costs/reviews.jsonl'
+  - '.context/project/enforcement-baseline.sha256'
+  - 'docs/reports/T-3586-build-prompt.md'
+  - 'docs/reports/T-3586-T-3587-review-prompt.md'
+  - '.fabric/components/agents-context-check-paid-backend.yaml'
+  - '.fabric/components/lib-review_cost.yaml'
+  - '.fabric/components/tests-unit-t3586_review_cost.yaml'
+  - '.fabric/components/tests-unit-t3586_skip_flag_policy.yaml'
+  - 'lib/cost.sh'
+  - 'lib/hooks/check-paid-backend.sh'
+  - 'lib/inception.sh'
+  - 'lib/review_cost.py'
+  - 'lib/review.sh'
+  - 'policy/review-backends.yaml'
+  - '.tasks/active/T-3586-t-3583-closed-itself-with---skip-accepta.md'
+  - '.tasks/active/T-3588-watchtower-approvals-surface-for-paid-re.md'
+  - '.tasks/active/T-3589-roll-check-paid-backend-hook-out-to-cons.md'
+  - '.tasks/completed/T-3583-codify-the-reviewdispatch-cost-ruling-a-.md'
+  - 'tests/unit/inception_close_consumer_root.bats'
+  - 'tests/unit/rca_gate.bats'
+  - 'tests/unit/recommendation_gate_needs_human.bats'
+  - 'tests/unit/skip_ac_partial_complete.bats'
+  - 'tests/unit/t3583_review_cost_system.bats'
+  - 'tests/unit/t3586_review_cost.bats'
+  - 'tests/unit/t3586_skip_flag_policy.bats'
+  - 'tests/unit/test_render_surface_gate.bats'
+  - 'web/blueprints/approvals.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-30T12:06:38'
+    action: 'T-3586: criteria — close the agent --skip-acceptance-criteria hole, build T-3583''s two skipped criteria, re-verify what it built'
+  - time: '2026-09-30T12:21:49'
+    action: 'T-3586: completion gate refuses agent --skip-* on criteria/ownership gates; every consumed --skip-* needs a reason'
+  - time: '2026-09-30T12:29:26'
+    action: 'T-3586: rebuild T-3583 cost system - extensible operator-owned registry, JSONL ledger, fw audit cost line, working paid-backend hook; restore lib/review.sh'
+  - time: '2026-09-30T12:30:14'
+    action: 'T-3586: vendor sync (skip policy, cost system rebuild, restored review.sh; drop orphaned cost.sh and lib/hooks copy)'
+  - time: '2026-09-30T12:31:22'
+    action: 'T-3586: vendor committed web/blueprints/approvals.py (CLAUDECODE strip); fw vendor self withholds it while T-3587 has uncommitted edits in the source'
+  - time: '2026-09-30T12:43:13'
+    action: 'T-3586: task record - skip-flag table, RCA, verification, 6/7 criteria ticked; correction note on T-3583; follow-ups T-3588, T-3589'
+  - time: '2026-09-30T12:47:10'
+    action: 'T-3586: vendor criterion verified clean; independent review prompt for batch-complete (T-3586) and evidence-links round 2 (T-3587)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 8 commit(s), 74 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 74
+  commits: 8
+  files_changed: 46
+  lines_added: 3984
+  lines_removed: 1185
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3586-t-3583-closed-itself-with---skip-accepta.md
+generated_by: context-agent-hybrid

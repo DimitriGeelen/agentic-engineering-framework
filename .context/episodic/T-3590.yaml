@@ -1,0 +1,105 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3590: /approvals offers to batch-complete tasks that are NOT ready - the button's ready test and the list's admission test use different Human-criteria parsers
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-09-30T11:19:20Z
+# ============================================================================
+
+task_id: T-3590
+task_name: "/approvals offers to batch-complete tasks that are NOT ready - the button's ready test and the list's admission test use different Human-criteria parsers"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-09-30T10:54:02Z
+completed: 2026-09-30T11:18:44Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-09-30T12:55:21+02:00
+last_commit: 2026-09-30T13:10:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  /approvals batch button would close two not-ready tasks (two readiness predicates disagree) — criteria and urgent fix prompt; T-3586/T-3587 review saved. one canonical batch-ready predicate on /approvals; batch-complete takes the displayed ids and re-checks each. vendor sync of the canonical batch-ready predicate. task record - RCA, decisions (predicate, agent-can-POST residual), verification, 5/6 criteria ticked; residual added to T-3586 'what this does not claim'. independent review prompt (also re-proves T-3586's batch-complete criterion on the new handler)
+
+# Key outcomes
+outcomes:
+  - 'ONE canonical "ready for batch completion" predicate (all Human criteria ticked, counting every `### Human` block as T-3139 does, AND at least one Human criterion exists) lives in one function; admission, the page''s ready count and `complete_batch` all call it; grep proves `_parse_acceptance_criteria` is no longer used for any decision on /approvals'
+  - 'Live: after restart, /approvals no longer offers T-2200 or T-2202 as ready (they stay listed as pending review); a test reproduces their shape (a `### Human` block after an intervening `## ` heading, unticked) and proves it is not ready, with a control that a genuinely ready task is'
+  - 'Batch-complete completes only the task ids the page displayed: the form posts them, and the handler refuses any id that is not ready by the canonical predicate at POST time (no "complete everything that happens to be ready now")'
+  - 'The agent-can-POST residual (any local agent can fetch a CSRF token and POST) is written into this task''s Decisions and into T-3586''s "what this does not claim"; not fixed here'
+  - '`bin/fw watchtower current`; `bin/fw vendor self --check` clean'
+  - 'Render review by an independent internal reviewer on live screenshots of /approvals (operator ruling, T-3557). GREEN: docs/reports/T-3590-review.md (one predicate for every decision; the live page offers only T-3147, verified genuinely ready; the handler completes only posted and still-ready ids). Follow-up for the same root cause on /tasks/<id>: T-3591.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: '/approvals batch button would close two not-ready tasks (two readiness predicates disagree) — criteria and urgent fix prompt; T-3586/T-3587 review saved'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-09-30 — what "ready" means, and where the predicate lives'
+    chose: '`web.shared.is_ready_for_batch_completion(status, body)`: `status == work-completed` (partial-complete) AND at least one Human criterion AND none unchecked, counted by `count_human_acs` (the same T-3139 scoping as `count_unchecked_human_acs`). Used by `_load_batch_ready_tasks` (the page''s ready count and the ids the form posts) and by `complete_batch` at POST time. Admission stays `needs_human_review` over the same counter, so the two lists are disjoint by construction.'
+    rationale: 'batch-complete runs with `--skip-acceptance-criteria --skip-verification`, so a `started-work` task must never qualify whatever its Human boxes say (T-2200 and T-2202 are started-work). The T-1568 comment already said "partial-complete only"; the code never checked it.'
+    alternatives_rejected: ['changing `_parse_acceptance_criteria`''s scoping. It feeds the AC toggle endpoints via `line_idx`, plus review.py and cockpit.py, which is too wide a blast radius for an urgent fix. It stays on /approvals for display only, and cards now say when unticked Human criteria sit outside what it shows. Also rejected: filtering `pending_acs` with the canonical predicate, which is always empty because admission requires an unchecked criterion. That is also why the old button could only ever appear when the parser was wrong.']
+  - decision: '2026-09-30 — residual: an agent can POST the endpoint (documented, not fixed)'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/approvals.py'
+  - '.agentic-framework/web/shared.py'
+  - '.agentic-framework/web/templates/_approvals_content.html'
+  - 'docs/reports/T-3586-T-3587-review.md'
+  - 'docs/reports/T-3590-build-prompt.md'
+  - 'docs/reports/T-3590-review-prompt.md'
+  - '.tasks/active/T-3586-t-3583-closed-itself-with---skip-accepta.md'
+  - '.tasks/active/T-3590-approvals-offers-to-batch-complete-tasks.md'
+  - 'tests/unit/test_approvals_expand_overflow.py'
+  - 'tests/web/test_approvals_cache.py'
+  - 'tests/web/test_t3590_batch_ready_predicate.py'
+  - 'web/blueprints/approvals.py'
+  - 'web/shared.py'
+  - 'web/templates/_approvals_content.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-09-30T12:55:21'
+    action: 'T-3590: /approvals batch button would close two not-ready tasks (two readiness predicates disagree) — criteria and urgent fix prompt; T-3586/T-3587 review saved'
+  - time: '2026-09-30T13:07:07'
+    action: 'T-3590: one canonical batch-ready predicate on /approvals; batch-complete takes the displayed ids and re-checks each'
+  - time: '2026-09-30T13:08:54'
+    action: 'T-3590: vendor sync of the canonical batch-ready predicate'
+  - time: '2026-09-30T13:09:36'
+    action: 'T-3590: task record - RCA, decisions (predicate, agent-can-POST residual), verification, 5/6 criteria ticked; residual added to T-3586 ''what this does not claim'''
+  - time: '2026-09-30T13:10:48'
+    action: 'T-3590: independent review prompt (also re-proves T-3586''s batch-complete criterion on the new handler)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 24 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 24
+  commits: 5
+  files_changed: 14
+  lines_added: 1021
+  lines_removed: 67
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3590-approvals-offers-to-batch-complete-tasks.md
+generated_by: context-agent-hybrid
