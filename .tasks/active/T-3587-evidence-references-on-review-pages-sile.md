@@ -1,10 +1,19 @@
 ---
 id: T-3587
-name: "Evidence references on review pages silently stay plain text - brace-grouped paths, bare filenames, tests/ and :line refs are not linked, and dead refs look like live ones"
+name: "Evidence references on review pages silently stay plain text - brace-grouped
+  paths, bare filenames, tests/ and :line refs are not linked, and dead refs look
+  like live ones"
 description: >
-  Operator 2026-09-30: evidence, doc report and code refs on review templates must be working links built from the serving Watchtower (right port, right project). Mechanism exists: web/shared.py _auto_link_files (T-1722, T-3368) -> /file/<path>, existence-gated, allowlisted by VIEWABLE_DIR_PREFIXES. Measured on live /review/T-3581: 8 linked, 3 unlinked: bare 'T-3581-rereview-openai.md', brace group 'docs/reports/T-3579-code-review-{openai,zai}.md', and 'lib/task_pair_acd.sh' (does not exist, but renders identically to a live ref). Probe: tests/unit/... not linked (prefix missing); lib/x.py:640 links the file but not the line.
+  Operator 2026-09-30: evidence, doc report and code refs on review templates must
+  be working links built from the serving Watchtower (right port, right project).
+  Mechanism exists: web/shared.py _auto_link_files (T-1722, T-3368) -> /file/<path>,
+  existence-gated, allowlisted by VIEWABLE_DIR_PREFIXES. Measured on live /review/T-3581:
+  8 linked, 3 unlinked: bare 'T-3581-rereview-openai.md', brace group 'docs/reports/T-3579-code-review-{openai,zai}.md',
+  and 'lib/task_pair_acd.sh' (does not exist, but renders identically to a live ref).
+  Probe: tests/unit/... not linked (prefix missing); lib/x.py:640 links the file but
+  not the line.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T10:19:30Z
-last_update: 2026-09-30T10:19:30Z
-date_finished: null
+last_update: 2026-09-30T10:22:21Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-09-30T10:22:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3587: Evidence references on review pages silently stay plain text - brace-grouped paths, bare filenames, tests/ and :line refs are not linked, and dead refs look like live ones
@@ -335,3 +362,6 @@ text emitted OUTSIDE Watchtower (CLI, handover, chat), via `fw watchtower url`.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3587-evidence-references-on-review-pages-sile.md
 - **Context:** Initial task creation
+
+### 2026-09-30T10:22:21Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
