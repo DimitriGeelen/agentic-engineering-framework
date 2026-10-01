@@ -195,6 +195,10 @@ PY
     # Without this the `else drift=0` arm below would silently absorb a locked
     # audit and compare 0 against the real expander answer.
     _require_audit_ran "$out"
+    # Only the check line itself. The audit's trend block ("Repeated issues ...")
+    # echoes past WARNs as "  -  N Fabric drift: M source file(s) ... (N times)"
+    # once the live history holds 3+ of them, which yielded two numbers here.
+    out="$(echo "$out" | grep -v '^  - ')"
     if echo "$out" | grep -q "Fabric drift: [0-9]* source file"; then
         drift="$(echo "$out" | grep -oE "Fabric drift: [0-9]+ source" | grep -oE "[0-9]+")"
     else
@@ -236,9 +240,11 @@ _audit_project() {
     local out
     out="$(cd "$FRAMEWORK_ROOT" && PROJECT_ROOT="$TEST_TEMP_DIR/ap" \
         bash agents/audit/audit.sh --sections structure 2>&1 || true)"
+    _require_audit_ran "$out"
     # T-2737 changed this wording: the old line printed the CARD count, which
-    # read as "N files were checked". It now names the measured set size.
-    echo "$out" | grep -q "PASS. Fabric drift: all 1 watched file(s) registered"
+    # read as "N files were checked". It now names the measured set size, in
+    # the shared pass_over form since T-3105 (92deaef0c).
+    echo "$out" | grep -q "PASS. Fabric drift: all watched files registered — examined 1 watched file(s)"
 }
 
 @test "T-2735 severity: injecting one uncarded file flips PASS to WARN" {
