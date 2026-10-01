@@ -16,7 +16,7 @@ description: >
   counts of result-bearing dirs. Tests must be incapable of touching the real /tmp/tl-dispatch.
   Triage: T-3639.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -50,7 +50,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T13:26:50Z
-last_update: '2026-10-01T13:30:38Z'
+last_update: 2026-10-01T21:35:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -102,8 +102,13 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw termlink cleanup --help|-h` prints usage, exits 0, touches nothing; an unknown flag exits 2 and touches nothing
+- [x] `--dry-run|-n` prints the plan (dirs to remove, PIDs to signal, uncollected results) and changes nothing
+- [x] Removal of a finished worker with uncollected result.md/result.jsonl needs consent (`--yes` or tty prompt); non-tty without `--yes` exits 3 and leaves it on disk. "Collected" = `fw termlink result` wrote a `collected` marker in the worker dir.
+- [x] Orphan SIGTERM happens only after the consent gate (never during the scan)
+- [x] T-3595/T-3580 protections kept: active and unfinalised review workers are never removed
+- [x] Callers of `fw termlink cleanup` audited (no script/cron/handover caller exists; only docs in CLAUDE.md and agents/termlink/AGENT.md, updated to `--dry-run` then `--yes`)
+- [x] tests/unit/t3651_termlink_cleanup_guards.bats passes on a fixture DISPATCH_DIR
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -137,6 +142,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bash -n agents/termlink/termlink.sh
+timeout 200 bats tests/unit/t3651_termlink_cleanup_guards.bats > /tmp/.t3651v.out 2>&1 < /dev/null && ! grep -q "^not ok" /tmp/.t3651v.out && test "$(grep -c '# skip' /tmp/.t3651v.out)" -eq 0
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -266,6 +275,11 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** `fw termlink cleanup --help`, `-h`, `--dry-run`, `-n` or a typo all ran the full cleanup: finished workers' dirs removed including uncollected result.md/result.jsonl, orphan PIDs SIGTERMed during the scan.
+**Root cause:** `cmd_cleanup` never parsed its arguments, and the scan loop killed orphans inline, so there was no point before the destructive acts where a flag or consent could intervene. No record of "result collected" existed, so cleanup could not tell a read result from an unread one.
+**Why structurally allowed:** no test ever called `cleanup` with flags (or at all, on a fixture dir), and a bare command with no argument grammar is indistinguishable from one that ignores its arguments.
+**Prevention:** tests/unit/t3651_termlink_cleanup_guards.bats (8 tests on a fixture FW_DISPATCH_DIR: help/typo/dry-run touch nothing, non-tty refusal exit 3, no SIGTERM before consent, active workers survive). Scan now only plans; act phase is after the consent gate; `fw termlink result` writes a `collected` marker.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -360,3 +374,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3651-fw-termlink-cleanup---help-still-execute.md
 - **Context:** Initial task creation
+
+### 2026-10-01T21:35:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

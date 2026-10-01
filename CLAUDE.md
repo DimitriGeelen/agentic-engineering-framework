@@ -1663,7 +1663,7 @@ and cleanup tracking while delegating all real work to the `termlink` binary.
 
 **Use `fw termlink dispatch` instead** — it has its own kill watchdog that properly terminates the process on timeout. If you must use `termlink run` directly, add your own kill logic.
 
-`fw termlink cleanup` detects and terminates orphaned dispatch processes.
+`fw termlink cleanup` detects and terminates orphaned dispatch processes — but only after consent (`--yes`/tty); `--dry-run` shows the plan (T-3651).
 
 ### MCP Task Governance (T-1063)
 
@@ -1694,7 +1694,7 @@ When communicating with agents on other machines via TermLink remote, choose the
 ### Budget Rules
 
 - **Do not spawn new sessions when context > 60%** — spawning is expensive, respect budget
-- **Always cleanup before session end** — `fw termlink cleanup`
+- **Always cleanup before session end** — `fw termlink cleanup --dry-run`, then `--yes` only when no uncollected result is listed (T-3651)
 - **Max 5 parallel workers** — same limit as sub-agent dispatch protocol
 - **Leave 40K tokens headroom** before dispatching workers
 
