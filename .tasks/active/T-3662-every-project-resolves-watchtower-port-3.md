@@ -318,6 +318,13 @@ bin/fw watchtower current
 
 ## Recommendation
 
+**Recommendation:** GO
+**Rationale:** The defect is fixed and proven: unconfigured projects now allocate distinct per-project ports (scan from PORT_SCAN_BASE, foreign holders skipped and never signalled, chosen port recorded as PORT), and `start` reuses a running server only after `/api/_identity` confirms it is ours. The only open item is a glance at one new settings row on /config, the render surface the P-013 gate flags.
+**Evidence:**
+- `tests/unit/t3662_watchtower_port_allocation.bats` 5/5 (two side-by-side unconfigured projects; foreign base holder skipped and alive; configured foreign port still refused; identity-verified reuse exit 0; unverified live pid not reused). Cases 1 and 4 were red before the fix.
+- Neighbour suites + config-registry parity lint green (P-011 7/7).
+- Live Watchtower restarted on its own port 3002; `bin/fw watchtower current` exit 0; `/config` contains PORT_SCAN_BASE. Other projects' servers (4050, 3050) untouched.
+
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
      shape is copied rather than reinvented.
