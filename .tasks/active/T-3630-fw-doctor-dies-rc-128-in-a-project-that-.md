@@ -1,19 +1,14 @@
 ---
-id: T-3624
-name: "OBS-587 triage D: 17 untriaged baselined red bats files (t3127..test_worker_kind_drift)"
+id: T-3630
+name: "fw doctor dies (rc 128) in a project that is not a git repository"
 description: >
-  Untriaged entries in .context/audits/unit-suite/baseline.yaml (T-3621), expire 2026-10-15:
-  t3127_audit_timing_headroom t3161_empty_registry_does_not_wipe_live_cron t3182_loop_exit_recorder
-  t3202_audit_kill_source t3231_help_exemption_scope t3459_metrics_quality_cache task_id_race
-  test_audit_cron_drift test_audit_retire_when test_audit_watchdog_fd test_bin_fw_no_heredoc_cmd_sub
-  test_cron_registry_generated_drift test_doctor_litellm_ollama test_index_doctor_rail
-  test_orchestrator_status_synthetic_filter test_upgrade_runtime_downgrade_guard test_worker_kind_drift
+  OBS-587 triage (T-3624). bin/fw:1755 'hooks_dir=$(git -C "$PROJECT_ROOT" rev-parse --git-path hooks 2>/dev/null)' runs under set -euo pipefail; when PROJECT_ROOT is not inside a git repo, git exits 128 and the assignment kills do_doctor silently right after 'OK Context directory' — every later check never runs and doctor exits 128. The case statement below it already handles an empty result, so the intent was to tolerate failure. Introduced by 176445c64 (T-2812). Latent until 2026-09-30: test fixtures under /tmp resolved to a stray /.git, so git succeeded; the T-3610 git discovery fence (tests/git_fence.bash, GIT_CEILING_DIRECTORIES=/tmp) removed that and exposed it. Failing tests: t3161_empty_registry_does_not_wipe_live_cron.bats tests 4-5, test_cron_registry_generated_drift.bats tests 1-3. Evidence: PROJECT_ROOT=<non-git fixture> GIT_CEILING_DIRECTORIES=/tmp bin/fw doctor -> rc=128, bash -x ends at the hooks_dir line. Report: docs/reports/T-3624-triage.md
 
-status: started-work
-workflow_type: test
+status: captured
+workflow_type: build
 owner: agent
-horizon: now
-tags: [tests, OBS-587]
+horizon: next
+tags: [bug, OBS-587]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -42,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-01T08:13:25Z
-last_update: 2026-10-01T08:16:22Z
-date_finished:
+created: 2026-10-01T08:49:17Z
+last_update: 2026-10-01T08:49:17Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -55,37 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-01T08:15:20Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 1
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=1 
-      (workflow:test); effort=8 (lines=271,acs=6)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-01T08:15:32Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3624: OBS-587 triage D: 17 untriaged baselined red bats files (t3127..test_worker_kind_drift)
+# T-3630: fw doctor dies (rc 128) in a project that is not a git repository
 
 ## Context
 
@@ -95,10 +62,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Every file named in this task's description (all under `tests/unit/`) has a verdict in `docs/reports/T-3624-triage.md`: its failing tests, the commit that broke them, and whether it is a STALE TEST, a CODE REGRESSION or ENVIRONMENT, with the evidence
-- [x] Every stale test is fixed by editing test files only, and passes in isolation with no skips
-- [x] Every code regression has its own bug task (one bug, one task), with the evidence and the breaking commit, and is listed in the report. None is fixed here
-- [ ] `agents/audit/unit_suite_baseline.py regenerate` is run after the fixes. Entries that turned green drop out, and the remaining entries name their owning task
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -351,10 +316,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-10-01T08:13:25Z — task-created [task-create-agent]
+### 2026-10-01T08:49:17Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3624-obs-587-triage-d-17-untriaged-baselined-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3630-fw-doctor-dies-rc-128-in-a-project-that-.md
 - **Context:** Initial task creation
-
-### 2026-10-01T08:15:32Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work

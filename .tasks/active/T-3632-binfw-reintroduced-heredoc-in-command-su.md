@@ -1,19 +1,14 @@
 ---
-id: T-3624
-name: "OBS-587 triage D: 17 untriaged baselined red bats files (t3127..test_worker_kind_drift)"
+id: T-3632
+name: "bin/fw reintroduced heredoc-in-command-substitution (2 sites, L-332/L-408)"
 description: >
-  Untriaged entries in .context/audits/unit-suite/baseline.yaml (T-3621), expire 2026-10-15:
-  t3127_audit_timing_headroom t3161_empty_registry_does_not_wipe_live_cron t3182_loop_exit_recorder
-  t3202_audit_kill_source t3231_help_exemption_scope t3459_metrics_quality_cache task_id_race
-  test_audit_cron_drift test_audit_retire_when test_audit_watchdog_fd test_bin_fw_no_heredoc_cmd_sub
-  test_cron_registry_generated_drift test_doctor_litellm_ollama test_index_doctor_rail
-  test_orchestrator_status_synthetic_filter test_upgrade_runtime_downgrade_guard test_worker_kind_drift
+  OBS-587 triage (T-3624). tests/unit/test_bin_fw_no_heredoc_cmd_sub.bats test 1 (the T-1946 structural lint) is red: bin/fw:2288 '_adr_out=$(python3 - "$PROJECT_ROOT/.context/arcs" <<'PY' ...' added by 6cbc5dd55 (T-3429, audit+doctor reviewer-claim rail, 2026-09-22), and bin/fw:2803 '_crl_out=$(python3 - "$_crl" <<'PY' ...' added by b072d815f (T-3206, continuous-run armed state, 2026-08-28). The lint is correct and its synthetic positive/negative controls (tests 2-3) pass; the code violates the L-332/L-408 rule, so the fix is in bin/fw (move each heredoc to a helper script or a python3 -c / temp file form), not in the test. Report: docs/reports/T-3624-triage.md
 
-status: started-work
-workflow_type: test
+status: captured
+workflow_type: build
 owner: agent
-horizon: now
-tags: [tests, OBS-587]
+horizon: next
+tags: [bug, OBS-587]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -42,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-01T08:13:25Z
-last_update: 2026-10-01T08:16:22Z
-date_finished:
+created: 2026-10-01T08:50:10Z
+last_update: 2026-10-01T08:50:10Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -55,37 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-01T08:15:20Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 1
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=1 
-      (workflow:test); effort=8 (lines=271,acs=6)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-01T08:15:32Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3624: OBS-587 triage D: 17 untriaged baselined red bats files (t3127..test_worker_kind_drift)
+# T-3632: bin/fw reintroduced heredoc-in-command-substitution (2 sites, L-332/L-408)
 
 ## Context
 
@@ -95,10 +62,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Every file named in this task's description (all under `tests/unit/`) has a verdict in `docs/reports/T-3624-triage.md`: its failing tests, the commit that broke them, and whether it is a STALE TEST, a CODE REGRESSION or ENVIRONMENT, with the evidence
-- [x] Every stale test is fixed by editing test files only, and passes in isolation with no skips
-- [x] Every code regression has its own bug task (one bug, one task), with the evidence and the breaking commit, and is listed in the report. None is fixed here
-- [ ] `agents/audit/unit_suite_baseline.py regenerate` is run after the fixes. Entries that turned green drop out, and the remaining entries name their owning task
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -351,10 +316,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-10-01T08:13:25Z — task-created [task-create-agent]
+### 2026-10-01T08:50:10Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3624-obs-587-triage-d-17-untriaged-baselined-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3632-binfw-reintroduced-heredoc-in-command-su.md
 - **Context:** Initial task creation
-
-### 2026-10-01T08:15:32Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
