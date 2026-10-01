@@ -323,6 +323,10 @@ EOF
     _setup_audit_project
     _write_recommending_inception "T-9203" "captured" "$AUDIT_ROOT/.tasks/active/T-9203-deciding.md"
     echo "# research" > "$AUDIT_ROOT/docs/reports/T-9203-the-research.md"
+    # A clean corpus also references its artefact from the task: an unreferenced
+    # one WARNs "has artifact but task doesn't reference it" (T-194). That WARN
+    # was always emitted here; the negated assertion below only bit from T-3138.
+    echo "Research artefact: docs/reports/T-9203-the-research.md" >> "$AUDIT_ROOT/.tasks/active/T-9203-deciding.md"
 
     _run_oe_research
     echo "$CLEAN" | grep -qE '^\[PASS\] C-001: All inceptions have research artifacts — 0 started-work, 1 awaiting decision$'
