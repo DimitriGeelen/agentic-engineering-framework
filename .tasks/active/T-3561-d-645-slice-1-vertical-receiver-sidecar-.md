@@ -353,27 +353,17 @@ bin/fw vendor self --check
 
 ## Evolution
 
-<!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
-     understanding evolved during build — what was learned that wasn't known at
-     filing, what in the original plan no longer fits, what triggered pivots
-     or new sub-tasks. Mandatory at slice boundaries (when applicable) and
-     before --status work-completed.
+### 2026-10-02 — HTTP server implementation
 
-     Origin: T-1717 grill Q4 — "the understanding of what we need and want
-     evolves with the process of materialisation." Structural counter to §ACD:
-     spec-vs-build divergence is logged as soon as it happens, not lost as
-     folklore.
+- **What changed:** Initially designed only storage + adapter; realized HTTP server must be built as part of slice 1 (not deferred). The design spec requires "receiver sidecar process with HTTP API" not "receiver storage module".
+- **Plan impact:** Added lib/sidecar/http_server.py with minimal POST /message handler (authentication, RECEIVED response) and GET endpoints for health/status. This implements the transport layer that T-3475 specified (HTTP on localhost).
+- **Triggered:** Follow-on slices own TLS/cross-host variants (T-3688), authentication hardening (future), and full refusal ledger integration (T-3555 follows).
 
-     Format (one entry per slice boundary or significant insight):
-       ### YYYY-MM-DD — [topic]
-       - **What changed:** [what we learned that we didn't know at filing]
-       - **Plan impact:** [what in the plan no longer fits]
-       - **Triggered:** [new sub-task / pivot / scope cut, with task ID if filed]
+### 2026-10-02 — State renaming clarified by test evidence
 
-     The completion gate (T-1718) blocks --status work-completed when this
-     section exists but is empty/template-only. Use --skip-evolution to bypass
-     (logged Tier-2). Non-arc tasks may leave this empty.
--->
+- **What changed:** INJECTED_NOW was ambiguous: meant hub-acceptance by code, but name implied injection into agent. E2E tests proved the distinction matters: e2e proof differentiates "HUB_ACCEPTED" (transport) from "HANDED_OVER" (delivery).
+- **Plan impact:** Renamed INJECTED_NOW → HUB_ACCEPTED in outbox.py with backward compatibility alias. Clarifies that sender's second confirmation (HANDED_OVER) is distinct and infrastructure-set.
+- **Triggered:** No new tasks; clarification anchors to T-3397 design's two-confirmation model and feeds into T-3555 refusal ledger (states must be correct before recording).
 
 ## Recommendation
 
