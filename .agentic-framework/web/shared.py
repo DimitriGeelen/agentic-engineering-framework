@@ -562,6 +562,7 @@ VIEWABLE_DIR_PREFIXES = (
     "docs/dispatch-templates/",
     "docs/adr/",       # T-3587: cited as evidence on /approvals
     "docs/runbooks/",  # T-3587: cited as evidence on /approvals
+    "docs/arcs/",      # T-3649: arc dossier location (docs/arcs/<id>/README.md, T-3565)
     ".tasks/active/",
     ".tasks/completed/",
     ".context/handovers/",
@@ -1053,7 +1054,7 @@ def protect_path_underscores(text: str) -> str:
     return "".join(parts)
 
 
-def render_markdown_safe(text: str) -> str:
+def render_markdown_safe(text: str, extras: list[str] | None = None) -> str:
     """Render Markdown to HTML with safe_mode='escape', auto-link T-XXX refs
     and bare http(s) URLs.
 
@@ -1065,6 +1066,11 @@ def render_markdown_safe(text: str) -> str:
     Origin: T-1575 — /review surface dumped raw markdown into a `<pre>` block.
     Promoted here (rather than reused from tasks.py) to break the blueprint-
     private parser pattern called out in the T-1575 RCA.
+
+    T-3649 (055 framework:pickup @236): optional markdown2 ``extras`` (e.g.
+    ["tables", "fenced-code-blocks", "header-ids"]) so a caller that needs
+    tables keeps this link pipeline instead of calling markdown2 directly.
+    ``extras=None`` is the previous behaviour exactly.
     """
     if not text:
         return ""
@@ -1075,7 +1081,10 @@ def render_markdown_safe(text: str) -> str:
     text = _TASK_REF_RE_SHARED.sub(r"[\1](/tasks/\1)", text)
     text = protect_path_underscores(text)
     text = _BARE_URL_RE_SHARED.sub(lambda m: f"[{m.group(1).rstrip('.,;:!?')}]({m.group(1).rstrip('.,;:!?')})", text)
-    html = markdown2.markdown(text, safe_mode="escape").strip()
+    if extras:
+        html = markdown2.markdown(text, safe_mode="escape", extras=list(extras)).strip()
+    else:
+        html = markdown2.markdown(text, safe_mode="escape").strip()
     # T-1575 codification: backticked URLs (`<code>http://...</code>`) are also
     # clickable. Rendering layer is the contract — agent need not remember to
     # avoid backticks around URLs.

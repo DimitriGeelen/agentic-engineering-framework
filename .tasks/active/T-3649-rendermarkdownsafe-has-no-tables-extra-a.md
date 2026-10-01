@@ -12,7 +12,7 @@ description: >
   for the dossier rendering in T-3565. Render surface: needs a [REVIEW] Human AC and
   watchtower restart + currency check. Triage: T-3639.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T13:25:23Z
-last_update: '2026-10-01T13:30:37Z'
+last_update: 2026-10-01T13:43:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,16 +92,25 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Port of 055-agentic-fleet-cockpit's link fix (framework:pickup offset 236, P-005 correction to offset 235; their T-344), re-derived against our `web/shared.py`. Our planned dossier location is the same (`docs/arcs/<id>/README.md`, T-3563 report / T-3565), so this is the prerequisite for T-3565 rendering the dossier through the one link pipeline. Triage row 15 in `docs/reports/T-3639-055-fix-triage.md`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproducing tests in `tests/unit/test_t3649_render_extras_viewable.py` are RED before the fix: `render_markdown_safe(md, extras=["tables"])` returns a `<table>` while the T-XXX ref and an existing artefact path inside a table cell are still links; `is_viewable_path("docs/arcs/<id>/README.md")` is True.
+- [x] Fix: `render_markdown_safe(text, extras=None)` — default output byte-identical to before (test pins `extras=None` == no-arg call and that a pipe table is NOT a `<table>` by default); `"docs/arcs/"` added to `VIEWABLE_DIR_PREFIXES`.
+- [x] No regression: `tests/unit/test_render_artefact_paths.py`, `tests/unit/test_t3587_file_refs.py` and `tests/unit/test_extract_recommendation.py` pass; vendored copy of `web/shared.py` byte-identical; Watchtower restarted and `bin/fw watchtower current` exits 0.
 
 ### Human
+- [ ] [REVIEW] Default task-body rendering is unchanged on a live review page
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url`
+  2. Open `<that url>/review/T-3642` in a browser.
+  3. Look at the Acceptance Criteria and RCA text: `T-NNNN` references and file paths such as `tests/unit/test_t3642_escalation_negation.py` should be links, and there should be no new tables or layout changes.
+  **Expected:** The page looks as it did before this change, and its links still open.
+  **If not:** Screenshot the area that changed and note which link is broken; revert `web/shared.py` to the commit before T-3649.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -260,6 +269,11 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/test_t3649_render_extras_viewable.py -q > /tmp/.t3649v1 2>&1 && grep -q passed /tmp/.t3649v1
+python3 -m pytest tests/unit/test_render_artefact_paths.py tests/unit/test_t3587_file_refs.py tests/unit/test_extract_recommendation.py tests/unit/test_file_route_extensions.py tests/unit/test_auto_link_root_and_articles.py tests/unit/test_file_viewer_unservable.py -q > /tmp/.t3649v2 2>&1 && grep -q passed /tmp/.t3649v2
+cmp -s web/shared.py .agentic-framework/web/shared.py
+bin/fw watchtower current
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -275,6 +289,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** in 055, the arc dossier's tables rendered but none of its task or file references were clickable, and `/file/docs/arcs/<id>/README.md` returned 404.
+
+**Root cause:** `render_markdown_safe(text)` (web/shared.py) hard-codes the markdown2 call with no extras, so a caller that needs tables has to call `markdown2.markdown` directly, which skips the whole link pipeline (T-XXX refs, bare URLs, T-1722 artefact paths). `docs/arcs/` was never added to `VIEWABLE_DIR_PREFIXES`, so the linker would not link it and the route refused it.
+
+**Why structurally allowed:** the shared renderer had one shape, so callers routed around it rather than through it (`inception.py:34` and `docs.py` already call markdown2 directly with `tables`). Nothing ties a new doc location to the viewable-prefix list until something links to it.
+
+**Prevention:** the `extras` parameter gives table-needing callers a route through the link pipeline; `tests/unit/test_t3649_render_extras_viewable.py` pins the table and link behaviour and the `docs/arcs/` prefix, and pins the default output as unchanged.
 
 ## Evolution
 
@@ -329,6 +351,13 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** The change only adds things. `render_markdown_safe` gets an optional `extras` argument, and leaving it out produces exactly the same output as before (a test checks this). `docs/arcs/` is added to the list of paths the file viewer will serve. No current caller passes `extras` yet; T-3565's dossier will be the first. The one thing left to check by eye is that existing review pages look the same.
+**Evidence:**
+- `tests/unit/test_t3649_render_extras_viewable.py`: 4 tests, red before the fix and green after.
+- 6 neighbouring render/file-route suites pass (112 + 43 tests).
+- Watchtower restarted; `bin/fw watchtower current` exits 0; `/review/T-3642` and `/file/docs/reports/T-3639-055-fix-triage.md` both return 200.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -356,3 +385,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3649-rendermarkdownsafe-has-no-tables-extra-a.md
 - **Context:** Initial task creation
+
+### 2026-10-01T13:43:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
