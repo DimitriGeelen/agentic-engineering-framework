@@ -171,12 +171,17 @@ PY
 
 # ── D6: scope — the fix must not change interactive behaviour ──────────────
 
-@test "D6: a NON-headless restart still relaunches with an empty argv (fresh session)" {
+@test "D6: a NON-headless restart relaunches a fresh, prompt-free session" {
     write_signal "$DIRECTIVE"
     run_interactive
 
+    # Fresh (no -c) and no prompt. T-3629: no longer an EMPTY argv — an empty
+    # argv opens Claude Code 2.1.28x's agents overview under
+    # defaultToAgentsView — so the relaunch carries only `-n <name>`.
     got=$(relaunch_argv | head -1)
-    [ -z "$got" ]
+    [[ "$got" == "-n "* ]]
+    [[ "$got" != *"-c"* ]]
+    [[ "$got" != *"$DIRECTIVE"* ]]
 }
 
 # ── C1: the control leg ─────────────────────────────────────────────────────

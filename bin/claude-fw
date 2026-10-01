@@ -521,10 +521,27 @@ _print_startup_banner
 _record_loop_event start armed \
     "restart=$([ "$AUTO_RESTART" = false ] && echo disabled || echo enabled) max_restarts=${MAX_RESTARTS} window=${RESTART_WINDOW}s armed=$(_continuous_armed && echo yes || echo no) termlink=${TERMLINK_ENABLED:-0}"
 
+# T-3629: a relaunch must never hand claude an empty argv. Claude Code 2.1.28x
+# opens its AGENTS OVERVIEW, not a conversation, when started with no arguments
+# and the user's ~/.claude.json has `defaultToAgentsView: true` — so every fresh
+# restart (CLAUDE_ARGS=(), T-3166) parked the agent in the overview with the
+# injected handover addressed to no session (055 P-016: 9 of 13 fleet agents
+# idle). Any real argument takes the conversation path; `-n <name>` also labels
+# the session. The name is restricted to [A-Za-z0-9._-] because the TermLink
+# path joins CLAUDE_ARGS with spaces into one shell line.
+_name_fresh_relaunch() {
+    [ "$restart_count" -gt 0 ] || return 0
+    [ "${#CLAUDE_ARGS[@]}" -eq 0 ] || return 0
+    local base
+    base=$(printf '%s' "${PWD##*/}" | tr -c 'A-Za-z0-9._-' '-')
+    CLAUDE_ARGS=("-n" "fw-${base}-r${restart_count}")
+}
+
 while true; do
     # T-2373: record when this run started so the terminator only acts on a
     # signal written DURING the run (edge case a — not a leftover/stale signal).
     run_start_epoch=$(date +%s)
+    _name_fresh_relaunch # T-3629
     # Run claude with user's arguments
     set +e
     if [ "$TERMLINK_ENABLED" = "1" ] && [ -n "$TERMLINK_SESSION" ]; then

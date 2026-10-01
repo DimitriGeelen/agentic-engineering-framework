@@ -1,10 +1,15 @@
 ---
 id: T-3629
-name: "claude-fw fresh restart with empty CLAUDE_ARGS lands Claude Code 2.1.28x in its agents overview, not a new conversation (055 P-016)"
+name: "claude-fw fresh restart with empty CLAUDE_ARGS lands Claude Code 2.1.28x in
+  its agents overview, not a new conversation (055 P-016)"
 description: >
-  055 measured on .107: plain 'claude' on 2.1.286 opens the agents overview; 'claude -n <name>' opens a new conversation; 9 of 13 fleet agents sat idle. claude-fw sets CLAUDE_ARGS=() on fresh restarts (T-3166 paths ~817/917); termlink path joins args with spaces (~577) so the name must have none. Verify on this host's claude version before changing.
+  055 measured on .107: plain 'claude' on 2.1.286 opens the agents overview; 'claude
+  -n <name>' opens a new conversation; 9 of 13 fleet agents sat idle. claude-fw sets
+  CLAUDE_ARGS=() on fresh restarts (T-3166 paths ~817/917); termlink path joins args
+  with spaces (~577) so the name must have none. Verify on this host's claude version
+  before changing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T08:48:42Z
-last_update: 2026-10-01T08:48:42Z
-date_finished: null
+last_update: 2026-10-01T13:31:27Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +55,54 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-01T09:00:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-01T09:00:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3629: claude-fw fresh restart with empty CLAUDE_ARGS lands Claude Code 2.1.28x in its agents overview, not a new conversation (055 P-016)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Verified on this host before changing anything (2026-10-01): `claude --version` = 2.1.286,
+the same as 055's .107. In the 2.1.286 binary, the startup path computes
+`i = getGlobalConfig().defaultToAgentsView === true` and takes the agents-view branch only
+when `st(args)` holds. `st()` returns true only for an argv that is empty apart from debug
+flags. This host's `~/.claude.json` has `"defaultToAgentsView": true`, so a promptless
+relaunch lands in the agents overview here too. Any real argument, such as `-n <name>`, takes
+the conversation path.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproducer: `tests/unit/t3629_fresh_relaunch_not_agents_view.bats`. A stub `claude` records argv. An interactive budget restart and an interactive armed re-arm each relaunch with a non-empty argv carrying `-n <name>`, where the name has no whitespace. It is red before the fix (relaunch argv empty)
+- [x] Fix in `bin/claude-fw`: a relaunch whose argv would be empty gets `-n <sanitised name>` at the launch point, on both the direct and TermLink paths. The first launch, `-c`, and headless `-p` relaunches are unchanged
+- [x] No regression: `claude_fw_restart_mode`, `t3247_restart_headless_prompt` (D6 updated: it pinned the empty argv this task removes), `t3249_rearm_headless_prompt`, `t3243_supervisor_restart_policy`, `t3346_termlink_exit_marker`, `t3358_claude_fw_exit_detection` and `claude_fw_copy_not_symlink` are green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -224,6 +263,14 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 590 bats tests/unit/t3629_fresh_relaunch_not_agents_view.bats > /tmp/.t3629-r.out 2>&1 && ! grep -q "^not ok" /tmp/.t3629-r.out && grep -q "^ok 6 " /tmp/.t3629-r.out
+test "$(grep -c '# skip' /tmp/.t3629-r.out)" -eq 0
+timeout 590 bats tests/unit/claude_fw_restart_mode.bats tests/unit/t3247_restart_headless_prompt.bats tests/unit/t3249_rearm_headless_prompt.bats tests/unit/t3243_supervisor_restart_policy.bats > /tmp/.t3629-n1.out 2>&1 && ! grep -q "^not ok" /tmp/.t3629-n1.out
+timeout 590 bats tests/unit/t3346_termlink_exit_marker.bats tests/unit/t3358_claude_fw_exit_detection.bats tests/unit/claude_fw_copy_not_symlink.bats > /tmp/.t3629-n2.out 2>&1 && ! grep -q "^not ok" /tmp/.t3629-n2.out
+test "$(cat /tmp/.t3629-n1.out /tmp/.t3629-n2.out | grep -c '# skip')" -eq 0
+bash -n bin/claude-fw
+bin/fw vendor self --check
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -239,6 +286,24 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** after a budget restart or armed re-arm, claude-fw-supervised fleet agents sat
+in Claude Code's agents overview instead of a conversation. 9 of 13 agents on 055's .107
+were idle, and the SessionStart-injected handover/directive had no session to act in.
+
+**Root cause:** T-3166 made fresh restarts relaunch `claude` with `CLAUDE_ARGS=()`. On Claude
+Code 2.1.28x, an empty argv plus a user-level `defaultToAgentsView: true` opens the agents
+view (binary: `R = y || i` behind `st(args)`, which holds only for an empty argv). The wrapper
+had assumed an empty argv means "new interactive conversation". That assumption belongs to
+the CLI version and the user's config, not to the wrapper.
+
+**Why structurally allowed:** the restart tests stub `claude` and assert on argv shape, and
+they pinned the empty argv as correct (t3247 D6). No test models what the real CLI does with
+that argv, and a user-level config toggle can change it.
+
+**Prevention:** relaunch argv is never empty, so a no-argument CLI default cannot capture it.
+`t3629_fresh_relaunch_not_agents_view.bats` pins that on both relaunch paths, with a
+mutation leg.
 
 ## Evolution
 
@@ -320,3 +385,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3629-claude-fw-fresh-restart-with-empty-claud.md
 - **Context:** Initial task creation
+
+### 2026-10-01T13:31:27Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
