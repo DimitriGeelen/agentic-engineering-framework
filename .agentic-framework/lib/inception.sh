@@ -605,7 +605,10 @@ do_inception_decide() {
 
         local _ac_section _agent_acs _agent_total _agent_checked _agent_unchecked
         # T-3148: anchored, FIRST-WINS extraction (lib/section-extract.sh).
-        _ac_section=$(extract_ac_section "$task_file" | sed '/<!--/,/-->/d')
+        # T-3696: structural strip (lib/comment_strip.py). `sed '/<!--/,/-->/d'`
+        # opened a range on a one-line comment and ran to the NEXT -->, deleting
+        # the real Agent ACs between and letting the unchecked-AC gate pass.
+        _ac_section=$(extract_ac_section "$task_file" | python3 "${FRAMEWORK_ROOT:-$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)}/lib/comment_strip.py")
         if echo "$_ac_section" | grep -q '^### Agent'; then
             _agent_acs=$(echo "$_ac_section" | awk '/^### Agent/{f=1; next} /^### /{f=0} f')
             _agent_total=$(echo "$_agent_acs" | grep -cE '^\s*-\s*\[[ x]\]' || true)
