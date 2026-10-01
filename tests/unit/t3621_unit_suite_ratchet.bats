@@ -58,6 +58,7 @@ schema: unit-suite-report-v2
 task: T-3621
 started: '$fin'
 finished: '$fin'
+suite_dir: tests/unit
 timeout_seconds: 7200
 timed_out: false
 runner_exit: 1

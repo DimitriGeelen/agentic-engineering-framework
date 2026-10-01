@@ -14,7 +14,7 @@ description: >
   directory rather than guess. Verify the invariant (label == report suite_dir), not
   a literal. Triage: T-3639.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T13:26:06Z
-last_update: '2026-10-01T13:30:38Z'
+last_update: 2026-10-01T13:46:57Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,14 +94,15 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Port of 055-agentic-fleet-cockpit's finding (framework:pickup offset 225, their commit 2926e85), re-derived against our `agents/audit/audit.sh` `check_unit_suite_report`. Triage row 16 in `docs/reports/T-3639-055-fix-triage.md`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproducing test `tests/unit/t3650_unit_suite_label_suite_dir.bats` (extracts the shipped check, fixture reports) is RED before the fix: with a report whose `suite_dir` is `<PROJECT_ROOT>/tests` (a flat consumer layout), the green, red and stale lines name `(tests)`, and no output line contains `tests/unit`. It asserts the invariant (label == report `suite_dir` made relative to PROJECT_ROOT), using two different layouts, not a single literal.
+- [x] Fix: the report parser emits `suite_dir` relative to PROJECT_ROOT, and every path that has a report uses it in the label. The missing-report and unparseable-report paths, and a report without `suite_dir`, name no directory rather than guess.
+- [x] No regression: `t3302_unit_suite_schedule.bats`, `t3602_unit_suite_partial_run.bats` and `t3621_unit_suite_ratchet.bats` pass; vendored `agents/audit/audit.sh` byte-identical. (Seven of their assertions pinned the old literal: two assertions were updated to the new contract, and two fixtures that had no `suite_dir` now carry `suite_dir: tests/unit`.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -262,6 +263,10 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 600 bats tests/unit/t3650_unit_suite_label_suite_dir.bats tests/unit/t3302_unit_suite_schedule.bats tests/unit/t3602_unit_suite_partial_run.bats tests/unit/t3621_unit_suite_ratchet.bats > /tmp/.t3650v 2>&1 && ! grep -q "^not ok" /tmp/.t3650v
+test "$(grep -c '# skip' /tmp/.t3650v)" -eq 0
+cmp -s agents/audit/audit.sh .agentic-framework/agents/audit/audit.sh
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -277,6 +282,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** in a consumer with a flat `tests/` layout (055), `fw audit` printed `Unit suite (tests/unit) green — examined 748 unit test(s) (tests/unit)`, naming a directory that does not exist there. 055 filed two urgent observations and two false blockers about a coverage hole that did not exist.
+
+**Root cause:** `check_unit_suite_report` hard-codes the literal `tests/unit` in every message path. The measurement comes from `.context/audits/unit-suite/LATEST.yaml`, which records its own `suite_dir`, but the parser never reads that field.
+
+**Why structurally allowed:** the label is correct in this repo, which is the only place the check's tests ran. The fixtures pin `suite_dir: tests/unit` and no assertion compares the label to the report. The verdict was right; only the noun was wrong, and nothing checks nouns.
+
+**Prevention:** `t3650_unit_suite_label_suite_dir.bats` asserts label == report `suite_dir` across two layouts, and that the no-report and unparseable paths name no directory.
 
 ## Evolution
 
@@ -358,3 +371,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3650-unit-suite-audit-line-hard-codes-testsun.md
 - **Context:** Initial task creation
+
+### 2026-10-01T13:46:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

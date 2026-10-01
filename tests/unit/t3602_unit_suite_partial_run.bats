@@ -109,6 +109,7 @@ EOF
     cat > "$WORK/v1.yaml" <<EOF
 schema: unit-suite-report-v1
 finished: '$(date -u +%FT%TZ)'
+suite_dir: tests/unit
 timeout_seconds: 7200
 timed_out: true
 runner_exit: 1

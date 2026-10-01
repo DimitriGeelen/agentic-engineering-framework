@@ -3502,7 +3502,8 @@ check_dead_negation_lint
 # unrun remainder is not a PASS (nothing was proven), but a recorded `not ok` is
 # a verdict whether or not the run later hit its ceiling (OBS-587 — treating the
 # whole list as unproven hid 46 red files for three weeks).
-# The line text names its corpus ("unit suite (tests/unit)") — the whole point
+# The line text names its corpus ("Unit suite (<suite_dir>)", the report's own
+# suite_dir relative to PROJECT_ROOT — T-3650; never a literal) — the whole point
 # of OBS-361 is that a green line must not answer a broader question than the
 # one it examined (same family as the invariant-suite rewording above).
 #
@@ -3523,8 +3524,8 @@ check_unit_suite_report() {
     local _report="${FW_UNIT_SUITE_REPORT:-$CONTEXT_DIR/audits/unit-suite/LATEST.yaml}"
     local _baseline="${FW_UNIT_SUITE_BASELINE:-$CONTEXT_DIR/audits/unit-suite/baseline.yaml}"
     if [ ! -f "$_report" ]; then
-        warn "Unit suite (tests/unit) NOT CHECKED — no report at .context/audits/unit-suite/LATEST.yaml (T-3302)" \
-             "The nightly unit-suite runner has not produced a report; tests/unit reds are invisible until it does" \
+        warn "Unit suite NOT CHECKED — no report at .context/audits/unit-suite/LATEST.yaml (T-3302)" \
+             "The nightly unit-suite runner has not produced a report; unit-suite reds are invisible until it does" \
              "Run once by hand: agents/audit/unit-suite.sh — or wait for the nightly cron (unit-suite-nightly)"
         return 0
     fi
@@ -3533,7 +3534,7 @@ check_unit_suite_report() {
     # ran", the per-file timeouts by name, and 1 when anything was left
     # undetermined (run ceiling hit, a file killed, or files never reached).
     local _parsed
-    _parsed=$(python3 - "$_report" "$_baseline" <<'PYEOF' 2>/dev/null
+    _parsed=$(python3 - "$_report" "$_baseline" "${PROJECT_ROOT:-}" <<'PYEOF' 2>/dev/null
 import sys, yaml, datetime
 try:
     d = yaml.safe_load(open(sys.argv[1])) or {}
@@ -3615,18 +3616,26 @@ try:
         bl_state = "bad"
     def _bound(xs):
         return "; ".join(xs[:25] + (["... +%d more" % (len(xs) - 25)] if len(xs) > 25 else [])).replace("|", "/")
-    print("%d|%d|%d|%d|%d|%d|%s|%s|%s|%d|%s|%d|%d|%d|%s|%s" % (
+    # T-3650 (055 framework:pickup @225): name the directory the report
+    # measured, relative to PROJECT_ROOT — not a literal that is only true in
+    # this repo. No suite_dir in the report → empty → no directory named.
+    sd = str(d.get("suite_dir") or "").rstrip("/")
+    root = (sys.argv[3] if len(sys.argv) > 3 else "").rstrip("/")
+    if sd and root and sd.startswith(root + "/"):
+        sd = sd[len(root) + 1:]
+    print("%d|%d|%d|%d|%d|%d|%s|%s|%s|%d|%s|%d|%d|%d|%s|%s|%s" % (
         total, failed, rc, age_h, to, tos,
         "; ".join(shown).replace("|", "/"), ran,
         ", ".join(ftimed).replace("|", "/"), partial,
-        bl_state, n_base, len(new), len(expired), _bound(new), _bound(expired)))
+        bl_state, n_base, len(new), len(expired), _bound(new), _bound(expired),
+        sd.replace("|", "/")))
 except Exception:
     pass
 PYEOF
 )
     if [ -z "$_parsed" ]; then
         warn_unenumerable ".context/audits/unit-suite/LATEST.yaml" \
-             "Unit suite (tests/unit) green" \
+             "Unit suite green" \
              "The report exists but could not be parsed — 'could not read' must not render as green (T-3302)" \
              "Inspect the report, then re-run: agents/audit/unit-suite.sh"
         return 0
@@ -3634,9 +3643,10 @@ PYEOF
 
     local _us_total _us_failed _us_rc _us_age _us_timedout _us_timeout_s _us_names
     local _us_ran _us_ftimed _us_partial
-    local _us_bl _us_nbase _us_nnew _us_nexp _us_new _us_exp
+    local _us_bl _us_nbase _us_nnew _us_nexp _us_new _us_exp _us_dir
     IFS='|' read -r _us_total _us_failed _us_rc _us_age _us_timedout _us_timeout_s _us_names \
-        _us_ran _us_ftimed _us_partial _us_bl _us_nbase _us_nnew _us_nexp _us_new _us_exp <<< "$_parsed"
+        _us_ran _us_ftimed _us_partial _us_bl _us_nbase _us_nnew _us_nexp _us_new _us_exp _us_dir <<< "$_parsed"
+    local _us_label="Unit suite${_us_dir:+ ($_us_dir)}"
 
     local _us_ceiling_txt="its timeout ceiling"
     [ "${_us_timeout_s:-0}" -gt 0 ] && _us_ceiling_txt="its ${_us_timeout_s}s ceiling"
@@ -3666,23 +3676,23 @@ PYEOF
         esac
         if _audit_is_prepush_scope && [ "${_us_bl:-none}" = "ok" ]; then
             if [ "${_us_nnew:-0}" -gt 0 ] || [ "${_us_nexp:-0}" -gt 0 ]; then
-                fail "Unit suite (tests/unit): ${_us_nnew} NEW red(s), ${_us_nexp} EXPIRED baselined red(s) — pre-push ratchet (T-3621)" \
+                fail "$_us_label: ${_us_nnew} NEW red(s), ${_us_nexp} EXPIRED baselined red(s) — pre-push ratchet (T-3621)" \
                      "${_us_incomplete}NEW (not in baseline): ${_us_new:-none}. EXPIRED (baselined, past expiry): ${_us_exp:-none}. ${_us_nbase} other baselined red(s) grade WARN" \
                      "New red: fix it or file a task (one bug = one task); only the operator may accept it into the baseline (python3 agents/audit/unit_suite_baseline.py add --i-am-human --name '<name>'). Expired: fix it, or the operator re-arms it the same way. Report: .context/audits/unit-suite/LATEST.yaml"
                 return 0
             fi
-            warn "Unit suite (tests/unit): ${_us_nbase} BASELINED red(s), 0 new, 0 expired — pre-push ratchet grade; the full fw audit still FAILs them (T-3621)" \
+            warn "$_us_label: ${_us_nbase} BASELINED red(s), 0 new, 0 expired — pre-push ratchet grade; the full fw audit still FAILs them (T-3621)" \
                  "${_us_incomplete:-$_us_ran. }runner_exit=$_us_rc; baseline: $_baseline. Baselined reds are a known backlog owned by their triage tasks, not green" \
                  "Fix the reds via their owning tasks (owner: in the baseline); once a nightly run shows them green, shrink the baseline: python3 agents/audit/unit_suite_baseline.py regenerate"
             # Unchanged rule: a stale report is still called stale.
             if [ "$_us_age" -lt 0 ] || [ "$_us_age" -ge 48 ]; then
-                warn "Unit suite (tests/unit) report STALE — last run ${_us_age}h ago, threshold 48h (T-3302)" \
+                warn "$_us_label report STALE — last run ${_us_age}h ago, threshold 48h (T-3302)" \
                      "The nightly unit-suite cron (unit-suite-nightly) has not produced a fresh report; reds since then are invisible" \
                      "Check the schedule (fw cron status, grep 'agentic-cron' syslog) or run by hand: agents/audit/unit-suite.sh"
             fi
             return 0
         fi
-        fail "Unit suite (tests/unit): $_us_failed of $_us_total unit test(s) RED (T-3302, T-3602)" \
+        fail "$_us_label: $_us_failed of $_us_total unit test(s) RED (T-3302, T-3602)" \
              "${_us_incomplete:-$_us_ran. }${_us_bl_note}runner_exit=$_us_rc; recorded failures: ${_us_names:-none listed}" \
              "Read the report (.context/audits/unit-suite/LATEST.yaml), fix or file per red (one bug = one task), re-run: agents/audit/unit-suite.sh"
         return 0
@@ -3692,14 +3702,14 @@ PYEOF
     # PASS. The unmeasured remainder is UNKNOWN, not green (OBS-392 still holds
     # for the tests that did not run).
     if [ "${_us_partial:-0}" -eq 1 ]; then
-        warn "Unit suite (tests/unit) COULD NOT DETERMINE — $_us_ran, no failures recorded (T-3302, T-3602)" \
+        warn "$_us_label COULD NOT DETERMINE — $_us_ran, no failures recorded (T-3302, T-3602)" \
              "${_us_incomplete}timed_out=$([ "${_us_timedout:-0}" -eq 1 ] && echo true || echo false), runner_exit=$_us_rc, report ${_us_age}h old. The tests that ran recorded no failure; the rest are UNMEASURED, not green" \
-             "Get the named files under their per-file cap (FW_UNIT_SUITE_FILE_TIMEOUT) or raise the run budget (FW_UNIT_SUITE_TIMEOUT / FW_UNIT_SUITE_JOBS). Until a run completes, treat the unrun part of tests/unit as UNKNOWN"
+             "Get the named files under their per-file cap (FW_UNIT_SUITE_FILE_TIMEOUT) or raise the run budget (FW_UNIT_SUITE_TIMEOUT / FW_UNIT_SUITE_JOBS). Until a run completes, treat the unrun part of the suite as UNKNOWN"
         return 0
     fi
 
     if [ "$_us_rc" -ne 0 ]; then
-        fail "Unit suite (tests/unit): $_us_failed of $_us_total unit test(s) RED (T-3302)" \
+        fail "$_us_label: $_us_failed of $_us_total unit test(s) RED (T-3302)" \
              "runner_exit=$_us_rc; first failures: ${_us_names:-none listed}" \
              "Read the report (.context/audits/unit-suite/LATEST.yaml), fix or file per red (one bug = one task), re-run: agents/audit/unit-suite.sh"
         return 0
@@ -3708,13 +3718,13 @@ PYEOF
     # A report older than two nightly slots means the schedule itself broke —
     # "checked two days ago" must not keep rendering as "checked".
     if [ "$_us_age" -lt 0 ] || [ "$_us_age" -ge 48 ]; then
-        warn "Unit suite (tests/unit) report STALE — last run ${_us_age}h ago, threshold 48h (T-3302)" \
+        warn "$_us_label report STALE — last run ${_us_age}h ago, threshold 48h (T-3302)" \
              "The nightly unit-suite cron (unit-suite-nightly) has not produced a fresh report; reds since then are invisible" \
              "Check the schedule (fw cron status, grep 'agentic-cron' syslog) or run by hand: agents/audit/unit-suite.sh"
         return 0
     fi
 
-    pass_over "$_us_total" "unit test(s) (tests/unit)" "Unit suite (tests/unit) green" \
+    pass_over "$_us_total" "unit test(s)${_us_dir:+ ($_us_dir)}" "$_us_label green" \
          "report parsed but recorded zero tests across both legs — a harness error, not a green corpus (T-3302)" \
          "Run manually and read the output: agents/audit/unit-suite.sh"
 }

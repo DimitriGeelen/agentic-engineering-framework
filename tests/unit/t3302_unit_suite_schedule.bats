@@ -354,7 +354,8 @@ PY
 @test "t3302 audit WARNs when the report is missing" {
     _run_audit_check "$WORK/does-not-exist.yaml"
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q '^WARN|Unit suite (tests/unit) NOT CHECKED'
+    # T-3650: no report → no suite_dir to read → no directory named.
+    echo "$output" | grep -q '^WARN|Unit suite NOT CHECKED'
     ! echo "$output" | grep -qE '^(PASS|FAIL)\|'
 }
 
@@ -387,5 +388,8 @@ PY
 @test "t3302 shipped audit source names both corpora, not the bare word 'suite'" {
     grep -q 'Invariant suite (tests/lint) green' "$REPO_ROOT/agents/audit/audit.sh"
     grep -q 'Invariant suite (tests/lint): \$_red of \$_total' "$REPO_ROOT/agents/audit/audit.sh"
-    grep -q 'Unit suite (tests/unit) green' "$REPO_ROOT/agents/audit/audit.sh"
+    # T-3650: the unit-suite corpus is named from the report's own suite_dir,
+    # not a literal (tests/unit is only true in this repo).
+    grep -qF '_us_label="Unit suite${_us_dir:+ ($_us_dir)}"' "$REPO_ROOT/agents/audit/audit.sh"
+    grep -qF '"$_us_label green"' "$REPO_ROOT/agents/audit/audit.sh"
 }
