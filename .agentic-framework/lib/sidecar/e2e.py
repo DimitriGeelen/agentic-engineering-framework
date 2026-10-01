@@ -168,7 +168,10 @@ def _fw_bin() -> str:
     env = os.environ.get("FW_BIN")
     if env:
         return env
-    return str(outbox._root() / "bin" / "fw")
+    fw = outbox._framework_root() / "bin" / "fw"
+    if not fw.is_file():
+        fw = outbox._root() / "bin" / "fw"
+    return str(fw)
 
 
 def real_send(sender: str, responder: str, body: str, conversation_id: str):

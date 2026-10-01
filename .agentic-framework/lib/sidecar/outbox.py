@@ -33,11 +33,36 @@ UNKNOWN = "UNKNOWN"
 TERMINAL_STATES = frozenset({INJECTED_NOW, INJECTED_LATER, UNKNOWN})
 
 
-def _root() -> Path:
+def _framework_root() -> Path:
+    """Where the framework code lives (`<project>/.agentic-framework` when vendored)."""
     env = os.environ.get("FRAMEWORK_ROOT")
     if env:
         return Path(env)
     return Path(__file__).resolve().parents[2]
+
+
+def _is_project_root(d: Path) -> bool:
+    return (d / ".framework.yaml").is_file() or (
+        (d / "FRAMEWORK.md").is_file() and (d / "bin" / "fw").is_file())
+
+
+def _root() -> Path:
+    """The CONSUMER project root: sidecar state and identity live here, never in
+    the vendored `.agentic-framework` dir (T-3671). PROJECT_ROOT, else the
+    nearest ancestor of cwd holding `.framework.yaml` (or the framework repo
+    itself), else the framework root with a vendored `.agentic-framework`
+    stripped."""
+    env = os.environ.get("PROJECT_ROOT")
+    if env:
+        return Path(env)
+    cwd = Path.cwd().resolve()
+    for d in (cwd, *cwd.parents):
+        if _is_project_root(d):
+            return d
+    fw = _framework_root()
+    if fw.name == ".agentic-framework":
+        return fw.parent
+    return fw
 
 
 def _outbox_dir() -> Path:
