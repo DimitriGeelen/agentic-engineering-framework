@@ -16,7 +16,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-01T15:59:37Z
-last_update: 2026-10-01T16:00:45Z
+last_update: '2026-10-01T16:15:18Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -43,6 +43,16 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-01T16:15:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=144,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3667: Standing arcs (FW-NNN): never-closing arcs where tasks flow in continuously, get scored, park when low-value, and are bundled or mined for patterns — FW-001 audit findings, FW-002 inception review loop
@@ -58,25 +68,25 @@ bvp_scores_proposed:
 ## Open Questions
 
 - **IW-1: What is a standing arc's lifecycle?** It needs a `standing` status that never closes, so it is exempt from the §ACD demo/close gate and the stale-arc WARN. What replaces them as health checks: inflow versus outflow, the oldest item's age, the score distribution?
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: "Standing" is an arc KIND with the full arc mechanics (operator 2026-10-01): headline, goal, `supports:` objectives, scoped drivers. It is exempt only from close/demo (replaced by a human-only retire) and from commit-staleness (replaced by resolved-based health: resolved per week, net growth over a rolling window, age not cleared by parking). Three-model review consensus 1, 5 and 9; docs/reports/T-3667-standing-arcs.md.
 - **IW-2: What files into a standing arc automatically (intake)?** Candidates: an audit WARN repeating N days → task in FW-001; an observation-inbox item older than N days; a red test past its baseline expiry (T-3621); an escalated inception → FW-002. What is manual only?
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: Automatic intake only for repeat signals, counted in audit RUNS (e.g. 5 of the last 7), dedup by check plus scope, link an existing task first, suppression on won't-fix, no recursion from standing-arc health WARNs. Escalated inceptions go to FW-002. Expired unfixed T-3621 baseline reds go to FW-001. Everything else is manual at triage. Review consensus 3 and 6.
 - **IW-3: How does it drain, so it never becomes a graveyard?** A periodic sweep (a dispatched worker) that clusters, bundles and extracts learnings/patterns; promotion out when the score rises; an explicit won't-fix close with a reason. What cadence, and what limits on age and count force action?
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: answered
+  rationale: Drain is measured by RESOLVED items only (fixed, verified, or won't-fix with an independent reviewer verdict and a taxonomy reason); bundling is never an exit. A weekly sweep is a cost-logged dispatch with a budget, and a missed sweep is detected. Thresholds: operator chose option (c), measure today's intake first and set calibrated REVIEW TRIGGERS, reported not enforced until calibrated. Review consensus 1, 8, 10.
 - **IW-4: How does scoring interact?** BVP scoring on intake; low score → park in the standing arc, high → promote to a delivery arc or horizon now. T-3637's "supports nothing AND stale" rail must exempt standing arcs. Which objectives does each one support (FW-001 → O-1/O-3; FW-002 → O-3/O-2)?
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: One promote path, the existing auto-promote band (T-1931), with parking as the default; no per-arc median. Each FW arc carries its own scoped value drivers (agent-proposed through the T-3429 reviewer path, operator override and re-weighting, expected to change over time), which drive estimation and BVP value assessment (operator 2026-10-01). `supports:` is declared and only the stale half of T-3637 is exempt (operator agreed with consensus 7). FW-001 → objectives 1 and 3; FW-002 → objectives 3 and 2.
 - **IW-5: Naming and the first set.** Should standing arcs get a distinct FW-NNN id namespace beside arc-NNN? The first set is FW-001 audit findings and FW-002 inception review loop (absorbing arc-008's continuing operator side). Are test reds (the T-3621 baseline) and peer-agent findings (055 backlog) their own standing arcs, or part of FW-001?
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: The FW-NNN id coexists with arc-NNN and slugs (the `arc_id` hook must accept it). First set: FW-001 audit findings (including test health as a tagged cluster and peer-agent findings until volume justifies their own arc) and FW-002 inception review loop (future escalations only). FW-003 is dropped. Arc-008 is NOT absorbed: it is closed through §ACD with a demo of its two-click decide. Review consensus 3 and 4.
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh

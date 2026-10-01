@@ -80,6 +80,16 @@ Reviews: `T-3667-review-anthropic.md`, `-openai.md` (codex), `-zai.md` (GLM-5.2)
 - whether standing arcs get scoped drivers.
 - **Verify** `fw note triage` exists (Anthropic could not find it; the handover prints it).
 
+## Operator rulings (2026-10-01, after the review)
+- **The forced-action clock: option (c), measure first.** Count today's real intake and set the thresholds as calibrated REVIEW TRIGGERS, not compulsory disposal. Until calibrated, the age and count numbers are reported, not enforced.
+- **Consensus change 7 (keep the objective mapping): fully agreed.**
+- **Full arc mechanics for every FW arc** (operator, verbatim in substance): "each FW-arc should have a very clear headline, goal and objectives, just as any other arc has, and its own value drivers, which also could change over time… full set of arc drivers, which agents can also propose themselves, but can be overwritten by operator. Clear goal, also for estimating. That drives then also value assessment, value points, business value assessment." This means:
+  - the §ACD create gate applies: headline mechanic, goal, and `supports:` objectives;
+  - **scoped value drivers per FW arc** through the existing workflow (T-1925/T-3429). Agents propose them with a scoring spec; the static driver reviewer gates the addition; the operator can override, re-weight or remove. The M2 cap (≤3, weight ≤6) applies;
+  - **drivers are expected to change over time** as system priorities shift. Re-weighting is a normal operation, not an exception, and the BVP estimator re-scores the arc's members when they change;
+  - the FW arc's goal and drivers drive estimation and BVP value assessment. That is the input to the promote decision (consensus change 2).
+  - The only arc mechanics a standing arc is exempt from: the close/demo gate (closure is replaced by a human-only retire) and the commit-staleness WARN (replaced by the resolved-based health checks).
+
 ## Risks
 The main risk is a graveyard: items parked and never drained. It needs drain rules (IW-3) and health rails (IW-1) that make an undrained standing arc as visible as a stale delivery arc is today.
 
