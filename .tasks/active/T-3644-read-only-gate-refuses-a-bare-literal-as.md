@@ -14,7 +14,7 @@ description: >
   if whitespace remains after removing the value); 'X=$(cat a && rm b)' must not ride
   a single-command check. Take the negative corpus. Triage: T-3639.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T13:21:50Z
-last_update: '2026-10-01T13:30:37Z'
+last_update: 2026-10-01T13:50:57Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,14 +94,16 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Port of 055-agentic-fleet-cockpit's fix (framework:pickup offset 227, their task 316), re-derived against our code. Test: tests/unit/t3644_literal_assignment_segment.bats.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Regression test (red before fix): `WURL=x; curl -sf "$WURL/"` and a bare literal assignment segment (`X=1`, `X="a b"`, `X='a'`) are SAFE per is_bash_safe_command
+- [x] Fix: a bare literal assignment segment is admitted; existing terminal command-substitution handling (T-3466) unchanged
+- [x] Negative corpus stays refused: `X=1 rm -rf /tmp/x`, `X=1 tee f`, ``X=`rm f` ``, `X=$(cat a && rm b)`, `X=$(rm f)`, `PATH=/tmp; cat x` style denylisted names stay governed by the env-prefix denylist, `X=1 > f`
+- [x] No regression in the neighbouring safe-commands / check-active-task suites
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -261,22 +263,20 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t3644_literal_assignment_segment.bats > /tmp/.t3644a 2>&1 && ! grep -q "^not ok" /tmp/.t3644a
+test "$(grep -c '# skip' /tmp/.t3644a)" -eq 0
+timeout 300 bats tests/unit/context_safe_commands.bats tests/unit/safe_commands_env_prefix.bats tests/unit/safe_commands_chain.bats tests/unit/t3344_readonly_allowlist_gaps.bats > /tmp/.t3644b 2>&1 && ! grep -q "^not ok" /tmp/.t3644b
+bin/fw vendor self --check
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** With focus null, `WURL=x; curl -sf "$WURL/"` (the /resume Step 1 shape) was refused by the read-only gate although neither segment writes.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** _fw_single_command_is_safe knew two assignment shapes — a `KEY=VALUE` prefix before a command (T-1908 stripper, needs whitespace + a command after it) and a terminal `VAR=$(cmd)` (F-15, T-3466). A segment that is only `NAME=literal` matched neither, so the assignment itself was read as the base command, matched no allowlist arm, and the whole chain gated.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** Positional-token-reader class again (T-1908, T-2988, T-3096, T-3344): each fix taught the reader one more shape; no test enumerated the assignment shapes as a set.
+
+**Prevention:** tests/unit/t3644_literal_assignment_segment.bats pins the admitted shapes and 055's negative corpus (`X=1 rm …`, backticks, `$(…)` in quotes, `X=$(cat a && rm b)`, arithmetic), plus T-3374 denylisted names as bare assignments (`PATH=/tmp; cat x`), which persist for the rest of the line.
 
 ## Evolution
 
@@ -358,3 +358,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3644-read-only-gate-refuses-a-bare-literal-as.md
 - **Context:** Initial task creation
+
+### 2026-10-01T13:50:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

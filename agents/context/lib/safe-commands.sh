@@ -301,6 +301,23 @@ _fw_single_command_is_safe() {
         return 1
     fi
 
+    # T-3644 (ported from 055, framework:pickup offset 227): a segment that is
+    # ONLY a literal assignment — `WURL=x` in `WURL=x; curl -sf "$WURL/"` — runs
+    # nothing and writes nothing. The whole segment must be the assignment: the
+    # value is unquoted words, "double" or 'single' quoted runs, nothing else,
+    # so `X=1 rm -rf /` (whitespace after the value) never matches. No command
+    # substitution in any form: `$(`, `$((` and backticks are refused here even
+    # inside double quotes (the terminal `VAR=$(cmd)` shape is F-15 above).
+    # A bare assignment persists for the REST of the line, so `PATH=/tmp; cat x`
+    # changes what `cat` resolves to — the T-3374 denylist applies here too.
+    # Writes are still judged separately by has_bash_write_pattern on the
+    # original line, so `X=1 > f` stays blocked.
+    if [[ "$cmd" =~ ^([A-Za-z_][A-Za-z0-9_]*)=(([^[:space:]\"\'\`\;\&\|\<\>\(\)]|\"[^\"\`]*\"|\'[^\']*\')*)$ ]]; then
+        _fw_env_prefix_is_denied "${BASH_REMATCH[1]}" && return 1
+        [[ "${BASH_REMATCH[2]}" == *'$('* ]] && return 1
+        return 0
+    fi
+
     # T-2988: strip shell grouping punctuation from the segment's edges.
     #
     # Both readers below take a token positionally — `awk '{print $1}'` for the
