@@ -333,6 +333,8 @@ The `## Verification` section contains shell commands that **must pass** before 
 - Each non-comment line is executed as a shell command
 - First 5 lines of failure output are shown for debugging
 
+**Unit-suite reds are a ratchet at pre-push, a FAIL everywhere else (T-3621).** Pre-push (`audit --section structure`) FAILs on a nightly-suite red that is not in `.context/audits/unit-suite/baseline.yaml` or is past its expiry, and grades unexpired baselined reds WARN; every other audit scope, the full daily `fw audit` included, FAILs on every red. The baseline only shrinks without the operator: `python3 agents/audit/unit_suite_baseline.py regenerate` drops reds the latest run shows green, and `add` refuses without `--i-am-human`.
+
 **Toolchain build commands (L-291, T-1501):** If your task touched compileable artifacts, the matching build command MUST be in `## Verification`. The framework is toolchain-agnostic by design — it runs only what you write, so a forgotten `dotnet build` ships broken DLLs to master (origin: 003-NTB-ATC-Plugin T-077, 5 days undetected).
 
 | You edited | Add to `## Verification` |

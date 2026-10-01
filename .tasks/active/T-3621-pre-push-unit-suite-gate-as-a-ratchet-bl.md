@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T07:38:58Z
-last_update: 2026-10-01T07:40:47Z
+last_update: '2026-10-01T07:45:22Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -74,6 +74,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-01T07:45:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=278,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3621: Pre-push unit-suite gate as a ratchet: block NEW reds against a recorded baseline; full red list stays FAIL in daily fw audit
@@ -85,14 +95,14 @@ Since T-3602, the nightly unit run completes, and the pre-push audit (`fw audit 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] A committed baseline file lists today's red unit tests (file + test name). Each entry carries the triage task that owns it, or "untriaged", and an expiry date (default 14 days).
-- [ ] The pre-push structure section FAILs on:
+- [x] A committed baseline file lists today's red unit tests (file + test name). Each entry carries the triage task that owns it, or "untriaged", and an expiry date (default 14 days).
+- [x] The pre-push structure section FAILs on:
   - a red test NOT in the baseline (new breakage);
   - a baseline entry still red past its expiry;
   - the existing stale/incomplete-report conditions, which are unchanged.
   It reports baselined reds as a WARN with the count. Tests: a fixture report with one new red FAILs; one with only baselined reds WARNs; one with an expired entry FAILs.
-- [ ] The full `fw audit` (cron/daily) still FAILs on every red, baselined or not, so the backlog never reads as green.
-- [ ] The baseline only shrinks without review. An entry that turns green is dropped by a regenerate verb, and adding entries is refused unless `--i-am-human` (operator) is given. Test: an agent adding an entry is refused.
+- [x] The full `fw audit` (cron/daily) still FAILs on every red, baselined or not, so the backlog never reads as green.
+- [x] The baseline only shrinks without review. An entry that turns green is dropped by a regenerate verb, and adding entries is refused unless `--i-am-human` (operator) is given. Test: an agent adding an entry is refused.
 - [ ] CLAUDE.md (§Verification Gate or the audit paragraph) states the rule in two sentences, and `git push origin bleeding-edge` passes the pre-push audit on today's tree without `--no-verify`.
 
 ### Human
@@ -254,6 +264,12 @@ Since T-3602, the nightly unit run completes, and the pre-push audit (`fw audit 
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 600 bats tests/unit/t3621_unit_suite_ratchet.bats > /tmp/.t3621.out 2>&1 && ! grep -q "^not ok" /tmp/.t3621.out
+test "$(grep -c '# skip' /tmp/.t3621.out)" -eq 0
+timeout 600 bats tests/unit/t3602_unit_suite_partial_run.bats > /tmp/.t3602.out 2>&1 && ! grep -q "^not ok" /tmp/.t3602.out
+python3 -c "import yaml; d=yaml.safe_load(open('.context/audits/unit-suite/baseline.yaml')); assert d['entries']"
+bin/fw vendor self --check
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -324,6 +340,16 @@ Since T-3602, the nightly unit run completes, and the pre-push audit (`fw audit 
 -->
 
 ## Decisions
+
+### 2026-10-01 — how the audit knows it is pre-push
+- **Chose:** `SECTIONS` exactly equal to `structure` (`_audit_is_prepush_scope`), which is the scope the pre-push hook passes and nothing else uses on its own. The */30 cron's multi-section run and the unscoped daily run both keep FAILing.
+- **Why:** reuses the existing signal; no env flag, no change to agents/git/lib/hooks.sh. A test pins that the hook still passes exactly `--section structure`.
+- **Rejected:** a new env flag set by the hook (a second path; touches hooks.sh, which another worker owns).
+
+### 2026-10-01 — owner mapping granularity
+- **Chose:** per test FILE, parsed from the verdict tables in docs/reports/*-triage.md. Owner = first task id in the Action column, else the triage task itself.
+- **Why:** the tables cite test numbers, not names. A file-level owner is right for 13 of the 14 mapped files. audit_inception_recommendation maps to T-3609 because test 10 is its regression; its STALE tests 8–9 were already fixed by T-3603.
+- **Rejected:** per-test-number mapping (fragile to test reordering for little gain).
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

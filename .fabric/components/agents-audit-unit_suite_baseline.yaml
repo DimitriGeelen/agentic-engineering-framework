@@ -1,0 +1,21 @@
+id: agents/audit/unit_suite_baseline.py
+name: unit_suite_baseline
+type: script
+subsystem: audit
+location: agents/audit/unit_suite_baseline.py
+tags: []
+
+purpose: "T-3621 (OBS-587): the unit-suite red BASELINE behind the pre-push ratchet."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-01
+created_by: unknown

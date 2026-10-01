@@ -1,0 +1,736 @@
+# T-3621 unit-suite red baseline. Managed by agents/audit/unit_suite_baseline.py.
+# Shrinks via `regenerate`. Growing it needs `add --i-am-human` (operator).
+schema: unit-suite-baseline-v1
+task: T-3621
+created: '2026-10-01'
+default_expiry_days: 14
+source_report:
+  path: .context/audits/unit-suite/LATEST.yaml
+  finished: '2026-10-01T01:43:26Z'
+entries:
+- leg: bats
+  name: 'approvals_close_ready_arcs.bats: arc with status=in-progress, ratio<0.80, rec present → excluded'
+  file: approvals_close_ready_arcs.bats
+  owner: T-3611
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'approvals_close_ready_arcs.bats: arc with status=in-progress, ratio>=0.80, no rec → included
+    with blocked_reason (T-2986)'
+  file: approvals_close_ready_arcs.bats
+  owner: T-3611
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'approvals_close_ready_arcs.bats: arc with status=in-progress, ratio>=0.80, rec present → included'
+  file: approvals_close_ready_arcs.bats
+  owner: T-3611
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'approvals_close_ready_arcs.bats: verdict is captured per arc (CLOSE / KEEP-OPEN / GO)'
+  file: approvals_close_ready_arcs.bats
+  owner: T-3611
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'approvals_close_ready_arcs.bats: anchor task with empty ## Recommendation body → included with
+    blocked_reason (T-2986)'
+  file: approvals_close_ready_arcs.bats
+  owner: T-3611
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'atomic_yaml_write_lint.bats: every lib/ and agents/ file that dumps YAML has an atomic-write
+    signal'
+  file: atomic_yaml_write_lint.bats
+  owner: T-3612
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'audit_corpus_lint_findings.bats: T-2985: the audit sees the REAL store, not only fixtures'
+  file: audit_corpus_lint_findings.bats
+  owner: T-3603
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'audit_inception_recommendation.bats: emit_review: FW_ALLOW_EMPTY_RECOMMENDATION=1 bypass → exit
+    0 + NOTE + log'
+  file: audit_inception_recommendation.bats
+  owner: T-3609
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'audit_split_root_asset_lint.bats: shell-idiom ratchet (T-2649): PROJECT_ROOT framework-asset
+    sites in shell stay at the reviewed baseline'
+  file: audit_split_root_asset_lint.bats
+  owner: T-3614
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'context_safe_commands.bats: safe-commands: no unclassified git verb is used by our own tooling
+    (T-2888)'
+  file: context_safe_commands.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'create_task.bats: T-100160: non-tty with ALL required flags still creates the task'
+  file: create_task.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'create_task.bats: T-2543: promote-origin create with owner:human + captured is ALLOWED'
+  file: create_task.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'cron_flock_parity.bats: registry has 9 flocks, deployed has 0 — parity warning fires'
+  file: cron_flock_parity.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'cron_flock_parity.bats: registry has 9 flocks, deployed has 5 — parity warning fires'
+  file: cron_flock_parity.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'cron_flock_parity.bats: missing deployed crontab — parity check is silent (existing ''not installed''
+    warning still fires)'
+  file: cron_flock_parity.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'designer_sync_from_tag.bats: from-tag installs when sha matches MANIFEST and pin (tag defaults
+    to pin source_tag)'
+  file: designer_sync_from_tag.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'designer_sync_from_tag.bats: from-tag REFUSES when MANIFEST at tag disagrees with artifact bytes
+    (release not self-consistent)'
+  file: designer_sync_from_tag.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'designer_sync_from_tag.bats: from-tag REFUSES install when tag is self-consistent but does not
+    match the pin'
+  file: designer_sync_from_tag.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'designer_sync_from_tag.bats: from-tag --dry-run verifies self-consistency, reports pin mismatch
+    as info, installs NOTHING'
+  file: designer_sync_from_tag.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'designer_sync_from_tag.bats: from-tag without source_origin in pin fails with actionable error
+    (exit 3)'
+  file: designer_sync_from_tag.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'designer_sync_sha256.bats: sync installs a matching artifact read-only'
+  file: designer_sync_sha256.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'designer_sync_sha256.bats: status reports NOT SYNCED before install, PRESENT after'
+  file: designer_sync_sha256.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'doctor_hook_counters.bats: T-2714: ''Hook configuration valid'' reports COMMANDS, not matcher
+    entries'
+  file: doctor_hook_counters.bats
+  owner: T-3615
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'doctor_hook_counters.bats: T-2714: the message states all three denominators'
+  file: doctor_hook_counters.bats
+  owner: T-3615
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'doctor_hook_counters.bats: T-2714: the two whole-file counters agree with each other'
+  file: doctor_hook_counters.bats
+  owner: T-3615
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'doctor_hook_counters.bats: T-2714: the /tmp exercise names the event scope it probes'
+  file: doctor_hook_counters.bats
+  owner: T-3615
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'doctor_hook_exercise.bats: doctor reports OK when all configured hooks resolve from /tmp'
+  file: doctor_hook_exercise.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'doctor_hook_exercise.bats: doctor reports FAIL when a hook command does not resolve from /tmp
+    (T-1626 witness)'
+  file: doctor_hook_exercise.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'doctor_hook_exercise.bats: doctor exercise reports each broken hook by name'
+  file: doctor_hook_exercise.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'fabric_coverage_single_source.bats: T-2735: the live coverage number equals the canonical expander''s'
+  file: fabric_coverage_single_source.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'fabric_coverage_single_source.bats: T-2735 severity: fully-carded project PASSes'
+  file: fabric_coverage_single_source.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'handover_push_timeout.bats: handover.sh distinguishes timeout (exit 124) from other failures'
+  file: handover_push_timeout.bats
+  owner: T-3556
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'handover_push_timeout.bats: checkpoint.sh wraps auto-handover invocation in timeout (T-1277 belt-and-braces)'
+  file: handover_push_timeout.bats
+  owner: T-3556
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'handover_push_timeout.bats: default push timeout is 60s when env var unset'
+  file: handover_push_timeout.bats
+  owner: T-3556
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'hook_producer_site_parity.bats: T-2911: template hook set has no unmirrored, unlisted divergence
+    from this repo''s own settings.json'
+  file: hook_producer_site_parity.bats
+  owner: T-3589
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'hook_producer_site_parity.bats: T-2911: fresh ''fw init'' consumer''s hook set matches this repo''s,
+    modulo the allowlist'
+  file: hook_producer_site_parity.bats
+  owner: T-3589
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'hook_telemetry.bats: missing-hook degrade-to-allow path records as failure (T-1626 witness)'
+  file: hook_telemetry.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'lib_review.bats: review: T-1492 — emit_review survives pipefail when inception task has no Recommendation
+    line'
+  file: lib_review.bats
+  owner: T-3609
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'lib_review.bats: review: T-1492 — HTML-commented Recommendation line does not poison the rationale'
+  file: lib_review.bats
+  owner: T-3609
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'no_root_framework_markers.bats: filesystem root carries no framework markers'
+  file: no_root_framework_markers.bats
+  owner: T-2787
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'resume.bats: resume status produces structured output'
+  file: resume.bats
+  owner: T-3607
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'resume.bats: resume status shows git info'
+  file: resume.bats
+  owner: T-3607
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'resume.bats: resume status shows active tasks'
+  file: resume.bats
+  owner: T-3607
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'resume.bats: resume status shows recommendations'
+  file: resume.bats
+  owner: T-3607
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'review_pipefail.bats: T-2206 bypass: FW_ALLOW_EMPTY_RECOMMENDATION=1 → exit 0 + NOTE + log'
+  file: review_pipefail.bats
+  owner: T-3609
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'sessions_claude_code_adapter.bats: t1: no claude on PATH → exit 2'
+  file: sessions_claude_code_adapter.bats
+  owner: T-3606
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'sessions_claude_code_adapter.bats: t2: malformed JSON → exit 3'
+  file: sessions_claude_code_adapter.bats
+  owner: T-3606
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'sessions_claude_code_adapter.bats: t3: blocked → needs-input'
+  file: sessions_claude_code_adapter.bats
+  owner: T-3606
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'sessions_claude_code_adapter.bats: t4: done → completed'
+  file: sessions_claude_code_adapter.bats
+  owner: T-3606
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'sessions_claude_code_adapter.bats: t5: failed → completed + description=failed'
+  file: sessions_claude_code_adapter.bats
+  owner: T-3606
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'sessions_claude_code_adapter.bats: t6: interactive busy → working'
+  file: sessions_claude_code_adapter.bats
+  owner: T-3606
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'sessions_claude_code_adapter.bats: t7: interactive idle → completed'
+  file: sessions_claude_code_adapter.bats
+  owner: T-3606
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'sessions_claude_code_adapter.bats: t8: cwd in git repo → project = basename(toplevel)'
+  file: sessions_claude_code_adapter.bats
+  owner: T-3606
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'sessions_claude_code_adapter.bats: t9: cwd in $HOME → project = (loose)'
+  file: sessions_claude_code_adapter.bats
+  owner: T-3606
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'sessions_claude_code_adapter.bats: t10: empty session array → exit 0, zero JSONL lines'
+  file: sessions_claude_code_adapter.bats
+  owner: T-3606
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't1719_ask_routing.bats: t1719-a3: a live ask writes a dispatch row with workflow_id=ask'
+  file: t1719_ask_routing.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't1719_ask_routing.bats: t1719-a3: a live ask writes an outcome row naming the route'
+  file: t1719_ask_routing.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't2244_audit_self_vendor_drift.bats: t2244 t2: libs-only drift → FAIL line names libs class'
+  file: t2244_audit_self_vendor_drift.bats
+  owner: T-3604
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't2244_audit_self_vendor_drift.bats: t2244 t3: templates-only drift → FAIL line names templates
+    class'
+  file: t2244_audit_self_vendor_drift.bats
+  owner: T-3604
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't2298_audit_structure_no_perfile_fork.bats: t3: T-2096 block uses single python3 pre-scan (not
+    per-task grep fan-out)'
+  file: t2298_audit_structure_no_perfile_fork.bats
+  owner: T-3604
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't2298_audit_structure_no_perfile_fork.bats: t4: T-2096 block has exactly one python3 -c invocation'
+  file: t2298_audit_structure_no_perfile_fork.bats
+  owner: T-3604
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3066_driver_drop_identity.bats: T-3066: approving after the slot changed hands refuses and changes
+    nothing'
+  file: t3066_driver_drop_identity.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3066_driver_drop_identity.bats: T-3066: an unchanged referent still approves, including at cap'
+  file: t3066_driver_drop_identity.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3066_driver_drop_identity.bats: T-3066: at-cap refusal message tells the operator to pass both
+    flags'
+  file: t3066_driver_drop_identity.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3070_audit_schedule_install_delegates_to_registry.bats: T-3070: with a registry present, ''audit.sh
+    schedule install'' writes registry content, not the hardcoded template'
+  file: t3070_audit_schedule_install_delegates_to_registry.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3073_c001_recommendation_bearing_inceptions.bats: T-3073 A3/A4: clean corpus passes with both
+    population sizes named'
+  file: t3073_c001_recommendation_bearing_inceptions.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3095_audit_branch_hygiene.bats: not a git repository: block is silent, emits nothing'
+  file: t3095_audit_branch_hygiene.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3099_go_scope_structural.bats: prose the old regex missed: GO''d inception with no propagation
+    is detected'
+  file: t3099_go_scope_structural.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3099_go_scope_structural.bats: back-referenced by another task''s related_tasks: is NOT detected'
+  file: t3099_go_scope_structural.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3099_go_scope_structural.bats: populated related_tasks: is NOT detected'
+  file: t3099_go_scope_structural.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3099_go_scope_structural.bats: unlocks_inception_decision: pointing at it is NOT detected'
+  file: t3099_go_scope_structural.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3099_go_scope_structural.bats: NO-GO and DEFER inceptions are never candidates'
+  file: t3099_go_scope_structural.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3099_go_scope_structural.bats: non-inception workflow types are never candidates'
+  file: t3099_go_scope_structural.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3099_go_scope_structural.bats: output is bounded: at most 5 sampled ids plus an overflow marker'
+  file: t3099_go_scope_structural.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3099_go_scope_structural.bats: full list is reachable by a named command in the mitigation'
+  file: t3099_go_scope_structural.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3099_go_scope_structural.bats: positive line states the size of the set actually examined'
+  file: t3099_go_scope_structural.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3099_go_scope_structural.bats: empty corpus PASS names zero, and does not claim to have examined
+    anything'
+  file: t3099_go_scope_structural.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3099_go_scope_structural.bats: two-pass O(M+N) structure preserved: no per-candidate cross-file
+    scan'
+  file: t3099_go_scope_structural.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3104_task_corpus_views.bats: non-git directory falls back to TASKS_DIR alone, no crash, no stderr'
+  file: t3104_task_corpus_views.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3112_worktree_hook_parity.bats: non-git directory is unenumerable (exit 1), not an empty set'
+  file: t3112_worktree_hook_parity.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3113_upgrade_worktree_advisory.bats: non-git target reports unenumerable, never a silent clean
+    bill'
+  file: t3113_upgrade_worktree_advisory.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3127_audit_timing_headroom.bats: t3127: the TERM trap records timed_out on a real timeout kill'
+  file: t3127_audit_timing_headroom.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3161_empty_registry_does_not_wipe_live_cron.bats: doctor WARNs when registry declares no jobs
+    but a deployed target exists'
+  file: t3161_empty_registry_does_not_wipe_live_cron.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3161_empty_registry_does_not_wipe_live_cron.bats: doctor SKIPs silently on true fresh init:
+    jobs: [] and no deployed target'
+  file: t3161_empty_registry_does_not_wipe_live_cron.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3182_loop_exit_recorder.bats: CONTROL LEG: each exit path records a DISTINCT reason'
+  file: t3182_loop_exit_recorder.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3202_audit_kill_source.bats: t3202: a real externally-killed audit records kill_source external'
+  file: t3202_audit_kill_source.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3231_help_exemption_scope.bats: control: a cross-task command is gated by focus-drift (fixture
+    can gate)'
+  file: t3231_help_exemption_scope.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3231_help_exemption_scope.bats: leg 1 isolated: --help in a quoted value no longer skips focus-drift'
+  file: t3231_help_exemption_scope.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 't3459_metrics_quality_cache.bats: the TTL matches the window shared.py already uses for task
+    metadata'
+  file: t3459_metrics_quality_cache.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'task_id_race.bats: task-id race (T-1424): create-task.sh fails loudly when keylock.sh is missing'
+  file: task_id_race.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_audit_cron_drift.bats: in-sync: registry == generated == deployed → PASS, no drift FAIL'
+  file: test_audit_cron_drift.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_audit_retire_when.bats: Empty retire_when: no WARN, no INFO'
+  file: test_audit_retire_when.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_audit_retire_when.bats: Missing retire_when field: no WARN, no INFO'
+  file: test_audit_retire_when.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_audit_retire_when.bats: FW_RETIRE_WHEN_ADVISORY=0 silences the section entirely'
+  file: test_audit_retire_when.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_audit_watchdog_fd.bats: two sequential fw audit runs both produce structure output (second
+    not stale-locked)'
+  file: test_audit_watchdog_fd.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_bin_fw_no_heredoc_cmd_sub.bats: T-1946: bin/fw contains zero heredoc-in-command-substitution
+    patterns'
+  file: test_bin_fw_no_heredoc_cmd_sub.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_cron_registry_generated_drift.bats: T-1942: registry ahead of generated → WARN ''edited
+    but not generated'''
+  file: test_cron_registry_generated_drift.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_cron_registry_generated_drift.bats: T-1942: clean state (registry == generated == deployed)
+    → OK, no drift WARN'
+  file: test_cron_registry_generated_drift.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_cron_registry_generated_drift.bats: T-1942: registry modified-in-place (same job count,
+    different schedule) → WARN'
+  file: test_cron_registry_generated_drift.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_doctor_litellm_ollama.bats: do_doctor body contains litellm-proxy reachable check'
+  file: test_doctor_litellm_ollama.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_doctor_litellm_ollama.bats: ollama check is gated on worker_kind: ollama-loop workflow marker'
+  file: test_doctor_litellm_ollama.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_index_doctor_rail.bats: the real index is stale at the default threshold'
+  file: test_index_doctor_rail.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_orchestrator_status_synthetic_filter.bats: headline excludes T-stress-* rows from dispatch_total'
+  file: test_orchestrator_status_synthetic_filter.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_orchestrator_status_synthetic_filter.bats: enrichment_ratio is computed against real dispatches
+    only'
+  file: test_orchestrator_status_synthetic_filter.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_orchestrator_status_synthetic_filter.bats: by_task_type breakdown excludes synthetic ''?''
+    rows'
+  file: test_orchestrator_status_synthetic_filter.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_orchestrator_status_synthetic_filter.bats: stdout headline shows Synthetic: N when present'
+  file: test_orchestrator_status_synthetic_filter.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_orchestrator_status_synthetic_filter.bats: stdout omits Synthetic: line when no synthetic
+    rows'
+  file: test_orchestrator_status_synthetic_filter.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_orchestrator_status_synthetic_filter.bats: all-synthetic case still emits substrate header
+    (not ''no dispatches yet'')'
+  file: test_orchestrator_status_synthetic_filter.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_orchestrator_status_synthetic_filter.bats: empty state still says ''no dispatches captured
+    yet'''
+  file: test_orchestrator_status_synthetic_filter.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_upgrade_runtime_downgrade_guard.bats: T-1912: do_upgrade refuses when consumer version is
+    AHEAD of framework'
+  file: test_upgrade_runtime_downgrade_guard.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_upgrade_runtime_downgrade_guard.bats: T-1912: refusal at precheck leaves runtime files untouched'
+  file: test_upgrade_runtime_downgrade_guard.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: bats
+  name: 'test_worker_kind_drift.bats: VALID_WORKER_KINDS in bin/fw includes the documented set'
+  file: test_worker_kind_drift.bats
+  owner: untriaged
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: pytest
+  name: tests/unit/test_arcs_pages_tokens.py::test_only_neutral_fallback_hexes_remain
+  file: test_arcs_pages_tokens.py
+  owner: T-3604
+  added: '2026-10-01'
+  expires: '2026-10-15'
+- leg: pytest
+  name: tests/unit/test_operator_facing_stderr.py::test_every_stderr_render_site_is_sanitized
+  file: test_operator_facing_stderr.py
+  owner: T-3605
+  added: '2026-10-01'
+  expires: '2026-10-15'

@@ -3500,8 +3500,23 @@ check_dead_negation_lint
 # The line text names its corpus ("unit suite (tests/unit)") — the whole point
 # of OBS-361 is that a green line must not answer a broader question than the
 # one it examined (same family as the invariant-suite rewording above).
+#
+# T-3621 — the pre-push RATCHET. The pre-push hook runs `audit.sh --section
+# structure` (agents/git/lib/hooks.sh) and nothing else does with exactly that
+# scope; the */30 cron runs structure,compliance,quality,discovery and the daily
+# run is unscoped. Under that one scope, a red listed in the committed baseline
+# (.context/audits/unit-suite/baseline.yaml) and not yet expired grades WARN.
+# A red NOT in the baseline, or a baselined red past its expiry, FAILs. Every
+# other scope FAILs on every red, baselined or not, so the backlog never reads
+# green. A missing or unreadable baseline fails closed (every red FAILs). The
+# baseline shrinks via agents/audit/unit_suite_baseline.py regenerate; growing
+# it needs `add --i-am-human`.
+_audit_is_prepush_scope() {
+    [ "${SECTIONS:-}" = "structure" ]
+}
 check_unit_suite_report() {
     local _report="${FW_UNIT_SUITE_REPORT:-$CONTEXT_DIR/audits/unit-suite/LATEST.yaml}"
+    local _baseline="${FW_UNIT_SUITE_BASELINE:-$CONTEXT_DIR/audits/unit-suite/baseline.yaml}"
     if [ ! -f "$_report" ]; then
         warn "Unit suite (tests/unit) NOT CHECKED — no report at .context/audits/unit-suite/LATEST.yaml (T-3302)" \
              "The nightly unit-suite runner has not produced a report; tests/unit reds are invisible until it does" \
@@ -3513,13 +3528,15 @@ check_unit_suite_report() {
     # ran", the per-file timeouts by name, and 1 when anything was left
     # undetermined (run ceiling hit, a file killed, or files never reached).
     local _parsed
-    _parsed=$(python3 - "$_report" <<'PYEOF' 2>/dev/null
+    _parsed=$(python3 - "$_report" "$_baseline" <<'PYEOF' 2>/dev/null
 import sys, yaml, datetime
 try:
     d = yaml.safe_load(open(sys.argv[1])) or {}
     legs = d.get("legs") or {}
     total = failed = 0
     names = []
+    reds = []      # T-3621: (leg, name) pairs, matched against the baseline
+    errors = []    # leg-level errors: never baselinable
     files = completed = not_run = 0
     per_file = True
     ftimed = []
@@ -3528,8 +3545,10 @@ try:
         total += int(l.get("tests") or 0)
         failed += int(l.get("failed_count") or 0)
         names += ["%s: %s" % (leg, n) for n in (l.get("failed") or [])]
+        reds += [(leg, str(n)) for n in (l.get("failed") or [])]
         if l.get("error"):
             names.append("%s: %s" % (leg, l["error"]))
+            errors.append("%s: %s" % (leg, l["error"]))
         files += int(l.get("files") or 0)
         if "files_completed" in l:
             completed += int(l.get("files_completed") or 0)
@@ -3560,10 +3579,42 @@ try:
     shown = names[:25]
     if len(names) > 25:
         shown.append("... +%d more in the report" % (len(names) - 25))
-    print("%d|%d|%d|%d|%d|%d|%s|%s|%s|%d" % (
+    # T-3621: grade each recorded red against the ratchet baseline. "none" /
+    # "bad" mean no baseline applies: the caller fails closed on every red.
+    bl_state, n_base, new, expired = "none", 0, [], []
+    try:
+        b = yaml.safe_load(open(sys.argv[2]))
+        ents = b.get("entries") if isinstance(b, dict) else None
+        if not isinstance(ents, list):
+            raise ValueError("no entries list")
+        today = datetime.datetime.now(datetime.timezone.utc).date()
+        base = {}
+        for e in ents:
+            try:
+                exp_ok = datetime.date.fromisoformat(str(e.get("expires"))) >= today
+            except Exception:
+                exp_ok = False          # unreadable expiry: treat as expired
+            base[(e.get("leg"), str(e.get("name")))] = exp_ok
+        bl_state = "ok"
+        for leg, n in reds:
+            if (leg, n) not in base:
+                new.append("%s: %s" % (leg, n))
+            elif base[(leg, n)]:
+                n_base += 1
+            else:
+                expired.append("%s: %s" % (leg, n))
+        new += errors
+    except FileNotFoundError:
+        bl_state = "none"
+    except Exception:
+        bl_state = "bad"
+    def _bound(xs):
+        return "; ".join(xs[:25] + (["... +%d more" % (len(xs) - 25)] if len(xs) > 25 else [])).replace("|", "/")
+    print("%d|%d|%d|%d|%d|%d|%s|%s|%s|%d|%s|%d|%d|%d|%s|%s" % (
         total, failed, rc, age_h, to, tos,
         "; ".join(shown).replace("|", "/"), ran,
-        ", ".join(ftimed).replace("|", "/"), partial))
+        ", ".join(ftimed).replace("|", "/"), partial,
+        bl_state, n_base, len(new), len(expired), _bound(new), _bound(expired)))
 except Exception:
     pass
 PYEOF
@@ -3578,8 +3629,9 @@ PYEOF
 
     local _us_total _us_failed _us_rc _us_age _us_timedout _us_timeout_s _us_names
     local _us_ran _us_ftimed _us_partial
+    local _us_bl _us_nbase _us_nnew _us_nexp _us_new _us_exp
     IFS='|' read -r _us_total _us_failed _us_rc _us_age _us_timedout _us_timeout_s _us_names \
-        _us_ran _us_ftimed _us_partial <<< "$_parsed"
+        _us_ran _us_ftimed _us_partial _us_bl _us_nbase _us_nnew _us_nexp _us_new _us_exp <<< "$_parsed"
 
     local _us_ceiling_txt="its timeout ceiling"
     [ "${_us_timeout_s:-0}" -gt 0 ] && _us_ceiling_txt="its ${_us_timeout_s}s ceiling"
@@ -3600,8 +3652,33 @@ PYEOF
     # red and unreported from 2026-09-08 to 2026-09-30. Only the tests the run
     # never reached are undetermined, and the WARN below still covers them.
     if [ "$_us_failed" -gt 0 ]; then
+        # T-3621 ratchet: only the pre-push scope, only with a readable baseline.
+        local _us_bl_note=""
+        case "${_us_bl:-none}" in
+            ok)   _us_bl_note="Ratchet baseline (T-3621): ${_us_nbase} baselined, ${_us_nnew} new, ${_us_nexp} expired. Only the pre-push scope grades baselined reds WARN; this scope FAILs on every red. " ;;
+            bad)  _us_bl_note="Ratchet baseline (T-3621) UNREADABLE at $_baseline: failing closed on every red. " ;;
+            *)    _us_bl_note="Ratchet baseline (T-3621) absent at $_baseline: failing closed on every red. " ;;
+        esac
+        if _audit_is_prepush_scope && [ "${_us_bl:-none}" = "ok" ]; then
+            if [ "${_us_nnew:-0}" -gt 0 ] || [ "${_us_nexp:-0}" -gt 0 ]; then
+                fail "Unit suite (tests/unit): ${_us_nnew} NEW red(s), ${_us_nexp} EXPIRED baselined red(s) — pre-push ratchet (T-3621)" \
+                     "${_us_incomplete}NEW (not in baseline): ${_us_new:-none}. EXPIRED (baselined, past expiry): ${_us_exp:-none}. ${_us_nbase} other baselined red(s) grade WARN" \
+                     "New red: fix it or file a task (one bug = one task); only the operator may accept it into the baseline (python3 agents/audit/unit_suite_baseline.py add --i-am-human --name '<name>'). Expired: fix it, or the operator re-arms it the same way. Report: .context/audits/unit-suite/LATEST.yaml"
+                return 0
+            fi
+            warn "Unit suite (tests/unit): ${_us_nbase} BASELINED red(s), 0 new, 0 expired — pre-push ratchet grade; the full fw audit still FAILs them (T-3621)" \
+                 "${_us_incomplete:-$_us_ran. }runner_exit=$_us_rc; baseline: $_baseline. Baselined reds are a known backlog owned by their triage tasks, not green" \
+                 "Fix the reds via their owning tasks (owner: in the baseline); once a nightly run shows them green, shrink the baseline: python3 agents/audit/unit_suite_baseline.py regenerate"
+            # Unchanged rule: a stale report is still called stale.
+            if [ "$_us_age" -lt 0 ] || [ "$_us_age" -ge 48 ]; then
+                warn "Unit suite (tests/unit) report STALE — last run ${_us_age}h ago, threshold 48h (T-3302)" \
+                     "The nightly unit-suite cron (unit-suite-nightly) has not produced a fresh report; reds since then are invisible" \
+                     "Check the schedule (fw cron status, grep 'agentic-cron' syslog) or run by hand: agents/audit/unit-suite.sh"
+            fi
+            return 0
+        fi
         fail "Unit suite (tests/unit): $_us_failed of $_us_total unit test(s) RED (T-3302, T-3602)" \
-             "${_us_incomplete:-$_us_ran. }runner_exit=$_us_rc; recorded failures: ${_us_names:-none listed}" \
+             "${_us_incomplete:-$_us_ran. }${_us_bl_note}runner_exit=$_us_rc; recorded failures: ${_us_names:-none listed}" \
              "Read the report (.context/audits/unit-suite/LATEST.yaml), fix or file per red (one bug = one task), re-run: agents/audit/unit-suite.sh"
         return 0
     fi
