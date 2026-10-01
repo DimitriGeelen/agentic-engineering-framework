@@ -398,3 +398,15 @@ YAML
     [ "$(ls "$proj"/.tasks/active/*define-project-objectives.md | wc -l)" -eq 1 ]
     [ ! -e "$proj/.context/project/objectives.yaml" ]
 }
+
+@test "T-3671: vendored consumer's sidecar whoami names the project, never .agentic-framework" {
+    local proj="$TEST_TEMP_DIR/vproj-sidecar"
+    make_vendored_consumer "$proj"
+    local out
+    # FW_SIDECAR_HUB_ID stands in for `termlink hub fingerprint` so this runs offline.
+    out="$(cd "$proj" && env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$TEST_TEMP_DIR/home" \
+        FW_SIDECAR_HUB_ID=testhub "$proj/.agentic-framework/bin/fw" sidecar whoami 2>&1)" || { echo "$out"; false; }
+    echo "$out" | grep -q "inbox:testhub/vproj-sidecar" || { echo "$out"; false; }
+    ! echo "$out" | grep -q "\.agentic-framework"
+    [ ! -d "$proj/.agentic-framework/.context/sidecar" ]
+}

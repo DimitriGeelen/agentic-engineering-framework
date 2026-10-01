@@ -29,6 +29,7 @@ import pytest
 @pytest.fixture()
 def sc(tmp_path, monkeypatch):
     monkeypatch.setenv("FRAMEWORK_ROOT", str(tmp_path))
+    monkeypatch.setenv("PROJECT_ROOT", str(tmp_path))
     monkeypatch.setenv("FW_SIDECAR_AGENT_ID", "answered-test")
     import lib.sidecar.outbox as outbox
     import lib.sidecar.inbox as inbox

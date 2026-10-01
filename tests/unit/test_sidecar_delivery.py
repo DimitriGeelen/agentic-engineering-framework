@@ -8,6 +8,7 @@ import pytest
 @pytest.fixture()
 def sidecar(tmp_path, monkeypatch):
     monkeypatch.setenv("FRAMEWORK_ROOT", str(tmp_path))
+    monkeypatch.setenv("PROJECT_ROOT", str(tmp_path))
     import lib.sidecar.outbox as outbox
     import lib.sidecar.delivery as delivery
     importlib.reload(outbox)

@@ -19,6 +19,7 @@ def mods(tmp_path, monkeypatch):
     project = tmp_path / "999-Agentic-Engineering-Framework"
     project.mkdir(exist_ok=True)
     monkeypatch.setenv("FRAMEWORK_ROOT", str(project))
+    monkeypatch.setenv("PROJECT_ROOT", str(project))
     monkeypatch.setenv("FW_SIDECAR_HUB_ID", "cacc73ea32b121dd")
     monkeypatch.setenv("FW_SIDECAR_HOST", "host107.ring20.lan")
     monkeypatch.delenv("FW_SIDECAR_AGENT_ID", raising=False)

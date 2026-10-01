@@ -28,6 +28,7 @@ def mod(tmp_path, monkeypatch):
     project = tmp_path / AGENT
     project.mkdir(exist_ok=True)
     monkeypatch.setenv("FRAMEWORK_ROOT", str(project))
+    monkeypatch.setenv("PROJECT_ROOT", str(project))
     monkeypatch.setenv("FW_SIDECAR_HUB_ID", HUB)
     monkeypatch.setenv("FW_SIDECAR_AGENT_ID", AGENT)
     import lib.sidecar.outbox as outbox

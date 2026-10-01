@@ -12,6 +12,7 @@ import pytest
 @pytest.fixture()
 def outbox(tmp_path, monkeypatch):
     monkeypatch.setenv("FRAMEWORK_ROOT", str(tmp_path))
+    monkeypatch.setenv("PROJECT_ROOT", str(tmp_path))
     import lib.sidecar.outbox as mod
     importlib.reload(mod)
     return mod

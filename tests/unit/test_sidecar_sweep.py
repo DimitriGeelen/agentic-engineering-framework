@@ -20,6 +20,7 @@ T0 = datetime(2026, 9, 22, 12, 0, 0, tzinfo=timezone.utc)
 @pytest.fixture()
 def sc(tmp_path, monkeypatch):
     monkeypatch.setenv("FRAMEWORK_ROOT", str(tmp_path))
+    monkeypatch.setenv("PROJECT_ROOT", str(tmp_path))
     monkeypatch.setenv("FW_SIDECAR_AGENT_ID", "sweeper-test")
     import lib.sidecar.outbox as outbox
     import lib.sidecar.delivery as delivery

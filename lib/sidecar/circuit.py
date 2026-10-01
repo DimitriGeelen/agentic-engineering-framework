@@ -141,8 +141,16 @@ def project_id() -> str:
     the same string `lib/publish-learning-to-bus.sh:54` and
     `lib/subscribe-learnings-from-bus.sh:50` use, and the same one
     `inbox.agent_id()` already defaulted to via `outbox._root().name`.
+
+    Refuses `.agentic-framework` or empty (T-3671): that is the vendored
+    framework dir, never a project, and signing as it mis-routes every consult.
     """
-    return outbox._root().name
+    name = outbox._root().name
+    if not name or name == ".agentic-framework":
+        raise CircuitError(
+            f"project id resolved to {name!r} — the vendored framework dir, not "
+            "the consumer project. Set PROJECT_ROOT=<project> or run from inside it")
+    return name
 
 
 def session_id() -> str | None:
