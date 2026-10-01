@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3657: Verdict-ledger audit FAILs forever on refused rows from fixed defects (V-20261001-795fe3f3, V-20261001-4e8131a6): append-only ledger needs a recorded 'superseded/known-refused' acknowledgement
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-01T15:32:08Z
+# ============================================================================
+
+task_id: T-3657
+task_name: "Verdict-ledger audit FAILs forever on refused rows from fixed defects (V-20261001-795fe3f3, V-20261001-4e8131a6): append-only ledger needs a recorded 'superseded/known-refused' acknowledgement"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-01T14:12:14Z
+completed: 2026-10-01T15:31:45Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-01T17:16:22+02:00
+last_commit: 2026-10-01T17:25:59+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  real ACs (acknowledgement record for refused verdict rows from fixed defects; push blocked meanwhile). acknowledged refusals — append-only ack record, audit WARN (never PASS), fw reviewer verdict acknowledge; ack V-20261001-795fe3f3 (T-3654) and V-20261001-4e8131a6 (T-3655)
+
+# Key outcomes
+outcomes:
+  - 'An appended, committed acknowledgement record names a refused ledger row, its reason class and the task that fixed the defect. The refused row is never edited or deleted; the ledger''s append-only history check still holds'
+  - '`fw audit` and the pre-push structure section grade an acknowledged refused row as WARN ("acknowledged: <row> superseded by <task>"); an unacknowledged refused row still FAILs; an acknowledgement never makes a row count as a verdict or tick a criterion'
+  - '`bin/fw reviewer verdict acknowledge <row> --fixed-by T-XXXX --reason "..."` refuses a nonexistent row, a non-refused row, a nonexistent task, or a missing --fixed-by. Tests cover each case, plus the WARN/FAIL grading'
+  - 'The two live-proof refusals (V-20261001-795fe3f3 fixed by T-3654; V-20261001-4e8131a6 fixed by T-3655) are acknowledged and committed, and `git push origin bleeding-edge` passes pre-push without --no-verify'
+  - 'The CLAUDE.md verdict-ledger paragraph has one sentence on acknowledgements; the vendored copies match'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'real ACs (acknowledgement record for refused verdict rows from fixed defects; push blocked meanwhile)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-01 — where the acknowledgement lives'
+    chose: 'a separate append-only file `.context/reviews/acknowledged-refusals.jsonl`, checked against git history with the same `history_fault` walk the completions file uses; only rows committed at HEAD are honoured.'
+    rationale: 'verdicts.jsonl rows are validated by one validator (`_row_fault`) shared by record/apply/audit; a second row type there would have to be excluded from every consumer (apply, check-render, satisfying_verdict, list, duplicate-id checks). A separate file is read by `audit` only, so an acknowledgement structurally cannot make a row count.'
+    alternatives_rejected: ['a new row type in verdicts.jsonl (touches every reader); editing or deleting the refused rows (breaks append-only, the property the audit protects).']
+  - decision: '2026-10-01 — what an acknowledgement binds to, and who may record it'
+    chose: 'each ack names the row id, the row''s sha256, the fault class it fails with, and a `fixed_by` task that must be in `.tasks/completed/` at record time and at every audit. If the row now fails with a different class, or the fix task is not completed, the ack is not honoured and the row FAILs. Audit exit 3 = WARN only; never 0. - **Agents may record one** for a refusal caused by a FIXED framework defect: it is the agent''s own bookkeeping, not a verdict and not a gate bypass. It is logged in the ack row (`recorded_by: agent:<git user>` under CLAUDECODE=1, `operator:` otherwise) and visible as WARN in every `fw audit`.'
+    alternatives_rejected: ['operator-only (`--i-am-human`): the ack grants nothing — the row still never counts — so gating it on the operator would only keep the push blocked on bookkeeping.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - 'agents/audit/audit.sh'
+  - 'CLAUDE.md'
+  - '.context/reviews/acknowledged-refusals.jsonl'
+  - 'lib/verdict_ledger.py'
+  - '.tasks/active/T-3657-verdict-ledger-audit-fails-forever-on-re.md'
+  - 'tests/unit/test_t3657_acknowledged_refusals.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T17:16:22'
+    action: 'T-3657: real ACs (acknowledgement record for refused verdict rows from fixed defects; push blocked meanwhile)'
+  - time: '2026-10-01T17:25:59'
+    action: 'T-3657: acknowledged refusals — append-only ack record, audit WARN (never PASS), fw reviewer verdict acknowledge; ack V-20261001-795fe3f3 (T-3654) and V-20261001-4e8131a6 (T-3655)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 79 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [T-3580, verdict-ledger, audit]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 79
+  commits: 2
+  files_changed: 8
+  lines_added: 841
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3657-verdict-ledger-audit-fails-forever-on-re.md
+generated_by: context-agent-hybrid

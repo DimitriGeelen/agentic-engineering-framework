@@ -11,12 +11,12 @@ description: >
   refused row, the fixing task and the operator/agent who recorded it; audit then
   reports it as acknowledged, never green-washes an unacknowledged refusal.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [T-3580, verdict-ledger, audit]
-components: []
+components: [agents/audit/audit.sh, lib/verdict_ledger.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T14:12:14Z
-last_update: 2026-10-01T15:16:34Z
-date_finished:
+last_update: 2026-10-01T15:31:45Z
+date_finished: 2026-10-01T15:31:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -100,7 +100,7 @@ bvp_scores_proposed:
 - [x] An appended, committed acknowledgement record names a refused ledger row, its reason class and the task that fixed the defect. The refused row is never edited or deleted; the ledger's append-only history check still holds
 - [x] `fw audit` and the pre-push structure section grade an acknowledged refused row as WARN ("acknowledged: <row> superseded by <task>"); an unacknowledged refused row still FAILs; an acknowledgement never makes a row count as a verdict or tick a criterion
 - [x] `bin/fw reviewer verdict acknowledge <row> --fixed-by T-XXXX --reason "..."` refuses a nonexistent row, a non-refused row, a nonexistent task, or a missing --fixed-by. Tests cover each case, plus the WARN/FAIL grading
-- [ ] The two live-proof refusals (V-20261001-795fe3f3 fixed by T-3654; V-20261001-4e8131a6 fixed by T-3655) are acknowledged and committed, and `git push origin bleeding-edge` passes pre-push without --no-verify
+- [x] The two live-proof refusals (V-20261001-795fe3f3 fixed by T-3654; V-20261001-4e8131a6 fixed by T-3655) are acknowledged and committed, and `git push origin bleeding-edge` passes pre-push without --no-verify
 - [x] The CLAUDE.md verdict-ledger paragraph has one sentence on acknowledgements; the vendored copies match
 
 ### Human
@@ -383,3 +383,15 @@ bash -n agents/audit/audit.sh
 ### 2026-10-01T15:15:08Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-62194c8f
+- **Timestamp:** 2026-10-01T15:31:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-01T15:31:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
