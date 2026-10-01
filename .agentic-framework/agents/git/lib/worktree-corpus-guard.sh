@@ -28,7 +28,7 @@
 # SCOPE — `.tasks/` ONLY
 # ----------------------
 # Source commits from a worktree are the normal, supported flow: `fw worktree
-# create` -> build -> `fw integrate run master --push`. They are untouched. Only
+# create` -> build -> `fw integrate run bleeding-edge --push`. They are untouched. Only
 # the task corpus is guarded, because only the task corpus is a registry with
 # global invariants (IDs unique across all space and time) that cannot fork and
 # merge. See the design doc's "The mismatch".
@@ -238,7 +238,7 @@ _fw_wcg_main() {
         echo "    cd $authority && bin/fw task update T-XXX --status <status>"
         echo ""
         echo "  Source commits from this worktree are unaffected — build here and"
-        echo "  land with \`fw integrate run master --push\` from the main checkout."
+        echo "  land with \`fw integrate run bleeding-edge --push\` from the main checkout."
         echo "  Only .tasks/ is guarded."
         echo ""
         echo "  DISPATCH WORKERS: agents/dispatch/preamble.md (L-419) tells you to"
