@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3633: claude-fw: two loop exit paths record the same reason max-restarts
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-01T13:52:22Z
+# ============================================================================
+
+task_id: T-3633
+task_name: "claude-fw: two loop exit paths record the same reason max-restarts"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T08:51:34Z
+completed: 2026-10-01T13:49:00Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-01T15:48:49+02:00
+last_commit: 2026-10-01T15:48:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  claude-fw re-arm budget exit records max-restarts-rearm, distinct from the restart path
+
+# Key outcomes
+outcomes:
+  - 'Reproducer: `tests/unit/t3182_loop_exit_recorder.bats` test 6 ("CONTROL LEG: each exit path records a DISTINCT reason") is red before the fix'
+  - 'Fix: the re-arm exit in `bin/claude-fw` records `max-restarts-rearm`. The restart-path exit still records `max-restarts`. `t3243` "re-arm cannot hot-spin" asserts the new reason, plus 0 `max-restarts` on that path'
+  - 'No regression: `t3182_loop_exit_recorder`, `t3243_supervisor_restart_policy`, `t3206_continuous_run_ledger`, `t3247_restart_headless_prompt`, `t3249_rearm_headless_prompt` and `t3629_fresh_relaunch_not_agents_view` are all green, and nothing outside tests reads the literal reason'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - 'bin/claude-fw'
+  - '.tasks/active/T-3633-claude-fw-two-loop-exit-paths-record-the.md'
+  - 'tests/unit/t3243_supervisor_restart_policy.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T15:48:49'
+    action: 'T-3633: claude-fw re-arm budget exit records max-restarts-rearm, distinct from the restart path'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 297 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, OBS-587]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 297
+  commits: 1
+  files_changed: 4
+  lines_added: 83
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3633-claude-fw-two-loop-exit-paths-record-the.md
+generated_by: context-agent-hybrid
