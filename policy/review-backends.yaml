@@ -27,6 +27,14 @@
 # `fw termlink dispatch --worker-kind` value; `vendor` is who runs it. The dispatcher prints it
 # (`fw termlink worker-kinds --vendors`) and the verdict ledger derives every review dispatch's
 # vendor from it, so a panel counts vendors this file names, never free text. One kind, one vendor.
+#
+# Optional model + binary (T-3580 round 8, T-3582): the ONE model and the ONE absolute binary a
+# review worker of that kind is launched with. The dispatcher reads both AS COMMITTED at the
+# reviewed revision; a caller cannot choose either. Without `binary:` the dispatcher resolves the
+# kind's binary itself (claude: PATH at dispatch; ollama-loop: tools/ollama-tool-loop.py).
+# codex, opencode and antigravity are "harness" kinds: their runtime runs them read-only in a
+# `git archive` export of the reviewed revision and records their printed verdict on their behalf
+# (docs/harnesses.md).
 
 backends:
   - id: claude-code
@@ -48,8 +56,11 @@ backends:
     cost_class: internal
     approval_required: false
     cost_estimate_method: unmetered
-    description: "Codex review via subscription account"
+    description: "Codex review via subscription account (ChatGPT login, ~/.codex/auth.json)"
+    worker_kind: codex
     vendor: openai
+    model: gpt-6-astra
+    binary: /root/.nvm/versions/node/v22.22.1/bin/codex
     match:
       - '(^|[;&|]\s*|/)codex\s'
       - '--worker-kind[= ]codex\b'
@@ -61,7 +72,10 @@ backends:
     approval_required: false
     cost_estimate_method: unmetered
     description: "Z.ai opencode via subscription coding plan"
+    worker_kind: opencode
     vendor: zai
+    model: zai-coding-plan/glm-5.2
+    binary: /root/.opencode/bin/opencode
     match:
       - '(^|[;&|]\s*|/)opencode\s'
       - '--worker-kind[= ]opencode\b'
@@ -94,6 +108,11 @@ backends:
     cost_class: "internal"
     approval_required: false
     cost_estimate_method: "unmetered"
-    description: "Antigravity 1.1.15 CLI on the operator's Google account; runs as user dimitri-mint-dev via sudo -n -u dimitri-mint-dev -H agy -p ... --mode plan --sandbox (operator approved 2026-09-30). No dispatch worker_kind yet."
+    description: "Antigravity 1.1.15 CLI on the operator's Google account; runs as user dimitri-mint-dev via sudo -n -u dimitri-mint-dev -H <binary> -p ... --mode plan --sandbox (operator approved 2026-09-30; the absolute path is needed because sudo's secure_path does not include ~/.local/bin). Spare panel seat (after claude, codex, opencode in registry order)."
+    worker_kind: antigravity
+    vendor: google
+    binary: /home/dimitri-mint-dev/.local/bin/agy
     match:
       - "\\bagy\\b"
+      - '--worker-kind[= ]antigravity\b'
+

@@ -32,10 +32,12 @@ dispatch run. Every dispatched seat logs one cost record (`fw review cost log`).
 internal backend can fill is offered to a PAID backend by `fw review propose` — and then waits for
 the operator: the judge never dispatches a paid backend.
 
-SINGLE-VENDOR HONESTY. Until T-3582 builds codex/opencode worker kinds only claude dispatches. A
-rung-5 run registers all three seats as required, dispatches the one it can, proposes the paid
-alternative for the others, and is reported "degraded: single-vendor panel"; the ledger refuses to
-let it satisfy the criterion. We chose "leave the criterion open" over "downgrade the requirement":
+SINGLE-VENDOR HONESTY. T-3582 made codex (openai), opencode (zai) and antigravity (google) real
+worker kinds, so a rung-5 panel of claude + codex + opencode can be dispatched; a harness seat gets
+a brief that asks it to PRINT its verdicts, which its runtime records (verdict_ledger
+record_for_worker). When fewer kinds can be dispatched than the panel needs, the run registers all
+three seats as required, dispatches the ones it can, proposes the paid alternative for the others,
+and is reported "degraded: single-vendor panel"; the ledger refuses to let it satisfy the criterion. We chose "leave the criterion open" over "downgrade the requirement":
 a high-impact criterion is not quietly closed on a weaker review than the impact model asked for.
 """
 
@@ -417,7 +419,7 @@ def commit_command(task_id: str) -> str:
 def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reason: str = "",
                  ceiling_note: str = "", evidence: dict | None = None, seat: str = "",
                  operator_only: list[dict] | None = None, run_id: str = "",
-                 degraded: str = "", revision: str = "") -> str:
+                 degraded: str = "", revision: str = "", kind: str = "") -> str:
     ev = {"needed": False, "shots": [], "error": "", "pages": [], "partial": [],
           **(evidence or {})}
     lines = [
@@ -477,6 +479,37 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
             lines.append("Pages: " + ", ".join(f"`{p}`" for p in ev["pages"]))
         lines.append("")
 
+    if kind in vl.HARNESS_KINDS:
+        # T-3582: a harness reviewer (codex / opencode / antigravity) runs read-only in an export
+        # of the reviewed revision. It prints; the dispatch runtime records what it printed.
+        lines += [
+            "## How your verdict is recorded",
+            "",
+            f"You review revision `{revision or 'the registered revision'}`. Your working directory is "
+            "a read-only export of exactly that revision (without `.context/`). Do NOT modify any "
+            "file and do not try to run `fw` or `git commit`: you cannot, and you need not.",
+            "",
+            "When you finish, the dispatch runtime records the verdicts you PRINT, under your own "
+            "reviewer identity, with your full output as the evidence report, and signs your "
+            "completion. Only the format below is read: a criterion you do not print exactly once, "
+            "or print twice with different verdicts, gets no verdict at all.",
+            "",
+            "## Output format (printed — this IS your record)",
+            "",
+            "For each criterion print, starting at the beginning of a line:",
+            "```",
+            "N. [AC] <criterion short>",
+            "VERDICT: green | amber | red | escalate",
+            "WHY: <what you checked, with evidence; or why a human is needed>",
+            "GUIDANCE: <what is needed next, mandatory for non-green>",
+            "```",
+            "N is the criterion number above (`### Criterion N`). End with: 'Summary: N green, M "
+            "amber, K red, J escalate'. A green from a run that fails or times out does not count.",
+        ]
+        if operator_only:
+            lines += ["", "Not yours (operator-only, never judge): " +
+                      ", ".join(f"AC#{c['ac_index']}" for c in operator_only)]
+        return "\n".join(lines)
     lines += [
         "## How you record your verdict (you write it; nobody writes it for you)",
         "",
@@ -751,7 +784,8 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
     briefs = {s["seat"]: _build_brief(task_id, judged, rung=rung, rung_reason=reason,
                                       ceiling_note=note, evidence=evidence,
                                       seat=s["seat"] if rung >= 5 else "", operator_only=operator,
-                                      run_id=run_id, degraded=degraded, revision=revision)
+                                      run_id=run_id, degraded=degraded, revision=revision,
+                                      kind=s.get("kind", ""))
               for s in seats}
     res["brief"] = briefs[(plan["dispatch"] or seats)[0]["seat"]]
     if dry_run:

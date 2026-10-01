@@ -114,6 +114,15 @@ def commit_registry(root, text: str) -> None:
     registry as committed, never the working tree). Committed by a non-producer identity, with
     no task id, so it is neither the task's work nor a producer commit."""
     import subprocess
+    import yaml
+    # T-3582: a harness kind (codex/opencode/antigravity) is registered only with the binary the
+    # registry commits for it; a fixture that names none gets the fixture worker binary.
+    data = yaml.safe_load(text)
+    if isinstance(data, dict) and isinstance(data.get("backends"), list):
+        for b in data["backends"]:
+            if isinstance(b, dict) and b.get("worker_kind") in vl.HARNESS_KINDS and not b.get("binary"):
+                b["binary"] = WORKER_BIN
+                text = yaml.safe_dump(data, sort_keys=False)
     p = Path(root) / "policy" / "review-backends.yaml"
     p.parent.mkdir(parents=True, exist_ok=True)
     p.write_text(text)

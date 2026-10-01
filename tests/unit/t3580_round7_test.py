@@ -6,6 +6,7 @@ docs/reports/T-3580-round6-review-codex.md (codex, RED) and docs/reports/T-3580-
 Fixtures only; no real task is judged (sovereignty hold).
 """
 import json
+import re
 import subprocess
 import sys
 from datetime import datetime, timezone
@@ -332,7 +333,9 @@ class TestOneBinding:
     def test_probe_f3_an_uncommitted_kinds_edit_launches_nothing_the_ledger_counts(self, hi):
         """F3: an uncommitted DISPATCH_WORKER_KINDS edit + a committed `worker_kind: codex`
         made a codex seat count (and run.sh would have run Claude under that name)."""
-        src = TERMLINK.read_text()
+        # T-3582 made codex a real kind; the probe starts from a dispatcher that cannot launch it.
+        src = re.sub(r'(?m)^DISPATCH_WORKER_KINDS="[^"]*"', 'DISPATCH_WORKER_KINDS="claude ollama-loop"',
+                     TERMLINK.read_text())
         _commit_file(hi, vl.TERMLINK_SH, src)                          # the project's own copy
         rt.commit_registry(hi, _THREE_KINDS)
         (hi / vl.TERMLINK_SH).write_text(src.replace('DISPATCH_WORKER_KINDS="claude ollama-loop"',

@@ -493,11 +493,12 @@ class TestJudgePanels:
         assert [t["ac"] for t in vl.apply(TID, repo)["ticked"]] == [1]
 
     def test_single_vendor_panel_is_reported_degraded_and_cannot_satisfy(self, repo, capsys):
-        """Until T-3582 builds real codex/opencode seats."""
+        """T-3582 made codex/opencode real seats; a host that can dispatch only claude is still
+        a degraded single-vendor panel (worker_kinds restricted to what that host launches)."""
         _mk_task(repo, TASTE, extra_fm=self.HI)
         _produce(repo)
         w = FakeWorker("green")
-        res = _judge(repo, dispatcher=w)
+        res = _judge(repo, dispatcher=w, worker_kinds={"claude"})
         assert res["rung"] == 5 and res["degraded"] == "degraded: single-vendor panel"
         assert [c["vendor"] for c in w.calls] == ["claude"]
         assert res["outcomes"] == {1: "unknown"} and "panel-incomplete" in res["why"][1]
@@ -513,7 +514,7 @@ class TestJudgePanels:
         _mk_task(repo, TASTE, extra_fm=self.HI)
         _produce(repo)
         w = FakeWorker("green")
-        _judge(repo, dispatcher=w)
+        _judge(repo, dispatcher=w, worker_kinds={"claude"})
         assert "degraded: single-vendor panel" in w.calls[0]["brief"]
 
 

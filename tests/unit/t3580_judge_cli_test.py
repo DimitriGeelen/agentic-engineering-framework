@@ -278,6 +278,9 @@ class FakeWorker:
                 rt.finish(root, did, self.exit_code)
             return did
         outcome = self.behaviour if isinstance(self.behaviour, str) else self.behaviour[self.n - 1]
+        if vendor in vl.HARNESS_KINDS:
+            # T-3582: a harness worker PRINTS its verdicts; the runtime records them on its behalf.
+            return self._harness(root, did, brief, outcome)
         run = re.search(r"--run-id (\S+)", brief)
         rung = re.search(r"--rung (\S+)", brief).group(1)
         shots = re.findall(r"^- `([^`]+\.png)`$", brief, re.M) if self.cite_shots else []
@@ -314,6 +317,22 @@ class FakeWorker:
         return did
 
 
+    def _harness(self, root, did, brief, outcome):
+        w = rt.wdir_for(root, did)
+        blocks = [f"{n}. [AC] criterion\nVERDICT: {outcome}\nWHY: checked it\n"
+                  f"GUIDANCE: {'none' if outcome == 'green' else 'needs work'}\n"
+                  for n, _ac in re.findall(r"^### Criterion (\d+) \(Human AC#(\d+)\)$", brief, re.M)]
+        (w / "result.md").write_text("\n".join(blocks) + "Summary: done\n")
+        (w / "result.jsonl").write_text('{"type":"thread.started","thread_id":"t"}\n')
+        (w / "exit_code").write_text(f"{self.exit_code}\n")
+        secret = rt.take_secret(root, did)
+        with rt.as_runtime():
+            vl.record_for_worker(did, wdir=str(w), secret=secret, root=Path(root))
+        if self.runtime:
+            rt.finish(root, did, self.exit_code, result=(w / "result.jsonl").read_bytes())
+        return did
+
+
 #: Every worker kind the registry's seat backends name — as if T-3582 had built them all.
 ALL_KINDS = {"claude", "codex", "opencode"}
 
@@ -326,6 +345,8 @@ def _all_kinds(monkeypatch, root):
     reg = yaml.safe_load((_HERE / "policy" / "review-backends.yaml").read_text())
     kinds = {"claude-code": "claude", "codex": "codex", "opencode": "opencode"}
     for b in reg["backends"]:
+        b.pop("binary", None)   # T-3582: commit_registry pins the fixture binary
+        b.pop("model", None)    # (and fixture workers run their default model)
         if b["id"] in kinds:
             b["worker_kind"] = b["vendor"] = kinds[b["id"]]
         elif b.get("worker_kind"):
