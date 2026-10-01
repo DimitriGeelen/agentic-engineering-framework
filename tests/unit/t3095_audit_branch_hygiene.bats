@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+load ../git_fence  # T-3610: git discovery must not escape a fixture into a repo above the temp dir
 # T-3095 (T-3093 slice 2): branch hygiene on the audit cron.
 #
 # The block under test lives inside a 6000-line audit.sh, so it is EXTRACTED

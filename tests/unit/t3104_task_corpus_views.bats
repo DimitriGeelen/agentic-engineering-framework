@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+load ../git_fence  # T-3610: git discovery must not escape a fixture into a repo above the temp dir
 # fw_task_view_dirs — the shared task-corpus view set (T-3104).
 #
 # A git worktree checks out its own snapshot of .tasks/, so "the corpus" is the

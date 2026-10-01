@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+load ../git_fence  # T-3610: git discovery must not escape a fixture into a repo above the temp dir
 # T-3112: fw doctor audits linked worktrees for enforcement drift (R7 leg L3).
 #
 # Two things are under test and they fail differently:

@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+load ../git_fence  # T-3610: git discovery must not escape a fixture into a repo above the temp dir
 # T-3113: `fw upgrade` names which linked worktrees are behind (R7 leg L4).
 #
 # Exercises _t3113_emit_worktree_advisory directly against a REAL `git worktree
