@@ -95,7 +95,9 @@ teardown() {
     mkdir -p "$FAKE_ROOT/agents/task-create" "$FAKE_ROOT/lib"
     # Copy create-task.sh + the libs paths.sh pulls in, but omit keylock.sh
     cp "$FRAMEWORK_ROOT/agents/task-create/create-task.sh" "$FAKE_ROOT/agents/task-create/"
-    for f in paths.sh enums.sh config.sh colors.sh errors.sh; do
+    # T-3624: paths.sh hard-sources worktree-identity.sh since T-3111 (6431393ae);
+    # without it the run dies in paths.sh before it ever reaches keylock.
+    for f in paths.sh worktree-identity.sh enums.sh config.sh colors.sh errors.sh; do
         [ -f "$FRAMEWORK_ROOT/lib/$f" ] && cp "$FRAMEWORK_ROOT/lib/$f" "$FAKE_ROOT/lib/"
     done
 
