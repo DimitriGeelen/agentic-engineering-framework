@@ -126,7 +126,11 @@ setup_drift_fixture() {
 drift_allows() {
     local cmd="$1" payload
     payload=$(python3 -c 'import json,sys; print(json.dumps({"tool_name":"Bash","tool_input":{"command":sys.argv[1]}}))' "$cmd")
-    printf '%s' "$payload" | CLAUDE_PROJECT_DIR="$DRIFT" PROJECT_ROOT="$DRIFT" \
+    # T-3624: focus-drift only BLOCKS under an agent-control signal (T-1739,
+    # c02a5a395); without one it prints a NOTE and allows. Inherited, the signal
+    # made this harness pass inside an agent session and fail under the nightly
+    # cron runner. Set it explicitly: the gate under test is the agent's.
+    printf '%s' "$payload" | CLAUDECODE=1 CLAUDE_PROJECT_DIR="$DRIFT" PROJECT_ROOT="$DRIFT" \
         bash "$HOOK" >/dev/null 2>&1
 }
 
