@@ -25,6 +25,12 @@ setup() {
 framework_root: $FRAMEWORK_ROOT
 version: $(cat "$FRAMEWORK_ROOT/VERSION" 2>/dev/null || echo "test")
 EOF
+    # Hermetic: an inherited PROJECT_ROOT (agent sessions, the nightly runner)
+    # wins over cwd in bin/fw, so doctor audited the LIVE repo's settings.json
+    # instead of this fixture's. Pin it, and make the fixture a git repo as a
+    # real consumer is (a non-git project aborts doctor early — T-3625).
+    export PROJECT_ROOT="$TEST_TEMP_DIR"
+    git -C "$TEST_TEMP_DIR" init -q
 }
 
 teardown() {
