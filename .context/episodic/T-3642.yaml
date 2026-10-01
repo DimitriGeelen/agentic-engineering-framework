@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3642: Reviewer destructive-action escalation fires on negated safety guarantees ('can never destroy') and reports only the first match (055 escalation finding)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-01T13:42:55Z
+# ============================================================================
+
+task_id: T-3642
+task_name: "Reviewer destructive-action escalation fires on negated safety guarantees ('can never destroy') and reports only the first match (055 escalation finding)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T13:20:12Z
+completed: 2026-10-01T13:42:32Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-01T15:42:15+02:00
+last_commit: 2026-10-01T15:42:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  escalation destructive-action — skip negated guarantees, scan past first match
+
+# Key outcomes
+outcomes:
+  - 'Reproducing tests in `tests/unit/test_t3642_escalation_negation.py` drive the real `evaluate_escalations` against the real policy file and (a) and (b) are RED before the fix: (a) the AC "Running it with no arguments can never destroy anything." does not fire `destructive-action`; (b) a harmless early mention plus a genuine later "wipe the production database" reports the later excerpt; (c) fail-open guard: a negation in the PREVIOUS sentence does not suppress a genuine hit in the next one (055''s 64-char-lookback trap).'
+  - 'Fix: `evaluate_escalations` scans with `re.finditer`, honours an optional per-matcher `exclude_pattern` tested against the current clause (clamped on `[.;:\n]`) and continues past excluded hits; an unparseable `exclude_pattern` means no exclusion. `destroy|wipe|purge` require a production-scope object within 3 words; `rm -rf`, `DROP TABLE`, force-push and hard-reset stay unconditional (tests assert they still fire, including when negated).'
+  - 'No regression: `tests/unit/test_reviewer_static_scan.py` passes, and the vendored copies of the two changed files are byte-identical to source (`cmp`; repo-wide `bin/fw vendor self --check` is red on other concurrent workers'' withheld files, not on these).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/static_scan.py'
+  - '.agentic-framework/policy/escalation-patterns.yaml'
+  - 'lib/reviewer/static_scan.py'
+  - 'policy/escalation-patterns.yaml'
+  - '.tasks/active/T-3642-reviewer-destructive-action-escalation-f.md'
+  - 'tests/unit/test_t3642_escalation_negation.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T15:42:15'
+    action: 'T-3642: escalation destructive-action — skip negated guarantees, scan past first match'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 22 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, 055, upstream]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 22
+  commits: 1
+  files_changed: 6
+  lines_added: 217
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3642-reviewer-destructive-action-escalation-f.md
+generated_by: context-agent-hybrid

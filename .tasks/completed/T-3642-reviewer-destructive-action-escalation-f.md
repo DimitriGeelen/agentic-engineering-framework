@@ -17,12 +17,12 @@ description: >
   => no exclusion (fail loud). Keep a test for the fail-open direction. Same at v1.7.0.
   Triage: T-3639.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, 055, upstream]
-components: []
+components: [lib/reviewer/static_scan.py, policy/escalation-patterns.yaml]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -51,8 +51,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T13:20:12Z
-last_update: 2026-10-01T13:39:43Z
-date_finished:
+last_update: 2026-10-01T13:42:32Z
+date_finished: 2026-10-01T13:42:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -377,3 +377,19 @@ cmp -s lib/reviewer/static_scan.py .agentic-framework/lib/reviewer/static_scan.p
 
 ### 2026-10-01T13:39:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8f7f25fc
+- **Timestamp:** 2026-10-01T13:42:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** yes
+- **Findings:** none
+
+- **Layer-1 escalations:** 1
+  1. **destructive-action** (high) — Destructive operation in verification or AC
+     - matched: `DROP TABLE`
+
+### 2026-10-01T13:42:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
