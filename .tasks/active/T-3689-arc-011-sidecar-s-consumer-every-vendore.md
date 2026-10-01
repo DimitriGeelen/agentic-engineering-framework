@@ -1,16 +1,8 @@
 ---
-id: T-3561
-name: "D-645 slice 1 vertical: receiver sidecar to real agent and back, proven by
-  a run-time nonce"
+id: T-3689
+name: "arc-011 sidecar S-CONSUMER: every vendored consumer gets the full sidecar (process, hooks, tick, cron) via fw init/fw upgrade, proven by fw sidecar e2e run from INSIDE a vendored consumer in CI"
 description: >
-  D-645 (ratified 2026-09-25) was never built past slice 0: T-3475 GO'd the slice-1
-  transport (HTTP) and slice 1 itself never got a task (OBS-575). This is that task,
-  re-scoped vertically per six external reviews (T-3558, two rounds, three vendors,
-  amber x2): one durable, authenticated path between two REAL agent sessions — receive,
-  store, RECEIVED, inject at a safe point through a real runtime adapter, HANDED_OVER,
-  reply — proven by a nonce generated at test time whose transformed value must come
-  back in the reply, with negative controls that must fail. Injection grants attention,
-  never authority.
+  Origin: 832 T-980 RCA 2026-10-01 (every vendored consumer was deaf; nothing was ever tested from inside a vendored project). Extends upgrade_fresh_machine_simulation.
 
 status: captured
 workflow_type: build
@@ -19,10 +11,7 @@ horizon: now
 tags: [sidecar, arc-011, design-conformance, T-3682]
 arc_id: arc-011
 components: []
-related_tasks: [T-3397, T-3475, T-3558, T-3559, T-3555]
-write_set: ["lib/sidecar/receiver.py", "lib/sidecar/lifecycle.py", "lib/sidecar/adapter.py",
-  "lib/sidecar/outbox.py", "lib/sidecar/inbox.py", "lib/sidecar_cli.py", "agents/context/sidecar-inbox.sh",
-  "tests/unit/t3561_*", "docs/architecture/sidecar-target-architecture.md"]
+related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -49,9 +38,9 @@ write_set: ["lib/sidecar/receiver.py", "lib/sidecar/lifecycle.py", "lib/sidecar/
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-29T16:46:15Z
-last_update: '2026-09-29T17:00:37Z'
-date_finished:
+created: 2026-10-01T23:02:38Z
+last_update: 2026-10-01T23:02:38Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -62,88 +51,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-09-29T17:00:14Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 7
-      tier: 2
-      effort: 8
-    rationale: blast_radius=7 (9-write-set-paths); tier=2 (workflow:build); 
-      effort=8 (lines=309,acs=12)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-09-29T17:00:37Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 1
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
-      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3561: D-645 slice 1 vertical: receiver sidecar to real agent and back, proven by a run-time nonce
+# T-3689: arc-011 sidecar S-CONSUMER: every vendored consumer gets the full sidecar (process, hooks, tick, cron) via fw init/fw upgrade, proven by fw sidecar e2e run from INSIDE a vendored consumer in CI
 
 ## Context
 
-**Authority.** D-645 (operator, 2026-09-25: *"build toward the design, do not ratify the
-divergence"*) and T-3475 (GO, transport = HTTP). This task exists because slice 1 was
-authorised and then never tasked; the audit that should have flagged it counted a
-mention as a build (OBS-575).
-
-**Design of record:** `docs/architecture/sidecar-target-architecture.md`. **Scope
-corrections from six external reviews** (T-3558, `docs/reports/T-3558-review*.md`,
-OpenAI + Z.ai + Anthropic, two rounds, amber):
-
-1. **Vertical, not horizontal.** A receiver daemon alone proves nothing about
-   consumption (OpenAI r2). The slice runs end to end between two real agent sessions.
-2. **The runtime adapter is the decisive component** (OpenAI r2). HTTP to a sidecar does
-   not reach an agent. Today's only adapter is the `UserPromptSubmit` hook
-   (`agents/context/sidecar-inbox.sh`), which fires only when a human types and was
-   silently broken 2026-09-24..29 (T-3559). v1 adapter: inject at a safe boundary
-   (between turns / after a tool call), never mid-tool-call. Waking an IDLE agent is
-   in scope only as a measured finding: record what works (candidate: TermLink PTY
-   inject into a TermLink-registered session) rather than claim it.
-3. **Injection grants attention, never authority** (all three, r2). Peer content is
-   framed as untrusted data; a request for action can at most become a task proposal
-   through AEF's approval path. Safety must not depend on the model behaving.
-4. **States are layered and idempotent** (all three, r2): stable message id, dedup at
-   store, a deadline with a named owner per non-terminal state. Minimum set for this
-   slice: SENT, RECEIVED, HANDED_OVER, REPLIED, plus the failure paths UNDELIVERABLE
-   (sender-side, retry budget exhausted), REJECTED (failed authentication, never
-   injected) and ESCALATED (set by infrastructure on deadline, never by the agent).
-5. **Callers are authenticated.** Localhost bind for this slice; the sender is bound to
-   the authenticated caller, not self-asserted. First-contact senders stop at RECEIVED.
-
-**Explicitly OUT of this slice:** blobs (slice 5), cross-host, hub fallback carrier,
-prioritisation, replay protection beyond message-id dedup, key rotation.
-
-**The test is the deliverable** (Z.ai r2: *"internal states may fail a test but never
-pass one; only externally observable behaviour passes"*).
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] A receiver sidecar process with an HTTP API on localhost stores each message durably (message + pending record in one recoverable write) BEFORE returning RECEIVED to the sender
-- [ ] Message ids are stable across retries; a duplicate id is stored once, and a reused id with different content is rejected
-- [ ] A runtime adapter hands the stored message to a real agent session at a safe boundary and records HANDED_OVER with the message id; a queue write alone never counts as HANDED_OVER
-- [ ] Injected peer content is framed as untrusted data; an action request becomes a task proposal, never execution (hostile-payload test)
-- [ ] The sender sees SENT, RECEIVED, HANDED_OVER and REPLIED for its message, each set by the party that can know it
-- [ ] Failure paths exist and are exercised: UNDELIVERABLE (receiver down, retry budget spent), REJECTED (unauthenticated caller, never injected), ESCALATED (HANDED_OVER never reached before its deadline, set by infrastructure)
-- [ ] END-TO-END PROOF: agent A sends a nonce generated at test time; agent B, whose prompt never mentions that a message is coming, replies with the nonce transformed; the only passing assertion is the transformed nonce arriving in A's context
-- [ ] NEGATIVE CONTROL: with injection disabled the end-to-end proof FAILS, and the sender sees ESCALATED rather than silence or success
-- [ ] Every non-success outcome is written to the T-3555 refusal ledger (or recorded for it, if T-3555 has not shipped yet)
-- [ ] `INJECTED_NOW` is renamed `HUB_ACCEPTED` wherever it survives, so no status claims more than it knows
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -396,7 +317,7 @@ pass one; only externally observable behaviour passes"*).
 
 ## Updates
 
-### 2026-09-29T16:46:15Z — task-created [task-create-agent]
+### 2026-10-01T23:02:38Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3561-d-645-slice-1-vertical-receiver-sidecar-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3689-arc-011-sidecar-s-consumer-every-vendore.md
 - **Context:** Initial task creation
