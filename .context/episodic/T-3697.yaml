@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3697: Guidance in lib/upgrade.sh:2812, check-worktree-governance-write.sh:176 and worktree-corpus-guard.sh:241 tells agents to land worktrees on master, contradicting the release-train rule (bleeding-edge)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-01T23:55:08Z
+# ============================================================================
+
+task_id: T-3697
+task_name: "Guidance in lib/upgrade.sh:2812, check-worktree-governance-write.sh:176 and worktree-corpus-guard.sh:241 tells agents to land worktrees on master, contradicting the release-train rule (bleeding-edge)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T23:38:42Z
+completed: 2026-10-01T23:54:50Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-02T01:54:15+02:00
+last_commit: 2026-10-02T01:54:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  guidance lands worktrees on bleeding-edge, not master (release-train). vendor sync of guidance fix
+
+# Key outcomes
+outcomes:
+  - 'No guidance string in lib/ or agents/ names `master` as the `fw integrate run` target (upgrade.sh, check-worktree-governance-write.sh, worktree-corpus-guard.sh all say `bleeding-edge`)'
+  - 'The governance-write block no longer tells agents to "edit on master" (main checkout is on the dev branch)'
+  - 'Regression test tests/lint/no-integrate-to-master-guidance.bats fails on the old code and passes on the fix'
+  - 'Vendored copies of the three touched files match source (cmp)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'vendor sync of guidance fix'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-worktree-governance-write.sh'
+  - '.agentic-framework/agents/git/lib/worktree-corpus-guard.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'agents/context/check-worktree-governance-write.sh'
+  - 'agents/git/lib/worktree-corpus-guard.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-3697-guidance-in-libupgradesh2812-check-workt.md'
+  - 'tests/lint/no-integrate-to-master-guidance.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-02T01:54:15'
+    action: 'T-3697: guidance lands worktrees on bleeding-edge, not master (release-train)'
+  - time: '2026-10-02T01:54:30'
+    action: 'T-3697: vendor sync of guidance fix'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, consult-triage, T-3678]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 16
+  commits: 3
+  files_changed: 9
+  lines_added: 402
+  lines_removed: 10
+  footprint_refreshed_at: '2026-10-01T23:55:18Z'
+  footprint_refreshed_by_commit: 9229091fa
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3697-guidance-in-libupgradesh2812-check-workt.md
+generated_by: context-agent-hybrid
