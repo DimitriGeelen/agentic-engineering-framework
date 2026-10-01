@@ -1202,10 +1202,17 @@ fi
 # loads only user and project settings: never the untracked .claude/settings.local.json, whose
 # env block (ANTHROPIC_BASE_URL, ANTHROPIC_MODEL) and hooks would choose its endpoint, model
 # and extra programs. `--setting-sources` is claude's documented flag (claude --help).
+# Round 9 (Claude R8-1): the USER source only — the working tree's .claude/settings.json (env,
+# hooks, model) is not loaded either — plus `--settings` naming the ledger's pinned copy of
+# policy/review-worker-settings.json (cross-session inbound refused; signed at registration,
+# re-checked at start and complete), and `--strict-mcp-config` with no --mcp-config: no MCP
+# server from .mcp.json or anywhere else. `start` refuses when CLAUDE.md, .claude/ or .mcp.json
+# differ from the reviewed revision.
 SETTING_SOURCES_FLAG=""
 if [ "$TASK_TYPE" = "review" ]; then
-    TOOLS_FLAG=""; PERMISSION_MODE_FLAG=""; MCP_CONFIG_FLAG=""; STRICT_MCP_FLAG=""; ALLOWED_TOOLS_FLAG=""
-    SETTING_SOURCES_FLAG="--setting-sources user,project"
+    TOOLS_FLAG=""; PERMISSION_MODE_FLAG=""; MCP_CONFIG_FLAG=""; ALLOWED_TOOLS_FLAG=""
+    STRICT_MCP_FLAG="--strict-mcp-config"
+    SETTING_SOURCES_FLAG="--setting-sources user --settings $WDIR/settings.json"
 fi
 
 # T-1706: worker_kind dispatch routing. If worker_kind.txt requests ollama-loop,
