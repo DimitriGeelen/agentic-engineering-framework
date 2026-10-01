@@ -55,12 +55,19 @@ _run_structure_audit() {
 
 @test "in-sync: registry == generated == deployed → PASS, no drift FAIL" {
     _minimal_registry
+    # T-3624: the structure audit verifies the reviewer-verdict ledger against
+    # git history (T-3581, 705269221) and FAILs when git cannot answer, so the
+    # fixture must be a repository for "no FAIL" to be about cron at all.
+    git -C "$TEST_PROJECT" init -q
     # T-1943: must actually generate (not write a stub) so the
     # registry→generated drift check sees a current source.
     "$FRAMEWORK_ROOT/bin/fw" cron generate >/dev/null
     cp "$SOURCE_PATH" "$DEPLOYED_PATH"
     _run_structure_audit
-    [ "$status" -eq 0 ]
+    # T-3624: exit 0 is unreachable in a near-empty fixture since T-3105
+    # (92deaef0c) — checks over an empty candidate set WARN (exit 1). The
+    # property is "no FAIL" (exit 2) plus the cron-specific output below.
+    [ "$status" -ne 2 ]
     [[ "$output" == *"Cron registry in sync with $DEPLOYED_PATH"* ]]
     [[ "$output" != *"Cron drift:"*"differs from deployed"* ]]
     [[ "$output" != *"generated but not installed"* ]]
