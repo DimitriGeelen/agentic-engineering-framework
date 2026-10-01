@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3639: Triage 055's ~18 local framework fixes (framework:pickup P-003..P-016, offsets ~186-256) before 055 can upgrade: covered by v1.7.0 / already on bleeding-edge / port
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-01T13:31:09Z
+# ============================================================================
+
+task_id: T-3639
+task_name: "Triage 055's ~18 local framework fixes (framework:pickup P-003..P-016, offsets ~186-256) before 055 can upgrade: covered by v1.7.0 / already on bleeding-edge / port"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T13:08:16Z
+completed: 2026-10-01T13:30:49Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-01T15:30:42+02:00
+last_commit: 2026-10-01T15:30:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  triage of 055's 18 vendored fixes — report, 12 port tasks (T-3640 Tier 0 priority), follow-up T-3652
+
+# Key outcomes
+outcomes:
+  - 'Every 055 fix named in cockpit:harness-access offset 4 (plus any further fix the framework:pickup posts name) has a verdict row in `docs/reports/T-3639-055-fix-triage.md` — COVERED-IN-v1.7.0 / BLEEDING-EDGE-ONLY / PORT-NEEDED / REJECT / NEED-PATCH — with file:line or commit evidence'
+  - 'Each PORT-NEEDED fix has an AEF bug task (new, tagged bug,055,upstream, or an existing task for the same defect) citing the post offset; the report''s AEF-task column names it; any Tier 0 port is marked priority in its task'
+  - 'One reply posted per 055 pickup on framework:pickup (`--reply-to <offset>`), giving verdict and AEF task; receipt (ack) posted only up to an offset where everything at or below was read'
+  - 'Summary table posted to 055 on cockpit:harness-access as a reply to offset 4, including the release-timing note (bleeding-edge-only and ported fixes reach 055 only at the next release cut, the operator''s decision)'
+  - 'No source code touched by this task (report + task files only)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'triage of 055''s 18 vendored fixes — report, 12 port tasks (T-3640 Tier 0 priority), follow-up T-3652'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-3639-055-fix-triage.md'
+  - '.tasks/active/T-3639-triage-055s-18-local-framework-fixes-fra.md'
+  - '.tasks/active/T-3640-priority-tier-0-check-tier0sh-blocks-onl.md'
+  - '.tasks/active/T-3641-readiness-gate-fails-open-when-libincept.md'
+  - '.tasks/active/T-3642-reviewer-destructive-action-escalation-f.md'
+  - '.tasks/active/T-3643-read-only-gate-treats--devnull-and-curl-.md'
+  - '.tasks/active/T-3644-read-only-gate-refuses-a-bare-literal-as.md'
+  - '.tasks/active/T-3645-hooks-resolve-projectroot-to-a-marker-be.md'
+  - '.tasks/active/T-3646-fw-note-promote-creates-a-duplicate-when.md'
+  - '.tasks/active/T-3647-claude-fw-leaks-its-claude-master-termli.md'
+  - '.tasks/active/T-3648-claude-fw-ends-a-live-agent-on-one-faile.md'
+  - '.tasks/active/T-3649-rendermarkdownsafe-has-no-tables-extra-a.md'
+  - '.tasks/active/T-3650-unit-suite-audit-line-hard-codes-testsun.md'
+  - '.tasks/active/T-3651-fw-termlink-cleanup---help-still-execute.md'
+  - '.tasks/active/T-3652-triage-055s-framework-findings-that-carr.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T15:30:42'
+    action: 'T-3639: triage of 055''s 18 vendored fixes — report, 12 port tasks (T-3640 Tier 0 priority), follow-up T-3652'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 22 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [T-3631, 055, cross-agent, upstream]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 22
+  commits: 1
+  files_changed: 15
+  lines_added: 4838
+  lines_removed: 40
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3639-triage-055s-18-local-framework-fixes-fra.md
+generated_by: context-agent-hybrid
