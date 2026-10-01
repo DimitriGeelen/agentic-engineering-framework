@@ -95,9 +95,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Every file named in this task's description (all under `tests/unit/`) has a verdict in `docs/reports/T-3623-triage.md`: its failing tests, the commit that broke them, and whether it is a STALE TEST, a CODE REGRESSION or ENVIRONMENT, with the evidence
-- [ ] Every stale test is fixed by editing test files only, and passes in isolation with no skips
-- [ ] Every code regression has its own bug task (one bug, one task), with the evidence and the breaking commit, and is listed in the report. None is fixed here
+- [x] Every file named in this task's description (all under `tests/unit/`) has a verdict in `docs/reports/T-3623-triage.md`: its failing tests, the commit that broke them, and whether it is a STALE TEST, a CODE REGRESSION or ENVIRONMENT, with the evidence
+- [x] Every stale test is fixed by editing test files only, and passes in isolation with no skips
+- [x] Every code regression has its own bug task (one bug, one task), with the evidence and the breaking commit, and is listed in the report. None is fixed here
 - [ ] `agents/audit/unit_suite_baseline.py regenerate` is run after the fixes. Entries that turned green drop out, and the remaining entries name their owning task
 
 ### Human
