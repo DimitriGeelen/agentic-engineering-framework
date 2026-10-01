@@ -1,8 +1,21 @@
 ---
 id: T-3608
-name: "Review-dispatch registration fails in consumers that do not commit .agentic-framework (T-3580 F5)"
+name: "Review-dispatch registration fails in consumers that do not commit .agentic-framework
+  (T-3580 F5)"
 description: >
-  Evidence (Claude round-6 review of T-3580, docs/reports/T-3580-round4-review.md '## Round 6 review' F5, INFO/unverified): lib/verdict_ledger.py _registry_blob/_committed_blob needs a COMMITTED policy/review-backends.yaml (and, since T-3580 round 7, a committed agents/termlink/termlink.sh for launchable kinds and the canonical run.sh). In a consumer that gitignores its vendored .agentic-framework/, candidate 2 (vendored path at the revision) fails; candidate 3 runs git show HEAD:<file> in the framework checkout, which for a vendored tree inside the consumer resolves against the consumer repo and fails too. Every review-dispatch registration then fails: dispatch prints 'not registered' and nothing reviewer-judged can close. Fails closed, not open, but a silent loss of function. Not checked against real consumers (project-boundary hook). Needed: an upgrade-simulation case (tests/unit/upgrade_fresh_machine_simulation.bats) with an ignored vendored tree, then a fix that pins a committed framework source for consumers without weakening the committed-not-working-tree rule.
+  Evidence (Claude round-6 review of T-3580, docs/reports/T-3580-round4-review.md
+  '## Round 6 review' F5, INFO/unverified): lib/verdict_ledger.py _registry_blob/_committed_blob
+  needs a COMMITTED policy/review-backends.yaml (and, since T-3580 round 7, a committed
+  agents/termlink/termlink.sh for launchable kinds and the canonical run.sh). In a
+  consumer that gitignores its vendored .agentic-framework/, candidate 2 (vendored
+  path at the revision) fails; candidate 3 runs git show HEAD:<file> in the framework
+  checkout, which for a vendored tree inside the consumer resolves against the consumer
+  repo and fails too. Every review-dispatch registration then fails: dispatch prints
+  'not registered' and nothing reviewer-judged can close. Fails closed, not open,
+  but a silent loss of function. Not checked against real consumers (project-boundary
+  hook). Needed: an upgrade-simulation case (tests/unit/upgrade_fresh_machine_simulation.bats)
+  with an ignored vendored tree, then a fix that pins a committed framework source
+  for consumers without weakening the committed-not-working-tree rule.
 
 status: captured
 workflow_type: build
@@ -38,8 +51,8 @@ related_tasks: [T-3580]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T22:16:53Z
-last_update: 2026-09-30T22:16:53Z
-date_finished: null
+last_update: '2026-09-30T22:30:46Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +63,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-30T22:30:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-30T22:30:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3608: Review-dispatch registration fails in consumers that do not commit .agentic-framework (T-3580 F5)

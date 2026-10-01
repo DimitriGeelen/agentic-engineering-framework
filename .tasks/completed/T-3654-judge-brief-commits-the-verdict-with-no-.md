@@ -1,19 +1,19 @@
 ---
-id: T-3655
-name: "All judge seats commit as reviewer@aef.local: one contaminated verdict commit
-  makes every later reviewer of that task a producer (T-3580 live proof, T-3341 poisoned)"
+id: T-3654
+name: "Judge brief commits the verdict with no pathspec: shared git index sweeps other
+  workers' staged files in, making the reviewer a producer (T-3580 live proof)"
 description: >
-  verdict_ledger.py:1281 and judge_cli.py:417 hard-code GIT_*_EMAIL=reviewer@aef.local.
-  producers_checked counts emails; contaminated commit 321f66ef8 (pre-T-3654) made
-  reviewer@aef.local a producer of T-3341, so every judge seat is refused introduced-by-producer
-  forever. Fix: per-dispatch reviewer email reviewer+<agent-id>@aef.local (independence
-  by identity, T-3557 IW-3), matching the already-unique name.
+  lib/reviewer/judge_cli.py commit_command: 'git add .context/reviews && ... git commit
+  -m' commits everything staged in the shared index. Live proof 2026-10-01: commit
+  321f66ef8 carried another worker's T-3535 changes; producers_checked (verdict_ledger.py:1524)
+  then classed the reviewer as producer and refused row V-20261001-795fe3f3. Fix:
+  'git commit -m ... -- .context/reviews'.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, T-3580, reviewer-identity]
+horizon: null
+tags: [bug, T-3580, shared-index]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -42,9 +42,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-01T13:56:00Z
-last_update: '2026-10-01T14:00:29Z'
-date_finished:
+created: 2026-10-01T13:47:15Z
+last_update: 2026-10-01T13:50:15Z
+date_finished: 2026-10-01T13:50:15Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,7 +56,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-01T13:57:21Z'
+  - ts: '2026-10-01T13:48:11Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -73,19 +73,9 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-01T14:00:29Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=273,acs=5)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3655: All judge seats commit as reviewer@aef.local: one contaminated verdict commit makes every later reviewer of that task a producer (T-3580 live proof, T-3341 poisoned)
+# T-3654: Judge brief commits the verdict with no pathspec: shared git index sweeps other workers' staged files in, making the reviewer a producer (T-3580 live proof)
 
 ## Context
 
@@ -95,9 +85,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Both reviewer commit paths (the `judge_cli.commit_command` brief and the ledger's runtime commit for harness seats) author and commit as `reviewer+<agent-id>@aef.local`, which is unique per dispatch. No code path commits as the shared `reviewer@aef.local`
-- [x] Regression test (`t3580_round3_test::test_reviewer_identity_is_per_dispatch_not_shared`): a contaminated commit by reviewer rv-1 makes `reviewer+rv-1@aef.local` a producer of the task, while the shared `reviewer@aef.local` and any later reviewer (rv-2) stay out of the producer set. It fails on the old code, which committed as `reviewer@aef.local` (the email assertion)
-- [x] The existing T-3580/T-3582 suites still pass (61/61), and the vendored copies match. The env-dependent T-3582 fixture commit (no git identity outside a dispatch worker) is fixed too
+- [x] `judge_cli.commit_command` commits with an explicit pathspec (`-- .context/reviews`), so another worker's staged files are never swept into the verdict commit
+- [x] Regression test: with an unrelated file staged in the same index, the generated command commits only `.context/reviews` (the unrelated file stays staged and is absent from the commit). Red before the fix, green after; the existing round-3 test still passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -131,9 +120,8 @@ cost_estimate_proposed:
 -->
 
 ## Verification
-timeout 900 python3 -m pytest tests/unit/t3580_round3_test.py tests/unit/t3582_harness_kinds_test.py -q > /tmp/.t3655 2>&1 && grep -q " passed" /tmp/.t3655 && ! grep -q "failed" /tmp/.t3655
-cmp -s lib/reviewer/judge_cli.py .agentic-framework/lib/reviewer/judge_cli.py && cmp -s lib/verdict_ledger.py .agentic-framework/lib/verdict_ledger.py
-test "$(grep -c 'reviewer@aef.local' lib/reviewer/judge_cli.py lib/verdict_ledger.py | awk -F: '{s+=$2} END{print s}')" -eq 0
+timeout 600 python3 -m pytest tests/unit/t3580_round3_test.py -q > /tmp/.t3654 2>&1 && grep -q " passed" /tmp/.t3654 && ! grep -q "failed" /tmp/.t3654
+cmp -s lib/reviewer/judge_cli.py .agentic-framework/lib/reviewer/judge_cli.py
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -263,10 +251,10 @@ test "$(grep -c 'reviewer@aef.local' lib/reviewer/judge_cli.py lib/verdict_ledge
 
 ## RCA
 
-**Symptom:** the T-3580 live-proof retry (row V-20261001-4e8131a6, clean commit 93386318e) was refused as introduced-by-producer: "authored by 'reviewer@aef.local', a producer of T-3341".
-**Root cause:** every judge seat committed as the same email, `reviewer@aef.local`. The first attempt's contaminated verdict commit (321f66ef8, pre-T-3654) touched non-review files, so `producers_checked` counted its identities, including that shared email, as producers of T-3341. From then on every reviewer of T-3341 matched.
-**Why structurally allowed:** reviewer independence was enforced by NAME (unique per dispatch) while the EMAIL was shared. The ledger rightly checks both, so one contamination poisoned the email for good. Fixture panels never produced a contaminated commit, so the shared email never mattered in tests.
-**Prevention:** a per-dispatch email on both commit paths, plus the regression test; a grep in Verification keeps the shared literal out of both files.
+**Symptom:** the T-3580 live proof's green verdict (row V-20261001-795fe3f3) was refused as "reviewer-is-producer". The verdict commit 321f66ef8 also carried another worker's staged T-3535 changes.
+**Root cause:** `judge_cli.commit_command` emitted `git add .context/reviews && git commit -m …` with no pathspec. Parallel workers share one git index, so the commit took everything staged; `producers_checked` (lib/verdict_ledger.py) then saw the reviewer's commit touch non-review files.
+**Why structurally allowed:** the ledger tests and the T-3582 fixture panel ran in isolated fixture repos, where nothing else is ever staged. The shared-index hazard (L-685, learned the same day for build workers) was never applied to the brief we hand reviewers.
+**Prevention:** the pathspec plus a regression test with an unrelated file staged; L-685 already covers the class for prompts.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -358,10 +346,22 @@ test "$(grep -c 'reviewer@aef.local' lib/reviewer/judge_cli.py lib/verdict_ledge
 
 ## Updates
 
-### 2026-10-01T13:56:00Z — task-created [task-create-agent]
+### 2026-10-01T13:47:15Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3655-all-judge-seats-commit-as-revieweraefloc.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3654-judge-brief-commits-the-verdict-with-no-.md
 - **Context:** Initial task creation
 
-### 2026-10-01T13:57:21Z — status-update [task-update-agent]
+### 2026-10-01T13:48:11Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d1c03062
+- **Timestamp:** 2026-10-01T13:50:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-01T13:50:15Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

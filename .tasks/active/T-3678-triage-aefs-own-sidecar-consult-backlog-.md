@@ -1,19 +1,22 @@
 ---
-id: T-3654
-name: "Judge brief commits the verdict with no pathspec: shared git index sweeps other
-  workers' staged files in, making the reviewer a producer (T-3580 live proof)"
+id: T-3678
+name: "Triage AEF's own sidecar consult backlog: ~40 peer proposals/defect reports
+  (832, ring20-dashboard 21 v1.7.0 defects, 1409-sprind, 010-termlink, 055) surfaced
+  but never actioned"
 description: >
-  lib/reviewer/judge_cli.py commit_command: 'git add .context/reviews && ... git commit
-  -m' commits everything staged in the shared index. Live proof 2026-10-01: commit
-  321f66ef8 carried another worker's T-3535 changes; producers_checked (verdict_ledger.py:1524)
-  then classed the reviewer as producer and refused row V-20261001-795fe3f3. Fix:
-  'git commit -m ... -- .context/reviews'.
+  fw sidecar inbox --peek on 2026-10-01 lists offsets 0-24 on the project inbox plus
+  1-22 on the legacy sidecar topic, many being concrete framework defects with patches
+  (ring20-dashboard T-2382 21 defects; 832 offsets 11-20: delegation boundary, audit
+  scanners, check-tier0 hole, inception template; 1409-sprind BVP/hub-split). They
+  were injected into prior turns but not converted into tasks. Per G-020 each is a
+  proposal: triage into one task per defect (or reject with reason), reply on each
+  conversation, then ack. Dispatch the reading/classification; integrate serially.
 
 status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [bug, T-3580, shared-index]
+tags: [sidecar, cross-agent, triage]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -42,8 +45,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-01T13:47:15Z
-last_update: 2026-10-01T13:48:11Z
+created: 2026-10-01T21:35:15Z
+last_update: 2026-10-01T21:51:36Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -55,8 +58,18 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-01T21:45:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-01T13:48:11Z'
+  - ts: '2026-10-01T21:45:33Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -75,7 +88,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3654: Judge brief commits the verdict with no pathspec: shared git index sweeps other workers' staged files in, making the reviewer a producer (T-3580 live proof)
+# T-3678: Triage AEF's own sidecar consult backlog: ~40 peer proposals/defect reports (832, ring20-dashboard 21 v1.7.0 defects, 1409-sprind, 010-termlink, 055) surfaced but never actioned
 
 ## Context
 
@@ -85,8 +98,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `judge_cli.commit_command` commits with an explicit pathspec (`-- .context/reviews`), so another worker's staged files are never swept into the verdict commit
-- [x] Regression test: with an unrelated file staged in the same index, the generated command commits only `.context/reviews` (the unrelated file stays staged and is absent from the commit). Red before the fix, green after; the existing round-3 test still passes
+- [x] Triage report docs/reports/T-3678-consult-triage.md classifies every peeked consult (class + evidence)
+- [x] Report ends with a ranked table of proposed new tasks and a list of conversations needing a reply
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -120,8 +133,6 @@ bvp_scores_proposed:
 -->
 
 ## Verification
-timeout 600 python3 -m pytest tests/unit/t3580_round3_test.py -q > /tmp/.t3654 2>&1 && grep -q " passed" /tmp/.t3654 && ! grep -q "failed" /tmp/.t3654
-cmp -s lib/reviewer/judge_cli.py .agentic-framework/lib/reviewer/judge_cli.py
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -251,11 +262,6 @@ cmp -s lib/reviewer/judge_cli.py .agentic-framework/lib/reviewer/judge_cli.py
 
 ## RCA
 
-**Symptom:** the T-3580 live proof's green verdict (row V-20261001-795fe3f3) was refused as "reviewer-is-producer". The verdict commit 321f66ef8 also carried another worker's staged T-3535 changes.
-**Root cause:** `judge_cli.commit_command` emitted `git add .context/reviews && git commit -m …` with no pathspec. Parallel workers share one git index, so the commit took everything staged; `producers_checked` (lib/verdict_ledger.py) then saw the reviewer's commit touch non-review files.
-**Why structurally allowed:** the ledger tests and the T-3582 fixture panel ran in isolated fixture repos, where nothing else is ever staged. The shared-index hazard (L-685, learned the same day for build workers) was never applied to the brief we hand reviewers.
-**Prevention:** the pathspec plus a regression test with an unrelated file staged; L-685 already covers the class for prompts.
-
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -346,10 +352,10 @@ cmp -s lib/reviewer/judge_cli.py .agentic-framework/lib/reviewer/judge_cli.py
 
 ## Updates
 
-### 2026-10-01T13:47:15Z — task-created [task-create-agent]
+### 2026-10-01T21:35:15Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3654-judge-brief-commits-the-verdict-with-no-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3678-triage-aefs-own-sidecar-consult-backlog-.md
 - **Context:** Initial task creation
 
-### 2026-10-01T13:48:11Z — status-update [task-update-agent]
+### 2026-10-01T21:51:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work

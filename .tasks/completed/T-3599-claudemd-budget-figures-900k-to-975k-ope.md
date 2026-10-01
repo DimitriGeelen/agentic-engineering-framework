@@ -4,10 +4,10 @@ name: "CLAUDE.md budget figures: 900K to 975K (operator ruling 2026-09-30)"
 description: >
   CLAUDE.md budget figures: 900K to 975K (operator ruling 2026-09-30)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T20:00:19Z
-last_update: 2026-09-30T20:00:19Z
-date_finished: null
+last_update: 2026-09-30T20:02:30Z
+date_finished: 2026-09-30T20:02:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -321,3 +321,15 @@ test "$(grep -c '900K\|900000' CLAUDE.md)" -eq 0
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3599-claudemd-budget-figures-900k-to-975k-ope.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-54c4b7bd
+- **Timestamp:** 2026-09-30T20:02:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-09-30T20:02:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

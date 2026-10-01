@@ -1,30 +1,39 @@
 ---
-id: T-3302
-name: "STRUCTURAL: nothing runs tests/unit on a schedule, so reds there are invisible
-  until someone happens to run an adjacent suite. Measured today while landing T-3235:
-  TWO independent pre-existing failures surfaced by accident — ac_counter_sed_range_one_line_comment
-  (OBS-359, brittle exact-count assertion) and inception_decide_emit_review_post_move
-  (separate note). Both predate today's edits; neither was reported by anything. The
-  daily audit's 'Invariant suite green' line covers tests/lint ONLY (104 invariants,
-  agents/audit + bin/fw glob tests/lint/*.bats), and its green reads to an agent like
-  the test corpus is green. Same family as T-2697 (tests/lint itself was globbed by
-  no runner for months while 'fw test lint' ran shellcheck and reassured) and as peer
-  832's T-654 BUG 2 (a detector with no delivery) and their OBS-333 (a 13-minute bridge
-  suite nothing schedules). The failure mode is not 'tests fail' — it is 'a green
-  line that answers a narrower question than the one the reader is asking'. Candidate
-  fix: a scheduled tests/unit run whose result is surfaced the way the invariant suite
-  is, plus an audit line that states WHICH corpus it examined rather than the bare
-  word 'suite'."
+id: T-3612
+name: "lib/govd_sandbox.py emit_profile writes the YAML manifest non-atomically (L-493
+  ratchet red)"
 description: >
-  Promoted from observation OBS-361
+  OBS-587 triage (T-3603). Failing: tests/unit/atomic_yaml_write_lint.bats test 1
+  ('Truncating YAML writer(s) without atomic-write signal: lib/govd_sandbox.py').
+  Breaking commit: 4d0448ec4 (T-2433, 2026-09-20). emit_profile() (lib/govd_sandbox.py:~240)
+  does (out / name).write_text(text) for render_manifest() output (yaml.safe_dump)
+  with no same-dir temp + os.replace. Fix in code (atomic write) or, if the manifest
+  is regenerable scratch, add a reasoned EXEMPT entry — the ratchet requires a deliberate
+  decision either way.
 
-status: started-work
+status: captured
 workflow_type: build
-owner: human
-horizon: now
-tags: []
+owner: agent
+horizon: next
+tags: [bug, OBS-587]
 components: []
 related_tasks: []
+# write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
+#                                 # naming the files this task intends to write. Declared
+#                                 # at CAPTURE, unlike components: which the framework
+#                                 # resolves from git history at close. Feeds TWO things:
+#                                 #   1. `fw write-set check T-A T-B` — without it the
+#                                 #      comparison has nothing to compare and every real
+#                                 #      pair exits 2 (undecidable). 0 of 3032 tasks
+#                                 #      declared it, so that gate has never had an input.
+#                                 #   2. BVP blast_radius before close — the 0.6-weighted
+#                                 #      cost term, unavailable for 85% of rankable tasks
+#                                 #      because components: only exists once the task is
+#                                 #      finished (T-3471).
+#                                 # Example: write_set: ["lib/bvp.sh", "tests/unit/t*_bvp*"]
+#                                 # An EMPTY list is a real declaration ("writes nothing"),
+#                                 # which is not the same as omitting the field. Omitted
+#                                 # means unknown, and unknown must never score as cheap.
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -35,8 +44,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-09-06T18:16:13Z
-last_update: '2026-09-30T21:45:33Z'
+created: 2026-09-30T22:37:17Z
+last_update: '2026-09-30T22:45:40Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -49,34 +58,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-09-06T18:30:10Z'
+  - ts: '2026-09-30T22:45:24Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=258,acs=4)
+      (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-09-06T18:30:19Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 0
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-09-07T06:49:15Z'
+  - ts: '2026-09-30T22:45:40Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -92,47 +84,21 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-09-30T21:45:33Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=? 
-      (unscored (no scorer for F3; not counted)); F1=? (unscored (no scorer for 
-      F1; not counted)); F2=? (unscored (no scorer for F2; not counted))
     rubric_sha: e4a00f38e801
 ---
 
-# T-3302: STRUCTURAL: nothing runs tests/unit on a schedule, so reds there are invisible until someone happens to run an adjacent suite. Measured today while landing T-3235: TWO independent pre-existing failures surfaced by accident — ac_counter_sed_range_one_line_comment (OBS-359, brittle exact-count assertion) and inception_decide_emit_review_post_move (separate note). Both predate today's edits; neither was reported by anything. The daily audit's 'Invariant suite green' line covers tests/lint ONLY (104 invariants, agents/audit + bin/fw glob tests/lint/*.bats), and its green reads to an agent like the test corpus is green. Same family as T-2697 (tests/lint itself was globbed by no runner for months while 'fw test lint' ran shellcheck and reassured) and as peer 832's T-654 BUG 2 (a detector with no delivery) and their OBS-333 (a 13-minute bridge suite nothing schedules). The failure mode is not 'tests fail' — it is 'a green line that answers a narrower question than the one the reader is asking'. Candidate fix: a scheduled tests/unit run whose result is surfaced the way the invariant suite is, plus an audit line that states WHICH corpus it examined rather than the bare word 'suite'.
+# T-3612: lib/govd_sandbox.py emit_profile writes the YAML manifest non-atomically (L-493 ratchet red)
 
 ## Context
 
-tests/unit holds 615 bats files + 191 pytest files; nothing schedules them. The
-daily audit's "Invariant suite green" line covers tests/lint ONLY, so tests/unit
-reds sit invisible until an adjacent run trips over them (2 found by accident on
-2026-09-06: OBS-359/OBS-360 → T-3300/T-3301). Fix: a scheduled unit-corpus run
-surfaced the way the invariant suite is, plus audit lines that name WHICH corpus
-they examined. Runtime caution: tests/unit contains suites that spawn
-`audit.sh --section structure` (observed live 2026-09-07 — a full run contends
-the audit lock), so the runner must be nightly, self-locked against overlap, and
-must NOT hold the audit lock itself.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] **A1 Nightly runner:** a new cron job (registry id e.g. `unit-suite-nightly`) runs the full tests/unit corpus (both bats and pytest legs) once nightly via a dedicated runner script; the runner takes its own overlap lock (skip-if-held, logged), never the audit lock, and bounds total runtime with a generous timeout
-- [x] **A2 Report artifact:** each run writes a machine-readable report to `.context/audits/unit-suite/LATEST.yaml` (+ dated sibling) recording: started/finished timestamps, per-leg file/test counts, failed test names (bats `not ok` lines and pytest failures), skip count, and runner exit status
-- [x] **A3 Audit surfacing:** `fw audit` gains a line that reads the latest report and emits FAIL when the report lists failures, WARN when the report is missing or older than 48h, PASS otherwise — and the line text names the corpus explicitly ("unit suite (tests/unit)"), not the bare word "suite"
-- [x] **A4 Corpus-naming parity:** the existing invariant-suite audit line is reworded to name its corpus ("invariant suite (tests/lint)") so neither green line answers a broader question than it examined
-- [x] **A5 Registry chain clean:** cron registry edited → `fw cron generate` → `fw cron install` all run; `fw doctor` shows "Cron registry in sync" with no "edited but not generated" WARN
-- [x] **A6 Pinned:** a bats suite pins: runner skips when its overlap lock is held (logged, exit 0); report schema fields present after a stub run; audit FAIL/WARN/PASS branches against fixture reports (hermetic — never runs the real corpus)
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -167,10 +133,6 @@ must NOT hold the audit lock itself.
 
 ## Verification
 
-timeout 300 bats tests/unit/t3302_unit_suite_schedule.bats > /tmp/.t3302-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3302-bats.out
-test "$(grep -c '# skip' /tmp/.t3302-bats.out)" -eq 0
-out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
-
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -179,6 +141,17 @@ out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! ec
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+#
+# ── Mutable-corpus anchor (T-3326) ────────────────────────────────────────────
+# Do NOT anchor a verification line (or a unit test it runs) to MUTABLE corpus
+# state — an exact live count, or a grep of live `fw audit`/`fw doctor` output
+# for a specific corpus entity (a named arc, a task count, a census number).
+# The corpus moves under the check, and the line rots: it goes red (or vanishes
+# its pattern) for reasons unrelated to the code under test, blocking closes.
+# Pin the INVARIANT (categories sum, count > 0, property holds) or run the code
+# against a COMMITTED FIXTURE — never the live count or a live-audit line.
+# Origin: T-2969 line grepping live audit for one arc's status; T-2871's census
+# test pinning exact live counts (56→74 files) — both blocked closes (OBS-377).
 #
 # ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
 #
@@ -302,14 +275,6 @@ out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! ec
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** Two pre-existing tests/unit reds (OBS-359 `ac_counter_sed_range_one_line_comment`, OBS-360 `inception_decide_emit_review_post_move`) surfaced only by accident while landing T-3235 — nothing scheduled or reported them.
-
-**Root cause:** No runner globbed tests/unit on any schedule. The only scheduled test surface, the daily audit's "Invariant suite green" line, covers tests/lint exclusively (104 invariants) while its wording read like the whole test corpus.
-
-**Why structurally allowed:** A green line that answers a narrower question than the reader is asking is indistinguishable from full coverage — the same false-green family as T-2697 (tests/lint unglobbed for months) and T-3282 (stale Watchtower). No audit line named the corpus it examined, so the gap between "tests/lint green" and "test corpus green" was invisible.
-
-**Prevention:** (1) nightly `unit-suite-nightly` cron runs the full tests/unit corpus and writes a machine-readable report; (2) `fw audit` FAILs on reported reds and WARNs when the report is missing/stale >48h — "not measured" can no longer render as green; (3) both suite lines now name their corpus ("(tests/lint)" / "(tests/unit)"); (4) `tests/unit/t3302_unit_suite_schedule.bats` pins the lock-skip, report schema, and all audit branches hermetically.
-
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -363,28 +328,16 @@ out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! ec
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-**Recommendation:** GO
-**Rationale:** The invisibility gap is closed end to end: a nightly `unit-suite-nightly` cron (03:03) runs both tests/unit legs through a dedicated runner that can never contend the audit lock (own flock, skip-if-held logged), writes a schema'd report, and `fw audit` now reads that report with FAIL/WARN/PASS semantics whose line text names the corpus ("Unit suite (tests/unit)"). The invariant-suite lines were re-worded to name their corpus too ("Invariant suite (tests/lint)"), killing the green-line-answers-narrower-question class at both surfaces. Parent verification caught and fixed one real environment hazard post-worker: under FORCE_COLOR the pytest leg wrote ANSI into the redirected report parse (OBS-374 class) — hardened with `--color=no` + env scrub, reproduced and re-verified.
-**Evidence:**
-- `tests/unit/t3302_unit_suite_schedule.bats` — 11/11 green, 0 skips, hermetic (verified twice: worker env and parent env with FORCE_COLOR=3)
-- `fw doctor`: "Cron registry in sync", no "edited but not generated" WARN (registry→generated→deployed chain complete)
-- audit FAILs on listed failures AND on runner_exit≠0; WARNs on missing/stale (>48h) report; real corpus never started by tests
-
 ## Decisions
 
-### 2026-09-07 — runner location and shape
-- **Chose:** `agents/audit/unit-suite.sh` — a standalone runner beside audit.sh, self-locked on `.context/locks/unit-suite.lock` (flock, skip-if-held logged to `.context/audits/unit-suite/runs.log`, exit 0), with a total-runtime budget (`FW_UNIT_SUITE_TIMEOUT`, default 7200s) split across the bats leg then the pytest leg via remaining-time computation.
-- **Why:** the audit family already lives in agents/audit/; a separate script (rather than a new audit section) keeps the heavy corpus run OFF the audit lock — tests/unit suites themselves spawn `audit.sh --section structure`, so a runner holding audit.lock would starve its own suites. Env-overridable dir/report/lock paths make the A6 suite hermetic without ever touching the real corpus.
-- **Rejected:** running the corpus inside `fw audit` (would hold the audit lock for 20-40+ min and deadlock-starve the spawning suites); a `fw test`-based cron line (no report artifact, no skip-if-held logging).
-
-### 2026-09-07 — audit reads the report, never runs the corpus
-- **Chose:** `check_unit_suite_report()` in audit.sh parses `.context/audits/unit-suite/LATEST.yaml` only: FAIL on listed failures OR `runner_exit != 0`, WARN on missing/unparsable/>48h-old report, PASS via `pass_over` (T-3105 set-naming). Unparsable routes to `warn_unenumerable`, never PASS.
-- **Why:** decouples the 30-min structural cron from the nightly heavy run; "checked two nightlies ago" degrades to WARN rather than silently rendering green; runner_exit in the FAIL predicate catches a leg that could not run at all (tool missing, timeout) — a corpus that was not measured must not read as green.
-- **Rejected:** file-mtime staleness (the report's own `finished:` field is the honest clock; mtime survives `touch`/checkout).
-
-### 2026-09-07 — schedule slot 03:03
-- **Chose:** `3 3 * * *` nightly.
-- **Why:** off-peak; minute :03 collides with no hourly/half-hourly audit slot (:00/:05/:07/:11/:15/:17/:19/:20/:27/:30/:35/:37/:41/:45/:47/:57 taken — T-3070 collision class). The run will overlap later half-hour audit ticks, which is fine: the runner never holds the audit lock, and audit-spawning suites take it briefly with their own skip logic.
+<!-- Record decisions ONLY when choosing between alternatives.
+     Skip for tasks with no meaningful choices.
+     Format:
+     ### [date] — [topic]
+     - **Chose:** [what was decided]
+     - **Why:** [rationale]
+     - **Rejected:** [alternatives and why not]
+-->
 
 ## Decision
 
@@ -398,10 +351,7 @@ out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! ec
 
 ## Updates
 
-### 2026-09-06T18:16:13Z — task-created [task-create-agent]
+### 2026-09-30T22:37:17Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3302-structural-nothing-runs-testsunit-on-a-s.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3612-libgovdsandboxpy-emitprofile-writes-the-.md
 - **Context:** Initial task creation
-
-### 2026-09-07T06:49:14Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
