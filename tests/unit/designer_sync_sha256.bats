@@ -11,6 +11,11 @@ setup() {
     SCRIPT="$REPO/agents/designer/designer.sh"
     ROOT="$(mktemp -d)"
     mkdir -p "$ROOT/policy" "$ROOT/bin"
+    # Hermetic pin (T-2547 hook): designer.sh reads the pin FRAMEWORK_ROOT-first
+    # (T-2649, 28c7a1bd3), so an inherited FRAMEWORK_ROOT (any fw-launched shell,
+    # the nightly runner) would point every verb at the live pin, not the fixture.
+    unset FRAMEWORK_ROOT
+    export FW_DESIGNER_PIN_FILE="$ROOT/policy/designer-pin.yaml"
     # minimal fw shim so `fw watchtower url` inside the script doesn't explode
     printf '#!/usr/bin/env bash\necho "http://localhost:3000"\n' > "$ROOT/bin/fw"
     chmod +x "$ROOT/bin/fw"
