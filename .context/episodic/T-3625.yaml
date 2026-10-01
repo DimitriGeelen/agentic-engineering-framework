@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3625: fw doctor aborts exit 128 at the git-hooks check in a non-git project (set -e on git rev-parse)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-01T18:29:43Z
+# ============================================================================
+
+task_id: T-3625
+task_name: "fw doctor aborts exit 128 at the git-hooks check in a non-git project (set -e on git rev-parse)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T08:34:43Z
+completed: 2026-10-01T18:27:28Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-01T15:21:08+02:00
+last_commit: 2026-10-01T19:10:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  real ACs + note — fix blocked, bin/fw:1755 reserved for concurrent T-3593 worker. fw doctor tolerates a non-git PROJECT_ROOT at the git-hooks check. commit sibling batch close-out of T-3645 (task move + episodic); focus cannot return to a completed task (OBS-250)
+
+# Key outcomes
+outcomes:
+  - 'Regression test `tests/unit/t3625_doctor_non_git_project.bats` runs `bin/fw doctor` with PROJECT_ROOT pointing at a non-git fixture (tests/git_fence.bash, GIT_CEILING_DIRECTORIES) and asserts doctor does not exit 128 and prints checks after "Context directory"; red before the fix'
+  - 'Fix: `bin/fw` git-hooks check tolerates a failed `git rev-parse --git-path hooks` (`|| true`), so the existing empty-result fallback runs; vendored copy synced'
+  - 'No regression: `tests/unit/cron_flock_parity.bats`, `tests/unit/t3161_empty_registry_does_not_wipe_live_cron.bats`, `tests/unit/test_cron_registry_generated_drift.bats` green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'real ACs + note — fix blocked, bin/fw:1755 reserved for concurrent T-3593 worker'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.context/episodic/T-3645.yaml'
+  - '.tasks/active/T-3625-fw-doctor-aborts-exit-128-at-the-git-hoo.md'
+  - '.tasks/completed/T-3645-hooks-resolve-projectroot-to-a-marker-be.md'
+  - 'tests/unit/t3625_doctor_non_git_project.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T15:21:08'
+    action: 'T-3625: real ACs + note — fix blocked, bin/fw:1755 reserved for concurrent T-3593 worker'
+  - time: '2026-10-01T18:59:12'
+    action: 'T-3625: fw doctor tolerates a non-git PROJECT_ROOT at the git-hooks check'
+  - time: '2026-10-01T19:10:51'
+    action: 'T-3625: commit sibling batch close-out of T-3645 (task move + episodic); focus cannot return to a completed task (OBS-250)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 592 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, OBS-587]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 592
+  commits: 3
+  files_changed: 6
+  lines_added: 530
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3625-fw-doctor-aborts-exit-128-at-the-git-hoo.md
+generated_by: context-agent-hybrid
