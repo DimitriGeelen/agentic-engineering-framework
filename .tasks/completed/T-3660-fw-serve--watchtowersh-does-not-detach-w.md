@@ -8,12 +8,12 @@ description: >
   in watchtower.sh: a real detached start (and a true foreground --debug), so the
   P-01 launcher workaround can be removed. Source: docs/reports/T-3659-p01-zero-to-running.md.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, onboarding, P-01, T-3659]
-components: []
+components: [bin/watchtower.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T15:02:24Z
-last_update: 2026-10-01T16:56:56Z
-date_finished:
+last_update: 2026-10-01T17:04:33Z
+date_finished: 2026-10-01T17:04:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -373,3 +373,15 @@ cmp bin/watchtower.sh .agentic-framework/bin/watchtower.sh
 ### 2026-10-01T16:54:02Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5e6e62dd
+- **Timestamp:** 2026-10-01T17:04:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-01T17:04:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

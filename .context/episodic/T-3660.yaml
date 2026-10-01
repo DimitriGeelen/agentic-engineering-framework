@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3660: fw serve / watchtower.sh does not detach: Watchtower dies with its launching shell; --debug is not foreground (P-01 WSL F-16, F-17)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-01T17:05:09Z
+# ============================================================================
+
+task_id: T-3660
+task_name: "fw serve / watchtower.sh does not detach: Watchtower dies with its launching shell; --debug is not foreground (P-01 WSL F-16, F-17)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T15:02:24Z
+completed: 2026-10-01T17:04:33Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-01T19:04:16+02:00
+last_commit: 2026-10-01T19:04:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  watchtower start detaches for real (setsid/nohup); --debug runs in the foreground; stop also ends the reloader child
+
+# Key outcomes
+outcomes:
+  - 'Reproducing test `tests/unit/t3660_watchtower_detach.bats`: starts `bin/watchtower.sh start` (temp PROJECT_ROOT, free port, stubbed ufw) from a launcher shell in its own process group, sends SIGHUP to that whole group (terminal close), and asserts the server still answers `/api/_identity` as ours. Red before the fix.'
+  - 'Fix: `do_start` launches the server detached (own session via `setsid` when available, `nohup` + stdin from /dev/null otherwise), so the launching shell''s hangup does not reach it.'
+  - 'Fix: `start --debug` runs in the foreground (the script execs the server; PID file holds the server''s pid, output goes to the terminal); a test asserts the foreground process IS the server (pid file == launcher pid) and that it does not return before the server exits. Because Flask''s debug reloader serves from a child of that pid, `stop` now also signals the pid''s own children (never a group or port holder); the test asserts `stop` frees the port.'
+  - 'No regression: `tests/unit/t3627_watchtower_log_rotate.bats`, `tests/unit/t3282_watchtower_current.bats`, `tests/unit/watchtower_url_no_guess.bats` and `tests/unit/lib_watchtower.bats` stay green.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'watchtower start detaches for real (setsid/nohup); --debug runs in the foreground; stop also ends the reloader child'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/watchtower.sh'
+  - 'bin/watchtower.sh'
+  - '.tasks/active/T-3660-fw-serve--watchtowersh-does-not-detach-w.md'
+  - 'tests/unit/t3660_watchtower_detach.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T19:04:16'
+    action: 'T-3660: watchtower start detaches for real (setsid/nohup); --debug runs in the foreground; stop also ends the reloader child'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 122 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, onboarding, P-01, T-3659]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 122
+  commits: 1
+  files_changed: 4
+  lines_added: 214
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3660-fw-serve--watchtowersh-does-not-detach-w.md
+generated_by: context-agent-hybrid
