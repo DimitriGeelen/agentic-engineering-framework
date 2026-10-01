@@ -68,7 +68,10 @@ for job in JOBS:
                     if re.match(r'^[A-Za-z_]', lines[i])), len(lines))
         if end > idx + 1 and not lines[end - 1].endswith("\n"):
             lines[end - 1] += "\n"
-        lines[end:end] = [job["block"]]
+        # T-3676: match the registry's own list-item indent (832 indents 2).
+        ind = next((m.group(1) for m in (re.match(r'^(\s*)- ', l) for l in lines[idx + 1:end]) if m), "")
+        blk = "".join((ind + l if l.strip() else l) for l in job["block"].splitlines(keepends=True))
+        lines[end:end] = [blk]
     else:
         print(f"ERROR {registry}: unsupported 'jobs:' form", file=sys.stderr)
         sys.exit(1)
