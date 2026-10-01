@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3665: Native Windows: a CRLF checkout silently disables the secret scan (P-01 Win F-07)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-01T17:06:26Z
+# ============================================================================
+
+task_id: T-3665
+task_name: "Native Windows: a CRLF checkout silently disables the secret scan (P-01 Win F-07)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T15:06:05Z
+completed: 2026-10-01T17:03:19Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-01T19:03:02+02:00
+last_commit: 2026-10-01T19:03:02+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  secret scan is line-ending agnostic — a CRLF catalogue no longer disables every pattern (P-01 Win F-07)
+
+# Key outcomes
+outcomes:
+  - 'Reproducing test: `tests/unit/t3665_secret_scan_crlf.bats` converts `.secret-scan-patterns` and `.secret-scan-allowlist` to CRLF (what a `core.autocrlf=true` checkout produces) and asserts a planted AWS key / GitHub PAT is still caught by `scan-staged`, `scan-file` and `scan-tree`, and that a CRLF allowlist entry still suppresses — red before the fix'
+  - 'Fix: `agents/git/lib/secret-scan.sh` strips a trailing CR from every catalogue and allowlist line, so the scanner is line-ending agnostic; `.gitattributes` pins `eol=lf` for `*.sh`, `*.bash`, `*.bats` and the `.secret-scan-*` config so a framework clone never checks them out CRLF'
+  - 'No regression in the neighbouring suites: `test_secret_scan.bats`, `secret_scan_name_axis.bats`, `secret_scan_span_rule.bats` all green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/secret-scan.sh'
+  - 'agents/git/lib/secret-scan.sh'
+  - '.gitattributes'
+  - '.tasks/active/T-3665-native-windows-a-crlf-checkout-silently-.md'
+  - 'tests/unit/t3665_secret_scan_crlf.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T19:03:02'
+    action: 'T-3665: secret scan is line-ending agnostic — a CRLF catalogue no longer disables every pattern (P-01 Win F-07)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 117 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, security, windows, P-01, T-3659]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 117
+  commits: 1
+  files_changed: 5
+  lines_added: 216
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3665-native-windows-a-crlf-checkout-silently-.md
+generated_by: context-agent-hybrid
