@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T09:20:47Z
-last_update: 2026-10-01T08:46:27Z
+last_update: '2026-10-01T12:45:28Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,6 +87,23 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-01T12:45:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 3
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=3 (body:portability-abstraction); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3582: Rung-5 review panel is three Claude workers with vendor labels - make codex and opencode real panel seats (termlink dispatch only spawns Claude)
@@ -101,16 +118,16 @@ Why now: with components counted from git (T-3580 round 8/9), 14 of the 30 most 
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `codex` and `opencode` (Z.ai) are launchable dispatcher worker kinds: `fw termlink worker-kinds --vendors` lists them with vendors openai and zai. A review dispatch with each produces a runtime-signed start and completion and a parsed verdict file. Test: a stub binary per kind. Live proof: one real review per kind on a fixture task, cost logged.
-- [ ] `antigravity` is a launchable worker kind that runs `agy` as user dimitri-mint-dev through the operator-approved sudo form, or the task records with evidence why it cannot be made non-interactive and it stays a spare.
-- [ ] Every new kind satisfies T-3580's launch pinning: a committed kind and binary path, a pinned model, no caller env, no caller flags, and its own settings isolation. The verdict ledger counts it as its own vendor only when launched this way. Test: a forged vendor label is refused.
-- [ ] A rung-5 panel of Claude, Codex and Z.ai can be assembled and recorded end to end on a fixture task (three seats, three vendors). Test plus one live run.
-- [ ] policy/review-backends.yaml maps each kind to its vendor; codex and opencode stay internal-class. `bin/fw vendor self --check` is clean for this task's files.
-- [ ] **T-3580 R9-1, fixed here because it is the same file (run.sh):**
+- [x] `codex` and `opencode` (Z.ai) are launchable dispatcher worker kinds: `fw termlink worker-kinds --vendors` lists them with vendors openai and zai. A review dispatch with each produces a runtime-signed start and completion and a parsed verdict file. Test: a stub binary per kind. Live proof: one real review per kind on a fixture task, cost logged.
+- [x] `antigravity` is a launchable worker kind that runs `agy` as user dimitri-mint-dev through the operator-approved sudo form, or the task records with evidence why it cannot be made non-interactive and it stays a spare.
+- [x] Every new kind satisfies T-3580's launch pinning: a committed kind and binary path, a pinned model, no caller env, no caller flags, and its own settings isolation. The verdict ledger counts it as its own vendor only when launched this way. Test: a forged vendor label is refused.
+- [x] A rung-5 panel of Claude, Codex and Z.ai can be assembled and recorded end to end on a fixture task (three seats, three vendors). Test plus one live run.
+- [x] policy/review-backends.yaml maps each kind to its vendor; codex and opencode stay internal-class. `bin/fw vendor self --check` is clean for this task's files.
+- [x] **T-3580 R9-1, fixed here because it is the same file (run.sh):**
   - a refused `start` launches NO worker;
   - `stderr.log` is appended, never truncated, so the refusal reason survives;
   - the dirty-tree check covers only what the pinned launch actually reads (with `--setting-sources user` and `--strict-mcp-config`, a dirty project `CLAUDE.md`/`.mcp.json` must not block an ordinary review), OR the reviewer runs from a `git archive` export of the pinned revision. Test: a dirty `CLAUDE.md` in the shared checkout does not block a review dispatch whose launch cannot read it.
-- [ ] **Harness reference doc for the fleet (055-agentic-fleet-cockpit, framework:pickup 256):** `docs/harnesses.md` covers Claude Code, Codex, Z.ai/opencode, Antigravity and Gemini CLI. For each it gives:
+- [x] **Harness reference doc for the fleet (055-agentic-fleet-cockpit, framework:pickup 256):** `docs/harnesses.md` covers Claude Code, Codex, Z.ai/opencode, Antigravity and Gemini CLI. For each it gives:
   - the binary and version;
   - interactive and headless launch commands, verified on this host or marked unverified;
   - how to resume a session;
@@ -279,6 +296,13 @@ Why now: with components counted from git (T-3580 round 8/9), 14 of the 30 most 
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 900 python3 -m pytest tests/unit/t3582_harness_kinds_test.py -q -p no:cacheprovider > /tmp/.t3582-v1.out 2>&1 && grep -q " passed" /tmp/.t3582-v1.out
+timeout 1800 python3 -m pytest tests/unit/t3580_judge_cli_test.py tests/unit/t3580_round2_test.py tests/unit/t3580_round3_test.py tests/unit/t3580_round4_test.py tests/unit/t3580_round5_test.py tests/unit/t3580_round6_test.py tests/unit/t3580_round7_test.py tests/unit/t3580_round8_test.py tests/unit/t3580_round9_test.py -q -p no:cacheprovider > /tmp/.t3582-v2.out 2>&1 && grep -q " passed" /tmp/.t3582-v2.out
+bin/fw termlink worker-kinds --vendors > /tmp/.t3582-v3.out 2>&1 && grep -qx "codex openai" /tmp/.t3582-v3.out && grep -qx "opencode zai" /tmp/.t3582-v3.out && grep -qx "antigravity google" /tmp/.t3582-v3.out
+python3 -c "import sys; sys.path.insert(0,'.'); from lib import review_cost as rc; r={b['id']: b for b in rc.load_registry()}; assert all(r[k]['cost_class']=='internal' for k in ('codex','opencode','antigravity'))"
+bash -c 'set -e; for f in agents/termlink/termlink.sh lib/review_cost.py lib/verdict_ledger.py lib/reviewer/judge_cli.py policy/review-backends.yaml; do cmp -s "$f" ".agentic-framework/$f"; done'
+test -f docs/harnesses.md && grep -q "## Gemini CLI" docs/harnesses.md && grep -q "## Antigravity" docs/harnesses.md && grep -q "## opencode" docs/harnesses.md && grep -q "## Codex CLI" docs/harnesses.md && grep -q "## Claude Code" docs/harnesses.md
+grep -q '"completion_signed": true' docs/reports/T-3582-live-runs.md
 
 ## RCA
 
@@ -351,7 +375,37 @@ Why now: with components counted from git (T-3580 round 8/9), 14 of the 30 most 
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
+### 2026-10-01 — R9-1: narrow the dirty-tree check per kind, and export only for harness kinds
+- **Chose:** `_project_config_fault` now covers only what each kind's pinned launch reads
+  (`verdict_ledger.WORKTREE_CONFIG`). That is nothing for claude, which runs `--setting-sources
+  user --strict-mcp-config`. A marker-file probe on 2026-10-01 showed the user-only launch saw no
+  project CLAUDE.md, agents or commands; the default launch saw all three. It is also nothing for
+  ollama-loop and for the harness kinds, which run in a `git archive` export of the pinned
+  revision. An unknown kind keeps the full round-9 check (fail closed).
+- **Why:** claude must run in the live checkout: it records and commits its own verdict row.
+  So exporting for all kinds alike would have broken the claude path. For the harness kinds the
+  export is the simplest isolation that holds across all three CLIs. It also lets the
+  antigravity user read the tree.
+- **Rejected:** a `git archive` export for every kind (breaks claude's own record/commit). Keeping
+  the round-9 check (blocks ordinary reviews in the shared checkout for a file the launch cannot
+  read).
+
+### 2026-10-01 — harness verdicts are recorded by the runtime, not the worker
+- **Chose:** codex, opencode and antigravity run read-only and PRINT their verdicts. run.sh then
+  calls `verdict_ledger.py record-for-worker`, authenticated like `complete`. It records each
+  printed verdict under the worker's identity, with an evidence report that carries the output
+  and its sha256, and commits it before the completion is signed.
+- **Why:** none of the three can run `fw reviewer verdict record` and `git commit` from a
+  read-only sandbox. Giving them a writable sandbox or `--auto` would let a reviewer write the
+  repo.
+- **Rejected:** a writable codex sandbox (`workspace-write`) or `opencode --auto`, which let the
+  reviewer modify files.
+
+### 2026-10-01 — antigravity launched with the absolute binary
+- **Chose:** `sudo -n -u dimitri-mint-dev -H <registry binary> -p … --mode plan --sandbox`.
+- **Why:** the approved form with bare `agy` fails (`sudo: agy: command not found`), because
+  sudo's secure_path does not include ~/.local/bin. Same user, same flags, same binary.
+
      Skip for tasks with no meaningful choices.
      Format:
      ### [date] — [topic]
