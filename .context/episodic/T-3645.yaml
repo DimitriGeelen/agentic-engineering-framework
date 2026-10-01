@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3645: Hooks resolve PROJECT_ROOT to a marker-bearing passwd home when cwd leaves the project: false 'No active task' (055 P-008)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-01T17:08:44Z
+# ============================================================================
+
+task_id: T-3645
+task_name: "Hooks resolve PROJECT_ROOT to a marker-bearing passwd home when cwd leaves the project: false 'No active task' (055 P-008)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T13:22:33Z
+completed: 2026-10-01T17:07:56Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-01T19:07:22+02:00
+last_commit: 2026-10-01T19:07:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  hooks never resolve PROJECT_ROOT to a marker-bearing passwd home
+
+# Key outcomes
+outcomes:
+  - 'Regression test `tests/unit/t3645_hook_root_marker_home.bats` reproduces both 055 paths with an INITIALISED scratch home (.framework.yaml + .tasks + focus): (H2) CLAUDE_PROJECT_DIR unset, HOME=scratch home, cwd under it → fw must not resolve the home; (H3) CLAUDE_PROJECT_DIR valid, HOME unset/different, cwd under the passwd home → fw must resolve CLAUDE_PROJECT_DIR. Red before the fix'
+  - 'Fix in `bin/fw`: `_project_root_is_stale` also treats the passwd home (getent/pwd, canonicalised) as stale; the `find_project_root` fallback applies the staleness test and, when stale, the project that contains this fw copy wins (vendored `.agentic-framework/` parent, or a self-hosting framework repo)'
+  - 'Fix in `agents/context/check-active-task.sh`: the "No active task" block names the project root and focus file it read'
+  - 'T-2446 stays pinned: cwd inside a genuine other project still wins over CLAUDE_PROJECT_DIR (asserted in the new test)'
+  - 'No regression: `tests/unit/test_project_root_discovery.py` (or equivalent existing root-resolution suites) and the check-active-task bats suites green; vendored copies synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - '.agentic-framework/bin/fw'
+  - 'agents/context/check-active-task.sh'
+  - 'bin/fw'
+  - '.tasks/active/T-3645-hooks-resolve-projectroot-to-a-marker-be.md'
+  - 'tests/unit/t3645_hook_root_marker_home.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T19:07:22'
+    action: 'T-3645: hooks never resolve PROJECT_ROOT to a marker-bearing passwd home'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 225 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, 055, upstream]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 225
+  commits: 1
+  files_changed: 6
+  lines_added: 228
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3645-hooks-resolve-projectroot-to-a-marker-be.md
+generated_by: context-agent-hybrid

@@ -16,12 +16,12 @@ description: >
   (an uninitialised marker dir makes the gate fail open, so a naive fixture passes
   vacuously). Triage: T-3639.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, 055, upstream]
-components: []
+components: [agents/context/check-active-task.sh, bin/fw]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -50,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T13:22:33Z
-last_update: 2026-10-01T17:02:20Z
-date_finished:
+last_update: 2026-10-01T17:07:56Z
+date_finished: 2026-10-01T17:07:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -368,3 +368,15 @@ Credit: diagnosis, fix shape and test design by 055-agentic-fleet-cockpit (T-349
 
 ### 2026-10-01T17:02:20Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ca81ae9d
+- **Timestamp:** 2026-10-01T17:08:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-01T17:07:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
