@@ -57,10 +57,14 @@ _anyone_holds_lock() {
 }
 
 @test "two sequential fw audit runs both produce structure output (second not stale-locked)" {
-    out1=$("$FRAMEWORK_ROOT/bin/fw" audit --section structure 2>&1)
+    # T-3624: the verdict is the output, not the exit code. In this near-empty
+    # fixture the audit exits 1 (empty-set WARNs, T-3105 92deaef0c) or 2 (the
+    # reviewer-verdict ledger FAILs where git cannot answer, T-3581 705269221),
+    # and a failing assignment aborts the test under bats errexit.
+    out1=$("$FRAMEWORK_ROOT/bin/fw" audit --section structure 2>&1) || true
     [[ "$out1" == *"=== STRUCTURE CHECKS ==="* ]]
     [[ "$out1" == *"=== SUMMARY ==="* ]]
-    out2=$("$FRAMEWORK_ROOT/bin/fw" audit --section structure 2>&1)
+    out2=$("$FRAMEWORK_ROOT/bin/fw" audit --section structure 2>&1) || true
     [[ "$out2" == *"=== STRUCTURE CHECKS ==="* ]]
     [[ "$out2" == *"=== SUMMARY ==="* ]]
     [[ "$out2" != *"Another audit is already running"* ]]
