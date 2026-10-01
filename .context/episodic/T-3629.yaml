@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3629: claude-fw fresh restart with empty CLAUDE_ARGS lands Claude Code 2.1.28x in its agents overview, not a new conversation (055 P-016)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-01T13:43:54Z
+# ============================================================================
+
+task_id: T-3629
+task_name: "claude-fw fresh restart with empty CLAUDE_ARGS lands Claude Code 2.1.28x in its agents overview, not a new conversation (055 P-016)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T08:48:42Z
+completed: 2026-10-01T13:40:05Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-01T15:39:48+02:00
+last_commit: 2026-10-01T15:39:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  claude-fw relaunches with -n <name>, never an empty argv
+
+# Key outcomes
+outcomes:
+  - 'Reproducer: `tests/unit/t3629_fresh_relaunch_not_agents_view.bats`. A stub `claude` records argv. An interactive budget restart and an interactive armed re-arm each relaunch with a non-empty argv carrying `-n <name>`, where the name has no whitespace. It is red before the fix (relaunch argv empty)'
+  - 'Fix in `bin/claude-fw`: a relaunch whose argv would be empty gets `-n <sanitised name>` at the launch point, on both the direct and TermLink paths. The first launch, `-c`, and headless `-p` relaunches are unchanged'
+  - 'No regression: `claude_fw_restart_mode`, `t3247_restart_headless_prompt` (D6 updated: it pinned the empty argv this task removes), `t3249_rearm_headless_prompt`, `t3243_supervisor_restart_policy`, `t3346_termlink_exit_marker`, `t3358_claude_fw_exit_detection` and `claude_fw_copy_not_symlink` are green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - 'bin/claude-fw'
+  - '.tasks/active/T-3629-claude-fw-fresh-restart-with-empty-claud.md'
+  - 'tests/unit/t3247_restart_headless_prompt.bats'
+  - 'tests/unit/t3629_fresh_relaunch_not_agents_view.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T15:39:48'
+    action: 'T-3629: claude-fw relaunches with -n <name>, never an empty argv'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 291 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, claude-fw]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 291
+  commits: 1
+  files_changed: 5
+  lines_added: 237
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3629-claude-fw-fresh-restart-with-empty-claud.md
+generated_by: context-agent-hybrid
