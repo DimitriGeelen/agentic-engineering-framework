@@ -236,7 +236,10 @@ free_drivers:
 YAML
 )"
     _run_structure_audit
-    [[ "$output" != *"F-EMPTY"* ]]
+    # T-3624: scoped to the section's own line prefix. Since T-3428 (26bbee259)
+    # the structure audit also WARNs on a driver with no scoring mechanism and
+    # names it, so a bare driver id now appears from an unrelated check.
+    [[ "$output" != *"free driver F-EMPTY"* ]]
 }
 
 @test "Missing retire_when field: no WARN, no INFO" {
@@ -249,7 +252,10 @@ free_drivers:
 YAML
 )"
     _run_structure_audit
-    [[ "$output" != *"F-NOFIELD"* ]]
+    # T-3624: scoped to the section's own line prefix. Since T-3428 (26bbee259)
+    # the structure audit also WARNs on a driver with no scoring mechanism and
+    # names it, so a bare driver id now appears from an unrelated check.
+    [[ "$output" != *"free driver F-NOFIELD"* ]]
 }
 
 @test "WARN cap: re-running audit produces ONE WARN per driver, not N" {
@@ -285,7 +291,10 @@ free_drivers:
 YAML
 )"
     FW_RETIRE_WHEN_ADVISORY=0 run "$FRAMEWORK_ROOT/bin/fw" audit --section structure
-    [[ "$output" != *"F-TEST"* ]]
+    # T-3624: scoped to the section's own line prefix. Since T-3428 (26bbee259)
+    # the structure audit also WARNs on a driver with no scoring mechanism and
+    # names it, so a bare driver id now appears from an unrelated check.
+    [[ "$output" != *"free driver F-TEST"* ]]
     [[ "$output" != *"retire_when"* ]]
 }
 
