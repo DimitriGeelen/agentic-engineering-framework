@@ -411,9 +411,12 @@ def record_command(task_id: str, seat: str, rung: int, run_id: str) -> str:
 
 
 def commit_command(task_id: str) -> str:
+    # T-3654: explicit pathspec. Workers share ONE git index; a bare commit sweeps in whatever
+    # another worker has staged, which makes the reviewer a producer and voids the row.
     return ('git add .context/reviews && GIT_AUTHOR_NAME="reviewer-$FW_SIDECAR_AGENT_ID" '
             'GIT_COMMITTER_NAME="reviewer-$FW_SIDECAR_AGENT_ID" GIT_AUTHOR_EMAIL=reviewer@aef.local '
-            f'GIT_COMMITTER_EMAIL=reviewer@aef.local git commit -m "{task_id}: reviewer verdict"')
+            f'GIT_COMMITTER_EMAIL=reviewer@aef.local git commit -m "{task_id}: reviewer verdict" '
+            '-- .context/reviews')
 
 
 def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reason: str = "",

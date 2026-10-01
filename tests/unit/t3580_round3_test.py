@@ -340,6 +340,23 @@ class TestBriefQuoting:
                              text=True).stdout.strip()
         assert log == "reviewer-rv-1|reviewer-rv-1"
 
+    def test_generated_commit_command_never_sweeps_other_staged_files(self, prod):
+        # T-3654: workers share ONE git index. A verdict commit without a pathspec took another
+        # worker's staged change, which made the reviewer a producer and voided the row.
+        _dispatch(prod, "rv-1")
+        _record(prod, "rv-1")
+        (prod / "unrelated.txt").write_text("another worker's staged change\n")
+        subprocess.run(["git", "add", "unrelated.txt"], cwd=prod, check=True)
+        r = subprocess.run(["bash", "-c", judge_cli.commit_command(TID)], cwd=prod, text=True,
+                           capture_output=True, env={**os.environ, "FW_SIDECAR_AGENT_ID": "rv-1"})
+        assert r.returncode == 0, r.stderr
+        files = subprocess.run(["git", "show", "--name-only", "--format=", "HEAD"], cwd=prod,
+                               capture_output=True, text=True).stdout.split()
+        assert files and all(f.startswith(".context/reviews/") for f in files), files
+        staged = subprocess.run(["git", "diff", "--cached", "--name-only"], cwd=prod,
+                                capture_output=True, text=True).stdout.split()
+        assert staged == ["unrelated.txt"]
+
 
 # ── 2. HIGH: the reviewed revision is captured before the review, not at record time ─────────
 
