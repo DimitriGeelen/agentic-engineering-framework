@@ -50,11 +50,11 @@ setup() {
     export SANDBOX
 }
 
-# _cmd_hash COMMAND — reproduce check-tier0.sh's hash exactly (T-1500 normalisation:
-# squeeze whitespace, strip leading/trailing). Computed here rather than imported so
-# a change to the hashing rule shows up as a test failure instead of tracking silently.
+# _cmd_hash COMMAND — reproduce check-tier0.sh's hash exactly (T-3593 round 7: the
+# sha256 of the original command bytes, nothing normalised). Computed here rather
+# than imported so a change to the hashing rule shows up as a test failure.
 _cmd_hash() {
-    printf '%s' "$1" | tr -s '[:space:]' ' ' | sed 's/^ //; s/ $//' | sha256sum | awk '{print $1}'
+    printf '%s' "$1" | sha256sum | awk '{print $1}'
 }
 
 # _run_hook COMMAND — drive the REAL hook the way Claude Code does, in the sandbox.

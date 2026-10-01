@@ -143,12 +143,12 @@ _approval_not_shared() {
     _approval_not_shared "git branch -D victim" "git branch -D -- +victim"
 }
 
-@test "remote deletes still normalise: push origin :refs/heads/x keys as branch x (push path unchanged)" {
+@test "remote deletes key on the full ref: push origin :refs/heads/x keys as refs/heads/x (round 7)" {
     git branch x
     git push -q origin x 2>/dev/null
     run _gate "git push origin :refs/heads/x"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"DELETE branch 'x' on remote 'origin'"* ]]
+    [[ "$output" == *"DELETE ref 'refs/heads/x' on remote 'origin'"* ]]
 }
 
 # ── Same class, rm: a trailing slash is a different target ──────────────────
@@ -163,12 +163,10 @@ _approval_not_shared() {
     [[ "$output" == *"RECURSIVELY DELETE $W/link/"* ]]
     _approval_not_shared "rm -rf ./ $W/link" "rm -rf ./ $W/link/" "rm -rf ./ $W/link/."
     _approval_not_shared "rm -rf ./ $W/link/" "rm -rf ./ $W/link"
-    # Collapsing that changes nothing is still collapsed: // and /./ inside.
-    run _gate_id toolu_s1 "rm -rf ./ $W/realdir/sub"
-    [ "$status" -eq 2 ]
-    _approve >/dev/null
-    run _gate_id toolu_s2 "rm -rf ./ $W//realdir/./sub"
-    [ "$status" -eq 0 ]
+    # Round 7 (no normalisation): // and /./ inside are NOT collapsed either.
+    # The same directory spelled two ways is two keys; the operator approves
+    # again, which is the safe direction.
+    _approval_not_shared "rm -rf ./ $W/realdir/sub" "rm -rf ./ $W//realdir/./sub"
 }
 
 # ── MEDIUM: ANSI-C quoting is decoded before the self-approval check ────────

@@ -1,15 +1,13 @@
 #!/usr/bin/env bats
-# T-1500: Tier 0 hash drift on retry-after-approval.
+# Exact-text Tier 0 approvals hash the ORIGINAL command bytes (T-3593 round 7).
 #
-# Root cause: check-tier0.sh hashed $COMMAND raw. When an agent regenerated
-# a blocked command for retry (extra whitespace, trailing newline, reflowed
-# args), the SHA-256 digest drifted from the stored approval and the hook
-# re-blocked. Approval was effectively single-use only for byte-identical
-# retries.
-#
-# Fix: normalize whitespace before hashing — collapse runs of [:space:] to a
-# single space, trim leading/trailing. Same human-readable command yields
-# same hash regardless of incidental whitespace.
+# History: T-1500 collapsed whitespace before hashing so a reflowed retry still
+# matched its approval. That also merged different commands: quoted whitespace
+# is part of an argument, so `rm -rf ./ "a  b"` and `rm -rf ./ "a b"` (two
+# different paths) shared one approval (codex round 6 HIGH). Round 7 removes all
+# normalisation. Retries no longer need it: duplicate fires of ONE tool call are
+# recognised by tool_use_id (round 4), and mapped commands match by action.
+# (File name kept for history; the suite now pins the opposite rule.)
 
 load ../test_helper
 
@@ -26,92 +24,84 @@ teardown() {
     [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
 }
 
-# $2 = tool_use_id (T-3593 round 4: duplicate fires of ONE tool call share it;
-# absent = the field is not in the payload).
+# $2 = tool_use_id (absent = the field is not in the payload).
 _run_hook() {
     local cmd="$1" id="${2:-}"
     local json
     json=$(python3 -c "
 import json, sys
-d = {'tool_input': {'command': sys.argv[1]}}
+d = {'tool_input': {'command': sys.argv[1]}, 'cwd': sys.argv[3]}
 if sys.argv[2]:
     d['tool_use_id'] = sys.argv[2]
-print(json.dumps(d))" "$cmd" "$id")
+print(json.dumps(d))" "$cmd" "$id" "$TEST_TEMP_DIR")
     echo "$json" | bash "$HOOK"
 }
 
-# Pre-approve using NORMALIZED hash (matches what the hook now computes).
-_pre_approve_normalized() {
-    local cmd="$1"
-    local normalized hash
-    normalized=$(printf '%s' "$cmd" | tr -s '[:space:]' ' ' | sed 's/^ //; s/ $//')
-    hash=$(printf '%s' "$normalized" | sha256sum | awk '{print $1}')
+# Approve the exact bytes of $1 (what the hook now computes).
+_pre_approve_raw() {
+    local hash
+    hash=$(printf '%s' "$1" | sha256sum | awk '{print $1}')
     echo "$hash $(date +%s)" > "$APPROVAL_FILE"
 }
 
-@test "tier0_hash_normalization: approval written for canonical form matches retry with extra internal whitespace" {
-    local approved="git push --force-with-lease onedev master"
-    local retry="git push  --force-with-lease   onedev    master"
-    _pre_approve_normalized "$approved"
-
-    run _run_hook "$retry"
-    [ "$status" -eq 0 ]
-    # Approval consumed exactly once
-    [ ! -f "$APPROVAL_FILE" ]
-}
-
-@test "tier0_hash_normalization: approval matches retry with trailing whitespace" {
-    local approved="git push --force-with-lease onedev master"
-    local retry="git push --force-with-lease onedev master   "
-    _pre_approve_normalized "$approved"
-
-    run _run_hook "$retry"
+@test "tier0_hash: the byte-identical command matches its approval" {
+    local cmd="git push --force-with-lease onedev master"
+    _pre_approve_raw "$cmd"
+    run _run_hook "$cmd"
     [ "$status" -eq 0 ]
     [ ! -f "$APPROVAL_FILE" ]
 }
 
-@test "tier0_hash_normalization: approval matches retry with embedded newline" {
-    local approved="git push --force-with-lease onedev master"
-    # Same command but with a tab/newline reflow between args
-    local retry=$'git push --force-with-lease\nonedev master'
-    _pre_approve_normalized "$approved"
-
-    run _run_hook "$retry"
-    [ "$status" -eq 0 ]
-    [ ! -f "$APPROVAL_FILE" ]
-}
-
-@test "tier0_hash_normalization: structurally different command does NOT match (security boundary)" {
-    local approved="git push --force-with-lease onedev master"
-    # Whitespace-equivalent? No — appended destructive command differs structurally.
-    local malicious="git push --force-with-lease onedev master ; rm -rf /tmp/xx"
-    _pre_approve_normalized "$approved"
-
-    run _run_hook "$malicious"
-    # Must still BLOCK (different command, different hash even after normalization).
-    # CRITICAL: the malicious command did NOT receive exit 0 — security boundary held.
+@test "tier0_hash: the pending hash the hook writes is the raw-byte sha256" {
+    local cmd='rm -rf ./ "a  b"'
+    run _run_hook "$cmd"
     [ "$status" -eq 2 ]
-    # Pre-existing defensive policy (line 266): any mismatched approval is
-    # also cleaned up, forcing re-approval of the original command. This is
-    # NOT introduced by T-1500; preserved to confirm no regression.
+    local want
+    want=$(printf '%s' "$cmd" | sha256sum | awk '{print $1}')
+    [ "$(awk '{print $1}' "${APPROVAL_FILE}.pending")" = "$want" ]
+}
+
+@test "tier0_hash: quoted whitespace is part of the argument — 'a  b' approval does not admit 'a b' (codex R6 HIGH)" {
+    _pre_approve_raw 'rm -rf ./ "a  b"'
+    run _run_hook 'rm -rf ./ "a b"'
+    [ "$status" -eq 2 ]
+    _pre_approve_raw 'rm -rf ./ "a b"'
+    run _run_hook 'rm -rf ./ "a  b"'
+    [ "$status" -eq 2 ]
+    _pre_approve_raw "rm -rf ./ 'a	b'"
+    run _run_hook "rm -rf ./ 'a b'"
+    [ "$status" -eq 2 ]
+}
+
+@test "tier0_hash: unquoted whitespace variants are distinct texts too (no normalisation anywhere)" {
+    local approved="git push --force-with-lease onedev master | tail -3"
+    for retry in "git push  --force-with-lease onedev master | tail -3" \
+                 "git push --force-with-lease onedev master | tail -3 " \
+                 $'git push --force-with-lease onedev master | tail -3\n' \
+                 " git push --force-with-lease onedev master | tail -3"; do
+        _pre_approve_raw "$approved"
+        run _run_hook "$retry"
+        [ "$status" -eq 2 ] || { echo "admitted: [$retry]"; return 1; }
+    done
+}
+
+@test "tier0_hash: structurally different command does NOT match (security boundary)" {
+    _pre_approve_raw "git push --force-with-lease onedev master"
+    run _run_hook "git push --force-with-lease onedev master ; rm -rf /tmp/xx"
+    [ "$status" -eq 2 ]
     [ ! -f "$APPROVAL_FILE" ]
 }
 
-@test "tier0_hash_normalization: idempotency sentinel uses normalized hash too (T-1508 still intact)" {
-    local approved="git push --force-with-lease onedev master"
-    local retry_a="git push --force-with-lease onedev master"
-    local retry_b="git push  --force-with-lease  onedev master"
-    _pre_approve_normalized "$approved"
-
-    # First fire (canonical form) — consume approval, write sentinel
-    run _run_hook "$retry_a" toolu_dup
+@test "tier0_hash: duplicate fire of the SAME tool call passes via tool_use_id (T-1508 intact)" {
+    local cmd="git push --force-with-lease onedev master | tail -3"
+    _pre_approve_raw "$cmd"
+    run _run_hook "$cmd" toolu_dup
     [ "$status" -eq 0 ]
     [ -f "${APPROVAL_FILE}.consumed" ]
-
-    # Second fire of the SAME tool call (duplicate hook registration), whitespace
-    # variant — sentinel must short-circuit (normalized hashes match, same call id)
-    run _run_hook "$retry_b" toolu_dup
+    run _run_hook "$cmd" toolu_dup
     [ "$status" -eq 0 ]
-    # No new pending block created
     [ ! -f "${APPROVAL_FILE}.pending" ]
+    # A different call with the same text gets no grace.
+    run _run_hook "$cmd" toolu_other
+    [ "$status" -eq 2 ]
 }

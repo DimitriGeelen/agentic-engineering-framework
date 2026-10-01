@@ -65,6 +65,22 @@ APPROVAL_FILE="$PROJECT_ROOT/.context/working/.tier0-approval"
 # Read stdin JSON from Claude Code
 INPUT=$(cat)
 
+# T-3593 round 7: the exact-text approval key is the sha256 of the ORIGINAL
+# command bytes, computed from the JSON value itself (a shell variable would
+# already have lost trailing newlines and any NUL). No whitespace is collapsed
+# anywhere: quoted whitespace is part of an argument, so collapsing it made
+# rm -rf ./ "a  b" and rm -rf ./ "a b" share one approval (codex R6 HIGH).
+# Retries no longer need text normalisation: duplicate fires of one call are
+# recognised by tool_use_id (round 4), and a mapped command matches by action.
+COMMAND_HASH=$(echo "$INPUT" | python3 -c "
+import sys, json, hashlib
+try:
+    c = json.load(sys.stdin).get('tool_input', {}).get('command', '')
+    print(hashlib.sha256(c.encode('utf-8', 'surrogatepass')).hexdigest() if c else '')
+except Exception:
+    print('')
+" 2>/dev/null)
+
 # Extract the bash command via Python (handles JSON properly)
 COMMAND=$(echo "$INPUT" | python3 -c "
 import sys, json
@@ -349,10 +365,45 @@ TIER0_READONLY = re.compile(
 # named, so reading or grepping lib/tier0_action.py is not Tier 0).
 MODULE_USE = [
     r'\bpython[\d.]*\b[^;|&]*tier0_action\.py\s+(?!(?:status|pending-show|describe)\b)\S',
-    r'(?:^|[;&|(]|\bexec)\s*\S*tier0_action\.py\s+(?!(?:status|pending-show|describe)\b)\S',
     r'\b(?:import|from)\s+tier0_action\b',
     r'\btier0_action\.(?!py\b)\w',
 ]
+# Round 7: the module EXECUTED as a command (./lib/tier0_action.py use ...).
+# This used to be a regex over the dequoted text, which cannot tell a word in
+# command position from a word inside an assignment value once quotes are gone:
+# FW_VENDOR_ONLY=(quoted list naming lib/tier0_action.py and other paths) bin/fw
+# vendor self was read as running the module (a false block on every T-3593
+# vendor sync). Now the command is tokenised the way the shell does (shlex,
+# after ANSI-C decoding), leading NAME=value assignments and exec are skipped,
+# and only the word in command position counts. A command shlex cannot split
+# (unbalanced quotes) falls back to the old regex: fail closed.
+MODULE_EXEC_RE = r'(?:^|[;&|(]|\bexec)\s*\S*tier0_action\.py\s+(?!(?:status|pending-show|describe)\b)\S'
+ASSIGN_RE = re.compile(r'[A-Za-z_][A-Za-z0-9_]*\+?=')
+OPS = set(';&|()') | {'&&', '||', ';;', '|&'}
+def module_executed(raw, dq):
+    import shlex
+    try:
+        lx = shlex.shlex(re.sub(re.escape(DOLLAR) + '(?=[' + SQ + DQ + '])', '', ansi_c_decode(raw)),
+                         posix=True, punctuation_chars=';&|()')
+        lx.whitespace_split = True
+        toks = list(lx)
+    except ValueError:
+        return bool(re.search(MODULE_EXEC_RE, dq))
+    at_cmd = True
+    for k, tok in enumerate(toks):
+        if tok in OPS or set(tok) <= set(';&|()'):
+            at_cmd = True
+            continue
+        if not at_cmd:
+            continue
+        if ASSIGN_RE.match(tok) or tok == 'exec':
+            continue
+        at_cmd = False
+        if re.search(r'tier0_action\.py$', tok):
+            nxt = toks[k + 1] if k + 1 < len(toks) else ''
+            if nxt and nxt not in OPS and nxt not in ('status', 'pending-show', 'describe'):
+                return True
+    return False
 # T-3593 R6 (codex MEDIUM): ANSI-C quoting is DECODED before the word check,
 # the way bash decodes it, so tier-backslash-x30 spells tier0 here too. Written
 # without backslash, dollar or double-quote literals: this script is inside a
@@ -372,33 +423,38 @@ def ansi_c_decode(raw):
             i += 1
             continue
         j = i + 2
+        seg = []
         while j < n and raw[j] != SQ:
             c = raw[j]
             if c != BS or j + 1 >= n:
-                out.append(c)
+                seg.append(c)
                 j += 1
                 continue
             e = raw[j + 1]
             j += 2
             if e in ANSI_SIMPLE:
-                out.append(ANSI_SIMPLE[e])
+                seg.append(ANSI_SIMPLE[e])
             elif e in ANSI_WIDTH:
                 k = j
                 while k < n and k - j < ANSI_WIDTH[e] and raw[k] in HEXD:
                     k += 1
-                out.append(chr(min(int(raw[j:k], 16), 0x10FFFF)) if k > j else BS + e)
+                seg.append(chr(min(int(raw[j:k], 16), 0x10FFFF)) if k > j else BS + e)
                 j = k
             elif e in OCTD:
                 k = j
                 while k < n and k - j < 2 and raw[k] in OCTD:
                     k += 1
-                out.append(chr(int(raw[j - 1:k], 8) & 255))
+                seg.append(chr(int(raw[j - 1:k], 8) & 255))
                 j = k
             elif e == 'c' and j < n:
-                out.append(chr(ord(raw[j]) & 31))
+                seg.append(chr(ord(raw[j]) & 31))
                 j += 1
             else:
-                out.append(BS + e)
+                seg.append(BS + e)
+        # Round 7 (codex R6 MEDIUM): bash ends an ANSI-C string at the first
+        # NUL it decodes (backslash-0, x00, u0000, c@ ...) and drops the rest
+        # of that string; what follows the closing quote still concatenates.
+        out.append(''.join(seg).split(chr(0), 1)[0])
         i = j + 1
     return ''.join(out)
 
@@ -415,7 +471,7 @@ def matches(raw):
              + [d for p, d in DEQUOTED_PATTERNS if re.search(p, dq)])
     if not any(d.startswith('TIER 0 SELF-APPROVAL') for d in found):
         if (re.search(TIER0_WORD, dq) and not TIER0_READONLY.fullmatch(raw.strip())) \
-                or any(re.search(p, dq) for p in MODULE_USE):
+                or any(re.search(p, dq) for p in MODULE_USE) or module_executed(raw, dq):
             found.append('TIER 0 SELF-APPROVAL: a tier0 command other than a plainly spelled '
                          'fw tier0 status|list (wrappers like sudo, su, tmux, bash -c and '
                          'reassembled spellings included) is human-only')
@@ -490,14 +546,11 @@ T0_ACTION_PY="$FRAMEWORK_ROOT/lib/tier0_action.py"
 # longer act on their own queue. T-3079 owns that leg.
 APPROVAL_TTL="${TIER0_WATCHTOWER_TTL:-$(fw_config_int TIER0_APPROVAL_TTL)}"
 
-# Compute command hash for approval matching.
-# T-1500: normalize whitespace before hashing so an agent regenerating the
-# blocked command for retry (with reflowed args, extra spaces, trailing
-# newline differences) still matches the approval. Single-use semantics
-# (rm -f on consume) bound the marginal collision risk; the human approved
-# the human-readable risk description, not a byte-exact command.
-COMMAND_NORMALIZED=$(printf '%s' "$COMMAND" | tr -s '[:space:]' ' ' | sed 's/^ //; s/ $//')
-COMMAND_HASH=$(printf '%s' "$COMMAND_NORMALIZED" | sha256sum | awk '{print $1}')
+# Command hash for exact-text approval matching: computed above, from the
+# original bytes (round 7). T-1500 used to collapse whitespace here so a
+# reflowed retry matched; that also made two different quoted arguments one
+# approval, and is gone. If the hash could not be computed, nothing matches.
+[ -n "$COMMAND_HASH" ] || COMMAND_HASH="unhashable-$(date +%s%N)"
 
 # ── T-1508 duplicate hook fires — bound to the TOOL CALL (T-3593 round 4) ──
 # When the same hook is registered in both .claude/settings.json (project) and
@@ -789,8 +842,8 @@ echo "  The approval is for the ACTION, single-use, for ${APPROVAL_TTL}s: a retr
 echo "  in the same plain shape (flag order, spacing, a cd prefix) still matches;" >&2
 echo "  a different ref, remote, branch or path does not." >&2
 else
-echo "  Not mapped to an action — the approval covers this exact command text" >&2
-echo "  (whitespace-normalised) only. Only plain 'cd PATH && git|rm ...' commands" >&2
+echo "  Not mapped to an action — the approval covers this exact command text," >&2
+echo "  byte for byte (spacing included). Only plain 'cd PATH && git|rm ...' commands" >&2
 echo "  (no quotes, variables, pipes, redirections or wrappers) map to actions." >&2
 fi
 if [ "$T0_LOCK_FAILED" = 1 ]; then

@@ -139,7 +139,7 @@ _events() { cat "$W/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
     bash "$FX/push.sh" 2>/dev/null || true
     run _approve
     [ "$status" -eq 0 ]
-    [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
+    [[ "$output" == *"FORCE-PUSH ref 'refs/heads/main' to remote 'origin'"* ]]
     run bash "$FX/push.sh"
     [ "$status" -eq 0 ]
     [ "$(_remote_sha main)" = "$(git rev-parse HEAD)" ]
@@ -170,7 +170,7 @@ _events() { cat "$W/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
     [[ "$output" == *"branch-delete: refs/heads/old on remote 'origin'"* ]]
     [ -n "$(_remote_sha old)" ]
     run _approve
-    [[ "$output" == *"DELETE branch 'old' on remote 'origin'"* ]]
+    [[ "$output" == *"DELETE ref 'refs/heads/old' on remote 'origin'"* ]]
     run git push origin --delete old
     [ "$status" -eq 0 ]
     [ -z "$(_remote_sha old)" ]
@@ -266,7 +266,7 @@ _gate() {
 @test "A2: the text gate matches git -C / git -c pushes that force, +ref or delete" {
     run _gate "git -C $W push -f origin main"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
+    [[ "$output" == *"FORCE-PUSH ref 'refs/heads/main' to remote 'origin'"* ]]
     run _gate "git -C $W push origin +main"
     [ "$status" -eq 2 ]
     run _gate "git -C $W push origin --delete old"
@@ -305,7 +305,7 @@ _gate() {
     run _gate "git push -f --no-verif origin main"
     [ "$status" -eq 2 ]
     [[ "$output" == *"HOOK BYPASS"* ]]
-    [[ "$output" != *"FORCE-PUSH ref 'main'"* ]]
+    [[ "$output" != *"FORCE-PUSH ref 'refs/heads/main'"* ]]
     # 2. the operator approves: it lands on the exact-text path, no action record
     run _approve
     [ "$status" -eq 0 ]
@@ -352,7 +352,7 @@ _gate() {
 @test "round 3 (a) CONTROL: a branch push keeps the short branch key" {
     run _gate "git push -f origin main"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
+    [[ "$output" == *"FORCE-PUSH ref 'refs/heads/main' to remote 'origin'"* ]]
 }
 
 @test "round 3 (b): core.hooksPath overrides are caught in any case and via --config-env / GIT_CONFIG_*" {

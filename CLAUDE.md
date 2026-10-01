@@ -460,13 +460,18 @@ maps to one or more actions — `force-push {remote, ref}`, `branch-delete {remo
 local `git branch -D`), `hard-reset {repo, branch, target commit}`, `recursive-delete {path}`
 — the block lists them in plain words, `fw tier0 approve` approves each one once, for the
 grant TTL, and a retry in the same plain shape (flag order, spacing, a `cd` prefix) matches.
-A different ref, remote, branch, target commit or path does not. A push ref is keyed the way
-pre-push sees it: a branch by its short name, a tag as `refs/tags/<t>` (for `-f`, `--delete`,
-`:ref` and `src:dst` alike), resolved from local refs; a short name that is both, or neither,
-is unmapped. A LOCAL `git branch -D` name is literal (round 6): `victim`, `+victim` and
-`refs/heads/victim` are three different branches to git and three different keys here. An
-`rm` path keeps a trailing `/` in its key, because `rm -rf link/` deletes what a symlink
-points at and `rm -rf link` deletes only the link.
+A different ref, remote, branch, target commit or path does not. **No key is normalised
+(round 7):** every round from 4 to 6 found two different targets sharing one key because a
+name was rewritten on the way in. A push keys on the FULL destination ref (`refs/heads/x`,
+`refs/tags/x`), at the text gate and at pre-push alike — so branch `refs/tags/x`
+(`refs/heads/refs/tags/x`) and tag `x` never share an approval; a short name is qualified
+from local refs, and one that is both, neither, or not a valid ref name is unmapped. A LOCAL
+`git branch -D` name is literal: `victim`, `+victim` and `refs/heads/victim` are three
+keys. An `rm` operand is keyed exactly as typed (after the cwd when relative): `link` and
+`link/`, `a/b` and `a//b` are different keys. The exact-text fallback hashes the original
+command bytes, spacing included (`"a  b"` and `"a b"` are different paths); retries of one
+call are recognised by `tool_use_id`, not by text. Same target spelled two ways means a second
+approval, never one approval for two targets. The block shows exactly the key.
 
 **Only these exact shapes map to actions; every DETECTED destructive command outside the
 grammar needs approval of the exact text (round 5 grammar).** A spelling the detector does not
@@ -500,7 +505,7 @@ through without consuming anything, and is admitted even when the lock could not
 
 **Who may approve:** any typed command whose text — quotes, backslashes and the `$` of `$'…'`
 removed, and ANSI-C quoting (`$'tier\x30'`, `\NNN`, `\uHHHH`, `\cX`, …) decoded the way
-bash decodes it — contains the word `tier0` is Tier 0 unless it is a plainly spelled bare
+bash decodes it, including the cut at a decoded NUL (`$'tier\0junk'0` is `tier0`) — contains the word `tier0` is Tier 0 unless it is a plainly spelled bare
 `fw tier0` or `fw tier0 status|list|help|--help|-h` (optionally after one `cd PATH &&`). That covers `sudo`, `su`, `runuser`, `tmux`, `screen`, `setsid`, `nohup`,
 `env -i`, `bash -c`, and reassembled verbs (`` `echo approve` ``, `appr{o,}ve`, `tier""0`,
 `X=tier0; … $X approve`); executing or importing `tier0_action` is Tier 0 too. The cost: a

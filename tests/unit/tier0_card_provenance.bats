@@ -175,8 +175,8 @@ PY
     [ "$status" -eq 2 ]
 
     local hash
-    hash=$(printf '%s' "$DESTRUCTIVE_CMD" | tr -s '[:space:]' ' ' \
-        | sed 's/^ //; s/ $//' | sha256sum | awk '{print $1}')
+    # T-3593 round 7: the hash is of the original bytes (no normalisation).
+    hash=$(printf '%s' "$DESTRUCTIVE_CMD" | sha256sum | awk '{print $1}')
     [ -f "$SANDBOX/.context/approvals/pending-${hash:0:12}.yaml" ]
     [ ! -e "$FRAMEWORK_ROOT/.context/approvals/pending-${hash:0:12}.yaml" ]
 }

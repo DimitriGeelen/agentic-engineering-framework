@@ -72,7 +72,7 @@ _events() { cat "$W/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
 @test "tag delete ':v1' — text gate and pre-push use ONE key; the approval is consumed and the tag is gone" {
     run _gate "git push origin :v1"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"DELETE tag 'v1' on remote 'origin'"* ]]
+    [[ "$output" == *"DELETE ref 'refs/tags/v1' on remote 'origin'"* ]]
     run _approve
     [ "$status" -eq 0 ]
     run _gate "git push origin :v1"
@@ -86,7 +86,7 @@ _events() { cat "$W/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
 @test "tag delete '--delete v1' — same single key end to end" {
     run _gate "git push --delete origin v1"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"DELETE tag 'v1' on remote 'origin'"* ]]
+    [[ "$output" == *"DELETE ref 'refs/tags/v1' on remote 'origin'"* ]]
     _approve >/dev/null
     run _gate "git push origin --delete v1"
     [ "$status" -eq 0 ]
@@ -100,7 +100,7 @@ _events() { cat "$W/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
     git fetch -q origin
     run _gate "git push origin --delete feat"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"DELETE branch 'feat' on remote 'origin'"* ]]
+    [[ "$output" == *"DELETE ref 'refs/heads/feat' on remote 'origin'"* ]]
     _approve >/dev/null
     run _gate "git push origin :feat"
     [ "$status" -eq 0 ]
@@ -113,7 +113,7 @@ _events() { cat "$W/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
     # The operator is shown and approves a TAG delete (local evidence: tag v1).
     run _gate "git push origin :v1"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"DELETE tag 'v1'"* ]]
+    [[ "$output" == *"DELETE ref 'refs/tags/v1'"* ]]
     _approve >/dev/null
     run _gate "git push origin :v1"               # admitted, never pushed: stranded
     [ "$status" -eq 0 ]
@@ -157,7 +157,7 @@ _events() { cat "$W/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
 @test "src:dst force-push to a BRANCH keeps the short key" {
     run _gate "git push -f origin HEAD:main"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
+    [[ "$output" == *"FORCE-PUSH ref 'refs/heads/main' to remote 'origin'"* ]]
 }
 
 # ── 3: git commit -n ────────────────────────────────────────────────────────

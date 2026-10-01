@@ -44,10 +44,10 @@ _events() { cat "$FX/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
 @test "one action approval admits the cosmetically different plain retry" {
     run _hook "git push --force origin main"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
+    [[ "$output" == *"FORCE-PUSH ref 'refs/heads/main' to remote 'origin'"* ]]
     run _approve
     [ "$status" -eq 0 ]
-    [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
+    [[ "$output" == *"FORCE-PUSH ref 'refs/heads/main' to remote 'origin'"* ]]
     run _hook "cd $FX && git push origin main --force"
     [ "$status" -eq 0 ]
     _events | grep -q '"event": "admitted"'
@@ -212,11 +212,11 @@ _events() { cat "$FX/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
 @test "stricter, not weaker: +refspec and remote ref delete are now blocked" {
     run _hook "git push origin +main"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"FORCE-PUSH ref 'main'"* ]]
+    [[ "$output" == *"FORCE-PUSH ref 'refs/heads/main'"* ]]
     git -C "$FX" branch old    # round 4: a short delete name needs local evidence it is a branch
     run _hook "git push origin --delete old"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"DELETE branch 'old' on remote 'origin'"* ]]
+    [[ "$output" == *"DELETE ref 'refs/heads/old' on remote 'origin'"* ]]
     # control: a plain push is not touched
     run _hook "git push origin main"
     [ "$status" -eq 0 ]
@@ -237,7 +237,7 @@ _events() { cat "$FX/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
     _approve >/dev/null
     run bash -c "cd '$FX' && env -u CLAUDECODE PROJECT_ROOT='$FX' '$FRAMEWORK_ROOT/bin/fw' tier0 status"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"FORCE-PUSH ref 'main'"* ]]
+    [[ "$output" == *"FORCE-PUSH ref 'refs/heads/main'"* ]]
 }
 
 # ── Review fixes (docs/reports/T-3593-T-3594-review.md) ──────────────────────
@@ -249,21 +249,21 @@ _mod() { PROJECT_ROOT="$FX" python3 "$FRAMEWORK_ROOT/lib/tier0_action.py" "$@"; 
     run _hook "git push -f --no-verify origin main"
     [ "$status" -eq 2 ]
     [[ "$output" == *"Not mapped to an action"* ]]
-    [[ "$output" != *"FORCE-PUSH ref 'main'"* ]]
+    [[ "$output" != *"FORCE-PUSH ref 'refs/heads/main'"* ]]
     [ ! -f "$FX/.context/working/.tier0-action.pending.json" ]
     _approve >/dev/null
     # the operator's approval went to the exact-text path: no reusable action record
     run bash -c "cat '$FX/.context/working/tier0-action-approvals.json' 2>/dev/null | grep -q '\"verb\": \"force-push\"'"
     [ "$status" -ne 0 ]
     # a later forced push of the same ref (e.g. from a script, at pre-push) finds nothing
-    run _mod use pre-push '[{"verb":"force-push","targets":{"remote":"origin","ref":"main"}}]'
+    run _mod use pre-push '[{"verb":"force-push","targets":{"remote":"origin","ref":"refs/heads/main"}}]'
     [ "$status" -ne 0 ]
 }
 
 @test "R1 CONTROL: the same push without --no-verify still maps to the action" {
     run _hook "git push -f origin main"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
+    [[ "$output" == *"FORCE-PUSH ref 'refs/heads/main' to remote 'origin'"* ]]
 }
 
 @test "R1: every pattern on a segment must be covered — git -c config is never mapped" {
@@ -376,7 +376,7 @@ _mod() { PROJECT_ROOT="$FX" python3 "$FRAMEWORK_ROOT/lib/tier0_action.py" "$@"; 
         [ "$status" -eq 2 ]
         [[ "$output" == *"HOOK BYPASS"* ]]
         [[ "$output" == *"Not mapped to an action"* ]]
-        [[ "$output" != *"FORCE-PUSH ref 'main'"* ]]
+        [[ "$output" != *"FORCE-PUSH ref 'refs/heads/main'"* ]]
         [ ! -f "$FX/.context/working/.tier0-action.pending.json" ]
     done
     # the text gate sees it on any git verb, not only push
@@ -389,12 +389,12 @@ _mod() { PROJECT_ROOT="$FX" python3 "$FRAMEWORK_ROOT/lib/tier0_action.py" "$@"; 
     # unique prefix of --force-with-lease maps to the force-push action
     run _hook "git push --force-w origin main"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
+    [[ "$output" == *"FORCE-PUSH ref 'refs/heads/main' to remote 'origin'"* ]]
     # abbreviated --delete maps to the delete action
     git -C "$FX" branch old    # round 4: local evidence that 'old' is a branch
     run _hook "git push --dele origin old"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"DELETE branch 'old' on remote 'origin'"* ]]
+    [[ "$output" == *"DELETE ref 'refs/heads/old' on remote 'origin'"* ]]
     # an option git does not know (or an ambiguous prefix) is never mapped
     local sp
     for sp in "--frobnicate -f" "--forc" "--fo -f" "--receive-pack=/bin/true -f"; do
@@ -405,16 +405,16 @@ _mod() { PROJECT_ROOT="$FX" python3 "$FRAMEWORK_ROOT/lib/tier0_action.py" "$@"; 
     # --verify (the opposite of --no-verify) is harmless and still maps
     run _hook "git push --verif -f origin main"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
+    [[ "$output" == *"FORCE-PUSH ref 'refs/heads/main' to remote 'origin'"* ]]
 }
 
 @test "R1 round 3: abbreviated --hard, and branch --delete --force, are blocked and mapped" {
     run _hook "git reset --har HEAD"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"HARD-RESET branch 'main'"* ]]
+    [[ "$output" == *"HARD-RESET branch 'refs/heads/main'"* ]]
     run _hook "git reset --h"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"HARD-RESET branch 'main'"* ]]
+    [[ "$output" == *"HARD-RESET branch 'refs/heads/main'"* ]]
     run _hook "git branch --del --forc gone"
     [ "$status" -eq 2 ]
     [[ "$output" == *"DELETE local branch 'gone'"* ]]
@@ -461,7 +461,7 @@ _mod() { PROJECT_ROOT="$FX" python3 "$FRAMEWORK_ROOT/lib/tier0_action.py" "$@"; 
     run _hook "git push --force origin main"
     [ "$status" -eq 0 ]
     _store | grep -q '"state": "admitted"'
-    local acts='[{"verb":"force-push","targets":{"remote":"origin","ref":"main"}}]'
+    local acts='[{"verb":"force-push","targets":{"remote":"origin","ref":"refs/heads/main"}}]'
     run env PROJECT_ROOT="$FX" python3 -c "
 import sys, time; sys.path.insert(0, '$FRAMEWORK_ROOT/lib'); import tier0_action as t
 sys.exit(0 if t.use('$FX', t.json.loads(sys.argv[1]), 'pre-push', now=time.time() + t.ADMIT_TTL + 1) else 1)" "$acts"
@@ -473,7 +473,7 @@ sys.exit(0 if t.use('$FX', t.json.loads(sys.argv[1]), 'pre-push', now=time.time(
     _hook "git push --force origin main" 2>/dev/null || true
     _approve >/dev/null
     _hook "git push --force origin main"
-    run _mod use pre-push '[{"verb":"force-push","targets":{"remote":"origin","ref":"main"}}]'
+    run _mod use pre-push '[{"verb":"force-push","targets":{"remote":"origin","ref":"refs/heads/main"}}]'
     [ "$status" -eq 0 ]
 }
 
@@ -499,7 +499,7 @@ sys.exit(0 if t.use('$FX', t.json.loads(sys.argv[1]), 'pre-push', now=time.time(
 @test "R2 residue: approve() called without approved_by records 'unknown', never 'human'" {
     run env PROJECT_ROOT="$FX" python3 -c "
 import sys; sys.path.insert(0, '$FRAMEWORK_ROOT/lib'); import tier0_action as t
-t.approve('$FX', [t.action('force-push', remote='origin', ref='main')], 300)"
+t.approve('$FX', [t.action('force-push', remote='origin', ref='refs/heads/main')], 300)"
     [ "$status" -eq 0 ]
     _store | grep -q '"approved_by": "unknown"'
     run bash -c "cat '$FX/.context/working/tier0-action-approvals.json' | grep -q '\"approved_by\": \"human\"'"
@@ -509,5 +509,5 @@ t.approve('$FX', [t.action('force-push', remote='origin', ref='main')], 300)"
 @test "fast path: git --no-pager push -f reaches the detailed patterns" {
     run _hook "git --no-pager push -f origin main"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
+    [[ "$output" == *"FORCE-PUSH ref 'refs/heads/main' to remote 'origin'"* ]]
 }

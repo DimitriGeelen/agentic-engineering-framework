@@ -175,7 +175,7 @@ _store_has() { grep -q "\"$1\"" "$W/.context/working/tier0-action-approvals.json
 @test "N1 CONTROL: without a prefix the same force push maps to the action" {
     run _gate "git push -f origin main"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
+    [[ "$output" == *"FORCE-PUSH ref 'refs/heads/main' to remote 'origin'"* ]]
 }
 
 @test "global options: -P / --no-pager are seen (blocked) and mapped; --git-dir, --work-tree, --namespace, -p, --no-replace-objects are unmapped" {
@@ -183,7 +183,7 @@ _store_has() { grep -q "\"$1\"" "$W/.context/working/tier0-action-approvals.json
     for c in "git -P push -f origin main" "git --no-pager push -f origin main"; do
         run _gate "$c"
         [ "$status" -eq 2 ] || { echo "not blocked: $c"; return 1; }
-        [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]] || { echo "not mapped: $c"; return 1; }
+        [[ "$output" == *"FORCE-PUSH ref 'refs/heads/main' to remote 'origin'"* ]] || { echo "not mapped: $c"; return 1; }
     done
     for c in "git --git-dir=$W/.git push -f origin main" \
              "git --git-dir $W/.git push -f origin main" \
@@ -201,7 +201,7 @@ _store_has() { grep -q "\"$1\"" "$W/.context/working/tier0-action-approvals.json
 @test "global options: -C to the SAME repo stays mapped; -C to a different repo is unmapped" {
     run _gate "git -C $W push -f origin main"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
+    [[ "$output" == *"FORCE-PUSH ref 'refs/heads/main' to remote 'origin'"* ]]
     git init -q -b main "$FX/other"
     git -C "$FX/other" -c user.email=t@l -c user.name=t commit -q --allow-empty -m "T-3593: other"
     run _gate "git -C $FX/other push -f origin main"

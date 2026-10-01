@@ -154,15 +154,37 @@ def _git(cwd: str, *args: str) -> str:
     return out.stdout.strip()
 
 
-def normalize_ref(ref: str) -> str:
-    ref = ref.lstrip("+")
-    if ref.startswith("refs/heads/"):
-        ref = ref[len("refs/heads/"):]
+# T-3593 round 7: NO NORMALISATION. Rounds 4-6 each found two different
+# targets sharing one approval key because a name was normalised on the way in
+# (`+name` vs `name`, `link/` vs `link`, a branch literally named `refs/tags/x`
+# vs tag `x` once `refs/heads/` was stripped). Keys are now the fully
+# qualified, literal target: a push keys on the full destination ref
+# (`refs/heads/x`, `refs/tags/x`) at the text gate and at pre-push alike; a
+# local branch delete on the literal name; an rm on the literal operand. A
+# target that cannot be stated that way with certainty is unmapped.
+
+def _valid_ref(cwd: str, ref: str) -> str:
+    """``ref`` itself when git accepts it as a full ref name, else Unmappable.
+    Validates only; never rewrites (``git check-ref-format`` without
+    ``--normalize``)."""
+    if not ref.startswith("refs/"):
+        raise Unmappable(f"not a fully qualified ref: {ref!r}")
+    try:
+        out = subprocess.run(["git", "-C", cwd, "check-ref-format", ref],
+                             capture_output=True, timeout=5)
+    except Exception:  # pragma: no cover - environment
+        raise Unmappable("git check-ref-format failed")
+    if out.returncode != 0:
+        raise Unmappable(f"not a valid ref name: {ref!r}")
     return ref
 
 
 def _current_branch(cwd: str) -> str:
-    return _git(cwd, "symbolic-ref", "--short", "HEAD")
+    """The checked-out branch, fully qualified (``refs/heads/<name>``)."""
+    ref = _git(cwd, "symbolic-ref", "HEAD")
+    if not ref.startswith("refs/heads/"):
+        raise Unmappable(f"HEAD is not a branch: {ref}")
+    return ref
 
 
 def _toplevel(cwd: str) -> str:
@@ -184,21 +206,18 @@ def action_key(a: dict) -> str:
 def describe(a: dict) -> str:
     """The action in plain words, as shown to the operator."""
     t, v = a["targets"], a["verb"]
+    # Round 7: every target is shown exactly as it is keyed — the full ref,
+    # the literal branch name, the literal path. Nothing is abbreviated.
     if v == "force-push":
         return (f"FORCE-PUSH ref '{t['ref']}' to remote '{t['remote']}' "
                 "(may overwrite remote history)")
     if v == "branch-delete":
         if t["remote"] == LOCAL_REMOTE:
             return f"DELETE local branch '{t['ref']}' in {t.get('repo', '?')} (even if unmerged)"
-        # The key says which namespace; so does the text (T-3594 round 4).
-        if t["ref"].startswith("refs/tags/"):
-            return f"DELETE tag '{t['ref'][len('refs/tags/'):]}' on remote '{t['remote']}'"
-        if t["ref"].startswith("refs/"):
-            return f"DELETE ref '{t['ref']}' on remote '{t['remote']}'"
-        return f"DELETE branch '{t['ref']}' on remote '{t['remote']}'"
+        return f"DELETE ref '{t['ref']}' on remote '{t['remote']}'"
     if v == "hard-reset":
         return (f"HARD-RESET branch '{t['branch']}' in {t['repo']} to commit "
-                f"{t.get('target', '?')[:12]} (moves the branch there and discards "
+                f"{t.get('target', '?')} (moves the branch there and discards "
                 "uncommitted changes)")
     if v == "recursive-delete":
         return f"RECURSIVELY DELETE {t['path']}"
@@ -329,7 +348,7 @@ def _classify_push(args: list[str], cwd: str | None, root: str | None = None) ->
         src, _, dst = body.partition(":")
         dst = dst or src
         if dst in ("HEAD", "@") or dst == "":
-            dst = _current_branch(cwd)
+            dst = _current_branch(cwd)   # already refs/heads/<name>
         if force or plus:
             out.append(action("force-push", remote=remote, ref=_remote_ref_key(remote, dst, src, cwd)))
     return out
@@ -346,19 +365,21 @@ def _ref_exists(cwd: str, ref: str) -> bool | None:
 
 
 def _remote_ref_key(remote: str, dst: str, src: str, cwd: str, deleting: bool = False) -> str:
-    """The ref key pre-push will see, for a force-push OR a delete — one
-    function for both, so the two layers cannot drift (T-3594 round 4).
+    """The FULL destination ref pre-push will see, for a force-push OR a
+    delete — one function for both, so the two layers cannot drift (T-3594
+    round 4). Pre-push reports the remote ref in full and keys on it as is
+    (round 7: nothing is stripped, so branch ``refs/tags/x`` — which is
+    ``refs/heads/refs/tags/x`` — and tag ``x`` — ``refs/tags/x`` — never share
+    a key).
 
-    Pre-push reports full names and strips only ``refs/heads/``: a branch keys
-    by its short name, a tag as ``refs/tags/<t>``, anything else in full. A
-    short name typed at the text gate is resolved from LOCAL evidence only:
+    A ``refs/...`` destination is taken literally (validated, not rewritten).
+    A short name typed at the text gate is qualified from LOCAL evidence only:
     ``refs/tags/<n>`` → tag; ``refs/heads/<n>`` or ``refs/remotes/<remote>/<n>``
-    → branch. Both, or neither, is unmapped rather than guessed, so a tag-delete
-    approval can never be keyed as (and later authorize) a branch delete. When
-    local evidence is wrong about the remote the keys differ and pre-push
-    refuses: the failure direction is closed."""
+    → branch. Both, or neither, is unmapped rather than guessed. When local
+    evidence is wrong about the remote the keys differ and pre-push refuses:
+    the failure direction is closed."""
     if dst.startswith("refs/"):
-        return normalize_ref(dst)
+        return _valid_ref(cwd, dst)
     tag = _ref_exists(cwd, "refs/tags/" + dst)
     branch_l = _ref_exists(cwd, "refs/heads/" + dst)
     branch_r = _ref_exists(cwd, f"refs/remotes/{remote}/{dst}")
@@ -370,11 +391,11 @@ def _remote_ref_key(remote: str, dst: str, src: str, cwd: str, deleting: bool = 
     if not tag and not branch:
         raise Unmappable(f"no local evidence whether '{dst}' is a branch or a tag")
     if tag:
-        return "refs/tags/" + dst
+        return _valid_ref(cwd, "refs/tags/" + dst)
     if not deleting and src and src != dst and not src.startswith("refs/heads/") \
             and _ref_exists(cwd, "refs/tags/" + src):
         raise Unmappable(f"tag {src} pushed to branch name {dst}")
-    return normalize_ref(dst)
+    return _valid_ref(cwd, "refs/heads/" + dst)
 
 
 def _classify_git(words: list[str], cwd: str | None,
@@ -445,10 +466,13 @@ def _classify_git(words: list[str], cwd: str | None,
         if cwd is None:
             raise Unmappable("branch -D with unknown cwd")
         repo = _toplevel(cwd)
-        # T-3593 R6: a LOCAL branch name is literal. `git branch -D` deletes the
-        # branch named `+victim` or `refs/heads/victim` as written, so those are
-        # different targets from `victim` and must not share its key. Refspec
-        # normalisation (normalize_ref) belongs to pushes only.
+        # T-3593 R6/R7: a LOCAL branch name is literal. `git branch -D` deletes
+        # the branch named `+victim` or `refs/heads/victim` as written, so those
+        # are different targets from `victim` and must not share its key. A
+        # name git would not accept as a branch (`a//b`, `./x`, a trailing `/`)
+        # is unmapped rather than keyed: it cannot be stated with certainty.
+        for n in names:
+            _valid_ref(cwd, "refs/heads/" + n)
         return [action("branch-delete", remote=LOCAL_REMOTE, ref=n, repo=repo)
                 for n in names]
     raise Unmappable(f"git {sub} is not an action verb")
@@ -481,18 +505,19 @@ def _classify_rm(args: list[str], cwd: str | None) -> list[dict]:
         raise Unmappable("rm -r without a path")
     out = []
     for p in paths:
+        # T-3593 R7: the operand is keyed LITERALLY, as typed — no normpath, no
+        # collapsing of `//`, `./` or a trailing `/` (R6: `link/` and `link`
+        # are different targets; so may be anything else a rewrite would
+        # merge). Two spellings of one target get two keys, which only means
+        # the operator approves again; never one key for two targets.
+        # A relative operand is prefixed by the cwd it runs in. The cwd is a
+        # DIRECTORY that `cd` already entered, so its spelling cannot change
+        # which directory it is; the operand after it is kept byte for byte.
         if not os.path.isabs(p):
             if cwd is None:
                 raise Unmappable("relative rm path with unknown cwd")
-            p = os.path.join(cwd, p)
-        norm = os.path.normpath(p)
-        # T-3593 R6: a trailing slash (or `/.`) IS a different target when the
-        # path is a symlink to a directory: `rm -rf link` removes the link,
-        # `rm -rf link/` removes what it points at. Keep it in the key and the
-        # text, so an approval for one never covers the other.
-        if (p.endswith("/") or p.endswith("/.")) and norm != "/":
-            norm += "/"
-        out.append(action("recursive-delete", path=norm))
+            p = cwd.rstrip("/") + "/" + p
+        out.append(action("recursive-delete", path=p))
     return out
 
 
@@ -841,7 +866,9 @@ def _main(argv: list[str]) -> int:
         if not rest or len(rest) % 2:
             print("usage: prepush <remote> <verb> <ref> [<verb> <ref> ...]", file=sys.stderr)
             return 2
-        acts = [action(rest[i], remote=remote, ref=normalize_ref(rest[i + 1]))
+        # Round 7: the ref exactly as git reports it (always fully qualified);
+        # the text gate keys the same way (_remote_ref_key), nothing stripped.
+        acts = [action(rest[i], remote=remote, ref=rest[i + 1])
                 for i in range(0, len(rest), 2)]
         preview = f"git push {remote} " + " ".join(rest[i + 1] for i in range(0, len(rest), 2))
         if use(root, acts, "pre-push", preview):

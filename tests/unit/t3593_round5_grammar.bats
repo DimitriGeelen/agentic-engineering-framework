@@ -104,10 +104,10 @@ _all_blocked_unmapped() {
              "git --no-pager push --force-with-lease origin main"; do
         run _gate "$c"
         [ "$status" -eq 2 ] || { echo "not blocked: $c"; return 1; }
-        [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]] || { echo "not mapped: $c"; echo "$output"; return 1; }
+        [[ "$output" == *"FORCE-PUSH ref 'refs/heads/main' to remote 'origin'"* ]] || { echo "not mapped: $c"; echo "$output"; return 1; }
     done
     run _gate "cd $W && git reset --hard HEAD"
-    [[ "$output" == *"HARD-RESET branch 'main'"* ]]
+    [[ "$output" == *"HARD-RESET branch 'refs/heads/main'"* ]]
     run _gate "cd $W/sub && rm -rf ./"
     [[ "$output" == *"RECURSIVELY DELETE $W/sub"* ]]
 }
@@ -354,7 +354,7 @@ time.sleep(60)' "$W/.context/working/.tier0-approval.lock" "$FX/held" &
     local typed="git reset --hard $c1"
     run _gate_id toolu_A "$typed"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"HARD-RESET branch 'main'"* ]]
+    [[ "$output" == *"HARD-RESET branch 'refs/heads/main'"* ]]
     _approve >/dev/null
     run _gate_id toolu_B "$typed"
     [ "$status" -eq 0 ]
