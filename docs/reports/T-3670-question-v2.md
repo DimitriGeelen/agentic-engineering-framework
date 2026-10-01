@@ -23,7 +23,21 @@ AEF governs AI coding agents. Hooks run on every agent tool call and must fail c
 - the task-close gates.
 It is written mostly in bash, with some Python (pack §1).
 
-**Threat model (pack §3) [OPERATOR: confirm].** The gate is a guardrail against a cooperative agent's MISTAKES and against UNSOPHISTICATED self-approval. It is not a security boundary against a determined adversary: the agent runs as the same OS user and can write files, including the approval store. The operator accepted that residual explicitly (T-3581). Within that model, a missed destructive command (a false allow) is worse than a false block.
+**Threat model (pack §3), confirmed by the operator 2026-10-01: BOTH, as strong as possible.** The enforcement must:
+- (a) reliably catch a cooperative agent's MISTAKES;
+- (b) hold against a DETERMINED adversarial agent that is actively searching for gaps (obscure spellings, wrapping in scripts, editing the approval store, editing the hooks themselves).
+
+Today every agent runs as the same OS user as the enforcement: root on the reference host. So (b) is currently unachievable by any hook implementation alone. That residual was accepted in T-3581 as a STARTING point, not as the goal. Reviewers must therefore design a LAYERED enforcement:
+1. a guardrail layer (the hooks) that is as complete as possible for (a);
+2. an isolation layer the agent cannot reach, for (b). Candidates:
+   - running the agent as a non-root user without write access to hooks, settings, the approval store or .git/hooks;
+   - harness managed/policy settings the agent cannot override;
+   - harness-native permission rules and sandboxing;
+   - approvals signed by a component outside the agent's reach;
+   - server-side branch and tag protection.
+For each layer, state what it guarantees and against whom. Name explicitly the gaps that ONLY the agent harness vendor could close. The operator wants that list as an evidenced feature request.
+
+Priority when there is doubt: a missed destructive action (a false allow) is worse than a false block.
 
 **Problem A (pack §5).** The Tier 0 gate classifies shell command TEXT as destructive or not. In each of seven review rounds, reviewers found a new spelling that bypassed it or reused an approval: brace expansion, line continuation, ANSI-C quoting, quote removal, target normalisation. Each cited case has an ID, the command and the expected outcome.
 
@@ -65,7 +79,7 @@ If any decision is mis-framed, say so first, then answer the question you think 
    WOULD CHANGE MY MIND: <one piece of evidence>
    ```
 1. **Diagnosis (≤200 words).** Roughly what share of the pack §5 and §6 defects are parsing, language, or spec/design? Cite the case IDs.
-2. **Security contract (≤150 words).** What is trusted, what is guaranteed, what is excluded, and how unsupported input is handled, under the §3 threat model.
+2. **Security contract per layer (≤250 words).** For the guardrail layer and the isolation layer separately: what is trusted, what is guaranteed against the mistaken agent (a) and against the determined adversary (b), what is excluded, and how unsupported input is handled. End with a bullet list: **"gaps only the harness vendor can close"**.
 3. **Options table.**
    - **Rows:** keep bash and patch; bash plus a parser; strict Python plus bashlex; Go plus mvdan.cc/sh; Rust plus tree-sitter-bash; harness-native or sandbox-first; one of your own.
    - **Gate column first, PASS/FAIL/UNKNOWN:** does it close the Tier 0 bypass class within §3?
@@ -99,7 +113,13 @@ Rules:
 - §7 distribution: vendoring, `fw upgrade`, the P-01 installer, supported OS and bash versions, hard constraints (no toolchain on consumer hosts, offline install, binary size, licence);
 - §8 the team: one operator plus AI agents. Who reviews Go or Rust code?
 - a neutral description of the parsers (mvdan.cc/sh, bashlex, tree-sitter-bash) and their known limits;
-- the harness-native options (Claude Code permission rules, sandboxing) as they exist today.
+- the harness-native options as they exist TODAY, verified against current Claude Code documentation, not memory:
+  - permission rules (allow/deny/ask);
+  - managed/policy settings and their precedence;
+  - the Bash sandbox (filesystem and network restrictions);
+  - the PreToolUse hook contract and its limits.
+  Also the same for the other harnesses where known (codex, opencode);
+- the reference host facts: agents run as root today; which files the agent can write (hooks, settings, the approval store, .git/hooks); OneDev server-side protection status.
 
 ## Process
 1. Freeze the pack.
