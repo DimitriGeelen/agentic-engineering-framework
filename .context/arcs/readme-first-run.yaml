@@ -27,7 +27,7 @@ purpose: Make the README's five-minute walkthrough true for a person with no age
 objective: 'The documented first-run path is independently usable without an agent: promised behaviour
   matches a plain shell, blockers have actionable remedies, and by-hand regressions remain visible independently
   of agent-assisted success.'
-supports: []
+supports: [O-4]
 success_criteria:
 - id: SC-1
   criterion: No step in the README's five-minute block promises a refusal that cannot fire in a plain

@@ -101,3 +101,5 @@ proposed_scoped_drivers:
           reason: 625 chars, distinguishes from D3, Usability
       ts: '2026-09-22T16:47:58Z'
       reviewer_id: static-v1
+# T-3635: objectives this arc serves (T-3535 v2 §2/§4, GO 2026-10-01).
+supports: [O-3]

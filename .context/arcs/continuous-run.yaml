@@ -43,7 +43,7 @@ purpose: Let a long-running agent cross context-budget boundaries unattended —
 objective: Armed sessions continue useful work across context-budget boundaries without operator relay,
   within tier/blast-radius limits, run caps and expiry, with an operator halt and category-level discard
   manifests available for review.
-supports: []
+supports: [O-2, O-3]
 success_criteria:
 - id: SC-1
   criterion: A real armed session crosses successive budget boundaries, hands over, restarts and resumes

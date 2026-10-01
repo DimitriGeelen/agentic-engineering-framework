@@ -135,3 +135,5 @@ grill_me:
     - "Does §9 collaboration seam producer ≠ judge mean arc-011 closure literally
       cannot land until TermLink-side substrate primitives are validated by AEF —
       i.e. arc-011 is bound to a cross-repo arc whose ETA is partly outside our control?"
+# T-3635: objectives this arc serves (T-3535 v2 §2/§4, GO 2026-10-01).
+supports: [O-5]

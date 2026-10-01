@@ -35,3 +35,5 @@ proposed_scoped_drivers:  # uncapped persistence (D7-reframe). Estimator may wri
     weight_suggestion: 3
     source: agent
     ts: 2026-07-19T19:45:00Z
+# T-3635: objectives this arc serves (T-3535 v2 §2/§4, GO 2026-10-01).
+supports: []

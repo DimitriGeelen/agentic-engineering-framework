@@ -13,3 +13,5 @@ demo_evidence: null
 created: 2026-05-04T15:02:56Z
 closed_at: null
 decision: null
+# T-3635: objectives this arc serves (T-3535 v2 §2/§4, GO 2026-10-01).
+supports: [O-2]

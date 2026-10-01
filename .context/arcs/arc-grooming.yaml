@@ -45,3 +45,5 @@ decision: "GO (inception T-1846 decide-go recorded by human via Watchtower 2026-
 # Parallel root paths: 1.5 / 5a / 8 can start as soon as their parent (T-1846)
 # lands. T-NEW-9 is the last slice (waits for 1.5, 2, 3, 5a, 5b, 6 to ship)
 # because it documents the post-refactor state.
+# T-3635: objectives this arc serves (T-3535 v2 §2/§4, GO 2026-10-01).
+supports: [O-3]

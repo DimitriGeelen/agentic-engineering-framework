@@ -50,3 +50,5 @@ proposed_scoped_drivers: [] # uncapped persistence (D7-reframe). Estimator may w
   #   http://192.168.10.107:3001/arcs/onboarding-shape-detection
   # Recommending TWO, not three — a third candidate was drafted and discarded rather than shipped
   # to look thorough (R5: manufacturing drivers is worse than proposing fewer).
+# T-3635: objectives this arc serves (T-3535 v2 §2/§4, GO 2026-10-01).
+supports: [O-4]

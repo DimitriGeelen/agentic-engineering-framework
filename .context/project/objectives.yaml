@@ -1,0 +1,88 @@
+# Project objectives — Agentic Engineering Framework (this repo only).
+#
+# Source: T-3535 (inception), docs/reports/T-3535-objectives-v2.md — §1 verbatim,
+# plus O-6 from §4 item 4. Operator GO recorded 2026-10-01, no §4 item rejected.
+# Written by T-3635.
+#
+# Authored intent; progress is derived, never written here (T-3535 IW-1).
+# Arcs reference these ids via `supports: [O-n, ...]` in .context/arcs/*.yaml.
+#
+# Directive 4: this file is project state, not framework source. It must never be
+# shipped into a consumer by fw init / fw vendor / fw upgrade.
+headline: >-
+  A governance framework for developers and small teams working with AI coding agents:
+  every change traces to a task, what was learned survives the session, and humans keep
+  authority over what matters while agents carry the rest.
+objectives:
+  - id: O-1
+    text: >-
+      In a governed project, every agent change traces to a task, and an agent cannot
+      bypass a gate or take a consequential action without it being recorded and, for
+      Tier 0, approved by a human.
+    measure: >-
+      Partly measurable. Commit-to-task traceability comes from `fw audit --section
+      traceability` (lib/traceability.sh); `fw metrics` only checks that a T-number appears
+      in commit subjects, not that the task exists or authorised the change. Bypass logs
+      count recorded exceptions, not undetected ones. Tier 0 sees only the typed command
+      string (T-2742), so actions carried out inside scripts are unmeasured.
+  - id: O-2
+    text: >-
+      A new session resumes the recorded task, decisions and next steps without
+      reconstructing prior work, and lessons from witnessed failures are available when
+      relevant and reduce recurrence.
+    measure: >-
+      Not instrumented. Pickup time and repeat-failure rate have never been measured.
+      Counts of learnings, patterns and escalation entries show coverage only; they are
+      not evidence of retrieval or of reduced recurrence. arc-018's "0 of 2416" is a
+      historical diagnosis, not a current baseline.
+  - id: O-3
+    text: >-
+      The operator's queue holds only what needs a human: Tier 0, irreversible external
+      acts, sovereignty and project direction, and escalations. Other review gets an
+      independent agent verdict, and work that advances no objective can be declined.
+    measure: >-
+      Proxies, computable now:
+      (a) `fw review-queue` count;
+      (b) `fw reviewer surface`, open Human criteria against their risk subset.
+      Target: (a) falls and (b) converges on its risk subset. No end-to-end measure of
+      correct routing exists yet. Arc `supports:` coverage is reported, not targeted:
+      maximising it would reward forced mappings.
+  - id: O-4
+    text: >-
+      A developer can install AEF in a new or existing project, complete a first governed
+      task, and upgrade later while preserving project-owned state.
+    measure: >-
+      Bounded fixture checks: tests/unit/upgrade_fresh_machine_simulation.bats,
+      tests/integration/readme_five_minute_by_hand.bats and
+      tests/unit/greenfield_seed_audit_prototype.bats. These do not prove every project
+      shape works, and they say nothing about real consumer success.
+  - id: O-5
+    text: >-
+      An agent can reach a named peer in another session, project or host and hand it
+      work without the operator relaying, and concurrent agents never corrupt governed
+      state.
+    measure: >-
+      Not measured routinely. Partial diagnostics:
+      - age of unread peer consults (23.6h, T-3558 F-3);
+      - identity collisions (OBS-567, OBS-574);
+      - merge conflicts in .tasks/ or .context/ during concurrent dispatch.
+      Dispatch verification pass rate is a secondary signal of hand-off quality. It needs
+      a stated window and a duplicate-event rule.
+  - id: O-6
+    text: >-
+      Every agent review and dispatch has a recorded cost, paid use happens only with
+      the operator's per-request approval, and review strength follows risk within a
+      stated spend ceiling.
+    measure: >-
+      `fw review cost report` (cost per week by backend and class); `fw audit` WARNs
+      on paid records with no approved proposal and on every ceiling step-down.
+      Coverage is only as good as logging discipline: unlogged use is invisible.
+out_of_scope:
+  - "Enterprise project management; this is not Jira (T-010 item 2)."
+  - "Non-AI development workflows (T-010 item 1)."
+  - "Non-technical users; the framework assumes command-line and git comfort (T-010 item 4)."
+  - "One framework instance governing several repositories. Each project keeps its own instance, tasks, objectives and approval authority; agents in different projects cooperate as peers (T-010 item 3, narrowed, not repealed, by T-3558)."
+  - "Removing or weakening Tier 0 / consequential-action human gates (T-3557 IW-1)."
+  - "Unbounded autonomous operation with no ceiling or run cap (continuous-run non_goals)."
+  - "Shipping this project's own objectives or state into consumer projects (T-3535; Directive 4)."
+  - "A real-time multiplayer human editing product; concurrent agent execution and peer communication remain in scope (T-010 item 5, narrowed by arc-011)."
