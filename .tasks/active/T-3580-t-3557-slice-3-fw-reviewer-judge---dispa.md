@@ -394,6 +394,11 @@ bin/fw vendor self --check
 
 ## Decisions
 
+### 2026-10-01 — Operator GO: accept the residuals and stop the review rounds
+- **Chose:** GO (operator, 2026-10-01: "go recorded"). Nine rounds in, both model families say no HIGH is left (round 9: codex "HIGH LEFT: NO", Claude "HIGH LEFT: NO"). The remaining residuals are accepted as listed in CLAUDE.md "What the caller can still steer": user-level config, post-start edits, the dispatcher PATH and the served model. All are inside the same-user boundary the operator accepted in T-3581.
+- **Sequence to close:** T-3582 makes codex and opencode (Z.ai) launchable panel seats and fixes R9-1 (a refused start must not launch; stderr appended; dirty-tree check scoped). Then the remaining Agent AC (live proof) runs on a real render criterion (T-3600 or T-3627) at its required rung, and the verdict closes it with no bypass flag. Then T-3580 closes.
+- **Rejected:** a tenth review round (diminishing returns: mediums only, all on the same-user axis); capping the rung until T-3582 (operator ruled to keep the rung rule and build the seats, T-3582 Context).
+
 ### 2026-09-30 — round 3: who signs the worker completion
 - **Chose:** the dispatch runtime (run.sh in agents/termlink/termlink.sh) calls `verdict_ledger.py complete` after `exit_code` is written; it binds session, exit state, result-stream hash, the revision registered at dispatch, and every row the worker left. `record` signs nothing. `complete` refuses inside the worker's environment and before exit; a second completion for a dispatch voids both.
 - **Why:** round-2 review (HIGH): a completion built by `record` from its own row is self-asserted.
