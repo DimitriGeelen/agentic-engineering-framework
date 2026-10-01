@@ -1751,6 +1751,30 @@ CRONREGEOF
         fi
     fi
 
+    # ── 3d. Project objectives authoring task (T-3636, T-3535 IW-3) ──
+    # One authoring moment per project. A consumer with no objectives file and no
+    # objectives-authoring task gets ONE task to write its own. Never a copy of the
+    # framework's objectives.yaml (Directive 4) — that file is this repo's state.
+    local _obj_lib="$FRAMEWORK_ROOT/lib/objectives-seed.sh"
+    [ -f "$_obj_lib" ] || _obj_lib="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/objectives-seed.sh"
+    if [ -f "$_obj_lib" ] && [ -d "$target_dir/.tasks" ]; then
+        # shellcheck source=lib/objectives-seed.sh
+        source "$_obj_lib"
+        if [ "$(fw_objectives_seed_status "$target_dir")" = "needed" ]; then
+            changes=$((changes + 1))
+            if [ "$dry_run" = true ]; then
+                echo -e "  ${CYAN}WOULD SEED${NC}  task: write down this project's objectives (.context/project/objectives.yaml)"
+            else
+                local _obj_task
+                if _obj_task=$(fw_objectives_seed_task "$target_dir" "$FRAMEWORK_ROOT" "$project_name"); then
+                    echo -e "  ${GREEN}SEEDED${NC}  task $(basename "$_obj_task" .md): write down this project's objectives (one time)"
+                else
+                    echo -e "  ${YELLOW}WARN${NC}  could not seed the objectives task — see message above"
+                fi
+            fi
+        fi
+    fi
+
     # ── 4. Git hooks ──
     echo -e "${YELLOW}[4/10] Git hooks${NC}"
 

@@ -24,7 +24,7 @@ Capture something learned during setup (a gotcha, a pattern, a shortcut) as a pr
 
 ## For the Operator
 
-**What is happening:** the last step of the prologue. The agent records one thing it
+**What is happening:** the next-to-last step of the prologue. The agent records one thing it
 actually learned during T-001 through T-005 as a **learning** — a durable note that later
 sessions read.
 
@@ -37,10 +37,9 @@ Worth checking what it wrote. A learning like *"the framework has hooks"* is noi
 learning like *"`fw audit` exits 1 for warnings, so `test $? -le 1` is the right check"* is
 the kind that saves someone an hour. You are a better judge of that than it is.
 
-**After this task closes, the prologue is over.** The gate holding the agent to onboarding
-work lifts, and it starts on whatever you actually came here to build. That is the moment
-this curriculum exists for: you should now have enough of the model to follow along,
-disagree, and redirect.
+**One step remains after this:** T-007, where the agent writes down what this project is
+for, as its objectives file. When that closes, the prologue is over and the gate holding
+the agent to onboarding work lifts.
 
 **Go deeper:** `fw corpus explain aef-audit-cron` — how the framework keeps checking itself
 without being asked. And Watchtower `/designer` for every map at once.

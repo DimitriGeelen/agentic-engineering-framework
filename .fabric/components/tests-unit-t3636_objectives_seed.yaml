@@ -1,0 +1,21 @@
+id: tests/unit/t3636_objectives_seed.bats
+name: t3636_objectives_seed
+type: script
+subsystem: tests
+location: tests/unit/t3636_objectives_seed.bats
+tags: []
+
+purpose: "TODO: describe what this component does"
+purpose_source: none
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-01
+created_by: unknown
