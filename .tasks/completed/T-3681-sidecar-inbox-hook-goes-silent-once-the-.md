@@ -14,12 +14,12 @@ description: >
   cannot render must emit one visible warning line, never silence; test with a >200KB
   inbox fixture.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, sidecar, cross-agent, silent-failure]
-components: []
+components: [agents/context/sidecar-inbox.sh, tests/unit/sidecar_inbox_hook.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -48,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T22:44:36Z
-last_update: 2026-10-01T22:45:41Z
-date_finished:
+last_update: 2026-10-01T22:59:30Z
+date_finished: 2026-10-01T22:59:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -90,10 +90,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Hook feeds the producer JSON to python on stdin (no argv payload), so a >200KB inbox still renders
-- [ ] Injected text is capped (newest first, per-message body cap, total cap) with an explicit "N more not shown, run fw sidecar inbox" line; output is valid JSON
-- [ ] A producer timeout emits one visible warning line ("inbox check timed out; consults may be pending, run fw sidecar inbox --peek"); genuinely empty inbox and absent termlink/fw stay silent; exit is always 0
-- [ ] bats fixture tests cover >200KB inbox, timeout, and empty cases and pass
+- [x] Hook feeds the producer JSON to python on stdin (no argv payload), so a >200KB inbox still renders
+- [x] Injected text is capped (newest first, per-message body cap, total cap) with an explicit "N more not shown, run fw sidecar inbox" line; output is valid JSON
+- [x] A producer timeout emits one visible warning line ("inbox check timed out; consults may be pending, run fw sidecar inbox --peek"); genuinely empty inbox and absent termlink/fw stay silent; exit is always 0
+- [x] bats fixture tests cover >200KB inbox, timeout, and empty cases and pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -361,3 +361,15 @@ bin/fw vendor self --check
 
 ### 2026-10-01T22:45:41Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-419a955b
+- **Timestamp:** 2026-10-01T22:59:39Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-01T22:59:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

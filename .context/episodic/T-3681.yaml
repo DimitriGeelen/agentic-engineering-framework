@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3681: sidecar-inbox hook goes silent once the inbox exceeds 128KB: it passes the whole JSON as one argv string (E2BIG), python never starts, '|| exit 0' hides it
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-01T22:59:53Z
+# ============================================================================
+
+task_id: T-3681
+task_name: "sidecar-inbox hook goes silent once the inbox exceeds 128KB: it passes the whole JSON as one argv string (E2BIG), python never starts, '|| exit 0' hides it"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T22:44:36Z
+completed: 2026-10-01T22:59:30Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-02T00:59:16+02:00
+last_commit: 2026-10-02T00:59:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  sidecar-inbox hook: JSON on stdin (no E2BIG), capped output, visible timeout warning
+
+# Key outcomes
+outcomes:
+  - 'Hook feeds the producer JSON to python on stdin (no argv payload), so a >200KB inbox still renders'
+  - 'Injected text is capped (newest first, per-message body cap, total cap) with an explicit "N more not shown, run fw sidecar inbox" line; output is valid JSON'
+  - 'A producer timeout emits one visible warning line ("inbox check timed out; consults may be pending, run fw sidecar inbox --peek"); genuinely empty inbox and absent termlink/fw stay silent; exit is always 0'
+  - 'bats fixture tests cover >200KB inbox, timeout, and empty cases and pass'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/sidecar-inbox.sh'
+  - 'agents/context/sidecar-inbox.sh'
+  - '.tasks/active/T-3681-sidecar-inbox-hook-goes-silent-once-the-.md'
+  - 'tests/unit/sidecar_inbox_hook.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-02T00:59:16'
+    action: 'T-3681: sidecar-inbox hook: JSON on stdin (no E2BIG), capped output, visible timeout warning'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 14 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, sidecar, cross-agent, silent-failure]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 14
+  commits: 1
+  files_changed: 4
+  lines_added: 470
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3681-sidecar-inbox-hook-goes-silent-once-the-.md
+generated_by: context-agent-hybrid
