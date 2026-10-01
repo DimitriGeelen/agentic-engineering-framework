@@ -22,5 +22,11 @@ On 2026-10-01, after seven Tier 0 review rounds (T-3593/T-3594), the operator as
 ## Effect on the open Tier 0 decision
 The agent revised its recommendation from "one more regex fix round" to: accept the current state with the remaining round-7 findings documented as residuals, deploy the pre-push guard (`fw git install-hooks`), close T-3593/T-3594, and let the parser-based rewrite (this inception's pilot) close the self-approval and normalisation class properly.
 
+## Operator rulings (2026-10-01)
+- "Core, core, core, ultra, very high value, a huge impact": start with an architectural assessment and rewrite advice from SEVEN agents (three internal harnesses plus four external).
+- **Stage 1 is the question itself:** a sharp question that shapes comparable responses, reviewed before anything goes out. v1 → three-model question review → v2 (docs/reports/T-3670-question-v2.md).
+- **Threat model: BOTH** a mistaken cooperative agent AND a determined adversarial one, "as strong as possible". The hooks are one layer; the operator wants a harder mechanism as well. They report that requests to the harness vendor for stronger enforcement have gone unanswered, so the design must list vendor-only gaps as an evidenced request.
+- **Agents WILL run as non-root users,** with "a good and frictionless way to allow elevated execution". This is D5 in question v2, and it is consistent with P-01 IW-2 (the installer creates a normal user).
+
 ## Dialogue Log
 - 2026-10-01, operator raised the language question (above). The agent separated the parsing problem from the implementation-language problem, proposed Go plus a Tier 0 pilot, and filed this inception with IW-1..IW-5.

@@ -58,6 +58,16 @@ These observations do not by themselves establish causes or justify a rewrite.
 - **D3, scope:** which pack-§1 modules are "core". Use or replace this criterion: security-critical, stable specification, a substantial test suite, runs on every call.
 - **D4, delivery:** how the core ships to vendored consumers on Linux, macOS and Windows via WSL (pack §7), and what happens when a component is missing or fails. Falling back to a known-vulnerable path is NOT fail-closed.
 
+- **D5, the elevation path.** Operator decision 2026-10-01: agents WILL run as non-root users. The design needs "a good and frictionless way to allow elevated execution". How does a non-root agent perform an operation that legitimately needs more privilege (installing a package, restarting a service, writing protected config, a force-push the operator approved) without re-opening the bypass? Requirements:
+  - least privilege;
+  - every elevation is attributable and auditable;
+  - it fails closed;
+  - the agent can never approve its own elevation;
+  - pre-approved, low-risk categories run with NO prompt;
+  - risky ones need at most ONE operator action (for example a one-tap approval from Watchtower or a push notification);
+  - it works on Linux, macOS and Windows via WSL, for vendored consumers.
+  Compare at least: scoped sudoers rules; a privileged broker (a separate service that checks policy and operator-signed approvals, then executes); polkit or an equivalent; time-boxed elevation leases; harness-native permission prompts. Say which tier of the current Tier 0 / approval model maps to which mechanism.
+
 If any decision is mis-framed, say so first, then answer the question you think we should have asked, in this same structure. "Insufficient evidence" is allowed if you name the experiment that would settle it.
 
 **Priorities when criteria conflict:**
@@ -75,6 +85,7 @@ If any decision is mis-framed, say so first, then answer the question you think 
    D2: <bash | python-strict | go | rust | other:X | no-change>
    D3: <module list>
    D4: <mechanism>
+   D5: <elevation mechanism> | prompt-free categories: <list> | one-tap categories: <list>
    PILOT: <one module> | STOP IF: <measurable condition>
    WOULD CHANGE MY MIND: <one piece of evidence>
    ```
