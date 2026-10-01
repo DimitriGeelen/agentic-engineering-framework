@@ -103,7 +103,7 @@ Since T-3602, the nightly unit run completes, and the pre-push audit (`fw audit 
   It reports baselined reds as a WARN with the count. Tests: a fixture report with one new red FAILs; one with only baselined reds WARNs; one with an expired entry FAILs.
 - [x] The full `fw audit` (cron/daily) still FAILs on every red, baselined or not, so the backlog never reads as green.
 - [x] The baseline only shrinks without review. An entry that turns green is dropped by a regenerate verb, and adding entries is refused unless `--i-am-human` (operator) is given. Test: an agent adding an entry is refused.
-- [ ] CLAUDE.md (§Verification Gate or the audit paragraph) states the rule in two sentences, and `git push origin bleeding-edge` passes the pre-push audit on today's tree without `--no-verify`.
+- [x] CLAUDE.md (§Verification Gate or the audit paragraph) states the rule in two sentences, and `git push origin bleeding-edge` passes the pre-push audit on today's tree without `--no-verify`.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
