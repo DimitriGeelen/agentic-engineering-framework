@@ -5,12 +5,12 @@ description: >
   Fast path trusts .budget-status from any session: parent critical blocks TermLink
   workers; a worker's low count reads as the parent's (false tokens:0)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, budget]
-components: []
+components: [C-007, agents/context/checkpoint.sh, agents/context/post-compact-resume.sh, bin/fw]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -39,8 +39,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T19:57:06Z
-last_update: '2026-09-30T20:00:30Z'
-date_finished:
+last_update: 2026-10-01T07:45:27Z
+date_finished: 2026-10-01T07:45:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -94,7 +94,7 @@ cost_estimate_proposed:
 - [x] The cache records the writing session's identity (Claude `session_id` from hook stdin, falling back to transcript_path) and the fast path only trusts a cache whose identity matches the calling hook's; a mismatch falls through to the slow path (reads the caller's own transcript)
 - [x] The slow path never overwrites another live session's cache entry in a way the other session then trusts (per-session cache file or identity-keyed entry); `checkpoint.sh budget` reads its own session's entry and reports `unknown` rather than another session's number
 - [x] bats test `tests/unit/t3598_budget_cache_session_keyed.bats` reproduces both symptoms first (red), then passes: a foreign-session `critical` cache does not block; a foreign-session `ok/0` cache is not reported as this session's budget
-- [ ] Existing budget-gate / checkpoint suites stay green; `bin/fw vendor self --check` clean
+- [x] Existing budget-gate / checkpoint suites stay green; `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -367,3 +367,15 @@ bin/fw vendor self --check
 
 ### 2026-09-30T19:58:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-058b8044
+- **Timestamp:** 2026-10-01T07:45:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-01T07:45:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

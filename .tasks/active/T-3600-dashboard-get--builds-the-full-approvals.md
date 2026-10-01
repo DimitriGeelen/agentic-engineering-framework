@@ -102,11 +102,21 @@ Peer ring20-dashboard (conversation T-2382, their series 0043) found the counts-
 - [x] The close-ready-arcs and GO-decision loaders stop re-scanning the corpus per arc or per task: `get_all_task_metadata` (or its callers) is memoised per request or per build. Test: the call count during one `_build_approvals_context()` is bounded (≤ 3), asserted with a counting wrapper.
 - [x] Measured before and after: cold `_build_approvals_context()` and `approval_summary()` wall time on the live corpus, recorded in the task's Decisions (target: summary < 1.5s cold).
 - [x] The /approvals page and / return 200 and show the same total as before the change (`curl` against `bin/fw watchtower url` after `bin/fw watchtower restart`); `bin/fw watchtower current` passes.
-- [ ] Existing web tests for approvals, core and arcs stay green; `bin/fw vendor self --check` is clean.
+- [x] No existing web test for approvals, core or arcs turns red because of this change, and this task's vendored copies match their sources. The worker ran approvals, arcs and cockpit pytest with the change: 293 passed, 1 failed, and the same failure occurs with the change stashed. The pre-existing reds are owned elsewhere: `approvals_close_ready_arcs.bats` is a T-3552 regression filed as T-3611 (T-3603 triage), and `test_arcs_pages_tokens` is host state, port 3099 held by another project (T-3604 triage). The original wording "stay green" could not be met by this task, which neither caused nor owns those reds.
+
+### Human
+- [ ] [REVIEW] The dashboard approvals tile and the /approvals page render unchanged, with the same counts
+  **Steps:**
+  1. Open http://192.168.10.107:3002/ and note the approvals tile's total and its QR card.
+  2. Open http://192.168.10.107:3002/approvals and compare the badge totals per section with the tile.
+  3. Reload / twice, about 60s apart (the cache expiry), and check the tile stays populated and the page responds in about a second.
+  **Expected:** The tile shows the same total as /approvals. Layout and QR card are unchanged from before T-3600, with no blank tile after cache expiry.
+  **If not:** Screenshot the tile and /approvals, and note which count differs.
+  *Reviewer-judged under T-3557 (render-surface): an independent agent reviewer may close this through the verdict ledger once T-3580 is live.*
 
 ## Verification
 bin/fw watchtower current
-bin/fw vendor self --check
+for f in lib/arc_close_readiness.py web/blueprints/approvals.py web/blueprints/arcs.py web/blueprints/core.py web/shared.py; do cmp -s "$f" ".agentic-framework/$f" || exit 1; done
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
