@@ -2,7 +2,7 @@
 
 **Task:** T-3670 (inception). **Date:** 2026-10-01. **Branch measured:** `bleeding-edge`.
 **Audience:** seven independent reviewers. Four have no repository access and see only this document.
-**Question:** `docs/reports/T-3670-question-v2.md`. Section numbers here (§1–§12) and case IDs (T0-NNN, D-NN) are the ones the question cites. They are stable: later edits append, they do not renumber.
+**Question:** `docs/reports/T-3670-question-v2.md`. Section numbers here (§1–§14) and case IDs (T0-NNN, D-NN) are the ones the question cites. They are stable: later edits append, they do not renumber.
 
 **How to read this pack.**
 - Every number was measured by a command on 2026-10-01 unless the line says otherwise, and each measurement says how it was taken.
@@ -566,3 +566,100 @@ Mechanisms the question asks reviewers to compare: scoped sudoers rules; a privi
 ### §12.3 Examples of operations that legitimately need elevation (from this project's work; inference)
 
 Installing a package (bubblewrap/socat for the sandbox, Python deps for Watchtower); restarting a service (Watchtower, cron jobs); writing protected config (`.claude/settings.json`, git hooks, managed settings, cron registry install); an operator-approved force push or ref deletion; recovering a consumer install (`fw consumer-recover`).
+
+---
+
+## §13 Prior decisions and their state
+
+Added for question v3. Each subsection summarises named documents; status lines were checked on this host on 2026-10-01 (commands named inline).
+
+### §13.1 T-2428 — governance by payload mediation (inception GO 2026-06-18; arc-013 `payload-mediation`, status in-progress)
+
+**Sources:** `docs/reports/T-2428-payload-mediation-design.md` (design of record, `design_status: final`), `docs/reports/T-2428-payload-mediation-spike.md`, `.context/arcs/payload-mediation.yaml`, member tasks T-2429…T-2434.
+
+**Thesis (design §1).** Govern agents by mediating their tool-call payloads at the model-API request/response layer: a model-agnostic gateway that can allow, deny, rewrite or route each tool intent, made unbypassable by an OS-level cage laid above the agent. Governance attaches to the protocol (the `tool_use`/`tool_result` contract), not to a harness, model or wrapper.
+
+**Headline mechanic (arc YAML, verbatim):** "Operator prompts an agent to attempt a self-authorizing action (edit a governance hook, self-approve a dispatch); the out-of-cage payload proxy denies the tool call at the wire and the OS sandbox blocks the write; operator observes on Watchtower that the action never executed and the agent could not bypass it". `demo_evidence: null`.
+
+**Capture surfaces (design §2, §4a).** Two nested contracts:
+- **Outer** (model ⟷ harness): structured `tool_use` blocks over the Messages/tool-calling API. A proxy here sees **every** tool intent (Bash, MCP, in-process built-ins such as Read/Write) as structured name + arguments, before execution.
+- **Inner** (harness ⟷ kernel): argv/env/stdio/exit. An OS layer sees only what forks/execs or does I/O, as raw bytes, without intent; it is blind to in-process built-ins.
+
+What the proxy cannot see (design §4a table): execution of Bash, file I/O, MCP calls, hooks, wrapper/loop, telemetry, auth refresh, and above all the harness's internal control flow (does it honour hook exit codes, execute only response-carried `tool_use`, report results truthfully). That row is a black box to both surfaces. Consequence stated in the design: AEF hooks are "proxy-class governance" that fire only because the harness chooses to run them; they cannot be the boundary for "the agent can't self-authorize".
+
+**Ranked surfaces (design §4b).** S1 in-harness hooks/permissions (declinable, harness-specific: "never a boundary"); S2 payload proxy via `ANTHROPIC_BASE_URL` (complete, semantic, portable, bypassable unless pinned); S3 netns + nftables egress allowlist (the pin); S4 filesystem RO (Landlock / mount-ns / RO binds: the "Lock-1 cage"); S5 uid demotion + cgroup/pid-ns; S6 LD_PRELOAD/FUSE (rejected as a boundary).
+
+**"Proxy plus OS cage" composition (design §4, §4b correction, §4c).**
+- Proxy alone: complete and semantic but bypassable (the harness can reach the model endpoint directly). Cage alone: unbypassable but blind to intent and to in-process tools.
+- Corrected framing (2026-06-18, operator): two **co-essential** surfaces split by what they govern. Proxy = **choices/mechanism** (which tool, which mechanism; e.g. forcing `fw task create` over a built-in TaskCreate, TermLink workers over in-process sub-agents). Sandbox = **effects** (real writes, egress, spawns). Neither subsumes the other.
+- Residual: in-process sub-agents lose attribution, so sub-agents must be forced out into distinct observable principals.
+- Trust model: proxy = policy engine for a cooperating harness; OS cage = containment for a non-cooperating one, and "the only trust anchor".
+- Control plane: **emit/install** split. `fw policy emit` / `fw sandbox emit-profile` are agent-runnable; `sudo fw policy install` / `sudo fw sandbox install` are human/root only ("Lock-1 Part 1"). One governance model compiles to both surfaces (e.g. "agent may not modify hooks" = proxy denies Write to a hook path + sandbox mounts hook paths RO).
+- Trusted dynamic state (focus, approvals, budget, bypass log) must move behind a privileged setter the agent uid cannot write (§4e: `aef-govd`, uid `aef-gov`, unix-socket proposals, append-only audit, a sovereign-authored **authority envelope** with a global risk ceiling plus per-type overrides; Tier 0 and directive authorship are a non-delegable floor). Files become read-only projections of the holder's record.
+- Sandbox tier (§7a, operator-confirmed): **microVM target** (kata + Cloud-Hypervisor/Firecracker, custom virtio-fs/virtio-net backends as the effects decider), **gVisor fallback**; Landlock + nftables as a static floor inside either. Linux-only is accepted because "portability lives at the proxy".
+
+**Spike results (T-2429, spike report).** All three PASS on 2026-06-18: (1) a Claude Code **subscription** session pointed at a transparent relay via `ANTHROPIC_BASE_URL` stayed on subscription billing (OAuth Bearer forwarded unchanged; refresh goes to a different host and is not intercepted); (2) the relay sees exact tool name + arguments for Bash, MCP and built-ins; (3) a denied `tool_use` can be replaced by a coherent text-only turn (`stop_reason: end_turn`, no owed `tool_result`) and the harness recovers. Caveats: the relay sees the cleartext Bearer, so it must run outside the cage under a non-agent uid; the model makes two `/v1/messages` calls per one-line prompt.
+
+**What is BUILT (code in repo, unit-tested; verified by `wc -l` and the task files):**
+
+| Piece | Task | Code | State |
+|---|---|---|---|
+| Relay (proxy brain) | T-2431 (completed) | `lib/govd_relay.py`, 245 lines: `parse_tool_uses`, `synth_deny_turn`, `Policy`, `Mediator`, `serve()` | 14 unit tests; allow + deny live-validated on the subscription path. **Buffers the whole upstream body** before mediating (no incremental streaming). Policy = governance-path list + **substring** `deny_command_patterns` (`rm -rf /`, `git push --no-verify`, `chattr -a`, `shutdown`, `mkfs`) from `policy/proxy-policy.yaml` (31 lines). |
+| Policy emit/install + drift | T-2432 (completed) | `lib/govd_policy.py`, 130 lines | `fw policy status` today: `SKIP proxy-policy not installed`. |
+| State holder / authority broker | T-2430 (work-completed, still in `active/`) | `lib/govd_envelope.py` 119, `lib/govd_holder.py` 194 lines | Mechanism built and tested. Two Human ACs open: deploy as root under a non-agent service user; relocate real `focus.yaml`/approvals/bypass log behind it. |
+| Sandbox static floor | T-2433 (work-completed, in `active/`) | `lib/govd_sandbox.py`, 382 lines; `policy/sandbox-profile.yaml`; emitted systemd unit + uid-keyed nftables ruleset | `fw sandbox status` today: `SKIP sandbox profile emitted but not installed`. Open Human ACs: install the floor and run the deciding validation; decide who installs a VMM. |
+
+**Not built / not deployed (checked 2026-10-01):** no `aef-agent` or `aef-gov` user exists (`id` fails); nothing under `/etc/aef-sandbox` or `/etc/systemd/system/aef-*`; relay not running in front of any session; no VMM or gVisor installed; the microVM tier half (virtio-fs/virtio-net mediators) has no code; T-2434 (Lock-1 acceptance demo) is `captured`, `horizon: later`, with template placeholder ACs; the arc's headline mechanic has never fired. T-2428 itself is `work-completed` with its `[REVIEW]` Human AC unticked.
+
+**Open questions (from the documents, plus what the build left):**
+1. Who performs Lock-1 Part 1 (root install of holder, policy, sandbox) and when; nothing has been installed in 3.5 months.
+2. Sandbox tier: microVM vs gVisor tooling and who installs it (T-2433 H2). The design's own deciding validation (does CC + TermLink + wrapper run inside the tier with substrate RO and egress pinned) has not been run.
+3. The relay's policy is substring matching on command text, the same class of check whose spelling gaps the Tier 0 rounds catalogue (§5, §6); the design defers "rich decisions" to a framework oracle (`fw policy decide`) that does not exist.
+4. Incremental streaming denial: the spike proved a buffered substitution; mid-stream rewriting without buffering remains unproven (design §5 named it the key build risk).
+5. Non-Anthropic wire formats (OpenAI `tool_calls`, opencode/Z.ai, codex) are asserted "isomorphic" (design §3); only the Anthropic path was tested (unverified for the others).
+6. Wiring the proxy's dynamic-state trust to the holder (the relay reads only static policy today).
+7. Distinct principals for sub-agents: named as a requirement, no task.
+
+### §13.2 T-586 — language strategy: TypeScript for new components (inception GO 2026-03-23; closed 2026-04-13)
+
+**Sources:** `.tasks/completed/T-586-language-strategy--typescript-adoption-f.md`, `docs/reports/T-586-{language-audit,q1-compilation,q2-vendoring,q3-inspectability,q4-shell-escaping,q5-language-count,prototype-comparison,migration-path,constitutional-review}.md`.
+
+**Why TypeScript (audit, March 2026 figures):** the framework was a three-language hybrid (42K bash, 25K Python, 13K Jinja, 13K JS); 54 of 98 bash scripts shelled out to Python; 199 inline `python3 -c` blocks, 84 (≈56% judged unsafe) interpolating shell variables into Python source, 32 invocations breaking on quotes. Node.js was taken as "guaranteed" on target hosts because Claude Code requires it. esbuild compiles in ~3 ms; compiled JS started ~2.5× faster than Python. Language count argued to stay at two (bash + TS), with TS **replacing** Python over time; Watchtower stays Python.
+
+**Scorecard (prototype comparison):** a PostToolUse loop detector built twice — TS 261 LOC vs bash+Python 218 LOC. TS 28 ms vs 54 ms; TS immune to the `'''` escaping break; compile-time type checks; importable/unit-testable functions. **TS 8, bash+Python 2, tie 1.** Constitutional review: D1 and D2 net positive, D3 net positive with build-step friction, D4 neutral.
+
+**Migration path (migration-path report):** bash stays forever for `bin/fw`, git hooks, `install.sh`, init/update/setup, and short glue. Tier 1: new components in TS (loop detector T-578, dedup T-579, error classification T-580, session isolation T-582, health T-583, structured logging T-584, token budget T-585). Tier 2: migrate inline Python when touched via an `fw-util` binary (~130 YAML, ~74 JSON, ~87 path, ~43 date blocks). Tier 3 never: Watchtower, `enrich.py`, `discovery.py`. Sources in `lib/ts/src/`, compiled `lib/ts/dist/` committed; vendoring ships only compiled JS; `fw_run_ts()` falls back to Python when Node is absent.
+
+**What exists today in `lib/ts/` (`wc -l`, 2026-10-01; last commits T-592/T-593/T-594):**
+
+| File | Lines |
+|---|---|
+| `src/fw-util.ts` (8 subcommands: yaml-get/set, json-get/set, path-rel, path-resolve, date-fmt, frontmatter) | 228 |
+| `src/loop-detect.ts` | 269 |
+| `dist/fw-util.js` (bundled, includes js-yaml) | 2,817 |
+| `dist/loop-detect.js` | 178 |
+| `package.json` / `tsconfig.json` / `package-lock.json` | 17 / 16 / 561 |
+
+Plus `lib/build.sh`, `lib/runtime.sh` (`fw_run_ts`). **In use:** `loop-detect.js` runs as a PostToolUse hook via `fw hook loop-detect` → `agents/context/loop-detect.sh` (`.claude/settings.json:194`). `fw-util` is referenced only by `lib/runtime.sh` (definition), `lib/validate-init.sh` and `agents/audit/self-audit.sh`.
+
+**What was never done:** none of T-579…T-585 shipped in TS; no inline Python was migrated to `fw-util` — the `python3 -c` count in `bin lib agents` `*.sh` is now **234** (grep, 2026-10-01; up from 199), and `bin/fw` alone is 10,901 lines of bash; no gate, hook other than loop-detect, or Tier 0 code is TypeScript; the CI `tsc --noEmit` / pre-push type-check legs were not found (unverified). The T-586 Human ACs asked whether TS "truly serves directives or engineering convenience"; the task closed without a later re-assessment.
+
+### §13.3 P-063 — opencode runs zero AEF hooks (framework:pickup, 2026-09-07, bug-report, priority high)
+
+Filed by an opencode agent in `/opt/0506-Voxtype-extention`: AEF enforces through `.claude/settings.json` PreToolUse wiring, which opencode never loads, so **none of the 37 fw hooks run in opencode sessions**. Concrete harm (2026-09-06): an opencode session crossed into another project's directory, read its files and planned work there with `check-project-boundary` never firing; the same command in Claude Code exits 2. The reporter verified that the hook *protocol* is runtime-agnostic (stdin JSON with `tool_name` + `tool_input`, exit 0 allow, exit 2 block, stderr guidance) and shipped a local opencode plugin (`.opencode/plugin/aef-guards.ts`, driving check-project-boundary, check-active-task and check-tier0; fail-open when `fw` is absent; Bash rewritten to a refusal no-op, edit/write cancelled by throwing) plus an installer. The ask: ship a `runtime/opencode/` plugin pack beside the `.claude` wiring, with the hook list in one manifest both runtimes read. **State in this repo (2026-10-01):** no `runtime/` or `.opencode/` directory; no task references P-063 or `aef-guards` (grep of `.tasks/`).
+
+---
+
+## §14 The harness landscape
+
+Source: `docs/harnesses.md` (T-3582, verified on this host 2026-10-01 unless marked), plus §13.3. "Honours AEF hooks" means the `.claude/settings.json` PreToolUse/PostToolUse chain of §2 runs before tool execution.
+
+| Harness | Version (this host) | How AEF uses it today | Instruction file read | Own native controls | Honours AEF hooks? |
+|---|---|---|---|---|---|
+| Claude Code | 2.1.286 (`claude`) | Primary interactive session (`claude-fw`), TermLink workers, review panel seat 1 | `CLAUDE.md` | permission rules, managed settings, Bash sandbox, hooks (§10) | **Yes**, interactive in-repo sessions. **No** for pinned review workers (`--setting-sources user`: no project hooks, verified). Fires only because the harness runs them (§13.1 §4a). |
+| Codex CLI (OpenAI) | codex-cli 0.153.4 | Review panel seat 2 (`codex exec -s read-only`), review-only worker kind | `AGENTS.md` (disabled with `project_doc_max_bytes=0`) | own config + execpolicy rules, `-s` sandbox modes | **No** (none) |
+| opencode (Z.ai) | 1.18.31 | Review panel seat 3 (`opencode run`), review-only worker kind; also used interactively in other projects (P-063) | `AGENTS.md` (no off switch); `CLAUDE.md` only if no `AGENTS.md` | `opencode.json`, built-in `plan` no-edit agent, plugins | **No** — zero of 37 (P-063); a local plugin bridge exists outside this repo |
+| Antigravity (`agy`, Google) | 1.1.15, runs as user `dimitri-mint-dev` | Spare review seat | unverified | `--mode plan --sandbox` | **No** (none) |
+| Gemini CLI | not installed | — | — | — | — |
+
+Non-Claude harnesses are dispatched only with `--task-type review` (harnesses.md "Harness kinds"); their governance today is the review-ledger signing and read-only/plan modes, not AEF gates.
