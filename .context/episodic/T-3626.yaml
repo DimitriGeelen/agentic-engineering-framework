@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3626: audit.sh schedule install delegates fw cron install into the cwd project, not PROJECT_ROOT (T-3285 re-anchor)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-01T13:23:17Z
+# ============================================================================
+
+task_id: T-3626
+task_name: "audit.sh schedule install delegates fw cron install into the cwd project, not PROJECT_ROOT (T-3285 re-anchor)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T08:37:21Z
+completed: 2026-10-01T13:22:57Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-01T15:22:39+02:00
+last_commit: 2026-10-01T15:22:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  audit.sh schedule install cds to PROJECT_ROOT before delegating to fw cron install (T-3285 re-anchor targeted the cwd project)
+
+# Key outcomes
+outcomes:
+  - 'Regression test `tests/unit/t3626_audit_schedule_install_project_root.bats` runs `PROJECT_ROOT=<target fixture> agents/audit/audit.sh schedule install` with cwd inside a DECOY fixture project and asserts the target''s crontab source is written and the decoy''s is not; red before the fix (never touches the live repo)'
+  - 'Fix: `agents/audit/audit.sh` schedule install `cd`s to `$PROJECT_ROOT` before delegating to `fw cron install`; vendored copy synced'
+  - 'No regression: `tests/unit/t3070_audit_schedule_install_delegates_to_registry.bats` green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-3626-auditsh-schedule-install-delegates-fw-cr.md'
+  - 'tests/unit/t3626_audit_schedule_install_project_root.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T15:22:39'
+    action: 'T-3626: audit.sh schedule install cds to PROJECT_ROOT before delegating to fw cron install (T-3285 re-anchor targeted the cwd project)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 285 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, OBS-587]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 285
+  commits: 1
+  files_changed: 4
+  lines_added: 446
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3626-auditsh-schedule-install-delegates-fw-cr.md
+generated_by: context-agent-hybrid
