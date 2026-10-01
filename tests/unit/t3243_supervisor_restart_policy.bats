@@ -199,7 +199,10 @@ PY
     MAXR=2 WINDOW=3600 SIGUNTIL=0 EXITCODE=0 run_wrapper
 
     [ "$(count_events iterate rearm)" -eq 2 ]
-    [ "$(count_events exit max-restarts)" -eq 1 ]
+    # T-3633: the re-arm path records its own reason, distinct from the
+    # budget-restart path's max-restarts.
+    [ "$(count_events exit max-restarts-rearm)" -eq 1 ]
+    [ "$(count_events exit max-restarts)" -eq 0 ]
 }
 
 @test "re-arm fires on a NON-zero exit too (a crash is not consent to stop)" {

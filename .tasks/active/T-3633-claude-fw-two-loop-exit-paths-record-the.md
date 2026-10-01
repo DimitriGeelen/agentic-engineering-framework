@@ -2,12 +2,21 @@
 id: T-3633
 name: "claude-fw: two loop exit paths record the same reason max-restarts"
 description: >
-  OBS-587 triage (T-3624). tests/unit/t3182_loop_exit_recorder.bats test 6 ('CONTROL LEG: each exit path records a DISTINCT reason') is red. bin/claude-fw main loop records _record_loop_event exit max-restarts at line ~665 (restart path, T-3182) and again at line ~812 (the armed re-arm path: 're-arm refused: ... >= MAX_RESTARTS'). The second exit was added by 8c42fe698 (T-3243, 2026-09-01) reusing the reason, so continuous-run.jsonl cannot tell which path stopped the loop from the reason field. Bisect over bin/claude-fw: 6e1a0332b clean, 8c42fe698 first with a duplicate. Precedent for the fix: no-directive-headless vs no-directive-headless-rearm. Check t3206_continuous_run_ledger.bats / t3243 / t3247 / t3249 for readers of the reason before renaming. Report: docs/reports/T-3624-triage.md
+  OBS-587 triage (T-3624). tests/unit/t3182_loop_exit_recorder.bats test 6 ('CONTROL
+  LEG: each exit path records a DISTINCT reason') is red. bin/claude-fw main loop
+  records _record_loop_event exit max-restarts at line ~665 (restart path, T-3182)
+  and again at line ~812 (the armed re-arm path: 're-arm refused: ... >= MAX_RESTARTS').
+  The second exit was added by 8c42fe698 (T-3243, 2026-09-01) reusing the reason,
+  so continuous-run.jsonl cannot tell which path stopped the loop from the reason
+  field. Bisect over bin/claude-fw: 6e1a0332b clean, 8c42fe698 first with a duplicate.
+  Precedent for the fix: no-directive-headless vs no-directive-headless-rearm. Check
+  t3206_continuous_run_ledger.bats / t3243 / t3247 / t3249 for readers of the reason
+  before renaming. Report: docs/reports/T-3624-triage.md
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, OBS-587]
 components: []
 related_tasks: []
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T08:51:34Z
-last_update: 2026-10-01T08:51:34Z
-date_finished: null
+last_update: 2026-10-01T13:44:26Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +59,50 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-01T09:00:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-01T09:00:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3633: claude-fw: two loop exit paths record the same reason max-restarts
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Rename the armed re-arm path's exhausted-budget reason to `max-restarts-rearm`, following
+the `no-directive-headless` / `no-directive-headless-rearm` precedent. The budget-restart
+path keeps `max-restarts`, so existing ledgers and readers of the restart path are unaffected.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproducer: `tests/unit/t3182_loop_exit_recorder.bats` test 6 ("CONTROL LEG: each exit path records a DISTINCT reason") is red before the fix
+- [x] Fix: the re-arm exit in `bin/claude-fw` records `max-restarts-rearm`. The restart-path exit still records `max-restarts`. `t3243` "re-arm cannot hot-spin" asserts the new reason, plus 0 `max-restarts` on that path
+- [x] No regression: `t3182_loop_exit_recorder`, `t3243_supervisor_restart_policy`, `t3206_continuous_run_ledger`, `t3247_restart_headless_prompt`, `t3249_rearm_headless_prompt` and `t3629_fresh_relaunch_not_agents_view` are all green, and nothing outside tests reads the literal reason
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -224,6 +263,12 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 300 bats tests/unit/t3182_loop_exit_recorder.bats > /tmp/.t3633-r.out 2>&1 && ! grep -q "^not ok" /tmp/.t3633-r.out && grep -q "^ok 6 " /tmp/.t3633-r.out
+timeout 590 bats tests/unit/t3243_supervisor_restart_policy.bats tests/unit/t3206_continuous_run_ledger.bats tests/unit/t3247_restart_headless_prompt.bats tests/unit/t3249_rearm_headless_prompt.bats tests/unit/t3629_fresh_relaunch_not_agents_view.bats > /tmp/.t3633-n.out 2>&1 && ! grep -q "^not ok" /tmp/.t3633-n.out
+test "$(cat /tmp/.t3633-r.out /tmp/.t3633-n.out | grep -c '# skip')" -eq 0
+test "$(grep -c '_record_loop_event exit max-restarts-rearm' bin/claude-fw)" -eq 1
+bin/fw vendor self --check
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -239,6 +284,20 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `continuous-run.jsonl` records `exit max-restarts` for two different stops: a
+budget-restart spin and an armed re-arm refused for exhausted budget. The reason field
+cannot say which path stopped the loop. t3182 test 6 is red.
+
+**Root cause:** 8c42fe698 (T-3243) added the re-arm branch and copied the restart path's
+`_record_loop_event exit max-restarts` call verbatim, reusing the reason constant.
+
+**Why structurally allowed:** t3182's distinct-reason control leg existed and went red,
+but it lives in the nightly unit suite, not a commit-time gate, so the duplicate shipped and
+stayed red (OBS-587 class, T-3624 triage).
+
+**Prevention:** the t3182 control leg is green again and fails on any future duplicate
+reason. t3243's hot-spin test now pins the re-arm reason by name.
 
 ## Evolution
 
@@ -320,3 +379,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3633-claude-fw-two-loop-exit-paths-record-the.md
 - **Context:** Initial task creation
+
+### 2026-10-01T13:44:26Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

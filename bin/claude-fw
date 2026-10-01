@@ -826,7 +826,9 @@ while true; do
                 echo ""
                 echo "claude-fw: Continuous run is armed, but the restart budget is exhausted"
                 echo "  (${spent}/${MAX_RESTARTS} within the last ${RESTART_WINDOW}s). Stopping."
-                _record_loop_event exit max-restarts \
+                # T-3633: own reason, not max-restarts — the ledger must say which
+                # path stopped the loop (precedent: no-directive-headless-rearm).
+                _record_loop_event exit max-restarts-rearm \
                     "re-arm refused: ${spent} restarts within ${RESTART_WINDOW}s window >= MAX_RESTARTS=${MAX_RESTARTS}" "$exit_code"
                 exit "$exit_code"
             fi
