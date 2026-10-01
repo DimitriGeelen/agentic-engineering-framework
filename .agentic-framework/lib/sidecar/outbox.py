@@ -15,7 +15,11 @@ File shapes (Amendment 5):
     .context/sidecar/awaiting-ack.jsonl            — append-only ack ledger
 
 Ack states: STORED (non-terminal — the only state that can expire) ->
-INJECTED_NOW | INJECTED_LATER | UNKNOWN (all terminal).
+HUB_ACCEPTED | INJECTED_LATER | UNKNOWN (all terminal).
+
+Per T-3561 AC10: INJECTED_NOW renamed HUB_ACCEPTED. The hub accepted the
+message; this is NOT the same as "injected into the agent" (T-3397, AC5).
+See INJECTED_LATER for delivery after store-and-wait.
 """
 
 from __future__ import annotations
@@ -27,10 +31,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 STORED = "STORED"
-INJECTED_NOW = "INJECTED_NOW"
+HUB_ACCEPTED = "HUB_ACCEPTED"  # T-3561: renamed from INJECTED_NOW
+INJECTED_NOW = "HUB_ACCEPTED"  # Alias for backward compatibility during migration
 INJECTED_LATER = "INJECTED_LATER"
 UNKNOWN = "UNKNOWN"
-TERMINAL_STATES = frozenset({INJECTED_NOW, INJECTED_LATER, UNKNOWN})
+TERMINAL_STATES = frozenset({HUB_ACCEPTED, INJECTED_LATER, UNKNOWN})
 
 
 def _framework_root() -> Path:
