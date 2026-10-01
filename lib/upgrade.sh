@@ -1724,6 +1724,35 @@ CRONREGEOF
         fi
     fi
 
+    # T-3673: framework-owned cron jobs missing from an existing registry.
+    # Add-only by id — an operator-edited job with the same id is never touched.
+    if [ -f "$target_dir/.context/cron-registry.yaml" ] && [ -f "$FRAMEWORK_ROOT/lib/cron-seed.sh" ]; then
+        source "$FRAMEWORK_ROOT/lib/cron-seed.sh"
+        local _cs_out _cs_line _cs_added=0
+        _cs_out=$(CRON_SEED_DRY_RUN=$([ "$dry_run" = true ] && echo 1) \
+            cron_seed_ensure_jobs "$target_dir/.context/cron-registry.yaml" "$target_dir" 2>&1) || {
+            echo -e "  ${YELLOW}WARN${NC}  Cron registry job merge failed: $_cs_out"
+            _cs_out=""
+        }
+        while IFS= read -r _cs_line; do
+            case "$_cs_line" in
+                ADDED\ *)
+                    _cs_added=$((_cs_added + 1)); changes=$((changes + 1))
+                    if [ "$dry_run" = true ]; then
+                        echo -e "  ${CYAN}WOULD ADD${NC}  cron job ${_cs_line#ADDED }"
+                    else
+                        echo -e "  ${GREEN}ADDED${NC}  cron job ${_cs_line#ADDED }"
+                    fi ;;
+                PRESENT\ *) echo -e "  ${GREEN}OK${NC}  cron job ${_cs_line#PRESENT } already present" ;;
+            esac
+        done <<< "$_cs_out"
+        if [ "$_cs_added" -gt 0 ] && [ "$dry_run" != true ]; then
+            (cd "$target_dir" && PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/bin/fw" cron generate >/dev/null 2>&1) \
+                && echo -e "  ${GREEN}OK${NC}  Cron source regenerated — run 'fw cron install' to deploy" \
+                || echo -e "  ${YELLOW}WARN${NC}  'fw cron generate' failed — run it manually, then 'fw cron install'"
+        fi
+    fi
+
     # ── 3c. BVP policy files (T-2262 / arc-006 Slice 2B) ──
     # Sibling of T-2261's lib/init.sh wiring. Seed BVP-policy files on consumers
     # that pre-date T-2261. Copy-on-missing only — consumer customisation survives.

@@ -306,6 +306,9 @@ do_init() {
 # logic: docs-daily, retention-daily, pickup-process, liveness-1m.
 jobs: []
 CRONREGEOF
+        # T-3673: framework-owned jobs a consumer needs (sidecar-sweep-5m)
+        source "$FRAMEWORK_ROOT/lib/cron-seed.sh"
+        cron_seed_ensure_jobs "$target_dir/.context/cron-registry.yaml" "$target_dir" >/dev/null || true
     fi
 
     #@init: yaml-5rc .context/bypass-log.yaml bypasses
