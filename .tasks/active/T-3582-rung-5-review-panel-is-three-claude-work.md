@@ -106,6 +106,20 @@ Why now: with components counted from git (T-3580 round 8/9), 14 of the 30 most 
 - [ ] Every new kind satisfies T-3580's launch pinning: a committed kind and binary path, a pinned model, no caller env, no caller flags, and its own settings isolation. The verdict ledger counts it as its own vendor only when launched this way. Test: a forged vendor label is refused.
 - [ ] A rung-5 panel of Claude, Codex and Z.ai can be assembled and recorded end to end on a fixture task (three seats, three vendors). Test plus one live run.
 - [ ] policy/review-backends.yaml maps each kind to its vendor; codex and opencode stay internal-class. `bin/fw vendor self --check` is clean for this task's files.
+- [ ] **T-3580 R9-1, fixed here because it is the same file (run.sh):**
+  - a refused `start` launches NO worker;
+  - `stderr.log` is appended, never truncated, so the refusal reason survives;
+  - the dirty-tree check covers only what the pinned launch actually reads (with `--setting-sources user` and `--strict-mcp-config`, a dirty project `CLAUDE.md`/`.mcp.json` must not block an ordinary review), OR the reviewer runs from a `git archive` export of the pinned revision. Test: a dirty `CLAUDE.md` in the shared checkout does not block a review dispatch whose launch cannot read it.
+- [ ] **Harness reference doc for the fleet (055-agentic-fleet-cockpit, framework:pickup 256):** `docs/harnesses.md` covers Claude Code, Codex, Z.ai/opencode, Antigravity and Gemini CLI. For each it gives:
+  - the binary and version;
+  - interactive and headless launch commands, verified on this host or marked unverified;
+  - how to resume a session;
+  - the auth mechanism and reference name only, with NO secrets;
+  - where sessions, transcripts and per-process state live;
+  - behaviour under TermLink and tmux, and the pitfalls;
+  - whether AEF hooks and governance apply;
+  - the worker-kind wrapper this task ships.
+  Gemini CLI is marked not installed if it isn't. A reply on `cockpit:harness-access` points 055 at the doc's path and commit.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
