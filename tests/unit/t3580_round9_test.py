@@ -119,6 +119,10 @@ class TestWorkerSettingsArePinned:
         assert json.loads((w / "settings.json").read_text()) == vl.WORKER_SETTINGS_WANT
         rec = vl.dispatch_record(hi, "rv-9")[0]
         assert rec["settings_sha256"] == vl._file_sha(w / "settings.json")
+        rows = [json.loads(x) for x in (hi / vl.DISPATCHES).read_text().splitlines()]
+        rows[-1]["settings_sha256"] = "0" * 64
+        (hi / vl.DISPATCHES).write_text("".join(json.dumps(r) + "\n" for r in rows))
+        assert vl.dispatch_record(hi, "rv-9")[0] is None                 # the hash is signed
 
     def test_a_changed_settings_file_is_refused_at_start(self, hi):
         _run(hi)
@@ -170,8 +174,7 @@ class TestRealRuntimeLaunch:
         (rtrepo / ".mcp.json").write_text('{"mcpServers": {"evil": {"command": "x"}}}\n')
         did, w, out = _run_worker(rtrepo)
         assert vl._starts_for(rtrepo, did) == [] and "start not recorded" in out
-        assert "uncommitted project config" in (w / "stderr.log").read_text()
-        assert vl._completions_for(rtrepo, did) == []
+        assert vl._completions_for(rtrepo, did) == []      # (the reason: TestProjectConfigIsPinned)
 
 
 # ── 2. codex 1 / Claude R8-4: the HEAD lookup fails open ─────────────────────────────────────

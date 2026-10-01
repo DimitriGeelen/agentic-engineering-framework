@@ -316,7 +316,8 @@ def _sign(key: bytes, row: dict) -> str:
               "start_by", "complete_by",                              # round 5
               "run_id", "seat",                                       # round 6: bound pre-launch
               "worker_bin", "prompt_sha256", "brief_sha256",          # round 7: what is launched
-              "model", "env_sha256"):                                 # round 8: model, env data
+              "model", "env_sha256",                                  # round 8: model, env data
+              "settings_sha256"):                                     # round 9: pinned settings
         if k in row:
             body[k] = row[k]
     return hmac.new(key, json.dumps(body, sort_keys=True, separators=(",", ":")).encode(),
@@ -518,8 +519,8 @@ def _input_hashes(wdir: Path) -> dict:
 
 def _launch_fault(drec: dict, wdir: Path) -> str:
     """(start, round 7) '' when what run.sh is about to launch is what was registered: the same
-    prompt.md, the same absolute worker binary, and an env.sh with no program- or model-choosing
-    key. Round 8: and no launch flag file in the worker directory. Round 9: and the registered,
+    prompt.md, the same absolute worker binary, and an env.json (data) with no program- or
+    model-choosing key. Round 8: and no launch flag file in the worker directory. Round 9: and the registered,
     pinned settings.json."""
     if not str(drec.get("settings_sha256") or ""):
         return "the dispatch was registered without pinned worker settings"
@@ -569,7 +570,8 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
     Round 7 (Claude F2): a review dispatch with a worker directory also signs WHAT is launched —
     `worker_bin` (the absolute worker binary the dispatcher resolved), `prompt_sha256` (the
     prompt.md it wrote) and, for a run seat, `brief_sha256`, which must be the brief the run
-    registered for that seat (and prompt.md must end with it). Its env.sh may set only
+    registered for that seat (and prompt.md must be exactly the review preamble plus it — round
+    8). Its env.json may set only
     REVIEW_ENV_ALLOW keys. `start` re-checks all of it before the worker runs."""
     root = root or _root()
     if not (dispatch_id or "").strip() or not (task_id or "").strip():

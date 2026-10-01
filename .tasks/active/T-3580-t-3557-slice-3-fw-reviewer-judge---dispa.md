@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T07:54:10Z
-last_update: 2026-09-30T22:45:44Z
+last_update: 2026-10-01T07:58:52Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -318,7 +318,7 @@ dispatching: `fw review propose --backend openrouter --task T-XXX --why "..."`.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-python3 -m pytest tests/unit/t3580_judge_cli_test.py tests/unit/t3580_round2_test.py tests/unit/t3580_round3_test.py tests/unit/t3580_round4_test.py tests/unit/t3580_round5_test.py tests/unit/t3580_round6_test.py tests/unit/test_t3579_verdict_ledger.py tests/unit/test_t3581_ledger_integrity.py tests/unit/test_t3581_round4.py -q > /tmp/.t3580-py.out 2>&1 && grep -q passed /tmp/.t3580-py.out
+python3 -m pytest tests/unit/t3580_judge_cli_test.py tests/unit/t3580_round2_test.py tests/unit/t3580_round3_test.py tests/unit/t3580_round4_test.py tests/unit/t3580_round5_test.py tests/unit/t3580_round6_test.py tests/unit/t3580_round7_test.py tests/unit/t3580_round8_test.py tests/unit/t3580_round9_test.py tests/unit/test_t3579_verdict_ledger.py tests/unit/test_t3581_ledger_integrity.py tests/unit/test_t3581_round4.py -q > /tmp/.t3580-py.out 2>&1 && grep -q passed /tmp/.t3580-py.out
 timeout 600 bats tests/unit/t3579_verdict_close_path.bats > /tmp/.t3580-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3580-bats.out
 test "$(grep -c '# skip' /tmp/.t3580-bats.out)" -eq 0
 bin/fw vendor self --check
@@ -512,7 +512,7 @@ bin/fw vendor self --check
 - **Rejected:** restricting inbound consults to the judge's session. The reviewer has no legitimate need for consults, so dropping the channel is simpler than authenticating it.
 - **Residual:** the preamble is a module constant. Whoever edits verdict_ledger.py edits the check itself, which is the same-user boundary. A hub that answers nothing reads as zero consults (`read: true, count: 0`); the sidecar reader cannot tell "empty" from "down".
 
-### 2026-10-01 — round 8: the worker's model, tools and settings are not the caller's (Claude N2)
+### 2026-10-01 — round 8: the worker's model, tools and settings are not the caller's (Claude N2) — SUPERSEDED in part by round 9 (setting sources: user only + pinned --settings)
 - **Chose:** review dispatches refuse `--mcp-config`, `--strict-mcp-config`, `--allowed-tools`, `--tools` and `--permission-mode` outright. No worker kind needs one today; if one ever does, it will come from committed config. `--model` is refused unless it equals the `model:` that policy/review-backends.yaml, as committed at the reviewed revision, pins for the kind. No pin means the worker default (''). The route cache and DISPATCH_MODEL_* are not consulted for review. The ledger signs `model` into the registration and `start` checks run.sh's argv[5] equals it; `_parent_argv` now keeps empty argv entries so '' is position-checked. `start` also refuses any flag file (tools.txt, …), and run.sh blanks those flags for review regardless. Review workers are launched with `--setting-sources user,project` (documented in `claude --help`; checked before use), so `.claude/settings.local.json` (untracked; env block and hooks) never applies. The wrong "Workers spawn --bare" comment is corrected.
 - **Rejected:** `--bare` plus `--settings <committed file>`. `--bare` also skips CLAUDE.md and the project hooks the reviewer runs under, and the user settings carry the permission allows a non-interactive worker needs.
 - **Residual:** user-level `~/.claude/settings.json` still applies. It is outside the repo and owned by the operator account, not the caller, and is inside the same-user boundary. The vendor is still counted from the kind, not the model actually served (T-3582).
@@ -536,6 +536,32 @@ bin/fw vendor self --check
 
 ### 2026-10-01 — round 8: deferred (Claude N6, Q3)
 - **Filed:** T-3619 (crashed review dirs are kept forever; the step-down WARN never expires or labels withdrawals) and T-3620 (step-downs on the handover's review-queue line).
+
+### 2026-10-01 — round 9: what the review worker loads (Claude R8-1) — supersedes round 8 N2's `--setting-sources user,project`
+- **Chose:** run.sh launches a review worker with `--setting-sources user --settings <wdir>/settings.json --strict-mcp-config` and no `--mcp-config`. `settings.json` is the committed `policy/review-worker-settings.json` (exactly `{"crossSessionInbound": "refuse"}`), copied in by registration from the commit at the reviewed revision. Registration refuses any other content and signs `settings_sha256`. `start` and `complete` re-check the hash. `crossSessionInbound` and its values (`accept`/`hold`/`refuse`) come from the installed claude binary's settings schema (`claude --help` lists `--settings`, `--setting-sources` and `--strict-mcp-config`). A `--settings` value outranks the user file in Claude Code's documented precedence, so inbound can be turned off per invocation, and the "refuse at start when the user settings accept inbound" fallback is not needed. `start` refuses while `CLAUDE.md`, `CLAUDE.local.md`, `.claude/` or `.mcp.json` have an uncommitted or untracked change, differ from the run's pinned revision, or (for `CLAUDE.local.md`) exist outside git. Any git failure refuses.
+- **Rejected:** a clean `git archive` export of the reviewed revision as the worker's cwd. It is the stronger isolation, but a larger change: the reviewer's own `bin/fw reviewer verdict record` + commit must land in the main checkout. Also rejected: `disableAllHooks` in the pinned file. It would also switch off the operator's user hooks, and those are the operator's call.
+- **Consequence:** project hooks (`.claude/settings.json`: the task gate, budget gate etc.) no longer run inside a review worker. The user settings keep the permission allows a non-interactive worker needs: `~/.claude/settings.json` has 999 allow entries, `defaultMode: auto` and no hooks or env today. Git hooks still run on the reviewer's commit.
+- **Residual:** the user source is loaded, and the same user can edit it (env, hooks, plugins, `~/.claude/CLAUDE.md`). Parent-directory `CLAUDE.md` files are loaded too. Gitignored files under `.claude/` are not seen by the check. An edit made after `start` has passed is not seen (the check runs once). That inbound is actually refused rests on Claude Code's settings precedence and was not observed live. A refused start is still followed by the worker launch (pre-existing behaviour): its verdicts never count because no completion secret was issued, and the worker's own stderr overwrites the start's refusal reason in `stderr.log`.
+- **Tests:** t3580_round9_test.py TestProjectConfigIsPinned, TestWorkerSettingsArePinned, TestRealRuntimeLaunch (the real run.sh: the stub claude's argv has `--setting-sources user`, `--settings <wdir>/settings.json` with the pinned content, `--strict-mcp-config`, and no `--mcp-config`).
+
+### 2026-10-01 — round 9: HEAD lookup, components, spend window, complete (codex 1–3, Claude R8-2 note, R8-3/4/5)
+- **Chose (codex 1 / R8-4):** `_head_checked` returns '' only when git answers that HEAD is unborn: `rev-parse --git-dir` succeeds, HEAD is a symbolic ref, and `show-ref --verify` says that ref does not exist. Anything else raises `HistoryUnreadable`. `_task_history_fms` and `_git_components` use it.
+- **Chose (codex 2):** fabric cards are parsed as YAML (CSafeLoader; leading `./` stripped). Each of the task's commits is resolved against the cards committed AT that commit and at HEAD (caches: blob sha -> fields, (repo, commit) -> map), so removing, renaming or relocating a card later keeps the attribution. **(Claude R8-2 note):** only the task's own commits count, meaning a subject that opens with a task-id list naming it (`T-3580: …`, `T-3598, T-3601: …`). A commit that merely mentions the id (a follow-up, a vendor sync) does not.
+- **Chose (codex 3 / R8-3):** the weekly window applies to the dispatch's signed start epoch (`review_policy._row_time`). The row's own `ts` is ignored, and each dispatch counts at most once across the whole ledger, before the window. The arithmetic-only suites' `rt.unbound_spend` now also substitutes the time source (the row ts), documented there.
+- **Chose (R8-5):** `complete` re-checks env.json, settings.json, prompt.md and brief.md against the signed registration (shared `_inputs_fault` with `start`), refuses on any change, and signs their hashes into the completion as `inputs`.
+- **Docs (codex 4):** CLAUDE.md now names what can still be steered after this round, says that no kind pins a concrete model today, bounds the consult read (500 per topic), and gives the step-down cost at the floor (about 16 panels) and at the default ceiling (about 1,666). The env.sh and suffix wording in docstrings is corrected.
+
+### 2026-10-01 — round 9: rung distribution under the current rule (Claude R8-2) — NOT changed, operator's decision
+- **Measured** with `task_required_strength` over every Human criterion body, at HEAD after round 9 (so components come from own commits only). The sample is the 30 most recent task ids named in commit subjects:
+
+| Required rung | Tasks | Share | Examples |
+|---|---:|---:|---|
+| 5 (three-vendor panel) | 14 | 47% | T-3580 (13 components), T-3603 (13), T-3586 (13), T-3587 (10), T-3604 (9), T-3581, T-3579, T-3610 (6), T-3578, T-3593/T-3576 (not revertible), T-3600, T-3569, T-3583 |
+| 3 (signed single-reviewer run) | 13 | 43% | T-3621, T-3598, T-3602, T-3595, T-3594, T-3596, T-3584, T-3090, T-3585, T-3591, T-3592, T-3590, T-3535 (inception GO) |
+| 1 (any registered independent dispatch) | 3 | 10% | T-3601, T-3599, T-3556 |
+
+- **Reading:** about half of recent tasks need a panel that cannot be assembled until T-3582, so their reviewer-judged criteria close only through a step-down. That needs about 1,666 rung-5 panels' worth of that week's genuinely started dispatches at the default ceiling. Restricting components to own commits did not move T-3610: its 6 components are its own commits.
+- **Not changed:** the threshold, counting subsystems instead of cards, and the medium hold. These are the operator's call (IW-7 policy).
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
