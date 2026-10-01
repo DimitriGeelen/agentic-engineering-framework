@@ -13,7 +13,15 @@ Items marked **[OPERATOR]** need the operator's confirmation before dispatch.
 
 ---
 
-## The question
+## The question (v3: reframed after the operator's direction, 2026-10-01)
+
+**The operator's aim from the start: a governance layer that does NOT depend on the agent harness.** PreToolUse hooks are a Claude Code mechanism. Other harnesses run none of them: opencode runs zero AEF hooks (pack §13, P-063). Two prior decisions bear directly on this and must be weighed, not ignored (pack §13):
+- **T-2428, payload mediation (GO 2026-06-18, arc in progress).** Govern at the model⟷harness contract (the structured tool_use/tool_result messages) through a payload proxy OUTSIDE the agent's cage, plus an OS funnel/cage (egress pinning, process isolation) for what the proxy cannot see. It is harness- and model-agnostic by construction. Its headline: the agent attempts self-authorisation, the out-of-cage proxy denies it at the wire, and the OS sandbox blocks the write.
+- **T-586, language strategy (GO 2026-03-23):** TypeScript adopted for new framework components (Node is available wherever the harness runs; immune to shell-escape defects; a `fw-util` replacing inline Python). It is partly implemented (lib/ts/).
+
+The operator also intends to refactor and rewrite pieces in different languages, stepping away from the bash/Python-only base. A polyglot answer (a different language per component) is acceptable if justified.
+
+So D1 below is primarily: **which enforcement architecture gives harness-independent governance** (payload proxy, OS cage and isolation, a broker for elevation, per-harness adapters such as hooks), and where the existing hook-based core fits in it. Add TypeScript to every language comparison. If you disagree with T-2428 or T-586, say so with reasons.
 
 AEF governs AI coding agents. Hooks run on every agent tool call and must fail closed (pack §2). The enforcement core comprises:
 - the Tier 0 destructive-action gate;
@@ -92,7 +100,8 @@ If any decision is mis-framed, say so first, then answer the question you think 
 1. **Diagnosis (≤200 words).** Roughly what share of the pack §5 and §6 defects are parsing, language, or spec/design? Cite the case IDs.
 2. **Security contract per layer (≤250 words).** For the guardrail layer and the isolation layer separately: what is trusted, what is guaranteed against the mistaken agent (a) and against the determined adversary (b), what is excluded, and how unsupported input is handled. End with a bullet list: **"gaps only the harness vendor can close"**.
 3. **Options table.**
-   - **Rows:** keep bash and patch; bash plus a parser; strict Python plus bashlex; Go plus mvdan.cc/sh; Rust plus tree-sitter-bash; harness-native or sandbox-first; one of your own.
+   - **Rows, architecture options:** hooks only, hardened; payload proxy plus OS cage (T-2428); harness-native permissions and sandbox; a hybrid; one of your own.
+   - **Rows, implementation options** (for the components your architecture needs): bash plus a parser; strict Python plus bashlex; TypeScript (T-586); Go plus mvdan.cc/sh; Rust plus tree-sitter-bash; polyglot per component.
    - **Gate column first, PASS/FAIL/UNKNOWN:** does it close the Tier 0 bypass class within §3?
    - **Scored columns, 1–5:** closes the §6 defects ×2; portability and distribution ×2; migration risk ×2; maintainability ×2; latency ×1.
    - **Score anchors:** 1 = worse or no effect, 3 = meets target, 5 = materially exceeds target; "?" = unknown, unscored.
