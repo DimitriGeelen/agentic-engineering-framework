@@ -1,13 +1,17 @@
 ---
 id: T-3660
-name: "fw serve / watchtower.sh does not detach: Watchtower dies with its launching shell; --debug is not foreground (P-01 WSL F-16, F-17)"
+name: "fw serve / watchtower.sh does not detach: Watchtower dies with its launching
+  shell; --debug is not foreground (P-01 WSL F-16, F-17)"
 description: >
-  P-01 instrumented WSL install (2026-09-29, 1.7.0 @29f3b02): the server dies when the launching terminal closes; the launcher had to wrap it in setsid/nohup. Fix in watchtower.sh: a real detached start (and a true foreground --debug), so the P-01 launcher workaround can be removed. Source: docs/reports/T-3659-p01-zero-to-running.md.
+  P-01 instrumented WSL install (2026-09-29, 1.7.0 @29f3b02): the server dies when
+  the launching terminal closes; the launcher had to wrap it in setsid/nohup. Fix
+  in watchtower.sh: a real detached start (and a true foreground --debug), so the
+  P-01 launcher workaround can be removed. Source: docs/reports/T-3659-p01-zero-to-running.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, onboarding, P-01, T-3659]
 components: []
 related_tasks: []
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T15:02:24Z
-last_update: 2026-10-01T15:02:24Z
-date_finished: null
+last_update: 2026-10-01T16:56:56Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-01T15:15:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-01T15:15:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3660: fw serve / watchtower.sh does not detach: Watchtower dies with its launching shell; --debug is not foreground (P-01 WSL F-16, F-17)
@@ -62,8 +94,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproducing test `tests/unit/t3660_watchtower_detach.bats`: starts `bin/watchtower.sh start` (temp PROJECT_ROOT, free port, stubbed ufw) from a launcher shell in its own process group, sends SIGHUP to that whole group (terminal close), and asserts the server still answers `/api/_identity` as ours. Red before the fix.
+- [x] Fix: `do_start` launches the server detached (own session via `setsid` when available, `nohup` + stdin from /dev/null otherwise), so the launching shell's hangup does not reach it.
+- [x] Fix: `start --debug` runs in the foreground (the script execs the server; PID file holds the server's pid, output goes to the terminal); a test asserts the foreground process IS the server (pid file == launcher pid) and that it does not return before the server exits. Because Flask's debug reloader serves from a child of that pid, `stop` now also signals the pid's own children (never a group or port holder); the test asserts `stop` frees the port.
+- [x] No regression: `tests/unit/t3627_watchtower_log_rotate.bats`, `tests/unit/t3282_watchtower_current.bats`, `tests/unit/watchtower_url_no_guess.bats` and `tests/unit/lib_watchtower.bats` stay green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +131,13 @@ date_finished: null
 -->
 
 ## Verification
+
+timeout 300 bats tests/unit/t3660_watchtower_detach.bats > /tmp/.t3660-v1 2>&1 && ! grep -q "^not ok" /tmp/.t3660-v1
+test "$(grep -c '# skip' /tmp/.t3660-v1)" -eq 0
+timeout 400 bats tests/unit/t3627_watchtower_log_rotate.bats tests/unit/t3282_watchtower_current.bats tests/unit/watchtower_url_no_guess.bats tests/unit/lib_watchtower.bats > /tmp/.t3660-v2 2>&1 && ! grep -q "^not ok" /tmp/.t3660-v2
+bash -n bin/watchtower.sh
+# Scoped vendor check: the global --check also reports other concurrent tasks' lib/ drift.
+cmp bin/watchtower.sh .agentic-framework/bin/watchtower.sh
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -240,6 +281,14 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** P-01 WSL install (F-16): closing the terminal that ran `fw serve` killed Watchtower; the launcher had to wrap it in `setsid`/`nohup`. F-17: `fw serve --debug` still backgrounded the server, so "debug" gave no foreground process to watch or Ctrl-C.
+
+**Root cause:** `bin/watchtower.sh do_start` launched the server with a plain `python3 -m web.app ... &`. In a non-interactive script a `&` child stays in the launcher's process group and session and keeps the default SIGHUP disposition, so the hangup a closing terminal delivers to that group terminates it. `--debug` was only forwarded to Flask as a flag; the launch shape was identical.
+
+**Why structurally allowed:** every existing Watchtower test exercises helpers (rotation, identity, url) by sourcing `lib/watchtower.sh`; none started the server through `do_start` and then took away the launching shell. On the framework host Watchtower is started from cron/long-lived sessions whose shells never close, so the defect had no witness until a fresh install opened and closed a terminal.
+
+**Prevention:** `tests/unit/t3660_watchtower_detach.bats` starts the real server through the script and hangs up the launcher's whole process group, asserting survival; a second case pins the foreground `--debug` contract.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -320,3 +369,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3660-fw-serve--watchtowersh-does-not-detach-w.md
 - **Context:** Initial task creation
+
+### 2026-10-01T16:54:02Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

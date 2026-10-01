@@ -85,7 +85,11 @@ do_stop() {
 
     log_info "Stopping Watchtower (PID $pid)..."
 
-    # Graceful shutdown
+    # Graceful shutdown. T-3660: a --debug (foreground) server runs Werkzeug's
+    # reloader, which serves from a CHILD of the pid on file; signal that child
+    # too, or it is orphaned still holding the port. Only children of our own
+    # pid are touched — never a process group, never a port holder.
+    pkill -TERM -P "$pid" 2>/dev/null || true
     kill -TERM "$pid" 2>/dev/null || true
     local timeout=10
     while [ "$timeout" -gt 0 ] && kill -0 "$pid" 2>/dev/null; do
@@ -97,6 +101,7 @@ do_stop() {
     # Force kill if still running
     if kill -0 "$pid" 2>/dev/null; then
         log_warn "Graceful shutdown failed. Sending SIGKILL..."
+        pkill -KILL -P "$pid" 2>/dev/null || true
         kill -KILL "$pid" 2>/dev/null || true
         sleep 1
     fi
@@ -217,8 +222,29 @@ do_start() {
     export PROJECT_ROOT
     log_info "Starting Watchtower on port $port (project: $PROJECT_ROOT)..."
     cd "$FRAMEWORK_ROOT"
+
+    # T-3660 (P-01 F-17): --debug is a FOREGROUND run. Exec the server so this
+    # process IS the server: output goes to the terminal, Ctrl-C stops it, and
+    # the pid file names it (exec keeps $$), so `stop` works from another shell.
+    if [ -n "$debug_flag" ]; then
+        echo "$$" > "$PID_FILE"
+        printf '%s\n' "$port" > "$PORT_FILE"
+        printf '%s\n' "http://localhost:${port}" > "$URL_FILE"
+        log_info "Foreground (--debug): output below, Ctrl-C to stop."
+        exec python3 -m web.app --port "$port" --debug
+    fi
+
     watchtower_rotate_log "$LOG_FILE" 3  # T-3627: rotate, never truncate the evidence
-    PROJECT_ROOT="$PROJECT_ROOT" python3 -m web.app --port "$port" $debug_flag > "$LOG_FILE" 2>&1 &
+    # T-3660 (P-01 F-16): detach for real. A plain `&` child stays in the
+    # launcher's process group and session, so closing the terminal (SIGHUP to
+    # that group) killed the server. setsid gives it its own session — it is
+    # not a group leader here (no job control), so setsid execs in place and
+    # $! is the server's pid. nohup is the fallback where setsid is absent.
+    if command -v setsid >/dev/null 2>&1; then
+        setsid python3 -m web.app --port "$port" < /dev/null > "$LOG_FILE" 2>&1 &
+    else
+        nohup python3 -m web.app --port "$port" < /dev/null > "$LOG_FILE" 2>&1 &
+    fi
     local new_pid=$!
     echo "$new_pid" > "$PID_FILE"
 
