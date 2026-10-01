@@ -16,7 +16,7 @@ description: >
   (an uninitialised marker dir makes the gate fail open, so a naive fixture passes
   vacuously). Triage: T-3639.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -50,7 +50,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T13:22:33Z
-last_update: '2026-10-01T13:30:37Z'
+last_update: 2026-10-01T17:02:20Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -102,8 +102,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Regression test `tests/unit/t3645_hook_root_marker_home.bats` reproduces both 055 paths with an INITIALISED scratch home (.framework.yaml + .tasks + focus): (H2) CLAUDE_PROJECT_DIR unset, HOME=scratch home, cwd under it → fw must not resolve the home; (H3) CLAUDE_PROJECT_DIR valid, HOME unset/different, cwd under the passwd home → fw must resolve CLAUDE_PROJECT_DIR. Red before the fix
+- [x] Fix in `bin/fw`: `_project_root_is_stale` also treats the passwd home (getent/pwd, canonicalised) as stale; the `find_project_root` fallback applies the staleness test and, when stale, the project that contains this fw copy wins (vendored `.agentic-framework/` parent, or a self-hosting framework repo)
+- [x] Fix in `agents/context/check-active-task.sh`: the "No active task" block names the project root and focus file it read
+- [x] T-2446 stays pinned: cwd inside a genuine other project still wins over CLAUDE_PROJECT_DIR (asserted in the new test)
+- [x] No regression: `tests/unit/test_project_root_discovery.py` (or equivalent existing root-resolution suites) and the check-active-task bats suites green; vendored copies synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -137,6 +140,12 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bats tests/unit/t3645_hook_root_marker_home.bats
+bats tests/unit/t2390_project_root_claude_dir.bats tests/unit/t2391_project_root_inherited_stale.bats tests/unit/t2446_project_root_cwd_consistency.bats tests/unit/check_active_task_cwd_resolution.bats tests/unit/t3285_nested_fw_cross_project.bats
+python3 -m pytest -q tests/unit/test_project_root_discovery.py
+cmp bin/fw .agentic-framework/bin/fw
+cmp agents/context/check-active-task.sh .agentic-framework/agents/context/check-active-task.sh
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -266,19 +275,15 @@ bvp_scores_proposed:
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** (reported by 055-agentic-fleet-cockpit, pickup P-008, 055 T-349) after a `cd` into a scratch dir under /root/.claude/jobs/…, check-active-task refused every tool call with "No active task" although focus.yaml held a task. Reproduced here: `fw version` prints `Project: /root` (H3) or the scratch home (H2).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** two gaps in bin/fw's PROJECT_ROOT resolution. (H2) when CLAUDE_PROJECT_DIR is unusable, the `find_project_root` fallback result was taken with no staleness test, so a marker-bearing home won. (H3) `_project_root_is_stale` recognised a home only by comparing against `$HOME`; with HOME unset or different in the hook env, /root (which carries .framework.yaml + .tasks on this host too) read as a genuine other project and T-2446's cwd-wins rule picked it.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** the T-2391/T-2446 tests all set HOME to the poison home, so the "home" signature and `$HOME` were always the same thing in the suite; no test ran with HOME absent/different, or with CLAUDE_PROJECT_DIR unusable from under a home. The gate's "No active task" message did not name the root it read, so the mis-resolution looked like a missing focus.
+
+**Prevention:** `tests/unit/t3645_hook_root_marker_home.bats` covers H2 (both unusable and unset CLAUDE_PROJECT_DIR, via a real vendored fw copy), H3 (HOME unset and HOME elsewhere, against the real passwd home; skips on hosts whose home has no markers), pins T-2446, and asserts the block now names the project root and focus file — so the next mis-resolution is self-describing.
+
+Credit: diagnosis, fix shape and test design by 055-agentic-fleet-cockpit (T-349, OBS-071); ported here.
 
 ## Evolution
 
@@ -360,3 +365,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3645-hooks-resolve-projectroot-to-a-marker-be.md
 - **Context:** Initial task creation
+
+### 2026-10-01T17:02:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

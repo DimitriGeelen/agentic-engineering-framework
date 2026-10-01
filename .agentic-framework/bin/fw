@@ -182,8 +182,36 @@ _project_root_is_stale() {
         canon_home="$(cd "$HOME" 2>/dev/null && pwd -P)" || canon_home="$HOME"
         [ "$canon_pr" = "$canon_home" ] && return 0
     fi
+    # T-3645 (ported from 055-agentic-fleet-cockpit T-349, pickup P-008): the home
+    # from the password database, for hook environments where HOME is unset or points
+    # elsewhere. A home carrying framework markers (/root/.framework.yaml, /root/.tasks)
+    # is never the project a hook is guarding.
+    _passwd_home_canon
+    [ -n "$_FW_PASSWD_HOME" ] && [ "$(cd "$pr" 2>/dev/null && pwd -P)" = "$_FW_PASSWD_HOME" ] && return 0
     [ -f "$pr/.framework.yaml" ] || [ -d "$pr/.tasks" ] || return 0   # no marker → stale
     return 1                            # real project root, not $HOME → keep (env wins)
+}
+
+# T-3645: canonical passwd home of the current uid, looked up once per process
+# into _FW_PASSWD_HOME (call without $(...) so the cache survives). getent first
+# (no interpreter start-up on every hook call); python3 where getent is absent
+# (macOS). Empty when neither resolves.
+_FW_PASSWD_HOME=""
+_FW_PASSWD_HOME_DONE=0
+_passwd_home_canon() {
+    [ "$_FW_PASSWD_HOME_DONE" -eq 0 ] || return 0
+    _FW_PASSWD_HOME_DONE=1
+    local h=""
+    if command -v getent >/dev/null 2>&1; then
+        h="$(getent passwd "$(id -u)" 2>/dev/null | cut -d: -f6)" || h=""
+    fi
+    if [ -z "$h" ]; then
+        h="$(python3 -c 'import os,pwd; print(pwd.getpwuid(os.getuid()).pw_dir)' 2>/dev/null)" || h=""
+    fi
+    if [ -n "$h" ]; then
+        _FW_PASSWD_HOME="$(cd "$h" 2>/dev/null && pwd -P)" || _FW_PASSWD_HOME=""
+    fi
+    return 0
 }
 
 # Resolve PROJECT_ROOT
@@ -232,6 +260,18 @@ if [ -z "${PROJECT_ROOT:-}" ] || _project_root_is_stale "${PROJECT_ROOT:-}"; the
         unset _cwd_root
     else
         PROJECT_ROOT=$(find_project_root) || true
+        # T-3645 (ported from 055 T-349): the walk result gets the same staleness test
+        # as an inherited root. When it lands on a home (stale) and this fw is a
+        # vendored copy inside a real project, that project is the one being guarded.
+        if [ -n "${PROJECT_ROOT:-}" ] && _project_root_is_stale "$PROJECT_ROOT"; then
+            _vendor_dir="$(cd "$FW_BIN_DIR/.." 2>/dev/null && pwd)"
+            _vendor_parent="$(dirname "$_vendor_dir")"
+            if [ "$(basename "$_vendor_dir")" = ".agentic-framework" ] && \
+               { [ -f "$_vendor_parent/.framework.yaml" ] || [ -d "$_vendor_parent/.tasks" ]; }; then
+                PROJECT_ROOT="$_vendor_parent"
+            fi
+            unset _vendor_dir _vendor_parent
+        fi
     fi
 fi
 

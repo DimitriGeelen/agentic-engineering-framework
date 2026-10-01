@@ -640,6 +640,9 @@ fi
 if [ -z "$CURRENT_TASK" ]; then
     echo "" >&2
     echo "BLOCKED: No active task. Framework rule: nothing gets done without a task." >&2
+    # T-3645 (ported from 055 T-349): name where the gate looked, so a mis-resolved
+    # root (e.g. a marker-bearing home after the cwd left the project) is visible.
+    echo "  (project root: $PROJECT_ROOT; focus file: $FOCUS_FILE)" >&2
     echo "" >&2
     echo "To unblock:" >&2
     echo "  1. Create a task:  $(_fw_cmd) task create --name '...' --type build --start" >&2
