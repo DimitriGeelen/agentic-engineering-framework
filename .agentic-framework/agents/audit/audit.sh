@@ -144,6 +144,11 @@ CRONEOF
             # remains only for pre-T-448 consumer projects with no registry.
             if [ -f "$PROJECT_ROOT/.context/cron-registry.yaml" ]; then
                 shift
+                # T-3626: cd first. paths.sh set _FW_PATHS_DERIVED_BY, so the
+                # nested fw (T-3285) re-anchors to the cwd project — without
+                # this, an explicit PROJECT_ROOT run from another tree installs
+                # THAT tree's crontab.
+                cd "$PROJECT_ROOT" || exit 1
                 exec "$FW_PATH" cron install "$@"
             fi
 
