@@ -52,6 +52,27 @@ YAML
     chmod +w "$proj/.agentic-framework/lib/marker.sh"
 }
 
+# T-3624: since T-2713 (3051b45bd) "ahead" is decided by git ancestry, not by
+# version-string order — a bare pin with no version_sha and no v<ver> tag is
+# `undecidable`, which proceeds by default. Make the consumer genuinely ahead:
+# record a version_sha whose parent is framework HEAD. The commit lives in a
+# scratch object dir reached through GIT_ALTERNATE_OBJECT_DIRECTORIES, so the
+# live repo's object store is never written.
+make_ahead_sha() {
+    local proj="$1"
+    local objs="$TEST_TEMP_DIR/objects"
+    mkdir -p "$objs"
+    local live_objs
+    live_objs="$(cd "$FRAMEWORK_ROOT" && cd "$(git rev-parse --git-common-dir)" && pwd)/objects"
+    local sha
+    sha=$(GIT_OBJECT_DIRECTORY="$objs" GIT_ALTERNATE_OBJECT_DIRECTORIES="$live_objs" \
+          GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@t GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@t \
+          git -C "$FRAMEWORK_ROOT" commit-tree "HEAD^{tree}" -p HEAD -m "t3624 ahead")
+    [ -n "$sha" ]
+    echo "version_sha: $sha" >> "$proj/.framework.yaml"
+    export GIT_ALTERNATE_OBJECT_DIRECTORIES="$objs"
+}
+
 # ── Source-level pins ──
 
 @test "T-1912: lib/upgrade.sh contains the T-1912 precheck marker" {
@@ -89,6 +110,7 @@ YAML
 @test "T-1912: do_upgrade refuses when consumer version is AHEAD of framework" {
     local proj="$TEST_TEMP_DIR/consumer"
     make_ahead_consumer "$proj" "1.6.260"
+    make_ahead_sha "$proj"
     run do_upgrade "$proj"
     [ "$status" -ne 0 ]
     [[ "$output" == *"REFUSED"* ]] || [[ "$output" == *"AHEAD"* ]]
@@ -97,6 +119,7 @@ YAML
 @test "T-1912: refusal at precheck leaves runtime files untouched" {
     local proj="$TEST_TEMP_DIR/consumer"
     make_ahead_consumer "$proj" "1.6.260"
+    make_ahead_sha "$proj"
     local marker_before
     marker_before=$(cat "$proj/.agentic-framework/lib/marker.sh")
     run do_upgrade "$proj"
