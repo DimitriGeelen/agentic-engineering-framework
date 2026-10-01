@@ -22,6 +22,12 @@
 - **Probe:** `fw sidecar e2e --peer 055-agentic-fleet-cockpit`, sent 12:37Z. It is expected to time out until 055 upgrades. Its result is evidence for IW-1/IW-2.
 - **Not done:** upgrading 055 from here. 055 has its own live agent working in that repo; running an upgrade into its checkout from this session risks colliding with that session, and the repo is 055's to change.
 
+### Probe result and 055's reply (2026-10-01)
+- **e2e probe a4ef8725:** verdict PENDING after 1800s. No ACK came back, because 055 cannot answer through `fw sidecar` yet. But 055 confirmed (cockpit:harness-access 4) that its interim listener, `tools/check-messages.py --wait` (watching its inbox topic, its DMs and its topics), received the probe within seconds. That is the **first confirmed AEF → 055 delivery**.
+- **055's upgrade blocker:** its vendored v1.6.768 carries about 18 local fixes posted to framework:pickup (P-003..P-016) that AEF never read; an upgrade would silently drop them. Accepted. They are triaged first in **T-3639**, then 055 upgrades. Their fixes reach 055 only through the next release cut (operator's decision); meanwhile 055 can upgrade to v1.7.0 and re-apply what the table marks as unreleased. Replied on cockpit:harness-access 5.
+- **Lesson for IW-1/IW-4:** the unread backlog is not just a communication cost. It blocks a consumer's upgrade path, because fixes upstreamed by message and never read become fixes a consumer must keep carrying locally.
+
 ## Dialogue Log
+- 2026-10-01, operator: "Why should I abandon Arc-008?" On re-checking, the abandonment recommendation in T-3535 §4 item 3 was wrong. Under IW-2 the reviewer escalates some inceptions to the operator, and arc-008's headline (two-click decide plus feedback the agent reads next session) is the operator side of exactly those. The revised recommendation is to re-scope it, not abandon it. The operator decides; nothing has been changed on arc-008.
 - 2026-10-01, operator: relayed 055's finding and asked AEF to read framework:pickup 256–257 and acknowledge. Done (offset 258).
 - 2026-10-01, operator: "focus also on answering to our workflow fleet thingy", then "help our workflow fleet manager agents making sure its sidecar works. It's properly set up." This led to the diagnosis and fix steps above.
