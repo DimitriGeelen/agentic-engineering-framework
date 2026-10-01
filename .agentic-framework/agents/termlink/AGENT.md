@@ -55,7 +55,8 @@ Shows dispatch workers with status + all TermLink sessions.
 ### cleanup — Deregister and close spawned sessions
 
 ```bash
-fw termlink cleanup
+fw termlink cleanup --dry-run   # plan only (T-3651)
+fw termlink cleanup --yes       # consent to removal; without it: tty prompt, or exit 3 when non-interactive
 ```
 
 **3-phase cleanup (T-074/T-143 lesson — NEVER close Terminal windows directly):**
@@ -108,7 +109,7 @@ fw termlink result worker-1
 ## Budget Rules
 
 - **Do not spawn new sessions when context > 60%**
-- **Always cleanup before session end** — `fw termlink cleanup`
+- **Always cleanup before session end** — `fw termlink cleanup --dry-run`, then `--yes` only when no uncollected result is listed (T-3651)
 - **Max 5 parallel workers** — same as sub-agent dispatch protocol
 - **Leave 40K tokens headroom** before dispatching
 

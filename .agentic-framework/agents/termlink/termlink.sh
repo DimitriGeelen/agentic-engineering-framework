@@ -442,10 +442,38 @@ cmd_status() {
 
 cmd_cleanup() {
     local orphan_count=0 removed_count=0 kept_count=0
+    local dry_run=false assume_yes=false
+
+    # T-3651: parse arguments BEFORE touching anything. This function used to ignore its
+    # arguments, so `--help` and `--dry-run` ran the full destructive cleanup.
+    while [ $# -gt 0 ]; do
+        case "$1" in
+            -h|--help)
+                cat <<'USAGE'
+Usage: fw termlink cleanup [--dry-run|-n] [--yes|-y]
+
+Remove finished dispatch workers' directories and terminate orphaned worker processes.
+Active workers and unfinalised review workers are never removed.
+
+  --dry-run, -n   print the plan (dirs to remove, PIDs to signal, uncollected results); change nothing
+  --yes, -y       consent to the removal/termination without a prompt
+  --help, -h      this text
+
+A result is "collected" once `fw termlink result <worker>` has printed it. Without --yes the
+removal needs an interactive confirmation; with no tty it refuses (exit 3) and removes nothing.
+Exit codes: 0 ok, 2 unknown option, 3 consent required.
+USAGE
+                return 0 ;;
+            -n|--dry-run) dry_run=true ;;
+            -y|--yes) assume_yes=true ;;
+            *) echo "fw termlink cleanup: unknown option '$1' (try --help)" >&2; return 2 ;;
+        esac
+        shift
+    done
 
     [ -d "$DISPATCH_DIR" ] || {
         echo "No dispatch workers to clean up."
-        command -v termlink >/dev/null 2>&1 && termlink clean 2>/dev/null || true
+        [ "$dry_run" = true ] || { command -v termlink >/dev/null 2>&1 && termlink clean 2>/dev/null || true; }
         return 0
     }
 
@@ -453,7 +481,7 @@ cmd_cleanup() {
     # `rm -rf "$DISPATCH_DIR"`, which took the dirs of the ACTIVE workers it had just
     # skipped (result, exit_code, meta, completion signing). Only dirs listed in
     # $remove are ever deleted: finished (exit_code present) or orphaned-and-terminated.
-    local remove=()
+    local remove=() uncollected=() orphan_plan=()
     for wdir in "$DISPATCH_DIR"/*/; do
         [ -d "$wdir" ] || continue
         local wname
@@ -466,6 +494,10 @@ cmd_cleanup() {
         if [ -f "$wdir/exit_code" ]; then
             if _worker_done "$wdir"; then
                 remove+=("$wdir")
+                # T-3651: a result nobody has read is the one thing cleanup must not destroy silently.
+                if [ ! -f "$wdir/collected" ] && { [ -s "$wdir/result.md" ] || [ -s "$wdir/result.jsonl" ]; }; then
+                    uncollected+=("$wdir")
+                fi
             else
                 echo -e "${YELLOW}KEPT${NC}    Worker '$wname' exited but its review completion is not finalised yet — not removed"
                 kept_count=$((kept_count + 1))
@@ -520,15 +552,51 @@ cmd_cleanup() {
             continue
         fi
 
-        echo -e "${YELLOW}ORPHAN${NC}  Worker '$wname' has running processes without TermLink session"
-        for pid in $worker_pids; do
-            local cmd_line
-            cmd_line=$(ps -p "$pid" -o args= 2>/dev/null || echo "unknown")
-            echo "  PID $pid: $cmd_line"
-            kill "$pid" 2>/dev/null && echo "  -> Sent SIGTERM to $pid" || true
-        done
+        # T-3651: the scan only PLANS. Signalling happens after the consent gate below.
+        orphan_plan+=("$wdir|$(echo $worker_pids)")
         orphan_count=$((orphan_count + 1))
         remove+=("$wdir")
+    done
+
+    # ---- plan ----
+    local d
+    for d in "${remove[@]}"; do
+        echo "PLAN    remove $(basename "$d")$([[ " ${uncollected[*]-} " == *" $d "* ]] && echo '  [UNCOLLECTED result]')"
+    done
+    local entry
+    for entry in "${orphan_plan[@]}"; do
+        echo -e "${YELLOW}ORPHAN${NC}  Worker '$(basename "${entry%%|*}")': would SIGTERM PID(s) ${entry#*|}"
+    done
+    echo "Plan: remove ${#remove[@]} dir(s) (${#uncollected[@]} with uncollected results), terminate ${orphan_count} orphan(s), keep $kept_count."
+
+    if [ "$dry_run" = true ]; then
+        echo "Dry run — nothing changed."
+        return 0
+    fi
+
+    # ---- consent gate ----
+    if [ "${#remove[@]}" -gt 0 ] && [ "$assume_yes" != true ]; then
+        if [ -t 0 ] && [ -t 1 ]; then
+            local reply=""
+            read -r -p "Proceed? [y/N] " reply || true
+            case "$reply" in
+                y|Y|yes|YES) ;;
+                *) echo "Aborted — nothing changed."; return 1 ;;
+            esac
+        else
+            echo "fw termlink cleanup: refusing — removal needs consent and there is no tty. Re-run with --yes (or --dry-run to inspect). Nothing was removed or signalled." >&2
+            return 3
+        fi
+    fi
+
+    # ---- act ----
+    for entry in "${orphan_plan[@]}"; do
+        echo -e "${YELLOW}ORPHAN${NC}  Worker '$(basename "${entry%%|*}")' has running processes without TermLink session"
+        local pid
+        for pid in ${entry#*|}; do
+            echo "  PID $pid: $(ps -p "$pid" -o args= 2>/dev/null || echo unknown)"
+            kill "$pid" 2>/dev/null && echo "  -> Sent SIGTERM to $pid" || true
+        done
     done
 
     [ "$orphan_count" -gt 0 ] && echo -e "${YELLOW}Cleaned $orphan_count orphaned worker(s)${NC}"
@@ -1608,6 +1676,8 @@ cmd_result() {
 
     if [ -f "$wdir/result.md" ]; then
         cat "$wdir/result.md"
+        # T-3651: record collection so `fw termlink cleanup` knows this result has been read.
+        date -u +%Y-%m-%dT%H:%M:%SZ > "$wdir/collected" 2>/dev/null || true
     else
         echo -e "${YELLOW}WARN${NC}  No result file yet for worker '$name'"
         if [ -f "$wdir/stderr.log" ] && [ -s "$wdir/stderr.log" ]; then
@@ -1696,7 +1766,8 @@ cmd_help() {
     echo "  fw termlink dispatch --task T-042 --name worker-1 --prompt 'Analyze auth module'
   fw termlink dispatch --task T-042 --name tl-worker --project /opt/termlink --prompt '...'"
     echo "  fw termlink wait --all --timeout 300"
-    echo "  fw termlink cleanup"
+    echo "  fw termlink cleanup --dry-run     # plan only"
+    echo "  fw termlink cleanup --yes         # consent to removal (T-3651)"
 }
 
 # T-1669 Step 2 — `fw termlink record-outcome --model X --task-type Y --exit-code N`
