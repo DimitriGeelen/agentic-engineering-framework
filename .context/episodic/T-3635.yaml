@@ -1,0 +1,108 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3635: T-3535 build A: write .context/project/objectives.yaml (v2 §1 + O-6) and set supports: on every arc per §2/§4; park capability-overlay
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-01T13:11:11Z
+# ============================================================================
+
+task_id: T-3635
+task_name: "T-3535 build A: write .context/project/objectives.yaml (v2 §1 + O-6) and set supports: on every arc per §2/§4; park capability-overlay"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-01T12:51:00Z
+completed: 2026-10-01T13:10:44Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-01T15:10:39+02:00
+last_commit: 2026-10-01T15:10:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  objectives.yaml (T-3535 v2 §1 + O-6, GO 2026-10-01) and supports: on every arc per §2/§4
+
+# Key outcomes
+outcomes:
+  - '`.context/project/objectives.yaml` exists, parses as YAML, and carries headline, O-1..O-5 and out_of_scope verbatim from docs/reports/T-3535-objectives-v2.md §1, plus O-6 verbatim from §4 item 4; header comment names the source (T-3535, v2 doc, GO 2026-10-01) and IW-1 ("authored intent; progress is derived, never written here")'
+  - 'Every arc YAML in `.context/arcs/` except inception-review-loop carries `supports:` per v2 §2 and §4 (NONE → `supports: []`; ewcr-arc0-contract-evidence → [O-1]); inception-review-loop is left untouched (operator abandons it via Watchtower)'
+  - 'No arc-key validator rejects `supports:` (checked: grep of lib/agents/web, `fw audit` arc sections); if one would, the key is added to its schema'
+  - 'capability-overlay parked: via an `fw arc` verb if one exists, otherwise recorded in Decisions that no parking verb exists'
+  - 'Directive 4: `fw upgrade`, `fw vendor` and `fw init` do not copy `.context/project/objectives.yaml` into a consumer (proved by grep of their copy lists and/or fresh-machine simulation fixture)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-01 — arc field name: `supports:`'
+    chose: '`supports: [O-n, ...]` on each arc YAML.'
+    rationale: 'the inception originally called it `serves_objective`; v2 (§1 O-3 measure, §2 table header) settled on `supports:`, and the T-3563 pilot had already seeded `supports: []` on three arcs. One name, matching the ratified doc.'
+    alternatives_rejected: ['`serves_objective` (superseded by v2); a scalar field (arcs map to more than one objective, e.g. dispatch-safety → O-3, O-5).']
+  - decision: '2026-10-01 — no arc-key schema to extend'
+    chose: 'add the key with no schema change.'
+    rationale: 'nothing validates arc YAML keys — `grep -rn supports lib agents web` finds no arc consumer, no arc key allowlist exists, and `fw arc list` loads all 20 arcs with the key present.'
+    alternatives_rejected: ['adding a schema just to carry this key (out of scope; no validator exists to extend).']
+  - decision: '2026-10-01 — parking capability-overlay'
+    chose: '`supports: []` only; status left `in-progress`. Parking is recorded here, not applied.'
+    rationale: '`fw arc` has no horizon or park verb (verbs: create, start, focus, list, show, tag, close, review, abandon, *-driver, show-suggestions), and arc YAMLs carry no `horizon:` field. Inventing one by hand-edit would be a field no tool reads. `abandon` is the wrong action (v2 §4.1 says park, not abandon) and is operator-only anyway.'
+    alternatives_rejected: ['hand-adding `horizon: later` (unread by any tool → false signal); `fw arc abandon` (wrong action, agent-gated).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/arcs/arc-020.yaml'
+  - '.context/arcs/arc-grooming.yaml'
+  - '.context/arcs/capability-overlay.yaml'
+  - '.context/arcs/continuous-run.yaml'
+  - '.context/arcs/designer-corpus.yaml'
+  - '.context/arcs/dispatch-safety.yaml'
+  - '.context/arcs/embeddings-strategy.yaml'
+  - '.context/arcs/ewcr-arc0-contract-evidence.yaml'
+  - '.context/arcs/horizon-axis-hardening.yaml'
+  - '.context/arcs/ladder-trigger-producer.yaml'
+  - '.context/arcs/onboarding-curriculum.yaml'
+  - '.context/arcs/onboarding-shape-detection.yaml'
+  - '.context/arcs/parallel-execution-aef.yaml'
+  - '.context/arcs/payload-mediation.yaml'
+  - '.context/arcs/project-shape-resilience.yaml'
+  - '.context/arcs/readme-first-run.yaml'
+  - '.context/arcs/value-prioritisation.yaml'
+  - '.context/arcs/watchtower-redesign.yaml'
+  - '.context/project/objectives.yaml'
+  - '.tasks/active/T-3635-t-3535-build-a-write-contextprojectobjec.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T15:10:39'
+    action: 'T-3635: objectives.yaml (T-3535 v2 §1 + O-6, GO 2026-10-01) and supports: on every arc per §2/§4'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 19 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [T-3535, objectives]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 19
+  commits: 1
+  files_changed: 20
+  lines_added: 511
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3635-t-3535-build-a-write-contextprojectobjec.md
+generated_by: context-agent-hybrid
