@@ -136,11 +136,15 @@ class ReceiverHandler(http.server.BaseHTTPRequestHandler):
             self.wfile.write(json.dumps({"error": "Not found"}).encode())
 
 
-def start_receiver_server(port: int | None = None, host: str = "127.0.0.1") -> tuple[int, str]:
+def start_receiver_server(port: int | None = None, host: str = "127.0.0.1", foreground: bool = False) -> tuple[int, str]:
     """Start the receiver HTTP server.
 
     Returns (port, url) tuple.
     Writes triple-file (pid/port/url) for durability.
+
+    If foreground=False (default), starts in a daemon thread (suitable for integration
+    into an existing process). If foreground=True, blocks indefinitely serving requests
+    (suitable for subprocess/standalone execution).
     """
     if port is None:
         port = lifecycle.find_free_port()
@@ -153,9 +157,13 @@ def start_receiver_server(port: int | None = None, host: str = "127.0.0.1") -> t
     pid = os.getpid()
     lifecycle.write_triple_file(pid, port, url)
 
-    # Start server in a daemon thread
-    thread = threading.Thread(target=server.serve_forever, daemon=True)
-    thread.start()
+    if foreground:
+        # Foreground mode: serve_forever (blocks)
+        server.serve_forever()
+    else:
+        # Daemon thread mode: non-blocking
+        thread = threading.Thread(target=server.serve_forever, daemon=True)
+        thread.start()
 
     return port, url
 

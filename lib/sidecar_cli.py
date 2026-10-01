@@ -24,7 +24,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from lib.sidecar import circuit, delivery, dm, e2e, inbox, outbox, retry, status as status_mod  # noqa: E402
-from lib.sidecar import termlink_transport as transport  # noqa: E402
+from lib.sidecar import termlink_transport as transport, receiver, lifecycle, http_server, adapter  # noqa: E402
 
 
 def cmd_whoami(args) -> int:
@@ -378,6 +378,206 @@ def cmd_inbox_stale(args) -> int:
     return 0
 
 
+def cmd_receiver_start(args) -> int:
+    """Start the per-agent receiver HTTP server as a subprocess.
+
+    Spawns a background process running the HTTP server.
+    Writes triple-file (pid/port/url) and generates an auth token.
+    Token is written to .context/sidecar/receiver.token (mode 0600).
+    Returns 0 on success, 1 if already running, 2 on error.
+    """
+    import subprocess
+    import secrets
+    from pathlib import Path
+
+    # Check if already running
+    info = lifecycle.read_triple_file()
+    if info and lifecycle.is_receiver_alive(info):
+        if not args.quiet:
+            print(f"receiver already running: pid={info['pid']} url={info['url']}")
+        return 1
+
+    # Clean up stale triple-file if present
+    if info:
+        lifecycle.clear_triple_file()
+
+    # Find an available port now (so we know what to report)
+    if args.port:
+        port = args.port
+    else:
+        port = lifecycle.find_free_port()
+
+    try:
+        # Spawn subprocess that runs the receiver in foreground mode
+        script = (
+            "import sys; "
+            "sys.path.insert(0, %r); "
+            "from lib.sidecar import http_server; "
+            "http_server.start_receiver_server(port=%d, foreground=True)"
+        ) % (str(Path(__file__).resolve().parent.parent), port)
+
+        # Spawn as a subprocess (not a daemon so it persists)
+        proc = subprocess.Popen(
+            [sys.executable, "-c", script],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            start_new_session=True  # Detach from parent
+        )
+
+        # Give the subprocess time to write the triple-file
+        import time
+        time.sleep(0.5)
+
+        # Verify it started by reading the triple-file
+        info = lifecycle.read_triple_file()
+        if not info:
+            proc.terminate()
+            print(f"receiver: subprocess started (pid={proc.pid}) but failed to write triple-file",
+                  file=sys.stderr)
+            return 2
+
+        # Verify the process is actually running
+        if not lifecycle.is_receiver_alive(info):
+            print(f"receiver: subprocess exited unexpectedly", file=sys.stderr)
+            return 2
+
+        # Generate and write auth token
+        token = secrets.token_hex(32)  # 64 chars, 256 bits
+        token_path = receiver._receiver_dir().parent / "receiver.token"
+        try:
+            with open(token_path, "w", encoding="utf-8") as fh:
+                fh.write(token)
+                fh.flush()
+                os.fsync(fh.fileno())
+            # Restrict to owner only (0600)
+            os.chmod(token_path, 0o600)
+        except (OSError, IOError) as e:
+            proc.terminate()
+            lifecycle.clear_triple_file()
+            print(f"receiver: failed to write token: {e}", file=sys.stderr)
+            return 2
+
+        if not args.quiet:
+            print(f"receiver started: pid={info['pid']} port={port}")
+            print(f"  url: {info['url']}")
+            print(f"  token: {token_path} (mode 0600)")
+
+        return 0
+    except Exception as e:
+        print(f"receiver: failed to start: {e}", file=sys.stderr)
+        return 2
+
+
+def cmd_receiver_stop(args) -> int:
+    """Stop the receiver HTTP server subprocess.
+
+    Terminates the process and removes the triple-file.
+    Returns 0 if stopped or not running, 2 on error.
+    """
+    import signal
+
+    info = lifecycle.read_triple_file()
+    if not info:
+        if not args.quiet:
+            print("receiver not running (no triple-file)")
+        return 0
+
+    pid = info.get("pid")
+
+    # Try to terminate the process
+    if pid:
+        try:
+            if os.name == "posix":
+                # On Unix, send SIGTERM first, then SIGKILL if needed
+                try:
+                    os.kill(pid, signal.SIGTERM)
+                except ProcessLookupError:
+                    pass  # Already dead
+                # Give it a moment to die gracefully
+                import time
+                time.sleep(0.5)
+                try:
+                    os.kill(pid, 0)  # Check if still alive
+                    os.kill(pid, signal.SIGKILL)  # Force kill
+                except OSError:
+                    pass  # Already dead
+            else:
+                # On Windows
+                import subprocess
+                subprocess.run(["taskkill", "/PID", str(pid), "/F"],
+                              capture_output=True, timeout=2)
+        except Exception as e:
+            print(f"receiver: warning: failed to kill pid {pid}: {e}", file=sys.stderr)
+
+    # Remove the triple-file
+    try:
+        lifecycle.clear_triple_file()
+        if not args.quiet:
+            print(f"receiver stopped: was pid={pid}")
+        return 0
+    except Exception as e:
+        print(f"receiver: failed to clean up: {e}", file=sys.stderr)
+        return 2
+
+
+def cmd_receiver_status(args) -> int:
+    """Check receiver status: running, port, url.
+
+    Returns 0 if running and responsive, 1 if not running, 2 on error.
+    """
+    info = lifecycle.read_triple_file()
+    if not info:
+        if not args.json:
+            print("receiver not running")
+        else:
+            print(json.dumps({"status": "not_running"}))
+        return 1
+
+    # Check if process is alive
+    if not lifecycle.is_receiver_alive(info):
+        if not args.json:
+            print(f"receiver stale: pid={info['pid']} (process not found)")
+        else:
+            print(json.dumps({"status": "stale", "pid": info["pid"], "url": info["url"]}))
+        lifecycle.clear_triple_file()
+        return 1
+
+    # Try to probe the HTTP server
+    try:
+        import urllib.request
+        url = f"{info['url']}/health"
+        req = urllib.request.Request(url, method="GET")
+        with urllib.request.urlopen(req, timeout=2) as resp:
+            if resp.status == 200:
+                data = json.loads(resp.read().decode("utf-8"))
+                if data.get("status") == "ok":
+                    if not args.json:
+                        print(f"receiver running: pid={info['pid']} port={info['port']}")
+                        print(f"  url: {info['url']}")
+                    else:
+                        print(json.dumps({
+                            "status": "running",
+                            "pid": info["pid"],
+                            "port": info["port"],
+                            "url": info["url"],
+                            "healthy": True
+                        }))
+                    return 0
+    except Exception as e:
+        if not args.json:
+            print(f"receiver unresponsive: pid={info['pid']} ({e})", file=sys.stderr)
+        else:
+            print(json.dumps({
+                "status": "unresponsive",
+                "pid": info["pid"],
+                "url": info["url"],
+                "error": str(e)
+            }))
+        return 1
+
+    return 1
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="fw sidecar",
                                      description=__doc__.split("\n")[0])
@@ -463,6 +663,24 @@ def build_parser() -> argparse.ArgumentParser:
     ibs.add_argument("--threshold-hours", type=float, default=24.0)
     ibs.add_argument("--json", action="store_true")
     ibs.set_defaults(func=cmd_inbox_stale)
+
+    # T-3693: receiver start/stop/status — manage the per-agent HTTP receiver process
+    recv = sub.add_parser("receiver", help="manage the per-agent receiver HTTP server")
+    recv_sub = recv.add_subparsers(dest="receiver_cmd", required=True)
+
+    recv_start = recv_sub.add_parser("start", help="start the receiver HTTP server")
+    recv_start.add_argument("--port", type=int, default=None,
+                            help="bind to this port (default: find available)")
+    recv_start.add_argument("--quiet", action="store_true")
+    recv_start.set_defaults(func=cmd_receiver_start)
+
+    recv_stop = recv_sub.add_parser("stop", help="stop the receiver HTTP server")
+    recv_stop.add_argument("--quiet", action="store_true")
+    recv_stop.set_defaults(func=cmd_receiver_stop)
+
+    recv_status = recv_sub.add_parser("status", help="check receiver status")
+    recv_status.add_argument("--json", action="store_true")
+    recv_status.set_defaults(func=cmd_receiver_status)
 
     return parser
 
