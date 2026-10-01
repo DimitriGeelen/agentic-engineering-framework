@@ -9,12 +9,12 @@ description: >
   reissued P-001. Fix: deliver by default to a channel with a listener or print plainly
   'saved locally, NOT delivered'; count every store in the ID.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, pickup, cross-agent]
-components: []
+components: [lib/pickup.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T08:48:00Z
-last_update: 2026-10-01T13:26:31Z
-date_finished:
+last_update: 2026-10-01T13:30:08Z
+date_finished: 2026-10-01T13:30:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -382,3 +382,20 @@ code, the `sent/` archive and the id allocator counting it (with a mutation leg)
 
 ### 2026-10-01T13:26:31Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-bd3b3ae5
+- **Timestamp:** 2026-10-01T13:30:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 131
+     - evidence: `timeout 300 bats tests/integration/fw_pickup.bats > /tmp/.t3628-i.out 2>&1; test "$(grep -c '^not ok' /tmp/.t3628-i.out)" -le 1 && ! grep '^not ok' /tmp/.t3628-i.out | grep -qv 'envelope has correct f`
+
+### 2026-10-01T13:30:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

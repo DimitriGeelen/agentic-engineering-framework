@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3628: fw pickup send without --remote delivers nothing and does not say so; ID counter ignores sent envelopes (055 finding, framework:pickup 257)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-01T13:30:49Z
+# ============================================================================
+
+task_id: T-3628
+task_name: "fw pickup send without --remote delivers nothing and does not say so; ID counter ignores sent envelopes (055 finding, framework:pickup 257)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T08:48:00Z
+completed: 2026-10-01T13:30:08Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-01T15:29:51+02:00
+last_commit: 2026-10-01T15:29:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pickup send says NOT delivered; delivered envelopes go to sent/, counted by pickup_next_id
+
+# Key outcomes
+outcomes:
+  - 'Reproducer `tests/unit/t3628_pickup_send_delivery.bats`: (a) send without `--remote` prints a "NOT delivered" notice; (b) a failed `termlink remote push` prints "NOT delivered" and exits non-zero; (c) after a successful remote send the envelope sits in `sent/`, not the sender''s inbox; (d) an id held only in `sent/` is not reissued — red before the fix'
+  - 'Fix in `lib/pickup.sh`: notice on every undelivered path, push exit code checked, delivered envelope archived to `sent/`, `sent/` scanned by `pickup_next_id`'
+  - 'No regression: `tests/unit/{lib_pickup,pickup_send_remote_session,pickup_send_yaml_safety,t3052_pickup_id_collision}.bats` green, and `tests/integration/fw_pickup.bats` has no failure other than test 10 (pre-existing since T-2308: asserts quoted scalars `yaml.safe_dump` never emits; filed T-3653)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/pickup.sh'
+  - 'lib/pickup.sh'
+  - '.tasks/active/T-3628-fw-pickup-send-without---remote-delivers.md'
+  - 'tests/unit/t3628_pickup_send_delivery.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T15:29:51'
+    action: 'T-3628: pickup send says NOT delivered; delivered envelopes go to sent/, counted by pickup_next_id'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 282 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, pickup, cross-agent]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 282
+  commits: 1
+  files_changed: 4
+  lines_added: 206
+  lines_removed: 27
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3628-fw-pickup-send-without---remote-delivers.md
+generated_by: context-agent-hybrid
