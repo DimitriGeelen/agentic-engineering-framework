@@ -2,12 +2,14 @@
 id: T-3661
 name: "fw watchtower status exits 0 when Watchtower is stopped (P-01 WSL F-25)"
 description: >
-  P-01 finding F-25: status reports success while nothing runs, so scripts cannot tell. Fix: exit non-zero when stopped (document codes); P-01 launcher worked around it with an /api/_identity probe.
+  P-01 finding F-25: status reports success while nothing runs, so scripts cannot
+  tell. Fix: exit non-zero when stopped (document codes); P-01 launcher worked around
+  it with an /api/_identity probe.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, onboarding, P-01, T-3659]
 components: []
 related_tasks: []
@@ -38,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T15:03:06Z
-last_update: 2026-10-01T15:03:06Z
-date_finished: null
+last_update: 2026-10-01T17:05:22Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +52,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-01T15:15:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-01T15:15:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3661: fw watchtower status exits 0 when Watchtower is stopped (P-01 WSL F-25)
@@ -62,8 +92,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproducing test `tests/unit/t3661_watchtower_status_exit.bats`: `bin/watchtower.sh status` against a temp PROJECT_ROOT with no pid file exits non-zero (3), with a stale pid file exits 1, and with a live server of ours exits 0. Red before the fix.
+- [x] Fix: `do_status` returns LSB-style codes (0 running, 1 stale pid file, 3 not running), documented in the script's help text.
+- [x] No in-repo caller of `watchtower status` breaks on a non-zero stopped exit (callers audited: only `tests/integration/fw_serve.bats`, which asserts output, not rc; it stays green).
+- [x] No regression: `tests/unit/t3660_watchtower_detach.bats`, `tests/unit/t3282_watchtower_current.bats`, `tests/unit/watchtower_url_no_guess.bats`, `tests/unit/lib_watchtower.bats`, `tests/unit/fw_help_watchtower_discoverable.bats` stay green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +129,13 @@ date_finished: null
 -->
 
 ## Verification
+
+timeout 300 bats tests/unit/t3661_watchtower_status_exit.bats > /tmp/.t3661-v1 2>&1 && ! grep -q "^not ok" /tmp/.t3661-v1
+test "$(grep -c '# skip' /tmp/.t3661-v1)" -eq 0
+timeout 500 bats tests/unit/t3660_watchtower_detach.bats tests/unit/t3282_watchtower_current.bats tests/unit/watchtower_url_no_guess.bats tests/unit/lib_watchtower.bats tests/unit/fw_help_watchtower_discoverable.bats tests/integration/fw_serve.bats > /tmp/.t3661-v2 2>&1 && ! grep -q "^not ok" /tmp/.t3661-v2
+bash -n bin/watchtower.sh
+# Scoped vendor check: the global --check also reports other concurrent tasks' lib/ drift.
+cmp bin/watchtower.sh .agentic-framework/bin/watchtower.sh
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -240,6 +279,14 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** P-01 WSL F-25: `fw watchtower status` printed "Watchtower is not running" and exited 0, so the P-01 launcher could not branch on it and had to probe `/api/_identity` itself.
+
+**Root cause:** `bin/watchtower.sh do_status`'s not-running branch only echoes; the function falls off the end with the status of the last `echo`/`if`, which is 0. The verb was written as a human-readable report, never as a predicate.
+
+**Why structurally allowed:** no test ran `status` at all, and no in-repo caller consumed its exit code (callers use `fw watchtower url`/`current` or the identity helpers), so the meaningless 0 had no reader to contradict it until an external script did.
+
+**Prevention:** `tests/unit/t3661_watchtower_status_exit.bats` pins all three codes (running / stale pid / not running), and the codes are documented in the help text so scripts have a contract to rely on.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -320,3 +367,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3661-fw-watchtower-status-exits-0-when-watcht.md
 - **Context:** Initial task creation
+
+### 2026-10-01T17:05:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

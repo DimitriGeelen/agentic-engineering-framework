@@ -372,9 +372,13 @@ do_status() {
         fi
     else
         echo -e "${YELLOW}Watchtower is not running${NC}"
+        # T-3661 (P-01 F-25): status is a predicate scripts branch on, so the
+        # stopped states must not exit 0. LSB init-script codes.
         if [ -f "$PID_FILE" ]; then
             echo "  (Stale PID file exists — will be cleaned on next start)"
+            return 1
         fi
+        return 3
     fi
 }
 
@@ -511,7 +515,7 @@ case "$cmd" in
         echo "  start   [--port N] [--debug]  Start Watchtower"
         echo "  stop                           Stop Watchtower"
         echo "  restart [--port N] [--debug]  Stop then start"
-        echo "  status                         Show current state"
+        echo "  status                         Show current state; exit 0 running, 1 stale PID file, 3 not running (T-3661)"
         echo "  port                           Print current port (triple-file source of truth; T-1376 B5)"
         echo "  url                            Print current URL (triple-file source of truth; T-1376 B5)"
         echo "  current                        Exit 1 if the running process predates web/ source (T-3282)"
