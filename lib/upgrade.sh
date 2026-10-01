@@ -2809,7 +2809,7 @@ _t3113_emit_worktree_advisory() {
     else
         echo ""
         echo -e "  $stale of $count linked worktree(s) run older enforcement than this project."
-        echo -e "  Land and remove:  fw integrate run master --push  (then fw worktree gc)"
+        echo -e "  Land and remove:  fw integrate run bleeding-edge --push  (then fw worktree gc)"
         echo -e "  Or refresh in place: fw upgrade <worktree-path>"
     fi
     return 0  # always 0 — advisory, never blocks the upgrade
