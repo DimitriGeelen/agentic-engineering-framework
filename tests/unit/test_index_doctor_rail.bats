@@ -25,8 +25,22 @@ setup() {
 # doctor smoke test remains below to prove the seam is actually wired in.
 # --------------------------------------------------------------------------
 
+# T-3624: the stale/fresh/zero legs run against a FIXTURE index — a database
+# file aged 30 days, no manifest beside it (source: db_mtime). They used to read
+# the live index, which made the default-threshold leg a claim about how
+# recently someone last rebuilt it: red the moment it was rebuilt (T-3326
+# mutable-corpus anchor).
+stale_fixture_db() {
+    local db="$BATS_TEST_TMPDIR/stale-index/vectors.db"
+    mkdir -p "$(dirname "$db")"
+    : > "$db"
+    touch -d '30 days ago' "$db"
+    echo "$db"
+}
+
 verdict() {
-    bash -c '
+    local db; db=$(stale_fixture_db)
+    VECTOR_DB_PATH="$db" bash -c '
         set -uo pipefail
         source "'"$PROJECT_ROOT"'/lib/config.sh"
         source "'"$PROJECT_ROOT"'/lib/index-health.sh"
@@ -34,10 +48,11 @@ verdict() {
     ' _ "$@"
 }
 
-@test "the real index is stale at the default threshold" {
+@test "a 30-day-old index is stale at the default threshold" {
     run verdict 7
     [[ "$output" == WARN\|* ]]
     [[ "$output" == *"days old"* ]]
+    [[ "$output" == *"source: db_mtime"* ]]   # the fixture, not the live index
 }
 
 @test "the same index passes when the threshold exceeds its age" {
