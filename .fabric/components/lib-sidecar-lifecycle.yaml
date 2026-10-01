@@ -1,0 +1,21 @@
+id: lib/sidecar/lifecycle.py
+name: lifecycle
+type: script
+subsystem: framework-core
+location: lib/sidecar/lifecycle.py
+tags: []
+
+purpose: "arc-011 sidecar receiver lifecycle — start/stop/monitor the HTTP server."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-01
+created_by: unknown

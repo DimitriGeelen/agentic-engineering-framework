@@ -1,0 +1,21 @@
+id: lib/sidecar/adapter.py
+name: adapter
+type: script
+subsystem: framework-core
+location: lib/sidecar/adapter.py
+tags: []
+
+purpose: "arc-011 sidecar adapter — integrate receiver with Claude Code hooks."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-01
+created_by: unknown

@@ -1,0 +1,21 @@
+id: lib/sidecar/receiver.py
+name: receiver
+type: script
+subsystem: framework-core
+location: lib/sidecar/receiver.py
+tags: []
+
+purpose: "arc-011 sidecar receiver — HTTP API for receiving peer consults."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-01
+created_by: unknown

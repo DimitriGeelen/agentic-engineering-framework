@@ -1,0 +1,21 @@
+id: tests/unit/t3561_e2e_nonce.py
+name: t3561_e2e_nonce
+type: script
+subsystem: tests
+location: tests/unit/t3561_e2e_nonce.py
+tags: []
+
+purpose: "End-to-end nonce proof for T-3561 — tests AC7 and AC8."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-01
+created_by: unknown
