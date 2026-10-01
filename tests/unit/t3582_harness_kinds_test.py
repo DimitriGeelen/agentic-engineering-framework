@@ -25,7 +25,7 @@ from lib.reviewer import judge_cli  # noqa: E402
 import _review_runtime as rt  # noqa: E402
 import t3580_round3_test as r3  # noqa: E402
 from t3580_judge_cli_test import (  # noqa: E402,F401
-    NOCAP, TASTE, TID, _git, _mk_task, _produce, repo)
+    NOCAP, TASTE, TID, _git, _ident, _mk_task, _produce, repo)
 
 TERMLINK = _HERE / "agents" / "termlink" / "termlink.sh"
 HI = "cost_estimate:\n  blast_radius: 9\n"
@@ -240,7 +240,9 @@ class TestLaunchPinning:
         p.write_text(re.sub(r", binary: [^,]+(?=, match: \['--worker-kind\[= \]codex)", "", p.read_text()))
         assert "worker_kind: codex, vendor: openai, match" in p.read_text()
         _git(hrepo, "add", str(vl.BACKENDS))
-        _git(hrepo, "commit", "-q", "-m", "fixture: codex without a binary")
+        # T-3655: explicit identity. The test passed only where a dispatch worker exported
+        # GIT_AUTHOR_*; from a plain shell the fixture commit failed with "who are you".
+        _git(hrepo, "commit", "-q", "-m", "fixture: codex without a binary", env=_ident("Operator"))
         rt.write_launch(rt.wdir_for(hrepo, "rv-n"), worker_bin="/bin/true")
         with pytest.raises(ValueError, match="has no committed binary"):
             vl.register_dispatch("rv-n", TID, "review", revision=r3._head(hrepo),

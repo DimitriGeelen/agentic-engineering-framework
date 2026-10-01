@@ -1277,8 +1277,10 @@ def record_for_worker(dispatch_id: str, *, wdir: str, secret: str = "",
     if not touched:
         return res
     paths = touched + [str(r) for r in (VERDICTS, RECORDED, REFUSALS, APPLIED) if (root / r).exists()]
+    # T-3655: per-reviewer email, never a shared one (see judge_cli.commit_command).
+    email = "reviewer+" + re.sub(r"[^A-Za-z0-9._-]", "-", identity) + "@aef.local"
     env = {**os.environ, "GIT_AUTHOR_NAME": identity, "GIT_COMMITTER_NAME": identity,
-           "GIT_AUTHOR_EMAIL": "reviewer@aef.local", "GIT_COMMITTER_EMAIL": "reviewer@aef.local"}
+           "GIT_AUTHOR_EMAIL": email, "GIT_COMMITTER_EMAIL": email}
     env.pop(_WORKER_ENV, None)
     add = subprocess.run(["git", "add", "--", *paths], cwd=str(root), env=env,
                          capture_output=True, text=True)

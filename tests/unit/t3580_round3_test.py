@@ -340,6 +340,26 @@ class TestBriefQuoting:
                              text=True).stdout.strip()
         assert log == "reviewer-rv-1|reviewer-rv-1"
 
+    def test_reviewer_identity_is_per_dispatch_not_shared(self, prod):
+        # T-3655: a shared reviewer@aef.local made one contaminated verdict commit (which also
+        # touched non-review files) poison every later reviewer of that task as a producer.
+        _dispatch(prod, "rv-1")
+        _record(prod, "rv-1")
+        (prod / "stray.txt").write_text("contaminating change\n")
+        subprocess.run(["git", "add", "stray.txt"], cwd=prod, check=True)
+        env1 = {**os.environ, "FW_SIDECAR_AGENT_ID": "rv-1"}
+        # simulate the pre-T-3654 contaminated commit: reviewer rv-1 commits review + stray file
+        cmd = judge_cli.commit_command(TID).replace(" -- .context/reviews", "")
+        r = subprocess.run(["bash", "-c", cmd], cwd=prod, text=True, capture_output=True, env=env1)
+        assert r.returncode == 0, r.stderr
+        email = subprocess.run(["git", "log", "-1", "--format=%ae|%ce"], cwd=prod,
+                               capture_output=True, text=True).stdout.strip()
+        assert email == "reviewer+rv-1@aef.local|reviewer+rv-1@aef.local"
+        producers, _ = vl.producers_checked(prod, TID)
+        assert "reviewer+rv-1@aef.local" in producers          # rv-1 is now a producer of TID
+        assert "reviewer@aef.local" not in producers           # no shared identity to poison
+        assert not any("rv-2" in p for p in producers)         # a later reviewer stays clean
+
     def test_generated_commit_command_never_sweeps_other_staged_files(self, prod):
         # T-3654: workers share ONE git index. A verdict commit without a pathspec took another
         # worker's staged change, which made the reviewer a producer and voided the row.
