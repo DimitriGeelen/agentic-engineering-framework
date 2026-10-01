@@ -19,7 +19,7 @@ description: >
   tests with negative controls (gate still loads and still flags an undisposed question).
   Triage: T-3639.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -53,7 +53,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T13:19:29Z
-last_update: '2026-10-01T13:30:36Z'
+last_update: 2026-10-01T13:39:39Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,14 +99,16 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Port of 055-agentic-fleet-cockpit's fix (framework:pickup offsets 207 FINDING 8 and 230 P-001, their task 294), re-derived against our code. Test: tests/unit/t3641_readiness_fail_closed.bats.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Regression test reproduces the fail-open (red before fix): with lib/inception-readiness.sh unloadable or its predicate crashing, `fw inception decide` and the inception close gate in update-task.sh proceed silently
+- [x] Fix: decide refuses loudly (names path, says nothing was written) when the library is missing / predicate undefined / predicate crashes (rc!=0, no report); update-task.sh refuses inceptions loudly and passes non-inceptions; review.sh stays warn-only but warns
+- [x] Negative controls in the test: with the library intact the gate still loads and still flags an undisposed question; a non-inception task still closes when the library is missing
+- [x] No regression in the neighbouring suites (existing inception-readiness / disposition-gate bats)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -266,22 +268,20 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t3641_readiness_fail_closed.bats > /tmp/.t3641a 2>&1 && ! grep -q "^not ok" /tmp/.t3641a
+test "$(grep -c '# skip' /tmp/.t3641a)" -eq 0
+timeout 300 bats tests/unit/t3539_finding_signal_set_e.bats tests/unit/t3279_decision_readiness_parity.bats tests/unit/disposition_gate.bats > /tmp/.t3641b 2>&1 && ! grep -q "^not ok" /tmp/.t3641b
+bin/fw vendor self --check
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** With lib/inception-readiness.sh missing, not defining its predicate, or the predicate crashing, `fw inception decide` recorded GO/NO-GO and `fw task update --status work-completed` completed the inception without ever checking dispositions — silently (055 observed this in their vendored copy).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** All three call sites loaded the library with `2>/dev/null || true` (update-task.sh: `|| return 0`) and the decide preflight was wrapped in `if command -v ...`, so "could not check" was indistinguishable from "checked, ready". T-3539 then added `|| true` to the capture, which fixed the errexit kill but also swallowed rc>1 / rc 127 (undefined) — a crash read as an empty, i.e. clean, report.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** The predicate's tests (t3279, t3539, disposition_gate) all ran with the library present; no test exercised the load-failure or crash path, and t3539's structural lint actively required `|| true`, the form that hides crashes.
+
+**Prevention:** tests/unit/t3641_readiness_fail_closed.bats pins every failure mode (missing / undefined / crash) at all three surfaces, with negative controls (intact library still flags; non-inception still closes). t3539's lint now accepts `|| _ud_rc=$?` so the rc-capturing form is the sanctioned guard.
 
 ## Evolution
 
@@ -363,3 +363,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3641-readiness-gate-fails-open-when-libincept.md
 - **Context:** Initial task creation
+
+### 2026-10-01T13:39:39Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

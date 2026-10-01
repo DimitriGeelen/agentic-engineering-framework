@@ -151,7 +151,18 @@ emit_review() {
             # as "Unknown error from fw inception decide". The diagnostic destroyed
             # the thing it was diagnosing. Only the OUTPUT is used below; the return
             # code is never read, so discarding it loses nothing.
-            _underdisposed=$(inception_underdisposed_questions "$task_file") || true
+            #
+            # T-3641: `|| true` also swallowed a CRASHED predicate (rc>1, or
+            # rc!=0 with no report), which then read as "ready". Capture the rc
+            # and say so. Warn-only here; the decide preflight and close gate
+            # refuse on the same condition.
+            local _ud_rc=0
+            _underdisposed=$(inception_underdisposed_questions "$task_file") || _ud_rc=$?
+            if [ "$_ud_rc" -gt 1 ] || { [ "$_ud_rc" -ne 0 ] && [ -z "$_underdisposed" ]; }; then
+                echo "" >&2
+                echo "WARNING: decision-readiness could NOT be checked — inception_underdisposed_questions" >&2
+                echo "  failed (rc=$_ud_rc) without a report. fw inception decide will refuse until it works." >&2
+            fi
 
             # T-3549: auto-adjust SHAPE first, then ask the ONE handoff predicate.
             # Repair is bounded to structure (a missing ## Recommendation
@@ -255,6 +266,14 @@ emit_review() {
                     return 1
                 fi
             fi
+        else
+            # T-3641 (055 P-001): the library did not load, or did not define
+            # the predicate. Warn-only at this invitation surface — the decide
+            # preflight and the close gate refuse on the same condition.
+            echo "" >&2
+            echo "WARNING: decision-readiness could NOT be checked — $FRAMEWORK_ROOT/lib/inception-readiness.sh" >&2
+            echo "  did not load or did not define inception_underdisposed_questions." >&2
+            echo "  fw inception decide will refuse until it does." >&2
         fi
     else
         [ -n "$review_url" ] || review_url="${base_url}/review/${task_id}"

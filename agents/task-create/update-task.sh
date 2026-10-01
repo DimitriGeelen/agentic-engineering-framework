@@ -930,13 +930,33 @@ check_disposition_gate() {
     # the decide preflight (lib/inception.sh) and review emission (lib/review.sh)
     # run the SAME implementation — parity by construction. This function keeps
     # the enforcement-point policy: messaging, bypass contract, Tier-2 logging.
-    source "$FRAMEWORK_ROOT/lib/inception-readiness.sh" 2>/dev/null || return 0
+    #
+    # T-3641 (ported from 055 P-001): fail CLOSED for inceptions. A library that
+    # cannot load, a predicate that is undefined after sourcing, or a predicate
+    # that crashed (rc>1, or rc!=0 with no report) used to read as "ready" and let
+    # every inception complete unchecked. Non-inceptions are exempt by contract,
+    # so they still pass when the library is unavailable.
+    local _wf
+    _wf=$(grep -m1 -E '^workflow_type:' "$TASK_FILE" 2>/dev/null | awk '{print $2}' | tr -d "\"'") || true
+    local _ir_lib="$FRAMEWORK_ROOT/lib/inception-readiness.sh"
+    if ! source "$_ir_lib" 2>/dev/null || ! command -v inception_underdisposed_questions >/dev/null 2>&1; then
+        [ "$_wf" = "inception" ] || return 0
+        echo -e "${RED}ERROR: Cannot complete inception — disposition gate could not load.${NC}" >&2
+        echo "  $_ir_lib did not load, or did not define inception_underdisposed_questions" >&2
+        echo "  (FRAMEWORK_ROOT=$FRAMEWORK_ROOT). Refusing rather than completing unchecked." >&2
+        exit 1
+    fi
 
-    local underdisposed missing=0 missing_list=""
-    # `|| true` — see T-3539. Finding-signal return code (1 = found under-disposed
-    # questions), and an unguarded assignment under `set -e` kills the close gate
-    # before it can report WHY it refused. Only the output is used below.
-    underdisposed=$(inception_underdisposed_questions "$TASK_FILE") || true
+    local underdisposed missing=0 missing_list="" _ud_rc=0
+    # T-3539: rc 1 is a FINDING signal, so capture it instead of letting `set -e`
+    # kill the gate. T-3641: anything else non-zero, or rc 1 with no report, is
+    # a crashed predicate and must refuse — `|| true` used to swallow it.
+    underdisposed=$(inception_underdisposed_questions "$TASK_FILE") || _ud_rc=$?
+    if [ "$_ud_rc" -gt 1 ] || { [ "$_ud_rc" -ne 0 ] && [ -z "$underdisposed" ]; }; then
+        echo -e "${RED}ERROR: Cannot complete — disposition predicate failed (rc=$_ud_rc) without a report.${NC}" >&2
+        echo "  inception_underdisposed_questions from $_ir_lib crashed; refusing rather than completing unchecked." >&2
+        exit 1
+    fi
     if [ -n "$underdisposed" ]; then
         local q_id q_disp q_rat
         while IFS=' ' read -r q_id q_disp q_rat; do

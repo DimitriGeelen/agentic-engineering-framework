@@ -96,7 +96,8 @@ teardown() { rm -rf "$FIX" 2>/dev/null; }
 #
 # Structural, because the behavioural test above cannot reach all three without
 # standing up three full fixture projects. If a fourth call site is added without
-# the guard, this goes red.
+# the guard, this goes red. T-3641: `|| _ud_rc=$?` is also a guard — it captures
+# the rc so a CRASHED predicate (rc>1) can be told apart from a finding (rc=1).
 
 @test "t3539: every inception_underdisposed_questions call site is guarded" {
     run bash -c "
@@ -104,7 +105,7 @@ teardown() { rm -rf "$FIX" 2>/dev/null; }
         grep -rn 'inception_underdisposed_questions' lib/ agents/ \
           | grep -v '.agentic-framework' \
           | grep '=\$(' \
-          | grep -v '|| true' \
+          | grep -vE '\|\| (true|_[a-z_]*rc=[$][?])' \
           | grep -vE '^[^:]+:[0-9]+:[[:space:]]*#'
     "
     # grep exits 1 when it finds nothing, which is the passing case here.

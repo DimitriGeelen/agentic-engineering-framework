@@ -564,30 +564,41 @@ do_inception_decide() {
         # recorded, status started-work) the operator hit on T-3278, with the
         # gate's agent-facing stderr surfaced raw in Watchtower. Refuse HERE,
         # body untouched, in language both operator and agent can act on.
-        source "$FRAMEWORK_ROOT/lib/inception-readiness.sh" 2>/dev/null || true
-        if command -v inception_underdisposed_questions >/dev/null 2>&1; then
-            local _underdisposed
-            # `|| true` — see T-3539. Finding-signal return code (1 = found), and
-            # this runs under `set -euo pipefail`, so an unguarded assignment kills
-            # `fw inception decide` silently instead of printing the refusal below.
-            # Only the output is used; the rc is never read.
-            _underdisposed=$(inception_underdisposed_questions "$task_file") || true
-            if [ -n "$_underdisposed" ]; then
-                local _ud_count
-                _ud_count=$(printf '%s\n' "$_underdisposed" | grep -c .)
-                echo -e "${RED}ERROR: Cannot record $decision_upper — $_ud_count Open Question(s) not yet disposed.${NC}" >&2
-                echo "" >&2
-                echo "This inception's decision is not ready: each IW-N under '## Open Questions'" >&2
-                echo "needs 'disposition: answered|deferred|dissolved' plus a one-line rationale" >&2
-                echo "before a go/no-go can complete (T-2190 disposition gate)." >&2
-                echo "" >&2
-                echo "Not yet disposed:" >&2
-                printf '%s\n' "$_underdisposed" | sed 's/^/    - /' >&2
-                echo "" >&2
-                echo "Nothing was written — the task body is untouched. Fill the dispositions" >&2
-                echo "(deferring a question to the build work is a valid disposition), then decide again." >&2
-                return 1
-            fi
+        #
+        # T-3641 (ported from 055 P-001): fail CLOSED. A missing library, an
+        # undefined predicate, or a crashed predicate used to skip this preflight
+        # silently — on the sovereignty path. Refuse instead, body untouched.
+        local _ir_lib="$FRAMEWORK_ROOT/lib/inception-readiness.sh"
+        if ! source "$_ir_lib" 2>/dev/null || ! command -v inception_underdisposed_questions >/dev/null 2>&1; then
+            echo -e "${RED}ERROR: Cannot record $decision_upper — decision-readiness check could not load.${NC}" >&2
+            echo "  $_ir_lib did not load, or did not define inception_underdisposed_questions" >&2
+            echo "  (FRAMEWORK_ROOT=$FRAMEWORK_ROOT). Nothing was written — the task body is untouched." >&2
+            return 1
+        fi
+        local _underdisposed _ud_rc=0
+        # T-3539: rc 1 is a FINDING signal (this runs under `set -euo pipefail`),
+        # so capture it. T-3641: rc>1, or rc!=0 with no report, is a crash.
+        _underdisposed=$(inception_underdisposed_questions "$task_file") || _ud_rc=$?
+        if [ "$_ud_rc" -gt 1 ] || { [ "$_ud_rc" -ne 0 ] && [ -z "$_underdisposed" ]; }; then
+            echo -e "${RED}ERROR: Cannot record $decision_upper — decision-readiness check failed (rc=$_ud_rc) without a report.${NC}" >&2
+            echo "  inception_underdisposed_questions from $_ir_lib crashed. Nothing was written — the task body is untouched." >&2
+            return 1
+        fi
+        if [ -n "$_underdisposed" ]; then
+            local _ud_count
+            _ud_count=$(printf '%s\n' "$_underdisposed" | grep -c .)
+            echo -e "${RED}ERROR: Cannot record $decision_upper — $_ud_count Open Question(s) not yet disposed.${NC}" >&2
+            echo "" >&2
+            echo "This inception's decision is not ready: each IW-N under '## Open Questions'" >&2
+            echo "needs 'disposition: answered|deferred|dissolved' plus a one-line rationale" >&2
+            echo "before a go/no-go can complete (T-2190 disposition gate)." >&2
+            echo "" >&2
+            echo "Not yet disposed:" >&2
+            printf '%s\n' "$_underdisposed" | sed 's/^/    - /' >&2
+            echo "" >&2
+            echo "Nothing was written — the task body is untouched. Fill the dispositions" >&2
+            echo "(deferring a question to the build work is a valid disposition), then decide again." >&2
+            return 1
         fi
 
         tick_inception_decide_acs "$task_file"
