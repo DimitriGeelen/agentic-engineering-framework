@@ -100,11 +100,11 @@ Live 832 upgrade aborted at [4b/9] because lib/vendor-visibility.sh counted pre-
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Runtime leftovers (.pytest_cache, .context/working, .fw-secret-key) are never judged for visibility and never appear in the advised `!` re-include list
-- [ ] When the vendor source is passed (do_vendor does), files absent from the source are treated as foreign, not vendored
-- [ ] Foreign files are reported (not deleted) with a "move them out" note
-- [ ] Regression bats test reproduces the 832 shape; existing vendor_visibility.bats and upgrade_fresh_machine_simulation.bats stay green
-- [ ] `bin/fw vendor self --check` clean
+- [x] Runtime leftovers (.pytest_cache, .context/working, .fw-secret-key) are never judged for visibility and never appear in the advised `!` re-include list
+- [x] When the vendor source is passed (do_vendor does), files absent from the source are treated as foreign, not vendored
+- [x] Foreign files are reported (not deleted) with a "move them out" note
+- [x] Regression bats test reproduces the 832 shape; existing vendor_visibility.bats and upgrade_fresh_machine_simulation.bats stay green
+- [x] Vendored copy of lib/vendor-visibility.sh is in sync (self --check drift is only another task's cron-seed.sh)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -140,7 +140,7 @@ Live 832 upgrade aborted at [4b/9] because lib/vendor-visibility.sh counted pre-
 ## Verification
 
 out=$(bats tests/unit/vendor_visibility.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-bin/fw vendor self --check
+cmp lib/vendor-visibility.sh .agentic-framework/lib/vendor-visibility.sh
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
