@@ -13,12 +13,12 @@ description: >
   appear in a name (e.g. \x1f) or separate outputs; add a fixture test with a pipe
   in a task name (the bats currently runs against the live repo).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, OBS-587]
-components: []
+components: [agents/resume/resume.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -47,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T21:46:19Z
-last_update: 2026-10-01T13:01:00Z
-date_finished:
+last_update: 2026-10-01T13:16:50Z
+date_finished: 2026-10-01T13:16:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -99,9 +99,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Regression test `tests/unit/t3607_resume_pipe_in_task_name.bats` builds a fixture project (PROJECT_ROOT override) with an active task whose name contains `|` and asserts `resume.sh status` and `resume.sh quick` exit 0 with correct counts; red before the fix
-- [ ] Fix: `agents/resume/resume.sh` packs `get_active_tasks` / `get_git_state` results with the ASCII unit separator (`\x1f`), which cannot appear in a YAML task name or a commit subject, instead of `|`; vendored copy synced
-- [ ] No regression: `tests/unit/resume.bats` all green
+- [x] Regression test `tests/unit/t3607_resume_pipe_in_task_name.bats` builds a fixture project (PROJECT_ROOT override) with an active task whose name contains `|` and asserts `resume.sh status` and `resume.sh quick` exit 0 with correct counts; red before the fix
+- [x] Fix: `agents/resume/resume.sh` packs `get_active_tasks` / `get_git_state` results with the ASCII unit separator (`\x1f`), which cannot appear in a YAML task name or a commit subject, instead of `|`; vendored copy synced
+- [x] No regression: `tests/unit/resume.bats` all green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -374,3 +374,15 @@ cmp -s agents/resume/resume.sh .agentic-framework/agents/resume/resume.sh
 ### 2026-10-01T13:01:00Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8c0e1a6a
+- **Timestamp:** 2026-10-01T13:19:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-01T13:16:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
