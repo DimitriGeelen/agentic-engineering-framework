@@ -13,7 +13,7 @@ description: >
   each tolerated failure logged to stderr. Fleet-wide exposure: each consumer gets
   this only after release + fw upgrade, so priority high. Triage: T-3639.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T13:24:40Z
-last_update: '2026-10-01T13:30:37Z'
+last_update: 2026-10-01T14:05:42Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,14 +93,18 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Port of 055-agentic-fleet-cockpit pickups P-011 (framework:pickup offset 242) and P-012
+(offset 244), 055 T-358, re-derived against our `bin/claude-fw` TermLink wait loop. Env
+knob keeps 055's name, `CLAUDE_FW_PING_FAILURES`, so a fleet project that already set it
+keeps the same meaning after `fw upgrade`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproducing test `tests/unit/t3648_claude_fw_ping_tolerance.bats` drives the real wrapper with a stub `termlink` whose `ping` fails once, then succeeds, then the exit marker appears: wrapper must exit with the marker's code (0), not 1. Red on the unfixed code
+- [x] Fix: the wait loop declares the session gone only after `CLAUDE_FW_PING_FAILURES` consecutive failed pings (default 3; non-numeric or <1 falls back to 3); a success resets the count; each tolerated failure is logged to stderr. Pinned by the same test (sustained failure still exits 1 after N pings; reset; fallback)
+- [x] No regression in the neighbouring claude-fw suites (t3647, t3358, t3346, claude_fw_restart_mode, claude_fw_router, claude_fw_copy_not_symlink)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,6 +264,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t3648_claude_fw_ping_tolerance.bats > /tmp/.t3648v 2>&1 && ! grep -q "^not ok" /tmp/.t3648v
+test "$(grep -c '# skip' /tmp/.t3648v)" -eq 0
+timeout 300 bats tests/unit/t3647_claude_fw_register_leak.bats tests/unit/t3358_claude_fw_exit_detection.bats tests/unit/t3346_termlink_exit_marker.bats tests/unit/claude_fw_restart_mode.bats tests/unit/claude_fw_router.bats tests/unit/claude_fw_copy_not_symlink.bats > /tmp/.t3648n 2>&1 && ! grep -q "^not ok" /tmp/.t3648n
+cmp -s bin/claude-fw .agentic-framework/bin/claude-fw
 
 ## RCA
 
@@ -276,6 +284,20 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** TermLink-mode agents lose their wrapper (and, without autorestart, their tmux
+session) while the host is under CPU load; 055 reproduced it on the live fleet twice on
+2026-09-29 (5 agents, then 2), plain-mode agents unaffected.
+
+**Root cause:** the wait loop treated ONE failed or slow `termlink ping` as proof the
+session was gone (`exit_code=1; break`). A ping is a liveness *sample*, not a verdict;
+under load a single sample times out while the session is fine.
+
+**Why structurally allowed:** every claude-fw test stub answered `ping` with exit 0, so
+the failure branch was never exercised; no test asked what a *transient* failure does.
+
+**Prevention:** t3648 stub pings fail on a script (once, then recover; and sustained),
+pinning both directions: transient failure is tolerated, a dead session is still detected.
 
 ## Evolution
 
@@ -357,3 +379,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3648-claude-fw-ends-a-live-agent-on-one-faile.md
 - **Context:** Initial task creation
+
+### 2026-10-01T14:05:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

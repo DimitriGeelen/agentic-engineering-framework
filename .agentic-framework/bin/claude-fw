@@ -96,6 +96,31 @@ termlink_inject() {
     termlink pty inject "$TERMLINK_SESSION" "$cmd" --enter >/dev/null 2>&1
 }
 
+# T-3648 (port of 055 P-011/P-012, framework:pickup offsets 242/244): one ping
+# is a liveness SAMPLE, not a verdict. Under CPU load a single ping fails or
+# times out while the session is fine, and the wait loop used to end the agent
+# on it. The session is declared gone only after CLAUDE_FW_PING_FAILURES
+# consecutive failures (default 3, one per 5 s poll; non-numeric or <1 → 3).
+# A success resets the count. Each tolerated failure goes to stderr.
+# Returns 0 when the session is gone, 1 while it should be treated as alive.
+_TL_PING_FAILS=0
+_tl_session_gone() {
+    local limit="${CLAUDE_FW_PING_FAILURES:-3}"
+    case "$limit" in ''|*[!0-9]*) limit=3 ;; esac
+    [ "$limit" -ge 1 ] 2>/dev/null || limit=3
+    if termlink ping "$TERMLINK_SESSION" >/dev/null 2>&1; then
+        _TL_PING_FAILS=0
+        return 1
+    fi
+    _TL_PING_FAILS=$((_TL_PING_FAILS + 1))
+    if [ "$_TL_PING_FAILS" -ge "$limit" ]; then
+        echo "claude-fw: termlink ping failed ${_TL_PING_FAILS} times in a row — session $TERMLINK_SESSION is gone." >&2
+        return 0
+    fi
+    echo "claude-fw: termlink ping failed (${_TL_PING_FAILS}/${limit}) — tolerating, session $TERMLINK_SESSION may be under load." >&2
+    return 1
+}
+
 # T-3346: parse the explicit exit marker the injected command line prints when
 # claude actually terminates. Prompt-glyph detection is unusable here: `❯` is
 # Claude Code's own TUI input caret, on screen the entire time claude is RUNNING,
@@ -601,6 +626,7 @@ while true; do
         # printf is the exit signal — see _tl_claude_exit_code. $? and quotes are
         # escaped so they reach the PTY shell literally.
         termlink_inject "claude ${CLAUDE_ARGS[*]}; printf '__CLAUDE_FW_EXIT_%s__\n' \"\$?\""
+        _TL_PING_FAILS=0 # T-3648: each run starts with a clean failure count
         # Wait for claude to exit by polling the PTY for shell prompt
         # We check if claude process is still running inside the session
         while true; do
@@ -621,8 +647,9 @@ while true; do
                     fi
                 fi
             fi
-            # Check if the session is still alive and claude is running
-            if ! termlink ping "$TERMLINK_SESSION" >/dev/null 2>&1; then
+            # Check if the session is still alive and claude is running.
+            # T-3648: tolerant of transient ping failures — see _tl_session_gone.
+            if _tl_session_gone; then
                 exit_code=1
                 break
             fi
