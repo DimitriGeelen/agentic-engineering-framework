@@ -11,10 +11,10 @@ description: >
   by OBS-587 triage T-3604. Fix: git update-index --chmod=+x on the adapter (and consider
   a lint that every agents/**/*.sh invoked directly is 100755).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, OBS-587]
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T21:43:07Z
-last_update: '2026-09-30T21:45:44Z'
+last_update: 2026-10-01T12:57:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,8 +97,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Regression test `tests/unit/t3606_sessions_adapter_exec_bit.bats` asserts every `agents/sessions/*/list.sh` adapter is indexed 100755 in git and executable on disk; red before the fix
+- [ ] Fix: `agents/sessions/claude-code/list.sh` indexed 100755 (git update-index --chmod=+x) and executable on disk; vendored copy synced
+- [ ] No regression: `tests/unit/sessions_claude_code_adapter.bats` t1-t10 all green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -132,6 +133,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+timeout 300 bats tests/unit/t3606_sessions_adapter_exec_bit.bats > /tmp/.t3606a 2>&1 && ! grep -q "^not ok" /tmp/.t3606a
+test "$(grep -c '# skip' /tmp/.t3606a)" -eq 0
+timeout 300 bats tests/unit/sessions_claude_code_adapter.bats > /tmp/.t3606b 2>&1 && ! grep -q "^not ok" /tmp/.t3606b
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -275,6 +280,14 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** `bin/fw sessions` prints "adapter not found or not executable" and exits 2 for every user; `tests/unit/sessions_claude_code_adapter.bats` t1-t10 fail with status 126.
+
+**Root cause:** `agents/sessions/claude-code/list.sh` was committed in bde6bf284 (T-2417) with git mode 100644. The exec bit existed only in the author's working tree, so every fresh checkout and vendored copy gets a non-executable adapter, and `bin/fw` gates on `[ -x "$_sess_adapter" ]`.
+
+**Why structurally allowed:** Nothing checks the git index mode of directly-executed scripts. The adapter's own bats suite invoked the file directly, so it was green on the author's tree (on-disk +x) and only went red on a fresh tree. `fw doctor`'s exec-bit drift check (bin/fw:1776) only catches the inverse case (indexed 100755, not +x on disk).
+
+**Prevention:** `tests/unit/t3606_sessions_adapter_exec_bit.bats` asserts the git index mode (not just the on-disk mode) of every `agents/sessions/*/list.sh` adapter, so a future adapter committed 100644 goes red on any host, including the author's.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -355,3 +368,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3606-fw-sessions-broken-agentssessionsclaude-.md
 - **Context:** Initial task creation
+
+### 2026-10-01T12:57:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
