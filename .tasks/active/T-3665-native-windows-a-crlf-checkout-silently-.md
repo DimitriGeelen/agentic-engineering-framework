@@ -1,10 +1,16 @@
 ---
 id: T-3665
-name: "Native Windows: a CRLF checkout silently disables the secret scan (P-01 Win F-07)"
+name: "Native Windows: a CRLF checkout silently disables the secret scan (P-01 Win
+  F-07)"
 description: >
-  P-01 instrumented native Git Bash install (Windows 10, 1.7.0 @29f3b02): with core.autocrlf CRLF checkout the secret-scan hook stops detecting, with no error. A safety gate that fails silently on a platform is a Reliability-directive breach regardless of whether native Windows is supported: it must either work on CRLF or refuse loudly. Fix: make the scanner line-ending agnostic (or enforce eol=lf via .gitattributes for hook scripts) plus a test with CRLF fixtures. Source: docs/reports/T-3659-p01-zero-to-running.md.
+  P-01 instrumented native Git Bash install (Windows 10, 1.7.0 @29f3b02): with core.autocrlf
+  CRLF checkout the secret-scan hook stops detecting, with no error. A safety gate
+  that fails silently on a platform is a Reliability-directive breach regardless of
+  whether native Windows is supported: it must either work on CRLF or refuse loudly.
+  Fix: make the scanner line-ending agnostic (or enforce eol=lf via .gitattributes
+  for hook scripts) plus a test with CRLF fixtures. Source: docs/reports/T-3659-p01-zero-to-running.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T15:06:05Z
-last_update: 2026-10-01T15:06:05Z
-date_finished: null
+last_update: 2026-10-01T16:53:55Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-01T15:15:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-01T15:15:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3665: Native Windows: a CRLF checkout silently disables the secret scan (P-01 Win F-07)
@@ -62,8 +96,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproducing test: `tests/unit/t3665_secret_scan_crlf.bats` converts `.secret-scan-patterns` and `.secret-scan-allowlist` to CRLF (what a `core.autocrlf=true` checkout produces) and asserts a planted AWS key / GitHub PAT is still caught by `scan-staged`, `scan-file` and `scan-tree`, and that a CRLF allowlist entry still suppresses — red before the fix
+- [x] Fix: `agents/git/lib/secret-scan.sh` strips a trailing CR from every catalogue and allowlist line, so the scanner is line-ending agnostic; `.gitattributes` pins `eol=lf` for `*.sh`, `*.bash`, `*.bats` and the `.secret-scan-*` config so a framework clone never checks them out CRLF
+- [x] No regression in the neighbouring suites: `test_secret_scan.bats`, `secret_scan_name_axis.bats`, `secret_scan_span_rule.bats` all green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -224,6 +259,12 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 300 bats tests/unit/t3665_secret_scan_crlf.bats > /tmp/.t3665_crlf 2>&1 && ! grep -q "^not ok" /tmp/.t3665_crlf
+test "$(grep -c '# skip' /tmp/.t3665_crlf)" -eq 0
+timeout 300 bats tests/unit/test_secret_scan.bats tests/unit/secret_scan_name_axis.bats tests/unit/secret_scan_span_rule.bats > /tmp/.t3665_nb 2>&1 && ! grep -q "^not ok" /tmp/.t3665_nb
+# Scoped to this task's vendored file: a whole-tree `vendor self --check` is red while concurrent batches have lib/ and bin/ edits in flight.
+cmp -s agents/git/lib/secret-scan.sh .agentic-framework/agents/git/lib/secret-scan.sh
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -239,6 +280,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** On native Git Bash with `core.autocrlf=true`, a commit staging a planted secret passes the pre-commit secret scan with no error and no warning (P-01 Win F-07).
+
+**Root cause:** `secret-scan.sh` reads `.secret-scan-patterns` with `IFS=$'\t' read -r _name _re`. In a CRLF checkout every catalogue line ends in `\r`, so every regex becomes `<pattern>\r` — it demands a literal carriage return after the secret. The staged diff is taken from the index, which autocrlf keeps LF, so no added line ever carries that `\r` and every pattern misses. The scanner exits 0 with zero hits: a correct-looking "clean". The allowlist has the same defect (entries end in `\r`), which fails closed rather than open, but is the same root.
+
+**Why structurally allowed:** The catalogue is data parsed by a line reader, and nothing normalised line endings at either end: the repo had no `.gitattributes` `eol=lf` rule for the hook scripts or their config, and the scanner trusted the bytes. Every test fixture was written on Linux with LF, so the CRLF shape was never exercised. A miss and a clean tree produce identical output, so the failure is silent by construction.
+
+**Prevention:** `tests/unit/t3665_secret_scan_crlf.bats` pins the CRLF catalogue/allowlist shape for all three scan modes. The scanner strips CR from each config line (agnostic regardless of how a consumer's clone is configured — `.gitattributes` in the framework repo does not reach a consumer's vendored copy), and `.gitattributes` pins `eol=lf` for shell scripts and the scan config in framework clones.
 
 ## Evolution
 
@@ -320,3 +369,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3665-native-windows-a-crlf-checkout-silently-.md
 - **Context:** Initial task creation
+
+### 2026-10-01T16:53:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

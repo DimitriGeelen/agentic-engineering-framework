@@ -1,2 +1,13 @@
 # Mark compiled TypeScript output as generated (excluded from GitHub language stats)
 lib/ts/dist/*.js linguist-generated=true
+
+# T-3665 (P-01 Win F-07): shell scripts and the secret-scan config are always
+# checked out LF. Under core.autocrlf=true (the Git for Windows default) a CRLF
+# .secret-scan-patterns silently disabled every pattern. The scanner now strips
+# CR itself (a consumer's vendored copy is not covered by this file); this pins
+# the bytes in framework clones as well.
+*.sh                   text eol=lf
+*.bash                 text eol=lf
+*.bats                 text eol=lf
+.secret-scan-patterns  text eol=lf
+.secret-scan-allowlist text eol=lf

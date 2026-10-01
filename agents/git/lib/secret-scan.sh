@@ -63,11 +63,24 @@ _secret_scan_build_allowlist() {
     [ ! -f "$allow_file" ] && { echo ""; return; }
     # Strip blank lines + comments; pipe-join the rest with '|'.
     local _joined
-    _joined=$(grep -v '^[[:space:]]*$' "$allow_file" 2>/dev/null \
+    # T-3665: `tr -d '\r'` first — a CRLF checkout (core.autocrlf=true) would
+    # otherwise leave a carriage return on every entry. See _secret_scan_read_catalogue.
+    _joined=$(tr -d '\r' < "$allow_file" 2>/dev/null \
+              | grep -v '^[[:space:]]*$' \
               | grep -v '^[[:space:]]*#' \
               | tr '\n' '|' \
               | sed 's/|$//')
     echo "$_joined"
+}
+
+# T-3665 (P-01 Win F-07): emit the pattern catalogue with carriage returns
+# stripped. In a CRLF checkout (core.autocrlf=true, the Git for Windows default)
+# every catalogue line ends in \r, `read` keeps it, and each regex then demands
+# a literal CR after the secret. Staged content comes from the LF index, so
+# nothing ever matched and the scan reported clean — a silent fail-open. Every
+# reader of the catalogue goes through here so no mode can regress alone.
+_secret_scan_read_catalogue() {
+    tr -d '\r' < "$1"
 }
 
 # Check whether a given "filepath:linecontent" string matches the allowlist.
@@ -131,7 +144,7 @@ _secret_scan_run_patterns() {
             printf '  [%s] %s\n' "$_name" "$_hit"
             _hits=$((_hits + 1))
         done <<< "$_matches"
-    done < "$patterns_file"
+    done < <(_secret_scan_read_catalogue "$patterns_file")
 
     [ "$_hits" -gt 0 ] && return 1
     return 0
@@ -245,7 +258,7 @@ scan_tree() {
             printf '  [%s] %s\n' "$_name" "$_hit"
             _hits=$((_hits + 1))
         done <<< "$_matches"
-    done < "$patterns"
+    done < <(_secret_scan_read_catalogue "$patterns")
 
     # T-2897: the name axis runs inside this same pass, deliberately. Callers
     # print one verdict line for scan-tree ("[PASS] Secret scan: tracked tree
