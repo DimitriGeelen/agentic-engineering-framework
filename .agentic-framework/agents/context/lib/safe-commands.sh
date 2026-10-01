@@ -1043,8 +1043,22 @@ _fw_single_command_is_safe() {
 has_bash_write_pattern() {
     local cmd="$1"
 
+    # T-3643 (ported from 055, framework:pickup offset 224): a redirect to
+    # /dev/null writes nothing. Strip those tokens (`>/dev/null`, `> /dev/null`,
+    # `1>`, `2>`, `&>`, `>>`) before the redirect scan, so `cat a > /dev/null`
+    # is not a write. The terminator must be whitespace, a separator or end of
+    # line: `/dev/nullx`, `/dev/null.bak`, `/dev/null/sub` are ordinary paths
+    # and stay writes, and any OTHER redirect on the line still bites below.
+    # (The T-3344 strip in is_bash_safe_command covers the allowlist side only;
+    # check-active-task consults THIS scan first.)
+    local _scan="$cmd" _sprev=""
+    while [ "$_scan" != "$_sprev" ]; do
+        _sprev="$_scan"
+        _scan=$(printf '%s' "$_scan" | sed -E 's#(^|[^>&0-9])([0-9]|&)?>>?[[:space:]]*/dev/null([[:space:];|&)]|$)#\1 \3#')
+    done
+
     # Redirect operators (but not comparison operators like 2>&1)
-    if echo "$cmd" | grep -qE '[^2>&]>[^>&]|>>'; then
+    if echo "$_scan" | grep -qE '[^2>&]>[^>&]|>>'; then
         return 0
     fi
 
@@ -1198,8 +1212,9 @@ _fw_fetch_writes_file() {
                         # wget -o is the LOG file (always a write). curl -o is
                         # the output file (stdout when the target is `-`).
                         if [ "$base" = wget ]; then return 0; fi
+                        # T-3643: /dev/null joins `-` — it discards the body.
                         case "$rest" in
-                            *o)   [ "${1:-}" = "-" ] || return 0 ;;
+                            *o)   [ "${1:-}" = "-" ] || [ "${1:-}" = "/dev/null" ] || return 0 ;;
                             *o-)  ;;
                             *)    return 0 ;;   # attached value, e.g. -ofile
                         esac

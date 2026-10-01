@@ -14,7 +14,7 @@ description: >
   /dev/null.bak, /dev/nullish, /dev/null/sub are ordinary files and must stay writes.
   Also 'cat a &>/dev/null' is still refused by the allowlist. Triage: T-3639.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T13:21:00Z
-last_update: '2026-10-01T13:30:36Z'
+last_update: 2026-10-01T13:45:32Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,14 +94,16 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Port of 055-agentic-fleet-cockpit's fix (framework:pickup offset 224, their task 313, commit f51443f), re-derived against our code. Test: tests/unit/t3643_devnull_not_a_write.bats.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Regression test (red before fix): `cat a > /dev/null`, `cat a 2>/dev/null`, `cat a >/dev/null 2>&1` are not writes per has_bash_write_pattern; `curl -sf http://x/ -o /dev/null` is safe per is_bash_safe_command
+- [x] Fix: /dev/null redirect tokens stripped before the write regex; curl -o accepts /dev/null alongside '-'
+- [x] Negative corpus stays refused: `> /dev/nullx`, `> /dev/null.bak`, `> /dev/nullish`, `> /dev/null/sub`, a second real redirect after /dev/null, `curl -o out.txt`, `wget -o /dev/null`
+- [x] No regression in the neighbouring safe-commands / check-active-task suites
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -261,22 +263,20 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t3643_devnull_not_a_write.bats > /tmp/.t3643a 2>&1 && ! grep -q "^not ok" /tmp/.t3643a
+test "$(grep -c '# skip' /tmp/.t3643a)" -eq 0
+timeout 300 bats tests/unit/context_safe_commands.bats tests/unit/t3344_readonly_allowlist_gaps.bats tests/unit/t3222_fetch_writes_file.bats tests/unit/safe_commands_chain.bats > /tmp/.t3643b 2>&1 && ! grep -q "^not ok" /tmp/.t3643b
+bin/fw vendor self --check
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** With focus null, read-only commands such as `cat a > /dev/null` or `curl -sf URL -o /dev/null` (/resume Step 1) were blocked by the task gate as writes.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** has_bash_write_pattern's redirect regex `[^2>&]>[^>&]|>>` matches any `>` not preceded by 2/&, including a redirect to /dev/null; and the curl `-o` arm of the fetch-writes check exempted only `-`. T-3344 had added a /dev/null strip, but only in is_bash_safe_command's token reader — the allowlist side — while check-active-task consults the write scan first.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** The two predicates (write scan, allowlist) are tested separately, and the T-3344 fix landed on one of them with no test asserting the other agreed on the same input.
+
+**Prevention:** tests/unit/t3643_devnull_not_a_write.bats pins both predicates on the /dev/null inputs, with a negative corpus (/dev/nullx, /dev/null.bak, /dev/nullish, /dev/null/sub, a second real redirect, curl -o file, wget -o /dev/null) so the strip cannot widen into admitting real writes.
 
 ## Evolution
 
@@ -358,3 +358,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3643-read-only-gate-treats--devnull-and-curl-.md
 - **Context:** Initial task creation
+
+### 2026-10-01T13:45:32Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
