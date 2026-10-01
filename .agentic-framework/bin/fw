@@ -1246,6 +1246,7 @@ show_help() {
     echo -e "  ${GREEN}prompt${NC} <cmd>           Reusable agent prompts (create, list, show, copy)"
     echo -e "  ${GREEN}note${NC} [text]          Lightweight observation capture"
     echo -e "  ${GREEN}notify${NC} <cmd>          Push notifications (setup, test, enable, disable, status)"
+    echo -e "  ${GREEN}runme${NC} <cmd>           Operator handoff as one logged script line (new, watch, path)"
     echo -e "  ${GREEN}cron${NC} <cmd>            Cron registry management (generate, status)"
     echo -e "  ${GREEN}peer${NC} <cmd>            v2 peer-consult (subscribe to TermLink inbox.queued + spawn responders)"
     echo -e "  ${GREEN}sidecar${NC} <cmd>         Peer-consult sidecar: whoami, send, inbox, status, sweep, e2e (live end-to-end check)"
