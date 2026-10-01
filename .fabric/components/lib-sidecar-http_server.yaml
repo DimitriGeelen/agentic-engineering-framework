@@ -1,0 +1,21 @@
+id: lib/sidecar/http_server.py
+name: http_server
+type: script
+subsystem: framework-core
+location: lib/sidecar/http_server.py
+tags: []
+
+purpose: "arc-011 receiver HTTP server — listen for incoming messages."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-01
+created_by: unknown
