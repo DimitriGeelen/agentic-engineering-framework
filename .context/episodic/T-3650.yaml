@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3650: Unit-suite audit line hard-codes '(tests/unit)' instead of the report's own suite_dir: wrong noun in every consumer (055 unit-suite label finding)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-01T13:59:07Z
+# ============================================================================
+
+task_id: T-3650
+task_name: "Unit-suite audit line hard-codes '(tests/unit)' instead of the report's own suite_dir: wrong noun in every consumer (055 unit-suite label finding)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T13:26:06Z
+completed: 2026-10-01T13:57:44Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-01T15:57:19+02:00
+last_commit: 2026-10-01T15:57:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  unit-suite audit label names the report's own suite_dir
+
+# Key outcomes
+outcomes:
+  - 'Reproducing test `tests/unit/t3650_unit_suite_label_suite_dir.bats` (extracts the shipped check, fixture reports) is RED before the fix: with a report whose `suite_dir` is `<PROJECT_ROOT>/tests` (a flat consumer layout), the green, red and stale lines name `(tests)`, and no output line contains `tests/unit`. It asserts the invariant (label == report `suite_dir` made relative to PROJECT_ROOT), using two different layouts, not a single literal.'
+  - 'Fix: the report parser emits `suite_dir` relative to PROJECT_ROOT, and every path that has a report uses it in the label. The missing-report and unparseable-report paths, and a report without `suite_dir`, name no directory rather than guess.'
+  - 'No regression: `t3302_unit_suite_schedule.bats`, `t3602_unit_suite_partial_run.bats` and `t3621_unit_suite_ratchet.bats` pass; vendored `agents/audit/audit.sh` byte-identical. (Seven of their assertions pinned the old literal: two assertions were updated to the new contract, and two fixtures that had no `suite_dir` now carry `suite_dir: tests/unit`.)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-3650-unit-suite-audit-line-hard-codes-testsun.md'
+  - 'tests/unit/t3302_unit_suite_schedule.bats'
+  - 'tests/unit/t3602_unit_suite_partial_run.bats'
+  - 'tests/unit/t3621_unit_suite_ratchet.bats'
+  - 'tests/unit/t3650_unit_suite_label_suite_dir.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T15:57:19'
+    action: 'T-3650: unit-suite audit label names the report''s own suite_dir'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 31 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, 055, upstream]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 31
+  commits: 1
+  files_changed: 7
+  lines_added: 213
+  lines_removed: 43
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3650-unit-suite-audit-line-hard-codes-testsun.md
+generated_by: context-agent-hybrid
