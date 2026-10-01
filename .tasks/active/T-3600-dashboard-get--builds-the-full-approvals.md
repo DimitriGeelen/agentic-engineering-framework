@@ -7,12 +7,12 @@ description: >
   dominate (18.9s of 30s profiled), get_all_task_metadata called 559x per build. Peer
   832/ring20-dashboard series 0043 proposed the counts-only half.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bug, perf, web]
-components: []
+components: [lib/arc_close_readiness.py, web/blueprints/approvals.py, web/blueprints/arcs.py, web/blueprints/core.py, web/shared.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T20:07:31Z
-last_update: '2026-09-30T20:15:20Z'
-date_finished:
+last_update: 2026-10-01T07:49:03Z
+date_finished: 2026-10-01T07:49:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -291,6 +291,15 @@ for f in lib/arc_close_readiness.py web/blueprints/approvals.py web/blueprints/a
 
 ## Recommendation
 
+**Recommendation:** GO
+
+**Rationale:** The dashboard tile no longer builds the whole /approvals page. Arc readiness reads the shared task cache instead of re-parsing YAML (668 parses per build before). Live GET / went from 5.4s to about 1.0s, and the tile summary from 4.7s to 0.9s on a running server. The output is identical before and after across 11 counts, the close-ready arcs and all 18 arcs' readiness legs. The only open item is the render check, which is reviewer-judged under T-3557.
+
+**Evidence:**
+- Commits 1c71f3b41 and 2187a6efc; the timings table and parity check are in ## Decisions.
+- New tests: tile and page parity on a fixture, a summary that does not render criteria, and corpus scans ≤3 per build (it was 559).
+- `bin/fw watchtower current` passes; / and /approvals return 200.
+
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
      shape is copied rather than reinvented.
@@ -363,3 +372,15 @@ for f in lib/arc_close_readiness.py web/blueprints/approvals.py web/blueprints/a
 
 ### 2026-09-30T20:09:19Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c8be02a8
+- **Timestamp:** 2026-10-01T07:49:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-01T07:49:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
