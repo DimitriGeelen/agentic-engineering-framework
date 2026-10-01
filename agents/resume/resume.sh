@@ -26,6 +26,11 @@ show_help() {
     echo "  ./agents/resume/resume.sh quick     # Quick summary"
 }
 
+# T-3607: field separator for the packed get_* results below. ASCII unit
+# separator, not '|': task names and commit subjects are free text and may
+# contain '|', which shifted the fields and crashed `resume status`.
+FS=$'\x1f'
+
 # Get active task count and list
 get_active_tasks() {
     local count=0
@@ -53,8 +58,8 @@ get_active_tasks() {
         fi
     done
     shopt -u nullglob
-    # Return: total|agent_tasks|human_count|human_tasks
-    echo "$count|$tasks|$human_count|$human_tasks"
+    # Return: total FS agent_tasks FS human_count FS human_tasks
+    echo "$count$FS$tasks$FS$human_count$FS$human_tasks"
 }
 
 # Get uncommitted changes
@@ -65,7 +70,7 @@ get_git_state() {
     last_commit=$(git -C "$PROJECT_ROOT" log -1 --pretty=format:"%h %s" 2>/dev/null)
     local branch
     branch=$(git -C "$PROJECT_ROOT" branch --show-current 2>/dev/null)
-    echo "$uncommitted|$last_commit|$branch"
+    echo "$uncommitted$FS$last_commit$FS$branch"
 }
 
 # Get current focus from working memory
@@ -135,7 +140,7 @@ cmd_status() {
     fi
 
     # Git state
-    IFS='|' read -r uncommitted last_commit branch <<< "$(get_git_state)"
+    IFS="$FS" read -r uncommitted last_commit branch <<< "$(get_git_state)"
     echo -e "${BOLD}Git:${NC}"
     echo "  Branch: $branch"
     echo "  Last commit: $last_commit"
@@ -199,7 +204,7 @@ PYCM
     fi
 
     # Active tasks (T-373: separate agent-actionable from human-owned)
-    IFS='|' read -r task_count task_list human_count human_list <<< "$(get_active_tasks)"
+    IFS="$FS" read -r task_count task_list human_count human_list <<< "$(get_active_tasks)"
     local actionable=$((task_count - human_count))
     echo -e "${BOLD}Active Tasks:${NC} $task_count total ($actionable actionable, $human_count awaiting human)"
     if [ "$actionable" -gt 0 ]; then
@@ -442,8 +447,8 @@ cmd_quick() {
     focus=$(get_focus)
     local arc_focus
     arc_focus=$(get_arc_focus)
-    IFS='|' read -r task_count task_list <<< "$(get_active_tasks)"
-    IFS='|' read -r uncommitted last_commit branch <<< "$(get_git_state)"
+    IFS="$FS" read -r task_count task_list _ <<< "$(get_active_tasks)"
+    IFS="$FS" read -r uncommitted last_commit branch <<< "$(get_git_state)"
 
     # First-session detection (T-125)
     local commit_count
