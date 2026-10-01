@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3641: Readiness gate fails OPEN when lib/inception-readiness.sh cannot load, and '|| true' masks a crashed predicate (055 P-001 remainder)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-01T13:45:23Z
+# ============================================================================
+
+task_id: T-3641
+task_name: "Readiness gate fails OPEN when lib/inception-readiness.sh cannot load, and '|| true' masks a crashed predicate (055 P-001 remainder)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T13:19:29Z
+completed: 2026-10-01T13:44:31Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-01T15:44:05+02:00
+last_commit: 2026-10-01T15:44:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  readiness gate fails closed when lib/inception-readiness.sh cannot load or its predicate crashes
+
+# Key outcomes
+outcomes:
+  - 'Regression test reproduces the fail-open (red before fix): with lib/inception-readiness.sh unloadable or its predicate crashing, `fw inception decide` and the inception close gate in update-task.sh proceed silently'
+  - 'Fix: decide refuses loudly (names path, says nothing was written) when the library is missing / predicate undefined / predicate crashes (rc!=0, no report); update-task.sh refuses inceptions loudly and passes non-inceptions; review.sh stays warn-only but warns'
+  - 'Negative controls in the test: with the library intact the gate still loads and still flags an undisposed question; a non-inception task still closes when the library is missing'
+  - 'No regression in the neighbouring suites (existing inception-readiness / disposition-gate bats)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/lib/inception.sh'
+  - '.agentic-framework/lib/review.sh'
+  - 'agents/task-create/update-task.sh'
+  - 'lib/inception.sh'
+  - 'lib/review.sh'
+  - '.tasks/active/T-3641-readiness-gate-fails-open-when-libincept.md'
+  - 'tests/unit/t3539_finding_signal_set_e.bats'
+  - 'tests/unit/t3641_readiness_fail_closed.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T15:44:05'
+    action: 'T-3641: readiness gate fails closed when lib/inception-readiness.sh cannot load or its predicate crashes'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 25 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, 055, upstream]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 25
+  commits: 1
+  files_changed: 9
+  lines_added: 418
+  lines_removed: 80
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3641-readiness-gate-fails-open-when-libincept.md
+generated_by: context-agent-hybrid
