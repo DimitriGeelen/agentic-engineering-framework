@@ -8,12 +8,12 @@ description: >
   port allocation on first start plus an identity check before reusing a running server
   (relates to T-885/T-1287/T-1376 triple-file).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bug, P-01, T-3659, install]
-components: []
+components: [bin/watchtower.sh, lib/config.sh, web/blueprints/config.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T15:03:48Z
-last_update: 2026-10-01T17:19:03Z
-date_finished:
+last_update: 2026-10-01T17:22:31Z
+date_finished: 2026-10-01T17:22:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -393,3 +393,20 @@ bin/fw watchtower current
 
 ### 2026-10-01T17:19:03Z — status-update [task-update-agent]
 - **Change:** tags: → [bug, P-01, T-3659, install]
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cc6224ae
+- **Timestamp:** 2026-10-01T17:23:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `timeout 300 bats tests/unit/t3662_watchtower_port_allocation.bats > /tmp/.t3662-v1 2>&1 && ! grep -q "^not ok" /tmp/.t3662-v1`
+
+### 2026-10-01T17:22:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
