@@ -86,7 +86,17 @@ def _registry(stubs: dict[str, Path]) -> str:
 @pytest.fixture()
 def hrepo(repo):
     """A consumer-shaped fixture project (like t3580_round3_test.rtrepo) with stub harness binaries
-    committed in its registry, and a high-impact task (rung 5) produced by a builder."""
+    committed in its registry, and a low-impact task (rung 1) produced by a builder."""
+    return _hrepo(repo, "")
+
+
+@pytest.fixture()
+def hrepo_hi(repo):
+    """The same, with a high-impact task: rung 5, a panel of three vendors."""
+    return _hrepo(repo, HI)
+
+
+def _hrepo(repo, extra_fm):
     (repo / ".agentic-framework").symlink_to(_HERE)
     (repo / "bin").mkdir()
     shim = repo / "bin" / "fw"
@@ -101,7 +111,7 @@ def hrepo(repo):
     (stub_dir / "termlink").write_text("#!/bin/sh\nexit 0\n")
     (stub_dir / "termlink").chmod(0o755)
     rt.commit_registry(repo, _registry({k: stub_dir / k for k in _STUBS}))
-    _mk_task(repo, TASTE, extra_fm=HI)
+    _mk_task(repo, TASTE, extra_fm=extra_fm)
     _produce(repo)
     return repo
 
@@ -308,7 +318,8 @@ class TestRealRuntimeHarness:
 # ── 5. a rung-5 panel of claude + codex + opencode, end to end through the real runtime ───────
 
 class TestPanelEndToEnd:
-    def test_three_seats_three_vendors_satisfy_the_criterion(self, hrepo, monkeypatch):
+    def test_three_seats_three_vendors_satisfy_the_criterion(self, hrepo_hi, monkeypatch):
+        hrepo = hrepo_hi
         rt.unbound_spend(monkeypatch)
         seen = []
 

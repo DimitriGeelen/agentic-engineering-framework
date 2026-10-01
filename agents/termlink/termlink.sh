@@ -1496,7 +1496,11 @@ echo ""
 echo "=== Worker $WORKER_NAME finished (exit: $EXIT_CODE) ==="
 echo "Result: $WDIR/result.md"
 # T-3582 (R9-1): a refused start is a visible, non-zero end — no worker ran.
-[ -n "$START_REFUSED" ] && { echo "REFUSED: review start refused — no worker was launched"; exit 3; }
+if [ -n "$START_REFUSED" ]; then
+    echo "REFUSED: review start refused — no worker was launched"
+    exit 3
+fi
+exit 0
 RUNEOF
     chmod +x "$wdir/run.sh"
 
