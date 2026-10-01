@@ -96,7 +96,7 @@ class TestCompletionSecret:
         rt.dispatch(prod, "rv-1", TID)
         w = rt.wdir_for(prod, "rv-1")
         # round 7: only the dispatcher's own launch files (brief, prompt, worker binary)
-        assert sorted(x.name for x in w.iterdir()) == ["brief.md", "prompt.md", "worker_bin"]
+        assert sorted(x.name for x in w.iterdir()) == ["brief.md", "prompt.md", "settings.json", "worker_bin"]  # round 9: pinned settings, no secret
         assert "secret" not in (prod / vl.DISPATCHES).read_text()
         secret = rt.take_secret(prod, "rv-1")
         comps = (prod / vl.COMPLETIONS).read_text()
