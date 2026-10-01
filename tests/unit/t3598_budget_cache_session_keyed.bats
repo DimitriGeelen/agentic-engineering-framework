@@ -93,8 +93,8 @@ _budget() {
     _budget "$ME"
     [ "$status" -eq 0 ]
     echo "$output" | grep -q '^level: unknown'
-    ! echo "$output" | grep -q '^tokens: 0'
     echo "$output" | grep -q "written by Claude session $OTHER"
+    ! echo "$output" | grep -q '^tokens: 0'
 }
 
 # --- Controls: same-session caches keep the fast path ------------------------
