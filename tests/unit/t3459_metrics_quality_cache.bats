@@ -121,13 +121,17 @@ print("ZERO_CACHED" if out == (0, 0) and M._quality_cache["ts"] > 0 else "NOT_CA
     [[ "$output" == *"ZERO_CACHED"* ]]
 }
 
-@test "the TTL matches the window shared.py already uses for task metadata" {
-    # Not a magic number: consistency with _TASK_CACHE_TTL is the reason 30 was
-    # chosen. If one moves, this says so rather than letting them silently differ.
+@test "the TTL never outlives the task-metadata cache's safety net" {
+    # 30 was chosen to match _TASK_CACHE_TTL when both were plain freshness
+    # windows. T-3575 (a04b21822) made the task cache change-driven (stat
+    # signature) and raised _TASK_CACHE_TTL to 300 as a safety net only, so
+    # equality no longer means anything. The quality cache is still TTL-only,
+    # so what must hold is: a positive window no longer than that safety net.
     run bash -c "grep -oE '_QUALITY_CACHE_TTL = [0-9]+' '$FRAMEWORK_ROOT/web/blueprints/metrics.py' | grep -oE '[0-9]+'"
     [ "$status" -eq 0 ]
     local q="$output"
     run bash -c "grep -oE '_TASK_CACHE_TTL = [0-9]+' '$FRAMEWORK_ROOT/web/shared.py' | grep -oE '[0-9]+'"
     [ "$status" -eq 0 ]
-    [ "$q" = "$output" ]
+    [ "$q" -gt 0 ]
+    [ "$q" -le "$output" ]
 }
