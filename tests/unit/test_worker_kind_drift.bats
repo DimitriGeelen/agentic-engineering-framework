@@ -16,14 +16,18 @@ load ../test_helper
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
-    FW_BIN="$FRAMEWORK_ROOT/bin/fw"
+    # T-3624: the workflow validator left bin/fw for lib/workflow_lint.py in
+    # T-1807 (85a876aa9); `fw doctor` now checks its parity with
+    # lib/resolver.py. Reading bin/fw found no line at all, which also made the
+    # drift detector below pass vacuously over an empty set.
+    LINT_PY="$FRAMEWORK_ROOT/lib/workflow_lint.py"
     TL_BIN="$FRAMEWORK_ROOT/agents/termlink/termlink.sh"
-    [ -x "$FW_BIN" ]
+    [ -f "$LINT_PY" ]
     [ -f "$TL_BIN" ]
 }
 
-@test "VALID_WORKER_KINDS in bin/fw includes the documented set" {
-    line=$(grep "^VALID_WORKER_KINDS = " "$FW_BIN")
+@test "VALID_WORKER_KINDS in lib/workflow_lint.py includes the documented set" {
+    line=$(grep "^VALID_WORKER_KINDS = " "$LINT_PY")
     [ -n "$line" ]
     [[ "$line" == *'"Task"'* ]]
     [[ "$line" == *'"TermLink"'* ]]
@@ -44,17 +48,20 @@ setup() {
 @test "every TermLink-routed kind in VALID_WORKER_KINDS has a case branch" {
     # Drift detector. Extract the validator set, exclude non-TermLink
     # kinds (Task, pi — they route via Claude Code Task tool and pi RPC
-    # respectively), and the umbrella alias TermLink. The remaining set
-    # MUST appear in the termlink.sh --worker-kind case statement.
-    fw_kinds=$(grep "^VALID_WORKER_KINDS = " "$FW_BIN" \
+    # respectively; ollama-thin-loop — routed by lib/spawn.py's own
+    # _spawn_ollama_thin_loop, T-2592; ollama-direct — spawns nothing, T-1719),
+    # and the umbrella alias TermLink. The remaining set MUST appear in the
+    # termlink.sh --worker-kind case statement.
+    fw_kinds=$(grep "^VALID_WORKER_KINDS = " "$LINT_PY" \
         | grep -oE '"[a-zA-Z-]+"' | tr -d '"')
+    [ -n "$fw_kinds" ]
     case_line=$(grep -E '^[[:space:]]+""\|.*\)' "$TL_BIN" | head -1)
     [ -n "$case_line" ]
 
     missing=""
     for kind in $fw_kinds; do
         case "$kind" in
-            Task|pi|TermLink) continue ;;
+            Task|pi|TermLink|ollama-thin-loop|ollama-direct) continue ;;
             *) ;;
         esac
         if ! echo "$case_line" | grep -q "$kind"; then
