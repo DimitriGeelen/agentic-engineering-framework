@@ -621,6 +621,23 @@ After **every commit**, briefly report what was done and ask if the user wants t
 
 **Structural enforcement (T-139):** The `budget-gate.sh` PreToolUse hook reads actual token usage from the session transcript and **blocks** Write/Edit/Bash tool calls when context reaches critical level (>=95% of `FW_CONTEXT_WINDOW` — 285K at the 300K default). At critical, only git commit, fw handover, and read operations are allowed. The hook writes `.context/working/.budget-status` with current level (ok/warn/urgent/critical) for fast caching. PostToolUse `checkpoint.sh` remains as fallback for warnings and auto-handover.
 
+### Operator Commands Ship as ONE `runme.sh` Line — standing directive (T-3675)
+
+Whenever the operator has to run something, do NOT paste a block. Wrap it and hand over one line:
+
+```
+.agentic-framework/bin/fw runme new <name> --desc "why" -- '<cmd 1>' '<cmd 2>' …
+# prints:   bash /abs/path/.context/runme/<name>/runme.sh
+.agentic-framework/bin/fw runme watch <name>   # in the background: wait for START, follow to EXIT
+```
+
+The script runs `set -euo pipefail`, echoes each command, timestamps all output into `run.log`
+beside it, and marks `RUNME START` / `RUNME EXIT <code>`. Hand off exactly the printed line (full
+absolute path), then watch the log yourself — never ask the operator to paste output back. No
+`run.log` means it was not started, whatever the chat says. Answer a failed run with a new runme,
+not ad-hoc instructions. Watchtower URL handoffs (reviews, inception decisions) stay URLs. Keep
+`.context/runme/` gitignored.
+
 ### Copy-Pasteable Commands (T-609)
 When giving the human a command to run (Tier 0 approvals, inception decisions, verification steps, Human AC instructions), the command MUST be:
 

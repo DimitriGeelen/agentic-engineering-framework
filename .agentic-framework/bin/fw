@@ -941,7 +941,7 @@ UPSTREAM
         # shellcheck source=lib/vendor-visibility.sh
         source "$FRAMEWORK_ROOT/lib/vendor-visibility.sh"
         local _vis_rc=0
-        fw_vendor_check_visibility "$dest" "$target" || _vis_rc=$?
+        fw_vendor_check_visibility "$dest" "$target" "$vendor_source" || _vis_rc=$?
         if [ "$_vis_rc" -ne 0 ]; then
             if [ "${FW_ALLOW_INVISIBLE_VENDOR:-0}" = "1" ]; then
                 log_gate_bypass "FW_ALLOW_INVISIBLE_VENDOR" \
@@ -10658,6 +10658,12 @@ PYPREDICT
                 ;;
         esac
         exit $_test_exit
+        ;;
+    runme)
+        # T-3675: operator command handoff as one logged line (bash /abs/runme.sh)
+        source "$FRAMEWORK_ROOT/lib/runme.sh"
+        runme_main "$@"
+        exit $?
         ;;
     notify)
         # T-710: Push notification management
