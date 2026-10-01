@@ -50,6 +50,36 @@
   - objective 2 (lessons survive sessions): operator feedback is read in the next session.
 - **FW-003 maps weakly:** it fits Directive D2 (reliability) more than any objective, which hints it may belong in FW-001.
 
+## Three-model review (2026-10-01): all three GO-WITH-CHANGES
+Reviews: `T-3667-review-anthropic.md`, `-openai.md` (codex), `-zai.md` (GLM-5.2). All internal-class, cost logged.
+
+### Consensus changes (all three, or two with no dissent) → adopted into v2
+1. **Drain is measured by RESOLVED items** (fixed, verified, or won't-fix with a reason). Bundling is NOT an exit and does not reduce the counts the health checks read; the same cluster cannot satisfy forced action twice. *All three: the main new failure mode is "laundering", where re-bundling looks like progress.*
+2. **No median threshold.** Intake promotion uses the existing auto-promote band (T-1931: bvp_norm ≥ 0.85, known cost ≤ 1, concurrency cap). One promote path, and parking is the default. *All three: a median is self-referential and ratchets down.*
+3. **FW-003 is merged into FW-001** as a tagged test-health cluster. The T-3621 baseline stays the source of truth; only entries that EXPIRE unfixed flow into FW-001, reusing their owning triage tasks. *All three.*
+4. **Arc-008 is NOT absorbed.** Its headline (two-click decide plus feedback) is a deliverable: close it through §ACD with a demo. FW-002 holds only future escalations, and T-3618 is reconciled with it. *All three.*
+5. **The age clock cannot be cleared by parking.** Parking is the normal state, so "parked with a reason" must not silence the age WARN. Only a resolution clears it, and parking carries a revisit date. *Anthropic, Z.ai; OpenAI likewise wants expiring parking decisions.*
+6. **Intake counts audit RUNS, not calendar days** (for example "seen in 5 of the last 7 runs", which catches flapping). Dedup by check plus affected entity/scope. Link an existing task before creating one. A won't-fix writes a suppression record, so the same WARN does not come back in. Health WARNs about standing arcs must never auto-file tasks (no recursion). *All three.*
+7. **T-3637 is not blanket-exempted.** Standing arcs declare `supports:`; only the stale half of the rail is exempt, so a standing arc can never go without an objective. *All three.*
+8. **The weekly sweep is recurring spend under objective 6:** cost logged, a budget per sweep, and failure and missed-sweep detection. *All three.*
+9. **The §ACD create gate is kept:** a standing arc still needs a headline mechanic (for example "operator sees FW-001 flow and age, and every exit has a reason"). It is exempt only from close and stale. A human-only retire verb. *Anthropic, Z.ai; OpenAI: "standing" as an arc KIND, separate from status, with retirement.*
+10. **A won't-fix needs an independent reviewer verdict** (Anthropic), with a reason taxonomy visible to the operator (Z.ai).
+
+### Split, for the operator to decide
+- **The forced-action age clock:** Anthropic says one 60-day clock; Z.ai says 30 days, to match the delivery stale WARN; OpenAI says the thresholds are uncalibrated, so measure today's intake first and use them as review triggers rather than compulsory disposal.
+
+### Missing (to specify in the build)
+- the parked item's task state (status, horizon, WIP, focus, handover, work-on);
+- FW-NNN coexisting with arc-NNN and slugs, and the `arc_id` hook accepting FW ids;
+- a resolved-per-week metric;
+- sweep failure and cost-ceiling behaviour;
+- migration of the existing WARN backlog, the ~381-item inbox and the 114 reds;
+- Watchtower surfaces (the flow/age chart, the won't-fix review);
+- excluding standing arcs from /approvals close-ready and the completion badges;
+- a won't-fix reason taxonomy;
+- whether standing arcs get scoped drivers.
+- **Verify** `fw note triage` exists (Anthropic could not find it; the handover prints it).
+
 ## Risks
 The main risk is a graveyard: items parked and never drained. It needs drain rules (IW-3) and health rails (IW-1) that make an undrained standing arc as visible as a stale delivery arc is today.
 
