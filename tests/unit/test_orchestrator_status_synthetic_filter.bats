@@ -15,7 +15,10 @@ setup() {
     PROJECT_ROOT="$TEST_TEMP_DIR"
     guard_project_root
     export PROJECT_ROOT
-    mkdir -p "$PROJECT_ROOT/.context"
+    # T-3624: bin/fw treats a PROJECT_ROOT with neither .framework.yaml nor
+    # .tasks/ as stale and re-resolves it (T-2391), which pointed this suite at
+    # the live repo's dispatches. The marker keeps the fixture authoritative.
+    mkdir -p "$PROJECT_ROOT/.context" "$PROJECT_ROOT/.tasks/active" "$PROJECT_ROOT/.tasks/completed"
     FW_BIN="$FRAMEWORK_ROOT/bin/fw"
     [ -x "$FW_BIN" ]
 }
