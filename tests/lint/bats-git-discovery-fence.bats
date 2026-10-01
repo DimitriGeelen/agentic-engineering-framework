@@ -125,7 +125,8 @@ _is_grandfathered() {
     run env -u GIT_CEILING_DIRECTORIES TMPDIR="$fr/tmp" bash -c \
         "source '$FRAMEWORK_ROOT/tests/git_fence.bash' && cd '$fx' && git config user.email t@t"
     [ "$status" -ne 0 ]
-    ! grep -q 't@t' "$fr/.git/config"
+    run grep -q 't@t' "$fr/.git/config"
+    [ "$status" -ne 0 ]
 
     # A repo created INSIDE the temp dir is still found from its subdirectory.
     git -C "$fr/tmp/fixture" init -q
