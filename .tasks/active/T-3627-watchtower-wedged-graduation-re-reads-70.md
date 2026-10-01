@@ -10,12 +10,12 @@ description: >
   bound concurrent work so one slow route cannot starve the server, and keep the log
   across restarts (restart truncated watchtower.log, losing the caller evidence).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bug, web, perf]
-components: []
+components: [bin/watchtower.sh, lib/watchtower.sh, tools/t3627_route_profile.py, web/blueprints/core.py, C-003, web/shared.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T08:42:58Z
-last_update: '2026-10-01T08:45:21Z'
-date_finished:
+last_update: 2026-10-01T12:41:26Z
+date_finished: 2026-10-01T12:41:26Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -103,6 +103,13 @@ Operator could not reach Watchtower on 2026-10-01. py-spy dump: docs/reports/T-w
 - [x] Who called /graduation about 60 times at once is identified if the evidence allows (playwright route sweeps such as tests/playwright/test_response_times.py and test_all_routes_height.py against the LIVE server, the nightly runner, or monitors). If a test hits the live operator Watchtower, it is pointed at its own fixture server instead. `bin/fw watchtower current` passes after the final restart.
 
 ### Human
+- [ ] [REVIEW] /graduation, / and /project render as before, and stay reachable
+  **Steps:**
+  1. Open http://192.168.10.107:3002/graduation, then http://192.168.10.107:3002/ and http://192.168.10.107:3002/project.
+  2. Reload /graduation a few times.
+  **Expected:** The pages look as they did before T-3627 (same tables and counts); a reload is fast, about 0.2s once warm. No "503 / Retry-After" appears in normal single-user use.
+  **If not:** Note the page and what differs, or the 503, and screenshot it.
+  *Reviewer-judged under T-3557 (render-surface): an independent agent reviewer may close this through the verdict ledger once T-3580 is live.*
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -303,6 +310,15 @@ bin/fw watchtower current
 
 ## Recommendation
 
+**Recommendation:** GO
+
+**Rationale:** The hang's cause is fixed. /graduation is cached on the corpus signature, and a warm request reads 5 files instead of about 6,700. Every cache has one build lock, so concurrent misses wait for a single build. Beyond 4 in-flight requests, /graduation answers 503 with Retry-After instead of piling up threads. In-process, 30 concurrent cold /graduation requests left / and a static file answering in under 2s. A restart now rotates the log instead of truncating it, so the next hang keeps its evidence. Other heavy routes are listed and filed (T-3634). Only the render check remains, and it is reviewer-judged.
+
+**Evidence:**
+- Commits dc8137bc3 and 3e3858db3; the py-spy dump is docs/reports/T-wt-hang-2026-10-01-pyspy.txt.
+- Tests: zero corpus reads when warm, one read after one file changes, the 30-concurrent starvation test, and 4 bats tests for log rotation.
+- `bin/fw watchtower current` passes after the final restart.
+
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
      shape is copied rather than reinvented.
@@ -390,3 +406,22 @@ Warm-request corpus file opens, before → after:
 
 ### 2026-10-01T08:44:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0e686564
+- **Timestamp:** 2026-10-01T12:42:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `_build_application_index` (web/blueprints/discovery.py) is cached on a corpus signature, reusing the T-3590/T-3600 mechanism (`_task_files_signature` / the shared task cache), so a warm `/graduation`
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/discovery.py in: `_build_application_index` (web/blueprints/discovery.py) is cached on a corpus signature, reusing the T-3590/T-3600 mechanism (`_task_files_signature``
+- **AC#5 (Agent)** — Who called /graduation about 60 times at once is identified if the evidence allows (playwright route sweeps such as tests/playwright/test_response_times.py and test_all_routes_height.py against the LI
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/playwright/test_response_times.py in: Who called /graduation about 60 times at once is identified if the evidence allows (playwright route sweeps such as tests/playwright/test_response_tim`
+
+### 2026-10-01T12:41:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
