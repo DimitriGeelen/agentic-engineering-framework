@@ -234,24 +234,29 @@ YAML
 # ── End to end: the real script, a real external kill ──
 
 @test "t3202: a real externally-killed audit records kill_source external" {
-    TIMING_FILE="$FRAMEWORK_ROOT/.context/audits/full-audit-timing.yaml"
-    PREV=""
-    [ -f "$TIMING_FILE" ] && PREV="$(cat "$TIMING_FILE")"
-    rm -f "$TIMING_FILE"
+    # T-3624: hermetic scratch PROJECT_ROOT (same shape as t3298). Against the
+    # live checkout this shared the live audit lock with cron audits, pre-push
+    # audits and — since the nightly runner went per-file parallel (T-3602) —
+    # sibling test files, so a held lock made audit.sh exit 75 before writing
+    # any timing record. A full audit of the empty scratch project takes ~10s,
+    # so the external kill comes at 4s to land mid-run.
+    local proj="$TMP_T3202/proj"
+    mkdir -p "$proj/.context/working" "$proj/.context/locks" \
+             "$proj/.context/audits" "$proj/.tasks/active" \
+             "$proj/.tasks/completed" "$proj/.tasks/templates"
+    echo "# template" > "$proj/.tasks/templates/default.md"
+    TIMING_FILE="$proj/.context/audits/full-audit-timing.yaml"
 
     # Ceiling deliberately far above the external kill, which is the whole
     # point: the run must be killed long before its own watchdog could fire.
-    FW_AUDIT_FULL_TIMEOUT=3000 timeout 20 "$AUDIT" \
-        --output "$TMP_T3202/audit-out" --quiet || true
+    env PROJECT_ROOT="$proj" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" FW_AUDIT_FULL_TIMEOUT=3000 \
+        timeout 4 bash "$AUDIT" --output "$TMP_T3202/audit-out" --quiet || true
 
-    local ok=0
-    if [ -f "$TIMING_FILE" ]; then
-        grep -q "timed_out: true" "$TIMING_FILE" \
-            && grep -q "kill_source: external" "$TIMING_FILE" && ok=1
-    fi
-
-    if [ -n "$PREV" ]; then printf '%s\n' "$PREV" > "$TIMING_FILE"; else rm -f "$TIMING_FILE"; fi
-    [ "$ok" -eq 1 ]
+    [ -f "$TIMING_FILE" ]
+    run grep -q "timed_out: true" "$TIMING_FILE"
+    [ "$status" -eq 0 ]
+    run grep -q "kill_source: external" "$TIMING_FILE"
+    [ "$status" -eq 0 ]
 }
 
 @test "t3202: audit.sh passes shell syntax check" {

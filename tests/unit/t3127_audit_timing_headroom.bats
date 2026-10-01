@@ -133,27 +133,28 @@ YAML
     # End-to-end: force a 3s ceiling on a full run and confirm the persisted
     # record names the section that was killed. Real audit.sh, real lock,
     # real SIGTERM — not a simulation of the trap logic.
+    #
+    # T-3624: hermetic scratch PROJECT_ROOT (same shape as t3298). Against the
+    # live checkout this shared the live audit lock with cron audits, pre-push
+    # audits and — since the nightly runner went per-file parallel (T-3602) —
+    # sibling test files, so a held lock made audit.sh exit 75 before writing
+    # any timing record.
+    local proj="$TMPDIR_T3127/proj"
+    mkdir -p "$proj/.context/working" "$proj/.context/locks" \
+             "$proj/.context/audits" "$proj/.tasks/active" \
+             "$proj/.tasks/completed" "$proj/.tasks/templates"
+    echo "# template" > "$proj/.tasks/templates/default.md"
     OUT_DIR="$TMPDIR_T3127/audit-out"
-    TIMING_FILE="$FRAMEWORK_ROOT/.context/audits/full-audit-timing.yaml"
-    PREV_TIMING=""
-    [ -f "$TIMING_FILE" ] && PREV_TIMING="$(cat "$TIMING_FILE")"
-    rm -f "$TIMING_FILE"
+    TIMING_FILE="$proj/.context/audits/full-audit-timing.yaml"
 
-    FW_AUDIT_FULL_TIMEOUT=3 timeout 60 "$AUDIT" --output "$OUT_DIR" --quiet || true
+    env PROJECT_ROOT="$proj" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" FW_AUDIT_FULL_TIMEOUT=3 \
+        timeout 60 bash "$AUDIT" --output "$OUT_DIR" --quiet || true
 
     [ -f "$TIMING_FILE" ]
     run grep -q "timed_out: true" "$TIMING_FILE"
     [ "$status" -eq 0 ]
     run grep -q "killed_in_section:" "$TIMING_FILE"
     [ "$status" -eq 0 ]
-
-    # Restore whatever was there before so this test has no side effect on a
-    # real dev checkout's timing record.
-    if [ -n "$PREV_TIMING" ]; then
-        printf '%s\n' "$PREV_TIMING" > "$TIMING_FILE"
-    else
-        rm -f "$TIMING_FILE"
-    fi
 }
 
 @test "t3127: audit.sh passes shell syntax check after edit" {
