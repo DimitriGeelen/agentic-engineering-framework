@@ -1752,7 +1752,7 @@ do_doctor() {
     # lib/paths.sh (see T-2466 note above), so this is inlined rather than shared
     # with agents/git/lib/common.sh's resolve_git_hooks_dir.
     local hooks_dir
-    hooks_dir=$(git -C "$PROJECT_ROOT" rev-parse --git-path hooks 2>/dev/null)
+    hooks_dir=$(git -C "$PROJECT_ROOT" rev-parse --git-path hooks 2>/dev/null) || hooks_dir=""  # T-3625: not a git repo -> fallback below
     case "$hooks_dir" in
         /*) ;;
         "") hooks_dir="$PROJECT_ROOT/.git/hooks" ;;

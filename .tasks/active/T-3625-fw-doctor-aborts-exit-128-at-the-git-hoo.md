@@ -50,7 +50,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T08:34:43Z
-last_update: 2026-10-01T13:20:14Z
+last_update: 2026-10-01T16:53:57Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -107,9 +107,9 @@ worker this session. Pick up once T-3593 releases `bin/fw`. T-3630 is a duplicat
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Regression test `tests/unit/t3625_doctor_non_git_project.bats` runs `bin/fw doctor` with PROJECT_ROOT pointing at a non-git fixture (tests/git_fence.bash, GIT_CEILING_DIRECTORIES) and asserts doctor does not exit 128 and prints checks after "Context directory"; red before the fix
-- [ ] Fix: `bin/fw` git-hooks check tolerates a failed `git rev-parse --git-path hooks` (`|| true`), so the existing empty-result fallback runs; vendored copy synced
-- [ ] No regression: `tests/unit/cron_flock_parity.bats`, `tests/unit/t3161_empty_registry_does_not_wipe_live_cron.bats`, `tests/unit/test_cron_registry_generated_drift.bats` green
+- [x] Regression test `tests/unit/t3625_doctor_non_git_project.bats` runs `bin/fw doctor` with PROJECT_ROOT pointing at a non-git fixture (tests/git_fence.bash, GIT_CEILING_DIRECTORIES) and asserts doctor does not exit 128 and prints checks after "Context directory"; red before the fix
+- [x] Fix: `bin/fw` git-hooks check tolerates a failed `git rev-parse --git-path hooks` (`|| true`), so the existing empty-result fallback runs; vendored copy synced
+- [x] No regression: `tests/unit/cron_flock_parity.bats`, `tests/unit/t3161_empty_registry_does_not_wipe_live_cron.bats`, `tests/unit/test_cron_registry_generated_drift.bats` green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -144,6 +144,9 @@ worker this session. Pick up once T-3593 releases `bin/fw`. T-3630 is a duplicat
 
 ## Verification
 
+bats tests/unit/t3625_doctor_non_git_project.bats
+bats tests/unit/cron_flock_parity.bats tests/unit/t3161_empty_registry_does_not_wipe_live_cron.bats tests/unit/test_cron_registry_generated_drift.bats
+bin/fw vendor self --check
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -272,19 +275,13 @@ worker this session. Pick up once T-3593 releases `bin/fw`. T-3630 is a duplicat
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `fw doctor` in a project not inside any git repo stops after "OK Context directory" and exits 128; every later check silently never runs (cron_flock_parity.bats 1/3/5, t3161 4-5, test_cron_registry_generated_drift 1-3 red).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** 176445c64 (T-2812) changed the git-hooks check to `hooks_dir=$(git -C "$PROJECT_ROOT" rev-parse --git-path hooks 2>/dev/null)`. bin/fw runs `set -euo pipefail`, and a plain assignment from a failing command substitution takes the command's exit status, so `set -e` killed `do_doctor`. The `"")` fallback in the case below was dead code.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** every doctor test fixture lived under /tmp, and on this host /tmp resolved to a stray /.git above it, so `rev-parse` always succeeded. No test exercised doctor in a project genuinely outside git until the T-3610 git fence (GIT_CEILING_DIRECTORIES) removed that accident.
+
+**Prevention:** `tests/unit/t3625_doctor_non_git_project.bats` runs doctor in a fenced non-git fixture and asserts it reaches the git-hooks checks. The git fence keeps all fixtures from borrowing an outer repo, so the next `set -e` + failing-git assignment in doctor shows up in the suite.
 
 ## Evolution
 
