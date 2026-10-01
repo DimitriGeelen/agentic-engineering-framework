@@ -190,28 +190,28 @@ register:
   - id: R2
     text: "Write-time fast path: if the receiver is ready, inject into it now"
     source: "T-3397 §Consumption"
-    owner_task: T-3684
+    owner_task: T-3693
     status: in-progress
     evidence: "deferred"
 
   - id: R3
     text: "Cron tick, default 30 s, configurable: guaranteed-delivery fallback that injects when ready"
     source: "T-3397 §Consumption; Amendment 5 IW-2"
-    owner_task: T-3684
+    owner_task: T-3693
     status: in-progress
     evidence: "deferred"
 
   - id: R4
     text: "Ready flag: Stop hook writes ready-for-input: true; UserPromptSubmit clears it"
     source: "T-3397 §Consumption"
-    owner_task: T-3684
+    owner_task: T-3693
     status: in-progress
     evidence: "deferred"
 
   - id: R5
     text: "Urgent bypass: urgent messages inject immediately regardless of state"
     source: "operator decision 2026-09-21, T-3397 IW-1"
-    owner_task: T-3684
+    owner_task: T-3693
     status: in-progress
     evidence: "deferred"
 

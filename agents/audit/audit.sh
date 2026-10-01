@@ -4335,6 +4335,95 @@ check_fabric_underpopulated() {
 }
 check_fabric_underpopulated
 
+# Design-conformance register check (T-3691/T-3694)
+# Validate that each requirement register row has a valid owner task
+check_register_requirements() {
+    local arch_doc="$PROJECT_ROOT/docs/architecture/sidecar-target-architecture.md"
+    [ -f "$arch_doc" ] || return 0
+
+    # Parse register YAML from the architecture doc
+    local register_py reg_out reg_rc
+    register_py=$(cat <<'REGPY'
+import yaml, sys, os, re
+from pathlib import Path
+
+arch_file = sys.argv[1] if len(sys.argv) > 1 else ""
+if not arch_file or not os.path.isfile(arch_file):
+    print("ERROR: arch file not found")
+    sys.exit(1)
+
+project_root = os.environ.get("PROJECT_ROOT", "")
+
+# Extract the register YAML from the markdown
+with open(arch_file) as f:
+    content = f.read()
+
+# Find the register block: starts with "register:" and ends with "```"
+register_match = re.search(r'^register:\n((?:.*\n)*?)^```', content, re.MULTILINE)
+if not register_match:
+    sys.exit(1)
+
+register_yaml = "register:\n" + register_match.group(1)
+try:
+    data = yaml.safe_load(register_yaml)
+    register = data.get("register", [])
+except Exception as e:
+    sys.exit(1)
+
+# Check each row
+failures = []
+for row in register:
+    rid = row.get("id", "UNKNOWN")
+    owner = row.get("owner_task")
+    status = row.get("status", "unknown")
+
+    # Check 1: owner_task must exist
+    if not owner:
+        failures.append(f"R_{rid}: no owner_task specified")
+        continue
+
+    # Check 2: owner_task must point to an existing task (active or completed)
+    task_found = False
+    for subdir in ["active", "completed"]:
+        task_dir = os.path.join(project_root, f".tasks/{subdir}")
+        if os.path.isdir(task_dir):
+            for f in os.listdir(task_dir):
+                if f.startswith(f"{owner}-"):
+                    task_found = True
+                    # Check 3: if owner is completed, status must be built
+                    if subdir == "completed" and status != "built":
+                        failures.append(f"R_{rid}: owner {owner} is completed but row status is {status} (not built)")
+                    break
+        if task_found:
+            break
+
+    if not task_found:
+        failures.append(f"R_{rid}: owner_task {owner} not found in .tasks/")
+
+if failures:
+    for f in failures:
+        print(f)
+    sys.exit(1)
+
+sys.exit(0)
+REGPY
+)
+
+    reg_out=$(PROJECT_ROOT="$PROJECT_ROOT" python3 -c "$register_py" "$arch_doc" 2>&1)
+    reg_rc=$?
+
+    if [ $reg_rc -eq 0 ]; then
+        pass "Design-conformance register: all rows have valid owners"
+        return 0
+    else
+        fail "Design-conformance register has invalid rows" \
+             "$reg_out" \
+             "Review docs/architecture/sidecar-target-architecture.md register section — ensure all owner_task references exist and completed owners have status=built"
+        return 1
+    fi
+}
+check_register_requirements
+
 echo ""
 fi # end structure
 
