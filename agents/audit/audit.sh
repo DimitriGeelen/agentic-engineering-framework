@@ -4379,7 +4379,7 @@ for row in register:
 
     # Check 1: owner_task must exist
     if not owner:
-        failures.append(f"R_{rid}: no owner_task specified")
+        failures.append(f"{rid}: no owner_task specified")
         continue
 
     # Check 2: owner_task must point to an existing task (active or completed)
@@ -4392,13 +4392,13 @@ for row in register:
                     task_found = True
                     # Check 3: if owner is completed, status must be built
                     if subdir == "completed" and status != "built":
-                        failures.append(f"R_{rid}: owner {owner} is completed but row status is {status} (not built)")
+                        failures.append(f"{rid}: owner {owner} is completed but row status is {status} (not built)")
                     break
         if task_found:
             break
 
     if not task_found:
-        failures.append(f"R_{rid}: owner_task {owner} not found in .tasks/")
+        failures.append(f"{rid}: owner_task {owner} not found in .tasks/")
 
 if failures:
     for f in failures:
