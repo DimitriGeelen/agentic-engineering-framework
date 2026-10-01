@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T23:22:44Z
-last_update: 2026-10-01T23:24:41Z
+last_update: '2026-10-01T23:30:20Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -75,6 +75,16 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-01T23:30:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=11)
     rubric_sha: e4a00f38e801
 ---
 
@@ -138,6 +148,15 @@ bvp_scores_proposed:
   **If not:** Screenshot the broken section and note what is missing (styling, alignment, link targets)
 
 ## Verification
+
+# Audit register check (audit structure section)
+bin/fw audit --section structure 2>&1 | grep -q "Design-conformance register"
+
+# Verify R2-R5 ownership updated to T-3693
+grep -q "owner_task: T-3693" docs/architecture/sidecar-target-architecture.md && grep "id: R2" -A3 docs/architecture/sidecar-target-architecture.md | grep -q T-3693
+
+# Vendor clean
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
