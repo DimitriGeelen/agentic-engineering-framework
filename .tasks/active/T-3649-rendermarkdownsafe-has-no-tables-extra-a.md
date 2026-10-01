@@ -12,12 +12,12 @@ description: >
   for the dossier rendering in T-3565. Render surface: needs a [REVIEW] Human AC and
   watchtower restart + currency check. Triage: T-3639.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bug, 055, upstream]
-components: []
+components: [web/shared.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T13:25:23Z
-last_update: 2026-10-01T13:43:09Z
-date_finished:
+last_update: 2026-10-01T13:46:21Z
+date_finished: 2026-10-01T13:46:21Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -388,3 +388,15 @@ bin/fw watchtower current
 
 ### 2026-10-01T13:43:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e6315298
+- **Timestamp:** 2026-10-01T13:46:35Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-01T13:46:21Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
