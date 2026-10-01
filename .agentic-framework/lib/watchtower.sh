@@ -331,3 +331,18 @@ _watchtower_open() {
         fi
     fi
 }
+
+# T-3627: keep the previous server's log across a restart. The start path used to
+# open watchtower.log with `>`, so every restart truncated it — on 2026-10-01 that
+# destroyed the only record of who sent ~60 concurrent /graduation requests to the
+# wedged server. Shift log -> log.1 -> ... -> log.<keep>; an empty or missing log is
+# left alone so it cannot push a real one out of the window.
+watchtower_rotate_log() {
+    local log="$1" keep="${2:-3}" i
+    [ -s "$log" ] || return 0
+    rm -f "$log.$keep"
+    for ((i = keep - 1; i >= 1; i--)); do
+        [ -e "$log.$i" ] && mv -f "$log.$i" "$log.$((i + 1))"
+    done
+    mv -f "$log" "$log.1"
+}

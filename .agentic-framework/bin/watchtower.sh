@@ -217,6 +217,7 @@ do_start() {
     export PROJECT_ROOT
     log_info "Starting Watchtower on port $port (project: $PROJECT_ROOT)..."
     cd "$FRAMEWORK_ROOT"
+    watchtower_rotate_log "$LOG_FILE" 3  # T-3627: rotate, never truncate the evidence
     PROJECT_ROOT="$PROJECT_ROOT" python3 -m web.app --port "$port" $debug_flag > "$LOG_FILE" 2>&1 &
     local new_pid=$!
     echo "$new_pid" > "$PID_FILE"

@@ -139,3 +139,6 @@ tests/unit/_bvp_cli_imported*.py
 .context/sidecar/inbox-state.json
 .context/sidecar/e2e/*-prompt.md
 docs/reports/T-3239-continuous-loop-demo/.livefire-run-copy.sh
+
+# T-3627: rotated Watchtower logs (watchtower_rotate_log) are local evidence, not history
+.context/working/watchtower.log.*

@@ -1,0 +1,21 @@
+id: tools/t3627_route_profile.py
+name: t3627_route_profile
+type: script
+subsystem: framework-core
+location: tools/t3627_route_profile.py
+tags: []
+
+purpose: "T-3627: profile Watchtower GET routes in-process (app.test_client, never a live server)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-01
+created_by: unknown

@@ -5,6 +5,7 @@ import logging
 import os
 import re as re_mod
 import subprocess
+import threading
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Callable, TypeVar
@@ -1548,6 +1549,8 @@ _TASK_CACHE_TTL = 300  # seconds — safety net only; freshness comes from the s
 
 _TASK_FM_CACHE: dict = {}       # path -> (mtime_ns, frontmatter dict | None)
 _EPISODIC_TAGS_CACHE: dict = {}  # path -> (mtime_ns, (task_id, tags) | None)
+_TASK_BUILD_LOCK = threading.Lock()
+_TAGS_BUILD_LOCK = threading.Lock()
 
 
 def _dir_signature(directory, prefix, suffix):
@@ -1616,7 +1619,15 @@ def get_all_task_metadata():
             and _task_cache["sig"] == sig
             and (now - _task_cache["ts"]) < _TASK_CACHE_TTL):
         return _task_cache["data"]
+    with _TASK_BUILD_LOCK:  # T-3627: concurrent misses wait for one build
+        if (_task_cache["data"] is not None
+                and _task_cache["sig"] == sig
+                and (_time.monotonic() - _task_cache["ts"]) < _TASK_CACHE_TTL):
+            return _task_cache["data"]
+        return _build_task_metadata(now, sig)
 
+
+def _build_task_metadata(now, sig):
     all_tasks = []
     names = {}
     for location in ("active", "completed"):
@@ -1695,7 +1706,15 @@ def get_episodic_tags():
             and _task_cache["tags_sig"] == sig
             and (now - _task_cache["tags_ts"]) < _TASK_CACHE_TTL):
         return _task_cache["tags"]
+    with _TAGS_BUILD_LOCK:  # T-3627: concurrent misses wait for one build
+        if (_task_cache["tags"] is not None
+                and _task_cache["tags_sig"] == sig
+                and (_time.monotonic() - _task_cache["tags_ts"]) < _TASK_CACHE_TTL):
+            return _task_cache["tags"]
+        return _build_episodic_tags(episodic_dir, now, sig)
 
+
+def _build_episodic_tags(episodic_dir, now, sig):
     tags = {}
     if episodic_dir.exists():
         for f in episodic_dir.glob("T-*.yaml"):
@@ -1709,6 +1728,91 @@ def get_episodic_tags():
     _task_cache["tags_ts"] = now   # T-3459: stamp what we just computed
     _task_cache["tags_sig"] = sig
     return tags
+
+
+# T-3627: Watchtower wedged on 2026-10-01 — 59 of 91 threads were rebuilding the
+# /graduation index at once, because a cache miss had no lock: every concurrent
+# request that missed did the whole-corpus read itself. Two rules, shared here so
+# the next cache does not re-learn them:
+#   1. single flight — one build per cache; concurrent misses wait for it and
+#      take its result (`signature_cached`);
+#   2. bounded heavy routes — past N in flight, answer 503 + Retry-After instead
+#      of queueing another thread (`limit_inflight`).
+_SIG_CACHES: dict = {}       # name -> (sig, value, monotonic ts)
+_SIG_LOCKS: dict = {}        # name -> threading.Lock
+_SIG_LOCKS_GUARD = threading.Lock()
+
+
+def episodic_files_signature():
+    """Stat-signature of .context/episodic/T-*.yaml (the episodic half of the corpus)."""
+    return _dir_signature(PROJECT_ROOT / ".context" / "episodic", "T-", ".yaml")
+
+
+def _file_stat_sig(path):
+    try:
+        st = path.stat()
+    except OSError:
+        return None
+    return (st.st_mtime_ns, st.st_size)
+
+
+def signature_cached(name, sig, build, ttl=None):
+    """Return build(), cached under `name` until `sig` changes (T-3627).
+
+    `sig` is a cheap stat-signature of everything `build` reads (see
+    `_task_files_signature`, `episodic_files_signature`). PROJECT_ROOT is folded in
+    so a re-pointed root never serves another corpus. A miss takes the cache's own
+    lock and re-checks, so N concurrent misses run `build` once, not N times.
+    `ttl` (default `_TASK_CACHE_TTL`) is only a safety net.
+    """
+    ttl = _TASK_CACHE_TTL if ttl is None else ttl
+    key = (str(PROJECT_ROOT), sig)
+
+    def _hit():
+        entry = _SIG_CACHES.get(name)
+        if entry is not None and entry[0] == key and (_time.monotonic() - entry[2]) < ttl:
+            return True, entry[1]
+        return False, None
+
+    ok, value = _hit()
+    if ok:
+        return value
+    with _SIG_LOCKS_GUARD:
+        lock = _SIG_LOCKS.setdefault(name, threading.Lock())
+    with lock:
+        ok, value = _hit()
+        if ok:
+            return value
+        value = build()
+        _SIG_CACHES[name] = (key, value, _time.monotonic())
+        return value
+
+
+def limit_inflight(limit, retry_after=5):
+    """Decorator: at most `limit` concurrent executions of a heavy view (T-3627).
+
+    Past the limit the view answers 503 with Retry-After at once rather than
+    occupying another server thread on work already in progress.
+    """
+    import functools
+
+    def deco(view):
+        sem = threading.BoundedSemaphore(limit)
+
+        @functools.wraps(view)
+        def wrapper(*args, **kwargs):
+            if not sem.acquire(blocking=False):
+                from flask import Response
+                logger.warning("T-3627: %s at in-flight limit %d — 503", view.__name__, limit)
+                return Response(
+                    "Busy: this page is being rebuilt; retry shortly.\n", status=503,
+                    headers={"Retry-After": str(retry_after)}, mimetype="text/plain")
+            try:
+                return view(*args, **kwargs)
+            finally:
+                sem.release()
+        return wrapper
+    return deco
 
 
 def sse_event(event_type, **kwargs):

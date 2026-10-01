@@ -11,7 +11,7 @@ from web.context_loader import load_concerns, load_decisions, load_directives, l
 from web.shared import (
     FRAMEWORK_ROOT, PROJECT_ROOT, render_page, load_yaml as _load_yaml,
     load_scan, parse_frontmatter, load_latest_audit, get_all_task_metadata,
-    _auto_link_files,
+    _auto_link_files, mtime_cached_get,
 )
 from web.subprocess_utils import run_git_command
 
@@ -195,6 +195,31 @@ def _get_focus_task():
     return {"id": task_id, "name": ""}
 
 
+def _arc_membership_index():
+    """`scan_tasks_by_arc_membership`, cached until a task file changes (T-3627).
+
+    The dashboard re-read the frontmatter of every task file (~3,600) on every
+    request to count arc members — the same whole-corpus-per-request class as the
+    /graduation wedge.
+    """
+    from web.shared import _task_files_signature, signature_cached
+    return signature_cached("dashboard-arc-membership", _task_files_signature(),
+                            lambda: scan_tasks_by_arc_membership(PROJECT_ROOT))
+
+
+def _episodic_display_name(f):
+    """`T-NNN: <task_name>` from an episodic file's first 800 bytes (cached per mtime)."""
+    try:
+        header = f.read_text(encoding="utf-8")[:800]
+    except Exception:
+        return f.stem
+    m = re_mod.search(r'task_name:\s*"(.+?)"', header)
+    return f"{f.stem}: {m.group(1)[:60]}" if m else f.stem
+
+
+_EPISODIC_NAME_CACHE: dict = {}  # path -> (mtime_ns, display name)
+
+
 def _get_arcs_in_flight():
     """T-1661: Return in-progress arcs with task counts for landing-page section.
 
@@ -218,7 +243,7 @@ def _get_arcs_in_flight():
     arcs = []
     # T-1880 (T-NEW-15): single pass over .tasks/, shared across all arc
     # cards on this page. Replaces N×O(tasks) inline loop with 1×O(tasks).
-    _by_arc_id, _by_tag = scan_tasks_by_arc_membership(PROJECT_ROOT)
+    _by_arc_id, _by_tag = _arc_membership_index()
     for f in sorted(arcs_dir.glob("*.yaml")):
         try:
             d = _load_yaml(f) or {}
@@ -534,14 +559,8 @@ def _build_project_categories():
             return int(m.group(1)) if m else 0
         episodics = sorted(episodic_dir.glob("T-*.yaml"), key=_task_num, reverse=True)
         for f in episodics:
-            name = f.stem
-            try:
-                header = f.read_text(encoding="utf-8")[:800]
-                m = re_mod.search(r'task_name:\s*"(.+?)"', header)
-                if m:
-                    name = f"{f.stem}: {m.group(1)[:60]}"
-            except Exception:
-                pass
+            # T-3627: was a read of every episodic file on every /project request
+            name = mtime_cached_get(f, _episodic_display_name, _EPISODIC_NAME_CACHE, f.stem)
             _add("Research", f, display_name=name)
 
     return categories

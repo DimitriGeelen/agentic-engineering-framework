@@ -1,20 +1,20 @@
 ---
-id: T-3627
-name: "Watchtower wedged: /graduation re-reads ~7000 files per request uncached; 59
-  of 91 threads stuck, every route timed out (2026-10-01)"
+id: T-3634
+name: "Watchtower: cache remaining per-request corpus readers (/docs/generated, /metrics,
+  dashboard cockpit summary)"
 description: >
-  Operator could not reach Watchtower. py-spy (docs/reports/T-wt-hang-2026-10-01-pyspy.txt):
-  59/91 threads in discovery.py _build_application_index (graduation view) reading
-  every task + episodic file, 83 CLOSE-WAIT connections, even static files timed out;
-  restart restored it. Fix: cache the application index (mtime/signature, like T-3590/T-3600),
-  bound concurrent work so one slow route cannot starve the server, and keep the log
-  across restarts (restart truncated watchtower.log, losing the caller evidence).
+  T-3627 follow-up. In-process profile (tools/t3627_route_profile.py) after T-3627:
+  warm requests still re-read: /docs/generated docs._load_docs 1394 fabric cards per
+  request (3.6s warm); /metrics metrics._stale_tasks ~545 active task files (0.8s);
+  / cockpit.get_action_summary ~539 active task files; /approvals 2.8s warm (CPU-bound,
+  ~80 files). Cache each on a stat-signature with web.shared.signature_cached (single-flight)
+  and add limit_inflight where a cold build is multi-second.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, web, perf]
+horizon: next
+tags: []
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-01T08:42:58Z
-last_update: '2026-10-01T08:45:21Z'
+created: 2026-10-01T09:12:28Z
+last_update: '2026-10-01T09:15:29Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -56,8 +56,18 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-01T09:15:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-01T08:44:19Z'
+  - ts: '2026-10-01T09:15:29Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -74,33 +84,20 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-01T08:45:21Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=275,acs=7)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3627: Watchtower wedged: /graduation re-reads ~7000 files per request uncached; 59 of 91 threads stuck, every route timed out (2026-10-01)
+# T-3634: Watchtower: cache remaining per-request corpus readers (/docs/generated, /metrics, dashboard cockpit summary)
 
 ## Context
 
-Operator could not reach Watchtower on 2026-10-01. py-spy dump: docs/reports/T-wt-hang-2026-10-01-pyspy.txt (59/91 threads in `_build_application_index`).
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `_build_application_index` (web/blueprints/discovery.py) is cached on a corpus signature, reusing the T-3590/T-3600 mechanism (`_task_files_signature` / the shared task cache), so a warm `/graduation` does not re-read the corpus. Test: a counting wrapper shows 0 file reads on the second request; cold and warm timings are recorded in Decisions.
-- [x] Any other route that re-reads the whole corpus per request without a cache is found (profile the routes the playwright route sweep hits) and listed in Decisions. The ones as bad as /graduation are fixed here; the rest get one follow-up task.
-- [x] One slow route cannot starve the server: bound concurrent heavy work (for example a per-route in-flight limit returning 503 with Retry-After, or one shared build lock so concurrent misses wait for a single build). Test: 30 concurrent cold /graduation requests leave / and a static file answering within 2s.
-- [x] `bin/fw watchtower restart` keeps the previous log (rotate to `watchtower.log.1`, do not truncate). Test included.
-- [ ] Who called /graduation about 60 times at once is identified if the evidence allows (playwright route sweeps such as tests/playwright/test_response_times.py and test_all_routes_height.py against the LIVE server, the nightly runner, or monitors). If a test hits the live operator Watchtower, it is pointed at its own fixture server instead. `bin/fw watchtower current` passes after the final restart.
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -261,21 +258,21 @@ Operator could not reach Watchtower on 2026-10-01. py-spy dump: docs/reports/T-w
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-python3 -m pytest tests/web/test_t3627_watchtower_wedge.py -q -p no:cacheprovider > /tmp/.t3627-py.out 2>&1 && grep -q "8 passed" /tmp/.t3627-py.out
-timeout 120 bats tests/unit/t3627_watchtower_log_rotate.bats > /tmp/.t3627-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3627-bats.out
-test "$(grep -c '# skip' /tmp/.t3627-bats.out)" -eq 0
-bin/fw vendor self --check
-bin/fw watchtower current
-
 ## RCA
 
-**Symptom:** 2026-10-01 Watchtower stopped answering every route, static files included. py-spy: 59 of 91 threads inside `discovery._build_application_index` (the /graduation view), 83 sockets in CLOSE-WAIT (clients had already given up).
+<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
+     Non-bug-class tasks may leave this section empty or remove it.
 
-**Root cause:** the T-1233 application index was a 60s TTL cache with no build lock. Every request that arrived after expiry re-read every task + episodic file (~6,700 files, 2.3s alone) itself, and concurrent misses each ran the full scan. Under load each scan slows the others (GIL + I/O), so requests outlive their clients' timeouts, clients retry, and the pile only grows: a positive-feedback wedge that ends with every server thread in the same loop. `graduation()` also called `_count_applications` once per learning (~700 calls per request).
+     For bug-class, fill in:
+       **Symptom:** what was observed (the user-facing manifestation).
+       **Root cause:** the specific structural/logical gap — not "the code was wrong".
+       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
+       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
 
-**Why structurally allowed:** no Watchtower cache had single-flight; T-3575/T-3590 made the task caches change-driven but still let N concurrent misses build N times. Nothing bounded concurrent heavy work, and the response-time tests measure one request at a time, which cannot see contention. `fw watchtower restart` truncated `watchtower.log`, so the evidence of who called was destroyed by the act of recovering.
-
-**Prevention:** `web.shared.signature_cached` (stat-signature + per-cache lock, so concurrent misses share one build) and `web.shared.limit_inflight` (503 + Retry-After past N), pinned by tests/web/test_t3627_watchtower_wedge.py, including 30 concurrent cold /graduation requests while / and a static file must answer in <2s. Restart rotates the log (tests/unit/t3627_watchtower_log_rotate.bats). The remaining per-request readers are in T-3634. `tools/t3627_route_profile.py` reproduces the profile in-process.
+     The completion gate (T-1550, G-019) blocks --status work-completed when
+     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
+-->
 
 ## Evolution
 
@@ -341,35 +338,6 @@ bin/fw watchtower current
      - **Rejected:** [alternatives and why not]
 -->
 
-### 2026-10-01 — cache shape for the graduation index
-- **Chose:** a stat-signature over tasks (`_task_files_signature`, the T-3575/T-3590 one), episodics (`episodic_files_signature`, new), and patterns.yaml; the build is behind a single-flight lock (`signature_cached`); per-file L-ref sets are kept in `mtime_cached_get`, so a rebuild after one file changes re-reads only that file.
-- **Why:** the wedge was concurrency on a miss, not the cost of a single miss, so freshness alone (T-3575 style) would not have prevented it. The lock does.
-- **Rejected:** a longer TTL (it still stampedes at expiry, and it serves stale data); precomputing in a background thread (it adds a second lifecycle to manage for a 2s build).
-
-### 2026-10-01 — bounding concurrency
-- **Chose:** both a per-cache build lock and `limit_inflight(4)` on /graduation (503 + `Retry-After: 5`).
-- **Why:** the lock alone still parks one server thread per waiting client; the limiter sheds them immediately. Measured in-process: of 30 concurrent cold requests, 26 get 503 at once; `/` and `/static/pico.min.css` answer in under 2s while the build runs.
-- **Rejected:** a global WSGI concurrency cap (it would also shed cheap routes, which the AC requires to stay up).
-
-### 2026-10-01 — timings (in-process, app.test_client, live corpus, read-only)
-- /graduation cold 2.35s / 6,696 files; warm 0.18s / 5 files; **61s later (the old TTL would have rebuilt) 0.21s**; after a signature change 0.27s (per-file caches hit).
-- Before: warm within 60s 0.24s; after 60s a full 2.3s rebuild, with every concurrent request rebuilding.
-
-### 2026-10-01 — whole-corpus readers found (tools/t3627_route_profile.py, all parameterless GET routes)
-Warm-request corpus file opens, before → after:
-- `/` (dashboard): 4,181 → 577. `core._get_arcs_in_flight` → `scan_tasks_by_arc_membership` read every task frontmatter (3,612) on every request. **Fixed here** (`_arc_membership_index`, signature-cached). The remaining 539 are `cockpit.get_action_summary` over active tasks → T-3634.
-- `/project`: 3,077 → 3. `_build_project_categories` read every episodic header on every request. **Fixed here** (per-file mtime cache).
-- `/graduation`: TTL rebuild every 60s → change-driven. **Fixed here.**
-- `/docs/generated`: 1,394 fabric cards per request, 3.6s warm → T-3634.
-- `/metrics`: `_stale_tasks`, ~545 active tasks per request, 0.8s → T-3634.
-- `/approvals`, `/approvals/content`: 2.8s warm but only ~80 files (CPU-bound) → T-3634.
-- Cold-only (already cached warm): `/` 19-21s, `/search` 20s, `/cron` 14s, `/bvp` 5s.
-
-### 2026-10-01 — caller (AC 5)
-- **Not identified with certainty.** The restart truncated the log (now fixed). Evidence: the wedged server's RSS climbed 248MB→1.7GB from 22:55 to 23:15 local and 1.9→2.4GB from 03:05 to 03:35 local. Those match the nightly unit-suite starts in `.context/audits/unit-suite/runs.log`: 20:53Z and 01:03Z, both `jobs=12` (T-3602 made the suite per-file parallel at 22:53 local). The remaining `.107` traffic is this host (`hostname -I`), i.e. local processes.
-- **Ruled out:** no Playwright file targets the live URL. All of them use `tests/playwright/target.TEST_URL` (FW_TEST_PORT, default 3099), and every `:3000` hit is a docstring. No file in tests/unit, tests/integration, agents, lib, bin or tools references `/graduation` over HTTP. The monitors (liveness, rss) only probe `/api/_identity` and `/health`. `agents/ux-review/ux-review.py` does default `--base` to the live URL, but it is sequential, so it cannot produce 60 concurrent requests.
-- The next occurrence will be attributable: the log now survives a restart (`watchtower.log.1`), and `limit_inflight` logs a WARNING line for every 503.
-
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -382,10 +350,7 @@ Warm-request corpus file opens, before → after:
 
 ## Updates
 
-### 2026-10-01T08:42:58Z — task-created [task-create-agent]
+### 2026-10-01T09:12:28Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3627-watchtower-wedged-graduation-re-reads-70.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3634-watchtower-cache-remaining-per-request-c.md
 - **Context:** Initial task creation
-
-### 2026-10-01T08:44:18Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work

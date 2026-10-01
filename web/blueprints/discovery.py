@@ -11,7 +11,10 @@ from pathlib import Path
 from flask import Blueprint, Response, request
 
 from web.context_loader import load_concerns, load_decisions, load_learnings, load_patterns, load_practices, load_received_learnings
-from web.shared import PROJECT_ROOT, render_page, sse_event
+from web.shared import (
+    PROJECT_ROOT, _file_stat_sig, _task_files_signature, episodic_files_signature,
+    limit_inflight, mtime_cached_get, render_page, signature_cached, sse_event,
+)
 
 log = logging.getLogger(__name__)
 bp = Blueprint("discovery", __name__)
@@ -655,70 +658,53 @@ def patterns_api():
     })
 
 
-# T-1233: Reverse index for learning application counts (was 562K file reads/request)
-import time as _time_mod
+# T-1233: Reverse index for learning application counts (was 562K file reads/request).
+# T-3627: the T-1233 version cached for 60s with no build lock. Every minute the next
+# visitors each re-read ~7,000 task + episodic files, all at once; on 2026-10-01 that
+# was 59 of 91 server threads and Watchtower stopped answering anything. The index is
+# now keyed on the corpus stat-signature (change-driven, like T-3575/T-3590), a
+# rebuild re-reads only files whose mtime moved, and concurrent misses share one build.
+_L_REF_RE = re_mod.compile(r'\bL-\d{3,}\b')
+_APP_REFS_CACHE: dict = {}  # path -> (mtime_ns, frozenset of L-ids)
+GRADUATION_INFLIGHT = 4     # concurrent /graduation renders before 503 (T-3627)
 
-_app_index_cache = {"data": None, "ts": 0}
-_APP_INDEX_TTL = 60  # seconds — graduation page is less frequently visited
+
+def _file_l_refs(path):
+    try:
+        return frozenset(_L_REF_RE.findall(path.read_text()))
+    except Exception:
+        return frozenset()
 
 
-def _build_application_index():
-    """Build {learning_id: count} by scanning files once."""
-    now = _time_mod.monotonic()
-    if _app_index_cache["data"] is not None and (now - _app_index_cache["ts"]) < _APP_INDEX_TTL:
-        return _app_index_cache["data"]
-
-    # Collect all L-XXX references across all files
+def _scan_application_refs():
+    """{learning_id: count} over episodics, tasks and patterns.yaml (per-file cached)."""
     counts = {}  # learning_id -> set of referencing task IDs
-
-    # Search episodics
     ep_dir = PROJECT_ROOT / ".context" / "episodic"
     if ep_dir.exists():
         for f in ep_dir.glob("T-*.yaml"):
-            try:
-                content = f.read_text()
-                for m in re_mod.finditer(r'\bL-\d{3,}\b', content):
-                    lid = m.group(0)
-                    counts.setdefault(lid, set()).add(f.stem)
-            except Exception:
-                continue
-
-    # Search tasks
+            for lid in mtime_cached_get(f, _file_l_refs, _APP_REFS_CACHE, frozenset()):
+                counts.setdefault(lid, set()).add(f.stem)
     for subdir in ["active", "completed"]:
         td = PROJECT_ROOT / ".tasks" / subdir
         if not td.exists():
             continue
         for f in td.glob("T-*.md"):
-            try:
-                content = f.read_text()
-                tid_m = re_mod.match(r"(T-\d+)", f.name)
-                tid = tid_m.group(1) if tid_m else f.stem
-                for m in re_mod.finditer(r'\bL-\d{3,}\b', content):
-                    lid = m.group(0)
-                    counts.setdefault(lid, set()).add(tid)
-            except Exception:
-                continue
-
-    # Search patterns
+            tid_m = re_mod.match(r"(T-\d+)", f.name)
+            tid = tid_m.group(1) if tid_m else f.stem
+            for lid in mtime_cached_get(f, _file_l_refs, _APP_REFS_CACHE, frozenset()):
+                counts.setdefault(lid, set()).add(tid)
     pf = PROJECT_ROOT / ".context" / "project" / "patterns.yaml"
-    pattern_lids = set()
-    if pf.exists():
-        try:
-            content = pf.read_text()
-            for m in re_mod.finditer(r'\bL-\d{3,}\b', content):
-                pattern_lids.add(m.group(0))
-        except Exception:
-            pass
+    pattern_lids = (mtime_cached_get(pf, _file_l_refs, _APP_REFS_CACHE, frozenset())
+                    if pf.exists() else frozenset())
+    return {lid: len(counts.get(lid, ())) + (1 if lid in pattern_lids else 0)
+            for lid in set(counts) | set(pattern_lids)}
 
-    # Convert to counts
-    result = {}
-    all_lids = set(counts.keys()) | pattern_lids
-    for lid in all_lids:
-        result[lid] = len(counts.get(lid, set())) + (1 if lid in pattern_lids else 0)
 
-    _app_index_cache["data"] = result
-    _app_index_cache["ts"] = now
-    return result
+def _build_application_index():
+    """Build {learning_id: count}; cached until a task/episodic/patterns file changes."""
+    sig = (_task_files_signature(), episodic_files_signature(),
+           _file_stat_sig(PROJECT_ROOT / ".context" / "project" / "patterns.yaml"))
+    return signature_cached("graduation-app-index", sig, lambda: _scan_application_refs())
 
 
 def _count_applications(learning_id):
@@ -728,6 +714,7 @@ def _count_applications(learning_id):
 
 
 @bp.route("/graduation")
+@limit_inflight(GRADUATION_INFLIGHT)
 def graduation():
     # Load learnings
     learnings_list = load_learnings()
@@ -750,9 +737,10 @@ def graduation():
 
     # Compute application counts and status for each learning
     pipeline = []
+    app_index = _build_application_index()  # T-3627: once per request, not per learning
     for l in learnings_list:
         lid = l.get("id", "")
-        apps = _count_applications(lid)
+        apps = app_index.get(lid, 0)
         if lid in promoted_ids:
             status = "promoted"
         elif apps >= 3:
