@@ -65,6 +65,44 @@ port_in_use() {
 
 # ensure_firewall_open is sourced from lib/firewall.sh (T-888)
 
+# T-3662 (P-01 F-28): has this project chosen a port (FW_PORT or PORT in
+# .framework.yaml)? If not, every project resolved the same registry default
+# and the second one on a host collided with the first.
+port_configured() {
+    [ -n "${FW_PORT:-}" ] || _fw_config_file_val "PORT" >/dev/null 2>&1
+}
+
+# allocate_port — first port from PORT_SCAN_BASE (100 ports) that is free or
+# already held by THIS project's identified Watchtower. Foreign holders are
+# skipped, never signalled. Prints the port; rc 1 when the range is exhausted.
+allocate_port() {
+    local base p
+    base=$(fw_config "PORT_SCAN_BASE" 3000)
+    [[ "$base" =~ ^[0-9]+$ ]] || base=3000
+    for ((p = base; p < base + 100; p++)); do
+        if ! port_in_use "$p" || _watchtower_port_holder_is_ours "$p"; then
+            echo "$p"
+            return 0
+        fi
+    done
+    return 1
+}
+
+# persist_port PORT — record an allocated port as PORT in .framework.yaml with
+# the `fw config set` writer, so restarts and `fw watchtower port` agree.
+persist_port() {
+    local p="$1"
+    if [ ! -f "$PROJECT_ROOT/.framework.yaml" ]; then
+        log_warn "No .framework.yaml — allocated port $p is not recorded (set it: fw config set PORT $p)."
+        return 0
+    fi
+    if ( source "$FRAMEWORK_ROOT/lib/config-file.sh" && _config_set PORT "$p" ) >/dev/null 2>&1; then
+        log_info "Recorded PORT: $p in .framework.yaml (per-project port, T-3662)."
+    else
+        log_warn "Could not record PORT $p in .framework.yaml (set it: fw config set PORT $p)."
+    fi
+}
+
 # ---------------------------------------------------------------------------
 # stop — Graceful shutdown with SIGTERM, fallback to SIGKILL
 # ---------------------------------------------------------------------------
@@ -119,8 +157,9 @@ do_stop() {
 # start — Launch Watchtower with health check
 # ---------------------------------------------------------------------------
 do_start() {
-    local port="$DEFAULT_PORT"
+    local port=""
     local debug_flag=""
+    local allocated=0
 
     # Parse start-specific args
     while [ $# -gt 0 ]; do
@@ -154,11 +193,35 @@ do_start() {
 
     # Check if already running
     if is_running; then
-        local pid
+        local pid run_port=""
         pid=$(get_pid)
-        log_warn "Watchtower is already running (PID $pid)."
+        [ -f "$PORT_FILE" ] && run_port=$(tr -d '[:space:]' < "$PORT_FILE" 2>/dev/null || true)
+        # T-3662: reuse the running server only once /api/_identity says it is
+        # THIS project's — a live pid alone can be a recycled pid or a server
+        # some other project now owns on that port.
+        if [ -n "$run_port" ] && { [ -z "$port" ] || [ "$port" = "$run_port" ]; } \
+            && _watchtower_port_holder_is_ours "$run_port"; then
+            log_info "Watchtower is already running for this project (PID $pid, identity verified)."
+            echo "  Local:  http://localhost:${run_port}"
+            return 0
+        fi
+        log_warn "Watchtower is already running (PID $pid)${run_port:+ on port $run_port}, but it was not reused."
         log_info "Use '$(basename "$0") restart' to restart, or '$(basename "$0") stop' first."
         return 1
+    fi
+
+    # T-3662 (P-01 F-28): an explicit --port or a configured PORT wins. With
+    # neither, allocate per project instead of every project resolving 3000.
+    if [ -z "$port" ]; then
+        if port_configured; then
+            port="$DEFAULT_PORT"
+        elif port=$(allocate_port); then
+            allocated=1
+            log_info "No PORT configured for this project; allocated port $port."
+        else
+            log_error "No free port in the 100 from PORT_SCAN_BASE ($(fw_config PORT_SCAN_BASE 3000)). Start with --port N."
+            exit 1
+        fi
     fi
 
     # Check Flask is installed
@@ -230,6 +293,7 @@ do_start() {
         echo "$$" > "$PID_FILE"
         printf '%s\n' "$port" > "$PORT_FILE"
         printf '%s\n' "http://localhost:${port}" > "$URL_FILE"
+        [ "$allocated" -eq 1 ] && persist_port "$port"
         log_info "Foreground (--debug): output below, Ctrl-C to stop."
         exec python3 -m web.app --port "$port" --debug
     fi
@@ -276,6 +340,7 @@ do_start() {
                 exit 1
             fi
             log_info "Health check passed (identity verified)."
+            [ "$allocated" -eq 1 ] && persist_port "$port"
             ensure_firewall_open "$port"
 
             local lan_ip

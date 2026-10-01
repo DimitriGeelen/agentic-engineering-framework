@@ -1,13 +1,17 @@
 ---
 id: T-3662
-name: "Every project resolves Watchtower port 3000; second project collides and identity is not checked (P-01 WSL F-28)"
+name: "Every project resolves Watchtower port 3000; second project collides and identity
+  is not checked (P-01 WSL F-28)"
 description: >
-  P-01 finding F-28: a second project resolves :3000 too; the P-01 launcher picks a free port and checks /api/_identity for its own project_root. Fix: per-project port allocation on first start plus an identity check before reusing a running server (relates to T-885/T-1287/T-1376 triple-file).
+  P-01 finding F-28: a second project resolves :3000 too; the P-01 launcher picks
+  a free port and checks /api/_identity for its own project_root. Fix: per-project
+  port allocation on first start plus an identity check before reusing a running server
+  (relates to T-885/T-1287/T-1376 triple-file).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, onboarding, P-01, T-3659]
 components: []
 related_tasks: []
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T15:03:48Z
-last_update: 2026-10-01T15:03:48Z
-date_finished: null
+last_update: 2026-10-01T17:08:57Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-01T15:15:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-01T15:15:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3662: Every project resolves Watchtower port 3000; second project collides and identity is not checked (P-01 WSL F-28)
@@ -62,8 +94,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproducing test `tests/unit/t3662_watchtower_port_allocation.bats`: two temp projects with no PORT configured both run `bin/watchtower.sh start` (no `--port`); both start, on different ports, each answering `/api/_identity` with its own project_root, and each project's `.framework.yaml` records its port. Red before the fix (the second resolves the same port and refuses).
+- [x] Fix: with no `--port`, no `FW_PORT` and no `PORT` in `.framework.yaml`, `start` allocates the first port from `PORT_SCAN_BASE` (registry default 3000, scanning 100 ports) that is free or held by this project's own identified Watchtower, skipping foreign holders, and persists it with the `fw config set` writer. A configured or explicit port keeps today's behaviour (refuse on a foreign holder).
+- [x] Fix: `start` while this project's Watchtower is already running reuses it only after `/api/_identity` confirms it is ours (exit 0, prints the URL); a live pid whose port does not identify as ours still refuses. Pinned by a test case.
+- [x] Neither the allocation scan nor the reuse path ever signals a process it has not identified as ours (test: a foreign listener on the base port is skipped and still alive afterwards).
+- [x] No regression: `tests/unit/t3660_watchtower_detach.bats`, `tests/unit/t3661_watchtower_status_exit.bats`, `tests/unit/watchtower_url_no_guess.bats`, `tests/unit/lib_watchtower.bats`, `tests/unit/watchtower_health_verdict_identity.bats`, `tests/integration/fw_serve.bats` and the config-registry parity lint stay green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +132,15 @@ date_finished: null
 -->
 
 ## Verification
+
+timeout 300 bats tests/unit/t3662_watchtower_port_allocation.bats > /tmp/.t3662-v1 2>&1 && ! grep -q "^not ok" /tmp/.t3662-v1
+test "$(grep -c '# skip' /tmp/.t3662-v1)" -eq 0
+timeout 900 bats tests/unit/t3660_watchtower_detach.bats tests/unit/t3661_watchtower_status_exit.bats tests/unit/watchtower_url_no_guess.bats tests/unit/lib_watchtower.bats tests/unit/watchtower_health_verdict_identity.bats tests/integration/fw_serve.bats tests/lint/config-registry-parity.bats > /tmp/.t3662-v2 2>&1 && ! grep -q "^not ok" /tmp/.t3662-v2
+bash -n bin/watchtower.sh
+python3 -c "import ast; ast.parse(open('web/blueprints/config.py').read())"
+# Scoped vendor check: the global --check also reports other concurrent tasks' lib/ drift.
+cmp bin/watchtower.sh .agentic-framework/bin/watchtower.sh && cmp lib/config.sh .agentic-framework/lib/config.sh && cmp web/blueprints/config.py .agentic-framework/web/blueprints/config.py
+bin/fw watchtower current
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -240,6 +284,14 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** P-01 WSL F-28: a second project on the same machine also resolved `:3000`; `fw serve` there refused ("held by a FOREIGN service") instead of running, so the P-01 launcher had to pick a free port itself and check `/api/_identity` before reusing a running server.
+
+**Root cause:** `bin/watchtower.sh` resolved its port as `fw_config PORT 3000`, a host-global constant whenever a project has not set PORT — which is every freshly installed project. The T-1803 identity check correctly refused to touch the neighbour, but nothing then chose another port; and `start` on an already-running instance answered "already running" (exit 1) from the pid alone, without asking whether the server on its port is ours.
+
+**Why structurally allowed:** the multi-project fixes (T-1803, T-1376, T-2802, T-3065) all made the framework *refuse* a wrong port safely; none made it *allocate* a right one, because the framework host's projects each had a hand-set port. No test started two unconfigured projects side by side.
+
+**Prevention:** `tests/unit/t3662_watchtower_port_allocation.bats` starts two unconfigured projects side by side and asserts distinct ports, own identities and persisted config, plus a foreign listener that must be skipped and survive.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -320,3 +372,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3662-every-project-resolves-watchtower-port-3.md
 - **Context:** Initial task creation
+
+### 2026-10-01T17:08:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
