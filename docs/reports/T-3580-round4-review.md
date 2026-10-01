@@ -229,3 +229,120 @@ Reviewer: independent dispatch `t3580-r7-review-33c8a12de682`, Claude family (th
 - N4: do it now if cheap (bind rows to signed runs); otherwise fix the doc wording.
 - N5–N7 are follow-ups.
 - A second-family (codex) pass is still warranted: this review shares a family with the builder.
+
+## Round 8 review
+
+Reviewer: independent dispatch `t3580-r8-review-b81c08a1df21`, Claude family (the same family as the builder). This was a targeted review: it checks whether the round-7 findings are closed and whether the round-8 surfaces open anything new. No verdict was recorded and no criterion was ticked. The only file written is this section.
+
+### VERDICT: AMBER — one HIGH remains (R8-1)
+
+- All of codex's round-7 findings are closed: 1 (env as data), 2 (one requirement), 3 (history errors refuse; small residual in R8-4) and 4 (OverflowError).
+- Claude N3, N4, N5 and N7 are closed. N6 is deferred to T-3619.
+- **N1 and N2 are closed for the routes they named:**
+  - the sidecar stanza;
+  - the suffix check;
+  - `--model`, `--mcp-config` and the other launch flags;
+  - `settings.local.json`.
+- **The same class is still reachable by other routes (R8-1).** The producer can still put text or programs in front of the reviewer without a key:
+  - a live cross-session message channel;
+  - the working-tree project config that `--setting-sources user,project` loads.
+
+### WHAT I CHECKED
+- I read the diffs of all 13 round-8 commits. The six round-8 source files are byte-identical to their vendored copies. `fw vendor self --check` reports DRIFT on four other files, which belong to concurrent work and not to round 8.
+- Tests, run with `TMPDIR` set to a tmp directory:
+  - `t3580_round6/7/8_test.py`: 175 passed.
+  - All `t357*`/`t358*` pytest files: 486 passed.
+  - `t3579_verdict_close_path.bats` and `t3580_round7_cleanup.bats`: 15/15.
+- **Probes:**
+
+| Probe | Result |
+|---|---|
+| Consult stanza before the brief | Refused at registration and at start: prompt equality (`_prompt_fault`). The stanza is not built for review. The `sidecar-inbox` hook exits when `FW_REVIEW_WORKER=1` (confirmed in this worker's env). |
+| `--model` other than the pinned one | Refused by the dispatcher and at registration. `start` checks `argv[6]`. In this worker's own `run.sh` argv the empty model sits at that position. |
+| `--mcp-config` / `--tools` / `--allowed-tools` / `--permission-mode` | Refused by the dispatcher. `start` refuses flag files, and `run.sh` blanks the flags. |
+| `settings.local.json` env or hook | Not loaded: this worker runs with `--setting-sources user,project`. **But see R8-1b.** |
+| A `$(...)` or backtick value in the env | Exported literally. A real-loop probe created no file. The dispatcher's `%q`→json conversion also kept the value literal. |
+| Risk lowered and left lowered, judge level | The judge plans with `task_required_strength`. `register_run` refuses a due rung below it. |
+| Git history read fails | `HistoryUnreadable`, not cached. `_strength_fault` refuses, and so does the judge. **Except for the `rev-parse HEAD` leg (R8-4).** |
+| Components counted at rung time | Taken from git. Measured on real tasks, see R8-2. |
+| Committed free-text spend row | Counts 0. It must be bound to a signed run, a signed dispatch and a signed start, once per dispatch, capped. **Not bound in time (R8-3).** |
+| `10**400` | Controlled refusal: row, decision, ceiling and aggregate. |
+| Caller `--env` on a review dispatch | Every key refused (the allowlist is empty in both places). |
+
+- **Over-blocking.** `fw reviewer judge` passes none of the refused flags and no `--env`. `fw reviewer T-XXX --dispatch` builds a `TermLinkWorker` with no `task_type`, so it is not a review dispatch and is unaffected. `kind-model` stops the dispatch when no valid committed registry exists, which fails closed. **No ordinary flow is over-blocked mechanically.** R8-2 covers the policy-level effect.
+
+### FINDINGS
+
+**R8-1: HIGH. Producer-controlled input still reaches the review worker outside the pinned prompt and flags. This is the N1/N2 class, by other routes.**
+
+*(a) Cross-session inbound.*
+- **Where:** `~/.claude/settings.json` has `"crossSessionInbound": "accept"`. `--setting-sources user,project` loads the user source.
+- **Observed live:** this review worker is addressable as `999-agentic-engineering-framework-49`. `ListAgents` shows 26 peer sessions, including other sessions in this repo that are working on T-3580's neighbours. Any of them can `SendMessage` into the reviewer:
+  - no key;
+  - a sanctioned tool;
+  - not in the signed completion (`_consult_traffic` reads sidecar topics only).
+- The preamble asks the model to ignore such messages. That is a behavioural control, not a structural one: the same one N1 had in reverse.
+
+*(b) Working-tree project config.*
+- **Where:** `run.sh` does `cd "$PROJECT_DIR"` (the main checkout), and the worker loads the `project` source and project files from there.
+- **Observed in this worker:**
+  - the full working-tree `CLAUDE.md` is in its context;
+  - the `.mcp.json` servers `fw`, `termlink`, `skills`, `context7` and `playwright` are connected, and MCP server `instructions` are injected into the system prompt.
+- **What an uncommitted, keyless edit can do:**
+  - `.claude/settings.json` can set an `env` block (`ANTHROPIC_BASE_URL`, `ANTHROPIC_MODEL`), a `model` key, or hooks (including `additionalContext` injection).
+  - `.mcp.json` can add a server: a program of the caller's choosing whose instructions and tool output reach the reviewer.
+  - `CLAUDE.md` or `.claude/` skills and agents can add instruction-level text.
+- These are round-7's N2(b) and N2(c) levers, moved from flags and `settings.local.json` to tracked files. All of them bypass the exact prompt-equality check.
+- `check-settings-edit` is advisory and does not see Bash edits.
+- The Decisions rejected `--bare` because CLAUDE.md and the project hooks are wanted. The consequence is not recorded as a residual.
+
+**Fix, in order of preference:**
+1. Launch review workers with `--setting-sources user` and `--settings <ledger-pinned JSON>`: no env, no hooks, inbound off (or the operator's equivalent), signed into the registration. Add `--strict-mcp-config` with no `--mcp-config`.
+2. Either run the worker in a clean export of the reviewed revision (`git archive` into the wdir, not a worktree), or have `start` refuse when `git status --porcelain -- CLAUDE.md .claude .mcp.json` is non-empty. Committed edits to these files are then at least part of the reviewed diff.
+3. For (a): if there is no per-session switch, have `start` refuse when user settings accept inbound, or record inbound cross-session traffic in the completion.
+
+**If the operator accepts these routes instead:**
+- Name both in the CLAUDE.md "What the caller can still steer" list and in the Decisions residual.
+- The current residual text calls `~/.claude/settings.json` operator-owned and "inside the same-user boundary". Editing that file is inside the boundary. Its current content, however, is a live channel that needs no edit at all.
+
+**R8-2: MEDIUM (operability, not a bypass). The N3 fix makes most real tasks require rung 5, which cannot be assembled.**
+- **Measured** with `_git_components` at HEAD on 12 recent tasks: 8 require rung 5.
+  - T-3580: 14 components; T-3586: 13; T-3587: 10; T-3581: 9; T-3579: 8; T-3610: 6; T-3557: 6; T-3593: 5.
+  - T-3598, T-3602 and T-3590 require rung 3. T-3621 requires rung 1.
+- Until T-3582, rung 5 closes only through a step-down. At the default ceiling of 10000, a step-down needs about 1,600 rung-5 panels' worth of genuine spend. In practice, then, the verdict path closes almost no high-impact criteria. That is correct per IW-7, but the operator should know before switching the path on.
+- Secondary: `--grep=T-XXXX([^0-9]|$)` over `--all` also counts commits that merely mention the id, such as follow-ups and vendor syncs. The likely example is T-3610's 6 components for a lint fix. Over-counting is conservative, but it compounds the above.
+- **Fix:** an operator decision. Either keep the threshold as is, count subsystems rather than component cards, or match only `^T-XXXX:` subjects (the producer-set convention).
+
+**R8-3: LOW. Judge spend rows are not bound in time.**
+- **Where:** `review_policy._spent` / `_judge_row_cost`.
+- **What:**
+  - The 7-day window uses the row's own `ts`, which the caller chooses. The dispatch's signed start epoch is never compared with it.
+  - Any historical, genuinely started seat can therefore be re-billed into the current week with a new committed row. It counts once per dispatch per window, every week, up to the cap.
+- **Effect today:** none. The registry has 12 dispatches and none has a `run_id`. The effect grows with use, and it weakens the doc's "run enough genuinely started review dispatches" bound into "have run them at some point".
+- **Fix:** count a row only when the start's epoch lies in `[since, now]` and the row's `ts` is not earlier than the start.
+
+**R8-4: LOW. `_head_sha` still fails open.**
+- **Where:** `_head_sha`, `_task_history_fms` and `_git_components`.
+- **What:**
+  - A failing `git rev-parse HEAD` returns `''`.
+  - `_task_history_fms` and `_git_components` then return `[]` (cached for the history case). That is the codex-3 class on its one remaining leg.
+  - Mitigation: the producer-set and commit-introduction checks also need git, so a whole-git failure refuses elsewhere.
+- **Fix:** distinguish "no commits yet" (`rev-parse --git-dir` succeeds, `HEAD` unborn) from "git cannot answer", and raise `HistoryUnreadable` for the latter.
+
+**R8-5: LOW (same-user window).**
+- **What:** `run.sh` reads `prompt.md` and `brief.md` at launch, after `start`. `complete` does not re-hash `prompt.md`, `brief.md` or `env.json`, so a swap between `start` and launch is not even detected afterwards.
+- **Fix:** re-hash them in `complete` and sign the result. This is cheap.
+
+**Nit.** A run's recorded `inputs` come from `_impact` over the current frontmatter, while its `reason` is history- and git-aware. This is cosmetic, but it can confuse a reader.
+
+### Docs
+- Accurate about what round 8 changed, with no over-claim on step-down or spend.
+- One over-claim by omission (R8-1): "What the caller can still steer" lists the dispatcher PATH, `~/.claude/settings.json` and the served model. It omits:
+  - working-tree `.claude/settings.json`, `.mcp.json` and `CLAUDE.md`;
+  - the live cross-session inbound channel.
+- The "about sixteen rung-5 panels" bound should note R8-3.
+
+### GUIDANCE
+- **HIGH left: yes, one (R8-1).** It is small and contained in `run.sh` and `start`: pin settings, strict MCP and inbound off, and require a clean (or exported) project config. If the operator judges the working-tree and cross-session routes to be inside the T-3581 same-user boundary, R8-1 drops to MEDIUM. The docs must then name both routes.
+- With R8-1 resolved or explicitly accepted, the rest are one MEDIUM policy question (R8-2) and three LOWs. In my view they do not need another full round; a targeted check of the R8-1 fix would do.
+- A second-family pass (codex) on R8-1 is still worthwhile, because this reviewer shares a family with the builder.
