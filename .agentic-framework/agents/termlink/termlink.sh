@@ -601,7 +601,11 @@ cmd_cleanup() {
 # `fw termlink worker-kinds` so a caller (fw reviewer judge) learns what can actually be
 # dispatched instead of hardcoding it. Must match the case statement in cmd_dispatch
 # (pinned by tests/unit/t3580_round3_test.py).
-DISPATCH_WORKER_KINDS="claude ollama-loop"
+# T-3582: codex (openai), opencode (zai) and antigravity (google) are HARNESS kinds — review-only,
+# run read-only in a `git archive` export of the reviewed revision, launched by the binary and
+# model policy/review-backends.yaml commits, their printed verdict recorded by the runtime
+# (lib/verdict_ledger.py HARNESS_KINDS, record-for-worker). See docs/harnesses.md.
+DISPATCH_WORKER_KINDS="claude ollama-loop codex opencode antigravity"
 
 # T-3580 round 7 (Claude F2): the ONLY caller --env keys a REVIEW dispatch accepts — deny by
 # default. Round 8 (Claude N7): none. A reviewer needs nothing from its caller's environment:
@@ -747,8 +751,8 @@ cmd_dispatch() {
     done
 
     case "$worker_kind" in
-        ""|claude|ollama-loop) : ;;
-        *) die "Unknown --worker-kind: $worker_kind (allowed: claude, ollama-loop)" ;;
+        ""|claude|ollama-loop|codex|opencode|antigravity) : ;;
+        *) die "Unknown --worker-kind: $worker_kind (allowed: $DISPATCH_WORKER_KINDS)" ;;
     esac
 
     [ -z "$name" ] && die "Missing --name"
@@ -785,6 +789,11 @@ cmd_dispatch() {
     if [ -z "$task_type" ]; then
         task_type=$(_derive_task_type)
     fi
+    # T-3582: a harness kind is a review worker only — run.sh has no build/test path for it.
+    case "$worker_kind" in
+        codex|opencode|antigravity)
+            [ "$task_type" = "review" ] || die "--worker-kind $worker_kind runs only as a review dispatch (--task-type review); got task type '${task_type:-none}'" ;;
+    esac
 
     # T-1643/W3 + T-1664 + T-1669: resolve model.
     # Pre-T-1669: env-var lookup only.
@@ -836,6 +845,13 @@ cmd_dispatch() {
             for _cand in "$FRAMEWORK_ROOT/tools/ollama-tool-loop.py" "$project_dir/tools/ollama-tool-loop.py"; do
                 [ -x "$_cand" ] && { worker_bin="$_cand"; break; }
             done
+        elif [ "${worker_kind:-claude}" != "claude" ]; then
+            # T-3582: a harness kind's binary is the one the registry commits at the reviewed
+            # revision — never PATH, never the caller. The ledger re-checks it at registration.
+            worker_bin=$(PROJECT_ROOT="$project_dir" python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" \
+                kind-binary --kind "$worker_kind" --revision "$review_revision") \
+                || die "review dispatch: no valid committed policy/review-backends.yaml to pin the $worker_kind binary"
+            [ -n "$worker_bin" ] || die "review dispatch: policy/review-backends.yaml (committed at ${review_revision:0:9}) pins no binary for worker kind $worker_kind"
         else
             worker_bin=$(command -v claude 2>/dev/null || true)
         fi
@@ -1073,7 +1089,7 @@ METAEOF
 #!/bin/bash
 WORKER_NAME="$1"; PROJECT_DIR="$2"; WDIR="$3"; TIMEOUT="$4"; MODEL="$5"
 TASK_TYPE="$6"; FW_BIN="$7"
-cd "$PROJECT_DIR" || { echo "FATAL: cd $PROJECT_DIR failed" > "$WDIR/stderr.log"; exit 1; }
+cd "$PROJECT_DIR" || { echo "FATAL: cd $PROJECT_DIR failed" >> "$WDIR/stderr.log"; exit 1; }
 
 # T-3580 round 6: the completion secret is ISSUED to this runtime by its authenticated start
 # (below), never written to disk by registration. Deliberately NOT exported; it reaches
@@ -1119,7 +1135,16 @@ if [ "$TASK_TYPE" = "review" ] && [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ]
     COMPLETION_SECRET=$(env -u FW_SIDECAR_AGENT_ID PROJECT_ROOT="$PROJECT_DIR" \
         python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" start \
         --dispatch-id "$WORKER_NAME" --wdir "$WDIR" 2>> "$WDIR/stderr.log") \
-        || { COMPLETION_SECRET=""; echo "WARNING: review start not recorded — this worker's verdicts will not count"; }
+        || COMPLETION_SECRET=""
+fi
+# T-3582 (T-3580 R9-1): a review whose start was refused (or never attempted) launches NO worker:
+# it could only ever produce verdicts that never count. The reason stays in stderr.log, which
+# every write below APPENDS to.
+START_REFUSED=""
+if [ "$TASK_TYPE" = "review" ] && [ -z "$COMPLETION_SECRET" ]; then
+    START_REFUSED=1
+    WORKER_BIN=""
+    echo "REFUSED: review start not recorded — the worker is NOT launched (reason: $WDIR/stderr.log)"
 fi
 
 # T-576: Unset CLAUDECODE to allow nested claude sessions from within Claude Code
@@ -1221,6 +1246,9 @@ fi
 # the claude -p branch entirely.
 WORKER_KIND=""
 [ -f "$WDIR/worker_kind.txt" ] && WORKER_KIND=$(cat "$WDIR/worker_kind.txt")
+# T-3582: harness kinds (lib/verdict_ledger.py HARNESS_KINDS; a test pins the two equal).
+HARNESS=""
+case "$WORKER_KIND" in codex|opencode|antigravity) HARNESS=1 ;; esac
 
 if [ "$WORKER_KIND" = "ollama-loop" ]; then
     # Resolve project's ollama-tool-loop.py — prefer FRAMEWORK_ROOT if vendored,
@@ -1231,12 +1259,13 @@ if [ "$WORKER_KIND" = "ollama-loop" ]; then
     done
     [ "$TASK_TYPE" = "review" ] && LOOP_BIN="$WORKER_BIN"
     if [ -z "$LOOP_BIN" ]; then
-        echo "FATAL: ollama-tool-loop.py not found" > "$WDIR/stderr.log"
+        echo "FATAL: ollama-tool-loop.py not found or not launched" >> "$WDIR/stderr.log"
+        EXIT_CODE=1
         echo 1 > "$WDIR/exit_code"
     else
         # Pass model alias as OLLAMA_LOOP_MODEL when --model was supplied.
         [ -n "$MODEL" ] && export OLLAMA_LOOP_MODEL="$MODEL"
-        ( python3 "$LOOP_BIN" --wdir "$WDIR" >"$WDIR/stdout.log" 2>"$WDIR/stderr.log" ) &
+        ( python3 "$LOOP_BIN" --wdir "$WDIR" >"$WDIR/stdout.log" 2>>"$WDIR/stderr.log" ) &
         LOOP_PID=$!
         (sleep "$TIMEOUT" && kill "$LOOP_PID" 2>/dev/null && echo "TIMEOUT" >> "$WDIR/stderr.log") &
         WATCHDOG_PID=$!
@@ -1246,6 +1275,69 @@ if [ "$WORKER_KIND" = "ollama-loop" ]; then
         # Worker already wrote exit_code; respect it. If absent, fall back.
         [ ! -f "$WDIR/exit_code" ] && echo "$EXIT_CODE" > "$WDIR/exit_code"
     fi
+elif [ -n "$HARNESS" ]; then
+    # T-3582: a harness reviewer (codex / opencode / antigravity) runs READ-ONLY in a `git archive`
+    # export of the reviewed revision, never in the shared working tree: what it loads (AGENTS.md,
+    # project config) IS the reviewed revision, a concurrent session's dirty file cannot reach it,
+    # and the antigravity user (who cannot read the root-owned project) can read it. Binary and
+    # model are the registered ones; no caller flag or env reaches the command line. It PRINTS
+    # its verdicts; result.md is normalised to the final text, and the runtime records them below.
+    EXIT_CODE=1
+    TREE="$WDIR/tree"
+    if [ "$TASK_TYPE" != "review" ] || [ -z "$WORKER_BIN" ]; then
+        echo "FATAL: $WORKER_KIND worker not launched (a harness kind runs only as a started review dispatch)" >> "$WDIR/stderr.log"
+    elif ! { mkdir -p "$TREE" && git -C "$PROJECT_DIR" archive --format=tar "${FW_REVIEW_REVISION:-HEAD}" -- . ':(exclude).context' | tar -x -C "$TREE"; }; then
+        echo "FATAL: cannot export revision ${FW_REVIEW_REVISION:-HEAD} for the $WORKER_KIND worker" >> "$WDIR/stderr.log"
+    else
+        chmod -R a+rX "$WDIR" 2>/dev/null
+        PROMPT_TEXT="$(cat "$WDIR/prompt.md")"
+        case "$WORKER_KIND" in
+            codex)
+                # -s read-only: no writes (the CLI itself writes -o); --ignore-user-config and
+                # --ignore-rules: no ~/.codex/config.toml or execpolicy rules (auth still loads);
+                # project_doc_max_bytes=0: AGENTS.md is not injected; --ephemeral: no session files.
+                ( cd "$TREE" && exec "$WORKER_BIN" exec -s read-only --skip-git-repo-check --ignore-user-config --ignore-rules --ephemeral --color never -c project_doc_max_bytes=0 ${MODEL:+-m "$MODEL"} --json -o "$WDIR/result.md" "$PROMPT_TEXT" < /dev/null > "$WDIR/result.jsonl" 2>> "$WDIR/stderr.log" ) &
+                ;;
+            opencode)
+                # --agent plan: opencode's built-in no-edit agent; --pure: no external plugins;
+                # --format json: raw events (no ANSI), normalised to result.md below.
+                ( cd "$TREE" && exec "$WORKER_BIN" run ${MODEL:+-m "$MODEL"} --agent plan --pure --format json "$PROMPT_TEXT" < /dev/null > "$WDIR/result.jsonl" 2>> "$WDIR/stderr.log" ) &
+                ;;
+            antigravity)
+                # The operator-approved form (2026-09-30), with the registered absolute binary:
+                # sudo's secure_path does not reach ~/.local/bin. sudo drops this environment.
+                ( cd "$TREE" && exec /usr/bin/sudo -n -u dimitri-mint-dev -H "$WORKER_BIN" -p "$PROMPT_TEXT" --mode plan --sandbox < /dev/null > "$WDIR/result.md" 2>> "$WDIR/stderr.log" ) &
+                ;;
+        esac
+        HARNESS_PID=$!
+        (sleep "$TIMEOUT" && kill "$HARNESS_PID" 2>/dev/null && echo "TIMEOUT" >> "$WDIR/stderr.log") &
+        WATCHDOG_PID=$!
+        wait "$HARNESS_PID" 2>/dev/null
+        EXIT_CODE=$?
+        kill "$WATCHDOG_PID" 2>/dev/null || true
+        # Normalise every harness to one result.md: the worker's final text, no ANSI.
+        python3 - "$WDIR" "$WORKER_KIND" <<'PYEOF' 2>> "$WDIR/stderr.log" || true
+import json, re, sys
+from pathlib import Path
+w, kind = Path(sys.argv[1]), sys.argv[2]
+ansi = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]|\x1b\][^\x07]*\x07")
+if kind == "opencode":
+    parts = []
+    for line in (w / "result.jsonl").read_text(errors="replace").splitlines() if (w / "result.jsonl").is_file() else []:
+        try:
+            ev = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(ev, dict) and ev.get("type") == "text":
+            parts.append(str((ev.get("part") or {}).get("text") or ""))
+    (w / "result.md").write_text("\n".join(p for p in parts if p).strip() + "\n")
+elif (w / "result.md").is_file():
+    (w / "result.md").write_text(ansi.sub("", (w / "result.md").read_text(errors="replace")))
+PYEOF
+        [ -f "$WDIR/result.md" ] || : > "$WDIR/result.md"
+    fi
+    case "$TREE" in "$WDIR"/tree) rm -rf -- "$TREE" ;; esac
+    echo "$EXIT_CODE" > "$WDIR/exit_code"
 else
     # Background process + kill watchdog (macOS has no `timeout` command)
     # T-1663: stream-json preserves forensic trail when watchdog kills the worker — text format
@@ -1256,7 +1348,7 @@ else
         echo "FATAL: review worker binary not resolved to an absolute path" >> "$WDIR/stderr.log"
         CLAUDE_PID=""
     else
-        "$WORKER_BIN" -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG $SETTING_SOURCES_FLAG $TOOLS_FLAG $PERMISSION_MODE_FLAG $MCP_CONFIG_FLAG $STRICT_MCP_FLAG $ALLOWED_TOOLS_FLAG --output-format stream-json --verbose > "$WDIR/result.jsonl" 2>"$WDIR/stderr.log" &
+        "$WORKER_BIN" -p "$(cat "$WDIR/prompt.md")" $MODEL_FLAG $SETTING_SOURCES_FLAG $TOOLS_FLAG $PERMISSION_MODE_FLAG $MCP_CONFIG_FLAG $STRICT_MCP_FLAG $ALLOWED_TOOLS_FLAG --output-format stream-json --verbose > "$WDIR/result.jsonl" 2>>"$WDIR/stderr.log" &
         CLAUDE_PID=$!
     fi
     if [ -z "$CLAUDE_PID" ]; then
@@ -1288,6 +1380,15 @@ echo "$FINISHED_AT" > "$WDIR/finished_at"
 # the worker's environment, so FW_SIDECAR_AGENT_ID is stripped for this one call).
 # Round 4: the secret goes in on stdin, and `finalised` is written after signing succeeds or
 # fails, so a review wait never returns between exit_code and the completion.
+# T-3582: a harness worker cannot record its own verdict; the runtime records what it printed, on
+# its behalf and under its identity, BEFORE signing — so the completion lists those rows.
+if [ "$TASK_TYPE" = "review" ] && [ -n "$HARNESS" ] && [ -n "$COMPLETION_SECRET" ] && \
+    [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ]; then
+    printf '%s' "$COMPLETION_SECRET" | env -u FW_SIDECAR_AGENT_ID PROJECT_ROOT="$PROJECT_DIR" \
+        python3 "$FRAMEWORK_ROOT/lib/verdict_ledger.py" record-for-worker \
+        --dispatch-id "$WORKER_NAME" --wdir "$WDIR" --secret-stdin > "$WDIR/recorded.json" 2>> "$WDIR/stderr.log" \
+        || echo "WARNING: the $WORKER_KIND worker's verdicts were not all recorded (see $WDIR/recorded.json)"
+fi
 if [ "$TASK_TYPE" = "review" ]; then
     FINAL="unsigned:completion-refused"
     if [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ] && \
@@ -1394,6 +1495,12 @@ termlink event emit "$WORKER_NAME" worker.done \
 echo ""
 echo "=== Worker $WORKER_NAME finished (exit: $EXIT_CODE) ==="
 echo "Result: $WDIR/result.md"
+# T-3582 (R9-1): a refused start is a visible, non-zero end — no worker ran.
+if [ -n "$START_REFUSED" ]; then
+    echo "REFUSED: review start refused — no worker was launched"
+    exit 3
+fi
+exit 0
 RUNEOF
     chmod +x "$wdir/run.sh"
 

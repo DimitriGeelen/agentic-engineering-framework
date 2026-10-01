@@ -46,6 +46,8 @@ REQUIRED = ("id", "name", "harness_class", "cost_class", "approval_required", "c
 ID_RE = re.compile(r"^[a-z0-9][a-z0-9-]*$")
 #: T-3580 round 8: a pinned worker model name (an alias or full id: letters, digits, . _ : / -).
 MODEL_RE = re.compile(r"^[A-Za-z0-9][A-Za-z0-9._:/-]*$")
+#: T-3582: a committed worker binary is an absolute path with no shell metacharacters.
+BINARY_RE = re.compile(r"^/[A-Za-z0-9._/+-]+$")
 UNMETERED_SUB = "unmetered (subscription)"
 
 
@@ -148,6 +150,11 @@ def validate(backends: object) -> list[str]:
         mdl = b.get("model")
         if mdl is not None and (not isinstance(mdl, str) or not MODEL_RE.match(mdl)):
             errs.append(f"{bid}: model must match {MODEL_RE.pattern}")
+        # T-3582: the ONE binary a review worker of this kind is launched with, committed here
+        # (absolute). Absent means the dispatcher resolves it (claude: PATH; ollama-loop: tools/).
+        bn = b.get("binary")
+        if bn is not None and (not isinstance(bn, str) or not BINARY_RE.match(bn) or "/../" in bn):
+            errs.append(f"{bid}: binary must be an absolute path matching {BINARY_RE.pattern}")
     kv: dict = {}
     for b in backends:
         if isinstance(b, dict) and b.get("worker_kind") and b.get("vendor"):
@@ -190,6 +197,14 @@ def worker_models(path: Path | None = None) -> dict[str, str]:
     dispatch of that kind is launched with exactly that model; a kind with none uses its default."""
     return {b["worker_kind"]: b["model"] for b in load_registry(path)
             if b.get("worker_kind") and b.get("model")}
+
+
+def worker_binaries(path: Path | None = None) -> dict[str, str]:
+    """{worker kind: absolute binary} for the kinds whose registry entry commits one (T-3582). A
+    review dispatch of that kind is launched with exactly that binary (resolved through symlinks
+    at dispatch); a kind with none is resolved by the dispatcher."""
+    return {b["worker_kind"]: b["binary"] for b in load_registry(path)
+            if b.get("worker_kind") and b.get("binary")}
 
 
 def get_backend(bid: str) -> dict:

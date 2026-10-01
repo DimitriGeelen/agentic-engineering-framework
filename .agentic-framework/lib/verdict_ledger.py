@@ -145,6 +145,8 @@ RUNS = Path(".context/reviews/review-runs.jsonl")
 #: attribution requirements 1-6, T-3580 round 3). A verdict row counts only if the one completion
 #: of its dispatch lists it with the same contents. `record` never writes here.
 COMPLETIONS = Path(".context/reviews/review-completions.jsonl")
+#: Where a reviewer's evidence report lives (the judge's brief names the same directory).
+REPORT_DIR = ".context/reviews/evidence"
 DISPATCH_KEY = Path(".context/secrets/review-dispatch.key")
 #: Per-dispatch completion secret (T-3580 round 4). `register_dispatch` writes it (mode 0600) into
 #: the worker directory and registers only its sha256; run.sh reads it and deletes the file BEFORE
@@ -451,6 +453,23 @@ WORKER_SETTINGS_WANT = {"crossSessionInbound": "refuse"}
 #: worker starts only when none differs from the run's pinned revision, so what it loads is part
 #: of the reviewed revision, never an uncommitted edit.
 PROJECT_CONFIG = ("CLAUDE.md", "CLAUDE.local.md", ".claude", ".mcp.json")
+#: T-3582 (T-3580 R9-1): the working-tree config each worker kind's PINNED launch actually loads.
+#: The round-9 check refused every review while any session had CLAUDE.md dirty in the shared
+#: checkout, although the launch could not read it:
+#:   claude      — `--setting-sources user --settings <pinned> --strict-mcp-config` loads no project
+#:                 CLAUDE.md, .claude/ agents, commands, skills or settings, and no .mcp.json
+#:                 (probed 2026-10-01 with marker files: user-only NONE, default launch found them).
+#:   ollama-loop — reads its worker directory only.
+#:   codex, opencode, antigravity (HARNESS_KINDS) — run in a `git archive` export of the pinned
+#:                 revision, never in the working tree: what they load IS the reviewed revision.
+#: A kind not listed here is checked against all of PROJECT_CONFIG (fail closed).
+WORKTREE_CONFIG: dict[str, tuple[str, ...]] = {
+    "claude": (), "ollama-loop": (), "codex": (), "opencode": (), "antigravity": ()}
+#: T-3582: kinds the runtime launches read-only in an export of the reviewed revision, whose
+#: printed verdict the RUNTIME records on the worker's behalf (`record_for_worker`), because the
+#: harness itself cannot run `fw reviewer verdict record` and commit. Mirrored by the case
+#: statement in run.sh (agents/termlink/termlink.sh; a test pins the two equal).
+HARNESS_KINDS = ("codex", "opencode", "antigravity")
 
 
 def _worker_settings(root: Path, revision: str) -> str:
@@ -468,10 +487,19 @@ def _worker_settings(root: Path, revision: str) -> str:
     return text
 
 
-def _project_config_fault(root: Path, revision: str) -> str:
-    """(start, round 9) '' when no project file claude would load (PROJECT_CONFIG) differs from
-    `revision` in the working tree: no uncommitted or untracked change, and no CLAUDE.local.md
-    outside git. Any git failure refuses."""
+def _project_config_fault(root: Path, revision: str, kind: str = "") -> str:
+    """(start, round 9) '' when no project file the `kind` worker's pinned launch would load
+    (WORKTREE_CONFIG, T-3582; PROJECT_CONFIG for an unknown kind) differs from `revision` in the
+    working tree: no uncommitted or untracked change, and no CLAUDE.local.md outside git. Any git
+    failure refuses."""
+    paths = WORKTREE_CONFIG.get((kind or "").strip() or "claude", PROJECT_CONFIG)
+    if not paths:
+        return ""
+    return _worktree_paths_fault(root, revision, paths)
+
+
+def _worktree_paths_fault(root: Path, revision: str, paths: tuple[str, ...]) -> str:
+    PROJECT_CONFIG = paths  # noqa: N806 - the round-9 body, now over the kind's own paths
     rev = (revision or "").strip() or "HEAD"
     rc, out = _git_out(root, "status", "--porcelain", "--untracked-files=all", "--", *PROJECT_CONFIG)
     if rc != 0:
@@ -486,7 +514,7 @@ def _project_config_fault(root: Path, revision: str) -> str:
     if out.strip():
         return (f"project config differs from the run's pinned revision {rev[:9]}: "
                 f"{', '.join(sorted(set(out.split())))}")
-    if (Path(root) / "CLAUDE.local.md").exists():
+    if "CLAUDE.local.md" in PROJECT_CONFIG and (Path(root) / "CLAUDE.local.md").exists():
         rc, _ = _git_out(root, "ls-files", "--error-unmatch", "CLAUDE.local.md")
         if rc != 0:
             return "CLAUDE.local.md is outside git — a reviewer loads only committed project config"
@@ -624,6 +652,16 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
         bad = _bin_fault(worker_bin) or _env_fault(w) or _prompt_fault(w)
         if bad:
             raise ValueError(f"review dispatch refused: {bad}")
+        # T-3582: a kind that commits its binary is launched with exactly that binary.
+        bins = kind_binaries(root, row["revision"])
+        want_bin = (bins or {}).get(row["worker_kind"], "")
+        if row["worker_kind"] in HARNESS_KINDS and not want_bin:
+            raise ValueError(f"review dispatch refused: worker kind {row['worker_kind']!r} has no "
+                             f"committed binary in {BACKENDS} at {row['revision'][:9]}")
+        if want_bin and os.path.realpath(worker_bin.strip()) != os.path.realpath(want_bin):
+            raise ValueError(f"review dispatch refused: worker binary {worker_bin.strip()!r} is not "
+                             f"the one {BACKENDS} (as committed at {row['revision'][:9]}) pins for "
+                             f"worker kind {row['worker_kind']!r} ({want_bin!r})")
         # Round 8 (N2): the model is the registry's, as committed at the reviewed revision.
         models = kind_models(root, row["revision"])
         want_model = (models or {}).get(row["worker_kind"], "")
@@ -728,6 +766,12 @@ def kind_models(root: Path | None = None, revision: str = "") -> dict[str, str] 
     A review dispatch of a kind is launched with exactly that model ('' = the worker's default);
     None when no valid committed registry exists (then no model can be verified)."""
     return _committed_registry_map(review_cost.worker_models, root, revision)
+
+
+def kind_binaries(root: Path | None = None, revision: str = "") -> dict[str, str] | None:
+    """(T-3582) {worker kind: absolute binary} committed in the registry at `revision`; None when
+    no valid committed registry exists."""
+    return _committed_registry_map(review_cost.worker_binaries, root, revision)
 
 
 _KINDS_RE = re.compile(r'^DISPATCH_WORKER_KINDS="([^"]*)"', re.M)
@@ -869,8 +913,10 @@ def _worker_session(wdir: Path) -> str:
                 ev = json.loads(line)
             except ValueError:
                 continue
-            if isinstance(ev, dict) and str(ev.get("session_id") or "").strip():
-                return str(ev["session_id"]).strip()
+            # claude: session_id; codex --json: thread_id; opencode --format json: sessionID.
+            for key in ("session_id", "thread_id", "sessionID"):
+                if isinstance(ev, dict) and str(ev.get(key) or "").strip():
+                    return str(ev[key]).strip()
     except OSError:
         pass
     return ""
@@ -916,7 +962,8 @@ def start(dispatch_id: str, *, wdir: str, pid: int = 0,
                              f"dispatch {did!r}")
     bad = (_runtime_fault(here, root, str(drec.get("revision") or ""), model=str(drec.get("model") or ""))
            or _launch_fault(drec, Path(here))
-           or _project_config_fault(root, str(drec.get("revision") or "")))
+           or _project_config_fault(root, str(drec.get("revision") or ""),
+                                    str(drec.get("worker_kind") or "claude")))
     if bad:
         raise VerdictRefused(f"dispatch {did!r} cannot be started here: {bad}")
     now = int(_clock())
@@ -1103,6 +1150,146 @@ def review_env(dispatch_id: str, *, wdir: str, root: Path | None = None) -> dict
     if bad:
         raise VerdictRefused(bad)
     return json.loads(raw) if raw is not None else {}
+
+
+# ── T-3582: harness worker kinds (codex, opencode, antigravity) ──────────────────────────────
+#
+# A harness reviewer runs read-only in a `git archive` export of the reviewed revision: it cannot
+# run `fw reviewer verdict record` or commit. It PRINTS its verdicts in the brief's output format;
+# after it exits, run.sh (the runtime, authenticated exactly like `start`/`complete`) calls
+# `record_for_worker`, which records each printed verdict on the worker's behalf, under the
+# worker's own identity, with an evidence report that carries the harness output and its sha256 —
+# so the row, the completion's result_sha256 and the report all bind the seat's actual output.
+
+_ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]|\x1b\][^\x07]*\x07")
+_BLOCK_RE = re.compile(r"^[ \t>#*-]*(\d+)\.\s*\[", re.M)
+_FIELD_RE = r"^[ \t>*-]*{name}:[ \t]*(.*?)(?=^[ \t>*-]*(?:VERDICT|WHY|GUIDANCE|Summary):|\Z)"
+_BRIEF_CRIT_RE = re.compile(r"^### Criterion (\d+) \(Human AC#(\d+)\)\s*$", re.M)
+_BRIEF_RUNG_RE = re.compile(r"^## Independence: (.+?)\s*$", re.M)
+
+
+def parse_harness_verdicts(text: str) -> dict[int, dict]:
+    """{criterion index: {outcome, why, guidance, block}} from a harness's printed output in the
+    brief's format (`N. [AC] ...` / `VERDICT:` / `WHY:` / `GUIDANCE:`). ANSI escapes, markdown
+    bold and backticks are stripped. A criterion printed twice with different outcomes is dropped
+    (ambiguous: no row, so `unknown`); an outcome outside OUTCOMES is dropped the same way."""
+    clean = _ANSI_RE.sub("", text or "").replace("**", "").replace("`", "").replace("\r", "")
+    starts = list(_BLOCK_RE.finditer(clean))
+    out: dict[int, dict] = {}
+    bad: set[int] = set()
+    for i, m in enumerate(starts):
+        block = clean[m.start(): starts[i + 1].start() if i + 1 < len(starts) else len(clean)]
+        fields = {}
+        for name in ("VERDICT", "WHY", "GUIDANCE"):
+            f = re.search(_FIELD_RE.format(name=name), block, re.M | re.S)
+            fields[name] = f.group(1).strip() if f else ""
+        if not fields["VERDICT"]:
+            continue
+        n = int(m.group(1))
+        outcome = fields["VERDICT"].split()[0].strip(".,;:").lower()
+        if outcome not in OUTCOMES or (n in out and out[n]["outcome"] != outcome):
+            bad.add(n)
+            continue
+        out.setdefault(n, {"outcome": outcome, "why": fields["WHY"],
+                           "guidance": fields["GUIDANCE"], "block": block.strip()})
+    return {n: v for n, v in out.items() if n not in bad}
+
+
+def record_for_worker(dispatch_id: str, *, wdir: str, secret: str = "",
+                      root: Path | None = None) -> dict:
+    """(run.sh, after a HARNESS_KINDS worker exits, before `complete`) record the worker's printed
+    verdicts on its behalf and commit them under the worker's identity. Authenticated like
+    `complete`: the parent must be the canonical run.sh of the registered worker directory, and the
+    secret its `start` issued must be presented. Returns {recorded, refused, commit}."""
+    root = root or _root()
+    did = (dispatch_id or "").strip()
+    drec, why = dispatch_record(root, did)
+    if drec is None:
+        raise VerdictRefused(why)
+    kind = str(drec.get("worker_kind") or "")
+    if drec.get("task_type") != REVIEW_TASK_TYPE or kind not in HARNESS_KINDS:
+        raise VerdictRefused(f"dispatch {did!r} is not a review dispatch of a harness kind "
+                             f"({', '.join(HARNESS_KINDS)}) — other workers record their own rows")
+    if os.environ.get(_WORKER_ENV, "").strip() == did:
+        raise VerdictRefused("verdicts are recorded on a harness worker's behalf by the runtime, "
+                             "never from inside the worker's own environment")
+    here = str(Path(wdir).resolve()) if (wdir or "").strip() else ""
+    if not here or here != str(drec.get("wdir") or ""):
+        raise VerdictRefused(f"worker directory {here or '(none)'} is not the one registered for "
+                             f"dispatch {did!r}")
+    bad = (_runtime_fault(here, root, str(drec.get("revision") or ""), model=str(drec.get("model") or ""))
+           or _inputs_fault(drec, Path(here)))
+    if bad:
+        raise VerdictRefused(f"dispatch {did!r}: {bad}")
+    starts = _starts_for(root, did)
+    if len(starts) != 1 or not _signed_ok(root, starts[0]) or not _secret_ok(starts[0], secret):
+        raise VerdictRefused(f"no valid runtime start and completion secret for dispatch {did!r}")
+    if not (Path(here) / "exit_code").is_file():
+        raise VerdictRefused(f"the worker has not exited: {here}/exit_code holds no exit state")
+    if any(r.get("dispatch_id") == did for r in _read(VERDICTS, root)):
+        raise VerdictRefused(f"dispatch {did!r} already has verdict rows — recorded once")
+    brief = (Path(here) / "brief.md").read_text()
+    crits = [(int(i), int(ac)) for i, ac in _BRIEF_CRIT_RE.findall(brief)]
+    rm = _BRIEF_RUNG_RE.search(brief)
+    rung = rm.group(1).strip() if rm else ""
+    try:
+        output = (Path(here) / "result.md").read_text(errors="replace")
+    except OSError:
+        output = ""
+    shas = {n: _file_sha(Path(here) / n) for n in ("result.md", "result.jsonl")
+            if (Path(here) / n).is_file()}
+    printed = parse_harness_verdicts(output)
+    task = str(drec["task"])
+    ctx = _task_ctx(root, task)
+    identity = worker_identity(did)
+    seat = str(drec.get("seat") or kind)
+    res: dict = {"recorded": [], "refused": [], "commit": ""}
+    touched: list[str] = []
+    for idx, ac in crits:
+        v = printed.get(idx)
+        if v is None:
+            res["refused"].append({"ac": ac, "why": "no unambiguous printed verdict"})
+            continue
+        crit = next((c for c in human_criteria(ctx.text) if c.index == ac), None) if ctx else None
+        if crit is None:
+            res["refused"].append({"ac": ac, "why": "no such Human criterion"})
+            continue
+        rep = Path(REPORT_DIR) / task / f"AC{ac}-{did}.md"
+        (root / rep).parent.mkdir(parents=True, exist_ok=True)
+        (root / rep).write_text(
+            f"# Reviewer evidence — {task} AC#{ac}\n\n"
+            f"- dispatch: `{did}`\n- worker kind: `{kind}` (vendor `{drec.get('vendor', '')}`, model "
+            f"`{drec.get('model') or 'worker default'}`)\n- seat: `{seat}`\n"
+            f"- reviewed revision: `{drec.get('revision', '')}`\n"
+            f"- recorded by: the dispatch runtime on the worker's behalf (T-3582)\n"
+            + "".join(f"- {n} sha256: `{h}`\n" for n, h in sorted(shas.items()))
+            + f"\n## The worker's verdict block\n\n```\n{v['block']}\n```\n"
+            f"\n## The worker's full output (result.md)\n\n```\n{_ANSI_RE.sub('', output).strip()}\n```\n")
+        touched.append(str(rep))
+        guidance = v["guidance"] or ("" if v["outcome"] == GREEN else v["why"])
+        try:
+            rec = record(task, ac, v["outcome"], reviewer=f"{identity}:{seat}", rung=rung,
+                         guidance=guidance, evidence=[str(rep)], digest=criterion_digest(crit),
+                         dispatch_id=did, run_id=str(drec.get("run_id") or ""), root=root)
+            res["recorded"].append({"ac": ac, "id": rec["id"], "outcome": rec["outcome"]})
+        except VerdictRefused as e:
+            res["refused"].append({"ac": ac, "why": str(e)})
+    if not touched:
+        return res
+    paths = touched + [str(r) for r in (VERDICTS, RECORDED, REFUSALS, APPLIED) if (root / r).exists()]
+    env = {**os.environ, "GIT_AUTHOR_NAME": identity, "GIT_COMMITTER_NAME": identity,
+           "GIT_AUTHOR_EMAIL": "reviewer@aef.local", "GIT_COMMITTER_EMAIL": "reviewer@aef.local"}
+    env.pop(_WORKER_ENV, None)
+    add = subprocess.run(["git", "add", "--", *paths], cwd=str(root), env=env,
+                         capture_output=True, text=True)
+    com = subprocess.run(["git", "commit", "-q", "-m",
+                          f"{task}: reviewer verdict ({kind} seat {seat}, recorded by the runtime)",
+                          "--", *paths], cwd=str(root), env=env, capture_output=True, text=True)
+    if add.returncode or com.returncode:
+        res["commit_error"] = (add.stderr + com.stderr).strip()[-500:]
+    else:
+        res["commit"] = _head_sha(root)
+    return res
 
 
 def _consult_reader(topic: str, cursor: int, limit: int) -> list[dict]:
@@ -2812,6 +2999,17 @@ def _cli(argv: list[str] | None = None) -> int:
     st.add_argument("--dispatch-id", required=True)
     st.add_argument("--wdir", required=True)
 
+    rw = sub.add_parser("record-for-worker", help="(dispatch runtime, harness kinds) record the "
+                        "exited worker's printed verdicts on its behalf and commit them")
+    rw.add_argument("--dispatch-id", required=True)
+    rw.add_argument("--wdir", required=True)
+    rw.add_argument("--secret-stdin", action="store_true")
+
+    kb = sub.add_parser("kind-binary", help="(dispatcher) print the binary the committed registry "
+                        "pins for a worker kind ('' = none); exit 2 when no valid registry")
+    kb.add_argument("--kind", required=True)
+    kb.add_argument("--revision", default="")
+
     sub.add_parser("kind-vendors", help="print `<worker kind> <vendor>` from the one mapping "
                    "(policy/review-backends.yaml)")
 
@@ -2899,6 +3097,22 @@ def _cli(argv: list[str] | None = None) -> int:
             return 2
         print(models.get(args.kind, ""))
         return 0
+    if args.cmd == "kind-binary":
+        bins = kind_binaries(revision=args.revision)
+        if bins is None:
+            print(f"no valid {BACKENDS} committed at {args.revision or 'HEAD'}", file=sys.stderr)
+            return 2
+        print(bins.get(args.kind, ""))
+        return 0
+    if args.cmd == "record-for-worker":
+        try:
+            out = record_for_worker(args.dispatch_id, wdir=args.wdir,
+                                    secret=sys.stdin.read() if args.secret_stdin else "")
+        except VerdictRefused as e:
+            print(f"REFUSED: {e}", file=sys.stderr)
+            return 1
+        print(json.dumps(out))
+        return 0 if out["recorded"] and not out.get("commit_error") else 1
     if args.cmd == "review-prompt":
         sys.stdout.write(review_prompt(Path(args.brief_file).read_text()))
         return 0
