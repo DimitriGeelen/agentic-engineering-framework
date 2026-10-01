@@ -2717,9 +2717,29 @@ def evaluate_escalations(
             if not haystack:
                 continue
             try:
-                m = re.search(pattern, haystack, re.IGNORECASE)
+                matches = list(re.finditer(pattern, haystack, re.IGNORECASE))
             except re.error:
                 continue
+            # T-3642: optional exclude_pattern (e.g. a negation) is tested
+            # against the CURRENT CLAUSE ending at the match — clamped on
+            # [.;:\n] so a "never" in the previous sentence cannot suppress a
+            # genuine hit in the next one (055's fail-open trap). Excluded hits
+            # are skipped and scanning continues. An unparseable exclude
+            # pattern means no exclusion: the rail fails loud, not open.
+            exclude = None
+            if matcher.get("exclude_pattern"):
+                try:
+                    exclude = re.compile(matcher["exclude_pattern"], re.IGNORECASE)
+                except re.error:
+                    exclude = None
+            m = None
+            for cand in matches:
+                if exclude is not None:
+                    clause = re.split(r"[.;:\n]", haystack[: cand.start()])[-1]
+                    if exclude.search(clause):
+                        continue
+                m = cand
+                break
             if m:
                 triggers.append(
                     EscalationTrigger(

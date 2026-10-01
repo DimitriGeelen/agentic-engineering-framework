@@ -24,7 +24,7 @@
 schema_version: 1
 # v1.4 (T-2642): cross-project-blast "all nodes" co-occurrence fix — first content
 # change since the v1.1 seed. Version tracks content vintage (832 rail-249 FYI, T-2643).
-catalogue_version: "v1.4"
+catalogue_version: "v1.5"
 policy_origin: T-1443
 
 triggers:
@@ -40,8 +40,17 @@ triggers:
         pattern: '\b(rm\s+-[rfRF]+|DROP\s+(TABLE|DATABASE|SCHEMA)|git\s+(push\s+(--force|-f)|reset\s+--hard|filter-branch|filter-repo))\b'
         description: destructive shell or SQL operation
       - kind: ac_text
-        pattern: '\b(force[- ]push|hard[- ]reset|drop[- ](table|db)|destroy|wipe|purge\s+production)\b'
-        description: destructive language in AC
+        pattern: '\b(force[- ]push|hard[- ]reset|drop[- ](table|db))\b'
+        description: destructive operation named in AC (unconditional — the words ARE the operation)
+      - kind: ac_text
+        # T-3642 (055 framework:pickup @219): destroy/wipe/purge need a
+        # production-scope object within 3 words — the trigger's own stated
+        # intent — and a negation in the same clause ("can never destroy
+        # production data") is a guarantee, not a plan. exclude_pattern is
+        # tested against the current clause only (clamped on [.;:\n]).
+        pattern: '\b(destroy\w*|wip(e|es|ed|ing)|purg(e|es|ed|ing))\b(\W+\w+){0,3}?\W+(production|prod|live|real|customer|user|tenant|fleet)s?\b'
+        exclude_pattern: "\\b(never|not|no|cannot|can't|won't|mustn't|must\\s+not|without|nothing)\\b"
+        description: destroy/wipe/purge of production-scope data in AC
 
   - id: external-publish
     name: "External publish or release"

@@ -17,7 +17,7 @@ description: >
   => no exclusion (fail loud). Keep a test for the fail-open direction. Same at v1.7.0.
   Triage: T-3639.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -51,7 +51,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T13:20:12Z
-last_update: '2026-10-01T13:30:36Z'
+last_update: 2026-10-01T13:39:43Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,14 +97,15 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Port of 055-agentic-fleet-cockpit's fix (pickup on framework:pickup offset 219, their T-304 / commit 9bb44ca), re-derived against our `lib/reviewer/static_scan.py` and `policy/escalation-patterns.yaml`. Triage row 5 in `docs/reports/T-3639-055-fix-triage.md`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproducing tests in `tests/unit/test_t3642_escalation_negation.py` drive the real `evaluate_escalations` against the real policy file and (a) and (b) are RED before the fix: (a) the AC "Running it with no arguments can never destroy anything." does not fire `destructive-action`; (b) a harmless early mention plus a genuine later "wipe the production database" reports the later excerpt; (c) fail-open guard: a negation in the PREVIOUS sentence does not suppress a genuine hit in the next one (055's 64-char-lookback trap).
+- [x] Fix: `evaluate_escalations` scans with `re.finditer`, honours an optional per-matcher `exclude_pattern` tested against the current clause (clamped on `[.;:\n]`) and continues past excluded hits; an unparseable `exclude_pattern` means no exclusion. `destroy|wipe|purge` require a production-scope object within 3 words; `rm -rf`, `DROP TABLE`, force-push and hard-reset stay unconditional (tests assert they still fire, including when negated).
+- [x] No regression: `tests/unit/test_reviewer_static_scan.py` passes, and the vendored copies of the two changed files are byte-identical to source (`cmp`; repo-wide `bin/fw vendor self --check` is red on other concurrent workers' withheld files, not on these).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -265,6 +266,10 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/test_t3642_escalation_negation.py -q > /tmp/.t3642v1 2>&1 && grep -q passed /tmp/.t3642v1
+python3 -m pytest tests/unit/test_reviewer_static_scan.py -q > /tmp/.t3642v2 2>&1 && grep -q passed /tmp/.t3642v2
+cmp -s lib/reviewer/static_scan.py .agentic-framework/lib/reviewer/static_scan.py && cmp -s policy/escalation-patterns.yaml .agentic-framework/policy/escalation-patterns.yaml
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -280,6 +285,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw reviewer` escalated 055's T-301 at severity HIGH (`matched: destroy`) on the AC "Running it with no arguments can never destroy anything" — the safety guarantee itself. Separately, a task with a harmless early destructive word and a genuine later one reports only the harmless excerpt.
+
+**Root cause:** (1) the `destructive-action` ac_text pattern matches bare vague verbs (`destroy|wipe`) with no object and no notion of negation, although the trigger's own stated intent is "destroying production data". (2) `evaluate_escalations` uses `re.search` + `break`, so it only ever looks at the first match per trigger and has no way to skip a match and keep scanning.
+
+**Why structurally allowed:** the escalation tests only assert the positive direction (the trigger fires); there was no negative fixture for well-written safety ACs, and the matcher schema had no exclusion concept, so the only lever was the regex itself.
+
+**Prevention:** `tests/unit/test_t3642_escalation_negation.py` pins both directions against the real policy file, including the cross-sentence fail-open trap 055 hit, and that a malformed `exclude_pattern` fails loud (trigger stays live).
 
 ## Evolution
 
@@ -361,3 +374,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3642-reviewer-destructive-action-escalation-f.md
 - **Context:** Initial task creation
+
+### 2026-10-01T13:39:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
