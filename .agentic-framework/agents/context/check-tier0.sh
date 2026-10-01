@@ -112,7 +112,9 @@ fi
 # removed), so a spelling the shell reassembles (tier""0, appr\ove) reaches the
 # detailed match.
 T0_DEQUOTED=$(printf '%s' "$COMMAND" | tr -d "\"'\\\\\$")
-if ! printf '%s\n%s\n' "$COMMAND" "$T0_DEQUOTED" | grep -qEi \
+# Round 6: ANSI-C quoting ($'tier\x30') is decoded in Python, so any $' skips
+# the fast path.
+if [[ "$COMMAND" != *"\$'"* ]] && ! printf '%s\n%s\n' "$COMMAND" "$T0_DEQUOTED" | grep -qEi \
     'git\s+(push|reset|clean|checkout|restore|branch)\s|git\s+-|git\s+commit\b[^;|&]*\s-[a-z]*n|(HOME|XDG_CONFIG_HOME|GIT_CONFIG[A-Z0-9_]*)=|hooksPath|include\.path|includeif|tier0|--no-v|rm\s+-|DROP\s|TRUNCATE\s|docker\s+system|kubectl\s+delete|find\s.*-delete|dd\s+if=|chmod\s.*\s000|mkfs|pkill\s|fw\s.*--force|fw\s.*inception\s.*decide'; then
     exit 0
 fi
@@ -351,7 +353,57 @@ MODULE_USE = [
     r'\b(?:import|from)\s+tier0_action\b',
     r'\btier0_action\.(?!py\b)\w',
 ]
+# T-3593 R6 (codex MEDIUM): ANSI-C quoting is DECODED before the word check,
+# the way bash decodes it, so tier-backslash-x30 spells tier0 here too. Written
+# without backslash, dollar or double-quote literals: this script is inside a
+# double-quoted shell string. Words built at run time (printf, eval) stay out
+# of reach (documented residual).
+BS = chr(92)
+HEXD, OCTD = '0123456789abcdefABCDEF', '01234567'
+ANSI_SIMPLE = {'a': chr(7), 'b': chr(8), 'e': chr(27), 'E': chr(27), 'f': chr(12),
+               'n': chr(10), 'r': chr(13), 't': chr(9), 'v': chr(11),
+               BS: BS, SQ: SQ, DQ: DQ, '?': '?'}
+ANSI_WIDTH = {'x': 2, 'u': 4, 'U': 8}
+def ansi_c_decode(raw):
+    out, i, n = [], 0, len(raw)
+    while i < n:
+        if raw[i] != DOLLAR or i + 1 >= n or raw[i + 1] != SQ:
+            out.append(raw[i])
+            i += 1
+            continue
+        j = i + 2
+        while j < n and raw[j] != SQ:
+            c = raw[j]
+            if c != BS or j + 1 >= n:
+                out.append(c)
+                j += 1
+                continue
+            e = raw[j + 1]
+            j += 2
+            if e in ANSI_SIMPLE:
+                out.append(ANSI_SIMPLE[e])
+            elif e in ANSI_WIDTH:
+                k = j
+                while k < n and k - j < ANSI_WIDTH[e] and raw[k] in HEXD:
+                    k += 1
+                out.append(chr(min(int(raw[j:k], 16), 0x10FFFF)) if k > j else BS + e)
+                j = k
+            elif e in OCTD:
+                k = j
+                while k < n and k - j < 2 and raw[k] in OCTD:
+                    k += 1
+                out.append(chr(int(raw[j - 1:k], 8) & 255))
+                j = k
+            elif e == 'c' and j < n:
+                out.append(chr(ord(raw[j]) & 31))
+                j += 1
+            else:
+                out.append(BS + e)
+        i = j + 1
+    return ''.join(out)
+
 def dequote(raw):
+    raw = ansi_c_decode(raw)
     raw = re.sub(re.escape(DOLLAR) + '(?=[' + SQ + DQ + '])', '', raw)
     return re.sub('[' + SQ + DQ + chr(92) * 2 + ']', '', raw)
 

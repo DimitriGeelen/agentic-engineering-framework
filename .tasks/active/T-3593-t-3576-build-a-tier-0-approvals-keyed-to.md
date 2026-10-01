@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T15:41:21Z
-last_update: 2026-10-01T07:42:05Z
+last_update: '2026-10-01T13:03:44Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -75,6 +75,23 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-01T13:03:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-09-30T15:45:17Z'
@@ -368,6 +385,12 @@ bin/fw vendor self --check
 - **Why:** four rounds closed lists of shell spellings and each second-family review found another (`command export`, `'export'`, `git -C /tmp/a\ b`, `sudo … approve`, brace expansion, `$'..'`). A denylist over shell cannot be complete; an allowlist grammar fails toward showing the operator the literal command.
 - **Rejected:** a fifth denylist round; allowing `~`/`^` mid-word (keeps `HEAD~1` mapped, but the instruction was no `~` anywhere, and the exact-text path covers it); allowing a read-only prefix (`git status &&`) or trailing pipe (the original `| tail -N` motivation) — each reopens "what can a preceding or following segment change".
 - **Accepted cost:** `| tail -N`, `2>&1`, `HEAD~1`, `rm -rf *`, `git status && …` and quoted arguments now need exact-text approval; a read-only command naming the bare word `tier0` (a grep, a commit message) is blocked.
+
+### 2026-10-01 — Round 6: target keys are literal where git/rm are literal
+- **Chose:** a LOCAL `git branch -D|-d -f|--delete --force` name is keyed and shown exactly as typed (no `+` or `refs/heads/` stripping; names after `--` are literal). `normalize_ref` stays on the push paths only. An `rm` path keeps a trailing `/` (or `/.`) in its key and text. ANSI-C quoting (`\xHH`, `\NNN`, `\uHHHH`, `\UHHHHHHHH`, `\cX`, simple escapes) is decoded before the tier0 word check, and any `$'` skips the bash fast path.
+- **Why:** codex R5 HIGH: `-D victim`, `-D +victim`, `-D refs/heads/victim` are three branches to git but shared one key. Codex R5 MEDIUM: `$'tier\x30'` was SAFE.
+- **Other verbs checked:** `hard-reset`: `repo` is `realpath` of git's toplevel, `branch` is `symbolic-ref --short HEAD` (one namespace, from git, not from the typed text), `target` is a full commit id from `rev-parse --verify`, so no collision: checked, none. `recursive-delete`: `normpath` collapsed a trailing slash, and `rm -rf link/` (link -> dir) deletes the target's contents while `rm -rf link` deletes only the link (reproduced in a tmp fixture). Fixed: the slash stays in the key. `//` and `/./` mid-path still collapse (same target). A last `..` (`x/..` with x a symlink) also normalises lexically, but GNU rm refuses a last `.`/`..` component, so it deletes nothing: recorded, not changed.
+- **Rejected:** treating `link/` and `link` as one key on the grounds that the normal case (a real directory) is the same target: one approval must never cover two different deletions, and the cost of keeping them apart is only an over-block.
 
 ## Decision
 

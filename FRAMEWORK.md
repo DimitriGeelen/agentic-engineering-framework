@@ -154,10 +154,14 @@ inside a build script, with the variable pointing at the repo root.
 approved per action, once, for a bounded time, so a retry in the same plain shape (flag
 order, spacing, a `cd` prefix) still matches while a different target does not. A push ref
 is keyed as pre-push sees it (a branch by short name, a tag as `refs/tags/<t>`), and a short
-name that local refs cannot resolve to exactly one of the two is not mapped.
+name that local refs cannot resolve to exactly one of the two is not mapped. A local
+`git branch -D` name is kept literal (`+victim` and `refs/heads/victim` are not `victim`),
+and an `rm` path keeps its trailing `/` (on a symlink, `link/` is the target, `link` the
+link).
 
-**Only these exact shapes map to actions; everything else needs approval of the exact
-text.** The classifier is a grammar, not a list of dangerous spellings: zero or more
+**Only these exact shapes map to actions; every detected destructive command outside the
+grammar needs approval of the exact text.** A spelling the detector does not recognise is
+not blocked at all: the grammar decides mapping, not detection. The classifier is a grammar, not a list of dangerous spellings: zero or more
 `cd PATH &&`, then one `git` segment (optionally `-C PATH`, `-P`, `--no-pager`, then the
 subcommand and plain options and refspecs) or one `rm` segment (`-r`/`-R`/`-f`/`-v`,
 `--recursive`/`--force`/`--verbose`, then paths). Every word is plain
@@ -173,17 +177,19 @@ mapped because bash does not consult `CDPATH` for it. An admitted push approval 
 by pre-push within 60 s expires. A hook registered twice is deduplicated by the tool call's
 `tool_use_id`, not by time, so an approved command runs once per tool call; this trusts the
 harness to give each call a unique id. The exact-text path consumes an approval only under
-its lock, and refuses (blocks) when the lock cannot be taken.
+its lock, and refuses (blocks) when the lock cannot be taken — except for the same-call
+duplicate fire, which consumes nothing and is admitted even when the lock could not be taken.
 
 **Approving is the operator's.** Any typed command whose text, with quotes, backslashes and
-the `$` of `$'…'` removed, contains the word `tier0` is Tier 0 unless it is a plainly
-spelled `fw tier0 status|list` — `sudo`, `su`, `runuser`, `tmux`, `screen`, `setsid`,
+the `$` of `$'…'` removed and ANSI-C escapes (`\xHH`, `\NNN`, `\uHHHH`, `\cX`, …) decoded,
+contains the word `tier0` is Tier 0 unless it is a plainly spelled bare `fw tier0` or
+`fw tier0 status|list|help|--help|-h` — `sudo`, `su`, `runuser`, `tmux`, `screen`, `setsid`,
 `nohup`, `env -i`, `bash -c` and reassembled spellings (`` `echo approve` ``, `appr{o,}ve`,
 `tier""0`, `X=tier0; … $X approve`) included — as is executing or importing
 `tier0_action`. The module also refuses an agent session unless overridden, and records the
 override as `agent-override`. **Not seen:** anything inside a script or other file; a word
-built at run time from pieces the text does not contain (`$'\x74ier0'`, `printf`, `eval` of
-a computed string); and a record written straight into the approval store by a same-user
+built at run time from pieces the text does not contain (`printf`, `eval` of a computed
+string, a command substitution); and a record written straight into the approval store by a same-user
 process, which cannot be told apart from a genuine one. This does not widen what the text
 gate sees.
 

@@ -463,10 +463,14 @@ grant TTL, and a retry in the same plain shape (flag order, spacing, a `cd` pref
 A different ref, remote, branch, target commit or path does not. A push ref is keyed the way
 pre-push sees it: a branch by its short name, a tag as `refs/tags/<t>` (for `-f`, `--delete`,
 `:ref` and `src:dst` alike), resolved from local refs; a short name that is both, or neither,
-is unmapped.
+is unmapped. A LOCAL `git branch -D` name is literal (round 6): `victim`, `+victim` and
+`refs/heads/victim` are three different branches to git and three different keys here. An
+`rm` path keeps a trailing `/` in its key, because `rm -rf link/` deletes what a symlink
+points at and `rm -rf link` deletes only the link.
 
-**Only these exact shapes map to actions; everything else needs approval of the exact text
-(round 5 grammar).** Four rounds of review each found one more shell spelling a denylist
+**Only these exact shapes map to actions; every DETECTED destructive command outside the
+grammar needs approval of the exact text (round 5 grammar).** A spelling the detector does not
+recognise is not blocked at all; the grammar decides mapping, not detection. Four rounds of review each found one more shell spelling a denylist
 missed (`command export`, a quoted `'export'`, `git -C /tmp/a\ b`, `sudo`, brace expansion,
 `$'..'`), so the classifier (`lib/tier0_action.py`) is now a grammar: zero or more
 `cd PATH &&`, then ONE `git` segment (`-C PATH`, `-P`, `--no-pager`, then the subcommand,
@@ -490,11 +494,14 @@ is let through; a second tool call with identical text is not, and a payload wit
 `tool_use_id` gets no grace. This trusts the harness to give each call a unique id. **The
 exact-text path fails closed:** it consumes an approval only under its lock (flock(2) taken by
 python, so no util-linux dependency), and when the lock cannot be taken within
-`TIER0_LOCK_TIMEOUT` (10 s) nothing is consumed and the command blocks.
+`TIER0_LOCK_TIMEOUT` (10 s) nothing is consumed and the command blocks. The one exception is
+the same-call duplicate fire above: a second fire of an already admitted `tool_use_id` is let
+through without consuming anything, and is admitted even when the lock could not be taken.
 
 **Who may approve:** any typed command whose text — quotes, backslashes and the `$` of `$'…'`
-removed — contains the word `tier0` is Tier 0 unless it is a plainly spelled `fw tier0
-status|list`. That covers `sudo`, `su`, `runuser`, `tmux`, `screen`, `setsid`, `nohup`,
+removed, and ANSI-C quoting (`$'tier\x30'`, `\NNN`, `\uHHHH`, `\cX`, …) decoded the way
+bash decodes it — contains the word `tier0` is Tier 0 unless it is a plainly spelled bare
+`fw tier0` or `fw tier0 status|list|help|--help|-h` (optionally after one `cd PATH &&`). That covers `sudo`, `su`, `runuser`, `tmux`, `screen`, `setsid`, `nohup`,
 `env -i`, `bash -c`, and reassembled verbs (`` `echo approve` ``, `appr{o,}ve`, `tier""0`,
 `X=tier0; … $X approve`); executing or importing `tier0_action` is Tier 0 too. The cost: a
 read-only command that names the bare word `tier0` (a grep for it, a commit message using it)
@@ -505,7 +512,7 @@ same user with write access to the repo, so an agent can write an approval recor
 `.context/working/tier0-action-approvals.json` directly, from a script or from python, and the
 gate cannot distinguish that from a genuine one (the same residual T-3581 names). It does not
 see anything inside a script or file, nor a word built at run time from pieces the text does
-not contain (`$'\x74ier0'`, `printf`, `eval` of a computed string). The check is fail-closed
+not contain (`printf`, `eval` of a computed string, a command substitution). The check is fail-closed
 against accidents and unsophisticated self-approval, not forgery-resistant. Everything above
 about scripts still holds: `rm -rf` inside a script has no equivalent control.
 

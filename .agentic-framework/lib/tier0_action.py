@@ -425,21 +425,31 @@ def _classify_git(words: list[str], cwd: str | None,
         return [action("hard-reset", repo=_toplevel(cwd), branch=_current_branch(cwd),
                        target=target)]
     if sub == "branch":
-        longs = {a: resolve_long("branch", a)[0] for a in args if a.startswith("--") and a != "--"}
-        shorts = "".join(a[1:] for a in args if a.startswith("-") and not a.startswith("--"))
+        # Options end at `--`; every word after it is a branch name.
+        opts, names = [], []
+        for j, a in enumerate(args):
+            if a == "--":
+                names.extend(args[j + 1:])
+                break
+            (opts if a.startswith("-") else names).append(a)
+        longs = {a: resolve_long("branch", a)[0] for a in opts if a.startswith("--")}
+        shorts = "".join(a[1:] for a in opts if not a.startswith("--"))
         force_del = "D" in shorts or (("d" in shorts or "delete" in longs.values())
                                       and ("f" in shorts or "force" in longs.values()))
         if not force_del:
             return []
         if "remotes" in longs.values() or "r" in shorts:
             raise Unmappable("branch delete of remote-tracking refs")
-        names = [a for a in args if not a.startswith("-")]
         if not names:
             raise Unmappable("branch -D without a name")
         if cwd is None:
             raise Unmappable("branch -D with unknown cwd")
         repo = _toplevel(cwd)
-        return [action("branch-delete", remote=LOCAL_REMOTE, ref=normalize_ref(n), repo=repo)
+        # T-3593 R6: a LOCAL branch name is literal. `git branch -D` deletes the
+        # branch named `+victim` or `refs/heads/victim` as written, so those are
+        # different targets from `victim` and must not share its key. Refspec
+        # normalisation (normalize_ref) belongs to pushes only.
+        return [action("branch-delete", remote=LOCAL_REMOTE, ref=n, repo=repo)
                 for n in names]
     raise Unmappable(f"git {sub} is not an action verb")
 
@@ -475,7 +485,13 @@ def _classify_rm(args: list[str], cwd: str | None) -> list[dict]:
             if cwd is None:
                 raise Unmappable("relative rm path with unknown cwd")
             p = os.path.join(cwd, p)
-        norm = os.path.normpath(p)          # trailing slash is not a different target
+        norm = os.path.normpath(p)
+        # T-3593 R6: a trailing slash (or `/.`) IS a different target when the
+        # path is a symlink to a directory: `rm -rf link` removes the link,
+        # `rm -rf link/` removes what it points at. Keep it in the key and the
+        # text, so an approval for one never covers the other.
+        if (p.endswith("/") or p.endswith("/.")) and norm != "/":
+            norm += "/"
         out.append(action("recursive-delete", path=norm))
     return out
 
