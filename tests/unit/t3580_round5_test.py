@@ -144,7 +144,7 @@ class TestVendorMapping:
 
     def test_negative_a_review_kind_the_mapping_does_not_know_is_refused(self, prod):
         with pytest.raises(ValueError, match="has no vendor in policy/review-backends.yaml"):
-            rt.dispatch(prod, "rv-x", TID, worker_kind="codex")    # real registry: no codex kind
+            rt.dispatch(prod, "rv-x", TID, worker_kind="kx")    # real registry: no such kind (T-3582: codex is one now)
 
     def test_the_dispatcher_prints_the_same_one_mapping(self):
         out = subprocess.run(["bash", str(TERMLINK), "worker-kinds", "--vendors"],

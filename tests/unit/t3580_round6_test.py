@@ -387,6 +387,9 @@ class TestRuntimeCapability:
 # ── 3. LOW: vendor provenance = the COMMITTED registry + a launchable worker kind ───────────
 
 from t3580_round5_test import _THREE_KINDS  # noqa: E402
+#: T-3582 made codex and opencode real, launchable kinds; the probes below need kinds the
+#: dispatcher CANNOT launch, so they use two future kinds with the same vendors.
+_FUTURE_KINDS = _THREE_KINDS.replace("codex", "kx").replace("opencode", "ky")
 
 PANEL = [{"seat": s, "vendor": s} for s in ("seat-a", "seat-b", "seat-c")]
 
@@ -406,11 +409,11 @@ class TestVendorProvenance:
     def test_negative_an_uncommitted_registry_declares_nothing(self, prod, monkeypatch):
         """The review's case: the round-5 three-vendor control used a working-tree registry."""
         (prod / "policy").mkdir()
-        (prod / "policy" / "review-backends.yaml").write_text(_THREE_KINDS)    # NOT committed
-        rt.launchable(monkeypatch, {"codex", "opencode"})
-        assert "codex" not in vl.kind_vendors(prod)
-        with pytest.raises(ValueError, match="'codex' has no vendor .* as committed"):
-            rt.dispatch(prod, "rv-x", TID, worker_kind="codex")
+        (prod / "policy" / "review-backends.yaml").write_text(_FUTURE_KINDS)    # NOT committed
+        rt.launchable(monkeypatch, {"kx", "ky"})
+        assert "kx" not in vl.kind_vendors(prod)
+        with pytest.raises(ValueError, match="'kx' has no vendor .* as committed"):
+            rt.dispatch(prod, "rv-x", TID, worker_kind="kx")
 
     def test_negative_an_uncommitted_edit_does_not_change_a_committed_vendor(self, prod):
         rt.commit_registry(prod, _THREE_KINDS)
@@ -419,19 +422,19 @@ class TestVendorProvenance:
         assert vl.kind_vendors(prod)["claude"] == "anthropic"
 
     def test_negative_a_committed_but_unlaunchable_kind_is_refused_at_registration(self, prod):
-        rt.commit_registry(prod, _THREE_KINDS)
-        assert vl.kind_vendors(prod)["codex"] == "openai"           # declared and committed ...
-        assert "codex" not in vl.launchable_kinds()                  # ... but no worker can run
+        rt.commit_registry(prod, _FUTURE_KINDS)
+        assert vl.kind_vendors(prod)["kx"] == "openai"           # declared and committed ...
+        assert "kx" not in vl.launchable_kinds()                  # ... but no worker can run
         with pytest.raises(ValueError, match="or the dispatcher cannot launch it"):
-            rt.dispatch(prod, "rv-x", TID, worker_kind="codex")
+            rt.dispatch(prod, "rv-x", TID, worker_kind="kx")
 
     def test_negative_at_apply_an_unlaunchable_seat_does_not_count(self, hi, monkeypatch):
         """Registered while (pretend) launchable; at apply the dispatcher cannot launch the kind:
         the seat's vendor is unverified and the panel does not tick."""
-        rt.commit_registry(hi, _THREE_KINDS)
+        rt.commit_registry(hi, _FUTURE_KINDS)
         with monkeypatch.context() as m:
-            rt.launchable(m, {"codex", "opencode"})
-            _three_seat_panel(hi)
+            rt.launchable(m, {"kx", "ky"})
+            _three_seat_panel(hi, kinds=("claude", "kx", "ky"))
             assert _ticked(hi) == [1]                                # control while launchable
         f = next((hi / ".tasks" / "active").glob(f"{TID}-*.md"))
         f.write_text(f.read_text().replace("- [x] [REVIEW]", "- [ ] [REVIEW]"))
@@ -444,11 +447,11 @@ class TestVendorProvenance:
         """A kind committed only AFTER the reviewed revision names no vendor for that review."""
         early = subprocess.run(["git", "rev-parse", "HEAD"], cwd=prod, capture_output=True,
                                text=True).stdout.strip()
-        rt.commit_registry(prod, _THREE_KINDS)
-        rt.launchable(monkeypatch, {"codex"})
-        with pytest.raises(ValueError, match="'codex' has no vendor"):
-            rt.dispatch(prod, "rv-x", TID, worker_kind="codex", revision=early)
-        rt.dispatch(prod, "rv-y", TID, worker_kind="codex")                  # control: at HEAD
+        rt.commit_registry(prod, _FUTURE_KINDS)
+        rt.launchable(monkeypatch, {"kx"})
+        with pytest.raises(ValueError, match="'kx' has no vendor"):
+            rt.dispatch(prod, "rv-x", TID, worker_kind="kx", revision=early)
+        rt.dispatch(prod, "rv-y", TID, worker_kind="kx")                  # control: at HEAD
         assert vl.dispatch_record(prod, "rv-y")[0]["vendor"] == "openai"
 
     def test_control_committed_and_launchable_three_vendors_tick(self, hi, monkeypatch):
