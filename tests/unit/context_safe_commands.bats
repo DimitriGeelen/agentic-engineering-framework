@@ -279,7 +279,10 @@ setup() {
         submodule gc prune repack filter-branch notes replace update-ref
         symbolic-ref update-index write-tree commit-tree hash-object mktree
         sparse-checkout maintenance fsck reflog-expire rerere send-email
-        format-patch request-pull archive bundle daemon hook read-tree "
+        format-patch request-pull archive bundle daemon hook read-tree
+        send-pack "
+    # send-pack (T-3594 comment in agents/git/lib/hooks.sh, e765d09ef) pushes
+    # refs to a remote: it mutates, so it stays gated.
     # Collapse the newlines above to single spaces — the membership test below is
     # a substring match on " $verb ", so a verb sitting at a line break would not
     # match and would show up as unclassified. It did, on the first run: this
