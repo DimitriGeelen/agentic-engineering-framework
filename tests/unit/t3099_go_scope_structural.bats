@@ -25,6 +25,9 @@ pass() { echo "PASS|$1"; PASS_COUNT=$((PASS_COUNT + 1)); }
 info() { echo "INFO|$1"; PASS_COUNT=$((PASS_COUNT + 1)); }
 warn() { echo "WARN|$1"; echo "EVIDENCE|$2"; echo "MITIGATION|$3"; WARN_COUNT=$((WARN_COUNT + 1)); }
 fail() { echo "FAIL|$1"; FAIL_COUNT=$((FAIL_COUNT + 1)); }
+# T-3105 helpers the block calls (pass_over / warn_unenumerable), also extracted
+# from the shipped source so the empty-set contract is the real one.
+eval "$(sed -n '/^pass_over() {$/,/^}$/p; /^warn_unenumerable() {$/,/^}$/p' "$REPO_ROOT/agents/audit/audit.sh")"
 eval "$(sed -n '/^# T-2096 (OBS-036, sibling to L-417\/T-1975): GO-scope-not-propagated scan\.$/,/^# end GO-scope-not-propagated scan (T-3099)$/p' "$REPO_ROOT/agents/audit/audit.sh")"
 echo "COUNTS|pass=$PASS_COUNT|warn=$WARN_COUNT|fail=$FAIL_COUNT"
 RUNNEREOF
@@ -122,7 +125,8 @@ EOF
     # The old gate's own regex must not match this fixture — otherwise the test
     # would pass for the wrong reason.
     if grep -qEi 'filed on GO|sub-tasks (filed|created)|build slices (filed|created)|child tasks (filed|spun off)' "$FIX/.tasks/completed/T-9001-prose-only.md" "$FIX/.tasks/completed/T-9001-prose-only.md"; then false; fi
-    echo "$output" | grep -q '^WARN|Found 1 GO-scope-not-propagated inception'
+    # Headline wording: T-3469 (tiers) / T-3562 (a mention is not a build).
+    echo "$output" | grep -q "^WARN|1 GO'd inception(s) have NO declared build link"
     echo "$output" | grep -q '^EVIDENCE|T-9001'
 }
 
@@ -173,7 +177,11 @@ EOF
     mv "$FIX/.tasks/completed/T-9010-DEFER.md" "$FIX/.tasks/completed/T-9011-defer.md"
     _block
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q '^PASS|No GO-scope-not-propagated inception'
+    # Both are counted as inceptions, neither as GO-recorded. With no GO set the
+    # check reports NOT EVALUATED rather than a vacuous PASS (T-3105).
+    echo "$output" | grep -q '(0 GO-recorded completed inception(s) of 2 completed inception(s))'
+    run grep -q 'have NO declared build link' <<< "$output"
+    [ "$status" -ne 0 ]
 }
 
 @test "non-inception workflow types are never candidates" {
@@ -190,7 +198,10 @@ related_tasks: []
 EOF
     _block
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q '^PASS|No GO-scope-not-propagated inception'
+    # Not an inception at all: the inception population is empty (T-3105 wording).
+    echo "$output" | grep -q '(0 GO-recorded completed inception(s) of 0 completed inception(s))'
+    run grep -q 'have NO declared build link' <<< "$output"
+    [ "$status" -ne 0 ]
 }
 
 # ── output contract (ACs #3, #4, #5) ─────────────────────────────────────────
@@ -210,17 +221,18 @@ EOF
     done
     _block
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q '^WARN|Found 9 GO-scope-not-propagated inception'
+    echo "$output" | grep -q "^WARN|9 GO'd inception(s) have NO declared build link"
     evidence=$(echo "$output" | grep '^EVIDENCE|' | head -1)
     [ "$(echo "$evidence" | grep -o 'T-92[0-9][0-9]' | wc -l)" -eq 5 ]
-    echo "$evidence" | grep -q '(+4 more)'
+    # T-3469: the overflow counts the tier the sample is drawn from.
+    echo "$evidence" | grep -q '(+4 more candidate)'
 }
 
 @test "full list is reachable by a named command in the mitigation" {
     _fixture_prose_only
     _block
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q 'MITIGATION|.*Full list: cat .*go-scope-unpropagated/LATEST.md'
+    echo "$output" | grep -q 'MITIGATION|.*Triage per tier: cat .*go-scope-unpropagated/LATEST.md'
     [ -f "$FIX/.context/audits/go-scope-unpropagated/LATEST.md" ]
     grep -q '^- T-9001' "$FIX/.context/audits/go-scope-unpropagated/LATEST.md"
 }
@@ -231,13 +243,16 @@ EOF
     _block
     [ "$status" -eq 0 ]
     # 2 GO-recorded completed inceptions examined, of 2 completed inceptions.
-    echo "$output" | grep -q '^PASS|No GO-scope-not-propagated inception(s) — examined 2 GO-recorded completed inception(s) of 2'
+    echo "$output" | grep -q '^PASS|No GO-scope-not-propagated inception(s) (sibling to L-417) — examined 2 GO-recorded completed inception(s) of 2'
 }
 
-@test "empty corpus PASS names zero, and does not claim to have examined anything" {
+@test "empty corpus is NOT EVALUATED, never a PASS that claims to have examined anything" {
     _block
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q 'examined 0 GO-recorded completed inception(s) of 0'
+    # T-3105: an empty candidate set WARNs instead of passing vacuously.
+    echo "$output" | grep -q '^WARN|.*NOT EVALUATED: candidate set empty (0 GO-recorded completed inception(s) of 0'
+    run grep -q '^PASS|' <<< "$output"
+    [ "$status" -ne 0 ]
 }
 
 # ── T-2298 structure preserved ───────────────────────────────────────────────
@@ -246,7 +261,9 @@ EOF
     block=$(sed -n '/^# T-2096 (OBS-036, sibling to L-417\/T-1975): GO-scope-not-propagated scan\.$/,/^# end GO-scope-not-propagated scan (T-3099)$/p' \
         "$REPO_ROOT/agents/audit/audit.sh")
     # Exactly one python3 pre-scan, and no grep fan-out over the task corpus.
-    [ "$(echo "$block" | grep -c 'python3 -c')" -eq 1 ]
+    # (Counted by the assignment, not the bare string: a comment inside the
+    # embedded script names 'python3 -c' too.)
+    [ "$(echo "$block" | grep -c '=\$(python3 -c')" -eq 1 ]
     if echo "$block" | grep -qE 'grep .*\.tasks/(completed|active)'; then false; fi
     # Both passes present.
     echo "$block" | grep -q '# Pass 1:'
