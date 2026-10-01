@@ -42,7 +42,12 @@ teardown() {
 # Drive the CLI against the scratch register. --from-watchtower stands in for the
 # Sovereign click (§ACD refuses agent sessions otherwise); these tests run under
 # $CLAUDECODE=1 in an agent session and via bats in cron, so it is required in both.
+#
+# Every --add carries --allow-unscored: the scratch drivers have no scorer, and
+# since T-3427 (491733d90) --add refuses an unscored driver before it reaches
+# the drop-identity guard under test here.
 drv() {
+    if [ "${1:-}" = "--add" ]; then set -- "$@" --allow-unscored; fi
     ( cd "$SCRATCH" && PROJECT_ROOT="$SCRATCH" "$FW" bvp driver "$@" 2>&1 )
 }
 
