@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3648: claude-fw ends a live agent on ONE failed termlink ping (055 P-011/P-012, 10 of 13 fleet agents exposed)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-01T14:19:20Z
+# ============================================================================
+
+task_id: T-3648
+task_name: "claude-fw ends a live agent on ONE failed termlink ping (055 P-011/P-012, 10 of 13 fleet agents exposed)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T13:24:40Z
+completed: 2026-10-01T14:16:12Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-01T16:15:58+02:00
+last_commit: 2026-10-01T16:15:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  claude-fw tolerates transient termlink ping failures (CLAUDE_FW_PING_FAILURES, default 3)
+
+# Key outcomes
+outcomes:
+  - 'Reproducing test `tests/unit/t3648_claude_fw_ping_tolerance.bats` drives the real wrapper with a stub `termlink` whose `ping` fails once, then succeeds, then the exit marker appears: wrapper must exit with the marker''s code (0), not 1. Red on the unfixed code'
+  - 'Fix: the wait loop declares the session gone only after `CLAUDE_FW_PING_FAILURES` consecutive failed pings (default 3; non-numeric or <1 falls back to 3); a success resets the count; each tolerated failure is logged to stderr. Pinned by the same test (sustained failure still exits 1 after N pings; reset; fallback)'
+  - 'No regression in the neighbouring claude-fw suites (t3647, t3358, t3346, claude_fw_restart_mode, claude_fw_router, claude_fw_copy_not_symlink)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - 'bin/claude-fw'
+  - '.tasks/active/T-3648-claude-fw-ends-a-live-agent-on-one-faile.md'
+  - 'tests/unit/t3648_claude_fw_ping_tolerance.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T16:15:58'
+    action: 'T-3648: claude-fw tolerates transient termlink ping failures (CLAUDE_FW_PING_FAILURES, default 3)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 51 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, 055, upstream]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 51
+  commits: 1
+  files_changed: 4
+  lines_added: 189
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3648-claude-fw-ends-a-live-agent-on-one-faile.md
+generated_by: context-agent-hybrid
