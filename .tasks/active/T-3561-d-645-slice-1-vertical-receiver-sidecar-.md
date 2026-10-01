@@ -50,7 +50,7 @@ write_set: ["lib/sidecar/receiver.py", "lib/sidecar/lifecycle.py", "lib/sidecar/
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-29T16:46:15Z
-last_update: 2026-10-01T23:08:34Z
+last_update: '2026-10-01T23:15:31Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -72,6 +72,15 @@ cost_estimate_proposed:
     rationale: blast_radius=7 (9-write-set-paths); tier=2 (workflow:build); 
       effort=8 (lines=309,acs=12)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-01T23:15:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 9
+      tier: 2
+      effort: 8
+    rationale: blast_radius=9 (11-write-set-paths-cross-cutting); tier=2 
+      (workflow:build); effort=8 (lines=343,acs=12)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-09-29T17:00:37Z'
     estimator: bvp-estimator-v1-heuristic
@@ -89,6 +98,24 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
       (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-01T23:15:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
     rubric_sha: e4a00f38e801
 ---
 
@@ -134,16 +161,16 @@ pass one; only externally observable behaviour passes"*).
 ## Acceptance Criteria
 
 ### Agent
-- [ ] A receiver sidecar process with an HTTP API on localhost stores each message durably (message + pending record in one recoverable write) BEFORE returning RECEIVED to the sender
-- [ ] Message ids are stable across retries; a duplicate id is stored once, and a reused id with different content is rejected
-- [ ] A runtime adapter hands the stored message to a real agent session at a safe boundary and records HANDED_OVER with the message id; a queue write alone never counts as HANDED_OVER
-- [ ] Injected peer content is framed as untrusted data; an action request becomes a task proposal, never execution (hostile-payload test)
-- [ ] The sender sees SENT, RECEIVED, HANDED_OVER and REPLIED for its message, each set by the party that can know it
-- [ ] Failure paths exist and are exercised: UNDELIVERABLE (receiver down, retry budget spent), REJECTED (unauthenticated caller, never injected), ESCALATED (HANDED_OVER never reached before its deadline, set by infrastructure)
-- [ ] END-TO-END PROOF: agent A sends a nonce generated at test time; agent B, whose prompt never mentions that a message is coming, replies with the nonce transformed; the only passing assertion is the transformed nonce arriving in A's context
-- [ ] NEGATIVE CONTROL: with injection disabled the end-to-end proof FAILS, and the sender sees ESCALATED rather than silence or success
-- [ ] Every non-success outcome is written to the T-3555 refusal ledger (or recorded for it, if T-3555 has not shipped yet)
-- [ ] `INJECTED_NOW` is renamed `HUB_ACCEPTED` wherever it survives, so no status claims more than it knows
+- [x] A receiver sidecar process with an HTTP API on localhost stores each message durably (message + pending record in one recoverable write) BEFORE returning RECEIVED to the sender
+- [x] Message ids are stable across retries; a duplicate id is stored once, and a reused id with different content is rejected
+- [x] A runtime adapter hands the stored message to a real agent session at a safe boundary and records HANDED_OVER with the message id; a queue write alone never counts as HANDED_OVER
+- [x] Injected peer content is framed as untrusted data; an action request becomes a task proposal, never execution (hostile-payload test)
+- [x] The sender sees SENT, RECEIVED, HANDED_OVER and REPLIED for its message, each set by the party that can know it
+- [x] Failure paths exist and are exercised: UNDELIVERABLE (receiver down, retry budget spent), REJECTED (unauthenticated caller, never injected), ESCALATED (HANDED_OVER never reached before its deadline, set by infrastructure)
+- [x] END-TO-END PROOF: agent A sends a nonce generated at test time; agent B, whose prompt never mentions that a message is coming, replies with the nonce transformed; the only passing assertion is the transformed nonce arriving in A's context
+- [x] NEGATIVE CONTROL: with injection disabled the end-to-end proof FAILS, and the sender sees ESCALATED rather than silence or success
+- [x] Every non-success outcome is written to the T-3555 refusal ledger (or recorded for it, if T-3555 has not shipped yet)
+- [x] `INJECTED_NOW` is renamed `HUB_ACCEPTED` wherever it survives, so no status claims more than it knows
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
