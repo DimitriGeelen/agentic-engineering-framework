@@ -112,10 +112,62 @@ _tl_claude_exit_code() {
     printf '%s\n' "$m" | sed -E 's/__CLAUDE_FW_EXIT_([0-9]+)__/\1/'
 }
 
+# T-3647 (port of 055 P-009, framework:pickup offset 241): PIDs of the
+# `termlink register --name <name>` process(es) that own a session. That process
+# outlives the session's shell, so injecting `exit` alone leaked one live,
+# heartbeating registration per wrapper exit. Matching is EXACT, never by pattern:
+# a `termlink list --json` entry whose display_name equals <name>, or a process
+# whose argv holds `register` and `--name <name>` as separate words. The /proc leg
+# matters because `termlink clean` drops the registration file while the process
+# lives on, after which `termlink list` cannot see it at all. A list-sourced PID
+# is kept only if /proc (where present) confirms the same argv, so a recycled PID
+# is never signalled. Prints one PID per line.
+_tl_register_pids() {
+    local name="$1" listing
+    [ -n "$name" ] || return 0
+    listing=$(termlink list --all --json 2>/dev/null) || listing=""
+    printf '%s' "$listing" | python3 -c '
+import json, os, sys
+name, me = sys.argv[1], os.getpid()
+
+def argv_matches(pid):
+    try:
+        with open("/proc/%d/cmdline" % pid, "rb") as f:
+            argv = f.read().decode("utf-8", "replace").split("\0")
+    except OSError:
+        return None
+    return "register" in argv and any(
+        argv[i] == "--name" and argv[i + 1] == name for i in range(len(argv) - 1))
+
+have_proc = os.path.isdir("/proc/self")
+pids = set()
+try:
+    for s in json.load(sys.stdin).get("sessions", []):
+        if s.get("display_name") == name and isinstance(s.get("pid"), int):
+            pids.add(s["pid"])
+except Exception:
+    pass
+if have_proc:
+    pids = {p for p in pids if argv_matches(p)}
+    for d in os.listdir("/proc"):
+        if d.isdigit() and argv_matches(int(d)):
+            pids.add(int(d))
+for p in sorted(pids - {me, os.getppid()}):
+    print(p)
+' "$name" 2>/dev/null || true
+}
+
 termlink_cleanup() {
     if [ -n "$TERMLINK_SESSION" ]; then
+        local _reg_pids
+        _reg_pids=$(_tl_register_pids "$TERMLINK_SESSION")
         termlink pty inject "$TERMLINK_SESSION" "exit" --enter >/dev/null 2>&1 || true
         sleep 2
+        # T-3647: SIGTERM removes the registration cleanly; `exit` alone does not.
+        if [ -n "$_reg_pids" ]; then
+            # shellcheck disable=SC2086 # one PID per word, by construction
+            kill -TERM $_reg_pids 2>/dev/null || true
+        fi
         termlink clean >/dev/null 2>&1 || true
     fi
 }

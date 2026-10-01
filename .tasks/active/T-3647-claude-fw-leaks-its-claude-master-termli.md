@@ -14,7 +14,7 @@ description: >
   different code: T-3622 (dispatch leaves a live register --shell). Related keeper
   leak: 055 P-015 (offset 252). Triage: T-3639.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T13:23:58Z
-last_update: '2026-10-01T13:30:37Z'
+last_update: 2026-10-01T13:54:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,14 +94,21 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Port of 055-agentic-fleet-cockpit pickup P-009 (framework:pickup offset 241, 055 T-356),
+re-derived against our `bin/claude-fw`. On this host at fix time: 73 live
+`termlink register --name claude-master-<pid>` processes, ~17h old — and none of them
+visible in `termlink list --all`, so a lookup by `termlink list` alone (055's approach)
+finds nothing once the registration file is gone. Our fix therefore resolves the PID by
+the EXACT display name from `termlink list --json` AND by exact argv tokens
+(`--name <name>`) from /proc, never by pattern.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproducing test `tests/unit/t3647_claude_fw_register_leak.bats` drives the real wrapper against a stub `termlink` whose `spawn` leaves a live register process (plus a near-namesake decoy); red on the unfixed code (register process survives the wrapper exit)
+- [x] Fix: `termlink_cleanup` SIGTERMs the session's own register process(es), resolved by exact display name / exact argv token, after the `exit` inject; the near-namesake decoy is never signalled (pinned by the same test)
+- [x] No regression in the neighbouring claude-fw suites (t3358, t3346, claude_fw_restart_mode, claude_fw_router, claude_fw_copy_not_symlink)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -261,6 +268,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t3647_claude_fw_register_leak.bats > /tmp/.t3647v 2>&1 && ! grep -q "^not ok" /tmp/.t3647v
+test "$(grep -c '# skip' /tmp/.t3647v)" -eq 0
+timeout 300 bats tests/unit/t3358_claude_fw_exit_detection.bats tests/unit/t3346_termlink_exit_marker.bats tests/unit/claude_fw_restart_mode.bats tests/unit/claude_fw_router.bats tests/unit/claude_fw_copy_not_symlink.bats > /tmp/.t3647n 2>&1 && ! grep -q "^not ok" /tmp/.t3647n
+bin/fw vendor self --check
 
 ## RCA
 
@@ -277,6 +288,24 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** every `claude-fw --termlink` exit leaves a live `termlink register --name
+claude-master-<pid> --shell` process heartbeating `ready` (055 measured 135 orphans on one
+host; 73 here, 17h old).
+
+**Root cause:** `termlink_cleanup` only injected `exit` into the session's shell and ran
+`termlink clean`. The register process is the session's owner and outlives its shell;
+nothing ever signalled it. `termlink clean` then drops the registration file, which makes
+the still-running process invisible to `termlink list` — so the leak hides itself.
+
+**Why structurally allowed:** the cleanup tests (t3358) asserted that cleanup was
+*attempted* (the `exit` inject and `clean` call appear in the stub log), never that the
+registration was actually *gone* afterwards. A stub that exits 0 for `spawn` has no
+process to leak, so the leak could not be observed by construction.
+
+**Prevention:** t3647 stub `spawn` leaves a real long-lived register process and asserts
+it is dead after the wrapper exits — the test measures the outcome, not the call — plus a
+near-namesake decoy that must survive, pinning exact-name matching.
 
 ## Evolution
 
@@ -358,3 +387,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3647-claude-fw-leaks-its-claude-master-termli.md
 - **Context:** Initial task creation
+
+### 2026-10-01T13:54:26Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
