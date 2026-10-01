@@ -1295,6 +1295,8 @@ Enforced structurally. `fw arc create` requires `--headline-mechanic "<who> <doe
 
 **Evidence:** T-1626, T-1633, T-1641 (origin); T-1667 (3rd-incident RCA → demo+headline-mechanic gates); T-1670 (4th-incident agent auto-close → T-1671 closure-decision gate).
 
+**Spec-conformance register gate (T-3691):** Arc design docs may carry a requirement register (YAML `register:` block with {id, text, owner_task, status}). Build tasks on that arc cannot close while deferring a spec requirement without naming an EXISTING owner task — structural prevention for the sidecar pattern where 7 requirements were deferred with no owner. Override via `--skip-register-requirements "rationale"` (logged Tier-2).
+
 ### Arc Action Handoffs — surface URLs, not CLI (T-2347)
 
 When surfacing an arc-mutating action to the operator — `fw arc close`, `fw arc approve-driver`, `fw arc abandon`, `fw arc set-scoped-weight`, `fw arc remove-driver` — paste the **Watchtower URL**, not the CLI command. The same rule that T-679 establishes for task review (`fw task review T-XXX` → URL) extends to arc actions because every arc-mutating verb has a Watchtower endpoint that wraps it (`web/blueprints/arcs.py:919-1322`).

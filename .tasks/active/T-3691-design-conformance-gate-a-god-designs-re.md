@@ -1,10 +1,21 @@
 ---
 id: T-3691
-name: "Design-conformance gate: a GO'd design's requirements are a tracked register with an owning task each; a slice cannot close while deferring a requirement without naming its owner; arcs cannot read healthy while a register row is unowned"
+name: "Design-conformance gate: a GO'd design's requirements are a tracked register
+  with an owning task each; a slice cannot close while deferring a requirement without
+  naming its owner; arcs cannot read healthy while a register row is unowned"
 description: >
-  Structural counter for T-3682 (operator 2026-10-02: 'do the structural measurement so this cannot reoccur'). The sidecar receive half was deferred by 6 slices with no owner and T-3397/T-3561 sat captured. Build: (1) register format on the design doc (requirement id, source, owning task, status), seeded for the sidecar R1-R15; (2) close gate: a task whose scope fence defers a register requirement must name an existing owner task; (3) fw audit FAIL on any register row with no owner or an owner that is closed while the row is unmet; (4) inception GO without inception_decisions/ships_in refused for new inceptions (no grandfathering forward) and T-3396/T-3397 retrofitted with ships_in pointing at the S-tasks; (5) stale-keystone check: a captured task named as an arc's keystone/slice 1 for >3 days WARNs on /approvals.
+  Structural counter for T-3682 (operator 2026-10-02: 'do the structural measurement
+  so this cannot reoccur'). The sidecar receive half was deferred by 6 slices with
+  no owner and T-3397/T-3561 sat captured. Build: (1) register format on the design
+  doc (requirement id, source, owning task, status), seeded for the sidecar R1-R15;
+  (2) close gate: a task whose scope fence defers a register requirement must name
+  an existing owner task; (3) fw audit FAIL on any register row with no owner or an
+  owner that is closed while the row is unmet; (4) inception GO without inception_decisions/ships_in
+  refused for new inceptions (no grandfathering forward) and T-3396/T-3397 retrofitted
+  with ships_in pointing at the S-tasks; (5) stale-keystone check: a captured task
+  named as an arc's keystone/slice 1 for >3 days WARNs on /approvals.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T23:04:08Z
-last_update: 2026-10-01T23:04:08Z
-date_finished: null
+last_update: 2026-10-01T23:08:35Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +62,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-01T23:08:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3691: Design-conformance gate: a GO'd design's requirements are a tracked register with an owning task each; a slice cannot close while deferring a requirement without naming its owner; arcs cannot read healthy while a register row is unowned
@@ -63,8 +92,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Requirement register format seeded in sidecar-target-architecture.md with R1-R15, each with {id, text, source, owner_task, status, evidence}
+- [ ] Close gate in update-task.sh:check_register_requirements() refuses work-completed if arc register row is deferred without owner
+- [ ] fw audit FAIL + fw doctor WARN on register row with no owner_task or completed owner with unbuilt requirement
+- [ ] Inceptions cannot GO without inception_decisions/ships_in (T-3396 / T-3397 retrofitted with deferred:T-XXXX refs)
+- [ ] Stale keystone check: captured task as arc keystone/slice-1 for >3 days WARNs audit + Watchtower /approvals
+- [ ] Tests for each: gate fixture (liveness self-probe deferred, no owner), close refuses + pass with owner named, audit fails, inception rejects no ships_in
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -321,3 +354,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3691-design-conformance-gate-a-god-designs-re.md
 - **Context:** Initial task creation
+
+### 2026-10-01T23:08:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

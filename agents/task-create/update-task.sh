@@ -95,7 +95,7 @@ _print_move_next_hint() {
 # artefact's shape rather than a criterion or ownership. Table: T-3586 task file.
 # Env-var bypasses (FW_*) are unchanged: they have no reason surface.
 _BYPASS_AGENT_REFUSED=" --skip-acceptance-criteria --skip-verification --skip-sovereignty --skip-human-ownership --skip-rca --skip-recommendation --skip-inception-decision "
-_BYPASS_REASON_REQUIRED=" --skip-acceptance-criteria --skip-verification --skip-sovereignty --skip-human-ownership --skip-rca --skip-recommendation --skip-inception-decision --skip-render-review --skip-evolution --skip-disposition-gate --skip-inception-scope-trace "
+_BYPASS_REASON_REQUIRED=" --skip-acceptance-criteria --skip-verification --skip-sovereignty --skip-human-ownership --skip-rca --skip-recommendation --skip-inception-decision --skip-render-review --skip-evolution --skip-disposition-gate --skip-inception-scope-trace --skip-register-requirements "
 enforce_bypass_policy() {
     local flag="$1" reason="$2"
     case "$_BYPASS_REASON_REQUIRED" in *" $flag "*) ;; *) return 0 ;; esac
@@ -916,6 +916,157 @@ check_evolution_log() {
     exit 1
 }
 
+# Design-conformance register gate (T-3691, structural prevention for T-3682)
+# Fires on --status work-completed for build tasks whose arc_id references a design
+# with a requirement register (structured YAML block with {id, text, owner_task, status}).
+# Checks that any scope fence deferring a register requirement names an EXISTING owner_task.
+#
+# Register lives in the design doc as a fenced YAML block listing R1-R15 with owner tasks.
+# If a task body mentions "deferred:R-id" or quotes the requirement text without naming
+# an owner_task that exists, the gate refuses: a spec requirement cannot be left unowned.
+#
+# Bypass policy (T-1890 parity):
+#   --skip-register-requirements "rationale"  (direct CLI, logged Tier-2)
+#   FW_SKIP_REGISTER_REQUIREMENTS=1           (env-var for git hooks, logged Tier-2)
+#
+# Origin: T-3682 audit found 6 slices deferring the same 7 sidecar requirements with NO
+# task ever assigned to build them. This gate prevents the pattern from reoccurring.
+check_register_requirements() {
+    [ "$NEW_STATUS" = "work-completed" ] || return 0
+
+    local task_type
+    task_type=$(grep '^workflow_type:' "$TASK_FILE" | head -1 | sed 's/workflow_type:[[:space:]]*//' | tr -d '"' | tr -d "'")
+
+    # Only build tasks; inceptions/specs/designs are not slices
+    [ "$task_type" = "build" ] || return 0
+
+    # Extract arc_id from frontmatter
+    local arc_id
+    arc_id=$(grep '^arc_id:' "$TASK_FILE" | head -1 | sed 's/arc_id:[[:space:]]*//' | tr -d '"' | tr -d "'" || true)
+    [ -n "$arc_id" ] || return 0
+
+    # Find the design doc in .context/arcs/ by slug or arc-NNN
+    local arc_yaml arc_slug
+    arc_slug=$(echo "$arc_id" | sed 's/^arc-//' | sed 's/^arc://')
+    arc_yaml="$PROJECT_ROOT/.context/arcs/${arc_slug}.yaml"
+    [ -f "$arc_yaml" ] || arc_yaml="$PROJECT_ROOT/.context/arcs/${arc_id}.yaml"
+    [ -f "$arc_yaml" ] || return 0
+
+    # Read the arc's design_doc reference (if any)
+    local design_doc
+    design_doc=$(grep '^design_doc:' "$arc_yaml" 2>/dev/null | head -1 | sed 's/design_doc:[[:space:]]*//' | tr -d '"' | tr -d "'" || true)
+    [ -n "$design_doc" ] || return 0
+
+    # Resolve design doc path
+    [ "${design_doc:0:1}" = "/" ] && design_doc="$PROJECT_ROOT${design_doc}" || design_doc="$PROJECT_ROOT/$design_doc"
+    [ -f "$design_doc" ] || return 0
+
+    # Extract the register block from the design doc (fenced YAML under ## 7. Design-conformance requirement register)
+    # Parse the register YAML and collect {id, owner_task, status} entries
+    local register_entries
+    register_entries=$(python3 - "$design_doc" "$TASK_FILE" "$PROJECT_ROOT" <<'PYREGISTER' 2>/dev/null || echo ""
+import sys, re, yaml
+design_file = sys.argv[1]
+task_file = sys.argv[2]
+project_root = sys.argv[3]
+
+try:
+    design_text = open(design_file).read()
+    task_text = open(task_file).read()
+except:
+    sys.exit(0)
+
+# Extract the register YAML block (```yaml ... ```  after "## 7. Design-conformance")
+m = re.search(r'## 7\..*?```yaml\s*(.*?)\s*```', design_text, re.DOTALL | re.IGNORECASE)
+if not m:
+    sys.exit(0)
+
+try:
+    register = yaml.safe_load(m.group(1))
+    if not register or 'register' not in register:
+        sys.exit(0)
+except:
+    sys.exit(0)
+
+# For each requirement, check if the task defers it without naming owner
+deferred_unowned = []
+for req in register.get('register', []):
+    req_id = req.get('id', '')
+    req_text = req.get('text', '')
+    owner_task = req.get('owner_task', '')
+    status = req.get('status', '')
+
+    # Check if task body mentions this requirement as deferred
+    # Patterns: "deferred: R-X", "R-X deferred", mention of requirement text in scope fence
+    task_body = task_text.lower()
+    req_id_lower = req_id.lower()
+
+    # Check for explicit "R-id deferred" or "deferred.*R-id" patterns
+    if re.search(rf'\b{req_id_lower}\b.*\bdeferred\b|\bdeferred\b.*\b{req_id_lower}\b', task_body):
+        # This requirement is explicitly deferred in the task
+        # Verify owner_task exists and is not completed
+        if not owner_task:
+            deferred_unowned.append(f"{req_id}: no owner_task")
+        else:
+            # Check if owner task exists
+            owner_path = f"{project_root}/.tasks/active/{owner_task}-*.md"
+            import glob
+            active = glob.glob(owner_path.replace(f"{owner_task}-*.md", f"{owner_task}-*"))
+            owner_path_c = f"{project_root}/.tasks/completed/{owner_task}-*.md"
+            completed = glob.glob(owner_path_c.replace(f"{owner_task}-*.md", f"{owner_task}-*"))
+
+            if not active and not completed:
+                deferred_unowned.append(f"{req_id}: owner_task {owner_task} does not exist")
+            elif completed and status == 'unbuilt':
+                deferred_unowned.append(f"{req_id}: owner_task {owner_task} is completed but requirement is unbuilt")
+
+if deferred_unowned:
+    for item in deferred_unowned:
+        print(item)
+PYREGISTER
+    ) || true
+
+    # If any deferred requirements have no valid owner, refuse
+    if [ -n "$register_entries" ]; then
+        if [ "$SKIP_REGISTER_REQUIREMENTS" = true ]; then
+            echo -e "${YELLOW}WARNING: Register requirements deferred without valid owners (--skip-register-requirements bypass)${NC}"
+            log_gate_bypass "--skip-register-requirements" "check_register_requirements"
+            return 0
+        fi
+
+        if [ "${FW_SKIP_REGISTER_REQUIREMENTS:-0}" = "1" ]; then
+            echo -e "${YELLOW}WARNING: Register requirements deferred without valid owners (FW_SKIP_REGISTER_REQUIREMENTS=1 bypass)${NC}"
+            log_gate_bypass "FW_SKIP_REGISTER_REQUIREMENTS" "check_register_requirements"
+            return 0
+        fi
+
+        local task_id
+        task_id=$(basename "$TASK_FILE" | grep -oE '^T-[0-9]+')
+
+        echo -e "${RED}ERROR: Cannot complete — scope fence defers register requirements without valid owners.${NC}" >&2
+        echo "" >&2
+        echo "T-3691 (T-3682 origin): this slice's scope fences items from the design's requirement" >&2
+        echo "register, but does not name an EXISTING owner task for each. The sidecar spec had" >&2
+        echo "7 deferred requirements and no owner — this gate prevents reoccurrence." >&2
+        echo "" >&2
+        echo "Failing requirement(s):" >&2
+        while IFS= read -r line; do
+            echo "  - $line" >&2
+        done <<< "$register_entries"
+        echo "" >&2
+        echo "To resolve:" >&2
+        echo "  1. For each deferred requirement, ensure an owner_task exists in .tasks/{active,completed}/" >&2
+        echo "  2. Or remove the deferred item from this task's scope fence" >&2
+        echo "" >&2
+        echo "To override (Tier-2 logged):" >&2
+        echo "  --skip-register-requirements \"rationale\"  (direct fw task update)" >&2
+        echo "  FW_SKIP_REGISTER_REQUIREMENTS=1 <cmd>    (env-var for git hooks)" >&2
+        exit 1
+    fi
+
+    return 0
+}
+
 # Disposition-completeness gate (T-2190, T-2186 Slice 4)
 # Inception tasks must dispose every declared question in the ## Open Questions
 # body section. Each question gets answered / dissolved / deferred with cited
@@ -1492,6 +1643,11 @@ SKIP_HUMAN_OWNERSHIP=false
 SKIP_RECOMMENDATION=false
 SKIP_RCA=false
 SKIP_EVOLUTION=false
+# T-3691: register-requirements gate (--skip-register-requirements / FW_SKIP_REGISTER_REQUIREMENTS=1)
+SKIP_REGISTER_REQUIREMENTS=false
+if [ "${FW_SKIP_REGISTER_REQUIREMENTS:-0}" = "1" ]; then
+    SKIP_REGISTER_REQUIREMENTS=true
+fi
 # T-2190: disposition-completeness gate (--skip-disposition-gate / FW_SKIP_DISPOSITION_GATE=1)
 SKIP_DISPOSITION_GATE=false
 if [ "${FW_SKIP_DISPOSITION_GATE:-0}" = "1" ]; then
@@ -1526,6 +1682,7 @@ while [[ $# -gt 0 ]]; do
         --skip-recommendation) SKIP_RECOMMENDATION=true; shift ;;
         --skip-rca) SKIP_RCA=true; shift ;;
         --skip-evolution) SKIP_EVOLUTION=true; shift ;;
+        --skip-register-requirements) SKIP_REGISTER_REQUIREMENTS=true; shift ;;
         --skip-disposition-gate)
             SKIP_DISPOSITION_GATE=true
             if [ -n "${2:-}" ] && [[ "${2:-}" != --* ]]; then
@@ -1565,12 +1722,13 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-recommendation        Bypass recommendation gate (T-679)" >&2
             echo "  --skip-rca                   Bypass RCA gate for bug-class (T-1550, G-019)" >&2
             echo "  --skip-evolution             Bypass Evolution-log gate for arc-tagged builds (T-1718)" >&2
+            echo "  --skip-register-requirements \"...\"  Bypass design-conformance register gate (T-3691)" >&2
             echo "  --skip-inception-decision    Bypass inception decision gate (T-1626, G-052)" >&2
             echo "  --skip-inception-scope-trace \"...\"  Bypass GO-scope trace gate (T-1984, G-066)" >&2
             echo "  --skip-render-review \"...\" Bypass render-surface Human AC gate (T-1766)" >&2
             echo "  --scope-reduction-acknowledged \"...\"   Bypass task-pair §ACD gate (P-012, T-1762, G-066)" >&2
             echo "  --skip-human-ownership       Bypass human ownership reassignment" >&2
-            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true; SKIP_RCA=true; SKIP_EVOLUTION=true; SKIP_INCEPTION_DECISION=true; SKIP_INCEPTION_SCOPE_TRACE=true; SKIP_RENDER_REVIEW=true; SKIP_RENDER_REVIEW_REASON="--force bypass"; SCOPE_REDUCTION_ACK="--force bypass"
+            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true; SKIP_RCA=true; SKIP_EVOLUTION=true; SKIP_REGISTER_REQUIREMENTS=true; SKIP_INCEPTION_DECISION=true; SKIP_INCEPTION_SCOPE_TRACE=true; SKIP_RENDER_REVIEW=true; SKIP_RENDER_REVIEW_REASON="--force bypass"; SCOPE_REDUCTION_ACK="--force bypass"
             shift ;;
         -h|--help)
             echo "Usage: update-task.sh T-XXX [options]"
@@ -2078,6 +2236,14 @@ PY
         # without the section aren't gated.
         if [ "$NEW_STATUS" = "work-completed" ]; then
             check_evolution_log
+        fi
+
+        # === Register Requirements Gate (T-3691, T-3682 prevention) ===
+        # Build tasks on arcs with a design-conformance register must not defer
+        # spec requirements without naming an existing owner task. Prevents the
+        # sidecar pattern where 7 requirements were deferred with no owner.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            check_register_requirements
         fi
 
         # === Task-pair §ACD Gate (P-012, T-1762, G-066 prong 2) ===

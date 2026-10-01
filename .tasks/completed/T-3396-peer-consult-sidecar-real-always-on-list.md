@@ -19,6 +19,23 @@ last_update: 2026-09-20T22:19:04Z
 date_finished: 2026-09-20T22:19:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
+# ── Inception GO-scope traceability (T-1984, G-066 prevention) ──
+inception_decisions:
+  - id: sidecar-keystone
+    text: "Build receiver sidecar process with store + flag (T-3561 keystone)"
+    ships_in: deferred:T-3561
+  - id: sidecar-receive-path
+    text: "Build write-time fast path: if receiver ready, inject into it now (R2-R5)"
+    ships_in: deferred:T-3684
+  - id: sidecar-liveness
+    text: "Build liveness self-probe daemon, Ready flag, Always-on listener (R4,R7,R14,R15)"
+    ships_in: deferred:T-3685
+  - id: sidecar-telemetry
+    text: "Build telemetry per hop (R6, separate from message path)"
+    ships_in: deferred:T-3687
+  - id: sidecar-legacy
+    text: "Retire legacy sidecar:<agent> address (cross-project)"
+    ships_in: deferred:T-3690
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
 target_blast_radius: 5            # int 0..9. Anticipated component count of the build work this inception would authorise on GO.
                                   # Substitutes for the absent components: list in the F8 cost formula (040). Required.

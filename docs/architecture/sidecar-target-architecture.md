@@ -171,7 +171,122 @@ one line, and it is generating false alarms while we build.
 
 ---
 
-## 7. What is still open
+## 7. Design-conformance requirement register (T-3691)
+
+Each specification requirement R1-R15 (from T-3682 audit) has a tracked owner task.
+Arc-011 cannot read healthy while a register row is unowned. Build order is enforced
+via the close gate: a slice cannot close while its scope fence defers a register
+requirement without naming the owner task for it.
+
+```yaml
+register:
+  - id: R1
+    text: "Push API: message file, then atomic flag file; STORED ack on return"
+    source: "T-3397, Amendment 5 IW-3"
+    owner_task: T-3402
+    status: built
+    evidence: "lib/sidecar/outbox.py (T-3402)"
+
+  - id: R2
+    text: "Write-time fast path: if the receiver is ready, inject into it now"
+    source: "T-3397 §Consumption"
+    owner_task: T-3684
+    status: in-progress
+    evidence: "deferred"
+
+  - id: R3
+    text: "Cron tick, default 30 s, configurable: guaranteed-delivery fallback that injects when ready"
+    source: "T-3397 §Consumption; Amendment 5 IW-2"
+    owner_task: T-3684
+    status: in-progress
+    evidence: "deferred"
+
+  - id: R4
+    text: "Ready flag: Stop hook writes ready-for-input: true; UserPromptSubmit clears it"
+    source: "T-3397 §Consumption"
+    owner_task: T-3684
+    status: in-progress
+    evidence: "deferred"
+
+  - id: R5
+    text: "Urgent bypass: urgent messages inject immediately regardless of state"
+    source: "operator decision 2026-09-21, T-3397 IW-1"
+    owner_task: T-3684
+    status: in-progress
+    evidence: "deferred"
+
+  - id: R6
+    text: "Bidirectional ack: sender sees stored / injected-now / injected-later"
+    source: "T-3397"
+    owner_task: T-3561
+    status: partial
+    evidence: "states exist, names misleading (T-3682 finding)"
+
+  - id: R7
+    text: "Liveness: .context/sidecar/liveness.yaml {identity, seq, last_probe_at, latency}; self-probe every 30 s tick"
+    source: "Amendment 5 IW-2"
+    owner_task: T-3685
+    status: unbuilt
+    evidence: "no liveness.yaml exists (T-3682 audit)"
+
+  - id: R8
+    text: "Per-hub capability probe + version floor before send"
+    source: "Amendment 5"
+    owner_task: T-3405
+    status: built
+    evidence: "termlink_transport.probe_hub, VERSION_FLOOR (T-3405)"
+
+  - id: R9
+    text: "Receive-side dedupe on client_msg_id"
+    source: "Amendment 5 IW-3"
+    owner_task: T-3406
+    status: built
+    evidence: "lib/sidecar/inbox.py:216 (T-3406)"
+
+  - id: R10
+    text: "awaiting-ack.jsonl with deadline; past deadline → UNKNOWN"
+    source: "Amendment 5"
+    owner_task: T-3561
+    status: built
+    evidence: "outbox.resolve_expired, sweep (T-3418)"
+
+  - id: R11
+    text: "conversation_id mandatory, never a bare offset"
+    source: "Amendment 1/IW-3"
+    owner_task: T-3561
+    status: built
+    evidence: "message schema"
+
+  - id: R12
+    text: "Cross-host direct cross-post, credentials refused loudly"
+    source: "Amendments 3/4"
+    owner_task: T-3690
+    status: partial
+    evidence: "same-host only verified; cross-host fenced"
+
+  - id: R13
+    text: "Sidecar-owned retry"
+    source: "Amendment 4"
+    owner_task: T-3561
+    status: built
+    evidence: "T-3434 retry ladder"
+
+  - id: R14
+    text: "Every agent runs a sidecar (symmetric)"
+    source: "T-3397 IW-5"
+    owner_task: T-3685
+    status: unbuilt
+    evidence: "no AEF sidecar process exists (T-3682 audit)"
+
+  - id: R15
+    text: "Always-on listener per agent session"
+    source: "T-3396 title"
+    owner_task: T-3685
+    status: unbuilt
+    evidence: "inbound is pull, not push (T-3682 audit)"
+```
+
+## 8. What is still open
 
 - **Tick cadence** (§4). 15s proposed, never validated.
 - **Readiness predicate** — how an agent's busy state is determined, and from where.
