@@ -12,7 +12,7 @@ status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [bug, onboarding, P-01, T-3659]
+tags: [bug, P-01, T-3659, install]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T15:03:48Z
-last_update: 2026-10-01T17:08:57Z
+last_update: 2026-10-01T17:19:03Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -101,6 +101,13 @@ bvp_scores_proposed:
 - [x] No regression: `tests/unit/t3660_watchtower_detach.bats`, `tests/unit/t3661_watchtower_status_exit.bats`, `tests/unit/watchtower_url_no_guess.bats`, `tests/unit/lib_watchtower.bats`, `tests/unit/watchtower_health_verdict_identity.bats`, `tests/integration/fw_serve.bats` and the config-registry parity lint stay green.
 
 ### Human
+- [ ] [REVIEW] The /config page shows the new PORT_SCAN_BASE row cleanly, and the existing rows are unchanged
+  **Steps:**
+  1. Open http://192.168.10.107:3002/config
+  2. Find PORT_SCAN_BASE (default 3000) next to PORT, and compare the rest of the table with before.
+  **Expected:** One new row with a readable description; no layout break; the other rows are as before.
+  **If not:** Screenshot the table and note the broken row.
+  *Reviewer-judged under T-3557 (render-surface): an independent agent reviewer may close this through the verdict ledger.*
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -383,3 +390,6 @@ bin/fw watchtower current
 ### 2026-10-01T17:08:57Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-01T17:19:03Z — status-update [task-update-agent]
+- **Change:** tags: → [bug, P-01, T-3659, install]

@@ -1,14 +1,18 @@
 ---
 id: T-3663
-name: "Watchtower dependencies undeclared and the install hint omits flask-socketio; stock Ubuntu has no pip (P-01 WSL F-15, F-03)"
+name: "Watchtower dependencies undeclared and the install hint omits flask-socketio;
+  stock Ubuntu has no pip (P-01 WSL F-15, F-03)"
 description: >
-  P-01 findings F-15/F-03: install/doctor do not pre-check all Watchtower imports; the hint is incomplete; pip absent on stock Ubuntu. Fix: one declared dependency list, a full import pre-check in install.sh and fw doctor, and an OS-package install path (apt/dnf/brew) rather than pip-only.
+  P-01 findings F-15/F-03: install/doctor do not pre-check all Watchtower imports;
+  the hint is incomplete; pip absent on stock Ubuntu. Fix: one declared dependency
+  list, a full import pre-check in install.sh and fw doctor, and an OS-package install
+  path (apt/dnf/brew) rather than pip-only.
 
 status: captured
 workflow_type: build
 owner: agent
 horizon: next
-tags: [bug, onboarding, P-01, T-3659]
+tags: [bug, P-01, T-3659, install]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T15:04:30Z
-last_update: 2026-10-01T15:04:30Z
-date_finished: null
+last_update: '2026-10-01T15:15:30Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-01T15:15:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-01T15:15:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3663: Watchtower dependencies undeclared and the install hint omits flask-socketio; stock Ubuntu has no pip (P-01 WSL F-15, F-03)
