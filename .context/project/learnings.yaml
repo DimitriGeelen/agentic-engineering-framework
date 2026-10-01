@@ -5020,3 +5020,45 @@ X'` returning empty group."
   task: T-3550
   date: 2026-09-29
   context: Added via context agent
+- id: L-681
+  learning: "A test that fakes a producer is only as current as the day it was written. The sidecar-inbox hook's own suite faked 'fw sidecar inbox --peek --json' as a bare list; T-3442 changed the real producer to {\"consults\": [...]} and the suite stayed green for five days while the only peer-mail adapter surfaced nothing. The fix is structural, not more fakes: test the JOIN with the REAL producer, faking only the true external boundary (here the termlink binary). And fail-open must not mean fail-silent: 'never block the prompt' and 'never tell anyone' are different properties, and implementing the first as exit 0 with stderr discarded made a broken contract indistinguishable from an empty inbox. Sibling of L-399 (the bug lives at the join) and of T-3550 (a bound read as a verdict)."
+  source: P-001
+  task: T-3559
+  date: 2026-09-29
+  context: Added via context agent
+- id: L-682
+  learning: "TermLink workers already run with session-scoped focus (fw termlink dispatch exports FW_SESSION_SCOPED_FOCUS=1 and FW_FOCUS_SESSION_KEY=<worker>, T-3038/T-3422), so the shared focus.yaml is NOT a reason to serialise workers. The real limits are overlapping write-sets and transient git index.lock contention. Serialising on 'focus' costs a day of wall-clock for nothing; check write-set overlap instead. The parent's own fw work-on changes the shared file, which is what looked like worker interference."
+  source: P-001
+  task: T-3587
+  date: 2026-09-30
+  context: Added via context agent
+- id: L-683
+  learning: "Before dispatching parallel workers, list the files each will edit; parallel only when disjoint. On 2026-09-30 T-3595 (termlink cleanup) and T-3580 round 5 both edited agents/termlink/termlink.sh; the T-3595 worker staged the whole file and committed round 5's in-progress edits under T-3595 (ba35b3559). Nothing was lost, but attribution crossed. The prompts had named 'files to avoid' for other pairs, but the parent did not check this pair. fw write-set check, or a quick grep of each prompt's target files, would have caught it."
+  source: P-001
+  task: T-3580
+  date: 2026-09-30
+  context: Added via context agent
+- id: L-684
+  learning: "A backtick or $( inside check-tier0.sh's double-quoted python3 -c block is bash command substitution, even in a Python comment: a comment naming a git push executed a real push from the hook's cwd. Pinned by t3593 'hook safety' test."
+  source: P-001
+  task: T-3594
+  date: 2026-09-30
+  context: Added via context agent
+- id: L-685
+  learning: "Parallel TermLink workers in one checkout share ONE git index: 'git add X && git commit' in worker A commits whatever worker B has staged (T-3580 round-7 commit fcc26c6e8 carried T-3602's unit-suite.sh + test). Workers must commit with an explicit pathspec ('git commit -m ... -- <paths>') or a private GIT_INDEX_FILE, never add-then-commit."
+  source: P-001
+  task: T-3580
+  date: 2026-09-30
+  context: Added via context agent
+- id: L-686
+  learning: "claude -p workers (build AND review) that background a long command and end their turn are never woken again: the dispatch ends with 'I'll pick up when it finishes' and no result (t3593-round3b, t3593-r6-review 2026-10-01). Every dispatch prompt needs 'run everything in the foreground; never background and end your turn' — and for review dispatches that sentence belongs in the fixed committed review preamble (T-3580 N1), not in each brief."
+  source: P-001
+  task: T-3593
+  date: 2026-10-01
+  context: Added via context agent
+- id: L-687
+  learning: "Before asking the operator ANY factual question (where a key lives, what was decided, whether X exists), run fw recall / grep docs/reports and decisions first. 2026-10-01 the agent asked for the OpenRouter key path (encoded in T-375), proposed paid external seats before applying the T-3557 review ladder, framed T-3670 without reading prior GOs T-586/T-2428, and misattributed IW-2 routing to T-3580. Operator: 'that in itself is cause of concern and need of investigation'."
+  source: P-001
+  task: T-3670
+  date: 2026-10-01
+  context: Added via context agent
