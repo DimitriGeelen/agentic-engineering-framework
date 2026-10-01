@@ -356,3 +356,45 @@ SCRIPT
     [[ "$output" != *"stale"* ]] || { echo "router fell through to the stale global install: $output"; false; }
     [[ "$output" == *"$proj/.agentic-framework"* ]]
 }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# T-3636 (T-3535 IW-3): an already-onboarded consumer with no objectives file gets
+# ONE task to author its own — never the framework's objectives.yaml (Directive 4).
+# ─────────────────────────────────────────────────────────────────────────────
+
+@test "T-3636: fw upgrade seeds a one-time objectives TASK, never the framework's objectives file" {
+    local upstream_bare="$TEST_TEMP_DIR/upstream.git"
+    local proj="$TEST_TEMP_DIR/obj-proj"
+    make_upstream_bare "$upstream_bare"
+    # premise: the upstream really carries an objectives file a careless copy could ship
+    git --git-dir="$upstream_bare" cat-file -e HEAD:.context/project/objectives.yaml
+
+    "$FRAMEWORK_ROOT/bin/fw" vendor --target "$proj" --source "$FRAMEWORK_ROOT" >/dev/null
+    cat > "$proj/.framework.yaml" <<YAML
+project_name: obj-proj
+version: $(tr -d '\n' < "$proj/.agentic-framework/VERSION")
+provider: claude
+upstream_repo: file://$upstream_bare
+YAML
+    # an onboarded consumer: tasks exist, none authors objectives
+    mkdir -p "$proj/.tasks/active" "$proj/.tasks/completed" "$proj/.context/project"
+    printf -- '---\nid: T-004\ntags: [onboarding]\n---\n' > "$proj/.tasks/completed/T-004-done.md"
+
+    local fw_bin="$proj/.agentic-framework/bin/fw"
+    run env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$TEST_TEMP_DIR/home" "$fw_bin" upgrade "$proj" --dry-run
+    [ "$status" -eq 0 ]
+    # dry-run from a vendored consumer prints the handoff plan; either way it writes nothing
+    [ -z "$(ls "$proj/.tasks/active/")" ]
+
+    run env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$TEST_TEMP_DIR/home" "$fw_bin" upgrade "$proj"
+    [ "$status" -eq 0 ]
+    [ -f "$proj/.tasks/active/T-005-define-project-objectives.md" ]
+    grep -qE '^tags:.*objectives-authoring' "$proj/.tasks/active/T-005-define-project-objectives.md"
+    [ ! -e "$proj/.context/project/objectives.yaml" ]
+
+    # idempotent: a second upgrade seeds nothing more
+    run env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$TEST_TEMP_DIR/home" "$fw_bin" upgrade "$proj"
+    [ "$status" -eq 0 ]
+    [ "$(ls "$proj"/.tasks/active/*define-project-objectives.md | wc -l)" -eq 1 ]
+    [ ! -e "$proj/.context/project/objectives.yaml" ]
+}

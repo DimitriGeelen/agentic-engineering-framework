@@ -1,0 +1,21 @@
+id: lib/objectives-seed.sh
+name: objectives-seed
+type: script
+subsystem: framework-core
+location: lib/objectives-seed.sh
+tags: []
+
+purpose: "lib/objectives-seed.sh — the fw upgrade entry point for project objectives (T-3636)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-01
+created_by: unknown

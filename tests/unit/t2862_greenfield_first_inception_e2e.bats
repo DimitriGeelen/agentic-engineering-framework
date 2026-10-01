@@ -70,8 +70,18 @@ in_proj() {
 # Agent ACs ticked. Deliberately does NOT touch the `### Human` AC — that one is
 # the operator's, and the flow must complete with it still unchecked.
 do_the_agent_work() {
-    mkdir -p "$PROJ/docs/reports"
-    echo "# T-002 research" > "$PROJ/docs/reports/T-002-goals.md"
+    # T-3636: the seed's deliverable is the objectives file (T-3535 IW-3), not prose.
+    mkdir -p "$PROJ/.context/project"
+    cat > "$PROJ/.context/project/objectives.yaml" <<'YAML'
+# Authored intent; progress is derived, never written here.
+headline: A fixture project.
+objectives:
+  - id: O-1
+    text: Something a user notices.
+    measure: Not measured yet.
+out_of_scope:
+  - Everything else.
+YAML
     python3 - "$TASK" <<'PY'
 import re, sys
 p = sys.argv[1]; s = open(p).read()
@@ -81,7 +91,7 @@ s = s[:ag.start(2)] + blk + s[ag.end(2):]
 s = re.sub(r'## Recommendation\n.*?(?=\n## )',
            '## Recommendation\n\n**Recommendation:** GO\n\n'
            '**Rationale:** Scope is clear and bounded.\n\n'
-           '**Evidence:**\n- docs/reports/T-002-goals.md\n', s, flags=re.S)
+           '**Evidence:**\n- .context/project/objectives.yaml\n', s, flags=re.S)
 open(p, 'w').write(s)
 PY
 }
@@ -160,7 +170,7 @@ PY
     output=$(in_proj inception decide T-002 go --rationale "scope is clear") || true
     # The command reached the gate with its comment delimiters intact, and ran.
     echo "$output" | grep -qF "PASS: sed '/<!--/,/-->/d'"
-    echo "$output" | grep -q 'Verification: 2/2 passed'
+    echo "$output" | grep -q 'Verification: 3/3 passed'  # T-3636: objectives shape + header + recommendation
 }
 
 @test "t2862: the shipped verification block passes on a properly-done inception" {

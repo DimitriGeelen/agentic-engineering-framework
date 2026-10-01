@@ -38,7 +38,7 @@ MAP_ID = "aef-existing-project-onboarding"
 SEED_DIR = REPO_ROOT / "lib" / "seeds" / "tasks" / "existing-project"
 MAP_PATH = REPO_ROOT / ".context" / "designer" / "projects" / MAP_ID / "v1.bpmn"
 
-#: Same five headings the greenfield map answers. Held only against the six curriculum
+#: Same five headings the greenfield map answers. Held only against the seven curriculum
 #: nodes — start/end frame the sequence rather than teach a step, and the human node
 #: answers a different question ("why does this box have no arrows").
 SECTIONS = (
@@ -58,6 +58,7 @@ SEED_TO_NODE = {
     "T-004": "agt_4_lifecycle",
     "T-005": "agt_5_handover",
     "T-006": "agt_6_learning",
+    "T-007": "agt_7_objectives",  # T-3636: objectives authoring step (T-3535 IW-3)
 }
 
 HUMAN_NODE = "hum_alongside"
