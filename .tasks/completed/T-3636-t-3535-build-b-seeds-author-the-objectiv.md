@@ -9,12 +9,12 @@ description: >
   lacking one. Must never ship THIS project's objectives into consumers (Directive
   4).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [T-3535, objectives]
-components: []
+components: [lib/objectives-seed.sh, lib/upgrade.sh, tests/unit/t2862_greenfield_first_inception_e2e.bats, tests/unit/t2979_existing_project_onboarding_map.py, tests/unit/t3636_objectives_seed.bats, tests/unit/upgrade_fresh_machine_simulation.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T12:51:40Z
-last_update: 2026-10-01T16:54:31Z
-date_finished:
+last_update: 2026-10-01T17:27:42Z
+date_finished: 2026-10-01T17:27:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -95,11 +95,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Greenfield seed `lib/seeds/tasks/greenfield/T-002-define-project-goals.md` names `.context/project/objectives.yaml` as its outcome, in the T-3635 shape (header "authored intent; progress is derived", `headline`, `objectives[]` each with `id`/`text`/`measure`, `out_of_scope`), keeps the agent-drafts / external-review / operator-ratifies flow, and its Verification checks the file parses with that shape (no more free-prose `docs/reports/T-002-*.md` outcome). It accepts an objectives file already written by the installer (P-01 IW-3) instead of re-drafting it. Proved by `tests/unit/t3636_objectives_seed.bats`.
-- [ ] Existing-project seed set gains the same step (`lib/seeds/tasks/existing-project/T-007-define-project-objectives.md`, owner agent, onboarding tag, no Human AC so the T-2815 onboarding gate admits it; the operator sees it once via the `fw task review T-007` handoff, non-blocking); the onboarding map `aef-existing-project-onboarding` gains a node for it so `tests/unit/t2979_existing_project_onboarding_map.py` stays green. Proved by `t3636_objectives_seed.bats` + t2979.
-- [ ] `fw upgrade` (lib/upgrade.sh, via `lib/objectives-seed.sh`) seeds ONE "define project objectives" task, with the next free task id, in a consumer that has no `.context/project/objectives.yaml` and no task tagged `objectives-authoring` (active or completed); a second upgrade seeds nothing; a consumer with the file gets nothing; `--dry-run` writes nothing. Proved by `t3636_objectives_seed.bats`.
-- [ ] No path copies this repo's `.context/project/objectives.yaml` into a consumer: the fresh-machine simulation asserts the consumer gets the seeded task and no objectives file. Proved by `tests/unit/upgrade_fresh_machine_simulation.bats` (stays green).
-- [ ] Vendored copies synced for touched framework paths (`bin/fw vendor self --check` clean).
+- [x] Greenfield seed `lib/seeds/tasks/greenfield/T-002-define-project-goals.md` names `.context/project/objectives.yaml` as its outcome, in the T-3635 shape (header "authored intent; progress is derived", `headline`, `objectives[]` each with `id`/`text`/`measure`, `out_of_scope`), keeps the agent-drafts / external-review / operator-ratifies flow, and its Verification checks the file parses with that shape (no more free-prose `docs/reports/T-002-*.md` outcome). It accepts an objectives file already written by the installer (P-01 IW-3) instead of re-drafting it. Proved by `tests/unit/t3636_objectives_seed.bats`.
+- [x] Existing-project seed set gains the same step (`lib/seeds/tasks/existing-project/T-007-define-project-objectives.md`, owner agent, onboarding tag, no Human AC so the T-2815 onboarding gate admits it; the operator sees it once via the `fw task review T-007` handoff, non-blocking); the onboarding map `aef-existing-project-onboarding` gains a node for it so `tests/unit/t2979_existing_project_onboarding_map.py` stays green. Proved by `t3636_objectives_seed.bats` + t2979.
+- [x] `fw upgrade` (lib/upgrade.sh, via `lib/objectives-seed.sh`) seeds ONE "define project objectives" task, with the next free task id, in a consumer that has no `.context/project/objectives.yaml` and no task tagged `objectives-authoring` (active or completed); a second upgrade seeds nothing; a consumer with the file gets nothing; `--dry-run` writes nothing. Proved by `t3636_objectives_seed.bats`.
+- [x] No path copies this repo's `.context/project/objectives.yaml` into a consumer: the fresh-machine simulation asserts the consumer gets the seeded task and no objectives file. Proved by `tests/unit/upgrade_fresh_machine_simulation.bats` (stays green).
+- [x] Vendored copies synced for touched framework paths (`bin/fw vendor self --check` clean).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -369,3 +369,24 @@ bin/fw vendor self --check
 ### 2026-10-01T16:54:31Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-90506b41
+- **Timestamp:** 2026-10-01T17:36:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Greenfield seed `lib/seeds/tasks/greenfield/T-002-define-project-goals.md` names `.context/project/objectives.yaml` as its outcome, in the T-3635 shape (header "authored intent; progress is derived", 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/project/objectives.yaml in: Greenfield seed `lib/seeds/tasks/greenfield/T-002-define-project-goals.md` names `.context/project/objectives.yaml` as its outcome, in the T-3635 shap`
+- **AC#3 (Agent)** — `fw upgrade` (lib/upgrade.sh, via `lib/objectives-seed.sh`) seeds ONE "define project objectives" task, with the next free task id, in a consumer that has no `.context/project/objectives.yaml` and no 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/project/objectives.yaml in: `fw upgrade` (lib/upgrade.sh, via `lib/objectives-seed.sh`) seeds ONE "define project objectives" task, with the next free task id, in a consumer that`
+- **AC#4 (Agent)** — No path copies this repo's `.context/project/objectives.yaml` into a consumer: the fresh-machine simulation asserts the consumer gets the seeded task and no objectives file. Proved by `tests/unit/upgr
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/project/objectives.yaml in: No path copies this repo's `.context/project/objectives.yaml` into a consumer: the fresh-machine simulation asserts the consumer gets the seeded task `
+
+### 2026-10-01T17:27:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,102 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3636: T-3535 build B: seeds author the objectives file once per project — greenfield T-002, existing-project seed step, fw upgrade backfill task where none exists
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-01T17:36:56Z
+# ============================================================================
+
+task_id: T-3636
+task_name: "T-3535 build B: seeds author the objectives file once per project — greenfield T-002, existing-project seed step, fw upgrade backfill task where none exists"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T12:51:40Z
+completed: 2026-10-01T17:27:42Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-01T19:17:24+02:00
+last_commit: 2026-10-01T19:18:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  objectives authored once per project — greenfield T-002 writes objectives.yaml, existing-project T-007, fw upgrade one-time task (lib/objectives-seed.sh), map + tests. vendor sync for objectives seeding paths + fabric card for t3636 test
+
+# Key outcomes
+outcomes:
+  - 'Greenfield seed `lib/seeds/tasks/greenfield/T-002-define-project-goals.md` names `.context/project/objectives.yaml` as its outcome, in the T-3635 shape (header "authored intent; progress is derived", `headline`, `objectives[]` each with `id`/`text`/`measure`, `out_of_scope`), keeps the agent-drafts / external-review / operator-ratifies flow, and its Verification checks the file parses with that shape (no more free-prose `docs/reports/T-002-*.md` outcome). It accepts an objectives file already written by the installer (P-01 IW-3) instead of re-drafting it. Proved by `tests/unit/t3636_objectives_seed.bats`.'
+  - 'Existing-project seed set gains the same step (`lib/seeds/tasks/existing-project/T-007-define-project-objectives.md`, owner agent, onboarding tag, no Human AC so the T-2815 onboarding gate admits it; the operator sees it once via the `fw task review T-007` handoff, non-blocking); the onboarding map `aef-existing-project-onboarding` gains a node for it so `tests/unit/t2979_existing_project_onboarding_map.py` stays green. Proved by `t3636_objectives_seed.bats` + t2979.'
+  - '`fw upgrade` (lib/upgrade.sh, via `lib/objectives-seed.sh`) seeds ONE "define project objectives" task, with the next free task id, in a consumer that has no `.context/project/objectives.yaml` and no task tagged `objectives-authoring` (active or completed); a second upgrade seeds nothing; a consumer with the file gets nothing; `--dry-run` writes nothing. Proved by `t3636_objectives_seed.bats`.'
+  - 'No path copies this repo''s `.context/project/objectives.yaml` into a consumer: the fresh-machine simulation asserts the consumer gets the seeded task and no objectives file. Proved by `tests/unit/upgrade_fresh_machine_simulation.bats` (stays green).'
+  - 'Vendored copies synced for touched framework paths (`bin/fw vendor self --check` clean).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/objectives-seed.sh'
+  - '.agentic-framework/lib/seeds/tasks/existing-project/T-001-orientation-and-framework-health.md'
+  - '.agentic-framework/lib/seeds/tasks/existing-project/T-006-add-project-learning.md'
+  - '.agentic-framework/lib/seeds/tasks/existing-project/T-007-define-project-objectives.md'
+  - '.agentic-framework/lib/seeds/tasks/greenfield/T-002-define-project-goals.md'
+  - '.agentic-framework/lib/seeds/tasks/upgrade/define-project-objectives.md'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.context/designer/projects/aef-existing-project-onboarding/v1.bpmn'
+  - '.context/designer/projects/aef-greenfield-onboarding/v2.bpmn'
+  - '.fabric/components/lib-objectives-seed.yaml'
+  - '.fabric/components/tests-unit-t3636_objectives_seed.yaml'
+  - 'lib/objectives-seed.sh'
+  - 'lib/seeds/tasks/existing-project/T-001-orientation-and-framework-health.md'
+  - 'lib/seeds/tasks/existing-project/T-006-add-project-learning.md'
+  - 'lib/seeds/tasks/existing-project/T-007-define-project-objectives.md'
+  - 'lib/seeds/tasks/greenfield/T-002-define-project-goals.md'
+  - 'lib/seeds/tasks/upgrade/define-project-objectives.md'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-3636-t-3535-build-b-seeds-author-the-objectiv.md'
+  - 'tests/unit/t2862_greenfield_first_inception_e2e.bats'
+  - 'tests/unit/t2979_existing_project_onboarding_map.py'
+  - 'tests/unit/t3636_objectives_seed.bats'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T19:17:24'
+    action: 'T-3636: objectives authored once per project — greenfield T-002 writes objectives.yaml, existing-project T-007, fw upgrade one-time task (lib/objectives-seed.sh), map + tests'
+  - time: '2026-10-01T19:18:13'
+    action: 'T-3636: vendor sync for objectives seeding paths + fabric card for t3636 test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 276 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [T-3535, objectives]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 276
+  commits: 2
+  files_changed: 23
+  lines_added: 1551
+  lines_removed: 97
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3636-t-3535-build-b-seeds-author-the-objectiv.md
+generated_by: context-agent-hybrid
