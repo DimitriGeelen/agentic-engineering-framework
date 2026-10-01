@@ -1217,6 +1217,17 @@ generate_claude_code_config() {
           }
         ]
       }
+    ],
+    "UserPromptSubmit": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$fw_prefix hook sidecar-inbox"
+          }
+        ]
+      }
     ]
   }
 }
