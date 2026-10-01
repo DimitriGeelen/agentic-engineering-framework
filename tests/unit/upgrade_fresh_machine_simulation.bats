@@ -407,6 +407,6 @@ YAML
     out="$(cd "$proj" && env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$TEST_TEMP_DIR/home" \
         FW_SIDECAR_HUB_ID=testhub "$proj/.agentic-framework/bin/fw" sidecar whoami 2>&1)" || { echo "$out"; false; }
     echo "$out" | grep -q "inbox:testhub/vproj-sidecar" || { echo "$out"; false; }
-    ! echo "$out" | grep -q "\.agentic-framework"
+    if echo "$out" | grep -q "\.agentic-framework"; then echo "$out"; false; fi
     [ ! -d "$proj/.agentic-framework/.context/sidecar" ]
 }
