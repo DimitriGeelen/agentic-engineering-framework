@@ -250,11 +250,29 @@ def _judge_row_cost(root: Path, r: dict, amount: float) -> tuple[float, str]:
     return min(amount, cap), did
 
 
+def _row_time(root: Path, r: dict, did: str) -> datetime | None:
+    """(round 9, codex 3 / Claude R8-3) WHEN a counted judge row's spend happened: the SIGNED
+    start epoch of the dispatch it names — never the row's own `ts`, which its writer chooses.
+    None when there is no single signed start."""
+    from lib import verdict_ledger as vl  # lazy: verdict_ledger imports this module
+
+    starts = vl._starts_for(Path(root), did)
+    if len(starts) != 1 or not vl._signed_ok(Path(root), starts[0]):
+        return None
+    try:
+        return datetime.fromtimestamp(int(starts[0].get("epoch")), timezone.utc)
+    except (TypeError, ValueError, OverflowError, OSError):
+        return None
+
+
 def _spent(lines: list[str], now: datetime, root: Path | None = None) -> tuple[float | None, str]:
     """(estimated USD the judge spent in the 7 days up to `now`, '') from cost-ledger lines; (None,
     why) when a judge record in them is malformed — malformed spend refuses a step-down.
     Round 8 (N4): a judge row counts only as `_judge_row_cost` allows — bound to a signed, started
-    run seat and capped — and each dispatch at most once."""
+    run seat and capped — and each dispatch at most once.
+    Round 9 (codex 3 / Claude R8-3): the 7-day window applies to the dispatch's SIGNED start time
+    (`_row_time`), not to the row's own `ts`: a new row naming a seat started long ago is not
+    this week's spend, and an old dispatch cannot be re-billed into every new week."""
     since = now - timedelta(days=7)
     total = 0.0
     counted: set[str] = set()
@@ -265,12 +283,6 @@ def _spent(lines: list[str], now: datetime, root: Path | None = None) -> tuple[f
             return None, f"cost-ledger line {n} is not JSON"
         if not isinstance(r, dict) or not str(r.get("purpose") or "").startswith(SPEND_PURPOSE):
             continue
-        try:
-            ts = datetime.strptime(str(r.get("ts")), _TS).replace(tzinfo=timezone.utc)
-        except ValueError:
-            return None, f"cost-ledger line {n} has a malformed ts {r.get('ts')!r}"
-        if not since <= ts <= now:
-            continue
         if r.get("cost_amount") is None:
             continue                      # an unmetered seat adds nothing it can prove
         amt = _money(r.get("cost_amount"), number=True)
@@ -279,7 +291,10 @@ def _spent(lines: list[str], now: datetime, root: Path | None = None) -> tuple[f
         got, did = _judge_row_cost(root or Path("."), r, amt)
         if not did or did in counted:
             continue
-        counted.add(did)
+        counted.add(did)                  # once per dispatch across the whole ledger
+        when = _row_time(root or Path("."), r, did)
+        if when is None or not since <= when <= now:
+            continue
         total += got
         if not math.isfinite(total):          # round 8 (codex 4): an aggregate that overflows
             return None, "the weekly judge spend overflows — not a finite amount"

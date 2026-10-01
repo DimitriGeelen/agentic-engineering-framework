@@ -314,9 +314,10 @@ class TestRuntimeCapability:
     def test_negative_registration_hands_the_caller_nothing(self, prod):
         w = _registered_never_ran(prod)
         # Round 7: brief.md / prompt.md / worker_bin are the DISPATCHER's launch files, not
-        # anything registration issues; there is still no secret among them.
+        # anything registration issues; there is still no secret among them. Round 9: plus the
+        # pinned worker settings.json registration copies from the committed policy file.
         assert sorted(p.name for p in w.iterdir()) == ["brief.md", "exit_code", "prompt.md",
-                                                       "result.jsonl", "worker_bin"]
+                                                       "result.jsonl", "settings.json", "worker_bin"]
         assert "secret" not in (prod / vl.DISPATCHES).read_text()
 
     def test_negative_the_round5_control_python_start_then_complete_is_refused(self, prod):

@@ -204,7 +204,9 @@ class TestWorkerLaunchIsPinned:
         src = TERMLINK.read_text()
         i = src.index("cat > \"$wdir/run.sh\" <<'RUNEOF'\n")
         body = src[i:src.index("\nRUNEOF\n", i)]
-        assert "--setting-sources user,project" in body
+        # Round 9 (R8-1): the user source only, plus the pinned --settings (t3580_round9_test).
+        assert "--setting-sources user --settings $WDIR/settings.json" in body
+        assert "user,project" not in body.split("SETTING_SOURCES_FLAG=\"\"")[1].split("fi\n")[0]
         assert 'if [ "$TASK_TYPE" = "review" ]; then\n    TOOLS_FLAG=""; PERMISSION_MODE_FLAG=""' in body
         assert "$MODEL_FLAG $SETTING_SOURCES_FLAG" in body
         assert "Workers spawn\n# --bare" not in src and "Workers spawn --bare" not in src
@@ -599,6 +601,7 @@ class TestOversizedNumbers:
         assert "malformed" in rp.verify_ceiling_decision(hi, dec, "2026-01-01T00:00:00Z")
 
     def test_an_overflowing_aggregate_spend_refuses(self, hi, monkeypatch):
+        rt.unbound_spend(monkeypatch)
         monkeypatch.setattr(rp, "_judge_row_cost", lambda root, r, amt: (1e308, r["purpose"]))
         _cost(hi, 1, purpose="reviewer-judge a")
         _cost(hi, 1, purpose="reviewer-judge b")

@@ -136,11 +136,21 @@ def unbound_spend(monkeypatch) -> None:
     signed, started run seat, capped at the run's per-seat cost — proven in t3580_round8_test
     (TestSpendIsBound). Suites that exercise only the ceiling ARITHMETIC with hand-written rows
     (clock, floor, NaN, append-only history, withdrawal) use this to count every judge row at its
-    amount, as before round 8. It replaces the binding and nothing else."""
+    amount, as before round 8. It replaces the binding and nothing else.
+    Round 9: with no signed start behind such a row, its time is the row's own `ts` here (the
+    real window uses the dispatch's signed start — t3580_round9_test.TestSpendWindow)."""
     import itertools
+    from datetime import datetime, timezone
     from lib import review_policy as rp
     n = itertools.count()
+
+    def _ts(root, r, did):
+        try:
+            return datetime.strptime(str(r.get("ts")), "%Y-%m-%dT%H:%M:%SZ").replace(tzinfo=timezone.utc)
+        except ValueError:
+            return None
     monkeypatch.setattr(rp, "_judge_row_cost", lambda root, r, amt: (amt, f"unbound-{next(n)}"))
+    monkeypatch.setattr(rp, "_row_time", _ts)
 
 
 def bound_spend(root, seats: int, *, task: str = "T-1") -> float:

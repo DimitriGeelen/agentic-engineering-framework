@@ -437,23 +437,99 @@ _LAUNCH_FLAG_FILES = ("tools.txt", "permission_mode.txt", "mcp_config.txt", "str
                       "allowed_tools.txt")
 
 
+#: Round 9 (Claude R8-1): the settings a review worker is launched with. run.sh passes
+#: `--setting-sources user --settings <wdir>/settings.json --strict-mcp-config`: no project or
+#: local settings file from the working tree, no MCP server, and on top of the operator's user
+#: settings exactly this — cross-session inbound refused (claude's `crossSessionInbound`; a
+#: `--settings` value outranks the user file), and nothing else: no env block, no hooks, no
+#: model. Committed at WORKER_SETTINGS; registration copies the committed file into the worker
+#: directory and signs its hash, start and complete re-check it.
+WORKER_SETTINGS = Path("policy/review-worker-settings.json")
+WORKER_SETTINGS_WANT = {"crossSessionInbound": "refuse"}
+#: Round 9 (R8-1b): project files claude reads from the working tree it is launched in. A review
+#: worker starts only when none differs from the run's pinned revision, so what it loads is part
+#: of the reviewed revision, never an uncommitted edit.
+PROJECT_CONFIG = ("CLAUDE.md", "CLAUDE.local.md", ".claude", ".mcp.json")
+
+
+def _worker_settings(root: Path, revision: str) -> str:
+    """The committed worker settings text at `revision`; raises ValueError unless it is exactly
+    WORKER_SETTINGS_WANT."""
+    text, where = _committed_blob(root, revision, WORKER_SETTINGS)
+    try:
+        data = json.loads(text) if text else None
+    except ValueError:
+        data = None
+    if data != WORKER_SETTINGS_WANT:
+        raise ValueError(f"{WORKER_SETTINGS} ({where or 'not committed'}) is not exactly "
+                         f"{json.dumps(WORKER_SETTINGS_WANT)} — a review worker's settings are "
+                         f"pinned: inbound refused, no env, no hooks")
+    return text
+
+
+def _project_config_fault(root: Path, revision: str) -> str:
+    """(start, round 9) '' when no project file claude would load (PROJECT_CONFIG) differs from
+    `revision` in the working tree: no uncommitted or untracked change, and no CLAUDE.local.md
+    outside git. Any git failure refuses."""
+    rev = (revision or "").strip() or "HEAD"
+    rc, out = _git_out(root, "status", "--porcelain", "--untracked-files=all", "--", *PROJECT_CONFIG)
+    if rc != 0:
+        return f"git cannot report the state of {', '.join(PROJECT_CONFIG)} (rc={rc}) — refused"
+    if out.strip():
+        names = sorted({ln[3:].strip() for ln in out.splitlines() if ln.strip()})
+        return (f"uncommitted project config the worker would load: {', '.join(names)} — commit "
+                f"or revert it; a reviewer loads only what the reviewed revision holds")
+    rc, out = _git_out(root, "diff", "--name-only", rev, "--", *PROJECT_CONFIG)
+    if rc != 0:
+        return f"git cannot compare project config with {rev[:9]} (rc={rc}) — refused"
+    if out.strip():
+        return (f"project config differs from the run's pinned revision {rev[:9]}: "
+                f"{', '.join(sorted(set(out.split())))}")
+    if (Path(root) / "CLAUDE.local.md").exists():
+        rc, _ = _git_out(root, "ls-files", "--error-unmatch", "CLAUDE.local.md")
+        if rc != 0:
+            return "CLAUDE.local.md is outside git — a reviewer loads only committed project config"
+    return ""
+
+
+def _inputs_fault(drec: dict, wdir: Path) -> str:
+    """'' when the worker's launch inputs are byte-for-byte the registered ones: env.json,
+    settings.json, prompt.md and brief.md. Start checks it before the launch and (round 9,
+    Claude R8-5) complete checks it again, so a swap between start and launch is caught."""
+    w = Path(wdir)
+    for name, key, missing, what in (("env.json", "env_sha256", "", "environment"),
+                                     ("settings.json", "settings_sha256", "", "pinned worker settings"),
+                                     ("prompt.md", "prompt_sha256", "-", "brief")):
+        if _file_sha(w / name) != str(drec.get(key) or missing):
+            return f"{name} is not the {what} registered with the dispatch"
+    try:
+        brief = (w / "brief.md").read_text()
+    except OSError:
+        return "brief.md is missing"
+    if brief_digest(brief) != str(drec.get("brief_sha256") or "-"):
+        return "brief.md is not the brief registered with the dispatch"
+    return ""
+
+
+def _input_hashes(wdir: Path) -> dict:
+    w = Path(wdir)
+    return {n: _file_sha(w / n) for n in ("env.json", "settings.json", "prompt.md", "brief.md")}
+
+
 def _launch_fault(drec: dict, wdir: Path) -> str:
     """(start, round 7) '' when what run.sh is about to launch is what was registered: the same
     prompt.md, the same absolute worker binary, and an env.sh with no program- or model-choosing
-    key. Round 8: and no launch flag file in the worker directory."""
-    if _file_sha(Path(wdir) / "env.json") != str(drec.get("env_sha256") or ""):
-        return "env.json is not the environment registered with the dispatch"
+    key. Round 8: and no launch flag file in the worker directory. Round 9: and the registered,
+    pinned settings.json."""
+    if not str(drec.get("settings_sha256") or ""):
+        return "the dispatch was registered without pinned worker settings"
     extra = [f for f in _LAUNCH_FLAG_FILES if (Path(wdir) / f).exists()]
     if extra:
         return (f"launch flag file(s) {', '.join(extra)} in {wdir} — a review worker takes no "
                 f"--tools/--permission-mode/--mcp-config/--allowed-tools from its caller")
-    if _file_sha(Path(wdir) / "prompt.md") != str(drec.get("prompt_sha256") or "-"):
-        return "prompt.md is not the brief registered with the dispatch"
-    bad = _prompt_fault(Path(wdir))
+    bad = _inputs_fault(drec, Path(wdir)) or _prompt_fault(Path(wdir))
     if bad:
         return bad
-    if brief_digest((Path(wdir) / "brief.md").read_text()) != str(drec.get("brief_sha256") or "-"):
-        return "brief.md is not the brief registered with the dispatch"
     try:
         wb = (Path(wdir) / "worker_bin").read_text().strip()
     except OSError:
@@ -556,6 +632,10 @@ def register_dispatch(dispatch_id: str, task_id: str, task_type: str, *,
                              f"worker's model is not the caller's to choose")
         row["model"] = want_model
         row["env_sha256"] = _file_sha(w / "env.json")      # round 8: '' = no env.json
+        # Round 9 (R8-1): the worker's settings are the committed, pinned file — written here,
+        # by the ledger, and signed.
+        (w / "settings.json").write_text(_worker_settings(root, row["revision"]))
+        row["settings_sha256"] = _file_sha(w / "settings.json")
         row["worker_bin"] = worker_bin.strip()
         row["prompt_sha256"] = _file_sha(w / "prompt.md")
         brief = (w / "brief.md").read_text()
@@ -729,6 +809,24 @@ def _head_sha(root: Path) -> str:
     return out.strip() if rc == 0 else ""
 
 
+def _head_checked(root: Path) -> str:
+    """(round 9, codex 1 / Claude R8-4) HEAD's sha, or '' ONLY when git answers that there is no
+    commit yet: a repository whose HEAD names a branch ref that does not exist. Anything else —
+    not a repository, a ref that exists but does not resolve, git failing — raises
+    HistoryUnreadable: a HEAD git cannot read is not an empty history."""
+    rc, out = _git_out(root, "rev-parse", "-q", "--verify", "HEAD")
+    if rc == 0 and out.strip():
+        return out.strip()
+    rc_dir, _ = _git_out(root, "rev-parse", "--git-dir")
+    rc_sym, ref = _git_out(root, "symbolic-ref", "-q", "HEAD")
+    if rc_dir == 0 and rc_sym == 0 and ref.strip():
+        rc_ref, _ = _git_out(root, "show-ref", "--verify", "-q", ref.strip())
+        if rc_ref == 1:                     # the branch HEAD names does not exist: unborn
+            return ""
+    raise HistoryUnreadable(f"git cannot resolve HEAD (rev-parse rc={rc}) — the task's committed "
+                            f"history, and the review strength it requires, cannot be established")
+
+
 def _criterion_at(root: Path, rev: str, task_id: str, ac: int) -> str | None:
     """Digest of Human criterion `ac` of `task_id` as it stood at `rev`; None if it did not exist."""
     rc, listing = _git_out(root, "ls-tree", "-r", "--name-only", rev, "--", ".tasks/active", ".tasks/completed")
@@ -815,7 +913,8 @@ def start(dispatch_id: str, *, wdir: str, pid: int = 0,
         raise VerdictRefused(f"worker directory {here or '(none)'} is not the one registered for "
                              f"dispatch {did!r}")
     bad = (_runtime_fault(here, root, str(drec.get("revision") or ""), model=str(drec.get("model") or ""))
-           or _launch_fault(drec, Path(here)))
+           or _launch_fault(drec, Path(here))
+           or _project_config_fault(root, str(drec.get("revision") or "")))
     if bad:
         raise VerdictRefused(f"dispatch {did!r} cannot be started here: {bad}")
     now = int(_clock())
@@ -954,9 +1053,11 @@ def complete(dispatch_id: str, *, wdir: str, exit_code: int, session: str = "",
     if not reg or here != reg:
         raise VerdictRefused(f"worker directory {here or '(none)'} is not the one registered for "
                              f"dispatch {did!r} ({reg or 'none registered'})")
-    bad = _runtime_fault(here, root, str(drec.get("revision") or ""), model=str(drec.get("model") or ""))
+    bad = (_runtime_fault(here, root, str(drec.get("revision") or ""), model=str(drec.get("model") or ""))
+           or _inputs_fault(drec, Path(here)))
     if bad:
-        raise VerdictRefused(f"dispatch {did!r} cannot be completed here: {bad}")
+        raise VerdictRefused(f"dispatch {did!r} cannot be completed here: {bad} — the worker's "
+                             f"launch inputs changed after the dispatch was registered")
     ec_file = Path(here) / "exit_code"
     try:
         written = int(ec_file.read_text().strip())
@@ -972,7 +1073,8 @@ def complete(dispatch_id: str, *, wdir: str, exit_code: int, session: str = "",
             "session": did, "worker": worker_identity(did), "wdir": reg, "exit_code": written,
             "worker_kind": kind, "worker_session": _worker_session(Path(here)),
             "result_sha256": _result_sha(Path(here)), "revision": drec.get("revision", ""),
-            "verdicts": verdicts, "consults": _consult_traffic(did), "epoch": now, "ts": _now()}
+            "verdicts": verdicts, "consults": _consult_traffic(did),
+            "inputs": _input_hashes(Path(here)), "epoch": now, "ts": _now()}
     body["sig"] = _sign_row(_dispatch_key(root), body)
     _append(COMPLETIONS, body, root)
     return body
@@ -1782,8 +1884,11 @@ def _task_history_fms(root: Path, task_id: str) -> list[tuple[str, dict]]:
     version fails — this raises HistoryUnreadable and caches nothing: an unreadable history is
     not an empty one, and treating it so dropped exactly the higher-risk versions F4 reads.
     Deletions are filtered out of the walk (`--diff-filter=d`), so every listed version must
-    exist at its commit."""
-    head = _head_sha(root)
+    exist at its commit.
+
+    Round 9 (codex 1): HEAD is read with `_head_checked`, so only a genuinely unborn repository
+    means "no history"; a HEAD lookup git cannot answer raises like the walk itself."""
+    head = _head_checked(root)
     key = (str(root), task_id, head)
     if key in _HISTORY_FM:
         return _HISTORY_FM[key]
@@ -1816,43 +1921,123 @@ def _task_history_fms(root: Path, task_id: str) -> list[tuple[str, dict]]:
 _GIT_COMPONENTS: dict = {}
 #: Paths close's component resolution skips too (update-task.sh, T-224): metadata, not work.
 _NOT_COMPONENT = (".context/", ".tasks/", ".fabric/", "docs/")
+#: Round 9: blob sha -> (id, location) of a parsed fabric card (blobs are immutable), and
+#: (repo, commit) -> {location: id} of the cards committed there.
+_CARD_BLOBS: dict[str, tuple[str, str]] = {}
+_CARD_MAPS: dict[tuple[str, str], dict[str, str]] = {}
+#: Round 9 (Claude R8-2 note): a commit is the task's OWN when its subject opens with a task-id
+#: list naming it ("T-3580: ...", "T-3598, T-3601: ..."), not when it merely mentions the id.
+_OWN_SUBJECT_RE = re.compile(r"^\s*(T-\d+(?:\s*(?:,|&|/|\+|and)\s*T-\d+)*)\s*:")
+
+
+def _owns(subject: str, task_id: str) -> bool:
+    m = _OWN_SUBJECT_RE.match(subject or "")
+    return bool(m) and task_id in re.findall(r"T-\d+", m.group(1))
+
+
+def _card_fields(text: str) -> tuple[str, str]:
+    """(id, location) of a fabric card, parsed as YAML (round 9, codex 2: a quoted location is
+    the same location); ('', '') when it is not a card."""
+    import yaml
+    try:
+        data = yaml.load(text, Loader=getattr(yaml, "CSafeLoader", yaml.SafeLoader))
+    except yaml.YAMLError:
+        return "", ""
+    if not isinstance(data, dict):
+        return "", ""
+    cid, loc = data.get("id"), data.get("location")
+    if not isinstance(cid, (str, int)) or not isinstance(loc, str):
+        return "", ""
+    loc = loc.strip()
+    while loc.startswith("./"):
+        loc = loc[2:]
+    return str(cid).strip(), loc
+
+
+def _read_blobs(root: Path, shas: list[str]) -> dict[str, str]:
+    """{sha: text} through one `git cat-file --batch`; raises HistoryUnreadable on failure."""
+    try:
+        cp = subprocess.run(["git", "cat-file", "--batch"], cwd=str(root), capture_output=True,
+                            input=("\n".join(shas) + "\n").encode(), timeout=120)
+    except (OSError, subprocess.SubprocessError) as e:
+        raise HistoryUnreadable(f"could not read the committed fabric cards ({e})")
+    if cp.returncode != 0:
+        raise HistoryUnreadable(f"could not read the committed fabric cards (git cat-file rc={cp.returncode})")
+    out, i, blobs = cp.stdout, 0, {}
+    for sha in shas:
+        nl = out.index(b"\n", i)
+        head = out[i:nl].split()
+        if len(head) != 3 or head[1] != b"blob":
+            raise HistoryUnreadable(f"could not read fabric card blob {sha[:9]}")
+        size = int(head[2])
+        blobs[sha] = out[nl + 1:nl + 1 + size].decode(errors="replace")
+        i = nl + 1 + size + 1
+    return blobs
+
+
+def _cards_at(root: Path, rev: str) -> dict[str, str]:
+    """{location: id} of the fabric cards committed at `rev`, parsed as YAML. Cached per commit
+    (and per card blob). Raises HistoryUnreadable when git cannot answer."""
+    key = (str(root), rev)
+    if key in _CARD_MAPS:
+        return _CARD_MAPS[key]
+    rc, out = _git_out(root, "ls-tree", "-r", rev, "--", ".fabric/components/")
+    if rc != 0:
+        raise HistoryUnreadable(f"could not list the fabric cards at {rev[:9]} (git ls-tree rc={rc})")
+    shas = []
+    for line in out.splitlines():
+        meta, _tab, name = line.partition("\t")
+        parts = meta.split()
+        if len(parts) == 3 and parts[1] == "blob" and name.endswith((".yaml", ".yml")):
+            shas.append(parts[2])
+    need = [s for s in dict.fromkeys(shas) if s not in _CARD_BLOBS]
+    if need:
+        for sha, text in _read_blobs(root, need).items():
+            _CARD_BLOBS[sha] = _card_fields(text)
+    cards = {loc: cid for cid, loc in (_CARD_BLOBS[s] for s in shas) if cid and loc}
+    _CARD_MAPS.clear() if len(_CARD_MAPS) > 512 else None
+    _CARD_MAPS[key] = cards
+    return cards
 
 
 def _git_components(root: Path, task_id: str) -> list[str]:
     """(round 8, Claude N3) The fabric components the task's commits changed, read from git —
-    not the frontmatter `components:` that close fills only after the last `apply`. The same
-    resolution close uses (update-task.sh T-224: every commit whose message names the task, on
-    any branch; metadata paths skipped; path -> id through each card's `location:`), except that
-    the cards are read AS COMMITTED at HEAD, so deleting or editing a card in the working tree
-    does not lower the count. Cached per (root, task, HEAD). Raises HistoryUnreadable when git
-    cannot answer."""
-    head = _head_sha(root)
+    not the frontmatter `components:` that close fills only after the last `apply`. Every commit
+    on any branch; metadata paths skipped; path -> id through each card's `location:`. Cached per
+    (root, task, HEAD). Raises HistoryUnreadable when git cannot answer.
+
+    Round 9 (codex 2): cards are parsed as YAML, and each commit's paths are resolved against
+    the cards committed AT THAT COMMIT as well as at HEAD, so a card removed, renamed or
+    relocated later — in the working tree or in a commit — does not erase the attribution.
+    (Claude R8-2 note): only the task's OWN commits count (`_owns`: the subject opens with a
+    task-id list naming it), not a commit whose message merely mentions the id."""
+    head = _head_checked(root)
     key = (str(root), task_id, head)
     if key in _GIT_COMPONENTS:
         return _GIT_COMPONENTS[key]
     if not head:
         return []
     rc, out = _git_out(root, "log", "--all", "-E", f"--grep={re.escape(task_id)}([^0-9]|$)",
-                       "--name-only", "--format=")
+                       "--name-only", "--format=%x1e%H%x1f%s")
     if rc != 0:
         raise HistoryUnreadable(f"could not list the files {task_id}'s commits changed (git log "
                                 f"rc={rc}) — its component count cannot be established")
-    paths = {p.strip() for p in out.splitlines() if p.strip() and not p.startswith(_NOT_COMPONENT)}
-    rc, cards = _git_out(root, "grep", "-e", "^id:", "-e", "^location:", "HEAD", "--",
-                         ".fabric/components/")
-    if rc not in (0, 1):                       # 1 = no match (no fabric): an answer, not an error
-        raise HistoryUnreadable(f"could not read the committed fabric cards (git grep rc={rc})")
-    by_card: dict[str, dict] = {}
-    for line in cards.splitlines():
-        # HEAD:.fabric/components/x.yaml:id: foo
-        parts = line.split(":", 3)
-        if len(parts) == 4:
-            by_card.setdefault(parts[1], {})[parts[2].strip()] = parts[3].strip()
-    loc = {c["location"]: c["id"] for c in by_card.values() if c.get("location") and c.get("id")}
-    comps = sorted({loc[p] for p in paths if p in loc})
+    at_head = _cards_at(root, head) if "\x1e" in out else {}
+    comps: set[str] = set()
+    for rec in out.split("\x1e"):
+        lines = [ln for ln in rec.splitlines() if ln.strip()]
+        if not lines or "\x1f" not in lines[0]:
+            continue
+        sha, subject = lines[0].split("\x1f", 1)
+        paths = [p.strip() for p in lines[1:] if not p.strip().startswith(_NOT_COMPONENT)]
+        if not paths or not _owns(subject, task_id):
+            continue
+        then = _cards_at(root, sha.strip())
+        comps |= {then.get(p) or at_head.get(p) for p in paths} - {None}
+    out_list = sorted(comps)
     _GIT_COMPONENTS.clear() if len(_GIT_COMPONENTS) > 64 else None
-    _GIT_COMPONENTS[key] = comps
-    return comps
+    _GIT_COMPONENTS[key] = out_list
+    return out_list
 
 
 def task_required_strength(root: Path, task_id: str, bodies: list[str], current_text: str,
