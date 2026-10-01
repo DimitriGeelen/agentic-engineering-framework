@@ -414,7 +414,7 @@ def commit_command(task_id: str) -> str:
     # T-3654: explicit pathspec. Workers share ONE git index; a bare commit sweeps in whatever
     # another worker has staged, which makes the reviewer a producer and voids the row.
     return ('git add .context/reviews && GIT_AUTHOR_NAME="reviewer-$FW_SIDECAR_AGENT_ID" '
-            # T-3655: a per-dispatch email. A shared reviewer@aef.local let one contaminated
+            # T-3655: a per-dispatch email. One shared reviewer email let one contaminated
             # verdict commit make every later reviewer of the task a producer.
             'GIT_COMMITTER_NAME="reviewer-$FW_SIDECAR_AGENT_ID" '
             'GIT_AUTHOR_EMAIL="reviewer+$FW_SIDECAR_AGENT_ID@aef.local" '
