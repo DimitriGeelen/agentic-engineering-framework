@@ -22,7 +22,8 @@ setup() {
 echo "$*" >> "$FAKE_LOG"
 if [ "${FAKE_MODE:-ok}" = "hang" ]; then sleep 30; fi
 if [ "${FAKE_MODE:-ok}" = "fail" ]; then exit 1; fi
-printf '%s' "$FAKE_INBOX"
+# A fixture over ~128KB cannot ride in the environment (E2BIG) — hence a file.
+if [ -n "${FAKE_INBOX_FILE:-}" ]; then cat "$FAKE_INBOX_FILE"; else printf '%s' "$FAKE_INBOX"; fi
 EOF
     chmod +x "$SANDBOX/bin/fw"
     # A fake `termlink` on PATH so the presence check passes.
@@ -96,11 +97,34 @@ teardown() { rm -rf "$SANDBOX"; }
     echo "$output" | grep -q 'task proposal'
 }
 
-@test "fail open: hung fw is cut by the timeout -> no stdout, exit 0" {
+@test "hung fw is cut by the timeout and SAID in one visible line, exit 0 (T-3681)" {
     export FAKE_MODE=hang FAKE_INBOX=''
     run bash "$HOOK" < /dev/null
     [ "$status" -eq 0 ]
-    [ -z "$output" ]
+    echo "$output" | grep -q 'inbox check timed out; consults may be pending, run fw sidecar inbox --peek'
+    echo "$output" | python3 -c 'import json,sys; json.load(sys.stdin)'
+    [ "$(echo "$output" | wc -l)" -eq 1 ]
+}
+
+@test "a >200KB inbox yields capped, non-empty, valid JSON context (T-3681)" {
+    python3 -c '
+import json
+print(json.dumps({"consults":[{"offset":i,"from":"p","conversation_id":"c%d"%i,"body":"x"*5000} for i in range(60)],"dm_rails":[]}))' > "$SANDBOX/big.json"
+    [ "$(wc -c < "$SANDBOX/big.json")" -gt 200000 ]
+    export FAKE_INBOX_FILE="$SANDBOX/big.json"
+    run bash "$HOOK" < /dev/null
+    [ "$status" -eq 0 ]
+    [ -n "$output" ]
+    echo "$output" > "$SANDBOX/out.json"
+    python3 - "$SANDBOX/out.json" <<'PY'
+import json, sys
+t = json.load(open(sys.argv[1]))["hookSpecificOutput"]["additionalContext"]
+assert 0 < len(t) < 30000, len(t)
+assert "UNTRUSTED" in t
+assert "older consult(s) not shown" in t and "fw sidecar inbox" in t
+assert "@offset 59" in t          # newest first
+assert "@offset 0 " not in t      # oldest dropped
+PY
 }
 
 @test "fail open: no termlink on PATH -> no stdout, exit 0, fw never called" {

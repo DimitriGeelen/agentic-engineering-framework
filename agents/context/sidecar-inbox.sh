@@ -36,11 +36,23 @@ FW_BIN="${FW_BIN:-$FRAMEWORK_ROOT/bin/fw}"
 command -v termlink >/dev/null 2>&1 || exit 0
 
 # --peek: do not advance the cursor. Timeout bounds the whole thing so a
-# wedged hub costs at most SIDECAR_INBOX_TIMEOUT seconds, then nothing.
-raw="$(timeout "${SIDECAR_INBOX_TIMEOUT:-5}" "$FW_BIN" sidecar inbox --peek --json 2>/dev/null)" || exit 0
+# wedged hub costs at most SIDECAR_INBOX_TIMEOUT seconds. T-3681: a timeout is a
+# host too loaded to answer, NOT an absent mail rail — it says so in one line
+# instead of impersonating an empty inbox. Only absence (no termlink/fw, fw
+# failing outright) stays silent.
+raw="$(timeout "${SIDECAR_INBOX_TIMEOUT:-5}" "$FW_BIN" sidecar inbox --peek --json 2>/dev/null)"
+rc=$?
+if [ "$rc" -eq 124 ]; then
+    python3 -c 'import json; print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": "# sidecar-inbox: inbox check timed out; consults may be pending, run fw sidecar inbox --peek (T-3681)"}}))' 2>/dev/null
+    exit 0
+fi
+[ "$rc" -eq 0 ] || exit 0
 [ -n "$raw" ] || exit 0
 
-python3 - "$raw" <<'PY' 2>/dev/null || exit 0
+# T-3681: the JSON goes to python on STDIN. It used to be one argv string, and a single
+# argv string over 131072 bytes (MAX_ARG_STRLEN) fails E2BIG before python starts —
+# which `|| exit 0` rendered identical to an empty inbox once the backlog passed ~128KB.
+read -r -d '' PYSRC <<'PY'
 import json, sys
 
 def emit(text):
@@ -50,7 +62,7 @@ def emit(text):
     }}))
 
 try:
-    payload = json.loads(sys.argv[1])
+    payload = json.loads(sys.stdin.read())
 except Exception:
     # Our own producer answered with something that is not JSON — a contract break,
     # the same class as the shape mismatch below, so it is said rather than hidden.
@@ -90,15 +102,36 @@ lines = [
     "the normal task and approval path, never direct execution.",
     "",
 ]
+# T-3681: cap what is injected. Newest first (highest offset), per-message body cap, total
+# cap; whatever does not fit is counted in an explicit line, never dropped silently.
+BODY_CAP, TOTAL_CAP = 2000, 20000
+
+def _off(m):
+    o = m.get("offset") if isinstance(m, dict) else None
+    return o if isinstance(o, (int, float)) else -1
+
+msgs = sorted((m for m in msgs if isinstance(m, dict)), key=_off, reverse=True)
+total, shown = sum(len(l) + 1 for l in lines), 0
 for m in msgs:
     who = m.get("from") or "unknown"
     conv = m.get("conversation_id") or "-"
-    body = (m.get("body") or "").strip()
-    lines.append(f"## From {who}  [conversation: {conv}]  @offset {m.get('offset')}")
-    lines.append(body)
+    body = str(m.get("body") or "").strip()
+    if len(body) > BODY_CAP:
+        body = body[:BODY_CAP] + f"… [truncated, {len(body) - BODY_CAP} more chars]"
+    block = [f"## From {who}  [conversation: {conv}]  @offset {m.get('offset')}", body, ""]
+    size = sum(len(l) + 1 for l in block)
+    if shown and total + size > TOTAL_CAP:
+        break
+    lines.extend(block)
+    total += size
+    shown += 1
+if shown < len(msgs):
+    lines.append(f"({len(msgs) - shown} older consult(s) not shown — run `fw sidecar inbox` to read them.)")
     lines.append("")
 lines.append("(Surfaced by the sidecar-inbox hook, T-3407. This was a PEEK — the consult is still in your inbox until you read it with `fw sidecar inbox`.)")
 
 emit("\n".join(lines))
 PY
+
+printf '%s' "$raw" | python3 -c "$PYSRC" 2>/dev/null || exit 0
 exit 0
