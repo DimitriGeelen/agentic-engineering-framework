@@ -1,10 +1,15 @@
 ---
 id: T-3628
-name: "fw pickup send without --remote delivers nothing and does not say so; ID counter ignores sent envelopes (055 finding, framework:pickup 257)"
+name: "fw pickup send without --remote delivers nothing and does not say so; ID counter
+  ignores sent envelopes (055 finding, framework:pickup 257)"
 description: >
-  lib/pickup.sh send writes $PICKUP_INBOX/$filename in the SENDER's own project and prints 'Created' with no 'not delivered' notice; only --remote pushes. pickup_next_id scans inbox/processed/rejected/auto-deferred but not a sent/ store, so a sender reissued P-001. Fix: deliver by default to a channel with a listener or print plainly 'saved locally, NOT delivered'; count every store in the ID.
+  lib/pickup.sh send writes $PICKUP_INBOX/$filename in the SENDER's own project and
+  prints 'Created' with no 'not delivered' notice; only --remote pushes. pickup_next_id
+  scans inbox/processed/rejected/auto-deferred but not a sent/ store, so a sender
+  reissued P-001. Fix: deliver by default to a channel with a listener or print plainly
+  'saved locally, NOT delivered'; count every store in the ID.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T08:48:00Z
-last_update: 2026-10-01T08:48:00Z
-date_finished: null
+last_update: 2026-10-01T13:26:31Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +55,51 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-01T09:00:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-01T09:00:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3628: fw pickup send without --remote delivers nothing and does not say so; ID counter ignores sent envelopes (055 finding, framework:pickup 257)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Evidence: `docs/reports/T-3631-cross-agent-delivery.md` (055 finding, framework:pickup 257).
+Fix shape: keep the local-inbox write (integration suites send-then-process from it), but
+say plainly when nothing was delivered, and move an envelope that WAS pushed out of the
+sender's own inbox into a `sent/` store that `pickup_next_id` counts.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproducer `tests/unit/t3628_pickup_send_delivery.bats`: (a) send without `--remote` prints a "NOT delivered" notice; (b) a failed `termlink remote push` prints "NOT delivered" and exits non-zero; (c) after a successful remote send the envelope sits in `sent/`, not the sender's inbox; (d) an id held only in `sent/` is not reissued — red before the fix
+- [x] Fix in `lib/pickup.sh`: notice on every undelivered path, push exit code checked, delivered envelope archived to `sent/`, `sent/` scanned by `pickup_next_id`
+- [x] No regression: `tests/unit/{lib_pickup,pickup_send_remote_session,pickup_send_yaml_safety,t3052_pickup_id_collision}.bats` green, and `tests/integration/fw_pickup.bats` has no failure other than test 10 (pre-existing since T-2308: asserts quoted scalars `yaml.safe_dump` never emits; filed T-3653)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -224,6 +260,13 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 300 bats tests/unit/t3628_pickup_send_delivery.bats > /tmp/.t3628-r.out 2>&1 && ! grep -q "^not ok" /tmp/.t3628-r.out && grep -q "^ok 5 " /tmp/.t3628-r.out
+test "$(grep -c '# skip' /tmp/.t3628-r.out)" -eq 0
+timeout 300 bats tests/unit/lib_pickup.bats tests/unit/pickup_send_remote_session.bats tests/unit/pickup_send_yaml_safety.bats tests/unit/t3052_pickup_id_collision.bats > /tmp/.t3628-n.out 2>&1 && ! grep -q "^not ok" /tmp/.t3628-n.out
+test "$(grep -c '# skip' /tmp/.t3628-n.out)" -eq 0
+timeout 300 bats tests/integration/fw_pickup.bats > /tmp/.t3628-i.out 2>&1; test "$(grep -c '^not ok' /tmp/.t3628-i.out)" -le 1 && ! grep '^not ok' /tmp/.t3628-i.out | grep -qv 'envelope has correct fields'
+bin/fw vendor self --check
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -239,6 +282,22 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** a 055 agent ran `fw pickup send` without `--remote`, saw "Created", and
+believed the envelope had reached AEF; nothing was delivered. A sender also reissued P-001.
+
+**Root cause:** `do_pickup_send` writes to `$PICKUP_INBOX` of the SENDER's own project and
+prints "Created" whether or not anything left the host; the `--remote` push's exit code was
+discarded. Outgoing envelopes therefore live in the sender's own inbox, where they look like
+incoming work and get cleared, and `pickup_next_id` has no store for sent envelopes, so the
+id high-water mark falls back and the next send reissues an id.
+
+**Why structurally allowed:** the send verb conflates "write an envelope" with "deliver an
+envelope"; tests covered envelope shape (T-2308) and flag pairing (T-1494) but never
+asserted delivery or its absence.
+
+**Prevention:** `t3628_pickup_send_delivery.bats` pins the notice, the push-failure exit
+code, the `sent/` archive and the id allocator counting it (with a mutation leg).
 
 ## Evolution
 
@@ -320,3 +379,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3628-fw-pickup-send-without---remote-delivers.md
 - **Context:** Initial task creation
+
+### 2026-10-01T13:26:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

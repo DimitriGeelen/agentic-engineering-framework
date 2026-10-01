@@ -24,6 +24,9 @@ PICKUP_INBOX="$PICKUP_DIR/inbox"
 PICKUP_PROCESSED="$PICKUP_DIR/processed"
 PICKUP_REJECTED="$PICKUP_DIR/rejected"
 PICKUP_AUTO_DEFERRED="$PICKUP_DIR/auto-deferred"
+# T-3628: envelopes this project pushed to another hub. Kept out of the inbox (an
+# outgoing envelope is not incoming work) but still counted by pickup_next_id.
+PICKUP_SENT="$PICKUP_DIR/sent"
 PICKUP_DEDUP_LOG="$PICKUP_DIR/dedup.log"
 
 # --- Directory setup ---
@@ -344,8 +347,10 @@ pickup_next_id() {
     # parked there is live work. Omitting it made the high-water mark too low,
     # the next send reissued the id, and — filenames being identities — the
     # arriving envelope overwrote the parked one.
+    #
+    # sent/ for the same reason (T-3628): an id this project already sent is spent.
     local dir
-    for dir in "$PICKUP_INBOX" "$PICKUP_PROCESSED" "$PICKUP_REJECTED" "$PICKUP_AUTO_DEFERRED"; do
+    for dir in "$PICKUP_SENT" "$PICKUP_INBOX" "$PICKUP_PROCESSED" "$PICKUP_REJECTED" "$PICKUP_AUTO_DEFERRED"; do
         [ -d "$dir" ] || continue
         local f
         for f in "$dir"/*.yaml "$dir"/*.yml; do
@@ -678,15 +683,32 @@ PYEOF
 
     echo -e "${GREEN}Created${NC} $filename"
 
-    # Remote push if requested (validated upstream — see --remote/--session gate)
-    if [ -n "$remote" ]; then
-        if command -v termlink >/dev/null 2>&1; then
-            echo -e "Pushing to ${BOLD}$remote${NC} (session ${BOLD}$session${NC}) via termlink..."
-            termlink remote push "$remote" "$session" "$filepath" 2>&1
-        else
-            echo -e "${YELLOW}WARN: termlink not installed — envelope saved locally only${NC}" >&2
-            echo "  Install: brew install DimitriGeelen/termlink/termlink"
+    # Remote push if requested (validated upstream — see --remote/--session gate).
+    # T-3628: "Created" is not "delivered". Every path that leaves the envelope
+    # only in this project's own inbox says so, and a failed push fails the verb.
+    if [ -z "$remote" ]; then
+        echo -e "${YELLOW}NOT delivered:${NC} saved locally in this project's inbox only." >&2
+        echo "  To deliver: fw pickup send ... --remote HUB --session SESSION" >&2
+    elif ! command -v termlink >/dev/null 2>&1; then
+        echo -e "${YELLOW}NOT delivered:${NC} termlink not installed — envelope saved locally only" >&2
+        echo "  Install: brew install DimitriGeelen/termlink/termlink" >&2
+        echo "$filepath"
+        return 1
+    else
+        echo -e "Pushing to ${BOLD}$remote${NC} (session ${BOLD}$session${NC}) via termlink..."
+        local push_rc=0
+        termlink remote push "$remote" "$session" "$filepath" 2>&1 || push_rc=$?
+        if [ "$push_rc" -ne 0 ]; then
+            echo -e "${RED}NOT delivered:${NC} termlink remote push exited $push_rc — envelope left in $PICKUP_INBOX" >&2
+            echo "$filepath"
+            return 1
         fi
+        mkdir -p "$PICKUP_SENT"
+        local sent_path
+        if sent_path=$(pickup_move_preserving "$filepath" "$PICKUP_SENT"); then
+            filepath="$sent_path"
+        fi
+        echo -e "${GREEN}Delivered${NC} to $remote ($session); archived to sent/"
     fi
 
     echo "$filepath"
