@@ -100,7 +100,7 @@ Operator could not reach Watchtower on 2026-10-01. py-spy dump: docs/reports/T-w
 - [x] Any other route that re-reads the whole corpus per request without a cache is found (profile the routes the playwright route sweep hits) and listed in Decisions. The ones as bad as /graduation are fixed here; the rest get one follow-up task.
 - [x] One slow route cannot starve the server: bound concurrent heavy work (for example a per-route in-flight limit returning 503 with Retry-After, or one shared build lock so concurrent misses wait for a single build). Test: 30 concurrent cold /graduation requests leave / and a static file answering within 2s.
 - [x] `bin/fw watchtower restart` keeps the previous log (rotate to `watchtower.log.1`, do not truncate). Test included.
-- [ ] Who called /graduation about 60 times at once is identified if the evidence allows (playwright route sweeps such as tests/playwright/test_response_times.py and test_all_routes_height.py against the LIVE server, the nightly runner, or monitors). If a test hits the live operator Watchtower, it is pointed at its own fixture server instead. `bin/fw watchtower current` passes after the final restart.
+- [x] Who called /graduation about 60 times at once is identified if the evidence allows (playwright route sweeps such as tests/playwright/test_response_times.py and test_all_routes_height.py against the LIVE server, the nightly runner, or monitors). If a test hits the live operator Watchtower, it is pointed at its own fixture server instead. `bin/fw watchtower current` passes after the final restart.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -368,6 +368,7 @@ Warm-request corpus file opens, before → after:
 ### 2026-10-01 — caller (AC 5)
 - **Not identified with certainty.** The restart truncated the log (now fixed). Evidence: the wedged server's RSS climbed 248MB→1.7GB from 22:55 to 23:15 local and 1.9→2.4GB from 03:05 to 03:35 local. Those match the nightly unit-suite starts in `.context/audits/unit-suite/runs.log`: 20:53Z and 01:03Z, both `jobs=12` (T-3602 made the suite per-file parallel at 22:53 local). The remaining `.107` traffic is this host (`hostname -I`), i.e. local processes.
 - **Ruled out:** no Playwright file targets the live URL. All of them use `tests/playwright/target.TEST_URL` (FW_TEST_PORT, default 3099), and every `:3000` hit is a docstring. No file in tests/unit, tests/integration, agents, lib, bin or tools references `/graduation` over HTTP. The monitors (liveness, rss) only probe `/api/_identity` and `/health`. `agents/ux-review/ux-review.py` does default `--base` to the live URL, but it is sequential, so it cannot produce 60 concurrent requests.
+- Final restart 2026-10-01 11:16: the previous 71,746-byte log was kept as `watchtower.log.1`, and `bin/fw watchtower current` returned 0 (pid 615078).
 - The next occurrence will be attributable: the log now survives a restart (`watchtower.log.1`), and `limit_inflight` logs a WARNING line for every 503.
 
 ## Decision
