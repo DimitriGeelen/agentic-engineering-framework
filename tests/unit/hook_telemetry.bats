@@ -129,7 +129,9 @@ teardown() {
     # carrying a project marker, with CLAUDE_PROJECT_DIR unset.
     mkdir -p "$TEST_TEMP_DIR/.tasks/active"
     local live_before live_after
-    live_before="$(grep -c 'bogus-hook-name-for-T1628' "$FRAMEWORK_ROOT/.context/working/.hook-counter" 2>/dev/null || echo 0)"
+    # `grep -c` prints 0 AND exits 1 on no match, so `|| echo 0` yielded "0\n0"
+    # once the live counter held no bogus entries; `|| true` + default instead.
+    live_before="$(grep -c 'bogus-hook-name-for-T1628' "$FRAMEWORK_ROOT/.context/working/.hook-counter" 2>/dev/null || true)"; live_before="${live_before:-0}"
 
     run bash -c "cd '$TEST_TEMP_DIR' && env -u CLAUDE_PROJECT_DIR -u PROJECT_ROOT '$FRAMEWORK_ROOT/bin/fw' hook bogus-hook-name-for-T1628"
     [ "$status" -eq 0 ]
@@ -141,7 +143,7 @@ teardown() {
     # CONTROL: the write must have gone ONLY to the temp project. Without this,
     # the assertions above pass just as happily while the suite keeps polluting
     # the live repo — which is exactly how the old version stayed unnoticed.
-    live_after="$(grep -c 'bogus-hook-name-for-T1628' "$FRAMEWORK_ROOT/.context/working/.hook-counter" 2>/dev/null || echo 0)"
+    live_after="$(grep -c 'bogus-hook-name-for-T1628' "$FRAMEWORK_ROOT/.context/working/.hook-counter" 2>/dev/null || true)"; live_after="${live_after:-0}"
     [ "$live_before" -eq "$live_after" ]
 }
 
