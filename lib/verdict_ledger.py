@@ -145,6 +145,13 @@ RUNS = Path(".context/reviews/review-runs.jsonl")
 #: attribution requirements 1-6, T-3580 round 3). A verdict row counts only if the one completion
 #: of its dispatch lists it with the same contents. `record` never writes here.
 COMPLETIONS = Path(".context/reviews/review-completions.jsonl")
+#: Acknowledged refusals (T-3657): one appended row per ledger row that does not verify because
+#: of a framework defect since fixed. Append-only against git like the ledger. An acknowledgement
+#: only moves that row's audit grade from FAIL to WARN; it never makes the row count.
+ACKS = Path(".context/reviews/acknowledged-refusals.jsonl")
+ACK_KIND = "acknowledged-refusal"
+#: `audit` exit code when every failing row is acknowledged: WARN, never PASS.
+AUDIT_WARN = 3
 #: Where a reviewer's evidence report lives (the judge's brief names the same directory).
 REPORT_DIR = ".context/reviews/evidence"
 DISPATCH_KEY = Path(".context/secrets/review-dispatch.key")
@@ -2906,7 +2913,12 @@ def audit(root: Path | None = None) -> tuple[int, list[str]]:
     if not n and not led.torn and not led.faults and not led.missing \
             and not _read(APPLIED, root) and not comps_exist:
         return 0, downs + ["verdict ledger: empty or absent (path is off until a review dispatch writes rows)"]
-    out, bad = [], 0
+    out, bad, acked = [], 0, 0
+    acks, ack_lines = _committed_acks(root)
+    for ln in ack_lines:
+        if ln.startswith("FAIL"):
+            bad += 1
+        out.append(ln)
     if comps_exist:
         # T-3580 round 5: the completions file is under the same append-only history check as the
         # ledger. It is written by run.sh AFTER the worker's last commit, so its newest rows are
@@ -2947,11 +2959,122 @@ def audit(root: Path | None = None) -> tuple[int, list[str]]:
             bases[task] = _Base(root, task, tp.read_text(encoding="utf-8", errors="replace") if tp else "")
         f = _row_fault(bases[task], r, intro)
         if f:
+            ack, why = _ack_for(root, acks, r, f[0], committed=intro is not None)
+            if ack is not None:
+                acked += 1
+                out.append(f"WARN acknowledged: {rid} ({task}) superseded by {ack['fixed_by']} — "
+                           f"{f[0].replace('-', ' ')}: {f[1]}")
+                continue
             bad += 1
-            out.append(f"FAIL {rid} ({task}): {f[0].replace('-', ' ')} — {f[1]}")
+            out.append(f"FAIL {rid} ({task}): {f[0].replace('-', ' ')} — {f[1]}"
+                       + (f" [acknowledgement not honoured: {why}]" if why else ""))
     out += downs
-    out.append(f"verdict ledger: {n} row(s), {bad} failure(s)")
-    return (2 if bad else 0), out
+    out.append(f"verdict ledger: {n} row(s), {bad} failure(s), {acked} acknowledged refusal(s)")
+    return (2 if bad else AUDIT_WARN if acked else 0), out
+
+
+# ── acknowledged refusals (T-3657) ───────────────────────────────────────────
+
+
+def _row_sha(row: dict) -> str:
+    return hashlib.sha256(json.dumps(row, sort_keys=True, separators=(",", ":")).encode()).hexdigest()
+
+
+def _completed_task(root: Path, task_id: str) -> bool:
+    return bool(re.fullmatch(r"T-\d+", task_id or "")) and \
+        any((root / ".tasks" / "completed").glob(f"{task_id}-*.md"))
+
+
+def _committed_acks(root: Path) -> tuple[list[dict], list[str]]:
+    """(acks, audit lines). Only rows committed at HEAD count, under the append-only history check;
+    an integrity fault in the acknowledgement file is a FAIL and honours none of them."""
+    if not (root / ACKS).is_file() and not _tracked(root, ACKS):
+        return [], []
+    hist = history_fault(root, ACKS)
+    if hist:
+        return [], [f"FAIL acknowledgement integrity: {hist}"]
+    rc, blob = _git_out(root, "show", f"HEAD:{ACKS}")
+    committed = _nonblank(blob) if rc == 0 else []
+    cur = _nonblank((root / ACKS).read_text(encoding="utf-8", errors="replace")) \
+        if (root / ACKS).is_file() else []
+    lines, acks = [], []
+    if len(cur) > len(committed):
+        lines.append(f"WARN {len(cur) - len(committed)} uncommitted acknowledgement(s) in {ACKS} — "
+                     f"not honoured until committed")
+    for ln in committed:
+        obj = _parse(ln)
+        if obj is None or obj.get("kind") != ACK_KIND:
+            return [], [f"FAIL acknowledgement integrity: torn or foreign line in {ACKS}: {ln[:80]!r}"]
+        acks.append(obj)
+    return acks, lines
+
+
+def _ack_for(root: Path, acks: list[dict], row: dict, cls: str, *,
+             committed: bool) -> tuple[dict | None, str]:
+    """(ack, '') when a committed acknowledgement covers exactly this row and this fault class;
+    else (None, why-an-existing-ack-does-not-apply) — '' when there is none at all."""
+    mine = [a for a in acks if a.get("row_id") == row.get("id")]
+    if not mine:
+        return None, ""
+    a = mine[-1]
+    if not committed:
+        return None, "the row itself is uncommitted"
+    if a.get("row_sha256") != _row_sha(row):
+        return None, "row bytes differ from the acknowledged row"
+    if a.get("class") != cls:
+        return None, f"acknowledged class {a.get('class')!r}, row now fails {cls!r}"
+    if not _completed_task(root, str(a.get("fixed_by", ""))):
+        return None, f"fixing task {a.get('fixed_by')!r} is not completed"
+    return a, ""
+
+
+def acknowledge(row_id: str, *, fixed_by: str, reason: str, root: Path | None = None) -> dict:
+    """Append an acknowledgement for a committed ledger row that does not verify because of a
+    framework defect that `fixed_by` (a completed task) has fixed. Never touches the ledger and
+    never makes the row count: it changes the row's audit grade from FAIL to WARN only."""
+    root = root or _root()
+    if not (fixed_by or "").strip():
+        raise VerdictRefused("--fixed-by is required: the completed task that fixed the defect")
+    if not (reason or "").strip():
+        raise VerdictRefused("--reason is required")
+    if not _completed_task(root, fixed_by):
+        raise VerdictRefused(f"{fixed_by} is not a completed task — only a FIXED defect can be "
+                             f"acknowledged")
+    led = load_ledger(root)
+    if led.faults:
+        raise VerdictRefused(f"the ledger does not verify as a whole ({led.faults[0]}) — an "
+                             f"integrity fault cannot be acknowledged row by row")
+    hit = next(((r, i) for r, i in led.entries() if r.get("id") == row_id), None)
+    if hit is None:
+        raise VerdictRefused(f"no row {row_id!r} in {VERDICTS}")
+    row, intro = hit
+    if intro is None:
+        raise VerdictRefused(f"{row_id} is uncommitted — commit it or remove it; only a committed "
+                             f"refusal is acknowledged")
+    why = _structural_fault(row)
+    task = str(row.get("task", ""))
+    if why:
+        f = ("schema", why)
+    else:
+        tp, _sub = _find_task(root, task)
+        f = _row_fault(_Base(root, task, tp.read_text(encoding="utf-8", errors="replace") if tp else ""),
+                       row, intro)
+    if not f:
+        raise VerdictRefused(f"{row_id} verifies — there is no refusal to acknowledge")
+    acks, lines = _committed_acks(root)
+    if any(ln.startswith("FAIL") for ln in lines):
+        raise VerdictRefused(f"{ACKS} does not verify: {lines[0]}")
+    pending = _read(ACKS, root)
+    if any(a.get("row_id") == row_id and a.get("class") == f[0] for a in pending):
+        raise VerdictRefused(f"{row_id} is already acknowledged for {f[0]}")
+    agent = os.environ.get("CLAUDECODE") == "1"
+    _rc, who = _git_out(root, "config", "user.name")
+    rec = {"kind": ACK_KIND, "ts": _now(), "row_id": row_id, "task": task, "class": f[0],
+           "refusal": f[1], "row_sha256": _row_sha(row), "fixed_by": fixed_by,
+           "reason": reason.strip(),
+           "recorded_by": f"{'agent' if agent else 'operator'}:{who.strip() or 'unknown'}"}
+    _append(ACKS, rec, root)
+    return rec
 
 
 # ── CLI ──────────────────────────────────────────────────────────────────────
@@ -3056,7 +3179,15 @@ def _cli(argv: list[str] | None = None) -> int:
     rl.add_argument("--reason", required=True)
     rl.add_argument("--i-am-human", action="store_true")
 
-    sub.add_parser("audit", help="cross-check every ledger row; exit 2 on any failure")
+    ak = sub.add_parser("acknowledge", help="record that a refused ledger row was caused by a "
+                        "framework defect a completed task has fixed (audit FAIL -> WARN; the row "
+                        "never counts)")
+    ak.add_argument("row_id")
+    ak.add_argument("--fixed-by", required=True, help="completed task that fixed the defect")
+    ak.add_argument("--reason", required=True)
+
+    sub.add_parser("audit", help="cross-check every ledger row; exit 2 on any failure, "
+                   f"{AUDIT_WARN} when every failing row is acknowledged")
 
     ls = sub.add_parser("list", help="verdicts recorded for a task")
     ls.add_argument("task_id")
@@ -3175,6 +3306,16 @@ def _cli(argv: list[str] | None = None) -> int:
             print(f"no active Human criterion #{args.ac} on {args.task_id}", file=sys.stderr)
             return 1
         print(criterion_digest(crit))
+        return 0
+    if args.cmd == "acknowledge":
+        try:
+            rec = acknowledge(args.row_id, fixed_by=args.fixed_by, reason=args.reason)
+        except VerdictRefused as e:
+            print(f"REFUSED: {e}", file=sys.stderr)
+            return 1
+        print(json.dumps(rec, sort_keys=True))
+        print(f"appended to {ACKS} — commit it; audit grades {args.row_id} WARN, and it still "
+              f"never counts", file=sys.stderr)
         return 0
     if args.cmd == "audit":
         code, lines = audit()

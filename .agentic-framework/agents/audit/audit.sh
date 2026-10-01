@@ -2819,7 +2819,13 @@ if [ -f "$FRAMEWORK_ROOT/lib/verdict_ledger.py" ]; then
     elif [ "$_vl_rc" -eq 2 ]; then
         fail "Reviewer-verdict ledger: rows that do not verify" \
              "$(echo "$_vl_out" | grep '^FAIL' | head -3 | tr '\n' ';')" \
-             "Inspect: python3 lib/verdict_ledger.py audit — a row with no signed review dispatch, an introducing commit by a producer, or a torn line must be removed or re-recorded by a real review dispatch"
+             "Inspect: python3 lib/verdict_ledger.py audit — a row with no signed review dispatch, an introducing commit by a producer, or a torn line must be removed or re-recorded by a real review dispatch; a refusal caused by a FIXED framework defect: fw reviewer verdict acknowledge <row> --fixed-by T-XXXX --reason '...'"
+    elif [ "$_vl_rc" -eq 3 ]; then
+        # T-3657: every failing row carries a committed acknowledgement naming the completed task
+        # that fixed the defect behind it. WARN, never PASS — the rows still do not count.
+        warn "Reviewer-verdict ledger: acknowledged refusals only — $(echo "$_vl_out" | tail -1)" \
+             "$(echo "$_vl_out" | grep '^WARN acknowledged' | head -3 | tr '\n' ';')" \
+             "Inspect: python3 lib/verdict_ledger.py audit — acknowledged rows never count as verdicts"
     else
         fail "Reviewer-verdict ledger: audit could not run (rc=$_vl_rc) — the ledger is UNVERIFIED" \
              "$(echo "$_vl_out" | tail -2 | tr '\n' ';')" \

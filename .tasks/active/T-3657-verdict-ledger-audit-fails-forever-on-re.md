@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T14:12:14Z
-last_update: 2026-10-01T15:15:08Z
+last_update: 2026-10-01T15:16:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,11 +97,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] An appended, committed acknowledgement record names a refused ledger row, its reason class and the task that fixed the defect. The refused row is never edited or deleted; the ledger's append-only history check still holds
-- [ ] `fw audit` and the pre-push structure section grade an acknowledged refused row as WARN ("acknowledged: <row> superseded by <task>"); an unacknowledged refused row still FAILs; an acknowledgement never makes a row count as a verdict or tick a criterion
-- [ ] `bin/fw reviewer verdict acknowledge <row> --fixed-by T-XXXX --reason "..."` refuses a nonexistent row, a non-refused row, a nonexistent task, or a missing --fixed-by. Tests cover each case, plus the WARN/FAIL grading
+- [x] An appended, committed acknowledgement record names a refused ledger row, its reason class and the task that fixed the defect. The refused row is never edited or deleted; the ledger's append-only history check still holds
+- [x] `fw audit` and the pre-push structure section grade an acknowledged refused row as WARN ("acknowledged: <row> superseded by <task>"); an unacknowledged refused row still FAILs; an acknowledgement never makes a row count as a verdict or tick a criterion
+- [x] `bin/fw reviewer verdict acknowledge <row> --fixed-by T-XXXX --reason "..."` refuses a nonexistent row, a non-refused row, a nonexistent task, or a missing --fixed-by. Tests cover each case, plus the WARN/FAIL grading
 - [ ] The two live-proof refusals (V-20261001-795fe3f3 fixed by T-3654; V-20261001-4e8131a6 fixed by T-3655) are acknowledged and committed, and `git push origin bleeding-edge` passes pre-push without --no-verify
-- [ ] The CLAUDE.md verdict-ledger paragraph has one sentence on acknowledgements; the vendored copies match
+- [x] The CLAUDE.md verdict-ledger paragraph has one sentence on acknowledgements; the vendored copies match
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -262,6 +262,12 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/test_t3657_acknowledged_refusals.py -q -p no:cacheprovider > /tmp/.t3657v 2>&1 && grep -q " passed" /tmp/.t3657v
+cmp -s lib/verdict_ledger.py .agentic-framework/lib/verdict_ledger.py && cmp -s agents/audit/audit.sh .agentic-framework/agents/audit/audit.sh
+grep -q "fw reviewer verdict acknowledge" CLAUDE.md
+python3 -c "import json; [json.loads(l) for l in open('.context/reviews/acknowledged-refusals.jsonl') if l.strip()]"
+bash -n agents/audit/audit.sh
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -277,6 +283,11 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** pre-push audit FAILed "Reviewer-verdict ledger: rows that do not verify" on V-20261001-795fe3f3 and V-20261001-4e8131a6 (T-3341), blocking `git push origin bleeding-edge`, with no action that could clear it.
+**Root cause:** the ledger is append-only (correct, T-3581), so a committed row refused by a since-fixed framework defect (T-3654 no-pathspec commit; T-3655 shared reviewer email) can never be removed, and `audit` had exactly two grades for it: PASS or FAIL. There was no record type for "known refusal, defect fixed".
+**Why structurally allowed:** T-3581 designed the audit for forged or broken rows; the case of an honest row broken by the framework itself was not modelled, so the first live-proof attempts turned the gate into a permanent red (the L-670 ignored-red class).
+**Prevention:** `fw reviewer verdict acknowledge` plus an append-only `acknowledged-refusals.jsonl`; audit grades acknowledged rows WARN (exit 3, never PASS) and any unacknowledged refusal still FAILs. Pinned by tests/unit/test_t3657_acknowledged_refusals.py (13 tests).
 
 ## Evolution
 
@@ -341,6 +352,16 @@ bvp_scores_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-01 — where the acknowledgement lives
+- **Chose:** a separate append-only file `.context/reviews/acknowledged-refusals.jsonl`, checked against git history with the same `history_fault` walk the completions file uses; only rows committed at HEAD are honoured.
+- **Why:** verdicts.jsonl rows are validated by one validator (`_row_fault`) shared by record/apply/audit; a second row type there would have to be excluded from every consumer (apply, check-render, satisfying_verdict, list, duplicate-id checks). A separate file is read by `audit` only, so an acknowledgement structurally cannot make a row count.
+- **Rejected:** a new row type in verdicts.jsonl (touches every reader); editing or deleting the refused rows (breaks append-only, the property the audit protects).
+
+### 2026-10-01 — what an acknowledgement binds to, and who may record it
+- **Chose:** each ack names the row id, the row's sha256, the fault class it fails with, and a `fixed_by` task that must be in `.tasks/completed/` at record time and at every audit. If the row now fails with a different class, or the fix task is not completed, the ack is not honoured and the row FAILs. Audit exit 3 = WARN only; never 0.
+- **Agents may record one** for a refusal caused by a FIXED framework defect: it is the agent's own bookkeeping, not a verdict and not a gate bypass. It is logged in the ack row (`recorded_by: agent:<git user>` under CLAUDECODE=1, `operator:` otherwise) and visible as WARN in every `fw audit`.
+- **Rejected:** operator-only (`--i-am-human`): the ack grants nothing — the row still never counts — so gating it on the operator would only keep the push blocked on bookkeeping.
 
 ## Decision
 
