@@ -1,26 +1,23 @@
 ---
-id: T-3639
-name: "Triage 055's ~18 local framework fixes (framework:pickup P-003..P-016, offsets
-  ~186-256) before 055 can upgrade: covered by v1.7.0 / already on bleeding-edge /
-  port"
+id: T-3648
+name: "claude-fw ends a live agent on ONE failed termlink ping (055 P-011/P-012, 10
+  of 13 fleet agents exposed)"
 description: >
-  055 (cockpit:harness-access offset 4) cannot run fw upgrade to get the sidecar:
-  its vendored v1.6.768 carries ~18 local fixes since 2026-09-26 that it posted to
-  framework:pickup and AEF never read (T-3631 IW-4). Listed: T-346 Tier 0 SIGKILL
-  spellings (P-006 @237), T-367 partial-complete commit allowance, T-287 approval-gate
-  waiver, T-294 decision-readiness gate under errexit, T-304, T-313 /dev/null sink,
-  T-316, T-349 OBS-071 hook project resolution (P-008 @239), T-348 (P-007 @238), T-356/T-358
-  claude-fw keeper + ping tolerance (P-009 @241, P-011 @242), T-312, T-314, T-342/T-344
-  Watchtower. Per fix: read the post, compare with our source (v1.7.0 tag and bleeding-edge),
-  classify covered-in-v1.7.0 / fixed-on-bleeding-edge-only / port-needed / reject
-  (with reason); port the needed ones as their own bug tasks; reply per post on framework:pickup
-  with a receipt only for what was read; post the summary table to 055 on cockpit:harness-access.
+  Source: 055 pickups P-011 (framework:pickup offset 242) and P-012 (offset 244),
+  055 task 358. bin/claude-fw:556 at HEAD (same at v1.7.0): 'if ! termlink ping "$TERMLINK_SESSION"
+  ...; then exit_code=1; break' — one failed or slow ping under CPU load ends the
+  wait loop and, without autorestart, the agent's tmux session. Reproduced on the
+  live fleet 2026-09-29; 10 of 13 TermLink-mode fleet agents carry the single-ping
+  break. 055 fix: count consecutive ping failures, declare the session gone only at
+  CLAUDE_FW_PING_FAILURES (default 3; non-numeric falls back to 3); a success resets;
+  each tolerated failure logged to stderr. Fleet-wide exposure: each consumer gets
+  this only after release + fw upgrade, so priority high. Triage: T-3639.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
-tags: [T-3631, 055, cross-agent, upstream]
+tags: [bug, 055, upstream]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -49,8 +46,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-01T13:08:16Z
-last_update: '2026-10-01T13:15:19Z'
+created: 2026-10-01T13:24:40Z
+last_update: '2026-10-01T13:30:37Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -62,8 +59,18 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-01T13:30:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-01T13:13:08Z'
+  - ts: '2026-10-01T13:30:37Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -80,33 +87,51 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-01T13:15:19Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=244,acs=5)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3639: Triage 055's ~18 local framework fixes (framework:pickup P-003..P-016, offsets ~186-256) before 055 can upgrade: covered by v1.7.0 / already on bleeding-edge / port
+# T-3648: claude-fw ends a live agent on ONE failed termlink ping (055 P-011/P-012, 10 of 13 fleet agents exposed)
 
 ## Context
 
-Report: `docs/reports/T-3639-055-fix-triage.md`. Replies: framework:pickup offsets 259-293, one per 055 post in 186-257. Summary: cockpit:harness-access offset 8 (reply to 4). No receipt (ack) was posted, because the posts from other senders in that range were not all read. New port tasks: T-3640..T-3651 (T-3640 is the Tier 0 priority). Two port-needed fixes map to existing tasks: T-3305 and T-3565. Follow-up triage of the findings that came with no vendored fix: T-3652.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Every 055 fix named in cockpit:harness-access offset 4 (plus any further fix the framework:pickup posts name) has a verdict row in `docs/reports/T-3639-055-fix-triage.md` — COVERED-IN-v1.7.0 / BLEEDING-EDGE-ONLY / PORT-NEEDED / REJECT / NEED-PATCH — with file:line or commit evidence
-- [x] Each PORT-NEEDED fix has an AEF bug task (new, tagged bug,055,upstream, or an existing task for the same defect) citing the post offset; the report's AEF-task column names it; any Tier 0 port is marked priority in its task
-- [x] One reply posted per 055 pickup on framework:pickup (`--reply-to <offset>`), giving verdict and AEF task; receipt (ack) posted only up to an offset where everything at or below was read
-- [x] Summary table posted to 055 on cockpit:harness-access as a reply to offset 4, including the release-timing note (bleeding-edge-only and ported fixes reach 055 only at the next release cut, the operator's decision)
-- [x] No source code touched by this task (report + task files only)
+- [ ] [First criterion]
+- [ ] [Second criterion]
+
+### Human
+<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
+     Remove this section if all criteria are agent-verifiable.
+     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
+
+     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
+     If your Expected clause is grep-able / file-exists / structural (a deterministic
+     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
+     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
+     verification genuinely needs human taste (tone, feel, layout rhythm).
+     See CLAUDE.md §AC Classification Guidance for the conversion rule.
+
+     [REVIEW] example (genuine human judgment):
+       - [ ] [REVIEW] Dashboard renders correctly
+         **Steps:**
+         1. Open https://example.com/dashboard in browser
+         2. Verify all panels load within 2 seconds
+         3. Check browser console for errors
+         **Expected:** All panels visible, no console errors
+         **If not:** Screenshot the broken panel and note the console error
+
+     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
+       - [ ] [REVIEWER] Block message names both bypass mechanisms
+         **Steps:**
+         1. Run `bin/fw reviewer T-XXX`
+         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
+         **If not:** Inspect hook block-message string and add missing mechanism
+       Conversion: this AC should be moved to ### Agent and
+       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
+-->
 
 ## Verification
 
@@ -235,17 +260,8 @@ Report: `docs/reports/T-3639-055-fix-triage.md`. Replies: framework:pickup offse
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-test "$(grep -cE '^\| [0-9]+ \|' docs/reports/T-3639-055-fix-triage.md)" -eq 18
-! grep -q '__T' docs/reports/T-3639-055-fix-triage.md
-bash -c 'set -e; for t in T-3640 T-3641 T-3642 T-3643 T-3644 T-3645 T-3646 T-3647 T-3648 T-3649 T-3650 T-3651 T-3652 T-3305 T-3565; do ls .tasks/active/$t-*.md >/dev/null; grep -q "$t" docs/reports/T-3639-055-fix-triage.md; done'
-grep -q 'PRIORITY' .tasks/active/T-3640-*.md
 
 ## RCA
-
-**Symptom:** 055 could not upgrade: its vendored framework carried ~18 local fixes that it had posted to framework:pickup. AEF had read none of them, so an upgrade would have dropped them silently.
-**Root cause:** framework:pickup has no consumer on the AEF side. Posts are accepted by the hub ("delivered-unconfirmed"), and nothing turns an unread backlog into work.
-**Why structurally allowed:** no receipt or delivery ledger exists on either side (055 offset 257). This triage task did not fix that.
-**Prevention:** tracked in T-3631 (one acknowledged channel) and T-3628 (fw pickup send delivers nothing). Each port has its own task, T-3640..T-3651.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -337,10 +353,7 @@ grep -q 'PRIORITY' .tasks/active/T-3640-*.md
 
 ## Updates
 
-### 2026-10-01T13:08:16Z — task-created [task-create-agent]
+### 2026-10-01T13:24:40Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3639-triage-055s-18-local-framework-fixes-fra.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3648-claude-fw-ends-a-live-agent-on-one-faile.md
 - **Context:** Initial task creation
-
-### 2026-10-01T13:13:07Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
