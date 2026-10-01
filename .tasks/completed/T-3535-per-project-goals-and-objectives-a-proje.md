@@ -8,16 +8,16 @@ description: >
   not own, with an optional arc-level goal, a serves_objective mapping, and a Watchtower
   surface
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/task-create/update-task.sh, bin/fw, lib/inception-readiness.sh, lib/inception.sh, lib/review.sh, tests/unit/t3549_inception_handoff_refusal.bats, web/blueprints/inception.py]
 related_tasks: []
 created: 2026-09-28T13:19:21Z
-last_update: 2026-09-29T22:14:15Z
-date_finished:
+last_update: 2026-10-01T12:49:37Z
+date_finished: 2026-10-01T12:49:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -137,15 +137,15 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -236,7 +236,11 @@ Selection is specified top-down but no objectives artefact exists, so 'anything 
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Selection is specified top-down but no objectives artefact exists, so 'anything that does not advance them is not eligible' is unenforceable — visible as 20 concurrent arcs, 5 stale past 30 days, and 325 tasks awaiting review with no basis for declining any of them. The layer's primary job is to make work DECLINABLE, not to help pick it. GO rather than DEFER because the evidence is complete and the alternatives are enumerated; what remains is the authored-vs-derived split and where it lands, which are design decisions, not knowledge gaps. Must be per-project: once vendored, a consumer's objectives are its own, and shipping ours as framework content would be a Directive 4 violation of exactly the consumer-shape conflation class arc-004 exists to kill.
+
+**Date**: 2026-10-01T12:49:36Z
 
 ## Updates
 
@@ -253,3 +257,41 @@ Selection is specified top-down but no objectives artefact exists, so 'anything 
 ### 2026-09-29T22:14:15Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+### 2026-10-01T12:49:36Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Selection is specified top-down but no objectives artefact exists, so 'anything that does not advance them is not eligible' is unenforceable — visible as 20 concurrent arcs, 5 stale past 30 days, and 325 tasks awaiting review with no basis for declining any of them. The layer's primary job is to make work DECLINABLE, not to help pick it. GO rather than DEFER because the evidence is complete and the alternatives are enumerated; what remains is the authored-vs-derived split and where it lands, which are design decisions, not knowledge gaps. Must be per-project: once vendored, a consumer's objectives are its own, and shipping ours as framework content would be a Directive 4 violation of exactly the consumer-shape conflation class arc-004 exists to kill.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-538f89ab
+- **Timestamp:** 2026-10-01T12:49:39Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-5
+     - evidence: `IW-5 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-350a10b2
+- **Timestamp:** 2026-10-01T12:49:39Z
+- **Overall:** CONFIRMED
+- **Claims:** 5
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `lib/seeds/tasks/greenfield/T-002-define-project-goals.md` | file | ✓ pass |
+| `T-3564` | task | ✓ pass |
+| `T-3618` | task | ✓ pass |
+| `T-002` | task | ✓ pass |
+| `T-038` | task | ✓ pass |
+
+### 2026-10-01T12:49:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
