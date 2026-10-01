@@ -296,14 +296,27 @@ do_count() {
     fi
 }
 
+# _tasks_naming_obs <OBS-NNN> — T-3646: print the active/completed task files
+# that already name this observation id. Boundary-anchored so OBS-0220 does not
+# count as OBS-022 (and OBS-022 inside OBS-0220 is not a hit either way).
+_tasks_naming_obs() {
+    local obs_id="$1" d
+    for d in "$PROJECT_ROOT/.tasks/active" "$PROJECT_ROOT/.tasks/completed"; do
+        [ -d "$d" ] || continue
+        grep -lE "(^|[^A-Za-z0-9_-])${obs_id}([^0-9]|\$)" "$d"/T-*.md 2>/dev/null || true
+    done
+}
+
 do_promote() {
     local obs_id=""
     local task_type="build"
+    local allow_duplicate=false
     while [ $# -gt 0 ]; do
         case "$1" in
             --type|-t) task_type="$2"; shift 2 ;;
+            --allow-duplicate) allow_duplicate=true; shift ;;
             -h|--help)
-                echo "Usage: fw note promote OBS-NNN [--type <build|inception|...>]"
+                echo "Usage: fw note promote OBS-NNN [--type <build|inception|...>] [--allow-duplicate]"
                 return 0 ;;
             -*)
                 echo -e "${RED}Unknown flag: $1${NC}" >&2
@@ -331,6 +344,25 @@ do_promote() {
     if [ -z "$text" ]; then
         echo -e "${RED}Observation $obs_id not found${NC}" >&2
         return 1
+    fi
+
+    # T-3646 (ported from 055 P-007, framework:pickup offset 238): promote used
+    # to create a task without looking whether one already names this id, so a
+    # re-promote (or a promote after someone filed the task by hand) produced a
+    # silent duplicate. Refuse, list the tasks, and offer both ways out — a
+    # recurrence is legitimate, so this informs rather than blocking forever.
+    if [ "$allow_duplicate" != true ]; then
+        local _existing
+        _existing=$(_tasks_naming_obs "$obs_id")
+        if [ -n "$_existing" ]; then
+            echo -e "${RED}$obs_id is already named by existing task(s) — not promoting:${NC}" >&2
+            printf '%s\n' "$_existing" | sed "s|^$PROJECT_ROOT/||; s/^/    /" >&2
+            echo "" >&2
+            echo "  Nothing was created and the inbox is unchanged." >&2
+            echo "  Already handled:  fw note dismiss $obs_id --reason \"tracked in T-XXX\"" >&2
+            echo "  Genuine recurrence: fw note promote $obs_id --allow-duplicate" >&2
+            return 1
+        fi
     fi
 
     echo -e "${YELLOW}Promoting $obs_id to task (type: $task_type)...${NC}"

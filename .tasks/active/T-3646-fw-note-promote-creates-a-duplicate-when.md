@@ -13,7 +13,7 @@ description: >
   rather than hard-blocking forever. Related, separate: promoted tasks get the whole
   observation text as --name; promoted_to does not record WHICH task. Triage: T-3639.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T13:23:16Z
-last_update: '2026-10-01T13:30:37Z'
+last_update: 2026-10-01T13:57:27Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,14 +93,16 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Port of 055-agentic-fleet-cockpit's fix (P-007, framework:pickup offset 238, their task 348; OBS-064 at offset 221), re-derived against our code. Test: tests/unit/t3646_note_promote_duplicate.bats.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Regression test (red before fix): `fw note promote OBS-NNN` when an active or completed task file already names OBS-NNN creates a second task
+- [x] Fix: promote refuses (rc 1, no task created, inbox untouched) on a hit, lists the matching tasks, prints the dismiss command and the `--allow-duplicate` override; `--allow-duplicate` promotes anyway
+- [x] Boundary: a task naming OBS-0220 (or OBS-0221) does not block promoting OBS-022; no match → promote proceeds as before
+- [x] No regression in the neighbouring observe / note suites
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,22 +262,20 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t3646_note_promote_duplicate.bats > /tmp/.t3646a 2>&1 && ! grep -q "^not ok" /tmp/.t3646a
+test "$(grep -c '# skip' /tmp/.t3646a)" -eq 0
+timeout 300 bats tests/unit/observe.bats tests/unit/t2928_note_dismiss_persists_reason.bats tests/unit/t2927_observation_inbox_listing.bats > /tmp/.t3646b 2>&1 && ! grep -q "^not ok" /tmp/.t3646b
+bin/fw vendor self --check
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `fw note promote OBS-NNN` created a new task even when an active or completed task already named that observation (re-promote, or a task filed by hand first) — a silent duplicate (055 P-007).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** do_promote went straight from "observation text found in inbox" to create-task.sh; nothing consulted .tasks/ for the id.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** The inbox `status: promoted` flag was the only dedup signal, and it only covers the promote path itself — a task created any other way, or an inbox entry reset/re-captured, is invisible to it. No test exercised promote against an existing task.
+
+**Prevention:** tests/unit/t3646_note_promote_duplicate.bats pins refuse-on-hit (active and completed), the `--allow-duplicate` override, inbox-untouched on refusal, and the id-boundary (OBS-0220 does not block OBS-022).
 
 ## Evolution
 
@@ -357,3 +357,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3646-fw-note-promote-creates-a-duplicate-when.md
 - **Context:** Initial task creation
+
+### 2026-10-01T13:57:27Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
