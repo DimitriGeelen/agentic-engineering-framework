@@ -11,7 +11,8 @@
 # a lock (the AEF registry's slug-less lock names are single-project only).
 
 # cron_seed_ensure_jobs <registry_path> <project_root>
-# Prints one line per framework job: "ADDED <id>" or "PRESENT <id>".
+# Prints one line per framework job: "ADDED <id>" or "PRESENT <id>" — only after
+# the merged text parsed and was written (T-3680); on failure: ERROR to stderr, no ADDED.
 # CRON_SEED_DRY_RUN=1 reports without writing.
 # Exit 0 on success, 1 when the registry is missing/unparseable (nothing written).
 cron_seed_ensure_jobs() {
@@ -52,9 +53,10 @@ if not isinstance(data, dict) or not isinstance(data.get("jobs", []) or [], list
 present = {j.get("id") for j in (data.get("jobs") or []) if isinstance(j, dict)}
 
 lines = text.splitlines(keepends=True)
+report = []  # T-3680: printed only after the merge parsed (and was written)
 for job in JOBS:
     if job["id"] in present:
-        print(f"PRESENT {job['id']}")
+        report.append(f"PRESENT {job['id']}")
         continue
     idx = next((i for i, l in enumerate(lines) if re.match(r'^jobs:', l)), None)
     if idx is None:
@@ -76,13 +78,20 @@ for job in JOBS:
         print(f"ERROR {registry}: unsupported 'jobs:' form", file=sys.stderr)
         sys.exit(1)
     present.add(job["id"])
-    print(f"ADDED {job['id']}")
+    report.append(f"ADDED {job['id']}")
 
 new = "".join(lines)
-if new != text and not os.environ.get("CRON_SEED_DRY_RUN"):
-    yaml.safe_load(new)  # never write something that does not parse
-    tmp = registry + ".tmp-seed"
-    open(tmp, "w").write(new)
-    os.replace(tmp, registry)
+if new != text:
+    try:
+        yaml.safe_load(new)  # never report or write something that does not parse
+    except Exception as e:
+        print(f"ERROR merged {registry} does not parse, nothing written: {e}", file=sys.stderr)
+        sys.exit(1)
+    if not os.environ.get("CRON_SEED_DRY_RUN"):
+        tmp = registry + ".tmp-seed"
+        open(tmp, "w").write(new)
+        os.replace(tmp, registry)
+for r in report:
+    print(r)
 PYEOF
 }
