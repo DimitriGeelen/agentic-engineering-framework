@@ -235,13 +235,17 @@ _store_has() { grep -q "\"$1\"" "$W/.context/working/tier0-action-approvals.json
 }
 
 @test "N2 CONTROL: ./-anchored cd ignores CDPATH and stays mapped; without CDPATH a bare cd is mapped" {
+    # Round 5: a glob is outside the grammar, so the control deletes ./ instead.
     mkdir -p "$W/sub"
-    CDPATH=/elsewhere run _gate "cd ./sub && rm -rf *"
+    CDPATH=/elsewhere run _gate "cd ./sub && rm -rf ./"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"RECURSIVELY DELETE $W/sub/*"* ]]
-    run _gate "cd sub && rm -rf *"
+    [[ "$output" == *"RECURSIVELY DELETE $W/sub"* ]]
+    run _gate "cd sub && rm -rf ./"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"RECURSIVELY DELETE $W/sub/*"* ]]
+    [[ "$output" == *"RECURSIVELY DELETE $W/sub"* ]]
+    CDPATH=/elsewhere run _gate "cd sub && rm -rf ./"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"Not mapped to an action"* ]]
 }
 
 # ── N3: invocation-bound dedup (tool_use_id) ────────────────────────────────
@@ -250,7 +254,9 @@ _store_has() { grep -q "\"$1\"" "$W/.context/working/tier0-action-approvals.json
     echo two > t.txt && git add t.txt && git commit -q -m "T-3593: second"
     run _gate_id toolu_A "git reset --hard HEAD~1"
     [ "$status" -eq 2 ]
-    [[ "$output" == *"HARD-RESET branch 'main'"* ]]
+    # Round 5: '~' is outside the grammar, so this is the exact-text path; the
+    # action path, with the reset actually executed, is in t3593_round5_grammar.
+    [[ "$output" == *"Not mapped to an action"* ]]
     _approve >/dev/null
     run _gate_id toolu_B "git reset --hard HEAD~1"
     [ "$status" -eq 0 ]

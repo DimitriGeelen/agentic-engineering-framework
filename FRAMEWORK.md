@@ -149,33 +149,56 @@ typed. This is a scope boundary rather than a defect, documented because its abs
 reads as coverage. Origin: a consumer project lost a working tree to a `rm -rf "$OUT"`
 inside a build script, with the variable pointing at the repo root.
 
-**Approvals name the action (T-3593).** A blocked command that maps cleanly to actions
+**Approvals name the action (T-3593).** A blocked command that maps to actions
 (force-push, branch-delete, hard-reset, recursive-delete — each with its target) is
-approved per action, once, for a bounded time, so a retry with different incidental text
-still matches while a different target does not. A push ref is keyed as pre-push sees it (a
-branch by short name, a tag as `refs/tags/<t>`), and a short name that local refs cannot
-resolve to exactly one of the two is not mapped. Anything the classifier cannot read with
-certainty keeps the exact-text approval: a segment that also carries `--no-verify`, any
-variable assignment or `env`/`sudo` wrapper in front of the command (`HOME=`,
-`GIT_CONFIG_GLOBAL=`, anything), a segment after `export`/`source`/`eval`/`alias`, any git
-global option other than `-C` (same repo), `-P` and `--no-pager`, and a relative `cd` while
-`CDPATH` is set. An admitted push approval not consumed by pre-push within 60 s expires. A
-hook registered twice is deduplicated by the tool call's `tool_use_id`, not by time, so an
-approved command runs once. Approval is refused to an agent session unless overridden, and
-the override is recorded as `agent-override`; a record written straight into the approval
-store by a same-user agent, or an approval run with the agent-session marker stripped from
-the environment inside a script, cannot be told apart from a genuine one. This does not
-widen what the text gate sees.
+approved per action, once, for a bounded time, so a retry in the same plain shape (flag
+order, spacing, a `cd` prefix) still matches while a different target does not. A push ref
+is keyed as pre-push sees it (a branch by short name, a tag as `refs/tags/<t>`), and a short
+name that local refs cannot resolve to exactly one of the two is not mapped.
+
+**Only these exact shapes map to actions; everything else needs approval of the exact
+text.** The classifier is a grammar, not a list of dangerous spellings: zero or more
+`cd PATH &&`, then one `git` segment (optionally `-C PATH`, `-P`, `--no-pager`, then the
+subcommand and plain options and refspecs) or one `rm` segment (`-r`/`-R`/`-f`/`-v`,
+`--recursive`/`--force`/`--verbose`, then paths). Every word is plain
+(`[A-Za-z0-9._/:=@+%,-]+`); a path has no `..` component. Not one quote, backslash, `$`,
+backtick, brace, glob, `~`, `#`, redirection, pipe, `;`, `||`, `&`, newline, subshell,
+here-doc, wrapper (`sudo`, `env`, `command`, `nohup`) or variable assignment anywhere in the
+command, and nothing after the action. The cost is deliberate: `| tail -3`, `2>&1`,
+`HEAD~1`, `rm -rf *` and `git status && …` all take the exact-text path. Within the
+grammar: a push from a repository other than the project is unmapped, a pattern the action
+does not cover (`--no-verify` on a force push) is unmapped, and a bare relative `cd` (not
+`./`-anchored) while `CDPATH` is set in the hook's environment is unmapped; `cd ./sub` stays
+mapped because bash does not consult `CDPATH` for it. An admitted push approval not consumed
+by pre-push within 60 s expires. A hook registered twice is deduplicated by the tool call's
+`tool_use_id`, not by time, so an approved command runs once per tool call; this trusts the
+harness to give each call a unique id. The exact-text path consumes an approval only under
+its lock, and refuses (blocks) when the lock cannot be taken.
+
+**Approving is the operator's.** Any typed command whose text, with quotes, backslashes and
+the `$` of `$'…'` removed, contains the word `tier0` is Tier 0 unless it is a plainly
+spelled `fw tier0 status|list` — `sudo`, `su`, `runuser`, `tmux`, `screen`, `setsid`,
+`nohup`, `env -i`, `bash -c` and reassembled spellings (`` `echo approve` ``, `appr{o,}ve`,
+`tier""0`, `X=tier0; … $X approve`) included — as is executing or importing
+`tier0_action`. The module also refuses an agent session unless overridden, and records the
+override as `agent-override`. **Not seen:** anything inside a script or other file; a word
+built at run time from pieces the text does not contain (`$'\x74ier0'`, `printf`, `eval` of
+a computed string); and a record written straight into the approval store by a same-user
+process, which cannot be told apart from a genuine one. This does not widen what the text
+gate sees.
+
 Force-push, tag moves and ref deletion are additionally enforced at git pre-push, for any
 push that runs that hook. Any path that skips client-side hooks skips it too — `git push
 --no-verify`, a `core.hooksPath` set through `-c`, `--config-env`, an included file, a
 config file chosen by `HOME`, `XDG_CONFIG_HOME`, `GIT_CONFIG_GLOBAL`, `GIT_CONFIG_SYSTEM` or
 `GIT_CONFIG`, or `GIT_CONFIG_PARAMETERS`/`GIT_CONFIG_COUNT`; another repository's own
 configuration (`-C`, `--git-dir`, `GIT_DIR`); plumbing (`git send-pack`) or forge-API ref
-updates. Typed, the text gate labels the first group a hook bypass (the environment forms
-when a hook-running git command follows); it does not label another repository's own
-configuration, `sudo`, or git aliases. Server-side branch and tag protection remains the
-stronger control.
+updates. Typed, the text gate labels as a hook bypass: `--no-verify` and `git commit -n`;
+git's own `-c`/`--config-env` setting `core.hooksPath`, `include.path` or `includeIf.*`;
+`git config` setting any of those three (so a persistent include is labelled when it is
+written); and the environment forms when a hook-running git command follows. It does not
+label an include that is already in a config file, another repository's own configuration,
+`sudo`, or git aliases. Server-side branch and tag protection remains the stronger control.
 
 ## Working with Tasks
 

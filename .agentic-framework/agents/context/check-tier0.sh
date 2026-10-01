@@ -108,8 +108,12 @@ fi
 # ── Fast path: keyword pre-filter (bash grep, no Python overhead) ──
 # Only invoke Python if the command MIGHT be destructive.
 # This keeps the hook fast (<5ms) for the 95%+ of safe commands.
-if ! echo "$COMMAND" | grep -qEi \
-    'git\s+(push|reset|clean|checkout|restore|branch)\s|git\s+-|git\s+commit\b[^;|&]*\s-[a-z]*n|(HOME|XDG_CONFIG_HOME|GIT_CONFIG[A-Z0-9_]*)=|hooksPath|tier0|--no-v|rm\s+-|DROP\s|TRUNCATE\s|docker\s+system|kubectl\s+delete|find\s.*-delete|dd\s+if=|chmod\s.*\s000|mkfs|pkill\s|fw\s.*--force|fw\s.*inception\s.*decide'; then
+# Round 5: the filter also sees a dequoted copy (quotes, backslashes and dollars
+# removed), so a spelling the shell reassembles (tier""0, appr\ove) reaches the
+# detailed match.
+T0_DEQUOTED=$(printf '%s' "$COMMAND" | tr -d "\"'\\\\\$")
+if ! printf '%s\n%s\n' "$COMMAND" "$T0_DEQUOTED" | grep -qEi \
+    'git\s+(push|reset|clean|checkout|restore|branch)\s|git\s+-|git\s+commit\b[^;|&]*\s-[a-z]*n|(HOME|XDG_CONFIG_HOME|GIT_CONFIG[A-Z0-9_]*)=|hooksPath|include\.path|includeif|tier0|--no-v|rm\s+-|DROP\s|TRUNCATE\s|docker\s+system|kubectl\s+delete|find\s.*-delete|dd\s+if=|chmod\s.*\s000|mkfs|pkill\s|fw\s.*--force|fw\s.*inception\s.*decide'; then
     exit 0
 fi
 
@@ -171,7 +175,10 @@ command_stripped = strip_comments(command_stripped)
 # patterns below match them as well as a plain git push.
 # Round 4: any short global option (-P, -p) and a long option with a separate
 # argument (--git-dir /x) too — 'git -P push -f' escaped every push pattern.
-GIT_PRE = r'\bgit\s+(?:-[cC]\s*\S+\s+|-[a-zA-Z]+\s+|--[\w-]+(?:=\S+|\s+[^-\s]\S*)?\s+)*'
+# Round 5 (codex HIGH): a word may contain an escaped space — 'git -C /tmp/a\\ b
+# push -f' is one -C argument, and the old \\S+ lost the boundary (SAFE).
+W = '(?:' + re.escape(chr(92)) + r'\s|\S)+'
+GIT_PRE = r'\bgit\s+(?:-[cC]\s*' + W + r'\s+|-[a-zA-Z]+\s+|--[\w-]+(?:=' + W + r'|\s+[^-\s](?:' + W + r')?)?\s+)*'
 GIT_PUSH = GIT_PRE + r'push\b'
 
 # T-3593 round 3: git's parse-options accepts any unambiguous PREFIX of a long
@@ -223,6 +230,11 @@ PATTERNS = [
      'RECURSIVE DELETE: Targets current directory (.)'),
     (r'\brm\s+[^;|&]*-[a-zA-Z]*[rR][a-zA-Z]*[^;|&]*\s+\*(\s|$|;|&|\))',
      'RECURSIVE DELETE: Targets everything via wildcard (*)'),
+    # Round 5: 'rm -rf sub/../..', '..', 'x/.', './' name a parent or the
+    # current directory without spelling '.' or '/' alone (the bare '.' case
+    # is the pattern above).
+    (r'\brm\s+[^;|&]*-[a-zA-Z]*[rR][a-zA-Z]*[^;|&]*\s(?!\.(?:\s|$|[;&|)]))(?:\S*/)?\.\.?/?(?=\s|$|[;&|)])',
+     'RECURSIVE DELETE: Targets a parent or the current directory (. or .. as the last path component)'),
 
     # === Database destructive ===
     (r'(?i)\bDROP\s+(TABLE|DATABASE|SCHEMA)\b',
@@ -241,10 +253,15 @@ PATTERNS = [
     # --config-env / GIT_CONFIG_* set the same key without -c.
     # Round 4: include.path / includeIf pull config (hooksPath included) from a
     # file; a -c value that strip_quotes blanked ('' / \"\") cannot be read.
-    (r'\bgit\b[^;|&]*(?:-c\s*|--config-env[=\s]\s*)(?:(?i:core\.hookspath|include\.path)\s*=|(?i:includeif)\.|' + SQ + SQ + '|' + DQ + DQ + ')',
+    # Round 5 (T-3610 false positive): the -c must be GIT'S global option, in
+    # the global-option position — not any -c after a '.git' path (stat -c,
+    # bash -c on a later line).
+    (r'(?<!\.)' + GIT_PRE + r'(?:-c\s*|--config-env[=\s]\s*)(?:(?i:core\.hookspath|include\.path)\s*=|(?i:includeif)\.|' + SQ + SQ + '|' + DQ + DQ + ')',
      'HOOK BYPASS: -c core.hooksPath / include.path overrides the hook directory (skips pre-push and all other hooks)'),
-    (r'\bgit\s+config\b(?![^;|&]*--(get|list|show|get-all|get-regexp)\b)[^;|&]*\b(?i:core\.hookspath)\s+\S',
-     'HOOK BYPASS: setting core.hooksPath redirects every git hook (skips pre-push and all other hooks)'),
+    # Round 5 (Claude F2): a persistent include.path / includeIf.* pulls in a
+    # file that can set core.hooksPath, for every later push.
+    (GIT_PRE + r'config\b(?![^;|&]*--(get|list|show|get-all|get-regexp)\b)[^;|&]*\b(?i:core\.hookspath|include\.path|includeif\.\S*)\s+\S',
+     'HOOK BYPASS: setting core.hooksPath / include.path / includeIf.* redirects every git hook (skips pre-push and all other hooks)'),
     (r'\bGIT_CONFIG_(?:PARAMETERS|KEY_\d+)=\S*(?i:core\.hookspath)',
      'HOOK BYPASS: GIT_CONFIG_PARAMETERS / GIT_CONFIG_KEY_n sets core.hooksPath for git (skips pre-push and all other hooks)'),
     # Round 4 (N1): every environment variable that selects a config file git
@@ -316,12 +333,41 @@ DEQUOTED_PATTERNS = [
      'TIER 0 SELF-APPROVAL: environment-stripped approval (CLAUDECODE= / env / unset, quoted or split) makes an agent look human'),
 ]
 
+# Round 5 (Claude F1): privilege and session wrappers (sudo, su, runuser,
+# tmux, screen, setsid, nohup, env -i, bash -c ...) reset CLAUDECODE, and the
+# verb can be reassembled at run time (backticks, braces, ANSI-C quoting).
+# One rule instead of a list: a command whose dequoted text contains the WORD
+# tier0 is Tier 0 unless it is a plainly spelled read-only verb. Dequoting
+# removes quotes and backslashes, and the dollar of a dollar-quote.
+DOLLAR, BTICK = chr(36), chr(96)
+TIER0_WORD = r'(?<![\w./-])tier0(?![\w.-])'
+TIER0_READONLY = re.compile(
+    r'(?:cd\s+[A-Za-z0-9._/-]+\s+&&\s+)?(?:[A-Za-z0-9._/-]*/)?fw\s+tier0(?:\s+(?:status|list|help|--help|-h))?')
+# The direct module path: executed, imported, or attribute-accessed (not merely
+# named, so reading or grepping lib/tier0_action.py is not Tier 0).
+MODULE_USE = [
+    r'\bpython[\d.]*\b[^;|&]*tier0_action\.py\s+(?!(?:status|pending-show|describe)\b)\S',
+    r'(?:^|[;&|(]|\bexec)\s*\S*tier0_action\.py\s+(?!(?:status|pending-show|describe)\b)\S',
+    r'\b(?:import|from)\s+tier0_action\b',
+    r'\btier0_action\.(?!py\b)\w',
+]
+def dequote(raw):
+    raw = re.sub(re.escape(DOLLAR) + '(?=[' + SQ + DQ + '])', '', raw)
+    return re.sub('[' + SQ + DQ + chr(92) * 2 + ']', '', raw)
+
 def matches(raw):
     t = strip_comments(strip_quotes(raw))
-    dq = re.sub('[' + SQ + DQ + chr(92) * 2 + ']', '', raw)
-    return ([d for p, d in PATTERNS if re.search(p, t)]
-            + [d for p, d in RAW_PATTERNS if re.search(p, raw)]
-            + [d for p, d in DEQUOTED_PATTERNS if re.search(p, dq)])
+    dq = dequote(raw)
+    found = ([d for p, d in PATTERNS if re.search(p, t)]
+             + [d for p, d in RAW_PATTERNS if re.search(p, raw)]
+             + [d for p, d in DEQUOTED_PATTERNS if re.search(p, dq)])
+    if not any(d.startswith('TIER 0 SELF-APPROVAL') for d in found):
+        if (re.search(TIER0_WORD, dq) and not TIER0_READONLY.fullmatch(raw.strip())) \
+                or any(re.search(p, dq) for p in MODULE_USE):
+            found.append('TIER 0 SELF-APPROVAL: a tier0 command other than a plainly spelled '
+                         'fw tier0 status|list (wrappers like sudo, su, tmux, bash -c and '
+                         'reassembled spellings included) is human-only')
+    return found
 
 found = matches(strip_heredocs(command))
 if found:
@@ -336,11 +382,11 @@ if found:
         import json, os
         sys.path.insert(0, os.environ.get('T0_FRAMEWORK_ROOT', '') + '/lib')
         import tier0_action
-        def is_flagged(seg):
+        def is_flagged(text):
             # Every matching pattern, so the module can require that ALL of
             # them are covered by the action verb (T-3593 R1).
-            return matches(strip_heredocs(seg))
-        acts = tier0_action.classify(strip_heredocs(command), is_flagged,
+            return matches(strip_heredocs(text))
+        acts = tier0_action.classify(command, is_flagged,
                                      os.environ.get('T0_CWD') or None,
                                      os.environ.get('T0_ROOT') or None)
         if acts:
@@ -425,14 +471,43 @@ _t0_same_call() {
 _t0_mark_consumed() { echo "$COMMAND_HASH $(date +%s) ${T0_CALL_ID:-}" > "$CONSUMED_FILE"; }
 # Serialise the legacy check-and-consume so concurrent sibling fires cannot both
 # miss (one removes the approval before the other has written the sentinel).
-# flock is util-linux; without it the race is the pre-round-4 one.
+# Round 5 (codex MEDIUM): fail closed. The lock is flock(2) on fd 8, taken by
+# python3 (which this hook already requires) rather than util-linux flock, so a
+# host without flock (macOS) still locks. The lock belongs to the open file
+# description bash holds, so it outlives the python child. If it cannot be
+# taken within TIER0_LOCK_TIMEOUT seconds (default 10), T0_LOCKED stays 0 and
+# both legacy check-and-consume legs below are SKIPPED: an exact-text approval
+# is never consumed unlocked, and the command blocks. The action path has its
+# own lock inside lib/tier0_action.py and is unaffected.
 # The lock is released before anything is spawned in the background and before
-# the block path, so no child can inherit fd 8 and hold it (bounded wait anyway).
-_t0_unlock() { flock -u 8 2>/dev/null; exec 8>&-; return 0; }
-if command -v flock >/dev/null 2>&1 && [ -d "${APPROVAL_FILE%/*}" ]; then
-    { exec 8>"${APPROVAL_FILE}.lock"; } 2>/dev/null && flock -w 10 8 2>/dev/null
-else
-    _t0_unlock() { return 0; }
+# the block path, so no child can inherit fd 8 and hold it.
+T0_LOCKED=0
+T0_LOCK_FAILED=1
+_t0_unlock() {
+    if [ "$T0_LOCKED" = 1 ]; then exec 8>&-; T0_LOCKED=0; fi
+    return 0
+}
+mkdir -p "${APPROVAL_FILE%/*}" 2>/dev/null
+if { exec 8>"${APPROVAL_FILE}.lock"; } 2>/dev/null; then
+    if T0_LOCK_TIMEOUT="${TIER0_LOCK_TIMEOUT:-10}" python3 -c '
+import fcntl, os, sys, time
+deadline = time.time() + float(os.environ["T0_LOCK_TIMEOUT"])
+while True:
+    try:
+        fcntl.flock(8, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        sys.exit(0)
+    except BlockingIOError:
+        if time.time() >= deadline:
+            sys.exit(1)
+        time.sleep(0.05)
+    except Exception:
+        sys.exit(1)
+' 2>/dev/null; then
+        T0_LOCKED=1
+        T0_LOCK_FAILED=0
+    else
+        exec 8>&-
+    fi
 fi
 if _t0_same_call; then
     exit 0
@@ -451,7 +526,8 @@ if [ -n "$ACTIONS_JSON" ] && [ -f "$T0_ACTION_PY" ]; then
 fi
 
 # ── Check for valid approval token (legacy command-hash path) ──
-if [ -f "$APPROVAL_FILE" ]; then
+# Only under the lock (round 5): unlocked, nothing is consumed or cleaned up.
+if [ "$T0_LOCKED" = 1 ] && [ -f "$APPROVAL_FILE" ]; then
     APPROVAL_HASH=$(awk '{print $1}' "$APPROVAL_FILE" 2>/dev/null)
     APPROVAL_TIME=$(awk '{print $2}' "$APPROVAL_FILE" 2>/dev/null)
     CURRENT_TIME=$(date +%s)
@@ -512,7 +588,7 @@ fi
 APPROVAL_DIR="$PROJECT_ROOT/.context/approvals"
 RESOLVED_FILE="$APPROVAL_DIR/resolved-${COMMAND_HASH:0:12}.yaml"
 
-if [ -f "$RESOLVED_FILE" ]; then
+if [ "$T0_LOCKED" = 1 ] && [ -f "$RESOLVED_FILE" ]; then
     WT_RESULT=$(T0_RESOLVED="$RESOLVED_FILE" T0_TTL="$APPROVAL_TTL" T0_HASH="$COMMAND_HASH" python3 -c "
 import yaml, time, os, sys
 
@@ -658,11 +734,17 @@ if [ -n "$ACTIONS_JSON" ] && [ -f "$T0_ACTION_PY" ]; then
 echo "  Action(s) the operator would approve (T-3593):" >&2
 python3 "$T0_ACTION_PY" describe "$ACTIONS_JSON" 2>/dev/null | sed 's/^/    - /' >&2
 echo "  The approval is for the ACTION, single-use, for ${APPROVAL_TTL}s: a retry" >&2
-echo "  whose incidental text differs (pipes, tail -N, flag order) still matches;" >&2
+echo "  in the same plain shape (flag order, spacing, a cd prefix) still matches;" >&2
 echo "  a different ref, remote, branch or path does not." >&2
 else
 echo "  Not mapped to an action — the approval covers this exact command text" >&2
-echo "  (whitespace-normalised) only." >&2
+echo "  (whitespace-normalised) only. Only plain 'cd PATH && git|rm ...' commands" >&2
+echo "  (no quotes, variables, pipes, redirections or wrappers) map to actions." >&2
+fi
+if [ "$T0_LOCK_FAILED" = 1 ]; then
+echo "" >&2
+echo "  NOTE: the approval lock could not be taken, so no exact-text approval was" >&2
+echo "  checked or consumed (fail closed). Retry when no other hook holds it." >&2
 fi
 echo "" >&2
 echo "  What this gate can and cannot see (T-2742, T-3593):" >&2

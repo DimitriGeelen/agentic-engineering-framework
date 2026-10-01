@@ -181,7 +181,7 @@ _events() { cat "$W/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
     git push --force origin main 2>/dev/null || true
     _approve >/dev/null
     # simulate the PreToolUse gate admitting the typed command
-    json=$(python3 -c "import json,sys; print(json.dumps({'tool_input':{'command':'git push --force origin main | tail -3'},'cwd':sys.argv[1]}))" "$W")
+    json=$(python3 -c "import json,sys; print(json.dumps({'tool_input':{'command':'git push origin main --force'},'cwd':sys.argv[1]}))" "$W")
     run bash -c "printf '%s' '$json' | PROJECT_ROOT='$W' bash '$FRAMEWORK_ROOT/agents/context/check-tier0.sh'"
     [ "$status" -eq 0 ]
     run git push --force origin main

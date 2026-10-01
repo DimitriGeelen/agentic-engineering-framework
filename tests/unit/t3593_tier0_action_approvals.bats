@@ -41,16 +41,26 @@ _approve() {
 
 _events() { cat "$FX/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
 
-@test "tail -12 vs tail -14: one action approval admits the cosmetically different retry" {
-    run _hook "git push --force origin main 2>&1 | tail -12"
+@test "one action approval admits the cosmetically different plain retry" {
+    run _hook "git push --force origin main"
     [ "$status" -eq 2 ]
     [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
     run _approve
     [ "$status" -eq 0 ]
     [[ "$output" == *"FORCE-PUSH ref 'main' to remote 'origin'"* ]]
-    run _hook "git push --force origin main 2>&1 | tail -14"
+    run _hook "cd $FX && git push origin main --force"
     [ "$status" -eq 0 ]
     _events | grep -q '"event": "admitted"'
+}
+
+@test "round 5: tail -12 vs tail -14 is outside the grammar — a pipe makes it exact text" {
+    run _hook "git push --force origin main 2>&1 | tail -12"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"Not mapped to an action"* ]]
+    _approve >/dev/null
+    run _hook "git push --force origin main 2>&1 | tail -14"
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"Not mapped to an action"* ]]
 }
 
 @test "CONTROL: without an approval the tail -14 retry is blocked" {
@@ -62,7 +72,7 @@ _events() { cat "$FX/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
     run _hook "git push --force origin main"
     [ "$status" -eq 2 ]
     _approve >/dev/null
-    run _hook "git   push origin   main -f   >/dev/null"
+    run _hook "git   push origin   main -f"
     [ "$status" -eq 0 ]
 }
 
@@ -72,7 +82,7 @@ _events() { cat "$FX/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
     run _hook "git push --force origin feature"
     [ "$status" -eq 2 ]
     # control: the approved ref still matches (proves the approval was live)
-    run _hook "git push --force origin main | tail -3"
+    run _hook "git push origin main --force"
     [ "$status" -eq 0 ]
 }
 
@@ -87,24 +97,24 @@ _events() { cat "$FX/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
 
 @test "a DIFFERENT path does not match a recursive-delete approval" {
     mkdir -p "$FX/build" "$FX/other"
-    _hook "cd $FX && rm -rf *" 2>/dev/null || true
+    _hook "cd $FX/build && rm -rf ./" 2>/dev/null || true
     _approve >/dev/null
-    run _hook "cd $FX/other && rm -rf *"
+    run _hook "cd $FX/other && rm -rf ./"
     [ "$status" -eq 2 ]
-    run _hook "cd $FX   &&   rm -rf * 2>&1 | tail -1"
+    run _hook "cd $FX/build   &&   rm -fr ./"
     [ "$status" -eq 0 ]
 }
 
 @test "single-use: the second use of a consumed approval is refused" {
-    _hook "cd $FX && rm -rf *" 2>/dev/null || true
+    mkdir -p "$FX/build"
+    _hook "cd $FX/build && rm -rf ./" 2>/dev/null || true
     _approve >/dev/null
-    run _hook "cd $FX && rm -rf *"
+    run _hook "cd $FX/build && rm -rf ./"
     [ "$status" -eq 0 ]
     _events | grep -q '"event": "consumed"'
-    # Different incidental text on purpose: the byte-identical command within 5s
-    # is let through by the T-1508 duplicate-hook-fire sentinel (both paths, by
-    # design). A cosmetically different retry is exactly what must be refused.
-    run _hook "cd $FX && rm -rf * | cat"
+    # A cosmetically different retry of the same action is exactly what must be
+    # refused once the approval is used.
+    run _hook "cd $FX/build && rm -fr ./"
     [ "$status" -eq 2 ]
 }
 
@@ -113,7 +123,7 @@ _events() { cat "$FX/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
     _approve >/dev/null
     run _hook "git push --force origin main"
     [ "$status" -eq 0 ]
-    run _hook "git push --force origin main | cat"
+    run _hook "git push origin main --force"
     [ "$status" -eq 2 ]
 }
 
@@ -172,9 +182,10 @@ _events() { cat "$FX/.context/working/tier0-action-events.jsonl" 2>/dev/null; }
 }
 
 @test "action path logs match_path: action to the bypass log" {
-    _hook "cd $FX && rm -rf *" 2>/dev/null || true
+    mkdir -p "$FX/build"
+    _hook "cd $FX/build && rm -rf ./" 2>/dev/null || true
     _approve >/dev/null
-    _hook "cd $FX && rm -rf *"
+    _hook "cd $FX/build && rm -rf ./"
     grep -q "match_path: action" "$FX/.context/bypass-log.yaml"
 }
 
@@ -335,11 +346,11 @@ _mod() { PROJECT_ROOT="$FX" python3 "$FRAMEWORK_ROOT/lib/tier0_action.py" "$@"; 
     [ "$status" -eq 2 ]
     [[ "$output" == *"to commit ${head:0:12}"* ]]
     _approve >/dev/null
-    run _hook "git reset --hard HEAD~1"
+    run _hook "git reset --hard $prev"
     [ "$status" -eq 2 ]
     [[ "$output" == *"to commit ${prev:0:12}"* ]]
     # control: the approved target still matches
-    run _hook "git reset --hard HEAD | tail -1"
+    run _hook "git reset   --hard   HEAD"
     [ "$status" -eq 0 ]
 }
 
@@ -477,8 +488,11 @@ sys.exit(0 if t.use('$FX', t.json.loads(sys.argv[1]), 'pre-push', now=time.time(
         [ "$status" -eq 2 ]
         [[ "$output" == *"TIER 0 SELF-APPROVAL"* ]]
     done
-    # control: the plain verb passes the text gate (the module refuses it under CLAUDECODE=1)
+    # Round 5: the plain approve verb is Tier 0 when typed by an agent too (any
+    # tier0 command but a plainly spelled read-only one); control: status passes.
     run _hook "bin/fw tier0 approve"
+    [ "$status" -eq 2 ]
+    run _hook "bin/fw tier0 status"
     [ "$status" -eq 0 ]
 }
 

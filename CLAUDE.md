@@ -456,47 +456,58 @@ lost, purely on P-009 commit cadence. Our instance was verified independently ag
 own hook source before being written down (OBS-138).
 
 **Tier 0 approvals name an ACTION, not a command hash (T-3593).** When a blocked command
-maps cleanly to one or more actions — `force-push {remote, ref}`, `branch-delete {remote,
-ref}` (also local `git branch -D`), `hard-reset {repo, branch, target commit}`,
-`recursive-delete {path}` — the block lists them in plain words, `fw tier0 approve` approves
-each one once, for the grant TTL, and a retry whose incidental text differs (`| tail -12` vs
-`| tail -14`, flag order, `2>&1`) matches. A different ref, remote, branch, target commit or
-path does not. A push ref is keyed the way pre-push sees it: a branch by its short name, a
-tag as `refs/tags/<t>` (for `-f`, `--delete`, `:ref` and `src:dst` alike), resolved from
-local refs; a short name that is both, or neither, is unmapped. **Unmapped** — the old
-exact-text hash approval, unchanged — is anything the classifier cannot read with certainty:
-a `$VAR`, `$(...)`, `--all`, an unknown cwd (a `cd` carries only across `&&`; a relative,
-non-`./` `cd` with `CDPATH` in the command or the environment has none), **any variable
-assignment or `env`/`sudo` wrapper in front of the command** (`HOME=`, `XDG_CONFIG_HOME=`,
-`GIT_CONFIG_GLOBAL=`, `GIT_DIR=`, `LC_ALL=`, anything), any segment after one that may change
-the environment (`export`, `unset`, `source`, `eval`, `alias`, a function definition, a bare
-assignment), any git global option other than `-C` (and for a push, `-C`/`cd` must still name
-the project repo), `-P` and `--no-pager`, and a flagged segment matched by a pattern its verb
-does not cover (e.g. `--no-verify` riding on a force push). The bypass log records which path
-matched (`match_path: action|command-hash`) and who approved (`authorized_by`, copied from
-the approval record). **Push approvals have two clocks:** the text gate *admits* a push, and
-an admitted approval not consumed by pre-push within 60 s (`TIER0_ADMIT_TTL`) expires.
-**Duplicate hook fires (T-1508) are bound to the tool call:** the second fire of the same
-PreToolUse `tool_use_id` is let through; a second tool call with identical text is not, and a
-payload with no `tool_use_id` gets no grace. There is no time window — an approved `git reset
---hard HEAD~1` runs once. **Who may approve:** the module itself refuses `approve-pending`
-under `CLAUDECODE=1`; `--i-am-human` overrides it and the record says `approved_by:
-agent-override`, not `human`, and typed, both the direct module call and `fw tier0 approve
---i-am-human` are Tier 0. **What this does NOT claim:** every agent here runs as the same user
-with write access to the repo, so an agent can write an approval record into
-`.context/working/tier0-action-approvals.json` directly (`echo … >`, `python3 -c` calling
-`_save` or `getattr(t, "appr"+"ove")`), and the gate cannot distinguish a record fabricated
-that way from a genuine one (the same residual T-3581 names). The same holds for the
-**environment-strip route**: `CLAUDECODE= fw tier0 approve` makes the module record
-`approved_by: human`. What the text gate matches, typed: `CLAUDECODE=`, `env …`, `unset
-CLAUDECODE` before `fw tier0 approve` or `tier0_action`, also inside `bash -c '…'`/`sh -c
-'…'`, with the verb split by quotes or backslashes (`appr""ove`, `appro\ve`), or with a
-variable in the verb slot (`tier0 $V`). What it does not see: the same inside a script or a
-file, `eval` of a constructed string, or any spelling not listed. The check is fail-closed
-against accidents and unsophisticated self-approval, not forgery-resistant. This fixes the
-incentive that pushed agents toward script indirection; it does not widen what the text gate
-sees — everything above about scripts still holds. `rm -rf` inside a script has no
-equivalent control.
+maps to one or more actions — `force-push {remote, ref}`, `branch-delete {remote, ref}` (also
+local `git branch -D`), `hard-reset {repo, branch, target commit}`, `recursive-delete {path}`
+— the block lists them in plain words, `fw tier0 approve` approves each one once, for the
+grant TTL, and a retry in the same plain shape (flag order, spacing, a `cd` prefix) matches.
+A different ref, remote, branch, target commit or path does not. A push ref is keyed the way
+pre-push sees it: a branch by its short name, a tag as `refs/tags/<t>` (for `-f`, `--delete`,
+`:ref` and `src:dst` alike), resolved from local refs; a short name that is both, or neither,
+is unmapped.
+
+**Only these exact shapes map to actions; everything else needs approval of the exact text
+(round 5 grammar).** Four rounds of review each found one more shell spelling a denylist
+missed (`command export`, a quoted `'export'`, `git -C /tmp/a\ b`, `sudo`, brace expansion,
+`$'..'`), so the classifier (`lib/tier0_action.py`) is now a grammar: zero or more
+`cd PATH &&`, then ONE `git` segment (`-C PATH`, `-P`, `--no-pager`, then the subcommand,
+plain options with long options resolved against git's own list, and refspecs) or ONE `rm`
+segment (`-r -R -f -v`, `--recursive --force --verbose`, paths). Every word matches
+`[A-Za-z0-9._/:=@+%,-]+`; no path has a `..` component or starts with `-`. Not one quote,
+backslash, `$`, backtick, brace, glob, `~`, `#`, redirection, pipe, `;`, `||`, `&`, newline,
+subshell, here-doc, wrapper or assignment anywhere in the command, and nothing after the
+action. Unmapped is the fail-safe direction: the operator sees the literal command. Accepted
+cost: `| tail -3`, `2>&1`, `HEAD~1`, `rm -rf *`, `git status && …` all need exact-text
+approval. Inside the grammar the round-4 rules still hold: a push from a repo other than the
+project is unmapped; a pattern the action does not cover (`--no-verify` riding on a force
+push) is unmapped; a bare relative `cd` (not `./`-anchored) while `CDPATH` is set in the
+hook's environment is unmapped. HOOK BYPASS labelling is a separate, best-effort warning —
+the grammar never depends on it. The bypass log records which path matched (`match_path:
+action|command-hash`) and who approved (`authorized_by`, copied from the approval record).
+**Push approvals have two clocks:** the text gate *admits* a push, and an admitted approval
+not consumed by pre-push within 60 s (`TIER0_ADMIT_TTL`) expires. **Duplicate hook fires
+(T-1508) are bound to the tool call:** the second fire of the same PreToolUse `tool_use_id`
+is let through; a second tool call with identical text is not, and a payload with no
+`tool_use_id` gets no grace. This trusts the harness to give each call a unique id. **The
+exact-text path fails closed:** it consumes an approval only under its lock (flock(2) taken by
+python, so no util-linux dependency), and when the lock cannot be taken within
+`TIER0_LOCK_TIMEOUT` (10 s) nothing is consumed and the command blocks.
+
+**Who may approve:** any typed command whose text — quotes, backslashes and the `$` of `$'…'`
+removed — contains the word `tier0` is Tier 0 unless it is a plainly spelled `fw tier0
+status|list`. That covers `sudo`, `su`, `runuser`, `tmux`, `screen`, `setsid`, `nohup`,
+`env -i`, `bash -c`, and reassembled verbs (`` `echo approve` ``, `appr{o,}ve`, `tier""0`,
+`X=tier0; … $X approve`); executing or importing `tier0_action` is Tier 0 too. The cost: a
+read-only command that names the bare word `tier0` (a grep for it, a commit message using it)
+is blocked; write "Tier 0" or name the file instead. The module itself refuses
+`approve-pending` under `CLAUDECODE=1`; `--i-am-human` overrides it and the record says
+`approved_by: agent-override`. **What this does NOT claim:** every agent here runs as the
+same user with write access to the repo, so an agent can write an approval record into
+`.context/working/tier0-action-approvals.json` directly, from a script or from python, and the
+gate cannot distinguish that from a genuine one (the same residual T-3581 names). It does not
+see anything inside a script or file, nor a word built at run time from pieces the text does
+not contain (`$'\x74ier0'`, `printf`, `eval` of a computed string). The check is fail-closed
+against accidents and unsophisticated self-approval, not forgery-resistant. Everything above
+about scripts still holds: `rm -rf` inside a script has no equivalent control.
 
 **Force-push and ref deletion are enforced at git pre-push (T-3594).** The pre-push hook
 (installed by `fw git install-hooks`, delivered to consumers by `fw upgrade`) reads git's
@@ -513,14 +524,16 @@ selected by `HOME`, `XDG_CONFIG_HOME`, `GIT_CONFIG_GLOBAL`, `GIT_CONFIG_SYSTEM` 
 another repository's own configuration (`-C`, `--git-dir`, `GIT_DIR`); plumbing (`git
 send-pack`) or forge-API ref updates. **Typed, the text gate labels HOOK BYPASS:**
 `--no-verify` (any abbreviation git accepts, quoted or not) and `git commit -n` (separate or
-combined, e.g. `-anm`) on any git command; `-c`/`--config-env` setting `core.hooksPath` (any
-case), `include.path` or `includeIf.*`, or with a quoted value containing whitespace; `git
-config core.hooksPath <v>`; `GIT_CONFIG_PARAMETERS`/`GIT_CONFIG_KEY_n` whose visible value
+combined, e.g. `-anm`) on any git command; git's own global `-c`/`--config-env` (in the
+global-option position, so `stat -c` or `bash -c` next to a `.git/hooks` path is not) setting
+`core.hooksPath` (any case), `include.path` or `includeIf.*`, or with a quoted value
+containing whitespace; `git config [--global|--system] core.hooksPath|include.path|includeIf.*
+<v>` (an include written persistently); `GIT_CONFIG_PARAMETERS`/`GIT_CONFIG_KEY_n` whose visible value
 names `core.hooksPath`; and any assignment of `HOME`, `XDG_CONFIG_HOME` or a `GIT_CONFIG*`
 variable listed above anywhere before a hook-running `git push|commit|merge|pull|rebase|am|
 cherry-pick|revert`. **Not labelled** (it is still unmapped, so it can only be approved as
-exact text): `-C`/`--git-dir`/`GIT_DIR` pointing at a repository whose own config sets
-`hooksPath`, `sudo` (root's config), and `git -c alias.x='push -f' x` (pre-push still
+exact text): an include already present in a config file, `-C`/`--git-dir`/`GIT_DIR`
+pointing at a repository whose own config sets `hooksPath`, `sudo` (root's config), and `git -c alias.x='push -f' x` (pre-push still
 refuses the forced update). Inside a script none of these is seen. Server-side branch and tag
 protection (OneDev) is the stronger control and is the operator's decision.
 

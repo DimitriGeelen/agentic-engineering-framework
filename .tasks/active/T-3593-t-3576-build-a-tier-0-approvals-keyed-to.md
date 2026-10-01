@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T15:41:21Z
-last_update: 2026-09-30T20:00:23Z
+last_update: 2026-10-01T07:42:05Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -361,7 +361,13 @@ bin/fw vendor self --check
 
 ### 2026-09-30 — OBS-568 pulled forward: admitted records expire after 60 s
 - **Chose:** `ADMIT_TTL = 60` (env `TIER0_ADMIT_TTL`). An `admitted` push approval expires 60 s after admission, independent of the grant TTL.
-- **Why:** the R1 chain needed an admitted record to live long enough for a second push to consume it. Pre-push follows the typed push within seconds, so 60 s removes that second-use window whatever spelling comes next.
+- **Why:** the R1 chain needed an admitted record to live long enough for a second push to consume it. Pre-push follows the typed push within seconds, so 60 s bounds that second-use window (to 60 s, not zero) whatever spelling comes next.
+
+### 2026-10-01 — Round 5: the classifier is a strict grammar, not a denylist
+- **Chose:** `lib/tier0_action.py:classify` maps a command only when it is `(cd PATH &&)* git [-C PATH|-P|--no-pager]* SUB WORD*` or `(cd PATH &&)* rm OPTION* PATH+`, every word `[A-Za-z0-9._/:=@+%,-]+`, no `..` path component. Anything else is unmapped (exact-text approval). Self-approval: any typed command whose dequoted text has the word `tier0` is Tier 0 unless it is a plainly spelled `fw tier0 status|list`. The legacy exact-text path takes its lock with flock(2) from python and skips consumption when the lock cannot be taken.
+- **Why:** four rounds closed lists of shell spellings and each second-family review found another (`command export`, `'export'`, `git -C /tmp/a\ b`, `sudo … approve`, brace expansion, `$'..'`). A denylist over shell cannot be complete; an allowlist grammar fails toward showing the operator the literal command.
+- **Rejected:** a fifth denylist round; allowing `~`/`^` mid-word (keeps `HEAD~1` mapped, but the instruction was no `~` anywhere, and the exact-text path covers it); allowing a read-only prefix (`git status &&`) or trailing pipe (the original `| tail -N` motivation) — each reopens "what can a preceding or following segment change".
+- **Accepted cost:** `| tail -N`, `2>&1`, `HEAD~1`, `rm -rf *`, `git status && …` and quoted arguments now need exact-text approval; a read-only command naming the bare word `tier0` (a grep, a commit message) is blocked.
 
 ## Decision
 

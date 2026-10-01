@@ -7867,7 +7867,7 @@ DEPLOYEOF
                     echo "  You are approving, each ONCE, for ${TIER0_TTL_HUMAN} (${TIER0_TTL_RESOLVED}s):"
                     PROJECT_ROOT="$PROJECT_ROOT" python3 "$T0_ACTION_PY" pending-show | sed 's/^/    - /'
                     echo ""
-                    echo "  A retry with different incidental text (pipes, tail -N, flag order)"
+                    echo "  A retry in the same plain shape (flag order, spacing, a cd prefix)"
                     echo "  matches; a different ref, remote, branch or path does not."
                     echo ""
                     _t0_override=""

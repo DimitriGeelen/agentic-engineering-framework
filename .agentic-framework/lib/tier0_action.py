@@ -13,15 +13,15 @@ An approval here names what the operator actually decided about:
     hard-reset        {repo, branch, target} (git reset --hard [<commit>])
     recursive-delete  {path}                 (rm -r)
 
-A command maps to actions only when EVERY segment the Tier 0 patterns flag is
-fully explained by this classifier, and every PATTERN that flags a segment is
-covered by an action verb that segment produced (a ``--no-verify`` riding on a
-force push is a second decision the operator must see; it is never folded into
-the force-push approval). Anything it cannot read with certainty —
-a ``$(...)``, a variable, ``--all``, an unknown cwd, an unmapped verb — makes the
-whole command *unmapped*, and the hook falls back to the legacy command-hash path
-unchanged. The failure direction is always "less can be approved", never "more
-is admitted".
+A command maps to actions only when it is spelled in a small explicit grammar
+(round 5, see "The grammar" below): ``cd PATH &&`` zero or more times, then one
+``git`` or ``rm`` segment, plain words only. Every pattern that flags it must be
+covered by an action verb it produced (a ``--no-verify`` riding on a force push
+is a second decision the operator must see; it is never folded into the
+force-push approval). Anything else — a quote, a variable, a pipe, ``;``, a
+wrapper, an unknown cwd, an unmapped verb — makes the command *unmapped*, and
+the hook falls back to the exact-text approval. The failure direction is always
+"less can be approved", never "more is admitted".
 
 ── Single use, bounded time, two layers ─────────────────────────────────────
 Each approval is consumed on first matching use and expires after the grant TTL
@@ -87,218 +87,57 @@ def _now_iso(ts: float | None = None) -> str:
     ).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-# ── Shell segmentation and tokenising ────────────────────────────────────────
+# ── The grammar (T-3593 round 5) ─────────────────────────────────────────────
+#
+# Rounds 1-4 parsed shell and then denied the spellings reviewers found:
+# `command export`, a quoted 'export', `git -C /tmp/a\ b`, `sudo`, brace
+# expansion, $'..' quoting. Each review found one more, because a denylist over
+# shell cannot be complete. Round 5 inverts it: a command maps to an ACTION only
+# when it is spelled in this small grammar, and EVERYTHING else is unmapped and
+# takes the exact-text approval path (the operator sees the literal command):
+#
+#     command  := ( "cd" PATH "&&" )*  action
+#     action   := "git" [ "-C" PATH | "-P" | "--no-pager" ]* SUBCOMMAND WORD*
+#               | "rm" OPTION* PATH+
+#     WORD     := [A-Za-z0-9._/:=@+%,-]+
+#     PATH     := a WORD with no ".." component that does not start with "-"
+#
+# Separators are `&&` only. Not one quote, backslash, `$`, backtick, brace,
+# glob, `~`, `#`, redirection, pipe, `;`, newline, subshell or here-doc anywhere
+# in the command. Nothing but `cd` may precede the action and nothing may follow
+# it, so no earlier segment can change the environment, cwd resolution or the
+# meaning of a word for the action (the round-4 taint class closes by
+# construction, not by a list of builtins).
+
+WORD_RE = re.compile(r"[A-Za-z0-9._/:=@+%,-]+")
+_GRAMMAR_CHARS = re.compile(r"[A-Za-z0-9._/:=@+%,\- \t&]*")
+
 
 class Unmappable(Exception):
-    """The command cannot be read with certainty — use the hash path."""
+    """The command is outside the grammar, or not certain — use the hash path."""
 
 
-def split_segments(cmd: str) -> list[str]:
-    """Split on ; && || | & and newlines that sit OUTSIDE quotes."""
-    return [s for s, _ in split_segments_seps(cmd)]
+def grammar_segments(cmd: str) -> list[list[str]]:
+    """Split ``cmd`` into its ``&&`` segments, each a list of plain words, or
+    raise :class:`Unmappable` when any part of it is outside the grammar."""
+    cmd = cmd.strip(" \t")
+    if not cmd or not _GRAMMAR_CHARS.fullmatch(cmd):
+        raise Unmappable("outside the grammar: a character the grammar does not allow")
+    segs = []
+    for part in cmd.split("&&"):
+        if "&" in part:
+            raise Unmappable("outside the grammar: a lone & (background job)")
+        words = part.split()
+        if not words:
+            raise Unmappable("outside the grammar: empty segment")
+        segs.append(words)
+    return segs
 
 
-def split_segments_seps(cmd: str) -> list[tuple[str, str]]:
-    """Like :func:`split_segments`, keeping the separator that FOLLOWS each
-    segment (``""`` for the last). ``cd`` only carries across ``&&`` (T-3593 R3),
-    so the classifier needs to know which separator it was."""
-    segs, cur, i, n = [], [], 0, len(cmd)
-    sq = dq = False
-    while i < n:
-        c = cmd[i]
-        if sq:
-            cur.append(c)
-            if c == "'":
-                sq = False
-        elif dq:
-            cur.append(c)
-            if c == "\\" and i + 1 < n:
-                cur.append(cmd[i + 1])
-                i += 1
-            elif c == '"':
-                dq = False
-        elif c == "\\" and i + 1 < n:
-            cur.append(c)
-            cur.append(cmd[i + 1])
-            i += 1
-        elif c == "'":
-            sq = True
-            cur.append(c)
-        elif c == '"':
-            dq = True
-            cur.append(c)
-        elif c == "#" and (not cur or cur[-1].isspace()):
-            while i + 1 < n and cmd[i + 1] != "\n":
-                i += 1                      # comment: drop to end of line
-        elif c in ";\n" or c in "|&":
-            # `>&` / `&>` / `2>&1` are redirections, not separators.
-            prev = cur[-1] if cur else ""
-            if c == "&" and (prev in "<>" or (i + 1 < n and cmd[i + 1] == ">")):
-                cur.append(c)
-            else:
-                sep = c
-                if i + 1 < n and cmd[i + 1] == c and c in "|&":
-                    sep = c + c
-                    i += 1
-                segs.append(("".join(cur), "\n" if c == "\n" else sep))
-                cur = []
-        else:
-            cur.append(c)
-        i += 1
-    if sq or dq:
-        raise Unmappable("unbalanced quotes")
-    segs.append(("".join(cur), ""))
-    # An empty segment still owns its separator (`a ; ; b`); keep the weakest.
-    out: list[tuple[str, str]] = []
-    for s, sep in segs:
-        if s.strip():
-            out.append((s.strip(), sep))
-        elif out and sep != "&&":
-            out[-1] = (out[-1][0], sep or out[-1][1])
-    return out
-
-
-def tokenize(seg: str) -> list[str]:
-    """POSIX-ish word split. Drops redirections; refuses anything dynamic.
-
-    Unquoted ``$``, backticks, parentheses and braces raise :class:`Unmappable`:
-    their value is not knowable from the text, so no action can be claimed.
-    """
-    words: list[str] = []
-    cur: list[str] = []
-    have = False          # a word is in progress (possibly empty "")
-    quoted_any = False
-    i, n = 0, len(seg)
-    skip_next_word = False
-
-    def flush():
-        nonlocal cur, have, quoted_any, skip_next_word
-        if have:
-            w = "".join(cur)
-            if skip_next_word:
-                skip_next_word = False
-            else:
-                words.append(w)
-        cur, have, quoted_any = [], False, False
-
-    while i < n:
-        c = seg[i]
-        if c.isspace():
-            flush()
-        elif c == "'":
-            j = seg.find("'", i + 1)
-            if j < 0:
-                raise Unmappable("unbalanced quote")
-            cur.append(seg[i + 1:j])
-            have = quoted_any = True
-            i = j
-        elif c == '"':
-            j = i + 1
-            while j < n and seg[j] != '"':
-                if seg[j] == "\\" and j + 1 < n:
-                    cur.append(seg[j + 1])
-                    j += 2
-                    continue
-                if seg[j] in "$`":
-                    raise Unmappable("expansion inside double quotes")
-                cur.append(seg[j])
-                j += 1
-            if j >= n:
-                raise Unmappable("unbalanced quote")
-            have = quoted_any = True
-            i = j
-        elif c == "\\" and i + 1 < n:
-            cur.append(seg[i + 1])
-            have = True
-            i += 1
-        elif c == "#" and not have:
-            break                           # comment to end of segment
-        elif c == "&" and i + 1 < n and seg[i + 1] == ">":
-            flush()
-            i += 1
-            continue                        # `&>file` — handled as a redirect next
-        elif c in "$`(){}":
-            raise Unmappable(f"dynamic shell construct {c!r}")
-        elif c in "<>":
-            # Redirection. Leading all-digit unquoted word is its fd.
-            if have and not quoted_any and "".join(cur).isdigit():
-                cur, have = [], False
-            else:
-                flush()
-            j = i + 1
-            while j < n and seg[j] in "<>&-":
-                j += 1
-            k = j
-            while k < n and seg[k].isdigit():
-                k += 1
-            if k > j and (k >= n or seg[k].isspace()):
-                j = k                       # >&1 style: fd target, nothing to skip
-            elif j < n and not seg[j].isspace():
-                pass                        # >file — the rest of this word is the target
-            else:
-                skip_next_word = True       # > file
-            # Consume an attached target word.
-            if j < n and not seg[j].isspace() and not skip_next_word:
-                while j < n and not seg[j].isspace():
-                    if seg[j] in "$`(){}'\"":
-                        raise Unmappable("dynamic redirect target")
-                    j += 1
-            i = j
-            continue
-        else:
-            cur.append(c)
-            have = True
-        i += 1
-    flush()
-    if skip_next_word:
-        raise Unmappable("dangling redirect")
-    return words
-
-
-class EnvChange(Unmappable):
-    """The segment may change the shell's environment, cwd resolution or the
-    meaning of a command name for every LATER segment (an assignment, export,
-    source, eval, alias, a function definition, ...). After one, no later
-    flagged segment can be mapped (T-3593 round 4)."""
-
-
-_ENV_ASSIGN = re.compile(r"^[A-Za-z_][A-Za-z0-9_]*(?:\[[^\]]*\])?\+?=")
-# Words that only wrap the command without changing its environment. `sudo`,
-# `env`, `doas` DO change it (HOME, a cleared or edited environment) and are
-# therefore not here: they make the segment unmapped (T-3593 round 4).
-_PREFIX_WORDS = {"command", "nohup", "time", "exec"}
-# Shell builtins/keywords whose effect outlives their own segment.
-_ENV_BUILTINS = {"export", "unset", "set", "declare", "typeset", "local", "readonly",
-                 "source", ".", "eval", "alias", "unalias", "shopt", "enable",
-                 "builtin", "hash", "trap", "function", "{", "exec"}
-
-
-def _strip_prefix(words: list[str]) -> list[str]:
-    """Drop wrapper words that leave the environment alone. ANY variable
-    assignment in front of the command is refused, not stripped — one rule, not
-    a denylist: GIT_CONFIG_GLOBAL=, HOME=, XDG_CONFIG_HOME=, GIT_DIR=, CDPATH=,
-    GIT_CONFIG_PARAMETERS= all change what git reads or where it runs, and a
-    list of the dangerous ones is exactly what round 3 got wrong (N1). The
-    command then takes the exact-text approval path."""
-    while words and (_ENV_ASSIGN.match(words[0]) or words[0] in _PREFIX_WORDS):
-        if _ENV_ASSIGN.match(words[0]):
-            raise Unmappable(f"environment assignment {words[0].split('=', 1)[0]}= before the command")
-        if len(words) > 1 and words[1].startswith("-"):
-            raise Unmappable(f"{words[0]} with options")
-        words = words[1:]
-    return words
-
-
-def env_effect(seg: str) -> bool:
-    """True when ``seg`` may change the environment of LATER segments. Read from
-    the raw first word, because the segments that do this are often the ones
-    :func:`tokenize` refuses (``export X=$(...)``, ``f() { ...; }``)."""
-    m = re.match(r"\s*(\S+)", seg)
-    if not m:
-        return False
-    w = m.group(1)
-    return bool(_ENV_ASSIGN.match(w) or w in _ENV_BUILTINS or w.startswith("{")
-                or "()" in w or w in ("env", "sudo", "doas"))
+def _plain_path(p: str) -> str:
+    if not WORD_RE.fullmatch(p) or p.startswith("-") or ".." in p.split("/"):
+        raise Unmappable(f"outside the grammar: path {p!r}")
+    return p
 
 
 # ── Git helpers ───────────────────────────────────────────────────────────────
@@ -539,25 +378,21 @@ def _remote_ref_key(remote: str, dst: str, src: str, cwd: str, deleting: bool = 
 
 
 def _classify_git(words: list[str], cwd: str | None,
-                  root: str | None = None) -> tuple[list[dict], str | None]:
-    # Global options: an ALLOWLIST, default unmapped (T-3593 round 4). Kept:
-    #   -C <dir>      moves the command, nothing else; for a push the repo must
-    #                 still be the project's (checked in _classify_push)
-    #   -P, --no-pager  pager only
-    # Everything else is unmapped: -c / --config-env (any config, incl.
-    # core.hooksPath and include.path), --git-dir / --work-tree / --bare
-    # (another repo's hooks and config), --namespace (different ref names),
-    # --exec-path, --no-replace-objects (rev resolution differs from ours),
-    # -p / --paginate and anything git adds later.
+                  root: str | None = None) -> list[dict]:
+    # Global options (the grammar): -C <PATH>, -P, --no-pager. Anything else is
+    # unmapped: -c / --config-env (any config, incl. core.hooksPath and
+    # include.path), --git-dir / --work-tree / --bare (another repo's hooks and
+    # config), --namespace, --exec-path, -p, and anything git adds later.
+    # For a push, the -C repo must still be the project's (_classify_push).
     i = 1
     while i < len(words) and words[i].startswith("-"):
         opt = words[i]
         if opt == "-C" and i + 1 < len(words):
-            target = words[i + 1]
-            if cwd is None and not os.path.isabs(target):
-                cwd = None
-            else:
-                cwd = os.path.normpath(os.path.join(cwd or "/", target))
+            target = _plain_path(words[i + 1])
+            if os.path.isabs(target):
+                cwd = os.path.normpath(target)
+            elif cwd is not None:
+                cwd = os.path.normpath(os.path.join(cwd, target))
             i += 2
         elif opt in ("-P", "--no-pager"):
             i += 1
@@ -566,15 +401,13 @@ def _classify_git(words: list[str], cwd: str | None,
     if i >= len(words):
         raise Unmappable("bare git")
     sub, args = words[i], words[i + 1:]
-    if "--no-verify" in args:
-        raise Unmappable("--no-verify is its own Tier 0 decision")
     if sub == "push":
-        return _classify_push(args, cwd, root), cwd
+        return _classify_push(args, cwd, root)
     if sub == "reset":
         # Long options resolve as git resolves them: `--har` and `--h` are --hard.
         longs = {a: resolve_long("reset", a)[0] for a in args if a.startswith("--") and a != "--"}
         if "hard" not in longs.values():
-            return [], cwd
+            return []
         if cwd is None:
             raise Unmappable("reset with unknown cwd")
         revs = []
@@ -590,14 +423,14 @@ def _classify_git(words: list[str], cwd: str | None,
         # T-3593 R4: the approval names WHERE the branch moves to, resolved now.
         target = _git(cwd, "rev-parse", "--verify", "-q", rev + "^{commit}")
         return [action("hard-reset", repo=_toplevel(cwd), branch=_current_branch(cwd),
-                       target=target)], cwd
+                       target=target)]
     if sub == "branch":
         longs = {a: resolve_long("branch", a)[0] for a in args if a.startswith("--") and a != "--"}
         shorts = "".join(a[1:] for a in args if a.startswith("-") and not a.startswith("--"))
         force_del = "D" in shorts or (("d" in shorts or "delete" in longs.values())
                                       and ("f" in shorts or "force" in longs.values()))
         if not force_del:
-            return [], cwd
+            return []
         if "remotes" in longs.values() or "r" in shorts:
             raise Unmappable("branch delete of remote-tracking refs")
         names = [a for a in args if not a.startswith("-")]
@@ -607,31 +440,37 @@ def _classify_git(words: list[str], cwd: str | None,
             raise Unmappable("branch -D with unknown cwd")
         repo = _toplevel(cwd)
         return [action("branch-delete", remote=LOCAL_REMOTE, ref=normalize_ref(n), repo=repo)
-                for n in names], cwd
+                for n in names]
     raise Unmappable(f"git {sub} is not an action verb")
 
 
+_RM_SHORT = set("rRfv")
+_RM_LONG = {"--recursive", "--force", "--verbose"}
+
+
 def _classify_rm(args: list[str], cwd: str | None) -> list[dict]:
+    # Options are an allowlist too: --no-preserve-root, --one-file-system, -i,
+    # -d ... are a different decision, or none the operator can read here.
     recursive, paths, opts_done = False, [], False
     for a in args:
         if not opts_done and a == "--":
             opts_done = True
         elif not opts_done and a.startswith("--"):
-            if a == "--recursive":
-                recursive = True
+            if a not in _RM_LONG:
+                raise Unmappable(f"rm option {a}")
+            recursive = recursive or a == "--recursive"
         elif not opts_done and a.startswith("-") and len(a) > 1:
-            if "r" in a[1:] or "R" in a[1:]:
-                recursive = True
+            if not set(a[1:]) <= _RM_SHORT:
+                raise Unmappable(f"rm option {a}")
+            recursive = recursive or bool(set(a[1:]) & {"r", "R"})
         else:
-            paths.append(a)
+            paths.append(_plain_path(a))
     if not recursive:
         return []
     if not paths:
         raise Unmappable("rm -r without a path")
     out = []
     for p in paths:
-        if p.startswith("~"):
-            p = os.path.expanduser(p)
         if not os.path.isabs(p):
             if cwd is None:
                 raise Unmappable("relative rm path with unknown cwd")
@@ -641,43 +480,10 @@ def _classify_rm(args: list[str], cwd: str | None) -> list[dict]:
     return out
 
 
-def classify_segment(seg: str, cwd: str | None, cdpath: bool = False,
-                     root: str | None = None) -> tuple[list[dict], str | None]:
-    """Return (actions, new_cwd). Raises Unmappable when not certain, and
-    :class:`EnvChange` when the segment may alter the environment of later ones."""
-    if env_effect(seg):
-        raise EnvChange(f"segment may change the environment: {seg[:40]!r}")
-    words = _strip_prefix(tokenize(seg))
-    if not words:
-        return [], cwd
-    head = words[0]
-    if head == "cd":
-        if len(words) != 2 or words[1] == "-":
-            return [], None
-        target = os.path.expanduser(words[1])
-        if os.path.isabs(target):
-            return [], os.path.normpath(target)
-        # N2 (round 4): bash consults CDPATH for a relative target that does not
-        # start with ./ or ../ (or is not . / ..). With CDPATH anywhere in play,
-        # where such a cd lands is not knowable from the text.
-        anchored = target in (".", "..") or target.startswith(("./", "../"))
-        if cdpath and not anchored:
-            return [], None
-        return [], (os.path.normpath(os.path.join(cwd, target)) if cwd else None)
-    if head in ("pushd", "popd"):
-        return [], None
-    if head == "git":
-        # `git -C dir` scopes to this one command; the shell cwd is unchanged.
-        acts, _ = _classify_git(words, cwd, root)
-        return acts, cwd
-    if head == "rm":
-        return _classify_rm(words[1:], cwd), cwd
-    raise Unmappable(f"{head} is not an action verb")
-
-
 # Which verb explains which Tier 0 pattern (by its description prefix, from
-# check-tier0.sh PATTERNS). A flagged segment whose patterns are not ALL covered
-# by the verbs it produced is unmapped (T-3593 R1).
+# check-tier0.sh PATTERNS). A command flagged by any pattern its action does not
+# cover is unmapped (T-3593 R1): a --no-verify or a hooksPath override riding on
+# a force push is a second decision the operator must see as text.
 PATTERN_COVERAGE = {
     "FORCE PUSH": ("force-push",),
     "REMOTE REF DELETE": ("branch-delete",),
@@ -700,79 +506,53 @@ def classify(command: str, is_flagged, cwd: str | None,
              root: str | None = None) -> list[dict] | None:
     """Map a blocked command to actions, or None when it is unmapped.
 
-    ``is_flagged(segment_text)`` is the hook's own Tier 0 pattern test, passed in
-    so the pattern list stays single-sourced in check-tier0.sh. It returns the
-    list of matching pattern descriptions (a bare bool is accepted for older
-    callers, but then pattern coverage cannot be checked). Every flagged segment
-    must classify to at least one action, and every pattern flagging it must be
-    covered by those actions' verbs; otherwise the WHOLE command is unmapped.
+    The command maps only when it is spelled in the grammar above: zero or more
+    ``cd PATH &&`` and then ONE ``git`` or ``rm`` action segment, plain words
+    only. Anything else returns None, and the hook falls back to the exact-text
+    approval. The direction is always "less can be approved", never "more is
+    admitted".
 
-    cwd tracking (T-3593 R3): a segment's cwd change carries to the next segment
-    only across ``&&``, only when the segment is not in a pipeline, and only
-    when the separator BEFORE it is not ``||`` (``true || cd x && rm -rf .``
-    skips the cd and runs the rm in the old cwd — round 3). And a cwd changed
-    inside an and-chain does not survive the chain's end: at ``;``, ``||``,
-    ``&`` or a newline a failed ``cd`` (or a short-circuit) may have left the
-    old cwd in place, so it becomes unknown (``cd x && true ; rm -rf .``).
-    After any segment this module cannot read, the cwd becomes unknown too.
-    Unknown means a relative target is unmapped.
+    ``is_flagged(text)`` is the hook's own Tier 0 pattern test (the pattern list
+    stays single-sourced in check-tier0.sh). It returns the matching pattern
+    descriptions. The WHOLE command must be flagged, and every pattern that
+    flags it must be covered by the action's verb.
 
-    Environment (round 4): a flagged segment with ANY assignment or env/sudo
-    wrapper in front is unmapped, and once any segment may have changed the
-    environment (export, unset, source, eval, alias, a function definition, a
-    bare assignment) no later flagged segment is mapped either. CDPATH anywhere
-    in the command, or in this process's environment, makes a bare relative
-    ``cd`` land somewhere unknown (N2). ``root`` is the project root: a push
-    from any other repository is unmapped.
+    cwd: a ``cd`` carries to the next segment because the separator is always
+    ``&&`` (the action runs only when every cd succeeded). A relative target
+    with an unknown cwd is unmapped, and so is a bare relative ``cd`` (not
+    ``./``-anchored) while CDPATH is set in this process's environment: bash
+    would consult it (N2). ``root`` is the project root: a push from any other
+    repository is unmapped.
     """
     try:
-        segs = split_segments_seps(command)
+        segs = grammar_segments(command)
+        *cds, act = segs
+        cdpath = bool(os.environ.get("CDPATH"))
+        for words in cds:
+            if words[0] != "cd" or len(words) != 2:
+                raise Unmappable("outside the grammar: only `cd PATH` may precede the action")
+            target = _plain_path(words[1])
+            if os.path.isabs(target):
+                cwd = os.path.normpath(target)
+            elif cdpath and not (target == "." or target.startswith("./")):
+                cwd = None
+            else:
+                cwd = os.path.normpath(os.path.join(cwd, target)) if cwd else None
+        if act[0] == "git":
+            acts = _classify_git(act, cwd, root)
+        elif act[0] == "rm":
+            acts = _classify_rm(act[1:], cwd)
+        else:
+            raise Unmappable(f"outside the grammar: {act[0]} is not an action verb")
     except Unmappable:
         return None
-    cdpath = bool(re.search(r"\bCDPATH\b", command) or os.environ.get("CDPATH"))
-    actions: list[dict] = []
-    saw_flagged = False
-    env_tainted = False
-    prev_sep = ""
-    chain_cwd = cwd          # the cwd at the start of the current and-chain
-    for seg, sep in segs:
-        flagged = is_flagged(seg)
-        if flagged and env_tainted:
-            return None
-        try:
-            acts, new_cwd = classify_segment(seg, cwd, cdpath, root)
-        except Unmappable as exc:
-            if flagged:
-                return None
-            if isinstance(exc, EnvChange):
-                env_tainted = True
-            # An unreadable segment (`source x`, `{ cd x; }`, `eval ...`) may
-            # change the cwd in ways the text does not show.
-            cwd = chain_cwd = None
-            prev_sep = sep
-            continue
-        if flagged:
-            saw_flagged = True
-            if not acts:
-                return None
-            if not isinstance(flagged, bool) and not _covered(flagged, acts):
-                return None
-            actions.extend(acts)
-        if new_cwd != cwd:
-            carries = sep == "&&" and prev_sep not in ("|", "||")
-            cwd = new_cwd if carries else None
-        if sep not in ("&&", "|"):
-            # End of an and-chain: a cd inside it may not have run.
-            if cwd != chain_cwd:
-                cwd = None
-            if sep != "||":
-                chain_cwd = cwd
-        prev_sep = sep
-    if not saw_flagged or not actions:
+    flagged = is_flagged(command)
+    if not acts or not flagged:
         return None
-    # De-duplicate, stable.
+    if not isinstance(flagged, bool) and not _covered(flagged, acts):
+        return None
     seen, uniq = set(), []
-    for a in actions:
+    for a in acts:
         k = action_key(a)
         if k not in seen:
             seen.add(k)
