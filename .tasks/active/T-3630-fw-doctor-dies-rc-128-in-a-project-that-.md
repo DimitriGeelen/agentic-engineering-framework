@@ -2,7 +2,18 @@
 id: T-3630
 name: "fw doctor dies (rc 128) in a project that is not a git repository"
 description: >
-  OBS-587 triage (T-3624). bin/fw:1755 'hooks_dir=$(git -C "$PROJECT_ROOT" rev-parse --git-path hooks 2>/dev/null)' runs under set -euo pipefail; when PROJECT_ROOT is not inside a git repo, git exits 128 and the assignment kills do_doctor silently right after 'OK Context directory' — every later check never runs and doctor exits 128. The case statement below it already handles an empty result, so the intent was to tolerate failure. Introduced by 176445c64 (T-2812). Latent until 2026-09-30: test fixtures under /tmp resolved to a stray /.git, so git succeeded; the T-3610 git discovery fence (tests/git_fence.bash, GIT_CEILING_DIRECTORIES=/tmp) removed that and exposed it. Failing tests: t3161_empty_registry_does_not_wipe_live_cron.bats tests 4-5, test_cron_registry_generated_drift.bats tests 1-3. Evidence: PROJECT_ROOT=<non-git fixture> GIT_CEILING_DIRECTORIES=/tmp bin/fw doctor -> rc=128, bash -x ends at the hooks_dir line. Report: docs/reports/T-3624-triage.md
+  OBS-587 triage (T-3624). bin/fw:1755 'hooks_dir=$(git -C "$PROJECT_ROOT" rev-parse
+  --git-path hooks 2>/dev/null)' runs under set -euo pipefail; when PROJECT_ROOT is
+  not inside a git repo, git exits 128 and the assignment kills do_doctor silently
+  right after 'OK Context directory' — every later check never runs and doctor exits
+  128. The case statement below it already handles an empty result, so the intent
+  was to tolerate failure. Introduced by 176445c64 (T-2812). Latent until 2026-09-30:
+  test fixtures under /tmp resolved to a stray /.git, so git succeeded; the T-3610
+  git discovery fence (tests/git_fence.bash, GIT_CEILING_DIRECTORIES=/tmp) removed
+  that and exposed it. Failing tests: t3161_empty_registry_does_not_wipe_live_cron.bats
+  tests 4-5, test_cron_registry_generated_drift.bats tests 1-3. Evidence: PROJECT_ROOT=<non-git
+  fixture> GIT_CEILING_DIRECTORIES=/tmp bin/fw doctor -> rc=128, bash -x ends at the
+  hooks_dir line. Report: docs/reports/T-3624-triage.md
 
 status: captured
 workflow_type: build
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T08:49:17Z
-last_update: 2026-10-01T08:49:17Z
-date_finished: null
+last_update: '2026-10-01T09:00:38Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,13 +61,41 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-01T09:00:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-01T09:00:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3630: fw doctor dies (rc 128) in a project that is not a git repository
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**DUPLICATE of T-3625** (same bug: `fw doctor` exits 128 outside a git repo, from 176445c64 / T-2812). The parallel triage workers T-3623 and T-3624 filed it independently on 2026-10-01. Keep T-3625 as the owner. This file adds its witnesses: t3161_empty_registry_does_not_wipe_live_cron and test_cron_registry_generated_drift (bin/fw:1755). Shelved; fix in T-3625.
 
 ## Acceptance Criteria
 
