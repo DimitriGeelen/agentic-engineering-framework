@@ -129,3 +129,37 @@ _stale_allowlist() {
     echo "$output" | grep -qE '^ *docs +1 file\(s\) +.*\*\.png'
     echo "$output" | grep -qE '^ *docs +1 file\(s\) +.*\*\.secret'
 }
+
+@test "T-3677: pre-T-3671 runtime leftovers are not judged and never advised for un-ignoring" {
+    # 832 shape: .pytest_cache + .context/working/.fw-secret-key under the
+    # vendored dir, ignored by the consumer's deny-all rule.
+    printf '%s\n' '.agentic-framework/*' '!.agentic-framework/bin' '!.agentic-framework/tools' > "$C/.gitignore"
+    mkdir -p "$C/.agentic-framework/.pytest_cache" "$C/.agentic-framework/.context/working"
+    echo x > "$C/.agentic-framework/.pytest_cache/README.md"
+    echo secret > "$C/.agentic-framework/.context/working/.fw-secret-key"
+    run fw_vendor_check_visibility "$C/.agentic-framework" "$C"
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q 'NOT written by the vendor'
+    echo "$output" | grep -q 'fw-secret-key'
+    if echo "$output" | grep -q '^ *!'; then false; fi
+}
+
+@test "T-3677: a real invisible dir alongside leftovers still fails, and the remedy omits .context" {
+    printf '%s\n' '.agentic-framework/*' '!.agentic-framework/bin' > "$C/.gitignore"
+    mkdir -p "$C/.agentic-framework/.context/working"
+    echo secret > "$C/.agentic-framework/.context/working/.fw-secret-key"
+    run fw_vendor_check_visibility "$C/.agentic-framework" "$C"
+    [ "$status" -eq 1 ]
+    echo "$output" | grep -q '!.agentic-framework/tools'
+    if echo "$output" | grep -q '!.agentic-framework/.context'; then false; fi
+}
+
+@test "T-3677: with a vendor source, files absent from it are foreign" {
+    printf '%s\n' '.agentic-framework/*' '!.agentic-framework/bin' '!.agentic-framework/tools' > "$C/.gitignore"
+    S="$BATS_TEST_TMPDIR/src"; mkdir -p "$S/tools" "$S/bin"
+    echo 'print(1)' > "$S/tools/corpus_explain.py"; echo 'echo hi' > "$S/bin/fw"
+    mkdir -p "$C/.agentic-framework/stray"; echo x > "$C/.agentic-framework/stray/f"
+    run fw_vendor_check_visibility "$C/.agentic-framework" "$C" "$S"
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q 'stray/f'
+}

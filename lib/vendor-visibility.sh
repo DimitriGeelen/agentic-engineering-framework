@@ -29,7 +29,7 @@
 # Returns 0 = all visible (or target is not a git repo), 1 = some invisible,
 # 2 = refused (enumerated nothing — see below).
 fw_vendor_check_visibility() {
-    local dest="$1" target="$2"
+    local dest="$1" target="$2" source="${3:-}"
 
     # A consumer that is not a git repo cannot hide anything. Not a finding.
     if ! git -C "$target" rev-parse --git-dir >/dev/null 2>&1; then
@@ -47,13 +47,41 @@ fw_vendor_check_visibility() {
     # pycache. These three patterns are do_vendor's own slashless excludes —
     # the ones it applies at every depth — so the filter and the copy agree on
     # what is not framework content.
-    local -a files=()
+    #
+    # T-3677: the same distinction applies to RUNTIME STATE that pre-T-3671
+    # frameworks wrote under FRAMEWORK_ROOT (`.pytest_cache/`,
+    # `.context/working/` incl. `.fw-secret-key`). Live 832 upgrade: the check
+    # counted 6 such files as vendored and advised `!.agentic-framework/.context`,
+    # which would have un-ignored a secret. They are never judged, never
+    # advised on; they are listed as foreign so the operator can move them.
+    # When the vendor source is known, a file also has to exist there to count
+    # as something the vendor wrote.
+    local -a files=() foreign=()
+    local f
     while IFS= read -r f; do
-        [ -n "$f" ] && files+=("$f")
+        [ -n "$f" ] || continue
+        case "$f" in
+            "$rel"/.pytest_cache/*|"$rel"/.context/working/*|"$rel"/.context/secrets/*|*/.fw-secret-key)
+                foreign+=("$f"); continue ;;
+        esac
+        if [ -n "$source" ] && [ ! -e "$source/${f#"$rel"/}" ]; then
+            foreign+=("$f"); continue
+        fi
+        files+=("$f")
     done < <(cd "$target" && find "$rel" -type f \
         -not -path '*/__pycache__/*' \
         -not -name '*.pyc' \
         -not -name '.DS_Store' 2>/dev/null)
+
+    if [ "${#foreign[@]}" -gt 0 ]; then
+        echo "" >&2
+        echo "NOTE: ${#foreign[@]} file(s) under $rel were NOT written by the vendor (runtime leftovers);" >&2
+        echo "  not judged for git visibility and never advised for un-ignoring. Move them out:" >&2
+        printf '    %s\n' "${foreign[@]:0:10}" >&2
+        if [ "${#foreign[@]}" -gt 10 ]; then
+            echo "    ... and $(( ${#foreign[@]} - 10 )) more" >&2
+        fi
+    fi
 
     # T-3144 AC4. A vendor that wrote nothing and a vendor whose file list was
     # never populated produce the same "nothing ignored" answer, and the second
