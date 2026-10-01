@@ -20,7 +20,9 @@ setup() {
 
 @test "do_doctor body contains litellm-proxy reachable check" {
     grep -q "litellm-proxy reachable" "$FW_BIN"
-    grep -q "http://localhost:4000/health" "$FW_BIN"
+    # T-3624: T-2490 (39f57ff85) moved the probe to the unauthenticated
+    # /health/liveliness (/health answers 401) on a configurable port.
+    grep -qF 'http://localhost:${_litellm_port}/health/liveliness' "$FW_BIN"
 }
 
 @test "do_doctor body contains ollama reachable check" {
@@ -35,7 +37,8 @@ setup() {
 }
 
 @test "ollama check is gated on worker_kind: ollama-loop workflow marker" {
-    grep -q 'worker_kind:\\s\*ollama-loop' "$FW_BIN"
+    # T-3624: T-2592 (de6cfb070) widened the marker to cover ollama-thin-loop.
+    grep -qF 'worker_kind:\s*ollama(-thin)?-loop' "$FW_BIN"
 }
 
 @test "litellm + ollama failures route through _doctor_warn_host" {
