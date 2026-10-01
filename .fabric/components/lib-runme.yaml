@@ -1,0 +1,21 @@
+id: lib/runme.sh
+name: runme
+type: script
+subsystem: framework-core
+location: lib/runme.sh
+tags: []
+
+purpose: "lib/runme.sh — operator command handoff as ONE line (T-3675, operator ruling 2026-10-01)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-01
+created_by: unknown

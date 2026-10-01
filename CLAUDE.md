@@ -908,6 +908,36 @@ After **every commit**, briefly report what was done and ask if the user wants t
 
 **Structural enforcement (T-139, T-478, T-596):** The `budget-gate.sh` PreToolUse hook reads actual token usage from the session transcript and **blocks** Write/Edit/Bash tool calls when context reaches critical level (>=285K tokens, ~95% of 300K window). At critical, only git commit, fw handover, and read operations are allowed. The hook writes `.context/working/.budget-status` with current level (ok/warn/urgent/critical) for fast caching. PostToolUse `checkpoint.sh` remains as fallback for warnings and auto-handover. Context window size is configurable via `FW_CONTEXT_WINDOW` env var (default: 300K).
 
+### Operator Commands Ship as ONE `runme.sh` Line — standing directive (T-3675)
+
+**Operator ruling 2026-10-01, standing:** whenever the operator has to run something —
+a command, a sequence, a script, an approval that needs a shell — the agent does NOT
+paste a block. It wraps the whole thing in a logged script and hands over **one line**:
+
+```
+bin/fw runme new <name> --desc "why" -- '<cmd 1>' '<cmd 2>' …
+# prints:   bash /abs/path/.context/runme/<name>/runme.sh
+bin/fw runme watch <name>          # run_in_background: true — wait for START, follow to EXIT
+```
+
+1. **Generate** with `fw runme new`. The script is `set -euo pipefail`, echoes each command
+   before running it, timestamps every output line into `run.log` beside it, and brackets
+   the run with `RUNME START` / `RUNME EXIT <code>` markers. Each command is one shell
+   line; `cd` into the right project inside the script, not in the handoff.
+2. **Hand off** exactly the printed `bash /abs/path/runme.sh` line — full absolute path,
+   nothing else to type, works from any directory.
+3. **Watch** immediately with `fw runme watch <name>` in the background, so you see it
+   start and read the outcome yourself. **Never ask the operator to paste output back.**
+4. **"Running" is not proof it ran.** If no `run.log` appears, the script was not started —
+   say so with the exact line again.
+5. A failed run is diagnosed from the log and answered with a NEW runme (`<name>b`), not
+   with ad-hoc instructions.
+
+This supersedes multi-command handoffs below; the copy-paste rules that follow still
+govern what goes *inside* the script (`cd` prefix, correct `fw` path). Exception: a
+Watchtower URL handoff (task review, inception decision, arc close) stays a URL.
+`.context/runme/` is gitignored — logs can hold host detail.
+
 ### Copy-Pasteable Commands (T-609, T-1257)
 When giving the human a command to run (Tier 0 approvals, inception decisions, verification steps, Human AC instructions), the command MUST be:
 

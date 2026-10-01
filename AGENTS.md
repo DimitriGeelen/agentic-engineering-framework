@@ -21,6 +21,7 @@
 3. **Never bypass structural gates.** If a gate blocks you, stop and ask the human.
 4. **Destructive commands require approval.** Force push, hard reset, `rm -rf`, DROP TABLE → `fw tier0 approve`.
 5. **Generate a handover before ending.** Use `fw handover --commit` to preserve session context.
+6. **Commands for the operator ship as ONE line (T-3675, standing directive).** Never paste a block of commands. `fw runme new <name> -- '<cmd>' …` writes a logged `runme.sh`; hand over the printed `bash /abs/path/runme.sh` line, then `fw runme watch <name>` and read the result yourself. Never ask the operator to paste output back.
 
 ## Authority Model
 

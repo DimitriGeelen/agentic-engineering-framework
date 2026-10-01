@@ -215,6 +215,11 @@ When starting work (**BEFORE reading code, editing files, or invoking external w
 4. THEN proceed with implementation
 5. Log every action in Updates section with: action, output, context snapshot
 
+When the operator must run a command (standing directive, T-3675):
+1. Never hand over a block of commands. Wrap them: `fw runme new <name> --desc "why" -- '<cmd>' …`
+2. Hand over the single printed line, `bash /abs/path/.context/runme/<name>/runme.sh`
+3. Watch it yourself: `fw runme watch <name>` (waits for START, follows `run.log` to EXIT). Never ask for output to be pasted back; no `run.log` means it never started.
+
 When encountering issues:
 1. Set status to `issues`
 2. Log error reference and healing loop suggestions
