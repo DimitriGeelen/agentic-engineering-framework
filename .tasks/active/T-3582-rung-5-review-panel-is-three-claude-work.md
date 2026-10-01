@@ -1,13 +1,22 @@
 ---
 id: T-3582
-name: "Rung-5 review panel is three Claude workers with vendor labels - make codex and opencode real panel seats (termlink dispatch only spawns Claude)"
+name: "Rung-5 review panel is three Claude workers with vendor labels - make codex
+  and opencode real panel seats (termlink dispatch only spawns Claude)"
 description: >
-  T-3580's judge builds the IW-7 rung-5 panel as three sequential dispatches labelled claude/codex/opencode, but fw termlink dispatch only spawns Claude workers, so the panel has no real cross-vendor independence (worker's own report, 2026-09-30). The hand-run panels this session (T-3535 objectives, T-3579/T-3581 code reviews) used codex exec -s read-only and opencode run -m zai-coding-plan/glm-5.2 with stdin closed; they found things a single vendor missed. Make those real seats: a dispatcher that runs codex/opencode in a review worker that can still record its own verdict row, or record on its behalf with the seat's output hash bound to the dispatch. Also: panel ordering (latest row wins, so the first non-green seat stops the panel).
+  T-3580's judge builds the IW-7 rung-5 panel as three sequential dispatches labelled
+  claude/codex/opencode, but fw termlink dispatch only spawns Claude workers, so the
+  panel has no real cross-vendor independence (worker's own report, 2026-09-30). The
+  hand-run panels this session (T-3535 objectives, T-3579/T-3581 code reviews) used
+  codex exec -s read-only and opencode run -m zai-coding-plan/glm-5.2 with stdin closed;
+  they found things a single vendor missed. Make those real seats: a dispatcher that
+  runs codex/opencode in a review worker that can still record its own verdict row,
+  or record on its behalf with the seat's output hash bound to the dispatch. Also:
+  panel ordering (latest row wins, so the first non-green seat stops the panel).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-30T09:20:47Z
-last_update: 2026-09-30T09:20:47Z
-date_finished: null
+last_update: 2026-10-01T08:46:27Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +59,53 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-09-30T09:30:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-09-30T09:30:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3582: Rung-5 review panel is three Claude workers with vendor labels - make codex and opencode real panel seats (termlink dispatch only spawns Claude)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Operator ruling, 2026-10-01 (on T-3580 R8-2):** keep the IW-7 rung rule, and make the other vendors real panel seats rather than capping the rung. Verbatim: "we've got ZAI, we've got Codex and actually also we've got [Antigravity] but we should all be able to get these three working ... alternative third one would be [Claude] ... Also the subscription one. Then we've got three."
+
+Why now: with components counted from git (T-3580 round 8/9), 14 of the 30 most recent tasks require rung 5, a panel of three vendors. Today only `claude` (anthropic) and `ollama-loop` (local GPU) are launchable worker kinds. codex (`codex exec`, ChatGPT subscription), opencode (`opencode run -m zai-coding-plan/glm-5.2`, Z.ai flat rate) and antigravity (`agy`, which runs as user dimitri-mint-dev via `sudo -n -u dimitri-mint-dev -H agy -p … --mode plan --sandbox`) work when invoked by hand, but none is a dispatcher worker kind, so none counts toward a panel. The target panel is Claude, Codex and Z.ai, with Antigravity as a spare. All four are internal-class backends (policy/review-backends.yaml). Each must satisfy T-3580's launch pinning: committed kind, pinned binary/model, no caller env, runtime-signed start/complete. Build after T-3580's round-9 review settles, because both touch agents/termlink/termlink.sh.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `codex` and `opencode` (Z.ai) are launchable dispatcher worker kinds: `fw termlink worker-kinds --vendors` lists them with vendors openai and zai. A review dispatch with each produces a runtime-signed start and completion and a parsed verdict file. Test: a stub binary per kind. Live proof: one real review per kind on a fixture task, cost logged.
+- [ ] `antigravity` is a launchable worker kind that runs `agy` as user dimitri-mint-dev through the operator-approved sudo form, or the task records with evidence why it cannot be made non-interactive and it stays a spare.
+- [ ] Every new kind satisfies T-3580's launch pinning: a committed kind and binary path, a pinned model, no caller env, no caller flags, and its own settings isolation. The verdict ledger counts it as its own vendor only when launched this way. Test: a forged vendor label is refused.
+- [ ] A rung-5 panel of Claude, Codex and Z.ai can be assembled and recorded end to end on a fixture task (three seats, three vendors). Test plus one live run.
+- [ ] policy/review-backends.yaml maps each kind to its vendor; codex and opencode stay internal-class. `bin/fw vendor self --check` is clean for this task's files.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -320,3 +362,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3582-rung-5-review-panel-is-three-claude-work.md
 - **Context:** Initial task creation
+
+### 2026-10-01T08:46:10Z — status-update [task-update-agent]
+- **Change:** horizon: next → now
+
+### 2026-10-01T08:46:27Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
