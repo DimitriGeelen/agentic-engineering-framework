@@ -81,7 +81,29 @@ def write_token() -> str:
         os.fsync(fh.fileno())
     os.replace(tmp, path)
     os.chmod(path, 0o600)
+    _ensure_runtime_ignored(path.parent)
     return token
+
+
+#: T-3725: runtime files beside the token that must never reach git. Written by
+#: the receiver itself so every project (vendored consumers included) is covered,
+#: not only repos whose root .gitignore happens to list them.
+_RUNTIME_IGNORES = ("receiver.token", "receiver.token.tmp", "ready-for-input.yaml", "receiver/")
+
+
+def _ensure_runtime_ignored(sidecar_dir: Path) -> None:
+    gi = sidecar_dir / ".gitignore"
+    have = set()
+    if gi.exists():
+        have = {ln.strip() for ln in gi.read_text(encoding="utf-8").splitlines()}
+    missing = [e for e in _RUNTIME_IGNORES if e not in have]
+    if not missing:
+        return
+    with open(gi, "a", encoding="utf-8") as fh:
+        if not have:
+            fh.write("# T-3725: sidecar receiver runtime state; the token is a secret\n")
+        for e in missing:
+            fh.write(e + "\n")
 
 
 def read_token(path: Path | None = None) -> str | None:
