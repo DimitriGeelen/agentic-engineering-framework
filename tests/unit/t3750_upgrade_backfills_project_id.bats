@@ -43,7 +43,8 @@ _upgrade() {
     ! grep -q '^project_id:' "$proj/.framework.yaml"
     run _upgrade "$proj"
     [ "$status" -eq 0 ] || { echo "$output" | tail -20; false; }
-    grep -qE '^project_id: pid-[0-9a-f]{16}$' "$proj/.framework.yaml"
+    grep -qE '^project_id: pid-[0-9a-f]{16}$' "$proj/.framework.yaml" \
+        || { echo "$output" | grep -iE "identity|project_id|step|═|──" | head -40; cat "$proj/.framework.yaml"; false; }
     [ "$(grep -c '^project_id:' "$proj/.framework.yaml")" -eq 1 ]
     [[ "$output" == *"MINTED"*"project_id"* ]]
 }

@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T22:39:54Z
-last_update: 2026-10-02T22:40:47Z
+last_update: '2026-10-02T22:45:22Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -73,21 +73,31 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-02T22:45:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=273,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3750: fw upgrade back-fills the minted project_id (T-3534) for consumers initialised before it existed
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+010-termlink (sidecar t3325-project-uuid @129, operator priority) asked for a minted project identity. It exists since T-3534 (`project_id: pid-<16 hex>` in .framework.yaml, lib/project_identity.sh, minted by fw init and `fw whoami --register`), but fw upgrade never back-filled it, so pre-T-3534 consumers had none. Step 8a in lib/upgrade.sh now calls fw_project_identity_ensure. Using the id at the circuit project level is a separate routing decision (inception, not this task).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw upgrade` on a consumer whose .framework.yaml has no project_id writes one (`pid-` + 16 hex) and reports it
-- [ ] An existing project_id is preserved byte-for-byte; `--dry-run` reports WOULD MINT and writes nothing
-- [ ] Regression test covers mint, preserve and dry-run; upgrade_fresh_machine_simulation.bats stays green
+- [x] `fw upgrade` on a consumer whose .framework.yaml has no project_id writes one (`pid-` + 16 hex) and reports it (MINTED line)
+- [x] An existing project_id is preserved byte-for-byte; `--dry-run` writes nothing (prints WOULD MINT when it reaches step 9; a vendored consumer's dry-run stops at the handoff plan)
+- [x] Regression test covers mint, preserve and dry-run (tests/unit/t3750_upgrade_backfills_project_id.bats 3/3); upgrade_fresh_machine_simulation.bats 13/13
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -247,6 +257,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+bash -n lib/upgrade.sh
+bats tests/unit/t3750_upgrade_backfills_project_id.bats
+bin/fw vendor self --check
 
 ## RCA
 
