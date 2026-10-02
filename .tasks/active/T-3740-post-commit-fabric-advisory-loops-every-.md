@@ -8,7 +8,7 @@ description: >
   cards) and look files up; summarise the advisory above N changed files. Any re-vendor
   commit hits this.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T17:42:19Z
-last_update: '2026-10-02T17:45:43Z'
+last_update: 2026-10-02T18:49:25Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The post-commit fabric advisories (blast-radius note T-236, unregistered-file note T-247) build the location→card map with ONE grep over all cards and look each changed file up in it; no per-file × per-card grep remains
+- [x] Same output as before for a normal commit (component names, edge count, unregistered list), and above 200 changed files the advisory prints a one-line summary instead of per-component detail
+- [x] Regression test: a commit touching 1,500 files in a temp repo with 500 fabric cards finishes its post-commit hook in under 10 s (was ~10 min per 832's measurement), and the generated hook passes bash -n
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -129,6 +130,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+bash -n agents/git/lib/hooks.sh
+bats tests/unit/t3740_postcommit_fabric_map.bats
+bats tests/unit/git_install_hooks_git_path.bats
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -272,6 +277,11 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** 832 (T-1004) re-vendor commit, 1561 files with 506 fabric cards: git commit sat in post-commit for 10+ minutes with the operator waiting.
+**Root cause:** the T-236 blast-radius note and the T-247 unregistered-file note each looped every changed file over every card with one `grep` per pair, so the cost was O(files × cards) process spawns.
+**Why structurally allowed:** advisories were written for normal commits of a few files; no test covered a re-vendor-sized commit, and the hook is advisory, so nothing ever timed it.
+**Prevention:** one map built per commit; summaries above 200 changed / 20 unregistered files; tests/unit/t3740_postcommit_fabric_map.bats pins a 1500 × 500 commit under 10 s.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -352,3 +362,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3740-post-commit-fabric-advisory-loops-every-.md
 - **Context:** Initial task creation
+
+### 2026-10-02T18:49:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

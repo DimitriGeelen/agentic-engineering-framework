@@ -644,28 +644,45 @@ if [ -f "$EDIT_COUNTER" ]; then
 fi
 
 # --- Fabric blast-radius note (T-236) ---
+# T-3740: the location -> card map is built ONCE (one grep over all cards) and
+# each changed file is looked up in it. The old loop ran one grep per changed
+# file per card: a re-vendor commit (1561 files x 506 cards, 832 T-1004) sat in
+# post-commit for 10+ minutes.
 FABRIC_DIR="$PROJECT_ROOT/.fabric/components"
+declare -A _FAB_LOC=()
+if [ -d "$FABRIC_DIR" ]; then
+    while IFS= read -r _fl; do
+        _fcard="${_fl%%:location: *}"
+        _floc="${_fl#*:location: }"
+        _floc="${_floc%"${_floc##*[![:space:]]}"}"
+        [ -n "$_floc" ] && [ -z "${_FAB_LOC[$_floc]+x}" ] && _FAB_LOC["$_floc"]="$_fcard"
+    done < <(grep -H "^location: " "$FABRIC_DIR"/*.yaml 2>/dev/null)
+fi
+_FAB_DETAIL_MAX=200
 if [ -d "$FABRIC_DIR" ]; then
     CHANGED_FILES=$(git diff-tree --no-commit-id --name-only -r HEAD 2>/dev/null)
     COMP_COUNT=0
     DEP_COUNT=0
     COMP_NAMES=""
+    _changed_n=$(printf '%s\n' "$CHANGED_FILES" | grep -c . || true)
     while IFS= read -r file; do
         [ -z "$file" ] && continue
         case "$file" in .context/*|.fabric/*|.tasks/*|docs/*) continue ;; esac
-        for card in "$FABRIC_DIR"/*.yaml; do
-            [ -f "$card" ] || continue
-            if grep -q "^location: $file" "$card" 2>/dev/null; then
-                COMP_COUNT=$((COMP_COUNT + 1))
-                name=$({ grep "^name:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^name: //')
-                COMP_NAMES="${COMP_NAMES:+$COMP_NAMES, }$name"
-                # Count dependents (depended_by entries)
-                deps=$(grep -c "target:" "$card" 2>/dev/null || true)
-                DEP_COUNT=$((DEP_COUNT + deps))
-                break
-            fi
-        done
+        card="${_FAB_LOC[$file]:-}"
+        [ -n "$card" ] || continue
+        COMP_COUNT=$((COMP_COUNT + 1))
+        [ "$_changed_n" -gt "$_FAB_DETAIL_MAX" ] && continue
+        name=$({ grep "^name:" "$card" 2>/dev/null || true; } | head -1 | sed 's/^name: //')
+        COMP_NAMES="${COMP_NAMES:+$COMP_NAMES, }$name"
+        # Count dependents (depended_by entries)
+        deps=$(grep -c "target:" "$card" 2>/dev/null || true)
+        DEP_COUNT=$((DEP_COUNT + deps))
     done <<< "$CHANGED_FILES"
+    if [ "$COMP_COUNT" -gt 0 ] && [ "$_changed_n" -gt "$_FAB_DETAIL_MAX" ]; then
+        echo ""
+        echo "FABRIC: $COMP_COUNT component(s) modified across $_changed_n changed files (detail skipped above $_FAB_DETAIL_MAX) — $(_fw_cmd 2>/dev/null || echo fw) fabric blast-radius HEAD"
+        COMP_COUNT=0
+    fi
     if [ "$COMP_COUNT" -gt 0 ]; then
         echo ""
         echo "FABRIC: $COMP_COUNT component(s) modified: $COMP_NAMES"
@@ -685,20 +702,15 @@ if [ -d "$FABRIC_DIR" ]; then
         case "$file" in
             .context/*|.fabric/*|.tasks/*|.claude/*|.git/*|docs/*|*.md|*.yaml|*.yml|*.json) continue ;;
         esac
-        FOUND=0
-        for card in "$FABRIC_DIR"/*.yaml; do
-            [ -f "$card" ] || continue
-            if grep -q "^location: $file" "$card" 2>/dev/null; then
-                FOUND=1
-                break
-            fi
-        done
-        if [ "$FOUND" -eq 0 ]; then
+        if [ -z "${_FAB_LOC[$file]:-}" ]; then
             UNREG_COUNT=$((UNREG_COUNT + 1))
             UNREG="${UNREG:+$UNREG, }$file"
         fi
     done <<< "$NEW_FILES"
-    if [ "$UNREG_COUNT" -gt 0 ]; then
+    if [ "$UNREG_COUNT" -gt 20 ]; then
+        echo ""
+        echo "FABRIC: $UNREG_COUNT new file(s) without component cards (list skipped above 20) — $(_fw_cmd 2>/dev/null || echo fw) fabric drift"
+    elif [ "$UNREG_COUNT" -gt 0 ]; then
         echo ""
         echo "FABRIC: $UNREG_COUNT new file(s) without component cards: $UNREG"
         echo "  Register: $(_fw_cmd 2>/dev/null || echo fw) fabric register <path>"
