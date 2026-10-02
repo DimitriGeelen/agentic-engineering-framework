@@ -30,8 +30,12 @@ def _refused_green(root):
 
 
 def _commit_acks(root):
+    """Commit the ack file with an explicit identity: the nightly runner (cron) has no GIT_* env
+    and no user.name, so a bare `git commit` exits 128 there (T-3718)."""
     _git(root, "add", str(vl.ACKS))
-    _git(root, "commit", "-q", "-m", f"{FIX}: acknowledge refusal")
+    _git(root, "commit", "-q", "-m", f"{FIX}: acknowledge refusal",
+         env={"GIT_AUTHOR_NAME": "Operator", "GIT_AUTHOR_EMAIL": "op@x.y",
+              "GIT_COMMITTER_NAME": "Operator", "GIT_COMMITTER_EMAIL": "op@x.y"})
 
 
 def test_unacknowledged_refused_row_fails_audit(root):
