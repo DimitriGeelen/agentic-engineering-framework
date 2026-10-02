@@ -118,7 +118,7 @@ X
     _make_map fixture-dirty dirty
     run "$AUDIT" --section structure
     [[ "$output" == *"unread-node-prose"* ]]
-    [[ "$output" != *"corpus map(s) lint clean"* ]]
+    [[ "$output" != *"[PASS] Corpus maps lint clean"* ]]
 }
 
 # --- degrade silently where there is nothing to scan ---
@@ -127,7 +127,7 @@ X
     rm -rf "$TEST_ROOT/.context/designer/projects"
     run "$AUDIT" --section structure
     [ "$status" -le 1 ]
-    [[ "$output" != *"corpus map(s) lint clean"* ]]
+    [[ "$output" != *"[PASS] Corpus maps lint clean"* ]]
     [[ "$output" != *"Corpus lint ["* ]]
 }
 
@@ -136,7 +136,7 @@ X
     rm -rf "$TEST_ROOT/tools"
     run "$AUDIT" --section structure
     [ "$status" -le 1 ]
-    [[ "$output" != *"corpus map(s) lint clean"* ]]
+    [[ "$output" != *"[PASS] Corpus maps lint clean"* ]]
     [[ "$output" != *"Traceback"* ]]
 }
 
@@ -144,7 +144,7 @@ X
     # Zero maps means the linter had nothing to judge. Saying "all 0 clean" would
     # read as coverage where there was none.
     run "$AUDIT" --section structure
-    [[ "$output" != *"corpus map(s) lint clean"* ]]
+    [[ "$output" != *"[PASS] Corpus maps lint clean"* ]]
 }
 
 # --- the check that guards the other checks ---
@@ -174,7 +174,10 @@ X
         skip "another audit holds the real repo's lock (EX_TEMPFAIL) — no verdict to judge"
     fi
 
-    grep -qE "corpus map\(s\) lint clean|Corpus lint \[" "$TEST_ROOT/real.out" || {
+    # T-3728: the clean verdict is pass_over's wording since T-3105 (92deaef0c). The old
+    # "corpus map(s) lint clean" pattern matched nothing; this test only stayed green
+    # while the real store had findings and the "Corpus lint [" branch answered instead.
+    grep -qE "\[PASS\] Corpus maps lint clean — examined [0-9]+ corpus map\(s\)|Corpus lint \[" "$TEST_ROOT/real.out" || {
         echo "audit exited $real_status but produced no corpus-lint verdict against the real store:"
         grep -i corpus "$TEST_ROOT/real.out" || echo "  (no corpus lines at all)"
         false

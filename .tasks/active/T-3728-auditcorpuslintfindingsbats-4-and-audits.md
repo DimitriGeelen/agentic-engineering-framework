@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T14:51:51Z
-last_update: 2026-10-02T14:53:10Z
+last_update: '2026-10-02T15:00:23Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -71,22 +71,32 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-02T15:00:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=274,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3728: audit_corpus_lint_findings.bats (4) and audit_seed_corpus_refs.bats (1) red after today's audit.sh changes (likely T-3694 register/keystone checks)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Two independent causes behind five reds; see ## RCA. Code fix in `lib/human_ac_ticks.py` + `agents/audit/audit.sh`; stale test wording in `tests/unit/audit_corpus_lint_findings.bats`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Causing commit identified by bisecting earlier file versions; named in ## RCA
-- [ ] Wrong side decided (test vs code) with rationale; fix applied without weakening any safety property
-- [ ] `tests/unit/audit_corpus_lint_findings.bats` and `tests/unit/audit_seed_corpus_refs.bats` pass with no `not ok` and no skips
-- [ ] T-3694 and T-3695 test files and `bats tests/lint/` still pass
+- [x] Causing commit identified by bisecting earlier file versions; named in ## RCA
+- [x] Wrong side decided (test vs code) with rationale; fix applied without weakening any safety property
+- [x] `tests/unit/audit_corpus_lint_findings.bats` and `tests/unit/audit_seed_corpus_refs.bats` pass with no `not ok` (test 9 run standalone without lock contention: ok, not skipped)
+- [x] T-3694 and T-3695 test files and `bats tests/lint/` still pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -247,7 +257,23 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 900 bats tests/unit/audit_corpus_lint_findings.bats tests/unit/audit_seed_corpus_refs.bats > /tmp/.t3728-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t3728-a.out
+timeout 300 bats tests/unit/t3695_human_ac_tick_bash.bats > /tmp/.t3728-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t3728-b.out
+timeout 300 bats tests/governance/test_t3694_conformance_gate.bats > /tmp/.t3728-c.out 2>&1 && ! grep -q "^not ok" /tmp/.t3728-c.out
+python3 -m pytest tests/unit/test_t3694_design_register.py -q > /tmp/.t3728-d.out 2>&1 && grep -q passed /tmp/.t3728-d.out
+bin/fw vendor self --check
+
 ## RCA
+
+**Symptom:** 2026-10-02 pre-push unit run: `audit_corpus_lint_findings.bats` tests 4, 6, 7, 9 and `audit_seed_corpus_refs.bats` test 15 red. Tests 4/6/7/15 assert `status -le 1` (structure audit exits ≤1 in a fixture project); the audit exited 2. Test 9 found no corpus-lint verdict in the real-repo audit output.
+
+**Root cause (A, tests 4/6/7/15) — commit f98c019d6 (T-3695).** It added the Human-AC tick block to `agents/audit/audit.sh`, which FAILs whenever `lib/human_ac_ticks.py audit` exits 3 ("could not run"). The detector does `git log ... HEAD`, which exits 128 when no commit exists. Fixture projects are bare `mktemp -d` dirs. On this host they also sit inside a stray, empty enclosing repo at `/` (`/.git`, created 2026-09-30 22:30, unborn HEAD). So every fixture audit got a `[FAIL] Human-AC ticks: detector could not run (rc=3)` and exited 2. The same applies to any freshly `git init`ed consumer before its first commit. The code was wrong here, not the tests. With no commit, no committed tick exists to judge. That is an unknown, and the audit's own convention (`pass_over`/`warn_unenumerable`, T-3105) grades an unknown as WARN "NOT EVALUATED", never FAIL. Fix: the detector returns rc 4 only when no commit can exist: no repository (no `.git` at the root and git agrees), or an unborn HEAD with zero refs. audit.sh maps rc 4 to `warn_unenumerable`. The safety property is kept: a repo that has history git cannot read (a corrupt `.git` file, deleted objects) still returns rc 3 and FAILs. All six states were checked by hand: enclosing-empty=4, fresh-init=4, no-repo=4, with-commit=0, corrupt-.git=3, objects-deleted=3.
+
+**Root cause (B, test 9) — stale wording since 92deaef0c (T-3105).** T-3105 reworded the clean verdict to `[PASS] Corpus maps lint clean — examined N corpus map(s)`. Test 9 still grepped `corpus map(s) lint clean`, which matches nothing. It stayed green only while the real store produced `Corpus lint [` findings (or skipped on lock contention). When the live store linted clean (8 maps, 0 findings), it went red. T-3603 (0e985120b) fixed test 1's wording but missed test 9. It also missed four negative assertions (tests 5–8, `!= *"corpus map(s) lint clean"*`) that had been vacuous since T-3105. The test was the wrong side: it now matches the deliberate T-3105 contract, and the negatives assert no `[PASS] Corpus maps lint clean` line.
+
+**Why T-3695's close missed it:** its Verification ran its own suites, which build real git repos. Nothing ran the full `tests/unit` suite before close, and the fixture-based audit tests sit in other files. The unit-suite ratchet (T-3621) only fires at pre-push. That is where this surfaced, after the commit had landed.
+
+**Prevention:** a new audit check must handle the fixture shape (a non-repo or empty-repo PROJECT_ROOT) by returning NOT EVALUATED, not FAIL. The six-state contract is now written into the detector's docstring (exit code 4) and the audit.sh comment. For B, all T-3105-era negative assertions in this file now use the current wording, so a future rewording turns them red rather than vacuous. Environmental note for the operator: `/.git` (empty repo at the filesystem root) makes every `/tmp` dir look like it is inside a git work tree. It was not removed here, because it is outside this task's scope.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).

@@ -2853,6 +2853,13 @@ if [ -f "$FRAMEWORK_ROOT/lib/human_ac_ticks.py" ]; then
         fail "Human-AC ticks: $(echo "$_hat_out" | tail -1)" \
              "$(echo "$_hat_out" | grep '^FAIL' | head -3 | tr '\n' ';')" \
              "Inspect: python3 lib/human_ac_ticks.py audit — if the operator really ticked it, the operator records it in their own terminal: python3 lib/human_ac_ticks.py ack T-XXX --ac N; otherwise un-tick the box and hand the task over with fw task review T-XXX"
+    elif [ "$_hat_rc" -eq 4 ]; then
+        # T-3728: no commit exists (no repo, or unborn HEAD with no refs), so no committed
+        # tick exists to judge — an unknown, not a failure (same tier as every other NOT
+        # EVALUATED). A repo git cannot read stays rc 3 and FAILs.
+        warn_unenumerable "git history ($(echo "$_hat_out" | tail -1))" "Human-AC ticks" \
+             "$(echo "$_hat_out" | tail -1)" \
+             "Expected in fixtures and fresh projects; in a real project, commit once and this check evaluates"
     else
         fail "Human-AC ticks: detector could not run (rc=$_hat_rc) — Human ticks UNVERIFIED" \
              "$(echo "$_hat_out" | tail -2 | tr '\n' ';')" \

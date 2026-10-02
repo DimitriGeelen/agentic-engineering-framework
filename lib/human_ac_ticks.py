@@ -30,7 +30,10 @@ it under a human identity is indistinguishable from the operator. The detector c
 accidents and unsophisticated bypasses — a `sed -i` tick committed by a session — not a
 coherent forgery. Same residual as T-3581.
 
-Exit codes of `audit`: 0 clean, 2 at least one unprovenanced tick, 3 could not run.
+Exit codes of `audit`: 0 clean, 2 at least one unprovenanced tick, 3 could not run,
+4 not evaluated — no commit exists (no repository, or unborn HEAD with no refs), so there
+is no committed history (T-3728: fixture and fresh projects; a repo whose history cannot
+be read is still 3).
 """
 from __future__ import annotations
 
@@ -409,7 +412,30 @@ def scan_commits(root: Path, since: str | None = None, rev: str = "HEAD") -> tup
     return findings, where
 
 
+def _no_history(root: Path) -> str | None:
+    """Why no commit can exist to audit, or None. Only two states qualify (T-3728):
+    no repository at all (no `.git` at the root AND git agrees), or a repository with an
+    unborn HEAD and not a single ref (fresh `git init`; also a fixture dir nested in an
+    empty enclosing repo). Anything else that fails to read is a broken repo: rc 3."""
+    def run(*args: str) -> subprocess.CompletedProcess:
+        return subprocess.run(["git", "-C", str(root), *args], capture_output=True, text=True)
+    try:
+        if run("rev-parse", "--is-inside-work-tree").returncode != 0:
+            return None if (root / ".git").exists() else "not a git repository"
+        if run("rev-parse", "--verify", "-q", "HEAD").returncode == 0:
+            return None
+        refs = run("for-each-ref", "--count=1")
+        if refs.returncode == 0 and not refs.stdout.strip():
+            return "git repository has no commits"
+    except OSError:
+        pass  # no git binary: could not run (rc 3), not "no history"
+    return None
+
+
 def audit(root: Path, since: str | None = None) -> tuple[int, list[str]]:
+    why = _no_history(root)
+    if why:
+        return 4, [f"{why} — no committed history to audit"]
     try:
         findings, since = scan_commits(root, since)
     except (subprocess.CalledProcessError, OSError) as e:
