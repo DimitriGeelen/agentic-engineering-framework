@@ -131,7 +131,10 @@ EOF
 
 @test "budget reader (checkpoint.sh budget) passes the headroom fields through" {
     run_gate "reader" "$HEAVY" 300000
-    run env PROJECT_ROOT="$GATE_PROJ" CONTEXT_DIR="$GATE_PROJ/.context" HOME="$TEST_TEMP_DIR" \
+    # T-3738: drop the caller's Claude session id — the reader rejects a cache
+    # stamped by another session, so an inherited id fails this test whenever
+    # the suite is launched from inside a Claude session.
+    run env -u CLAUDE_CODE_SESSION_ID PROJECT_ROOT="$GATE_PROJ" CONTEXT_DIR="$GATE_PROJ/.context" HOME="$TEST_TEMP_DIR" \
         bash "$CHECKPOINT" budget
     [ "$status" -eq 0 ]
     [[ "$output" == *"baseline_tokens: 52600"* ]]
