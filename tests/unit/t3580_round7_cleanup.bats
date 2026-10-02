@@ -18,7 +18,7 @@ teardown() {
 }
 
 run_cleanup() {
-    run env FW_DISPATCH_DIR="$DD" bash -c "source '$TERMLINK_SH' >/dev/null 2>&1; [ \"\$DISPATCH_DIR\" = '$DD' ] || exit 99; cmd_cleanup"
+    run env FW_DISPATCH_DIR="$DD" bash -c "source '$TERMLINK_SH' >/dev/null 2>&1; [ \"\$DISPATCH_DIR\" = '$DD' ] || exit 99; cmd_cleanup --yes"  # T-3716: consent required since T-3651
 }
 
 # A review runtime paused in the window: the worker has exited (exit_code written), the runtime

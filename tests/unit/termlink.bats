@@ -46,7 +46,7 @@ TERMLINK_SH="$FRAMEWORK_ROOT/agents/termlink/termlink.sh"
     # exit_code and meta whenever any worker ran the unit suite. Sandbox it.
     local dd="$BATS_TEST_TMPDIR/tl-dispatch"
     mkdir -p "$dd/done-worker" && echo 0 > "$dd/done-worker/exit_code"
-    run bash -c "source '$TERMLINK_SH' >/dev/null 2>&1; DISPATCH_DIR='$dd'; cmd_cleanup"
+    run bash -c "source '$TERMLINK_SH' >/dev/null 2>&1; DISPATCH_DIR='$dd'; cmd_cleanup --yes"  # T-3716: consent required since T-3651
     [ "$status" -eq 0 ]
     [ -d /tmp/tl-dispatch ] || [ ! -e /tmp/tl-dispatch ]
 }

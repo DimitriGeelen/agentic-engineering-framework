@@ -56,7 +56,7 @@ spawn_orphan() {
 make_finished() { mkdir -p "$DD/$1" && echo 0 > "$DD/$1/exit_code" && echo r > "$DD/$1/result.md"; }
 
 run_cleanup() {
-    run env FW_DISPATCH_DIR="$DD" bash -c "source '$TERMLINK_SH' >/dev/null 2>&1; [ \"\$DISPATCH_DIR\" = '$DD' ] || exit 99; cmd_cleanup"
+    run env FW_DISPATCH_DIR="$DD" bash -c "source '$TERMLINK_SH' >/dev/null 2>&1; [ \"\$DISPATCH_DIR\" = '$DD' ] || exit 99; cmd_cleanup --yes"  # T-3716: consent required since T-3651
 }
 
 @test "DISPATCH_DIR honours FW_DISPATCH_DIR; default unchanged" {
@@ -143,7 +143,7 @@ for p in root.rglob('*'):
         s = line.strip()
         if s.startswith('#') or s.startswith('@test') or not invoke.search(s):
             continue
-        if re.search(r'grep|awk|^\s*\w+\(\)\s*\{', s):   # inspecting, not invoking
+        if re.search(r'grep|awk|\$output|^\s*\w+\(\)\s*\{', s):   # inspecting, not invoking (T-3716: assertions on $output)
             continue
         if 'DISPATCH_DIR' not in s and 'run_cleanup' not in s:
             bad.append(f'{p.relative_to(root)}:{n}: {s}')
