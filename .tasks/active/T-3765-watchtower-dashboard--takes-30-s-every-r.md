@@ -1,15 +1,10 @@
 ---
-id: T-3749
-name: "Watchtower inception decide times out at 30 s and reports Command timed out
-  although the decision landed"
+id: T-3765
+name: "Watchtower dashboard / takes >30 s: every request re-reads and YAML-parses all task frontmatter for arc membership (blueprints/core.py:206 _arc_membership_index); review-batch reachability probe times out on it"
 description: >
-  web/blueprints/inception.py runs fw inception decide with timeout=30; the chain
-  runs past 30 s, the operator sees a timeout for a decision that DID land (T-3631,
-  2026-10-02), and the kill can interrupt post-completion steps (T-3744 root cause).
-  Measure the chain, detach or speed the slow side effects, make the message reflect
-  what landed.
+  py-spy 2026-10-03 01:24: request threads in arc_membership.scan_tasks_by_arc_membership and yaml.load under index (core.py:428); /api/_identity answers in 17 ms. signature_cached (shared.py:1814) is not keeping the scan out of the request path. fw task review-batch reported No Watchtower reachable because its probe hits /. Fix the cache (signature on dir mtimes, or background refresh) and probe a cheap endpoint.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-02T22:33:14Z
-last_update: 2026-10-02T23:21:46Z
-date_finished:
+created: 2026-10-02T23:25:13Z
+last_update: 2026-10-02T23:25:13Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -55,37 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-02T22:45:22Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-02T22:45:37Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3749: Watchtower inception decide times out at 30 s and reports Command timed out although the decision landed
+# T-3765: Watchtower dashboard / takes >30 s: every request re-reads and YAML-parses all task frontmatter for arc membership (blueprints/core.py:206 _arc_membership_index); review-batch reachability probe times out on it
 
 ## Context
 
@@ -95,10 +62,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The decide chain is measured: wall time per step (decision write, completion, episodic, reviewer, BVP, other side effects) recorded in ## Context
-- [ ] A Watchtower GO returns well inside its timeout: the primary decision and completion run synchronously; slow side effects run detached and their outcome is logged, so a timeout can no longer cut the chain mid-flight
-- [ ] When the decision landed, Watchtower never says "Command timed out" / "Automatic completion was blocked"; it says what landed and what is still running
-- [ ] Regression test covers the message classification (landed + timed-out side effect → success wording)
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -351,10 +316,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-10-02T22:33:14Z — task-created [task-create-agent]
+### 2026-10-02T23:25:13Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3749-watchtower-inception-decide-times-out-at.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3765-watchtower-dashboard--takes-30-s-every-r.md
 - **Context:** Initial task creation
-
-### 2026-10-02T23:21:46Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
