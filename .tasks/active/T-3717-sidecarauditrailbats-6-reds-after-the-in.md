@@ -263,7 +263,8 @@ timeout 600 bats tests/unit/sidecar_audit_rail.bats > /tmp/.t3717.out 2>&1 && ! 
 test "$(grep -c '# skip' /tmp/.t3717.out)" -eq 0
 timeout 900 python3 -m pytest tests/unit/test_sidecar_status.py tests/unit/test_sidecar_outbox.py tests/unit/test_sidecar_sweep.py -q -p no:cacheprovider > /tmp/.t3717.py 2>&1 && grep -q passed /tmp/.t3717.py
 timeout 900 bats tests/lint/ > /tmp/.t3717.lint 2>&1 && ! grep -q "^not ok" /tmp/.t3717.lint
-bin/fw vendor self --check
+# Scoped to this task's paths: whole-tree `fw vendor self --check` also sees other workers' uncommitted lib/ files in the shared checkout.
+cmp lib/sidecar-audit.sh .agentic-framework/lib/sidecar-audit.sh && cmp lib/sidecar/outbox.py .agentic-framework/lib/sidecar/outbox.py
 
 ## RCA
 
