@@ -757,7 +757,14 @@ _BRACE_GROUP_RE = re_mod.compile(r"\{([^{}]*)\}")
 
 _BASENAME_INDEX: dict = {"built": 0.0, "index": {}}
 _BASENAME_TTL = 30.0       # a new report becomes resolvable within this window
-_BASENAME_MISS_TTL = 3.0   # …or sooner: a miss forces a rebuild at most this often
+# T-3736: a miss used to force a rebuild once the index was 3s old. Under load a
+# walk takes longer than 3s, so every unmatched bare name on a page re-walked the
+# tree and /inception pages took minutes (279s measured). A miss may now force a
+# rebuild at most once per this window, shared by every thread (single flight).
+_BASENAME_MISS_TTL = 30.0
+import threading as _threading
+_INDEX_LOCK = _threading.Lock()
+_TREE_LOCK = _threading.Lock()
 
 
 def _basename_index(force_fresh: bool = False) -> dict:
@@ -772,6 +779,16 @@ def _basename_index(force_fresh: bool = False) -> dict:
     age = now - _BASENAME_INDEX["built"]
     if age < _BASENAME_TTL and not (force_fresh and age >= _BASENAME_MISS_TTL):
         return _BASENAME_INDEX["index"]
+    with _INDEX_LOCK:
+        # Single flight: another thread may have rebuilt while we waited.
+        now = _t.monotonic()
+        age = now - _BASENAME_INDEX["built"]
+        if age < _BASENAME_TTL and not (force_fresh and age >= _BASENAME_MISS_TTL):
+            return _BASENAME_INDEX["index"]
+        return _build_basename_index(now)
+
+
+def _build_basename_index(now: float) -> dict:
     idx: dict = {}
     suffixes = tuple("." + e for e in VIEWABLE_EXTENSIONS)
     for prefix in VIEWABLE_DIR_PREFIXES:
@@ -824,14 +841,16 @@ def _exists_anywhere(name: str) -> bool:
     serve but that exists somewhere is left as plain text, never marked.
     """
     import time as _t
-    now = _t.monotonic()
-    if now - _TREE_NAMES["built"] >= _BASENAME_MISS_TTL:
-        names = set()
-        for _root, dirs, files in os.walk(PROJECT_ROOT):
-            dirs[:] = [d for d in dirs if d not in _TREE_SKIP_DIRS]
-            names.update(files)
-        _TREE_NAMES["names"] = frozenset(names)
-        _TREE_NAMES["built"] = now
+    if _t.monotonic() - _TREE_NAMES["built"] >= _BASENAME_MISS_TTL:
+        with _TREE_LOCK:  # T-3736: single flight, same 30 s budget as the index
+            now = _t.monotonic()
+            if now - _TREE_NAMES["built"] >= _BASENAME_MISS_TTL:
+                names = set()
+                for _root, dirs, files in os.walk(PROJECT_ROOT):
+                    dirs[:] = [d for d in dirs if d not in _TREE_SKIP_DIRS]
+                    names.update(files)
+                _TREE_NAMES["names"] = frozenset(names)
+                _TREE_NAMES["built"] = now
     return name in _TREE_NAMES["names"]
 
 
