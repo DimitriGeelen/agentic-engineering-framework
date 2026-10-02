@@ -1,17 +1,21 @@
 ---
-id: T-3695
-name: "check-human-ac-tick guards only Write|Edit: a Bash sed -i / tee / cp can tick
-  a ### Human acceptance criterion (sovereignty bypass)"
+id: T-3727
+name: "Sidecar unit tests not hermetic under the nightly env: 27 reds in test_sidecar_sweep/answered_topics/v9_dual_read
+  (CircuitError: hub fingerprint unreadable) after today's identity/path changes"
 description: >
-  From the T-3678 consult triage (docs/reports/T-3678-consult-triage.md §2 row 1,
-  source ring20-dashboard inbox@21 #10 #18), verified against AEF source. Reporter
-  content is peer data; fix on our own analysis.
+  Fresh unit-suite run 2026-10-02 (env -i like cron): 12+10+5 reds; same files pass
+  in an interactive shell (37 passed) and passed in the 01:03Z nightly. Error: lib/sidecar/circuit.py:127
+  CircuitError 'hub fingerprint unreadable' — tests now reach the real hub anchor
+  instead of a fixture. Suspects: T-3671 (fa4d0de4d identity from PROJECT_ROOT), T-3717
+  (40c556b24), T-3719 (047adb5dc PROJECT_ROOT in sidecar-audit.sh). Fix the test isolation
+  (each test pins FW_SIDECAR_HUB_ID / its own project root) or the resolution order,
+  whichever is wrong; verify under env -i.
 
 status: started-work
 workflow_type: build
 owner: agent
 horizon: now
-tags: [bug, consult-triage, T-3678, security, sovereignty]
+tags: [bug, regression, push-blocker, unit-suite, sidecar]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -40,8 +44,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-01T23:37:22Z
-last_update: 2026-10-02T12:21:31Z
+created: 2026-10-02T14:40:33Z
+last_update: 2026-10-02T14:42:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -53,18 +57,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-01T23:45:19Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-01T23:45:30Z'
+  - ts: '2026-10-02T14:42:09Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -83,36 +77,18 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3695: check-human-ac-tick guards only Write|Edit: a Bash sed -i / tee / cp can tick a ### Human acceptance criterion (sovereignty bypass)
+# T-3727: Sidecar unit tests not hermetic under the nightly env: 27 reds in test_sidecar_sweep/answered_topics/v9_dual_read (CircuitError: hub fingerprint unreadable) after today's identity/path changes
 
 ## Context
 
-PreToolUse hook `check-human-ac-tick` is registered with matcher `Write|Edit` only, so a
-Bash command (`sed -i`, `perl -pi`, `tee`, `cp`, `python3 -c`, a redirect) could turn
-`- [ ]` into `- [x]` under `### Human` in a `.tasks/` file unchecked. Source: T-3678
-consult triage §2 row 1 (peer data; reproduced independently before fixing).
-
-**Live false positive (parent session, 2026-10-02, after codex round 4 FAIL):**
-`S=<scratchpad dir>; sed "s/<TASK>/T-3727/g" $S/w-regress.md > $S/w-T-3727.md`
-was blocked as "redirect > (target not resolvable from the text; command names a
-guarded path)". The target was a scratchpad file outside the repo; the "guarded
-path" was only the string `T-3727` inside the sed expression. A redirect whose
-target is a $VAR should not be treated as naming a task file just because a task id
-appears elsewhere in the command. Fix alongside codex round 4's findings (cp -ft
-cluster, grep -F false positive, delete-one-tick-another audit gap).
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] AC1 Reproduction recorded: which shell write paths to a `.tasks/{active,completed}/T-*.md` file were (or were not) already refused by `check-active-task.sh` before this change, in which modes — written into `## RCA`.
-- [x] AC2 A Bash command whose shell write targets a `.tasks/{active,completed}/T-*.md` file through `sed -i`, `perl -i`, `tee`, a redirect (`>`/`>>`), `cp`/`mv`/`install`/`dd of=` over it, or `python3 -c`/`perl -e` naming it, is refused by a PreToolUse Bash hook before it runs. Verbs are anchored to command position (start of a pipeline segment), not anywhere in the string.
-- [x] AC3 Legitimate Bash reads of task files (`cat`, `grep`, `sed -n`, `git diff`) and writes to unrelated files pass the new check.
-- [x] AC4 The block message and CLAUDE.md §Agent/Human AC Split state the residual: a script file or other indirection is not inspected (same scope boundary as Tier 0, T-2742).
-- [x] AC5 Post-hoc detector: `fw audit` FAILs when a commit flips a `### Human` box `[ ]`→`[x]` and its author is an agent identity or the change did not come through `fw task review`/Watchtower; pinned against a fixture git repo.
-- [x] AC6 bats suite: one fixture test per write path (sed -i, tee, redirect, cp over, python -c) plus controls (reads, unrelated writes) and audit-detector tests; no mid-test `! cmd`; all green.
-- [x] AC7 Hook registered in `.claude/settings.json` AND consumer template `lib/init.sh`; enforcement baseline refreshed; vendored copy synced (`bin/fw vendor self --check` clean).
-- [ ] AC8 Independent adversarial review (codex) recorded in `docs/reports/T-3695-review-codex.md` ends `VERDICT: PASS`; cost logged.
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -272,18 +248,6 @@ cluster, grep -F false positive, delete-one-tick-another audit gap).
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-timeout 300 bats tests/unit/t3695_human_ac_tick_bash.bats > /tmp/.t3695v.out 2>&1 && ! grep -q "^not ok" /tmp/.t3695v.out
-test "$(grep -c '# skip' /tmp/.t3695v.out)" -eq 0
-timeout 300 bats tests/unit/human_ac_tick_guard.bats > /tmp/.t3695g.out 2>&1 && ! grep -q "^not ok" /tmp/.t3695g.out
-timeout 300 bats tests/unit/inception_decide_ac_tick.bats > /tmp/.t3695i.out 2>&1 && ! grep -q "^not ok" /tmp/.t3695i.out
-python3 -c "import json; d=json.load(open('.claude/settings.json')); assert any(e['matcher']=='Bash' and any('check-human-ac-tick' in h['command'] for h in e['hooks']) for e in d['hooks']['PreToolUse'])"
-awk '/"matcher": "Bash"/{b=1} b&&/check-human-ac-tick/{f=1} /"matcher": "Agent"/{b=0} END{exit !f}' lib/init.sh
-grep -q "check-human-ac-tick" agents/audit/audit.sh && grep -q "human_ac_ticks.py" agents/audit/audit.sh
-grep -q "T-2742" CLAUDE.md && grep -q "human_ac_ticks.py" CLAUDE.md
-python3 lib/human_ac_ticks.py audit > /tmp/.t3695a.out 2>&1
-bin/fw enforcement status > /tmp/.t3695e.out 2>&1; ! grep -qi "CHANGED" /tmp/.t3695e.out
-bin/fw vendor self --check
-grep -q "VERDICT: PASS" docs/reports/T-3695-review-codex.md
 
 ## RCA
 
@@ -300,48 +264,6 @@ grep -q "VERDICT: PASS" docs/reports/T-3695-review-codex.md
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** a Bash command could tick a `### Human` box in a task file with no check.
-Reproduced 2026-10-02 (not taken from the reporter): six Bash tool payloads — `sed -i`,
-`perl -pi`, `| tee`, `cp` over, `python3 -c` write_text, `cat x > task` — fed under
-`CLAUDECODE=1` to both `check-active-task` and `check-human-ac-tick` returned **rc=0 / rc=0**
-for all six, with T-3695 as the focused task with real ACs.
-
-**Were shell writes to task files already refused? Only in two states.** `check-active-task.sh`
-classifies a Bash write pattern, then asks only "is there an active, in-scope task?".
-`.tasks/` is an exempt path for Write/Edit (`:480`), and for Bash the gate has no target
-analysis at all. Shell writes to a task file are refused ONLY when focus is null/stale or
-the focused task is in the G-020 placeholder-AC state (`:1166-1203`, T-3299 "SHELL writes
-to it stay blocked by design"). In the normal working state — a started task with real
-ACs, i.e. exactly when an agent is about to close something — every shell path was open.
-`check-human-ac-tick` had matcher `Write|Edit` and returned 0 for any other tool_name.
-
-**Root cause:** the guard modelled "how does an agent change a file?" as the Write/Edit
-tools. The T-3299 statement that shell writes "stay blocked by design" was true of one
-gate state and read as a general property.
-
-**Why structurally allowed:** no test exercised the guard with a Bash payload; the
-existing suites (`human_ac_tick_guard.bats`, `t2954_*`) only feed Edit/Write JSON. The
-hook returned 0 for an unknown tool silently — a false green indistinguishable from "no
-tick happened". And nothing after the fact looked at committed Human ticks at all.
-
-**Fix:** (1) Bash leg — `lib/shell_write_scan.py` + `check_bash()`: verbs anchored to
-command position, targets resolved (cwd through `cd`, globs, realpath), unresolvable
-targets and inline code refused when the command names a guarded path; a shell write
-to `.tasks/**` or the tick ledger is refused under agent control. (2) Write/Edit leg —
-a rise in the ticked count is now blocking (appended / delete-then-add ticked box was
-invisible to the positional zip); the ledger is not writable by Write/Edit. (3) Post-hoc
-— `lib/human_ac_ticks.py` + `fw audit`: every Human tick committed since the detector's
-own commit (ancestry, not date) without provenance FAILs, naming AGENT identities.
-
-**Prevention:** `tests/unit/t3695_human_ac_tick_bash.bats` pins each write path twice
-(the vector really ticks; the hook refuses it) plus controls, and the audit detector runs
-on every `fw audit` (cron + pre-push), so a path the text gate misses is caught at the
-next audit rather than never. **Residual (stated in the block message and CLAUDE.md):**
-a script file or a run-time-built path is not inspected (T-2742 boundary); a same-user
-agent that also forges a ledger row through such a route is not distinguishable (T-3581
-class). Watchtower ticks carry no ledger row until T-3722 lands — until then the operator
-records them with `python3 lib/human_ac_ticks.py ack T-XXX --ac N`.
 
 ## Evolution
 
@@ -407,20 +329,6 @@ records them with `python3 lib/human_ac_ticks.py ack T-XXX --ac N`.
      - **Rejected:** [alternatives and why not]
 -->
 
-### 2026-10-02 — Bash leg refuses the write, not the tick
-- **Chose:** refuse ANY shell write to `.tasks/**` under agent control (Edit tool stays open and diffed).
-- **Why:** a shell command's result cannot be computed before it runs; simulating `sed`/`perl`/python is unbounded. The Edit tool already covers every legitimate agent edit.
-- **Rejected:** simulating the command to diff old/new (unsound for anything beyond `sed s///`); refusing only commands whose text contains `[x]` (trivially evaded: `s/ \]/x]/`).
-
-### 2026-10-02 — Watchtower provenance split to T-3722
-- **Chose:** ledger + reader + `ack` CLI here; the one-call Watchtower write in T-3722.
-- **Why:** `web/blueprints/tasks.py` is a render surface — P-013 requires a `[REVIEW]` Human AC, which would leave this security fix un-closable by its own review.
-- **Rejected:** `--skip-render-review` (forbidden for this task); reading Watchtower's access log (rotated, local, and an agent curl is indistinguishable).
-
-### 2026-10-02 — Audit range by ancestry, not date
-- **Chose:** `<commit that added lib/human_ac_ticks.py>..HEAD`.
-- **Why:** `git log --since` trusts committer dates; a backdated commit escapes it (pinned by test 24).
-
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -433,17 +341,10 @@ records them with `python3 lib/human_ac_ticks.py ack T-XXX --ac N`.
 
 ## Updates
 
-### 2026-10-01T23:37:22Z — task-created [task-create-agent]
+### 2026-10-02T14:40:33Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3695-check-human-ac-tick-guards-only-writeedi.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3727-sidecar-unit-tests-not-hermetic-under-th.md
 - **Context:** Initial task creation
 
-### 2026-10-02T12:21:31Z — status-update [task-update-agent]
+### 2026-10-02T14:42:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-
-### 2026-10-02 — independent review: NOT PASSED, task left open
-- codex round 1 FAIL → fixed (ff842a0af); round 2 FAIL → fixed (959fef3eb); round 3
-  (the last round the brief allowed) FAIL → the six round-3 findings are fixed and
-  pinned (39/39 bats) but have NOT been re-reviewed. AC8 stays unticked; the task is
-  not closed. Next step: one more independent review of the round-3 fixes
-  (docs/reports/T-3695-review-brief.md §Round 3) before closing.
