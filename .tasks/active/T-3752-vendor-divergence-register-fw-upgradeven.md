@@ -1,10 +1,10 @@
 ---
-id: T-3751
-name: "Sidecar circuit project level: minted project_id instead of the folder name
-  (010-termlink T-3325 request)"
+id: T-3752
+name: "Vendor-divergence register: fw upgrade/vendor sees and refuses to silently
+  erase a consumer's local fixes to vendored framework code (010 + 832 proposals)"
 description: >
-  Inception: Sidecar circuit project level: minted project_id instead of the folder
-  name (010-termlink T-3325 request)
+  Inception: Vendor-divergence register: fw upgrade/vendor sees and refuses to silently
+  erase a consumer's local fixes to vendored framework code (010 + 832 proposals)
 
 status: started-work
 workflow_type: inception
@@ -13,8 +13,8 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-10-02T22:57:45Z
-last_update: '2026-10-02T23:00:30Z'
+created: 2026-10-02T23:00:16Z
+last_update: 2026-10-02T23:01:59Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -25,7 +25,7 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
 bvp_scores_proposed:
-  - ts: '2026-10-02T22:59:00Z'
+  - ts: '2026-10-02T23:02:00Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 2
@@ -41,42 +41,32 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-02T23:00:30Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 3
-      tier: 4
-      effort: 6
-    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
-      (workflow:inception); effort=6 (lines=136,acs=4)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3751: Sidecar circuit project level: minted project_id instead of the folder name (010-termlink T-3325 request)
+# T-3752: Vendor-divergence register: fw upgrade/vendor sees and refuses to silently erase a consumer's local fixes to vendored framework code (010 + 832 proposals)
 
 ## Problem Statement
 
-The sidecar's five-level circuit (host / hub / project / session / agent, D-660, lib/aef_address.py) puts the project's folder basename at the project level (`lib/sidecar/circuit.py:136 project_id()`), and every inbox topic name (`inbox:<hub>/<project>`) inherits it. Folder names change on rename, collide across hosts, and differ between instances of one project; the minted id (T-3534, `pid-<16 hex>`, back-filled by `fw upgrade` since T-3750) has none of those faults. 010-termlink is about to make its notify sidecar wake an agent only when `to_circuit` matches its own circuit (their T-3325), so every address written before this is settled must be migrated later. Their operator asked for it as a priority (sidecar @129, 2026-10-02).
+Consumers patch vendored framework code (`.agentic-framework/`) to fix bugs before we release the fix, and every `fw upgrade` / `fw vendor` erases those patches silently. Consumer-added files under the vendored tree get deleted too. 832 measured it on its first protocol run (2026-10-02, 1.7.740): 51 fixes to re-decide; one undeclared fix (T-943, lib/verification-port.sh) lost with nothing listing it; 5 local files deleted, 4 of them undeclared. 010-termlink runs a register plus checker (framework:pickup @304 code and guide, @305 live register). 832 originated the convention with a different schema. Both asked for it upstream. A silent overwrite violates the Reliability directive.
 
 ## Assumptions
 
-- Every peer that sends to us can learn our minted id (via `fw whoami` or a published directory) before the folder-name topics are retired.
-- Dual-reading old and new inbox topics during the migration costs one extra `channel subscribe` per poll (the same shape `v9_topics` / `legacy_topics` already use).
+- A declared register (path, reason, upstream status, owning task) is enough for `fw upgrade` to name every fix it is about to erase.
+- 010's and 832's schemas can be reconciled into one without losing either side's fields.
 
 ## Open Questions
 
-- **IW-1: Where exactly does the minted id appear in both grammars?** Path form (`//host/hub/<project>/session/agent`, sent today as `from_circuit`) and the V9 form (`aef::host=…::hub=…::project=…::session=…::@agent::`). Does `project=` carry the id alone, or id plus display name?
+- **IW-1: One schema.** Which fields reconcile 010's `.vendor-divergence.yaml` and 832's? Candidates: path, content hash at patch time, reason, owning task, upstream status (filed-upstream / local-only / superseded).
   confidence: 1
 
-- **IW-2: How do inbox topics migrate without losing messages?** New topic `inbox:<hub>/<pid>`, with the receiver dual-reading the folder-name topic until no peer has written to it for N days?
+- **IW-2: What does `fw upgrade` do with a declared divergence?** Refuse until resolved, keep the consumer's version, or overwrite and report each one by name?
   confidence: 1
 
-- **IW-3: How does `--to <name>` resolve to an id?** Human-readable names stay the operator's way to address a peer, so a name→id directory (hub kv, or each peer's published whoami) is needed. Which, and who owns it (Gap Homing: TermLink or us)?
+- **IW-3: Undeclared changes.** Do we detect undeclared edits (hash against the vendored baseline) and locally added files at upgrade time, or adopt 832's G4 commit gate on the consumer side, or both?
   confidence: 1
 
-- **IW-4: Is the fallback ladder exactly as 010 states it?** Deliver to the deepest level that resolves, falling back towards level 1 (host) when the full address is not found. Confirm, or name the exceptions (for example: never fall back across projects).
-  confidence: 2
+- **IW-4: Upstream intake.** How does a `filed-upstream` entry reach us as a task, and how does the consumer learn it is superseded, so the next re-vendor drops the entry cleanly?
+  confidence: 1
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
@@ -158,7 +148,7 @@ The sidecar's five-level circuit (host / hub / project / session / agent, D-660,
 
 **Rationale:**
 
-The minted id exists (T-3534, pid-16hex, back-filled by fw upgrade since T-3750) but circuit.project_id() still returns the root basename, so the circuit project level and every inbox topic name (inbox:hub/project) are folder names that collide across hosts and change on rename. TermLink is about to key wake-up on to_circuit (their T-3325) and asked us to settle it before they build. Open: topic migration (dual-read old and new topics, as v9_topics/legacy_topics already do), the name-to-id alias for --to, and the fallback ladder confirmed with TermLink.
+Evidence from two consumers: 832's first protocol run (1.7.740) found 51 local fixes erased by re-vendor, an undeclared one (T-943 on lib/verification-port.sh) lost with nothing listing it, and 5 consumer-added files deleted by the vendor copy, 4 undeclared. 010-termlink runs a working register plus check (framework:pickup @304/@305). Both schemas exist and differ. Today fw upgrade overwrites silently, which violates the Reliability directive (no silent failures). Open: one schema reconciling 010 and 832, whether fw upgrade refuses or only reports, consumer-side commit gate (832 G4), and upstream intake of filed-upstream entries.
 
 **Evidence:**
 
@@ -186,5 +176,5 @@ The minted id exists (T-3534, pid-16hex, back-filled by fw upgrade since T-3750)
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
 
-### 2026-10-02T22:59:00Z — status-update [task-update-agent]
+### 2026-10-02T23:01:59Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
