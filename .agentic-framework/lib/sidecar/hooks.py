@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import json
 import os
+import secrets
 import subprocess
 import sys
 import time
@@ -83,7 +84,19 @@ def stop(_hook_input: dict) -> int:
     return 0
 
 
-def _frame(messages: list[dict]) -> str:
+def _header(msg: dict, surfacing: str) -> str:
+    """The block header for one message in one surfacing attempt. `surfacing`
+    is a fresh random token per prompt-hook run: the finalizer accepts only
+    this exact line (followed by the PEER-DATA opener) as evidence, so neither
+    an id quoted inside some other message's untrusted body nor an attachment
+    left by an EARLIER attempt can certify this one."""
+    sender = str(msg.get("from") or "unknown")
+    conv = str(msg.get("conversation_id") or "-")
+    mid = str(msg.get("client_msg_id") or msg.get("msg_id"))
+    return f"## from {sender}  [conversation {conv}]  [msg {mid}]  [surfacing {surfacing}]"
+
+
+def _frame(messages: list[dict], surfacing: str) -> str:
     fw = _fw_bin()
     lines = [
         f"# Sidecar receiver: {len(messages)} message(s) from other agents (T-3693)",
@@ -104,7 +117,7 @@ def _frame(messages: list[dict]) -> str:
         conv = str(msg.get("conversation_id") or "-")
         mid = str(msg.get("client_msg_id") or msg.get("msg_id"))
         lines += [
-            f"## from {sender}  [conversation {conv}]  [msg {mid}]",
+            _header(msg, surfacing),
             OPEN,
             body,
             CLOSE,
@@ -157,59 +170,84 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
     if not messages:
         return []
     surfaced = [str(m.get("client_msg_id")) for m in messages]
+    surfacing = secrets.token_hex(16)
     out.write(json.dumps({"hookSpecificOutput": {
         "hookEventName": "UserPromptSubmit",
-        "additionalContext": _frame(messages),
+        "additionalContext": _frame(messages, surfacing),
     }}) + "\n")
     out.flush()
     for mid in surfaced:
         try:
-            _surfacing_marker(mid).write_text(str(now), encoding="utf-8")
+            _surfacing_marker(mid).write_text(surfacing, encoding="utf-8")
         except OSError:
             pass
     if spawn:
         transcript = str(hook_input.get("transcript_path") or "")
         subprocess.Popen(
-            [sys.executable, os.path.abspath(__file__), "finalize", transcript, *surfaced],
+            [sys.executable, os.path.abspath(__file__), "finalize", transcript,
+             "--surfacing", surfacing, *surfaced],
             stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
             env=dict(os.environ, PROJECT_ROOT=str(receiver._root())),
             start_new_session=True)
     return surfaced
 
 
-def _in_transcript(transcript: str, msg_id: str) -> bool:
+def _in_transcript(transcript: str, msg_id: str, surfacing: str | None) -> bool:
     """Does the session transcript hold the attachment that handed `msg_id` to
-    the model? (The harness's own record — not ours.)"""
+    the model in THIS surfacing attempt? (The harness's own record — not ours.)
+
+    Evidence is the exact block header `_header(msg, surfacing)` as a whole
+    line, immediately followed by the PEER-DATA opener, inside a
+    hook_additional_context attachment. The id appearing anywhere else (for
+    example quoted in another message's untrusted body) is not evidence, and
+    nor is a header from an earlier attempt (different token)."""
+    msg = receiver.read_message(msg_id)
+    if not surfacing or not msg:
+        return False
+    header = _header(msg, surfacing)
     try:
         text = open(transcript, encoding="utf-8", errors="replace").read()
     except OSError:
         return False
-    tag = f"[msg {msg_id}]"
     for line in text.splitlines():
-        if tag not in line or "hook_additional_context" not in line:
+        if surfacing not in line or "hook_additional_context" not in line:
             continue
         try:
             att = (json.loads(line).get("attachment") or {})
         except json.JSONDecodeError:
             continue
+        if att.get("type") != "hook_additional_context":
+            continue
         content = att.get("content")
         body = "\n".join(content) if isinstance(content, list) else str(content)
-        if att.get("type") == "hook_additional_context" and tag in body:
+        lines = body.splitlines()
+        if any(lines[i] == header and lines[i + 1] == OPEN for i in range(len(lines) - 1)):
             return True
     return False
 
 
+def _surfacing_token(msg_id: str) -> str | None:
+    try:
+        return _surfacing_marker(msg_id).read_text(encoding="utf-8").strip() or None
+    except OSError:
+        return None
+
+
 def finalize(transcript: str, msg_ids: list[str], wait_s: float = FINALIZE_WAIT_S,
-             poll_s: float = 1.0, sleep=time.sleep) -> dict:
+             poll_s: float = 1.0, sleep=time.sleep, surfacing: str | None = None) -> dict:
     """Record HANDED_OVER (+ CONFIRM-2) for each id the transcript proves the
-    model received; HANDOVER_UNCONFIRMED for the rest, which are released for
-    re-surfacing and re-injection."""
+    model received in this surfacing attempt; HANDOVER_UNCONFIRMED for the
+    rest, which are released for re-surfacing and re-injection.
+
+    `surfacing` is the attempt's token (the prompt hook passes it); without it,
+    each id's own surfacing marker supplies it."""
+    tokens = {mid: surfacing or _surfacing_token(mid) for mid in msg_ids}
     pending = list(msg_ids)
     confirmed: list[str] = []
     deadline = time.time() + wait_s
     while pending and transcript:
         for mid in list(pending):
-            if _in_transcript(transcript, mid):
+            if _in_transcript(transcript, mid, tokens[mid]):
                 pending.remove(mid)
                 confirmed.append(mid)
         if not pending or time.time() >= deadline:
@@ -259,7 +297,11 @@ def main(argv=None) -> int:
             prompt(hook_input)
             return 0
         if which == "finalize":
-            finalize(argv[1] if len(argv) > 1 else "", argv[2:])
+            rest = argv[2:]
+            token = None
+            if len(rest) >= 2 and rest[0] == "--surfacing":
+                token, rest = rest[1], rest[2:]
+            finalize(argv[1] if len(argv) > 1 else "", rest, surfacing=token)
             return 0
         print(f"usage: hooks.py stop|prompt (got {which!r})", file=sys.stderr)
         return 0
