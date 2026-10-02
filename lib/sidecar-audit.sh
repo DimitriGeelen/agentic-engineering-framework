@@ -194,7 +194,7 @@ try:
     v = json.load(sys.stdin)
     live = v.get("liveness") or {}
     print("\t".join((v["state"], str(live.get("seq")), str(v.get("age_s")),
-                     str(live.get("last_probe_latency_ms")), str(v.get("termlink")),
+                     str(live.get("last_probe_latency_ms")), str(v.get("injection_transport")),
                      "; ".join(v.get("reasons") or []))))
 except Exception:
     sys.exit(2)

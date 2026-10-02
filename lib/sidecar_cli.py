@@ -573,14 +573,14 @@ def cmd_liveness(args) -> int:
     """The liveness verdict doctor/audit read. Exit 0 live, 1 not-live, 2 absent."""
     v = watcher.liveness_verdict()
     v["supervisor_alive"] = watcher.supervisor_alive()
-    v["termlink"] = "present" if __import__("shutil").which("termlink") else "absent"
+    v["injection_transport"] = "present" if __import__("shutil").which("termlink") else "absent"
     if args.json:
         print(json.dumps(v, default=str))
     else:
         live = v.get("liveness") or {}
         print(f"sidecar watcher: {v['state']}  seq={live.get('seq')} age={v.get('age_s')}s "
               f"probe_ok={live.get('last_probe_ok')} supervisor={'up' if v['supervisor_alive'] else 'down'} "
-              f"termlink={v['termlink']}")
+              f"termlink={v['injection_transport']}")
         for r in v["reasons"]:
             print(f"  - {r}")
     return {"live": 0, "not-live": 1}.get(v["state"], 2)
