@@ -40,7 +40,8 @@ PY
 @test "T-2877: SMOKE — both seed sets exist with the expected populations" {
     # If these counts are wrong every leg below is measuring the wrong tree.
     [ "$(ls "$SEEDS"/greenfield/T-*.md | wc -l)" -eq 5 ]
-    [ "$(ls "$SEEDS"/existing-project/T-*.md | wc -l)" -eq 6 ]
+    # 7 since T-3636 added T-007-define-project-objectives.
+    [ "$(ls "$SEEDS"/existing-project/T-*.md | wc -l)" -eq 7 ]
 }
 
 @test "T-2877: PRESENT — every seeded onboarding task carries the operator section" {

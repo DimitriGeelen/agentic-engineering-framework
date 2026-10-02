@@ -171,7 +171,9 @@ _review() {
     # inception_underdisposed_questions returns 1 as a FINDING (OBS-566), and
     # emit_review runs under set -euo pipefail. The `|| true` guard is what keeps
     # the refusal from killing the command before it can print (T-3539).
-    grep -q '_underdisposed=$(inception_underdisposed_questions "$task_file") || true' \
+    # T-3641 replaced `|| true` with `|| _ud_rc=$?`: still set-e safe, but a
+    # crashed predicate is now warned about instead of reading as "ready".
+    grep -qF '_underdisposed=$(inception_underdisposed_questions "$task_file") || _ud_rc=$?' \
         "$FRAMEWORK_ROOT/lib/review.sh"
 }
 

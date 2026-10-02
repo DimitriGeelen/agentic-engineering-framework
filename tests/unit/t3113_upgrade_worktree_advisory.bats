@@ -132,7 +132,9 @@ _add_wt() {
 @test "stale summary names both remedies" {
     _add_wt "$TEST_ROOT/wt1" "" behind
     run _t3113_emit_worktree_advisory "$MAIN"
-    [[ "$output" == *"fw integrate run master --push"* ]]
+    # T-3697 (release-train): worktrees land on bleeding-edge, never master.
+    [[ "$output" == *"fw integrate run bleeding-edge --push"* ]]
+    [[ "$output" != *"fw integrate run master"* ]]
     [[ "$output" == *"fw upgrade <worktree-path>"* ]]
 }
 

@@ -86,7 +86,10 @@ fw_sidecar_dm_stale_facts() {
     [ -f "$lib_dir/sidecar_cli.py" ] || return 2
 
     local rows
-    rows=$(FRAMEWORK_ROOT="$root" timeout 30 python3 "$lib_dir/sidecar_cli.py" \
+    # T-3719: PROJECT_ROOT, not FRAMEWORK_ROOT — since T-3671 the sidecar
+    # resolves its state root from PROJECT_ROOT (else cwd), so FRAMEWORK_ROOT
+    # alone left <root> inert and the check read the caller's ambient project.
+    rows=$(PROJECT_ROOT="$root" timeout 30 python3 "$lib_dir/sidecar_cli.py" \
            dm-stale --threshold-hours "$threshold_hours" --json 2>/dev/null) || return 2
     [ -n "$rows" ] || return 2
 
@@ -139,7 +142,8 @@ fw_sidecar_inbox_stale_facts() {
     [ -f "$lib_dir/sidecar_cli.py" ] || return 2
 
     local rows
-    rows=$(FRAMEWORK_ROOT="$root" timeout 60 python3 "$lib_dir/sidecar_cli.py" \
+    # T-3719: PROJECT_ROOT, not FRAMEWORK_ROOT (see fw_sidecar_dm_stale_facts).
+    rows=$(PROJECT_ROOT="$root" timeout 60 python3 "$lib_dir/sidecar_cli.py" \
            inbox-stale --threshold-hours "$threshold_hours" --json 2>/dev/null) || return 2
     [ -n "$rows" ] || return 2
 
