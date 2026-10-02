@@ -106,6 +106,12 @@ bvp_scores_proposed:
 - [x] After `bin/fw watchtower restart`, /inception/T-3726 and /inception/T-3723 each load in under 5 s (measured with curl) — 0.20 s and 0.12 s (were 300 s timeout and 279 s)
 
 ### Human
+- [ ] [REVIEW] Inception pages open quickly and their file references still render as links
+  **Steps:**
+  1. Open http://192.168.10.107:3002/inception/T-3726
+  2. Click two file references in the page (e.g. docs/reports/T-3726-synthesis.md)
+  **Expected:** the page opens in about a second; references to existing files are clickable and open the file
+  **If not:** note the URL and which reference looked wrong or how long it took
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
