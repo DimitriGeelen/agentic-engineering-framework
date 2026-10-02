@@ -1,0 +1,511 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.2, pluggy-1.6.0 -- /usr/bin/python3
+cachedir: .pytest_cache
+rootdir: /opt/999-Agentic-Engineering-Framework
+plugins: anyio-4.11.0, asyncio-1.3.0, typeguard-4.5.2
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 3 items
+
+tests/integration/t3693_sidecar_e2e_test.py::test_real_termlink_inject_reaches_the_tagged_session PASSED
+tests/integration/t3693_sidecar_e2e_test.py::test_e2e_two_real_agents_nonce_round_trip [t3693-e2e 02:39:41] run 7ofesh: inject_enabled_at_B=True nonce=xgzmqsctpbqu
+[t3693-e2e 02:39:42] t3693a-7ofesh: receiver started: agent=t3693a-7ofesh pid=3912272 port=37059
+[t3693-e2e 02:39:42] t3693b-7ofesh: receiver started: agent=t3693b-7ofesh pid=3912849 port=42195
+[t3693-e2e 02:39:47] t3693b-7ofesh: accepted folder trust
+[t3693-e2e 02:39:51] t3693b-7ofesh: session tl-e6bxunne ready (Stop hook fired)
+[t3693-e2e 02:39:52] t3693a-7ofesh: accepted folder trust
+[t3693-e2e 02:39:56] t3693a-7ofesh: session tl-svoh2zij ready (Stop hook fired)
+[t3693-e2e 02:39:56] A instructed (operator) to send the nonce to B
+[t3693-e2e 02:40:17] evidence: /tmp/t3693-e2e-3909906-1790901581/t3693-e2e-7ofesh.json
+{
+  "run": "7ofesh",
+  "inject_enabled_at_B": true,
+  "model": "sonnet",
+  "projects": {
+    "A": "/tmp/t3693-e2e-3909906-1790901581/t3693a-7ofesh",
+    "B": "/tmp/t3693-e2e-3909906-1790901581/t3693b-7ofesh"
+  },
+  "sessions": {
+    "A": "tl-svoh2zij",
+    "B": "tl-e6bxunne"
+  },
+  "elapsed_s": 11.6,
+  "transformed_nonce_in_A_receiver": "38858a95-c9fc-4ad2-a1b7-107db4b126eb",
+  "transformed_nonce_in_A_context": "0972c09b-c315-41c0-a9e8-3dc5b6c37cad.jsonl [hook_additional_context] \u2026task and approval path, never executed directly.\\n\\n## from t3693b-7ofesh  [conversation e2e-7ofesh]  [msg 38858a95-c9fc-4ad2-a1b7-107db4b126eb]\\n<<<PEER-DATA\\nXGZMQSCTPBQU\\nPEER-DATA>>>\\nreply: /opt/999-Agentic-Engineer\u2026",
+  "A_sender_ledger": [
+    {
+      "client_msg_id": "9ad47831-32f3-4bfd-8fd0-70dc7a2f577c",
+      "state": "SENT",
+      "by": "sender",
+      "target": "t3693b-7ofesh"
+    },
+    {
+      "client_msg_id": "9ad47831-32f3-4bfd-8fd0-70dc7a2f577c",
+      "state": "RECEIVED",
+      "by": "receiver-response",
+      "target": null
+    },
+    {
+      "client_msg_id": "9ad47831-32f3-4bfd-8fd0-70dc7a2f577c",
+      "state": "HANDED_OVER",
+      "by": "peer-receiver:t3693b-7ofesh",
+      "target": null
+    },
+    {
+      "client_msg_id": "9ad47831-32f3-4bfd-8fd0-70dc7a2f577c",
+      "state": "REPLIED",
+      "by": "own-receiver",
+      "target": null
+    }
+  ],
+  "B_sender_ledger": [
+    {
+      "client_msg_id": "38858a95-c9fc-4ad2-a1b7-107db4b126eb",
+      "state": "SENT",
+      "by": "sender",
+      "target": "t3693a-7ofesh"
+    },
+    {
+      "client_msg_id": "38858a95-c9fc-4ad2-a1b7-107db4b126eb",
+      "state": "RECEIVED",
+      "by": "receiver-response",
+      "target": null
+    },
+    {
+      "client_msg_id": "38858a95-c9fc-4ad2-a1b7-107db4b126eb",
+      "state": "HANDED_OVER",
+      "by": "peer-receiver:t3693a-7ofesh",
+      "target": null
+    }
+  ],
+  "A_receiver_events": [
+    {
+      "msg_id": "38858a95-c9fc-4ad2-a1b7-107db4b126eb",
+      "event": "STORED"
+    },
+    {
+      "msg_id": "38858a95-c9fc-4ad2-a1b7-107db4b126eb",
+      "event": "INJECT_ATTEMPT",
+      "trigger": "on-store",
+      "ok": true
+    },
+    {
+      "msg_id": "38858a95-c9fc-4ad2-a1b7-107db4b126eb",
+      "event": "HANDED_OVER"
+    },
+    {
+      "msg_id": "38858a95-c9fc-4ad2-a1b7-107db4b126eb",
+      "event": "CONFIRM_SENT"
+    }
+  ],
+  "B_receiver_events": [
+    {
+      "msg_id": "9ad47831-32f3-4bfd-8fd0-70dc7a2f577c",
+      "event": "STORED"
+    },
+    {
+      "msg_id": "9ad47831-32f3-4bfd-8fd0-70dc7a2f577c",
+      "event": "INJECT_ATTEMPT",
+      "trigger": "on-store",
+      "ok": true
+    },
+    {
+      "msg_id": "9ad47831-32f3-4bfd-8fd0-70dc7a2f577c",
+      "event": "HANDED_OVER"
+    },
+    {
+      "msg_id": "9ad47831-32f3-4bfd-8fd0-70dc7a2f577c",
+      "event": "CONFIRM_SENT"
+    }
+  ]
+}
+PASSED
+tests/integration/t3693_sidecar_e2e_test.py::test_e2e_negative_control_injection_disabled_fails_and_escalates [t3693-e2e 02:40:17] run 6df47b: inject_enabled_at_B=False nonce=feyrrnxwflgp
+[t3693-e2e 02:40:17] t3693a-6df47b: receiver started: agent=t3693a-6df47b pid=3927358 port=36637
+[t3693-e2e 02:40:18] t3693b-6df47b: receiver started: agent=t3693b-6df47b pid=3927764 port=38713
+[t3693-e2e 02:40:22] t3693b-6df47b: accepted folder trust
+[t3693-e2e 02:40:26] t3693b-6df47b: session tl-qsatzihw ready (Stop hook fired)
+[t3693-e2e 02:40:27] t3693a-6df47b: accepted folder trust
+[t3693-e2e 02:40:31] t3693a-6df47b: session tl-or7lry5o ready (Stop hook fired)
+[t3693-e2e 02:40:31] A instructed (operator) to send the nonce to B
+[t3693-e2e 02:45:32] no transformed nonce in A's context; letting the HANDED_OVER deadline (120s after send) pass, then sweeping
+[t3693-e2e 02:45:45] evidence: /tmp/t3693-e2e-3909906-1790901617/t3693-e2e-6df47b.json
+{
+  "run": "6df47b",
+  "inject_enabled_at_B": false,
+  "model": "sonnet",
+  "projects": {
+    "A": "/tmp/t3693-e2e-3909906-1790901617/t3693a-6df47b",
+    "B": "/tmp/t3693-e2e-3909906-1790901617/t3693b-6df47b"
+  },
+  "sessions": {
+    "A": "tl-or7lry5o",
+    "B": "tl-qsatzihw"
+  },
+  "elapsed_s": 301.4,
+  "transformed_nonce_in_A_receiver": null,
+  "transformed_nonce_in_A_context": null,
+  "A_sweep_direct_escalated": [
+    "8b694e90-0453-4878-aafc-4d09bf794c82"
+  ],
+  "A_sender_ledger": [
+    {
+      "client_msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "state": "SENT",
+      "by": "sender",
+      "target": "t3693b-6df47b"
+    },
+    {
+      "client_msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "state": "RECEIVED",
+      "by": "receiver-response",
+      "target": null
+    },
+    {
+      "client_msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "state": "ESCALATED",
+      "by": "infrastructure",
+      "target": null
+    }
+  ],
+  "B_sender_ledger": [],
+  "A_receiver_events": [],
+  "B_receiver_events": [
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "STORED"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "on-store",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    }
+  ]
+}
+PASSED
+
+======================== 3 passed in 365.96s (0:06:05) =========================

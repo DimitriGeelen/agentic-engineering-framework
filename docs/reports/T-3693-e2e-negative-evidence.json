@@ -1,0 +1,377 @@
+{
+  "run": "6df47b",
+  "inject_enabled_at_B": false,
+  "model": "sonnet",
+  "projects": {
+    "A": "/tmp/t3693-e2e-3909906-1790901617/t3693a-6df47b",
+    "B": "/tmp/t3693-e2e-3909906-1790901617/t3693b-6df47b"
+  },
+  "sessions": {
+    "A": "tl-or7lry5o",
+    "B": "tl-qsatzihw"
+  },
+  "elapsed_s": 301.4,
+  "transformed_nonce_in_A_receiver": null,
+  "transformed_nonce_in_A_context": null,
+  "A_sweep_direct_escalated": [
+    "8b694e90-0453-4878-aafc-4d09bf794c82"
+  ],
+  "A_sender_ledger": [
+    {
+      "client_msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "state": "SENT",
+      "by": "sender",
+      "target": "t3693b-6df47b"
+    },
+    {
+      "client_msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "state": "RECEIVED",
+      "by": "receiver-response",
+      "target": null
+    },
+    {
+      "client_msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "state": "ESCALATED",
+      "by": "infrastructure",
+      "target": null
+    }
+  ],
+  "B_sender_ledger": [],
+  "A_receiver_events": [],
+  "B_receiver_events": [
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "STORED"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "on-store",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    },
+    {
+      "msg_id": "8b694e90-0453-4878-aafc-4d09bf794c82",
+      "event": "INJECT_BLOCKED",
+      "trigger": "e2e-tick",
+      "reason": "injection disabled (receiver started with --no-inject)"
+    }
+  ]
+}

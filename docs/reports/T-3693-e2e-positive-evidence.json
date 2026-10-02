@@ -1,0 +1,102 @@
+{
+  "run": "7ofesh",
+  "inject_enabled_at_B": true,
+  "model": "sonnet",
+  "projects": {
+    "A": "/tmp/t3693-e2e-3909906-1790901581/t3693a-7ofesh",
+    "B": "/tmp/t3693-e2e-3909906-1790901581/t3693b-7ofesh"
+  },
+  "sessions": {
+    "A": "tl-svoh2zij",
+    "B": "tl-e6bxunne"
+  },
+  "elapsed_s": 11.6,
+  "transformed_nonce_in_A_receiver": "38858a95-c9fc-4ad2-a1b7-107db4b126eb",
+  "transformed_nonce_in_A_context": "0972c09b-c315-41c0-a9e8-3dc5b6c37cad.jsonl [hook_additional_context] \u2026task and approval path, never executed directly.\\n\\n## from t3693b-7ofesh  [conversation e2e-7ofesh]  [msg 38858a95-c9fc-4ad2-a1b7-107db4b126eb]\\n<<<PEER-DATA\\nXGZMQSCTPBQU\\nPEER-DATA>>>\\nreply: /opt/999-Agentic-Engineer\u2026",
+  "A_sender_ledger": [
+    {
+      "client_msg_id": "9ad47831-32f3-4bfd-8fd0-70dc7a2f577c",
+      "state": "SENT",
+      "by": "sender",
+      "target": "t3693b-7ofesh"
+    },
+    {
+      "client_msg_id": "9ad47831-32f3-4bfd-8fd0-70dc7a2f577c",
+      "state": "RECEIVED",
+      "by": "receiver-response",
+      "target": null
+    },
+    {
+      "client_msg_id": "9ad47831-32f3-4bfd-8fd0-70dc7a2f577c",
+      "state": "HANDED_OVER",
+      "by": "peer-receiver:t3693b-7ofesh",
+      "target": null
+    },
+    {
+      "client_msg_id": "9ad47831-32f3-4bfd-8fd0-70dc7a2f577c",
+      "state": "REPLIED",
+      "by": "own-receiver",
+      "target": null
+    }
+  ],
+  "B_sender_ledger": [
+    {
+      "client_msg_id": "38858a95-c9fc-4ad2-a1b7-107db4b126eb",
+      "state": "SENT",
+      "by": "sender",
+      "target": "t3693a-7ofesh"
+    },
+    {
+      "client_msg_id": "38858a95-c9fc-4ad2-a1b7-107db4b126eb",
+      "state": "RECEIVED",
+      "by": "receiver-response",
+      "target": null
+    },
+    {
+      "client_msg_id": "38858a95-c9fc-4ad2-a1b7-107db4b126eb",
+      "state": "HANDED_OVER",
+      "by": "peer-receiver:t3693a-7ofesh",
+      "target": null
+    }
+  ],
+  "A_receiver_events": [
+    {
+      "msg_id": "38858a95-c9fc-4ad2-a1b7-107db4b126eb",
+      "event": "STORED"
+    },
+    {
+      "msg_id": "38858a95-c9fc-4ad2-a1b7-107db4b126eb",
+      "event": "INJECT_ATTEMPT",
+      "trigger": "on-store",
+      "ok": true
+    },
+    {
+      "msg_id": "38858a95-c9fc-4ad2-a1b7-107db4b126eb",
+      "event": "HANDED_OVER"
+    },
+    {
+      "msg_id": "38858a95-c9fc-4ad2-a1b7-107db4b126eb",
+      "event": "CONFIRM_SENT"
+    }
+  ],
+  "B_receiver_events": [
+    {
+      "msg_id": "9ad47831-32f3-4bfd-8fd0-70dc7a2f577c",
+      "event": "STORED"
+    },
+    {
+      "msg_id": "9ad47831-32f3-4bfd-8fd0-70dc7a2f577c",
+      "event": "INJECT_ATTEMPT",
+      "trigger": "on-store",
+      "ok": true
+    },
+    {
+      "msg_id": "9ad47831-32f3-4bfd-8fd0-70dc7a2f577c",
+      "event": "HANDED_OVER"
+    },
+    {
+      "msg_id": "9ad47831-32f3-4bfd-8fd0-70dc7a2f577c",
+      "event": "CONFIRM_SENT"
+    }
+  ]
+}
