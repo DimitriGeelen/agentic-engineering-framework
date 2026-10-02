@@ -16,7 +16,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-02T13:39:27Z
-last_update: 2026-10-02T13:41:02Z
+last_update: '2026-10-02T13:45:28Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -43,6 +43,16 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-02T13:45:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=132,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3723: Standing warm reviewer/research agents per vendor (Claude, Codex, Z.ai/opencode, Antigravity): keep the harness and prompt cache warm, inject review and research questions via the sidecar, a fresh conversation per question
@@ -59,12 +69,20 @@ bvp_scores_proposed:
 
 - **IW-1: Per vendor (Claude, codex, opencode/Z.ai, Antigravity), how much does a warm second question save versus a cold start (tokens and seconds), with a fresh conversation for that question?**
   confidence: 1
+  disposition: deferred
+  rationale: measured by spike T-3724 (cold Claude baseline already measured: ~86K cache tokens per worker)
 - **IW-2: Per vendor, can a fresh conversation in a warm process be proven to carry nothing from the previous question (canary planted in question N absent from answer N+1)?**
   confidence: 1
+  disposition: deferred
+  rationale: canary isolation test per vendor is spike T-3724's core deliverable
 - **IW-3: Does a signed dispatch, start and completion per question preserve T-3580 review provenance when the process is shared across questions, or does a warm reviewer need a new provenance model?**
   confidence: 1
+  disposition: deferred
+  rationale: spike T-3724 gathers the evidence; the provenance ruling follows its results, before any build
 - **IW-4: Lifecycle: context cap (operator ~800-900K for Claude), restart policy, liveness (T-3685), per-question cost logging, and how many standing agents per vendor?**
   confidence: 2
+  disposition: deferred
+  rationale: lifecycle is a build concern after the spike; cap ~800-900K for Claude stated by the operator
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
