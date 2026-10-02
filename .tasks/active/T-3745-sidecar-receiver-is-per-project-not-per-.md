@@ -1,8 +1,16 @@
 ---
 id: T-3745
-name: "Sidecar receiver is per PROJECT, not per SESSION: one session's Stop hook marks ready while another (fleet agent) is mid-turn, and the next prompting session takes HANDED_OVER for mail it never saw — bind ready flag and handover to session_id"
+name: "Sidecar receiver is per PROJECT, not per SESSION: one session's Stop hook marks
+  ready while another (fleet agent) is mid-turn, and the next prompting session takes
+  HANDED_OVER for mail it never saw — bind ready flag and handover to session_id"
 description: >
-  055 @117 2026-10-02: two Claude sessions in one project (claude-fw --termlink fleet agent + operator terminal). (a) .context/sidecar/ready-for-input.yaml records no session; inject.py:142-159 types the doorbell into the fleet agent's PTY while it is busy — the stale-ready danger in sidecar-target-architecture.md:118-122. (b) the UserPromptSubmit adapter marks HANDED_OVER for whichever session prompts next. Fix: key ready flag and handover on hook session_id/transcript_path; inject only into the session that set ready. MUST be fixed before or within T-3684 (the watcher).
+  055 @117 2026-10-02: two Claude sessions in one project (claude-fw --termlink fleet
+  agent + operator terminal). (a) .context/sidecar/ready-for-input.yaml records no
+  session; inject.py:142-159 types the doorbell into the fleet agent's PTY while it
+  is busy — the stale-ready danger in sidecar-target-architecture.md:118-122. (b)
+  the UserPromptSubmit adapter marks HANDED_OVER for whichever session prompts next.
+  Fix: key ready flag and handover on hook session_id/transcript_path; inject only
+  into the session that set ready. MUST be fixed before or within T-3684 (the watcher).
 
 status: captured
 workflow_type: build
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T19:56:47Z
-last_update: 2026-10-02T19:56:47Z
-date_finished: null
+last_update: '2026-10-02T20:00:44Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-02T20:00:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-02T20:00:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3745: Sidecar receiver is per PROJECT, not per SESSION: one session's Stop hook marks ready while another (fleet agent) is mid-turn, and the next prompting session takes HANDED_OVER for mail it never saw — bind ready flag and handover to session_id
@@ -62,8 +98,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] ready-for-input state is keyed by hook session_id (and transcript_path); the watcher injects only into the session whose own flag is ready, never into a busy sibling session in the same project
+- [ ] HANDED_OVER is attributed only to the session that was injected, from that session's transcript, not to whichever session prompts next
+- [ ] Test with two sessions in one project: one busy, one idle → a non-urgent consult lands in the idle one only; the busy one's PTY receives nothing
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

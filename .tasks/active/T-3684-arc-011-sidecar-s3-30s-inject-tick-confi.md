@@ -12,7 +12,7 @@ description: >
   = one line into the project's TermLink-registered Claude session so the prompt hook
   surfaces the messages. Gap rows R2-R5 in docs/reports/T-3682-sidecar-design-conformance-audit.md.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T22:58:50Z
-last_update: '2026-10-01T23:00:41Z'
+last_update: 2026-10-02T23:04:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,6 +87,23 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-02T23:04:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 3
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=3 (body:portability-abstraction); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3684: arc-011 sidecar S3: 30s inject tick (configurable) + harness-asserted ready flag (Stop hook sets ready-for-input, UserPromptSubmit clears) + urgent hard bypass + idle-session wake
@@ -100,8 +117,11 @@ bvp_scores_proposed:
 ### Agent
 - [ ] Design register rows R3 (30 s configurable tick) and R5 (urgent bypass) in docs/architecture/sidecar-target-architecture.md §7 are built and set to `status: built` with evidence (owner assigned by T-3694)
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A supervised watcher loop ticks every SIDECAR_TICK seconds (config key in lib/config.sh FW_CONFIG_REGISTRY, default 30); each tick checks the receiver's flagged messages AND the agent's hub inbox topic(s) (legacy topic covered until T-3690)
+- [ ] Urgent consults inject immediately regardless of the ready flag; non-urgent inject only when the target session is ready; HANDED_OVER only on transcript evidence; the sender is informed (CONFIRM-2)
+- [ ] Live e2e (not mocked): an idle real session receives a non-urgent consult within 60 s with nobody typing; a busy session only after its turn ends; urgent while busy; a legacy-topic post within 60 s; watcher disabled → no pickup and the sender sees ESCALATED
+- [ ] `fw sidecar latency` reports send→RECEIVED and send→HANDED_OVER per message (median, p95, max), and the measured figures are in docs/reports/T-3684-review-brief.md
+- [ ] Independent codex review (docs/reports/T-3684-review-codex.md) ends VERDICT: PASS
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -361,3 +381,6 @@ bvp_scores_proposed:
 
 ### 2026-10-02T03:05:00Z — handoff from T-3693 [w-t-3693b]
 - **Inherited:** T-3693 built the receiver's injection step but no tick. The tick this task builds should call `fw sidecar deliver-pending --trigger tick` (lib/sidecar_cli.py `cmd_deliver_pending` → lib/sidecar/inject.py `deliver_pending`, flock-guarded and idempotent within 120 s) on its cadence. Register rows R3 (tick) and R5 (urgent bypass) point here. inject.py already injects an `urgent` message regardless of readiness (`urgent_bypass` in the INJECT_ATTEMPT event), so R5's remaining scope is the operator-ruled priority semantics. The live e2e (tests/integration/t3693_sidecar_e2e_test.py) runs deliver-pending every 5 s as a stand-in.
+
+### 2026-10-02T23:04:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

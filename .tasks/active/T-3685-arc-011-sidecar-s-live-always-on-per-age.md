@@ -98,8 +98,9 @@ bvp_scores_proposed:
 ### Agent
 - [ ] Design register rows R7 (liveness.yaml + 30 s self-probe), R14 (every agent runs a sidecar) and R15 (always-on listener per agent session) in docs/architecture/sidecar-target-architecture.md §7 are built and set to `status: built` with evidence (owner assigned by T-3691/T-3694)
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Each tick increments seq, runs the loopback self-probe and writes .context/sidecar/liveness.yaml {identity, seq, last_probe_at, last_probe_ok, last_probe_latency_ms}
+- [ ] The watcher is started with the receiver (`fw sidecar receiver start` or `fw sidecar start`), restarted by its supervisor when killed, survives reboot by the repo's existing supervision pattern, and shows in `fw sidecar status`; `claude-fw --termlink` sessions get one; inert and visibly so without TermLink
+- [ ] `fw doctor` and `fw audit` WARN/FAIL when the watcher is not live (seq stalled 2 ticks or probe failed); live test: kill the watcher → not-live reported → supervisor restarts it
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
