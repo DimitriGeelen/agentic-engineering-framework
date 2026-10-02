@@ -2095,7 +2095,9 @@ USAGE:
                                   as unbuilt. See `fw bvp estimate-cost --help`.
   fw bvp confirm T-<id> [--override Dn=N]... [--i-am-human|--from-watchtower]
                                   move bvp_scores_proposed → bvp_scores
-                                  (sovereignty boundary, F7/D8, §ACD-gated)
+                                  (agents may confirm, D-661; run `fw bvp judge`
+                                  first; operator edits via Watchtower or
+                                  --i-am-human are sticky, T-3523)
   fw bvp estimate T-<id> [--dry-run] [--json]
                                   score a task and write bvp_scores_proposed:
                                   (heuristic v1, NOT sovereignty-bearing)
