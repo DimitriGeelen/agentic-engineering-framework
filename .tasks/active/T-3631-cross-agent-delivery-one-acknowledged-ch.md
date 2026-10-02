@@ -66,24 +66,24 @@ cost_estimate_proposed:
 ## Open Questions
 
 - **IW-1: Which ONE channel does a peer use to reach AEF, and who consumes it?** Option one: give framework:pickup a consumer that reads, acts and posts a receipt per offset. Option two: retire it in favour of the sidecar DM to the framework agent. Either way, document the one channel. Today it has 258 posts and one stale receipt (up to 81).
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: answered
+  rationale: the one channel is the sidecar (D-645 design; receive half delivered in T-3693, HTTP receiver + ready-flag injection, live two-agent e2e 3/3; the 30 s watcher in T-3684/T-3685 also reads the hub inbox topic); framework:pickup gets retired, not given a second consumer (build slice after GO)
 
 - **IW-2: Where do unconfirmed outbound messages surface, and after how long?** A delivery ledger that handover and audit read: an "unconfirmed after N hours" WARN, so that "posted" is never reported as "told". Which N, and does the ledger cover pickups, channel posts and sidecar DMs alike?
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: deferred
+  rationale: the ledger exists since T-3693 (sender states SENT→RECEIVED→HANDED_OVER→REPLIED, ESCALATED set by infrastructure on deadline); the surfacing (fw sidecar latency, doctor/audit WARN on unconfirmed) is built in T-3684; N is set there from measured latency (median reply today 49 min, max 278 min)
 
 - **IW-3: How do co-resident agents get distinct identities?** All agents on .107 sign as one TermLink identity (T-1448), so replies wake the TermLink agent. The options are per-agent identity in TermLink (Gap Homing: TermLink's fix) or a framework-level reply-to agent id honoured by sidecars. Which side fixes it, and what does the framework do meanwhile?
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: deferred
+  rationale: per-agent signing identity is TermLink's fix (Gap Homing; D5/D6 routed to 010-termlink 2026-10-01, status asked 2026-10-02); meanwhile the framework distinguishes agents by circuit id (D-660) and per-agent sidecar receivers with bearer tokens (T-3693, T-3725)
 
 - **IW-4: How is the unread backlog (framework:pickup 82-254, ~70 posts addressed to AEF) triaged without a flood of tasks?** One pass reads each post, answers or files it (one bug, one task), and posts a receipt only for what was actually read.
   confidence: 2
-  disposition:
-  rationale:
+  disposition: answered
+  rationale: done for the sidecar inbox by T-3678 (54/54 consults classified from decoded bodies, 13 verified defects filed one per task T-3695..T-3707, replies sent); the framework:pickup 82-254 backlog gets the same one-pass treatment as a build slice after GO
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
