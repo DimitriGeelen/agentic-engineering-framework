@@ -612,3 +612,48 @@ def test_late_received_never_regresses_a_reply(env):
     # the ledger itself keeps every row, in arrival order
     assert [r["state"] for r in direct.history("m-8")] == [
         direct.SENT, direct.HANDED_OVER, direct.REPLIED, direct.RECEIVED]
+
+
+def test_peer_confirm_and_reply_racing_ahead_of_send_over_real_http(env, monkeypatch):
+    """Round-3: the codex round-2 interleaving, driven through the REAL send()
+    and two REAL receiver processes. B's receiver answers RECEIVED; before our
+    send() call gets to write that row, B's prompt-hook CONFIRM-2 (real POST
+    /ack to A's receiver) and B's reply (real direct.send to A's receiver) both
+    land in A's ledger. send() then writes RECEIVED last. The effective state
+    must stay REPLIED, and the sweep must not escalate it."""
+    a, b = env.project("t3693-a"), env.project("t3693-b")
+    env.start(a)
+    env.start(b)
+    env.use(a)
+    real_post = direct.post_with_token
+    raced: list[str] = []
+
+    def post_then_race(entry, path, payload, token=None):
+        status, resp = real_post(entry, path, payload, token=token)
+        if path == "/message" and payload.get("to") == "t3693-b" and not raced:
+            raced.append(payload["client_msg_id"])
+            env.use(b)
+            hooks._confirm(payload["client_msg_id"], payload, "t3693-b")
+            back = direct.send(lifecycle.lookup("t3693-a"), from_id="t3693-b", to="t3693-a",
+                               body="answer", conversation_id=payload["conversation_id"],
+                               in_reply_to=payload["client_msg_id"])
+            assert back["state"] == direct.RECEIVED
+            env.use(a)
+        return status, resp
+
+    monkeypatch.setattr(direct, "post_with_token", post_then_race)
+    row = direct.send(lifecycle.lookup("t3693-b"), from_id="t3693-a", to="t3693-b",
+                      body="q", conversation_id="conv-race", handover_deadline_s=0)
+    cid = row["client_msg_id"]
+    assert raced == [cid]
+    # rows landed in arrival order: B's confirm and reply BEFORE our RECEIVED …
+    assert [r["state"] for r in direct.history(cid)] == [
+        direct.SENT, direct.HANDED_OVER, direct.REPLIED, direct.RECEIVED]
+    assert direct.history(cid)[1]["by"] == "peer-receiver:t3693-b"
+    assert direct.history(cid)[2]["by"] == "own-receiver"
+    # … and the late RECEIVED (deadline already past) regresses nothing
+    assert direct.latest_state(cid) == direct.REPLIED
+    assert direct.latest()[cid]["state"] == direct.REPLIED
+    assert direct.escalate_expired(now="2099-01-01T00:00:00+00:00") == []
+    assert direct.confirm_from_peer(cid, direct.HANDED_OVER, "t3693-b") is False
+    assert direct.latest_state(cid) == direct.REPLIED
