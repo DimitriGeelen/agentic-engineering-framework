@@ -191,8 +191,8 @@ register:
     text: "Write-time fast path: if the receiver is ready, inject into it now"
     source: "T-3397 §Consumption"
     owner_task: T-3693
-    status: in-progress
-    evidence: "not built: T-3693 AC 'receiver injects ONE line when agent is ready' (T-3694 re-point)"
+    status: built
+    evidence: "T-3693: lib/sidecar/inject.py + direct.py inject-on-store when ready; live e2e tests/integration/t3693_sidecar_e2e_test.py 3/3 (docs/reports/T-3693-e2e-*); codex round 4 PASS (docs/reports/T-3693-review-codex.md)"
 
   - id: R3
     text: "Cron tick, default 30 s, configurable: guaranteed-delivery fallback that injects when ready"
@@ -205,8 +205,8 @@ register:
     text: "Ready flag: Stop hook writes ready-for-input: true; UserPromptSubmit clears it"
     source: "T-3397 §Consumption"
     owner_task: T-3693
-    status: in-progress
-    evidence: "not built: T-3693 ACs 'Stop hook sets ready-for-input / UserPromptSubmit clears' (T-3694 re-point)"
+    status: built
+    evidence: "T-3693: lib/sidecar/hooks.py Stop sets ready, UserPromptSubmit clears first; wired in .claude/settings.json + lib/init.sh; live Stop-hook readiness in docs/reports/T-3693-e2e-run.log; codex round 4 PASS"
 
   - id: R5
     text: "Urgent bypass: urgent messages inject immediately regardless of state"
@@ -219,8 +219,8 @@ register:
     text: "Bidirectional ack: sender sees stored / injected-now / injected-later"
     source: "T-3397"
     owner_task: T-3693
-    status: partial
-    evidence: "states exist, names misleading (T-3682); T-3561 closed owning it partial — T-3693 AC 'sender ledger records SENT → RECEIVED → HANDED_OVER → REPLIED' (T-3694 re-point)"
+    status: built
+    evidence: "T-3693: sender ledger SENT → RECEIVED → HANDED_OVER → REPLIED (+ UNDELIVERABLE/REJECTED/ESCALATED), monotonic (dafbca068); INJECTED_NOW renamed HUB_ACCEPTED (T-3561); live ledger in docs/reports/T-3693-e2e-positive-evidence.json; codex round 4 PASS"
 
   - id: R7
     text: "Liveness: .context/sidecar/liveness.yaml {identity, seq, last_probe_at, latency}; self-probe every 30 s tick"
