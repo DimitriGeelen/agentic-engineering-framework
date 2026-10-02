@@ -31,6 +31,10 @@ def sc(tmp_path, monkeypatch):
     monkeypatch.setenv("FRAMEWORK_ROOT", str(tmp_path))
     monkeypatch.setenv("PROJECT_ROOT", str(tmp_path))
     monkeypatch.setenv("FW_SIDECAR_AGENT_ID", "answered-test")
+    # Pin the hub anchor: without it circuit.hub_id() shells out to the live
+    # `termlink hub fingerprint`, which a cron/env -i run cannot reach (T-3727).
+    monkeypatch.setenv("FW_SIDECAR_HUB_ID", "cacc73ea32b121dd")
+    monkeypatch.setenv("FW_SIDECAR_HOST", "host107.ring20.lan")
     import lib.sidecar.outbox as outbox
     import lib.sidecar.inbox as inbox
     import lib.sidecar.retry as retry

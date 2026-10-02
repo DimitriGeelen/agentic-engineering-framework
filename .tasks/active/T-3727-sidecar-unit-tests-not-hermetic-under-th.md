@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T14:40:33Z
-last_update: 2026-10-02T14:42:09Z
+last_update: '2026-10-02T14:45:19Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -75,6 +75,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-02T14:45:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=274,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3727: Sidecar unit tests not hermetic under the nightly env: 27 reds in test_sidecar_sweep/answered_topics/v9_dual_read (CircuitError: hub fingerprint unreadable) after today's identity/path changes
@@ -87,8 +97,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Causing commit localised and named in ## RCA, with the side (test vs production) that was wrong
+- [x] test_sidecar_sweep/answered_topics/v9_dual_read pass under `env -i` (nightly-like env) — no test reaches the live hub
+- [x] `python3 -m pytest -q tests/unit -k sidecar` green in both an interactive shell and `env -i`; `bats tests/lint/` green
+- [x] No production check weakened (hub_id / project_id resolution unchanged unless shown wrong)
+- [x] Prevention: tests/unit/conftest.py makes the live hub unreachable for every `test_sidecar_*` module, so an unpinned test goes red in an interactive shell too (negative control: pin removed from a scratch copy of test_sidecar_sweep.py → 12 failed interactively)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,7 +262,20 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+env -i PATH=/usr/local/bin:/usr/bin:/bin:/root/.cargo/bin HOME=/root python3 -m pytest -q -p no:cacheprovider tests/unit/test_sidecar_sweep.py tests/unit/test_sidecar_answered_topics.py tests/unit/test_sidecar_v9_dual_read.py > /tmp/.t3727-envi.out 2>&1 && grep -q passed /tmp/.t3727-envi.out
+env -i PATH=/usr/local/bin:/usr/bin:/bin:/root/.cargo/bin HOME=/root python3 -m pytest -q -p no:cacheprovider tests/unit -k sidecar > /tmp/.t3727-envi-all.out 2>&1 && grep -q passed /tmp/.t3727-envi-all.out
+python3 -m pytest -q -p no:cacheprovider tests/unit -k sidecar > /tmp/.t3727-shell.out 2>&1 && grep -q passed /tmp/.t3727-shell.out
+grep -q "_sidecar_tests_cannot_reach_the_live_hub" tests/unit/conftest.py
+
 ## RCA
+
+**Symptom:** 27 reds (test_sidecar_sweep 12, test_sidecar_answered_topics 10, test_sidecar_v9_dual_read 5) under `env -i` / the unit-suite runner, all `CircuitError: hub fingerprint unreadable` from `lib/sidecar/circuit.py:127`; the same files pass (37) in an interactive shell and passed in the 01:03Z nightly.
+
+**Root cause:** the tests, not production. None of the three fixtures pinned `FW_SIDECAR_HUB_ID`, so `circuit.hub_id()` fell through to the live `termlink hub fingerprint` call — the seven sibling `test_sidecar_*` files all pin it. **No commit in the suspect list caused the regression.** Bisected with read-only `git archive` scratch copies under `env -i`: fa4d0de4d~1 (before T-3671), fa4d0de4d (T-3671), 6e8c37c37, 25944186d, 8558988a0, 801c9c253, 53891a246, 40c556b24 (T-3717), 462102f95 and HEAD all give the identical 27 failed / 10 passed. The defect dates from the files' creation: 95ed08493 (T-3418, 2026-09-22, sweep), 5d2e07edc (T-3462, 2026-09-25, answered_topics), 32f1ca21b (T-3479, 2026-09-25, v9_dual_read). What changed today was the environment. Without `TERMLINK_RUNTIME_DIR`, termlink looks for the hub in `/tmp/termlink-0`. That directory was last modified 2026-10-02 12:19 and no longer holds `hub.cert.pem` (the hub runs from `/var/lib/termlink`). So the 01:03Z cron run still reached a hub and went green, and every `env -i` run after 12:19 cannot. Production resolution is correct as written: a real consumer must resolve its own hub id, and an unreadable fingerprint must raise rather than invent an address. Nothing in `lib/` was changed.
+
+**Why structurally allowed:** the authoring tasks (T-3418/T-3462/T-3479) ran their tests in an interactive shell where `TERMLINK_RUNTIME_DIR` points at a running hub, so the unpinned path *succeeded* — a false green indistinguishable from a hermetic pass. The nightly runner inherited the same luck via the legacy `/tmp/termlink-0` runtime dir. Nothing made "this test touched the live hub" observable until the hub moved.
+
+**Prevention:** `tests/unit/conftest.py::_sidecar_tests_cannot_reach_the_live_hub` (autouse) points `TERMLINK_RUNTIME_DIR` at an empty tmp dir for every `test_sidecar_*` module, so an unpinned test fails in the author's interactive shell as well as in cron. Env rather than a patched `_binary` because these tests `importlib.reload` the sidecar modules. Negative control: removing the pin from a scratch copy of test_sidecar_sweep.py gives 12 failed in an interactive shell. The three fixtures now pin `FW_SIDECAR_HUB_ID` / `FW_SIDECAR_HOST` like their siblings.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).

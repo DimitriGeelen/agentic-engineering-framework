@@ -165,3 +165,20 @@ def _restore_rebound_class_identity():
         # rebuilt class compares equal on every attribute and is still wrong.
         if mod is not None and getattr(mod, attr, None) is not original:
             setattr(mod, attr, original)
+
+
+@pytest.fixture(autouse=True)
+def _sidecar_tests_cannot_reach_the_live_hub(request, monkeypatch, tmp_path):
+    """Make the live TermLink hub unreachable from every `test_sidecar_*` module.
+
+    `circuit.hub_id()` falls back to `termlink hub fingerprint` when the test has
+    not pinned `FW_SIDECAR_HUB_ID`. In an interactive shell that call SUCCEEDS
+    (TERMLINK_RUNTIME_DIR points at the running hub), so an unpinned test passes
+    there and only goes red under cron / `env -i` — T-3727, 27 reds that no author
+    ever saw locally. Pointing the runtime dir at an empty directory makes the
+    unpinned case fail in every environment, the author's included. Env, not a
+    monkeypatched `_binary`: these tests `importlib.reload` the sidecar modules.
+    """
+    if not request.path.name.startswith("test_sidecar_"):
+        return
+    monkeypatch.setenv("TERMLINK_RUNTIME_DIR", str(tmp_path / "no-live-hub"))
