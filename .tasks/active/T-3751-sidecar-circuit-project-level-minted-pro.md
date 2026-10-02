@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-02T22:57:45Z
-last_update: '2026-10-02T23:00:30Z'
+last_update: 2026-10-02T23:29:58Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -67,7 +67,9 @@ The sidecar's five-level circuit (host / hub / project / session / agent, D-660,
 ## Open Questions
 
 - **IW-1: Where exactly does the minted id appear in both grammars?** Path form (`//host/hub/<project>/session/agent`, sent today as `from_circuit`) and the V9 form (`aef::host=…::hub=…::project=…::session=…::@agent::`). Does `project=` carry the id alone, or id plus display name?
-  confidence: 1
+  confidence: 3
+  disposition: answered
+  rationale: operator ruling 2026-10-03 (decision brief, option C) — the minted id (pid-…) in the project slot of BOTH forms (path //host/hub/pid-…/…, V9 project=pid-…); the readable name is display-only via display_format() and never on the wire; reverses T-3287 D2 (root path) for the project slot; see docs/reports/T-3751-project-id-circuit.md
 
 - **IW-2: How do inbox topics migrate without losing messages?** New topic `inbox:<hub>/<pid>`, with the receiver dual-reading the folder-name topic until no peer has written to it for N days?
   confidence: 1
@@ -176,6 +178,12 @@ The minted id exists (T-3534, pid-16hex, back-filled by fw upgrade since T-3750)
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-03 — IW-1: what goes in the project slot (operator ruling)
+- **Chose:** C — minted project_id (`pid-…`) in the project slot of both the path form and the V9 form; the readable project name is display-only (`display_format()`), never on the wire.
+- **Why:** the address must survive a folder rename/move and not collide across hosts, and stay readable for people; C is the only option with both (score +35 vs B +25, D −7, A −25).
+- **Rejected:** A keep path/basename (breaks on rename, the two forms already disagree); B id only (unreadable logs and inboxes); D defer (TermLink builds on folder names meanwhile).
+- **Left open:** name→id resolution (IW-3), topic migration (IW-2), fallback ladder (IW-4); two checkouts of one project on one host share an id — session level separates them (raise in IW-4). Reverses T-3287 D2 for the project slot only.
 
 ## Decision
 
