@@ -7,6 +7,8 @@ FRAMEWORK_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
 
 setup() {
     TEST_TMP="$(mktemp -d)"
+    # Git-discovery fence: nothing in this test may resolve to the repo above $TEST_TMP.
+    export GIT_CEILING_DIRECTORIES="$TEST_TMP"
     PROJ="$TEST_TMP/proj"
     mkdir -p "$PROJ/.fabric/components" "$PROJ/src"
     git -C "$PROJ" init -q
