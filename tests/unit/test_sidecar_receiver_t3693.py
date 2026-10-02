@@ -3,7 +3,7 @@
 Receivers here are REAL processes started through `fw sidecar receiver start`
 and spoken to over real HTTP. The one stand-in is the `termlink` binary inside
 the injector's unit tests (a recorded runner); the real-TermLink legs and the
-two-agent proof live in tests/integration/test_sidecar_t3693_e2e.py.
+two-agent proof live in tests/integration/t3693_sidecar_e2e_test.py.
 """
 
 from __future__ import annotations
