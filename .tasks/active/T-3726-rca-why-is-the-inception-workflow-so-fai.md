@@ -68,13 +68,21 @@ cost_estimate_proposed:
 ## Open Questions
 
 - **IW-1: What is the root-cause class of the refused decides (T-3631, T-3723): agent behaviour (filtering a refusal and synthesising the URL), gate design (refusal only at the last step), or both?**
-  confidence: 2
+  confidence: 3
+  disposition: answered
+  rationale: both, structural first (3/3 reviewers) — Watchtower renders GO without the readiness predicate (web/blueprints/inception.py:344-503) and the handoff mixes refusal and URL; the agent's grep + synthesised URL exploited that (docs/reports/T-3726-synthesis.md)
 - **IW-2: Why do GO'd inceptions not turn into built work (186 GO'd inceptions with no declared build link; T-3396/T-3397 GO'd and unbuilt for 2 weeks; T-3561 keystone captured for a week)?**
-  confidence: 1
+  confidence: 2
+  disposition: answered
+  rationale: GO is terminal with no delivery obligation; build traceability optional and grandfathered; slices may fence out requirements with no owner; completeness only audited after the fact (3/3; synthesis §Root cause 4)
 - **IW-3: Is the number and sequencing of inception gates itself a cause (filing recommendation gate, open-questions gate, commit cap, disposition gate, AC gate, handoff refusal, GO-scope trace, register gate), each discovered one at a time at the moment it refuses?**
-  confidence: 1
+  confidence: 2
+  disposition: answered
+  rationale: yes — readiness re-implemented in ~5 places with different severities, refusals discovered serially; each gate patches a symptom (3/3); fix = one readiness API consumed everywhere (F2)
 - **IW-4: Which structural changes make the inception workflow robust, ranked by impact and cost, and which current gates should be merged, moved earlier or removed?**
-  confidence: 0
+  confidence: 2
+  disposition: answered
+  rationale: consensus F1-F6 (render-time readiness in Watchtower, one readiness API, handoff output contract, GO creates a delivery obligation, independent acceptance, visible model routing); 2/3 removals (commit cap, filing DEFER-stub cron, auto-tick ACs); splits listed for the operator in docs/reports/T-3726-synthesis.md
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
@@ -158,7 +166,11 @@ cost_estimate_proposed:
 
 Operator demand 2026-10-02 after the second refused GO in one day (T-3631, T-3723). Proximate cause verified: fw task review correctly refused (exit 1, 'BLOCKED: NOT decision-ready'), and the agent grep-filtered the output, saw no URL, and synthesised the handoff URL by hand, contrary to CLAUDE.md. Systemic evidence: 186 GO'd inceptions with no declared build link; the T-3396/T-3397 sidecar design GO'd but unbuilt for 2 weeks (T-3682); inception dispatch 0/122. GO = run the three-vendor external RCA review, then decide structural fixes.
 
+UPDATE after the reviews (2026-10-02): GO on building the consensus fixes, in order: F1+F2 (readiness API + Watchtower renders it, GO hidden when unready), F3 (handoff output contract), F4 (GO creates a binding delivery obligation; absorbs T-3691/T-3694 register and T-1984), F5+F6 (independent acceptance, visible routing — T-3709). Removals (commit cap, DEFER-stub cron, auto-tick ACs) only after the measurements the reviewers asked for. Operator rulings needed on the splits: G-067 open-questions gate, Google's signed decision nonce, and how hard F4 bites (atomic child creation vs mandatory manifest).
+
 **Evidence:**
+- docs/reports/T-3726-synthesis.md (consensus and splits)
+- docs/reports/T-3726-review-openai.md, -zai.md, -google.md (blind, three vendors)
 
 <!-- Add evidence bullets as exploration progresses (file paths,
      commit hashes, test results). The filing-time recommendation
