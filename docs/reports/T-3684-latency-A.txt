@@ -1,0 +1,11 @@
+outbound (5 message(s), 0 without HANDED_OVER)
+  send to received       n=5    median=0.01s p95=1.107s max=1.107s
+  send to handed over    n=5    median=78.52s p95=110.713s max=110.713s
+    f5045645-c16a-4b5a-a46b-14a2d8c111f2 recv=0.01s handed_over=1.455s
+    c9ae9360-747b-4f34-bee2-890b254b89d5 recv=0.01s handed_over=110.713s
+    1f00b23c-0e50-4d09-8175-6bd6c16c6d0d recv=0.009s handed_over=78.52s
+    50f1c1ef-c68d-4340-aa40-28c59d4512bc recv=0.01s handed_over=105.491s
+    86999409-671d-4bb2-96e9-fa4e9b878f39 recv=1.107s handed_over=2.589s
+inbound (0 message(s), 0 without HANDED_OVER)
+  send to received       n=0
+  send to handed over    n=0

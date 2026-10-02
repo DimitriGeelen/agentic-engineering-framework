@@ -1,0 +1,107 @@
+{
+  "outbound": {
+    "messages": [],
+    "send_to_received": {
+      "n": 0,
+      "median": null,
+      "p95": null,
+      "max": null
+    },
+    "send_to_handed_over": {
+      "n": 0,
+      "median": null,
+      "p95": null,
+      "max": null
+    },
+    "open": 0
+  },
+  "inbound": {
+    "messages": [
+      {
+        "msg_id": "1f00b23c-0e50-4d09-8175-6bd6c16c6d0d",
+        "from": "t3684a-ox90o8",
+        "via": "direct",
+        "urgent": true,
+        "sent_at": "2026-10-02T23:42:08.422367+00:00",
+        "send_to_received_s": 0.008,
+        "send_to_handed_over_s": 78.489,
+        "inject_triggers": [
+          "on-store"
+        ]
+      },
+      {
+        "msg_id": "48b80204-bc8c-4674-b397-0d09b8a3676a",
+        "from": "t3684a-ox90o8",
+        "via": "hub-topic",
+        "urgent": false,
+        "sent_at": "2026-10-02T23:45:38.487000+00:00",
+        "send_to_received_s": 103.716,
+        "send_to_handed_over_s": 105.144,
+        "inject_triggers": [
+          "tick"
+        ]
+      },
+      {
+        "msg_id": "50f1c1ef-c68d-4340-aa40-28c59d4512bc",
+        "from": "t3684a-ox90o8",
+        "via": "direct",
+        "urgent": false,
+        "sent_at": "2026-10-02T23:45:38.198286+00:00",
+        "send_to_received_s": 0.009,
+        "send_to_handed_over_s": 105.454,
+        "inject_triggers": [
+          "tick"
+        ]
+      },
+      {
+        "msg_id": "a0f56d53-1940-472c-b274-b46d82f7ed39",
+        "from": "t3684a-ox90o8",
+        "via": "hub-topic",
+        "urgent": false,
+        "sent_at": "2026-10-02T23:41:35.184000+00:00",
+        "send_to_received_s": 15.897,
+        "send_to_handed_over_s": 17.329,
+        "inject_triggers": [
+          "tick"
+        ]
+      },
+      {
+        "msg_id": "c9ae9360-747b-4f34-bee2-890b254b89d5",
+        "from": "t3684a-ox90o8",
+        "via": "direct",
+        "urgent": false,
+        "sent_at": "2026-10-02T23:42:02.110350+00:00",
+        "send_to_received_s": 0.009,
+        "send_to_handed_over_s": 110.68,
+        "inject_triggers": [
+          "tick"
+        ]
+      },
+      {
+        "msg_id": "f5045645-c16a-4b5a-a46b-14a2d8c111f2",
+        "from": "t3684a-ox90o8",
+        "via": "direct",
+        "urgent": false,
+        "sent_at": "2026-10-02T23:41:30.885753+00:00",
+        "send_to_received_s": 0.009,
+        "send_to_handed_over_s": 1.423,
+        "inject_triggers": [
+          "on-store"
+        ]
+      }
+    ],
+    "send_to_received": {
+      "n": 6,
+      "median": 0.009,
+      "p95": 103.716,
+      "max": 103.716
+    },
+    "send_to_handed_over": {
+      "n": 6,
+      "median": 91.817,
+      "p95": 110.68,
+      "max": 110.68
+    },
+    "open": 0
+  }
+}
