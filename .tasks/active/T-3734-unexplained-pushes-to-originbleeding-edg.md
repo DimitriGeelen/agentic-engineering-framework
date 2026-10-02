@@ -99,6 +99,7 @@ Findings so far (parent session, 2026-10-02 ~17:50Z), times UTC:
 - DISPROVED: "the ratchet read a half-written report". unit-suite.sh writes LATEST.yaml atomically at the end (tmp + rename), so at 14:11Z the gate read the 01:03Z nightly report (26 new reds), which should refuse.
 - Mirror sync (cron, 15 min) only syncs the github remote (.mirror-sync.log).
 - No entry in .gate-bypass-log.yaml at 14:0x-14:2x.
+STRONG LEAD (21:50 local): later "update by push" reflog entries are at 18:36:52, 19:50:35 and 21:47:09 (+02:00). Each is a minute or a few after a quarter-hour mark, matching the 15-min `fw mirror sync` cron (/etc/cron.d/agentic-audit-999-*, "Mirror cascade auto-recovery"). The 21:47 push carried 1caf5450a minutes after the session committed it and while the session's own pushes were being refused. Check whether mirror sync pushes local bleeding-edge to origin, and with which pre-push verdict (cron environment, no CLAUDE_CODE_SESSION_ID, possibly a different audit scope).
 Remaining candidates to check: the continuous-run Stop hook (agents/context/stop-driver.sh; audit warned it is "cycling on a stale terminate reason") triggering a handover push; another Claude session working in this repo; the pre-push audit scope used by handover pushes; /var/log or shell history for git push at 14:11Z.
 
 ## Acceptance Criteria
