@@ -165,7 +165,9 @@ true
 
     run "$FW" task update T-9903 --status work-completed
     [ "$status" -ne 0 ]
-    [[ "$output" == *"register"* ]] || [[ "$output" == *"owner"* ]] || [[ "$output" == *"Cannot complete"* ]]
+    # T-3694: was an any-of on "register"/"owner"/"Cannot complete", which any
+    # unrelated close failure satisfies. Pin the register gate's own finding.
+    [[ "$output" == *"R2: deferred here but has no owner_task"* ]]
 }
 
 # Treatment: task defers requirement but owner doesn't exist
@@ -173,9 +175,11 @@ true
     _write_design "$FRAMEWORK_ROOT/docs/architecture/redteam-design.md"
     _write_arc "redteam-arc" "docs/architecture/redteam-design.md"
 
-    # Main task defers R1 which names T-9999 (doesn't exist)
+    # Main task defers R1, whose register owner T-9901 is not created in this test.
+    # T-3694: the prose used to name T-9999, which the register gate never reads —
+    # the row's owner_task is what is checked, so the fixture now says so.
     _write_task_on_arc "T-9904" "Defers with missing owner" "redteam-arc" "## Context
-This slice defers R1 to T-9999 (which doesn't exist).
+This slice defers R1 (its register owner T-9901 does not exist here).
 
 ## Acceptance Criteria
 ### Agent
@@ -189,7 +193,7 @@ true
 
     run "$FW" task update T-9904 --status work-completed
     [ "$status" -ne 0 ]
-    [[ "$output" == *"does not exist"* ]] || [[ "$output" == *"Cannot complete"* ]]
+    [[ "$output" == *"R1: deferred to owner_task T-9901, which does not exist"* ]]
 }
 
 # Control: task that doesn't defer anything passes

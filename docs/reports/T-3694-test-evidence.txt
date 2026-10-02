@@ -1,0 +1,69 @@
+# T-3694 captured test and live-check output — 2026-10-02T00:45:18Z, HEAD 70d2946c2 + working tree
+
+$ python3 -m pytest tests/unit/test_t3694_design_register.py -v
+tests/unit/test_t3694_design_register.py::test_violations_control_clean PASSED [  4%]
+tests/unit/test_t3694_design_register.py::test_violations_treatment_fails[row0-R2: no owner_task] PASSED [  8%]
+tests/unit/test_t3694_design_register.py::test_violations_treatment_fails[row1-R2: owner_task T-0404 does not exist] PASSED [ 12%]
+tests/unit/test_t3694_design_register.py::test_violations_treatment_fails[row2-R2: owner T-0001 is completed but row status is 'partial'] PASSED [ 16%]
+tests/unit/test_t3694_design_register.py::test_violations_see_unlinked_and_arc_linked_docs PASSED [ 20%]
+tests/unit/test_t3694_design_register.py::test_violations_sidecar_shape_before_and_after_repoint PASSED [ 24%]
+tests/unit/test_t3694_design_register.py::test_live_register_has_no_owner_on_unrelated_t3692 PASSED [ 28%]
+tests/unit/test_t3694_design_register.py::test_stale_keystone_owner_of_unbuilt_row PASSED [ 32%]
+tests/unit/test_t3694_design_register.py::test_stale_keystone_built_row_does_not_count PASSED [ 36%]
+tests/unit/test_t3694_design_register.py::test_stale_keystone_by_arc_field_and_by_name PASSED [ 40%]
+tests/unit/test_t3694_design_register.py::test_stale_keystone_uses_last_demotion_not_created PASSED [ 44%]
+tests/unit/test_t3694_design_register.py::test_stale_keystone_cli_exit_codes PASSED [ 48%]
+tests/unit/test_t3694_design_register.py::test_self_deferral_reproduces_t3691 PASSED [ 52%]
+tests/unit/test_t3694_design_register.py::test_self_deferral_t3691_control_with_real_owners PASSED [ 56%]
+tests/unit/test_t3694_design_register.py::test_self_deferral_completed_target_refused PASSED [ 60%]
+tests/unit/test_t3694_design_register.py::test_self_deferral_ignores_context_and_fenced_code PASSED [ 64%]
+tests/unit/test_t3694_design_register.py::test_self_deferral_formatting_does_not_hide_target[Remaining work deferred to `T-0404`.] PASSED [ 68%]
+tests/unit/test_t3694_design_register.py::test_self_deferral_formatting_does_not_hide_target[Remaining work is deferred to\nT-0404 for later.] PASSED [ 72%]
+tests/unit/test_t3694_design_register.py::test_self_deferral_formatting_does_not_hide_target[Remaining work deferred to [T-0404](/tasks/T-0404).] PASSED [ 76%]
+tests/unit/test_t3694_design_register.py::test_self_deferral_formatting_does_not_hide_target[Remaining work deferred to **T-0404**.] PASSED [ 80%]
+tests/unit/test_t3694_design_register.py::test_self_deferral_list_items_stay_separate PASSED [ 84%]
+tests/unit/test_t3694_design_register.py::test_close_check_resolves_arc_by_id_not_filename PASSED [ 88%]
+tests/unit/test_t3694_design_register.py::test_close_check_refuses_owner_closing_on_unbuilt_row PASSED [ 92%]
+tests/unit/test_t3694_design_register.py::test_approvals_renders_stale_keystone PASSED [ 96%]
+tests/unit/test_t3694_design_register.py::test_approvals_no_section_when_fresh PASSED [100%]
+============================= 25 passed in 10.61s ==============================
+
+$ bats tests/governance/test_t3694_conformance_gate.bats
+1..12
+ok 1 T-3691 reproduction: close REFUSED when deferral targets are missing/unrelated
+ok 2 T-3691 control: same text closes once both targets are active and name it
+ok 3 self-deferral: agent cannot waive the gate with --skip-self-deferral
+ok 4 register gate: arc resolved by id (not filename) — unowned deferred row REFUSED
+ok 5 register gate: owner closing while its row is partial REFUSED (T-3561 shape)
+ok 6 register gate control: owner closes once its row is built
+ok 7 doctor WARNs on a register row whose owner does not exist
+ok 8 doctor control: OK on a register whose owner is active
+ok 9 audit FAILs: owner completed while its row is not built (the T-3561 shape)
+ok 10 audit FAILs: row with no owner_task
+ok 11 audit control: re-pointed to an active owner → PASS
+ok 12 audit WARNs on a keystone captured >3 days; PASS once started
+
+$ bats tests/governance/test_register_requirements_gate.bats
+1..5
+ok 1 register gate: PASSES when deferred R-id names existing owner
+ok 2 register gate: BLOCKS when R-id deferred without owner_task
+ok 3 register gate: BLOCKS when owner_task does not exist
+ok 4 register gate: PASSES when no requirements deferred
+ok 5 register gate: PASSES with --skip-register-requirements bypass
+
+$ python3 lib/design_register.py violations   (live)
+rc=0
+
+$ python3 lib/design_register.py stale-keystones   (live)
+rc=0
+
+$ bin/fw vendor self --check
+Self-vendor: vendored .agentic-framework/ in sync with source.
+rc=0
+
+$ bin/fw watchtower current
+[watchtower] current: Watchtower pid 3452877 is newer than every file under web/
+rc=0
+
+$ curl -s -o /dev/null -w "%{http_code}" "$(bin/fw watchtower url)/approvals"
+200

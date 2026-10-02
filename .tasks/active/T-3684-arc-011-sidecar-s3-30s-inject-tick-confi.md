@@ -98,6 +98,7 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
+- [ ] Design register rows R3 (30 s configurable tick) and R5 (urgent bypass) in docs/architecture/sidecar-target-architecture.md §7 are built and set to `status: built` with evidence (owner assigned by T-3694)
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [ ] [First criterion]
 - [ ] [Second criterion]

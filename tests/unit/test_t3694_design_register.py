@@ -224,11 +224,32 @@ def test_self_deferral_completed_target_refused(tmp_path):
     assert r.returncode == 1 and "T-0101 is not active" in r.stdout
 
 
-def test_self_deferral_ignores_context_and_code(tmp_path):
+def test_self_deferral_ignores_context_and_fenced_code(tmp_path):
     """A Context line describing another task's deferral is a finding, not a
-    deferral by this task (T-3694's own description is exactly that)."""
+    deferral by this task (T-3694's own description is exactly that); a fenced
+    command block is not prose."""
     body = ("## Context\n\nT-0200 deferred its items to T-0404.\n\n"
-            "## Recommendation\n\nRun `fw x deferred to T-0405` once.\n")
+            "## Recommendation\n\nGO.\n\n```\nfw x  # deferred to T-0405\n```\n")
+    f = task(tmp_path, "T-0100", body=body)
+    assert cli(tmp_path, "self-deferral", str(f)).returncode == 0
+
+
+@pytest.mark.parametrize("prose", [
+    "Remaining work deferred to `T-0404`.",                  # inline code
+    "Remaining work is deferred to\nT-0404 for later.",     # wrapped line
+    "Remaining work deferred to [T-0404](/tasks/T-0404).",   # markdown link
+    "Remaining work deferred to **T-0404**.",                # emphasis
+])
+def test_self_deferral_formatting_does_not_hide_target(tmp_path, prose):
+    """T-3694 review finding: backticks and line wraps used to hide the target."""
+    f = task(tmp_path, "T-0100", body=f"## Recommendation\n\n{prose}\n")
+    r = cli(tmp_path, "self-deferral", str(f))
+    assert r.returncode == 1 and "T-0404 does not exist" in r.stdout
+
+
+def test_self_deferral_list_items_stay_separate(tmp_path):
+    """Joining wrapped lines must not glue a list item onto the next one."""
+    body = "## Evolution\n\n- Scope was deferred to later in this task.\n- T-0404 is cited as evidence.\n"
     f = task(tmp_path, "T-0100", body=body)
     assert cli(tmp_path, "self-deferral", str(f)).returncode == 0
 

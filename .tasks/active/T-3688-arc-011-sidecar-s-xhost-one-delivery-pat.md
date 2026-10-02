@@ -62,6 +62,7 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
+- [ ] Design register row R12 (cross-host direct cross-post, credentials refused loudly) in docs/architecture/sidecar-target-architecture.md §7 is built and set to `status: built` with evidence (owner assigned by T-3694)
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [ ] [First criterion]
 - [ ] [Second criterion]

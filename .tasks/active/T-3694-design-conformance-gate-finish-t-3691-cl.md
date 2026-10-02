@@ -102,12 +102,12 @@ docs/reports/T-3694-review-brief.md.
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] `fw audit` (structure section) FAILs when a register row has no owner_task, a non-existent owner_task, or an owner that is completed while the row is not built — predicate lib/design_register.py `violations`, called from agents/audit/audit.sh:check_register_requirements
 - [x] `fw doctor` WARNs on the same register row conditions (bin/fw do_doctor, same predicate)
-- [x] Sidecar register re-pointed to the task whose ACs build each row: R2, R4, R6 → T-3693 (S1-finish); R3, R5 → T-3684 (S3 tick); R12 → T-3688 (S-XHOST); no row points at T-3692; live `violations` exits 0
+- [x] Sidecar register re-pointed so each row's owner commits to it in an AC: R2, R4, R6 → T-3693 (its ACs: inject-when-ready, Stop/UserPromptSubmit ready flag, sender state ledger); R3, R5 → T-3684 and R12 → T-3688 (each given an AC naming the rows, whose descriptions already said 'Gap rows R2-R5' / 'Gap row R12'); no row points at T-3692; live `violations` exits 0
 - [x] Stale keystone: audit WARNs on a captured task that owns an unbuilt register row or is an arc's keystone / slice 1 and has stayed captured >3 days
 - [x] Stale keystone appears on Watchtower /approvals (section-stale-keystones) with task link, arc link and days-captured count
-- [x] Close gate refuses a close whose own result hands work to a missing, inactive, or unrelated task (one that never mentions the closer) — fixture: T-3691's own task file, tests/fixtures/t3694/T-3691-as-closed.md
+- [x] Close gate refuses a close whose own result hands work to a missing, inactive, or unrelated task (one that never mentions the closer), including when the target is backticked, linked, emphasised or wrapped onto the next line — fixture: T-3691's own task file, tests/fixtures/t3694/T-3691-as-closed.md
 - [x] Close gate also refuses a task that closes while owning an unbuilt register row (T-3561 shape), and resolves arcs by `id:` so arc-011 slices are actually gated
-- [x] Tests for every gate with control and treatment: tests/governance/test_t3694_conformance_gate.bats (12), tests/unit/test_t3694_design_register.py (20); existing tests/governance/test_register_requirements_gate.bats green
+- [x] Tests for every gate with control and treatment: tests/governance/test_t3694_conformance_gate.bats (12), tests/unit/test_t3694_design_register.py (25); existing tests/governance/test_register_requirements_gate.bats green with its assertions pinned to the gate's own messages; captured run in docs/reports/T-3694-test-evidence.txt
 - [x] All verification commands pass (tests green, live register clean, vendor in sync, watchtower current)
 
 ### Human
@@ -151,6 +151,7 @@ docs/reports/T-3694-review-brief.md.
 
 ## Verification
 
+grep -q "R3 (30 s configurable tick) and R5" .tasks/active/T-3684-*.md && grep -q "register row R12" .tasks/active/T-3688-*.md
 python3 -m pytest tests/unit/test_t3694_design_register.py -q > /tmp/.t3694-py 2>&1 && grep -q " passed" /tmp/.t3694-py && ! grep -qE "failed|error" /tmp/.t3694-py
 timeout 900 bats tests/governance/test_t3694_conformance_gate.bats > /tmp/.t3694-gate 2>&1 && ! grep -q "^not ok" /tmp/.t3694-gate
 test "$(grep -c '# skip' /tmp/.t3694-gate)" -eq 0
@@ -367,9 +368,9 @@ curl -sf "$(bin/fw watchtower url)/approvals" -o /tmp/.t3694-appr.html
 **Rationale:** Items 3 and 5 of T-3691 and the self-deferral hole are built on one predicate and proven through the real entry points (update-task.sh, audit.sh, bin/fw doctor, /approvals) against throwaway project roots, each with a control. The T-3691 case is reproduced from T-3691's own task text and is refused; a mutation that disables the gate turns that test red. The live sidecar register is clean because every row now points at the task whose ACs build it, not because the check is lenient (the same check FAILs on the pre-repoint register).
 **Evidence:**
 - tests/governance/test_t3694_conformance_gate.bats: 12/12 ok, 0 skipped
-- tests/unit/test_t3694_design_register.py: 20 passed
+- tests/unit/test_t3694_design_register.py: 25 passed
 - tests/governance/test_register_requirements_gate.bats: 5/5 ok (was 3/5 on T-3691's code)
-- docs/reports/T-3694-review-brief.md and docs/reports/T-3694-review-codex.md
+- docs/reports/T-3694-review-brief.md, docs/reports/T-3694-test-evidence.txt, docs/reports/T-3694-review-codex.md (round 1 FAIL, findings fixed) and docs/reports/T-3694-review-codex-r2.md
 - The one open item is the [REVIEW] rendering check of /approvals, which is the operator's.
 
 ## Decisions
@@ -387,6 +388,7 @@ curl -sf "$(bin/fw watchtower url)/approvals" -o /tmp/.t3694-appr.html
 - **Chose:** R2, R4, R6 → T-3693; R3, R5 → T-3684; R12 → T-3688.
 - **Why:** the brief said to point R2-R5 at T-3693, on the premise that T-3561 owned them. The register showed R2-R5 on T-3684 and the completed-owner violation on R6 (T-3561). T-3693's ACs build the ready-flag hooks, the inject-when-ready path and the sender state ledger (R4, R2, R6); they contain no tick and no urgent bypass, which T-3684's description names (R3, R5). T-3688's description names "Gap row R12"; T-3690 retires the legacy address. Pointing a row at a task that will not build it is the false-owner pattern this gate exists to stop.
 - **Rejected:** all of R2-R5 on T-3693 (R3/R5 would read owned by a task that does not build them).
+- **Follow-through (review round 1):** T-3684 and T-3688 had placeholder ACs only, so an AC naming their rows was added to each; only that line was committed for T-3688, whose other uncommitted edits belong to another session.
 
 ### 2026-10-02 — self-deferral relatedness test
 - **Chose:** a deferral target must exist, be active, and mention the closing task's id anywhere in its file.

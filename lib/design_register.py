@@ -325,16 +325,29 @@ def _own_result_text(text: str) -> str:
     body = _body(text)
     body = re.sub(r"<!--.*?-->", "", body, flags=re.S)
     body = re.sub(r"```.*?```", "", body, flags=re.S)
-    body = re.sub(r"`[^`\n]*`", "", body)
-    keep, skip = [], False
+    # Inline code keeps its text: "deferred to `T-1234`" is still a deferral
+    # (T-3694 review: stripping the span let a backticked target escape).
+    body = re.sub(r"`([^`\n]*)`", r"\1", body)
+    units, skip = [], False
     for line in body.splitlines():
         m = re.match(r"^##\s+(.+?)\s*$", line)
         if m:
             skip = m.group(1).strip().lower() in _SKIP_SECTIONS
+            units.append("")
             continue
-        if not skip:
-            keep.append(line)
-    return "\n".join(keep)
+        if skip:
+            continue
+        # A wrapped line continues the previous unit, so "deferred to\nT-1234"
+        # is one sentence. Blank lines, list items, headings and table rows
+        # start a new unit.
+        starts_unit = (not line.strip()
+                       or re.match(r"^\s*(?:[-*+]|\d+\.)\s", line)
+                       or re.match(r"^\s*(?:#|\|)", line))
+        if starts_unit or not units or not units[-1].strip():
+            units.append(line)
+        else:
+            units[-1] += " " + line.strip()
+    return "\n".join(units)
 
 
 def self_deferrals(task_file: Path, root: Path, tasks: dict | None = None) -> list:
