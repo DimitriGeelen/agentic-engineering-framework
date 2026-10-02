@@ -62,6 +62,7 @@ date_finished: null
 ## Acceptance Criteria
 
 ### Agent
+- [ ] Design register rows R7 (liveness.yaml + 30 s self-probe), R14 (every agent runs a sidecar) and R15 (always-on listener per agent session) in docs/architecture/sidecar-target-architecture.md §7 are built and set to `status: built` with evidence (owner assigned by T-3691/T-3694)
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [ ] [First criterion]
 - [ ] [Second criterion]

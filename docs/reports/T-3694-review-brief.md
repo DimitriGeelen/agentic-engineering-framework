@@ -54,7 +54,12 @@ a fenced `register:` block (`:171`). Arcs are resolved by filename, `id:` or `sl
 ### AC3: register re-pointed to real owners
 - `docs/architecture/sidecar-target-architecture.md` §7 now reads: R2, R4, R6 → T-3693; R3, R5 → T-3684; R12 → T-3688. Each row's `evidence:` names the owner AC or description it relies on.
 - **This deviates from the literal instruction ("R2-R5 → T-3693"). Rationale (task file, Decisions):** T-3693's ACs build the ready-flag hooks (R4), inject-when-ready (R2) and the sender state ledger (R6). Its ACs say nothing about the 30 s tick (R3) or the urgent bypass (R5), and T-3684's description names both. R12 was on T-3690 (legacy-address retirement), but T-3688's description says "Gap row R12".
-- **Owner commitment (round-1 fix):** T-3684 and T-3688 carried only placeholder ACs, so each now has an Agent AC that names its rows (`.tasks/active/T-3684-*.md`, `.tasks/active/T-3688-*.md`, under `### Agent`). T-3693's existing ACs cover R2, R4 and R6 by content.
+- **Owner commitment (round-1 and round-2 fixes):** T-3684, T-3688 and T-3685 carried only placeholder ACs. Each now has an Agent AC under `### Agent` that names its rows:
+  - T-3684: R3, R5
+  - T-3688: R12
+  - T-3685: R7, R14, R15 (missed in round 1, caught by round 2)
+
+  T-3693's existing ACs cover R2, R4 and R6 by content: inject-when-ready, the Stop/UserPromptSubmit ready flag, and the sender state ledger. Every non-built row's owner therefore commits to the row in an AC.
 - No row points at T-3692: `tests/unit/test_t3694_design_register.py::test_live_register_has_no_owner_on_unrelated_t3692`, and a Verification line.
 - Every owner exists: R1 T-3402, R8 T-3405, R9 T-3406, R10/R11/R13 T-3561 are completed with status built. T-3684, T-3685, T-3688 and T-3693 are active. `python3 lib/design_register.py violations` exits 0.
 
