@@ -1,23 +1,22 @@
 ---
-id: T-3684
-name: "arc-011 sidecar S3: 30s inject tick (configurable) + harness-asserted ready
-  flag (Stop hook sets ready-for-input, UserPromptSubmit clears) + urgent hard bypass
-  + idle-session wake"
+id: T-3760
+name: "Human fw inception decide refused with 'Task review required' because only
+  the agent-side fw task review writes the .reviewed marker (832 T-996)"
 description: >
-  Design of record: T-3397 §Consumption (cron tick default 30s configurable = guaranteed-delivery
-  fallback; write-time fast path; Stop hook writes ready-for-input:true when the turn
-  ends, UserPromptSubmit clears it instantly; store-then-maybe-inject), operator ruling
-  2026-09-21 (urgent = hard bypass, inject immediately regardless of state), operator
-  2026-10-02 (30s, deliver as designed), target-architecture §2 steps 7-8. Inject
-  = one line into the project's TermLink-registered Claude session so the prompt hook
-  surfaces the messages. Gap rows R2-R5 in docs/reports/T-3682-sidecar-design-conformance-audit.md.
+  832 consult 669719d5 (inception-decide-review-marker): lib/inception.sh T-973 gate
+  checks .context/working/.reviewed-<id>, whose only writer is emit_review via the
+  agent-side fw task review (Watchtower writes it itself, T-1120). A human running
+  decide from the CLI is refused for an obligation the agent missed; 15 hits in 832
+  transcripts. Fix direction from 832: decide satisfies the property itself (render
+  the review to the human before deciding) instead of refusing, and an agent-facing
+  surface shows 'inception ready, review not emitted'. Related: T-3726 F2 readiness
+  API (T-3753).
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
-tags: [sidecar, arc-011, design-conformance, T-3682]
-arc_id: arc-011
+tags: []
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -46,8 +45,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-01T22:58:50Z
-last_update: 2026-10-02T23:13:31Z
+created: 2026-10-02T23:11:56Z
+last_update: '2026-10-02T23:15:39Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -60,7 +59,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-01T23:00:23Z'
+  - ts: '2026-10-02T23:15:20Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -70,7 +69,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-01T23:00:41Z'
+  - ts: '2026-10-02T23:15:39Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -87,26 +86,9 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-  - ts: '2026-10-02T23:04:18Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 3
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=3 (body:portability-abstraction); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3684: arc-011 sidecar S3: 30s inject tick (configurable) + harness-asserted ready flag (Stop hook sets ready-for-input, UserPromptSubmit clears) + urgent hard bypass + idle-session wake
+# T-3760: Human fw inception decide refused with 'Task review required' because only the agent-side fw task review writes the .reviewed marker (832 T-996)
 
 ## Context
 
@@ -115,14 +97,9 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Design register rows R3 (30 s configurable tick) and R5 (urgent bypass) in docs/architecture/sidecar-target-architecture.md §7 are built and set to `status: built` with evidence (owner assigned by T-3694)
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A supervised watcher loop ticks every SIDECAR_TICK seconds (config key in lib/config.sh FW_CONFIG_REGISTRY, default 30); each tick checks the receiver's flagged messages AND the agent's hub inbox topic(s) (legacy topic covered until T-3690)
-- [ ] Urgent consults inject immediately regardless of the ready flag; non-urgent inject only when the target session is ready; HANDED_OVER only on transcript evidence; the sender is informed (CONFIRM-2)
-- [ ] Live e2e (not mocked): an idle real session receives a non-urgent consult within 60 s with nobody typing; a busy session only after its turn ends; urgent while busy; a legacy-topic post within 60 s; watcher disabled → no pickup and the sender sees ESCALATED
-- [ ] `fw sidecar latency` reports send→RECEIVED and send→HANDED_OVER per message (median, p95, max), and the measured figures are in docs/reports/T-3684-review-brief.md
-- [ ] Receipt telemetry on EVERY path (operator 2026-10-03): a message taken off the hub topic (watcher, prompt hook, `fw sidecar inbox`) sends RECEIVED back at once, HANDED_OVER on injection, REPLIED on an --in-reply-to answer; all three timestamps stored and in `fw sidecar latency`; live test: legacy-topic consult → RECEIVED at the sender within 60 s (gap verified: lib/sidecar/inbox.py sends no receipt today)
-- [ ] Independent codex review (docs/reports/T-3684-review-codex.md) ends VERDICT: PASS
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -375,13 +352,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-10-01T22:58:50Z — task-created [task-create-agent]
+### 2026-10-02T23:11:56Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3684-arc-011-sidecar-s3-30s-inject-tick-confi.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3760-human-fw-inception-decide-refused-with-t.md
 - **Context:** Initial task creation
-
-### 2026-10-02T03:05:00Z — handoff from T-3693 [w-t-3693b]
-- **Inherited:** T-3693 built the receiver's injection step but no tick. The tick this task builds should call `fw sidecar deliver-pending --trigger tick` (lib/sidecar_cli.py `cmd_deliver_pending` → lib/sidecar/inject.py `deliver_pending`, flock-guarded and idempotent within 120 s) on its cadence. Register rows R3 (tick) and R5 (urgent bypass) point here. inject.py already injects an `urgent` message regardless of readiness (`urgent_bypass` in the INJECT_ATTEMPT event), so R5's remaining scope is the operator-ruled priority semantics. The live e2e (tests/integration/t3693_sidecar_e2e_test.py) runs deliver-pending every 5 s as a stand-in.
-
-### 2026-10-02T23:04:17Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
