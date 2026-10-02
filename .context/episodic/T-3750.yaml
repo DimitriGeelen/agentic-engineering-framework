@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3750: fw upgrade back-fills the minted project_id (T-3534) for consumers initialised before it existed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-02T22:57:19Z
+# ============================================================================
+
+task_id: T-3750
+task_name: "fw upgrade back-fills the minted project_id (T-3534) for consumers initialised before it existed"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-02T22:39:54Z
+completed: 2026-10-02T22:55:50Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-03T00:42:23+02:00
+last_commit: 2026-10-03T00:55:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw upgrade back-fills the minted project_id (T-3534) for pre-T-3534 consumers; preserves existing, dry-run aware; test. test diagnostics on failure; vendor synced; ACs and verification
+
+# Key outcomes
+outcomes:
+  - '`fw upgrade` on a consumer whose .framework.yaml has no project_id writes one (`pid-` + 16 hex) and reports it (MINTED line)'
+  - 'An existing project_id is preserved byte-for-byte; `--dry-run` writes nothing (prints WOULD MINT when it reaches step 9; a vendored consumer''s dry-run stops at the handoff plan)'
+  - 'Regression test covers mint, preserve and dry-run (tests/unit/t3750_upgrade_backfills_project_id.bats 3/3); upgrade_fresh_machine_simulation.bats 13/13'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-3750-fw-upgrade-back-fills-the-minted-project.md'
+  - 'tests/unit/t3750_upgrade_backfills_project_id.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-03T00:42:23'
+    action: 'T-3750: fw upgrade back-fills the minted project_id (T-3534) for pre-T-3534 consumers; preserves existing, dry-run aware; test'
+  - time: '2026-10-03T00:55:48'
+    action: 'T-3750: test diagnostics on failure; vendor synced; ACs and verification'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 15 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 15
+  commits: 2
+  files_changed: 4
+  lines_added: 478
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3750-fw-upgrade-back-fills-the-minted-project.md
+generated_by: context-agent-hybrid
