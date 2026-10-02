@@ -100,58 +100,95 @@ def boxes(section: str) -> list[tuple[str, bool, str]]:
     return out
 
 
-def verdict_checker(root: Path, task_id: str):
-    """A predicate: does verdict id `vid` back a tick on `task_id`?
-
-    An annotation is text anyone can write (review round 1: a fabricated
-    `**Reviewer verdict:** green` was exempt). It counts only when the reviewer-verdict
-    ledger has that id as a green row for this task AND the applied ledger records
-    verdict_ledger.apply ticking it. Whether that verdict row is itself genuine (signed
-    review dispatch, non-producer commit) is `verdict_ledger.py audit`'s FAIL to raise."""
-    greens, applied = set(), set()
-    for rel, sink in ((".context/reviews/verdicts.jsonl", greens), (".context/reviews/applied.jsonl", applied)):
-        p = root / rel
-        if not p.exists():
-            continue
+def _jsonl(root: Path, rel: str) -> list[dict]:
+    p = root / rel
+    out = []
+    if p.exists():
         for line in p.read_text(encoding="utf-8", errors="replace").splitlines():
             try:
                 r = json.loads(line)
             except (json.JSONDecodeError, ValueError):
                 continue
-            if not isinstance(r, dict) or r.get("task") != task_id:
-                continue
-            if sink is greens and r.get("outcome") == "green" and r.get("id"):
-                greens.add(str(r["id"]))
-            elif sink is applied:
+            if isinstance(r, dict):
+                out.append(r)
+    return out
+
+
+def _criterion_digests(text: str) -> dict[str, set[str]]:
+    """criterion key -> {verdict_ledger.criterion_digest} for every Human criterion in `text`."""
+    try:
+        if str(Path(__file__).resolve().parent.parent) not in sys.path:
+            sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
+        import verdict_ledger as _vl  # noqa: PLC0415 — heavy; only when an annotation is seen
+    except Exception:  # noqa: BLE001 — no validator, no exemption (fail closed)
+        return {}
+    out: dict[str, set[str]] = {}
+    for c in _vl.human_criteria(text):
+        out.setdefault(criterion_key(c.title), set()).add(_vl.criterion_digest(c))
+    return out
+
+
+class VerdictBacking:
+    """Which verdict annotations may exempt a tick on one task.
+
+    An annotation is text anyone can write. It exempts a tick only when (review rounds 1-2)
+      * `verdicts.jsonl` has the cited id as a GREEN row for this task,
+      * that row's `ac_digest` equals verdict_ledger.criterion_digest of THE criterion the
+        annotation sits under (no reuse of A's verdict on B), and
+      * `applied.jsonl` records verdict_ledger.apply ticking it — ONE applied tick event
+        licenses ONE tick (no replay after an un-tick); `consume` spends it.
+    Whether the verdict row is itself genuine (signed review dispatch, non-producer commit)
+    is `verdict_ledger.py audit`'s FAIL to raise."""
+
+    def __init__(self, root: Path, task_id: str):
+        self.digest = {str(r["id"]): str(r.get("ac_digest") or "")
+                       for r in _jsonl(root, ".context/reviews/verdicts.jsonl")
+                       if r.get("task") == task_id and r.get("outcome") == "green" and r.get("id")}
+        self.budget = Counter()
+        for r in _jsonl(root, ".context/reviews/applied.jsonl"):
+            if r.get("task") == task_id:
                 for t in r.get("ticked") or []:
                     if isinstance(t, dict) and t.get("verdict_id"):
-                        applied.add(str(t["verdict_id"]))
-    return lambda vid: bool(vid) and vid in greens and vid in applied
+                        self.budget[str(t["verdict_id"])] += 1
+
+    def bound(self, vid: str, key: str, digests: dict[str, set[str]]) -> bool:
+        return bool(vid) and bool(self.digest.get(vid)) and self.digest[vid] in digests.get(key, set())
+
+    def consume(self, vid: str) -> bool:
+        if self.budget[vid] > 0:
+            self.budget[vid] -= 1
+            return True
+        return False
 
 
-def unprovenanced_ticks(old: str, new: str, verdict_ok=lambda _vid: False) -> list[tuple[str, str]]:
-    """[(criterion key, kind)] for ticks in `new` that `old` did not have.
+def unprovenanced_ticks(old: str, new: str, backing: "VerdictBacking | None" = None
+                        ) -> list[tuple[str, str, str]]:
+    """[(criterion key, kind, verdict id or "")] for ticks in `new` that `old` did not have.
 
     kind: "ticked" (was [ ] under Human), "added-ticked" (new under Human, already [x]),
     "moved-ticked" (left Human unticked, reappears ticked elsewhere in the file).
-    A tick whose annotation cites a verdict `verdict_ok` accepts is excluded.
+    The third field names a verdict BOUND to this criterion (see VerdictBacking) — the
+    caller still has to `consume` an applied tick event for it to count.
     """
     oh, nh = boxes(_human_section(old)), boxes(_human_section(new))
     old_ticked = Counter(k for k, t, _ in oh if t)
     old_open = Counter(k for k, t, _ in oh if not t)
-    new_ticked = Counter(k for k, t, a in nh if t and not verdict_ok(a))
-    new_ann = Counter(k for k, t, a in nh if t and verdict_ok(a))
+    digests = _criterion_digests(new) if backing and any(t and a for _, t, a in nh) else {}
+    new_ticks: dict[str, list[str]] = {}
+    for k, t, a in nh:
+        if t:
+            new_ticks.setdefault(k, []).append(a if backing and backing.bound(a, k, digests) else "")
     out = []
-    for k, n in new_ticked.items():
-        extra = n - max(0, old_ticked[k] - new_ann[k])
-        for _ in range(max(0, extra)):
-            out.append((k, "ticked" if old_open[k] else "added-ticked"))
+    for k, vids in new_ticks.items():
+        extra = len(vids) - old_ticked[k]
+        for vid in sorted(vids, reverse=True)[:max(0, extra)]:  # bound verdicts first
+            out.append((k, "ticked" if old_open[k] else "added-ticked", vid))
     new_human_keys = Counter(k for k, _, _ in nh)
     elsewhere = Counter(k for k, t, _ in boxes(new) if t) - Counter(k for k, t, _ in nh if t)
     for k, n in old_open.items():
         gone = n - new_human_keys[k]
         if gone > 0 and elsewhere[k] > 0:
-            out.append((k, "moved-ticked"))
+            out.append((k, "moved-ticked", ""))
     return out
 
 
@@ -268,8 +305,8 @@ def scan_commits(root: Path, since: str | None = None, rev: str = "HEAD") -> tup
                     continue
                 old = "" if (status.startswith("A") or not parent) else _blob(root, parent, old_path)
                 tid = _task_id(new_path)
-                ok = checkers.setdefault(tid, verdict_checker(root, tid))
-                got[new_path] = (tid, Counter(unprovenanced_ticks(old, _blob(root, sha, new_path), ok)))
+                backing = checkers.setdefault(tid, VerdictBacking(root, tid))
+                got[new_path] = (tid, unprovenanced_ticks(old, _blob(root, sha, new_path), backing))
             per_parent.append(got)
         # a tick is NEW in this commit only if it is new relative to EVERY parent; a tick
         # inherited from a merged branch was judged in that branch's own commit
@@ -278,25 +315,22 @@ def scan_commits(root: Path, since: str | None = None, rev: str = "HEAD") -> tup
             paths &= set(got)
         for path in sorted(paths):
             tid, first = per_parent[0][path]
-            keys = Counter()
-            for (key, _kind), n in first.items():
-                keys[key] += n
+            keys = Counter(k for k, _, _ in first)
             for got in per_parent[1:]:
-                other = Counter()
-                for (key, _kind), n in got[path][1].items():
-                    other[key] += n
-                keys &= other  # kinds may differ per parent; the KEY is what must be new
-            kinds = {key: kind for (key, kind) in first}
-            for key, n in sorted(keys.items()):
-                kind = kinds.get(key, "ticked")
-                for _ in range(n):
-                    d = key_digest(tid, key)
-                    if budget[d] > 0:
-                        budget[d] -= 1
-                        continue
-                    findings.append({"commit": sha, "who": who, "agent": agent, "task": tid,
-                                     "path": path, "kind": kind, "criterion": key[:100],
-                                     "merge": len(parents) > 1})
+                keys &= Counter(k for k, _, _ in got[path][1])  # kinds may differ per parent
+            for key, kind, vid in first:
+                if keys[key] <= 0:
+                    continue
+                keys[key] -= 1
+                if vid and checkers[tid].consume(vid):
+                    continue  # a bound verdict with an unspent applied tick event
+                d = key_digest(tid, key)
+                if budget[d] > 0:
+                    budget[d] -= 1
+                    continue
+                findings.append({"commit": sha, "who": who, "agent": agent, "task": tid,
+                                 "path": path, "kind": kind if not vid else kind + " (verdict replayed)",
+                                 "criterion": key[:100], "merge": len(parents) > 1})
     return findings, where
 
 

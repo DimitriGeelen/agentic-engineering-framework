@@ -17,7 +17,7 @@ GUARDED
 
 HOW (a text gate, deliberately)
 -------------------------------
-The command is tokenised with shlex (quote-aware, so a `>` inside a quoted sed script is
+The command is tokenised bash-style (_tokens: quote-aware, so a `>` inside a quoted sed script is
 not a redirect), split into simple commands on `; && || | & ( ) newline` and backticks,
 and each segment is read as bash would: leading assignments and wrappers (`sudo`, `env`,
 `timeout`, `xargs`, ...) are skipped, so the VERB is the word in command position — a verb
@@ -52,7 +52,6 @@ from __future__ import annotations
 import glob
 import os
 import re
-import shlex
 from dataclasses import dataclass, field
 
 LEDGER_NAME = "human-ac-ticks.jsonl"
@@ -116,38 +115,98 @@ def mentions_guarded(command: str) -> bool:
     return bool(MENTION_RE.search(normalised(command)))
 
 
-def _dequote(tok: str) -> str:
-    try:
-        return "".join(shlex.split(tok, posix=True)) if tok else tok
-    except ValueError:
-        return tok.replace("'", "").replace('"', "")
+OPERATORS = sorted([";;", "&&", "||", "|&", ">>", "&>>", "&>", ">&", ">|", "<>", "<<-", "<<<", "<<",
+                    ";", "&", "|", "(", ")", "<", ">", "\n"], key=len, reverse=True)
+_OPSET = set(OPERATORS)
+_HEREDOC_RE = re.compile(r"<<-?\s*(['\"]?)([A-Za-z_][A-Za-z0-9_]*)\1")
+
+
+def _strip_heredoc_bodies(cmd: str) -> str:
+    """Drop here-document BODIES (kept for the mention check, which reads the raw text).
+
+    A body is data or interpreter code, not shell: tokenising it as shell made an
+    apostrophe in a Python comment an "unbalanced quote"."""
+    out, pending = [], []
+    for line in cmd.split("\n"):
+        if pending:
+            if line.lstrip("\t") == pending[0]:
+                pending.pop(0)
+            continue
+        out.append(line)
+        pending = [m.group(2) for m in _HEREDOC_RE.finditer(line)]
+    return "\n".join(out)
 
 
 def _tokens(command: str) -> list[str] | None:
-    """Operator tokens stay bare (`>`, `|`, ...); WORDS are returned dequoted.
+    """Bash-style words and operators. Operators are bare (`>`, `|`, ...); words are
+    dequoted. A QUOTED word that spells an operator (`grep '>' f`, `grep -e'>' f`) is
+    prefixed with NUL so it is never read as one (T-3695 review rounds 1-2 — shlex could
+    not tokenise a quote attached to an option). None when a quote is unterminated."""
+    cmd = _decode_ansi_c_quoted(_strip_heredoc_bodies(command)).replace("`", "\n")
+    out: list[str] = []
+    buf: list[str] = []
+    inword = False
+    i, n = 0, len(cmd)
 
-    Tokenised NON-posix so a quoted operator keeps its quotes (`grep '>' f` is a search
-    for '>', not a redirect — T-3695 review round 1), then each word is dequoted. A word
-    that dequotes to an operator string is protected with a leading NUL so the segment
-    and redirect logic never mistake it for one.
-    """
-    cmd = _decode_ansi_c(command).replace("`", "\n")
-    lex = shlex.shlex(cmd, posix=False, punctuation_chars=";&|()<>\n")
-    lex.whitespace_split = True
-    lex.commenters = ""
-    lex.whitespace = " \t\r"
-    try:
-        raw = list(lex)
-    except ValueError:
-        return None
-    out = []
-    for t in raw:
-        if t and set(t) <= set(";&|()<>\n"):
-            out.append(t)
-            continue
-        w = _dequote(t)
-        out.append("\x00" + w if w and set(w) <= set(";&|()<>\n") else w)
+    def flush():
+        nonlocal buf, inword
+        if inword:
+            w = "".join(buf)
+            out.append("\x00" + w if w in _OPSET else w)
+        buf, inword = [], False
+
+    while i < n:
+        c = cmd[i]
+        if c in " \t\r":
+            flush()
+            i += 1
+        elif c == "\\":
+            if i + 1 < n and cmd[i + 1] == "\n":
+                i += 2
+                continue
+            buf.append(cmd[i + 1] if i + 1 < n else "")
+            inword, i = True, i + 2
+        elif c == "'":
+            j = cmd.find("'", i + 1)
+            if j < 0:
+                return None
+            buf.append(cmd[i + 1:j])
+            inword, i = True, j + 1
+        elif c == '"':
+            j, part = i + 1, []
+            while j < n and cmd[j] != '"':
+                if cmd[j] == "\\" and j + 1 < n and cmd[j + 1] in '"\\$`\n':
+                    part.append(cmd[j + 1])
+                    j += 2
+                else:
+                    part.append(cmd[j])
+                    j += 1
+            if j >= n:
+                return None
+            buf.append("".join(part))
+            inword, i = True, j + 1
+        else:
+            op = next((o for o in OPERATORS if cmd.startswith(o, i)), None)
+            if op:
+                flush()
+                out.append(op)
+                i += len(op)
+            else:
+                buf.append(c)
+                inword, i = True, i + 1
+    flush()
     return out
+
+
+def _decode_ansi_c_quoted(text: str) -> str:
+    """Like _decode_ansi_c, but re-quote the decoded text so it stays ONE word."""
+    def dec(m):
+        try:
+            s = m.group(1).encode("latin-1", "backslashreplace").decode("unicode_escape")
+        except Exception:  # noqa: BLE001
+            s = m.group(1)
+        return "'" + s.replace("'", "'\\''") + "'"
+    return re.sub(r"\$'((?:[^'\\]|\\.)*)'", dec, text)
 
 
 def _segments(tokens: list[str]) -> list[list[str]]:
@@ -173,6 +232,8 @@ def _resolve(target: str, ctx: _Ctx) -> tuple[bool, list[str]]:
     """(resolved?, absolute paths). Unresolvable → (False, [])."""
     if target == UNRESOLVED or not target:
         return False, []
+    if target.startswith("\x00"):
+        return True, []  # a quoted operator spelling (e.g. `\;`), not a path
     t = target
     if t.startswith("~"):
         t = os.path.expanduser(t)
@@ -281,6 +342,11 @@ SED_WRITE_RE = re.compile(
     r"|/[gpiImMe0-9]*[we](?:\s|$|;|})")
 
 
+def _is_long(name: str, full: str) -> bool:
+    """`--name` is an abbreviation GNU getopt_long would accept for `--full`."""
+    return bool(name) and full.startswith(name)
+
+
 def _parse_sed(args: list[str]) -> tuple[bool, list[str], bool, list[str]]:
     """(in-place?, -e scripts, -f given?, operands) — GNU option clustering honoured.
 
@@ -295,16 +361,18 @@ def _parse_sed(args: list[str]) -> tuple[bool, list[str], bool, list[str]]:
         elif a == "--":
             end = True
         elif a.startswith("--"):
-            name, _, val = a[2:].partition("=")
-            if name.startswith("in-place") or name == "in-place":
+            name, eq, val = a[2:].partition("=")
+            # GNU getopt_long accepts any unambiguous PREFIX (`--in-plac`, `--expr`) —
+            # review round 2. Matched liberally: a prefix of several options counts as each.
+            if _is_long(name, "in-place"):
                 inplace = True
-            elif name in ("expression", "file", "line-length"):
-                if not val and i + 1 < len(args):
+            if any(_is_long(name, o) for o in ("expression", "file", "line-length")):
+                if not eq and i + 1 < len(args):
                     i += 1
                     val = args[i]
-                if name == "expression":
+                if _is_long(name, "expression"):
                     scripts.append(val)
-                elif name == "file":
+                if _is_long(name, "file"):
                     script_file = True
         else:
             k = 1
@@ -385,15 +453,21 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
             _script_form(verb, seg_text, ctx)
         return
     if verb in ("awk", "gawk", "mawk", "nawk"):
-        if any(a in ("-i", "--include") and "inplace" in (args[k + 1] if k + 1 < len(args) else "")
-               or re.match(r"^(-iinplace|--include=inplace)", a) for k, a in enumerate(args)):
+        if any((a == "-i" or (a.startswith("--") and _is_long(a[2:].partition("=")[0], "include")))
+               and "inplace" in (a + " " + (args[k + 1] if k + 1 < len(args) else ""))
+               or a.startswith("-iinplace") for k, a in enumerate(args)):
             ops = _operands(args, {"-i", "-f", "-v", "-F", "--include"})
             for t in ops[1:]:
                 _check_target(t, ctx, f"{verb} -i inplace")
         prog = next(iter(_operands(args, {"-i", "-f", "-v", "-F", "--include"})), "")
         # awk writes only through print/printf redirection, a pipe to a command, system()
         # or close(); a bare comparison (`NF > 0`) is not one (review round 1).
-        if re.search(r"\bprintf?\b[^;{}]*(>|\|)|\bsystem\s*\(|\|\s*getline|\bclose\s*\(", prog):
+        # string literals and parenthesised expressions (`print ($1 > 0)`) cannot redirect
+        bare = re.sub(r'"(?:[^"\\]|\\.)*"', '""', prog)
+        while re.search(r"\([^()]*\)", bare):
+            bare = re.sub(r"\([^()]*\)", " 0", bare)
+        if re.search(r"\bprintf?\b[^;{}]*(>|\|)|\bsystem\s*\(|\|\s*getline|\bclose\s*\(", prog) and \
+                re.search(r"\bprintf?\b[^;{}]*(>|\|)|\bsystem\b|\|\s*getline|\bclose\b", bare):
             _inline(ctx, verb)
         return
     if verb in ("tee", "sponge"):
@@ -402,10 +476,11 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
         return
     if verb in ("sort", "gsort", "shuf", "uniq"):
         for k, a in enumerate(args):
-            if a in ("-o", "--output") and k + 1 < len(args):
+            name, eq, val = a[2:].partition("=") if a.startswith("--") else ("", "", "")
+            if (a == "-o" or (_is_long(name, "output") and not eq)) and k + 1 < len(args):
                 _check_target(args[k + 1], ctx, f"{verb} -o")
-            elif a.startswith("--output="):
-                _check_target(a.split("=", 1)[1], ctx, f"{verb} -o")
+            elif _is_long(name, "output") and eq:
+                _check_target(val, ctx, f"{verb} -o")
             elif re.match(r"^-[a-zA-Z]*o.+", a) and verb != "uniq":
                 _check_target(a[a.index("o") + 1:], ctx, f"{verb} -o")
         if verb == "uniq":
@@ -417,11 +492,15 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
         tval = {"-t", "--target-directory", "-S", "--suffix", "-m", "--mode", "-o", "--owner",
                 "-g", "--group", "-e", "--exclude", "--include", "-f", "--filter"}
         for k, a in enumerate(args):
-            if a in ("-t", "--target-directory") and k + 1 < len(args):
+            name, eq, val = a[2:].partition("=") if a.startswith("--") else ("", "", "")
+            if (a == "-t" or (_is_long(name, "target-directory") and not eq)) and k + 1 < len(args):
                 _check_target(args[k + 1], ctx, f"{verb} -t")
                 return
-            if a.startswith("--target-directory="):
-                _check_target(a.split("=", 1)[1], ctx, f"{verb} -t")
+            if a.startswith("-t") and len(a) > 2 and not a.startswith("--"):
+                _check_target(a[2:], ctx, f"{verb} -t")
+                return
+            if _is_long(name, "target-directory") and eq:
+                _check_target(val, ctx, f"{verb} -t")
                 return
         ops = _operands(args, tval)
         if ops:
@@ -435,6 +514,8 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
             if a.startswith("of="):
                 _check_target(a[3:], ctx, "dd of=")
         return
+    if verb == "view" and not any(a in ("-c", "-s", "-es", "-e", "--cmd", "-S") or a.startswith("+") for a in args):
+        return  # read-only vim; only its command options can write
     if verb in EDITORS:
         for t in _operands(args, {"-c", "-S", "-u", "-i", "-s", "-e", "--cmd"}):
             _check_target(t, ctx, f"editor {verb}")
@@ -471,7 +552,7 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
             if a in ("-exec", "-execdir", "-ok", "-okdir"):
                 inner = []
                 for b in args[k + 1:]:
-                    if b in (";", "+", "\\;"):
+                    if b.lstrip("\x00") in (";", "+", "\\;"):
                         break
                     inner.append(UNRESOLVED if "{}" in b else b)
                 if inner:
@@ -479,7 +560,7 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
         return
     if verb in EXTRACTORS:
         flags = "".join(x.lstrip("-") for x in args if x.startswith("-")) + (args[0] if args and verb in ("tar", "bsdtar") and not args[0].startswith("-") else "")
-        extracting = (verb in ("unzip", "busybox") or ("x" in flags if verb in ("tar", "bsdtar", "7z", "7za") else "i" in flags)
+        extracting = ((verb == "unzip" and not re.search(r"[lvtZpz]", flags)) or verb == "busybox" or ("x" in flags if verb in ("tar", "bsdtar", "7z", "7za") else "i" in flags)
                       or any(x in ("--extract", "--get") or (verb in ("7z", "7za") and x in ("x", "e")) for x in args))
         if extracting and MENTION_RE.search(normalised(seg_text)):
             ctx.hits.append(Hit(f"{verb} extracts into a guarded path"))
@@ -514,8 +595,12 @@ def scan(command: str, cwd: str | None = None) -> list[Hit]:
         if ctx.mentions:
             ctx.hits.append(Hit("command does not tokenise (unbalanced quote) and names a guarded path"))
         return ctx.hits
-    for seg in _segments(toks):
-        _segment(seg, ctx)
+    try:
+        for seg in _segments(toks):
+            _segment(seg, ctx)
+    except Exception as e:  # noqa: BLE001 — a scanner bug must not open the gate
+        if ctx.mentions:
+            ctx.hits.append(Hit(f"scanner error ({type(e).__name__}) on a command naming a guarded path"))
     return ctx.hits
 
 

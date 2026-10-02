@@ -164,6 +164,14 @@ EOF"
     assert_refused "sed -f /tmp/script.sed $TASK_REL"
 }
 
+@test "review round 2: GNU long-option abbreviations are refused" {
+    assert_vector_refused "sed --in-plac $S $TASK_REL"
+    assert_vector_refused "sed --in -e $S $TASK_REL"
+    assert_vector_refused "mkdir -p d && cp ticked.md d/T-9999-test.md && cp --target=.tasks/active d/T-9999-test.md"
+    assert_refused "sort --out=$TASK_REL /tmp/x"
+    assert_refused "gawk --incl=inplace '{print}' $TASK_REL"
+}
+
 @test "Watchtower tick endpoint and the provenance ledger are refused from Bash" {
     assert_refused "curl -s -X POST http://localhost:3000/api/task/T-9999/toggle-ac -d line=12"
     assert_refused "echo '{}' >> .context/reviews/human-ac-ticks.jsonl"
@@ -195,6 +203,12 @@ EOF"
     assert_allowed "awk 'NF > 0' $TASK_REL"
     assert_allowed "tar -cf /tmp/t3695-tasks.tar .tasks"
     assert_allowed "sed -n '/^### Human/,/^## /p' $TASK_REL"
+    # review round 2 false positives
+    assert_allowed "grep -e'>' $TASK_REL"
+    assert_allowed "unzip -l /tmp/t3695.zip $TASK_REL"
+    assert_allowed "view $TASK_REL"
+    assert_allowed "awk '{print (\$1 > 0)}' $TASK_REL"
+    assert_allowed "awk '{print \"a>b\"}' $TASK_REL"
 }
 
 @test "controls: unrelated writes and framework verbs pass" {
@@ -341,10 +355,28 @@ PY
     [[ "$output" == *"FAIL T-9999 ticked"* ]]
 }
 
-@test "audit: an annotation backed by a green verdict row AND an applied tick is left to verdict_ledger" {
+# verdict_ledger.criterion_digest of Human criterion N in the fixture (title + body).
+crit_digest() {
+    python3 - "$FRAMEWORK_ROOT" "$TASK_FILE" "$1" <<'PY'
+import sys
+sys.path[:0] = [sys.argv[1] + "/lib", sys.argv[1]]
+import verdict_ledger as v
+c = v.human_criteria(open(sys.argv[2]).read())[int(sys.argv[3]) - 1]
+print(v.criterion_digest(c))
+PY
+}
+
+verdict_rows() {  # id digest [applied-count]
+    printf '{"id": "%s", "task": "T-9999", "ac": 1, "ac_digest": "%s", "outcome": "green"}\n' "$1" "$2" > .context/reviews/verdicts.jsonl
+    : > .context/reviews/applied.jsonl
+    for _ in $(seq 1 "${3:-1}"); do
+        printf '{"task": "T-9999", "kind": "verdict-apply", "ticked": [{"ac": 1, "verdict_id": "%s"}]}\n' "$1" >> .context/reviews/applied.jsonl
+    done
+}
+
+@test "audit: an annotation backed by a green verdict row (criterion digest) AND an applied tick is exempt" {
     git_fixture
-    printf '%s\n' '{"id": "V-0001", "task": "T-9999", "ac": 1, "outcome": "green"}' > .context/reviews/verdicts.jsonl
-    printf '%s\n' '{"task": "T-9999", "kind": "verdict-apply", "ticked": [{"ac": 1, "verdict_id": "V-0001"}]}' > .context/reviews/applied.jsonl
+    verdict_rows V-0001 "$(crit_digest 1)"
     annotate_tick
     run python3 "$TICKS" audit --since 2000-01-01
     [ "$status" -eq 0 ]
@@ -352,6 +384,28 @@ PY
     : > .context/reviews/applied.jsonl
     run python3 "$TICKS" audit --since 2000-01-01
     [ "$status" -eq 2 ]
+}
+
+@test "audit: a verdict is bound to ITS criterion — reused on another criterion it FAILs (review round 2)" {
+    git_fixture
+    verdict_rows V-0001 "0000deadbeef"   # green, applied, but for a different criterion text
+    annotate_tick
+    run python3 "$TICKS" audit --since 2000-01-01
+    [ "$status" -eq 2 ]
+}
+
+@test "audit: one applied tick event exempts ONE tick — replay after an un-tick FAILs (review round 2)" {
+    git_fixture
+    verdict_rows V-0001 "$(crit_digest 1)" 1
+    annotate_tick
+    sed -i 's/^- \[x\] \[REVIEW\] Human AC one/- [ ] [REVIEW] Human AC one/' "$TASK_FILE"
+    git add "$TASK_REL" && git commit -qm "T-9999: untick"
+    sed -i 's/^- \[ \] \[REVIEW\] Human AC one/- [x] [REVIEW] Human AC one/' "$TASK_FILE"
+    git add "$TASK_REL" && git commit -qm "T-9999: replay"
+    run python3 "$TICKS" audit --since 2000-01-01
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"verdict replayed"* ]]
+    [[ "$output" == *"1 unprovenanced"* ]]
 }
 
 @test "audit: one ack licenses ONE tick — untick then re-tick FAILs again (review round 1)" {

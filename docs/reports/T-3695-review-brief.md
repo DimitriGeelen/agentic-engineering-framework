@@ -30,7 +30,7 @@ write a row — follow-up T-3722 (render surface, P-013 needs its own `[REVIEW]`
 
 ## Scanner (lib/shell_write_scan.py) — how a command is read
 
-shlex (posix, punctuation `;&|()<>\n`, no comment chars) after decoding `$'..'` and turning
+A bash-style tokenizer (`_tokens`; was shlex until round 2) after decoding `$'..'` and turning
 backticks into separators. Segments split on `; && || | & ( ) newline { } !`. Per segment:
 write-redirections collected (`> >> >| &> &>> <> >&FILE`; `>&N` skipped), then leading
 `VAR=` assignments and wrappers (sudo, env, timeout, nohup, xargs, ...) skipped, so the verb
@@ -54,7 +54,7 @@ own segment mentions one.
 | AC3 reads/unrelated pass | tests 10–12 (cat, grep, sed -n, awk, git diff, `2>&1`, read redirected to /tmp, cp FROM a task file, unrelated sed -i/redirects, `fw task update`, quoted prose). |
 | AC4 residual stated | block message text (test 14 greps `script file`, `T-2742`, `fw audit`); CLAUDE.md §Agent/Human AC Split, line after "NEVER check a `### Human` AC". |
 | AC5 audit detector | `lib/human_ac_ticks.py`; `agents/audit/audit.sh` block "T-3695"; tests 17–24 (agent identity, trailer, human-without-provenance, ack, added-ticked, verdict, inception decide, ancestry + backdated commit). |
-| AC6 bats | 32/32 ok, 0 skip (after round 1). Each write path test runs the command FOR REAL against a mktemp fixture and asserts the Human box became `[x]` (`assert_vector_ticks`) before asserting the hook exits 2. No mid-test `! cmd`. |
+| AC6 bats | 35/35 ok, 0 skip (after round 2). Write-path tests use `assert_vector_refused`: the SAME string is run for real against a mktemp fixture (exit 0 and the Human box becomes `[x]`) and then refused by the hook. Refusal-only (no vector run, stated honestly): the `>>` append (the fixture's append lands after `## Verification`), `s///w` (writes only matched lines — clobbers rather than ticks), `sed -f`, `sort --out`, `gawk --incl`, the toggle-ac curl, ledger write, `ack`, `git checkout`. No mid-test `! cmd`. |
 | AC7 registration | `.claude/settings.json` PreToolUse matcher `Bash` → `check-human-ac-tick` (added via `fw hook-enable`); `lib/init.sh` Bash block; `.context/project/enforcement-baseline.sha256`; `bin/fw vendor self --check` clean. |
 | AC8 review | this brief + `docs/reports/T-3695-review-codex.md`. |
 
@@ -65,11 +65,23 @@ own segment mentions one.
 | `sed -i -e'EXPR' FILE` dropped FILE (attached `-e`) | `_parse_sed`: GNU clustering, attached/separate `-e/-f/-l`, `--expression=`, `-i[SUF]` | test 10 |
 | sed `w FILE` / `s///w` / `e` / `-f` not seen | `SED_WRITE_RE`; such a sed is treated as inline code (refused when the command names a guarded path) | test 10 |
 | merge-commit ticks skipped | merges included; a tick counts when it is new relative to EVERY parent | merge tests |
-| fabricated `**Reviewer verdict:** green` exempt | `verdict_checker`: id must be a green row for the task in verdicts.jsonl AND an applied tick in applied.jsonl | annotation tests |
+| fabricated `**Reviewer verdict:** green` exempt | `VerdictBacking` (renamed in round 2): id must be a green row for the task in verdicts.jsonl AND an applied tick in applied.jsonl | annotation tests |
 | one `ack` licensed every later re-tick | one ledger row = one tick, consumed oldest-first | ack-reuse test |
 | only the first `### Human` section read (detector AND Edit-leg hook) | all sections joined, both places | second-section tests |
 | FPs: `grep '>'`, `git show/cat-file`, `awk 'NF > 0'`, `tar -c` | non-posix tokenising keeps quoted operators as words; git show/cat-file dropped; awk only print/printf redirection, pipes, system(), close(); tar only when extracting | controls test |
 | vector test ignored the command's exit status; some vectors not run with the refused string | `assert_vector_ticks` asserts status 0; `assert_vector_refused` runs and refuses the SAME string | all vector tests |
+
+## Round 2 (codex FAIL) — what changed
+
+| Finding | Fix | Pinned by |
+|---|---|---|
+| GNU long-option abbreviations (`sed --in-plac`, `--in`, `--expr`) | `_is_long` prefix matching for sed, cp/mv `--target-directory`, sort `--output`, gawk `--include` | "review round 2: GNU long-option abbreviations" |
+| a valid verdict replayed after an un-tick | `VerdictBacking`: one `applied.jsonl` tick event exempts ONE tick (consumed oldest-first) | "one applied tick event exempts ONE tick" |
+| a valid verdict reused on another criterion | the verdict row's `ac_digest` must equal `verdict_ledger.criterion_digest` of the criterion the annotation sits under | "a verdict is bound to ITS criterion" |
+| `grep -e'>'` refused (tokeniser) | shlex replaced by a bash-style tokenizer (`_tokens`): quotes attached to words handled; a quoted operator spelling is a word; here-doc bodies stripped before tokenising | controls test |
+| `unzip -l`, `view` refused | unzip extracts only without `-l/-v/-t/-Z/-p/-z`; `view` counts only with `-c/-s/+cmd` | controls test |
+| awk `print ($1 > 0)` / `print "a>b"` | string literals and parenthesised expressions removed before the redirect check | controls test |
+| scanner exception → hook crash | `scan()` catches any internal error and refuses when the command names a guarded path | — |
 
 **Accepted false positive (deliberate):** inline interpreter code (`python3 -c`, `perl -e`,
 `node -e`, heredoc to an interpreter) is refused whenever the command names a guarded path
