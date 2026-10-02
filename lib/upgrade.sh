@@ -2506,6 +2506,27 @@ MCPJSON
         skipped=$((skipped + 1))
     fi
 
+    # ── 8a. Project identity back-fill (T-3750) ──
+    # fw init mints project_id (T-3534, lib/setup.sh) but a consumer initialised
+    # before T-3534 has none until someone runs `fw whoami --register`. Upgrade
+    # is the one verb every consumer runs, so it back-fills here. ensure()
+    # preserves an existing id unconditionally — never re-identify a project.
+    if [ -f "$yaml_file" ] && [ -f "$FRAMEWORK_ROOT/lib/project_identity.sh" ]; then
+        # shellcheck disable=SC1091
+        . "$FRAMEWORK_ROOT/lib/project_identity.sh"
+        local _pid_existing
+        _pid_existing=$(fw_project_id "$target_dir")
+        if [ -n "$_pid_existing" ]; then
+            echo -e "  ${GREEN}OK${NC}  Project identity $_pid_existing"
+        elif [ "$dry_run" = true ]; then
+            echo -e "  ${CYAN}WOULD MINT${NC}  project_id (none recorded; T-3534)"
+            changes=$((changes + 1))
+        else
+            echo -e "  ${GREEN}MINTED${NC}  project_id: $(fw_project_identity_ensure "$target_dir") (once; never changes)"
+            changes=$((changes + 1))
+        fi
+    fi
+
     # ── 8b. Upgrade audit trail (.context/audits/upgrades.yaml) ──
     if [ "$dry_run" != true ] && [ -n "${current_pinned:-}" ] && [ "${current_pinned:-}" != "$fw_version" ]; then
         local audit_file="$target_dir/.context/audits/upgrades.yaml"
