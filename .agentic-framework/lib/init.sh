@@ -1103,6 +1103,10 @@ generate_claude_code_config() {
           {
             "type": "command",
             "command": "$fw_prefix hook check-tier0"
+          },
+          {
+            "type": "command",
+            "command": "$fw_prefix hook check-human-ac-tick"
           }
         ]
       },

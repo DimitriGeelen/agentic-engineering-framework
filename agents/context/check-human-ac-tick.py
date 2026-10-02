@@ -9,6 +9,9 @@ these boxes." This hook makes that structural.
 
 Activation:
     PreToolUse Write|Edit on .tasks/*.md (any subdirectory).
+    PreToolUse Bash (T-3695): a shell write to a task file is refused — see
+    lib/shell_write_scan.py. A shell command's result cannot be diffed before it
+    runs, so the Bash leg refuses the WRITE, not just the tick.
 Receives stdin JSON from Claude Code:
     {"tool_name": "Edit"|"Write", "tool_input": {file_path, ...}}
 Behavior:
@@ -124,6 +127,18 @@ def blocking_toggles(toggles: list[tuple[int, str, str]]) -> list[tuple[int, str
     return [t for t in toggles if t[1] == " " and t[2] in ("x", "X")]
 
 
+def added_ticks(old_human: str, new_human: str) -> int:
+    """T-3695: how many MORE ticked boxes the new Human section has than the old one.
+
+    `detect_toggle` zips positionally, so an APPENDED `- [x]` line (old [' '], new
+    [' ', 'x']) and a delete-then-add (old [], new ['x']) are invisible to it. A ticked
+    box that did not exist before asserts human verification exactly as a flipped one
+    does, so a rise in the ticked count is blocking on its own.
+    """
+    return (sum(1 for b in get_checkbox_states(new_human) if b in ("x", "X"))
+            - sum(1 for b in get_checkbox_states(old_human) if b in ("x", "X")))
+
+
 def log_bypass(project_root: Path, task_id: str, file_path: str, toggles: list) -> None:
     """Append override usage to .context/working/.gate-bypass-log.yaml (existing T-1142 path)."""
     log_dir = project_root / ".context" / "working"
@@ -155,6 +170,73 @@ def derive_task_id(file_path: str) -> str:
     return m.group(0) if m else "unknown"
 
 
+def _under_agent_control() -> bool:
+    # T-1739: multi-signal agent-control detection (CLAUDECODE alone proved unreliable).
+    return (
+        os.environ.get("CLAUDECODE") == "1"
+        or bool(os.environ.get("AI_AGENT", "").strip())
+    )
+
+
+def check_bash(data: dict) -> int:
+    """T-3695: refuse a Bash command that writes a task file (or the tick ledger).
+
+    The Write/Edit leg can diff old against new; a shell command's effect cannot be
+    computed before it runs, so here the WRITE is refused, whatever it changes. The Edit
+    tool is the sanctioned way to change a task file and is diffed by the leg above.
+    """
+    ti = data.get("tool_input", {}) or {}
+    command = ti.get("command", "") or ""
+    if not command.strip():
+        return 0
+    try:
+        from shell_write_scan import scan
+    except Exception as e:  # noqa: BLE001 — fail closed under agent control
+        if _under_agent_control():
+            sys.stderr.write(f"BLOCKED: Human-AC tick guard could not load its shell scanner ({e}).\n"
+                             "Restore lib/shell_write_scan.py (bin/fw vendor self). Policy: T-3695\n")
+            return 2
+        return 0
+    cwd = data.get("cwd") or os.environ.get("PROJECT_ROOT") or os.getcwd()
+    hits = scan(command, cwd)
+    if not hits:
+        return 0
+    project_root = Path(os.environ.get("PROJECT_ROOT", "."))
+    targets = ", ".join(sorted({h.target for h in hits if h.target})) or "-"
+    if os.environ.get("FW_ALLOW_HUMAN_AC_TICK") == "1":
+        log_bypass(project_root, derive_task_id(targets), f"bash: {command[:200]}",
+                   [(0, "shell-write", h.reason) for h in hits])
+        sys.stderr.write("NOTE: shell write to a task file allowed via FW_ALLOW_HUMAN_AC_TICK=1 — logged.\n")
+        return 0
+    if not _under_agent_control():
+        sys.stderr.write(f"NOTE: shell write to a task file (advisory only — no agent-control "
+                         f"signal): {hits[0].reason}\n")
+        return 0
+    w = sys.stderr.write
+    w("\n══════════════════════════════════════════════════════════\n")
+    w("  SHELL WRITE TO A TASK FILE BLOCKED — Human-AC tick guard\n")
+    w("══════════════════════════════════════════════════════════\n\n")
+    w(f"  Command: {command.strip().splitlines()[0][:160]}\n")
+    for h in hits[:5]:
+        w(f"  Why:     {h.reason}" + (f"  [{h.target}]" if h.target else "") + "\n")
+    w("\n  A shell write's result cannot be checked before it runs, so a task file\n")
+    w("  (.tasks/**) and the Human-tick ledger are never written from Bash under agent\n")
+    w("  control. `### Human` boxes are the operator's (CLAUDE.md §Agent/Human AC Split).\n\n")
+    w("  To proceed, choose ONE:\n")
+    w("    1. Change the task file with the Edit tool (diffed; Agent ACs, prose: fine).\n")
+    w("    2. Use the framework verb: fw task update T-XXX ... / fw inception ...\n")
+    w("    3. Hand Human criteria to the operator: fw task review T-XXX\n")
+    w("    4. Reading only? cat / grep / sed -n / awk without redirects pass.\n\n")
+    w("  Scope (same boundary as Tier 0, T-2742): this is a TEXT gate. A script file the\n")
+    w("  command runs, or a path built at run time, is not inspected — such a tick is\n")
+    w("  caught after the fact: `fw audit` FAILs on any committed Human tick without\n")
+    w("  Watchtower/operator provenance (lib/human_ac_ticks.py).\n")
+    w("  Override (operator, logged Tier 2): FW_ALLOW_HUMAN_AC_TICK=1 on the session.\n")
+    w("  Policy: T-3695 (extends T-1731 to Bash)\n")
+    w("══════════════════════════════════════════════════════════\n\n")
+    return 2
+
+
 def main() -> int:
     try:
         data = json.load(sys.stdin)
@@ -162,11 +244,25 @@ def main() -> int:
         return 0  # malformed input — fail open
 
     tool_name = data.get("tool_name", "")
+    if tool_name == "Bash":
+        return check_bash(data)
     if tool_name not in ("Edit", "Write", "MultiEdit"):
         return 0
 
     ti = data.get("tool_input", {}) or {}
     file_path = ti.get("file_path") or ti.get("notebook_path") or ""
+
+    # T-3695: the Human-tick provenance ledger is the operator's record; an agent that
+    # could write it could launder any tick past `fw audit`.
+    if os.path.basename(file_path) == "human-ac-ticks.jsonl" and _under_agent_control() \
+            and os.environ.get("FW_ALLOW_HUMAN_AC_TICK") != "1":
+        sys.stderr.write(
+            "\nBLOCKED: .context/reviews/human-ac-ticks.jsonl records that a HUMAN ticked a\n"
+            "### Human criterion. Only the operator writes it (Watchtower, inception decide, or\n"
+            "`python3 lib/human_ac_ticks.py ack T-XXX --ac N` in their own terminal).\n"
+            "Hand the task over instead: fw task review T-XXX\n"
+            "Policy: T-3695 (Human-AC tick guard)\n\n")
+        return 2
 
     # Only inspect task files
     if "/.tasks/" not in file_path or not file_path.endswith(".md"):
@@ -217,6 +313,11 @@ def main() -> int:
         return 0
 
     toggled, toggles = detect_toggle(old_human, new_human)
+    n_added = added_ticks(old_human, new_human)
+    if n_added > 0 and not any(a == " " and b in ("x", "X") for _, a, b in toggles):
+        # T-3695: appended / delete-then-added ticked box — invisible to the zip.
+        toggles = toggles + [(-1, " ", "x")] * n_added
+        toggled = True
     if not toggled:
         return 0
 
@@ -252,10 +353,7 @@ def main() -> int:
     # because tests legitimately supply tool JSON and would degrade to
     # blocking. See agents/context/check-active-task.sh:_under_agent_control
     # for the bash-side mirror.
-    under_agent_control = (
-        os.environ.get("CLAUDECODE") == "1"
-        or bool(os.environ.get("AI_AGENT", "").strip())
-    )
+    under_agent_control = _under_agent_control()
 
     # Block under agent control
     if under_agent_control:

@@ -1040,6 +1040,7 @@ Tasks may have `### Agent` and `### Human` sections under `## Acceptance Criteri
 - **Agent ACs:** Criteria the agent can verify (code, tests, commands). P-010 gates on these.
 - **Human ACs:** Criteria requiring human verification (UI behavior, subjective quality). Not blocking.
 - **NEVER check a `### Human` AC.** Only the human may verify and check these boxes.
+  Enforced by `check-human-ac-tick` (T-1731, T-3695): Write/Edit is diffed, and a **Bash** write to `.tasks/**` (`sed -i`, `perl -i`, `tee`, a redirect, `cp`/`mv`/`dd`, `python3 -c`, ...) is refused outright under agent control — use the Edit tool. It is a text gate: a script file or a path built at run time is not inspected (same boundary as Tier 0, T-2742), so `fw audit` also FAILs on any committed Human tick without Watchtower/operator provenance (`lib/human_ac_ticks.py`).
 - When agent ACs pass but human ACs remain unchecked, the task enters **partial-complete**: stays in `active/` with `owner: human`.
 - The human finalizes by checking their ACs and running `fw task update T-XXX --status work-completed`.
 

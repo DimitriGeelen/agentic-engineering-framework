@@ -315,11 +315,12 @@ PYINCEPTION
 tick_inception_decide_acs() {
     local task_file="$1"
     [ -f "$task_file" ] || return 0
-    python3 - "$task_file" << 'PYTICK'
+    python3 - "$task_file" "$FRAMEWORK_ROOT" "$PROJECT_ROOT" << 'PYTICK'
 import re
 import sys
 
 task_file = sys.argv[1]
+_human_ticked = []  # T-3695: provenance rows for lib/human_ac_ticks.py
 with open(task_file) as f:
     content = f.read()
 
@@ -382,6 +383,7 @@ for line in lines:
             has_marker = (TICK_MARKER in line) or (TICK_MARKER in prev_line)
             if has_marker or any(p.search(m.group(2)) for p in PATTERNS):
                 line = f'{m.group(1)}- [x]{m.group(2)}'
+                _human_ticked.append(m.group(2))
     elif in_agent and has_recommendation:
         m = re.match(r'^(\s*)- \[ \]\s*(.*)$', line)
         if m:
@@ -393,6 +395,23 @@ for line in lines:
 
 with open(task_file, 'w') as f:
     f.write('\n'.join(out))
+
+# T-3695: a ### Human tick written by the decision command is the human's decision
+# (decide is refused under agent control without --i-am-human / --from-watchtower), so
+# record its provenance — `fw audit` FAILs on Human ticks that have none.
+if _human_ticked and len(sys.argv) > 3 and sys.argv[2]:
+    try:
+        import os
+        from pathlib import Path
+        sys.path.insert(0, os.path.join(sys.argv[2], 'lib'))
+        import human_ac_ticks as _hat
+        _tid = re.search(r'T-\d+', os.path.basename(task_file))
+        _root = Path(sys.argv[3] or os.getcwd())
+        for _t in _human_ticked:
+            _hat.record(_root, _tid.group(0) if _tid else '?', _hat.criterion_key(_t),
+                        'inception-decide', os.environ.get('USER') or 'operator')
+    except Exception as _e:  # never break a decision on telemetry; the audit will say so
+        print(f'WARN: Human-tick provenance not recorded ({_e})', file=sys.stderr)
 PYTICK
 }
 

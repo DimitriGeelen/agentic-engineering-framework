@@ -109,6 +109,10 @@
           {
             "type": "command",
             "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-paid-backend"
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook check-human-ac-tick"
           }
         ]
       },

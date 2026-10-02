@@ -2838,6 +2838,32 @@ else
          "Restore it: bin/fw vendor self (or fw upgrade)"
 fi
 
+# T-3695: the PreToolUse Human-AC tick guard is a TEXT gate (Write|Edit diffed, Bash shell
+# writes to .tasks/ refused); a script file or a run-time-built path is outside it (T-2742
+# boundary). This is the after-the-fact half: every commit since the cutoff that ticks a
+# `### Human` box without provenance (Watchtower/operator ledger row, inception decide,
+# verify-acs auto-check, or a reviewer-verdict annotation) FAILs, and names an agent
+# identity when the committer is one.
+if [ -f "$FRAMEWORK_ROOT/lib/human_ac_ticks.py" ]; then
+    _hat_out=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/human_ac_ticks.py" audit 2>&1)
+    _hat_rc=$?
+    if [ "$_hat_rc" -eq 0 ]; then
+        pass "Human-AC ticks: $(echo "$_hat_out" | tail -1)"
+    elif [ "$_hat_rc" -eq 2 ]; then
+        fail "Human-AC ticks: $(echo "$_hat_out" | tail -1)" \
+             "$(echo "$_hat_out" | grep '^FAIL' | head -3 | tr '\n' ';')" \
+             "Inspect: python3 lib/human_ac_ticks.py audit — if the operator really ticked it, the operator records it in their own terminal: python3 lib/human_ac_ticks.py ack T-XXX --ac N; otherwise un-tick the box and hand the task over with fw task review T-XXX"
+    else
+        fail "Human-AC ticks: detector could not run (rc=$_hat_rc) — Human ticks UNVERIFIED" \
+             "$(echo "$_hat_out" | tail -2 | tr '\n' ';')" \
+             "Run: python3 lib/human_ac_ticks.py audit"
+    fi
+else
+    fail "Human-AC ticks: lib/human_ac_ticks.py is missing — Human ticks UNVERIFIED" \
+         "detector code unavailable" \
+         "Restore it: bin/fw vendor self (or fw upgrade)"
+fi
+
 # T-3580 round 7: every spend-ceiling step-down (a review run registered one rung below what IW-7
 # requires) is a WARN — the lever must be visible even when it was exercised legitimately.
 _audit_review_step_downs() {
