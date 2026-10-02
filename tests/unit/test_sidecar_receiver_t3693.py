@@ -448,3 +448,53 @@ def test_send_cli_direct_when_registered_hub_when_not(env, monkeypatch):
     monkeypatch.setattr(cli.circuit, "topic_for_circuit", lambda c: f"inbox:{c}")
     rc = cli.main(["send", "--to", "nobody-registered", "--body", "x", "--json"])
     assert rc == 0 and "hub" in called
+
+
+# ── ledger invariants: each state only from the party that can know it ─────
+
+def _sent(cid="m-1", target="t3693-b", conv="c"):
+    direct.record(cid, direct.SENT, by="sender", target=target, conversation_id=conv)
+    direct.record(cid, direct.RECEIVED, by="receiver-response", deadline="2099-01-01T00:00:00+00:00")
+
+
+def test_confirm_only_from_the_original_recipient(env):
+    env.use(env.project("t3693-a"))
+    _sent()
+    assert direct.confirm_from_peer("m-1", direct.HANDED_OVER, "t3693-intruder") is False
+    assert direct.confirm_from_peer("m-1", direct.HANDED_OVER, None) is False
+    assert direct.confirm_from_peer("m-1", direct.REPLIED, "t3693-b") is False
+    assert direct.latest_state("m-1") == direct.RECEIVED
+    assert direct.confirm_from_peer("m-1", direct.HANDED_OVER, "t3693-b") is True
+    assert direct.latest_state("m-1") == direct.HANDED_OVER
+
+
+def test_late_or_repeated_confirm_never_regresses(env):
+    env.use(env.project("t3693-a"))
+    _sent()
+    assert direct.confirm_from_peer("m-1", direct.HANDED_OVER, "t3693-b")
+    assert direct.confirm_from_peer("m-1", direct.HANDED_OVER, "t3693-b") is False
+    direct.note_reply({"client_msg_id": "r-1", "from": "t3693-b", "in_reply_to": "m-1"})
+    assert direct.latest_state("m-1") == direct.REPLIED
+    assert direct.confirm_from_peer("m-1", direct.HANDED_OVER, "t3693-b") is False
+    assert direct.latest_state("m-1") == direct.REPLIED
+
+
+def test_late_confirm_after_escalation_is_recorded(env):
+    env.use(env.project("t3693-a"))
+    _sent()
+    assert direct.escalate_expired(now="2099-06-01T00:00:00+00:00") == ["m-1"]
+    assert direct.confirm_from_peer("m-1", direct.HANDED_OVER, "t3693-b")
+    assert [r["state"] for r in direct.history("m-1")][-2:] == [direct.ESCALATED, direct.HANDED_OVER]
+
+
+def test_reply_only_from_the_original_recipient(env):
+    env.use(env.project("t3693-a"))
+    _sent()
+    assert direct.note_reply({"client_msg_id": "r-x", "from": "t3693-intruder",
+                              "in_reply_to": "m-1"}) is None
+    assert direct.note_reply({"client_msg_id": "r-y", "from": "t3693-intruder",
+                              "conversation_id": "c"}) is None
+    assert direct.latest_state("m-1") == direct.RECEIVED
+    assert direct.note_reply({"client_msg_id": "r-z", "from": "t3693-b",
+                              "conversation_id": "c"}) == "m-1"
+    assert direct.latest_state("m-1") == direct.REPLIED

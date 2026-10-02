@@ -403,3 +403,6 @@ not to guess.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3555-refusal-ledger---every-gate-refusal-reco.md
 - **Context:** Initial task creation
+
+### 2026-10-02T03:05:00Z — input recorded for this ledger by T-3693 [w-t-3693b]
+- **Inherited:** the arc-011 direct send path (lib/sidecar/direct.py) appends every non-success outcome (UNDELIVERABLE, REJECTED, ESCALATED) to `.context/sidecar/refusals.jsonl` as `{"source": "sidecar-direct", "for": "T-3555", ...}`, per T-3561 AC9 ("recorded for it, if T-3555 has not shipped yet"). When this ledger ships it should ingest those rows (one file per project; consumer projects too).

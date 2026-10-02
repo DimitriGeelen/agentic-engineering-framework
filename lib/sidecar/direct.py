@@ -197,13 +197,36 @@ def send(entry: dict, *, from_id: str, to: str, body: str, conversation_id: str,
 
 # ── peer-set states (called by OUR receiver) ────────────────────────────────
 
+def _name(address) -> str:
+    """The agent name a --to address resolves to in the receiver registry."""
+    return str(address or "").rstrip("/").rsplit("/", 1)[-1]
+
+
+def _first(client_msg_id: str) -> dict | None:
+    rows = history(client_msg_id)
+    return rows[0] if rows and rows[0].get("state") == SENT else None
+
+
 def confirm_from_peer(client_msg_id: str, state: str, peer: str | None) -> bool:
     """CONFIRM-2 arrived at our receiver: record HANDED_OVER for a message we
-    sent. Only HANDED_OVER may be confirmed this way, and only for an id this
-    ledger knows — a peer cannot invent rows."""
-    if state != HANDED_OVER or not history(client_msg_id):
+    sent.
+
+    Accepted only when every one of these holds — otherwise nothing is written:
+      * the state is HANDED_OVER (the only state a peer can know),
+      * this ledger SENT that id (a peer cannot invent rows),
+      * `peer` is the agent we sent it to (another agent holding our token
+        cannot confirm a hand-over it was never party to),
+      * the message has not already reached HANDED_OVER or REPLIED, so a late
+        or repeated confirmation never moves the state backwards.
+    A late confirmation after ESCALATED IS recorded: it is the truth arriving
+    late, and the ledger keeps both rows.
+    """
+    sent = _first(client_msg_id)
+    if state != HANDED_OVER or sent is None or not peer or _name(peer) != _name(sent.get("target")):
         return False
-    record(client_msg_id, HANDED_OVER, by=f"peer-receiver:{peer or 'unknown'}")
+    if latest_state(client_msg_id) in (HANDED_OVER, REPLIED):
+        return False
+    record(client_msg_id, HANDED_OVER, by=f"peer-receiver:{peer}")
     return True
 
 
@@ -211,17 +234,22 @@ def note_reply(envelope: dict) -> str | None:
     """A message just stored by our receiver may answer one we sent. If so,
     record REPLIED on the original and return its id.
 
-    Explicit `in_reply_to` wins; otherwise the newest open message we sent to
-    the same peer on the same conversation is the one answered.
+    Only the agent we sent the original to can reply to it. Explicit
+    `in_reply_to` wins; otherwise the newest open message we sent to the same
+    peer on the same conversation is the one answered.
     """
+    sender = envelope.get("from")
     rows = latest()
     target = envelope.get("in_reply_to")
     if target and target in rows:
+        sent = _first(target)
+        if sent is None or _name(sent.get("target")) != _name(sender):
+            return None
         original = target
     else:
-        sender, conv = envelope.get("from"), envelope.get("conversation_id")
+        conv = envelope.get("conversation_id")
         candidates = [r for r in rows.values()
-                      if r.get("target") == sender and r.get("conversation_id") == conv
+                      if _name(r.get("target")) == _name(sender) and r.get("conversation_id") == conv
                       and r.get("state") not in (REPLIED, REJECTED, UNDELIVERABLE)]
         if not candidates:
             return None

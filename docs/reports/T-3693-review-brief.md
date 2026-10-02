@@ -86,58 +86,74 @@ Recorded in the task's `## Decisions`.
   `test_inject_one_line_when_ready_and_never_hand_over`, `test_no_inject_when_not_ready`,
   `test_urgent_bypasses_readiness`, `test_no_matching_session_leaves_message_flagged[×2]`,
   `test_two_matching_sessions_refuse_to_guess`, `test_cwd_fallback_matches_claude_session`,
-  `test_injection_disabled_blocks`, `test_deliver_pending_cli`.
+  `test_injection_disabled_blocks`, `test_deliver_pending_cli` (nothing-waiting path only; the
+  CLI-triggered injection is proven live, next bullet).
 - Live, real TermLink: `tests/integration/t3693_sidecar_e2e_test.py::test_real_termlink_inject_reaches_the_tagged_session`
-  (the line appears in the real PTY; events contain INJECT_ATTEMPT and no HANDED_OVER) — PASSED.
+  drives the real `bin/fw sidecar deliver-pending` CLI against a real TermLink PTY session tagged
+  with the project tag. The line appears in the PTY; events contain INJECT_ATTEMPT and no
+  HANDED_OVER. PASSED.
 
-### AC5 — REAL e2e: two real Claude sessions, nonce, B's prompt never mentions it
+### AC5 — REAL e2e: two real Claude sessions; A generates the nonce; B's prompt never mentions it
 **MET.** `tests/integration/t3693_sidecar_e2e_test.py::test_e2e_two_real_agents_nonce_round_trip`.
 - Two scratch projects, each with `fw sidecar receiver start`, a `.claude/settings.json` that
   registers only the two framework hooks, and a real `bin/claude-fw --termlink --no-restart
   --model sonnet hello` session found through its `fw-project` tag.
-- The nonce is 12 random lowercase letters generated at test time. A gets an operator
-  instruction to `fw sidecar send` it to B. **B's only prompts were `hello` and the injected
-  `[sidecar] …` line** (B's own transcript, `docs/reports/T-3693-e2e-agentB-transcript-excerpt.txt`).
-  B's hook surfaced the message, and **B's model issued**
-  `fw sidecar send --to t3693a-7ofesh … --in-reply-to 9ad47831-… --body 'XGZMQSCTPBQU'`.
-- The test never writes the UPPERCASE string. The pass condition (`passed = bool(stored and surfaced)`)
-  is: that string in A's receiver store AND in A's own transcript as a
-  `hook_additional_context` attachment inside the PEER-DATA block.
-- Captured (`docs/reports/T-3693-e2e-run.log`, evidence JSON `T-3693-e2e-positive-evidence.json`):
+- **A generates the nonce in its own session** (round-2 fix, after codex round 1). The operator
+  instruction (`:301`) tells A to run a `/dev/urandom` one-liner and send the result. A's own
+  tool call ran `N=$(head -c 4096 /dev/urandom | tr -dc a-z | head -c 12); … fw sidecar send …
+  --body "Nonce check $N: …"` and printed `ccmmpycodjyq`. **The test never chooses the nonce.**
+  It learns it only by observing the message in B's receiver store (`_nonce_sent_by_a`, `:176`).
+- **B's only prompts were `hello` and the injected `[sidecar] …` line.** B's hook surfaced the
+  message, and **B's model issued** `fw sidecar send --to t3693a-uu6nns … --in-reply-to
+  eb91d596-… --body 'CCMMPYCODJYQ'` (`docs/reports/T-3693-e2e-transcript-excerpts.txt`).
+- **The pass condition** (`:332`, `passed = bool(stored and surfaced)`): the UPPERCASE string,
+  which the test never writes, must appear in A's receiver store AND in A's transcript.
+  `_surfaced_in_transcript` (`:151`, strict since round 2) requires a `hook_additional_context`
+  attachment whose text starts `# Sidecar receiver` and whose **PEER-DATA block** contains the
+  string. Matching anywhere on the line is no longer enough.
+- Captured round 2 (`docs/reports/T-3693-e2e-run.log`, `T-3693-e2e-positive-evidence.json`):
   ```
-  [t3693-e2e 02:39:41] run 7ofesh: inject_enabled_at_B=True nonce=xgzmqsctpbqu
-  [t3693-e2e 02:39:51] t3693b-7ofesh: session tl-e6bxunne ready (Stop hook fired)
-  [t3693-e2e 02:39:56] t3693a-7ofesh: session tl-svoh2zij ready (Stop hook fired)
-  [t3693-e2e 02:39:56] A instructed (operator) to send the nonce to B
-  "elapsed_s": 11.6,
-  "transformed_nonce_in_A_receiver": "38858a95-c9fc-4ad2-a1b7-107db4b126eb",
-  "transformed_nonce_in_A_context": "0972c09b-….jsonl [hook_additional_context] …## from t3693b-7ofesh
-      [conversation e2e-7ofesh] [msg 38858a95-…]\n<<<PEER-DATA\nXGZMQSCTPBQU\nPEER-DATA>>>…"
+  [t3693-e2e 02:56:37] A instructed (operator) to generate a nonce and send it to B
+  [t3693-e2e 02:56:43] observed A's nonce on the wire at B's receiver: ccmmpycodjyq
+  "nonce_generated_by_A": "ccmmpycodjyq",
+  "elapsed_s": 11.5,
+  "transformed_nonce_in_A_receiver": "406dcbb4-b7d3-4009-a589-b645f1a6c3d4",
+  "transformed_nonce_in_A_context": "9891be35-….jsonl [hook_additional_context] PEER-DATA block: 'CCMMPYCODJYQ'",
   PASSED
   ```
   Both injections were `trigger: on-store`; the harness's 5 s `deliver-pending` loop (standing
-  in for T-3684's tick, clearly labelled in the test) never had to deliver.
+  in for T-3684's tick, labelled in the test) never had to deliver.
 
 ### AC6 — negative control: injection disabled → FAIL, sender sees ESCALATED
 **MET.** `::test_e2e_negative_control_injection_disabled_fails_and_escalates` runs the SAME
-`run_round_trip()` with B's receiver started `--no-inject`, and asserts `not result.passed`.
-- Captured (`T-3693-e2e-negative-evidence.json`): A's ledger `SENT/sender → RECEIVED/receiver-response
-  → ESCALATED/infrastructure` (B's receiver had the message; nothing reached B's agent). B's
-  events: `STORED`, then `INJECT_BLOCKED` "injection disabled (receiver started with --no-inject)"
-  on-store and on every tick. B's transcript holds only `hello`. B sent nothing.
-  `transformed_nonce_in_A_*: null` after the full 300 s window; `fw sidecar sweep` returned
-  `direct_escalated: ['8b694e90-0453-4878-aafc-4d09bf794c82']` (the message A sent). PASSED.
+`run_round_trip()` with B's receiver started `--no-inject`. It asserts that A's nonce reached B's
+receiver (so the path was exercised), that `not result.passed`, and that A's ledger reads
+`SENT → RECEIVED → … ESCALATED` with no HANDED_OVER and no REPLIED.
+- Captured (`T-3693-e2e-negative-evidence.json`): A generated `zkwdzpyfgcgm`, and it reached B's
+  receiver. A's ledger: `SENT/sender, RECEIVED/receiver-response, ESCALATED/infrastructure`.
+  B's events: `STORED`, then `INJECT_BLOCKED` "injection disabled (receiver started with
+  --no-inject)" on-store and on every tick. B's transcript holds only `hello`.
+  `transformed_nonce_in_A_*: null` after the full ~300 s window, then `fw sidecar sweep` escalated
+  A's message. PASSED.
 
 ### AC7 — sender ledger SENT → RECEIVED → HANDED_OVER → REPLIED, each by the party that knows it
-**MET.** `lib/sidecar/direct.py`: `SENT` by sender (`:166`); `RECEIVED` from the receiver's HTTP
-response (`:180`); `HANDED_OVER` when the peer's prompt hook posted CONFIRM-2 to our receiver
-(`http_server.py:110` → `direct.confirm_from_peer` `:200`, by `peer-receiver:<name>`, unknown ids
-refused); `REPLIED` by our own receiver when the answering message is stored (`direct.note_reply`
-`:210`, via `in_reply_to` or same peer + conversation). `fw sidecar acks [id]` prints it.
-- Live: A's ledger in the positive run `[SENT/sender, RECEIVED/receiver-response,
-  HANDED_OVER/peer-receiver:t3693b-…, REPLIED/own-receiver]` (asserted after the verdict).
-- Unit: `test_received_then_replied_ledger_order`,
-  `test_prompt_hook_surfaces_untrusted_then_hands_over_and_confirms`, `test_peer_cannot_confirm_an_unknown_message`.
+**MET.** `lib/sidecar/direct.py`:
+- `SENT` by the sender (`:166`). `RECEIVED` from the receiver's HTTP response (`:180`).
+- `HANDED_OVER` only through `confirm_from_peer` (`:210`), reached from our receiver's `/ack`
+  (`http_server.py:110`), which the peer's prompt hook posts after surfacing. Round-2 hardening
+  after codex: accepted only if this ledger SENT the id, the confirming `peer` IS the agent it was
+  sent to, and the message is not already HANDED_OVER/REPLIED (no regression, no duplicates). A late
+  confirmation after ESCALATED is recorded, because it is the truth arriving late.
+- `REPLIED` only through `note_reply` (`:233`), by our own receiver when the answering message
+  is stored, and only if it comes FROM the original recipient (explicit `in_reply_to` or same
+  peer + conversation).
+- Trust model: same-host; the peer authenticates with our 0600 token, and the `peer` name is
+  checked against the SENT row. Signed peer identity across hosts is T-3688.
+- Live: A's ledger `[SENT/sender, RECEIVED/receiver-response, HANDED_OVER/peer-receiver:t3693b-uu6nns,
+  REPLIED/own-receiver]`, asserted after the verdict.
+- Unit: `test_received_then_replied_ledger_order`, `test_confirm_only_from_the_original_recipient`,
+  `test_late_or_repeated_confirm_never_regresses`, `test_late_confirm_after_escalation_is_recorded`,
+  `test_reply_only_from_the_original_recipient`, `test_peer_cannot_confirm_an_unknown_message`.
 
 ### AC8 — UNDELIVERABLE, REJECTED, ESCALATED
 **MET.**
@@ -159,11 +175,11 @@ $ python3 -m pytest tests/integration/t3693_*.py -v -s
 …::test_real_termlink_inject_reaches_the_tagged_session PASSED
 …::test_e2e_two_real_agents_nonce_round_trip PASSED
 …::test_e2e_negative_control_injection_disabled_fails_and_escalates PASSED
-======================== 3 passed in 365.96s (0:06:05) =========================
+======================== 3 passed in 370.08s (0:06:10) =========================
 $ python3 -m pytest tests/unit -k sidecar -q
-199 passed, 3963 deselected in 16.68s
+203 passed, 3968 deselected in 20.94s
 $ python3 -m pytest tests/unit/t3561_adapter.py tests/unit/t3561_receiver_storage.py -q
-14 passed
+13 passed
 ```
 (`tests/unit/t3561_*.py` are not collected by a directory run, because they lack a `test_`
 prefix, so they are run by path.) The skip is loud: `needs_live` names the missing binaries and
@@ -179,12 +195,12 @@ says "a skip here proves nothing"; the Verification line also refuses `SKIPPED`.
 
 | Not built here | Owner | Check |
 |---|---|---|
-| 30 s tick driver (design R3) — this slice gives it `fw sidecar deliver-pending` to call | **T-3684** "arc-011 sidecar S3: 30s inject tick…" | `.tasks/active/T-3684-*.md` |
+| 30 s tick driver (design R3) — this slice gives it `fw sidecar deliver-pending` to call | **T-3684** "arc-011 sidecar S3: 30s inject tick…" | `.tasks/active/T-3684-*.md`, handoff note appended 2026-10-02 |
 | Urgent bypass as a *register row* (R5). Inject-time urgent bypass exists (`inject.py:135`); T-3694 pointed R5 at T-3684 | **T-3684** | register R5 `owner_task: T-3684` |
 | Always-on per-agent sidecar / liveness (R7, R14, R15) — receivers here are started by `fw sidecar receiver start` | **T-3685** | `.tasks/active/T-3685-*.md` |
 | Cross-host delivery (the registry is same-host, token read from a 0600 file) | **T-3688** | `.tasks/active/T-3688-*.md` |
 | Consumer install (template entries ARE added to `lib/init.sh`; no upgrade rollout) | **T-3689** | `.tasks/active/T-3689-*.md` |
-| T-3555 refusal ledger (rows recorded for it in `.context/sidecar/refusals.jsonl`) | **T-3555** | `.tasks/active/T-3555-*.md` |
+| T-3555 refusal ledger (rows recorded for it in `.context/sidecar/refusals.jsonl`) | **T-3555** | `.tasks/active/T-3555-*.md`, handoff note appended 2026-10-02 |
 | Register rows R2/R4/R6 → `built` (doc owned by T-3694; I may not edit it) | **T-3694** asked via `fw sidecar send` (conversation `t3693-register-rows`) | see below |
 
 **Register state at writing.** `lib/design_register.py close-check` reports R2, R4 and R6 as
@@ -192,6 +208,17 @@ says "a skip here proves nothing"; the Verification line also refuses `SKIPPED`.
 document is stale, and its owner has been asked to set `status: built` with the evidence above.
 T-3693 does not close until that close-check is clean. R6's row text still uses the old state
 names (stored / injected-now / injected-later); the built states are T-3561's.
+
+## Round-1 review findings and what changed (codex, `docs/reports/T-3693-review-codex.md` round 1: FAIL)
+
+| Finding | Change |
+|---|---|
+| AC5: the harness generated the nonce; the AC says A generates it | A generates it in its own session; the test observes it on the wire (`:176`, `:301`) |
+| AC5: the transcript match was any line with three strings | strict: `hook_additional_context` attachment + nonce inside a PEER-DATA block (`:151`) |
+| AC7: any peer could confirm; late confirms could regress REPLIED; any sender could set REPLIED | `confirm_from_peer` / `note_reply` enforce recipient identity and no regression, + 4 tests |
+| legacy `t3561_adapter.py` / `t3561_receiver_storage.py` tests overclaimed (no harness, no stale flag, no framing) | `test_ac3_safe_boundary_timing` deleted; `test_ready_flag_freshness` replaced by a real fail-safe test (missing/garbled flag → not ready); the storage-only test renamed `test_hostile_payload_stored_verbatim`; docstrings point at the tests that do prove hook behaviour |
+| `test_deliver_pending_cli` only covers "nothing waiting" | the live TermLink leg now injects through the real `fw sidecar deliver-pending` CLI |
+| T-3555 handoff unconfirmed | Updates entry appended to `.tasks/active/T-3555-*.md` naming `.context/sidecar/refusals.jsonl`; the same for T-3684 (`deliver-pending`, R3/R5) |
 
 ## Not mine, found on the way (pre-existing, not fixed here)
 

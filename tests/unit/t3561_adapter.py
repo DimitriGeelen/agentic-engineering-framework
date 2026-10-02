@@ -1,7 +1,8 @@
 """Tests for T-3561 adapter — Stop hook and UserPromptSubmit hook integration.
 
-Tests AC3: Runtime adapter hands messages to agent at safe boundary
-Tests AC5: Sender sees state transitions
+Unit tests of the lib/sidecar/adapter.py functions (ready flag, pending peek).
+The hook wiring, HANDED_OVER and sender states are proven in
+test_sidecar_receiver_t3693.py and tests/integration/t3693_sidecar_e2e_test.py.
 """
 
 import tempfile
@@ -27,7 +28,8 @@ def temp_project():
 
 
 def test_ac3_stop_hook_sets_ready_flag(temp_project):
-    """AC3: Stop hook sets ready-for-input flag when agent is idle."""
+    """Adapter setter only. The real Stop hook wiring is tested in
+    test_sidecar_receiver_t3693.py::test_stop_hook_sets_ready_via_fw_hook."""
     # Initially no ready flag
     assert not adapter.is_ready_for_input()
 
@@ -45,7 +47,8 @@ def test_ac3_stop_hook_sets_ready_flag(temp_project):
 
 
 def test_ac3_userpromptsubmit_clears_ready(temp_project):
-    """AC3: UserPromptSubmit hook clears ready flag when new prompt starts."""
+    """Adapter clear only. Clear-FIRST ordering in the real prompt hook is tested in
+    test_sidecar_receiver_t3693.py::test_prompt_hook_clears_ready_before_reading_messages."""
     # Set ready flag (simulating Stop hook)
     adapter.set_ready_for_input(True)
     assert adapter.is_ready_for_input()
@@ -55,22 +58,6 @@ def test_ac3_userpromptsubmit_clears_ready(temp_project):
 
     # Ready flag should now be false
     assert not adapter.is_ready_for_input()
-
-
-def test_ac3_safe_boundary_timing(temp_project):
-    """AC3: Ready flag transition is safe — no injection mid-tool-call."""
-    # The stop hook sets ready ONLY when a turn ends (harness is idle)
-    # The UserPromptSubmit hook clears it BEFORE the next turn starts
-    # This ensures injection happens at a safe boundary, never mid-tool-call
-
-    adapter.set_ready_for_input(True)
-    ready1 = adapter.is_ready_for_input()
-    assert ready1, "Agent should be marked ready after Stop hook"
-
-    # UserPromptSubmit runs (clearing the flag happens first, before prompt)
-    adapter.clear_ready_for_input()
-    ready2 = adapter.is_ready_for_input()
-    assert not ready2, "Agent should not be marked ready during prompt processing"
 
 
 def test_get_pending_messages_empty(temp_project):
@@ -119,13 +106,14 @@ def test_get_pending_messages_skips_handed_over(temp_project):
     assert len(messages) == 0
 
 
-def test_ready_flag_freshness(temp_project):
-    """Test that stale ready flags are treated as not ready (safety fallback)."""
-    # Set ready
-    adapter.set_ready_for_input(True)
-    assert adapter.is_ready_for_input()
-
-    # Manipulate the flag file to be old (optional: test stale detection)
-    # For now, we test that clearing always works
-    adapter.set_ready_for_input(False)
+def test_missing_or_unreadable_flag_reads_not_ready(temp_project):
+    """Readiness fails toward NOT ready (T-3397:109): a message waits rather
+    than being typed into a busy agent."""
+    flag = adapter._ready_flag_path()
+    if flag.exists():
+        flag.unlink()
+    assert not adapter.is_ready_for_input()
+    flag.write_text("garbage without a ready line\n")
+    assert not adapter.is_ready_for_input()
+    flag.write_text("ready: maybe\n")
     assert not adapter.is_ready_for_input()

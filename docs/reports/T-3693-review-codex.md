@@ -1,0 +1,31 @@
+**The implementation is substantially improved, but AC5 and AC7 are NOT MET.** The replacement e2e exercises real agents; several older tests still claim behavior they never exercise.
+
+I reviewed the current code, tests, task, and captured evidence. This environment is read-only, so I did not rerun the stateful test suites or create a handover commit. I independently ran the vendor check and recomputed the enforcement hash.
+
+| Criterion | Result | Evidence |
+|---|---|---|
+| **AC1 — receiver start/status/stop** | **MET** | [sidecar_cli.py:428](/opt/999-Agentic-Engineering-Framework/lib/sidecar_cli.py:428) writes the token before spawning, waits for health, reports pid/port/url, and implements shutdown/cleanup. The lifecycle tests launch actual receiver processes and inspect their files and status. |
+| **AC2 — Stop sets ready; prompt clears first, then surfaces** | **MET** | [hooks.py:66](/opt/999-Agentic-Engineering-Framework/lib/sidecar/hooks.py:66) sets readiness; `prompt()` clears it before reading messages and emits context before marking handover. New tests exercise the real `fw hook` wrappers; the readiness spy delegates to the real reader. |
+| **AC3 — registration and baseline** | **MET** | Both handlers exist in [.claude/settings.json:230](/opt/999-Agentic-Engineering-Framework/.claude/settings.json:230), and the consumer template registers them. Independently computed hooks hash exactly matches the stored baseline: `e19fd656…`. |
+| **AC4 — one-line injection; handover only after surfacing** | **MET** | [inject.py:122](/opt/999-Agentic-Engineering-Framework/lib/sidecar/inject.py:122) checks pending/readiness, resolves one session, and invokes one `termlink pty inject … --enter`. It records `INJECT_ATTEMPT`, not handover. [hooks.py:134](/opt/999-Agentic-Engineering-Framework/lib/sidecar/hooks.py:134) writes and flushes context before marking handover. Captured live evidence shows the on-store path. |
+| **AC5 — real e2e with A-generated nonce** | **NOT MET** | Two real Claude sessions are exercised, and B genuinely issues the reply command. However, [the harness:258](/opt/999-Agentic-Engineering-Framework/tests/integration/t3693_sidecar_e2e_test.py:258) generates the nonce and gives A a fully constructed send command. **A does not generate it**, as the AC requires. Also, `_surfaced_in_transcript()` merely finds three strings anywhere in a transcript line; it reports the attachment type without requiring `hook_additional_context` or checking that the nonce is inside the data block. The captured run has the correct attachment, but the assertion does not enforce it. |
+| **AC6 — disabled injection fails and escalates** | **MET** | The same round-trip function runs with B’s `--no-inject`. Assertions require `SENT → RECEIVED`, terminal `ESCALATED`, and no handover/reply. [Captured evidence](/opt/999-Agentic-Engineering-Framework/docs/reports/T-3693-e2e-negative-evidence.json) shows no transformed nonce after 301.4 seconds and escalation by infrastructure. |
+| **AC7 — transitions recorded only by the knowledgeable party** | **NOT MET** | [direct.py:200](/opt/999-Agentic-Engineering-Framework/lib/sidecar/direct.py:200) accepts any claimed peer for any known message ID; it never checks that peer against the original recipient. A late or repeated confirmation can also append `HANDED_OVER` after `REPLIED`, regressing the effective state. `note_reply()` accepts a known `in_reply_to` without validating the sender against the original target. The happy-path trace passes, but these invariants are unenforced. |
+| **AC8 — non-success paths tested** | **MET** | Tests crash a real receiver and exercise HTTP retries, send a wrong token to a real server, and run the real sweep CLI with an expired deadline. These are meaningful paths; replacing sleep with a recorder does not replace delivery logic. |
+| **AC9 — specified suites pass** | **MET — recorded evidence** | [Live run log](/opt/999-Agentic-Engineering-Framework/docs/reports/T-3693-e2e-run.log) records three integration passes. The brief reports 199 sidecar unit passes and 14 explicitly selected legacy passes. These were not independently rerun here; the unit result is a brief-level claim. |
+| **AC10 — vendor, baseline, lint** | **MET — partly recorded evidence** | Independently: `bin/fw vendor self --check` exits 0, and baseline matches. The brief reports 118 lint passes; lint was not rerun here. |
+
+The test-integrity findings are:
+
+- **The replacement e2e does not manufacture B’s reply.** It computes an expected uppercase string for comparison, launches real agents, and reads receiver/transcript results. The captured B transcript contains B’s actual send command.
+- **The injector unit tests mock TermLink, not the injector.** This legitimately tests command construction and gating; separate live tests cover PTY delivery.
+- **[Legacy adapter tests:29](/opt/999-Agentic-Engineering-Framework/tests/unit/t3561_adapter.py:29) overclaim hook execution and timing.** They call setters directly. `test_ac3_safe_boundary_timing` exercises no harness or tool call.
+- **[test_ready_flag_freshness:122](/opt/999-Agentic-Engineering-Framework/tests/unit/t3561_adapter.py:122) never creates a stale flag.** It explicitly clears one, then checks false.
+- **[test_ac4_untrusted_data_framing:103](/opt/999-Agentic-Engineering-Framework/tests/unit/t3561_receiver_storage.py:103) never surfaces or frames anything.** It stores malicious text and reads it back. The newer hook test supplies actual framing coverage.
+- `test_deliver_pending_cli` exercises only “nothing waiting”; it does not prove CLI-triggered injection.
+
+All deferral owners **exist and are active**. T-3684, T-3685, T-3688, T-3689, and T-3694 have relevant scope. T-3694 is appropriately named for register maintenance, not injection implementation. T-3555 is related, but its ACs cover gate-refusal recording and do not explicitly own ingestion of `.context/sidecar/refusals.jsonl`; that integration handoff remains unconfirmed.
+
+The architecture register still lists R2/R4 as `in-progress` and R6 as `partial`, owned by T-3693. The brief correctly acknowledges that closure remains blocked.
+
+**VERDICT: FAIL**

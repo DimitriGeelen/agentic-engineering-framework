@@ -2,7 +2,7 @@
 
 Tests AC1: Durable storage with message + pending record before returning RECEIVED
 Tests AC2: Stable message IDs with dedup
-Tests AC4: Peer content is framed as untrusted data
+Tests: a hostile payload is stored verbatim (framing is the hook's job)
 """
 
 import json
@@ -100,8 +100,10 @@ def test_ac2_reject_duplicate_id_different_content(temp_project):
     assert receiver.read_message(msg_id)["body"] == "Message A"
 
 
-def test_ac4_untrusted_data_framing(temp_project):
-    """AC4: Peer content is framed as untrusted data in surfacing."""
+def test_hostile_payload_stored_verbatim(temp_project):
+    """Storage only: a hostile body is stored byte-for-byte, never interpreted.
+    The untrusted-data FRAMING happens when the prompt hook surfaces it — see
+    test_sidecar_receiver_t3693.py::test_prompt_hook_surfaces_untrusted_then_hands_over_and_confirms."""
     msg_id = "test-untrust-001"
     # Malicious payload
     envelope = {

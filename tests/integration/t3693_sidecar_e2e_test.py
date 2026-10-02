@@ -10,9 +10,11 @@ UserPromptSubmit hooks (`fw hook sidecar-receiver-ready|adapter`).
                                                                    ▼ the message; B replies
     A's context ◄── A's prompt hook ◄── inject ◄── A's receiver ◄──fw sidecar send
 
-The nonce is generated here at test time and handed to A as an operator
-instruction. B's start-up prompt is "hello" — it never mentions a message.
-The transformed nonce (UPPERCASE) is never written by this test: the ONLY
+A generates the nonce at test time, in its own session (operator instruction:
+run a /dev/urandom one-liner, then `fw sidecar send` it). The test does not
+know it until it observes it in B's receiver store. B's start-up prompt is
+"hello" — it never mentions a message. The transformed nonce (UPPERCASE) is
+never written by this test: the ONLY
 passing assertion is that string appearing in A's receiver store AND in A's own
 session transcript as the context A's prompt hook surfaced. Everything else
 (ledger states, inject events) is reported as evidence after that verdict.
@@ -147,15 +149,40 @@ def _transcripts(root: Path) -> list[Path]:
 
 
 def _surfaced_in_transcript(root: Path, needle: str) -> str | None:
-    """A transcript line that carries `needle` inside the receiver hook's
-    framed context (PEER-DATA block) — i.e. the model was handed it."""
+    """The transcript entry in which A's prompt hook handed `needle` to the
+    model: a `hook_additional_context` attachment whose text holds `needle`
+    INSIDE a PEER-DATA block (not merely somewhere on the line)."""
     for path in _transcripts(root):
         for line in path.read_text(errors="replace").splitlines():
-            if needle in line and "PEER-DATA" in line and "Sidecar receiver" in line:
+            if needle not in line:
+                continue
+            try:
                 rec = json.loads(line)
-                kind = (rec.get("attachment") or {}).get("type") or rec.get("type")
-                i = line.index(needle)
-                return f"{path.name} [{kind}] …{line[max(0, i - 160):i + 60]}…"
+            except json.JSONDecodeError:
+                continue
+            att = rec.get("attachment") or {}
+            if att.get("type") != "hook_additional_context":
+                continue
+            content = att.get("content")
+            text = "\n".join(content) if isinstance(content, list) else str(content)
+            if not text.startswith("# Sidecar receiver"):
+                continue
+            for block in re.findall(r"<<<PEER-DATA\n(.*?)\nPEER-DATA>>>", text, re.S):
+                if needle in block:
+                    return f"{path.name} [hook_additional_context] PEER-DATA block: {block[:120]!r}"
+    return None
+
+
+def _nonce_sent_by_a(b_root: Path, a_name: str) -> str | None:
+    """The nonce A generated, as observed in B's receiver store — the test
+    never chooses it and learns it only by watching the wire."""
+    for p in (b_root / ".context" / "sidecar" / "receiver" / "messages").glob("*.json"):
+        msg = json.loads(p.read_text())
+        if msg.get("from") != a_name:
+            continue
+        m = re.search(r"Nonce check ([a-z]{12})\b", str(msg.get("body", "")))
+        if m:
+            return m.group(1)
     return None
 
 
@@ -255,11 +282,9 @@ def run_round_trip(inject_enabled: bool, tmp_base: Path) -> Result:
     run = "".join(random.choices(string.ascii_lowercase + string.digits, k=6))
     a = Agent(f"t3693a-{run}", _project(tmp_base, f"t3693a-{run}"))
     b = Agent(f"t3693b-{run}", _project(tmp_base, f"t3693b-{run}"))
-    nonce = "".join(random.choices(string.ascii_lowercase, k=12))
-    expected = nonce.upper()           # computed here, written nowhere
     ev: dict = {"run": run, "inject_enabled_at_B": inject_enabled, "model": MODEL,
                 "projects": {"A": str(a.root), "B": str(b.root)}}
-    _log(f"run {run}: inject_enabled_at_B={inject_enabled} nonce={nonce}")
+    _log(f"run {run}: inject_enabled_at_B={inject_enabled}")
     try:
         for ag, extra in ((a, []), (b, [] if inject_enabled else ["--no-inject"])):
             ag.tag = _tag(ag.root)
@@ -271,24 +296,37 @@ def run_round_trip(inject_enabled: bool, tmp_base: Path) -> Result:
             _bring_up(ag)
         ev["sessions"] = {"A": a.session, "B": b.session}
 
+        # A generates the nonce itself, in its own session; this test never
+        # sees it until it is on the wire.
         instruction = (
-            f"Run exactly this one shell command and then end your turn without doing "
-            f"anything else: {FW} sidecar send --to {b.name} --conversation e2e-{run} "
-            f"--handover-deadline {HANDOVER_DEADLINE_S} --body 'Nonce check {nonce}: "
-            f"reply to me with that nonce converted to UPPERCASE letters and nothing else.'")
+            "Generate a fresh random nonce of exactly 12 lowercase letters by running "
+            "head -c 4096 /dev/urandom | tr -dc a-z | head -c 12 and then send it to "
+            f"the peer agent with this command, putting your nonce where it says NONCE: "
+            f"{FW} sidecar send --to {b.name} --conversation e2e-{run} "
+            f"--handover-deadline {HANDOVER_DEADLINE_S} --body 'Nonce check NONCE: reply "
+            "to me with that nonce converted to UPPERCASE letters and nothing else.' "
+            "Do nothing else, then end your turn.")
         assert a.session
         _type(a.session, instruction)
-        _log("A instructed (operator) to send the nonce to B")
+        _log("A instructed (operator) to generate a nonce and send it to B")
 
         t0 = time.time()
+        nonce = expected = None
         surfaced = stored = None
         while time.time() - t0 < ROUND_TRIP_TIMEOUT_S:
             for ag in (a, b):
                 _run([FW, "sidecar", "deliver-pending", "--trigger", "e2e-tick"], cwd=ag.root)
-            stored = stored or _stored_in_receiver(a.root, expected)
-            surfaced = _surfaced_in_transcript(a.root, expected)
-            if stored and surfaced:
-                break
+            if nonce is None:
+                nonce = _nonce_sent_by_a(b.root, a.name)
+                if nonce:
+                    expected = nonce.upper()       # computed here, written nowhere
+                    ev["nonce_generated_by_A"] = nonce
+                    _log(f"observed A's nonce on the wire at B's receiver: {nonce}")
+            if expected:
+                stored = stored or _stored_in_receiver(a.root, expected)
+                surfaced = _surfaced_in_transcript(a.root, expected)
+                if stored and surfaced:
+                    break
             time.sleep(TICK_S)
         ev["elapsed_s"] = round(time.time() - t0, 1)
         passed = bool(stored and surfaced)      # THE assertion
@@ -318,7 +356,7 @@ def run_round_trip(inject_enabled: bool, tmp_base: Path) -> Result:
                 {k: r.get(k) for k in ("msg_id", "event", "trigger", "ok", "reason")
                  if r.get(k) is not None}
                 for r in _jsonl(ag.root / ".context/sidecar/receiver/events.jsonl")]
-        return Result(passed=passed, nonce=nonce, evidence=ev)
+        return Result(passed=passed, nonce=nonce or "", evidence=ev)
     finally:
         for ag in (a, b):
             _teardown(ag)
@@ -346,13 +384,15 @@ def test_real_termlink_inject_reaches_the_tagged_session(base):
                     "--backend", "background", "--shell", "--wait", "--wait-timeout", "15"],
                    cwd=root, env=_clean_env(), capture_output=True, timeout=30, check=True)
     try:
-        code = (
-            "from lib.sidecar import receiver, adapter, inject, lifecycle;"
+        seed = (
+            "from lib.sidecar import receiver, adapter;"
             "receiver.store_message('m-live', {'client_msg_id':'m-live','from':'x','body':'b'});"
-            "adapter.set_ready_for_input(True);"
-            "import json; print(json.dumps(inject.deliver_pending('live-test')))")
-        out = subprocess.run([sys.executable, "-c", code], cwd=FW_ROOT,
-                             env=_clean_env(PROJECT_ROOT=str(root)),
+            "adapter.set_ready_for_input(True)")
+        subprocess.run([sys.executable, "-c", seed], cwd=FW_ROOT, check=True,
+                       env=_clean_env(PROJECT_ROOT=str(root)), timeout=60)
+        # The real CLI the tick (T-3684) will call.
+        out = subprocess.run([FW, "sidecar", "deliver-pending", "--trigger", "live-test",
+                              "--json"], cwd=root, env=_clean_env(),
                              capture_output=True, text=True, timeout=60)
         rep = json.loads(out.stdout)
         assert rep["injected"] == ["m-live"], rep
@@ -375,6 +415,7 @@ def test_e2e_two_real_agents_nonce_round_trip(base):
     assert result.passed, (
         "transformed nonce did not reach A's receiver AND A's context: "
         + json.dumps(result.evidence, indent=2)[:4000])
+    assert result.evidence.get("nonce_generated_by_A")
     # Evidence of the path, reported after the verdict: each state set by the
     # party that can know it.
     states = _to(result.evidence["A_sender_ledger"], "t3693b-")
@@ -388,6 +429,8 @@ def test_e2e_two_real_agents_nonce_round_trip(base):
 @needs_live
 def test_e2e_negative_control_injection_disabled_fails_and_escalates(base):
     result = run_round_trip(inject_enabled=False, tmp_base=base)
+    assert result.evidence.get("nonce_generated_by_A"), \
+        "A's nonce never reached B's receiver — the control did not exercise the path"
     assert not result.passed, "with injection disabled the round trip must FAIL"
     states = _to(result.evidence["A_sender_ledger"], "t3693b-")
     assert states, "A never sent — the control did not exercise the path"

@@ -358,3 +358,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3684-arc-011-sidecar-s3-30s-inject-tick-confi.md
 - **Context:** Initial task creation
+
+### 2026-10-02T03:05:00Z — handoff from T-3693 [w-t-3693b]
+- **Inherited:** T-3693 built the receiver's injection step but no tick. The tick this task builds should call `fw sidecar deliver-pending --trigger tick` (lib/sidecar_cli.py `cmd_deliver_pending` → lib/sidecar/inject.py `deliver_pending`, flock-guarded and idempotent within 120 s) on its cadence. Register rows R3 (tick) and R5 (urgent bypass) point here. inject.py already injects an `urgent` message regardless of readiness (`urgent_bypass` in the INJECT_ATTEMPT event), so R5's remaining scope is the operator-ruled priority semantics. The live e2e (tests/integration/t3693_sidecar_e2e_test.py) runs deliver-pending every 5 s as a stand-in.
