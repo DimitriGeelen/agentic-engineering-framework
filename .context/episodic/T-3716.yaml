@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3716: termlink cleanup tests red after T-3651 consent gate: t3580_round7_cleanup (2), t3595_cleanup_scope (4), termlink.bats 'cleanup runs without error' (1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-02T12:27:58Z
+# ============================================================================
+
+task_id: T-3716
+task_name: "termlink cleanup tests red after T-3651 consent gate: t3580_round7_cleanup (2), t3595_cleanup_scope (4), termlink.bats 'cleanup runs without error' (1)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-02T12:15:48Z
+completed: 2026-10-02T12:26:40Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-02T14:26:28+02:00
+last_commit: 2026-10-02T14:26:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  cleanup fixture tests pass --yes after T-3651 consent gate; lint skips $output assertions
+
+# Key outcomes
+outcomes:
+  - 'Causing commit identified and named in ## RCA'
+  - 'tests/unit/t3580_round7_cleanup.bats passes with zero `not ok`'
+  - 'tests/unit/t3595_cleanup_scope.bats passes with zero `not ok`'
+  - 'termlink.bats ''cleanup runs without error'' passes'
+  - 'T-3651 safety preserved: non-tty cleanup without --yes still refuses (no destructive default)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'cleanup fixture tests pass --yes after T-3651 consent gate; lint skips $output assertions'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3716-termlink-cleanup-tests-red-after-t-3651-.md'
+  - 'tests/unit/t3580_round7_cleanup.bats'
+  - 'tests/unit/t3595_cleanup_scope.bats'
+  - 'tests/unit/termlink.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-02T14:26:28'
+    action: 'T-3716: cleanup fixture tests pass --yes after T-3651 consent gate; lint skips $output assertions'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 10 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, regression, push-blocker, unit-suite]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 10
+  commits: 1
+  files_changed: 4
+  lines_added: 372
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3716-termlink-cleanup-tests-red-after-t-3651-.md
+generated_by: context-agent-hybrid
