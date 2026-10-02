@@ -179,7 +179,12 @@ blk = '''if [ -n "${TASK_FILE:-}" ] && [ -f "$TASK_FILE" ] \\
 fi
 '''
 assert blk in s, "mutation target not found — the fix moved, update this test"
-open(p, 'w').write(s.replace(blk, '', 1))
+s = s.replace(blk, '', 1)
+# T-3744 added the same null at each move site; strip those too, so the mutant
+# has no horizon null-ing anywhere and the leg below still measures the guard.
+s, k = re.subn(r'\n[ \t]*_sed_i "s/\^horizon:\.\*/horizon: null/" "\$TASK_FILE"(?=\n[ \t]*# T-2864)', '', s)
+assert k == 2, f"expected 2 T-3744 move-site nulls, found {k}"
+open(p, 'w').write(s)
 PY
     bash -n "$mutant"
 

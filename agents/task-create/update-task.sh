@@ -1889,6 +1889,10 @@ if [ -n "$NEW_STATUS" ]; then
                     mv "$TASK_FILE" "$DEST"
                 fi
                 TASK_FILE="$DEST"
+                # T-3744: null the horizon AT the move, not only in the end-of-
+                # script invariant — a caller timeout (Watchtower decide, 30 s)
+                # killed the script between here and there three times.
+                _sed_i "s/^horizon:.*/horizon: null/" "$TASK_FILE"
                 # T-2864: reconcile the INDEX, not just the disk. The `|| mv`
                 # fallback above leaves the source tracked in the index while
                 # removing it from disk — so the `[ -e ]` check below passes
@@ -2532,6 +2536,8 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
                 mv "$TASK_FILE" "$DEST"
             fi
             TASK_FILE="$DEST"
+            # T-3744: null the horizon at the move (see the sibling site above).
+            _sed_i "s/^horizon:.*/horizon: null/" "$TASK_FILE"
             # T-2864: reconcile the index (see the sibling call site above).
             _t2864_reconcile_index "$_t1863_orig" "$DEST"
             # T-1863: post-move orphan check — same rationale as the T-193

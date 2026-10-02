@@ -1,20 +1,14 @@
 ---
-id: T-3744
-name: "fw inception decide completes the inception but leaves horizon: now on the
-  completed task, violating the archived-horizon invariant (t3118, t3235)"
+id: T-3749
+name: "Watchtower inception decide times out at 30 s and reports Command timed out although the decision landed"
 description: >
-  2026-10-02: the operator's GO on T-3723 moved it to .tasks/completed/ with horizon:
-  now; t3118_horizon_migration_scope and t3235_archived_horizon_invariant went red
-  on the live corpus and blocked pre-push. update-task.sh enforces the horizon invariant
-  on --status work-completed; the decide path (lib/inception.sh) does not go through
-  it. Fix decide to clear horizon on completion (the same invariant), plus a regression
-  test; correct T-3723's record.
+  web/blueprints/inception.py runs fw inception decide with timeout=30; the chain runs past 30 s, the operator sees a timeout for a decision that DID land (T-3631, 2026-10-02), and the kill can interrupt post-completion steps (T-3744 root cause). Measure the chain, detach or speed the slow side effects, make the message reflect what landed.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
-tags: [bug, inception, horizon]
+tags: []
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -43,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-02T19:24:22Z
-last_update: '2026-10-02T19:30:21Z'
-date_finished:
+created: 2026-10-02T22:33:14Z
+last_update: 2026-10-02T22:33:14Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,49 +50,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-10-02T19:25:10Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-02T19:30:21Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=273,acs=5)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3744: fw inception decide completes the inception but leaves horizon: now on the completed task, violating the archived-horizon invariant (t3118, t3235)
+# T-3749: Watchtower inception decide times out at 30 s and reports Command timed out although the decision landed
 
 ## Context
 
-Three operator GOs recorded through Watchtower (T-3723, T-3631, T-3726) archived the inception with `horizon: now`. Watchtower runs `fw inception decide` under a 30 s subprocess timeout; the decide chain (decision → update-task.sh completion → episodic, reviewer, BVP side effects) runs past 30 s, and the kill lands after the archive move but before update-task.sh's end-of-script ARCHIVED-HORIZON INVARIANT (T-3235). Fix: null the horizon at each archive move site, keep the end invariant as a backstop. The timeout itself is a separate bug (T-3749).
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] T-3723's completed record carries horizon: null (data fix; unblocks the live-corpus invariants t3118 and t3235)
-- [x] Archiving (the path `fw inception decide` completes through) nulls the horizon at the move itself, so a caller-side kill after the move cannot leave `horizon: now`; regression test tests/unit/t3744_horizon_null_at_move.bats
-- [x] t3118_horizon_migration_scope.bats and t3235_archived_horizon_invariant.bats pass on the live corpus (t3235's mutation leg updated to strip the new move-site nulls too)
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -259,12 +224,6 @@ Three operator GOs recorded through Watchtower (T-3723, T-3631, T-3726) archived
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-bats tests/unit/t3744_horizon_null_at_move.bats
-bats tests/unit/t3235_archived_horizon_invariant.bats
-bats tests/unit/t3118_horizon_migration_scope.bats
-bash -n agents/task-create/update-task.sh
-bin/fw vendor self --check
-
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -280,14 +239,6 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** T-3723, T-3631 and T-3726 landed in `.tasks/completed/` with `horizon: now` after the operator recorded GO in Watchtower; Watchtower showed "Command timed out"; the live-corpus invariants t3118/t3235 went red and blocked the push.
-
-**Root cause:** the horizon null-ing ran only as a post-condition at the END of update-task.sh (T-3235 moved it there on purpose, to cover both archive branches). Watchtower's decide call (`web/blueprints/inception.py`, `run_fw_command(..., timeout=30)`) kills the chain after ~30 s; the T-3631 reviewer stamp landed 27 s after the decision, so the kill falls between the archive move and the post-condition.
-
-**Why structurally allowed:** the invariant was tested only on runs that complete normally; nothing modelled a caller killing the script mid-flight, and a post-condition is by construction the step most exposed to that.
-
-**Prevention:** the null now happens at each archive move site (`TASK_FILE="$DEST"`), one line after the move; tests/unit/t3744_horizon_null_at_move.bats fails if any archive site lacks it, and t3235's live-corpus leg still catches any instance that slips through. The 30 s timeout is filed separately (T-3749).
 
 ## Evolution
 
@@ -365,10 +316,7 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-02T19:24:22Z — task-created [task-create-agent]
+### 2026-10-02T22:33:14Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3744-fw-inception-decide-completes-the-incept.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3749-watchtower-inception-decide-times-out-at.md
 - **Context:** Initial task creation
-
-### 2026-10-02T19:25:09Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
