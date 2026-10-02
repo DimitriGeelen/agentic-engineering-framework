@@ -71,6 +71,28 @@ run_facts() {
     [ "$output" = $'0\t0\t0\t2\t0\t0' ]
 }
 
+@test "T-3717: HUB_ACCEPTED and legacy on-disk INJECTED_NOW rows both count as delivered" {
+    make_outbox
+    ledger_row new HUB_ACCEPTED
+    ledger_row old INJECTED_NOW
+    ledger_row later INJECTED_LATER
+    run_facts
+    [ "$status" -eq 0 ]
+    [ "$output" = $'0\t0\t0\t3\t0\t0' ]
+}
+
+@test "T-3717: a legacy INJECTED_NOW row with no attempts is closed, not reopened by the ladder" {
+    make_outbox
+    ledger_row old INJECTED_NOW
+    run env PROJECT_ROOT="$TEST_ROOT" PYTHONPATH="$FRAMEWORK_ROOT" python3 -c '
+from lib.sidecar import outbox, retry
+rows = outbox._read_ledger()
+assert rows[0]["state"] == outbox.HUB_ACCEPTED, rows
+print("open" if retry.is_open(rows[0]) else "closed")'
+    [ "$status" -eq 0 ]
+    [ "$output" = "closed" ]
+}
+
 @test "UNKNOWN rows are counted in field 1; a later row for the same id supersedes" {
     make_outbox
     ledger_row a STORED "2999-01-01T00:00:00+00:00"

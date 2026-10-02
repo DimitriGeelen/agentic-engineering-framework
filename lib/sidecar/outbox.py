@@ -33,6 +33,12 @@ from pathlib import Path
 STORED = "STORED"
 HUB_ACCEPTED = "HUB_ACCEPTED"  # T-3561: renamed from INJECTED_NOW
 INJECTED_NOW = "HUB_ACCEPTED"  # Alias for backward compatibility during migration
+# T-3717: the alias above renames the Python NAME only. Ledger rows written
+# before T-3561 still carry the literal string "INJECTED_NOW" on disk, and the
+# ledger is append-only, so they never go away. `_read_ledger` maps this value
+# to HUB_ACCEPTED so every reader (status counts, retry eligibility) still sees
+# those rows as delivered rather than as an unknown, retryable state.
+LEGACY_INJECTED_NOW = "INJECTED_NOW"
 INJECTED_LATER = "INJECTED_LATER"
 UNKNOWN = "UNKNOWN"
 TERMINAL_STATES = frozenset({HUB_ACCEPTED, INJECTED_LATER, UNKNOWN})
@@ -181,9 +187,12 @@ def _read_ledger() -> list[dict]:
             if not line:
                 continue
             try:
-                rows.append(json.loads(line))
+                row = json.loads(line)
             except json.JSONDecodeError:
                 continue
+            if isinstance(row, dict) and row.get("state") == LEGACY_INJECTED_NOW:
+                row["state"] = HUB_ACCEPTED
+            rows.append(row)
     return rows
 
 

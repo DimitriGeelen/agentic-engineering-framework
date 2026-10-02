@@ -37,7 +37,11 @@ fw_sidecar_ledger_facts() {
     [ -f "$lib_dir/sidecar_cli.py" ] || return 2
 
     local snap
-    snap=$(FRAMEWORK_ROOT="$root" python3 "$lib_dir/sidecar_cli.py" status --json 2>/dev/null) || return 2
+    # T-3717: PROJECT_ROOT, not FRAMEWORK_ROOT. Since T-3671 the sidecar reads its
+    # state from the consumer PROJECT_ROOT (else the cwd's project); setting only
+    # FRAMEWORK_ROOT made <root> inert and the facts described whatever project
+    # the caller happened to be standing in.
+    snap=$(PROJECT_ROOT="$root" python3 "$lib_dir/sidecar_cli.py" status --json 2>/dev/null) || return 2
     [ -n "$snap" ] || return 2
 
     printf '%s' "$snap" | python3 -c '
@@ -45,7 +49,11 @@ import json, sys
 try:
     s = json.load(sys.stdin)
     l = s["ledger"]
-    delivered = int(l.get("INJECTED_NOW", 0)) + int(l.get("INJECTED_LATER", 0))
+    # T-3717: T-3561 renamed INJECTED_NOW to HUB_ACCEPTED; legacy rows are
+    # folded into HUB_ACCEPTED by outbox._read_ledger. The INJECTED_NOW key is
+    # still summed so an older status producer keeps counting.
+    delivered = (int(l.get("HUB_ACCEPTED", 0)) + int(l.get("INJECTED_NOW", 0))
+                 + int(l.get("INJECTED_LATER", 0)))
     print("\t".join(str(x) for x in (
         int(l.get("UNKNOWN", 0)), int(s.get("expired_unswept", 0)),
         int(l.get("STORED", 0)), delivered, int(s.get("messages_total", 0)),
