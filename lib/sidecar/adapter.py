@@ -16,11 +16,30 @@ in an agent's working session. Injection grants attention, never authority
 
 Ready flag file: .context/sidecar/ready-for-input.yaml
 The hook entry points are lib/sidecar/hooks.py (T-3693).
+
+T-3745 — readiness is per SESSION, not per project. Two Claude sessions can
+share one project (a `claude-fw --termlink` fleet agent plus the operator's own
+terminal, 055 @117). One project-wide flag let the operator's Stop hook mark
+"ready" while the fleet agent was mid-turn, and the injector typed into the
+busy one. So every Stop / UserPromptSubmit now also writes
+
+    .context/sidecar/sessions/<claude session_id>.json
+      {session_id, transcript_path, termlink_session, claude_pid, ready, updated_at}
+
+keyed on the hook input's `session_id`, carrying the TermLink session the
+hook runs inside (`TERMLINK_SESSION_ID`, which `termlink spawn` sets in the
+PTY shell that `claude-fw --termlink` launches claude from). The injector
+(inject.py) reads ONLY these records: it types into a TermLink session only
+when that session's own record says ready. The project-wide file above is
+kept as a display summary ("did any session last stop or prompt") and is not
+consulted by any injection decision.
 """
 
 from __future__ import annotations
 
+import json
 import os
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -125,3 +144,130 @@ def get_pending_messages(limit: int = 100) -> list[dict]:
             })
 
     return messages
+
+
+# ── per-session readiness (T-3745) ──────────────────────────────────────────
+
+_SID_RE = re.compile(r"[^A-Za-z0-9_-]")
+
+
+def _sessions_dir() -> Path:
+    d = _sidecar_dir() / "sessions"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def _safe_sid(session_id: str) -> str:
+    return _SID_RE.sub("", str(session_id or ""))[:128]
+
+
+def _session_path(session_id: str) -> Path:
+    return _sessions_dir() / f"{_safe_sid(session_id)}.json"
+
+
+def _claude_ancestor_pid(start: int | None = None, depth: int = 16) -> int | None:
+    """The pid of the `claude` process this hook runs under, found by walking
+    /proc parents. Recorded so a session whose claude has exited (its TermLink
+    shell lives on under claude-fw) never reads as ready: typing into that
+    shell would hand the line to bash, not to an agent."""
+    pid = start or os.getpid()
+    for _ in range(depth):
+        try:
+            stat = Path(f"/proc/{pid}/stat").read_text()
+        except OSError:
+            return None
+        # comm is in parentheses and may hold spaces; fields after the LAST ')'.
+        comm = stat[stat.find("(") + 1:stat.rfind(")")]
+        if comm == "claude":
+            return pid
+        try:
+            pid = int(stat[stat.rfind(")") + 2:].split()[1])
+        except (IndexError, ValueError):
+            return None
+        if pid <= 1:
+            return None
+    return None
+
+
+def session_identity(hook_input: dict) -> dict | None:
+    """{session_id, transcript_path, termlink_session, claude_pid} for the
+    session a hook fired in, or None when the hook input carries no
+    session_id (then nothing per-session can be keyed and nothing is
+    written — failing toward "not ready", the safe direction)."""
+    sid = _safe_sid((hook_input or {}).get("session_id") or "")
+    if not sid:
+        return None
+    return {
+        "session_id": sid,
+        "transcript_path": str((hook_input or {}).get("transcript_path") or "") or None,
+        "termlink_session": os.environ.get("TERMLINK_SESSION_ID") or None,
+        "claude_pid": _claude_ancestor_pid(),
+    }
+
+
+def set_session_ready(hook_input: dict, ready: bool) -> dict | None:
+    """Write this session's own ready record (Stop: True, UserPromptSubmit:
+    False). Atomic replace, no fsync — same reasoning as set_ready_for_input."""
+    ident = session_identity(hook_input)
+    if ident is None:
+        return None
+    record = dict(ident, ready=bool(ready),
+                  updated_at=datetime.now(timezone.utc).isoformat())
+    path = _session_path(ident["session_id"])
+    tmp = path.with_suffix(f".json.{os.getpid()}.tmp")
+    try:
+        tmp.write_text(json.dumps(record), encoding="utf-8")
+        os.replace(tmp, path)
+    except OSError:
+        return None
+    return record
+
+
+def clear_session_ready(session_id: str) -> None:
+    """Mark one session busy (the injector does this before it types)."""
+    path = _session_path(session_id)
+    try:
+        record = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return
+    record["ready"] = False
+    record["updated_at"] = datetime.now(timezone.utc).isoformat()
+    tmp = path.with_suffix(f".json.{os.getpid()}.tmp")
+    try:
+        tmp.write_text(json.dumps(record), encoding="utf-8")
+        os.replace(tmp, path)
+    except OSError:
+        pass
+
+
+def _pid_alive(pid) -> bool:
+    if not isinstance(pid, int) or pid <= 1:
+        return False
+    try:
+        os.kill(pid, 0)
+        return True
+    except OSError:
+        return False
+
+
+def session_records() -> list[dict]:
+    """Every per-session record, newest first. A record whose recorded claude
+    process has exited is reported with ready=False and alive=False."""
+    out = []
+    for p in _sessions_dir().glob("*.json"):
+        try:
+            rec = json.loads(p.read_text(encoding="utf-8"))
+        except (OSError, json.JSONDecodeError):
+            continue
+        pid = rec.get("claude_pid")
+        rec["alive"] = _pid_alive(pid) if pid else None
+        if rec["alive"] is False:
+            rec["ready"] = False
+        out.append(rec)
+    out.sort(key=lambda r: str(r.get("updated_at") or ""), reverse=True)
+    return out
+
+
+def ready_sessions() -> list[dict]:
+    """Sessions whose OWN record says ready, newest Stop first."""
+    return [r for r in session_records() if r.get("ready") is True]

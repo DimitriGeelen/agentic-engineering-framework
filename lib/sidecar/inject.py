@@ -12,15 +12,22 @@ framed as untrusted data and records HANDED_OVER (lib/sidecar/hooks.py).
 Injection alone never records HANDED_OVER: a keystroke that reached a PTY is
 not a message that reached an agent.
 
-Session resolution (claude-fw --termlink registers the session):
-  1. sessions tagged `fw-project=<project_tag()>` (claude-fw adds this tag)
-  2. else sessions tagged `claude` whose metadata.cwd is the project root
-Exactly one match → inject. Zero or several → do not inject; the message stays
-flagged and an INJECT_BLOCKED event records why. Guessing between two agents
-would hand one agent's mail to another.
+Target selection (T-3745 — per SESSION, not per project):
+  Each Claude session's Stop / UserPromptSubmit hook writes its own record
+  (.context/sidecar/sessions/<session_id>.json, adapter.py) naming the
+  TermLink session it runs in. A candidate is a record whose TermLink session
+  is registered for this project (tag `fw-project=<project_tag()>`, which
+  claude-fw --termlink adds; else claude-tagged with this cwd) and whose claude
+  process is alive. Non-urgent mail goes only to a candidate whose OWN record
+  says ready; urgent mail (R5) may go to a busy one. The injector writes a
+  claim naming the target session BEFORE it types, and the prompt hook
+  surfaces only messages claimed for its own session — so HANDED_OVER is
+  credited to the session that was injected, never to whichever sibling
+  prompts next. No candidate → the message stays flagged and an
+  INJECT_BLOCKED event (once per reason) records why.
 
-Triggers: on store (http_server.py), and `fw sidecar deliver-pending`, which
-the 30 s tick (T-3684) will call. This slice adds no tick driver.
+Triggers: on store (http_server.py), and every tick of the watcher
+(lib/sidecar/watcher.py, T-3684), which also covers `fw sidecar deliver-pending`.
 """
 
 from __future__ import annotations
@@ -56,30 +63,6 @@ def _discover(runner=subprocess.run) -> list[dict]:
     return json.loads(proc.stdout).get("sessions", [])
 
 
-def resolve_session(runner=subprocess.run) -> tuple[str | None, str]:
-    """(session_id, reason). session_id is None unless exactly one matches."""
-    try:
-        sessions = _discover(runner)
-    except (OSError, RuntimeError, ValueError, subprocess.SubprocessError) as e:
-        return None, f"termlink unavailable: {e}"
-    tag = project_tag()
-    root = str(receiver._root().resolve())
-    tagged = [s for s in sessions if tag in (s.get("tags") or [])]
-    if not tagged:
-        tagged = [s for s in sessions
-                  if "claude" in (s.get("tags") or [])
-                  and _real((s.get("metadata") or {}).get("cwd")) == root]
-        how = f"tag claude + cwd {root}"
-    else:
-        how = f"tag {tag}"
-    if len(tagged) == 1:
-        return tagged[0].get("id"), f"matched by {how}"
-    if not tagged:
-        return None, f"no TermLink session for this project ({tag}, or claude-tagged with cwd {root})"
-    ids = ",".join(str(s.get("id")) for s in tagged)
-    return None, f"{len(tagged)} TermLink sessions match ({how}): {ids} — refusing to guess"
-
-
 def _real(path) -> str | None:
     if not path:
         return None
@@ -93,12 +76,124 @@ def _inject_marker(msg_id: str) -> Path:
     return receiver._messages_dir() / f"{msg_id}.injected"
 
 
-def _recently_injected(msg_id: str, now: datetime) -> bool:
+def read_claim(msg_id: str) -> dict | None:
+    """The injector's claim on a message: {at, session_id, termlink_session}.
+
+    T-3745: the claim names the Claude session the line was typed into, and
+    the prompt hook surfaces a message only in the session that holds its
+    claim. A pre-T-3745 marker (a bare timestamp) reads as a claim naming no
+    session, which no prompt hook will match — it simply expires."""
     try:
-        ts = datetime.fromisoformat(_inject_marker(msg_id).read_text(encoding="utf-8").strip())
-    except (OSError, ValueError):
+        raw = _inject_marker(msg_id).read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    try:
+        claim = json.loads(raw)
+        if isinstance(claim, dict):
+            return claim
+    except json.JSONDecodeError:
+        pass
+    return {"at": raw, "session_id": None, "termlink_session": None}
+
+
+def is_claimed_for(msg_id: str, session: dict | None) -> bool:
+    """Was `msg_id` injected into this session? Matched on the Claude
+    session_id; a claim made before the target session had ever stopped (an
+    urgent inject into a session with no record yet) names only the TermLink
+    session, and matches the session running inside that PTY."""
+    claim = read_claim(msg_id)
+    if not claim or not session:
+        return False
+    if claim.get("session_id"):
+        return claim["session_id"] == session.get("session_id")
+    tl = claim.get("termlink_session")
+    return bool(tl) and tl == session.get("termlink_session")
+
+
+def _write_claim(msg_id: str, now: datetime, target: dict) -> None:
+    _inject_marker(msg_id).write_text(json.dumps({
+        "at": now.isoformat(), "session_id": target.get("session_id"),
+        "termlink_session": target.get("termlink_session")}), encoding="utf-8")
+
+
+def _recently_injected(msg_id: str, now: datetime) -> bool:
+    claim = read_claim(msg_id)
+    if not claim:
+        return False
+    try:
+        ts = datetime.fromisoformat(str(claim.get("at")))
+    except ValueError:
         return False
     return now - ts < timedelta(seconds=REINJECT_AFTER_S)
+
+
+def _tagged_sessions(runner) -> tuple[list[dict] | None, str]:
+    """TermLink sessions registered for THIS project (the claude-fw tag, else
+    claude-tagged with this cwd). None when TermLink cannot be asked."""
+    try:
+        sessions = _discover(runner)
+    except (OSError, RuntimeError, ValueError, subprocess.SubprocessError) as e:
+        return None, f"termlink unavailable: {e}"
+    tag = project_tag()
+    root = str(receiver._root().resolve())
+    tagged = [s for s in sessions if tag in (s.get("tags") or [])]
+    if tagged:
+        return tagged, f"tag {tag}"
+    tagged = [s for s in sessions
+              if "claude" in (s.get("tags") or [])
+              and _real((s.get("metadata") or {}).get("cwd")) == root]
+    return tagged, f"tag claude + cwd {root}"
+
+
+def choose_target(urgent: bool, runner=subprocess.run) -> tuple[dict | None, str]:
+    """Pick the ONE session to type into, from per-session records (T-3745).
+
+    A candidate is a Claude session whose own Stop/prompt hook recorded the
+    TermLink session it runs in, where that TermLink session is registered
+    for this project and its claude process is still alive.
+      * non-urgent: the newest candidate whose OWN record says ready; none
+        ready → no target (the message waits — never typed into a busy
+        sibling because some other session in the project stopped)
+      * urgent (R5, hard bypass): a ready candidate if any, else the most
+        recently active candidate, else — when the project has exactly one
+        registered TermLink session and no record yet — that session.
+    Returns (target, reason); target = {session_id, termlink_session, ready}.
+    """
+    tagged, how = _tagged_sessions(runner)
+    if tagged is None:
+        return None, how
+    tagged_ids = {str(s.get("id")) for s in tagged}
+    candidates = [r for r in adapter.session_records()
+                  if r.get("termlink_session") in tagged_ids and r.get("alive") is not False]
+    ready = [r for r in candidates if r.get("ready") is True]
+    if ready:
+        r = ready[0]
+        return ({"session_id": r.get("session_id"), "termlink_session": r["termlink_session"],
+                 "ready": True},
+                f"session {r.get('session_id')} ready in {r['termlink_session']} (matched by {how})")
+    if not urgent:
+        if candidates:
+            return None, (f"agent not ready: {len(candidates)} registered session(s), "
+                          "none has stopped since its last prompt")
+        if not tagged:
+            return None, (f"no TermLink session for this project ({how}); start the "
+                          "agent with claude-fw --termlink")
+        return None, ("agent not ready: no session in a registered TermLink PTY has "
+                      "reported a Stop yet")
+    if candidates:
+        r = candidates[0]
+        return ({"session_id": r.get("session_id"), "termlink_session": r["termlink_session"],
+                 "ready": False},
+                f"URGENT bypass: session {r.get('session_id')} busy in {r['termlink_session']}")
+    if len(tagged) == 1:
+        return ({"session_id": None, "termlink_session": str(tagged[0].get("id")),
+                 "ready": False},
+                f"URGENT bypass: only registered session {tagged[0].get('id')} (no record yet)")
+    if not tagged:
+        return None, (f"no TermLink session for this project ({how}); start the "
+                      "agent with claude-fw --termlink")
+    ids = ",".join(sorted(tagged_ids))
+    return None, f"{len(tagged)} TermLink sessions match ({how}) and none has a record: {ids} — refusing to guess"
 
 
 def injection_line(msg_ids: list[str]) -> str:
@@ -126,49 +221,69 @@ def deliver_pending(trigger: str = "manual", runner=subprocess.run) -> dict:
         return _deliver_locked(trigger, runner)
 
 
+def _blocked(msg_id: str, trigger: str, reason: str) -> None:
+    """INJECT_BLOCKED, once per (message, reason): the 30 s tick re-decides
+    every message every tick, and the ledger records the decision, not the
+    heartbeat."""
+    last = [e for e in receiver.read_events(msg_id) if e.get("event") == "INJECT_BLOCKED"]
+    if last and last[-1].get("reason") == reason:
+        return
+    receiver.record_event(msg_id, "INJECT_BLOCKED", trigger=trigger, reason=reason)
+
+
 def _deliver_locked(trigger: str, runner) -> dict:
     now = datetime.now(timezone.utc)
     waiting = [m for m in receiver.awaiting_handover() if not _recently_injected(m, now)]
     report = {"trigger": trigger, "waiting": len(waiting), "injected": [],
-              "session": None, "reason": ""}
+              "session": None, "target_session_id": None, "reason": ""}
     if not waiting:
         report["reason"] = "nothing waiting"
         return report
     if not lifecycle.inject_enabled():
         report["reason"] = "injection disabled (receiver started with --no-inject)"
         for m in waiting:
-            receiver.record_event(m, "INJECT_BLOCKED", trigger=trigger, reason=report["reason"])
+            _blocked(m, trigger, report["reason"])
         return report
     urgent = [m for m in waiting if (receiver.read_message(m) or {}).get("urgent")]
-    ready = adapter.is_ready_for_input()
-    if not ready and not urgent:
-        report["reason"] = "agent not ready (no Stop since the last prompt)"
-        return report
-    session, why = resolve_session(runner)
-    report["session"] = session
-    if not session:
+    target, why = choose_target(bool(urgent), runner)
+    if target is None:
         report["reason"] = why
-        for m in waiting:
-            receiver.record_event(m, "INJECT_BLOCKED", trigger=trigger, reason=why)
+        if not why.startswith("agent not ready"):
+            for m in waiting:
+                _blocked(m, trigger, why)
         return report
-    # Clear readiness BEFORE typing: a second trigger racing this one must see
-    # a busy agent, and the prompt hook would clear it a moment later anyway.
-    adapter.clear_ready_for_input()
-    line = injection_line(waiting)
+    # A busy target takes only the urgent messages; the rest wait for its Stop.
+    batch = waiting if target["ready"] else urgent
+    session = target["termlink_session"]
+    report["session"] = session
+    report["target_session_id"] = target.get("session_id")
+    # Clear THIS session's readiness and write the claims BEFORE typing: the
+    # prompt hook can fire within milliseconds of Enter, and it surfaces only
+    # what is already claimed for its own session. A second trigger racing
+    # this one sees the session busy.
+    if target.get("session_id"):
+        adapter.clear_session_ready(target["session_id"])
+    for m in batch:
+        _write_claim(m, now, target)
+    line = injection_line(batch)
     try:
         proc = runner(["termlink", "pty", "inject", session, line, "--enter"],
                       capture_output=True, text=True, timeout=15)
         ok, err = proc.returncode == 0, (proc.stderr or "").strip()[:200]
     except (OSError, subprocess.SubprocessError) as e:
         ok, err = False, str(e)
-    for m in waiting:
-        if ok:
-            _inject_marker(m).write_text(now.isoformat(), encoding="utf-8")
+    for m in batch:
+        if not ok:
+            try:
+                _inject_marker(m).unlink()
+            except FileNotFoundError:
+                pass
         receiver.record_event(m, "INJECT_ATTEMPT", trigger=trigger, session=session,
+                              target_session_id=target.get("session_id"),
                               ok=ok, error=err or None,
-                              urgent_bypass=(m in urgent and not ready) or None)
+                              urgent_bypass=(m in urgent and not target["ready"]) or None)
     if ok:
-        report["injected"] = waiting
+        report["injected"] = batch
         report["reason"] = f"injected into {session} ({why})"
     else:
         report["reason"] = f"termlink pty inject failed: {err}"
