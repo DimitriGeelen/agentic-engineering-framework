@@ -1,0 +1,21 @@
+id: lib/shell_write_scan.py
+name: shell_write_scan
+type: script
+subsystem: framework-core
+location: lib/shell_write_scan.py
+tags: []
+
+purpose: "shell_write_scan — does a Bash command write a task file? (T-3695)"
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-02
+created_by: unknown

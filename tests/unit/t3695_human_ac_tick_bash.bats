@@ -57,10 +57,19 @@ assert_vector_ticks() {
     run human_ticked
     [ "$status" -ne 0 ]
     run bash -c "cd '$TEST_ROOT' && $1"
+    [ "$status" -eq 0 ]
     run human_ticked
     [ "$status" -eq 0 ]
     cp "$TEST_ROOT/pristine.md" "$TASK_FILE"
 }
+
+# The SAME command string: proven to tick for real, then refused by the hook.
+assert_vector_refused() {
+    assert_vector_ticks "$1"
+    assert_refused "$1"
+}
+
+S="'s/- \[ \] \[REVIEW\]/- [x] [REVIEW]/'"
 
 run_hook_bash() {
     local input
@@ -120,29 +129,39 @@ assert_allowed() {
     assert_refused "$c"
 }
 
-@test "mv over / dd of= / append (>>): each refused" {
-    assert_vector_ticks "cp ticked.md /tmp/t3695-mv-\$\$ && mv /tmp/t3695-mv-\$\$ $TASK_REL"
-    assert_refused "mv /tmp/forged.md $TASK_REL"
-    assert_vector_ticks "dd if=ticked.md of=$TASK_REL status=none"
-    assert_refused "dd if=ticked.md of=$TASK_REL"
+@test "mv over / dd of=: tick for real, and are refused" {
+    assert_vector_refused "cp ticked.md mv-src.md && mv mv-src.md $TASK_REL"
+    assert_vector_refused "dd if=ticked.md of=$TASK_REL status=none"
+}
+
+@test "append (>>) of a ticked Human line is refused" {
     assert_refused "echo '- [x] [REVIEW] forged' >> $TASK_REL"
 }
 
-@test "indirect spellings: cd+relative, glob, variable, xargs, find -exec, bash -c, ANSI-C, \$(), heredoc" {
-    assert_vector_ticks "cd .tasks/active && sed -i 's/- \[ \] \[REVIEW\]/- [x] [REVIEW]/' T-9999-test.md"
-    assert_refused "cd .tasks/active && sed -i s/a/b/ T-9999-test.md"
-    assert_vector_ticks "sed -i 's/- \[ \] \[REVIEW\]/- [x] [REVIEW]/' .t*/act*/T-9999*"
-    assert_refused "sed -i s/a/b/ .t*/act*/T-9999*"
-    assert_refused "F=$TASK_REL; sed -i s/a/b/ \"\$F\""
-    assert_refused "ls .tasks/active/T-9999* | xargs sed -i s/a/b/"
-    assert_refused "find .tasks -name 'T-9999*' -exec sed -i s/a/b/ {} \\;"
-    assert_refused "bash -c \"sed -i s/a/b/ $TASK_REL\""
-    assert_refused "sed -i s/a/b/ \$'\\x2etasks'/active/T-9999-test.md"
-    assert_refused "echo \$(sed -i s/a/b/ $TASK_REL)"
-    assert_refused "python3 - <<'EOF'
-open('$TASK_REL', 'w').write('x')
+@test "indirect spellings each tick for real and are refused (same command string)" {
+    assert_vector_refused "cd .tasks/active && sed -i $S T-9999-test.md"
+    assert_vector_refused "sed -i $S .t*/act*/T-9999*"
+    assert_vector_refused "F=$TASK_REL; sed -i $S \"\$F\""
+    assert_vector_refused "ls .tasks/active/T-9999* | xargs sed -i $S"
+    assert_vector_refused "find .tasks -name 'T-9999*' -exec sed -i $S {} \\;"
+    assert_vector_refused "bash -c \"sed -i $S $TASK_REL\""
+    assert_vector_refused "sed -i $S \$'\\x2etasks'/active/T-9999-test.md"
+    assert_vector_refused "echo \$(sed -i $S $TASK_REL)"
+    assert_vector_refused "python3 - <<'EOF'
+import pathlib
+p = pathlib.Path('$TASK_REL')
+p.write_text(p.read_text().replace('- [ ] [REVIEW]', '- [x] [REVIEW]'))
 EOF"
-    assert_refused "sudo tee -a $TASK_REL < ticked.md"
+    assert_vector_refused "cat ticked.md | sudo -n tee $TASK_REL >/dev/null 2>&1 || cat ticked.md | env tee $TASK_REL >/dev/null"
+}
+
+@test "review round 1: attached sed -e, sed w-command, sed -f are refused" {
+    assert_vector_refused "sed -i -e's/- \[ \] \[REVIEW\]/- [x] [REVIEW]/' $TASK_REL"
+    assert_vector_refused "sed -i -e 's/- \[ \] \[REVIEW\]/- [x] [REVIEW]/' -- $TASK_REL"
+    assert_vector_refused "cp $TASK_REL src.md && sed -n 's/- \[ \] \[REVIEW\]/- [x] [REVIEW]/;w $TASK_REL' src.md"
+    # s///w writes only the matched lines (it clobbers rather than ticks) — refusal only
+    assert_refused "cp $TASK_REL src.md && sed 's/- \[ \] \[REVIEW\]/- [x] [REVIEW]/w $TASK_REL' src.md >/dev/null"
+    assert_refused "sed -f /tmp/script.sed $TASK_REL"
 }
 
 @test "Watchtower tick endpoint and the provenance ledger are refused from Bash" {
@@ -169,6 +188,13 @@ EOF"
     assert_allowed "grep x $TASK_REL 2>&1 | head -3"
     assert_allowed "head -5 $TASK_REL > /tmp/t3695-read-copy"
     assert_allowed "cp $TASK_REL /tmp/t3695-copy.md"
+    # review round 1 false positives
+    assert_allowed "grep '>' $TASK_REL"
+    assert_allowed "git show HEAD:$TASK_REL"
+    assert_allowed "git cat-file -p HEAD:$TASK_REL"
+    assert_allowed "awk 'NF > 0' $TASK_REL"
+    assert_allowed "tar -cf /tmp/t3695-tasks.tar .tasks"
+    assert_allowed "sed -n '/^### Human/,/^## /p' $TASK_REL"
 }
 
 @test "controls: unrelated writes and framework verbs pass" {
@@ -204,6 +230,17 @@ EOF"
 import json, sys
 print(json.dumps({"tool_name": "Edit", "tool_input": {"file_path": sys.argv[1],
   "old_string": "- [ ] [REVIEW] Human AC one\n", "new_string": "- [ ] [REVIEW] Human AC one\n- [x] [REVIEW] forged\n"}}))
+' "$TASK_FILE")
+    run bash "$HOOK_SH" <<< "$input"
+    [ "$status" -eq 2 ]
+}
+
+@test "Edit ticking a box under a SECOND ### Human section is refused (review round 1)" {
+    printf '\n## Other\n\n### Human\n- [ ] [REVIEW] Second-section AC\n' >> "$TASK_FILE"
+    input=$(python3 -c '
+import json, sys
+print(json.dumps({"tool_name": "Edit", "tool_input": {"file_path": sys.argv[1],
+  "old_string": "- [ ] [REVIEW] Second-section AC", "new_string": "- [x] [REVIEW] Second-section AC"}}))
 ' "$TASK_FILE")
     run bash "$HOOK_SH" <<< "$input"
     [ "$status" -eq 2 ]
@@ -285,8 +322,7 @@ Co-Authored-By: Claude Opus 5.5 <noreply@anthropic.com>"
     [[ "$output" == *"added-ticked"* ]]
 }
 
-@test "audit: reviewer-verdict annotated tick is left to verdict_ledger (passes here)" {
-    git_fixture
+annotate_tick() {
     python3 - "$TASK_FILE" <<'PY'
 import sys
 p = sys.argv[1]
@@ -295,8 +331,79 @@ s = open(p).read().replace("- [ ] [REVIEW] Human AC one",
 open(p, "w").write(s)
 PY
     git add "$TASK_REL" && git commit -qm "T-9999: verdict"
+}
+
+@test "audit: a FABRICATED verdict annotation does not exempt the tick (review round 1)" {
+    git_fixture
+    annotate_tick
+    run python3 "$TICKS" audit --since 2000-01-01
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"FAIL T-9999 ticked"* ]]
+}
+
+@test "audit: an annotation backed by a green verdict row AND an applied tick is left to verdict_ledger" {
+    git_fixture
+    printf '%s\n' '{"id": "V-0001", "task": "T-9999", "ac": 1, "outcome": "green"}' > .context/reviews/verdicts.jsonl
+    printf '%s\n' '{"task": "T-9999", "kind": "verdict-apply", "ticked": [{"ac": 1, "verdict_id": "V-0001"}]}' > .context/reviews/applied.jsonl
+    annotate_tick
     run python3 "$TICKS" audit --since 2000-01-01
     [ "$status" -eq 0 ]
+    # a green row alone (no applied tick) is not enough
+    : > .context/reviews/applied.jsonl
+    run python3 "$TICKS" audit --since 2000-01-01
+    [ "$status" -eq 2 ]
+}
+
+@test "audit: one ack licenses ONE tick — untick then re-tick FAILs again (review round 1)" {
+    git_fixture
+    commit_tick_as "Operator" "op@example.com"
+    CLAUDECODE= run python3 "$TICKS" ack T-9999 --ac 1
+    [ "$status" -eq 0 ]
+    cp pristine.md "$TASK_FILE" && git add "$TASK_REL" && git commit -qm "T-9999: untick"
+    commit_tick_as "Operator" "op@example.com" "T-9999: retick"
+    run python3 "$TICKS" audit --since 2000-01-01
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"1 unprovenanced"* ]]
+}
+
+@test "audit: a tick under a SECOND ### Human section FAILs (review round 1)" {
+    git_fixture
+    printf '\n## Other\n\n### Human\n- [ ] [REVIEW] Second-section AC\n' >> "$TASK_FILE"
+    git add "$TASK_REL" && git commit -qm "T-9999: second section"
+    sed -i 's/- \[ \] \[REVIEW\] Second-section AC/- [x] [REVIEW] Second-section AC/' "$TASK_FILE"
+    git add "$TASK_REL" && git commit -qm "T-9999: tick second"
+    run python3 "$TICKS" audit --since 2000-01-01
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"Second-section AC"* ]]
+}
+
+@test "audit: a tick introduced only in a MERGE commit FAILs; one inherited from a branch is not double-counted" {
+    git_fixture
+    base=$(git rev-parse --abbrev-ref HEAD)
+    git checkout -qb topic
+    echo "other" > other.txt && git add other.txt && git commit -qm "T-9999: topic"
+    git checkout -q "$base"
+    echo "main" > main.txt && git add main.txt && git commit -qm "T-9999: main"
+    git merge --no-ff --no-commit -q topic
+    cp ticked.md "$TASK_FILE" && git add "$TASK_REL"
+    git commit -qm "T-9999: merge"
+    run python3 "$TICKS" audit --since 2000-01-01
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"in merge "* ]]
+    [[ "$output" == *"1 unprovenanced"* ]]
+}
+
+@test "audit: a branch tick merged later is reported once (on the branch commit), not again on the merge" {
+    git_fixture
+    base=$(git rev-parse --abbrev-ref HEAD)
+    git checkout -qb topic
+    commit_tick_as "fw worker (x)" "dispatch+3@aef.local"
+    git checkout -q "$base"
+    echo "main" > main.txt && git add main.txt && git commit -qm "T-9999: main"
+    git merge --no-ff -q -m "T-9999: merge topic" topic
+    run python3 "$TICKS" audit --since 2000-01-01
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"1 unprovenanced"* ]]
 }
 
 @test "audit: inception decide's own tick records provenance (passes)" {

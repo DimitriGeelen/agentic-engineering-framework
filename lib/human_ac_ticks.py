@@ -14,8 +14,12 @@ PROVENANCE — a tick counts as the human's when either holds:
      text) — written by Watchtower's tick endpoint (follow-up task, render surface) or by
      the operator: `python3 lib/human_ac_ticks.py ack T-XXX --ac N` (refused under agent
      control unless --i-am-human);
-  2. the criterion carries a `**Reviewer verdict:** green` annotation — the T-3579 verdict
-     path, whose own validity `lib/verdict_ledger.py audit` checks.
+  2. the criterion carries a `**Reviewer verdict:** green <id>` annotation whose id is a
+     green row for this task in `.context/reviews/verdicts.jsonl` AND an applied tick in
+     `applied.jsonl` (verdict_checker) — the T-3579 verdict path; whether that row is
+     genuine is `lib/verdict_ledger.py audit`'s FAIL to raise.
+One ledger row licenses ONE tick (consumed oldest-first), every `### Human` section is
+read, and merge commits are judged against every parent.
 Everything else FAILs. The FAIL line names the committing identity and says AGENT when it
 is one (an `@aef.local` dispatch/reviewer identity, or a `Co-Authored-By: Claude` /
 "Generated with Claude Code" trailer).
@@ -52,7 +56,7 @@ LEDGER = ".context/reviews/human-ac-ticks.jsonl"
 CUTOFF = "2026-10-02T00:00:00Z"
 
 BOX_RE = re.compile(r"^\s*-\s*\[([ xX])\]\s*(.*)$")
-VERDICT_RE = re.compile(r"\*\*Reviewer verdict:\*\*\s*green\b")
+VERDICT_RE = re.compile(r"\*\*Reviewer verdict:\*\*\s*green\s+(\S+)")
 AGENT_TRAILER_RE = re.compile(
     r"(?im)^co-authored-by:.*(claude|anthropic)|generated with \[?claude code")
 
@@ -70,41 +74,73 @@ def key_digest(task_id: str, key: str) -> str:
 
 
 def _human_section(text: str) -> str:
-    m = re.search(r"(?ms)^### Human\b.*?(?=^### |^## [^A]|\Z)", text or "")
-    return m.group(0) if m else ""
+    """EVERY `### Human` section, concatenated — a second one is not a hiding place
+    (T-3695 review round 1: only the first was read)."""
+    return "\n".join(m.group(0) for m in
+                     re.finditer(r"(?ms)^### Human\b.*?(?=^### |^## [^A]|\Z)", text or ""))
 
 
-def boxes(section: str) -> list[tuple[str, bool, bool]]:
-    """[(key, ticked, verdict_annotated)] for every checkbox, HTML comments stripped."""
+def boxes(section: str) -> list[tuple[str, bool, str]]:
+    """[(key, ticked, verdict id cited by a green annotation or "")], HTML comments stripped."""
     lines = strip_html_comment_lines(section).split("\n")
     out = []
     for i, line in enumerate(lines):
         m = BOX_RE.match(line)
         if not m:
             continue
-        ann = False
+        ann = ""
         for nxt in lines[i + 1:]:
             if BOX_RE.match(nxt) or nxt.startswith("#"):
                 break
-            if VERDICT_RE.search(nxt):
-                ann = True
+            v = VERDICT_RE.search(nxt)
+            if v:
+                ann = v.group(1)
                 break
         out.append((criterion_key(m.group(2)), m.group(1) in "xX", ann))
     return out
 
 
-def unprovenanced_ticks(old: str, new: str) -> list[tuple[str, str]]:
+def verdict_checker(root: Path, task_id: str):
+    """A predicate: does verdict id `vid` back a tick on `task_id`?
+
+    An annotation is text anyone can write (review round 1: a fabricated
+    `**Reviewer verdict:** green` was exempt). It counts only when the reviewer-verdict
+    ledger has that id as a green row for this task AND the applied ledger records
+    verdict_ledger.apply ticking it. Whether that verdict row is itself genuine (signed
+    review dispatch, non-producer commit) is `verdict_ledger.py audit`'s FAIL to raise."""
+    greens, applied = set(), set()
+    for rel, sink in ((".context/reviews/verdicts.jsonl", greens), (".context/reviews/applied.jsonl", applied)):
+        p = root / rel
+        if not p.exists():
+            continue
+        for line in p.read_text(encoding="utf-8", errors="replace").splitlines():
+            try:
+                r = json.loads(line)
+            except (json.JSONDecodeError, ValueError):
+                continue
+            if not isinstance(r, dict) or r.get("task") != task_id:
+                continue
+            if sink is greens and r.get("outcome") == "green" and r.get("id"):
+                greens.add(str(r["id"]))
+            elif sink is applied:
+                for t in r.get("ticked") or []:
+                    if isinstance(t, dict) and t.get("verdict_id"):
+                        applied.add(str(t["verdict_id"]))
+    return lambda vid: bool(vid) and vid in greens and vid in applied
+
+
+def unprovenanced_ticks(old: str, new: str, verdict_ok=lambda _vid: False) -> list[tuple[str, str]]:
     """[(criterion key, kind)] for ticks in `new` that `old` did not have.
 
     kind: "ticked" (was [ ] under Human), "added-ticked" (new under Human, already [x]),
     "moved-ticked" (left Human unticked, reappears ticked elsewhere in the file).
-    Verdict-annotated ticks are excluded (verdict_ledger owns them).
+    A tick whose annotation cites a verdict `verdict_ok` accepts is excluded.
     """
     oh, nh = boxes(_human_section(old)), boxes(_human_section(new))
     old_ticked = Counter(k for k, t, _ in oh if t)
     old_open = Counter(k for k, t, _ in oh if not t)
-    new_ticked = Counter(k for k, t, a in nh if t and not a)
-    new_ann = Counter(k for k, t, a in nh if t and a)
+    new_ticked = Counter(k for k, t, a in nh if t and not verdict_ok(a))
+    new_ann = Counter(k for k, t, a in nh if t and verdict_ok(a))
     out = []
     for k, n in new_ticked.items():
         extra = n - max(0, old_ticked[k] - new_ann[k])
@@ -201,32 +237,66 @@ def scan_commits(root: Path, since: str | None = None, rev: str = "HEAD") -> tup
             rng, where = [f"{anchor}..{rev}"], f"detector commit {anchor[:10]}"
         else:
             rng, where = [f"--since={CUTOFF}", rev], CUTOFF
-    log = _git(root, "log", "--no-merges", "--format=%x1e%H%x1f%an <%ae>%x1f%ae%x1f%ce%x1f%B%x1f",
-               "-M", "--name-status", *rng, "--", ".tasks")
-    covered = {r.get("digest") for r in ledger_rows(root)}
+    # Oldest first, merges INCLUDED (review round 1: a tick made while resolving a merge
+    # appeared in no non-merge commit). Ledger rows are consumed in this order.
+    log = _git(root, "log", "--topo-order", "--reverse",
+               "--format=%x1e%H%x1f%P%x1f%an <%ae>%x1f%ae%x1f%ce%x1f%B", *rng)
+    # One ledger row covers ONE tick (review round 1: a single `ack` used to license every
+    # later re-tick of the same criterion text).
+    budget = Counter(r.get("digest") for r in ledger_rows(root))
+    checkers: dict = {}
     findings = []
     for rec in log.split("\x1e")[1:]:
-        parts = rec.split("\x1f")
+        parts = rec.split("\x1f", 5)
         if len(parts) < 6:
             continue
-        sha, who, aemail, cemail, msg, files = parts[:6]
+        sha, parents, who, aemail, cemail, msg = parts
+        parents = parents.split() or [None]
         agent = is_agent_identity(aemail, cemail, msg)
-        for fl in files.strip().splitlines():
-            cols = fl.split("\t")
-            status = cols[0]
-            if status.startswith("D") or len(cols) < 2:
-                continue
-            old_path, new_path = (cols[1], cols[2]) if status[0] in "RC" and len(cols) > 2 else (cols[1], cols[1])
-            if not new_path.endswith(".md") or not re.search(r"(^|/)T-\d+", os.path.basename(new_path)):
-                continue
-            old = "" if status.startswith("A") else _blob(root, f"{sha}^", old_path)
-            new = _blob(root, sha, new_path)
-            tid = _task_id(new_path)
-            for key, kind in unprovenanced_ticks(old, new):
-                if key_digest(tid, key) in covered:
+        per_parent: list[dict] = []
+        for parent in parents:
+            args = ["diff-tree", "-r", "-M", "--no-commit-id", "--name-status"]
+            args += [parent, sha] if parent else ["--root", sha]
+            got: dict = {}
+            for fl in _git(root, *args, "--", ".tasks").splitlines():
+                cols = fl.split("\t")
+                status = cols[0]
+                if status.startswith("D") or len(cols) < 2:
                     continue
-                findings.append({"commit": sha, "who": who, "agent": agent, "task": tid,
-                                 "path": new_path, "kind": kind, "criterion": key[:100]})
+                old_path, new_path = (cols[1], cols[2]) if status[0] in "RC" and len(cols) > 2 else (cols[1], cols[1])
+                if not new_path.endswith(".md") or not re.search(r"(^|/)T-\d+", os.path.basename(new_path)):
+                    continue
+                old = "" if (status.startswith("A") or not parent) else _blob(root, parent, old_path)
+                tid = _task_id(new_path)
+                ok = checkers.setdefault(tid, verdict_checker(root, tid))
+                got[new_path] = (tid, Counter(unprovenanced_ticks(old, _blob(root, sha, new_path), ok)))
+            per_parent.append(got)
+        # a tick is NEW in this commit only if it is new relative to EVERY parent; a tick
+        # inherited from a merged branch was judged in that branch's own commit
+        paths = set(per_parent[0])
+        for got in per_parent[1:]:
+            paths &= set(got)
+        for path in sorted(paths):
+            tid, first = per_parent[0][path]
+            keys = Counter()
+            for (key, _kind), n in first.items():
+                keys[key] += n
+            for got in per_parent[1:]:
+                other = Counter()
+                for (key, _kind), n in got[path][1].items():
+                    other[key] += n
+                keys &= other  # kinds may differ per parent; the KEY is what must be new
+            kinds = {key: kind for (key, kind) in first}
+            for key, n in sorted(keys.items()):
+                kind = kinds.get(key, "ticked")
+                for _ in range(n):
+                    d = key_digest(tid, key)
+                    if budget[d] > 0:
+                        budget[d] -= 1
+                        continue
+                    findings.append({"commit": sha, "who": who, "agent": agent, "task": tid,
+                                     "path": path, "kind": kind, "criterion": key[:100],
+                                     "merge": len(parents) > 1})
     return findings, where
 
 
@@ -240,7 +310,7 @@ def audit(root: Path, since: str | None = None) -> tuple[int, list[str]]:
     lines = []
     for f in findings:
         lines.append(
-            f"FAIL {f['task']} {f['kind']} in {f['commit'][:10]} by "
+            f"FAIL {f['task']} {f['kind']} in {'merge ' if f.get('merge') else ''}{f['commit'][:10]} by "
             f"{'AGENT ' if f['agent'] else ''}{f['who']}: \"{f['criterion']}\" — no Watchtower/"
             f"operator record and no reviewer verdict")
     lines.append(f"{len(findings)} unprovenanced ### Human tick(s) since {since}")

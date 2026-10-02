@@ -53,14 +53,17 @@ from comment_strip import strip_html_comment_lines  # noqa: E402
 
 
 def extract_human_section(text: str) -> str:
-    """Extract the `### Human` section: from `### Human` up to next `### ` or `## `."""
+    """Extract EVERY `### Human` section (each up to the next `### ` or `## `), joined.
+
+    T-3695 review round 1: only the first section was read, so a box under a second
+    `### Human` heading could be ticked through the Edit tool unchecked.
+    """
     if not text:
         return ""
-    m = re.search(
+    return "\n".join(m.group(0) for m in re.finditer(
         r"(?ms)^### Human\b.*?(?=^### |^## [^A]|\Z)",
         text,
-    )
-    return m.group(0) if m else ""
+    ))
 
 
 def get_checkbox_states(text: str) -> list[str]:

@@ -116,16 +116,38 @@ def mentions_guarded(command: str) -> bool:
     return bool(MENTION_RE.search(normalised(command)))
 
 
+def _dequote(tok: str) -> str:
+    try:
+        return "".join(shlex.split(tok, posix=True)) if tok else tok
+    except ValueError:
+        return tok.replace("'", "").replace('"', "")
+
+
 def _tokens(command: str) -> list[str] | None:
+    """Operator tokens stay bare (`>`, `|`, ...); WORDS are returned dequoted.
+
+    Tokenised NON-posix so a quoted operator keeps its quotes (`grep '>' f` is a search
+    for '>', not a redirect — T-3695 review round 1), then each word is dequoted. A word
+    that dequotes to an operator string is protected with a leading NUL so the segment
+    and redirect logic never mistake it for one.
+    """
     cmd = _decode_ansi_c(command).replace("`", "\n")
-    lex = shlex.shlex(cmd, posix=True, punctuation_chars=";&|()<>\n")
+    lex = shlex.shlex(cmd, posix=False, punctuation_chars=";&|()<>\n")
     lex.whitespace_split = True
     lex.commenters = ""
     lex.whitespace = " \t\r"
     try:
-        return list(lex)
+        raw = list(lex)
     except ValueError:
         return None
+    out = []
+    for t in raw:
+        if t and set(t) <= set(";&|()<>\n"):
+            out.append(t)
+            continue
+        w = _dequote(t)
+        out.append("\x00" + w if w and set(w) <= set(";&|()<>\n") else w)
+    return out
 
 
 def _segments(tokens: list[str]) -> list[list[str]]:
@@ -253,6 +275,59 @@ def _operands(args: list[str], takes_value: "set[str] | frozenset[str]" = frozen
     return out
 
 
+_SED_ADDR = r"(?:\d+(?:~\d+)?|\$|/(?:[^/\\]|\\.)*/[IM]*|\\(.)(?:(?!\1).)*\1)"
+SED_WRITE_RE = re.compile(
+    rf"(?:^|[;{{}}\n])\s*(?:{_SED_ADDR}(?:\s*,\s*(?:{_SED_ADDR}|[+~]\d+))?)?\s*!?\s*[wWe](?:\s|$|;)"
+    r"|/[gpiImMe0-9]*[we](?:\s|$|;|})")
+
+
+def _parse_sed(args: list[str]) -> tuple[bool, list[str], bool, list[str]]:
+    """(in-place?, -e scripts, -f given?, operands) — GNU option clustering honoured.
+
+    `-i[SUF]` swallows the rest of its cluster as a suffix; `-e`/`-f`/`-l` take the rest
+    of the cluster or the next word (`-e's/a/b/'` attached — review round 1)."""
+    inplace, scripts, script_file, ops = False, [], False, []
+    i, end = 0, False
+    while i < len(args):
+        a = args[i]
+        if end or a == "-" or not a.startswith("-"):
+            ops.append(a)
+        elif a == "--":
+            end = True
+        elif a.startswith("--"):
+            name, _, val = a[2:].partition("=")
+            if name.startswith("in-place") or name == "in-place":
+                inplace = True
+            elif name in ("expression", "file", "line-length"):
+                if not val and i + 1 < len(args):
+                    i += 1
+                    val = args[i]
+                if name == "expression":
+                    scripts.append(val)
+                elif name == "file":
+                    script_file = True
+        else:
+            k = 1
+            while k < len(a):
+                c = a[k]
+                if c == "i":
+                    inplace = True
+                    break
+                if c in "efl":
+                    val = a[k + 1:]
+                    if not val and i + 1 < len(args):
+                        i += 1
+                        val = args[i]
+                    if c == "e":
+                        scripts.append(val)
+                    elif c == "f":
+                        script_file = True
+                    break
+                k += 1
+        i += 1
+    return inplace, scripts, script_file, ops
+
+
 def _inline(ctx: _Ctx, verb: str) -> None:
     if ctx.mentions:
         ctx.hits.append(Hit(f"{verb} runs inline code and the command names a guarded path"))
@@ -283,14 +358,17 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
         return
 
     if verb in ("sed", "gsed"):
-        if any(re.match(r"^(-[a-zA-Z]*i|--in-place)", a) for a in args if a.startswith("-") and not a.startswith("--e")):
-            has_e = any(a in ("-e", "-f", "--expression", "--file") or a.startswith(("--expression=", "--file="))
-                        for a in args)
-            ops = _operands(args, {"-e", "-f", "--expression", "--file", "-l"})
-            if not has_e and ops:
-                ops = ops[1:]
+        inplace, scripts, script_file, ops = _parse_sed(args)
+        if not scripts and not script_file and ops:
+            scripts, ops = [ops[0]], ops[1:]
+        if inplace:
             for t in ops:
                 _check_target(t, ctx, "sed -i")
+        # sed's own write/execute commands: `w FILE`, `s///w FILE`, `e`, `s///e`
+        # (T-3695 review round 1). The file is named inside the script, so it is not
+        # resolved here; refused when the command names a guarded path, like inline code.
+        if script_file or any(SED_WRITE_RE.search(s) for s in scripts):
+            _inline(ctx, "sed (w/e command or -f script)")
         return
     if verb.startswith(("perl", "ruby")):
         flags = [a for a in args if a.startswith("-") and not a.startswith("--")]
@@ -313,7 +391,9 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
             for t in ops[1:]:
                 _check_target(t, ctx, f"{verb} -i inplace")
         prog = next(iter(_operands(args, {"-i", "-f", "-v", "-F", "--include"})), "")
-        if re.search(r">|\|\s*\"|system|getline\s*<|fflush|printf?\s*>", prog):
+        # awk writes only through print/printf redirection, a pipe to a command, system()
+        # or close(); a bare comparison (`NF > 0`) is not one (review round 1).
+        if re.search(r"\bprintf?\b[^;{}]*(>|\|)|\bsystem\s*\(|\|\s*getline|\bclose\s*\(", prog):
             _inline(ctx, verb)
         return
     if verb in ("tee", "sponge"):
@@ -378,7 +458,7 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
             if opt in ("-C", "-c", "--git-dir", "--work-tree", "--namespace") and rest:
                 rest.pop(0)
         sub = rest[0] if rest else ""
-        if sub in ("checkout", "restore", "apply", "am", "show", "cat-file", "stash", "switch") and \
+        if sub in ("checkout", "restore", "apply", "am", "stash", "switch", "reset") and \
                 MENTION_RE.search(normalised(seg_text)):
             ctx.hits.append(Hit(f"git {sub} names a guarded path (writes it from another revision/patch)"))
         elif sub in ("apply", "am"):
@@ -398,7 +478,10 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
                     _segment(inner, ctx)
         return
     if verb in EXTRACTORS:
-        if MENTION_RE.search(normalised(seg_text)):
+        flags = "".join(x.lstrip("-") for x in args if x.startswith("-")) + (args[0] if args and verb in ("tar", "bsdtar") and not args[0].startswith("-") else "")
+        extracting = (verb in ("unzip", "busybox") or ("x" in flags if verb in ("tar", "bsdtar", "7z", "7za") else "i" in flags)
+                      or any(x in ("--extract", "--get") or (verb in ("7z", "7za") and x in ("x", "e")) for x in args))
+        if extracting and MENTION_RE.search(normalised(seg_text)):
             ctx.hits.append(Hit(f"{verb} extracts into a guarded path"))
         return
     if verb in ("eval", "source", "."):
