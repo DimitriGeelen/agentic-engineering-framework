@@ -92,11 +92,12 @@ def test_ac2_reject_duplicate_id_different_content(temp_project):
     success1, _ = receiver.store_message(msg_id, envelope1)
     assert success1
 
-    # Retry with different content should be rejected
+    # T-3693: a reused id with different content is a different message and is
+    # REJECTED (T-3561 AC2) — answering it with the old message would be silent loss.
     success2, error = receiver.store_message(msg_id, envelope2)
-    # Either reject or ignore (idempotent) — both are acceptable
-    # The implementation chooses idempotent (safe for retries)
-    assert success2  # Idempotent: same ID always succeeds
+    assert not success2
+    assert error.startswith("conflict")
+    assert receiver.read_message(msg_id)["body"] == "Message A"
 
 
 def test_ac4_untrusted_data_framing(temp_project):

@@ -64,6 +64,25 @@ done
 # TermLink session management
 TERMLINK_SESSION=""
 
+# T-3693: `fw-project=<16 hex of sha256(realpath project root)>`. Project root:
+# PROJECT_ROOT, else the nearest ancestor holding .framework.yaml (or the
+# framework repo itself), else $PWD — the same walk lib/sidecar/receiver.py does.
+_fw_project_tag() {
+    local d="${PROJECT_ROOT:-}"
+    if [ -z "$d" ]; then
+        d="$PWD"
+        while [ "$d" != "/" ]; do
+            if [ -f "$d/.framework.yaml" ] || { [ -f "$d/FRAMEWORK.md" ] && [ -f "$d/bin/fw" ]; }; then
+                break
+            fi
+            d=$(dirname "$d")
+        done
+        [ "$d" = "/" ] && d="$PWD"
+    fi
+    d=$(cd "$d" 2>/dev/null && pwd -P) || return 0
+    printf 'fw-project=%s' "$(printf '%s' "$d" | sha256sum | cut -c1-16)"
+}
+
 termlink_start() {
     if [ "$TERMLINK_ENABLED" != "1" ]; then return; fi
     if ! command -v termlink >/dev/null 2>&1; then
@@ -75,9 +94,15 @@ termlink_start() {
     TERMLINK_SESSION="claude-master-$$"
     echo "claude-fw: Registering TermLink session: $TERMLINK_SESSION"
 
+    # T-3693: tag the session with this project, so the arc-011 receiver sidecar
+    # can find the ONE session to inject into (lib/sidecar/inject.py:project_tag
+    # computes the same value — keep the two in step).
+    local _fwp
+    _fwp=$(_fw_project_tag)
+
     # Spawn a persistent shell session that survives claude restarts
     termlink spawn --name "$TERMLINK_SESSION" \
-        --tags "master,claude,framework" \
+        --tags "master,claude,framework${_fwp:+,$_fwp}" \
         --backend auto --shell \
         --wait --wait-timeout 15 2>/dev/null || {
         echo "claude-fw: TermLink spawn failed. Falling back to direct mode."

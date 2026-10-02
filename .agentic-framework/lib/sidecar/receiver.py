@@ -9,9 +9,11 @@ Architecture:
   - Stores messages durably in .context/sidecar/inbox/<msg_id>.json
   - Sets a dirty-bit flag AFTER successful message write
   - Returns RECEIVED immediately (sender-side confirmation)
-  - Injects via Stop hook (ready-for-input flag) and UserPromptSubmit hook
-  - Returns HANDED_OVER when agent is ready and message is delivered
-  - Authenticated: only recognized callers can send
+  - Injection (lib/sidecar/inject.py) types ONE line into the agent's TermLink
+    session when the agent is ready; the UserPromptSubmit hook
+    (lib/sidecar/hooks.py) then surfaces the stored message and records
+    HANDED_OVER — never the queue write, never the inject alone (T-3693)
+  - Authenticated: bearer token checked against receiver.token (http_server.py)
 
 Per D-645 §2 (round trip):
   - Step 3: store message locally, atomic with flag
@@ -23,12 +25,14 @@ Message storage layout:
   .context/sidecar/receiver/
     messages/<msg_id>.json     — message envelope (durable)
     messages/<msg_id>.ready    — dirty-bit flag (receiver-side)
-    liveness.yaml              — self-probe data
-    bound.yaml                 — pid/port/url triple-file
+    messages/<msg_id>.pending  — HANDED_OVER record (written by the prompt hook)
+    events.jsonl               — append-only receiver event ledger
+  .context/sidecar/receiver.{pid,port,url,token}  — triple-file + auth token
 """
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 from datetime import datetime, timezone
@@ -107,59 +111,109 @@ def _now_iso() -> str:
     return datetime.now(timezone.utc).isoformat()
 
 
-def store_message(msg_id: str, envelope: dict) -> tuple[bool, str]:
-    """Store a message durably and atomically set the ready flag.
+def _canonical_hash(envelope: dict) -> str:
+    """Content hash of an envelope, independent of key order and transport noise.
 
-    Returns (success, error_msg). On success, the message file and flag
-    are both written and the caller can return RECEIVED to the sender.
+    A retry of the same message carries the same id AND the same content; a
+    reused id with different content is a different message wearing a stolen
+    id, and must be refused rather than silently answered with the old one.
     """
-    # Validate message ID is stable (not regenerated from content)
-    if not msg_id or not isinstance(msg_id, str):
-        return False, "Invalid message ID"
+    body = {k: v for k, v in envelope.items() if not k.startswith("_")}
+    raw = json.dumps(body, sort_keys=True, ensure_ascii=False).encode("utf-8")
+    return hashlib.sha256(raw).hexdigest()
 
-    # Check for duplicate: if both message and ready flag exist, this is a retry
+
+def _events_path() -> Path:
+    return _receiver_dir() / "events.jsonl"
+
+
+def record_event(msg_id: str, event: str, **detail) -> None:
+    """Append one row to the receiver's own event ledger (append-only).
+
+    This is the receiver-side record of what happened to a message it holds:
+    STORED, INJECT_ATTEMPT, INJECT_BLOCKED, HANDED_OVER, CONFIRM_SENT,
+    CONFIRM_FAILED, REJECTED. HANDED_OVER is written ONLY by the prompt hook
+    after it has emitted the message (lib/sidecar/hooks.py) — an injection
+    attempt or a queue write never produces it.
+    """
+    row = {"msg_id": msg_id, "event": event, "ts": _now_iso()}
+    row.update({k: v for k, v in detail.items() if v is not None})
+    with open(_events_path(), "a", encoding="utf-8") as fh:
+        fh.write(json.dumps(row) + "\n")
+
+
+def read_events(msg_id: str | None = None) -> list[dict]:
+    path = _events_path()
+    if not path.exists():
+        return []
+    rows = []
+    for line in path.read_text(encoding="utf-8").splitlines():
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            continue
+        if msg_id is None or row.get("msg_id") == msg_id:
+            rows.append(row)
+    return rows
+
+
+def store_message(msg_id: str, envelope: dict) -> tuple[bool, str]:
+    """Store a message durably, then set its dirty-bit flag.
+
+    Returns (success, error). On success the message file and the flag are
+    both on disk and the caller may answer RECEIVED. A retry of the same id
+    with the same content is idempotent; the same id with different content
+    returns (False, "conflict: ...").
+    """
+    if not msg_id or not isinstance(msg_id, str) or "/" in msg_id or msg_id.startswith("."):
+        return False, "invalid client_msg_id"
+
     msg_path = _message_path(msg_id)
     ready_path = _ready_flag_path(msg_id)
+    digest = _canonical_hash(envelope)
 
-    if msg_path.exists() and ready_path.exists():
-        # Message was already stored; this is a retry of the same ID
-        # Re-storing is idempotent — return success without rewriting
+    if msg_path.exists():
+        stored = read_message(msg_id) or {}
+        if stored.get("_content_sha256") != digest:
+            return False, "conflict: client_msg_id reused with different content"
+        if not ready_path.exists():
+            # Torn write from an earlier attempt: the message is complete (it
+            # was renamed into place), only the flag is missing. Finish it.
+            _write_flag(ready_path)
         return True, ""
 
-    if msg_path.exists() and not ready_path.exists():
-        # Torn write: message exists but flag doesn't. Shouldn't happen in normal flow
-        # but we treat it as a retry that already failed
-        return False, "Message partially stored (flag missing); retry with new ID"
-
-    # Write message to temp path first
+    record = dict(envelope)
+    record["_content_sha256"] = digest
+    record["_stored_at"] = _now_iso()
     tmp_path = msg_path.with_suffix(".json.tmp")
     try:
         with open(tmp_path, "w", encoding="utf-8") as fh:
-            json.dump(envelope, fh, indent=2)
+            json.dump(record, fh, indent=2)
             fh.flush()
             os.fsync(fh.fileno())
-        # Atomic rename
         os.replace(tmp_path, msg_path)
-    except (OSError, IOError) as e:
-        if tmp_path.exists():
-            try:
-                tmp_path.unlink()
-            except OSError:
-                pass
-        return False, f"Failed to write message: {e}"
+    except OSError as e:
+        try:
+            tmp_path.unlink()
+        except OSError:
+            pass
+        return False, f"failed to write message: {e}"
 
-    # NOW write the flag (dirty-bit) to signal the message is ready
-    # This ordering is critical: if interrupted here, we have orphaned message,
-    # not a flag with no message
+    # The flag is written only after the message is fully in place: a crash
+    # between the two leaves a complete message with no flag (finished on the
+    # retry above), never a flag pointing at a partial message.
     try:
-        with open(ready_path, "w", encoding="utf-8") as fh:
-            fh.write("")  # Empty flag file
-            fh.flush()
-            os.fsync(fh.fileno())
-    except (OSError, IOError) as e:
-        return False, f"Failed to write ready flag: {e}"
-
+        _write_flag(ready_path)
+    except OSError as e:
+        return False, f"failed to write ready flag: {e}"
+    record_event(msg_id, "STORED", sender=envelope.get("from"))
     return True, ""
+
+
+def _write_flag(path: Path) -> None:
+    with open(path, "w", encoding="utf-8") as fh:
+        fh.flush()
+        os.fsync(fh.fileno())
 
 
 def list_pending_messages() -> list[str]:
@@ -196,8 +250,15 @@ def mark_handed_over(msg_id: str) -> None:
             json.dump(state, fh, indent=2)
             fh.flush()
             os.fsync(fh.fileno())
-    except OSError:
-        pass  # Best effort
+    except OSError as e:
+        record_event(msg_id, "HANDED_OVER_WRITE_FAILED", error=str(e))
+        raise
+    record_event(msg_id, HANDED_OVER)
+
+
+def awaiting_handover() -> list[str]:
+    """Flagged messages not yet handed over to the agent."""
+    return [m for m in list_pending_messages() if not is_message_handed_over(m)]
 
 
 def is_message_handed_over(msg_id: str) -> bool:

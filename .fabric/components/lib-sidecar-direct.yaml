@@ -1,0 +1,21 @@
+id: lib/sidecar/direct.py
+name: direct
+type: script
+subsystem: framework-core
+location: lib/sidecar/direct.py
+tags: []
+
+purpose: "arc-011 sidecar — direct (receiver-to-receiver) send path and sender ledger."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-02
+created_by: unknown

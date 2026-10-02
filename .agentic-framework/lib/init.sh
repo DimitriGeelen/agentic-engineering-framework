@@ -1228,6 +1228,21 @@ generate_claude_code_config() {
           {
             "type": "command",
             "command": "$fw_prefix hook sidecar-inbox"
+          },
+          {
+            "type": "command",
+            "command": "$fw_prefix hook sidecar-receiver-adapter"
+          }
+        ]
+      }
+    ],
+    "Stop": [
+      {
+        "matcher": "",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "$fw_prefix hook sidecar-receiver-ready"
           }
         ]
       }

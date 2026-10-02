@@ -15,7 +15,7 @@ in an agent's working session. Injection grants attention, never authority
 (peer content is untrusted data, per T-3558).
 
 Ready flag file: .context/sidecar/ready-for-input.yaml
-Pending messages surface as additionalContext in the UserPromptSubmit hook.
+The hook entry points are lib/sidecar/hooks.py (T-3693).
 """
 
 from __future__ import annotations
@@ -27,12 +27,8 @@ from pathlib import Path
 
 def _sidecar_dir() -> Path:
     """Root directory for sidecar state."""
-    env = os.environ.get("PROJECT_ROOT")
-    if env:
-        root = Path(env)
-    else:
-        root = Path.cwd()
-    d = root / ".context" / "sidecar"
+    from . import receiver
+    d = receiver._root() / ".context" / "sidecar"
     d.mkdir(parents=True, exist_ok=True)
     return d
 
@@ -69,9 +65,11 @@ def set_ready_for_input(ready: bool) -> None:
 def is_ready_for_input() -> bool:
     """Check if the agent is ready to receive input.
 
-    Returns True only if the ready flag exists, is recent (within last 5 sec),
-    and says ready=true. This conservative approach avoids injecting into a
-    busy agent if the Stop hook somehow fails to clear the flag.
+    True only if the flag file exists and says ready: true. Missing or
+    unreadable reads as NOT ready — the safe direction (T-3397:109): a message
+    waits rather than being typed into a mid-turn agent. The flag is set by
+    the Stop hook and cleared by the UserPromptSubmit hook and by the injector
+    itself just before it types.
     """
     path = _ready_flag_path()
     if not path.exists():

@@ -8,6 +8,8 @@ it can run, and a verb it can be TOLD to run in a dispatch prompt.
     fw sidecar whoami
     fw sidecar send --to <agent> --body <text> [--hub host:port] [--conversation ID]
     fw sidecar inbox [--json] [--peek]
+    fw sidecar receiver start|stop|status     (T-3693: the receiving sidecar)
+    fw sidecar deliver-pending | acks         (T-3693)
 
 Delivery is not reimplemented here — `send` calls slice 1's outbox, slice 2's
 deliver() and slice 3's transport and probe, so the ack ledger, the hub
@@ -24,7 +26,7 @@ import sys
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from lib.sidecar import circuit, delivery, dm, e2e, inbox, outbox, retry, status as status_mod  # noqa: E402
-from lib.sidecar import termlink_transport as transport  # noqa: E402
+from lib.sidecar import termlink_transport as transport, receiver, lifecycle, adapter, direct, inject  # noqa: E402
 
 
 def cmd_whoami(args) -> int:
@@ -66,7 +68,38 @@ def cmd_whoami(args) -> int:
     return 0
 
 
+def _send_direct(args, entry: dict) -> int:
+    """T-3693: the peer has a registered receiver — call its API directly."""
+    row = direct.send(entry, from_id=inbox.agent_id(), to=args.to, body=args.body,
+                      conversation_id=args.conversation or f"consult-{args.to}",
+                      urgent=args.urgent, in_reply_to=args.in_reply_to,
+                      handover_deadline_s=args.handover_deadline,
+                      retries=args.retries)
+    ok = row["state"] == direct.RECEIVED
+    payload = {"client_msg_id": row["client_msg_id"], "state": row["state"],
+               "delivered": ok, "reason": row.get("error"), "path": "direct",
+               "url": entry.get("url"), "handover_deadline": row.get("deadline")}
+    if args.json:
+        print(json.dumps(payload))
+    else:
+        print(f"{'delivered' if ok else 'NOT delivered'}: {row['state']}  ->  "
+              f"{args.to} receiver {entry.get('url')}")
+        print(f"client_msg_id: {row['client_msg_id']}")
+        if row.get("error"):
+            print(f"reason: {row['error']}")
+    return 0 if ok else 1
+
+
 def cmd_send(args) -> int:
+    # T-3693: a peer with a registered receiver is called directly (D-645 §2).
+    # The hub topic path below stays as the fallback when no receiver was ever
+    # registered for the name. A registered-but-down receiver is NOT rerouted:
+    # it spends the retry budget and is recorded UNDELIVERABLE.
+    if not args.hub:
+        entry = lifecycle.lookup(args.to)
+        if entry is not None:
+            return _send_direct(args, entry)
+
     # Resolve the address HERE rather than carrying a level flag through the
     # outbox: a resolved circuit is used verbatim by transport.topic_for, so
     # the ledger records the exact address the post went to (T-3433).
@@ -231,13 +264,19 @@ def cmd_sweep(args) -> int:
     lib/retry_ladder.py; the walk lives in lib/sidecar/retry.py.
     """
     report = retry.sweep(now=args.now)
+    # T-3693: the direct path's deadline check — HANDED_OVER missing past the
+    # deadline is ESCALATED by infrastructure, never left as silence.
+    report["direct_escalated"] = direct.escalate_expired(now=args.now)
     if args.json:
         print(json.dumps(report, indent=2, sort_keys=True))
         return 0
     print(f"swept: {report['considered']} open row(s), {report['due']} due  ->  "
           f"{report['reposted']} reposted, {report['nudged']} nudged, "
           f"{report['operator']} to operator, {report['answered']} answered, "
-          f"{report['deadlettered']} dead-lettered")
+          f"{report['deadlettered']} dead-lettered, "
+          f"{len(report['direct_escalated'])} direct escalated")
+    for cid in report["direct_escalated"]:
+        print(f"  {'escalate-direct':<22} {cid}  HANDED_OVER deadline passed")
     for action in report["actions"]:
         detail = action.get("reason") or action.get("state") or ""
         print(f"  {action['verb']:<22} {action['client_msg_id']}  {detail}")
@@ -378,6 +417,160 @@ def cmd_inbox_stale(args) -> int:
     return 0
 
 
+def _agent_or_none():
+    try:
+        return circuit.agent_name()
+    except circuit.CircuitError as exc:
+        print(f"receiver: no agent name can be derived — {exc}", file=sys.stderr)
+        return None
+
+
+def cmd_receiver_start(args) -> int:
+    """Start the per-agent receiver (T-3693).
+
+    Order is the contract (T-3475): the 0600 token is written FIRST; the
+    server process reads it and refuses to bind without it; only after it has
+    bound does it write the triple-file and the host registry entry. Exit 0
+    started, 1 already running, 2 refused/failed.
+    """
+    import subprocess
+    import time
+
+    agent = args.agent or _agent_or_none()
+    if not agent:
+        return 2
+    info = lifecycle.read_triple_file()
+    if info and lifecycle.is_receiver_alive(info) and lifecycle.health(str(info["url"])):
+        if not args.quiet:
+            print(f"receiver already running: pid={info['pid']} url={info['url']}")
+        return 1
+    if info:
+        lifecycle.clear_triple_file()
+
+    try:
+        lifecycle.write_token()
+    except OSError as e:
+        print(f"receiver: refusing to start — cannot write token: {e}", file=sys.stderr)
+        return 2
+    lifecycle.write_config(inject=not args.no_inject)
+
+    root = str(receiver._root().resolve())
+    env = dict(os.environ, PROJECT_ROOT=root)
+    log = open(receiver._receiver_dir() / "server.log", "ab")
+    server_py = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sidecar", "http_server.py")
+    proc = subprocess.Popen(
+        [sys.executable, server_py, "--port", str(args.port or 0), "--agent", agent],
+        stdin=subprocess.DEVNULL, stdout=log, stderr=log, cwd=root, env=env,
+        start_new_session=True)
+
+    deadline = time.time() + 10
+    while time.time() < deadline:
+        info = lifecycle.read_triple_file()
+        if info and info.get("pid") == proc.pid and lifecycle.health(str(info["url"])):
+            break
+        if proc.poll() is not None:
+            print(f"receiver: server exited with {proc.returncode} before binding "
+                  f"(see {receiver._receiver_dir() / 'server.log'})", file=sys.stderr)
+            return 2
+        time.sleep(0.1)
+    else:
+        proc.terminate()
+        print("receiver: server did not come up within 10s", file=sys.stderr)
+        return 2
+
+    if not args.quiet:
+        print(f"receiver started: agent={agent} pid={info['pid']} port={info['port']}")
+        print(f"  url:    {info['url']}")
+        print(f"  token:  {lifecycle.token_path()} (mode 0600)")
+        print(f"  inject: {'enabled' if not args.no_inject else 'DISABLED (--no-inject)'}")
+    return 0
+
+
+def cmd_receiver_stop(args) -> int:
+    """Stop the receiver: SIGTERM, wait, SIGKILL only if it will not go."""
+    import signal
+    import time
+
+    info = lifecycle.read_triple_file()
+    if not info:
+        if not args.quiet:
+            print("receiver not running (no triple-file)")
+        return 0
+    pid = info.get("pid")
+    if lifecycle.pid_alive(pid):
+        os.kill(pid, signal.SIGTERM)
+        deadline = time.time() + 5
+        while time.time() < deadline and lifecycle.pid_alive(pid):
+            time.sleep(0.1)
+        if lifecycle.pid_alive(pid):
+            os.kill(pid, signal.SIGKILL)
+    # The server clears these itself on a clean exit; this covers a SIGKILL.
+    lifecycle.clear_triple_file()
+    agent = args.agent or _agent_or_none()
+    if agent:
+        lifecycle.unregister(agent, pid if isinstance(pid, int) else None)
+    if not args.quiet:
+        print(f"receiver stopped: was pid={pid}")
+    return 0
+
+
+def cmd_receiver_status(args) -> int:
+    """pid/port/url and health. Exit 0 running+healthy, 1 not running/unhealthy."""
+    info = lifecycle.read_triple_file()
+    payload = {"status": "not_running"}
+    if info:
+        alive = lifecycle.is_receiver_alive(info)
+        healthy = alive and lifecycle.health(str(info["url"]))
+        payload = {"status": "running" if healthy else ("unresponsive" if alive else "stale"),
+                   "pid": info["pid"], "port": info["port"], "url": info["url"],
+                   "healthy": healthy, "inject_enabled": lifecycle.inject_enabled(),
+                   "awaiting_handover": len(receiver.awaiting_handover()),
+                   "token_file": str(lifecycle.token_path()),
+                   "ready_for_input": adapter.is_ready_for_input()}
+    if args.json:
+        print(json.dumps(payload))
+    elif payload["status"] == "not_running":
+        print("receiver not running")
+    else:
+        print(f"receiver {payload['status']}: pid={payload['pid']} port={payload['port']}")
+        print(f"  url:               {payload['url']}")
+        print(f"  healthy:           {payload['healthy']}")
+        print(f"  inject enabled:    {payload['inject_enabled']}")
+        print(f"  awaiting handover: {payload['awaiting_handover']}")
+        print(f"  agent ready:       {payload['ready_for_input']}")
+    return 0 if payload.get("healthy") else 1
+
+
+def cmd_deliver_pending(args) -> int:
+    """Inject if a stored message waits and the agent is ready (T-3693).
+
+    The entry point the 30 s tick (T-3684) will call; this slice adds no tick.
+    """
+    report = inject.deliver_pending(trigger=args.trigger)
+    if args.json:
+        print(json.dumps(report))
+    else:
+        print(f"deliver-pending ({report['trigger']}): waiting={report['waiting']} "
+              f"injected={len(report['injected'])} — {report['reason']}")
+    return 0
+
+
+def cmd_acks(args) -> int:
+    """The direct-path sender ledger: latest state per message (T-3693)."""
+    rows = direct.latest()
+    if args.id:
+        hist = direct.history(args.id)
+        print(json.dumps(hist, indent=2) if args.json else
+              "\n".join(f"{r['ts']}  {r['state']:<13} by {r['by']}" for r in hist))
+        return 0 if hist else 1
+    if args.json:
+        print(json.dumps(list(rows.values()), indent=2))
+        return 0
+    for cid, row in rows.items():
+        print(f"{cid}  {row['state']:<13} to {row.get('target')}  [{row.get('conversation_id')}]")
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="fw sidecar",
                                      description=__doc__.split("\n")[0])
@@ -397,7 +590,15 @@ def build_parser() -> argparse.ArgumentParser:
     send.add_argument("--level", choices=("auto", "project", "agent"), default="auto",
                       help="address form for a bare --to: project (durable role "
                            "address) or agent. Default auto — see circuit.is_project_id")
-    send.add_argument("--urgent", action="store_true")
+    send.add_argument("--urgent", action="store_true",
+                      help="direct path: inject even if the peer agent is busy (R5)")
+    send.add_argument("--in-reply-to", default=None,
+                      help="client_msg_id this message answers (direct path: REPLIED)")
+    send.add_argument("--handover-deadline", type=int,
+                      default=direct.DEFAULT_HANDOVER_DEADLINE_S,
+                      help="direct path: seconds until a missing HANDED_OVER is ESCALATED")
+    send.add_argument("--retries", type=int, default=direct.DEFAULT_RETRIES,
+                      help="direct path: attempts before UNDELIVERABLE")
     send.add_argument("--json", action="store_true")
     send.set_defaults(func=cmd_send)
 
@@ -463,6 +664,41 @@ def build_parser() -> argparse.ArgumentParser:
     ibs.add_argument("--threshold-hours", type=float, default=24.0)
     ibs.add_argument("--json", action="store_true")
     ibs.set_defaults(func=cmd_inbox_stale)
+
+    # T-3693: receiver start/stop/status — the per-agent receiving sidecar
+    recv = sub.add_parser("receiver", help="manage this agent's receiver sidecar (HTTP)")
+    recv_sub = recv.add_subparsers(dest="receiver_cmd", required=True)
+
+    recv_start = recv_sub.add_parser("start", help="write the 0600 token, then start the receiver")
+    recv_start.add_argument("--port", type=int, default=None,
+                            help="bind to this port (default: any free port)")
+    recv_start.add_argument("--agent", default=None,
+                            help="register under this agent name (default: this agent's name)")
+    recv_start.add_argument("--no-inject", action="store_true",
+                            help="store and confirm, but never inject (negative control)")
+    recv_start.add_argument("--quiet", action="store_true")
+    recv_start.set_defaults(func=cmd_receiver_start)
+
+    recv_stop = recv_sub.add_parser("stop", help="stop the receiver")
+    recv_stop.add_argument("--agent", default=None)
+    recv_stop.add_argument("--quiet", action="store_true")
+    recv_stop.set_defaults(func=cmd_receiver_stop)
+
+    recv_status = recv_sub.add_parser("status", help="pid/port/url and health")
+    recv_status.add_argument("--json", action="store_true")
+    recv_status.set_defaults(func=cmd_receiver_status)
+
+    dp = sub.add_parser("deliver-pending", help="inject waiting receiver messages if the "
+                        "agent is ready (called by the tick, T-3684)")
+    dp.add_argument("--trigger", default="manual")
+    dp.add_argument("--json", action="store_true")
+    dp.set_defaults(func=cmd_deliver_pending)
+
+    ak = sub.add_parser("acks", help="direct-path sender ledger: SENT/RECEIVED/"
+                        "HANDED_OVER/REPLIED or UNDELIVERABLE/REJECTED/ESCALATED")
+    ak.add_argument("id", nargs="?", default=None, help="one message's full history")
+    ak.add_argument("--json", action="store_true")
+    ak.set_defaults(func=cmd_acks)
 
     return parser
 

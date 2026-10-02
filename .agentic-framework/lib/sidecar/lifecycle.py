@@ -1,40 +1,53 @@
-"""arc-011 sidecar receiver lifecycle — start/stop/monitor the HTTP server.
+"""arc-011 sidecar receiver lifecycle — address, token and host registry.
 
-T-3561 (arc-011 slice 1). Manages the per-agent receiver process: bind to
-an available localhost port, write the triple-file (pid/port/url), maintain
-liveness.
+T-3561 / T-3693 (arc-011 slice 1). Manages the per-agent receiver process's
+durable address and credentials.
 
 Triple-file pattern (from CLAUDE.md §Watchtower Port):
   .context/sidecar/receiver.pid     — process ID
   .context/sidecar/receiver.port    — listening port
-  .context/sidecar/receiver.url     — full URL (http://localhost:PORT)
+  .context/sidecar/receiver.url     — full URL (http://127.0.0.1:PORT)
+  .context/sidecar/receiver.token   — bearer token, mode 0600 (T-3475: the
+                                      token exists BEFORE the port opens)
 
-Read this, never guess the port. Consumers verify the file exists before
-connecting.
+Read these, never guess the port.
+
+Host registry (T-3693): a sender addresses a peer by name, not by port, so a
+started receiver also writes
+  $FW_SIDECAR_REGISTRY_DIR/<agent>.json   (default ~/.local/state/fw-sidecar/receivers)
+holding {agent, url, pid, project_root, token_file}. The token itself is never
+copied into the registry; a same-host sender reads it from token_file, which
+only the same user can. Cross-host addressing is T-3688.
 """
 
 from __future__ import annotations
 
+import json
 import os
+import secrets
 import socket
+import urllib.request
 from pathlib import Path
 
+from . import receiver
 
-def _receiver_dir() -> Path:
-    """Root directory for receiver state."""
-    env = os.environ.get("PROJECT_ROOT")
-    if env:
-        root = Path(env)
-    else:
-        root = Path.cwd()
-    d = root / ".context" / "sidecar" / "receiver"
+
+def _sidecar_dir() -> Path:
+    d = receiver._root() / ".context" / "sidecar"
     d.mkdir(parents=True, exist_ok=True)
     return d
 
 
 def _triple_file_path(suffix: str) -> Path:
-    """Path to one of the triple-file components."""
-    return _receiver_dir().parent / f"receiver.{suffix}"
+    return _sidecar_dir() / f"receiver.{suffix}"
+
+
+def token_path() -> Path:
+    return _triple_file_path("token")
+
+
+def config_path() -> Path:
+    return _sidecar_dir() / "receiver" / "config.json"
 
 
 def find_free_port(start: int = 9000) -> int:
@@ -43,12 +56,60 @@ def find_free_port(start: int = 9000) -> int:
         try:
             with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
                 s.bind(("127.0.0.1", port))
-                s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
                 return port
         except OSError:
             continue
     raise RuntimeError("Could not find available port")
 
+
+# ── token ───────────────────────────────────────────────────────────────────
+
+def write_token() -> str:
+    """Generate a fresh token and write it 0600 (created with that mode, so it
+    is never world-readable even for an instant). Returns the token."""
+    token = secrets.token_hex(32)
+    path = token_path()
+    tmp = path.with_suffix(".token.tmp")
+    try:
+        tmp.unlink()
+    except FileNotFoundError:
+        pass
+    fd = os.open(tmp, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    with os.fdopen(fd, "w", encoding="utf-8") as fh:
+        fh.write(token)
+        fh.flush()
+        os.fsync(fh.fileno())
+    os.replace(tmp, path)
+    os.chmod(path, 0o600)
+    return token
+
+
+def read_token(path: Path | None = None) -> str | None:
+    path = path or token_path()
+    try:
+        token = path.read_text(encoding="utf-8").strip()
+    except OSError:
+        return None
+    return token or None
+
+
+# ── config ──────────────────────────────────────────────────────────────────
+
+def write_config(inject: bool) -> None:
+    path = config_path()
+    path.parent.mkdir(parents=True, exist_ok=True)
+    path.write_text(json.dumps({"inject": bool(inject)}), encoding="utf-8")
+
+
+def inject_enabled() -> bool:
+    """Injection is on unless the receiver was started with --no-inject."""
+    try:
+        return bool(json.loads(config_path().read_text(encoding="utf-8")).get("inject", True))
+    except (OSError, json.JSONDecodeError):
+        return True
+
+
+# ── triple-file ─────────────────────────────────────────────────────────────
 
 def write_triple_file(pid: int, port: int, url: str) -> None:
     """Write the pid/port/url triple files."""
@@ -62,10 +123,8 @@ def read_triple_file() -> dict[str, str | int] | None:
     pid_path = _triple_file_path("pid")
     port_path = _triple_file_path("port")
     url_path = _triple_file_path("url")
-
     if not (pid_path.exists() and port_path.exists() and url_path.exists()):
         return None
-
     try:
         pid = int(pid_path.read_text(encoding="utf-8").strip())
         port = int(port_path.read_text(encoding="utf-8").strip())
@@ -75,47 +134,112 @@ def read_triple_file() -> dict[str, str | int] | None:
         return None
 
 
-def is_receiver_alive(info: dict) -> bool:
-    """Check if the receiver process is still running."""
-    pid = info.get("pid")
+def pid_alive(pid) -> bool:
     if not pid or not isinstance(pid, int):
         return False
     try:
-        # On Unix, os.kill with signal 0 checks if process exists
-        # On Windows, this raises except if process doesn't exist
-        if os.name == "posix":
-            os.kill(pid, 0)
-            return True
-        else:
-            # Windows check
-            import subprocess as sp
-            result = sp.run(
-                ["tasklist", "/FI", f"PID eq {pid}"],
-                capture_output=True, text=True, timeout=2
-            )
-            return result.returncode == 0
-    except (OSError, Exception):
+        os.kill(pid, 0)
+        return True
+    except OSError:
+        return False
+
+
+def is_receiver_alive(info: dict) -> bool:
+    """Check if the receiver process is still running."""
+    return pid_alive(info.get("pid"))
+
+
+def health(url: str, timeout: float = 2.0) -> bool:
+    try:
+        with urllib.request.urlopen(f"{url}/health", timeout=timeout) as resp:
+            return resp.status == 200 and json.loads(resp.read()).get("status") == "ok"
+    except Exception:
         return False
 
 
 def clear_triple_file() -> None:
-    """Remove the triple files (process shutdown)."""
+    """Remove the triple files (process shutdown). The token stays: it is
+    regenerated by the next start, and removing it here would race a
+    concurrent start."""
     for suffix in ("pid", "port", "url"):
-        path = _triple_file_path(suffix)
-        if path.exists():
-            try:
-                path.unlink()
-            except OSError:
-                pass
+        try:
+            _triple_file_path(suffix).unlink()
+        except FileNotFoundError:
+            pass
 
 
 def get_receiver_url() -> str | None:
     """Get the receiver's URL from the triple file, or None if not running."""
     info = read_triple_file()
-    if not info:
-        return None
-    if not is_receiver_alive(info):
-        clear_triple_file()
+    if not info or not is_receiver_alive(info):
         return None
     url = info.get("url")
     return url if isinstance(url, str) else None
+
+
+# ── host registry ───────────────────────────────────────────────────────────
+
+def registry_dir() -> Path:
+    env = os.environ.get("FW_SIDECAR_REGISTRY_DIR")
+    if env:
+        d = Path(env)
+    else:
+        base = os.environ.get("XDG_STATE_HOME") or str(Path.home() / ".local" / "state")
+        d = Path(base) / "fw-sidecar" / "receivers"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def _registry_file(agent: str) -> Path:
+    safe = "".join(c if c.isalnum() or c in "._-" else "_" for c in agent)
+    return registry_dir() / f"{safe}.json"
+
+
+def register(agent: str, url: str, pid: int) -> Path:
+    entry = {
+        "agent": agent,
+        "url": url,
+        "pid": pid,
+        "project_root": str(receiver._root().resolve()),
+        "token_file": str(token_path().resolve()),
+    }
+    path = _registry_file(agent)
+    tmp = path.with_suffix(".json.tmp")
+    tmp.write_text(json.dumps(entry), encoding="utf-8")
+    os.replace(tmp, path)
+    return path
+
+
+def unregister(agent: str, pid: int | None = None) -> None:
+    """Remove our registry entry — only if it is still ours (a newer receiver
+    for the same agent name must not be unregistered by a stale stop)."""
+    path = _registry_file(agent)
+    try:
+        entry = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return
+    if pid is None or entry.get("pid") == pid:
+        try:
+            path.unlink()
+        except FileNotFoundError:
+            pass
+
+
+def lookup(agent: str) -> dict | None:
+    """The registry entry for `agent`, or None if no receiver ever registered.
+
+    The entry carries `live` (pid running AND /health answering). A
+    registered-but-dead receiver is returned with live=False rather than as
+    None: the sender then spends its retry budget and records UNDELIVERABLE
+    ("receiver down"), instead of silently rerouting to the hub as though the
+    peer had never had a receiver. A lookup is a read; nothing is deleted.
+    """
+    if not agent:
+        return None
+    name = agent.rstrip("/").rsplit("/", 1)[-1]
+    try:
+        entry = json.loads(_registry_file(name).read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+    entry["live"] = pid_alive(entry.get("pid")) and health(entry.get("url", ""))
+    return entry
