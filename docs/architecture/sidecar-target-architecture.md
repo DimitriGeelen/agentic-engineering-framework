@@ -192,35 +192,35 @@ register:
     source: "T-3397 §Consumption"
     owner_task: T-3693
     status: in-progress
-    evidence: "deferred"
+    evidence: "not built: T-3693 AC 'receiver injects ONE line when agent is ready' (T-3694 re-point)"
 
   - id: R3
     text: "Cron tick, default 30 s, configurable: guaranteed-delivery fallback that injects when ready"
     source: "T-3397 §Consumption; Amendment 5 IW-2"
-    owner_task: T-3693
-    status: in-progress
-    evidence: "deferred"
+    owner_task: T-3684
+    status: unbuilt
+    evidence: "not built: T-3684 (S3 tick) names R2-R5; tick + configurable cadence not in T-3693 ACs (T-3694 re-point)"
 
   - id: R4
     text: "Ready flag: Stop hook writes ready-for-input: true; UserPromptSubmit clears it"
     source: "T-3397 §Consumption"
     owner_task: T-3693
     status: in-progress
-    evidence: "deferred"
+    evidence: "not built: T-3693 ACs 'Stop hook sets ready-for-input / UserPromptSubmit clears' (T-3694 re-point)"
 
   - id: R5
     text: "Urgent bypass: urgent messages inject immediately regardless of state"
     source: "operator decision 2026-09-21, T-3397 IW-1"
-    owner_task: T-3693
-    status: in-progress
-    evidence: "deferred"
+    owner_task: T-3684
+    status: unbuilt
+    evidence: "not built: urgent bypass is T-3684 scope (operator ruling 2026-09-21), absent from T-3693 ACs (T-3694 re-point)"
 
   - id: R6
     text: "Bidirectional ack: sender sees stored / injected-now / injected-later"
     source: "T-3397"
-    owner_task: T-3561
+    owner_task: T-3693
     status: partial
-    evidence: "states exist, names misleading (T-3682 finding)"
+    evidence: "states exist, names misleading (T-3682); T-3561 closed owning it partial — T-3693 AC 'sender ledger records SENT → RECEIVED → HANDED_OVER → REPLIED' (T-3694 re-point)"
 
   - id: R7
     text: "Liveness: .context/sidecar/liveness.yaml {identity, seq, last_probe_at, latency}; self-probe every 30 s tick"
@@ -260,9 +260,9 @@ register:
   - id: R12
     text: "Cross-host direct cross-post, credentials refused loudly"
     source: "Amendments 3/4"
-    owner_task: T-3690
+    owner_task: T-3688
     status: partial
-    evidence: "same-host only verified; cross-host fenced"
+    evidence: "same-host only verified; cross-host fenced. T-3688 (S-XHOST) names 'Gap row R12'; T-3690 is legacy-address retirement (T-3694 re-point)"
 
   - id: R13
     text: "Sidecar-owned retry"

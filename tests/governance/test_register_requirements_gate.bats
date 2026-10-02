@@ -68,7 +68,9 @@ register:
   - id: R3
     text: "Third requirement"
     source: "spec"
-    owner_task: T-9902
+    # T-3694: was T-9902 — the control's own closing task owning an unbuilt row,
+    # which the close gate now refuses (the T-3561 shape). Owned elsewhere instead.
+    owner_task: T-9910
     status: unbuilt
     evidence: "deferred"
 ```
@@ -132,7 +134,7 @@ true
 **Evidence:** none"
 
     run "$FW" task update T-9902 --status work-completed
-    [ "$status" -eq 0 ] || echo "Output: $output"
+    [ "$status" -eq 0 ]  # T-3694: was `|| echo`, which can never fail
 }
 
 # Treatment: task defers R-id without naming owner
@@ -210,7 +212,7 @@ true
 **Evidence:** none"
 
     run "$FW" task update T-9905 --status work-completed
-    [ "$status" -eq 0 ] || echo "Output: $output"
+    [ "$status" -eq 0 ]  # T-3694: was `|| echo`, which can never fail
 }
 
 # Bypass: --skip-register-requirements allows override
@@ -234,6 +236,6 @@ true
 
     run "$FW" task update T-9906 --status work-completed \
         --skip-register-requirements --reason "testing bypass"
-    [ "$status" -eq 0 ] || echo "Output: $output"
+    [ "$status" -eq 0 ]  # T-3694: was `|| echo`, which can never fail
     [[ "$output" == *"bypass"* ]]
 }

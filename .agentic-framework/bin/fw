@@ -2402,6 +2402,25 @@ PY
         fi
     fi
 
+    # Check: design-conformance register (T-3691 item 3, T-3694)
+    # Mirrors agents/audit/audit.sh:check_register_requirements (audit FAILs; doctor
+    # WARNs). Same predicate, lib/design_register.py, so the two cannot disagree.
+    # Silent when the project has no register docs.
+    if [ -f "$FRAMEWORK_ROOT/lib/design_register.py" ]; then
+        local _reg_out _reg_rc=0
+        # `|| _reg_rc=$?`: doctor runs under errexit, and exit 1 is a finding here.
+        _reg_out=$(python3 "$FRAMEWORK_ROOT/lib/design_register.py" violations --root "$PROJECT_ROOT" 2>&1) || _reg_rc=$?
+        if [ "$_reg_rc" -eq 0 ]; then
+            [ "$_reg_out" = "no register docs" ] || \
+                echo -e "  ${GREEN}OK${NC}  Design-conformance register: every row has a valid owner"
+        else
+            echo -e "  ${YELLOW}WARN${NC}  Design-conformance register: row(s) without a valid owner"
+            printf '%s\n' "$_reg_out" | head -5 | sed 's/^/         /'
+            echo -e "         Point owner_task at the ACTIVE task that will build each row (fw audit FAILs on this)"
+            warnings=$((warnings + 1))
+        fi
+    fi
+
     # Check: delegation surface (T-3445, mechanism for D-626)
     # Mirrors agents/audit/audit.sh:check_delegation_surface. Doctor is
     # pull-only and the audit's structure section is cron'd; both read the same

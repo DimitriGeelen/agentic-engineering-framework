@@ -94,8 +94,8 @@ _print_move_next_hint() {
 # (--skip-render-review under T-3557 until T-3580 lands) or whose gate guards an
 # artefact's shape rather than a criterion or ownership. Table: T-3586 task file.
 # Env-var bypasses (FW_*) are unchanged: they have no reason surface.
-_BYPASS_AGENT_REFUSED=" --skip-acceptance-criteria --skip-verification --skip-sovereignty --skip-human-ownership --skip-rca --skip-recommendation --skip-inception-decision "
-_BYPASS_REASON_REQUIRED=" --skip-acceptance-criteria --skip-verification --skip-sovereignty --skip-human-ownership --skip-rca --skip-recommendation --skip-inception-decision --skip-render-review --skip-evolution --skip-disposition-gate --skip-inception-scope-trace --skip-register-requirements "
+_BYPASS_AGENT_REFUSED=" --skip-acceptance-criteria --skip-verification --skip-sovereignty --skip-human-ownership --skip-rca --skip-recommendation --skip-inception-decision --skip-self-deferral "
+_BYPASS_REASON_REQUIRED=" --skip-acceptance-criteria --skip-verification --skip-sovereignty --skip-human-ownership --skip-rca --skip-recommendation --skip-inception-decision --skip-render-review --skip-evolution --skip-disposition-gate --skip-inception-scope-trace --skip-register-requirements --skip-self-deferral "
 enforce_bypass_policy() {
     local flag="$1" reason="$2"
     case "$_BYPASS_REASON_REQUIRED" in *" $flag "*) ;; *) return 0 ;; esac
@@ -940,91 +940,16 @@ check_register_requirements() {
     # Only build tasks; inceptions/specs/designs are not slices
     [ "$task_type" = "build" ] || return 0
 
-    # Extract arc_id from frontmatter
-    local arc_id
-    arc_id=$(grep '^arc_id:' "$TASK_FILE" | head -1 | sed 's/arc_id:[[:space:]]*//' | tr -d '"' | tr -d "'" || true)
-    [ -n "$arc_id" ] || return 0
-
-    # Find the design doc in .context/arcs/ by slug or arc-NNN
-    local arc_yaml arc_slug
-    arc_slug=$(echo "$arc_id" | sed 's/^arc-//' | sed 's/^arc://')
-    arc_yaml="$PROJECT_ROOT/.context/arcs/${arc_slug}.yaml"
-    [ -f "$arc_yaml" ] || arc_yaml="$PROJECT_ROOT/.context/arcs/${arc_id}.yaml"
-    [ -f "$arc_yaml" ] || return 0
-
-    # Read the arc's design_doc reference (if any)
-    local design_doc
-    design_doc=$(grep '^design_doc:' "$arc_yaml" 2>/dev/null | head -1 | sed 's/design_doc:[[:space:]]*//' | tr -d '"' | tr -d "'" || true)
-    [ -n "$design_doc" ] || return 0
-
-    # Resolve design doc path
-    [ "${design_doc:0:1}" = "/" ] && design_doc="$PROJECT_ROOT${design_doc}" || design_doc="$PROJECT_ROOT/$design_doc"
-    [ -f "$design_doc" ] || return 0
-
-    # Extract the register block from the design doc (fenced YAML under ## 7. Design-conformance requirement register)
-    # Parse the register YAML and collect {id, owner_task, status} entries
+    # T-3694: one predicate (lib/design_register.py close-check), shared with
+    # fw audit, fw doctor and /approvals. The T-3691 inline version resolved the
+    # arc by FILENAME only, so arc-011 (parallel-execution-aef.yaml, id: arc-011)
+    # was never found and the gate was inert for the very arc it was built for.
+    # The module resolves by id/slug too, reads register_docs: as well as
+    # design_doc:, and also refuses a closing task that still owns an unbuilt
+    # row (the T-3561 shape).
     local register_entries
-    register_entries=$(python3 - "$design_doc" "$TASK_FILE" "$PROJECT_ROOT" <<'PYREGISTER' 2>/dev/null || echo ""
-import sys, re, yaml
-design_file = sys.argv[1]
-task_file = sys.argv[2]
-project_root = sys.argv[3]
-
-try:
-    design_text = open(design_file).read()
-    task_text = open(task_file).read()
-except:
-    sys.exit(0)
-
-# Extract the register YAML block (```yaml ... ```  after "## 7. Design-conformance")
-m = re.search(r'## 7\..*?```yaml\s*(.*?)\s*```', design_text, re.DOTALL | re.IGNORECASE)
-if not m:
-    sys.exit(0)
-
-try:
-    register = yaml.safe_load(m.group(1))
-    if not register or 'register' not in register:
-        sys.exit(0)
-except:
-    sys.exit(0)
-
-# For each requirement, check if the task defers it without naming owner
-deferred_unowned = []
-for req in register.get('register', []):
-    req_id = req.get('id', '')
-    req_text = req.get('text', '')
-    owner_task = req.get('owner_task', '')
-    status = req.get('status', '')
-
-    # Check if task body mentions this requirement as deferred
-    # Patterns: "deferred: R-X", "R-X deferred", mention of requirement text in scope fence
-    task_body = task_text.lower()
-    req_id_lower = req_id.lower()
-
-    # Check for explicit "R-id deferred" or "deferred.*R-id" patterns
-    if re.search(rf'\b{req_id_lower}\b.*\bdeferred\b|\bdeferred\b.*\b{req_id_lower}\b', task_body):
-        # This requirement is explicitly deferred in the task
-        # Verify owner_task exists and is not completed
-        if not owner_task:
-            deferred_unowned.append(f"{req_id}: no owner_task")
-        else:
-            # Check if owner task exists
-            owner_path = f"{project_root}/.tasks/active/{owner_task}-*.md"
-            import glob
-            active = glob.glob(owner_path.replace(f"{owner_task}-*.md", f"{owner_task}-*"))
-            owner_path_c = f"{project_root}/.tasks/completed/{owner_task}-*.md"
-            completed = glob.glob(owner_path_c.replace(f"{owner_task}-*.md", f"{owner_task}-*"))
-
-            if not active and not completed:
-                deferred_unowned.append(f"{req_id}: owner_task {owner_task} does not exist")
-            elif completed and status == 'unbuilt':
-                deferred_unowned.append(f"{req_id}: owner_task {owner_task} is completed but requirement is unbuilt")
-
-if deferred_unowned:
-    for item in deferred_unowned:
-        print(item)
-PYREGISTER
-    ) || true
+    register_entries=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/design_register.py" \
+        close-check "$TASK_FILE" --root "$PROJECT_ROOT" 2>&1) || true
 
     # If any deferred requirements have no valid owner, refuse
     if [ -n "$register_entries" ]; then
@@ -1043,7 +968,7 @@ PYREGISTER
         local task_id
         task_id=$(basename "$TASK_FILE" | grep -oE '^T-[0-9]+')
 
-        echo -e "${RED}ERROR: Cannot complete — scope fence defers register requirements without valid owners.${NC}" >&2
+        echo -e "${RED}ERROR: Cannot complete — register requirements without a live owner (deferred here, or owned by this task and not built).${NC}" >&2
         echo "" >&2
         echo "T-3691 (T-3682 origin): this slice's scope fences items from the design's requirement" >&2
         echo "register, but does not name an EXISTING owner task for each. The sidecar spec had" >&2
@@ -1055,8 +980,9 @@ PYREGISTER
         done <<< "$register_entries"
         echo "" >&2
         echo "To resolve:" >&2
-        echo "  1. For each deferred requirement, ensure an owner_task exists in .tasks/{active,completed}/" >&2
-        echo "  2. Or remove the deferred item from this task's scope fence" >&2
+        echo "  1. For each deferred requirement, point owner_task at an ACTIVE task that will build it" >&2
+        echo "  2. For a row this task owns: build it (status: built), or re-point owner_task" >&2
+        echo "  3. Or remove the deferred item from this task's scope fence" >&2
         echo "" >&2
         echo "To override (Tier-2 logged):" >&2
         echo "  --skip-register-requirements \"rationale\"  (direct fw task update)" >&2
@@ -1065,6 +991,46 @@ PYREGISTER
     fi
 
     return 0
+}
+
+# Self-deferral gate (T-3694 — the hole T-3691 closed through)
+# A task's own result (ACs, Recommendation, Evolution, Decisions, scope fence —
+# not Context/RCA/Updates, which describe other tasks) must not defer its own
+# work to a task id that does not exist, is not active, or never mentions the
+# closing task. T-3691 closed with "deferred to separate tasks (T-3692, T-3693)":
+# T-3693 did not exist and T-3692 was an unrelated bug. A deferral the target
+# does not acknowledge is a deferral to nobody.
+# Predicate: lib/design_register.py self-deferral (shared with its tests).
+# Bypass: --skip-self-deferral --reason "..." (operator only; refused under
+# CLAUDECODE=1 without --i-am-human, logged Tier-2). No env-var form: the gate
+# guards a criterion, and an env var has no reason surface (T-3586).
+check_self_deferral() {
+    [ "$NEW_STATUS" = "work-completed" ] || return 0
+    local found
+    found=$(PROJECT_ROOT="$PROJECT_ROOT" python3 "$FRAMEWORK_ROOT/lib/design_register.py" \
+        self-deferral "$TASK_FILE" --root "$PROJECT_ROOT" 2>&1) || true
+    [ -n "$found" ] || return 0
+    if [ "$SKIP_SELF_DEFERRAL" = true ]; then
+        echo -e "${YELLOW}WARNING: deferral to an unowned target (--skip-self-deferral bypass)${NC}"
+        log_gate_bypass "--skip-self-deferral" "check_self_deferral"
+        return 0
+    fi
+    echo -e "${RED}ERROR: Cannot complete — this task defers its own work to a task that cannot own it.${NC}" >&2
+    echo "" >&2
+    echo "T-3694 (T-3691 origin): a deferral target must exist, be active, and mention this" >&2
+    echo "task (so the owner knows it inherited the work)." >&2
+    echo "" >&2
+    while IFS= read -r line; do
+        echo "  - $line" >&2
+    done <<< "$found"
+    echo "" >&2
+    echo "To resolve:" >&2
+    echo "  1. File the follow-up task (fw task create ...) and reference this task in it" >&2
+    echo "  2. Or add a line naming this task to the existing target's body" >&2
+    echo "  3. Or do the work here and drop the deferral" >&2
+    echo "" >&2
+    echo "Operator override (Tier-2 logged): --skip-self-deferral --reason \"...\"" >&2
+    exit 1
 }
 
 # Disposition-completeness gate (T-2190, T-2186 Slice 4)
@@ -1648,6 +1614,7 @@ SKIP_REGISTER_REQUIREMENTS=false
 if [ "${FW_SKIP_REGISTER_REQUIREMENTS:-0}" = "1" ]; then
     SKIP_REGISTER_REQUIREMENTS=true
 fi
+SKIP_SELF_DEFERRAL=false  # T-3694: flag only, no env-var form
 # T-2190: disposition-completeness gate (--skip-disposition-gate / FW_SKIP_DISPOSITION_GATE=1)
 SKIP_DISPOSITION_GATE=false
 if [ "${FW_SKIP_DISPOSITION_GATE:-0}" = "1" ]; then
@@ -1683,6 +1650,7 @@ while [[ $# -gt 0 ]]; do
         --skip-rca) SKIP_RCA=true; shift ;;
         --skip-evolution) SKIP_EVOLUTION=true; shift ;;
         --skip-register-requirements) SKIP_REGISTER_REQUIREMENTS=true; shift ;;
+        --skip-self-deferral) SKIP_SELF_DEFERRAL=true; shift ;;
         --skip-disposition-gate)
             SKIP_DISPOSITION_GATE=true
             if [ -n "${2:-}" ] && [[ "${2:-}" != --* ]]; then
@@ -1723,12 +1691,13 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-rca                   Bypass RCA gate for bug-class (T-1550, G-019)" >&2
             echo "  --skip-evolution             Bypass Evolution-log gate for arc-tagged builds (T-1718)" >&2
             echo "  --skip-register-requirements \"...\"  Bypass design-conformance register gate (T-3691)" >&2
+            echo "  --skip-self-deferral         Bypass self-deferral gate (T-3694; operator only, needs --reason)" >&2
             echo "  --skip-inception-decision    Bypass inception decision gate (T-1626, G-052)" >&2
             echo "  --skip-inception-scope-trace \"...\"  Bypass GO-scope trace gate (T-1984, G-066)" >&2
             echo "  --skip-render-review \"...\" Bypass render-surface Human AC gate (T-1766)" >&2
             echo "  --scope-reduction-acknowledged \"...\"   Bypass task-pair §ACD gate (P-012, T-1762, G-066)" >&2
             echo "  --skip-human-ownership       Bypass human ownership reassignment" >&2
-            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true; SKIP_RCA=true; SKIP_EVOLUTION=true; SKIP_REGISTER_REQUIREMENTS=true; SKIP_INCEPTION_DECISION=true; SKIP_INCEPTION_SCOPE_TRACE=true; SKIP_RENDER_REVIEW=true; SKIP_RENDER_REVIEW_REASON="--force bypass"; SCOPE_REDUCTION_ACK="--force bypass"
+            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true; SKIP_RCA=true; SKIP_EVOLUTION=true; SKIP_REGISTER_REQUIREMENTS=true; SKIP_SELF_DEFERRAL=true; SKIP_INCEPTION_DECISION=true; SKIP_INCEPTION_SCOPE_TRACE=true; SKIP_RENDER_REVIEW=true; SKIP_RENDER_REVIEW_REASON="--force bypass"; SCOPE_REDUCTION_ACK="--force bypass"
             shift ;;
         -h|--help)
             echo "Usage: update-task.sh T-XXX [options]"
@@ -2244,6 +2213,13 @@ PY
         # sidecar pattern where 7 requirements were deferred with no owner.
         if [ "$NEW_STATUS" = "work-completed" ]; then
             check_register_requirements
+        fi
+
+        # === Self-deferral Gate (T-3694) ===
+        # The closing task's own result must not defer its work to a task that
+        # does not exist, is not active, or does not mention it.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            check_self_deferral
         fi
 
         # === Task-pair §ACD Gate (P-012, T-1762, G-066 prong 2) ===

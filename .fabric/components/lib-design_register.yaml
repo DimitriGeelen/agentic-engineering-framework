@@ -1,0 +1,21 @@
+id: lib/design_register.py
+name: design_register
+type: script
+subsystem: framework-core
+location: lib/design_register.py
+tags: []
+
+purpose: "Design-conformance register checks (T-3691 items 3 and 5, T-3694)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-02
+created_by: unknown

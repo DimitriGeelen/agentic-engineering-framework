@@ -783,6 +783,26 @@ def _load_decided_unclosed():
         return []
 
 
+def _load_stale_keystones():
+    """T-3694 (T-3691 item 5): captured keystones older than 3 days.
+
+    A captured task that owns an unbuilt design-register row, or is named as an
+    arc's keystone / slice 1, and has stayed captured for more than 3 days. The
+    predicate is lib/design_register.py, the same one `fw audit` WARNs from, so
+    the page and the audit cannot disagree. T-3397/T-3561 sat captured while the
+    sidecar arc read healthy; this puts that on the operator's surface.
+    """
+    lib_dir = str(Path(__file__).resolve().parents[2] / "lib")
+    if lib_dir not in sys.path:
+        sys.path.insert(0, lib_dir)
+    try:
+        import design_register
+        return design_register.stale_keystones(PROJECT_ROOT, days=3.0)
+    except Exception:
+        # Never take the page down for a helper — a 500 hides every section.
+        return []
+
+
 def _approval_counts(pending_tier0, pending_go, ac_task_count, paused_dispatches,
                      arcs_close_ready, bvp_proposals, decided_unclosed) -> dict:
     """The badge arithmetic, shared by the page and the dashboard tile (T-3600).
@@ -846,6 +866,7 @@ def _build_approvals_context(expand_overflow: bool = False):
     pending_go = _load_pending_go_decisions()
     pending_acs = _load_pending_human_acs()
     decided_unclosed = _load_decided_unclosed()  # T-3175
+    stale_keystones = _load_stale_keystones()  # T-3694
     deferred_count = _count_deferred_inceptions()
     paused_dispatches = _load_paused_dispatches()  # T-1808
     arcs_close_ready = _load_close_ready_arcs()  # T-1961
@@ -882,6 +903,7 @@ def _build_approvals_context(expand_overflow: bool = False):
         pending_go=pending_go,
         decided_unclosed=decided_unclosed,          # T-3175
         decided_unclosed_count=decided_unclosed_count,  # T-3175
+        stale_keystones=stale_keystones,            # T-3694
         pending_acs=pending_acs,
         paused_dispatches=paused_dispatches,
         arcs_close_ready=arcs_close_ready,

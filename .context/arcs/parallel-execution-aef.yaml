@@ -7,6 +7,10 @@ description: "Multi-agent concurrent execution over disjoint write-sets, coordin
   (TermLink repo authoritative). Scoping inception: T-2303."
 status: in-progress
 anchor_task: T-2303
+# T-3694: the sidecar design-conformance register (T-3691) lives here. Without this
+# link the update-task.sh close gate could not find it for arc-011 slices.
+register_docs:
+  - docs/architecture/sidecar-target-architecture.md
 headline_mechanic: |
   two agents on disjoint-write-set tasks run concurrently against shared substrate,
   integrate results through the hub's serialized integration queue, and the operator

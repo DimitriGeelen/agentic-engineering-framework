@@ -265,6 +265,30 @@
 {% endfor %}
 {% endif %}
 
+<!-- T-3694 (T-3691 item 5): keystones left captured. A captured task that owns an
+     unbuilt design-register row, or is an arc's keystone / slice 1, for more than
+     3 days. Same predicate as the fw audit WARN (lib/design_register.py). -->
+{% if stale_keystones %}
+<h2 id="section-stale-keystones" class="approvals-group-heading">Stale Keystones</h2>
+<div class="section-header">
+    <h3>Keystones still captured</h3>
+    <small>{{ stale_keystones|length }} task{{ '' if stale_keystones|length == 1 else 's' }} the arc depends on, captured for more than 3 days</small>
+</div>
+{% for k in stale_keystones %}
+<div class="approval-card stale-keystone" data-task-id="{{ k.task_id }}">
+    <div class="approval-header">
+        <a href="/tasks/{{ k.task_id }}"><strong>{{ k.task_id }}</strong></a>
+        <span class="badge badge-nogo">captured {{ k.days_captured }} day{{ '' if k.days_captured == 1 else 's' }}</span>
+        {% if k.arc %}<span class="muted">arc: <a href="/arcs/{{ k.arc }}">{{ k.arc }}</a></span>{% endif %}
+    </div>
+    <div class="approval-body">
+        <div>{{ k.name }}</div>
+        <small class="muted">{{ k.reasons|join('; ') }} · captured since {{ k.captured_since }}</small>
+    </div>
+</div>
+{% endfor %}
+{% endif %}
+
 <!-- T-1961: Arc closure queue — in-progress arcs meeting L1 + L2 (T-3552); anchor advisory and demo evidence shown per card -->
 {% if arcs_close_ready %}
 <h2 id="section-arc-closure" class="approvals-group-heading">Arc Closure</h2>

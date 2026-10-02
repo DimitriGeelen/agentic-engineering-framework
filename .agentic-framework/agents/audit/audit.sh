@@ -4335,6 +4335,49 @@ check_fabric_underpopulated() {
 }
 check_fabric_underpopulated
 
+# Design-conformance register (T-3691 items 3 + 5, T-3694)
+# Predicate: lib/design_register.py — the same module fw doctor, /approvals and the
+# update-task.sh close gate use. Registers are found via arc design_doc:/register_docs:
+# AND any docs/**/*.md carrying a fenced `register:` YAML block.
+#   FAIL: a row with no owner_task, an owner that does not exist, or an owner that is
+#         completed while the row is not built (T-3561 closed owning R6 'partial').
+#   WARN: a captured task that owns an unbuilt row or is an arc's keystone/slice 1,
+#         captured for more than 3 days (T-3397/T-3561 sat captured while the arc
+#         read healthy).
+check_register_requirements() {
+    local _mod="$FRAMEWORK_ROOT/lib/design_register.py"
+    if [ ! -f "$_mod" ]; then
+        fail "Design-conformance register: lib/design_register.py missing" "" \
+             "Restore lib/design_register.py (bin/fw vendor self in consumers)"
+        return 0
+    fi
+    local reg_out reg_rc=0
+    reg_out=$(python3 "$_mod" violations --root "$PROJECT_ROOT" 2>&1) || reg_rc=$?
+    if [ $reg_rc -eq 0 ]; then
+        pass "Design-conformance register: every row has a live or finished-and-built owner"
+    elif [ $reg_rc -eq 1 ]; then
+        fail "Design-conformance register: $(printf '%s\n' "$reg_out" | grep -c .) row(s) without a valid owner" \
+             "$reg_out" \
+             "Point owner_task at the ACTIVE task that will build the row (or mark the row built with evidence)"
+    else
+        fail "Design-conformance register check could not run (rc=$reg_rc)" "$reg_out" \
+             "python3 lib/design_register.py violations --root \"\$PROJECT_ROOT\""
+    fi
+
+    local ks_out ks_rc=0
+    ks_out=$(python3 "$_mod" stale-keystones --root "$PROJECT_ROOT" --days 3 2>&1) || ks_rc=$?
+    if [ $ks_rc -eq 0 ]; then
+        pass "Stale keystones: none captured >3 days"
+    elif [ $ks_rc -eq 1 ]; then
+        warn "Stale keystones: $(printf '%s\n' "$ks_out" | grep -c .) captured >3 days" \
+             "$ks_out" \
+             "Start the keystone (fw work-on T-XXX) or re-plan the arc; listed on Watchtower /approvals"
+    else
+        warn "Stale-keystone check could not run (rc=$ks_rc)" "$ks_out" ""
+    fi
+}
+check_register_requirements
+
 echo ""
 fi # end structure
 
