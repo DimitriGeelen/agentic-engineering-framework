@@ -348,6 +348,15 @@ bin/fw vendor self --check
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The cause was measured, not guessed: py-spy put every sample in the per-miss index rebuild. The fix is a 30 s single-flight budget in one function. Inception pages went from 279 s (and a 300 s timeout) to 0.1–0.2 s, measured with curl after the restart. All 73 existing auto-link tests still pass, so links render as before. Your review is only the visual check that references still look and click right.
+
+**Evidence:**
+- curl after restart: /inception/T-3726 0.20 s, /inception/T-3723 0.12 s, /inception/T-3731 0.11 s
+- tests/unit/test_t3736_basename_index_single_build.py 2/2 (fails on the old code); auto-link suites 73 passed
+- /approvals still 26 s: a separate cause, tracked in T-3600
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
