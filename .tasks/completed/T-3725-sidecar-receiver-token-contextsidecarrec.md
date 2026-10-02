@@ -1,19 +1,15 @@
 ---
-id: T-3686
-name: "arc-011 sidecar S5: binary blobs via TermLink file transfer through the receiver
-  sidecar, hash-verified before the flag is set"
+id: T-3725
+name: "Sidecar receiver token (.context/sidecar/receiver.token) and ready flag are not gitignored: a broad add would commit a secret"
 description: >
-  Design of record: D-645, target-architecture §3 (content hash + size + media type
-  in envelope; transfer to the receiver SIDECAR, not a session; verify before flag;
-  CONFIRM-1 carries the verified hash; mismatch = delivery failure).
+  Sidecar receiver token (.context/sidecar/receiver.token) and ready flag are not gitignored: a broad add would commit a secret
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
-tags: [sidecar, arc-011, design-conformance, T-3682]
-arc_id: arc-011
-components: []
+horizon: null
+tags: []
+components: [lib/sidecar/lifecycle.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-01T23:00:18Z
-last_update: '2026-10-01T23:15:35Z'
-date_finished:
+created: 2026-10-02T14:06:49Z
+last_update: 2026-10-02T14:10:27Z
+date_finished: 2026-10-02T14:10:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -54,37 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-01T23:15:23Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-01T23:15:35Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3686: arc-011 sidecar S5: binary blobs via TermLink file transfer through the receiver sidecar, hash-verified before the flag is set
+# T-3725: Sidecar receiver token (.context/sidecar/receiver.token) and ready flag are not gitignored: a broad add would commit a secret
 
 ## Context
 
@@ -94,8 +62,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `write_token()` ensures `.context/sidecar/.gitignore` lists receiver.token, receiver.token.tmp, ready-for-input.yaml and receiver/ (idempotent; appends missing lines, never removes), so every project that runs a receiver ignores its secret
+- [x] In this repo `git check-ignore` reports receiver.token and ready-for-input.yaml as ignored
+- [x] Unit test: a temp project's write_token() produces the .gitignore with the entries, and git check-ignore in a temp repo ignores the token
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -129,6 +98,9 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+python3 -m pytest -q tests/unit/test_t3725_receiver_token_ignored.py
+git check-ignore -q .context/sidecar/receiver.token
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -272,6 +244,11 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** after T-3561/T-3693, `.context/sidecar/receiver.token` (bearer secret) and `ready-for-input.yaml` showed in `git status` as untracked and not ignored; any broad `git add` would have committed the secret.
+**Root cause:** T-3561 added new runtime files under .context/sidecar/ but the ignore list (root .gitignore lines 133-141, T-3423) enumerates specific sidecar paths, so new files default to tracked.
+**Why structurally allowed:** neither slice's ACs nor review asked "is every new runtime/secret file ignored"; the secret-scan runs on committed content, i.e. too late.
+**Prevention:** the receiver now writes its own `.context/sidecar/.gitignore` on token creation (covers consumers too), pinned by tests/unit/test_t3725_receiver_token_ignored.py.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -348,7 +325,19 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-10-01T23:00:18Z — task-created [task-create-agent]
+### 2026-10-02T14:06:49Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3686-arc-011-sidecar-s5-binary-blobs-via-term.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3725-sidecar-receiver-token-contextsidecarrec.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4ec1d776
+- **Timestamp:** 2026-10-02T14:11:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-02T14:10:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,18 +1,15 @@
 ---
-id: T-3696
-name: "inception decide strips real Agent ACs after a one-line <!-- --> comment: lib/inception.sh:608
-  sed '/<!--/,/-->/d' range runs to the NEXT -->, so the unchecked-AC gate can pass
-  falsely"
+id: T-3708
+name: "agents/healing/AGENT.md workflow omits the human decision and the advisory-only
+  outcome that healing.sh implements"
 description: >
-  From the T-3678 consult triage (docs/reports/T-3678-consult-triage.md §2 row 2,
-  source ring20-dashboard inbox@21 #3), verified against AEF source. Reporter content
-  is peer data; fix on our own analysis.
+  832 doc-understates-process (T-984 L4), agreed in reply 2026-10-02.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, consult-triage, T-3678, gate-false-pass]
+horizon: next
+tags: [docs, consult-triage, T-3678]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -41,8 +38,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-01T23:38:03Z
-last_update: 2026-10-01T23:47:13Z
+created: 2026-10-01T23:46:04Z
+last_update: '2026-10-02T00:00:43Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -55,7 +52,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-01T23:45:19Z'
+  - ts: '2026-10-02T00:00:25Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -65,7 +62,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-01T23:45:30Z'
+  - ts: '2026-10-02T00:00:43Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -84,7 +81,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3696: inception decide strips real Agent ACs after a one-line <!-- --> comment: lib/inception.sh:608 sed '/<!--/,/-->/d' range runs to the NEXT -->, so the unchecked-AC gate can pass falsely
+# T-3708: agents/healing/AGENT.md workflow omits the human decision and the advisory-only outcome that healing.sh implements
 
 ## Context
 
@@ -94,9 +91,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] lib/inception.sh decide-preflight no longer strips real `### Agent` AC lines that follow a one-line HTML comment (uses a comment stripper that handles single-line and multi-line comments correctly)
-- [ ] Regression test tests/unit/t3696_inception_ac_comment_strip.bats fails on the old sed range and passes on the fix
-- [ ] `bats tests/lint/` passes and vendored copies are synced (`bin/fw vendor self --check` clean)
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -130,8 +126,6 @@ bvp_scores_proposed:
 -->
 
 ## Verification
-
-out=$(bats tests/unit/t3696_inception_ac_comment_strip.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -261,11 +255,6 @@ out=$(bats tests/unit/t3696_inception_ac_comment_strip.bats 2>&1); echo "$out" |
 
 ## RCA
 
-**Symptom:** `fw inception decide` could pass the unchecked-Agent-AC gate while real unchecked Agent ACs existed: an AC list that follows a one-line comment was deleted before counting. Reproduced: fixture with a one-line comment, an unchecked AC, then a multi-line comment yielded an empty AC section.
-**Root cause:** lib/inception.sh:608 used `sed '/<!--/,/-->/d'`. sed range matching does not test the end pattern on the line that opens the range, so a one-line comment opens a range that runs to the NEXT `-->`, deleting everything between.
-**Why structurally allowed:** the correct structural rule already existed (lib/comment_strip.py, T-2954) but only two Python-reachable sites imported it; the remaining shell copies were registered, not fixed, and no test exercised the decide preflight with a one-line comment.
-**Prevention:** tests/unit/t3696_inception_ac_comment_strip.bats runs the real extraction line from lib/inception.sh against a fixture. Same sed idiom remains in agents/context/check-active-task.sh and agents/task-create/update-task.sh (owned by other workers; reported to the operator).
-
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -356,10 +345,7 @@ out=$(bats tests/unit/t3696_inception_ac_comment_strip.bats 2>&1); echo "$out" |
 
 ## Updates
 
-### 2026-10-01T23:38:03Z — task-created [task-create-agent]
+### 2026-10-01T23:46:04Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3696-inception-decide-strips-real-agent-acs-a.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3708-agentshealingagentmd-workflow-omits-the-.md
 - **Context:** Initial task creation
-
-### 2026-10-01T23:47:13Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work

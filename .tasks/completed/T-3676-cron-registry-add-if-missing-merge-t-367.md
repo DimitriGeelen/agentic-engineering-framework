@@ -11,12 +11,12 @@ description: >
   indent; test with 2-space-indented and 0-indented registries; post-merge parse check
   stays as the safety net (it held: 832's file was not written).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, sidecar, upgrade, T-3673]
-components: []
+components: [lib/cron-seed.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T21:28:03Z
-last_update: '2026-10-01T21:30:22Z'
-date_finished:
+last_update: 2026-10-01T21:51:19Z
+date_finished: 2026-10-01T21:51:19Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -97,10 +97,10 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] cron_seed_ensure_jobs inserts the job at the registry's own list-item indent (0 and 2 spaces both yield parseable YAML containing sidecar-sweep-5m)
-- [ ] Regression bats covers 0-indented and 2-space-indented registries, plus idempotent re-run (PRESENT)
-- [ ] tests/unit/upgrade_fresh_machine_simulation.bats and t3673 bats stay green
-- [ ] bin/fw vendor self --check is clean
+- [x] cron_seed_ensure_jobs inserts the job at the registry's own list-item indent (0 and 2 spaces both yield parseable YAML containing sidecar-sweep-5m)
+- [x] Regression bats covers 0-indented and 2-space-indented registries, plus idempotent re-run (PRESENT)
+- [x] tests/unit/upgrade_fresh_machine_simulation.bats and t3673 bats stay green
+- [x] bin/fw vendor self --check is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -368,3 +368,15 @@ bin/fw vendor self --check
 
 ### 2026-10-01T21:29:45Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-79924215
+- **Timestamp:** 2026-10-01T21:53:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-01T21:51:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

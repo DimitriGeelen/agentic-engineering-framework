@@ -1,8 +1,14 @@
 ---
 id: T-3685
-name: "arc-011 sidecar S-LIVE: always-on per-agent sidecar process, supervised, with liveness.yaml (monotonic seq per tick + loopback self-probe each 30s tick); doctor and audit FAIL when not live"
+name: "arc-011 sidecar S-LIVE: always-on per-agent sidecar process, supervised, with
+  liveness.yaml (monotonic seq per tick + loopback self-probe each 30s tick); doctor
+  and audit FAIL when not live"
 description: >
-  Design of record: T-3396 Amendment 5 IW-2 (two-field liveness: seq stalls for 2 ticks OR last_probe_ok false = not live; state .context/sidecar/liveness.yaml {identity, seq, last_probe_at, last_probe_ok, last_probe_latency_ms}), T-3397 IW-5 (every agent runs a sidecar), arc-011 §5 self-check-ears (an agent with a dead listener knows it is deaf). Gap rows R7, R14, R15 in T-3682 audit.
+  Design of record: T-3396 Amendment 5 IW-2 (two-field liveness: seq stalls for 2
+  ticks OR last_probe_ok false = not live; state .context/sidecar/liveness.yaml {identity,
+  seq, last_probe_at, last_probe_ok, last_probe_latency_ms}), T-3397 IW-5 (every agent
+  runs a sidecar), arc-011 §5 self-check-ears (an agent with a dead listener knows
+  it is deaf). Gap rows R7, R14, R15 in T-3682 audit.
 
 status: captured
 workflow_type: build
@@ -39,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T22:59:31Z
-last_update: 2026-10-01T22:59:31Z
-date_finished: null
+last_update: '2026-10-01T23:15:35Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +57,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-01T23:15:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-01T23:15:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3685: arc-011 sidecar S-LIVE: always-on per-agent sidecar process, supervised, with liveness.yaml (monotonic seq per tick + loopback self-probe each 30s tick); doctor and audit FAIL when not live

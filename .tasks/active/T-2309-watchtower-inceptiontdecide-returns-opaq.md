@@ -353,15 +353,19 @@ Discovered cross-project, in field — no test pinned the friendly-error contrac
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-e053f368
-- **Timestamp:** 2026-06-10T11:30:37Z
+- **Scan ID:** R-cffb893f
+- **Timestamp:** 2026-10-02T05:20:05Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
-- **Suppressed:** 1 (by override)
-  - AC-verify-mismatch @ AC#1 (Agent)
+**Per-AC findings:**
 
+- **AC#1 (Agent)** — `web/app.py:forbidden` (line 368-379) distinguishes CSRF failures from generic 403s. When `e.description` matches `"CSRF token"`, the handler renders a CSRF-specific template; otherwise the existing `
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/app.py in: `web/app.py:forbidden` (line 368-379) distinguishes CSRF failures from generic 403s. When `e.description` matches `"CSRF token"`, the handler renders `
+
+- **Expired overrides:** 1
+  - OV-f1e47937 pattern=AC-verify-mismatch expired_at=2026-09-08T11:30:30Z
 ### 2026-06-10T11:31:24Z — status-update [task-update-agent]
 - **Change:** owner: agent → human

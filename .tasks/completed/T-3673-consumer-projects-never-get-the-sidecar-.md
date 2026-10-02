@@ -11,12 +11,12 @@ description: >
   have upgrade add it when absent (never overwrite operator edits), then regenerate;
   doctor/audit already WARN on expired_unswept.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, sidecar, cross-agent, T-3631]
-components: []
+components: [lib/cron-seed.sh, lib/init.sh, lib/upgrade.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T19:20:24Z
-last_update: '2026-10-01T19:30:24Z'
-date_finished:
+last_update: 2026-10-01T19:43:13Z
+date_finished: 2026-10-01T19:43:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -372,3 +372,20 @@ bin/fw vendor self --check
 
 ### 2026-10-01T19:21:55Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2dfd125e
+- **Timestamp:** 2026-10-01T19:45:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `fw init` seeds `.context/cron-registry.yaml` with a `sidecar-sweep-5m` job using the consumer fw path and a per-project lock name
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/cron-registry.yaml in: `fw init` seeds `.context/cron-registry.yaml` with a `sidecar-sweep-5m` job using the consumer fw path and a per-project lock name`
+
+### 2026-10-01T19:43:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

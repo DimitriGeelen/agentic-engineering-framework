@@ -1,18 +1,18 @@
 ---
-id: T-3686
-name: "arc-011 sidecar S5: binary blobs via TermLink file transfer through the receiver
-  sidecar, hash-verified before the flag is set"
+id: T-3710
+name: "Replace the remaining sed '/<!--/,/-->/d' comment-range strips with lib/comment_strip.py
+  (check-active-task.sh:1082,1162; update-task.sh:223,248,1893) — same class as T-3696"
 description: >
-  Design of record: D-645, target-architecture §3 (content hash + size + media type
-  in envelope; transfer to the receiver SIDECAR, not a session; verify before flag;
-  CONFIRM-1 carries the verified hash; mismatch = delivery failure).
+  T-3696 fixed lib/inception.sh. These five sites pre-strip single-line comments with
+  sed -E first, which narrows but does not remove the range run-on (e.g. a line holding
+  text plus an unterminated <!--). One structural stripper everywhere; regression
+  fixture per site.
 
 status: captured
 workflow_type: build
 owner: agent
 horizon: next
-tags: [sidecar, arc-011, design-conformance, T-3682]
-arc_id: arc-011
+tags: [bug, gates, T-3696]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-01T23:00:18Z
-last_update: '2026-10-01T23:15:35Z'
+created: 2026-10-01T23:59:44Z
+last_update: '2026-10-02T00:15:30Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -55,7 +55,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-01T23:15:23Z'
+  - ts: '2026-10-02T00:15:19Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -65,7 +65,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-01T23:15:35Z'
+  - ts: '2026-10-02T00:15:30Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -84,7 +84,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3686: arc-011 sidecar S5: binary blobs via TermLink file transfer through the receiver sidecar, hash-verified before the flag is set
+# T-3710: Replace the remaining sed '/<!--/,/-->/d' comment-range strips with lib/comment_strip.py (check-active-task.sh:1082,1162; update-task.sh:223,248,1893) — same class as T-3696
 
 ## Context
 
@@ -348,7 +348,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-10-01T23:00:18Z — task-created [task-create-agent]
+### 2026-10-01T23:59:44Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3686-arc-011-sidecar-s5-binary-blobs-via-term.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3710-replace-the-remaining-sed-----d-comment-.md
 - **Context:** Initial task creation

@@ -8,12 +8,12 @@ description: >
   logged, watched by the agent) — codify in CLAUDE.md/FRAMEWORK.md/AGENTS.md + fw
   runme helper
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/runme.sh, tests/unit/t3675_runme.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T20:51:46Z
-last_update: '2026-10-01T21:00:36Z'
-date_finished:
+last_update: 2026-10-01T22:17:14Z
+date_finished: 2026-10-01T22:17:14Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -359,3 +359,20 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3675-standing-directive-operator-command-hand.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e0899aa0
+- **Timestamp:** 2026-10-01T22:17:28Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — CLAUDE.md, FRAMEWORK.md and AGENTS.md carry the standing directive (operator ruling 2026-10-01): any command the operator must run is handed off as ONE line `bash /abs/path/runme.sh`, never a multi-li
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=abs/path/runme.sh in: CLAUDE.md, FRAMEWORK.md and AGENTS.md carry the standing directive (operator ruling 2026-10-01): any command the operator must run is handed off as ON`
+
+### 2026-10-01T22:17:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

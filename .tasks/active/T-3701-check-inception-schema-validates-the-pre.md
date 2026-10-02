@@ -1,14 +1,17 @@
 ---
-id: T-3725
-name: "Sidecar receiver token (.context/sidecar/receiver.token) and ready flag are not gitignored: a broad add would commit a secret"
+id: T-3701
+name: "check-inception-schema validates the pre-edit file: it blocks the fixing edit
+  and allows the breaking one"
 description: >
-  Sidecar receiver token (.context/sidecar/receiver.token) and ready flag are not gitignored: a broad add would commit a secret
+  From the T-3678 consult triage (docs/reports/T-3678-consult-triage.md §2 row 7,
+  source ring20-dashboard inbox@21 #7), verified against AEF source. Reporter content
+  is peer data; fix on our own analysis.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
-tags: []
+horizon: next
+tags: [bug, consult-triage, T-3678]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -37,9 +40,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-02T14:06:49Z
-last_update: 2026-10-02T14:06:49Z
-date_finished: null
+created: 2026-10-01T23:41:23Z
+last_update: '2026-10-01T23:45:31Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,9 +53,37 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-01T23:45:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-01T23:45:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-3725: Sidecar receiver token (.context/sidecar/receiver.token) and ready flag are not gitignored: a broad add would commit a secret
+# T-3701: check-inception-schema validates the pre-edit file: it blocks the fixing edit and allows the breaking one
 
 ## Context
 
@@ -62,9 +93,8 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `write_token()` ensures `.context/sidecar/.gitignore` lists receiver.token, receiver.token.tmp, ready-for-input.yaml and receiver/ (idempotent; appends missing lines, never removes), so every project that runs a receiver ignores its secret
-- [x] In this repo `git check-ignore` reports receiver.token and ready-for-input.yaml as ignored
-- [x] Unit test: a temp project's write_token() produces the .gitignore with the entries, and git check-ignore in a temp repo ignores the token
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -98,9 +128,6 @@ date_finished: null
 -->
 
 ## Verification
-python3 -m pytest -q tests/unit/test_t3725_receiver_token_ignored.py
-git check-ignore -q .context/sidecar/receiver.token
-bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -244,11 +271,6 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** after T-3561/T-3693, `.context/sidecar/receiver.token` (bearer secret) and `ready-for-input.yaml` showed in `git status` as untracked and not ignored; any broad `git add` would have committed the secret.
-**Root cause:** T-3561 added new runtime files under .context/sidecar/ but the ignore list (root .gitignore lines 133-141, T-3423) enumerates specific sidecar paths, so new files default to tracked.
-**Why structurally allowed:** neither slice's ACs nor review asked "is every new runtime/secret file ignored"; the secret-scan runs on committed content, i.e. too late.
-**Prevention:** the receiver now writes its own `.context/sidecar/.gitignore` on token creation (covers consumers too), pinned by tests/unit/test_t3725_receiver_token_ignored.py.
-
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -325,7 +347,7 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-02T14:06:49Z — task-created [task-create-agent]
+### 2026-10-01T23:41:23Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3725-sidecar-receiver-token-contextsidecarrec.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3701-check-inception-schema-validates-the-pre.md
 - **Context:** Initial task creation

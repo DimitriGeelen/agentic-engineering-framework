@@ -4,12 +4,12 @@ name: "fw help omits the new runme command (help-router-parity lint red, blocks 
 description: >
   fw help omits the new runme command (help-router-parity lint red, blocks push)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T22:27:48Z
-last_update: 2026-10-01T22:27:48Z
-date_finished: null
+last_update: 2026-10-01T22:29:57Z
+date_finished: 2026-10-01T22:29:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -326,3 +326,15 @@ bats tests/lint/help-router-parity.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3679-fw-help-omits-the-new-runme-command-help.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fad03cf6
+- **Timestamp:** 2026-10-01T22:30:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-01T22:29:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

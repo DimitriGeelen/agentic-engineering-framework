@@ -1,19 +1,20 @@
 ---
-id: T-3686
-name: "arc-011 sidecar S5: binary blobs via TermLink file transfer through the receiver
-  sidecar, hash-verified before the flag is set"
+id: T-3719
+name: "Four single unit reds: onboarding_curriculum_ungated (1), t3113_upgrade_worktree_advisory
+  (1), t3544_inbox_backlog_rail (1), t3549_inception_handoff_refusal (1)"
 description: >
-  Design of record: D-645, target-architecture §3 (content hash + size + media type
-  in envelope; transfer to the receiver SIDECAR, not a session; verify before flag;
-  CONFIRM-1 carries the verified hash; mismatch = delivery failure).
+  Pre-push ratchet 2026-10-02 (T-3621): new reds not in baseline, re-run confirmed
+  real (not load flakes). Localise each (bisect today's commits); t3113 likely asserts
+  the old 'master' guidance text changed by T-3697 (then the test, not the fix, is
+  wrong — keep bleeding-edge); t3544/t3549 possibly T-3681/T-3696/T-3694. If causes
+  differ, file one task per distinct cause.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: next
-tags: [sidecar, arc-011, design-conformance, T-3682]
-arc_id: arc-011
-components: []
+horizon: null
+tags: [bug, regression, push-blocker, unit-suite]
+components: [lib/sidecar-audit.sh, tests/unit/t3113_upgrade_worktree_advisory.bats, tests/unit/t3549_inception_handoff_refusal.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,9 +42,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-01T23:00:18Z
-last_update: '2026-10-01T23:15:35Z'
-date_finished:
+created: 2026-10-02T12:17:51Z
+last_update: 2026-10-02T13:23:30Z
+date_finished: 2026-10-02T13:23:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -54,18 +55,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-01T23:15:23Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-01T23:15:35Z'
+  - ts: '2026-10-02T12:19:10Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -82,9 +73,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-02T12:30:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=319,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-3686: arc-011 sidecar S5: binary blobs via TermLink file transfer through the receiver sidecar, hash-verified before the flag is set
+# T-3719: Four single unit reds: onboarding_curriculum_ungated (1), t3113_upgrade_worktree_advisory (1), t3544_inbox_backlog_rail (1), t3549_inception_handoff_refusal (1)
 
 ## Context
 
@@ -94,8 +95,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Each of the four reds is reproduced and its causing commit named in ## RCA
+- [x] For each red, the wrong side (test vs code) is fixed without weakening a safety property
+- [x] All four test files pass in full, and `bats tests/lint/` passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -255,6 +257,16 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/onboarding_curriculum_ungated.bats > /tmp/.t3719-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t3719-a.out
+test "$(grep -c '# skip' /tmp/.t3719-a.out)" -eq 0
+timeout 600 bats tests/unit/t3113_upgrade_worktree_advisory.bats > /tmp/.t3719-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t3719-b.out
+test "$(grep -c '# skip' /tmp/.t3719-b.out)" -eq 0
+timeout 600 bats tests/unit/t3544_inbox_backlog_rail.bats > /tmp/.t3719-c.out 2>&1 && ! grep -q "^not ok" /tmp/.t3719-c.out
+test "$(grep -c '# skip' /tmp/.t3719-c.out)" -eq 0
+timeout 600 bats tests/unit/t3549_inception_handoff_refusal.bats > /tmp/.t3719-d.out 2>&1 && ! grep -q "^not ok" /tmp/.t3719-d.out
+test "$(grep -c '# skip' /tmp/.t3719-d.out)" -eq 0
+! grep -q 'FRAMEWORK_ROOT="$root" timeout' lib/sidecar-audit.sh
+bin/fw vendor self --check
 
 ## RCA
 
@@ -271,6 +283,42 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** four new single reds on the 2026-10-02 pre-push ratchet (T-3621):
+`onboarding_curriculum_ungated` #1 (seed count 6), `t3113_upgrade_worktree_advisory` #8
+(expects `fw integrate run master --push`), `t3544_inbox_backlog_rail` #3 (unreadable hub
+anchor returned rc 0, not 2), `t3549_inception_handoff_refusal` #11 (greps `|| true`).
+Four distinct causes, all small; kept in one task because each fix is one line.
+
+**Root causes (one per red):**
+1. `89bed4ff8` (T-3636, 2026-10-01) deliberately added seed
+   `existing-project/T-007-define-project-objectives.md`. Test was wrong → count 6→7.
+2. `80a61ca04` (T-3697) deliberately changed upgrade guidance to land worktrees on
+   `bleeding-edge` (release-train model, CLAUDE.md §Worktree Policy). Test was wrong → now
+   asserts `bleeding-edge` AND the absence of `integrate run master` (keeps the safety property).
+3. `fa4d0de4d` (T-3671) made `outbox._root()` resolve from `PROJECT_ROOT` (else cwd's
+   project) instead of `FRAMEWORK_ROOT`. `lib/sidecar-audit.sh` still passed
+   `FRAMEWORK_ROOT="$root"` to `dm-stale` and `inbox-stale`, so the `<root>` argument became
+   inert: the check read the ambient project (here the real repo, whose cached
+   `.context/sidecar/hub-id` made the "unreadable anchor" fixture look healthy → rc 0).
+   **Code was wrong** → both calls now pass `PROJECT_ROOT="$root"`. (The third call,
+   `fw_sidecar_ledger_facts`, has the same defect and is being fixed in T-3717's
+   uncommitted hunk; not committed here.)
+4. `c0134e8fb` (T-3641) deliberately replaced `|| true` with `|| _ud_rc=$?` so a crashed
+   readiness predicate warns instead of reading as "ready". Still set-e safe, which is the
+   contract the test protects. Test was wrong → greps the new guard (fixed-string).
+
+**Why the causing tasks' close gates missed it:** each causing task ran only its own new test
+file plus nearby ones in `## Verification` (T-3641 updated `t3539` but not `t3549`; T-3636
+updated `t2862`/`upgrade_fresh_machine_simulation` but not `onboarding_curriculum_ungated`;
+T-3671 updated the python sidecar tests but not the bash fact-function bats). The full unit
+suite runs only nightly / at pre-push, so a sibling test pinning the old contract is invisible
+at close.
+
+**Prevention:** the T-3621 pre-push ratchet is what caught these, which is its job. Lesson for
+contract-changing tasks: `grep -rn '<old literal>' tests/` before close (T-3641's `|| true`,
+T-3697's `integrate run master`) — every hit is a test pinning the contract being changed.
+For root-resolution changes (T-3671), grep every caller that sets the old env var.
 
 ## Evolution
 
@@ -348,7 +396,22 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-10-01T23:00:18Z — task-created [task-create-agent]
+### 2026-10-02T12:17:51Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3686-arc-011-sidecar-s5-binary-blobs-via-term.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3719-four-single-unit-reds-onboardingcurricul.md
 - **Context:** Initial task creation
+
+### 2026-10-02T12:19:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-15c3d891
+- **Timestamp:** 2026-10-02T13:24:37Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-02T13:23:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

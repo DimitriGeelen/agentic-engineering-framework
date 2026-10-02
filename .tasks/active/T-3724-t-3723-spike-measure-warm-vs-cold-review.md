@@ -1,18 +1,14 @@
 ---
-id: T-3686
-name: "arc-011 sidecar S5: binary blobs via TermLink file transfer through the receiver
-  sidecar, hash-verified before the flag is set"
+id: T-3724
+name: "T-3723 spike: measure warm-vs-cold reviewer cost per vendor (claude, codex, opencode/Z.ai, antigravity) and prove fresh-conversation isolation with a canary"
 description: >
-  Design of record: D-645, target-architecture §3 (content hash + size + media type
-  in envelope; transfer to the receiver SIDECAR, not a session; verify before flag;
-  CONFIRM-1 carries the verified hash; mismatch = delivery failure).
+  Spike under the T-3723 GO (operator 2026-10-02). Answers IW-1 (cost), IW-2 (canary isolation) and gathers evidence for IW-3 (provenance) per vendor. Output: docs/reports/T-3723-spike-results.md with measured numbers and transcripts; no framework code changes.
 
 status: captured
 workflow_type: build
 owner: agent
-horizon: next
-tags: [sidecar, arc-011, design-conformance, T-3682]
-arc_id: arc-011
+horizon: now
+tags: [spike, reviewers, T-3723]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -41,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-01T23:00:18Z
-last_update: '2026-10-01T23:15:35Z'
-date_finished:
+created: 2026-10-02T14:03:48Z
+last_update: 2026-10-02T14:03:48Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -54,37 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-01T23:15:23Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-01T23:15:35Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3686: arc-011 sidecar S5: binary blobs via TermLink file transfer through the receiver sidecar, hash-verified before the flag is set
+# T-3724: T-3723 spike: measure warm-vs-cold reviewer cost per vendor (claude, codex, opencode/Z.ai, antigravity) and prove fresh-conversation isolation with a canary
 
 ## Context
 
@@ -348,7 +316,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-10-01T23:00:18Z — task-created [task-create-agent]
+### 2026-10-02T14:03:48Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3686-arc-011-sidecar-s5-binary-blobs-via-term.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3724-t-3723-spike-measure-warm-vs-cold-review.md
 - **Context:** Initial task creation

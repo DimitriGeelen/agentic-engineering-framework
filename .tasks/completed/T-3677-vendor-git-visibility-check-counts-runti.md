@@ -15,12 +15,12 @@ description: >
   workaround used: moved both to /root/backup-832-vendor-runtime-20261001-232647/.
   Other consumers on pre-1.7.740 likely carry the same leftovers.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, security, vendor, upgrade]
-components: []
+components: [lib/vendor-visibility.sh, tests/unit/vendor_visibility.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -49,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T21:28:45Z
-last_update: '2026-10-01T21:30:22Z'
-date_finished:
+last_update: 2026-10-01T21:46:28Z
+date_finished: 2026-10-01T21:46:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -372,3 +372,15 @@ cmp lib/vendor-visibility.sh .agentic-framework/lib/vendor-visibility.sh
 
 ### 2026-10-01T21:29:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-aab084bb
+- **Timestamp:** 2026-10-01T21:46:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-01T21:46:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

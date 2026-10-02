@@ -12,13 +12,13 @@ description: >
   back in the reply, with negative controls that must fail. Injection grants attention,
   never authority.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [sidecar, arc-011, design-conformance, T-3682]
 arc_id: arc-011
-components: []
+components: [agents/task-create/update-task.sh, lib/sidecar/adapter.py, lib/sidecar/http_server.py, lib/sidecar/lifecycle.py, lib/sidecar/outbox.py, lib/sidecar/receiver.py, tests/unit/t3561_adapter.py, tests/unit/t3561_e2e_nonce.py, tests/unit/t3561_receiver_storage.py]
 related_tasks: [T-3397, T-3475, T-3558, T-3559, T-3555]
 write_set: ["lib/sidecar/receiver.py", "lib/sidecar/lifecycle.py", "lib/sidecar/adapter.py",
   "lib/sidecar/outbox.py", "lib/sidecar/inbox.py", "lib/sidecar_cli.py", "agents/context/sidecar-inbox.sh",
@@ -50,8 +50,8 @@ write_set: ["lib/sidecar/receiver.py", "lib/sidecar/lifecycle.py", "lib/sidecar/
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-09-29T16:46:15Z
-last_update: '2026-10-01T23:15:31Z'
-date_finished:
+last_update: 2026-10-01T23:19:24Z
+date_finished: 2026-10-01T23:19:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -451,3 +451,26 @@ bin/fw vendor self --check
 
 ### 2026-10-01T23:08:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5609fe1d
+- **Timestamp:** 2026-10-01T23:19:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** FAIL
+- **Needs Human:** no
+- **Findings:** 4
+
+**Verification-level findings:**
+
+  1. **swallowed-errors** (severe, deterministic) @ Verification:line 2
+     - evidence: `bin/fw fabric drift | grep -q "lib-sidecar-receiver\|lib-sidecar-lifecycle\|lib-sidecar-adapter" || true`
+  2. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `python3 -m pytest tests/unit/t3561_*.py -v > /tmp/t3561_tests.log 2>&1 && grep -q "18 passed" /tmp/t3561_tests.log`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 2
+     - evidence: `bin/fw fabric drift | grep -q "lib-sidecar-receiver\|lib-sidecar-lifecycle\|lib-sidecar-adapter" || true`
+  4. **write-set-underdeclared** (partial, heuristic) @ write_set: vs body cross-check
+     - evidence: `path='lib/sidecar/http_server.py' not in write_set=['lib/sidecar/receiver.py', 'lib/sidecar/lifecycle.py', 'lib/sidecar/adapter.py', 'lib/sidecar/outbox.py', 'lib/sidecar/inbox.py', 'lib/sidecar_cli.py', 'agents/context/sidecar-inbox.sh', 'tests/unit/t3561_*', 'docs/architecture/sidecar-target-architecture.md']; context='- **Plan impact:** Added lib/sidecar/http_server.py with minimal POST /message handler (authentication, RECEIVED respons'`
+
+### 2026-10-01T23:19:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

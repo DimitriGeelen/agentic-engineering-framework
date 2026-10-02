@@ -1,19 +1,19 @@
 ---
-id: T-3717
-name: "sidecar_audit_rail.bats 6 reds after the INJECTED_NOW→HUB_ACCEPTED rename /
-  new sender states (T-3561/T-3693)"
+id: T-3692
+name: "Dispatched workers cannot read the project's sidecar inbox: FW_SIDECAR_AGENT_ID=<worker
+  name> scopes fw sidecar inbox --peek to the worker's own topics, so a triage worker
+  sees nothing"
 description: >
-  Pre-push ratchet 2026-10-02 (T-3621): new reds not in baseline, re-run confirmed
-  real (not load flakes). The audit rail counters (UNKNOWN, STORED past deadline,
-  ladder-exhausted, expired-unswept) read the ack ledger; T-3561/T-3693 renamed and
-  added states. Fix the rail to the new state set (and keep reading legacy INJECTED_NOW
-  rows), do not just edit expectations.
+  Measured 2026-10-02: w-t-3678 ran fw sidecar inbox --peek --json and got only inbox:…/w-t-3678
+  and sidecar:w-t-3678 (empty) while the project inbox held the backlog. T-3407 sets
+  FW_SIDECAR_AGENT_ID to the worker --name. Need an explicit, read-only way for a
+  worker to peek the PROJECT inbox (e.g. --as-project), without acking.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, regression, push-blocker, unit-suite]
+horizon: next
+tags: [bug, sidecar, dispatch]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-02T12:16:28Z
-last_update: '2026-10-02T12:30:21Z'
+created: 2026-10-01T23:08:30Z
+last_update: '2026-10-01T23:15:36Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -55,8 +55,18 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-01T23:15:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-02T12:19:05Z'
+  - ts: '2026-10-01T23:15:36Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -73,19 +83,9 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-02T12:30:21Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=306,acs=7)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3717: sidecar_audit_rail.bats 6 reds after the INJECTED_NOW→HUB_ACCEPTED rename / new sender states (T-3561/T-3693)
+# T-3692: Dispatched workers cannot read the project's sidecar inbox: FW_SIDECAR_AGENT_ID=<worker name> scopes fw sidecar inbox --peek to the worker's own topics, so a triage worker sees nothing
 
 ## Context
 
@@ -95,11 +95,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Causing commit named in ## RCA, with which side (test or code) was wrong and why
-- [x] `bats tests/unit/sidecar_audit_rail.bats` is fully green with zero skips
-- [x] Rail still counts legacy `INJECTED_NOW` ledger rows (no safety counter weakened)
-- [x] Legacy on-disk `INJECTED_NOW` rows are not reopened by the retry ladder (pinned by a new test)
-- [x] `bats tests/lint/` green
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -259,54 +256,22 @@ cost_estimate_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-timeout 600 bats tests/unit/sidecar_audit_rail.bats > /tmp/.t3717.out 2>&1 && ! grep -q "^not ok" /tmp/.t3717.out
-test "$(grep -c '# skip' /tmp/.t3717.out)" -eq 0
-timeout 900 python3 -m pytest tests/unit/test_sidecar_status.py tests/unit/test_sidecar_outbox.py tests/unit/test_sidecar_sweep.py -q -p no:cacheprovider > /tmp/.t3717.py 2>&1 && grep -q passed /tmp/.t3717.py
-timeout 900 bats tests/lint/ > /tmp/.t3717.lint 2>&1 && ! grep -q "^not ok" /tmp/.t3717.lint
-# Scoped to this task's paths: whole-tree `fw vendor self --check` also sees other workers' uncommitted lib/ files in the shared checkout.
-cmp lib/sidecar-audit.sh .agentic-framework/lib/sidecar-audit.sh && cmp lib/sidecar/outbox.py .agentic-framework/lib/sidecar/outbox.py
 
 ## RCA
 
-**Symptom:** pre-push ratchet (T-3621) reported 6 new reds in
-`tests/unit/sidecar_audit_rail.bats` (tests 2,3,4,5,6,8): every counter from
-`fw_sidecar_ledger_facts <root>` described the wrong ledger.
+<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
+     Non-bug-class tasks may leave this section empty or remove it.
 
-**Root cause — two commits, the code side was wrong in both:**
-1. `fa4d0de4d` (T-3671, 2026-10-01) moved sidecar state resolution from
-   `FRAMEWORK_ROOT` to `PROJECT_ROOT` (else the cwd's project). `lib/sidecar-audit.sh`
-   still passed only `FRAMEWORK_ROOT="$root"`, so the `<root>` argument became inert
-   and the facts read the live repo's ledger instead of the fixture — all 6 reds.
-   The test's contract (facts describe `<root>`) is correct; the caller was not updated.
-2. `25944186d` (T-3561, 2026-10-02) renamed `INJECTED_NOW` → `HUB_ACCEPTED`, but the
-   "backward-compat alias" `INJECTED_NOW = "HUB_ACCEPTED"` renamed only the Python
-   name. Rows already on disk carry the literal string `"INJECTED_NOW"` (13 in the live
-   ledger), and the ledger is append-only. After the rename: (a) `sidecar-audit.sh`
-   summed the now-absent `INJECTED_NOW` key, so delivered rows dropped out of the
-   count; (b) `status.py` no longer counted legacy rows at all; and (c) worse,
-   `retry.is_open` returned True for a legacy delivered row with no `attempts`, so the
-   T-3434 ladder would reopen consults delivered weeks ago and nudge peers about
-   finished conversations — the exact thing `is_open`'s docstring says it must not do.
-   Masked in the test by bug 1 until bug 1 is fixed (test 2 then fails on delivered=1).
+     For bug-class, fill in:
+       **Symptom:** what was observed (the user-facing manifestation).
+       **Root cause:** the specific structural/logical gap — not "the code was wrong".
+       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
+       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
 
-**Fix:** `lib/sidecar-audit.sh` passes `PROJECT_ROOT="$root"` and sums `HUB_ACCEPTED`
-(+ legacy key + `INJECTED_LATER`); `outbox._read_ledger` maps on-disk `"INJECTED_NOW"`
-to `HUB_ACCEPTED`, the single read path every ledger consumer uses. No test
-expectation was edited; two regression tests added (both state names count as
-delivered; a legacy row is closed to the ladder — negative control: the raw legacy row
-gives `is_open == True` without the fix).
-
-**Why the close gates missed it:** both causing tasks ran their own named test files
-(T-3671 touched the `test_sidecar_*.py` set; T-3561 its 18 tests) but not
-`sidecar_audit_rail.bats`, which exercises `lib/sidecar-audit.sh` — a bash caller of the
-Python package that no Python test imports. The suite was red from 2026-10-01 until
-the nightly/pre-push ratchet saw it. The rename's tests also only ever wrote new rows,
-never read a pre-rename ledger.
-
-**Prevention:** the new legacy-row tests pin the on-disk compatibility contract, so
-any future rename that drops it fails here. Learning: a constant alias is not a data
-migration — renaming a persisted enum value needs a read-side mapping (or a
-migration) and a test that reads an old row.
+     The completion gate (T-1550, G-019) blocks --status work-completed when
+     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
+-->
 
 ## Evolution
 
@@ -384,10 +349,7 @@ migration) and a test that reads an old row.
 
 ## Updates
 
-### 2026-10-02T12:16:28Z — task-created [task-create-agent]
+### 2026-10-01T23:08:30Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3717-sidecarauditrailbats-6-reds-after-the-in.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3692-dispatched-workers-cannot-read-the-proje.md
 - **Context:** Initial task creation
-
-### 2026-10-02T12:19:04Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work

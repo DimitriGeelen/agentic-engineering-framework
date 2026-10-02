@@ -1,18 +1,17 @@
 ---
-id: T-3686
-name: "arc-011 sidecar S5: binary blobs via TermLink file transfer through the receiver
-  sidecar, hash-verified before the flag is set"
+id: T-3682
+name: "Sidecar design-conformance audit: T-3396/T-3397 spec vs built slices — receive
+  half (30s inject tick, Stop-hook ready flag, urgent bypass, liveness self-probe,
+  always-on per-agent sidecar) never built; deferred by every slice, owned by none"
 description: >
-  Design of record: D-645, target-architecture §3 (content hash + size + media type
-  in envelope; transfer to the receiver SIDECAR, not a session; verify before flag;
-  CONFIRM-1 carries the verified hash; mismatch = delivery failure).
+  Operator demanded 2026-10-02 a full check of the sidecar arc against its design.
+  Findings in docs/reports/T-3682-sidecar-design-conformance-audit.md.
 
-status: captured
-workflow_type: build
+status: started-work
+workflow_type: inception
 owner: agent
-horizon: next
-tags: [sidecar, arc-011, design-conformance, T-3682]
-arc_id: arc-011
+horizon: now
+tags: [sidecar, audit, design-conformance, arc-020]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -41,8 +40,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-01T23:00:18Z
-last_update: '2026-10-01T23:15:35Z'
+created: 2026-10-01T22:51:19Z
+last_update: '2026-10-02T01:19:13Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -54,18 +53,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-01T23:15:23Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-01T23:15:35Z'
+  - ts: '2026-10-01T22:53:07Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -82,9 +71,35 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-02T01:19:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-01T23:00:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 4
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=4 
+      (workflow:inception); effort=8 (lines=275,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-3686: arc-011 sidecar S5: binary blobs via TermLink file transfer through the receiver sidecar, hash-verified before the flag is set
+# T-3682: Sidecar design-conformance audit: T-3396/T-3397 spec vs built slices — receive half (30s inject tick, Stop-hook ready flag, urgent bypass, liveness self-probe, always-on per-agent sidecar) never built; deferred by every slice, owned by none
 
 ## Context
 
@@ -298,32 +313,15 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-<!-- T-2945: same shape as inception.md's block — the gate that reads it
-     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
-     shape is copied rather than reinvented.
+**Recommendation:** DEFER
 
-     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
-     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
-     `fw task review` emission for build/refactor/test/decommission tasks in that
-     state with no substantive block here — the operator would otherwise open
-     /review/<id> to a blank Recommendation card and be asked to approve a form.
+**Rationale:**
 
-     Not required while every Human AC is ticked or the task has none: the gate
-     only fires on the partial-complete transition. It is here from the start so
-     you write it while you still have the evidence, not when the gate refuses.
+Filed pre-T-1716 gate without Recommendation. Promotion criterion: re-surface when concrete spike data or human-graded evidence emerges. Auto-retrofitted by 'fw inception retrofit-rec --apply'.
 
-     Format (the parser wants the `**Recommendation:**` line at the start of a
-     line; a leading `-` or `*` bullet is also accepted):
-     **Recommendation:** GO / NO-GO / DEFER
-     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
-     **Evidence:**
-     - Finding 1
-     - Finding 2
+**Evidence:**
 
-     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
-     for Human Review). If the artefact is complete and you still don't want to
-     commit, that is a calibration failure — recommend GO or NO-GO.
--->
+<!-- Pre-gate retrofit. Add concrete evidence when re-surfacing. -->
 
 ## Decisions
 
@@ -348,7 +346,13 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-10-01T23:00:18Z — task-created [task-create-agent]
+### 2026-10-01T22:51:19Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3686-arc-011-sidecar-s5-binary-blobs-via-term.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3682-sidecar-design-conformance-audit-t-3396t.md
 - **Context:** Initial task creation
+
+### 2026-10-01T22:53:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-01T22:53:34Z — status-update [task-update-agent]
+- **Change:** workflow_type: build → inception
