@@ -1,228 +1,242 @@
 # T-3693 Review Brief — arc-011 sidecar slice 1 (finishing T-3561)
 
 **Date:** 2026-10-02 · **Task:** `.tasks/active/T-3693-arc-011-sidecar-s1-finish-t-3561-closed-.md`
-**Commits:** `801c9c253` (receiver, hooks, injection, sender path, unit tests, vendored copies),
-`70d2946c2` (real two-agent e2e + negative control, task ACs/Verification). The previous
-worker's commits `8558988a0`, `bf6d38b47` and `9e7c932ba` are superseded where noted below.
+**Commits:** `801c9c253` (receiver, hooks, injection, sender path, unit tests, vendored copies) ·
+`70d2946c2` (live e2e + negative control) · `82ce0b483` (brief + evidence) · `7f46f6515`
+(codex round-1 fixes) · this round's commit (codex round-2 fixes + a defect found live; see §Round 3).
+The previous worker's `8558988a0` / `bf6d38b47` / `9e7c932ba` are superseded where noted.
 
-This replaces the previous worker's brief. That brief marked AC4/AC5/AC6 as not met and
-deferred injection to "T-3694", which is the design-conformance task and not an injection
-owner. Every claim below names a file:line, a test, or captured output.
+Reviews so far: `docs/reports/T-3693-review-codex-round1.md` (FAIL: AC5, AC7) and
+`docs/reports/T-3693-review-codex-round2.md` (FAIL: AC4, AC7). Every finding is addressed below.
 
 ---
 
-## What was wrong with what the previous worker left (verified, then fixed)
+## What the previous worker left, verified and fixed
 
-| Found | Where | Fix |
-|---|---|---|
-| Any non-empty bearer token was accepted; an env var `SIDECAR_AUTH_TOKEN` was a fallback | old `http_server.py:_is_authorized` | `hmac.compare_digest` against `receiver.token`, `lib/sidecar/http_server.py:55-60` |
-| Token written AFTER the port opened (T-3475 says before) | old `sidecar_cli.py:cmd_receiver_start` | token first `lib/sidecar_cli.py:451`; server refuses without one `http_server.py:131-136, 142-148` |
-| Stop hook only set a flag through a heredoc with `2>/dev/null`; the prompt hook marked HANDED_OVER *before* printing | old `agents/context/sidecar-receiver-*.sh` | `lib/sidecar/hooks.py`: print, flush, THEN `mark_handed_over` (`hooks.py:134-144`) |
-| No injection code at all | — | `lib/sidecar/inject.py` |
-| A reused id with different content was silently accepted, and a test asserted that | `receiver.py`, `tests/unit/t3561_receiver_storage.py:85` | content hash → `conflict` (`receiver.py:178`); test now asserts rejection |
-| `tests/unit/t3561_e2e_nonce.py` wrote agent B's reply itself | — | deleted in `801c9c253`; replaced by the live test below |
+| Found | Fix |
+|---|---|
+| Any non-empty bearer token accepted; env-var fallback | `hmac.compare_digest` against `receiver.token` (`lib/sidecar/http_server.py:55-60`) |
+| Token written AFTER the port opened (T-3475: before) | token first (`lib/sidecar_cli.py:451`); server refuses without one (`http_server.py:131-148`) |
+| Prompt hook marked HANDED_OVER before printing; errors to `/dev/null` | `lib/sidecar/hooks.py` (below) |
+| No injection code | `lib/sidecar/inject.py` |
+| Reused id with different content accepted, and a test asserting that | content hash → `conflict` (`receiver.py`); test now asserts rejection |
+| `tests/unit/t3561_e2e_nonce.py` wrote agent B's reply itself | deleted (`801c9c253`) |
 
 ---
 
 ## Acceptance criteria
 
-### AC1 — `fw sidecar receiver start|stop|status`
-**MET.**
-- `lib/sidecar_cli.py:428` `cmd_receiver_start`: writes the 0600 token first (`:451` →
-  `lib/sidecar/lifecycle.py:67-84`, created `O_EXCL` with mode 0600 so it is never world-readable),
-  then spawns `lib/sidecar/http_server.py`. The server reads the token and refuses to bind
-  without it (`http_server.py:142-148`). After binding it writes the pid/port/url triple-file
-  and a host registry entry (`lifecycle.py:198`). The CLI waits for `/health` before reporting.
-- `:489` `cmd_receiver_stop`: SIGTERM, waits up to 5 s, SIGKILL only if needed; removes the
-  triple-file and the registry entry (the server also cleans up on SIGTERM, `http_server.py:150-168`).
-- `:517` `cmd_receiver_status`: pid/port/url, `/health`, inject enabled, awaiting count, ready flag.
-- Tests (`tests/unit/test_sidecar_receiver_t3693.py`, real subprocess receivers):
+### AC1 — `fw sidecar receiver start|stop|status` — **MET**
+- `lib/sidecar_cli.py:428` start: writes the 0600 token FIRST (`:451` →
+  `lifecycle.write_token`, created `O_EXCL` 0600). It then spawns `lib/sidecar/http_server.py`,
+  which refuses to bind without the token (`http_server.py:142-148`). After binding it writes the
+  pid/port/url triple-file and a host registry entry. The CLI waits for `/health`.
+- `:489` stop: SIGTERM, wait, SIGKILL only if needed; removes the triple-file and the registry entry.
+- `:517` status: pid/port/url, `/health`, inject enabled, awaiting count, ready flag.
+- Tests (`tests/unit/test_sidecar_receiver_t3693.py`, real receiver subprocesses):
   `test_receiver_start_writes_token_0600_triple_file_and_registry`,
   `test_receiver_status_reports_pid_port_url_and_health`, `test_receiver_stop_is_clean`,
   `test_server_refuses_to_open_a_port_without_a_token`.
 
-### AC2 — Stop sets ready; UserPromptSubmit clears it FIRST, then surfaces
-**MET.**
-- `lib/sidecar/hooks.py:66` `stop()` → `adapter.set_ready_for_input(True)`.
-- `hooks.py:123` `prompt()`: line `:127` `adapter.clear_ready_for_input()` is the first
-  statement after the activity check. Then it reads the stored messages, emits them as
-  `additionalContext` framed as untrusted data (`_frame`, PEER-DATA markers that a body cannot
-  close early), flushes (`:136`), and only then calls `mark_handed_over` (`:144`) and sends CONFIRM-2.
-- Wrappers: `agents/context/sidecar-receiver-ready.sh`, `agents/context/sidecar-receiver-adapter.sh`
-  (stdin passed through, errors logged to `.context/sidecar/receiver/hook-errors.log`).
-- Tests: `test_stop_hook_sets_ready_via_fw_hook` (runs the real `bin/fw hook`),
-  `test_prompt_hook_clears_ready_before_reading_messages` (a spy on the read sees `ready=False`),
-  `test_prompt_hook_surfaces_untrusted_then_hands_over_and_confirms` (hostile body, breakout
-  attempt, CONFIRM-2 to a real receiver), `test_prompt_hook_via_fw_hook_wrapper`.
-- Live: both e2e agents became ready only through their own Stop hook (`… ready (Stop hook fired)`
-  in the run log below).
+### AC2 — Stop sets ready; UserPromptSubmit clears it FIRST, then surfaces — **MET**
+- `lib/sidecar/hooks.py:79` `stop()` → `adapter.set_ready_for_input(True)`.
+- `hooks.py:147` `prompt()`: `:153` clears ready first. It then emits the stored, not-yet-handed-over
+  messages as `additionalContext` framed as untrusted data (PEER-DATA markers that a body cannot
+  close early), flushes (`:164`), starts the detached finalizer (`:172`) and exits.
+- The ready-flag write is an atomic replace with **no fsync** (`lib/sidecar/adapter.py:53`).
+  See §Round 3 for why.
+- Wrappers `agents/context/sidecar-receiver-ready.sh` / `sidecar-receiver-adapter.sh` pass stdin
+  through and log errors to `.context/sidecar/receiver/hook-errors.log`.
+- Tests: `test_stop_hook_sets_ready_via_fw_hook` (real `bin/fw hook`),
+  `test_prompt_hook_clears_ready_before_reading_messages` (a spy at the read sees `ready=False`),
+  `test_prompt_hook_surfaces_untrusted_then_hands_over_and_confirms`,
+  `test_prompt_hook_via_fw_hook_wrapper_exits_fast_and_finalizes` (real wrapper, real detached finalizer).
 
-### AC3 — registration in `.claude/settings.json` (+ consumer template), baseline refreshed
-**MET.**
+### AC3 — registered in `.claude/settings.json` + consumer template; baseline — **MET**
 - `.claude/settings.json:241` (Stop, alongside `stop-driver.sh`), `:256` (UserPromptSubmit,
-  alongside `sidecar-inbox`).
-- `lib/init.sh:1234` (UserPromptSubmit adapter), `:1239-1249` (new Stop block).
-- `bin/fw enforcement baseline` re-run in `801c9c253` (`.context/project/enforcement-baseline.sha256`).
-  `bin/fw enforcement status` → `✓ Baseline set (e19fd6564856929a...)`.
-- `stop-driver.sh` still works: `bats tests/unit/stop_driver.bats` → 19 ok, 0 not ok.
-  `upgrade_fresh_machine_simulation.bats` (required for `lib/init.sh` edits) → 13 ok, rc 0.
-- Test: `test_hooks_registered_in_settings_and_consumer_template`.
+  alongside `sidecar-inbox`); `lib/init.sh:1234` and `:1239-1249`.
+- `bin/fw enforcement baseline` re-run (`801c9c253`). `bin/fw enforcement status` →
+  `✓ Baseline set (e19fd6564856929a...)`; codex recomputed the hash independently in both rounds.
+- `stop_driver.bats` 19/19 ok; `upgrade_fresh_machine_simulation.bats` 13/13 ok (required for
+  `lib/init.sh` edits). Test: `test_hooks_registered_in_settings_and_consumer_template`.
 
-### AC4 — inject ONE line when pending + ready; HANDED_OVER only when the hook surfaced it
-**MET.** The AC's wording was corrected to the operator directive. The previous worker wrote
-"on success [of the inject] records HANDED_OVER", which the directive and T-3561 AC3 forbid.
-Recorded in the task's `## Decisions`.
-- `lib/sidecar/inject.py:122` `_deliver_locked`, under an flock: nothing waiting → no-op;
-  `--no-inject` → INJECT_BLOCKED; not ready and not urgent → wait; resolve the session (`:58`):
-  `fw-project=<sha256(root)[:16]>` tag that `bin/claude-fw:70-101` now adds to the session it
-  registers, else `claude`-tagged with cwd == project root. Zero or several matches → no inject,
-  INJECT_BLOCKED with the reason (`:79` "refusing to guess"). Readiness is cleared before typing
-  (`:149`). Then one `termlink pty inject <session> <line> --enter` (`:152`). The line holds a
-  count and ids, never peer content. INJECT_ATTEMPT is recorded; HANDED_OVER is not.
-- Triggers: on store (`http_server.py:107`, after the RECEIVED response) and
-  `fw sidecar deliver-pending` (`sidecar_cli.py:544`). There is no tick (T-3684).
-- Urgent: injects even when not ready (`inject.py:135`), recorded as `urgent_bypass`.
-- Unit (termlink binary stubbed; the component under test is real):
-  `test_inject_one_line_when_ready_and_never_hand_over`, `test_no_inject_when_not_ready`,
-  `test_urgent_bypasses_readiness`, `test_no_matching_session_leaves_message_flagged[×2]`,
-  `test_two_matching_sessions_refuse_to_guess`, `test_cwd_fallback_matches_claude_session`,
-  `test_injection_disabled_blocks`, `test_deliver_pending_cli` (nothing-waiting path only; the
-  CLI-triggered injection is proven live, next bullet).
+### AC4 — ONE line injected when pending + ready; HANDED_OVER only when the hook actually surfaced it — **MET**
+(The AC wording was corrected to the operator directive; see the task's `## Decisions`.)
+- `lib/sidecar/inject.py:129` `_deliver_locked`, under an flock. It resolves the session by the
+  `fw-project=<sha256(root)[:16]>` tag that `bin/claude-fw:70-101` now registers, else a
+  `claude`-tagged session with cwd == project root. Zero or several matches → no inject, and an
+  INJECT_BLOCKED event records why (`:80` "refusing to guess"). Readiness is cleared before typing
+  (`:156`), then one `termlink pty inject <session> <line> --enter` (`:159`).
+- **One line, guaranteed** (round-2 finding 1): ids must match `[A-Za-z0-9_:-]{1,128}` at
+  ingress (`receiver.py:57`, so a newline id → HTTP 400 REJECTED), and `injection_line`
+  (`inject.py:104`) strips every id to `[A-Za-z0-9-]` again and asserts the line is printable.
+  The line never carries peer content. Tests: `test_unsafe_ids_rejected_at_ingress[×8]`,
+  `test_unsafe_id_rejected_over_real_http`, `test_injection_line_is_one_printable_line_whatever_the_ids`.
+- **HANDED_OVER** is written only by `hooks.finalize` (`hooks.py:202`, `:223`). It runs only when
+  the session transcript (`transcript_path` from the hook input) holds a
+  `hook_additional_context` attachment carrying `[msg <id>]` (`_in_transcript`, `:180`), i.e. the
+  harness's own record that the model was given it. The injector records INJECT_ATTEMPT only;
+  printing records nothing. With no evidence → HANDOVER_UNCONFIRMED (`:230`), and the message is
+  released (`.injected`/`.surfacing` removed) for re-surfacing and re-injection.
+- Triggers: on store (`http_server.py:107`) and `fw sidecar deliver-pending` (`sidecar_cli.py:544`).
+  Urgent bypasses readiness (`inject.py:142`).
+- Unit (termlink binary stubbed; injector real): `test_inject_one_line_when_ready_and_never_hand_over`,
+  `test_no_inject_when_not_ready`, `test_urgent_bypasses_readiness`,
+  `test_no_matching_session_leaves_message_flagged[×2]`, `test_two_matching_sessions_refuse_to_guess`,
+  `test_cwd_fallback_matches_claude_session`, `test_injection_disabled_blocks`,
+  `test_no_transcript_evidence_means_no_hand_over_and_release`,
+  `test_finalizer_waits_for_the_transcript_to_catch_up`.
 - Live, real TermLink: `tests/integration/t3693_sidecar_e2e_test.py::test_real_termlink_inject_reaches_the_tagged_session`
-  drives the real `bin/fw sidecar deliver-pending` CLI against a real TermLink PTY session tagged
-  with the project tag. The line appears in the PTY; events contain INJECT_ATTEMPT and no
-  HANDED_OVER. PASSED.
-
-### AC5 — REAL e2e: two real Claude sessions; A generates the nonce; B's prompt never mentions it
-**MET.** `tests/integration/t3693_sidecar_e2e_test.py::test_e2e_two_real_agents_nonce_round_trip`.
-- Two scratch projects, each with `fw sidecar receiver start`, a `.claude/settings.json` that
-  registers only the two framework hooks, and a real `bin/claude-fw --termlink --no-restart
-  --model sonnet hello` session found through its `fw-project` tag.
-- **A generates the nonce in its own session** (round-2 fix, after codex round 1). The operator
-  instruction (`:301`) tells A to run a `/dev/urandom` one-liner and send the result. A's own
-  tool call ran `N=$(head -c 4096 /dev/urandom | tr -dc a-z | head -c 12); … fw sidecar send …
-  --body "Nonce check $N: …"` and printed `ccmmpycodjyq`. **The test never chooses the nonce.**
-  It learns it only by observing the message in B's receiver store (`_nonce_sent_by_a`, `:176`).
-- **B's only prompts were `hello` and the injected `[sidecar] …` line.** B's hook surfaced the
-  message, and **B's model issued** `fw sidecar send --to t3693a-uu6nns … --in-reply-to
-  eb91d596-… --body 'CCMMPYCODJYQ'` (`docs/reports/T-3693-e2e-transcript-excerpts.txt`).
-- **The pass condition** (`:332`, `passed = bool(stored and surfaced)`): the UPPERCASE string,
-  which the test never writes, must appear in A's receiver store AND in A's transcript.
-  `_surfaced_in_transcript` (`:151`, strict since round 2) requires a `hook_additional_context`
-  attachment whose text starts `# Sidecar receiver` and whose **PEER-DATA block** contains the
-  string. Matching anywhere on the line is no longer enough.
-- Captured round 2 (`docs/reports/T-3693-e2e-run.log`, `T-3693-e2e-positive-evidence.json`):
+  drives the real `bin/fw sidecar deliver-pending` CLI into a real tagged PTY. The line appears;
+  INJECT_ATTEMPT, no HANDED_OVER. PASSED.
+- Live e2e: every HANDED_OVER carries `evidence: transcript:<session>.jsonl`:
   ```
-  [t3693-e2e 02:56:37] A instructed (operator) to generate a nonce and send it to B
-  [t3693-e2e 02:56:43] observed A's nonce on the wire at B's receiver: ccmmpycodjyq
-  "nonce_generated_by_A": "ccmmpycodjyq",
-  "elapsed_s": 11.5,
-  "transformed_nonce_in_A_receiver": "406dcbb4-b7d3-4009-a589-b645f1a6c3d4",
-  "transformed_nonce_in_A_context": "9891be35-….jsonl [hook_additional_context] PEER-DATA block: 'CCMMPYCODJYQ'",
+  A STORED · A INJECT_ATTEMPT on-store · A HANDED_OVER transcript:b9821d75-….jsonl · A CONFIRM_SENT
+  B STORED · B INJECT_ATTEMPT on-store · B HANDED_OVER transcript:3a6f6989-….jsonl · B CONFIRM_SENT
+  ```
+
+### AC5 — REAL e2e: two real Claude sessions; A generates the nonce; B's prompt never mentions it — **MET**
+`tests/integration/t3693_sidecar_e2e_test.py::test_e2e_two_real_agents_nonce_round_trip`
+- Two scratch projects, each running `fw sidecar receiver start`, with a `.claude/settings.json`
+  that registers only the two framework hooks, and a real `bin/claude-fw --termlink --no-restart
+  --model sonnet hello` session found through its `fw-project` tag.
+- **A generates the nonce in its own session** (`:301` operator instruction). A ran
+  `N=$(head -c 4096 /dev/urandom | tr -dc a-z | head -c 12); … fw sidecar send … --body "Nonce check $N: …"`.
+  **The test never chooses the nonce.** It learns it by observing B's receiver store (`:176`).
+- **B's only prompts: `hello` and the injected `[sidecar] …` line.** B's model then issued
+  `fw sidecar send --to t3693a-69ukz9 … --in-reply-to d08e401c-… --body 'AWBDZVLBQBLU'`, and A's
+  model said: *"The peer replied `AWBDZVLBQBLU`. That is my nonce `awbdzvlbqblu` in uppercase,
+  so the check passed."* (`docs/reports/T-3693-e2e-transcript-excerpts.txt`).
+- **The pass condition** (`:332`): the UPPERCASE string, which the test never writes, must be in
+  A's receiver store AND in A's transcript inside the PEER-DATA block of a
+  `hook_additional_context` attachment (`_surfaced_in_transcript`, `:151`).
+- Captured (`docs/reports/T-3693-e2e-run.log`, `T-3693-e2e-positive-evidence.json`):
+  ```
+  [t3693-e2e 03:33:11] observed A's nonce on the wire at B's receiver: awbdzvlbqblu
+  "elapsed_s": 12.5,
+  "transformed_nonce_in_A_receiver": "b7c910ed-5883-4345-b802-fd7d1d5abc3a",
+  "transformed_nonce_in_A_context": "b9821d75-….jsonl [hook_additional_context] PEER-DATA block: 'AWBDZVLBQBLU'",
   PASSED
   ```
-  Both injections were `trigger: on-store`; the harness's 5 s `deliver-pending` loop (standing
-  in for T-3684's tick, labelled in the test) never had to deliver.
+- Reliability after the round-3 fix: 5/5 positive runs passed (12.5, 17.7, 11.8, 11.5, 11.6 s).
+  All injections were `on-store`; the harness's 5 s `deliver-pending` loop (labelled as T-3684's
+  stand-in) never had to deliver.
 
-### AC6 — negative control: injection disabled → FAIL, sender sees ESCALATED
-**MET.** `::test_e2e_negative_control_injection_disabled_fails_and_escalates` runs the SAME
+### AC6 — negative control: injection disabled → FAIL, sender sees ESCALATED — **MET**
+`::test_e2e_negative_control_injection_disabled_fails_and_escalates` runs the SAME
 `run_round_trip()` with B's receiver started `--no-inject`. It asserts that A's nonce reached B's
-receiver (so the path was exercised), that `not result.passed`, and that A's ledger reads
-`SENT → RECEIVED → … ESCALATED` with no HANDED_OVER and no REPLIED.
-- Captured (`T-3693-e2e-negative-evidence.json`): A generated `zkwdzpyfgcgm`, and it reached B's
-  receiver. A's ledger: `SENT/sender, RECEIVED/receiver-response, ESCALATED/infrastructure`.
-  B's events: `STORED`, then `INJECT_BLOCKED` "injection disabled (receiver started with
-  --no-inject)" on-store and on every tick. B's transcript holds only `hello`.
-  `transformed_nonce_in_A_*: null` after the full ~300 s window, then `fw sidecar sweep` escalated
-  A's message. PASSED.
+receiver, that `not result.passed`, and that A's ledger reads SENT → RECEIVED → ESCALATED with no
+HANDED_OVER and no REPLIED, set by infrastructure.
+- Captured (`T-3693-e2e-negative-evidence.json`): A generated `lrdbvcksduye`, and it reached B's
+  receiver. A's ledger `SENT/sender, RECEIVED/receiver-response, ESCALATED/infrastructure`. B's
+  events: STORED, then INJECT_BLOCKED "injection disabled (receiver started with --no-inject)"
+  on-store and on every tick. B's transcript: only `hello`. A said "I haven't seen a reply yet."
+  PASSED.
 
-### AC7 — sender ledger SENT → RECEIVED → HANDED_OVER → REPLIED, each by the party that knows it
-**MET.** `lib/sidecar/direct.py`:
-- `SENT` by the sender (`:166`). `RECEIVED` from the receiver's HTTP response (`:180`).
-- `HANDED_OVER` only through `confirm_from_peer` (`:210`), reached from our receiver's `/ack`
-  (`http_server.py:110`), which the peer's prompt hook posts after surfacing. Round-2 hardening
-  after codex: accepted only if this ledger SENT the id, the confirming `peer` IS the agent it was
-  sent to, and the message is not already HANDED_OVER/REPLIED (no regression, no duplicates). A late
-  confirmation after ESCALATED is recorded, because it is the truth arriving late.
-- `REPLIED` only through `note_reply` (`:233`), by our own receiver when the answering message
-  is stored, and only if it comes FROM the original recipient (explicit `in_reply_to` or same
-  peer + conversation).
-- Trust model: same-host; the peer authenticates with our 0600 token, and the `peer` name is
-  checked against the SENT row. Signed peer identity across hosts is T-3688.
-- Live: A's ledger `[SENT/sender, RECEIVED/receiver-response, HANDED_OVER/peer-receiver:t3693b-uu6nns,
-  REPLIED/own-receiver]`, asserted after the verdict.
-- Unit: `test_received_then_replied_ledger_order`, `test_confirm_only_from_the_original_recipient`,
+### AC7 — sender ledger SENT → RECEIVED → HANDED_OVER → REPLIED, each by the party that can know it — **MET**
+`lib/sidecar/direct.py`:
+- SENT by the sender (`:191`); RECEIVED from the receiver's HTTP response (`:205`).
+- HANDED_OVER only through `confirm_from_peer` (`:235`), reached through our receiver's `/ack`
+  (`http_server.py:110`). The peer's finalizer posts that only after transcript evidence. It is
+  accepted only if this ledger SENT the id, the confirming peer IS the original recipient, and the
+  message is not already HANDED_OVER/REPLIED.
+- REPLIED only through `note_reply` (`:258`), by our own receiver, and only from the original recipient.
+- **Out-of-order rows cannot regress the state** (round-2 finding 2). The rows come from three
+  processes and may arrive out of order: the peer can confirm before our send call writes
+  RECEIVED. The state is therefore the **highest-ranked** row (`RANK`, `:57`; `_effective`,
+  `:110`), not the newest, so a late RECEIVED never undoes HANDED_OVER/REPLIED and the sweep never
+  escalates a handled message. A late HANDED_OVER after ESCALATED still counts (truth arriving
+  late). The ledger keeps every row in arrival order.
+- Tests: `test_received_then_replied_ledger_order`, `test_confirm_only_from_the_original_recipient`,
   `test_late_or_repeated_confirm_never_regresses`, `test_late_confirm_after_escalation_is_recorded`,
-  `test_reply_only_from_the_original_recipient`, `test_peer_cannot_confirm_an_unknown_message`.
+  `test_reply_only_from_the_original_recipient`, `test_peer_cannot_confirm_an_unknown_message`,
+  `test_late_received_never_regresses_a_handed_over`, `test_late_received_never_regresses_a_reply`.
+- Live: A's ledger `[SENT/sender, RECEIVED/receiver-response, HANDED_OVER/peer-receiver:t3693b-69ukz9,
+  REPLIED/own-receiver]`.
+- Trust model: same-host. The peer authenticates with our 0600 token, and its name is checked
+  against the SENT row. Cross-host signed identity is T-3688.
 
-### AC8 — UNDELIVERABLE, REJECTED, ESCALATED
-**MET.**
-- UNDELIVERABLE: `direct.py:193` after `retries` attempts with backoff. Test
-  `test_receiver_down_spends_budget_then_undeliverable` SIGKILLs a real receiver (its registry
-  entry survives, as after a crash) → 3 attempts, 2 sleeps, UNDELIVERABLE.
-- REJECTED: 401 from the real server for a wrong token. `test_bad_token_rejected_never_stored_never_injected`
-  checks REJECTED in the ledger, a refusals.jsonl row, nothing stored (so nothing can be injected),
-  and a receiver REJECTED event. Also 409 for a reused id: `test_reused_id_with_other_content_is_rejected`.
-- ESCALATED: `direct.escalate_expired` (`:238`), run by `fw sidecar sweep` (`sidecar_cli.py:269`).
-  Test `test_escalated_by_sweep_when_handover_deadline_passes` drives the real CLI; live in AC6.
-- Every non-success row is also appended to `.context/sidecar/refusals.jsonl` for T-3555, which
-  has not shipped (`direct.py:76`).
+### AC8 — UNDELIVERABLE, REJECTED, ESCALATED — **MET**
+- UNDELIVERABLE (`direct.py:218`): `test_receiver_down_spends_budget_then_undeliverable` SIGKILLs a
+  real receiver (its registry entry survives, as after a crash) → 3 attempts, 2 backoffs.
+- REJECTED: wrong token → real 401, `test_bad_token_rejected_never_stored_never_injected` (nothing
+  stored, so nothing can be injected); id reuse → 409; unsafe id → 400.
+- ESCALATED: `escalate_expired` (`:291`) via `fw sidecar sweep`;
+  `test_escalated_by_sweep_when_handover_deadline_passes` (real CLI); live in AC6.
+- Every non-success row also goes to `.context/sidecar/refusals.jsonl` for T-3555 (unshipped).
+  The handoff note is appended to `.tasks/active/T-3555-*.md`.
 
-### AC9 — all tests pass
-**MET** (commands and output):
+### AC9 — all tests pass — **MET**
 ```
 $ python3 -m pytest tests/integration/t3693_*.py -v -s
 …::test_real_termlink_inject_reaches_the_tagged_session PASSED
 …::test_e2e_two_real_agents_nonce_round_trip PASSED
 …::test_e2e_negative_control_injection_disabled_fails_and_escalates PASSED
-======================== 3 passed in 370.08s (0:06:10) =========================
+======================== 3 passed in 372.67s (0:06:12) =========================
 $ python3 -m pytest tests/unit -k sidecar -q
-203 passed, 3968 deselected in 20.94s
-$ python3 -m pytest tests/unit/t3561_adapter.py tests/unit/t3561_receiver_storage.py -q
-13 passed
+217 passed, 3968 deselected
+$ python3 -m pytest tests/unit/test_sidecar_receiver_t3693.py tests/unit/t3561_adapter.py tests/unit/t3561_receiver_storage.py -q
+56 passed
 ```
-(`tests/unit/t3561_*.py` are not collected by a directory run, because they lack a `test_`
-prefix, so they are run by path.) The skip is loud: `needs_live` names the missing binaries and
-says "a skip here proves nothing"; the Verification line also refuses `SKIPPED`.
+The live tests skip loudly ("T-3693 LIVE E2E NOT RUN … a skip here proves nothing") when
+termlink, claude or tmux is missing, and the Verification line refuses `SKIPPED`.
 
-### AC10 — vendor check, baseline, lint
-**MET.** `bin/fw vendor self --check` → `Self-vendor: vendored .agentic-framework/ in sync with source.`
-(rc 0). `timeout 590 bats tests/lint/` → 118 ok, 0 not ok, rc 0. Baseline: see AC3.
+### AC10 — vendor check, baseline, lint — **MET**
+`bin/fw vendor self --check` → `in sync` (rc 0). `bats tests/lint/` → 118 ok, 0 not ok (re-run
+before the final commit). Baseline: AC3.
 
 ---
 
-## Scope fence — every deferral and its owner (all exist and are active)
+## Round 3 — a defect the live runs found (not raised by codex)
+
+With the round-2 code, 2 of 8 positive runs failed. The PTY capture now in the evidence
+(`docs/reports/T-3693-e2e-failed-run-hook-timeout.json`) showed B's screen:
+*"UserPromptSubmit hook [fw hook sidecar-receiver-adapter] timed out after 30s — output
+discarded"*. B saw only the notice, and A's ledger (correctly) went to ESCALATED. B's files showed
+the hook had printed and written `.pending` (HANDED_OVER) at 03:22:54.29, then stalled in the next
+fsync (btrfs, load average ~28). **So the receiver held a false HANDED_OVER for a message the model
+never received, and it would never have been re-delivered.** The root cause: Claude Code uses a
+hook's stdout only if the process exits within its timeout, so any record written inside the hook
+is premature.
+
+Fix: no fsync on the hook's critical path (`adapter.py:53`). The hook prints and exits. A detached
+finalizer records HANDED_OVER only on the transcript's own `hook_additional_context` evidence,
+otherwise HANDOVER_UNCONFIRMED plus release (AC4). After the fix: 5/5 positive runs, and the full
+file passed (3/3).
+
+## Review findings → changes
+
+| Round | Finding | Change |
+|---|---|---|
+| 1 | AC5: harness generated the nonce | A generates it; test observes it on the wire |
+| 1 | AC5: loose transcript match | strict attachment + PEER-DATA block check |
+| 1 | AC7: any peer could confirm; regressions; any sender REPLIED | recipient identity + no-regression in `confirm_from_peer` / `note_reply` |
+| 1 | legacy t3561 tests overclaimed | deleted/replaced/renamed (`test_adapter_set_ready_for_input`, `test_adapter_clear_ready_for_input`, `test_missing_or_unreadable_flag_reads_not_ready`, `test_hostile_payload_stored_verbatim`) |
+| 1 | `deliver-pending` CLI only tested empty | live TermLink leg now goes through the real CLI |
+| 1 | T-3555 handoff unconfirmed | Updates notes appended to T-3555 and T-3684 |
+| 2 | AC4: ids could carry a newline into the "one line" | ingress charset + sanitised, asserted-printable line |
+| 2 | AC7: late RECEIVED could regress HANDED_OVER/REPLIED | effective state = highest rank |
+| 3 (live) | hook killed after printing → false HANDED_OVER | transcript-evidenced detached finalizer; no fsync in the hook path |
+
+## Scope fence — every deferral, owner exists and is active
 
 | Not built here | Owner | Check |
 |---|---|---|
-| 30 s tick driver (design R3) — this slice gives it `fw sidecar deliver-pending` to call | **T-3684** "arc-011 sidecar S3: 30s inject tick…" | `.tasks/active/T-3684-*.md`, handoff note appended 2026-10-02 |
-| Urgent bypass as a *register row* (R5). Inject-time urgent bypass exists (`inject.py:135`); T-3694 pointed R5 at T-3684 | **T-3684** | register R5 `owner_task: T-3684` |
-| Always-on per-agent sidecar / liveness (R7, R14, R15) — receivers here are started by `fw sidecar receiver start` | **T-3685** | `.tasks/active/T-3685-*.md` |
-| Cross-host delivery (the registry is same-host, token read from a 0600 file) | **T-3688** | `.tasks/active/T-3688-*.md` |
-| Consumer install (template entries ARE added to `lib/init.sh`; no upgrade rollout) | **T-3689** | `.tasks/active/T-3689-*.md` |
-| T-3555 refusal ledger (rows recorded for it in `.context/sidecar/refusals.jsonl`) | **T-3555** | `.tasks/active/T-3555-*.md`, handoff note appended 2026-10-02 |
-| Register rows R2/R4/R6 → `built` (doc owned by T-3694; I may not edit it) | **T-3694** asked via `fw sidecar send` (conversation `t3693-register-rows`) | see below |
+| 30 s tick driver (R3); this slice provides `fw sidecar deliver-pending` for it | **T-3684** | `.tasks/active/T-3684-*.md`, handoff note appended |
+| Urgent bypass as a register row (R5). The inject-time bypass exists (`inject.py:142`) | **T-3684** | register R5 `owner_task: T-3684` |
+| Always-on per-agent sidecar / liveness (R7, R14, R15) | **T-3685** | `.tasks/active/T-3685-*.md` |
+| Cross-host delivery and signed peer identity | **T-3688** | `.tasks/active/T-3688-*.md` |
+| Consumer rollout (template entries ARE added to `lib/init.sh`) | **T-3689** | `.tasks/active/T-3689-*.md` |
+| Refusal ledger ingestion of `.context/sidecar/refusals.jsonl` | **T-3555** | `.tasks/active/T-3555-*.md`, handoff note appended |
+| Register rows R2/R4/R6 → `built` (document owned by T-3694; this task may not edit it) | **T-3694**, asked via `fw sidecar send` (conversation `t3693-register-rows`) | see below |
 
-**Register state at writing.** `lib/design_register.py close-check` reports R2, R4 and R6 as
-"owned by T-3693 and still in-progress/partial". All three are built (AC4/AC2/AC7). Only the
-document is stale, and its owner has been asked to set `status: built` with the evidence above.
-T-3693 does not close until that close-check is clean. R6's row text still uses the old state
-names (stored / injected-now / injected-later); the built states are T-3561's.
-
-## Round-1 review findings and what changed (codex, `docs/reports/T-3693-review-codex.md` round 1: FAIL)
-
-| Finding | Change |
-|---|---|
-| AC5: the harness generated the nonce; the AC says A generates it | A generates it in its own session; the test observes it on the wire (`:176`, `:301`) |
-| AC5: the transcript match was any line with three strings | strict: `hook_additional_context` attachment + nonce inside a PEER-DATA block (`:151`) |
-| AC7: any peer could confirm; late confirms could regress REPLIED; any sender could set REPLIED | `confirm_from_peer` / `note_reply` enforce recipient identity and no regression, + 4 tests |
-| legacy `t3561_adapter.py` / `t3561_receiver_storage.py` tests overclaimed (no harness, no stale flag, no framing) | `test_ac3_safe_boundary_timing` deleted; `test_ready_flag_freshness` replaced by a real fail-safe test (missing/garbled flag → not ready); the storage-only test renamed `test_hostile_payload_stored_verbatim`; docstrings point at the tests that do prove hook behaviour |
-| `test_deliver_pending_cli` only covers "nothing waiting" | the live TermLink leg now injects through the real `fw sidecar deliver-pending` CLI |
-| T-3555 handoff unconfirmed | Updates entry appended to `.tasks/active/T-3555-*.md` naming `.context/sidecar/refusals.jsonl`; the same for T-3684 (`deliver-pending`, R3/R5) |
+**Register state at writing.** `python3 lib/design_register.py close-check` reports R2, R4 and R6
+as "owned by T-3693 and still in-progress/partial". All three are built (R2 = AC4 on-store
+injection; R4 = AC2; R6 = AC7). Only the document is stale; its owner has been asked to mark them
+built, and has not answered yet. **T-3693 does not close until that check is clean.**
 
 ## Not mine, found on the way (pre-existing, not fixed here)
 
-`tests/unit/sidecar_audit_rail.bats` has 6 failures. The nightly unit-suite record already lists
-them (`.context/audits/unit-suite/LATEST.yaml:442` `sidecar_audit_rail.bats: 6`). The cause is
-T-3561's `INJECTED_NOW`→`HUB_ACCEPTED` rename: `lib/sidecar-audit.sh:48` still counts the
-`INJECTED_NOW` key. Neither file is touched by T-3693.
+`tests/unit/sidecar_audit_rail.bats` has 6 failures. The nightly record already lists them
+(`.context/audits/unit-suite/LATEST.yaml:442`). The cause is T-3561's `INJECTED_NOW`→`HUB_ACCEPTED`
+rename: `lib/sidecar-audit.sh:48` still counts `INJECTED_NOW`. Neither file is touched by T-3693.

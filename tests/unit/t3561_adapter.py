@@ -27,7 +27,7 @@ def temp_project():
                 yield project_root
 
 
-def test_ac3_stop_hook_sets_ready_flag(temp_project):
+def test_adapter_set_ready_for_input(temp_project):
     """Adapter setter only. The real Stop hook wiring is tested in
     test_sidecar_receiver_t3693.py::test_stop_hook_sets_ready_via_fw_hook."""
     # Initially no ready flag
@@ -46,7 +46,7 @@ def test_ac3_stop_hook_sets_ready_flag(temp_project):
     assert "ready: true" in content.lower()
 
 
-def test_ac3_userpromptsubmit_clears_ready(temp_project):
+def test_adapter_clear_ready_for_input(temp_project):
     """Adapter clear only. Clear-FIRST ordering in the real prompt hook is tested in
     test_sidecar_receiver_t3693.py::test_prompt_hook_clears_ready_before_reading_messages."""
     # Set ready flag (simulating Stop hook)

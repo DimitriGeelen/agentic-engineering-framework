@@ -35,6 +35,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+import re
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -48,6 +49,12 @@ HANDED_OVER = "HANDED_OVER"
 REJECTED = "REJECTED"
 ESCALATED = "ESCALATED"
 UNDELIVERABLE = "UNDELIVERABLE"
+
+
+# A message id becomes a filename and appears in the one injected line, so it
+# is held to a strict charset: no path separators, no dots, no whitespace or
+# control characters (a newline would split the "one line" into two prompts).
+_MSG_ID_RE = re.compile(r"[A-Za-z0-9_:-]{1,128}")
 
 
 def _framework_root() -> Path:
@@ -165,8 +172,8 @@ def store_message(msg_id: str, envelope: dict) -> tuple[bool, str]:
     with the same content is idempotent; the same id with different content
     returns (False, "conflict: ...").
     """
-    if not msg_id or not isinstance(msg_id, str) or "/" in msg_id or msg_id.startswith("."):
-        return False, "invalid client_msg_id"
+    if not isinstance(msg_id, str) or not _MSG_ID_RE.fullmatch(msg_id):
+        return False, "invalid client_msg_id (allowed: [A-Za-z0-9_:-], 1-128 chars)"
 
     msg_path = _message_path(msg_id)
     ready_path = _ready_flag_path(msg_id)
@@ -240,20 +247,20 @@ def read_message(msg_id: str) -> dict | None:
         return None
 
 
-def mark_handed_over(msg_id: str) -> None:
-    """Record that a message was handed over to the agent (injected into prompt)."""
+def mark_handed_over(msg_id: str, evidence: str | None = None) -> None:
+    """Record that a message reached the agent. Called ONLY by the hook
+    finalizer once the session transcript shows the model was given it
+    (lib/sidecar/hooks.py:finalize) — never by the injector, never on store."""
     pending_path = _pending_path(msg_id)
-    pending_path.parent.mkdir(parents=True, exist_ok=True)
-    state = {"msg_id": msg_id, "status": HANDED_OVER, "handed_over_at": _now_iso()}
-    try:
-        with open(pending_path, "w", encoding="utf-8") as fh:
-            json.dump(state, fh, indent=2)
-            fh.flush()
-            os.fsync(fh.fileno())
-    except OSError as e:
-        record_event(msg_id, "HANDED_OVER_WRITE_FAILED", error=str(e))
-        raise
-    record_event(msg_id, HANDED_OVER)
+    state = {"msg_id": msg_id, "status": HANDED_OVER, "handed_over_at": _now_iso(),
+             "evidence": evidence}
+    tmp = pending_path.with_suffix(".pending.tmp")
+    with open(tmp, "w", encoding="utf-8") as fh:
+        json.dump(state, fh, indent=2)
+        fh.flush()
+        os.fsync(fh.fileno())
+    os.replace(tmp, pending_path)
+    record_event(msg_id, HANDED_OVER, evidence=evidence)
 
 
 def awaiting_handover() -> list[str]:

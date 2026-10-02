@@ -46,6 +46,17 @@ REJECTED = "REJECTED"
 ESCALATED = "ESCALATED"
 NON_SUCCESS = frozenset({UNDELIVERABLE, REJECTED, ESCALATED})
 
+#: A message's state is the HIGHEST-ranked row it has, not the newest. The
+#: rows come from different processes (our send call, our receiver's /ack and
+#: /message handlers) and may land out of order: the peer can surface the
+#: message and confirm it before our own send call has written RECEIVED. With
+#: latest-row-wins that late RECEIVED would regress HANDED_OVER/REPLIED and the
+#: sweep would escalate a message that was already handled.
+#: ESCALATED ranks below HANDED_OVER: a late hand-over is the truth arriving
+#: late, and it supersedes the escalation (both rows stay in the ledger).
+RANK = {SENT: 0, UNDELIVERABLE: 1, REJECTED: 1, RECEIVED: 2, ESCALATED: 3,
+        HANDED_OVER: 4, REPLIED: 5}
+
 DEFAULT_HANDOVER_DEADLINE_S = 900   # 15 min — the retry ladder's first escalation rung
 DEFAULT_RETRIES = 3
 _BACKOFF_S = (0.5, 1.0, 2.0, 4.0)
@@ -96,20 +107,34 @@ def history(client_msg_id: str) -> list[dict]:
     return [r for r in read_ledger() if r.get("client_msg_id") == client_msg_id]
 
 
+def _effective(rows: list[dict]) -> str | None:
+    best = None
+    for row in rows:
+        st = row.get("state")
+        if best is None or RANK.get(st, -1) > RANK.get(best, -1):
+            best = st
+    return best
+
+
 def latest() -> dict[str, dict]:
-    """Latest row per id, carrying the first row's message metadata."""
-    out: dict[str, dict] = {}
+    """Per id: every row's fields merged in order, with `state` set to the
+    EFFECTIVE (highest-ranked) state — see RANK."""
+    rows_by: dict[str, list[dict]] = {}
     for row in read_ledger():
-        cid = str(row.get("client_msg_id") or "")
-        merged = dict(out.get(cid, {}))
-        merged.update(row)
+        rows_by.setdefault(str(row.get("client_msg_id") or ""), []).append(row)
+    out: dict[str, dict] = {}
+    for cid, rows in rows_by.items():
+        merged: dict = {}
+        for row in rows:
+            merged.update(row)
+        merged["state"] = _effective(rows)
         out[cid] = merged
     return out
 
 
 def latest_state(client_msg_id: str) -> str | None:
-    rows = history(client_msg_id)
-    return rows[-1]["state"] if rows else None
+    """The effective state (highest rank), not the newest row."""
+    return _effective(history(client_msg_id))
 
 
 # ── HTTP ────────────────────────────────────────────────────────────────────

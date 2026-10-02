@@ -358,6 +358,15 @@ def run_round_trip(inject_enabled: bool, tmp_base: Path) -> Result:
                 for r in _jsonl(ag.root / ".context/sidecar/receiver/events.jsonl")]
         return Result(passed=passed, nonce=nonce or "", evidence=ev)
     finally:
+        # What each agent's screen showed at the end — a failed run must be
+        # diagnosable (a permission dialog, an API stall, a refusal).
+        ev["pty_tail"] = {}
+        for label, ag in (("A", a), ("B", b)):
+            if ag.session:
+                try:
+                    ev["pty_tail"][label] = _pty(ag.session, 60)[-3000:]
+                except (OSError, subprocess.SubprocessError) as exc:
+                    ev["pty_tail"][label] = f"unavailable: {exc}"
         for ag in (a, b):
             _teardown(ag)
         report = tmp_base / f"t3693-e2e-{run}.json"

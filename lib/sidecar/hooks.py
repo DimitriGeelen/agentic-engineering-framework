@@ -11,11 +11,20 @@ Invoked through `fw hook sidecar-receiver-ready` / `fw hook
 sidecar-receiver-adapter` (agents/context/*.sh), alongside stop-driver.sh and
 sidecar-inbox.sh respectively.
 
-The prompt hook is the ONLY place HANDED_OVER is recorded: after the stored
-messages have been written to the hook's output for the agent, each is marked
-HANDED_OVER in the receiver ledger and CONFIRM-2 is posted to the sender's
-receiver. Peer content is framed as untrusted data: it grants attention, never
-authority (T-3558).
+HANDED_OVER is recorded only once the harness ITSELF shows the model was given
+the message. Claude Code uses a hook's stdout only if the process exits within
+its timeout — output printed by a hook that is then killed is discarded (seen
+live: an fsync stalled 30 s under load, the hook was killed after printing, and
+the message had already been marked HANDED_OVER — a false hand-over). So the
+prompt hook prints, flushes, starts a DETACHED finalizer and exits at once; the
+finalizer waits for the session transcript (`transcript_path` from the hook
+input) to contain the `hook_additional_context` attachment carrying each
+message id, and only then marks HANDED_OVER and posts CONFIRM-2 to the sender.
+No transcript evidence within FINALIZE_WAIT_S → HANDOVER_UNCONFIRMED, and the
+message becomes eligible for surfacing and injection again.
+
+Peer content is framed as untrusted data: it grants attention, never authority
+(T-3558).
 
 Both hooks fail open — a broken sidecar must never block a turn — but never
 silently: an exception is appended to .context/sidecar/receiver/hook-errors.log.
@@ -25,7 +34,9 @@ from __future__ import annotations
 
 import json
 import os
+import subprocess
 import sys
+import time
 import traceback
 from datetime import datetime, timezone
 
@@ -36,6 +47,8 @@ if __package__ in (None, ""):
 from . import adapter, circuit, direct, lifecycle, receiver  # noqa: E402
 
 BODY_CAP = 4000
+FINALIZE_WAIT_S = 90        # how long the finalizer looks for transcript evidence
+SURFACING_HOLD_S = 120      # a message being finalized is not surfaced twice
 OPEN, CLOSE = "<<<PEER-DATA", "PEER-DATA>>>"
 
 
@@ -120,40 +133,122 @@ def _confirm(msg_id: str, envelope: dict, me: str) -> None:
                           status=status, recorded=resp.get("recorded"))
 
 
-def prompt(_hook_input: dict, out=sys.stdout) -> int:
+def _surfacing_marker(msg_id: str):
+    return receiver._messages_dir() / f"{msg_id}.surfacing"
+
+
+def _being_finalized(msg_id: str, now: float) -> bool:
+    try:
+        return now - _surfacing_marker(msg_id).stat().st_mtime < SURFACING_HOLD_S
+    except OSError:
+        return False
+
+
+def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
+    """Surface waiting messages; return the ids surfaced. Never records
+    HANDED_OVER itself — see finalize()."""
     if not _active():
-        return 0
+        return []
     # FIRST, before anything that can fail or take time: the agent is busy now.
     adapter.clear_ready_for_input()
-    ids = receiver.awaiting_handover()
+    now = time.time()
+    ids = [i for i in receiver.awaiting_handover() if not _being_finalized(i, now)]
     messages = [m for m in (receiver.read_message(i) for i in ids) if m]
     if not messages:
-        return 0
+        return []
+    surfaced = [str(m.get("client_msg_id")) for m in messages]
     out.write(json.dumps({"hookSpecificOutput": {
         "hookEventName": "UserPromptSubmit",
         "additionalContext": _frame(messages),
     }}) + "\n")
     out.flush()
-    # Surfaced. Only now is HANDED_OVER true.
+    for mid in surfaced:
+        try:
+            _surfacing_marker(mid).write_text(str(now), encoding="utf-8")
+        except OSError:
+            pass
+    if spawn:
+        transcript = str(hook_input.get("transcript_path") or "")
+        subprocess.Popen(
+            [sys.executable, os.path.abspath(__file__), "finalize", transcript, *surfaced],
+            stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            env=dict(os.environ, PROJECT_ROOT=str(receiver._root())),
+            start_new_session=True)
+    return surfaced
+
+
+def _in_transcript(transcript: str, msg_id: str) -> bool:
+    """Does the session transcript hold the attachment that handed `msg_id` to
+    the model? (The harness's own record — not ours.)"""
+    try:
+        text = open(transcript, encoding="utf-8", errors="replace").read()
+    except OSError:
+        return False
+    tag = f"[msg {msg_id}]"
+    for line in text.splitlines():
+        if tag not in line or "hook_additional_context" not in line:
+            continue
+        try:
+            att = (json.loads(line).get("attachment") or {})
+        except json.JSONDecodeError:
+            continue
+        content = att.get("content")
+        body = "\n".join(content) if isinstance(content, list) else str(content)
+        if att.get("type") == "hook_additional_context" and tag in body:
+            return True
+    return False
+
+
+def finalize(transcript: str, msg_ids: list[str], wait_s: float = FINALIZE_WAIT_S,
+             poll_s: float = 1.0, sleep=time.sleep) -> dict:
+    """Record HANDED_OVER (+ CONFIRM-2) for each id the transcript proves the
+    model received; HANDOVER_UNCONFIRMED for the rest, which are released for
+    re-surfacing and re-injection."""
+    pending = list(msg_ids)
+    confirmed: list[str] = []
+    deadline = time.time() + wait_s
+    while pending and transcript:
+        for mid in list(pending):
+            if _in_transcript(transcript, mid):
+                pending.remove(mid)
+                confirmed.append(mid)
+        if not pending or time.time() >= deadline:
+            break
+        sleep(poll_s)
     try:
         me = circuit.agent_name()
     except circuit.CircuitError:
         me = receiver._root().name
-    for msg in messages:
-        mid = str(msg.get("client_msg_id"))
-        receiver.mark_handed_over(mid)
+    for mid in confirmed:
+        receiver.mark_handed_over(mid, evidence=f"transcript:{os.path.basename(transcript)}")
+        msg = receiver.read_message(mid) or {}
         try:
             _confirm(mid, msg, me)
         except Exception:
             _log_error(f"confirm {mid}")
-    return 0
+    for mid in pending:
+        receiver.record_event(mid, "HANDOVER_UNCONFIRMED",
+                              reason=("no transcript_path in hook input" if not transcript else
+                                      f"no hook_additional_context for it in {transcript} "
+                                      f"within {wait_s:.0f}s (hook killed or output discarded?)"))
+        for marker in (_surfacing_marker(mid), receiver._messages_dir() / f"{mid}.injected"):
+            try:
+                marker.unlink()
+            except FileNotFoundError:
+                pass
+    for mid in confirmed:
+        try:
+            _surfacing_marker(mid).unlink()
+        except FileNotFoundError:
+            pass
+    return {"confirmed": confirmed, "unconfirmed": pending}
 
 
 def main(argv=None) -> int:
     argv = sys.argv[1:] if argv is None else argv
     which = argv[0] if argv else ""
     try:
-        raw = sys.stdin.read() if not sys.stdin.isatty() else ""
+        raw = sys.stdin.read() if which != "finalize" and not sys.stdin.isatty() else ""
         hook_input = json.loads(raw) if raw.strip() else {}
     except (OSError, json.JSONDecodeError):
         hook_input = {}
@@ -161,7 +256,11 @@ def main(argv=None) -> int:
         if which == "stop":
             return stop(hook_input)
         if which == "prompt":
-            return prompt(hook_input)
+            prompt(hook_input)
+            return 0
+        if which == "finalize":
+            finalize(argv[1] if len(argv) > 1 else "", argv[2:])
+            return 0
         print(f"usage: hooks.py stop|prompt (got {which!r})", file=sys.stderr)
         return 0
     except Exception:

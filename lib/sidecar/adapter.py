@@ -50,14 +50,18 @@ def set_ready_for_input(ready: bool) -> None:
         "updated_at": datetime.now(timezone.utc).isoformat(),
         "pid": os.getpid(),
     }
+    # Atomic replace, deliberately WITHOUT fsync (T-3693): this runs first in
+    # every UserPromptSubmit, and an fsync stalled 30 s+ under btrfs load, long
+    # enough for Claude Code to kill the hook and discard its output. The flag
+    # is advisory state, not a durable record: a crash that loses it reads as
+    # "not ready", which is the safe direction.
+    tmp = path.with_suffix(f".yaml.{os.getpid()}.tmp")
     try:
-        with open(path, "w", encoding="utf-8") as fh:
-            fh.write(f"# Ready for input: {ready}\n")
-            fh.write(f"ready: {str(ready).lower()}\n")
-            fh.write(f"updated_at: {state['updated_at']}\n")
-            fh.write(f"pid: {state['pid']}\n")
-            fh.flush()
-            os.fsync(fh.fileno())
+        tmp.write_text(f"# Ready for input: {ready}\n"
+                       f"ready: {str(ready).lower()}\n"
+                       f"updated_at: {state['updated_at']}\n"
+                       f"pid: {state['pid']}\n", encoding="utf-8")
+        os.replace(tmp, path)
     except OSError:
         pass  # Best effort; do not block the hook
 
