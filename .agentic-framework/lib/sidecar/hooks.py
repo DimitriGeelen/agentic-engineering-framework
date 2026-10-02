@@ -45,7 +45,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
     __package__ = "lib.sidecar"
 
-from . import adapter, circuit, direct, lifecycle, receiver  # noqa: E402
+from . import adapter, circuit, direct, inject, lifecycle, receiver  # noqa: E402
 
 BODY_CAP = 4000
 FINALIZE_WAIT_S = 90        # how long the finalizer looks for transcript evidence
@@ -77,9 +77,12 @@ def _log_error(where: str) -> None:
         pass
 
 
-def stop(_hook_input: dict) -> int:
+def stop(hook_input: dict) -> int:
     if not _active():
         return 0
+    # T-3745: this session's own record first — it is the one the injector
+    # reads. The project-wide file is a display summary only.
+    adapter.set_session_ready(hook_input, True)
     adapter.set_ready_for_input(True)
     return 0
 
@@ -131,6 +134,13 @@ def _frame(messages: list[dict], surfacing: str) -> str:
 def _confirm(msg_id: str, envelope: dict, me: str) -> None:
     """CONFIRM-2: tell the sender's receiver this message reached the agent."""
     sender = envelope.get("from")
+    if envelope.get("via") == "hub-topic":
+        # T-3684: picked up from the legacy hub topic by the watcher. The
+        # sender posted it the pre-receiver way and has no SENT row a /ack
+        # could land on; its own hub-path ledger closes on our reply.
+        receiver.record_event(msg_id, "CONFIRM_SKIPPED",
+                              reason="legacy hub-topic sender: no direct ledger to confirm into")
+        return
     entry = lifecycle.lookup(sender) if sender else None
     if not entry or not entry.get("live"):
         receiver.record_event(msg_id, "CONFIRM_FAILED",
@@ -163,9 +173,20 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
     if not _active():
         return []
     # FIRST, before anything that can fail or take time: the agent is busy now.
+    me = adapter.set_session_ready(hook_input, False)
     adapter.clear_ready_for_input()
     now = time.time()
-    ids = [i for i in receiver.awaiting_handover() if not _being_finalized(i, now)]
+    # T-3745: surface ONLY what the injector claimed for THIS session. Mail
+    # typed into the fleet agent's PTY must not be taken by the operator's
+    # terminal because it happened to prompt first — that session never saw
+    # the injected line, and HANDED_OVER would be credited to the wrong agent.
+    # No session_id in the hook input → nothing can be attributed → nothing
+    # surfaced (the message waits; the safe direction).
+    my_sid = (me or {}).get("session_id")
+    if not my_sid:
+        return []
+    ids = [i for i in receiver.awaiting_handover()
+           if not _being_finalized(i, now) and inject.is_claimed_for(i, me)]
     messages = [m for m in (receiver.read_message(i) for i in ids) if m]
     if not messages:
         return []

@@ -1,0 +1,24 @@
+{
+  "msg": "50f1c1ef-c68d-4340-aa40-28c59d4512bc",
+  "sender_states": [
+    "SENT",
+    "RECEIVED",
+    "ESCALATED"
+  ],
+  "escalated_row": {
+    "client_msg_id": "50f1c1ef-c68d-4340-aa40-28c59d4512bc",
+    "state": "ESCALATED",
+    "by": "infrastructure",
+    "ts": "2026-10-02T23:47:19.561916+00:00",
+    "error": "HANDED_OVER not confirmed by deadline 2026-10-02T23:47:08.208120+00:00"
+  },
+  "b_events": [
+    {
+      "msg_id": "50f1c1ef-c68d-4340-aa40-28c59d4512bc",
+      "event": "STORED",
+      "ts": "2026-10-02T23:45:38.207367+00:00",
+      "sender": "t3684a-ox90o8"
+    }
+  ],
+  "legacy_ingested": null
+}

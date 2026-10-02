@@ -1,0 +1,21 @@
+id: tests/integration/t3684_sidecar_watcher_e2e_test.py
+name: t3684_sidecar_watcher_e2e_test
+type: script
+subsystem: tests
+location: tests/integration/t3684_sidecar_watcher_e2e_test.py
+tags: []
+
+purpose: "T-3684 / T-3685 / T-3745 — LIVE proof of the sidecar watcher. Not mocked."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-02
+created_by: unknown

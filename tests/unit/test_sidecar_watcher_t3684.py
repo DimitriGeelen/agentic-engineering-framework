@@ -237,6 +237,8 @@ def test_start_supervises_restarts_and_ensure_recovers(proj):
     assert live["termlink"] == "absent" and live["last_probe_ok"] is True
     st = json.loads(_cli(proj, "liveness", "--json").stdout)
     assert st["state"] == "live" and st["supervisor_alive"] is True
+    status = _cli(proj, "status", path=NO_TERMLINK_PATH).stdout
+    assert "watcher:          live" in status and "supervisor=up" in status
 
     # 1. SIGKILL the watcher → the supervisor respawns it; seq keeps rising
     w1 = _pid(proj, "watcher")

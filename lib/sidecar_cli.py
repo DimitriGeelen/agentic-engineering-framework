@@ -232,7 +232,8 @@ def cmd_status(args) -> int:
         payload["inbound"] = inbound
         if probe is not None:
             payload["hub_probe"] = probe
-        print(json.dumps(payload, indent=2))
+        payload["watcher"] = dict(watcher.liveness_verdict(), supervisor_alive=watcher.supervisor_alive())
+        print(json.dumps(payload, indent=2, default=str))
         return 0
     print(status_mod.render(snap))
     # Printed unconditionally, including the zero. "inbound unread: 0" is a
@@ -253,6 +254,14 @@ def cmd_status(args) -> int:
                   f"cursor={row['cursor']} unread={row['unread']}")
     if probe is not None:
         print(f"hub probe:        {'ok' if probe['ok'] else 'REFUSED'} — {probe['reason']}")
+    # T-3685: the watcher, in the one status command an operator reaches for.
+    wv = watcher.liveness_verdict()
+    live = wv.get("liveness") or {}
+    print(f"watcher:          {wv['state']}  seq={live.get('seq')} tick={live.get('tick_s')}s "
+          f"probe_ok={live.get('last_probe_ok')} supervisor={'up' if watcher.supervisor_alive() else 'down'} "
+          f"termlink={live.get('termlink', 'unknown')}")
+    for r in wv["reasons"]:
+        print(f"  - {r}")
     return 0
 
 

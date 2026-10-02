@@ -1,0 +1,56 @@
+{
+  "msg": "a0f56d53-1940-472c-b274-b46d82f7ed39",
+  "via": "hub-topic",
+  "hub_ts": 1790984495184,
+  "send_to_received_s": 15.89696192741394,
+  "send_to_handed_over_s": 17.328700065612793,
+  "inject_triggers": [
+    "tick"
+  ],
+  "b_events": [
+    {
+      "msg_id": "a0f56d53-1940-472c-b274-b46d82f7ed39",
+      "event": "STORED",
+      "ts": "2026-10-02T23:41:51.080767+00:00",
+      "sender": "t3684a-ox90o8"
+    },
+    {
+      "msg_id": "a0f56d53-1940-472c-b274-b46d82f7ed39",
+      "event": "INGESTED_FROM_HUB",
+      "ts": "2026-10-02T23:41:51.080962+00:00",
+      "topic": "inbox:cacc73ea32b121dd/t3684b-ox90o8",
+      "offset": 0,
+      "hub_ts": 1790984495184
+    },
+    {
+      "msg_id": "a0f56d53-1940-472c-b274-b46d82f7ed39",
+      "event": "INJECT_TYPING",
+      "ts": "2026-10-02T23:41:51.099678+00:00",
+      "trigger": "tick",
+      "session": "tl-xkuxh62h",
+      "target_session_id": "3efdbc29-0da6-4ffe-a335-b585c6eaa598"
+    },
+    {
+      "msg_id": "a0f56d53-1940-472c-b274-b46d82f7ed39",
+      "event": "INJECT_ATTEMPT",
+      "ts": "2026-10-02T23:41:51.125668+00:00",
+      "trigger": "tick",
+      "session": "tl-xkuxh62h",
+      "target_session_id": "3efdbc29-0da6-4ffe-a335-b585c6eaa598",
+      "ok": true
+    },
+    {
+      "msg_id": "a0f56d53-1940-472c-b274-b46d82f7ed39",
+      "event": "HANDED_OVER",
+      "ts": "2026-10-02T23:41:52.512700+00:00",
+      "evidence": "transcript:3efdbc29-0da6-4ffe-a335-b585c6eaa598.jsonl"
+    },
+    {
+      "msg_id": "a0f56d53-1940-472c-b274-b46d82f7ed39",
+      "event": "CONFIRM_SKIPPED",
+      "ts": "2026-10-02T23:41:52.513151+00:00",
+      "reason": "legacy hub-topic sender: no direct ledger to confirm into"
+    }
+  ],
+  "transcript": "3efdbc29-0da6-4ffe-a335-b585c6eaa598.jsonl [hook_additional_context] PEER-DATA block: 'Peer check LEGACY-xymfdxubvl: no action and no reply needed; just end your turn.'"
+}

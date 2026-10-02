@@ -265,6 +265,11 @@ def _deliver_locked(trigger: str, runner) -> dict:
         adapter.clear_session_ready(target["session_id"])
     for m in batch:
         _write_claim(m, now, target)
+        # Recorded BEFORE the keystrokes: a watcher killed between typing and
+        # the INJECT_ATTEMPT row below must not leave a typed line with no
+        # ledger trace (seen live, T-3684 e2e run 1).
+        receiver.record_event(m, "INJECT_TYPING", trigger=trigger, session=session,
+                              target_session_id=target.get("session_id"))
     line = injection_line(batch)
     try:
         proc = runner(["termlink", "pty", "inject", session, line, "--enter"],

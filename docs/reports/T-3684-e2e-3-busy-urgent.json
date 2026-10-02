@@ -1,0 +1,202 @@
+{
+  "busy_since": 1790984513.8160775,
+  "turn_end_observed": 1790984608.017817,
+  "non_urgent": {
+    "msg": "c9ae9360-747b-4f34-bee2-890b254b89d5",
+    "inject": {
+      "msg_id": "c9ae9360-747b-4f34-bee2-890b254b89d5",
+      "event": "INJECT_ATTEMPT",
+      "ts": "2026-10-02T23:43:51.427951+00:00",
+      "trigger": "tick",
+      "session": "tl-xkuxh62h",
+      "target_session_id": "3efdbc29-0da6-4ffe-a335-b585c6eaa598",
+      "ok": true
+    },
+    "handed_over": {
+      "msg_id": "c9ae9360-747b-4f34-bee2-890b254b89d5",
+      "event": "HANDED_OVER",
+      "ts": "2026-10-02T23:43:52.790026+00:00",
+      "evidence": "transcript:3efdbc29-0da6-4ffe-a335-b585c6eaa598.jsonl"
+    },
+    "send_to_inject_s": 109.31758403778076,
+    "turn_end_to_inject_s": 23.410134077072144,
+    "send_to_handed_over_s": 110.67965888977051
+  },
+  "urgent": {
+    "msg": "1f00b23c-0e50-4d09-8175-6bd6c16c6d0d",
+    "inject": {
+      "msg_id": "1f00b23c-0e50-4d09-8175-6bd6c16c6d0d",
+      "event": "INJECT_ATTEMPT",
+      "ts": "2026-10-02T23:42:08.471216+00:00",
+      "trigger": "on-store",
+      "session": "tl-xkuxh62h",
+      "target_session_id": "3efdbc29-0da6-4ffe-a335-b585c6eaa598",
+      "ok": true,
+      "urgent_bypass": true
+    },
+    "busy_at_inject": true,
+    "pty_has_line_while_busy": true,
+    "handed_over": {
+      "msg_id": "1f00b23c-0e50-4d09-8175-6bd6c16c6d0d",
+      "event": "HANDED_OVER",
+      "ts": "2026-10-02T23:43:26.911120+00:00",
+      "evidence": "transcript:3efdbc29-0da6-4ffe-a335-b585c6eaa598.jsonl"
+    },
+    "send_to_inject_s": 0.04883289337158203,
+    "send_to_handed_over_s": 78.48873686790466
+  },
+  "b_events": [
+    {
+      "msg_id": "f5045645-c16a-4b5a-a46b-14a2d8c111f2",
+      "event": "STORED",
+      "ts": "2026-10-02T23:41:30.894974+00:00",
+      "sender": "t3684a-ox90o8"
+    },
+    {
+      "msg_id": "f5045645-c16a-4b5a-a46b-14a2d8c111f2",
+      "event": "INJECT_TYPING",
+      "ts": "2026-10-02T23:41:30.912692+00:00",
+      "trigger": "on-store",
+      "session": "tl-xkuxh62h",
+      "target_session_id": "3efdbc29-0da6-4ffe-a335-b585c6eaa598"
+    },
+    {
+      "msg_id": "f5045645-c16a-4b5a-a46b-14a2d8c111f2",
+      "event": "INJECT_ATTEMPT",
+      "ts": "2026-10-02T23:41:30.936048+00:00",
+      "trigger": "on-store",
+      "session": "tl-xkuxh62h",
+      "target_session_id": "3efdbc29-0da6-4ffe-a335-b585c6eaa598",
+      "ok": true
+    },
+    {
+      "msg_id": "f5045645-c16a-4b5a-a46b-14a2d8c111f2",
+      "event": "HANDED_OVER",
+      "ts": "2026-10-02T23:41:32.308317+00:00",
+      "evidence": "transcript:3efdbc29-0da6-4ffe-a335-b585c6eaa598.jsonl"
+    },
+    {
+      "msg_id": "f5045645-c16a-4b5a-a46b-14a2d8c111f2",
+      "event": "CONFIRM_SENT",
+      "ts": "2026-10-02T23:41:32.341464+00:00",
+      "status": 200,
+      "recorded": true
+    },
+    {
+      "msg_id": "a0f56d53-1940-472c-b274-b46d82f7ed39",
+      "event": "STORED",
+      "ts": "2026-10-02T23:41:51.080767+00:00",
+      "sender": "t3684a-ox90o8"
+    },
+    {
+      "msg_id": "a0f56d53-1940-472c-b274-b46d82f7ed39",
+      "event": "INGESTED_FROM_HUB",
+      "ts": "2026-10-02T23:41:51.080962+00:00",
+      "topic": "inbox:cacc73ea32b121dd/t3684b-ox90o8",
+      "offset": 0,
+      "hub_ts": 1790984495184
+    },
+    {
+      "msg_id": "a0f56d53-1940-472c-b274-b46d82f7ed39",
+      "event": "INJECT_TYPING",
+      "ts": "2026-10-02T23:41:51.099678+00:00",
+      "trigger": "tick",
+      "session": "tl-xkuxh62h",
+      "target_session_id": "3efdbc29-0da6-4ffe-a335-b585c6eaa598"
+    },
+    {
+      "msg_id": "a0f56d53-1940-472c-b274-b46d82f7ed39",
+      "event": "INJECT_ATTEMPT",
+      "ts": "2026-10-02T23:41:51.125668+00:00",
+      "trigger": "tick",
+      "session": "tl-xkuxh62h",
+      "target_session_id": "3efdbc29-0da6-4ffe-a335-b585c6eaa598",
+      "ok": true
+    },
+    {
+      "msg_id": "a0f56d53-1940-472c-b274-b46d82f7ed39",
+      "event": "HANDED_OVER",
+      "ts": "2026-10-02T23:41:52.512700+00:00",
+      "evidence": "transcript:3efdbc29-0da6-4ffe-a335-b585c6eaa598.jsonl"
+    },
+    {
+      "msg_id": "a0f56d53-1940-472c-b274-b46d82f7ed39",
+      "event": "CONFIRM_SKIPPED",
+      "ts": "2026-10-02T23:41:52.513151+00:00",
+      "reason": "legacy hub-topic sender: no direct ledger to confirm into"
+    },
+    {
+      "msg_id": "c9ae9360-747b-4f34-bee2-890b254b89d5",
+      "event": "STORED",
+      "ts": "2026-10-02T23:42:02.119606+00:00",
+      "sender": "t3684a-ox90o8"
+    },
+    {
+      "msg_id": "1f00b23c-0e50-4d09-8175-6bd6c16c6d0d",
+      "event": "STORED",
+      "ts": "2026-10-02T23:42:08.430247+00:00",
+      "sender": "t3684a-ox90o8"
+    },
+    {
+      "msg_id": "1f00b23c-0e50-4d09-8175-6bd6c16c6d0d",
+      "event": "INJECT_TYPING",
+      "ts": "2026-10-02T23:42:08.447376+00:00",
+      "trigger": "on-store",
+      "session": "tl-xkuxh62h",
+      "target_session_id": "3efdbc29-0da6-4ffe-a335-b585c6eaa598"
+    },
+    {
+      "msg_id": "1f00b23c-0e50-4d09-8175-6bd6c16c6d0d",
+      "event": "INJECT_ATTEMPT",
+      "ts": "2026-10-02T23:42:08.471216+00:00",
+      "trigger": "on-store",
+      "session": "tl-xkuxh62h",
+      "target_session_id": "3efdbc29-0da6-4ffe-a335-b585c6eaa598",
+      "ok": true,
+      "urgent_bypass": true
+    },
+    {
+      "msg_id": "1f00b23c-0e50-4d09-8175-6bd6c16c6d0d",
+      "event": "HANDED_OVER",
+      "ts": "2026-10-02T23:43:26.911120+00:00",
+      "evidence": "transcript:3efdbc29-0da6-4ffe-a335-b585c6eaa598.jsonl"
+    },
+    {
+      "msg_id": "1f00b23c-0e50-4d09-8175-6bd6c16c6d0d",
+      "event": "CONFIRM_SENT",
+      "ts": "2026-10-02T23:43:26.942914+00:00",
+      "status": 200,
+      "recorded": true
+    },
+    {
+      "msg_id": "c9ae9360-747b-4f34-bee2-890b254b89d5",
+      "event": "INJECT_TYPING",
+      "ts": "2026-10-02T23:43:51.404170+00:00",
+      "trigger": "tick",
+      "session": "tl-xkuxh62h",
+      "target_session_id": "3efdbc29-0da6-4ffe-a335-b585c6eaa598"
+    },
+    {
+      "msg_id": "c9ae9360-747b-4f34-bee2-890b254b89d5",
+      "event": "INJECT_ATTEMPT",
+      "ts": "2026-10-02T23:43:51.427951+00:00",
+      "trigger": "tick",
+      "session": "tl-xkuxh62h",
+      "target_session_id": "3efdbc29-0da6-4ffe-a335-b585c6eaa598",
+      "ok": true
+    },
+    {
+      "msg_id": "c9ae9360-747b-4f34-bee2-890b254b89d5",
+      "event": "HANDED_OVER",
+      "ts": "2026-10-02T23:43:52.790026+00:00",
+      "evidence": "transcript:3efdbc29-0da6-4ffe-a335-b585c6eaa598.jsonl"
+    },
+    {
+      "msg_id": "c9ae9360-747b-4f34-bee2-890b254b89d5",
+      "event": "CONFIRM_SENT",
+      "ts": "2026-10-02T23:43:52.824135+00:00",
+      "status": 200,
+      "recorded": true
+    }
+  ]
+}

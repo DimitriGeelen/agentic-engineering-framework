@@ -1,0 +1,27 @@
+============================= test session starts ==============================
+platform linux -- Python 3.12.3, pytest-9.0.2, pluggy-1.6.0 -- /usr/bin/python3
+rootdir: /opt/999-Agentic-Engineering-Framework
+plugins: anyio-4.11.0, asyncio-1.3.0, typeguard-4.5.2
+asyncio: mode=Mode.STRICT, debug=False, asyncio_default_fixture_loop_scope=None, asyncio_default_test_loop_scope=function
+collecting ... collected 6 items
+
+tests/integration/t3684_sidecar_watcher_e2e_test.py::test_1_idle_session_receives_within_60s [t3684-e2e 01:41:23] B: accepted folder trust
+[t3684-e2e 01:41:27] B: tl-xkuxh62h ready (its own Stop hook, session 3efdbc29-0da6-4ffe-a335-b585c6eaa598)
+[t3684-e2e 01:41:32] evidence: /opt/999-Agentic-Engineering-Framework/docs/reports/T-3684-e2e-1-idle.json
+PASSED
+tests/integration/t3684_sidecar_watcher_e2e_test.py::test_2_legacy_hub_topic_post_picked_up_within_60s [t3684-e2e 01:41:53] evidence: /opt/999-Agentic-Engineering-Framework/docs/reports/T-3684-e2e-2-legacy-topic.json
+PASSED
+tests/integration/t3684_sidecar_watcher_e2e_test.py::test_3_busy_gets_non_urgent_only_after_turn_ends_urgent_while_busy [t3684-e2e 01:43:53] evidence: /opt/999-Agentic-Engineering-Framework/docs/reports/T-3684-e2e-3-busy-urgent.json
+PASSED
+tests/integration/t3684_sidecar_watcher_e2e_test.py::test_4_watcher_killed_reported_not_live_and_restarted [t3684-e2e 01:45:27] evidence: /opt/999-Agentic-Engineering-Framework/docs/reports/T-3684-e2e-4-kill.json
+PASSED
+tests/integration/t3684_sidecar_watcher_e2e_test.py::test_5_negative_control_watcher_disabled_no_pickup_sender_escalated [t3684-e2e 01:47:21] evidence: /opt/999-Agentic-Engineering-Framework/docs/reports/T-3684-e2e-5-negative-control.json
+PASSED
+tests/integration/t3684_sidecar_watcher_e2e_test.py::test_6_two_sessions_one_project_idle_gets_it_busy_pty_gets_nothing [t3684-e2e 01:47:27] C1: accepted folder trust
+[t3684-e2e 01:47:33] C1: tl-ikboseux ready (its own Stop hook, session 20a14f2f-6d4c-48a1-96c3-2a248734c891)
+[t3684-e2e 01:47:39] C2: tl-sadyppwm ready (its own Stop hook, session ca3852c2-bfed-4b8d-a57a-93783588aef0)
+[t3684-e2e 01:47:51] evidence: /opt/999-Agentic-Engineering-Framework/docs/reports/T-3684-e2e-6-two-sessions.json
+PASSED
+
+======================== 6 passed in 411.20s (0:06:51) =========================
+EXIT 0

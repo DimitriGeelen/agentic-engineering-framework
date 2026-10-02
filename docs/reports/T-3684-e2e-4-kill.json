@@ -1,0 +1,70 @@
+{
+  "respawned_watcher": [
+    2485344,
+    2611803
+  ],
+  "killed_at": 1790984634.0300174,
+  "doctor_not_live": "  \u001b[0;31mFAIL\u001b[0m  Sidecar watcher NOT live: seq stalled at 6 for 75s (> 2 ticks of 30s)",
+  "audit_not_live": "[FAIL] Sidecar watcher NOT live\n       Evidence: seq stalled at 6 for 78s (> 2 ticks of 30s)",
+  "ensure": "[{\"enabled\": true, \"receiver\": \"running\", \"action\": \"supervisor restarted pid=2611658\", \"project_root\": \"/tmp/t3684-e2e-2482677-1790984477/t3684b-ox90o8\"}, {\"enabled\": true, \"receiver\": \"running\", \"action\": \"supervisor running\", \"project_root\": \"/tmp/t3684-e2e-2482677-1790984477/t3684a-ox90o8\"}]\n",
+  "doctor_after_ensure": "  \u001b[0;32mOK\u001b[0m  Sidecar watcher live (seq 7, last tick 8.5s ago, self-probe 33.0ms)",
+  "watcher_events": [
+    {
+      "ts": "2026-10-02T23:41:20.819306+00:00",
+      "event": "SUPERVISOR_STARTED",
+      "pid": 2485243
+    },
+    {
+      "ts": "2026-10-02T23:41:20.820757+00:00",
+      "event": "WATCHER_SPAWNED",
+      "pid": 2485344
+    },
+    {
+      "ts": "2026-10-02T23:41:20.923825+00:00",
+      "event": "WATCHER_STARTED",
+      "pid": 2485344,
+      "tick_s": 30.0,
+      "resumed_seq": 0
+    },
+    {
+      "ts": "2026-10-02T23:43:53.914362+00:00",
+      "event": "WATCHER_DIED",
+      "pid": 2485344,
+      "rc": -9
+    },
+    {
+      "ts": "2026-10-02T23:43:53.915124+00:00",
+      "event": "WATCHER_SPAWNED",
+      "pid": 2566712
+    },
+    {
+      "ts": "2026-10-02T23:43:54.022337+00:00",
+      "event": "WATCHER_STARTED",
+      "pid": 2566712,
+      "tick_s": 30.0,
+      "resumed_seq": 6
+    },
+    {
+      "ts": "2026-10-02T23:45:16.901143+00:00",
+      "event": "SUPERVISOR_STARTED",
+      "pid": 2611658
+    },
+    {
+      "ts": "2026-10-02T23:45:16.902667+00:00",
+      "event": "WATCHER_SPAWNED",
+      "pid": 2611803
+    },
+    {
+      "ts": "2026-10-02T23:45:17.009005+00:00",
+      "event": "WATCHER_STARTED",
+      "pid": 2611803,
+      "tick_s": 30.0,
+      "resumed_seq": 6
+    },
+    {
+      "ts": "2026-10-02T23:45:17.187478+00:00",
+      "event": "SUPERVISOR_ENSURED",
+      "result": "started"
+    }
+  ]
+}

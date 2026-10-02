@@ -10,6 +10,8 @@ it can run, and a verb it can be TOLD to run in a dispatch prompt.
     fw sidecar inbox [--json] [--peek]
     fw sidecar receiver start|stop|status     (T-3693: the receiving sidecar)
     fw sidecar deliver-pending | acks         (T-3693)
+    fw sidecar start|stop|ensure [--all]      (T-3684/T-3685: receiver + supervised watcher)
+    fw sidecar liveness | latency | tick      (T-3685 / T-3684)
 
 Delivery is not reimplemented here — `send` calls slice 1's outbox, slice 2's
 deliver() and slice 3's transport and probe, so the ack ledger, the hub
@@ -27,6 +29,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from lib.sidecar import circuit, delivery, dm, e2e, inbox, outbox, retry, status as status_mod  # noqa: E402
 from lib.sidecar import termlink_transport as transport, receiver, lifecycle, adapter, direct, inject  # noqa: E402
+from lib.sidecar import latency as latency_mod, watcher  # noqa: E402
 
 
 def cmd_whoami(args) -> int:
@@ -229,7 +232,8 @@ def cmd_status(args) -> int:
         payload["inbound"] = inbound
         if probe is not None:
             payload["hub_probe"] = probe
-        print(json.dumps(payload, indent=2))
+        payload["watcher"] = dict(watcher.liveness_verdict(), supervisor_alive=watcher.supervisor_alive())
+        print(json.dumps(payload, indent=2, default=str))
         return 0
     print(status_mod.render(snap))
     # Printed unconditionally, including the zero. "inbound unread: 0" is a
@@ -250,6 +254,14 @@ def cmd_status(args) -> int:
                   f"cursor={row['cursor']} unread={row['unread']}")
     if probe is not None:
         print(f"hub probe:        {'ok' if probe['ok'] else 'REFUSED'} — {probe['reason']}")
+    # T-3685: the watcher, in the one status command an operator reaches for.
+    wv = watcher.liveness_verdict()
+    live = wv.get("liveness") or {}
+    print(f"watcher:          {wv['state']}  seq={live.get('seq')} tick={live.get('tick_s')}s "
+          f"probe_ok={live.get('last_probe_ok')} supervisor={'up' if watcher.supervisor_alive() else 'down'} "
+          f"termlink={live.get('termlink', 'unknown')}")
+    for r in wv["reasons"]:
+        print(f"  - {r}")
     return 0
 
 
@@ -425,25 +437,17 @@ def _agent_or_none():
         return None
 
 
-def cmd_receiver_start(args) -> int:
-    """Start the per-agent receiver (T-3693).
-
-    Order is the contract (T-3475): the 0600 token is written FIRST; the
-    server process reads it and refuses to bind without it; only after it has
-    bound does it write the triple-file and the host registry entry. Exit 0
-    started, 1 already running, 2 refused/failed.
-    """
+def _start_receiver(agent: str, port, no_inject: bool, quiet: bool) -> tuple[int, dict | None]:
+    """Start the receiver process. (rc, triple-file info): rc 0 started,
+    1 already running, 2 refused/failed."""
     import subprocess
     import time
 
-    agent = args.agent or _agent_or_none()
-    if not agent:
-        return 2
     info = lifecycle.read_triple_file()
     if info and lifecycle.is_receiver_alive(info) and lifecycle.health(str(info["url"])):
-        if not args.quiet:
+        if not quiet:
             print(f"receiver already running: pid={info['pid']} url={info['url']}")
-        return 1
+        return 1, info
     if info:
         lifecycle.clear_triple_file()
 
@@ -451,15 +455,15 @@ def cmd_receiver_start(args) -> int:
         lifecycle.write_token()
     except OSError as e:
         print(f"receiver: refusing to start — cannot write token: {e}", file=sys.stderr)
-        return 2
-    lifecycle.write_config(inject=not args.no_inject)
+        return 2, None
+    lifecycle.write_config(inject=not no_inject)
 
     root = str(receiver._root().resolve())
     env = dict(os.environ, PROJECT_ROOT=root)
     log = open(receiver._receiver_dir() / "server.log", "ab")
     server_py = os.path.join(os.path.dirname(os.path.abspath(__file__)), "sidecar", "http_server.py")
     proc = subprocess.Popen(
-        [sys.executable, server_py, "--port", str(args.port or 0), "--agent", agent],
+        [sys.executable, server_py, "--port", str(port or 0), "--agent", agent],
         stdin=subprocess.DEVNULL, stdout=log, stderr=log, cwd=root, env=env,
         start_new_session=True)
 
@@ -471,25 +475,149 @@ def cmd_receiver_start(args) -> int:
         if proc.poll() is not None:
             print(f"receiver: server exited with {proc.returncode} before binding "
                   f"(see {receiver._receiver_dir() / 'server.log'})", file=sys.stderr)
-            return 2
+            return 2, None
         time.sleep(0.1)
     else:
         proc.terminate()
         print("receiver: server did not come up within 10s", file=sys.stderr)
-        return 2
+        return 2, None
 
-    if not args.quiet:
+    if not quiet:
         print(f"receiver started: agent={agent} pid={info['pid']} port={info['port']}")
         print(f"  url:    {info['url']}")
         print(f"  token:  {lifecycle.token_path()} (mode 0600)")
-        print(f"  inject: {'enabled' if not args.no_inject else 'DISABLED (--no-inject)'}")
+        print(f"  inject: {'enabled' if not no_inject else 'DISABLED (--no-inject)'}")
+    return 0, info
+
+
+def _start_watcher(agent: str, tick, no_inject: bool, quiet: bool) -> dict:
+    """Enable + start the supervised watcher (T-3684/T-3685)."""
+    watcher.enable(agent, tick, inject_on=not no_inject)
+    res = watcher.start_supervisor()
+    if not quiet:
+        tl = "present" if __import__("shutil").which("termlink") else \
+            "ABSENT — inert: messages are stored and confirmed RECEIVED, never injected"
+        state = "started" if res.get("started") else res.get("reason", "")
+        print(f"watcher {state}: supervisor pid={res.get('pid')} "
+              f"tick={watcher.tick_seconds(tick):g}s termlink={tl}")
+    return res
+
+
+def cmd_receiver_start(args) -> int:
+    """Start the per-agent receiver (T-3693) and, unless --no-watcher, its
+    supervised watcher (T-3684/T-3685).
+
+    Order is the contract (T-3475): the 0600 token is written FIRST; the
+    server process reads it and refuses to bind without it; only after it has
+    bound does it write the triple-file and the host registry entry. Exit 0
+    started, 1 already running, 2 refused/failed.
+    """
+    agent = args.agent or _agent_or_none()
+    if not agent:
+        return 2
+    rc, _info = _start_receiver(agent, args.port, args.no_inject, args.quiet)
+    if rc == 0 and not args.no_watcher:
+        _start_watcher(agent, args.tick, args.no_inject, args.quiet)
+    return rc
+
+
+def cmd_start(args) -> int:
+    """`fw sidecar start`: receiver (if not running) + supervised watcher.
+    Exit 0 when both are up (already-running counts), 2 on failure."""
+    agent = args.agent or _agent_or_none()
+    if not agent:
+        return 2
+    rc, info = _start_receiver(agent, args.port, args.no_inject, args.quiet)
+    if rc == 2:
+        return 2
+    res = _start_watcher(agent, args.tick, args.no_inject, args.quiet)
+    if args.json:
+        print(json.dumps({"receiver": info, "watcher": res, "tick_s": watcher.tick_seconds(args.tick),
+                          "liveness": watcher.liveness_verdict()["state"]}))
+    return 0 if (res.get("started") or res.get("reason") == "already running") else 2
+
+
+def cmd_stop(args) -> int:
+    """`fw sidecar stop`: disable and stop the watcher, then the receiver."""
+    stopped = watcher.stop_all()
+    if not args.quiet:
+        print(f"watcher stopped: {stopped or 'was not running'}")
+    return cmd_receiver_stop(args)
+
+
+def cmd_ensure(args) -> int:
+    """Cron / @reboot / claude-fw entry. Here: if this project's sidecar is
+    enabled and its supervisor is not running, start it (and the receiver).
+    --all: every enabled project on this host."""
+    if args.all:
+        rows = watcher.ensure_all()
+        if args.json:
+            print(json.dumps(rows))
+        else:
+            for r in rows:
+                print(f"{r.get('project_root')}: {r.get('action') or r.get('error')}")
+        return 0
+    cfg = watcher.read_enabled()
+    row = {"enabled": cfg is not None}
+    if cfg is None:
+        row["action"] = "not enabled (fw sidecar start enables it)"
+    else:
+        rc, _ = _start_receiver(str(cfg.get("agent") or _agent_or_none() or ""), None,
+                                not cfg.get("inject", True), True)
+        row["receiver"] = {0: "restarted", 1: "running", 2: "FAILED"}[rc]
+        if watcher.supervisor_alive():
+            row["action"] = "supervisor running"
+        else:
+            res = watcher.start_supervisor()
+            watcher.record_event("SUPERVISOR_ENSURED", result=res.get("reason") or "started")
+            row["action"] = f"supervisor restarted pid={res.get('pid')}"
+    if args.json:
+        print(json.dumps(row))
+    else:
+        print(row["action"])
+    return 0
+
+
+def cmd_liveness(args) -> int:
+    """The liveness verdict doctor/audit read. Exit 0 live, 1 not-live, 2 absent."""
+    v = watcher.liveness_verdict()
+    v["supervisor_alive"] = watcher.supervisor_alive()
+    v["injection_transport"] = "present" if __import__("shutil").which("termlink") else "absent"
+    if args.json:
+        print(json.dumps(v, default=str))
+    else:
+        live = v.get("liveness") or {}
+        print(f"sidecar watcher: {v['state']}  seq={live.get('seq')} age={v.get('age_s')}s "
+              f"probe_ok={live.get('last_probe_ok')} supervisor={'up' if v['supervisor_alive'] else 'down'} "
+              f"termlink={v['injection_transport']}")
+        for r in v["reasons"]:
+            print(f"  - {r}")
+    return {"live": 0, "not-live": 1}.get(v["state"], 2)
+
+
+def cmd_latency(args) -> int:
+    rep = latency_mod.report()
+    print(json.dumps(rep, indent=2) if args.json else latency_mod.render(rep))
+    return 0
+
+
+def cmd_tick(args) -> int:
+    """Run ONE watcher tick now, in the foreground (diagnostics)."""
+    live = watcher.read_liveness() or {}
+    rep = watcher.run_tick(int(live.get("seq") or 0) + 1, watcher.tick_seconds())
+    print(json.dumps(rep, indent=2, default=str))
     return 0
 
 
 def cmd_receiver_stop(args) -> int:
-    """Stop the receiver: SIGTERM, wait, SIGKILL only if it will not go."""
+    """Stop the receiver: SIGTERM, wait, SIGKILL only if it will not go.
+    The watcher is stopped (and disabled) FIRST, or its supervisor would
+    restart the receiver this just stopped."""
     import signal
     import time
+
+    if watcher.read_enabled() is not None or watcher.supervisor_alive():
+        watcher.stop_all()
 
     info = lifecycle.read_triple_file()
     if not info:
@@ -526,7 +654,11 @@ def cmd_receiver_status(args) -> int:
                    "healthy": healthy, "inject_enabled": lifecycle.inject_enabled(),
                    "awaiting_handover": len(receiver.awaiting_handover()),
                    "token_file": str(lifecycle.token_path()),
-                   "ready_for_input": adapter.is_ready_for_input()}
+                   "ready_for_input": adapter.is_ready_for_input(),
+                   "sessions": [{k: r.get(k) for k in ("session_id", "termlink_session",
+                                                       "ready", "alive", "updated_at")}
+                                for r in adapter.session_records()],
+                   "watcher": watcher.liveness_verdict()["state"]}
     if args.json:
         print(json.dumps(payload))
     elif payload["status"] == "not_running":
@@ -537,7 +669,10 @@ def cmd_receiver_status(args) -> int:
         print(f"  healthy:           {payload['healthy']}")
         print(f"  inject enabled:    {payload['inject_enabled']}")
         print(f"  awaiting handover: {payload['awaiting_handover']}")
-        print(f"  agent ready:       {payload['ready_for_input']}")
+        print(f"  watcher:           {payload['watcher']}")
+        for r in payload["sessions"]:
+            print(f"  session {str(r['session_id'])[:12]:<12} ready={r['ready']} "
+                  f"termlink={r['termlink_session']} alive={r['alive']}")
     return 0 if payload.get("healthy") else 1
 
 
@@ -677,6 +812,10 @@ def build_parser() -> argparse.ArgumentParser:
     recv_start.add_argument("--no-inject", action="store_true",
                             help="store and confirm, but never inject (negative control)")
     recv_start.add_argument("--quiet", action="store_true")
+    recv_start.add_argument("--no-watcher", action="store_true",
+                            help="receiver only; do not start the supervised watcher (T-3684)")
+    recv_start.add_argument("--tick", type=float, default=None,
+                            help="watcher tick seconds (default SIDECAR_TICK, 30)")
     recv_start.set_defaults(func=cmd_receiver_start)
 
     recv_stop = recv_sub.add_parser("stop", help="stop the receiver")
@@ -699,6 +838,42 @@ def build_parser() -> argparse.ArgumentParser:
     ak.add_argument("id", nargs="?", default=None, help="one message's full history")
     ak.add_argument("--json", action="store_true")
     ak.set_defaults(func=cmd_acks)
+
+    # T-3684 / T-3685: the supervised watcher
+    st_ = sub.add_parser("start", help="start this agent's sidecar: receiver + supervised "
+                         "watcher (tick every SIDECAR_TICK s, default 30)")
+    st_.add_argument("--agent", default=None)
+    st_.add_argument("--port", type=int, default=None)
+    st_.add_argument("--tick", type=float, default=None)
+    st_.add_argument("--no-inject", action="store_true",
+                     help="store and confirm, never inject (negative control)")
+    st_.add_argument("--quiet", action="store_true")
+    st_.add_argument("--json", action="store_true")
+    st_.set_defaults(func=cmd_start)
+
+    sp_ = sub.add_parser("stop", help="stop and disable the watcher and the receiver")
+    sp_.add_argument("--agent", default=None)
+    sp_.add_argument("--quiet", action="store_true")
+    sp_.set_defaults(func=cmd_stop)
+
+    en_ = sub.add_parser("ensure", help="restart an enabled sidecar whose supervisor is gone "
+                         "(cron sidecar-ensure-1m, @reboot, claude-fw)")
+    en_.add_argument("--all", action="store_true",
+                     help="every enabled project on this host")
+    en_.add_argument("--json", action="store_true")
+    en_.set_defaults(func=cmd_ensure)
+
+    lv_ = sub.add_parser("liveness", help="watcher liveness verdict (exit 0 live, 1 not-live, 2 absent)")
+    lv_.add_argument("--json", action="store_true")
+    lv_.set_defaults(func=cmd_liveness)
+
+    la_ = sub.add_parser("latency", help="send→RECEIVED and send→HANDED_OVER per message "
+                         "(median, p95, max), from the ledgers")
+    la_.add_argument("--json", action="store_true")
+    la_.set_defaults(func=cmd_latency)
+
+    tk_ = sub.add_parser("tick", help="run one watcher tick now, in the foreground")
+    tk_.set_defaults(func=cmd_tick)
 
     return parser
 

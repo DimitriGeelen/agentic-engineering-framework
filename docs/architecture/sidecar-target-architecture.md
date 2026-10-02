@@ -198,8 +198,8 @@ register:
     text: "Cron tick, default 30 s, configurable: guaranteed-delivery fallback that injects when ready"
     source: "T-3397 §Consumption; Amendment 5 IW-2"
     owner_task: T-3684
-    status: unbuilt
-    evidence: "not built: T-3684 (S3 tick) names R2-R5; tick + configurable cadence not in T-3693 ACs (T-3694 re-point)"
+    status: built
+    evidence: "T-3684: lib/sidecar/watcher.py run_tick/run_forever, SIDECAR_TICK (lib/config.sh, default 30) — each tick drains the hub inbox topic(s) and injects when ready; live e2e tests/integration/t3684_sidecar_watcher_e2e_test.py (docs/reports/T-3684-e2e-*.json: legacy-topic consult injected by trigger=tick, HANDED_OVER <= 60 s at the default 30 s tick); review docs/reports/T-3684-review-codex.md"
 
   - id: R4
     text: "Ready flag: Stop hook writes ready-for-input: true; UserPromptSubmit clears it"
@@ -212,8 +212,8 @@ register:
     text: "Urgent bypass: urgent messages inject immediately regardless of state"
     source: "operator decision 2026-09-21, T-3397 IW-1"
     owner_task: T-3684
-    status: unbuilt
-    evidence: "not built: urgent bypass is T-3684 scope (operator ruling 2026-09-21), absent from T-3693 ACs (T-3694 re-point)"
+    status: built
+    evidence: "T-3684: lib/sidecar/inject.py choose_target (urgent → a busy session, urgent_bypass recorded); live e2e test_3 — urgent injected while the session's own record was busy, non-urgent only after its Stop (docs/reports/T-3684-e2e-3-busy-urgent.json)"
 
   - id: R6
     text: "Bidirectional ack: sender sees stored / injected-now / injected-later"
@@ -226,8 +226,8 @@ register:
     text: "Liveness: .context/sidecar/liveness.yaml {identity, seq, last_probe_at, latency}; self-probe every 30 s tick"
     source: "Amendment 5 IW-2"
     owner_task: T-3685
-    status: unbuilt
-    evidence: "no liveness.yaml exists (T-3682 audit)"
+    status: built
+    evidence: "T-3685: lib/sidecar/watcher.py write_liveness/self_probe/liveness_verdict — .context/sidecar/liveness.yaml {identity, seq, last_probe_at, last_probe_ok, last_probe_latency_ms} every tick, loopback probe = /health + authenticated /ack; fw doctor + fw audit FAIL when not live (live e2e test_4, docs/reports/T-3684-e2e-4-kill.json)"
 
   - id: R8
     text: "Per-hub capability probe + version floor before send"
@@ -275,15 +275,15 @@ register:
     text: "Every agent runs a sidecar (symmetric)"
     source: "T-3397 IW-5"
     owner_task: T-3685
-    status: unbuilt
-    evidence: "no AEF sidecar process exists (T-3682 audit)"
+    status: built
+    evidence: "T-3685: fw sidecar start / receiver start run receiver + supervised watcher (watcher.py supervise); claude-fw --termlink starts it; cron sidecar-ensure-1m + @reboot restart any enabled sidecar on the host; doctor/audit WARN where none runs"
 
   - id: R15
     text: "Always-on listener per agent session"
     source: "T-3396 title"
     owner_task: T-3685
-    status: unbuilt
-    evidence: "inbound is pull, not push (T-3682 audit)"
+    status: built
+    evidence: "T-3685/T-3684: the always-on watcher pushes into the agent's own TermLink session (per-session readiness, T-3745); its supervisor restarts a dead or hung watcher (unit test_start_supervises_restarts_and_ensure_recovers; live test_4)"
 ```
 
 ## 8. What is still open
