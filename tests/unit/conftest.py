@@ -182,3 +182,8 @@ def _sidecar_tests_cannot_reach_the_live_hub(request, monkeypatch, tmp_path):
     if not request.path.name.startswith("test_sidecar_"):
         return
     monkeypatch.setenv("TERMLINK_RUNTIME_DIR", str(tmp_path / "no-live-hub"))
+    # T-3684: `fw sidecar start` records enabled projects host-wide so the
+    # cron `fw sidecar ensure --all` can restart them. A test must never land
+    # in the real registry (cron would try to resurrect a deleted tmp project).
+    monkeypatch.setenv("FW_SIDECAR_ENABLED_DIR", str(tmp_path / "sidecar-enabled"))
+    monkeypatch.setenv("FW_SIDECAR_REGISTRY_DIR", str(tmp_path / "sidecar-registry"))

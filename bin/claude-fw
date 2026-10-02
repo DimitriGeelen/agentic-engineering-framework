@@ -606,6 +606,37 @@ PY
 # Start TermLink session if requested (before main loop)
 termlink_start
 
+# T-3684/T-3685 (arc-011): a --termlink session gets its always-on sidecar —
+# the receiver plus the supervised watcher that injects peer messages into
+# THIS session's PTY (urgent at once, the rest when this session's own Stop
+# hook says it is idle). Idempotent: an already-running sidecar is kept. The
+# watcher outlives this wrapper on purpose (R15, always-on); `fw sidecar stop`
+# ends it. Without TermLink the injection target cannot exist, so nothing is
+# started and the line below says so — inert, and visibly so.
+sidecar_start() {
+    [ "${CLAUDE_FW_NO_SIDECAR:-0}" = "1" ] && return 0
+    local _fw
+    _fw="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)/fw"
+    if [ "$TERMLINK_ENABLED" != "1" ]; then
+        if [ "${_TERMLINK_REQUESTED:-0}" = "1" ]; then
+            echo "claude-fw: sidecar watcher NOT started — TermLink absent, peer messages cannot be injected (inert). Install termlink, then: fw sidecar start"
+        fi
+        return 0
+    fi
+    [ -x "$_fw" ] || return 0
+    local _out
+    if _out=$("$_fw" sidecar start --quiet --json 2>&1); then
+        local _tick
+        _tick=$(printf '%s' "$_out" | sed -n 's/.*"tick_s": \([0-9.]*\).*/\1/p' | tail -1)
+        echo "claude-fw: sidecar watcher running (tick ${_tick:-?}s) — fw sidecar liveness"
+    else
+        echo "claude-fw: WARNING sidecar start failed — peer messages will not be injected: ${_out: -300}" >&2
+    fi
+}
+_TERMLINK_REQUESTED=0
+for _a in "$@"; do [ "$_a" = "--termlink" ] && _TERMLINK_REQUESTED=1; done
+sidecar_start
+
 # T-2411: one-shot startup overview (before main loop — not re-emitted on restart).
 _print_startup_banner
 

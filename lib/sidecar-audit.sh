@@ -170,3 +170,34 @@ except Exception:
 ' || return 2
     return 0
 }
+
+# T-3685 (arc-011 S-LIVE, R7/R14/R15). The watcher's liveness verdict, read by
+# fw doctor and fw audit. Reads .context/sidecar/liveness.yaml through
+# `fw sidecar liveness --json` — our own file, no hub call.
+#
+#   fw_sidecar_watcher_facts <project_root>
+#     stdout : STATE<TAB>SEQ<TAB>AGE_S<TAB>PROBE_LATENCY_MS<TAB>TERMLINK<TAB>REASONS ("; "-joined)
+#              STATE is live | not-live | absent (see lib/sidecar/watcher.py:liveness_verdict)
+#     rc 0   : facts printed
+#     rc 2   : the verdict could not be read — the caller says so
+fw_sidecar_watcher_facts() {
+    local root="${1:?fw_sidecar_watcher_facts: project root required}"
+    local lib_dir
+    lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    [ -f "$lib_dir/sidecar_cli.py" ] || return 2
+    local out
+    out=$(PROJECT_ROOT="$root" timeout 60 python3 "$lib_dir/sidecar_cli.py" liveness --json 2>/dev/null)
+    [ -n "$out" ] || return 2
+    printf '%s' "$out" | python3 -c '
+import json, sys
+try:
+    v = json.load(sys.stdin)
+    live = v.get("liveness") or {}
+    print("\t".join((v["state"], str(live.get("seq")), str(v.get("age_s")),
+                     str(live.get("last_probe_latency_ms")), str(v.get("termlink")),
+                     "; ".join(v.get("reasons") or []))))
+except Exception:
+    sys.exit(2)
+' || return 2
+    return 0
+}

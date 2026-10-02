@@ -42,6 +42,30 @@ jobs:
     \ pre-sweep backlog as expired_unswept and the give-ups as dead_letters.\
     \ Offset to :03/:08/... off the audit slots (T-3070 collision class); takes its\
     \ own lock, not audit.lock."
+- id: sidecar-ensure-1m
+  name: Sidecar watcher supervisor keep-alive (1 min)
+  schedule: '* * * * *'
+  command: flock -n /var/lock/agentic-cron-sidecar-ensure.lock -c 'fw sidecar ensure --all'
+  source_file: agentic-audit.crontab
+  origin_task: T-3685
+  status: active
+  description: "arc-011 S-LIVE (R14/R15). Every agent's sidecar watcher runs under\
+    \ a supervisor that restarts the watcher (died or hung) and the receiver. This\
+    \ restarts the SUPERVISOR: for every project on this host whose sidecar was\
+    \ started with fw sidecar start (or claude-fw --termlink) and not stopped \u2014\
+    \ the host enabled-registry ~/.local/state/fw-sidecar/enabled/ \u2014 start\
+    \ its supervisor if it is not running. A no-op while everything is up. Host-wide\
+    \ by design, so consumer projects on this host are covered too."
+- id: sidecar-ensure-boot
+  name: Sidecar watchers on startup
+  schedule: '@reboot'
+  command: sleep 30 && flock -n /var/lock/agentic-cron-sidecar-ensure.lock -c 'fw sidecar ensure --all'
+  source_file: agentic-audit.crontab
+  origin_task: T-3685
+  status: active
+  description: "arc-011 S-LIVE: bring every enabled sidecar watcher back after a reboot\
+    \ (the 1-minute keep-alive would too, within a minute; this is the explicit\
+    \ boot leg). The 30 s delay lets the TermLink hub come up first."
 - id: reviewer-audit-daily
   name: Reviewer Layer-3 audit (daily Pass B)
   schedule: 37 4 * * *

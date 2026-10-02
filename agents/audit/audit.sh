@@ -4061,6 +4061,44 @@ check_sidecar_ledger() {
 }
 check_sidecar_ledger
 
+# T-3685 (arc-011 S-LIVE, R7/R14/R15). The always-on sidecar watcher: FAIL
+# while it is enabled and NOT live (seq stalled for 2 ticks, or its loopback
+# self-probe failed) — the same verdict fw doctor reads
+# (lib/sidecar-audit.sh:fw_sidecar_watcher_facts). Never started here: WARN.
+check_sidecar_watcher() {
+    [ -f "$FRAMEWORK_ROOT/lib/sidecar-audit.sh" ] || return 0
+    # shellcheck source=/dev/null
+    source "$FRAMEWORK_ROOT/lib/sidecar-audit.sh"
+    local _sw _sw_rc _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why
+    _sw=$(fw_sidecar_watcher_facts "$PROJECT_ROOT"); _sw_rc=$?
+    if [ "$_sw_rc" -ne 0 ]; then
+        fail "Sidecar watcher liveness unreadable" \
+             "fw sidecar liveness --json produced no readable verdict" \
+             "Run: bin/fw sidecar liveness — an unreadable liveness check is a deaf agent that cannot tell (T-3685)"
+        return 0
+    fi
+    IFS=$'\t' read -r _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why <<< "$_sw"
+    case "$_sw_state" in
+        live)
+            if [ "$_sw_tl" = "absent" ]; then
+                warn "Sidecar watcher live but inert: TermLink absent" \
+                     "liveness.yaml termlink=absent" \
+                     "Install TermLink; until then peer messages are stored and confirmed RECEIVED, never injected"
+            else
+                pass "Sidecar watcher live: seq $_sw_seq, last tick ${_sw_age}s ago, self-probe ${_sw_ms}ms"
+            fi ;;
+        not-live)
+            fail "Sidecar watcher NOT live" \
+                 "$_sw_why" \
+                 "Run: bin/fw sidecar liveness; bin/fw sidecar ensure — cron sidecar-ensure-1m should have restarted it (T-3685)" ;;
+        *)
+            warn "No sidecar watcher in this project" \
+                 "$_sw_why" \
+                 "R14: every agent runs a sidecar. Start: bin/fw sidecar start (claude-fw --termlink starts it)" ;;
+    esac
+}
+check_sidecar_watcher
+
 # T-3428 (OBS-463 leg 3, arc-006). A value driver that the estimator cannot
 # score is only a NAME. T-3427 stopped it distorting the ranking (an unscorable
 # driver is omitted from the scores map and so left out of the normalisation

@@ -1,0 +1,21 @@
+id: lib/sidecar/watcher.py
+name: watcher
+type: script
+subsystem: framework-core
+location: lib/sidecar/watcher.py
+tags: []
+
+purpose: "arc-011 sidecar watcher — the per-agent, always-on tick (T-3684, T-3685)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-02
+created_by: unknown

@@ -11,6 +11,12 @@ PATH=/usr/local/bin:/usr/bin:/bin
 # Sidecar ack-ledger sweep (5 min)
 3,8,13,18,23,28,33,38,43,48,53,58 * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-sidecar-sweep-5m.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" sidecar sweep' 2>&1 | logger -t agentic-cron
 
+# Sidecar watcher supervisor keep-alive (1 min)
+* * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-sidecar-ensure.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" sidecar ensure --all' 2>&1 | logger -t agentic-cron
+
+# Sidecar watchers on startup
+@reboot root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" sleep 30 && flock -n /var/lock/agentic-cron-sidecar-ensure.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" sidecar ensure --all' 2>&1 | logger -t agentic-cron
+
 # Reviewer Layer-3 audit (daily Pass B)
 37 4 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" "/opt/999-Agentic-Engineering-Framework/bin/fw" reviewer audit 2>&1 | logger -t agentic-cron
 

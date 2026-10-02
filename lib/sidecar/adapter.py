@@ -153,7 +153,10 @@ _SID_RE = re.compile(r"[^A-Za-z0-9_-]")
 
 def _sessions_dir() -> Path:
     d = _sidecar_dir() / "sessions"
-    d.mkdir(parents=True, exist_ok=True)
+    if not d.is_dir():
+        d.mkdir(parents=True, exist_ok=True)
+        from . import lifecycle
+        lifecycle._ensure_runtime_ignored(d.parent)   # runtime state, never git
     return d
 
 

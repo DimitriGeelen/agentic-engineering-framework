@@ -3,3 +3,6 @@ receiver.token
 receiver.token.tmp
 ready-for-input.yaml
 receiver/
+sessions/
+watcher/
+liveness.yaml

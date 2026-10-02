@@ -3457,6 +3457,40 @@ sys.exit(0 if '$_tl_topic' in names else 1)
         _doctor_warn_host "TermLink not installed (cargo install termlink)"
     fi
 
+    # T-3685 (arc-011 S-LIVE, R7/R14/R15): the always-on sidecar watcher. NOT
+    # live (seq stalled 2 ticks, or the loopback self-probe failed) while it is
+    # enabled is a FAIL — an agent with a dead listener is deaf and does not
+    # know it. Never started here is a WARN (R14: every agent runs a sidecar).
+    # Same fact function as fw audit's check_sidecar_watcher.
+    if [ -f "$FRAMEWORK_ROOT/lib/sidecar-audit.sh" ]; then
+        # shellcheck source=/dev/null
+        source "$FRAMEWORK_ROOT/lib/sidecar-audit.sh"
+        local _sw _sw_rc _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why
+        _sw=$(fw_sidecar_watcher_facts "$PROJECT_ROOT"); _sw_rc=$?
+        if [ "$_sw_rc" -ne 0 ]; then
+            echo -e "  ${RED}FAIL${NC}  Sidecar watcher liveness could not be read (fw sidecar liveness --json)"
+            issues=$((issues + 1))
+        else
+            IFS=$'\t' read -r _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why <<< "$_sw"
+            case "$_sw_state" in
+                live)
+                    if [ "$_sw_tl" = "absent" ]; then
+                        echo -e "  ${YELLOW}WARN${NC}  Sidecar watcher live but INERT: TermLink absent — messages are stored and confirmed, never injected"
+                        warnings=$((warnings + 1))
+                    else
+                        echo -e "  ${GREEN}OK${NC}  Sidecar watcher live (seq $_sw_seq, last tick ${_sw_age}s ago, self-probe ${_sw_ms}ms)"
+                    fi ;;
+                not-live)
+                    echo -e "  ${RED}FAIL${NC}  Sidecar watcher NOT live: $_sw_why"
+                    echo "         Run: fw sidecar liveness; fw sidecar ensure (restarts the supervisor); logs in .context/sidecar/watcher/"
+                    issues=$((issues + 1)) ;;
+                *)
+                    echo -e "  ${YELLOW}WARN${NC}  No sidecar watcher in this project (R14: every agent runs one) — start: fw sidecar start"
+                    warnings=$((warnings + 1)) ;;
+            esac
+        fi
+    fi
+
     # Check: pi (Pi mono coding-agent — optional, ADR-0003 worker_kind=pi)
     # T-1694 (Q13): warn-only, no auto-install. Operator runs the install
     # command consciously if any workflow declares worker_kind: pi.

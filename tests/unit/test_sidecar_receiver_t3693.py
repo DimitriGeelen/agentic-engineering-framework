@@ -60,7 +60,9 @@ def env(tmp_path, monkeypatch):
             return proc
 
         def start(self, root, *extra):
-            proc = self.cli(root, "receiver", "start", *extra)
+            # --no-watcher: these tests drive inject themselves; the T-3684
+            # watcher has its own suite (test_sidecar_watcher_t3684.py).
+            proc = self.cli(root, "receiver", "start", "--no-watcher", *extra)
             assert proc.returncode == 0, proc.stdout + proc.stderr
             started.append(root)
             return proc

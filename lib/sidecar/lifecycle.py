@@ -88,7 +88,8 @@ def write_token() -> str:
 #: T-3725: runtime files beside the token that must never reach git. Written by
 #: the receiver itself so every project (vendored consumers included) is covered,
 #: not only repos whose root .gitignore happens to list them.
-_RUNTIME_IGNORES = ("receiver.token", "receiver.token.tmp", "ready-for-input.yaml", "receiver/")
+_RUNTIME_IGNORES = ("receiver.token", "receiver.token.tmp", "ready-for-input.yaml", "receiver/",
+                    "sessions/", "watcher/", "liveness.yaml")
 
 
 def _ensure_runtime_ignored(sidecar_dir: Path) -> None:

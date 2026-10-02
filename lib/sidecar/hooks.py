@@ -134,6 +134,13 @@ def _frame(messages: list[dict], surfacing: str) -> str:
 def _confirm(msg_id: str, envelope: dict, me: str) -> None:
     """CONFIRM-2: tell the sender's receiver this message reached the agent."""
     sender = envelope.get("from")
+    if envelope.get("via") == "hub-topic":
+        # T-3684: picked up from the legacy hub topic by the watcher. The
+        # sender posted it the pre-receiver way and has no SENT row a /ack
+        # could land on; its own hub-path ledger closes on our reply.
+        receiver.record_event(msg_id, "CONFIRM_SKIPPED",
+                              reason="legacy hub-topic sender: no direct ledger to confirm into")
+        return
     entry = lifecycle.lookup(sender) if sender else None
     if not entry or not entry.get("live"):
         receiver.record_event(msg_id, "CONFIRM_FAILED",
