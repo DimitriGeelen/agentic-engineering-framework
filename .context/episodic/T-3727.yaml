@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3727: Sidecar unit tests not hermetic under the nightly env: 27 reds in test_sidecar_sweep/answered_topics/v9_dual_read (CircuitError: hub fingerprint unreadable) after today's identity/path changes
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-02T14:54:07Z
+# ============================================================================
+
+task_id: T-3727
+task_name: "Sidecar unit tests not hermetic under the nightly env: 27 reds in test_sidecar_sweep/answered_topics/v9_dual_read (CircuitError: hub fingerprint unreadable) after today's identity/path changes"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-02T14:40:33Z
+completed: 2026-10-02T14:52:14Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-02T16:51:57+02:00
+last_commit: 2026-10-02T16:51:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pin hub anchor in 3 sidecar test fixtures; conftest makes live hub unreachable for test_sidecar_*
+
+# Key outcomes
+outcomes:
+  - 'Causing commit localised and named in ## RCA, with the side (test vs production) that was wrong'
+  - 'test_sidecar_sweep/answered_topics/v9_dual_read pass under `env -i` (nightly-like env) — no test reaches the live hub'
+  - '`python3 -m pytest -q tests/unit -k sidecar` green in both an interactive shell and `env -i`; `bats tests/lint/` green'
+  - 'No production check weakened (hub_id / project_id resolution unchanged unless shown wrong)'
+  - 'Prevention: tests/unit/conftest.py makes the live hub unreachable for every `test_sidecar_*` module, so an unpinned test goes red in an interactive shell too (negative control: pin removed from a scratch copy of test_sidecar_sweep.py → 12 failed interactively)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'pin hub anchor in 3 sidecar test fixtures; conftest makes live hub unreachable for test_sidecar_*'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3727-sidecar-unit-tests-not-hermetic-under-th.md'
+  - 'tests/unit/conftest.py'
+  - 'tests/unit/test_sidecar_answered_topics.py'
+  - 'tests/unit/test_sidecar_sweep.py'
+  - 'tests/unit/test_sidecar_v9_dual_read.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-02T16:51:57'
+    action: 'T-3727: pin hub anchor in 3 sidecar test fixtures; conftest makes live hub unreachable for test_sidecar_*'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 11 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, regression, push-blocker, unit-suite, sidecar]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 11
+  commits: 1
+  files_changed: 5
+  lines_added: 58
+  lines_removed: 3
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3727-sidecar-unit-tests-not-hermetic-under-th.md
+generated_by: context-agent-hybrid
