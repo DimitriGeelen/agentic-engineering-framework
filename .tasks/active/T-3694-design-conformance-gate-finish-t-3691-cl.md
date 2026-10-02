@@ -108,7 +108,7 @@ docs/reports/T-3694-review-brief.md.
 - [x] Close gate refuses a close whose own result hands work to a missing, inactive, or unrelated task (one that never mentions the closer), including when the target is backticked, linked, emphasised or wrapped onto the next line — fixture: T-3691's own task file, tests/fixtures/t3694/T-3691-as-closed.md
 - [x] Close gate also refuses a task that closes while owning an unbuilt register row (T-3561 shape), and resolves arcs by `id:` so arc-011 slices are actually gated
 - [x] Tests for every gate with control and treatment: tests/governance/test_t3694_conformance_gate.bats (12), tests/unit/test_t3694_design_register.py (25); existing tests/governance/test_register_requirements_gate.bats green with its assertions pinned to the gate's own messages; captured run in docs/reports/T-3694-test-evidence.txt
-- [x] All verification commands pass (tests green, live register clean, vendor in sync, watchtower current)
+- [ ] All verification commands pass (tests green, live register clean, vendor in sync, watchtower current) — OPEN 2026-10-02: `bin/fw vendor self --check` reports drift on lib/sidecar/direct.py, an uncommitted in-flight edit by T-3693's session (this task may not touch lib/sidecar/); every other line passes (docs/reports/T-3694-test-evidence.txt, codex round 3)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
