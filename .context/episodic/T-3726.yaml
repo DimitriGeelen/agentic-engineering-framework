@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3726: RCA: why is the inception workflow so failure-prone (decide refused twice in one day, GO'd designs left unbuilt, 186 GO'd inceptions with no build link, 0/122 dispatched inceptions passing)? Three external vendor reviews
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-02T23:03:10Z
+# ============================================================================
+
+task_id: T-3726
+task_name: "RCA: why is the inception workflow so failure-prone (decide refused twice in one day, GO'd designs left unbuilt, 186 GO'd inceptions with no build link, 0/122 dispatched inceptions passing)? Three external vendor reviews"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-02T14:13:19Z
+completed: 2026-10-02T22:16:18Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-02T16:15:26+02:00
+last_commit: 2026-10-03T00:16:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  RCA brief (evidence E1-E5, gate inventory, reviewer question) + IW-1..IW-4. three blind external reviews (OpenAI, Z.ai, Google) + synthesis; IW-1..IW-4 answered; recommendation updated. inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/costs/reviews.jsonl'
+  - 'docs/reports/T-3726-inception-process-rca.md'
+  - 'docs/reports/T-3726-review-google.md'
+  - 'docs/reports/T-3726-review-openai.md'
+  - 'docs/reports/T-3726-review-zai.md'
+  - 'docs/reports/T-3726-synthesis.md'
+  - '.tasks/active/T-3726-rca-why-is-the-inception-workflow-so-fai.md'
+  - '.tasks/completed/T-3726-rca-why-is-the-inception-workflow-so-fai.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-02T16:15:26'
+    action: 'T-3726: RCA brief (evidence E1-E5, gate inventory, reviewer question) + IW-1..IW-4'
+  - time: '2026-10-02T16:19:32'
+    action: 'T-3726: three blind external reviews (OpenAI, Z.ai, Google) + synthesis; IW-1..IW-4 answered; recommendation updated'
+  - time: '2026-10-03T00:16:20'
+    action: 'T-3726: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 482 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 482
+  commits: 3
+  files_changed: 8
+  lines_added: 539
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3726-rca-why-is-the-inception-workflow-so-fai.md
+generated_by: context-agent-hybrid

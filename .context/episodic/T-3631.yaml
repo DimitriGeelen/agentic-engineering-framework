@@ -1,0 +1,109 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3631: Cross-agent delivery: one acknowledged channel, a delivery ledger for unconfirmed messages, and per-agent identity (055 finding, framework:pickup 257)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-02T23:02:57Z
+# ============================================================================
+
+task_id: T-3631
+task_name: "Cross-agent delivery: one acknowledged channel, a delivery ledger for unconfirmed messages, and per-agent identity (055 finding, framework:pickup 257)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T08:49:35Z
+completed: 2026-10-02T22:14:59Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-01T10:52:53+02:00
+last_commit: 2026-10-03T00:15:31+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception filed from 055's delivery finding (verified), open questions IW-1..4; T-3628/T-3629 bugs filed; ack posted framework:pickup 258, harness answer cockpit:harness-access 1. research artifact — 055 sidecar root cause (vendored v1.6.768 has no fw sidecar, no consult hook), host identity ambiguity, actions and posts. shared bug-batch worker prompt (fleet batch T-3617/T-3628/T-3629/T-3633; hygiene batch T-3606/T-3607/T-3625/T-3626). T-3635 build prompt (objectives.yaml + arc supports per ratified T-3535). probe a4ef8725 reached 055 (their listener), 055's upgrade blocker -> T-3639 filed; arc-008 abandonment recommendation revised to re-scope. T-3639 triage prompt (055's local fixes before its upgrade). Session handover S-2026-1001-1738 (enriched: state, decisions, blockers, first actions). housekeeping — commit T-3625 close-out (focus cannot return to a completed task, OBS-250). inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'T-3639 triage prompt (055''s local fixes before its upgrade)'
+    source: git-mined
+  - description: 'shared bug-batch worker prompt (fleet batch T-3617/T-3628/T-3629/T-3633; hygiene batch T-3606/T-3607/T-3625/T-3626)'
+    source: git-mined
+  - description: 'inception filed from 055''s delivery finding (verified), open questions IW-1..4; T-3628/T-3629 bugs filed; ack posted framework:pickup 258, harness answer cockpit:harness-access 1'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-3625.yaml'
+  - '.context/handovers/S-2026-1001-1738.md'
+  - 'docs/reports/bug-batch-prompt.md'
+  - 'docs/reports/T-3631-cross-agent-delivery.md'
+  - 'docs/reports/T-3635-build-prompt.md'
+  - 'docs/reports/T-3639-triage-prompt.md'
+  - '.tasks/active/T-3628-fw-pickup-send-without---remote-delivers.md'
+  - '.tasks/active/T-3629-claude-fw-fresh-restart-with-empty-claud.md'
+  - '.tasks/active/T-3631-cross-agent-delivery-one-acknowledged-ch.md'
+  - '.tasks/active/T-3639-triage-055s-18-local-framework-fixes-fra.md'
+  - '.tasks/completed/T-3625-fw-doctor-aborts-exit-128-at-the-git-hoo.md'
+  - '.tasks/completed/T-3631-cross-agent-delivery-one-acknowledged-ch.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T10:52:53'
+    action: 'T-3631: inception filed from 055''s delivery finding (verified), open questions IW-1..4; T-3628/T-3629 bugs filed; ack posted framework:pickup 258, harness answer cockpit:harness-access 1'
+  - time: '2026-10-01T14:39:38'
+    action: 'T-3631: research artifact — 055 sidecar root cause (vendored v1.6.768 has no fw sidecar, no consult hook), host identity ambiguity, actions and posts'
+  - time: '2026-10-01T14:57:34'
+    action: 'T-3631: shared bug-batch worker prompt (fleet batch T-3617/T-3628/T-3629/T-3633; hygiene batch T-3606/T-3607/T-3625/T-3626)'
+  - time: '2026-10-01T14:58:06'
+    action: 'T-3631: T-3635 build prompt (objectives.yaml + arc supports per ratified T-3535)'
+  - time: '2026-10-01T15:10:20'
+    action: 'T-3631: probe a4ef8725 reached 055 (their listener), 055''s upgrade blocker -> T-3639 filed; arc-008 abandonment recommendation revised to re-scope'
+  - time: '2026-10-01T15:12:52'
+    action: 'T-3631: T-3639 triage prompt (055''s local fixes before its upgrade)'
+  - time: '2026-10-01T17:45:19'
+    action: 'T-3631: Session handover S-2026-1001-1738 (enriched: state, decisions, blockers, first actions)'
+  - time: '2026-10-01T20:30:16'
+    action: 'T-3631: housekeeping — commit T-3625 close-out (focus cannot return to a completed task, OBS-250)'
+  - time: '2026-10-03T00:15:31'
+    action: 'T-3631: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 9 commit(s), 2245 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2245
+  commits: 9
+  files_changed: 11
+  lines_added: 1470
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3631-cross-agent-delivery-one-acknowledged-ch.md
+generated_by: context-agent-hybrid

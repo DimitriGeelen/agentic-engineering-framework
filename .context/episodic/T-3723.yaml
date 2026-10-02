@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3723: Standing warm reviewer/research agents per vendor (Claude, Codex, Z.ai/opencode, Antigravity): keep the harness and prompt cache warm, inject review and research questions via the sidecar, a fresh conversation per question
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-02T23:03:06Z
+# ============================================================================
+
+task_id: T-3723
+task_name: "Standing warm reviewer/research agents per vendor (Claude, Codex, Z.ai/opencode, Antigravity): keep the harness and prompt cache warm, inject review and research questions via the sidecar, a fresh conversation per question"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-02T13:39:27Z
+completed: 2026-10-02T17:28:42Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-02T15:41:59+02:00
+last_commit: 2026-10-02T19:29:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception artifact + IW-1..IW-4 — standing warm reviewers per vendor; measured ~86K cache tokens per cold claude worker. dispose IW-1..IW-4 (deferred to spike T-3724) so the GO can record. ACs (auto-tick-on-decide) ticked; GO is decidable. inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-3723-standing-warm-reviewers.md'
+  - '.tasks/active/T-3723-standing-warm-reviewerresearch-agents-pe.md'
+  - '.tasks/completed/T-3723-standing-warm-reviewerresearch-agents-pe.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-02T15:41:59'
+    action: 'T-3723: inception artifact + IW-1..IW-4 — standing warm reviewers per vendor; measured ~86K cache tokens per cold claude worker'
+  - time: '2026-10-02T16:05:38'
+    action: 'T-3723: dispose IW-1..IW-4 (deferred to spike T-3724) so the GO can record'
+  - time: '2026-10-02T16:06:39'
+    action: 'T-3723: ACs (auto-tick-on-decide) ticked; GO is decidable'
+  - time: '2026-10-02T19:29:21'
+    action: 'T-3723: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 229 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 229
+  commits: 4
+  files_changed: 3
+  lines_added: 276
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3723-standing-warm-reviewerresearch-agents-pe.md
+generated_by: context-agent-hybrid
