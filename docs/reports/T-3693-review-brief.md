@@ -3,11 +3,14 @@
 **Date:** 2026-10-02 · **Task:** `.tasks/active/T-3693-arc-011-sidecar-s1-finish-t-3561-closed-.md`
 **Commits:** `801c9c253` (receiver, hooks, injection, sender path, unit tests, vendored copies) ·
 `70d2946c2` (live e2e + negative control) · `82ce0b483` (brief + evidence) · `7f46f6515`
-(codex round-1 fixes) · this round's commit (codex round-2 fixes + a defect found live; see §Round 3).
+(codex round-1 fixes) · `d3fa880ad` (codex round-2 fixes + a defect found live; see §Round 3) ·
+`dafbca068` (round 3: the late-RECEIVED race driven through the real `send()` and two real receivers) ·
+the round-3 evidence commit (fresh live e2e + negative control, this brief).
 The previous worker's `8558988a0` / `bf6d38b47` / `9e7c932ba` are superseded where noted.
 
 Reviews so far: `docs/reports/T-3693-review-codex-round1.md` (FAIL: AC5, AC7) and
 `docs/reports/T-3693-review-codex-round2.md` (FAIL: AC4, AC7). Every finding is addressed below.
+Round 3 output: `docs/reports/T-3693-review-codex.md`.
 
 ---
 
@@ -103,22 +106,25 @@ Reviews so far: `docs/reports/T-3693-review-codex-round1.md` (FAIL: AC5, AC7) an
 - **A generates the nonce in its own session** (`:301` operator instruction). A ran
   `N=$(head -c 4096 /dev/urandom | tr -dc a-z | head -c 12); … fw sidecar send … --body "Nonce check $N: …"`.
   **The test never chooses the nonce.** It learns it by observing B's receiver store (`:176`).
-- **B's only prompts: `hello` and the injected `[sidecar] …` line.** B's model then issued
-  `fw sidecar send --to t3693a-69ukz9 … --in-reply-to d08e401c-… --body 'AWBDZVLBQBLU'`, and A's
-  model said: *"The peer replied `AWBDZVLBQBLU`. That is my nonce `awbdzvlbqblu` in uppercase,
-  so the check passed."* (`docs/reports/T-3693-e2e-transcript-excerpts.txt`).
+- **B's only prompts: `hello` and the injected `[sidecar] …` line.** In the round-3 run (`jbil2q`)
+  B's model issued `fw sidecar send --to t3693a-jbil2q --conversation e2e-jbil2q --in-reply-to
+  1a7065bc-… --body 'EIKBIYCWTQNY'`, and A's model said: *"The peer replied `EIKBIYCWTQNY`, which is
+  my nonce `eikbiycwtqny` in uppercase, so the check passed."*
+  (`docs/reports/T-3693-e2e-transcript-excerpts.txt`, extracted from both agents' own Claude Code
+  session transcripts for this run, lines 3-23).
 - **The pass condition** (`:332`): the UPPERCASE string, which the test never writes, must be in
   A's receiver store AND in A's transcript inside the PEER-DATA block of a
   `hook_additional_context` attachment (`_surfaced_in_transcript`, `:151`).
 - Captured (`docs/reports/T-3693-e2e-run.log`, `T-3693-e2e-positive-evidence.json`):
   ```
-  [t3693-e2e 03:33:11] observed A's nonce on the wire at B's receiver: awbdzvlbqblu
-  "elapsed_s": 12.5,
-  "transformed_nonce_in_A_receiver": "b7c910ed-5883-4345-b802-fd7d1d5abc3a",
-  "transformed_nonce_in_A_context": "b9821d75-….jsonl [hook_additional_context] PEER-DATA block: 'AWBDZVLBQBLU'",
+  [t3693-e2e 03:59:41] observed A's nonce on the wire at B's receiver: eikbiycwtqny
+  "elapsed_s": 11.5,
+  "transformed_nonce_in_A_receiver": "5be1c0d4-d0b3-4f83-a321-d4575566bec5",
+  "transformed_nonce_in_A_context": "bf61ae28-c85c-44c1-9ebc-4a0133f68f84.jsonl [hook_additional_context] PEER-DATA block: 'EIKBIYCWTQNY'",
   PASSED
   ```
-- Reliability after the round-3 fix: 5/5 positive runs passed (12.5, 17.7, 11.8, 11.5, 11.6 s).
+- Reliability after the round-3 fix: 5/5 positive runs passed (12.5, 17.7, 11.8, 11.5, 11.6 s) in
+  round 2; the round-3 re-run (above) passed again at 11.5 s.
   All injections were `on-store`; the harness's 5 s `deliver-pending` loop (labelled as T-3684's
   stand-in) never had to deliver.
 
@@ -127,7 +133,7 @@ Reviews so far: `docs/reports/T-3693-review-codex-round1.md` (FAIL: AC5, AC7) an
 `run_round_trip()` with B's receiver started `--no-inject`. It asserts that A's nonce reached B's
 receiver, that `not result.passed`, and that A's ledger reads SENT → RECEIVED → ESCALATED with no
 HANDED_OVER and no REPLIED, set by infrastructure.
-- Captured (`T-3693-e2e-negative-evidence.json`): A generated `lrdbvcksduye`, and it reached B's
+- Captured (`T-3693-e2e-negative-evidence.json`, round-3 run `6u7cc5`): A generated `bqehezzwuiwu`, and it reached B's
   receiver. A's ledger `SENT/sender, RECEIVED/receiver-response, ESCALATED/infrastructure`. B's
   events: STORED, then INJECT_BLOCKED "injection disabled (receiver started with --no-inject)"
   on-store and on every tick. B's transcript: only `hello`. A said "I haven't seen a reply yet."
@@ -137,7 +143,7 @@ HANDED_OVER and no REPLIED, set by infrastructure.
 `lib/sidecar/direct.py`:
 - SENT by the sender (`:191`); RECEIVED from the receiver's HTTP response (`:205`).
 - HANDED_OVER only through `confirm_from_peer` (`:235`), reached through our receiver's `/ack`
-  (`http_server.py:110`). The peer's finalizer posts that only after transcript evidence. It is
+  (`http_server.py:81`). The peer's finalizer posts that only after transcript evidence. It is
   accepted only if this ledger SENT the id, the confirming peer IS the original recipient, and the
   message is not already HANDED_OVER/REPLIED.
 - REPLIED only through `note_reply` (`:258`), by our own receiver, and only from the original recipient.
@@ -150,8 +156,19 @@ HANDED_OVER and no REPLIED, set by infrastructure.
 - Tests: `test_received_then_replied_ledger_order`, `test_confirm_only_from_the_original_recipient`,
   `test_late_or_repeated_confirm_never_regresses`, `test_late_confirm_after_escalation_is_recorded`,
   `test_reply_only_from_the_original_recipient`, `test_peer_cannot_confirm_an_unknown_message`,
-  `test_late_received_never_regresses_a_handed_over`, `test_late_received_never_regresses_a_reply`.
-- Live: A's ledger `[SENT/sender, RECEIVED/receiver-response, HANDED_OVER/peer-receiver:t3693b-69ukz9,
+  `test_late_received_never_regresses_a_handed_over`, `test_late_received_never_regresses_a_reply`,
+  and (round 3) `test_peer_confirm_and_reply_racing_ahead_of_send_over_real_http`.
+- **Round-3: the race through the real path.** Codex round 2 noted the late-RECEIVED tests seed rows
+  by hand. The round-3 test starts two REAL receiver processes and calls the REAL `direct.send()`.
+  After the real POST `/message` to B returns RECEIVED, but before `send()` writes its RECEIVED row,
+  B's real CONFIRM-2 (`hooks._confirm` → real POST `/ack` to A's receiver process) and B's real reply
+  (`direct.send` → A's receiver `/message` → `note_reply`) land in A's ledger. Only the code under
+  test runs; the one wrapper merely delays when `send()` sees its own response. Asserted: rows in
+  arrival order `SENT, HANDED_OVER, REPLIED, RECEIVED` (by `peer-receiver:t3693-b` / `own-receiver`),
+  effective state REPLIED, the sweep (with the late row's deadline already past) escalates nothing,
+  and a further CONFIRM-2 is refused. **Mutation check:** with `_effective` changed to
+  latest-row-wins, this test and both late-RECEIVED tests FAIL (3 failed); restored, they pass.
+- Live (round-3 run): A's ledger `[SENT/sender, RECEIVED/receiver-response, HANDED_OVER/peer-receiver:t3693b-jbil2q,
   REPLIED/own-receiver]`.
 - Trust model: same-host. The peer authenticates with our 0600 token, and its name is checked
   against the SENT row. Cross-host signed identity is T-3688.
@@ -172,11 +189,11 @@ $ python3 -m pytest tests/integration/t3693_*.py -v -s
 …::test_real_termlink_inject_reaches_the_tagged_session PASSED
 …::test_e2e_two_real_agents_nonce_round_trip PASSED
 …::test_e2e_negative_control_injection_disabled_fails_and_escalates PASSED
-======================== 3 passed in 372.67s (0:06:12) =========================
+======================== 3 passed in 370.56s (0:06:10) =========================
 $ python3 -m pytest tests/unit -k sidecar -q
-217 passed, 3968 deselected
+218 passed, 3968 deselected
 $ python3 -m pytest tests/unit/test_sidecar_receiver_t3693.py tests/unit/t3561_adapter.py tests/unit/t3561_receiver_storage.py -q
-56 passed
+57 passed
 ```
 The live tests skip loudly ("T-3693 LIVE E2E NOT RUN … a skip here proves nothing") when
 termlink, claude or tmux is missing, and the Verification line refuses `SKIPPED`.
@@ -217,6 +234,7 @@ file passed (3/3).
 | 2 | AC4: ids could carry a newline into the "one line" | ingress charset + sanitised, asserted-printable line |
 | 2 | AC7: late RECEIVED could regress HANDED_OVER/REPLIED | effective state = highest rank |
 | 3 (live) | hook killed after printing → false HANDED_OVER | transcript-evidenced detached finalizer; no fsync in the hook path |
+| 3 | round-2 race tests seeded rows by hand | `test_peer_confirm_and_reply_racing_ahead_of_send_over_real_http`: real `send()`, two real receivers, mutation-checked |
 
 ## Scope fence — every deferral, owner exists and is active
 
