@@ -407,9 +407,8 @@ if _human_ticked and len(sys.argv) > 3 and sys.argv[2]:
         import human_ac_ticks as _hat
         _tid = re.search(r'T-\d+', os.path.basename(task_file))
         _root = Path(sys.argv[3] or os.getcwd())
-        for _t in _human_ticked:
-            _hat.record(_root, _tid.group(0) if _tid else '?', _hat.criterion_key(_t),
-                        'inception-decide', os.environ.get('USER') or 'operator')
+        _hat.record_ticked(_root, _tid.group(0) if _tid else '?', '\n'.join(out), _human_ticked,
+                           'inception-decide', os.environ.get('USER') or 'operator')
     except Exception as _e:  # never break a decision on telemetry; the audit will say so
         print(f'WARN: Human-tick provenance not recorded ({_e})', file=sys.stderr)
 PYTICK

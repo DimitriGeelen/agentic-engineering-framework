@@ -444,6 +444,7 @@ if auto_check:
                 content = f.read()
 
             modified = False
+            _titles = []
             for ac_text in acs:
                 # Find the unchecked AC line that matches (first 60 chars)
                 ac_prefix = ac_text[:60]
@@ -453,12 +454,13 @@ if auto_check:
                     content = content[:match.start()] + match.group(1) + '[x]' + match.group(2) + content[match.end():]
                     modified = True
                     checked_count += 1
-                    _human_ticked.append((tid, content[match.end():].split('\n', 1)[0], match.group(2)))
+                    _titles.append(match.group(2) + content[match.end():].split('\n', 1)[0])
                     print(f"  {GREEN}CHECKED{NC} {tid}: {ac_text[:60]}")
 
             if modified:
                 with open(task_file, 'w') as f:
                     f.write(content)
+                _human_ticked.append((tid, content, _titles))
 
         # T-3695: a RUBBER-STAMP Human AC ticked here passed its mechanical check (T-840);
         # record that provenance — `fw audit` FAILs on Human ticks that have none.
@@ -467,9 +469,9 @@ if auto_check:
                 sys.path.insert(0, os.path.join(os.environ.get('FRAMEWORK_ROOT', ''), 'lib'))
                 import human_ac_ticks as _hat
                 from pathlib import Path as _P
-                for _tid, _rest, _head in _human_ticked:
-                    _hat.record(_P(project_root), _tid, _hat.criterion_key(_head + _rest),
-                                'verify-acs-auto-check', os.environ.get('USER') or 'fw')
+                for _tid, _content, _ts in _human_ticked:
+                    _hat.record_ticked(_P(project_root), _tid, _content, _ts,
+                                       'verify-acs-auto-check', os.environ.get('USER') or 'fw')
             except Exception as _e:
                 print(f"WARN: Human-tick provenance not recorded ({_e})", file=sys.stderr)
 

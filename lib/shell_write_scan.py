@@ -160,6 +160,10 @@ def _tokens(command: str) -> list[str] | None:
         if c in " \t\r":
             flush()
             i += 1
+        elif c == "#" and not inword:
+            # a comment runs to end of line (`cat F # don't edit` — review round 3)
+            j = cmd.find("\n", i)
+            i = n if j < 0 else j
         elif c == "\\":
             if i + 1 < n and cmd[i + 1] == "\n":
                 i += 2
@@ -488,6 +492,10 @@ def _segment(seg: list[str], ctx: _Ctx) -> None:
             if len(ops) >= 2:
                 _check_target(ops[1], ctx, "uniq OUTPUT")
         return
+    if verb in ("rsync", "patch") and any(
+            (a.startswith("--") and _is_long(a[2:].partition("=")[0], "dry-run") and len(a) > 4)
+            or (verb == "rsync" and re.match(r"^-[a-zA-Z]*n", a)) for a in args):
+        return  # --dry-run / rsync -n writes nothing (review round 3)
     if verb in COPY_FAMILY:
         tval = {"-t", "--target-directory", "-S", "--suffix", "-m", "--mode", "-o", "--owner",
                 "-g", "--group", "-e", "--exclude", "--include", "-f", "--filter"}
@@ -590,18 +598,47 @@ def _script_form(verb: str, seg_text: str, ctx: _Ctx) -> None:
 def scan(command: str, cwd: str | None = None) -> list[Hit]:
     """Every reason `command` writes (or may write) a guarded path. Empty list = no write seen."""
     ctx = _Ctx(cwd=cwd, mentions=mentions_guarded(command))
-    toks = _tokens(command)
-    if toks is None:
-        if ctx.mentions:
-            ctx.hits.append(Hit("command does not tokenise (unbalanced quote) and names a guarded path"))
-        return ctx.hits
     try:
-        for seg in _segments(toks):
-            _segment(seg, ctx)
+        # the command itself, then every $(...) / `...` body found ANYWHERE in it — a
+        # substitution inside double quotes still executes (review round 3); one inside
+        # single quotes does not, but scanning it too only errs toward refusing
+        for text in [command] + _substitutions(command):
+            toks = _tokens(text)
+            if toks is None:
+                if ctx.mentions:
+                    ctx.hits.append(Hit("command does not tokenise (unbalanced quote) and names a guarded path"))
+                continue
+            for seg in _segments(toks):
+                _segment(seg, ctx)
     except Exception as e:  # noqa: BLE001 — a scanner bug must not open the gate
         if ctx.mentions:
             ctx.hits.append(Hit(f"scanner error ({type(e).__name__}) on a command naming a guarded path"))
     return ctx.hits
+
+
+def _substitutions(command: str) -> list[str]:
+    """Bodies of every `$(...)` (paren-matched, nested included) and `` `...` `` in the text."""
+    out, i, n = [], 0, len(command)
+    while i < n:
+        if command.startswith("$(", i) and not command.startswith("$((", i):
+            depth, j = 1, i + 2
+            while j < n and depth:
+                depth += {"(": 1, ")": -1}.get(command[j], 0)
+                j += 1
+            body = command[i + 2:j - 1] if depth == 0 else command[i + 2:]
+            out.append(body)
+            out.extend(_substitutions(body))
+            i += 2
+        elif command[i] == "`":
+            j = command.find("`", i + 1)
+            if j < 0:
+                out.append(command[i + 1:])
+                break
+            out.append(command[i + 1:j])
+            i = j + 1
+        else:
+            i += 1
+    return out
 
 
 if __name__ == "__main__":  # pragma: no cover - debugging aid

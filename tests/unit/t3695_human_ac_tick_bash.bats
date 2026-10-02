@@ -164,6 +164,11 @@ EOF"
     assert_refused "sed -f /tmp/script.sed $TASK_REL"
 }
 
+@test "review round 3: command substitution inside double quotes is scanned" {
+    assert_vector_refused "printf '%s' \"\$(sed -i $S $TASK_REL)\""
+    assert_vector_refused "echo \"\`sed -i $S $TASK_REL\`\""
+}
+
 @test "review round 2: GNU long-option abbreviations are refused" {
     assert_vector_refused "sed --in-plac $S $TASK_REL"
     assert_vector_refused "sed --in -e $S $TASK_REL"
@@ -209,6 +214,11 @@ EOF"
     assert_allowed "view $TASK_REL"
     assert_allowed "awk '{print (\$1 > 0)}' $TASK_REL"
     assert_allowed "awk '{print \"a>b\"}' $TASK_REL"
+    # review round 3 false positives
+    assert_allowed "cat $TASK_REL # don't edit"
+    assert_allowed "rsync --dry-run src.md $TASK_REL"
+    assert_allowed "rsync -avn src.md $TASK_REL"
+    assert_allowed "patch --dry-run $TASK_REL < /tmp/change.patch"
 }
 
 @test "controls: unrelated writes and framework verbs pass" {
@@ -429,6 +439,67 @@ verdict_rows() {  # id digest [applied-count]
     run python3 "$TICKS" audit --since 2000-01-01
     [ "$status" -eq 2 ]
     [[ "$output" == *"Second-section AC"* ]]
+}
+
+two_same_titled() {  # Desktop ticked (legitimately acked), Mobile open — same title
+    cat > "$TASK_FILE" <<'MD'
+---
+id: T-9999
+---
+## Acceptance Criteria
+
+### Human
+- [x] [REVIEW] Check display
+  Desktop
+- [ ] [REVIEW] Check display
+  Mobile
+
+## Verification
+true
+MD
+    git add "$TASK_REL" && git commit -qm "T-9999: two criteria"
+}
+
+@test "audit: moving a tick onto a same-titled sibling criterion FAILs (review round 3)" {
+    git_fixture
+    two_same_titled
+    python3 - "$TASK_FILE" <<'PY'
+import sys
+p = sys.argv[1]
+s = open(p).read()
+s = s.replace("- [x] [REVIEW] Check display\n  Desktop", "- [ ] [REVIEW] Check display\n  Desktop")
+s = s.replace("- [ ] [REVIEW] Check display\n  Mobile", "- [x] [REVIEW] Check display\n  Mobile")
+open(p, "w").write(s)
+PY
+    git add "$TASK_REL" && git commit -qm "T-9999: move tick"
+    run python3 "$TICKS" audit --since 2000-01-01
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"Check display"* ]]
+    # the first commit added Desktop pre-ticked: 2 findings total (added + moved)
+    [[ "$output" == *"2 unprovenanced"* ]]
+}
+
+@test "audit control: editing the BODY of an already-ticked criterion is not a new tick" {
+    git_fixture
+    two_same_titled
+    run python3 "$TICKS" audit --since 2000-01-01
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"1 unprovenanced"* ]]   # baseline: the pre-ticked Desktop
+    sed -i 's/^  Desktop$/  Desktop and laptop/' "$TASK_FILE"
+    git add "$TASK_REL" && git commit -qm "T-9999: edit body"
+    run python3 "$TICKS" audit --since 2000-01-01
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"1 unprovenanced"* ]]   # still only the baseline finding
+}
+
+@test "audit: a tick in a task file with a non-ASCII name is not skipped (review round 3)" {
+    git_fixture
+    U=".tasks/active/T-9998-café.md"
+    cp pristine.md "$U" && git add "$U" && git commit -qm "T-9998: create"
+    cp ticked.md "$U" && git add "$U" && git commit -qm "T-9998: tick"
+    run python3 "$TICKS" audit --since 2000-01-01
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"FAIL T-9998 ticked"* ]]
 }
 
 @test "audit: a tick introduced only in a MERGE commit FAILs; one inherited from a branch is not double-counted" {

@@ -1,83 +1,90 @@
-**The round-1 reproductions are fixed, but unlisted coverage gaps and a common-read false positive remain.**
+**FAIL: two unlisted coverage gaps escape both layers, and common read-only commands are still refused.**
 
-I read the prior review through `git log -p`, inspected all requested files, and ran read-only scanner and detector probes. I could not rerun the fixture-writing Bats suite in this read-only sandbox.
+I inspected all requested files and prior reviews, ran read-only scanner probes and in-memory history simulations, and checked vendor synchronization. I did not execute the bypasses against project files or rerun the fixture-writing Bats suite because the sandbox is read-only.
 
-**1. Round-1 findings**
+**Round-2 findings**
 
-| Finding | Round-2 assessment |
+| Finding | Assessment |
 |---|---|
-| Attached sed `-e'EXPR'` loses target | **Fixed:** scanner now detects the original command. |
-| Sed `w`, substitution `w`, `e`, and `-f` unseen | **Original cases fixed:** scripts are inspected or treated as opaque code. |
-| Merge-only ticks ignored | **Fixed:** merges are compared against every parent; regression tests cover new and inherited ticks. |
-| Fabricated green annotation exempts tick | **Original case fixed:** an unknown ID no longer suffices. Valid-ID reuse remains a gap below. |
-| One acknowledgment permits unlimited re-ticks | **Fixed for acknowledgment rows:** the detector consumes one row per tick. |
-| Only first Human section inspected | **Fixed:** detector and Edit hook collect all matching sections. |
-| Quoted `>`, git object reads, awk comparison, tar creation blocked | **Original examples fixed:** each returned no scanner hits. Related false positives remain below. |
-| Vector execution status discarded; different strings tested | **Fixed in the vector helper:** execution status is checked immediately, and `assert_vector_refused` uses the same string. Some tests deliberately remain refusal-only. |
+| GNU long-option abbreviations | **Fixed:** `sed --in-plac` is detected; prefix handling also covers the listed copy, sort, and gawk options. |
+| Valid verdict replay after unticking | **Fixed:** one applied event permits one tick; subsequent consumption fails. |
+| Verdict reused for another criterion | **Fixed:** a different criterion digest receives no exemption. |
+| `grep -e'>'` refused | **Fixed:** scanner returns no hits. |
+| `unzip -l` and `view` refused | **Fixed:** both original commands return no hits. |
+| Awk parenthesized comparisons and string literals | **Fixed:** both original examples return no hits. |
+| Scanner exceptions crash the hook | **Partially fixed:** segment-processing exceptions are caught, but `_tokens()` remains outside the `try` in [scan()](/opt/999-Agentic-Engineering-Framework/lib/shell_write_scan.py:590). An injected tokenizer exception still escapes. This limitation alone does not determine the verdict. |
 
-**2. Commands missed by both layers**
+**Coverage: commands both layers miss**
 
-Both examples assume `.tasks/active/T-9999-test.md` and genuine existing provenance: verdict `V-0001` is green for criterion A of T-9999, and its application is recorded.
+The following are reproductions, not operator instructions. Each is one Bash tool-call string, and each returned `[]` from `scan()`.
 
-The scanner misses GNU sed’s valid abbreviated `--in-plac` option because [the parser](/opt/999-Agentic-Engineering-Framework/lib/shell_write_scan.py:297) recognizes only names starting with the complete `in-place`.
+**1. Transfer approval between two same-titled criteria.**
 
-The detector’s [verdict checker](/opt/999-Agentic-Engineering-Framework/lib/human_ac_ticks.py:103) checks task and verdict ID, but neither binds the exemption to a particular criterion nor consumes it per tick.
+Prerequisite: the task starts with these five lines; the Desktop tick is legitimately established:
 
-**A. Re-tick a previously approved criterion.** Prerequisite: A was legitimately ticked, subsequently unticked, and retains its verdict annotation.
-
-```bash
-sed --in-plac 's/^- \[ \] A$/- [x] A/' .tasks/active/T-9999-test.md && git add .tasks/active/T-9999-test.md && git commit -m 'T-9999: retick'
+```text
+### Human
+- [x] [REVIEW] Check display
+  Desktop
+- [ ] [REVIEW] Check display
+  Mobile
 ```
 
-**B. Apply A’s valid verdict annotation to unchecked criterion B.**
-
 ```bash
-sed --in-plac -e 's/^- \[ \] B$/- [x] B/' -e '/^- \[x\] B$/a\  **Reviewer verdict:** green V-0001' .tasks/active/T-9999-test.md && git add .tasks/active/T-9999-test.md && git commit -m 'T-9999: tick B'
+printf '%s' "$(sed -i '2s/\[x\]/[ ]/;4s/\[ \]/[x]/' .tasks/active/T-9999-test.md)" && git add .tasks/active/T-9999-test.md && git commit -m 'T-9999: tick mobile'
 ```
 
-For **both complete command strings**, `scan()` returned `[]`. Using the real `verdict_checker` with mocked ledger-file contents, `unprovenanced_ticks()` also returned `[]` for both corresponding changes. The history walker therefore receives no tick to report.
+The [tokenizer](/opt/999-Agentic-Engineering-Framework/lib/shell_write_scan.py:179) treats the double-quoted command substitution as one argument and never examines its executing `sed -i`.
 
-**Neither is listed as an accepted residual or accepted false positive.** Neither requires runtime path construction, an external script, forged ledger rows, or a human committing identity. The brief describes annotation exemptions, but does not accept replay or cross-criterion reuse as limitations. These findings concern the requested `human_ac_ticks.py` check; a separate verdict-ledger audit may impose additional checks.
+The [history comparison](/opt/999-Agentic-Engineering-Framework/lib/human_ac_ticks.py:174) counts ticks by normalized checkbox title, ignoring the distinguishing body. One tick before and after therefore produces no finding, although Mobile changed `[ ]`→`[x]`. Both `unprovenanced_ticks()` and the history walker returned no findings in controlled in-memory probes.
 
-**3. False positives beyond those accepted**
+**Accepted residual or false positive: neither.** The command and target are explicit; no external script, constructed path, forged ledger, or human identity is required.
 
-The following scanner probes returned hits:
+**2. Tick a task whose filename Git quotes.**
 
-| Read-only command | Incorrect classification |
+Prerequisite: an existing `.tasks/active/T-9999-café.md` containing an unchecked Human criterion, with Git’s default `core.quotePath=true`.
+
+```bash
+printf '%s' "$(sed -i 's/\[ \]/[x]/g' .tasks/active/T-9999-café.md)" && git add .tasks/active/T-9999-café.md && git commit -m 'T-9999: tick'
+```
+
+The scanner misses the same double-quoted command substitution.
+
+The [history walker](/opt/999-Agentic-Engineering-Framework/lib/human_ac_ticks.py:295) requests line-oriented `--name-status` without `-z`. Git represents this pathname as `".tasks/active/T-9999-caf\303\251.md"`. The trailing quote makes `endswith(".md")` false, so the file is skipped before reading either blob. A simulation supplying that Git output returned no findings and made zero blob reads.
+
+**Accepted residual or false positive: neither.** Filename quoting is not an accepted limitation.
+
+**Unaccepted false positives**
+
+All three commands produced scanner hits:
+
+| Read-only command | Incorrect refusal |
 |---|---|
-| `grep -e'>' .tasks/active/T-9999-test.md` | “Unbalanced quote,” although this is valid, ordinary Bash quoting. |
-| `unzip -l tasks.zip .tasks/active/T-9999-test.md` | Extraction, although `-l` only lists archive entries. |
-| `view .tasks/active/T-9999-test.md` | A write-capable editor invocation despite its read-only viewing mode. |
+| `cat .tasks/active/T-9999-test.md # don't edit` | The apostrophe inside a Bash comment is treated as an unbalanced quote. |
+| `rsync --dry-run source.md .tasks/active/T-9999-test.md` | Dry-run destination is classified as a write. |
+| `patch --dry-run .tasks/active/T-9999-test.md < change.patch` | Dry-run target is classified as a write. |
 
-The grep case alone meets your **unaccepted false positive on a common read** failure condition. Its cause is [non-POSIX tokenization](/opt/999-Agentic-Engineering-Framework/lib/shell_write_scan.py:126) mishandling quotes attached to an option.
+These are not covered by the brief’s accepted inline-interpreter false positives. The ordinary `cat` example alone satisfies the common-read failure condition.
 
-Also, `awk '{print ($1 > 0)}' task.md` and `awk '{print "a>b"}' task.md` are classified as inline writes. These contradict the brief’s stated awk parsing behavior, although its broad acceptance of inline-interpreter false positives could cover them. I do not rely on those ambiguous cases for the verdict.
-
-**4. Acceptance criteria**
+**Acceptance criteria**
 
 | AC | Result | Reason |
 |---|---|---|
-| AC1 | **MET** | RCA records six reproductions and distinguishes active-task gate states. |
-| AC2 | **NOT MET** | GNU sed’s `--in-plac` spelling performs an in-place task write without refusal. |
-| AC3 | **NOT MET** | Ordinary `grep -e'>' task.md` is refused. |
-| AC4 | **MET** | Block message and CLAUDE.md state script/indirection limitations and reference T-2742. |
-| AC5 | **NOT MET** | Valid verdict replay and cross-criterion annotation reuse suppress committed ticks. |
-| AC6 | **MET** | Required fixture tests and substantive assertions exist; 32/32 green is reported, not independently rerun here. |
-| AC7 | **MET** | Both registrations exist, the calculated enforcement hash matches, and vendor self-check succeeds. |
+| AC1 | **MET** | RCA records six reproductions and the relevant pre-existing gate states. |
+| AC2 | **NOT MET** | Explicit `sed -i` inside double-quoted command substitution passes the Bash scanner. |
+| AC3 | **NOT MET** | A legitimate `cat` read with a trailing comment is refused. |
+| AC4 | **MET** | Block message and CLAUDE.md document script/indirection residuals and T-2742. |
+| AC5 | **NOT MET** | Same-title tick transfers and Git-quoted task filenames escape committed-history detection. |
+| AC6 | **MET** | Required fixture tests and meaningful assertions exist; the brief reports 35/35 passing, not independently rerun here. |
+| AC7 | **MET** | Both registrations exist, the calculated enforcement baseline matches, and vendor self-check succeeded. |
 | AC8 | **NOT MET** | This review yields FAIL. |
 
-**5. Test assertions**
+**Test assertions**
 
-All **32 tests assert a real outcome**: exit status, block/advisory output, actual checkbox state, audit findings, or provenance. No vacuous test or mid-test `! cmd` was found.
+All **35 tests assert a real outcome**: execution status, checkbox state, hook refusal/advisory output, audit findings, or provenance. I found no vacuous test, skip path, or mid-test `! cmd`.
 
-The brief still overstates execution coverage:
+The vector helper checks execution status immediately and tests the same command string against the hook. Refusal-only cases are now explicitly acknowledged in the brief. The suite does not cover quoted command substitution, same-title approval transfers, Git-quoted filenames, or the read-only false positives above.
 
-- Append test 8 checks refusal only; its fixture append would fall after `## Verification`, outside Human.
-- Test 10 executes its first three vectors; substitution `w` and `-f` only check refusal.
-- Test 11 checks endpoint, ledger, acknowledgment CLI, and checkout refusal without executing those actions.
-
-Those are meaningful hook tests, but they do not prove every refused command actually ticks a Human checkbox.
-
-No files were changed. The read-only sandbox prevented saving this review or generating the required committed handover.
+No files were changed. The read-only sandbox prevented saving this review or generating a committed handover.
 
 VERDICT: FAIL

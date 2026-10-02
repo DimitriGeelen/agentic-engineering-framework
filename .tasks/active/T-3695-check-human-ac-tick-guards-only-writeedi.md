@@ -431,3 +431,10 @@ records them with `python3 lib/human_ac_ticks.py ack T-XXX --ac N`.
 
 ### 2026-10-02T12:21:31Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-02 — independent review: NOT PASSED, task left open
+- codex round 1 FAIL → fixed (ff842a0af); round 2 FAIL → fixed (959fef3eb); round 3
+  (the last round the brief allowed) FAIL → the six round-3 findings are fixed and
+  pinned (39/39 bats) but have NOT been re-reviewed. AC8 stays unticked; the task is
+  not closed. Next step: one more independent review of the round-3 fixes
+  (docs/reports/T-3695-review-brief.md §Round 3) before closing.

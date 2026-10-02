@@ -83,6 +83,19 @@ own segment mentions one.
 | awk `print ($1 > 0)` / `print "a>b"` | string literals and parenthesised expressions removed before the redirect check | controls test |
 | scanner exception → hook crash | `scan()` catches any internal error and refuses when the command names a guarded path | — |
 
+## Round 3 (codex FAIL — final review round allowed) — fixed after the review, NOT re-reviewed
+
+| Finding | Fix | Pinned by |
+|---|---|---|
+| `"$(sed -i …)"` / `` "`…`" `` inside double quotes not scanned | `_substitutions`: every `$(…)` (nested) and backtick body anywhere in the text is scanned as a command too | "review round 3: command substitution inside double quotes" |
+| tick moved between two criteria sharing a title | criterion identity = title + body (`boxes`); a body edit pairs only with the same position among same-titled criteria | "moving a tick onto a same-titled sibling" + body-edit control |
+| git C-quotes non-ASCII paths → file skipped | `diff-tree -z`; an unreadable blob now raises (audit rc 3) instead of reading as "" | "non-ASCII name" |
+| FPs: `cat F # don't`, `rsync --dry-run`/`-n`, `patch --dry-run` | tokenizer drops `#` comments at word start; dry-run forms skipped | controls test |
+| `_tokens()` outside the try | tokenising now inside `scan()`'s fail-closed try | — |
+
+Provenance writers (`inception decide`, `verify-acs`) now record the full criterion key via
+`record_ticked`. 39/39 bats after round 3.
+
 **Accepted false positive (deliberate):** inline interpreter code (`python3 -c`, `perl -e`,
 `node -e`, heredoc to an interpreter) is refused whenever the command names a guarded path
 anywhere, even if it only reads — the text cannot tell a read from a write in arbitrary code,

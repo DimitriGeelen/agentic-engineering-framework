@@ -80,24 +80,53 @@ def _human_section(text: str) -> str:
                      re.finditer(r"(?ms)^### Human\b.*?(?=^### |^## [^A]|\Z)", text or ""))
 
 
+_GENERATED_RE = re.compile(r"^\s*\*\*Reviewer (verdict|escalation)\b")
+
+
 def boxes(section: str) -> list[tuple[str, bool, str]]:
-    """[(key, ticked, verdict id cited by a green annotation or "")], HTML comments stripped."""
+    """[(key, ticked, verdict id cited by a green annotation or "")], HTML comments stripped.
+
+    The KEY is the criterion's title AND its body (Steps/Expected/If-not lines, minus the
+    generated verdict annotations): two criteria that share a title are different
+    criteria, so a tick cannot be moved from one to the other unseen (review round 3)."""
     lines = strip_html_comment_lines(section).split("\n")
     out = []
     for i, line in enumerate(lines):
         m = BOX_RE.match(line)
         if not m:
             continue
-        ann = ""
+        ann, body = "", []
         for nxt in lines[i + 1:]:
             if BOX_RE.match(nxt) or nxt.startswith("#"):
                 break
             v = VERDICT_RE.search(nxt)
-            if v:
+            if v and not ann:
                 ann = v.group(1)
-                break
-        out.append((criterion_key(m.group(2)), m.group(1) in "xX", ann))
+            if nxt.strip() and not _GENERATED_RE.match(nxt):
+                body.append(nxt.strip())
+        key = criterion_key(m.group(2)) + ("\n" + "\n".join(body) if body else "")
+        out.append((key, m.group(1) in "xX", ann))
     return out
+
+
+def record_ticked(root: Path, task_id: str, text: str, titles: list[str], via: str, by: str) -> int:
+    """Record provenance for Human boxes a framework verb just ticked, by title.
+
+    The ledger key is the full criterion key (title + body, see `boxes`); callers that
+    only know the line they ticked pass its title. Each title occurrence records one
+    ticked box with that title (duplicates are matched in order)."""
+    used: set[int] = set()
+    n = 0
+    bx = boxes(_human_section(text))
+    for title in titles:
+        t = criterion_key(title)
+        for i, (k, ticked, _) in enumerate(bx):
+            if i not in used and ticked and k.split("\n", 1)[0] == t:
+                used.add(i)
+                record(root, task_id, k, via, by)
+                n += 1
+                break
+    return n
 
 
 def _jsonl(root: Path, rel: str) -> list[dict]:
@@ -114,18 +143,25 @@ def _jsonl(root: Path, rel: str) -> list[dict]:
     return out
 
 
-def _criterion_digests(text: str) -> dict[str, set[str]]:
-    """criterion key -> {verdict_ledger.criterion_digest} for every Human criterion in `text`."""
+def _criterion_digests(text: str, n_boxes: int) -> list[set[str]]:
+    """Per Human box (in order): the verdict_ledger.criterion_digest(s) it may carry.
+
+    Positional when verdict_ledger parses the same number of Human criteria as `boxes`
+    does (the normal case); otherwise every digest of a same-titled criterion (looser,
+    still never a digest of a differently titled one). Empty when the validator cannot
+    be loaded — no validator, no exemption (fail closed)."""
     try:
         if str(Path(__file__).resolve().parent.parent) not in sys.path:
             sys.path.insert(0, str(Path(__file__).resolve().parent.parent))
         import verdict_ledger as _vl  # noqa: PLC0415 — heavy; only when an annotation is seen
-    except Exception:  # noqa: BLE001 — no validator, no exemption (fail closed)
-        return {}
-    out: dict[str, set[str]] = {}
-    for c in _vl.human_criteria(text):
-        out.setdefault(criterion_key(c.title), set()).add(_vl.criterion_digest(c))
-    return out
+        crits = list(_vl.human_criteria(text))
+        digs = [(criterion_key(c.title), _vl.criterion_digest(c)) for c in crits]
+    except Exception:  # noqa: BLE001
+        return [set() for _ in range(n_boxes)]
+    if len(digs) == n_boxes:
+        return [{d} for _, d in digs]
+    titles = [k.split("\n", 1)[0] for k, _, _ in boxes(_human_section(text))]
+    return [{d for t2, d in digs if t2 == t} for t in titles]
 
 
 class VerdictBacking:
@@ -151,8 +187,8 @@ class VerdictBacking:
                     if isinstance(t, dict) and t.get("verdict_id"):
                         self.budget[str(t["verdict_id"])] += 1
 
-    def bound(self, vid: str, key: str, digests: dict[str, set[str]]) -> bool:
-        return bool(vid) and bool(self.digest.get(vid)) and self.digest[vid] in digests.get(key, set())
+    def bound(self, vid: str, digests: set[str]) -> bool:
+        return bool(vid) and bool(self.digest.get(vid)) and self.digest[vid] in digests
 
     def consume(self, vid: str) -> bool:
         if self.budget[vid] > 0:
@@ -170,19 +206,47 @@ def unprovenanced_ticks(old: str, new: str, backing: "VerdictBacking | None" = N
     The third field names a verdict BOUND to this criterion (see VerdictBacking) — the
     caller still has to `consume` an applied tick event for it to count.
     """
+    def title(k: str) -> str:
+        return k.split("\n", 1)[0]
+
     oh, nh = boxes(_human_section(old)), boxes(_human_section(new))
     old_ticked = Counter(k for k, t, _ in oh if t)
     old_open = Counter(k for k, t, _ in oh if not t)
-    digests = _criterion_digests(new) if backing and any(t and a for _, t, a in nh) else {}
-    new_ticks: dict[str, list[str]] = {}
-    for k, t, a in nh:
-        if t:
-            new_ticks.setdefault(k, []).append(a if backing and backing.bound(a, k, digests) else "")
+    old_open_titles = Counter(title(k) for k in old_open.elements())
+    annotated = backing is not None and any(t and a for _, t, a in nh)
+    digests = _criterion_digests(new, len(nh)) if annotated else [set() for _ in nh]
+    # 1. a tick the old text already had, on the SAME criterion (title + body), is not new
+    def ordinals(bx):  # position of each box among the boxes sharing its title
+        seen: Counter = Counter()
+        out_ = []
+        for k, _, _ in bx:
+            out_.append(seen[title(k)])
+            seen[title(k)] += 1
+        return out_
+
+    n_ord, o_ord = ordinals(nh), ordinals(oh)
+    leftover: list[tuple[str, str, int]] = []
+    remaining = Counter(old_ticked)
+    for idx, (k, t, a) in enumerate(nh):
+        if not t:
+            continue
+        if remaining[k] > 0:
+            remaining[k] -= 1
+            continue
+        leftover.append((k, a if backing and backing.bound(a, digests[idx]) else "", n_ord[idx]))
+    # 2. ...nor is one whose criterion only had its BODY edited: an old ticked criterion
+    #    whose key no longer exists in the new text pairs with a new tick of the same title
+    #    AT THE SAME POSITION among same-titled criteria. Moving a tick onto a sibling
+    #    that shares the title is a new tick (review round 3).
+    new_all = Counter(k for k, _, _ in nh)
+    orphans = {(title(k), o_ord[i]) for i, (k, t, _) in enumerate(oh) if t and new_all[k] == 0}
     out = []
-    for k, vids in new_ticks.items():
-        extra = len(vids) - old_ticked[k]
-        for vid in sorted(vids, reverse=True)[:max(0, extra)]:  # bound verdicts first
-            out.append((k, "ticked" if old_open[k] else "added-ticked", vid))
+    for k, vid, o in leftover:
+        if not vid and (title(k), o) in orphans:
+            orphans.discard((title(k), o))
+            continue
+        kind = "ticked" if (old_open[k] or old_open_titles[title(k)]) else "added-ticked"
+        out.append((k, kind, vid))
     new_human_keys = Counter(k for k, _, _ in nh)
     elsewhere = Counter(k for k, t, _ in boxes(new) if t) - Counter(k for k, t, _ in nh if t)
     for k, n in old_open.items():
@@ -232,9 +296,9 @@ def _git(root: Path, *args: str) -> str:
 
 
 def _blob(root: Path, rev: str, path: str) -> str:
-    r = subprocess.run(["git", "-C", str(root), "show", f"{rev}:{path}"], capture_output=True,
-                       text=True)
-    return r.stdout if r.returncode == 0 else ""
+    # check=True: an unreadable blob is an audit that could not run (rc 3), never "no ticks"
+    return subprocess.run(["git", "-C", str(root), "show", f"{rev}:{path}"], capture_output=True,
+                          check=True, encoding="utf-8", errors="replace").stdout
 
 
 def _task_id(path: str) -> str:
@@ -292,15 +356,26 @@ def scan_commits(root: Path, since: str | None = None, rev: str = "HEAD") -> tup
         agent = is_agent_identity(aemail, cemail, msg)
         per_parent: list[dict] = []
         for parent in parents:
-            args = ["diff-tree", "-r", "-M", "--no-commit-id", "--name-status"]
+            # -z: NUL-separated, never C-quoted — a non-ASCII filename is otherwise printed
+            # as "...caf\303\251.md" and silently skipped (review round 3)
+            args = ["diff-tree", "-r", "-M", "-z", "--no-commit-id", "--name-status"]
             args += [parent, sha] if parent else ["--root", sha]
             got: dict = {}
-            for fl in _git(root, *args, "--", ".tasks").splitlines():
-                cols = fl.split("\t")
-                status = cols[0]
-                if status.startswith("D") or len(cols) < 2:
+            fields = _git(root, *args, "--", ".tasks").split("\0")
+            j = 0
+            while j < len(fields) - 1:
+                status = fields[j]
+                if not status:
+                    j += 1
                     continue
-                old_path, new_path = (cols[1], cols[2]) if status[0] in "RC" and len(cols) > 2 else (cols[1], cols[1])
+                if status[0] in "RC":
+                    old_path, new_path = fields[j + 1], fields[j + 2]
+                    j += 3
+                else:
+                    old_path = new_path = fields[j + 1]
+                    j += 2
+                if status.startswith("D"):
+                    continue
                 if not new_path.endswith(".md") or not re.search(r"(^|/)T-\d+", os.path.basename(new_path)):
                     continue
                 old = "" if (status.startswith("A") or not parent) else _blob(root, parent, old_path)
