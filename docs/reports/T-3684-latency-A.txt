@@ -1,57 +1,57 @@
-# T-3684 run 9 (2026-10-03, code f7c7f1d2c) — fw sidecar latency per e2e project
-== t3684a-23f7gu
+# T-3684 run 10 (2026-10-03, code bf07a0255) — fw sidecar latency per e2e project
+== t3684a-l8wf5q
 outbound (4 message(s), 0 without HANDED_OVER)
-  send to received       n=4    median=10.432s p95=27.611s max=27.611s
-  send to handed over    n=4    median=11.159s p95=29.057s max=29.057s
-  send to replied        n=2    median=46.142s p95=57.455s max=57.455s
-    a0ec5898-580e-4201-a983-2fdafe7a414f recv=0.01s handed_over=1.482s replied=57.455s path=direct
-    08e30d93-9f08-4709-97fd-82f4116bfa1d recv=4.005s handed_over=4.011s replied=Nones path=hub
-    92447a9b-a474-4057-93a6-30141e02f20b recv=27.611s handed_over=29.057s replied=34.829s path=hub
-    b49a7f68-3ee8-4600-936a-f587a18656e2 recv=16.86s handed_over=18.307s replied=Nones path=hub
+  send to received       n=4    median=9.476s p95=27.645s max=27.645s
+  send to handed over    n=4    median=10.2s p95=29.072s max=29.072s
+  send to replied        n=2    median=44.903s p95=55.219s max=55.219s
+    5777a8fd-ef10-48e3-ad8f-8145b6934104 recv=0.01s handed_over=1.481s replied=55.219s path=direct
+    0d3f7217-0ca7-45a8-af67-967b66758370 recv=4.052s handed_over=4.058s replied=Nones path=hub
+    6fdf5d97-7de4-45fd-a556-d1168e9e1b12 recv=14.899s handed_over=16.341s replied=Nones path=hub
+    7b1e5286-0465-4d66-8006-066fd29b1708 recv=27.645s handed_over=29.072s replied=34.586s path=hub
 inbound (1 message(s), 1 without HANDED_OVER)
-  send to received       n=1    median=0.012s p95=0.012s max=0.012s
+  send to received       n=1    median=0.01s p95=0.01s max=0.01s
   send to handed over    n=0
   send to replied        n=0
-    c70b2c61-f232-487c-b2c1-3f296d5d8f7f recv=0.012s handed_over=Nones replied=Nones via=direct
-== t3684b-23f7gu
+    2bc2f270-c0d0-4ddd-8408-836f1d382354 recv=0.01s handed_over=Nones replied=Nones via=direct
+== t3684b-l8wf5q
 outbound (1 message(s), 1 without HANDED_OVER)
-  send to received       n=1    median=0.013s p95=0.013s max=0.013s
+  send to received       n=1    median=0.011s p95=0.011s max=0.011s
   send to handed over    n=0
   send to replied        n=0
-    c70b2c61-f232-487c-b2c1-3f296d5d8f7f recv=0.013s handed_over=Nones replied=Nones path=direct
+    2bc2f270-c0d0-4ddd-8408-836f1d382354 recv=0.011s handed_over=Nones replied=Nones path=direct
 inbound (3 message(s), 0 without HANDED_OVER)
-  send to received       n=3    median=16.827s p95=27.578s max=27.578s
-  send to handed over    n=3    median=18.242s p95=28.995s max=28.995s
-  send to replied        n=1    median=34.797s p95=34.797s max=34.797s
-    92447a9b-a474-4057-93a6-30141e02f20b recv=27.578s handed_over=28.995s replied=34.797s via=hub-topic
-    a0ec5898-580e-4201-a983-2fdafe7a414f recv=0.01s handed_over=1.433s replied=Nones via=direct
-    b49a7f68-3ee8-4600-936a-f587a18656e2 recv=16.827s handed_over=18.242s replied=Nones via=hub-topic
-== t3684a-d0zgi6
+  send to received       n=3    median=14.867s p95=27.607s max=27.607s
+  send to handed over    n=3    median=16.279s p95=29.005s max=29.005s
+  send to replied        n=1    median=34.549s p95=34.549s max=34.549s
+    5777a8fd-ef10-48e3-ad8f-8145b6934104 recv=0.009s handed_over=1.435s replied=Nones via=direct
+    6fdf5d97-7de4-45fd-a556-d1168e9e1b12 recv=14.867s handed_over=16.279s replied=Nones via=hub-topic
+    7b1e5286-0465-4d66-8006-066fd29b1708 recv=27.607s handed_over=29.005s replied=34.549s via=hub-topic
+== t3684a-woejcj
 outbound (6 message(s), 0 without HANDED_OVER)
-  send to received       n=6    median=0.01s p95=92.769s max=92.769s
-  send to handed over    n=6    median=86.992s p95=106.475s max=106.475s
+  send to received       n=6    median=0.366s p95=117.689s max=117.689s
+  send to handed over    n=6    median=91.591s p95=119.406s max=119.406s
   send to replied        n=0
-    56f5e78a-542d-47a6-9458-e55b7ab96cd2 recv=0.009s handed_over=106.475s replied=Nones path=direct
-    20c54504-d291-47c5-bedd-9c8de59d2ba1 recv=0.009s handed_over=79.757s replied=Nones path=direct
-    e4799cef-1004-47c4-b0bb-50e217817e59 recv=0.01s handed_over=94.505s replied=Nones path=direct
-    0f6b5851-c407-4f9c-a087-caa8b98b5acd recv=0.01s handed_over=1.514s replied=Nones path=direct
-    009af015-5532-4a3a-aee3-e5b28fe0d644 recv=92.769s handed_over=94.227s replied=Nones path=hub
-    f0a816b4-ea4c-4afc-8c8f-8361fef87101 recv=7.543s handed_over=78.141s replied=Nones path=hub
+    5443f54c-4abf-4a2c-af07-922f3aca9e32 recv=0.045s handed_over=104.878s replied=Nones path=direct
+    0fd3b050-ebc6-45ef-8128-a36d81db0e03 recv=0.687s handed_over=78.305s replied=Nones path=direct
+    273fcbc4-aa7a-49c9-a968-05c82e7085df recv=0.009s handed_over=119.406s replied=Nones path=direct
+    5436be4b-b25f-477c-9bad-e0f2bbf0afb8 recv=0.009s handed_over=1.47s replied=Nones path=direct
+    446d6629-d25a-4aec-b7ae-5a88e1e4290d recv=5.206s handed_over=76.888s replied=Nones path=hub
+    f640eda6-d877-4c44-b011-4577c285e7c8 recv=117.689s handed_over=119.151s replied=Nones path=hub
 inbound (0 message(s), 0 without HANDED_OVER)
   send to received       n=0
   send to handed over    n=0
   send to replied        n=0
-== t3684b-d0zgi6
+== t3684b-woejcj
 outbound (0 message(s), 0 without HANDED_OVER)
   send to received       n=0
   send to handed over    n=0
   send to replied        n=0
 inbound (5 message(s), 0 without HANDED_OVER)
-  send to received       n=5    median=0.009s p95=92.703s max=92.703s
-  send to handed over    n=5    median=94.162s p95=106.44s max=106.44s
+  send to received       n=5    median=0.686s p95=117.624s max=117.624s
+  send to handed over    n=5    median=104.847s p95=119.364s max=119.364s
   send to replied        n=0
-    009af015-5532-4a3a-aee3-e5b28fe0d644 recv=92.703s handed_over=94.162s replied=Nones via=hub-topic
-    20c54504-d291-47c5-bedd-9c8de59d2ba1 recv=0.008s handed_over=79.71s replied=Nones via=direct
-    56f5e78a-542d-47a6-9458-e55b7ab96cd2 recv=0.009s handed_over=106.44s replied=Nones via=direct
-    e4799cef-1004-47c4-b0bb-50e217817e59 recv=0.009s handed_over=94.503s replied=Nones via=direct
-    f0a816b4-ea4c-4afc-8c8f-8361fef87101 recv=7.489s handed_over=78.058s replied=Nones via=hub-topic
+    0fd3b050-ebc6-45ef-8128-a36d81db0e03 recv=0.686s handed_over=78.272s replied=Nones via=direct
+    273fcbc4-aa7a-49c9-a968-05c82e7085df recv=0.008s handed_over=119.364s replied=Nones via=direct
+    446d6629-d25a-4aec-b7ae-5a88e1e4290d recv=5.146s handed_over=76.798s replied=Nones via=hub-topic
+    5443f54c-4abf-4a2c-af07-922f3aca9e32 recv=0.044s handed_over=104.847s replied=Nones via=direct
+    f640eda6-d877-4c44-b011-4577c285e7c8 recv=117.624s handed_over=119.118s replied=Nones via=hub-topic

@@ -1,77 +1,77 @@
 {
-  "msg": "92447a9b-a474-4057-93a6-30141e02f20b",
+  "msg": "7b1e5286-0465-4d66-8006-066fd29b1708",
   "receipts": {
     "RECEIVED": {
-      "client_msg_id": "92447a9b-a474-4057-93a6-30141e02f20b",
+      "client_msg_id": "7b1e5286-0465-4d66-8006-066fd29b1708",
       "state": "RECEIVED",
-      "by": "peer:t3684b-23f7gu",
+      "by": "peer:t3684b-l8wf5q",
       "via": "direct",
-      "ts": "2026-10-03T12:57:36.619066+00:00"
+      "ts": "2026-10-03T13:24:55.931952+00:00"
     },
     "HANDED_OVER": {
-      "client_msg_id": "92447a9b-a474-4057-93a6-30141e02f20b",
+      "client_msg_id": "7b1e5286-0465-4d66-8006-066fd29b1708",
       "state": "HANDED_OVER",
-      "by": "peer:t3684b-23f7gu",
+      "by": "peer:t3684b-l8wf5q",
       "via": "direct",
-      "ts": "2026-10-03T12:57:38.065128+00:00"
+      "ts": "2026-10-03T13:24:57.358929+00:00"
     },
     "REPLIED": {
-      "client_msg_id": "92447a9b-a474-4057-93a6-30141e02f20b",
+      "client_msg_id": "7b1e5286-0465-4d66-8006-066fd29b1708",
       "state": "REPLIED",
-      "by": "peer:t3684b-23f7gu",
+      "by": "peer:t3684b-l8wf5q",
       "via": "direct",
-      "ts": "2026-10-03T12:57:43.837774+00:00"
+      "ts": "2026-10-03T13:25:02.873632+00:00"
     }
   },
   "latency_row": [
     {
-      "client_msg_id": "92447a9b-a474-4057-93a6-30141e02f20b",
-      "to": "cacc73ea32b121dd/t3684b-23f7gu",
+      "client_msg_id": "7b1e5286-0465-4d66-8006-066fd29b1708",
+      "to": "cacc73ea32b121dd/t3684b-l8wf5q",
       "path": "hub",
-      "sent_at": "2026-10-03T12:57:09.008434+00:00",
-      "send_to_received_s": 27.611,
-      "send_to_handed_over_s": 29.057,
-      "send_to_replied_s": 34.829
+      "sent_at": "2026-10-03T13:24:28.287359+00:00",
+      "send_to_received_s": 27.645,
+      "send_to_handed_over_s": 29.072,
+      "send_to_replied_s": 34.586
     }
   ],
   "sender_send_to_s": {
-    "RECEIVED": 27.610631942749023,
-    "HANDED_OVER": 29.05669403076172,
-    "REPLIED": 34.8293399810791
+    "RECEIVED": 27.644593000411987,
+    "HANDED_OVER": 29.07156991958618,
+    "REPLIED": 34.586272954940796
   },
   "b_receipts_sent": [
     {
-      "client_msg_id": "92447a9b-a474-4057-93a6-30141e02f20b",
+      "client_msg_id": "7b1e5286-0465-4d66-8006-066fd29b1708",
       "state": "RECEIVED",
       "by": "watcher",
-      "to": "t3684a-23f7gu",
-      "to_circuit": "//dimitrimintdev/cacc73ea32b121dd/t3684a-23f7gu",
-      "conversation_id": "t3684-t3684b-23f7gu",
-      "ts": "2026-10-03T12:57:36.616392+00:00",
+      "to": "t3684a-l8wf5q",
+      "to_circuit": "//dimitrimintdev/cacc73ea32b121dd/t3684a-l8wf5q",
+      "conversation_id": "t3684-t3684b-l8wf5q",
+      "ts": "2026-10-03T13:24:55.929515+00:00",
       "ok": true,
       "via": "direct",
       "error": null
     },
     {
-      "client_msg_id": "92447a9b-a474-4057-93a6-30141e02f20b",
+      "client_msg_id": "7b1e5286-0465-4d66-8006-066fd29b1708",
       "state": "HANDED_OVER",
       "by": "prompt-hook",
-      "to": "t3684a-23f7gu",
-      "to_circuit": "//dimitrimintdev/cacc73ea32b121dd/t3684a-23f7gu",
-      "conversation_id": "t3684-t3684b-23f7gu",
-      "ts": "2026-10-03T12:57:38.034152+00:00",
+      "to": "t3684a-l8wf5q",
+      "to_circuit": "//dimitrimintdev/cacc73ea32b121dd/t3684a-l8wf5q",
+      "conversation_id": "t3684-t3684b-l8wf5q",
+      "ts": "2026-10-03T13:24:57.328066+00:00",
       "ok": true,
       "via": "direct",
       "error": null
     },
     {
-      "client_msg_id": "92447a9b-a474-4057-93a6-30141e02f20b",
+      "client_msg_id": "7b1e5286-0465-4d66-8006-066fd29b1708",
       "state": "REPLIED",
       "by": "reply",
-      "to": "t3684a-23f7gu",
-      "to_circuit": "//dimitrimintdev/cacc73ea32b121dd/t3684a-23f7gu",
-      "conversation_id": "t3684-t3684b-23f7gu",
-      "ts": "2026-10-03T12:57:43.835009+00:00",
+      "to": "t3684a-l8wf5q",
+      "to_circuit": "//dimitrimintdev/cacc73ea32b121dd/t3684a-l8wf5q",
+      "conversation_id": "t3684-t3684b-l8wf5q",
+      "ts": "2026-10-03T13:25:02.870852+00:00",
       "ok": true,
       "via": "direct",
       "error": null

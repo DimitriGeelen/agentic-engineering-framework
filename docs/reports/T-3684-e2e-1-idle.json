@@ -1,50 +1,50 @@
 {
-  "msg": "a0ec5898-580e-4201-a983-2fdafe7a414f",
-  "send_to_received_s": 0.010354995727539062,
-  "send_to_handed_over_s": 1.4326860904693604,
+  "msg": "5777a8fd-ef10-48e3-ad8f-8145b6934104",
+  "send_to_received_s": 0.009813070297241211,
+  "send_to_handed_over_s": 1.4345080852508545,
   "sender_ledger_handed_over": {
-    "client_msg_id": "a0ec5898-580e-4201-a983-2fdafe7a414f",
+    "client_msg_id": "5777a8fd-ef10-48e3-ad8f-8145b6934104",
     "state": "HANDED_OVER",
-    "by": "peer-receiver:t3684b-23f7gu",
-    "ts": "2026-10-03T12:56:47.860822+00:00"
+    "by": "peer-receiver:t3684b-l8wf5q",
+    "ts": "2026-10-03T13:24:09.132216+00:00"
   },
   "b_events": [
     {
-      "msg_id": "a0ec5898-580e-4201-a983-2fdafe7a414f",
+      "msg_id": "5777a8fd-ef10-48e3-ad8f-8145b6934104",
       "event": "STORED",
-      "ts": "2026-10-03T12:56:46.388717+00:00",
-      "sender": "t3684a-23f7gu"
+      "ts": "2026-10-03T13:24:07.660275+00:00",
+      "sender": "t3684a-l8wf5q"
     },
     {
-      "msg_id": "a0ec5898-580e-4201-a983-2fdafe7a414f",
+      "msg_id": "5777a8fd-ef10-48e3-ad8f-8145b6934104",
       "event": "INJECT_TYPING",
-      "ts": "2026-10-03T12:56:46.407391+00:00",
+      "ts": "2026-10-03T13:24:07.679094+00:00",
       "trigger": "on-store",
-      "session": "tl-twpw6kyj",
-      "target_session_id": "c9dae677-6fc3-43b8-ab7d-274e6dfde029"
+      "session": "tl-yovwvfe4",
+      "target_session_id": "d635d11c-7521-4378-a730-dd6fa709963c"
     },
     {
-      "msg_id": "a0ec5898-580e-4201-a983-2fdafe7a414f",
+      "msg_id": "5777a8fd-ef10-48e3-ad8f-8145b6934104",
       "event": "INJECT_ATTEMPT",
-      "ts": "2026-10-03T12:56:46.431789+00:00",
+      "ts": "2026-10-03T13:24:07.704282+00:00",
       "trigger": "on-store",
-      "session": "tl-twpw6kyj",
-      "target_session_id": "c9dae677-6fc3-43b8-ab7d-274e6dfde029",
+      "session": "tl-yovwvfe4",
+      "target_session_id": "d635d11c-7521-4378-a730-dd6fa709963c",
       "ok": true
     },
     {
-      "msg_id": "a0ec5898-580e-4201-a983-2fdafe7a414f",
+      "msg_id": "5777a8fd-ef10-48e3-ad8f-8145b6934104",
       "event": "HANDED_OVER",
-      "ts": "2026-10-03T12:56:47.811731+00:00",
-      "evidence": "transcript:c9dae677-6fc3-43b8-ab7d-274e6dfde029.jsonl"
+      "ts": "2026-10-03T13:24:09.085716+00:00",
+      "evidence": "transcript:d635d11c-7521-4378-a730-dd6fa709963c.jsonl"
     },
     {
-      "msg_id": "a0ec5898-580e-4201-a983-2fdafe7a414f",
+      "msg_id": "5777a8fd-ef10-48e3-ad8f-8145b6934104",
       "event": "CONFIRM_SENT",
-      "ts": "2026-10-03T12:56:47.861358+00:00",
+      "ts": "2026-10-03T13:24:09.132722+00:00",
       "status": 200,
       "recorded": true
     }
   ],
-  "transcript": "c9dae677-6fc3-43b8-ab7d-274e6dfde029.jsonl [hook_additional_context] PEER-DATA block: 'Peer check IDLE-jkrkxvyeae: no action and no reply needed; just end your turn.'"
+  "transcript": "d635d11c-7521-4378-a730-dd6fa709963c.jsonl [hook_additional_context] PEER-DATA block: 'Peer check IDLE-iezaozctee: no action and no reply needed; just end your turn.'"
 }

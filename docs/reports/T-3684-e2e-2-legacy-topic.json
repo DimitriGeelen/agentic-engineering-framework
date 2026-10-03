@@ -1,80 +1,80 @@
 {
-  "msg": "b49a7f68-3ee8-4600-936a-f587a18656e2",
+  "msg": "6fdf5d97-7de4-45fd-a556-d1168e9e1b12",
   "via": "hub-topic",
-  "hub_ts": 1791032209678,
-  "send_to_received_s": 16.82769012451172,
-  "send_to_handed_over_s": 18.24170708656311,
+  "hub_ts": 1791033850950,
+  "send_to_received_s": 14.86681604385376,
+  "send_to_handed_over_s": 16.278527975082397,
   "inject_triggers": [
     "tick"
   ],
   "b_events": [
     {
-      "msg_id": "b49a7f68-3ee8-4600-936a-f587a18656e2",
+      "msg_id": "6fdf5d97-7de4-45fd-a556-d1168e9e1b12",
       "event": "STORED",
-      "ts": "2026-10-03T12:57:06.505483+00:00",
-      "sender": "t3684a-23f7gu"
+      "ts": "2026-10-03T13:24:25.816611+00:00",
+      "sender": "t3684a-l8wf5q"
     },
     {
-      "msg_id": "b49a7f68-3ee8-4600-936a-f587a18656e2",
+      "msg_id": "6fdf5d97-7de4-45fd-a556-d1168e9e1b12",
       "event": "INGESTED_FROM_HUB",
-      "ts": "2026-10-03T12:57:06.505690+00:00",
-      "topic": "inbox:cacc73ea32b121dd/t3684b-23f7gu",
+      "ts": "2026-10-03T13:24:25.816816+00:00",
+      "topic": "inbox:cacc73ea32b121dd/t3684b-l8wf5q",
       "offset": 0,
-      "hub_ts": 1791032209678
+      "hub_ts": 1791033850950
     },
     {
-      "msg_id": "b49a7f68-3ee8-4600-936a-f587a18656e2",
+      "msg_id": "6fdf5d97-7de4-45fd-a556-d1168e9e1b12",
       "event": "RECEIPT_SENT",
-      "ts": "2026-10-03T12:57:06.509468+00:00",
+      "ts": "2026-10-03T13:24:25.820654+00:00",
       "state": "RECEIVED",
       "via": "direct"
     },
     {
-      "msg_id": "b49a7f68-3ee8-4600-936a-f587a18656e2",
+      "msg_id": "6fdf5d97-7de4-45fd-a556-d1168e9e1b12",
       "event": "INJECT_TYPING",
-      "ts": "2026-10-03T12:57:06.527011+00:00",
+      "ts": "2026-10-03T13:24:25.837852+00:00",
       "trigger": "tick",
-      "session": "tl-twpw6kyj",
-      "target_session_id": "c9dae677-6fc3-43b8-ab7d-274e6dfde029"
+      "session": "tl-yovwvfe4",
+      "target_session_id": "d635d11c-7521-4378-a730-dd6fa709963c"
     },
     {
-      "msg_id": "b49a7f68-3ee8-4600-936a-f587a18656e2",
+      "msg_id": "6fdf5d97-7de4-45fd-a556-d1168e9e1b12",
       "event": "INJECT_ATTEMPT",
-      "ts": "2026-10-03T12:57:06.551270+00:00",
+      "ts": "2026-10-03T13:24:25.861279+00:00",
       "trigger": "tick",
-      "session": "tl-twpw6kyj",
-      "target_session_id": "c9dae677-6fc3-43b8-ab7d-274e6dfde029",
+      "session": "tl-yovwvfe4",
+      "target_session_id": "d635d11c-7521-4378-a730-dd6fa709963c",
       "ok": true
     },
     {
-      "msg_id": "b49a7f68-3ee8-4600-936a-f587a18656e2",
+      "msg_id": "6fdf5d97-7de4-45fd-a556-d1168e9e1b12",
       "event": "HANDED_OVER",
-      "ts": "2026-10-03T12:57:07.919707+00:00",
-      "evidence": "transcript:c9dae677-6fc3-43b8-ab7d-274e6dfde029.jsonl"
+      "ts": "2026-10-03T13:24:27.228528+00:00",
+      "evidence": "transcript:d635d11c-7521-4378-a730-dd6fa709963c.jsonl"
     },
     {
-      "msg_id": "b49a7f68-3ee8-4600-936a-f587a18656e2",
+      "msg_id": "6fdf5d97-7de4-45fd-a556-d1168e9e1b12",
       "event": "RECEIPT_SENT",
-      "ts": "2026-10-03T12:57:07.956138+00:00",
+      "ts": "2026-10-03T13:24:27.262075+00:00",
       "state": "HANDED_OVER",
       "via": "direct"
     }
   ],
-  "transcript": "c9dae677-6fc3-43b8-ab7d-274e6dfde029.jsonl [hook_additional_context] PEER-DATA block: 'Peer check LEGACY-ppsgvuzpld: no action and no reply needed; just end your turn.'",
+  "transcript": "d635d11c-7521-4378-a730-dd6fa709963c.jsonl [hook_additional_context] PEER-DATA block: 'Peer check LEGACY-gauxvplftv: no action and no reply needed; just end your turn.'",
   "sender_receipt_received": {
-    "client_msg_id": "b49a7f68-3ee8-4600-936a-f587a18656e2",
+    "client_msg_id": "6fdf5d97-7de4-45fd-a556-d1168e9e1b12",
     "state": "RECEIVED",
-    "by": "peer:t3684b-23f7gu",
+    "by": "peer:t3684b-l8wf5q",
     "via": "direct",
-    "ts": "2026-10-03T12:57:06.508468+00:00"
+    "ts": "2026-10-03T13:24:25.819762+00:00"
   },
   "sender_receipt_handed_over": {
-    "client_msg_id": "b49a7f68-3ee8-4600-936a-f587a18656e2",
+    "client_msg_id": "6fdf5d97-7de4-45fd-a556-d1168e9e1b12",
     "state": "HANDED_OVER",
-    "by": "peer:t3684b-23f7gu",
+    "by": "peer:t3684b-l8wf5q",
     "via": "direct",
-    "ts": "2026-10-03T12:57:07.955129+00:00"
+    "ts": "2026-10-03T13:24:27.261280+00:00"
   },
-  "sender_send_to_received_s": 16.860168933868408,
-  "sender_send_to_handed_over_s": 18.306829929351807
+  "sender_send_to_received_s": 14.898988962173462,
+  "sender_send_to_handed_over_s": 16.34050703048706
 }

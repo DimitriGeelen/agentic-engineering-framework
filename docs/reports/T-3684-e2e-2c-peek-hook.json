@@ -1,43 +1,43 @@
 {
-  "msg": "08e30d93-9f08-4709-97fd-82f4116bfa1d",
+  "msg": "0d3f7217-0ca7-45a8-af67-967b66758370",
   "receipt_received": {
-    "client_msg_id": "08e30d93-9f08-4709-97fd-82f4116bfa1d",
+    "client_msg_id": "0d3f7217-0ca7-45a8-af67-967b66758370",
     "state": "RECEIVED",
-    "by": "peer:t3684d-23f7gu",
+    "by": "peer:t3684d-l8wf5q",
     "via": "direct",
-    "ts": "2026-10-03T12:58:00.012350+00:00"
+    "ts": "2026-10-03T13:25:18.383901+00:00"
   },
   "receipt_handed_over": {
-    "client_msg_id": "08e30d93-9f08-4709-97fd-82f4116bfa1d",
+    "client_msg_id": "0d3f7217-0ca7-45a8-af67-967b66758370",
     "state": "HANDED_OVER",
-    "by": "peer:t3684d-23f7gu",
+    "by": "peer:t3684d-l8wf5q",
     "via": "direct",
-    "ts": "2026-10-03T12:58:00.018128+00:00"
+    "ts": "2026-10-03T13:25:18.389772+00:00"
   },
-  "sender_send_to_received_s": 4.004980087280273,
-  "sender_send_to_handed_over_s": 4.010757923126221,
-  "d_transcript_with_consult": "50fb4ae7-4826-4b6c-9479-72c3e7b36f9c.jsonl",
+  "sender_send_to_received_s": 4.052377939224243,
+  "sender_send_to_handed_over_s": 4.058248996734619,
+  "d_transcript_with_consult": "66ea86ac-5f47-4011-9fa2-d68a305a96ca.jsonl",
   "d_receipts_sent": [
     {
-      "client_msg_id": "08e30d93-9f08-4709-97fd-82f4116bfa1d",
+      "client_msg_id": "0d3f7217-0ca7-45a8-af67-967b66758370",
       "state": "RECEIVED",
       "by": "prompt-hook-peek",
-      "to": "t3684a-23f7gu",
-      "to_circuit": "//dimitrimintdev/cacc73ea32b121dd/t3684a-23f7gu",
-      "conversation_id": "t3684-t3684d-23f7gu",
-      "ts": "2026-10-03T12:57:59.977414+00:00",
+      "to": "t3684a-l8wf5q",
+      "to_circuit": "//dimitrimintdev/cacc73ea32b121dd/t3684a-l8wf5q",
+      "conversation_id": "t3684-t3684d-l8wf5q",
+      "ts": "2026-10-03T13:25:18.351030+00:00",
       "ok": true,
       "via": "direct",
       "error": null
     },
     {
-      "client_msg_id": "08e30d93-9f08-4709-97fd-82f4116bfa1d",
+      "client_msg_id": "0d3f7217-0ca7-45a8-af67-967b66758370",
       "state": "HANDED_OVER",
       "by": "prompt-hook-peek",
-      "to": "t3684a-23f7gu",
-      "to_circuit": "//dimitrimintdev/cacc73ea32b121dd/t3684a-23f7gu",
-      "conversation_id": "t3684-t3684d-23f7gu",
-      "ts": "2026-10-03T12:58:00.015783+00:00",
+      "to": "t3684a-l8wf5q",
+      "to_circuit": "//dimitrimintdev/cacc73ea32b121dd/t3684a-l8wf5q",
+      "conversation_id": "t3684-t3684d-l8wf5q",
+      "ts": "2026-10-03T13:25:18.387315+00:00",
       "ok": true,
       "via": "direct",
       "error": null

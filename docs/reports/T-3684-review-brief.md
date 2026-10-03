@@ -1,17 +1,35 @@
-# T-3684 / T-3685 / T-3745 — review brief (sidecar watcher), round 3
+# T-3684 / T-3685 / T-3745 — review brief (sidecar watcher), round 4
 
 Independent-review input. Every claim points at code (file:line), a test, or a
-recorded artefact. Live evidence: **run 9** of
-`tests/integration/t3684_sidecar_watcher_e2e_test.py` on committed code f7c7f1d2c
-(round-2 fixes bb823a983 + e9c6bbb46, round-3 headless fix f7c7f1d2c) — **8 passed**
-(tests 1/2/2b/2c in 99 s, tests 3–6 in 472 s; log `docs/reports/T-3684-e2e-run9.log`;
-per-test JSON `docs/reports/T-3684-e2e-*.json`, written by run 9 on 2026-10-03
-12:56–13:06 UTC). Run 8 (same tests, on e9c6bbb46, before the headless fix) was
-also 8/8 (`docs/reports/T-3684-e2e-run8.log`). Unit: all 268 tests in
-`tests/unit/test_sidecar_*.py` pass. Runs 1–7 are in §8.
+recorded artefact. Live evidence: **run 10** of
+`tests/integration/t3684_sidecar_watcher_e2e_test.py` on committed code bf07a0255
+(round-3 fixes) — **8 passed** (tests 1/2/2b/2c in 98 s, tests 3–6 in 500 s; log
+`docs/reports/T-3684-e2e-run10.log`; per-test JSON `docs/reports/T-3684-e2e-*.json`,
+written by run 10 on 2026-10-03 13:24–13:34 UTC). Runs 8 (e9c6bbb46) and 9
+(f7c7f1d2c) were also 8/8 (`T-3684-e2e-run8.log`, `-run9.log`). Unit: all 271
+tests in `tests/unit/test_sidecar_*.py` pass; bats sidecar_inbox_hook (11),
+t3559_sidecar_inbox_contract (5), sidecar_audit_rail (12) pass with no skips, also
+with `FW_SIDECAR_AGENT_ID` unset under a `claude -p` runner.
 
 Commits: 41a55a515, 7619e1c08 (T-3745); 2e7bdc0ab, 5d0aac008, a2c5c188d, e3f76a1e5,
-3ec45b45e, bb823a983, e9c6bbb46, f7c7f1d2c, 987dff4f4 (T-3684); 7fb5ba890 (T-3685).
+3ec45b45e, bb823a983, e9c6bbb46, f7c7f1d2c, 987dff4f4, ede6b2f95, bf07a0255,
+c680353dc (T-3684); 7fb5ba890 (T-3685).
+
+## 00. Round-3 findings (docs/reports/T-3684-review-codex-round3.md, FAIL) and what changed (bf07a0255)
+
+| # | finding | fix | test (each fails on the round-3 code, passes now) |
+|---|---|---|---|
+| 1 | urgent "only registered session, no record yet" fallback could pick a headless worker's PTY before its first hook wrote a record; the PTY-only claim (session_id None) then matched the worker's prompt hook, which surfaced it (codex's in-memory reproduction) | (a) inject.py `choose_target` no-record fallback: types only when `adapter.claude_in_pty(pid)` (new, adapter.py ≈l.195 — breadth-first over /proc children of the TermLink PTY's shell, first `claude` decides via `_is_headless`) returns `interactive`; headless, a bare shell or no evidence → refused, the message waits; (b) hooks.py `prompt`: a headless session surfaces NONE of the receiver's mail, claimed for its PTY or not (a stale claim expires after REINJECT_AFTER_S=120 and is retried) | `test_urgent_no_record_fallback_needs_an_interactive_claude_seen_in_the_pty`; `test_headless_session_surfaces_nothing_even_with_a_pty_only_claim` (codex's scenario: PTY-only claim for `tl-w`, headless worker prompts → nothing, body absent; an interactive session in that PTY takes it); `test_claude_in_pty_reads_real_processes` (real process trees: shell → `claude` / `claude -p` / bare `sleep`) |
+| 2 | the peek hook in a plain `claude -p` with no `FW_SIDECAR_AGENT_ID` peeks the PROJECT's inbox (agent_name() defaults to the project) and would send receipts for it | agents/context/sidecar-inbox.sh: a headless session with no agent id of its own exits silently before calling fw; an addressable worker (own id) still reads its own inbox | bats `headless claude -p with no agent id of its own: silent, the project's inbox is never read` — a fake `claude` ancestor (`#!/bin/bash` so /proc comm is `claude`) with `-p`: no output, fw never called; CONTROL 1 interactive → surfaces; CONTROL 2 headless + own id → surfaces. Fails on the round-3 hook (output non-empty) |
+| 3 | drain test name claimed print-before-receipt order but did not assert it | `test_inbox_drain_really_sends_received_after_printing_and_no_handed_over` wraps the REAL `receipts.send` and records what had been printed at the moment of the call; asserts the consult body was already printed | — |
+| 4 | the brief said hub urgency was not exercised live; the artifact has `hub_urgent` | corrected: live test_3 posts an urgent consult over the hub topic; run 10: `INJECT_ATTEMPT trigger: tick, urgent_bypass: true, busy_at_inject: true` | live test_3 |
+| — | headless regression test covered only already-recorded workers | the no-record case is finding 1's first test | — |
+
+Test fixtures that now pin "not headless" (because the suites can run inside a
+`claude -p`): `_claude_ancestor_pid` → None in the watcher/receiver/T-3745 fixtures;
+`test_urgent_bypasses_readiness` pins `claude_in_pty` → `interactive` (it tests the
+bypass itself; the refusal is tested above); the wrapper subprocess test runs the
+hook under a fake interactive `claude` parent; the two bats suites set an agent id.
 
 ## 0. Round 3 change: a headless worker is never an inject target (f7c7f1d2c)
 
@@ -30,16 +48,21 @@ typed `u1` into the worker's PTY) and passes now. Three test fixtures now pin
 run from inside a `claude -p` worker, their sessions read as headless and were
 correctly no longer targets.
 
-Can a headless worker still take a peer's message? Every route, as built:
-- injection: no (above);
-- its prompt hook's plain-terminal fallback: no (hooks.py ≈l.198 `not me.get("headless")`;
+Can a headless worker still take a peer's message? Every route, as built after
+bf07a0255 (round 3 found two of these open; §00):
+- injection with a session record: no (above);
+- injection with no record yet (urgent fallback): only into a PTY where an
+  interactive claude is seen (§00 #1a);
+- its prompt hook, claimed mail: none surfaced in a headless session, whatever the
+  claim names (§00 #1b);
+- its prompt hook's plain-terminal fallback: no (`not me.get("headless")`;
   unit `test_headless_session_never_takes_fallback_mail`);
-- its prompt hook's claimed-for-this-session surfacing: only mail claimed for its own
-  session_id, and claims are only written for an inject target, which it never is now;
-- the peek hook (agents/context/sidecar-inbox.sh): shows only the worker's OWN inbox
-  topics (its own agent id, `FW_SIDECAR_AGENT_ID`), as a peek — the project
-  receiver's mail is never on those topics. Receipts sent from there are for its
-  own mail.
+- the peek hook: silent in a headless session without its own agent id (§00 #2);
+  with its own id (`FW_SIDECAR_AGENT_ID`, set by the dispatcher for addressable
+  workers) it peeks only its own inbox topics, never the project's.
+The one remaining dependency: headlessness is read from the claude process's
+command line (`-p` / `--print`, adapter.py `_is_headless`). A headless launch
+spelled differently (e.g. stdin piping without `-p`) would read as interactive.
 
 ## 0a. Round-2 findings (docs/reports/T-3684-review-codex.md, FAIL) and what changed
 
@@ -47,7 +70,7 @@ Can a headless worker still take a peer's message? Every route, as built:
 |---|---|---|---|
 | 1 | `fw sidecar inbox` drain sent HANDED_OVER before printing, no transcript proof | lib/sidecar_cli.py `cmd_inbox` (≈l.164): prints first, flushes, THEN sends RECEIVED only; a drain sends no HANDED_OVER at all (nothing proves where its output went) | unit `test_inbox_drain_really_sends_received_after_printing_and_no_handed_over` (real `inbox.pending` over a recorded hub, real receipt to A's real receiver; A's ledger == `["RECEIVED"]`) |
 | 2 | REPLIED sent in `finally`, also for a failed reply | `cmd_send` (≈l.110) calls `_replied_receipt` only when `_cmd_send` returned 0 (delivered / hub-accepted) | unit `test_failed_reply_sends_no_replied`; live test_2b REPLIED at the sender |
-| 3 | urgency lost on the hub path | termlink_transport.py `build_post_command` adds `--metadata urgent=1`; inbox.py `pending` parses it; watcher.py `ingest_hub` stores `urgent: bool(m["urgent"])` | unit `test_urgency_survives_the_hub_path` (argv + ingest); **new in round 3:** `test_urgent_hub_topic_consult_is_injected_on_the_tick_while_busy` (tests/unit/test_sidecar_watcher_t3684.py) — an urgent hub post is injected on the same tick into a BUSY session; the non-urgent post beside it waits. Not exercised live (live test_3's urgent message uses the direct path) |
+| 3 | urgency lost on the hub path | termlink_transport.py `build_post_command` adds `--metadata urgent=1`; inbox.py `pending` parses it; watcher.py `ingest_hub` stores `urgent: bool(m["urgent"])` | unit `test_urgency_survives_the_hub_path` (argv + ingest); **new in round 3:** `test_urgent_hub_topic_consult_is_injected_on_the_tick_while_busy` (tests/unit/test_sidecar_watcher_t3684.py) — an urgent hub post is injected on the same tick into a BUSY session; the non-urgent post beside it waits. Also live: test_3's `hub_urgent` leg (§4) |
 | 4 | prompt-hook peek path not instrumented / not shown live | agents/context/sidecar-inbox.sh: each shown consult's header carries `[msg <id>] [surfacing <one-time token>]`; RECEIVED for exactly what it showed; a detached `fw sidecar receipts-flush` sends HANDED_OVER only when THIS surfacing's header line appears in a `hook_additional_context` attachment of the session's own transcript (receipts.py `_peek_in_transcript`, `flush`) | unit `test_real_peek_hook_received_now_handed_over_only_on_transcript_evidence` (runs the real hook script), `test_peek_hook_forged_header_in_a_body_is_not_evidence`; **live test_2c**: project D with no sidecar, only the peek hook, a real claude session prompted by its operator → sender A gets RECEIVED 4.04 s and HANDED_OVER 4.04 s after send (D's receipts-sent ledger: RECEIVED + HANDED_OVER `by: prompt-hook-peek`; D's transcript `7c2b4fdd….jsonl` holds the surfacing) |
 | R14 | plain `claude` launches got no sidecar | SessionStart hook agents/context/sidecar-autostart.sh (`fw sidecar ensure --autostart`, detached; respects an explicit `fw sidecar stop`; skipped in review workers), registered in .claude/settings.json and by lib/init.sh | register row R14 evidence |
 | — | (run 7) an em dash in an operator prompt left test_2c's prompt unsubmitted | e9c6bbb46: ASCII prompts, submission confirmed | run 8: 8/8 |
@@ -83,7 +106,7 @@ Can a headless worker still take a peer's message? Every route, as built:
 | AC | status | evidence |
 |---|---|---|
 | ready keyed by session_id (+transcript_path); inject only into the session whose own flag is ready | MET | unit tests/unit/test_sidecar_session_ready_t3745.py (16 tests: 055 scenario, busy-until-own-Stop, claim-before-typing, dead claude pid, urgent into busy, no-decision-on-record → nothing taken, headless → nothing taken, headless worker PTY never injected even urgent — §0); live test_6 |
-| HANDED_OVER only to the injected session, from its transcript | MET | unit `test_handed_over_is_attributed_only_to_the_injected_session`; live test_6: HANDED_OVER evidence `transcript:e96da31f-….jsonl` = C2's session |
+| HANDED_OVER only to the injected session, from its transcript | MET | unit `test_handed_over_is_attributed_only_to_the_injected_session`; live test_6: HANDED_OVER evidence `transcript:bf52bfe5-….jsonl` = C2's session (run 10) |
 | two sessions, one project: idle gets it, busy PTY nothing | MET (live) | T-3684-e2e-6-two-sessions.json: inject session = C2's TermLink id; C1 busy at check; `c1_pty_has_line: false`, `c1_pty_has_any_sidecar_line: false`; `c2_pty_has_line: true` |
 
 ## 3. T-3684
@@ -95,46 +118,48 @@ Can a headless worker still take a peer's message? Every route, as built:
 | urgent regardless; non-urgent when ready; HANDED_OVER on transcript; sender informed | MET | live test_3; test_1 sender ledger HANDED_OVER `by: peer-receiver:…`; hub senders get a HANDED_OVER receipt (test_2) |
 | live: idle ≤60 s; busy only after turn end; urgent while busy; legacy ≤60 s; watcher disabled → no pickup + ESCALATED | MET (live) | §4 |
 | `fw sidecar latency` median/p95/max, figures here | MET | §4, docs/reports/T-3684-latency-A.txt, -B.json |
-| receipt telemetry on every path; 3 timestamps in latency; live legacy → RECEIVED at sender ≤60 s | MET | three hub-topic take-off paths: watcher (live test_2: RECEIVED at sender 16.86 s, HANDED_OVER 18.31 s; test_2b: RECEIVED 27.61 s, HANDED_OVER 29.06 s, REPLIED 34.83 s, latency row `path: hub`, `send_to_replied_s` set), prompt-hook peek (live test_2c: RECEIVED + HANDED_OVER at the sender 4.01 s), `fw sidecar inbox` drain (unit, RECEIVED only — by design, see §0a #1); unit tests/unit/test_sidecar_receipts_t3684.py (real receivers over HTTP for the direct leg; drain, real peek hook, forged header refused, failed reply → no REPLIED, detached flush, hub fallback consumed as a receipt, wrong-peer refused) |
+| receipt telemetry on every path; 3 timestamps in latency; live legacy → RECEIVED at sender ≤60 s | MET | three hub-topic take-off paths: watcher (live test_2, run 10: RECEIVED at sender 14.90 s, HANDED_OVER 16.34 s; test_2b: RECEIVED 27.64 s, HANDED_OVER 29.07 s, REPLIED 34.59 s, latency row `path: hub`, `send_to_replied_s` set), prompt-hook peek (live test_2c: RECEIVED 4.05 s + HANDED_OVER 4.06 s at the sender), `fw sidecar inbox` drain (unit, RECEIVED only — by design, see §0a #1); unit tests/unit/test_sidecar_receipts_t3684.py (real receivers over HTTP for the direct leg; drain, real peek hook, forged header refused, failed reply → no REPLIED, detached flush, hub fallback consumed as a receipt, wrong-peer refused) |
 | codex VERDICT: PASS | this review | |
 
-## 4. Measured latencies (run 9, 2026-10-03, default 30 s tick, model haiku)
+## 4. Measured latencies (run 10, 2026-10-03, code bf07a0255, default 30 s tick, model haiku)
 
 From component-written ledgers: A's `direct-ack.jsonl` / `receipts.jsonl` / outbox
 `created_at`, B's receiver `events.jsonl`, the hub's own post timestamp.
 
 | case | send→RECEIVED | send→HANDED_OVER | delivered by |
 |---|---|---|---|
-| idle, non-urgent (test_1) | 0.01 s | **1.43 s** | on-store inject |
-| legacy hub topic (test_2) | ingest 16.83 s; **at the sender 16.86 s** | 18.24 s (at sender 18.31 s) | tick |
-| legacy + reply (test_2b) | 27.61 s at sender | 29.06 s at sender; **REPLIED 34.83 s** | tick |
-| legacy, prompt-hook peek, no sidecar (test_2c) | **4.01 s at sender** | 4.01 s at sender (transcript-proven, D's `50fb4ae7….jsonl`) | operator prompt 3 s after send |
-| busy, non-urgent (test_3) | ≈0.01 s | 106.4 s (turn ran ~87 s); injected **17.7 s after the turn ended** | tick |
-| busy, urgent (test_3) | ≈0.01 s | typed **0.054 s** after send while busy (`urgent_bypass`, line in the busy PTY); HANDED_OVER 79.7 s (when the busy turn ended) | on-store, urgent bypass |
-| two sessions (test_6) | — | STORED→HANDED_OVER 1.44 s into idle C2 (`transcript:e96da31f….jsonl` = C2) | on-store |
-| hung watcher (test_4) | — | doctor FAIL at 73 s, audit FAIL at 77 s, supervisor replaced it after **96.7 s** | supervisor |
+| idle, non-urgent (test_1) | 0.01 s | **1.44 s** | on-store inject |
+| legacy hub topic (test_2) | ingest 14.87 s; **at the sender 14.90 s** | 16.28 s (at sender 16.34 s) | tick |
+| legacy + reply (test_2b) | 27.64 s at sender | 29.07 s at sender; **REPLIED 34.59 s** | tick |
+| legacy, prompt-hook peek, no sidecar (test_2c) | **4.05 s at sender** | 4.06 s at sender (transcript-proven, D's `66ea86ac….jsonl`) | operator prompt 3 s after send |
+| busy, non-urgent (test_3) | ≈0.01 s | 104.8 s (turn ran ~87 s); injected **17.3 s after the turn ended** | tick |
+| busy, urgent, direct (test_3) | ≈0.01 s | typed **0.73 s** after send while busy (`urgent_bypass`, line in the busy PTY); HANDED_OVER 78.3 s (when the busy turn ended) | on-store, urgent bypass |
+| busy, urgent, hub topic (test_3 `hub_urgent`) | — | typed on the next tick while busy (`trigger: tick`, `urgent_bypass: true`, `busy_at_inject: true`) | tick, urgent bypass |
+| two sessions (test_6) | — | STORED→HANDED_OVER 1.43 s into idle C2 (`transcript:bf52bfe5….jsonl` = C2) | on-store |
+| hung watcher (test_4) | — | doctor FAIL at 74 s, audit FAIL at 78 s, supervisor replaced it after **96.6 s** | supervisor |
 
-Run 8 (e9c6bbb46) gave the same picture: idle 2.15 s; legacy at sender 13.30 s /
-14.78 s; 2b REPLIED 31.47 s; peek 4.04 s; urgent typed 0.12 s; non-urgent 16.2 s
-after turn end; hung healed 96.3 s.
+Runs 8 (e9c6bbb46) and 9 (f7c7f1d2c) gave the same picture: idle 2.15 / 1.43 s;
+legacy RECEIVED at sender 13.30 / 16.86 s; 2b REPLIED 31.47 / 34.83 s; peek 4.04 /
+4.01 s; urgent typed 0.12 / 0.054 s; non-urgent 16.2 / 17.7 s after turn end; hung
+healed 96.3 / 96.7 s.
 
 The 60 s bound: idle pickup on the direct path is on-store (≈1.5 s); on the hub
-path it is bounded by one tick (30 s) + inject; measured 13–28 s over runs 8–9.
+path it is bounded by one tick (30 s) + inject; measured 13–28 s over runs 8–10.
 The tests assert `<= 60` on measured values; they do not prove a worst case.
 
-`fw sidecar latency` per run-9 project: docs/reports/T-3684-latency-A.txt (all four
+`fw sidecar latency` per run-10 project: docs/reports/T-3684-latency-A.txt (all four
 projects, text) and docs/reports/T-3684-latency-B.json (B of pair 1, JSON). Pooled
 figures include the deliberately delayed busy and negative-control messages:
 ```
-pair 1 A outbound (4): send→RECEIVED median=10.432s p95=27.611s max=27.611s
-                       send→HANDED_OVER median=11.159s p95=29.057s max=29.057s
-                       send→REPLIED n=2 median=46.142s max=57.455s
-pair 1 B inbound  (3): send→RECEIVED median=16.827s max=27.578s
-                       send→HANDED_OVER median=18.242s max=28.995s; send→REPLIED 34.797s
-pair 2 A outbound (6): send→RECEIVED median=0.01s p95=92.769s max=92.769s
-                       send→HANDED_OVER median=86.992s p95=106.475s max=106.475s
-pair 2 B inbound  (5): send→RECEIVED median=0.009s max=92.703s
-                       send→HANDED_OVER median=94.162s max=106.44s
+pair 1 A outbound (4): send→RECEIVED median=9.476s p95=27.645s max=27.645s
+                       send→HANDED_OVER median=10.2s p95=29.072s max=29.072s
+                       send→REPLIED n=2 median=44.903s max=55.219s
+pair 1 B inbound  (3): send→RECEIVED median=14.867s max=27.607s
+                       send→HANDED_OVER median=16.279s max=29.005s; send→REPLIED 34.549s
+pair 2 A outbound (6): send→RECEIVED median=0.366s p95=117.689s max=117.689s
+                       send→HANDED_OVER median=91.591s p95=119.406s max=119.406s
+pair 2 B inbound  (5): send→RECEIVED median=0.686s max=117.624s
+                       send→HANDED_OVER median=104.847s max=119.364s
 ```
 
 **Limitation — urgent while busy.** The line is typed into the busy session at once,
@@ -150,7 +175,7 @@ design does not ask for.
 | R7, R14, R15 built with evidence | MET | §7 rows; R14 = every claude-fw session (termlink or not) AND every other launch (plain `claude`, IDE, worker) via the SessionStart hook `sidecar-autostart` (bb823a983; an explicit `fw sidecar stop` is respected — this repo's own sidecar is in that state, so doctor WARNs here); doctor/audit WARN wherever none runs |
 | each tick: seq+1, loopback probe, liveness.yaml fields | MET | watcher.py:405/:281/:326; unit `test_tick_injects_into_the_ready_session_and_writes_liveness` (real receiver process) |
 | started with receiver; restarted when killed; reboot via repo pattern; in `fw sidecar status`; claude-fw gets one; inert+visible without TermLink | MET | unit `test_start_supervises_restarts_and_ensure_recovers` (real processes/signals; `fw sidecar status` shows `watcher: live … supervisor=up`), `test_claude_fw_really_starts_the_sidecar[--termlink / plain]` (runs the real bin/claude-fw with a stub claude, PATH without termlink → live supervised watcher, `termlink: absent`, inert line printed), `test_supervisor_restarts_a_dead_receiver`, `test_receiver_start_starts_the_watcher_and_receiver_stop_stops_it`. Reboot: @reboot cron line (no reboot performed). |
-| doctor + audit FAIL when not live; live kill → not-live reported → supervisor restarts | MET (live) | T-3684-e2e-4-kill.json `hung`: watcher SIGSTOPped → doctor `FAIL Sidecar watcher NOT live: seq stalled at 6 for 73s (> 2 ticks of 30s)`, audit `[FAIL] Sidecar watcher NOT live` (77 s) → supervisor replaced it by itself after 96.7 s (run 9) (`WATCHER_HUNG_KILLED` event) → live. Also: SIGKILL watcher → respawned in seconds; SIGKILL supervisor+watcher → doctor FAIL → `ensure --all` (the cron command) → doctor `OK … live` |
+| doctor + audit FAIL when not live; live kill → not-live reported → supervisor restarts | MET (live) | T-3684-e2e-4-kill.json `hung`: watcher SIGSTOPped → doctor `FAIL Sidecar watcher NOT live: seq stalled at 6 for 74s (> 2 ticks of 30s)`, audit `[FAIL] Sidecar watcher NOT live` (78 s) → supervisor replaced it by itself after 96.6 s (run 10) (`WATCHER_HUNG_KILLED` event) → live. Also: SIGKILL watcher → respawned in seconds; SIGKILL supervisor+watcher → doctor FAIL → `ensure --all` (the cron command) → doctor `OK … live` |
 
 ## 6. Live incident during this work (disclosed)
 
@@ -189,7 +214,7 @@ transcript or receipt itself: its JSON serialises what the components and Claude
 Code wrote. Hermetic guard: tests/unit/conftest.py sets FW_SIDECAR_ENABLED_DIR /
 FW_SIDECAR_REGISTRY_DIR / TERMLINK_RUNTIME_DIR to tmp for every `test_sidecar_*` module.
 
-## 8. Runs 1–9
+## 8. Runs 1–10
 
 1. haiku ran `sleep 90` in the background (busy precondition false); a watcher
    SIGKILLed mid-tick left no INJECT_ATTEMPT → INJECT_TYPING added.
@@ -203,7 +228,8 @@ FW_SIDECAR_REGISTRY_DIR / TERMLINK_RUNTIME_DIR to tmp for every `test_sidecar_*`
 7. 7/8 on bb823a983 — an em dash in test_2c's operator prompt left it
    unsubmitted (`docs/reports/T-3684-e2e-run7.log`) → ASCII prompts (e9c6bbb46).
 8. 8/8 on e9c6bbb46 (`docs/reports/T-3684-e2e-run8.log`).
-9. 8/8 on f7c7f1d2c (`docs/reports/T-3684-e2e-run9.log`) — the evidence in §4.
+9. 8/8 on f7c7f1d2c (`docs/reports/T-3684-e2e-run9.log`).
+10. 8/8 on bf07a0255 (`docs/reports/T-3684-e2e-run10.log`) — the evidence in §4.
 
 ## 9. Not done / deferred
 
@@ -211,6 +237,7 @@ FW_SIDECAR_REGISTRY_DIR / TERMLINK_RUNTIME_DIR to tmp for every `test_sidecar_*`
 - This framework repo's own sidecar is in the explicitly-stopped state (`fw sidecar
   stop`), which the SessionStart autostart respects; `bin/fw sidecar start` turns it
   on — operator's call. Doctor WARNs.
-- Urgency over the hub path is proven by unit test (ingest + tick inject while busy),
-  not live; live test_3's urgent message uses the direct path.
+- The 2c peek path, the 2b reply and the busy case each need an operator prompt
+  (the e2e types it into the real session as the operator would); nothing in them
+  is written by the test itself.
 - Legacy-topic retirement: T-3690 (exists, active).

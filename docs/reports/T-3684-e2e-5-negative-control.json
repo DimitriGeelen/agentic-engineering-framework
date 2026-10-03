@@ -1,23 +1,23 @@
 {
-  "msg": "e4799cef-1004-47c4-b0bb-50e217817e59",
+  "msg": "273fcbc4-aa7a-49c9-a968-05c82e7085df",
   "sender_states": [
     "SENT",
     "RECEIVED",
     "ESCALATED"
   ],
   "escalated_row": {
-    "client_msg_id": "e4799cef-1004-47c4-b0bb-50e217817e59",
+    "client_msg_id": "273fcbc4-aa7a-49c9-a968-05c82e7085df",
     "state": "ESCALATED",
     "by": "infrastructure",
-    "ts": "2026-10-03T13:05:18.256535+00:00",
-    "error": "HANDED_OVER not confirmed by deadline 2026-10-03T13:05:17.087932+00:00"
+    "ts": "2026-10-03T13:33:06.476348+00:00",
+    "error": "HANDED_OVER not confirmed by deadline 2026-10-03T13:32:39.138621+00:00"
   },
   "b_events": [
     {
-      "msg_id": "e4799cef-1004-47c4-b0bb-50e217817e59",
+      "msg_id": "273fcbc4-aa7a-49c9-a968-05c82e7085df",
       "event": "STORED",
-      "ts": "2026-10-03T13:03:47.087006+00:00",
-      "sender": "t3684a-d0zgi6"
+      "ts": "2026-10-03T13:31:09.137884+00:00",
+      "sender": "t3684a-woejcj"
     }
   ],
   "legacy_ingested": null

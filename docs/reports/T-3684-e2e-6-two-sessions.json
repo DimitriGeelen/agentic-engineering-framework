@@ -1,22 +1,22 @@
 {
-  "msg": "0f6b5851-c407-4f9c-a087-caa8b98b5acd",
-  "c1": "tl-xojv2zoc",
-  "c2": "tl-klgq3kvo",
-  "c2_session_id": "e96da31f-aba4-4d59-a2fe-044dfae169ca",
+  "msg": "5436be4b-b25f-477c-9bad-e0f2bbf0afb8",
+  "c1": "tl-zm47xtut",
+  "c2": "tl-gfvn5jsm",
+  "c2_session_id": "bf52bfe5-f95b-453e-af2a-076c2503bd21",
   "inject": {
-    "msg_id": "0f6b5851-c407-4f9c-a087-caa8b98b5acd",
+    "msg_id": "5436be4b-b25f-477c-9bad-e0f2bbf0afb8",
     "event": "INJECT_ATTEMPT",
-    "ts": "2026-10-03T13:05:47.812240+00:00",
+    "ts": "2026-10-03T13:33:34.768123+00:00",
     "trigger": "on-store",
-    "session": "tl-klgq3kvo",
-    "target_session_id": "e96da31f-aba4-4d59-a2fe-044dfae169ca",
+    "session": "tl-gfvn5jsm",
+    "target_session_id": "bf52bfe5-f95b-453e-af2a-076c2503bd21",
     "ok": true
   },
   "handed_over": {
-    "msg_id": "0f6b5851-c407-4f9c-a087-caa8b98b5acd",
+    "msg_id": "5436be4b-b25f-477c-9bad-e0f2bbf0afb8",
     "event": "HANDED_OVER",
-    "ts": "2026-10-03T13:05:49.209072+00:00",
-    "evidence": "transcript:e96da31f-aba4-4d59-a2fe-044dfae169ca.jsonl"
+    "ts": "2026-10-03T13:33:36.154560+00:00",
+    "evidence": "transcript:bf52bfe5-f95b-453e-af2a-076c2503bd21.jsonl"
   },
   "c1_busy_at_check": true,
   "c1_pty_has_line": false,
@@ -24,38 +24,38 @@
   "c1_pty_has_any_sidecar_line": false,
   "events": [
     {
-      "msg_id": "0f6b5851-c407-4f9c-a087-caa8b98b5acd",
+      "msg_id": "5436be4b-b25f-477c-9bad-e0f2bbf0afb8",
       "event": "STORED",
-      "ts": "2026-10-03T13:05:47.769713+00:00",
-      "sender": "t3684a-d0zgi6"
+      "ts": "2026-10-03T13:33:34.725848+00:00",
+      "sender": "t3684a-woejcj"
     },
     {
-      "msg_id": "0f6b5851-c407-4f9c-a087-caa8b98b5acd",
+      "msg_id": "5436be4b-b25f-477c-9bad-e0f2bbf0afb8",
       "event": "INJECT_TYPING",
-      "ts": "2026-10-03T13:05:47.788294+00:00",
+      "ts": "2026-10-03T13:33:34.744350+00:00",
       "trigger": "on-store",
-      "session": "tl-klgq3kvo",
-      "target_session_id": "e96da31f-aba4-4d59-a2fe-044dfae169ca"
+      "session": "tl-gfvn5jsm",
+      "target_session_id": "bf52bfe5-f95b-453e-af2a-076c2503bd21"
     },
     {
-      "msg_id": "0f6b5851-c407-4f9c-a087-caa8b98b5acd",
+      "msg_id": "5436be4b-b25f-477c-9bad-e0f2bbf0afb8",
       "event": "INJECT_ATTEMPT",
-      "ts": "2026-10-03T13:05:47.812240+00:00",
+      "ts": "2026-10-03T13:33:34.768123+00:00",
       "trigger": "on-store",
-      "session": "tl-klgq3kvo",
-      "target_session_id": "e96da31f-aba4-4d59-a2fe-044dfae169ca",
+      "session": "tl-gfvn5jsm",
+      "target_session_id": "bf52bfe5-f95b-453e-af2a-076c2503bd21",
       "ok": true
     },
     {
-      "msg_id": "0f6b5851-c407-4f9c-a087-caa8b98b5acd",
+      "msg_id": "5436be4b-b25f-477c-9bad-e0f2bbf0afb8",
       "event": "HANDED_OVER",
-      "ts": "2026-10-03T13:05:49.209072+00:00",
-      "evidence": "transcript:e96da31f-aba4-4d59-a2fe-044dfae169ca.jsonl"
+      "ts": "2026-10-03T13:33:36.154560+00:00",
+      "evidence": "transcript:bf52bfe5-f95b-453e-af2a-076c2503bd21.jsonl"
     },
     {
-      "msg_id": "0f6b5851-c407-4f9c-a087-caa8b98b5acd",
+      "msg_id": "5436be4b-b25f-477c-9bad-e0f2bbf0afb8",
       "event": "CONFIRM_SENT",
-      "ts": "2026-10-03T13:05:49.274954+00:00",
+      "ts": "2026-10-03T13:33:36.187430+00:00",
       "status": 200,
       "recorded": true
     }

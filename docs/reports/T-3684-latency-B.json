@@ -2,20 +2,20 @@
   "outbound": {
     "messages": [
       {
-        "client_msg_id": "c70b2c61-f232-487c-b2c1-3f296d5d8f7f",
-        "to": "t3684a-23f7gu",
+        "client_msg_id": "2bc2f270-c0d0-4ddd-8408-836f1d382354",
+        "to": "t3684a-l8wf5q",
         "path": "direct",
-        "sent_at": "2026-10-03T12:57:43.821993+00:00",
-        "send_to_received_s": 0.013,
+        "sent_at": "2026-10-03T13:25:02.859904+00:00",
+        "send_to_received_s": 0.011,
         "send_to_handed_over_s": null,
         "send_to_replied_s": null
       }
     ],
     "send_to_received": {
       "n": 1,
-      "median": 0.013,
-      "p95": 0.013,
-      "max": 0.013
+      "median": 0.011,
+      "p95": 0.011,
+      "max": 0.011
     },
     "send_to_handed_over": {
       "n": 0,
@@ -34,40 +34,40 @@
   "inbound": {
     "messages": [
       {
-        "send_to_replied_s": 34.797,
-        "msg_id": "92447a9b-a474-4057-93a6-30141e02f20b",
-        "from": "t3684a-23f7gu",
-        "via": "hub-topic",
-        "urgent": false,
-        "sent_at": "2026-10-03T12:57:09.038000+00:00",
-        "send_to_received_s": 27.578,
-        "send_to_handed_over_s": 28.995,
-        "inject_triggers": [
-          "tick"
-        ]
-      },
-      {
         "send_to_replied_s": null,
-        "msg_id": "a0ec5898-580e-4201-a983-2fdafe7a414f",
-        "from": "t3684a-23f7gu",
+        "msg_id": "5777a8fd-ef10-48e3-ad8f-8145b6934104",
+        "from": "t3684a-l8wf5q",
         "via": "direct",
         "urgent": false,
-        "sent_at": "2026-10-03T12:56:46.379031+00:00",
-        "send_to_received_s": 0.01,
-        "send_to_handed_over_s": 1.433,
+        "sent_at": "2026-10-03T13:24:07.651192+00:00",
+        "send_to_received_s": 0.009,
+        "send_to_handed_over_s": 1.435,
         "inject_triggers": [
           "on-store"
         ]
       },
       {
         "send_to_replied_s": null,
-        "msg_id": "b49a7f68-3ee8-4600-936a-f587a18656e2",
-        "from": "t3684a-23f7gu",
+        "msg_id": "6fdf5d97-7de4-45fd-a556-d1168e9e1b12",
+        "from": "t3684a-l8wf5q",
         "via": "hub-topic",
         "urgent": false,
-        "sent_at": "2026-10-03T12:56:49.678000+00:00",
-        "send_to_received_s": 16.827,
-        "send_to_handed_over_s": 18.242,
+        "sent_at": "2026-10-03T13:24:10.950000+00:00",
+        "send_to_received_s": 14.867,
+        "send_to_handed_over_s": 16.279,
+        "inject_triggers": [
+          "tick"
+        ]
+      },
+      {
+        "send_to_replied_s": 34.549,
+        "msg_id": "7b1e5286-0465-4d66-8006-066fd29b1708",
+        "from": "t3684a-l8wf5q",
+        "via": "hub-topic",
+        "urgent": false,
+        "sent_at": "2026-10-03T13:24:28.322000+00:00",
+        "send_to_received_s": 27.607,
+        "send_to_handed_over_s": 29.005,
         "inject_triggers": [
           "tick"
         ]
@@ -75,21 +75,21 @@
     ],
     "send_to_received": {
       "n": 3,
-      "median": 16.827,
-      "p95": 27.578,
-      "max": 27.578
+      "median": 14.867,
+      "p95": 27.607,
+      "max": 27.607
     },
     "send_to_handed_over": {
       "n": 3,
-      "median": 18.242,
-      "p95": 28.995,
-      "max": 28.995
+      "median": 16.279,
+      "p95": 29.005,
+      "max": 29.005
     },
     "send_to_replied": {
       "n": 1,
-      "median": 34.797,
-      "p95": 34.797,
-      "max": 34.797
+      "median": 34.549,
+      "p95": 34.549,
+      "max": 34.549
     },
     "open": 0
   }
