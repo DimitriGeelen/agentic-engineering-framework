@@ -8,3 +8,5 @@
 {"by": "human", "event": "approved", "id": "RP-09cddceb", "reason": "", "ts": "2026-10-03T11:35:20Z"}
 {"backend": "openrouter", "class": "paid", "estimate_cost": 0.3, "estimate_tokens": 25000, "event": "proposed", "id": "RP-14a5f1f8", "task": "T-3751", "ts": "2026-10-03T12:34:46Z", "why": "T-3751 external design review, seat xAI re-run (first call returned an agentic preamble only, 169 tokens; prompt fixed)."}
 {"backend": "openrouter", "class": "paid", "estimate_cost": 0.3, "estimate_tokens": 25000, "event": "proposed", "id": "RP-1454c057", "task": "T-3751", "ts": "2026-10-03T12:34:46Z", "why": "T-3751 external design review, seat Qwen re-run (first call spent its 6000-token cap on hidden reasoning, 13 words of answer; cap raised to 20000)."}
+{"by": "human", "event": "approved", "id": "RP-14a5f1f8", "reason": "", "ts": "2026-10-03T15:26:13Z"}
+{"by": "human", "event": "approved", "id": "RP-1454c057", "reason": "", "ts": "2026-10-03T15:26:13Z"}
