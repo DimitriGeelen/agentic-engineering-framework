@@ -1,11 +1,21 @@
 {
   "outbound": {
-    "messages": [],
+    "messages": [
+      {
+        "client_msg_id": "d9f64e54-fa4b-407d-8e0a-49dd961e3e8b",
+        "to": "t3684a-guxa6x",
+        "path": "direct",
+        "sent_at": "2026-10-03T00:25:29.176853+00:00",
+        "send_to_received_s": 0.009,
+        "send_to_handed_over_s": null,
+        "send_to_replied_s": 15.016
+      }
+    ],
     "send_to_received": {
-      "n": 0,
-      "median": null,
-      "p95": null,
-      "max": null
+      "n": 1,
+      "median": 0.009,
+      "p95": 0.009,
+      "max": 0.009
     },
     "send_to_handed_over": {
       "n": 0,
@@ -13,94 +23,125 @@
       "p95": null,
       "max": null
     },
-    "open": 0
+    "send_to_replied": {
+      "n": 1,
+      "median": 15.016,
+      "p95": 15.016,
+      "max": 15.016
+    },
+    "open": 1
   },
   "inbound": {
     "messages": [
       {
-        "msg_id": "1f00b23c-0e50-4d09-8175-6bd6c16c6d0d",
-        "from": "t3684a-ox90o8",
+        "send_to_replied_s": null,
+        "msg_id": "06dac30e-4361-4538-8cb8-6e053f862c21",
+        "from": "t3684a-guxa6x",
+        "via": "direct",
+        "urgent": false,
+        "sent_at": "2026-10-03T00:30:54.722289+00:00",
+        "send_to_received_s": 0.008,
+        "send_to_handed_over_s": 121.383,
+        "inject_triggers": [
+          "tick"
+        ]
+      },
+      {
+        "send_to_replied_s": 32.159,
+        "msg_id": "504c0621-65d5-4c7b-bdf1-06c1ed81789b",
+        "from": "t3684a-guxa6x",
+        "via": "hub-topic",
+        "urgent": false,
+        "sent_at": "2026-10-03T00:24:57.027000+00:00",
+        "send_to_received_s": 27.683,
+        "send_to_handed_over_s": 29.09,
+        "inject_triggers": [
+          "tick"
+        ]
+      },
+      {
+        "send_to_replied_s": null,
+        "msg_id": "5d420058-ef73-453c-bd8c-d39c3adc9e05",
+        "from": "t3684a-guxa6x",
         "via": "direct",
         "urgent": true,
-        "sent_at": "2026-10-02T23:42:08.422367+00:00",
-        "send_to_received_s": 0.008,
-        "send_to_handed_over_s": 78.489,
+        "sent_at": "2026-10-03T00:25:50.488466+00:00",
+        "send_to_received_s": 0.009,
+        "send_to_handed_over_s": 78.586,
         "inject_triggers": [
           "on-store"
         ]
       },
       {
-        "msg_id": "48b80204-bc8c-4674-b397-0d09b8a3676a",
-        "from": "t3684a-ox90o8",
+        "send_to_replied_s": null,
+        "msg_id": "6fc0157b-9ce6-4cb4-b52d-20ef30cd56e4",
+        "from": "t3684a-guxa6x",
         "via": "hub-topic",
         "urgent": false,
-        "sent_at": "2026-10-02T23:45:38.487000+00:00",
-        "send_to_received_s": 103.716,
-        "send_to_handed_over_s": 105.144,
+        "sent_at": "2026-10-03T00:30:55.017000+00:00",
+        "send_to_received_s": 119.613,
+        "send_to_handed_over_s": 121.127,
         "inject_triggers": [
           "tick"
         ]
       },
       {
-        "msg_id": "50f1c1ef-c68d-4340-aa40-28c59d4512bc",
-        "from": "t3684a-ox90o8",
-        "via": "direct",
-        "urgent": false,
-        "sent_at": "2026-10-02T23:45:38.198286+00:00",
-        "send_to_received_s": 0.009,
-        "send_to_handed_over_s": 105.454,
-        "inject_triggers": [
-          "tick"
-        ]
-      },
-      {
-        "msg_id": "a0f56d53-1940-472c-b274-b46d82f7ed39",
-        "from": "t3684a-ox90o8",
+        "send_to_replied_s": null,
+        "msg_id": "73249a91-cbae-4ec6-bbe5-86cc6a2b6124",
+        "from": "t3684a-guxa6x",
         "via": "hub-topic",
         "urgent": false,
-        "sent_at": "2026-10-02T23:41:35.184000+00:00",
-        "send_to_received_s": 15.897,
-        "send_to_handed_over_s": 17.329,
+        "sent_at": "2026-10-03T00:24:38.665000+00:00",
+        "send_to_received_s": 15.921,
+        "send_to_handed_over_s": 17.321,
         "inject_triggers": [
           "tick"
         ]
       },
       {
-        "msg_id": "c9ae9360-747b-4f34-bee2-890b254b89d5",
-        "from": "t3684a-ox90o8",
+        "send_to_replied_s": null,
+        "msg_id": "b161b16d-acdf-4fc3-8c11-f8a989ba8fec",
+        "from": "t3684a-guxa6x",
         "via": "direct",
         "urgent": false,
-        "sent_at": "2026-10-02T23:42:02.110350+00:00",
-        "send_to_received_s": 0.009,
-        "send_to_handed_over_s": 110.68,
-        "inject_triggers": [
-          "tick"
-        ]
-      },
-      {
-        "msg_id": "f5045645-c16a-4b5a-a46b-14a2d8c111f2",
-        "from": "t3684a-ox90o8",
-        "via": "direct",
-        "urgent": false,
-        "sent_at": "2026-10-02T23:41:30.885753+00:00",
-        "send_to_received_s": 0.009,
-        "send_to_handed_over_s": 1.423,
+        "sent_at": "2026-10-03T00:24:34.364981+00:00",
+        "send_to_received_s": 0.011,
+        "send_to_handed_over_s": 1.427,
         "inject_triggers": [
           "on-store"
+        ]
+      },
+      {
+        "send_to_replied_s": null,
+        "msg_id": "d535cf4e-2042-416c-ba97-725d141a987a",
+        "from": "t3684a-guxa6x",
+        "via": "direct",
+        "urgent": false,
+        "sent_at": "2026-10-03T00:25:44.182710+00:00",
+        "send_to_received_s": 0.009,
+        "send_to_handed_over_s": 102.272,
+        "inject_triggers": [
+          "tick"
         ]
       }
     ],
     "send_to_received": {
-      "n": 6,
-      "median": 0.009,
-      "p95": 103.716,
-      "max": 103.716
+      "n": 7,
+      "median": 0.011,
+      "p95": 119.613,
+      "max": 119.613
     },
     "send_to_handed_over": {
-      "n": 6,
-      "median": 91.817,
-      "p95": 110.68,
-      "max": 110.68
+      "n": 7,
+      "median": 78.586,
+      "p95": 121.383,
+      "max": 121.383
+    },
+    "send_to_replied": {
+      "n": 1,
+      "median": 32.159,
+      "p95": 32.159,
+      "max": 32.159
     },
     "open": 0
   }

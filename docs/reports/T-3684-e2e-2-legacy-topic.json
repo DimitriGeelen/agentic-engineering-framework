@@ -1,56 +1,80 @@
 {
-  "msg": "a0f56d53-1940-472c-b274-b46d82f7ed39",
+  "msg": "73249a91-cbae-4ec6-bbe5-86cc6a2b6124",
   "via": "hub-topic",
-  "hub_ts": 1790984495184,
-  "send_to_received_s": 15.89696192741394,
-  "send_to_handed_over_s": 17.328700065612793,
+  "hub_ts": 1790987078665,
+  "send_to_received_s": 15.920886993408203,
+  "send_to_handed_over_s": 17.320760011672974,
   "inject_triggers": [
     "tick"
   ],
   "b_events": [
     {
-      "msg_id": "a0f56d53-1940-472c-b274-b46d82f7ed39",
+      "msg_id": "73249a91-cbae-4ec6-bbe5-86cc6a2b6124",
       "event": "STORED",
-      "ts": "2026-10-02T23:41:51.080767+00:00",
-      "sender": "t3684a-ox90o8"
+      "ts": "2026-10-03T00:24:54.585707+00:00",
+      "sender": "t3684a-guxa6x"
     },
     {
-      "msg_id": "a0f56d53-1940-472c-b274-b46d82f7ed39",
+      "msg_id": "73249a91-cbae-4ec6-bbe5-86cc6a2b6124",
       "event": "INGESTED_FROM_HUB",
-      "ts": "2026-10-02T23:41:51.080962+00:00",
-      "topic": "inbox:cacc73ea32b121dd/t3684b-ox90o8",
+      "ts": "2026-10-03T00:24:54.585887+00:00",
+      "topic": "inbox:cacc73ea32b121dd/t3684b-guxa6x",
       "offset": 0,
-      "hub_ts": 1790984495184
+      "hub_ts": 1790987078665
     },
     {
-      "msg_id": "a0f56d53-1940-472c-b274-b46d82f7ed39",
+      "msg_id": "73249a91-cbae-4ec6-bbe5-86cc6a2b6124",
+      "event": "RECEIPT_SENT",
+      "ts": "2026-10-03T00:24:54.589499+00:00",
+      "state": "RECEIVED",
+      "via": "direct"
+    },
+    {
+      "msg_id": "73249a91-cbae-4ec6-bbe5-86cc6a2b6124",
       "event": "INJECT_TYPING",
-      "ts": "2026-10-02T23:41:51.099678+00:00",
+      "ts": "2026-10-03T00:24:54.605638+00:00",
       "trigger": "tick",
-      "session": "tl-xkuxh62h",
-      "target_session_id": "3efdbc29-0da6-4ffe-a335-b585c6eaa598"
+      "session": "tl-zzwys5yw",
+      "target_session_id": "0b609728-e42b-43a2-936d-2160d36f980a"
     },
     {
-      "msg_id": "a0f56d53-1940-472c-b274-b46d82f7ed39",
+      "msg_id": "73249a91-cbae-4ec6-bbe5-86cc6a2b6124",
       "event": "INJECT_ATTEMPT",
-      "ts": "2026-10-02T23:41:51.125668+00:00",
+      "ts": "2026-10-03T00:24:54.629709+00:00",
       "trigger": "tick",
-      "session": "tl-xkuxh62h",
-      "target_session_id": "3efdbc29-0da6-4ffe-a335-b585c6eaa598",
+      "session": "tl-zzwys5yw",
+      "target_session_id": "0b609728-e42b-43a2-936d-2160d36f980a",
       "ok": true
     },
     {
-      "msg_id": "a0f56d53-1940-472c-b274-b46d82f7ed39",
+      "msg_id": "73249a91-cbae-4ec6-bbe5-86cc6a2b6124",
       "event": "HANDED_OVER",
-      "ts": "2026-10-02T23:41:52.512700+00:00",
-      "evidence": "transcript:3efdbc29-0da6-4ffe-a335-b585c6eaa598.jsonl"
+      "ts": "2026-10-03T00:24:55.985760+00:00",
+      "evidence": "transcript:0b609728-e42b-43a2-936d-2160d36f980a.jsonl"
     },
     {
-      "msg_id": "a0f56d53-1940-472c-b274-b46d82f7ed39",
-      "event": "CONFIRM_SKIPPED",
-      "ts": "2026-10-02T23:41:52.513151+00:00",
-      "reason": "legacy hub-topic sender: no direct ledger to confirm into"
+      "msg_id": "73249a91-cbae-4ec6-bbe5-86cc6a2b6124",
+      "event": "RECEIPT_SENT",
+      "ts": "2026-10-03T00:24:56.018609+00:00",
+      "state": "HANDED_OVER",
+      "via": "direct"
     }
   ],
-  "transcript": "3efdbc29-0da6-4ffe-a335-b585c6eaa598.jsonl [hook_additional_context] PEER-DATA block: 'Peer check LEGACY-xymfdxubvl: no action and no reply needed; just end your turn.'"
+  "transcript": "0b609728-e42b-43a2-936d-2160d36f980a.jsonl [hook_additional_context] PEER-DATA block: 'Peer check LEGACY-zlsbxpcleu: no action and no reply needed; just end your turn.'",
+  "sender_receipt_received": {
+    "client_msg_id": "73249a91-cbae-4ec6-bbe5-86cc6a2b6124",
+    "state": "RECEIVED",
+    "by": "peer:t3684b-guxa6x",
+    "via": "direct",
+    "ts": "2026-10-03T00:24:54.588450+00:00"
+  },
+  "sender_receipt_handed_over": {
+    "client_msg_id": "73249a91-cbae-4ec6-bbe5-86cc6a2b6124",
+    "state": "HANDED_OVER",
+    "by": "peer:t3684b-guxa6x",
+    "via": "direct",
+    "ts": "2026-10-03T00:24:56.017642+00:00"
+  },
+  "sender_send_to_received_s": 15.954922914505005,
+  "sender_send_to_handed_over_s": 17.384114980697632
 }

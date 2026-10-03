@@ -1,68 +1,111 @@
 {
   "respawned_watcher": [
-    2485344,
-    2611803
+    3997255,
+    4168249
   ],
-  "killed_at": 1790984634.0300174,
-  "doctor_not_live": "  \u001b[0;31mFAIL\u001b[0m  Sidecar watcher NOT live: seq stalled at 6 for 75s (> 2 ticks of 30s)",
-  "audit_not_live": "[FAIL] Sidecar watcher NOT live\n       Evidence: seq stalled at 6 for 78s (> 2 ticks of 30s)",
-  "ensure": "[{\"enabled\": true, \"receiver\": \"running\", \"action\": \"supervisor restarted pid=2611658\", \"project_root\": \"/tmp/t3684-e2e-2482677-1790984477/t3684b-ox90o8\"}, {\"enabled\": true, \"receiver\": \"running\", \"action\": \"supervisor running\", \"project_root\": \"/tmp/t3684-e2e-2482677-1790984477/t3684a-ox90o8\"}]\n",
-  "doctor_after_ensure": "  \u001b[0;32mOK\u001b[0m  Sidecar watcher live (seq 7, last tick 8.5s ago, self-probe 33.0ms)",
+  "killed_at": 1790987345.054453,
+  "hung": {
+    "pid": 4069246,
+    "doctor": "  \u001b[0;31mFAIL\u001b[0m  Sidecar watcher NOT live: seq stalled at 8 for 73s (> 2 ticks of 30s)",
+    "audit": "[FAIL] Sidecar watcher NOT live\n       Evidence: seq stalled at 8 for 77s (> 2 ticks of 30s)",
+    "healed_by_supervisor": true,
+    "healed_after_s": 97.20525813102722,
+    "hung_killed_event": [
+      {
+        "ts": "2026-10-03T00:29:03.477355+00:00",
+        "event": "WATCHER_HUNG_KILLED",
+        "pid": 4069246,
+        "reasons": [
+          "seq stalled at 8 for 96s (> 2 ticks of 30s)"
+        ]
+      }
+    ]
+  },
+  "doctor_not_live": "  \u001b[0;31mFAIL\u001b[0m  Sidecar watcher NOT live: seq stalled at 9 for 76s (> 2 ticks of 30s)",
+  "audit_not_live": "[FAIL] Sidecar watcher NOT live\n       Evidence: seq stalled at 9 for 80s (> 2 ticks of 30s)",
+  "ensure": "[{\"enabled\": true, \"receiver\": \"running\", \"action\": \"supervisor running\", \"project_root\": \"/tmp/t3684-e2e-3995699-1790987061/t3684a-guxa6x\"}, {\"enabled\": true, \"receiver\": \"running\", \"action\": \"supervisor restarted pid=4168030\", \"project_root\": \"/tmp/t3684-e2e-3995699-1790987061/t3684b-guxa6x\"}]\n",
+  "doctor_after_ensure": "  \u001b[0;32mOK\u001b[0m  Sidecar watcher live (seq 10, last tick 9.0s ago, self-probe 56.0ms)",
   "watcher_events": [
     {
-      "ts": "2026-10-02T23:41:20.819306+00:00",
+      "ts": "2026-10-03T00:24:24.317580+00:00",
       "event": "SUPERVISOR_STARTED",
-      "pid": 2485243
+      "pid": 3997131
     },
     {
-      "ts": "2026-10-02T23:41:20.820757+00:00",
+      "ts": "2026-10-03T00:24:24.320074+00:00",
       "event": "WATCHER_SPAWNED",
-      "pid": 2485344
+      "pid": 3997255
     },
     {
-      "ts": "2026-10-02T23:41:20.923825+00:00",
+      "ts": "2026-10-03T00:24:24.425670+00:00",
       "event": "WATCHER_STARTED",
-      "pid": 2485344,
+      "pid": 3997255,
       "tick_s": 30.0,
       "resumed_seq": 0
     },
     {
-      "ts": "2026-10-02T23:43:53.914362+00:00",
+      "ts": "2026-10-03T00:27:27.431589+00:00",
       "event": "WATCHER_DIED",
-      "pid": 2485344,
+      "pid": 3997255,
       "rc": -9
     },
     {
-      "ts": "2026-10-02T23:43:53.915124+00:00",
+      "ts": "2026-10-03T00:27:27.432462+00:00",
       "event": "WATCHER_SPAWNED",
-      "pid": 2566712
+      "pid": 4069246
     },
     {
-      "ts": "2026-10-02T23:43:54.022337+00:00",
+      "ts": "2026-10-03T00:27:27.536569+00:00",
       "event": "WATCHER_STARTED",
-      "pid": 2566712,
+      "pid": 4069246,
       "tick_s": 30.0,
-      "resumed_seq": 6
+      "resumed_seq": 7
     },
     {
-      "ts": "2026-10-02T23:45:16.901143+00:00",
+      "ts": "2026-10-03T00:29:03.477355+00:00",
+      "event": "WATCHER_HUNG_KILLED",
+      "pid": 4069246,
+      "reasons": [
+        "seq stalled at 8 for 96s (> 2 ticks of 30s)"
+      ]
+    },
+    {
+      "ts": "2026-10-03T00:29:03.480917+00:00",
+      "event": "WATCHER_DIED",
+      "pid": 4069246,
+      "rc": -9
+    },
+    {
+      "ts": "2026-10-03T00:29:03.481641+00:00",
+      "event": "WATCHER_SPAWNED",
+      "pid": 4106197
+    },
+    {
+      "ts": "2026-10-03T00:29:03.586867+00:00",
+      "event": "WATCHER_STARTED",
+      "pid": 4106197,
+      "tick_s": 30.0,
+      "resumed_seq": 8
+    },
+    {
+      "ts": "2026-10-03T00:30:32.302149+00:00",
       "event": "SUPERVISOR_STARTED",
-      "pid": 2611658
+      "pid": 4168030
     },
     {
-      "ts": "2026-10-02T23:45:16.902667+00:00",
+      "ts": "2026-10-03T00:30:32.304450+00:00",
       "event": "WATCHER_SPAWNED",
-      "pid": 2611803
+      "pid": 4168249
     },
     {
-      "ts": "2026-10-02T23:45:17.009005+00:00",
+      "ts": "2026-10-03T00:30:32.435087+00:00",
       "event": "WATCHER_STARTED",
-      "pid": 2611803,
+      "pid": 4168249,
       "tick_s": 30.0,
-      "resumed_seq": 6
+      "resumed_seq": 9
     },
     {
-      "ts": "2026-10-02T23:45:17.187478+00:00",
+      "ts": "2026-10-03T00:30:32.599077+00:00",
       "event": "SUPERVISOR_ENSURED",
       "result": "started"
     }

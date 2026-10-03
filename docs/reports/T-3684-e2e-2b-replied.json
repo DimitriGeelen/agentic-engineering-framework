@@ -1,0 +1,80 @@
+{
+  "msg": "504c0621-65d5-4c7b-bdf1-06c1ed81789b",
+  "receipts": {
+    "RECEIVED": {
+      "client_msg_id": "504c0621-65d5-4c7b-bdf1-06c1ed81789b",
+      "state": "RECEIVED",
+      "by": "peer:t3684b-guxa6x",
+      "via": "direct",
+      "ts": "2026-10-03T00:25:24.712863+00:00"
+    },
+    "HANDED_OVER": {
+      "client_msg_id": "504c0621-65d5-4c7b-bdf1-06c1ed81789b",
+      "state": "HANDED_OVER",
+      "by": "peer:t3684b-guxa6x",
+      "via": "direct",
+      "ts": "2026-10-03T00:25:26.149503+00:00"
+    },
+    "REPLIED": {
+      "client_msg_id": "504c0621-65d5-4c7b-bdf1-06c1ed81789b",
+      "state": "REPLIED",
+      "by": "peer:t3684b-guxa6x",
+      "via": "direct",
+      "ts": "2026-10-03T00:25:29.188680+00:00"
+    }
+  },
+  "latency_row": [
+    {
+      "client_msg_id": "504c0621-65d5-4c7b-bdf1-06c1ed81789b",
+      "to": "cacc73ea32b121dd/t3684b-guxa6x",
+      "path": "hub",
+      "sent_at": "2026-10-03T00:24:56.996918+00:00",
+      "send_to_received_s": 27.716,
+      "send_to_handed_over_s": 29.153,
+      "send_to_replied_s": 32.192
+    }
+  ],
+  "sender_send_to_s": {
+    "RECEIVED": 27.71594500541687,
+    "HANDED_OVER": 29.15258502960205,
+    "REPLIED": 32.19176197052002
+  },
+  "b_receipts_sent": [
+    {
+      "client_msg_id": "504c0621-65d5-4c7b-bdf1-06c1ed81789b",
+      "state": "RECEIVED",
+      "by": "watcher",
+      "to": "t3684a-guxa6x",
+      "to_circuit": "//dimitrimintdev/cacc73ea32b121dd/t3684a-guxa6x",
+      "conversation_id": "t3684-t3684b-guxa6x",
+      "ts": "2026-10-03T00:25:24.710111+00:00",
+      "ok": true,
+      "via": "direct",
+      "error": null
+    },
+    {
+      "client_msg_id": "504c0621-65d5-4c7b-bdf1-06c1ed81789b",
+      "state": "HANDED_OVER",
+      "by": "prompt-hook",
+      "to": "t3684a-guxa6x",
+      "to_circuit": "//dimitrimintdev/cacc73ea32b121dd/t3684a-guxa6x",
+      "conversation_id": "t3684-t3684b-guxa6x",
+      "ts": "2026-10-03T00:25:26.117968+00:00",
+      "ok": true,
+      "via": "direct",
+      "error": null
+    },
+    {
+      "client_msg_id": "504c0621-65d5-4c7b-bdf1-06c1ed81789b",
+      "state": "REPLIED",
+      "by": "reply",
+      "to": "t3684a-guxa6x",
+      "to_circuit": "//dimitrimintdev/cacc73ea32b121dd/t3684a-guxa6x",
+      "conversation_id": "t3684-t3684b-guxa6x",
+      "ts": "2026-10-03T00:25:29.185972+00:00",
+      "ok": true,
+      "via": "direct",
+      "error": null
+    }
+  ]
+}
