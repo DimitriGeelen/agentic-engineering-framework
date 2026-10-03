@@ -39,6 +39,19 @@ JOBS = [
   description: "Walks the peer-consult ack ledger and escalates unacked consults (T-3418, T-3673). Without this job unacked consults never escalate."
 """,
     },
+    {
+        "id": "index-reindex-hourly",
+        "block": f"""\
+- id: index-reindex-hourly
+  name: Vector index incremental reindex (hourly)
+  schedule: 20 * * * *
+  command: flock -n /var/lock/agentic-cron-index-reindex-hourly-{slug}.lock -c 'fw index reindex'
+  source_file: agentic-audit.crontab
+  origin_task: T-3783
+  status: active
+  description: "Re-embeds changed corpus files every hour so semantic recall (fw recall, fw ask, Watchtower search) sees new learnings, decisions and reports. T-3783: this job lived only in AEF's own registry (T-3014); 47 of 49 projects on .107 never reindexed and their recall froze for months."
+""",
+    },
 ]
 
 text = open(registry).read()

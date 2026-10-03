@@ -23,7 +23,7 @@ ids() { python3 -c "import sys,yaml; print(' '.join(j['id'] for j in yaml.safe_l
 @test "T-3673 (a): fresh fw init seeds sidecar-sweep-5m with per-project lock" {
     run timeout 180 "$FRAMEWORK_ROOT/bin/fw" init "$CONSUMER" --no-first-run
     [ -f "$REG" ]
-    [ "$(ids)" = "sidecar-sweep-5m" ]
+    [ "$(ids)" = "sidecar-sweep-5m index-reindex-hourly" ]
     grep -q "agentic-cron-sidecar-sweep-5m-my_proj.lock" "$REG"
     grep -q "'fw sidecar sweep'" "$REG"
 }
@@ -41,8 +41,8 @@ jobs:
 Y
     run bash -c "cd '$CONSUMER' && source '$FRAMEWORK_ROOT/lib/cron-seed.sh' && cron_seed_ensure_jobs '$REG' '$CONSUMER'"
     [ "$status" -eq 0 ]
-    [ "$output" = "ADDED sidecar-sweep-5m" ]
-    [ "$(ids)" = "mine sidecar-sweep-5m" ]
+    [ "$output" = "$(printf 'ADDED sidecar-sweep-5m\nADDED index-reindex-hourly')" ]  # T-3783: two framework jobs
+    [ "$(ids)" = "mine sidecar-sweep-5m index-reindex-hourly" ]
     grep -q "# operator comment" "$REG"
 }
 
@@ -65,18 +65,23 @@ Y
     cp "$REG" "$TEST_TEMP_DIR/before.yaml"
     run bash -c "source '$FRAMEWORK_ROOT/lib/cron-seed.sh' && cron_seed_ensure_jobs '$REG' '$CONSUMER'"
     [ "$status" -eq 0 ]
-    [ "$output" = "PRESENT sidecar-sweep-5m" ]
-    cmp "$REG" "$TEST_TEMP_DIR/before.yaml"
+    # T-3783: the other framework job is still added, so the file grows — but the
+    # operator's tuned block must survive byte for byte as the file's prefix.
+    [ "$output" = "$(printf 'PRESENT sidecar-sweep-5m\nADDED index-reindex-hourly')" ]
+    n=$(wc -c < "$TEST_TEMP_DIR/before.yaml")
+    cmp -n "$n" "$REG" "$TEST_TEMP_DIR/before.yaml"
+    grep -q "status: paused" "$REG"
+    [ "$(grep -c 'id: sidecar-sweep-5m' "$REG")" -eq 1 ]
 }
 
 @test "T-3673 (d): second upgrade is idempotent" {
     mkdir -p "$CONSUMER/.context"
     printf 'jobs: []\n' > "$REG"
     run bash -c "source '$FRAMEWORK_ROOT/lib/cron-seed.sh' && cron_seed_ensure_jobs '$REG' '$CONSUMER'"
-    [ "$output" = "ADDED sidecar-sweep-5m" ]
+    [ "$output" = "$(printf 'ADDED sidecar-sweep-5m\nADDED index-reindex-hourly')" ]  # T-3783: two framework jobs
     cp "$REG" "$TEST_TEMP_DIR/after1.yaml"
     run bash -c "source '$FRAMEWORK_ROOT/lib/cron-seed.sh' && cron_seed_ensure_jobs '$REG' '$CONSUMER'"
-    [ "$output" = "PRESENT sidecar-sweep-5m" ]
+    [ "$output" = "$(printf 'PRESENT sidecar-sweep-5m\nPRESENT index-reindex-hourly')" ]
     cmp "$REG" "$TEST_TEMP_DIR/after1.yaml"
 }
 
@@ -84,6 +89,6 @@ Y
     mkdir -p "$CONSUMER/.context"
     printf 'jobs: []\n' > "$REG"
     run bash -c "CRON_SEED_DRY_RUN=1 && export CRON_SEED_DRY_RUN && source '$FRAMEWORK_ROOT/lib/cron-seed.sh' && cron_seed_ensure_jobs '$REG' '$CONSUMER'"
-    [ "$output" = "ADDED sidecar-sweep-5m" ]
+    [ "$output" = "$(printf 'ADDED sidecar-sweep-5m\nADDED index-reindex-hourly')" ]  # T-3783: two framework jobs
     [ "$(cat "$REG")" = "jobs: []" ]
 }

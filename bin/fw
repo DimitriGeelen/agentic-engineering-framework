@@ -6778,14 +6778,19 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
                     echo "Run 'fw index --help' for the full description."
                     exit 0
                 fi
-                cd "$PROJECT_ROOT" && python3 -c '
+                # T-3783 (010 T-3336): web/ is FRAMEWORK-owned — in a vendored consumer it
+                # lives under .agentic-framework/, not PROJECT_ROOT, so put FRAMEWORK_ROOT on
+                # the import path (cwd stays PROJECT_ROOT: the index is the consumer's). And
+                # "unimportable" is a failure, not a quiet success: it exited 0 for months
+                # while the hourly cron indexed nothing.
+                cd "$PROJECT_ROOT" && PYTHONPATH="$FRAMEWORK_ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 -c '
 import json, sys
 try:
     from web.embeddings import reindex_incremental
 except Exception as exc:
     print(json.dumps({"status": "unimportable",
                        "detail": f"{type(exc).__name__}: {str(exc)[:200]}"}))
-    sys.exit(0)
+    sys.exit(2)
 try:
     stats = reindex_incremental()
     stats["status"] = "ok"

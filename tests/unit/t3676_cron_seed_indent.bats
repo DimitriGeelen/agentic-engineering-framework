@@ -30,8 +30,8 @@ jobs:
 Y
     run seed
     [ "$status" -eq 0 ]
-    [ "$output" = "ADDED sidecar-sweep-5m" ]
-    [ "$(ids)" = "mine other sidecar-sweep-5m" ]
+    [ "$output" = "$(printf 'ADDED sidecar-sweep-5m\nADDED index-reindex-hourly')" ]  # T-3783: two framework jobs
+    [ "$(ids)" = "mine other sidecar-sweep-5m index-reindex-hourly" ]
     grep -q "^  - id: sidecar-sweep-5m" "$REG"
 }
 
@@ -47,7 +47,7 @@ version: 2
 Y
     run seed
     [ "$status" -eq 0 ]
-    [ "$(ids)" = "mine sidecar-sweep-5m" ]
+    [ "$(ids)" = "mine sidecar-sweep-5m index-reindex-hourly" ]
     [ "$(python3 -c "import sys,yaml; print(yaml.safe_load(open(sys.argv[1]))['version'])" "$REG")" = "2" ]
 }
 
@@ -62,9 +62,9 @@ jobs:
 Y
     run seed
     [ "$status" -eq 0 ]
-    [ "$(ids)" = "mine sidecar-sweep-5m" ]
+    [ "$(ids)" = "mine sidecar-sweep-5m index-reindex-hourly" ]
     run seed
-    [ "$output" = "PRESENT sidecar-sweep-5m" ]
+    [ "$output" = "$(printf 'PRESENT sidecar-sweep-5m\nPRESENT index-reindex-hourly')" ]
 }
 
 @test "T-3680: merge that fails to parse prints no ADDED, errors, leaves registry unchanged" {
@@ -97,6 +97,6 @@ P
     printf 'jobs: []\n' > "$REG"
     run bash -c "CRON_SEED_DRY_RUN=1; export CRON_SEED_DRY_RUN; source '$FRAMEWORK_ROOT/lib/cron-seed.sh' && cron_seed_ensure_jobs '$REG' '$CONSUMER'"
     [ "$status" -eq 0 ]
-    [ "$output" = "ADDED sidecar-sweep-5m" ]
+    [ "$output" = "$(printf 'ADDED sidecar-sweep-5m\nADDED index-reindex-hourly')" ]  # T-3783: two framework jobs
     [ "$(cat "$REG")" = "jobs: []" ]
 }
