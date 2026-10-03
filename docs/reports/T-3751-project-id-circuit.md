@@ -31,3 +31,38 @@ framework:pickup @294; adopted as the standing process, T-3764).
 - Options A keep path (−25), B id only (+25), C id + display-only name (+35),
   D defer (−7). Recommendation C.
 - Operator: "Okay, proceed as suggested." Read as: ruling C.
+
+### 2026-10-03 — IW-4 (decision 2), operator thinking aloud, no ruling yet
+Brief offered A ladder to host (−14), B stop at project (+25), C B + exactly-once
+claim + receipt names the delivering level (+45, recommended), D no fallback (−34).
+
+Operator response (voice, paraphrased faithfully; NOT a ruling):
+1. The brief dropped a level: the full address is host / hub / project / session /
+   agent. A host is identified by FQDN; its IP can change.
+2. Model refinement: every level needs TWO labels — a FUNCTION label (static: what
+   it is) and an ADDRESS/ID label (dynamic: which instance). Host: FQDN static, IP
+   dynamic. Hub: assume one per host for now (otherwise hub1..n or named hubs,
+   possibly one hub per project — undecided). Project: project id (fixed) plus a
+   project INSTANCE id. Session: session name plus session instance id. Agent:
+   agent name plus agent instance id.
+3. Fallback is by FUNCTION, with respawn: a message for agent "research" whose
+   instance died should spin up a new "research" agent that ingests the context and
+   follows up. A message for a project whose instance died should spin up a new
+   instance that continues from the saved context.
+4. Session is a preference, not a requirement: delivering back into the same session
+   keeps its context (efficiency), but a new session in the same project gives the
+   same functionality (effectiveness) — context is saved often for exactly this.
+
+Agent corrections after re-reading docs/reports/T-3287-identity-taxonomy-circuit-model.md:
+- The brief omitted the host level (operator is right; circuit.py:22-31 keeps host out
+  of the DESTINATION on purpose and carries it in metadata.from_circuit, which the brief
+  should have said).
+- The brief's options ignored two RATIFIED rulings that already say "respawn":
+  T-3287 D1 (line 243: on a dead endpoint, climb the ladder until an ancestor can
+  re-provision, then establish a NEW circuit; "a working equivalent, not the same B")
+  and D5 (line 419: PROVISION a missing child is Tier-3 pre-authorized self-heal).
+  Options A-D only chose where to DELIVER; none re-provisioned. The operator's point 3
+  is D1/D5 applied; what is NEW is point 2 — an explicit function label per level, which
+  is what "a working equivalent" has to be matched on. D1 ruled identity is instance-,
+  not role-identity; point 2 keeps instance ids and adds the role beside them.
+
