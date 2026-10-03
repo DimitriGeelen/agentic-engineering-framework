@@ -547,6 +547,143 @@ def _load_paused_dispatches():
     return out
 
 
+# ---------------------------------------------------------------------------
+# T-3782: peer messages waiting for a recipient (lib/sidecar/waiting.py).
+#
+# Read through `fw sidecar waiting --json` in a subprocess (the sidecar modules
+# resolve the project from PROJECT_ROOT in their environment; mutating this
+# process's environment under threaded Flask is not safe). Cached on the
+# mtimes of every ledger the listing reads, plus a one-minute bucket because
+# an item can become listed by age alone. A failure is shown as an error card,
+# never as an empty list: "could not look" must not read as "nothing waiting".
+# ---------------------------------------------------------------------------
+
+_WAITING_CACHE: dict = {}
+_SIDECAR_ID_RE = re.compile(r"[A-Za-z0-9_:-]{1,128}")
+
+
+def _waiting_signature():
+    sc = PROJECT_ROOT / ".context" / "sidecar"
+    paths = [sc / "receiver" / "events.jsonl", sc / "receiver" / "messages",
+             sc / "direct-ack.jsonl", sc / "receipts.jsonl", sc / "receipts-sent.jsonl",
+             sc / "outbox", sc / "waiting", sc / "waiting" / "closures.jsonl",
+             sc / "waiting" / "escalations.jsonl", sc / "waiting" / "recover.jsonl"]
+    sig = []
+    for p in paths:
+        try:
+            sig.append(p.stat().st_mtime_ns)
+        except OSError:
+            sig.append(None)
+    return (tuple(sig), int(time.time() // 60))
+
+
+def _sidecar_cli_env() -> dict:
+    env = {k: v for k, v in os.environ.items() if k != "CLAUDECODE"}
+    env["PROJECT_ROOT"] = str(PROJECT_ROOT)
+    env["FRAMEWORK_ROOT"] = str(FRAMEWORK_ROOT)
+    return env
+
+
+def _load_waiting_messages() -> dict:
+    import json
+    import subprocess
+
+    sig = _waiting_signature()
+    if _WAITING_CACHE.get("sig") == sig:
+        return _WAITING_CACHE["value"]
+    value = {"items": [], "error": None, "warn_hours": None}
+    if not (PROJECT_ROOT / ".context" / "sidecar").is_dir():
+        _WAITING_CACHE.update(sig=sig, value=value)
+        return value   # no sidecar in this project: genuinely nothing held
+    try:
+        proc = subprocess.run(
+            [sys.executable, str(FRAMEWORK_ROOT / "lib" / "sidecar_cli.py"), "waiting", "--json"],
+            capture_output=True, text=True, timeout=20, cwd=str(PROJECT_ROOT),
+            env=_sidecar_cli_env())
+        if proc.returncode != 0:
+            raise RuntimeError(f"exit {proc.returncode}: {(proc.stderr or '').strip()[-300:]}")
+        data = json.loads(proc.stdout)
+        items = []
+        for it in data.get("items", []):
+            hours = (it.get("age_s") or 0) / 3600
+            it["age_label"] = f"{hours:.1f} h" if hours >= 1 else f"{int((it.get('age_s') or 0) // 60)} min"
+            items.append(it)
+        value = {"items": items, "error": None, "warn_hours": data.get("warn_hours")}
+    except Exception as e:
+        from web.shared import operator_facing_stderr
+        value = {"items": [], "error": operator_facing_stderr(str(e))[:300] or type(e).__name__,
+                 "warn_hours": None}
+        _WAITING_CACHE.clear()   # retry on the next render rather than caching a failure
+        return value
+    _WAITING_CACHE.update(sig=sig, value=value)
+    return value
+
+
+def _sidecar_operator_action(verb: str, msg_id: str, reason: str = "") -> tuple[bool, str]:
+    import json
+    import subprocess
+
+    argv = [sys.executable, str(FRAMEWORK_ROOT / "lib" / "sidecar_cli.py"), verb, msg_id,
+            "--from-watchtower", "--json"]
+    if verb == "drop":
+        argv += ["--reason", reason]
+    try:
+        proc = subprocess.run(argv, capture_output=True, text=True, timeout=60,
+                              cwd=str(PROJECT_ROOT), env=_sidecar_cli_env())
+    except (OSError, subprocess.SubprocessError) as e:
+        return False, str(e)[:300]
+    _WAITING_CACHE.clear()
+    if proc.returncode != 0:
+        from web.shared import operator_facing_stderr
+        return False, operator_facing_stderr((proc.stderr or proc.stdout or "")[-1500:])[:400] \
+            or f"exit {proc.returncode}"
+    try:
+        return True, json.loads(proc.stdout)
+    except json.JSONDecodeError:
+        return True, {}
+
+
+@bp.route("/api/sidecar/recover", methods=["POST"])
+def sidecar_recover():
+    """T-3782: the operator's Recover button — start this project's agent with
+    the waiting message (fw sidecar recover --from-watchtower). CSRF-checked
+    like every mutating route (web/app.py before_request)."""
+    from markupsafe import escape
+
+    msg_id = (request.form.get("msg_id") or "").strip()
+    if not _SIDECAR_ID_RE.fullmatch(msg_id):
+        return '<p style="color:var(--pico-del-color);">Refused: invalid message id.</p>', 400
+    ok, out = _sidecar_operator_action("recover", msg_id)
+    if not ok:
+        return f'<p style="color:var(--pico-del-color);">Recover refused: {escape(out)}</p>'
+    return (f'<p style="color:var(--pico-ins-color);">Started <code>{escape(out.get("termlink_session", "?"))}</code> '
+            f'for message <code>{escape(msg_id[:12])}</code>. Watch: '
+            f'<code>termlink attach {escape(out.get("termlink_session", "?"))}</code>. '
+            'It stays listed until the new session shows the message (HANDED_OVER) or answers it.</p>')
+
+
+@bp.route("/api/sidecar/drop", methods=["POST"])
+def sidecar_drop():
+    """T-3782: the operator's Drop button — close a waiting message with a reason;
+    the sender is told."""
+    from markupsafe import escape
+
+    msg_id = (request.form.get("msg_id") or "").strip()
+    reason = (request.form.get("reason") or "").strip()
+    if not _SIDECAR_ID_RE.fullmatch(msg_id):
+        return '<p style="color:var(--pico-del-color);">Refused: invalid message id.</p>', 400
+    if not reason:
+        return '<p style="color:var(--pico-del-color);">Refused: a reason is required to drop a message.</p>'
+    ok, out = _sidecar_operator_action("drop", msg_id, reason)
+    if not ok:
+        return f'<p style="color:var(--pico-del-color);">Drop refused: {escape(out)}</p>'
+    told = ""
+    if out.get("side") == "inbound":
+        told = " Sender told." if out.get("sender_told") else f" Sender NOT told: {escape(str(out.get('sender_told_via')))}"
+    return (f'<p style="color:var(--pico-ins-color);">Dropped <code>{escape(msg_id[:12])}</code>: '
+            f'{escape(reason)}.{told}</p>')
+
+
 def _load_close_ready_arcs(threshold: float = 0.80) -> list[dict]:
     """T-1961: arcs ready for closure review on /approvals.
 
@@ -804,7 +941,8 @@ def _load_stale_keystones():
 
 
 def _approval_counts(pending_tier0, pending_go, ac_task_count, paused_dispatches,
-                     arcs_close_ready, bvp_proposals, decided_unclosed) -> dict:
+                     arcs_close_ready, bvp_proposals, decided_unclosed,
+                     waiting_messages=()) -> dict:
     """The badge arithmetic, shared by the page and the dashboard tile (T-3600).
 
     One function so the two cannot drift. A ripe DEFER revisit is deliberately
@@ -815,8 +953,11 @@ def _approval_counts(pending_tier0, pending_go, ac_task_count, paused_dispatches
     """
     tier0_count = sum(1 for a in pending_tier0 if a.get("status") == "pending")
     go_count = len(pending_go)
+    # T-3782: a peer message waiting for a recipient is an outstanding operator
+    # action (recover or drop) like every other section.
     total = (tier0_count + go_count + ac_task_count + len(paused_dispatches)
-             + len(arcs_close_ready) + len(bvp_proposals) + len(decided_unclosed))
+             + len(arcs_close_ready) + len(bvp_proposals) + len(decided_unclosed)
+             + len(waiting_messages))
     return {"total_count": total, "tier0_count": tier0_count,
             "go_count": go_count, "ac_task_count": ac_task_count}
 
@@ -849,6 +990,7 @@ def approval_summary() -> dict:
         _load_close_ready_arcs(),
         _load_proposals(),
         _load_decided_unclosed(),
+        _load_waiting_messages()["items"],
     )
 
 
@@ -876,10 +1018,11 @@ def _build_approvals_context(expand_overflow: bool = False):
     from web.blueprints.bvp import _load_proposals
 
     bvp_proposals = _load_proposals()
+    waiting = _load_waiting_messages()  # T-3782
 
     counts = _approval_counts(pending_tier0, pending_go, len(pending_acs),
                               paused_dispatches, arcs_close_ready, bvp_proposals,
-                              decided_unclosed)
+                              decided_unclosed, waiting["items"])
     tier0_count = counts["tier0_count"]
     tier0_origin_summary = _tier0_origin_summary(pending_tier0)  # T-3078
     go_count = counts["go_count"]
@@ -923,6 +1066,9 @@ def _build_approvals_context(expand_overflow: bool = False):
         deferred_count=deferred_count,
         expand_overflow=expand_overflow,
         continuous=_halt_state(),          # T-3200
+        waiting_messages=waiting["items"],  # T-3782
+        waiting_error=waiting["error"],     # T-3782
+        waiting_warn_hours=waiting["warn_hours"],
     )
 
 

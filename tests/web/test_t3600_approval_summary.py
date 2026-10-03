@@ -72,6 +72,9 @@ def fixture_corpus(monkeypatch):
     monkeypatch.setattr(ap, "_load_decided_unclosed", lambda: [{"task_id": "T-9202"}])
     monkeypatch.setattr(ap, "_count_deferred_inceptions", lambda: 0)
     monkeypatch.setattr(ap, "_load_paused_dispatches", lambda: [{"dispatch_id": "d1"}])
+    # T-3782: the waiting-for-a-recipient section reads the live sidecar; pin it empty.
+    monkeypatch.setattr(ap, "_load_waiting_messages",
+                        lambda: {"items": [], "error": None, "warn_hours": 4.0})
     monkeypatch.setattr(ap, "_load_close_ready_arcs", lambda threshold=0.80: [{"slug": "a"}, {"slug": "b"}])
     import web.blueprints.bvp as bvp_bp
     monkeypatch.setattr(bvp_bp, "_load_proposals", lambda: [{"id": "p1"}, {"id": "p2"}, {"id": "p3"}])

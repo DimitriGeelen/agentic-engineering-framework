@@ -1,0 +1,21 @@
+id: tests/unit/test_sidecar_waiting_t3782.py
+name: test_sidecar_waiting_t3782
+type: script
+subsystem: tests
+location: tests/unit/test_sidecar_waiting_t3782.py
+tags: []
+
+purpose: "T-3782 — no message goes unnoticed (T-3751 2b amendment, operator 2026-10-03)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-03
+created_by: unknown
