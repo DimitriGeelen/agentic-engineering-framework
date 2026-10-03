@@ -145,6 +145,10 @@ def _pid_is_decide(pid, task_id: str) -> bool:
             argv = f.read().split(b"\0")
     except OSError:
         return True
+    if argv == [b""]:
+        # T-3749 r4: a hardened /proc (yama, sandbox) reads 0 bytes without an
+        # error — no evidence of reuse, so fall back to liveness, as without /proc.
+        return True
     return b"decide" in argv and task_id.encode() in argv
 
 

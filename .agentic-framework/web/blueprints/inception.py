@@ -683,7 +683,8 @@ def record_decision(task_id):
                 warning_html += (
                     f'<div style="color:#f59e0b; font-size:0.85rem; margin-top:4px; '
                     f'white-space:pre-wrap;">'
-                    f'⚠ Your decision is saved and the task is completed. A follow-up '
+                    f'⚠ Your decision is saved and the task is '
+                    f'{"parked (DEFER)" if decision == "defer" else "completed"}. A follow-up '
                     f'step reported a problem — no action needed from you unless it '
                     f'persists.{_html.escape(log_hint)}\n'
                     f'Reason: {_html.escape(_reason)}'
