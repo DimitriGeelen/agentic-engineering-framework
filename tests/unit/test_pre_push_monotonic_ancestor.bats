@@ -32,6 +32,25 @@ STUB
     mkdir -p .git/hooks
     cp "$FRAMEWORK_ROOT/.git/hooks/pre-push" .git/hooks/pre-push
     chmod +x .git/hooks/pre-push
+    # T-3747: since T-3594 the hook refuses any non-fast-forward (or unknown
+    # remote sha) update without a Tier 0 action approval BEFORE the VERSION
+    # monotonicity leg runs, and fails closed when lib/tier0_action.py is
+    # absent. Cases 2 and 3 are non-fast-forward by construction, so they need
+    # the module plus a fixture-only approval to reach the leg under test.
+    mkdir -p lib .context/working
+    cp "$FRAMEWORK_ROOT/lib/tier0_action.py" lib/
+}
+
+# T-3747: approve one forced update of refs/heads/master on 'origin' — in this
+# temp repo only, acting as the operator (CLAUDECODE unset), via the module's
+# own approve(), so the T-3594 gate consumes it and the push reaches the
+# monotonicity check.
+_approve_forced_master() {
+    env -u CLAUDECODE PROJECT_ROOT="$TMP_REPO" python3 -c '
+import sys; sys.path.insert(0, "lib")
+import tier0_action as t
+t.approve(sys.argv[1], [t.action("force-push", remote="origin", ref="refs/heads/master")], 300, approved_by="test-fixture")
+' "$TMP_REPO"
 }
 
 teardown() {
@@ -121,6 +140,8 @@ _run_hook() {
     # (the cc38e98f5 incident shape — a stale-ref checkout pushed backward).
     run git merge-base --is-ancestor "$NEWER_SHA" "$OLDER_SHA"
     [ "$status" -ne 0 ]   # NEWER is NOT ancestor of OLDER (confirms shape)
+    # The T-3594 forced-update gate must be satisfied first (T-3747)
+    _approve_forced_master
     # Push must be BLOCKED
     run bash -c "echo 'refs/heads/master $OLDER_SHA refs/heads/master $NEWER_SHA' | .git/hooks/pre-push origin http://localhost"
     [ "$status" -ne 0 ]
@@ -147,6 +168,8 @@ _run_hook() {
     # `continue`s on empty remote_ver and the case never reaches the ancestor
     # check. This means case 3's correct behavior is "pass-through on
     # unknown" — not block. Adjust expectation accordingly.
+    # An unknown remote sha is a forced update to the T-3594 gate (T-3747)
+    _approve_forced_master
     run bash -c "echo 'refs/heads/master $LOCAL_SHA refs/heads/master $FAKE_REMOTE_SHA' | .git/hooks/pre-push origin http://localhost"
     # With unknown remote_sha, the hook cannot read remote VERSION, returns
     # empty, and skips the check (continue). So this push passes through.
