@@ -1,111 +1,111 @@
 {
   "respawned_watcher": [
-    3997255,
-    4168249
+    536071,
+    938142
   ],
-  "killed_at": 1790987345.054453,
+  "killed_at": 1791032520.072042,
   "hung": {
-    "pid": 4069246,
-    "doctor": "  \u001b[0;31mFAIL\u001b[0m  Sidecar watcher NOT live: seq stalled at 8 for 73s (> 2 ticks of 30s)",
-    "audit": "[FAIL] Sidecar watcher NOT live\n       Evidence: seq stalled at 8 for 77s (> 2 ticks of 30s)",
+    "pid": 631292,
+    "doctor": "  \u001b[0;31mFAIL\u001b[0m  Sidecar watcher NOT live: seq stalled at 6 for 73s (> 2 ticks of 30s)",
+    "audit": "[FAIL] Sidecar watcher NOT live\n       Evidence: seq stalled at 6 for 77s (> 2 ticks of 30s)",
     "healed_by_supervisor": true,
-    "healed_after_s": 97.20525813102722,
+    "healed_after_s": 96.66194152832031,
     "hung_killed_event": [
       {
-        "ts": "2026-10-03T00:29:03.477355+00:00",
+        "ts": "2026-10-03T13:01:58.833471+00:00",
         "event": "WATCHER_HUNG_KILLED",
-        "pid": 4069246,
+        "pid": 631292,
         "reasons": [
-          "seq stalled at 8 for 96s (> 2 ticks of 30s)"
+          "seq stalled at 6 for 96s (> 2 ticks of 30s)"
         ]
       }
     ]
   },
-  "doctor_not_live": "  \u001b[0;31mFAIL\u001b[0m  Sidecar watcher NOT live: seq stalled at 9 for 76s (> 2 ticks of 30s)",
-  "audit_not_live": "[FAIL] Sidecar watcher NOT live\n       Evidence: seq stalled at 9 for 80s (> 2 ticks of 30s)",
-  "ensure": "[{\"enabled\": true, \"receiver\": \"running\", \"action\": \"supervisor running\", \"project_root\": \"/tmp/t3684-e2e-3995699-1790987061/t3684a-guxa6x\"}, {\"enabled\": true, \"receiver\": \"running\", \"action\": \"supervisor restarted pid=4168030\", \"project_root\": \"/tmp/t3684-e2e-3995699-1790987061/t3684b-guxa6x\"}]\n",
-  "doctor_after_ensure": "  \u001b[0;32mOK\u001b[0m  Sidecar watcher live (seq 10, last tick 9.0s ago, self-probe 56.0ms)",
+  "doctor_not_live": "  \u001b[0;31mFAIL\u001b[0m  Sidecar watcher NOT live: seq stalled at 7 for 75s (> 2 ticks of 30s)",
+  "audit_not_live": "[FAIL] Sidecar watcher NOT live\n       Evidence: seq stalled at 7 for 79s (> 2 ticks of 30s)",
+  "ensure": "[{\"enabled\": true, \"receiver\": \"running\", \"action\": \"supervisor restarted pid=938029\", \"project_root\": \"/tmp/t3684-e2e-532888-1791032296/t3684b-d0zgi6\"}, {\"enabled\": true, \"receiver\": \"running\", \"action\": \"supervisor running\", \"project_root\": \"/tmp/t3684-e2e-532888-1791032296/t3684a-d0zgi6\"}]\n",
+  "doctor_after_ensure": "  \u001b[0;32mOK\u001b[0m  Sidecar watcher live (seq 8, last tick 8.8s ago, self-probe 34.6ms)",
   "watcher_events": [
     {
-      "ts": "2026-10-03T00:24:24.317580+00:00",
+      "ts": "2026-10-03T12:58:19.689374+00:00",
       "event": "SUPERVISOR_STARTED",
-      "pid": 3997131
+      "pid": 535838
     },
     {
-      "ts": "2026-10-03T00:24:24.320074+00:00",
+      "ts": "2026-10-03T12:58:19.692064+00:00",
       "event": "WATCHER_SPAWNED",
-      "pid": 3997255
+      "pid": 536071
     },
     {
-      "ts": "2026-10-03T00:24:24.425670+00:00",
+      "ts": "2026-10-03T12:58:19.802834+00:00",
       "event": "WATCHER_STARTED",
-      "pid": 3997255,
+      "pid": 536071,
       "tick_s": 30.0,
       "resumed_seq": 0
     },
     {
-      "ts": "2026-10-03T00:27:27.431589+00:00",
+      "ts": "2026-10-03T13:00:22.774472+00:00",
       "event": "WATCHER_DIED",
-      "pid": 3997255,
+      "pid": 536071,
       "rc": -9
     },
     {
-      "ts": "2026-10-03T00:27:27.432462+00:00",
+      "ts": "2026-10-03T13:00:22.775415+00:00",
       "event": "WATCHER_SPAWNED",
-      "pid": 4069246
+      "pid": 631292
     },
     {
-      "ts": "2026-10-03T00:27:27.536569+00:00",
+      "ts": "2026-10-03T13:00:22.887872+00:00",
       "event": "WATCHER_STARTED",
-      "pid": 4069246,
+      "pid": 631292,
+      "tick_s": 30.0,
+      "resumed_seq": 5
+    },
+    {
+      "ts": "2026-10-03T13:01:58.833471+00:00",
+      "event": "WATCHER_HUNG_KILLED",
+      "pid": 631292,
+      "reasons": [
+        "seq stalled at 6 for 96s (> 2 ticks of 30s)"
+      ]
+    },
+    {
+      "ts": "2026-10-03T13:01:58.837079+00:00",
+      "event": "WATCHER_DIED",
+      "pid": 631292,
+      "rc": -9
+    },
+    {
+      "ts": "2026-10-03T13:01:58.837830+00:00",
+      "event": "WATCHER_SPAWNED",
+      "pid": 832246
+    },
+    {
+      "ts": "2026-10-03T13:01:58.947972+00:00",
+      "event": "WATCHER_STARTED",
+      "pid": 832246,
+      "tick_s": 30.0,
+      "resumed_seq": 6
+    },
+    {
+      "ts": "2026-10-03T13:03:25.671271+00:00",
+      "event": "SUPERVISOR_STARTED",
+      "pid": 938029
+    },
+    {
+      "ts": "2026-10-03T13:03:25.673478+00:00",
+      "event": "WATCHER_SPAWNED",
+      "pid": 938142
+    },
+    {
+      "ts": "2026-10-03T13:03:25.780826+00:00",
+      "event": "WATCHER_STARTED",
+      "pid": 938142,
       "tick_s": 30.0,
       "resumed_seq": 7
     },
     {
-      "ts": "2026-10-03T00:29:03.477355+00:00",
-      "event": "WATCHER_HUNG_KILLED",
-      "pid": 4069246,
-      "reasons": [
-        "seq stalled at 8 for 96s (> 2 ticks of 30s)"
-      ]
-    },
-    {
-      "ts": "2026-10-03T00:29:03.480917+00:00",
-      "event": "WATCHER_DIED",
-      "pid": 4069246,
-      "rc": -9
-    },
-    {
-      "ts": "2026-10-03T00:29:03.481641+00:00",
-      "event": "WATCHER_SPAWNED",
-      "pid": 4106197
-    },
-    {
-      "ts": "2026-10-03T00:29:03.586867+00:00",
-      "event": "WATCHER_STARTED",
-      "pid": 4106197,
-      "tick_s": 30.0,
-      "resumed_seq": 8
-    },
-    {
-      "ts": "2026-10-03T00:30:32.302149+00:00",
-      "event": "SUPERVISOR_STARTED",
-      "pid": 4168030
-    },
-    {
-      "ts": "2026-10-03T00:30:32.304450+00:00",
-      "event": "WATCHER_SPAWNED",
-      "pid": 4168249
-    },
-    {
-      "ts": "2026-10-03T00:30:32.435087+00:00",
-      "event": "WATCHER_STARTED",
-      "pid": 4168249,
-      "tick_s": 30.0,
-      "resumed_seq": 9
-    },
-    {
-      "ts": "2026-10-03T00:30:32.599077+00:00",
+      "ts": "2026-10-03T13:03:25.967251+00:00",
       "event": "SUPERVISOR_ENSURED",
       "result": "started"
     }

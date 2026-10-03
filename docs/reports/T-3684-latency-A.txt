@@ -1,17 +1,57 @@
-outbound (8 message(s), 0 without HANDED_OVER)
-  send to received       n=8    median=0.011s p95=119.675s max=119.675s
-  send to handed over    n=8    median=53.892s p95=121.416s max=121.416s
-  send to replied        n=2    median=43.506s p95=54.82s max=54.82s
-    b161b16d-acdf-4fc3-8c11-f8a989ba8fec recv=0.012s handed_over=1.458s replied=54.82s path=direct
-    d535cf4e-2042-416c-ba97-725d141a987a recv=0.01s handed_over=102.304s replied=Nones path=direct
-    5d420058-ef73-453c-bd8c-d39c3adc9e05 recv=0.009s handed_over=78.631s replied=Nones path=direct
-    06dac30e-4361-4538-8cb8-6e053f862c21 recv=0.009s handed_over=121.416s replied=Nones path=direct
-    aa3cb501-64d8-4939-8ab8-bcfa11efdb44 recv=0.01s handed_over=1.468s replied=Nones path=direct
-    504c0621-65d5-4c7b-bdf1-06c1ed81789b recv=27.716s handed_over=29.153s replied=32.192s path=hub
-    6fc0157b-9ce6-4cb4-b52d-20ef30cd56e4 recv=119.675s handed_over=121.159s replied=Nones path=hub
-    73249a91-cbae-4ec6-bbe5-86cc6a2b6124 recv=15.955s handed_over=17.384s replied=Nones path=hub
+# T-3684 run 9 (2026-10-03, code f7c7f1d2c) — fw sidecar latency per e2e project
+== t3684a-23f7gu
+outbound (4 message(s), 0 without HANDED_OVER)
+  send to received       n=4    median=10.432s p95=27.611s max=27.611s
+  send to handed over    n=4    median=11.159s p95=29.057s max=29.057s
+  send to replied        n=2    median=46.142s p95=57.455s max=57.455s
+    a0ec5898-580e-4201-a983-2fdafe7a414f recv=0.01s handed_over=1.482s replied=57.455s path=direct
+    08e30d93-9f08-4709-97fd-82f4116bfa1d recv=4.005s handed_over=4.011s replied=Nones path=hub
+    92447a9b-a474-4057-93a6-30141e02f20b recv=27.611s handed_over=29.057s replied=34.829s path=hub
+    b49a7f68-3ee8-4600-936a-f587a18656e2 recv=16.86s handed_over=18.307s replied=Nones path=hub
 inbound (1 message(s), 1 without HANDED_OVER)
-  send to received       n=1    median=0.008s p95=0.008s max=0.008s
+  send to received       n=1    median=0.012s p95=0.012s max=0.012s
   send to handed over    n=0
   send to replied        n=0
-    d9f64e54-fa4b-407d-8e0a-49dd961e3e8b recv=0.008s handed_over=Nones replied=Nones via=direct
+    c70b2c61-f232-487c-b2c1-3f296d5d8f7f recv=0.012s handed_over=Nones replied=Nones via=direct
+== t3684b-23f7gu
+outbound (1 message(s), 1 without HANDED_OVER)
+  send to received       n=1    median=0.013s p95=0.013s max=0.013s
+  send to handed over    n=0
+  send to replied        n=0
+    c70b2c61-f232-487c-b2c1-3f296d5d8f7f recv=0.013s handed_over=Nones replied=Nones path=direct
+inbound (3 message(s), 0 without HANDED_OVER)
+  send to received       n=3    median=16.827s p95=27.578s max=27.578s
+  send to handed over    n=3    median=18.242s p95=28.995s max=28.995s
+  send to replied        n=1    median=34.797s p95=34.797s max=34.797s
+    92447a9b-a474-4057-93a6-30141e02f20b recv=27.578s handed_over=28.995s replied=34.797s via=hub-topic
+    a0ec5898-580e-4201-a983-2fdafe7a414f recv=0.01s handed_over=1.433s replied=Nones via=direct
+    b49a7f68-3ee8-4600-936a-f587a18656e2 recv=16.827s handed_over=18.242s replied=Nones via=hub-topic
+== t3684a-d0zgi6
+outbound (6 message(s), 0 without HANDED_OVER)
+  send to received       n=6    median=0.01s p95=92.769s max=92.769s
+  send to handed over    n=6    median=86.992s p95=106.475s max=106.475s
+  send to replied        n=0
+    56f5e78a-542d-47a6-9458-e55b7ab96cd2 recv=0.009s handed_over=106.475s replied=Nones path=direct
+    20c54504-d291-47c5-bedd-9c8de59d2ba1 recv=0.009s handed_over=79.757s replied=Nones path=direct
+    e4799cef-1004-47c4-b0bb-50e217817e59 recv=0.01s handed_over=94.505s replied=Nones path=direct
+    0f6b5851-c407-4f9c-a087-caa8b98b5acd recv=0.01s handed_over=1.514s replied=Nones path=direct
+    009af015-5532-4a3a-aee3-e5b28fe0d644 recv=92.769s handed_over=94.227s replied=Nones path=hub
+    f0a816b4-ea4c-4afc-8c8f-8361fef87101 recv=7.543s handed_over=78.141s replied=Nones path=hub
+inbound (0 message(s), 0 without HANDED_OVER)
+  send to received       n=0
+  send to handed over    n=0
+  send to replied        n=0
+== t3684b-d0zgi6
+outbound (0 message(s), 0 without HANDED_OVER)
+  send to received       n=0
+  send to handed over    n=0
+  send to replied        n=0
+inbound (5 message(s), 0 without HANDED_OVER)
+  send to received       n=5    median=0.009s p95=92.703s max=92.703s
+  send to handed over    n=5    median=94.162s p95=106.44s max=106.44s
+  send to replied        n=0
+    009af015-5532-4a3a-aee3-e5b28fe0d644 recv=92.703s handed_over=94.162s replied=Nones via=hub-topic
+    20c54504-d291-47c5-bedd-9c8de59d2ba1 recv=0.008s handed_over=79.71s replied=Nones via=direct
+    56f5e78a-542d-47a6-9458-e55b7ab96cd2 recv=0.009s handed_over=106.44s replied=Nones via=direct
+    e4799cef-1004-47c4-b0bb-50e217817e59 recv=0.009s handed_over=94.503s replied=Nones via=direct
+    f0a816b4-ea4c-4afc-8c8f-8361fef87101 recv=7.489s handed_over=78.058s replied=Nones via=hub-topic
