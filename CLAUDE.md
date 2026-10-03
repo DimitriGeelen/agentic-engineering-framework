@@ -591,6 +591,8 @@ Tasks feed three memory types:
 - **Project Memory** — Patterns across all tasks (failure modes, effective approaches)
 - **Episodic Memory** — Completed task histories for future reference
 
+**Semantic recall health (T-3783):** `lib/vector_index_health.py` is the one check behind `fw doctor`, `fw audit` (corpus-health), the handover and the hourly `fw index reindex`. It FAILs when the index is missing, `web.embeddings` will not import the way the reindex imports it, the manifest is older than `INDEX_MAX_AGE_HOURS` or the index is missing more than `INDEX_MAX_LAG` tasks/learnings, the canary query misses, or `index-reindex-hourly` is not in the cron registry. It pushes the operator once when it turns red, and `fw recall`/`fw ask` print `semantic recall degraded: …` on stderr. Remedy: `fw index reindex`; for a missing job or import, `fw upgrade` then `fw cron install`. An empty recall with that banner showing means recall is broken, not that nothing is known.
+
 ## Error Escalation Ladder
 
 Graduated response from tactical to structural:

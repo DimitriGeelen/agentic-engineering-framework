@@ -1,0 +1,488 @@
+#!/usr/bin/env python3
+"""Vector-index (semantic recall) health — ONE predicate for doctor, audit,
+handover, the reindex cron and the recall/ask banner. T-3783.
+
+Why this exists: semantic recall froze for ~2 months in 47 of 49 projects on
+.107 and nothing failed loudly. The hourly reindex job was never seeded into
+consumers, `fw index reindex` exited 0 when it could not import web/, doctor
+said "Cron registry in sync" (true: registry and crontab both lacked the job),
+and index age was at most a WARN. Every one of those was a check answering a
+question next to the one that mattered. This module asks the question itself:
+can this project's index answer a query right now, and is it current?
+
+Checks (any FAIL makes the verdict FAIL):
+  index     the index file exists, opens read-only, and has documents
+  manifest  the corpus manifest exists, parses, and carries finished_at +
+            canary_token (a missing manifest is FAIL, never "unknown")
+  import    web.embeddings imports exactly the way `fw index reindex` imports
+            it: cwd=PROJECT_ROOT, PYTHONPATH=FRAMEWORK_ROOT
+  age       manifest finished_at no older than INDEX_MAX_AGE_HOURS
+  lag       task ids / learning ids on disk that the index has never seen,
+            no more than INDEX_MAX_LAG of either
+  canary    a semantic search for the manifest's canary probe returns the
+            canary document as top hit — through the real search code, against
+            this index (skipped only with --no-canary, and then reported SKIP)
+  cron      .context/cron-registry.yaml has an active index-reindex-hourly job
+WARN-only:
+  usage     recall queries that could not run, as a share of the window
+
+Stdlib only — so it runs, and FAILs, exactly where web/ cannot be imported.
+Never raises: a health check that crashes reports nothing.
+
+Usage:
+  vector_index_health.py [--project-root P] [--framework-root F]
+                         [--no-canary] [--json] [--record] [--banner]
+Exit: 0 OK, 1 WARN, 2 FAIL (also printed as the first line in text mode).
+"""
+
+from __future__ import annotations
+
+import argparse
+import json
+import os
+import re
+import sqlite3
+import subprocess
+import sys
+import time
+from pathlib import Path
+
+REQUIRED_JOB = "index-reindex-hourly"
+STATE_NAME = "vector-index-health.json"
+
+# Defaults mirror lib/config.sh FW_CONFIG_REGISTRY; the bash wrapper passes the
+# resolved values in the environment.
+DEFAULT_MAX_AGE_HOURS = 24.0
+DEFAULT_MAX_LAG = 50
+DEFAULT_FAIL_PCT = 10.0
+USAGE_WINDOW_DAYS = 7.0
+USAGE_MIN_ROWS = 10
+
+REMEDY_REINDEX = "fw index reindex"
+REMEDY_UPGRADE = "fw upgrade   (re-seeds the cron job and the vendored web/)"
+
+
+def _env_num(name: str, default: float) -> float:
+    try:
+        v = float(os.environ.get(name, "") or default)
+        return v if v >= 0 else default
+    except ValueError:
+        return default
+
+
+def _check(name, verdict, message, hint=""):
+    return {"check": name, "verdict": verdict, "message": message, "hint": hint}
+
+
+def db_path(project_root: Path) -> Path:
+    # Same resolution as web/config.py Config.VECTOR_DB_PATH.
+    override = os.environ.get("VECTOR_DB_PATH")
+    if override:
+        return Path(override)
+    return project_root / ".context" / "working" / "fw-vec-index.db"
+
+
+def read_manifest(path: Path):
+    p = Path(str(path) + ".manifest.json")
+    try:
+        data = json.loads(p.read_text())
+    except Exception:  # noqa: BLE001 — absent/corrupt both mean "no manifest"
+        return None
+    return data if isinstance(data, dict) else None
+
+
+def _open_ro(path: Path):
+    return sqlite3.connect(f"file:{path}?mode=ro", uri=True, timeout=10)
+
+
+def check_index(path: Path):
+    if not path.exists():
+        return _check("index", "FAIL", f"vector index missing ({path})",
+                      f"Build it: {REMEDY_REINDEX}")
+    try:
+        db = _open_ro(path)
+        try:
+            n = db.execute("SELECT COUNT(*) FROM documents").fetchone()[0]
+        finally:
+            db.close()
+    except Exception as exc:  # noqa: BLE001
+        return _check("index", "FAIL",
+                      f"vector index unopenable ({type(exc).__name__}: {str(exc)[:80]})",
+                      f"Rebuild it: mv {path} {path}.broken && {REMEDY_REINDEX}")
+    if not n:
+        return _check("index", "FAIL", "vector index has 0 documents",
+                      f"Rebuild it: {REMEDY_REINDEX}")
+    return _check("index", "OK", f"vector index opens ({n} chunks)")
+
+
+def check_manifest(manifest):
+    if manifest is None:
+        return _check("manifest", "FAIL",
+                      "vector index has no readable manifest — age and canary unknowable",
+                      f"Write one: {REMEDY_REINDEX}")
+    fin = manifest.get("finished_at")
+    if not isinstance(fin, (int, float)) or isinstance(fin, bool) or fin <= 0:
+        return _check("manifest", "FAIL", "manifest has no valid finished_at",
+                      f"Rewrite it: {REMEDY_REINDEX}")
+    if not str(manifest.get("canary_token") or "").strip():
+        return _check("manifest", "FAIL", "manifest has no canary_token",
+                      f"Replant canaries: {REMEDY_REINDEX}")
+    return _check("manifest", "OK", "manifest present")
+
+
+def check_age(manifest, max_age_hours: float, now: float):
+    fin = (manifest or {}).get("finished_at")
+    if not isinstance(fin, (int, float)) or isinstance(fin, bool) or fin <= 0:
+        return _check("age", "FAIL", "vector index age unknown (no manifest finished_at)",
+                      f"Run: {REMEDY_REINDEX}")
+    hours = (now - float(fin)) / 3600.0
+    if hours > max_age_hours:
+        return _check("age", "FAIL",
+                      f"vector index {hours / 24:.1f} days old "
+                      f"(limit {max_age_hours:g}h — the hourly reindex is not running)",
+                      f"Run: {REMEDY_REINDEX}; then check the cron job: fw cron status")
+    return _check("age", "OK", f"vector index {hours:.1f}h old (limit {max_age_hours:g}h)")
+
+
+_TASK_RE = re.compile(r"(?:^|/)(T-\d+)[-.]")
+_LEARN_RE = re.compile(r"\bid:\s*(L-\d+)\b")
+
+
+def _disk_task_ids(project_root: Path) -> set:
+    ids = set()
+    for sub in ("active", "completed"):
+        d = project_root / ".tasks" / sub
+        if d.is_dir():
+            for f in d.glob("T-*.md"):
+                m = _TASK_RE.search(f.name)
+                if m:
+                    ids.add(m.group(1))
+    return ids
+
+
+def check_lag(path: Path, project_root: Path, max_lag: int):
+    """Count source items on disk that the index has never seen.
+
+    A count of ids, not a max id: task ids are not dense (T-100xxx exists), and
+    a max comparison would let one indexed outlier hide hundreds of missing ones.
+    """
+    try:
+        db = _open_ro(path)
+        try:
+            indexed_paths = [r[0] for r in db.execute(
+                "SELECT DISTINCT path FROM documents WHERE path LIKE '.tasks/%'")]
+            learn_chunks = [r[0] for r in db.execute(
+                "SELECT chunk_text FROM documents WHERE path = ?",
+                (".context/project/learnings.yaml",))]
+        finally:
+            db.close()
+    except Exception as exc:  # noqa: BLE001
+        return _check("lag", "FAIL", f"index lag unmeasurable ({type(exc).__name__})",
+                      f"Rebuild it: {REMEDY_REINDEX}")
+
+    indexed_tasks = {m.group(1) for p in indexed_paths for m in [_TASK_RE.search(p)] if m}
+    missing_tasks = _disk_task_ids(project_root) - indexed_tasks
+
+    learn_file = project_root / ".context" / "project" / "learnings.yaml"
+    try:
+        disk_learn = set(_LEARN_RE.findall(learn_file.read_text(errors="replace")))
+    except OSError:
+        disk_learn = set()
+    indexed_learn = set(_LEARN_RE.findall("\n".join(learn_chunks)))
+    missing_learn = disk_learn - indexed_learn
+
+    detail = f"{len(missing_tasks)} task(s), {len(missing_learn)} learning(s) not in the index"
+    if len(missing_tasks) > max_lag or len(missing_learn) > max_lag:
+        return _check("lag", "FAIL", f"vector index lags the corpus: {detail} (limit {max_lag})",
+                      f"Run: {REMEDY_REINDEX}")
+    return _check("lag", "OK", detail)
+
+
+# Runs in a child exactly as `fw index reindex` does (bin/fw: cd PROJECT_ROOT,
+# PYTHONPATH=FRAMEWORK_ROOT). The canary goes through web.embeddings'
+# _semantic_search — the real embed + sqlite-vec KNN path — against the same
+# DB_PATH, without writing a recall-telemetry row (a health probe is not usage).
+_CHILD = r'''
+import json, sys
+try:
+    import web.embeddings as E
+    from web.canary import verify_canaries
+except Exception as exc:
+    print(json.dumps({"import": False, "detail": f"{type(exc).__name__}: {str(exc)[:160]}"}))
+    sys.exit(0)
+out = {"import": True, "db_path": str(E.DB_PATH)}
+if sys.argv[1] == "canary":
+    try:
+        res = verify_canaries(E._semantic_search, sys.argv[2])
+        out["canaries"] = [{"name": r.name, "ok": r.ok, "detail": r.detail} for r in res]
+    except Exception as exc:
+        out["canaries"] = [{"name": "canary", "ok": False,
+                            "detail": f"raised {type(exc).__name__}: {str(exc)[:160]}"}]
+print(json.dumps(out))
+'''
+
+
+def run_child(project_root: Path, framework_root: Path, mode: str, token: str,
+              path: Path, timeout: float):
+    env = dict(os.environ)
+    env["PYTHONPATH"] = str(framework_root) + (
+        os.pathsep + env["PYTHONPATH"] if env.get("PYTHONPATH") else "")
+    env["PROJECT_ROOT"] = str(project_root)
+    env["VECTOR_DB_PATH"] = str(path)
+    try:
+        p = subprocess.run([sys.executable, "-c", _CHILD, mode, token],
+                           cwd=str(project_root), env=env, capture_output=True,
+                           text=True, timeout=timeout)
+    except subprocess.TimeoutExpired:
+        return {"import": None, "timeout": True}
+    except Exception as exc:  # noqa: BLE001
+        return {"import": False, "detail": f"spawn failed: {exc}"}
+    for line in reversed(p.stdout.strip().splitlines()):
+        try:
+            return json.loads(line)
+        except ValueError:
+            continue
+    return {"import": False, "detail": (p.stderr.strip().splitlines() or ["no output"])[-1][:160]}
+
+
+def check_import(child):
+    if child.get("timeout"):
+        return _check("import", "FAIL", "web.embeddings import timed out",
+                      "Check the python env: python3 -c 'import web.embeddings'")
+    if not child.get("import"):
+        return _check("import", "FAIL",
+                      f"web.embeddings not importable the way fw index reindex imports it "
+                      f"({child.get('detail', '?')})",
+                      f"Reindex cannot run. Fix the install: {REMEDY_UPGRADE}; "
+                      f"deps: pip install -r <framework>/web/requirements.txt")
+    return _check("import", "OK", "web.embeddings importable from the reindex path")
+
+
+def check_canary(child, token: str):
+    if child.get("timeout"):
+        return _check("canary", "FAIL", "canary query timed out (embedder unreachable?)",
+                      "Check the embed path: fw doctor (ollama/embed lines)")
+    cans = child.get("canaries")
+    if not cans:
+        return _check("canary", "FAIL", "canary query did not run",
+                      "Check the embed path: fw doctor")
+    bad = [c for c in cans if not c.get("ok")]
+    if bad:
+        return _check("canary", "FAIL",
+                      "canary query failed: " + "; ".join(
+                          f"{c.get('name')}: {c.get('detail')}" for c in bad)[:240],
+                      f"If the embedder is up, the index is stale or broken: {REMEDY_REINDEX}")
+    return _check("canary", "OK", f"canary {token} retrieved as top hit")
+
+
+def check_cron(project_root: Path):
+    reg = project_root / ".context" / "cron-registry.yaml"
+    try:
+        text = reg.read_text()
+    except OSError:
+        return _check("cron", "FAIL", f"no cron registry — {REQUIRED_JOB} cannot be scheduled",
+                      f"Seed it: {REMEDY_UPGRADE}, then: fw cron install")
+    # Parse with yaml when available; fall back to a block scan (stdlib only).
+    jobs = None
+    try:
+        import yaml  # noqa: PLC0415
+        data = yaml.safe_load(text) or {}
+        jobs = [j for j in (data.get("jobs") or []) if isinstance(j, dict)]
+    except Exception:  # noqa: BLE001
+        jobs = None
+    if jobs is None:
+        m = re.search(r"-\s*id:\s*['\"]?" + re.escape(REQUIRED_JOB) + r"['\"]?\s*\n((?:[ \t]+\S.*\n?)*)", text)
+        jobs = []
+        if m:
+            st = re.search(r"status:\s*(\S+)", m.group(1))
+            jobs = [{"id": REQUIRED_JOB, "status": st.group(1) if st else "active"}]
+    job = next((j for j in jobs if j.get("id") == REQUIRED_JOB), None)
+    if job is None:
+        return _check("cron", "FAIL",
+                      f"cron registry lacks {REQUIRED_JOB} — the index will never be refreshed",
+                      f"Seed it: {REMEDY_UPGRADE}, then: fw cron install")
+    status = str(job.get("status", "active")).strip("'\"").lower()
+    if status != "active":
+        return _check("cron", "FAIL", f"{REQUIRED_JOB} is {status}, not active",
+                      f"Resume it: fw cron resume {REQUIRED_JOB}")
+    return _check("cron", "OK", f"{REQUIRED_JOB} scheduled")
+
+
+def check_usage(path: Path, fail_pct: float, now: float):
+    tel = Path(os.environ.get("FW_RECALL_TELEMETRY_PATH") or (path.parent / "recall-telemetry.jsonl"))
+    cutoff = now - USAGE_WINDOW_DAYS * 86400
+    rows = bad = 0
+    try:
+        with open(tel, errors="replace") as fh:
+            for line in fh:
+                try:
+                    r = json.loads(line)
+                    t = time.mktime(time.strptime(r.get("ts", ""), "%Y-%m-%dT%H:%M:%SZ")) - time.timezone
+                except Exception:  # noqa: BLE001
+                    continue
+                if t < cutoff:
+                    continue
+                rows += 1
+                bad += r.get("outcome") == "unavailable"
+    except OSError:
+        return _check("usage", "OK", "recall usage: no telemetry yet")
+    if rows >= USAGE_MIN_ROWS and 100.0 * bad / rows > fail_pct:
+        return _check("usage", "WARN",
+                      f"recall: {bad} of {rows} queries in {USAGE_WINDOW_DAYS:g}d could not run "
+                      f"({100.0 * bad / rows:.0f}% > {fail_pct:g}%)",
+                      "The embed path fails mid-query: fw doctor (ollama/embed lines)")
+    return _check("usage", "OK", f"recall: {bad} of {rows} queries in {USAGE_WINDOW_DAYS:g}d could not run")
+
+
+def evaluate(project_root: Path, framework_root: Path, canary: bool = True,
+             now: float | None = None) -> dict:
+    now = time.time() if now is None else now
+    max_age = _env_num("FW_INDEX_MAX_AGE_HOURS", DEFAULT_MAX_AGE_HOURS)
+    max_lag = int(_env_num("FW_INDEX_MAX_LAG", DEFAULT_MAX_LAG))
+    fail_pct = _env_num("FW_RECALL_FAIL_PCT_WARN", DEFAULT_FAIL_PCT)
+    timeout = _env_num("FW_INDEX_CANARY_TIMEOUT", 90)
+
+    path = db_path(project_root)
+    manifest = read_manifest(path)
+    checks = []
+    idx = check_index(path)
+    checks.append(idx)
+    man = check_manifest(manifest)
+    checks.append(man)
+    token = str((manifest or {}).get("canary_token") or "")
+
+    # The canary only runs against a non-empty index: web.embeddings._get_db()
+    # falls through to a FULL rebuild when the index is missing or empty, and a
+    # health probe must never start a multi-hour build.
+    mode = "canary" if (canary and idx["verdict"] == "OK" and man["verdict"] == "OK") else "import"
+    child = run_child(project_root, framework_root, mode, token, path, timeout)
+    checks.append(check_import(child))
+    checks.append(check_age(manifest, max_age, now))
+    checks.append(check_lag(path, project_root, max_lag) if idx["verdict"] == "OK"
+                  else _check("lag", "FAIL", "index lag unmeasurable (no usable index)",
+                              f"Build it: {REMEDY_REINDEX}"))
+    if not canary:
+        checks.append(_check("canary", "SKIP", "canary not run (fast mode)"))
+    elif mode != "canary":
+        checks.append(_check("canary", "FAIL", "canary cannot run (no usable index/manifest)",
+                             f"Build it: {REMEDY_REINDEX}"))
+    elif not child.get("import") and not child.get("timeout"):
+        checks.append(_check("canary", "FAIL", "canary cannot run (web.embeddings unimportable)",
+                             REMEDY_UPGRADE))
+    else:
+        checks.append(check_canary(child, token))
+    checks.append(check_cron(project_root))
+    checks.append(check_usage(path, fail_pct, now))
+
+    verdicts = [c["verdict"] for c in checks]
+    status = "FAIL" if "FAIL" in verdicts else ("WARN" if "WARN" in verdicts else "OK")
+    return {"status": status, "full": canary, "ts": now,
+            "project_root": str(project_root), "checks": checks}
+
+
+def record(result: dict, project_root: Path) -> bool:
+    """Persist the verdict; return True exactly when it turned red.
+
+    "Turned red" = this FAIL follows a non-FAIL (or no prior record), so the
+    operator push fires once per transition, not on every run. Only full runs
+    record: a fast run cannot see the canary and must not flip red to green.
+    """
+    state = project_root / ".context" / "working" / STATE_NAME
+    prev = None
+    try:
+        prev = json.loads(state.read_text()).get("status")
+    except Exception:  # noqa: BLE001
+        prev = None
+    turned_red = result["status"] == "FAIL" and prev != "FAIL"
+    try:
+        state.parent.mkdir(parents=True, exist_ok=True)
+        tmp = state.with_suffix(".json.tmp")
+        tmp.write_text(json.dumps({
+            "status": result["status"], "ts": result["ts"], "previous": prev,
+            "reasons": [c["message"] for c in result["checks"] if c["verdict"] == "FAIL"],
+        }, indent=2))
+        tmp.replace(state)
+    except OSError:
+        pass
+    return turned_red
+
+
+def banner(result: dict, project_root: Path) -> str:
+    """One stderr line for fw recall / fw ask, or "" when recall is healthy.
+
+    Fast runs cannot see the canary, so a red verdict recorded by the last full
+    run (doctor/audit/reindex) is honoured too.
+    """
+    reasons = [c for c in result["checks"] if c["verdict"] == "FAIL"]
+    if not reasons:
+        try:
+            st = json.loads((project_root / ".context" / "working" / STATE_NAME).read_text())
+            if st.get("status") == "FAIL" and st.get("reasons"):
+                return ("semantic recall degraded: " + st["reasons"][0]
+                        + " — results may be missing; fix: " + REMEDY_REINDEX)
+        except Exception:  # noqa: BLE001
+            pass
+        return ""
+    first = reasons[0]
+    fix = first["hint"].split(": ", 1)[-1] if first["hint"] else REMEDY_REINDEX
+    return (f"semantic recall degraded: {first['message']} — results may be missing; "
+            f"fix: {fix}")
+
+
+def degraded_banner(project_root, framework_root, embed_error: str | None = None) -> str:
+    """The fw recall / fw ask banner: "" when healthy, else one loud line.
+
+    `embed_error` is the caller's own failure on THIS query (the semantic path
+    raised and the caller fell back) — reported first, because it is certain.
+    Otherwise the fast predicate runs (no canary) plus the last full verdict.
+    Never raises.
+    """
+    if embed_error:
+        return ("semantic recall degraded: embed path failed for this query ("
+                + str(embed_error)[:160] + ") — results may be missing; fix: fw doctor")
+    try:
+        pr, fr = Path(project_root), Path(framework_root)
+        return banner(evaluate(pr, fr, canary=False), pr)
+    except Exception as exc:  # noqa: BLE001
+        return f"semantic recall degraded: health check crashed ({exc}) — results may be missing; fix: fw doctor"
+
+
+def main(argv=None) -> int:
+    ap = argparse.ArgumentParser(description="Vector-index (semantic recall) health (T-3783)")
+    ap.add_argument("--project-root", default=os.environ.get("PROJECT_ROOT") or os.getcwd())
+    ap.add_argument("--framework-root", default=os.environ.get("FRAMEWORK_ROOT")
+                    or str(Path(__file__).resolve().parent.parent))
+    ap.add_argument("--no-canary", action="store_true")
+    ap.add_argument("--json", action="store_true")
+    ap.add_argument("--record", action="store_true",
+                    help="persist the verdict; prints TURNED_RED when it just went red")
+    ap.add_argument("--banner", action="store_true",
+                    help="print only the degraded-recall banner (stderr) and exit 0")
+    a = ap.parse_args(argv)
+    pr, fr = Path(a.project_root).resolve(), Path(a.framework_root).resolve()
+    try:
+        res = evaluate(pr, fr, canary=not a.no_canary)
+    except Exception as exc:  # noqa: BLE001 — never silent
+        res = {"status": "FAIL", "full": False, "ts": time.time(), "project_root": str(pr),
+               "checks": [_check("check", "FAIL", f"vector index check crashed: {exc}",
+                                 "Report it; run: fw doctor")]}
+    if a.banner:
+        line = banner(res, pr)
+        if line:
+            print(line, file=sys.stderr)
+        return 0
+    turned = record(res, pr) if (a.record and res.get("full")) else False
+    if a.json:
+        res["turned_red"] = turned
+        print(json.dumps(res))
+    else:
+        print(res["status"])
+        for c in res["checks"]:
+            print(f"{c['verdict']}|{c['check']}: {c['message']}|{c['hint']}")
+        if turned:
+            print("TURNED_RED")
+    return {"OK": 0, "WARN": 1}.get(res["status"], 2)
+
+
+if __name__ == "__main__":
+    sys.exit(main())

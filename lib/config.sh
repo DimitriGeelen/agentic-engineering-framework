@@ -280,6 +280,12 @@ FW_CONFIG_REGISTRY=(
     # than the one you are working in.
     "INDEX_STALE_DAYS|7|Days before fw doctor WARNs that the vector index is stale, measured from the corpus manifest's build time (web/embeddings.py:index_freshness). T-3013."
     "RECALL_USAGE_DAYS|7|Window fw doctor looks back over for semantic-recall queries. Zero rows in the window WARNs — the G-064 zero-consumer signal, distinct from the index being stale (web/recall_telemetry.py:usage_summary). T-3019."
+    # T-3783: the vector-index health check (lib/vector_index_health.py) FAILs in
+    # doctor/audit/handover when these are exceeded — the reindex runs hourly, so
+    # 24h is a full day of missed runs, not jitter.
+    "INDEX_MAX_AGE_HOURS|24|Hours since the vector index manifest was written before the vector-index health check FAILs (fw doctor, fw audit corpus-health, handover, operator push). The reindex cron runs hourly. T-3783."
+    "INDEX_MAX_LAG|50|Task ids or learning ids on disk that the vector index has never seen before the vector-index health check FAILs. T-3783."
+    "RECALL_FAIL_PCT_WARN|10|Percent of recall queries in 7 days that could not run (embed path failed mid-query) above which the vector-index health check WARNs. T-3783."
     # T-3028 (T-3025 GO, option 3). State dumps are 97.3% of a handover and the
     # three of them are byte-identical between consecutive sessions. Digesting
     # them to count + regenerating command + top-N is what stops handovers being

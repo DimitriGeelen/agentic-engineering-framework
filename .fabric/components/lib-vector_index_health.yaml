@@ -1,0 +1,21 @@
+id: lib/vector_index_health.py
+name: vector_index_health
+type: script
+subsystem: framework-core
+location: lib/vector_index_health.py
+tags: []
+
+purpose: "Vector-index (semantic recall) health — ONE predicate for doctor, audit, handover, the reindex cron and the recall/ask banner. T-3783."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-03
+created_by: unknown

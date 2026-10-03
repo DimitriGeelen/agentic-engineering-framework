@@ -1,0 +1,21 @@
+id: lib/vector-index-health.sh
+name: vector-index-health
+type: script
+subsystem: framework-core
+location: lib/vector-index-health.sh
+tags: []
+
+purpose: "Vector-index (semantic recall) health — bash side of lib/vector_index_health.py. T-3783."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-03
+created_by: unknown

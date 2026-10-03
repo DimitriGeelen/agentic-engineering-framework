@@ -2577,25 +2577,31 @@ PY
     # without five full doctor runs per test suite. Embed-free: manifest read
     # plus a stat. The canary (which does embed) runs in
     # `fw audit --section corpus-health`, never here and never in pre-push.
-    source "$FRAMEWORK_ROOT/lib/index-health.sh"
-    _idx_line=$(index_freshness_verdict)
-    _idx_verdict="${_idx_line%%|*}"
-    _idx_rest="${_idx_line#*|}"
-    _idx_msg="${_idx_rest%%|*}"
-    _idx_hint="${_idx_rest#*|}"
-    case "$_idx_verdict" in
-        OK)
-            echo -e "  ${GREEN}OK${NC}  $_idx_msg"
-            ;;
-        WARN)
-            echo -e "  ${YELLOW}WARN${NC}  $_idx_msg"
-            [ -n "$_idx_hint" ] && echo -e "         $_idx_hint"
-            warnings=$((warnings + 1))
-            ;;
-        *)
-            echo -e "  ${CYAN}SKIP${NC}  $_idx_msg"
-            ;;
-    esac
+    # T-3783: replaced the age-only WARN above with ONE predicate shared with
+    # fw audit / handover / the reindex cron (lib/vector_index_health.py): index
+    # opens, manifest present, web.embeddings importable the way the reindex
+    # imports it, age + lag within limits, canary retrieved, cron job seeded.
+    # Any of those failing is a FAIL — two months of a frozen index in 47 of 49
+    # projects passed as "WARN, 9 days old" or as SKIP (unimportable).
+    # The canary embeds (~5-10s); FW_DOCTOR_INDEX_FAST=1 skips it.
+    source "$FRAMEWORK_ROOT/lib/vector-index-health.sh"
+    if [ "${FW_DOCTOR_INDEX_FAST:-0}" = "1" ]; then
+        _idx_out=$(vector_index_health --no-canary) || true
+    else
+        _idx_out=$(FW_INDEX_CANARY_TIMEOUT="${FW_INDEX_CANARY_TIMEOUT:-30}" vector_index_health) || true
+    fi
+    while IFS='|' read -r _idx_verdict _idx_msg _idx_hint; do
+        case "$_idx_verdict" in
+            OK)   echo -e "  ${GREEN}OK${NC}  $_idx_msg" ;;
+            WARN) echo -e "  ${YELLOW}WARN${NC}  $_idx_msg"
+                  [ -n "$_idx_hint" ] && echo -e "         $_idx_hint"
+                  warnings=$((warnings + 1)) ;;
+            FAIL) echo -e "  ${RED}FAIL${NC}  $_idx_msg"
+                  [ -n "$_idx_hint" ] && echo -e "         $_idx_hint"
+                  issues=$((issues + 1)) ;;
+            SKIP) echo -e "  ${CYAN}SKIP${NC}  $_idx_msg" ;;
+        esac
+    done < <(printf '%s\n' "$_idx_out" | tail -n +2)
 
     # Check: recall usage — the "Used" signal (T-3019, T-3005 slice 6a)
     #
@@ -6783,7 +6789,8 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
                 # the import path (cwd stays PROJECT_ROOT: the index is the consumer's). And
                 # "unimportable" is a failure, not a quiet success: it exited 0 for months
                 # while the hourly cron indexed nothing.
-                cd "$PROJECT_ROOT" && PYTHONPATH="$FRAMEWORK_ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 -c '
+                _rx_rc=0
+                (cd "$PROJECT_ROOT" && PYTHONPATH="$FRAMEWORK_ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 -c '
 import json, sys
 try:
     from web.embeddings import reindex_incremental
@@ -6798,7 +6805,16 @@ try:
 except Exception as exc:
     print(json.dumps({"status": "error", "detail": str(exc)[:300]}))
     sys.exit(1)
-'
+') || _rx_rc=$?
+                # T-3783: the hourly cron is the one periodic caller every consumer has,
+                # so it runs the health check too (stderr; stdout stays the JSON stats):
+                # the verdict is recorded and the operator is pushed once when it turns
+                # red — including when the reindex itself could not import or failed.
+                if [ "${FW_REINDEX_NO_HEALTH:-0}" != "1" ]; then
+                    source "$FRAMEWORK_ROOT/lib/vector-index-health.sh"
+                    vector_index_health >&2 || true
+                fi
+                exit "$_rx_rc"
                 ;;
             ""|-h|--help)
                 echo "Usage: fw index reindex"
