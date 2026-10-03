@@ -12,6 +12,11 @@
 # Both directions are pinned: a transient failure is tolerated, and a session
 # that really is gone is still declared gone after CLAUDE_FW_PING_FAILURES.
 
+# T-3747: since T-3684 every claude-fw launch starts an always-on sidecar for
+# its project; under a fixture it outlives the test, writes into the deleted
+# tmpdir (teardown "Directory not empty") and slowed files past the suite cap.
+export CLAUDE_FW_NO_SIDECAR=1
+
 setup() {
     FRAMEWORK_ROOT="$(cd "${BATS_TEST_DIRNAME}/../.." && pwd)"
     SRC="$FRAMEWORK_ROOT/bin/claude-fw"

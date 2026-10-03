@@ -24,6 +24,11 @@
 # reconstructed from the live one, and C1 asserts D1 goes RED there — the same
 # discipline T-3243's and T-3249's suites use.
 
+# T-3747: since T-3684 every claude-fw launch starts an always-on sidecar for
+# its project; under a fixture it outlives the test, writes into the deleted
+# tmpdir (teardown "Directory not empty") and slowed files past the suite cap.
+export CLAUDE_FW_NO_SIDECAR=1
+
 setup() {
     REPO="$(cd "${BATS_TEST_DIRNAME}/../.." && pwd)"
     WRAPPER="${FW_TEST_WRAPPER:-${REPO}/bin/claude-fw}"

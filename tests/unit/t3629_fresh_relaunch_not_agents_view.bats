@@ -14,6 +14,11 @@
 # contains a space — which the TermLink path would split, since it joins
 # CLAUDE_ARGS with spaces — is visible as an extra field rather than hidden.
 
+# T-3747: since T-3684 every claude-fw launch starts an always-on sidecar for
+# its project; under a fixture it outlives the test, writes into the deleted
+# tmpdir (teardown "Directory not empty") and slowed files past the suite cap.
+export CLAUDE_FW_NO_SIDECAR=1
+
 load ../test_helper
 
 setup() {

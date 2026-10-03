@@ -20,6 +20,11 @@
 #
 # `! cmd` at statement position is INERT in bats (T-3199) — uses `if cmd; then false; fi`.
 
+# T-3747: since T-3684 every claude-fw launch starts an always-on sidecar for
+# its project; under a fixture it outlives the test, writes into the deleted
+# tmpdir (teardown "Directory not empty") and slowed files past the suite cap.
+export CLAUDE_FW_NO_SIDECAR=1
+
 setup() {
     REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
     FW="$REPO_ROOT/bin/fw"

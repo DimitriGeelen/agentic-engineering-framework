@@ -15,6 +15,11 @@
 # indistinguishable from one that fires for the right one unless the passing leg
 # is measured too — the same indistinguishability the E10 rig exists to break.
 
+# T-3747: since T-3684 every claude-fw launch starts an always-on sidecar for
+# its project; under a fixture it outlives the test, writes into the deleted
+# tmpdir (teardown "Directory not empty") and slowed files past the suite cap.
+export CLAUDE_FW_NO_SIDECAR=1
+
 setup() {
     INJECTOR="${BATS_TEST_DIRNAME}/../../agents/context/inject-next-directive.py"
     WRAPPER="${BATS_TEST_DIRNAME}/../../bin/claude-fw"

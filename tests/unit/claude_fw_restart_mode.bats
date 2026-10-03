@@ -6,6 +6,11 @@
 # written against a transcribed snippet would stay green against a wrapper that
 # had stopped honouring the variable entirely.
 
+# T-3747: since T-3684 every claude-fw launch starts an always-on sidecar for
+# its project; under a fixture it outlives the test, writes into the deleted
+# tmpdir (teardown "Directory not empty") and slowed files past the suite cap.
+export CLAUDE_FW_NO_SIDECAR=1
+
 setup() {
     SRC="${BATS_TEST_DIRNAME}/../../bin/claude-fw"
 }

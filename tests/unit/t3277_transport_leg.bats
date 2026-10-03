@@ -27,6 +27,11 @@
 # driver's assumptions rather than against the tool — the failure mode that let the
 # `termlink info` defect survive review (see t3254's B4 note).
 
+# T-3747: since T-3684 every claude-fw launch starts an always-on sidecar for
+# its project; under a fixture it outlives the test, writes into the deleted
+# tmpdir (teardown "Directory not empty") and slowed files past the suite cap.
+export CLAUDE_FW_NO_SIDECAR=1
+
 setup() {
     command -v tmux >/dev/null 2>&1 || skip "tmux not installed"
     REPO="$(cd "${BATS_TEST_DIRNAME}/../.." && pwd)"

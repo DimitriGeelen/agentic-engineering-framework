@@ -5,6 +5,11 @@
 # opened a terminal". A leaked one steers a session that never asked to be steered,
 # and with T-3166 that session no longer has a transcript to contradict it.
 
+# T-3747: since T-3684 every claude-fw launch starts an always-on sidecar for
+# its project; under a fixture it outlives the test, writes into the deleted
+# tmpdir (teardown "Directory not empty") and slowed files past the suite cap.
+export CLAUDE_FW_NO_SIDECAR=1
+
 setup() {
     HOOK="${BATS_TEST_DIRNAME}/../../agents/context/post-compact-resume.sh"
     WRAPPER="${BATS_TEST_DIRNAME}/../../bin/claude-fw"

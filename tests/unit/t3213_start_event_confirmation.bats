@@ -30,6 +30,11 @@
 # is ignored for any command preceded by `!`, so a failing negation passes. This
 # file uses the sibling t3209 idiom `if cmd; then false; fi` throughout.
 
+# T-3747: since T-3684 every claude-fw launch starts an always-on sidecar for
+# its project; under a fixture it outlives the test, writes into the deleted
+# tmpdir (teardown "Directory not empty") and slowed files past the suite cap.
+export CLAUDE_FW_NO_SIDECAR=1
+
 setup() {
     REPO_ROOT="$(cd "$BATS_TEST_DIRNAME/../.." && pwd)"
     FW="$REPO_ROOT/bin/fw"

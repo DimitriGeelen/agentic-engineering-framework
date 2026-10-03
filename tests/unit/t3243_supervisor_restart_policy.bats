@@ -17,6 +17,11 @@
 # cannot fire are the same observation; a re-arm that always happens and one that
 # happens when armed are the same observation. The negative cases are the point.
 
+# T-3747: since T-3684 every claude-fw launch starts an always-on sidecar for
+# its project; under a fixture it outlives the test, writes into the deleted
+# tmpdir (teardown "Directory not empty") and slowed files past the suite cap.
+export CLAUDE_FW_NO_SIDECAR=1
+
 setup() {
     REPO="$(cd "${BATS_TEST_DIRNAME}/../.." && pwd)"
     # Overridable so the suite can be pointed at the PRE-FIX wrapper and shown to

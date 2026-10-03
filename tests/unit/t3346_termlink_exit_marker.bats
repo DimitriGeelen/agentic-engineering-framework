@@ -10,6 +10,11 @@
 # These tests lift _tl_claude_exit_code out of the real wrapper (house style:
 # claude_fw_restart_mode.bats) so editing bin/claude-fw moves the assertions.
 
+# T-3747: since T-3684 every claude-fw launch starts an always-on sidecar for
+# its project; under a fixture it outlives the test, writes into the deleted
+# tmpdir (teardown "Directory not empty") and slowed files past the suite cap.
+export CLAUDE_FW_NO_SIDECAR=1
+
 setup() {
     SRC="${BATS_TEST_DIRNAME}/../../bin/claude-fw"
 }

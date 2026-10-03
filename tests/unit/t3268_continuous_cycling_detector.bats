@@ -14,6 +14,11 @@
 # .stop-driver.log within a trailing window and prints one tab-separated fact
 # line when a pair recurs at/above threshold, nothing otherwise.
 
+# T-3747: since T-3684 every claude-fw launch starts an always-on sidecar for
+# its project; under a fixture it outlives the test, writes into the deleted
+# tmpdir (teardown "Directory not empty") and slowed files past the suite cap.
+export CLAUDE_FW_NO_SIDECAR=1
+
 load ../test_helper
 
 CONTINUOUS_MODE_LIB="$FRAMEWORK_ROOT/lib/continuous-mode.sh"
