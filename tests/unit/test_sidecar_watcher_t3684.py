@@ -41,6 +41,9 @@ def proj(tmp_path, monkeypatch):
     monkeypatch.delenv("FW_SIDECAR_TICK", raising=False)
     monkeypatch.delenv("FW_REVIEW_WORKER", raising=False)
     monkeypatch.delenv("TERMLINK_SESSION_ID", raising=False)
+    # Not headless whoever runs the suite (a `claude -p` worker would be, and a
+    # headless session is never an inject target — T-3684 round 3).
+    monkeypatch.setattr(adapter, "_claude_ancestor_pid", lambda *a, **k: None)
     yield root
     _cli(root, "stop", "--quiet")
 
@@ -200,6 +203,29 @@ def test_legacy_topic_consult_is_ingested_once_and_injected(proj, monkeypatch):
     assert msg["from"] == "old-peer" and msg["hub_ts"]
     # the cursor moved: a second tick ingests nothing
     assert watcher.run_tick(2, 30.0, runner=tl, hub_reader=reader)["hub"]["ingested"] == []
+
+
+def test_urgent_hub_topic_consult_is_injected_on_the_tick_while_busy(proj, monkeypatch):
+    # R5 over the hub fallback: urgent=1 metadata → ingest keeps urgency → the
+    # same tick types it into a BUSY session; a non-urgent one beside it waits.
+    posted = {}
+
+    def reader(topic, cursor, limit=100):
+        return [e for e in posted.get(topic, []) if e["offset"] >= cursor]
+    monkeypatch.setattr(watcher.inbox, "read_topics", lambda agent=None: ["sidecar:t3684"])
+    urgent = _hub_envelope(0, "hub-urgent", "urgent over the hub")
+    urgent["metadata"]["urgent"] = "1"
+    posted["sidecar:t3684"] = [urgent, _hub_envelope(1, "hub-plain", "not urgent")]
+    _stop_hook(monkeypatch, "sess-1", "tl-1")
+    monkeypatch.setenv("TERMLINK_SESSION_ID", "tl-1")
+    hooks.prompt({"session_id": "sess-1"}, out=io.StringIO(), spawn=False)   # busy
+    monkeypatch.delenv("TERMLINK_SESSION_ID")
+    tl = Termlink(_tagged("tl-1"))
+    rep = watcher.run_tick(1, 30.0, runner=tl, hub_reader=reader)
+    assert sorted(rep["hub"]["ingested"]) == ["hub-plain", "hub-urgent"]
+    assert receiver.read_message("hub-urgent")["urgent"] is True
+    assert receiver.read_message("hub-plain")["urgent"] is False
+    assert rep["deliver"]["injected"] == ["hub-urgent"]
 
 
 def test_legacy_sender_gets_a_handed_over_receipt_not_a_skip(proj, monkeypatch):

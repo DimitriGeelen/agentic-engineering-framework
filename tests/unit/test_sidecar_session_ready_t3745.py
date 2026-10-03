@@ -250,6 +250,26 @@ def test_headless_session_never_takes_fallback_mail(proj, monkeypatch):
     assert ids == [] and inject.read_claim("m1") is None
 
 
+def test_headless_worker_in_a_tagged_pty_is_never_injected_not_even_urgent(proj, monkeypatch):
+    # A dispatched `claude -p` worker runs in a TermLink PTY tagged for the
+    # project. Busy or stopped, it is never a target: no urgent bypass into it,
+    # no "only registered session" fallback onto its PTY.
+    monkeypatch.setattr(adapter, "_is_headless", lambda pid: True)
+    _hook(monkeypatch, "stop", "worker", "tl-w")               # its own record says ready
+    monkeypatch.setattr(adapter, "_is_headless", lambda pid: False)
+    _store("n1")
+    _store("u1", urgent=True)
+    tl = Termlink(_sessions("tl-w"))
+    rep = inject.deliver_pending("tick", runner=tl)
+    assert tl.injects == [] and rep["injected"] == []
+    assert inject.read_claim("n1") is None and inject.read_claim("u1") is None
+    # ...and its PTY does not count as a registered interactive session, so a
+    # plain-terminal interactive session may take the mail (T-3745 fallback).
+    assert inject.injector_found_no_session() is True
+    ids, _ = _hook(monkeypatch, "prompt", "operator-terminal", "")
+    assert set(ids) == {"n1", "u1"}
+
+
 def _execd(pid):
     import time
     for _ in range(100):                       # until the child has exec'd

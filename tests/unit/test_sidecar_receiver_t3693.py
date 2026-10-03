@@ -41,6 +41,9 @@ def env(tmp_path, monkeypatch):
     monkeypatch.setenv("FW_SIDECAR_REGISTRY_DIR", str(tmp_path / "registry"))
     monkeypatch.delenv("FW_SIDECAR_AGENT_ID", raising=False)
     monkeypatch.delenv("FW_REVIEW_WORKER", raising=False)
+    # Not headless whoever runs the suite (a `claude -p` worker would be, and a
+    # headless session is never an inject target — T-3684 round 3).
+    monkeypatch.setattr(adapter, "_claude_ancestor_pid", lambda *a, **k: None)
     started: list[Path] = []
 
     class Env:
