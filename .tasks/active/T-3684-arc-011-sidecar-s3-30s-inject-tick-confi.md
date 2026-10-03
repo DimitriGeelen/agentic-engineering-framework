@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T22:58:50Z
-last_update: 2026-10-02T23:13:31Z
+last_update: 2026-10-03T12:25:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -112,16 +112,22 @@ bvp_scores_proposed:
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+**Status 2026-10-03 (finisher w-t3684b-finish) — NOT closed: no passing independent review yet.**
+- Round 2 (docs/reports/T-3684-review-codex.md, FAIL): all 4 findings fixed in bb823a983; round 3 confirmed each fixed.
+- Round 3 (docs/reports/T-3684-review-codex-round3.md, FAIL): one blocking finding — the urgent "only registered session, no record yet" fallback could type into a headless worker's PTY, and that worker's prompt hook would surface the PTY-only claim; plus the peek hook in a `claude -p` with no own agent id peeked the project's inbox. Fixed in f7c7f1d2c + bf07a0255, with tests that fail on the old code; live e2e run 10 on bf07a0255: 8/8 (docs/reports/T-3684-e2e-run10.log). Brief updated for round 4 (§00).
+- Round 4: codex hit its usage limit mid-review (resets 18:11 local, 2026-10-03); no verdict (docs/reports/T-3684-review-codex-round4-aborted.log). The round-4 command is the round-3 command with the round-3 review added to the inputs and `-o docs/reports/T-3684-review-codex-round4.md`.
+- Still open: the review-verdict AC (and its Verification line, which greps docs/reports/T-3684-review-codex.md — point it at the passing round's file when one exists). T-3685 and T-3745 are not closed because they close with T-3684.
+
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Design register rows R3 (30 s configurable tick) and R5 (urgent bypass) in docs/architecture/sidecar-target-architecture.md §7 are built and set to `status: built` with evidence (owner assigned by T-3694)
+- [x] Design register rows R3 (30 s configurable tick) and R5 (urgent bypass) in docs/architecture/sidecar-target-architecture.md §7 are built and set to `status: built` with evidence (owner assigned by T-3694)
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A supervised watcher loop ticks every SIDECAR_TICK seconds (config key in lib/config.sh FW_CONFIG_REGISTRY, default 30); each tick checks the receiver's flagged messages AND the agent's hub inbox topic(s) (legacy topic covered until T-3690)
-- [ ] Urgent consults inject immediately regardless of the ready flag; non-urgent inject only when the target session is ready; HANDED_OVER only on transcript evidence; the sender is informed (CONFIRM-2)
-- [ ] Live e2e (not mocked): an idle real session receives a non-urgent consult within 60 s with nobody typing; a busy session only after its turn ends; urgent while busy; a legacy-topic post within 60 s; watcher disabled → no pickup and the sender sees ESCALATED
-- [ ] `fw sidecar latency` reports send→RECEIVED and send→HANDED_OVER per message (median, p95, max), and the measured figures are in docs/reports/T-3684-review-brief.md
-- [ ] Receipt telemetry on EVERY path (operator 2026-10-03): a message taken off the hub topic (watcher, prompt hook, `fw sidecar inbox`) sends RECEIVED back at once, HANDED_OVER on injection, REPLIED on an --in-reply-to answer; all three timestamps stored and in `fw sidecar latency`; live test: legacy-topic consult → RECEIVED at the sender within 60 s (gap verified: lib/sidecar/inbox.py sends no receipt today)
+- [x] A supervised watcher loop ticks every SIDECAR_TICK seconds (config key in lib/config.sh FW_CONFIG_REGISTRY, default 30); each tick checks the receiver's flagged messages AND the agent's hub inbox topic(s) (legacy topic covered until T-3690)
+- [x] Urgent consults inject immediately regardless of the ready flag; non-urgent inject only when the target session is ready; HANDED_OVER only on transcript evidence; the sender is informed (CONFIRM-2)
+- [x] Live e2e (not mocked): an idle real session receives a non-urgent consult within 60 s with nobody typing; a busy session only after its turn ends; urgent while busy; a legacy-topic post within 60 s; watcher disabled → no pickup and the sender sees ESCALATED
+- [x] `fw sidecar latency` reports send→RECEIVED and send→HANDED_OVER per message (median, p95, max), and the measured figures are in docs/reports/T-3684-review-brief.md
+- [x] Receipt telemetry on EVERY path (operator 2026-10-03): a message taken off the hub topic (watcher, prompt hook, `fw sidecar inbox`) sends RECEIVED back at once, HANDED_OVER on injection, REPLIED on an --in-reply-to answer; all three timestamps stored and in `fw sidecar latency`; live test: legacy-topic consult → RECEIVED at the sender within 60 s (gap verified: lib/sidecar/inbox.py sends no receipt today)
 - [ ] Independent codex review (docs/reports/T-3684-review-codex.md) ends VERDICT: PASS
 
 ### Human
@@ -283,6 +289,19 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/test_sidecar_watcher_t3684.py tests/unit/test_sidecar_session_ready_t3745.py tests/unit/test_sidecar_receiver_t3693.py -q -p no:cacheprovider > /tmp/.t3684-unit.out 2>&1 && grep -q passed /tmp/.t3684-unit.out && ! grep -q failed /tmp/.t3684-unit.out
+python3 -c "import json; d=json.load(open('docs/reports/T-3684-e2e-1-idle.json')); assert d['send_to_handed_over_s'] <= 60 and d['transcript']"
+python3 -c "import json; d=json.load(open('docs/reports/T-3684-e2e-2-legacy-topic.json')); assert d['via']=='hub-topic' and d['inject_triggers'][0]=='tick' and d['send_to_handed_over_s'] <= 60"
+python3 -c "import json; d=json.load(open('docs/reports/T-3684-e2e-3-busy-urgent.json')); u=d['urgent']; n=d['non_urgent']; assert u['busy_at_inject'] and u['pty_has_line_while_busy'] and n['inject']['trigger']=='tick' and n['turn_end_to_inject_s'] >= -1.5"
+python3 -c "import json; d=json.load(open('docs/reports/T-3684-e2e-5-negative-control.json')); assert d['escalated_row']['by']=='infrastructure' and 'HANDED_OVER' not in d['sender_states'] and d['legacy_ingested'] is None"
+python3 -c "import json; d=json.load(open('docs/reports/T-3684-e2e-2-legacy-topic.json')); assert d['sender_receipt_received'] and d['sender_send_to_received_s'] <= 60 and d['sender_receipt_handed_over']"
+python3 -c "import json; d=json.load(open('docs/reports/T-3684-e2e-2b-replied.json')); assert all(d['receipts'].values()) and d['latency_row'][0]['send_to_replied_s'] is not None"
+python3 -m pytest tests/unit/test_sidecar_receipts_t3684.py -q -p no:cacheprovider > /tmp/.t3684-rcpt.out 2>&1 && grep -q passed /tmp/.t3684-rcpt.out && ! grep -q failed /tmp/.t3684-rcpt.out
+python3 lib/sidecar_cli.py latency --json > /tmp/.t3684-lat.out 2>&1 && grep -q send_to_replied /tmp/.t3684-lat.out
+python3 -c "import yaml,re; f=chr(96)*3; t=open('docs/architecture/sidecar-target-architecture.md').read(); r=yaml.safe_load(re.search(f+'yaml\n(register:.*?)'+f, t, re.S).group(1))['register']; assert all(x['status']=='built' for x in r if x['id'] in ('R3','R5'))"
+grep -q "VERDICT: PASS" docs/reports/T-3684-review-codex.md
+bin/fw vendor self --check
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -322,6 +341,11 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-10-03 — readiness had to become per-session first (T-3745)
+- **What changed:** The per-project ready flag T-3693 built could not carry a watcher: with a fleet agent and the operator's terminal in one project, the tick would have typed into whichever session's sibling had stopped. T-3745 was built first: per-session records keyed on the hook's `session_id`, carrying `TERMLINK_SESSION_ID` (set by `termlink spawn` in the PTY claude-fw launches claude from — verified for backends `background` and `auto`) and the claude pid; claims name the target session and are written before typing.
+- **Plan impact:** The legacy hub topic is not a second inject path: each tick drains it into the receiver store (cursor advanced, so the peeking sidecar-inbox hook does not show it twice), from where it follows the same flag → inject → transcript-evidence route. A legacy sender has no direct ledger, so CONFIRM-2 is recorded as CONFIRM_SKIPPED for it, explicitly.
+- **Triggered:** none new. Live run 1 showed haiku running a requested `sleep` with run_in_background, ending the "busy" turn in 6 s; the e2e now asserts the session is still busy 8 s after the prompt, so a weak precondition fails loudly instead of passing or failing for the wrong reason.
 
 ## Recommendation
 

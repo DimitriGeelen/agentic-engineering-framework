@@ -1,0 +1,16 @@
+# T-3684 codex round 4 — ABORTED (codex usage limit), no verdict. Last 15 lines of the 420 KB run log:
+bin/fw:3481:                        echo -e "  ${GREEN}OK${NC}  Sidecar watcher live (seq $_sw_seq, last tick ${_sw_age}s ago, self-probe ${_sw_ms}ms)"
+bin/fw:3484:                    echo -e "  ${RED}FAIL${NC}  Sidecar watcher NOT live: $_sw_why"
+/etc/cron.d/agentic-audit-999-agentic-engineering-framework:14:# Sidecar watcher supervisor keep-alive (1 min)
+/etc/cron.d/agentic-audit-999-agentic-engineering-framework:15:* * * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-sidecar-ensure.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" sidecar ensure --all' 2>&1 | logger -t agentic-cron
+/etc/cron.d/agentic-audit-999-agentic-engineering-framework:17:# Sidecar watchers on startup
+/etc/cron.d/agentic-audit-999-agentic-engineering-framework:18:@reboot root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" sleep 30 && flock -n /var/lock/agentic-cron-sidecar-ensure.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" sidecar ensure --all' 2>&1 | logger -t agentic-cron
+.claude/settings.json:36:            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook sidecar-autostart"
+.claude/settings.json:49:            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook sidecar-autostart"
+lib/init.sh:1038:            "command": "$fw_prefix hook sidecar-autostart"
+lib/init.sh:1051:            "command": "$fw_prefix hook sidecar-autostart"
+
+ERROR: You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 6:11 PM.
+ERROR: You've hit your usage limit. Upgrade to Pro (https://chatgpt.com/explore/pro), visit https://chatgpt.com/codex/settings/usage to purchase more credits or try again at 6:11 PM.
+tokens used
+75,654
