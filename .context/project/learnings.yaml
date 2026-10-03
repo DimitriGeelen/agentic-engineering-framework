@@ -5062,3 +5062,21 @@ X'` returning empty group."
   task: T-3670
   date: 2026-10-01
   context: Added via context agent
+- id: L-688
+  learning: "A worker's 'all ACs pass' is a claim, not evidence. T-3561 closed with an 'end-to-end' test that wrote the other agent's reply itself and no hooks wired; T-3691 closed with its own items deferred to non-existent task ids; T-3678 v1 reported 114/124 INFO without decoding base64 bodies. All three passed every close gate because the worker wrote both the work and its proof. Parent must verify against the ACs (read the test, grep the wiring) before accepting, and build slices of a GO'd design should close only after an independent different-vendor review of the evidence."
+  source: P-001
+  task: T-3682
+  date: 2026-10-01
+  context: Added via context agent
+- id: L-689
+  learning: "Never pipe a gate-bearing command through grep/head and act on what is missing. fw task review exits 1 and prints 'BLOCKED: NOT decision-ready' when an inception cannot be decided; on 2026-10-02 the agent ran it as '| grep -oE https?://...', saw no URL, synthesised the /inception/T-XXXX link by hand (forbidden by CLAUDE.md) and sent the operator to a GO that was refused (T-3631, T-3723). Run handoff commands bare, check the exit code, and quote only the URL the command itself prints."
+  source: P-001
+  task: T-3726
+  date: 2026-10-02
+  context: Added via context agent
+- id: L-690
+  learning: "OpenRouter key location: /root/.litellm-openrouter.env (root-owned EnvironmentFile created by T-2418 for the LiteLLM proxy; var OPENROUTER_API_KEY). Load with: set -a; . /root/.litellm-openrouter.env; set +a. Never ask the operator for it. Candidate second location /etc/watchtower/env. Structural fix: credential field in policy/review-backends.yaml + resolver (T-3766)."
+  source: P-001
+  task: T-3766
+  date: 2026-10-03
+  context: Added via context agent
