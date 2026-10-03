@@ -173,6 +173,16 @@ def post_with_token(entry: dict, path: str, payload: dict,
 
 # ── send ────────────────────────────────────────────────────────────────────
 
+def _mark_epoch() -> None:
+    """T-3782: the waiting register's outbound cut-off must exist BEFORE the
+    first message is sent, or that message would fall before it forever."""
+    try:
+        from . import waiting
+        waiting.epoch()
+    except Exception:
+        pass
+
+
 def send(entry: dict, *, from_id: str, to: str, body: str, conversation_id: str,
          urgent: bool = False, in_reply_to: str | None = None,
          handover_deadline_s: int = DEFAULT_HANDOVER_DEADLINE_S,
@@ -194,8 +204,10 @@ def send(entry: dict, *, from_id: str, to: str, body: str, conversation_id: str,
         "body": body,
         "created_at": _now().isoformat(),
     }
+    _mark_epoch()
     record(client_msg_id, SENT, by="sender", target=to, url=entry.get("url"),
-           conversation_id=conversation_id, in_reply_to=in_reply_to)
+           conversation_id=conversation_id, in_reply_to=in_reply_to,
+           urgent=bool(urgent) or None)   # T-3782: the sender-side escalation reads it
 
     last_error = None
     for attempt in range(1, retries + 1):

@@ -87,15 +87,34 @@ def stop(hook_input: dict) -> int:
     return 0
 
 
+_META_UNSAFE = __import__("re").compile(r"[^A-Za-z0-9._:/@=+-]")
+
+
+def safe_meta(value, default: str) -> str:
+    """T-3782: peer-controlled metadata (sender name, conversation id, message
+    id) is printed OUTSIDE the PEER-DATA markers — in block headers, in the
+    reply command the agent is told to run, in the recover preamble. Reduce it
+    to a token charset so it can carry no newline, no instruction prose and no
+    shell metacharacter."""
+    raw = str(value or "")
+    if not raw:
+        return default
+    if _META_UNSAFE.search(raw) or len(raw) > 128:
+        # Not partially escaped: words joined by "_" still read as prose.
+        # The whole value is replaced by a stable placeholder.
+        return "invalid-" + __import__("hashlib").sha256(raw.encode()).hexdigest()[:10]
+    return raw
+
+
 def _header(msg: dict, surfacing: str) -> str:
     """The block header for one message in one surfacing attempt. `surfacing`
     is a fresh random token per prompt-hook run: the finalizer accepts only
     this exact line (followed by the PEER-DATA opener) as evidence, so neither
     an id quoted inside some other message's untrusted body nor an attachment
     left by an EARLIER attempt can certify this one."""
-    sender = str(msg.get("from") or "unknown")
-    conv = str(msg.get("conversation_id") or "-")
-    mid = str(msg.get("client_msg_id") or msg.get("msg_id"))
+    sender = safe_meta(msg.get("from"), "unknown")
+    conv = safe_meta(msg.get("conversation_id"), "-")
+    mid = safe_meta(msg.get("client_msg_id") or msg.get("msg_id"), "?")
     return f"## from {sender}  [conversation {conv}]  [msg {mid}]  [surfacing {surfacing}]"
 
 
@@ -116,9 +135,9 @@ def _frame(messages: list[dict], surfacing: str) -> str:
         if len(body) > BODY_CAP:
             body = body[:BODY_CAP] + f" [truncated, {len(body) - BODY_CAP} more chars]"
         body = body.replace(OPEN, "<<<peer-data").replace(CLOSE, "peer-data>>>")
-        sender = str(msg.get("from") or "unknown")
-        conv = str(msg.get("conversation_id") or "-")
-        mid = str(msg.get("client_msg_id") or msg.get("msg_id"))
+        sender = safe_meta(msg.get("from"), "unknown")
+        conv = safe_meta(msg.get("conversation_id"), "-")
+        mid = safe_meta(msg.get("client_msg_id") or msg.get("msg_id"), "?")
         lines += [
             _header(msg, surfacing),
             OPEN,
