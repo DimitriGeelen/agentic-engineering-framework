@@ -49,7 +49,8 @@ from web import decide_runner as dr  # noqa: E402
     # killed / crashed with the decision written: never gate wording (review r1)
     ("go", True, False, False, -9, dr.LANDED_INTERRUPTED),
     ("go", True, False, False, 137, dr.LANDED_INTERRUPTED),
-    ("go", True, False, False, 124, dr.LANDED_GATE_REFUSED),  # <128: a plain exit code
+    ("go", True, False, False, 124, dr.LANDED_INTERRUPTED),   # timeout(1)'s exit (review r2)
+    ("go", True, False, False, 2, dr.LANDED_GATE_REFUSED),
     ("go", True, False, False, -1, dr.LANDED_INTERRUPTED),
     ("go", True, False, False, None, dr.LANDED_INTERRUPTED),
     ("go", True, False, False, 0, dr.LANDED_INTERRUPTED),
@@ -67,7 +68,7 @@ def test_a_running_chain_is_never_a_gate_refusal():
 
 
 def test_only_a_plain_nonzero_exit_is_a_gate_refusal():
-    for rc in (None, -15, -9, -1, 0, 128, 137, 143, 255):
+    for rc in (None, -15, -9, -1, 0, 124, 125, 126, 127, 128, 137, 143, 255):
         out = dr.classify("go", landed=True, completed=False, running=False, rc=rc)
         assert out != dr.LANDED_GATE_REFUSED, rc
 
@@ -428,6 +429,58 @@ def test_dead_runner_with_live_fw_still_blocks_a_second_launch(tmp_path):
         fw.wait()
     assert not dr.is_running(proj, "T-9770")
     assert "stopped before it finished" in (dr.surface(proj, "T-9770") or "")
+
+
+def _run_dir(root, tid, stamp, status):
+    run = root / ".context/working/decide" / f"{tid}-{stamp}"
+    run.mkdir(parents=True)
+    (run / "status.json").write_text(status)
+    return run
+
+
+def test_surface_newer_attempt_does_not_hide_an_older_failure(tmp_path):
+    """Review r2: a newer failed or dead run must not mask an older one."""
+    _run_dir(tmp_path, "T-9764", "20261003T000000000000Z", '{"state": "running", "pid": 1}')
+    _run_dir(tmp_path, "T-9764", "20261003T000100000000Z",
+             '{"state": "done", "rc": 1, "commit_ok": true}')
+    msg = dr.surface(tmp_path, "T-9764") or ""
+    assert "exited with code 1" in msg and "stopped before it finished" in msg
+
+
+def test_surface_a_clean_newer_run_supersedes_older_failures(tmp_path):
+    _run_dir(tmp_path, "T-9765", "20261003T000000000000Z", '{"state": "running", "pid": 1}')
+    _run_dir(tmp_path, "T-9765", "20261003T000100000000Z",
+             '{"state": "done", "rc": 0, "commit_ok": true}')
+    assert dr.surface(tmp_path, "T-9765") is None
+
+
+def test_lock_survives_a_runner_killed_before_it_records_fw_pid(slow_chain, monkeypatch):
+    """Review r2: the startup window. fw inherits the lock, so killing the runner
+    — with fw_pid erased, as if it died before writing it — keeps a second GO out."""
+    import signal
+    proj, fake = slow_chain
+    monkeypatch.setenv("SLOW_FW_PRE", "4")
+    monkeypatch.setenv("PROJECT_ROOT", str(proj))
+    run = dr.launch("T-9750", "go", "r", project_root=proj, framework_root=fake)
+    end = time.monotonic() + 10
+    while "fw_pid" not in dr.read_status(run.run_dir) and time.monotonic() < end:
+        time.sleep(0.05)
+    st = dr.read_status(run.run_dir)
+    fw_pid = st["fw_pid"]
+    st.pop("fw_pid")
+    (run.run_dir / "status.json").write_text(__import__("json").dumps(st))
+    os.kill(run.proc.pid, signal.SIGKILL)
+    run.proc.wait()
+    try:
+        assert dr.is_running(proj, "T-9750")
+        with pytest.raises(dr.Busy):
+            dr.launch("T-9750", "go", "r", project_root=proj, framework_root=fake)
+    finally:
+        os.kill(fw_pid, signal.SIGKILL)
+    end = time.monotonic() + 5
+    while dr.is_running(proj, "T-9750") and time.monotonic() < end:
+        time.sleep(0.05)
+    assert not dr.is_running(proj, "T-9750")
 
 
 def test_surface_reports_a_failed_chain_even_when_its_commit_succeeded(tmp_path):

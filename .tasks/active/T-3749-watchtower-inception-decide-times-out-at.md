@@ -136,7 +136,7 @@ on the primary result.
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] The decide chain is measured: wall time per step (decision write, completion, episodic, reviewer, BVP, other side effects) recorded in ## Context
-- [x] A Watchtower GO returns well inside its timeout: the primary decision and completion run synchronously; slow side effects run detached and their outcome is logged, so a timeout can no longer cut the chain mid-flight
+- [x] A Watchtower GO returns well inside its timeout: the primary decision and completion run synchronously; slow side effects run detached and their outcome is logged, so a timeout can no longer cut the chain mid-flight (as built, per the dispatch brief: the request waits synchronously for the primary result — decision written, task in completed/ — while the whole chain runs detached and logged; see ## Decisions)
 - [x] When the decision landed, Watchtower never says "Command timed out" / "Automatic completion was blocked"; it says what landed and what is still running
 - [x] Regression test covers the message classification (landed + timed-out side effect → success wording)
 

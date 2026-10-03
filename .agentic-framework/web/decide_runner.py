@@ -17,9 +17,10 @@ Shape of the fix:
   and again when the chain ends (episodic, components, Updates) — the request
   itself never commits, so it never waits on git or the commit lock.
 * One chain per task: launch() takes an exclusive flock on
-  .context/working/decide/<task>.lock and hands it to the runner, which holds
-  it until it exits; if the runner died while its fw still runs (fw_pid in
-  status.json, checked against /proc), launch() refuses too. A second GO
+  .context/working/decide/<task>.lock and hands it to the runner, which passes
+  it on to fw, so it is held until the chain itself has ended — a runner that
+  dies, even before recording fw_pid, does not free it. As a second line,
+  launch() also refuses while the recorded fw_pid is alive (/proc-checked). A second GO
   click while a chain is running gets `Busy`.
 * `classify()` turns (landed, completed, running, rc) into one outcome; the
   blueprint words its message from that. A still-running chain is never
@@ -63,10 +64,11 @@ def gate_exit(rc) -> bool:
     """A refusal the chain itself reported: a plain non-zero exit.
 
     Gates exit 1/2. A negative rc is a signal (subprocess), >=128 is a shell's
-    128+N for a killed child, -1 is the runner's "died without an exit code",
+    128+N for a killed child, 124 is timeout(1)'s "timed out", 125-127 are
+    "could not run" codes, -1 is the runner's "died without an exit code",
     None is "unknown" — none of those is a gate, so none gets gate wording.
     """
-    return isinstance(rc, int) and 0 < rc < 128
+    return isinstance(rc, int) and 0 < rc < 124
 
 
 class Busy(Exception):
@@ -236,28 +238,35 @@ def surface(project_root, task_id: str):
 
     Reports what would otherwise be silent once the request has returned:
     the chain exited non-zero, a commit failed, or the runner is gone without
-    having recorded that it finished.
+    having recorded that it finished. Every such run since the last CLEAN run
+    (done, exit 0, committed) is reported, so a newer attempt — running or
+    failed — cannot hide an older failure. A clean run supersedes what came
+    before it: it ran the whole chain (archive, episodic, commit) to the end.
     """
     runs = _runs(project_root, task_id)
-    if not runs:
+    live = is_running(project_root, task_id)
+    problems = []
+    for i, run in enumerate(reversed(runs)):
+        st = read_status(run)
+        rel = os.path.relpath(run, project_root)
+        if st.get("state") == "done":
+            if st.get("rc") == 0 and st.get("commit_ok") is not False:
+                break  # clean: everything older is superseded
+            parts = []
+            if st.get("rc") != 0:
+                parts.append(f"the decide command exited with code {st.get('rc')} — "
+                             f"check that the task is where you expect it")
+            if st.get("commit_ok") is False:
+                parts.append(f"its writes are not committed: {st.get('commit_msg', '')}")
+            problems.append("; ".join(parts) + f" (log: {rel})")
+        elif i == 0 and live:
+            continue  # the newest run is still going: nothing to report yet
+        else:
+            problems.append(f"a decide run stopped before it finished "
+                            f"(state: {st.get('state', 'unknown')}; log: {rel})")
+    if not problems:
         return None
-    run = runs[-1]
-    st = read_status(run)
-    rel = os.path.relpath(run, project_root)
-    if st.get("state") == "done":
-        problems = []
-        if st.get("rc") != 0:
-            problems.append(f"the decide command exited with code {st.get('rc')} — "
-                            f"check that the task is where you expect it")
-        if st.get("commit_ok") is False:
-            problems.append(f"its writes are not committed: {st.get('commit_msg', '')}")
-        if not problems:
-            return None
-        return f"The last decide run for {task_id}: " + "; ".join(problems) + f" (log: {rel})"
-    if is_running(project_root, task_id):
-        return None
-    return (f"The decide run for {task_id} stopped before it finished "
-            f"(state: {st.get('state', 'unknown')}). Check the task and the log: {rel}")
+    return f"Decide runs for {task_id} that need a look: " + " | ".join(problems)
 
 
 # ---------------------------------------------------------------- runner side
@@ -280,10 +289,17 @@ def _run(run_dir: Path, fw_bin: str, task_id: str, decision: str, rationale: str
     _write_status(run_dir, state="running", pid=os.getpid())
     with open(run_dir / "stdout.log", "ab") as out, open(run_dir / "stderr.log", "ab") as err:
         # No timeout, on purpose: the chain must run to its end (T-3749).
+        # The task lock goes to fw too (and so to its children): if this runner
+        # dies at any point — even before fw_pid is recorded — the lock stays held
+        # until the chain itself has ended, so a second GO cannot overlap it.
+        lock_fds = ()
+        if os.environ.get("FW_DECIDE_LOCK_FD", "").isdigit():
+            lock_fds = (int(os.environ["FW_DECIDE_LOCK_FD"]),)
         proc = subprocess.Popen(
             [fw_bin, "inception", "decide", task_id,
              decision, "--rationale", rationale, "--from-watchtower"],
             cwd=str(PROJECT_ROOT), stdin=subprocess.DEVNULL, stdout=out, stderr=err,
+            pass_fds=lock_fds,
         )
         _write_status(run_dir, fw_pid=proc.pid)
         primary_committed = False
