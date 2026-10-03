@@ -453,10 +453,12 @@ def _cred_exempt_spans(cmd, root):
                 i += 1
             if len(words) < i + 3:
                 continue
+            # Exactly this project's fw: no other executable that merely ends in `fw`.
             exe = words[i]
-            if exe.startswith('/') and not exe.startswith(root + '/'):
-                continue
-            if exe.rsplit('/', 1)[-1] != 'fw' or words[i + 1:i + 3] != ['review', 'credential']:
+            fw_names = {'fw', 'bin/fw', './bin/fw', '.agentic-framework/bin/fw',
+                        './.agentic-framework/bin/fw', root + '/bin/fw',
+                        root + '/.agentic-framework/bin/fw'}
+            if exe not in fw_names or words[i + 1:i + 3] != ['review', 'credential']:
                 continue
             # No substitution, redirect-in or subshell anywhere in the segment:
             # `$( cat <file> )` would run INSIDE an exempt segment and put the
@@ -465,7 +467,10 @@ def _cred_exempt_spans(cmd, root):
                 continue
             if files is None:
                 files = _registered_cred_files()
-            for j in range(i + 3, len(toks)):
+            # Only the resolver's own arguments: everything after --exec is the CHILD
+            # command, which the exemption must never cover.
+            stop = words.index('--exec') if '--exec' in words[i + 3:] else len(toks)
+            for j in range(i + 3, stop):
                 if toks[j].group(0) in files and words[j - 1] == '--source':
                     spans.append((s + toks[j].start(), s + toks[j].end()))
         return spans

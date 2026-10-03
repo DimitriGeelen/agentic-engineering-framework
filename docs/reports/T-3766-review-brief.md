@@ -98,3 +98,18 @@ credential value appears in this document.
 - A same-user process can commit a registry change that retargets a credential file; it is then
   attributable in git history, and the target must still pass the file checks and contain the
   named variable.
+
+## Round 1 (codex, VERDICT: FAIL) — findings and fixes
+
+| # | Finding | Fix | Evidence |
+|---|---|---|---|
+| 1a | Multiline value escapes the line-by-line output mask | Any value with a newline/control character is refused, not echoed (`lib/review_credential.py:267` `_single_line`, applied to env and file values) | @test "R1-1: a multiline env value is refused…" |
+| 1b | Validation echoed a rejected `source` value; YAML parser errors quote source text | Credential validation names fields/indices only; YAML errors report the line number only (`lib/review_cost.py:192`, `lib/review_credential.py` `_yaml`) | @test "R1-1: validation and YAML errors never echo…" |
+| 2a | Exemption accepted any executable named `fw` (`../../tmp/fw`) | Executable must be exactly this project's fw (`fw`, `bin/fw`, `./bin/fw`, `.agentic-framework/bin/fw`, or those under PROJECT_ROOT) (`check-project-boundary.sh:458`) | @test "R1-2" (`../../tmp/fw`, `/tmp/fw` blocked; `.agentic-framework/bin/fw` control allowed) |
+| 2b | Exemption covered `--source` in the CHILD command after `--exec` | Scan stops at `--exec` (`check-project-boundary.sh:472`) | @test "R1-2" (`--exec -- tool --source F` blocked) |
+| 3a | Git failure fell back to working-tree credentials | `committed_credentials` (`:134`): registry in HEAD's tree → must match; a git error other than "not a git repository" → refuse; git not runnable with a `.git` ancestor → refuse. (`/` is itself a git work tree on this host, so "any `.git` ancestor" alone cannot be the test.) | @test "R1-3: fails closed when git cannot answer" (fake failing git; no git at all; control resolves) |
+| 3b | Symlinked parent directory; lstat/read race | `realpath(f) == f` required; opened with `O_NOFOLLOW`, then `fstat` on the open fd for type/mode/owner/size (`_read_var`/`_parse_var`, `:218`) | @test "R1-3: a symlinked parent directory is refused"; test 10 |
+| 3c | A committed registry edit can retarget a credential (commit ≠ authorization) | Not closed by code: a same-user process can commit; documented residual. Bounded by: committed (attributable), regular root/caller-owned non-writable file ≤ 64 KiB, only the one named `NAME=VALUE` read, `--source` limited to registered files, output masked, paid needs approval. | — |
+| 4 | Paid `--exec` checked but did not consume the approval | The consuming cost record (with `proposal_id`) is written before the child starts (`:360`) | @test "R1-4: one approval covers one --exec" |
+
+24/24 ok, 0 skip; regression suites green.

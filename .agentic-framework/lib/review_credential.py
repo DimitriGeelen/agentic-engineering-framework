@@ -24,7 +24,10 @@ The value never reaches stdout, stderr, an exception message or a process argume
   --exec    runs the command with the variable in its ENVIRONMENT, and rewrites any
             occurrence of the value in the child's stdout/stderr to a mask. A paid backend
             (approval_required) needs an approved, unused proposal for the focused task,
-            checked here, not only by the check-paid-backend hook.
+            checked here, not only by the check-paid-backend hook, and the cost record that
+            consumes it is written before the child starts (one approval, one --exec).
+            A value containing a newline or control character is refused, so it cannot
+            straddle the line-by-line mask.
 
 Exfiltration by registry edit: the credential blocks are read from the registry as
 committed at HEAD when the registry is tracked by git; a working-tree edit to any
@@ -83,8 +86,8 @@ def validate_credential(bid: str, cred: object) -> list[str]:
                 errs.append(f"{bid}: credential.{k} looks like a credential VALUE — the registry "
                             f"names where a credential is, never what it is")
     src = cred.get("source", "env-file")
-    if src not in SOURCES:
-        errs.append(f"{bid}: credential.source must be one of {SOURCES}, got {src!r}")
+    if src not in SOURCES:  # never echo the rejected text: it may be a pasted value
+        errs.append(f"{bid}: credential.source must be one of {SOURCES}")
     env, files, note = cred.get("env"), cred.get("files"), cred.get("note")
     if env is not None and (not isinstance(env, str) or not ENV_RE.match(env)):
         errs.append(f"{bid}: credential.env must match {ENV_RE.pattern}")
@@ -92,9 +95,9 @@ def validate_credential(bid: str, cred: object) -> list[str]:
         if not isinstance(files, list) or not files:
             errs.append(f"{bid}: credential.files must be a non-empty list of absolute paths")
         else:
-            for f in files:
+            for n, f in enumerate(files):
                 if not isinstance(f, str) or not PATH_RE.match(f) or "/../" in f or f.endswith("/.."):
-                    errs.append(f"{bid}: credential.files entry {f!r} must be an absolute path "
+                    errs.append(f"{bid}: credential.files entry {n} must be an absolute path "
                                 f"matching {PATH_RE.pattern}")
     if note is not None and not (isinstance(note, str) and note.strip()):
         errs.append(f"{bid}: credential.note must be non-empty text")
@@ -114,22 +117,50 @@ def _git(path: Path, *args: str) -> subprocess.CompletedProcess:
     return subprocess.run(["git", "-C", str(path.parent), *args], capture_output=True, text=True, timeout=10)
 
 
+def _yaml(text: str, what: str) -> dict:
+    """Parse YAML without ever echoing source text (a parser error quotes the offending line)."""
+    try:
+        doc = yaml.safe_load(text) or {}
+    except yaml.YAMLError as e:
+        mark = getattr(e, "problem_mark", None)
+        raise CredError(f"{what} is not valid YAML" + (f" (line {mark.line + 1})" if mark else ""))
+    return doc if isinstance(doc, dict) else {}
+
+
+def _in_git_tree(path: Path) -> bool:
+    return any((d / ".git").exists() for d in path.resolve().parents)
+
+
 def committed_credentials(path: Path) -> dict[str, dict] | None:
     """{backend id: credential block} from the registry as committed at HEAD, or None when
-    the registry is not inside a git work tree. Raises when it is inside one but untracked,
-    unreadable at HEAD, or its credential blocks differ from the working tree."""
+    the registry is not part of a commit (outside any git work tree, or not in HEAD's tree).
+    When it IS in HEAD it fails closed: credential blocks differing from the working tree
+    raise. When git cannot be run at all and a `.git` ancestor exists, it raises too.
+    Removing the registry from HEAD is itself a commit, attributable like any edit."""
+    fail = CredError(f"cannot determine whether the backend registry {path} is committed — "
+                     f"refusing (credential locations are read from the committed registry)")
     try:
-        inside = _git(path, "rev-parse", "--is-inside-work-tree")
+        top = _git(path, "rev-parse", "--show-toplevel")
+        if top.returncode != 0:
+            if "not a git repository" in top.stderr:
+                return None
+            raise fail
+        listed = _git(path, "ls-tree", "--name-only", "HEAD", "--", f"./{path.name}")
+        if listed.returncode != 0:
+            if _git(path, "rev-parse", "--verify", "-q", "HEAD").returncode != 0:
+                return None  # unborn repository: nothing is committed yet
+            raise fail
+        if not listed.stdout.strip():
+            return None
+        shown = _git(path, "show", f"HEAD:./{path.name}")
     except (OSError, subprocess.SubprocessError):
+        if _in_git_tree(path):
+            raise fail
         return None
-    if inside.returncode != 0 or inside.stdout.strip() != "true":
-        return None
-    shown = _git(path, "show", f"HEAD:./{path.name}")
     if shown.returncode != 0:
-        raise CredError(f"the backend registry {path} is in a git work tree but not committed at "
-                        f"HEAD — credential locations are read only from the committed registry")
-    head = yaml.safe_load(shown.stdout) or {}
-    work = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+        raise fail
+    head = _yaml(shown.stdout, f"{path} at HEAD")
+    work = _yaml(path.read_text(encoding="utf-8"), str(path))
 
     def creds(doc: dict) -> dict[str, dict]:
         return {b.get("id"): b.get("credential") for b in (doc.get("backends") or [])
@@ -168,15 +199,24 @@ def registered_files(path: Path, backends: list[dict]) -> set[str]:
 def _read_var(fpath: str, var: str) -> str | None:
     """The value of `var` in a KEY=VALUE file, or None when the file lacks it or is absent.
     Raises (with no content in the message) when the file is unsafe to read."""
-    p = Path(fpath)
+    if not os.path.lexists(fpath):
+        return None
+    if os.path.realpath(fpath) != fpath:
+        raise CredError(f"{fpath}: is or passes through a symlink — register the real path itself")
     try:
-        st = os.lstat(p)
+        fd = os.open(fpath, os.O_RDONLY | os.O_NOFOLLOW | getattr(os, "O_NONBLOCK", 0))
     except FileNotFoundError:
         return None
     except PermissionError:
         raise CredError(f"{fpath}: not readable by this user")
-    if stat.S_ISLNK(st.st_mode):
-        raise CredError(f"{fpath}: is a symlink — register the target path itself")
+    except OSError:
+        raise CredError(f"{fpath}: cannot be opened safely (symlink or special file)")
+    with os.fdopen(fd, "rb") as fh:
+        return _parse_var(fpath, var, fh)
+
+
+def _parse_var(fpath: str, var: str, fh) -> str | None:
+    st = os.fstat(fh.fileno())
     if not stat.S_ISREG(st.st_mode):
         raise CredError(f"{fpath}: not a regular file")
     if st.st_mode & (stat.S_IWGRP | stat.S_IWOTH):
@@ -185,10 +225,7 @@ def _read_var(fpath: str, var: str) -> str | None:
         raise CredError(f"{fpath}: owned by uid {st.st_uid}, not root or the caller")
     if st.st_size > MAX_FILE:
         raise CredError(f"{fpath}: larger than {MAX_FILE} bytes — not a credential env file")
-    try:
-        text = p.read_text(encoding="utf-8", errors="replace")
-    except PermissionError:
-        raise CredError(f"{fpath}: not readable by this user")
+    text = fh.read(MAX_FILE + 1).decode("utf-8", errors="replace")
     pat = re.compile(rf"^\s*(?:export\s+)?{re.escape(var)}\s*=(.*)$")
     for line in text.splitlines():
         m = pat.match(line)
@@ -217,14 +254,22 @@ def resolve(backend: dict, path: Path, only_file: str | None = None) -> tuple[st
                             f"(registered: {', '.join(files) or 'none'})")
         files = [only_file]
     elif os.environ.get(var):
-        return var, os.environ[var], f"environment ${var}"
+        return var, _single_line(os.environ[var], f"environment ${var}"), f"environment ${var}"
     for f in files:
         val = _read_var(f, var)
         if val:
-            return var, val, f"file {f}"
+            return var, _single_line(val, f"file {f}"), f"file {f}"
     tried = ([f"${var}"] if only_file is None else []) + files
     raise CredError(f"no value for {var} (backend {bid!r}, registry {path}: credential.env={var}, "
                     f"credential.files={files}) — tried {', '.join(tried)}")
+
+
+def _single_line(val: str, where: str) -> str:
+    """A credential is one line of printable text. A newline or other control character would
+    let the value straddle the line-by-line output mask, so it is refused (not echoed)."""
+    if any(ord(c) < 32 or ord(c) == 127 for c in val):
+        raise CredError(f"value from {where} contains a newline or control character — refusing")
+    return val
 
 
 def _masked(val: str) -> str:
@@ -301,13 +346,20 @@ def main(argv: list[str]) -> int:
             return 0
         if backend.get("approval_required"):
             task = a.task or _focused_task(rc_._roots()[0])
-            if not task or not rc_.open_approval(task, backend["id"]):
+            prop = rc_.open_approval(task, backend["id"]) if task else None
+            if not prop:
                 raise CredError(
                     f"backend {backend['id']!r} is paid: --exec needs an approved, unused proposal "
                     f"for {task or 'the focused task (none focused)'}.\n"
                     f"  bin/fw review propose --task {task or 'T-XXX'} --backend {backend['id']} "
                     f"--why '...' --estimate-cost N   (the operator approves it)")
         var, val, _ = resolve(backend, path, a.source)
+        if backend.get("approval_required"):
+            # One approval, one use: the cost record that consumes the proposal is written
+            # BEFORE the child starts, so a second --exec cannot ride the same approval.
+            rc_.log_cost(task=task, backend=backend["id"], tokens=None, cost=None,
+                         purpose=f"fw review credential --exec: {os.path.basename(cmd[0])}",
+                         proposal_id=prop["id"], evidence=None)
         return run_exec(var, val, cmd)
     except (CredError, rc_.CostError) as e:
         print(f"ERROR: {e}", file=sys.stderr)

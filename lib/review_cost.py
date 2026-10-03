@@ -185,7 +185,11 @@ def load_registry(path: Path | None = None) -> list[dict]:
     path = path or policy_path()
     if not path.is_file():
         raise CostError(f"backend registry not found: {path}")
-    data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    try:
+        data = yaml.safe_load(path.read_text(encoding="utf-8")) or {}
+    except yaml.YAMLError as e:  # T-3766: never echo source text (it may hold a pasted credential)
+        mark = getattr(e, "problem_mark", None)
+        raise CostError(f"backend registry is not valid YAML{f' (line {mark.line + 1})' if mark else ''}: {path}")
     backends = data.get("backends") if isinstance(data, dict) else None
     errs = validate(backends)
     if errs:

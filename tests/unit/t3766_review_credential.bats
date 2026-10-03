@@ -242,3 +242,75 @@ PY
     run bash -c "$(printf '%q' "$BOUNDARY") <<<'$(hook_json "bin/fw review credential openrouter --check --source $REAL_CRED")'"
     [ "$status" -eq 2 ]
 }
+
+# ── round-1 review findings (docs/reports/T-3766-review-codex.md) ────────────
+
+@test "R1-1: a multiline env value is refused and not echoed (it would straddle the line mask)" {
+    export OPENROUTER_API_KEY="$(printf '%s\n%s' "$ENVVAL" "$FILEVAL")"
+    run rc credential openrouter --check
+    [ "$status" -eq 1 ]; [[ "$output" == *"newline or control character"* ]]
+    no_value
+}
+
+@test "R1-1: validation and YAML errors never echo the offending text" {
+    python3 - "$POLICY" "$ENVVAL" <<'PY'
+import sys
+p, v = sys.argv[1], sys.argv[2]; s = open(p).read()
+s = s.replace("      source: env-file", "      source: " + v, 1)
+open(p, "w").write(s)
+PY
+    run rc list-backends
+    [ "$status" -ne 0 ]; no_value
+    printf 'backends: [\n  bad: "%s\n' "$ENVVAL" >> "$POLICY"
+    run rc list-backends
+    [ "$status" -ne 0 ]; [[ "$output" == *"not valid YAML"* ]]; no_value
+}
+
+@test "R1-2: boundary exemption needs this project's fw and stops at --exec" {
+    point_openrouter_at "$REAL_CRED"
+    for c in "../../tmp/fw review credential openrouter --check --source $REAL_CRED" \
+             "/tmp/fw review credential openrouter --check --source $REAL_CRED" \
+             "bin/fw review credential openrouter --exec -- tool --source $REAL_CRED"; do
+        run bash -c "$(printf '%q' "$BOUNDARY") <<<'$(hook_json "$c")'"
+        [ "$status" -eq 2 ] || { echo "not blocked: $c"; false; }
+    done
+    run bash -c "$(printf '%q' "$BOUNDARY") <<<'$(hook_json ".agentic-framework/bin/fw review credential openrouter --check --source $REAL_CRED")'"
+    [ "$status" -eq 0 ]
+}
+
+@test "R1-3: the resolver fails closed when git cannot answer (control: real git resolves)" {
+    git -C "$PROJECT_ROOT" init -q
+    git -C "$PROJECT_ROOT" -c user.email=t@t -c user.name=t add policy/review-backends.yaml
+    git -C "$PROJECT_ROOT" -c user.email=t@t -c user.name=t commit -q -m fixture
+    run rc credential openrouter --check
+    [ "$status" -eq 0 ]
+    mkdir "$TEST_TEMP_DIR/fakebin"
+    printf '#!/bin/sh\necho "fatal: something broke" >&2\nexit 128\n' > "$TEST_TEMP_DIR/fakebin/git"
+    chmod +x "$TEST_TEMP_DIR/fakebin/git"
+    PATH="$TEST_TEMP_DIR/fakebin:$PATH" run python3 "$RC" credential openrouter --check
+    [ "$status" -eq 1 ]; [[ "$output" == *"refusing"* ]]
+    no_value
+    # git missing entirely, with a .git ancestor: refused as well
+    PATH="$TEST_TEMP_DIR/empty" run "$(command -v python3)" "$RC" credential openrouter --check
+    [ "$status" -eq 1 ]; [[ "$output" == *"refusing"* ]]
+}
+
+@test "R1-3: a symlinked parent directory is refused" {
+    mkdir "$TEST_TEMP_DIR/real"; mv "$CRED" "$TEST_TEMP_DIR/real/cred.env"
+    ln -s "$TEST_TEMP_DIR/real" "$TEST_TEMP_DIR/viadir"
+    point_openrouter_at "$TEST_TEMP_DIR/viadir/cred.env"
+    run rc credential openrouter --check
+    [ "$status" -eq 1 ]; [[ "$output" == *"symlink"* ]]
+}
+
+@test "R1-4: one approval covers one --exec (the proposal is consumed before the child runs)" {
+    focus T-9999
+    run rc propose --task T-9999 --backend openrouter --why "fixture" --estimate-cost 1
+    pid="$(echo "$output" | grep -o 'RP-[A-Za-z0-9-]*' | head -1)"
+    run rc approve "$pid" --i-am-human --reason fixture
+    run rc credential openrouter --exec -- true
+    [ "$status" -eq 0 ]
+    grep -q "\"proposal_id\": \"$pid\"" "$PROJECT_ROOT/.context/costs/reviews.jsonl"
+    run rc credential openrouter --exec -- true
+    [ "$status" -eq 1 ]; [[ "$output" == *"needs an approved, unused proposal"* ]]
+}
