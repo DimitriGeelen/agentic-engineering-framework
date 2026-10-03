@@ -264,8 +264,10 @@ def mark_handed_over(msg_id: str, evidence: str | None = None) -> None:
 
 
 def awaiting_handover() -> list[str]:
-    """Flagged messages not yet handed over to the agent."""
-    return [m for m in list_pending_messages() if not is_message_handed_over(m)]
+    """Flagged messages not yet handed over to the agent, and not dropped by
+    the operator (T-3782: lib/sidecar/waiting.py writes <id>.dropped)."""
+    return [m for m in list_pending_messages() if not is_message_handed_over(m)
+            and not (_messages_dir() / f"{m}.dropped").exists()]
 
 
 def is_message_handed_over(msg_id: str) -> bool:

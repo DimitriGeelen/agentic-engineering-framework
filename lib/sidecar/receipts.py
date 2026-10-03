@@ -16,6 +16,10 @@ it off the topic tells the sender, once per state:
                  A `fw sidecar inbox` drain sends no HANDED_OVER: nothing
                  proves where its output went.
     REPLIED      when our agent's `fw sidecar send --in-reply-to` succeeded
+    WAITING_NO_RECIPIENT  T-3782: the injector found no live recipient for it
+                 (lib/sidecar/waiting.py) — carries the reason and the time
+                 it started waiting; on EVERY receive path (direct and hub)
+    DROPPED      T-3782: the operator closed it unhandled, with a reason
 
 Delivery, receiver → sender:
   1. the sender's registered, live receiver: POST /ack {client_msg_id, state,
@@ -50,7 +54,9 @@ from . import circuit, direct, lifecycle, outbox, receiver
 RECEIVED = "RECEIVED"
 HANDED_OVER = "HANDED_OVER"
 REPLIED = "REPLIED"
-STATES = (RECEIVED, HANDED_OVER, REPLIED)
+WAITING = "WAITING_NO_RECIPIENT"   # T-3782
+DROPPED = "DROPPED"                # T-3782
+STATES = (RECEIVED, HANDED_OVER, REPLIED, WAITING, DROPPED)
 KIND = "receipt"
 
 
@@ -108,7 +114,8 @@ def _me() -> str:
 
 # ── sender side ─────────────────────────────────────────────────────────────
 
-def record_from_peer(client_msg_id: str, state: str, peer: str | None, via: str) -> bool:
+def record_from_peer(client_msg_id: str, state: str, peer: str | None, via: str,
+                     note: str | None = None, since: str | None = None) -> bool:
     """Record a receipt for a message WE sent through the outbox to `peer`.
     False (nothing written) for an unknown id, a state that is not a receipt,
     a peer that is not the addressee, or a state already recorded."""
@@ -125,8 +132,13 @@ def record_from_peer(client_msg_id: str, state: str, peer: str | None, via: str)
     if any(r.get("client_msg_id") == client_msg_id and r.get("state") == state
            for r in read_ledger()):
         return False
-    _append(ledger_path(), {"client_msg_id": client_msg_id, "state": state,
-                            "by": f"peer:{direct._name(peer)}", "via": via, "ts": _now()})
+    row = {"client_msg_id": client_msg_id, "state": state,
+           "by": f"peer:{direct._name(peer)}", "via": via, "ts": _now()}
+    if note:
+        row["note"] = str(note)[:300]
+    if since:
+        row["since"] = str(since)[:64]
+    _append(ledger_path(), row)
     return True
 
 
@@ -135,6 +147,9 @@ def record_from_peer(client_msg_id: str, state: str, peer: str | None, via: str)
 def _already(client_msg_id: str, state: str) -> bool:
     return any(r.get("client_msg_id") == client_msg_id and r.get("state") == state
                and r.get("ok") for r in read_sent())
+
+
+already = _already
 
 
 def origin(client_msg_id: str) -> dict | None:
@@ -155,14 +170,16 @@ def origin(client_msg_id: str) -> dict | None:
 
 
 def _hub_post(client_msg_id: str, state: str, sender: str, sender_circuit: str | None,
-              conversation_id: str | None, runner=subprocess.run) -> tuple[bool, str]:
+              conversation_id: str | None, runner=subprocess.run,
+              note: str | None = None, since: str | None = None) -> tuple[bool, str]:
     try:
         topic = circuit.topic_for_name(sender_circuit or sender)
     except circuit.CircuitError as e:
         return False, f"no topic for {sender!r}: {e}"
     me = _me()
     body = (f"[sidecar receipt] {state} for message {client_msg_id} from {me}. "
-            "Automatic delivery receipt — no action or reply needed.")
+            + (f"{note}" + (f" (since {since}). " if since else ". ") if note else "")
+            + "Automatic delivery receipt — no action or reply needed.")
     argv = ["termlink", "channel", "post", topic, "--json", "--ensure-topic",
             "--msg-type", "sidecar.receipt",
             "--client-msg-id", f"rcpt-{state.lower()}-{client_msg_id}"[:128],
@@ -170,8 +187,12 @@ def _hub_post(client_msg_id: str, state: str, sender: str, sender_circuit: str |
             "--metadata", f"receipt_for={client_msg_id}",
             "--metadata", f"receipt_state={state}",
             "--metadata", f"from_agent={me}",
-            "--metadata", f"conversation_id={conversation_id or '-'}",
-            "--payload", body]
+            "--metadata", f"conversation_id={conversation_id or '-'}"]
+    if note:
+        argv += ["--metadata", f"receipt_note={str(note)[:200]}"]
+    if since:
+        argv += ["--metadata", f"receipt_since={since}"]
+    argv += ["--payload", body]
     try:
         proc = runner(argv, capture_output=True, text=True, timeout=15)
     except (OSError, subprocess.SubprocessError) as e:
@@ -181,7 +202,8 @@ def _hub_post(client_msg_id: str, state: str, sender: str, sender_circuit: str |
     return True, topic
 
 
-def send(env: dict, state: str, *, by: str, runner=subprocess.run) -> dict:
+def send(env: dict, state: str, *, by: str, runner=subprocess.run,
+         note: str | None = None, since: str | None = None) -> dict:
     """Tell the sender of hub-topic message `env` that it reached `state`.
     Once per (message, state). Returns the receipts-sent row."""
     cid = str(env.get("client_msg_id") or "")
@@ -189,6 +211,10 @@ def send(env: dict, state: str, *, by: str, runner=subprocess.run) -> dict:
     row = {"client_msg_id": cid, "state": state, "by": by, "to": sender,
            "to_circuit": env.get("from_circuit"),
            "conversation_id": env.get("conversation_id"), "ts": _now()}
+    if note:
+        row["note"] = str(note)[:300]
+    if since:
+        row["since"] = since
     if state not in STATES or not cid or not sender:
         row.update(ok=False, via=None, error="not a receipt-able message (no id or sender)")
         _append(sent_path(), row)
@@ -199,8 +225,12 @@ def send(env: dict, state: str, *, by: str, runner=subprocess.run) -> dict:
     entry = lifecycle.lookup(str(sender))
     if entry and entry.get("live"):
         try:
-            status, resp = direct.post_with_token(
-                entry, "/ack", {"client_msg_id": cid, "state": state, "peer": _me()})
+            payload = {"client_msg_id": cid, "state": state, "peer": _me()}
+            if note:
+                payload["note"] = str(note)[:300]
+            if since:
+                payload["since"] = since
+            status, resp = direct.post_with_token(entry, "/ack", payload)
             ok = status == 200 and resp.get("recorded") is True
             via = "direct"
             err = None if ok else f"HTTP {status} {resp}"[:200]
@@ -208,7 +238,7 @@ def send(env: dict, state: str, *, by: str, runner=subprocess.run) -> dict:
             err = f"receiver unreachable: {e}"[:200]
     if not ok:
         hub_ok, detail = _hub_post(cid, state, str(sender), env.get("from_circuit"),
-                                   env.get("conversation_id"), runner)
+                                   env.get("conversation_id"), runner, note=note, since=since)
         if hub_ok:
             ok, via, err = True, f"hub:{detail}", None
         else:

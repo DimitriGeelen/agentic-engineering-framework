@@ -464,9 +464,12 @@ def test_received_then_replied_ledger_order(env):
                        body="answer", conversation_id="conv-9", in_reply_to=cid)
     assert back["state"] == direct.RECEIVED
     env.use(a)
-    states = [r["state"] for r in direct.history(cid)]
+    # T-3782: B's real receiver has no TermLink session, so it may also tell A
+    # WAITING_NO_RECIPIENT (from its on-store inject thread, at any point in
+    # this sequence). That row is the T-3782 receipt, not part of this order.
+    states = [r["state"] for r in direct.history(cid) if r["state"] != direct.WAITING]
     assert states == [direct.SENT, direct.RECEIVED, direct.REPLIED]
-    assert direct.history(cid)[-1]["by"] == "own-receiver"
+    assert [r for r in direct.history(cid) if r["state"] != direct.WAITING][-1]["by"] == "own-receiver"
 
 
 def test_bad_token_rejected_never_stored_never_injected(env):

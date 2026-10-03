@@ -112,12 +112,14 @@ class ReceiverHandler(http.server.BaseHTTPRequestHandler):
         if payload is None:
             return
         cid, state = str(payload.get("client_msg_id", "")), str(payload.get("state", ""))
-        ok = direct.confirm_from_peer(cid, state, payload.get("peer"))
+        note, since = payload.get("note"), payload.get("since")
+        ok = direct.confirm_from_peer(cid, state, payload.get("peer"), note=note, since=since)
         if not ok:
             # T-3684: a receipt (RECEIVED / HANDED_OVER / REPLIED) for a
             # consult we sent over the HUB topic — recorded only if our
             # outbox sent that id to that peer.
-            ok = receipts.record_from_peer(cid, state, payload.get("peer"), via="direct")
+            ok = receipts.record_from_peer(cid, state, payload.get("peer"), via="direct",
+                                           note=note, since=since)
         self._reply(200 if ok else 404,
                     {"recorded": ok, "client_msg_id": payload.get("client_msg_id")})
 

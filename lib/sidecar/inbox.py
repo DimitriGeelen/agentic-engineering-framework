@@ -218,10 +218,17 @@ def pending(agent: str | None = None, *, reader=default_reader,
                 # our topic by a peer with no reachable receiver. It is ledger
                 # data, never a consult: recorded (only if we really sent that
                 # id to that peer) and never surfaced or counted as unread.
-                from . import receipts
-                receipts.record_from_peer(str(meta.get("receipt_for") or ""),
-                                          str(meta.get("receipt_state") or ""),
-                                          meta.get("from_agent"), via=f"hub:{topic}")
+                from . import direct, receipts
+                rf, rs = str(meta.get("receipt_for") or ""), str(meta.get("receipt_state") or "")
+                note, since = meta.get("receipt_note"), meta.get("receipt_since")
+                if not receipts.record_from_peer(rf, rs, meta.get("from_agent"),
+                                                 via=f"hub:{topic}", note=note, since=since):
+                    # T-3782: a receipt for a DIRECT-path send whose peer could
+                    # not reach our receiver comes here too; the direct ledger
+                    # applies the same "only what we sent, only from its
+                    # addressee" rule.
+                    direct.confirm_from_peer(rf, rs, meta.get("from_agent"),
+                                             note=note, since=since)
                 continue
             client_msg_id = meta.get("client_msg_id")
             if client_msg_id and client_msg_id in seen_set:

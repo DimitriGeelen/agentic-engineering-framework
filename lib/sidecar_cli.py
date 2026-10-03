@@ -12,6 +12,8 @@ it can run, and a verb it can be TOLD to run in a dispatch prompt.
     fw sidecar deliver-pending | acks         (T-3693)
     fw sidecar start|stop|ensure [--all]      (T-3684/T-3685: receiver + supervised watcher)
     fw sidecar liveness | latency | tick      (T-3685 / T-3684)
+    fw sidecar waiting [--json]               (T-3782: messages waiting for a recipient)
+    fw sidecar recover <id> | drop <id> --reason "..."   (T-3782, operator only)
 
 Delivery is not reimplemented here — `send` calls slice 1's outbox, slice 2's
 deliver() and slice 3's transport and probe, so the ack ledger, the hub
@@ -30,6 +32,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 from lib.sidecar import circuit, delivery, dm, e2e, inbox, outbox, retry, status as status_mod  # noqa: E402
 from lib.sidecar import termlink_transport as transport, receiver, lifecycle, adapter, direct, inject  # noqa: E402
 from lib.sidecar import latency as latency_mod, receipts, watcher  # noqa: E402
+from lib.sidecar import waiting as waiting_mod  # noqa: E402
 
 
 def cmd_whoami(args) -> int:
@@ -791,6 +794,84 @@ def cmd_acks(args) -> int:
     return 0
 
 
+def cmd_waiting(args) -> int:
+    """T-3782: every message waiting for a recipient, both directions."""
+    items = waiting_mod.open_items()
+    if args.json:
+        print(json.dumps({"items": items, "warn_hours": waiting_mod.warn_hours(),
+                          "overdue_hours": waiting_mod.overdue_hours()}, indent=2, default=str))
+    else:
+        print(waiting_mod.render(items))
+    return 0
+
+
+def _operator(args, verb: str) -> str | None:
+    """Who is acting, or None when refused. Operator verbs (T-3782): refused
+    under CLAUDECODE=1 unless --i-am-human (recorded as agent-override);
+    Watchtower posts --from-watchtower with CLAUDECODE stripped. --from-watchtower
+    does NOT lift the refusal for an agent: the agent shell is the one place
+    it must not be accepted from."""
+    if os.environ.get("CLAUDECODE") == "1":
+        if not args.i_am_human:
+            print(f"fw sidecar {verb}: operator-only — refused under CLAUDECODE=1. The operator "
+                  f"runs it, or uses the Recover / Drop buttons on Watchtower /approvals. "
+                  f"Override for scripts and tests: --i-am-human (recorded).", file=sys.stderr)
+            return None
+        return "agent-override"
+    if args.from_watchtower:
+        return "watchtower"
+    return "human"
+
+
+def cmd_recover(args) -> int:
+    by = _operator(args, "recover")
+    if by is None:
+        return 2
+    try:
+        row = waiting_mod.recover(args.id, by=by)
+    except waiting_mod.OperatorRefusal as e:
+        print(f"fw sidecar recover: {e}", file=sys.stderr)
+        return 1
+    if args.json:
+        print(json.dumps(row, indent=2))
+        return 0
+    print(f"recover: started {row['termlink_session']} (claude-fw --termlink, wrapper pid "
+          f"{row['wrapper_pid']}) for message {row['id']} from {row.get('peer')}, "
+          f"conversation {row.get('conversation_id') or '-'}")
+    print(f"  watch:  termlink attach {row['termlink_session']}")
+    print(f"  log:    {row['log']}")
+    print("  HANDED_OVER is recorded when the new session's transcript shows the message "
+          f"(within {waiting_mod.RECOVER_CONFIRM_S:.0f}s); until then it stays listed.")
+    return 0
+
+
+def cmd_drop(args) -> int:
+    by = _operator(args, "drop")
+    if by is None:
+        return 2
+    try:
+        row = waiting_mod.drop(args.id, args.reason or "", by=by)
+    except waiting_mod.OperatorRefusal as e:
+        print(f"fw sidecar drop: {e}", file=sys.stderr)
+        return 1
+    if args.json:
+        print(json.dumps(row, indent=2))
+        return 0
+    told = ""
+    if row["side"] == "inbound":
+        told = (" — sender told (DROPPED receipt)" if row.get("sender_told")
+                else f" — sender NOT told: {row.get('sender_told_via')}")
+    print(f"drop: closed {row['side']} message {row['id']} ({row.get('peer')}): "
+          f"{row['reason']}{told}")
+    return 0
+
+
+def cmd_recover_finalize(args) -> int:
+    row = waiting_mod.finalize_recover(args.id, args.token)
+    print(json.dumps(row))
+    return 0
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(prog="fw sidecar",
                                      description=__doc__.split("\n")[0])
@@ -970,6 +1051,30 @@ def build_parser() -> argparse.ArgumentParser:
 
     tk_ = sub.add_parser("tick", help="run one watcher tick now, in the foreground")
     tk_.set_defaults(func=cmd_tick)
+
+    wt_ = sub.add_parser("waiting", help="messages waiting for a recipient, both directions, "
+                         "until handed over, replied or dropped (T-3782)")
+    wt_.add_argument("--json", action="store_true")
+    wt_.set_defaults(func=cmd_waiting)
+
+    for name, func, hlp in (
+            ("recover", cmd_recover, "operator: start this project's agent (claude-fw "
+             "--termlink) with a waiting message as its first prompt (T-3782)"),
+            ("drop", cmd_drop, "operator: close a waiting message unhandled, with a reason; "
+             "the sender is told (T-3782)")):
+        op = sub.add_parser(name, help=hlp)
+        op.add_argument("id", help="client_msg_id (or a unique prefix of 8+ characters)")
+        if name == "drop":
+            op.add_argument("--reason", required=True)
+        op.add_argument("--json", action="store_true")
+        op.add_argument("--i-am-human", action="store_true", dest="i_am_human")
+        op.add_argument("--from-watchtower", action="store_true", dest="from_watchtower")
+        op.set_defaults(func=func)
+
+    rfz_ = sub.add_parser("recover-finalize", help=argparse.SUPPRESS)
+    rfz_.add_argument("id")
+    rfz_.add_argument("--token", required=True)
+    rfz_.set_defaults(func=cmd_recover_finalize)
 
     return parser
 

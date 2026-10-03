@@ -1,0 +1,21 @@
+id: lib/sidecar/waiting.py
+name: waiting
+type: script
+subsystem: framework-core
+location: lib/sidecar/waiting.py
+tags: []
+
+purpose: "arc-011 sidecar — no message goes unnoticed (T-3782, T-3751 2b amendment)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-03
+created_by: unknown

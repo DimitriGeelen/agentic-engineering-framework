@@ -44,6 +44,8 @@ REPLIED = "REPLIED"
 UNDELIVERABLE = "UNDELIVERABLE"
 REJECTED = "REJECTED"
 ESCALATED = "ESCALATED"
+WAITING = "WAITING_NO_RECIPIENT"   # T-3782: peer has the message, no live agent to take it
+DROPPED = "DROPPED"                # T-3782: peer's operator closed it unhandled
 NON_SUCCESS = frozenset({UNDELIVERABLE, REJECTED, ESCALATED})
 
 #: A message's state is the HIGHEST-ranked row it has, not the newest. The
@@ -54,8 +56,12 @@ NON_SUCCESS = frozenset({UNDELIVERABLE, REJECTED, ESCALATED})
 #: sweep would escalate a message that was already handled.
 #: ESCALATED ranks below HANDED_OVER: a late hand-over is the truth arriving
 #: late, and it supersedes the escalation (both rows stay in the ledger).
-RANK = {SENT: 0, UNDELIVERABLE: 1, REJECTED: 1, RECEIVED: 2, ESCALATED: 3,
-        HANDED_OVER: 4, REPLIED: 5}
+#: T-3782: WAITING sits between RECEIVED and ESCALATED (the peer holds it and
+#: says why it cannot be taken; the deadline still escalates it), DROPPED above
+#: ESCALATED and below HANDED_OVER (an operator closure; a late hand-over is
+#: still the truth arriving late).
+RANK = {SENT: 0, UNDELIVERABLE: 1, REJECTED: 1, RECEIVED: 2, WAITING: 2.5, ESCALATED: 3,
+        DROPPED: 3.5, HANDED_OVER: 4, REPLIED: 5}
 
 DEFAULT_HANDOVER_DEADLINE_S = 900   # 15 min — the retry ladder's first escalation rung
 DEFAULT_RETRIES = 3
@@ -232,7 +238,8 @@ def _first(client_msg_id: str) -> dict | None:
     return rows[0] if rows and rows[0].get("state") == SENT else None
 
 
-def confirm_from_peer(client_msg_id: str, state: str, peer: str | None) -> bool:
+def confirm_from_peer(client_msg_id: str, state: str, peer: str | None,
+                      note: str | None = None, since: str | None = None) -> bool:
     """CONFIRM-2 arrived at our receiver: record HANDED_OVER for a message we
     sent.
 
@@ -247,11 +254,15 @@ def confirm_from_peer(client_msg_id: str, state: str, peer: str | None) -> bool:
     late, and the ledger keeps both rows.
     """
     sent = _first(client_msg_id)
-    if state != HANDED_OVER or sent is None or not peer or _name(peer) != _name(sent.get("target")):
+    if state not in (HANDED_OVER, WAITING, DROPPED) or sent is None or not peer \
+            or _name(peer) != _name(sent.get("target")):
         return False
     if latest_state(client_msg_id) in (HANDED_OVER, REPLIED):
         return False
-    record(client_msg_id, HANDED_OVER, by=f"peer-receiver:{peer}")
+    if state != HANDED_OVER and any(r.get("state") == state for r in history(client_msg_id)):
+        return False   # T-3782: one WAITING / DROPPED row per message
+    record(client_msg_id, state, by=f"peer-receiver:{peer}",
+           note=str(note)[:300] if note else None, since=str(since)[:64] if since else None)
     return True
 
 
@@ -295,7 +306,7 @@ def escalate_expired(now: str | None = None) -> list[str]:
     now_dt = datetime.fromisoformat(now) if now else _now()
     flipped = []
     for cid, row in latest().items():
-        if row.get("state") != RECEIVED:
+        if row.get("state") not in (RECEIVED, WAITING):
             continue
         deadline = row.get("deadline")
         if deadline and now_dt > datetime.fromisoformat(deadline):

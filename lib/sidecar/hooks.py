@@ -191,7 +191,11 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
     # into an interactive session.
     if me.get("headless"):
         return []
-    waiting = [i for i in receiver.awaiting_handover() if not _being_finalized(i, now)]
+    from . import waiting as waiting_mod
+    # T-3782: a message being recovered is the recovered session's first
+    # prompt already; it is not surfaced a second time here.
+    waiting = [i for i in receiver.awaiting_handover() if not _being_finalized(i, now)
+               and not waiting_mod.recovering(i)]
     ids = [i for i in waiting if inject.is_claimed_for(i, me)]
     # A project where the injector has DECIDED no TermLink session is
     # registered (plain terminals only) has no injection target at all; the
