@@ -155,6 +155,10 @@ def validate(backends: object) -> list[str]:
         bn = b.get("binary")
         if bn is not None and (not isinstance(bn, str) or not BINARY_RE.match(bn) or "/../" in bn):
             errs.append(f"{bid}: binary must be an absolute path matching {BINARY_RE.pattern}")
+        # T-3766: where the backend's credential lives (env var + files, or the CLI's own
+        # login) — a location, never a value. review_credential owns the rules.
+        if "credential" in b:
+            errs += _credential_mod().validate_credential(str(bid), b["credential"])
     kv: dict = {}
     for b in backends:
         if isinstance(b, dict) and b.get("worker_kind") and b.get("vendor"):
@@ -169,6 +173,12 @@ def validate(backends: object) -> list[str]:
             errs.append(f"{pid}: is pinned paid + approval_required (operator ruling "
                         f"2026-09-30) and cannot be reclassified")
     return errs
+
+
+def _credential_mod():
+    sys.path.insert(0, str(Path(__file__).resolve().parent))
+    import review_credential
+    return review_credential
 
 
 def load_registry(path: Path | None = None) -> list[dict]:
@@ -437,8 +447,12 @@ def audit_lines(weeks: int = 4) -> list[tuple[str, str]]:
     """(level, message) for `fw audit`. Levels: PASS WARN FAIL INFO."""
     out: list[tuple[str, str]] = []
     try:
-        load_registry()
+        regs = load_registry()
         out.append(("PASS", f"Review-backend registry valid ({policy_path().name})"))
+        nocred = [b["id"] for b in regs if not b.get("credential")]
+        if nocred:  # T-3766: a backend with no credential location sends agents to ask the operator
+            out.append(("WARN", f"Review backend(s) with no `credential:` block: {', '.join(nocred)} "
+                                f"— record where the credential lives (fw review credential)"))
     except CostError as e:
         out.append(("FAIL", str(e).splitlines()[0] + " — " + "; ".join(l.strip() for l in str(e).splitlines()[1:3])))
     recs, bad = read_jsonl(ledger("reviews.jsonl"))
@@ -510,6 +524,9 @@ def _bool(s: str) -> bool:
 
 
 def main(argv: list[str] | None = None) -> int:
+    argv = sys.argv[1:] if argv is None else argv
+    if argv[:1] == ["credential"]:  # T-3766: own parser (--exec takes a raw command tail)
+        return _credential_mod().main(argv[1:])
     ap = argparse.ArgumentParser(prog="fw review", description="Review/dispatch cost (T-3583, T-3586)")
     sub = ap.add_subparsers(dest="cmd")
 
@@ -546,6 +563,7 @@ def main(argv: list[str] | None = None) -> int:
     st.add_argument("--id", required=True); st.add_argument("--class", dest="cls", choices=CLASSES)
     st.add_argument("--approval-required", type=_bool); st.add_argument("--i-am-human", action="store_true")
 
+    sub.add_parser("credential", help="resolve a backend's credential (T-3766): <backend> [--check] [--exec -- cmd...]")
     sub.add_parser("audit")
     hk = sub.add_parser("check-command"); hk.add_argument("--task", default="")
 

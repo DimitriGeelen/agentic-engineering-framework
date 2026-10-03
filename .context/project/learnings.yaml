@@ -5080,3 +5080,9 @@ X'` returning empty group."
   task: T-3766
   date: 2026-10-03
   context: Added via context agent
+- id: L-691
+  learning: "Vendor credentials are resolved by bin/fw review credential <backend> (--check masked, --exec -- cmd); the location is the credential: block in policy/review-backends.yaml. Do not source /root/*.env by hand (the boundary gate blocks it) and never ask the operator for a credential the registry names."
+  source: P-001
+  task: T-3766
+  date: 2026-10-03
+  context: Added via context agent

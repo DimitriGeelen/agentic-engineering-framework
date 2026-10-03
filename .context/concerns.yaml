@@ -1675,3 +1675,35 @@
   - OBS-392
   - T-3328
   follow_up_task: null
+- id: OBS-597
+  type: structural
+  severity: medium
+  surface: 'vendor credential location (OpenRouter key and other review backends)'
+  detected_in: T-3766
+  symptom: 'Agents repeatedly asked the operator for the OpenRouter key, or where it
+    lives, although the framework set it up (T-2418, /root/.litellm-openrouter.env).
+    Recurrences: 2026-10-01 (T-3670, L-687) and twice on 2026-10-03 (T-3751).'
+  root_cause: 'The credential LOCATION lived only in prose: a commit diff, a report
+    describing a different store (T-375), and a behavioural learning (L-687) that
+    said "recall first" without naming the path. Nothing machine-readable answered
+    "where is the key for backend X", and the project-boundary gate blocked
+    verifying a guess, which nudged toward asking.'
+  prevention: 'T-3766: `credential:` block per backend in policy/review-backends.yaml
+    (validated; value-looking strings refused); one resolver `fw review credential`
+    (env, then registered files; never prints the value; reads only the committed
+    registry); the boundary hook exempts exactly the registered files as --source
+    of the resolver; CLAUDE.md §Review and Dispatch Cost Ruling says never ask the
+    operator for a credential the registry names; fw audit WARNs on a backend with
+    no credential block. Pinned by tests/unit/t3766_review_credential.bats.'
+  blast_radius: every review/dispatch runner needing a vendor credential, and the
+    operator's time on each recurrence.
+  observed: '2026-10-03'
+  status: mitigated
+  related:
+  - T-3766
+  - T-3751
+  - T-3670
+  - T-2418
+  - L-687
+  - L-690
+  follow_up_task: null

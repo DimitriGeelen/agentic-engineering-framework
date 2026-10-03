@@ -35,6 +35,13 @@
 # codex, opencode and antigravity are "harness" kinds: their runtime runs them read-only in a
 # `git archive` export of the reviewed revision and records their printed verdict on their behalf
 # (docs/harnesses.md).
+#
+# credential (T-3766): WHERE the backend's credential lives — never the value (a value-looking
+# string is refused). `source: env-file` + `env:` (the variable a runner expects) + optional
+# `files:` (ordered KEY=VALUE files to read it from); `source: cli-login` or `none` + `note:`
+# when the CLI authenticates itself. Resolve with `bin/fw review credential <id> --check`
+# (masked) or `--exec -- <cmd>`. The resolver reads the credential blocks as COMMITTED at HEAD.
+# Never ask the operator for a credential this registry names.
 
 backends:
   - id: claude-code
@@ -46,6 +53,9 @@ backends:
     description: "Claude Code session with subscription harness"
     worker_kind: claude
     vendor: anthropic
+    credential:
+      source: cli-login
+      note: "Claude Code's own login (claude /login; OAuth state in ~/.claude) — the CLI authenticates itself"
     match:
       - '\bclaude\s+(-p|--print)\b'
       - '--worker-kind[= ]claude\b'
@@ -59,6 +69,9 @@ backends:
     description: "Codex review via subscription account (ChatGPT login, ~/.codex/auth.json)"
     worker_kind: codex
     vendor: openai
+    credential:
+      source: cli-login
+      note: "codex login with the ChatGPT account (~/.codex/auth.json) — the CLI authenticates itself"
     model: gpt-6-astra
     binary: /root/.nvm/versions/node/v22.22.1/bin/codex
     match:
@@ -74,6 +87,9 @@ backends:
     description: "Z.ai opencode via subscription coding plan"
     worker_kind: opencode
     vendor: zai
+    credential:
+      source: cli-login
+      note: "opencode auth login with the Z.ai coding plan (opencode's own auth store) — the CLI authenticates itself"
     model: zai-coding-plan/glm-5.2
     binary: /root/.opencode/bin/opencode
     match:
@@ -89,6 +105,9 @@ backends:
     description: "Review run on the operator's local hardware"
     worker_kind: ollama-loop
     vendor: ollama-local
+    credential:
+      source: none
+      note: "local Ollama on the operator's hardware — no credential"
 
   - id: openrouter
     name: "OpenRouter (pay-per-use)"
@@ -97,10 +116,16 @@ backends:
     approval_required: true
     cost_estimate_method: tokens_estimated
     description: "OpenRouter API for on-demand model access; requires approval per request"
+    credential:
+      source: env-file
+      env: OPENROUTER_API_KEY
+      files:
+        - /root/.litellm-openrouter.env
     match:
       - 'https?://([a-z0-9-]+\.)*openrouter\.ai'
       - '(^|[;&|]\s*|/)openrouter\s'
       - '\$\{?OPENROUTER_API_KEY'
+      - '\breview\s+credential\s+openrouter\b.*--exec\b'
 
   - id: antigravity
     name: "Google Antigravity (agy CLI)"
@@ -111,6 +136,9 @@ backends:
     description: "Antigravity 1.1.15 CLI on the operator's Google account; runs as user dimitri-mint-dev via sudo -n -u dimitri-mint-dev -H <binary> -p ... --mode plan --sandbox (operator approved 2026-09-30; the absolute path is needed because sudo's secure_path does not include ~/.local/bin). Spare panel seat (after claude, codex, opencode in registry order)."
     worker_kind: antigravity
     vendor: google
+    credential:
+      source: cli-login
+      note: "agy CLI signed in to the operator's Google account as user dimitri-mint-dev — the CLI authenticates itself"
     binary: /home/dimitri-mint-dev/.local/bin/agy
     match:
       - "\\bagy\\b"

@@ -1719,6 +1719,8 @@ Every review or dispatch records its cost, internal ones included. Cost is never
 
 **The registry is `policy/review-backends.yaml`: operator-owned and extensible.** A new backend is a data edit; no code lists vendors. An agent may add an *internal* backend (`bin/fw review backend add … --class internal`, logged to `.context/costs/registry-changes.jsonl`). Adding a paid one, or changing any `cost_class` / `approval_required` (`bin/fw review backend set`), is an operator action. `openrouter` is pinned paid + approval-required: a registry that reclassifies it does not load. There is no Watchtower surface for paid proposals yet; approval is the operator's CLI.
 
+**Credentials are a registry fact (T-3766).** Each backend's `credential:` block in `policy/review-backends.yaml` names where its credential lives (env var + files, or the CLI's own login), never the value. Resolve it with `bin/fw review credential <backend> --check` (masked) or `--exec -- <cmd>` (paid backends still need an approved proposal). **Never ask the operator for a credential the registry names.** This registry is the source of truth for runners; `web/secrets_store.py` is Watchtower's separate UI key store.
+
 ## Auto-Restart (T-179)
 
 When context budget hits critical, `checkpoint.sh` auto-generates a handover and writes `.context/working/.restart-requested`. If the user started their session via `claude-fw` (instead of `claude`), the wrapper detects this signal on exit and auto-restarts with `claude -c`. The `SessionStart:resume` hook then injects handover context into the fresh session.
