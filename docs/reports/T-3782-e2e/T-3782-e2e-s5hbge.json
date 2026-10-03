@@ -1,0 +1,74 @@
+{
+  "run": "s5hbge",
+  "a": "/tmp/t3684-e2e-910728-1791065558/t3782a-s5hbge",
+  "b": "/tmp/t3684-e2e-910728-1791065558/t3782b-s5hbge",
+  "u": "6ff14dce-d696-4bb9-b6d7-1d44e3a0d6be",
+  "n": "4de807e3-a628-49af-85ef-5a24a91fb38d",
+  "sender_waiting_rows": [
+    {
+      "client_msg_id": "6ff14dce-d696-4bb9-b6d7-1d44e3a0d6be",
+      "state": "WAITING_NO_RECIPIENT",
+      "by": "peer-receiver:t3782b-s5hbge",
+      "ts": "2026-10-03T22:13:42.904107+00:00",
+      "note": "no live recipient: URGENT bypass refused: only registered session tl-4fwdduci has no record and runs no claude that could be seen",
+      "since": "2026-10-03T22:13:42.886295+00:00"
+    },
+    {
+      "client_msg_id": "4de807e3-a628-49af-85ef-5a24a91fb38d",
+      "state": "WAITING_NO_RECIPIENT",
+      "by": "peer-receiver:t3782b-s5hbge",
+      "ts": "2026-10-03T22:13:43.134846+00:00",
+      "note": "no live recipient: URGENT bypass refused: only registered session tl-4fwdduci has no record and runs no claude that could be seen",
+      "since": "2026-10-03T22:13:43.131989+00:00"
+    }
+  ],
+  "sender_told_within_s": 2.0,
+  "pushes": [
+    "URGENT Peer message waiting in t3782b-s5hbge|From t3782a-s5hbge, conversation t3684-t3782b-s5hbge, waiting 0.0 h (no-live-recipient). Recover: fw sidecar recover 6ff14dce-d696-4bb9-b6d7-1d44e3a0d6be | drop: fw sidecar drop 6ff14dce-d696-4bb9-b6d7-1d44e3a0d6be --reason ...",
+    "Peer message waiting in t3782b-s5hbge|From t3782a-s5hbge, conversation t3684-t3782b-s5hbge, waiting 0.0 h (no-live-recipient). Recover: fw sidecar recover 4de807e3-a628-49af-85ef-5a24a91fb38d | drop: fw sidecar drop 4de807e3-a628-49af-85ef-5a24a91fb38d --reason ..."
+  ],
+  "handover_has_section": true,
+  "negative_control_listed_s_after_send": 162.5,
+  "negative_control_listed": {
+    "side": "inbound",
+    "id": "4de807e3-a628-49af-85ef-5a24a91fb38d",
+    "key": "in:4de807e3-a628-49af-85ef-5a24a91fb38d",
+    "peer": "t3782a-s5hbge",
+    "conversation_id": "t3684-t3782b-s5hbge",
+    "urgent": false,
+    "via": "direct",
+    "since": "2026-10-03T22:13:43.074402+00:00",
+    "age_s": 163,
+    "waiting_since": "2026-10-03T22:13:43.131989+00:00",
+    "reason": "URGENT bypass refused: only registered session tl-4fwdduci has no record and runs no claude that could be seen",
+    "state": "no-live-recipient",
+    "escalated": [
+      "warn"
+    ],
+    "last_recover": null,
+    "actions": [
+      "recover",
+      "drop"
+    ]
+  },
+  "recover": {
+    "id": "6ff14dce-d696-4bb9-b6d7-1d44e3a0d6be",
+    "event": "RECOVER_STARTED",
+    "by": "human",
+    "token": "71bfd8fc7994ed4b",
+    "conversation_id": "t3684-t3782b-s5hbge",
+    "peer": "t3782a-s5hbge",
+    "log": "/tmp/t3684-e2e-910728-1791065558/t3782b-s5hbge/.context/sidecar/waiting/recover/6ff14dce-d696-4bb9-b6d7-1d44e3a0d6be.log",
+    "ts": "2026-10-03T22:16:25.764299+00:00",
+    "wrapper_pid": 1059030,
+    "termlink_session": "claude-master-1059030"
+  },
+  "recover_handed_over": {
+    "msg_id": "6ff14dce-d696-4bb9-b6d7-1d44e3a0d6be",
+    "event": "HANDED_OVER",
+    "ts": "2026-10-03T22:16:29.848370+00:00",
+    "evidence": "recover-transcript:34570722-5cbe-41a8-8610-2922a7595afa.jsonl"
+  },
+  "n_after_recover": "listed",
+  "result": "PASS"
+}
