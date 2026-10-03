@@ -40,7 +40,8 @@ _upgrade() {
 @test "upgrade mints a project_id when none is recorded" {
     local proj="$TEST_TEMP_DIR/legacy"
     _consumer "$proj"
-    ! grep -q '^project_id:' "$proj/.framework.yaml"
+    run grep -q '^project_id:' "$proj/.framework.yaml"
+    [ "$status" -ne 0 ]
     run _upgrade "$proj"
     [ "$status" -eq 0 ] || { echo "$output" | tail -20; false; }
     grep -qE '^project_id: pid-[0-9a-f]{16}$' "$proj/.framework.yaml" \
