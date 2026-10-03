@@ -76,3 +76,21 @@ teardown() { rm -rf "$TMPP"; }
     run "$FW" runme new nocmd
     [ "$status" -eq 2 ]
 }
+
+@test "T-3767: --help after any verb prints usage and returns at once" {
+    for v in new watch path; do
+        run timeout 5 "$FW" runme "$v" --help
+        [ "$status" -eq 0 ]
+        [[ "$output" == *"fw runme watch"* ]]
+    done
+    [ ! -e "$TMPP/.context/runme/--help" ]
+}
+
+@test "T-3767: a name starting with a dash is refused by every verb" {
+    run "$FW" runme new -x -- 'true'
+    [ "$status" -eq 2 ]
+    run timeout 5 "$FW" runme watch -x
+    [ "$status" -eq 2 ]
+    run "$FW" runme path -x
+    [ "$status" -ne 0 ]
+}

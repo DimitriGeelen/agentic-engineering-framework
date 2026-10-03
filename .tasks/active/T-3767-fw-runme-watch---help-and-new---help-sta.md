@@ -1,13 +1,17 @@
 ---
 id: T-3767
-name: "fw runme watch --help (and new --help) starts a watch for a runme named --help instead of printing usage"
+name: "fw runme watch --help (and new --help) starts a watch for a runme named --help
+  instead of printing usage"
 description: >
-  Found 2026-10-03: bin/fw runme watch --help blocked for 300 s waiting for a runme called --help. lib/runme.sh treats the first argument as the name. Same class as T-3651 (fw termlink cleanup --help executed). Fix: -h/--help prints usage and exits 0 for every runme verb; test.
+  Found 2026-10-03: bin/fw runme watch --help blocked for 300 s waiting for a runme
+  called --help. lib/runme.sh treats the first argument as the name. Same class as
+  T-3651 (fw termlink cleanup --help executed). Fix: -h/--help prints usage and exits
+  0 for every runme verb; test.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-03T12:15:37Z
-last_update: 2026-10-03T12:15:37Z
-date_finished: null
+last_update: 2026-10-03T12:18:51Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-03T12:18:52Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3767: fw runme watch --help (and new --help) starts a watch for a runme named --help instead of printing usage
@@ -62,8 +84,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw runme new|watch|path -h/--help` prints usage and exits 0 without creating or waiting on anything
+- [x] A runme name starting with `-` is refused (exit 2) by every verb
+- [x] Tests in tests/unit/t3675_runme.bats cover both (the watch case returns at once, not after the timeout)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -224,7 +247,16 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n lib/runme.sh
+bats tests/unit/t3675_runme.bats
+bin/fw vendor self --check
+
 ## RCA
+
+**Symptom:** `bin/fw runme watch --help` blocked for 300 s (the agent's tool limit) waiting for a runme named `--help`.
+**Root cause:** `_runme_valid_name` allowed a leading `-` (`^[A-Za-z0-9._-]+$`), and only `runme_main`'s first argument was checked for -h/--help, so `watch --help` reached the watch loop as a name.
+**Why structurally allowed:** the T-3675 tests checked path-traversal names (`../x`) but no option-looking name; the same class shipped in T-3651 (`fw termlink cleanup --help` executed) and no lint covers "help after a verb".
+**Prevention:** names may not start with `-`; `-h/--help` after any verb prints usage; two bats tests pin both (T-3767).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -320,3 +352,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3767-fw-runme-watch---help-and-new---help-sta.md
 - **Context:** Initial task creation
+
+### 2026-10-03T12:18:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
