@@ -94,7 +94,7 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Operator ruling (relayed by 832, 7e88ade2 + b9708bc6, 2026-10-03): the estate's subscriptions are usable easily by every agent IN this estate, and strictly estate-scoped. No credential values are committed (verified 2026-10-03), but the vendored registry and docs/harnesses.md DESCRIBE this estate's subscriptions (login paths, the dimitri-mint-dev sudo user, account kinds). Scope agreed with 832: move estate-specific entries and descriptions into estate-local config outside the vendored framework (not committed in the framework repo); ship only the mechanism plus an empty/example registry; a doctor/audit check that an estate's backends are declared locally; one command to add a backend (a fourth subscription is coming).
 
 ## Acceptance Criteria
 
