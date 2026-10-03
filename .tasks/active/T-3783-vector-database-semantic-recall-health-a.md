@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-03T20:35:51Z
-last_update: '2026-10-03T20:45:24Z'
+last_update: 2026-10-03T21:03:03Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -355,6 +355,14 @@ cost_estimate_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-03 — rollout to the 47 other projects (operator ruling)
+- **Chose:** no mass reindex and no enforced upgrades; projects are ENCOURAGED to upgrade (the fix reaches each on its own fw upgrade, which seeds the hourly reindex), and each project decides.
+- **Why:** operator ruling 2026-10-03 ("no re-index for all the projects … encourage projects to upgrade").
+- **Rejected:** a runme running fw upgrade + fw index reindex across all 49 projects (agent's proposal) — heavy, and it overrides each project's own decision.
+
+### 2026-10-03 — one deployment, one version (operator ruling, TermLink side)
+- **Chose:** deployment always goes with the same version; no mismatch. Measured: two TermLink hubs on .107 (PID 906293 /var/lib/termlink TCP 9100; PID 2919639 /tmp/termlink-0) and three termlink binary copies (all 0.12.103 today). Sent to 010 (sidecar t3336-vector-index fe30dbda + direct inject): one binary, one hub per host (T-3287 D6), one runtime dir, and a FAIL when two hubs or versions exist. AEF side: doctor WARN under T-3779.
 
 ## Decision
 
