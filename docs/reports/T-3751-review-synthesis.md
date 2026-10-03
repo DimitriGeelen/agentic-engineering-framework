@@ -111,3 +111,40 @@ The operator's two-label model survives review at the agent level (unanimous) an
 - display: readable project name, session name, folder name.
 Respawn (decision 2b) is a separate grant the operator must make explicitly, with the
 guardrails in §2.
+
+---
+
+# Decision 2a — which label routes (second review, steelman/strawman + value drivers)
+
+Brief: `docs/reports/T-3751-2a-review-brief.md`. Same seven vendors; reports
+`docs/reports/T-3751-2a-review-<vendor>.md`. Paid spend 0.24 USD.
+
+**Recommendation: 7/7 B** (function names route; instance ids ride inside; exact-instance
+is an explicit opt-in).
+
+| Reviewer | A | B | C | D |
+|---|---|---|---|---|
+| OpenAI | −23 | **+22** | −8 | −9 |
+| Z.ai | −49 | **+50** | −12 | −13 |
+| Google (with F2) | −68 | **+49** | −29 | −9 |
+| xAI | −70 | **+46** | −41 | −22 |
+| DeepSeek | −15 | **+62** | +29 | −23 |
+| Agent (original) | −15 | +44 | +24 | −7 |
+
+**Where the agent's scoring was wrong (consensus):** C is net negative (it routes on the
+value certificate rotation changes; 6/7); A is worse than −15 on D1/D2/D3/F-AUTONOMY;
+B's D1/D2 are +1 not +2 until ambiguity and exact-instance failure are specified, and B
+is robustness more than antifragility (OpenAI, DeepSeek); F2 (topology) and F-RECALL
+(addresses are durable retrieval keys) were wrongly dropped.
+
+**What a ruling for B must still settle (named by ≥5 of 7):**
+1. TermLink hub-name contract: who assigns, uniqueness scope (host vs estate), and the
+   interim — the fingerprint as a temporary hub label inside a B-shaped envelope.
+2. Migration of `inbox:<fingerprint>/<project>` topics to the stable name without
+   stranding mail (dual-read, aliases, retention through rotation).
+3. Function-route cardinality: several live `@research` (e.g. two clones of one pid) —
+   pick by a stated rule or reject; never silent ambiguity.
+4. `exact-instance` miss: an explicit failure outcome, no silent fallback to another
+   instance, no implied respawn (that is 2b).
+5. One classification matrix for every label (envelope / inside / display), incl. that
+   `pid` is the only project routing identity and checkout/session never route by default.
