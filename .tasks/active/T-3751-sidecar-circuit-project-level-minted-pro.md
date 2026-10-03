@@ -72,13 +72,19 @@ The sidecar's five-level circuit (host / hub / project / session / agent, D-660,
   rationale: operator ruling 2026-10-03 (decision brief, option C) — the minted id (pid-…) in the project slot of BOTH forms (path //host/hub/pid-…/…, V9 project=pid-…); the readable name is display-only via display_format() and never on the wire; reverses T-3287 D2 (root path) for the project slot; see docs/reports/T-3751-project-id-circuit.md
 
 - **IW-2: How do inbox topics migrate without losing messages?** New topic `inbox:<hub>/<pid>`, with the receiver dual-reading the folder-name topic until no peer has written to it for N days?
-  confidence: 1
+  confidence: 2
+  disposition: deferred
+  rationale: principle settled by decision 2a follow-up 2 (operator ruling 2026-10-03; 7/7 reviewers): migrate fingerprint/folder-keyed topics to the stable name with dual-read, never stranding mail; the mechanics (aliases, retention, N) are built in T-3784
 
 - **IW-3: How does `--to <name>` resolve to an id?** Human-readable names stay the operator's way to address a peer, so a name→id directory (hub kv, or each peer's published whoami) is needed. Which, and who owns it (Gap Homing: TermLink or us)?
   confidence: 1
+  disposition: deferred
+  rationale: TermLink's operator rules on their view first (010 @186, @29 "IW-3 view follows after our operator's ruling"); owner and directory are agreed jointly and built in T-3784
 
 - **IW-4: Is the fallback ladder exactly as 010 states it?** Deliver to the deepest level that resolves, falling back towards level 1 (host) when the full address is not found. Confirm, or name the exceptions (for example: never fall back across projects).
-  confidence: 2
+  confidence: 3
+  disposition: answered
+  rationale: operator rulings 2026-10-03 (2a, 2b) + 010 agreement @137: delivery never crosses a project; the message waits in the project's durable inbox; an exact-instance miss is an explicit failure with no silent fallback; respawn is opt-in per project and off by default (T-3781); a stranded message always escalates and is recoverable by one operator command (T-3782)
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
@@ -160,13 +166,14 @@ The sidecar's five-level circuit (host / hub / project / session / agent, D-660,
 
 **Rationale:**
 
-The minted id exists (T-3534, pid-16hex, back-filled by fw upgrade since T-3750) but circuit.project_id() still returns the root basename, so the circuit project level and every inbox topic name (inbox:hub/project) are folder names that collide across hosts and change on rename. TermLink is about to key wake-up on to_circuit (their T-3325) and asked us to settle it before they build. Open: topic migration (dual-read old and new topics, as v9_topics/legacy_topics already do), the name-to-id alias for --to, and the fallback ladder confirmed with TermLink.
+The address model is decided in substance through four operator rulings on 2026-10-03, each after evidence and, for 2a, two independent 7-vendor reviews: IW-1 C (minted pid in the project slot, name display-only), 2a B (function names route, instance ids inside, exact-instance opt-in), 2b B (respawn opt-in per project, off by default) plus the amendment that no stranded message goes unnoticed. What remains is building it (T-3784) and agreeing name→id resolution with TermLink, whose operator rules first (IW-3, deferred to T-3784). GO authorises the build slices below; nothing in them switches respawn on.
 
 **Evidence:**
-
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- Rulings with Chose/Why/Rejected: ## Decisions (IW-1, 2a, 2b, amendment); dialogue log: docs/reports/T-3751-project-id-circuit.md
+- Model review, 7/7 ADOPT-WITH-CHANGES: docs/reports/T-3751-review-{openai,zai,google,deepseek,mistralai,x-ai,qwen}.md; synthesis docs/reports/T-3751-review-synthesis.md
+- Option review for 2a, 7/7 B with steelman/strawman + value-driver scores: docs/reports/T-3751-2a-review-*.md (synthesis appended)
+- Build slices: T-3784 (address model + migration + IW-3), T-3781 (guarded respawn, later), T-3782 (stranded-message escalation + manual recovery, now), T-3780 (conversation continuity, next); prerequisite peers: TermLink hub names and per-agent identity
+- Paid review spend: 0.35 + 0.24 USD, logged in .context/costs/reviews.jsonl against operator-approved proposals
 
 ## Decisions
 
