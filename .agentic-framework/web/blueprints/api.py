@@ -18,6 +18,17 @@ from web.shared import sse_event
 bp = Blueprint("api", __name__, url_prefix="/api/v1")
 
 
+@bp.errorhandler(Exception)
+def _index_unavailable(exc):
+    """T-3786: readers never build the vector index; an unusable index is a 503
+    with the remedy, not a 500 and not a silent multi-hour rebuild."""
+    from web.embeddings import IndexUnavailable
+    if isinstance(exc, IndexUnavailable):
+        return jsonify({"error": "vector index unavailable", "detail": str(exc),
+                        "remedy": "fw index reindex"}), 503
+    raise exc
+
+
 @bp.route("/")
 def index():
     """Self-documenting API index."""
