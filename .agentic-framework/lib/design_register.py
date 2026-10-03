@@ -69,10 +69,10 @@ def _body(text: str) -> str:
     return text[end + 4:] if end >= 0 else text
 
 
-def task_index(root: Path) -> dict:
+def task_index(root: Path, locations: tuple = ("active", "completed")) -> dict:
     """{task_id: {location, status, name, path, fm}} over active/ and completed/."""
     out: dict = {}
-    for loc in ("active", "completed"):
+    for loc in locations:
         d = root / ".tasks" / loc
         if not d.is_dir():
             continue
@@ -291,7 +291,16 @@ def captured_since(info: dict) -> datetime | None:
 
 def stale_keystones(root: Path, days: float = 3.0, now: datetime | None = None,
                     tasks: dict | None = None) -> list:
-    tasks = task_index(root) if tasks is None else tasks
+    if tasks is None:
+        # T-3747: only ACTIVE captured tasks can be returned, so parse active/
+        # alone. Parsing completed/ too cost ~20 s per /approvals render and
+        # pushed Watchtower past doctor's smoke timeout. An id that also sits in
+        # completed/ is dropped, as task_index()'s completed-wins overwrite did.
+        done_dir = root / ".tasks" / "completed"
+        done = {m.group(1) for p in (done_dir.glob("T-*.md") if done_dir.is_dir() else [])
+                if (m := re.match(r"(T-\d+)-", p.name))}
+        tasks = {tid: info for tid, info in task_index(root, ("active",)).items()
+                 if tid not in done}
     now = now or datetime.now(timezone.utc)
     reasons: dict = {}
     arc_of: dict = {}  # task id -> arc slug, when an arc names the task itself
