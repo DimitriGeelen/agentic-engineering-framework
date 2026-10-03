@@ -98,11 +98,11 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] RCA written (## RCA): why the vector index went stale/down for ~2 months unnoticed, in AEF and in TermLink's instance (joint with 010 over the sidecar)
-- [ ] Freshness check: newest indexed source vs newest learning/decision/episodic/report; stale beyond a configured threshold = FAIL in fw audit, WARN/FAIL in fw doctor
-- [ ] Liveness + canary: the index opens, and a fixed canary query returns its known expected hit; failure = FAIL
-- [ ] Surfacing: the result is in the handover and pushes to the operator when it turns red; consumers get the same check via fw upgrade
-- [ ] Tests: stale index, missing index and failing canary each produce the red result (hermetic fixtures)
+- [x] RCA written (## RCA): why the vector index went stale/down for ~2 months unnoticed, in AEF and in TermLink's instance (joint with 010 over the sidecar)
+- [x] Freshness check: newest indexed source vs newest learning/decision/episodic/report; stale beyond a configured threshold = FAIL in fw audit, WARN/FAIL in fw doctor
+- [x] Liveness + canary: the index opens, and a fixed canary query returns its known expected hit; failure = FAIL
+- [x] Surfacing: the result is in the handover and pushes to the operator when it turns red; consumers get the same check via fw upgrade
+- [x] Tests: stale index, missing index and failing canary each produce the red result (hermetic fixtures)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -136,6 +136,15 @@ cost_estimate_proposed:
 -->
 
 ## Verification
+
+timeout 600 bats tests/unit/t3783_vector_index_health.bats > /tmp/.t3783v.out 2>&1 && ! grep -q "^not ok" /tmp/.t3783v.out
+test "$(grep -c '# skip' /tmp/.t3783v.out)" -eq 0
+timeout 300 bats tests/unit/t3783_vector_index_reach.bats > /tmp/.t3783r.out 2>&1 && ! grep -q "^not ok" /tmp/.t3783r.out
+timeout 300 bats tests/lint/config-registry-parity.bats > /tmp/.t3783c.out 2>&1 && ! grep -q "^not ok" /tmp/.t3783c.out
+python3 -m py_compile lib/vector_index_health.py agents/context/lib/memory-recall.py lib/ask.py
+bash -n lib/vector-index-health.sh && bash -n bin/fw && bash -n agents/audit/audit.sh && bash -n agents/handover/handover.sh
+bin/fw vendor self --check
+bin/fw watchtower current
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -274,7 +283,8 @@ cost_estimate_proposed:
 2. **The health check asked the wrong question.** `fw doctor` reports "Cron registry in sync" — true for TermLink: its registry matches its crontab; both lack the job. Same false-green family as T-3187 (a check that cannot see its own subject).
 3. **Staleness is a WARN that nobody reads.** Index age surfaces in `fw doctor` (on demand); there is no FAIL, no handover line, no operator push. A degraded recall layer fails SOFT: `fw recall` still returns results (old ones, or none), so an agent cannot tell "nothing relevant exists" from "the index is two months old".
 4. **Recall failures are silent at the point of use.** Even AEF's fresh index failed 107 of 551 recall queries in 7 days ("embed path failed mid-query") — the agent gets less, not an error.
-5. **The behavioural backstop is a learning, not a mechanism.** L-687 says "recall before asking"; with a stale index, obeying it returns nothing useful, which teaches agents recall is worthless — the deja vu loop.
+5. **`fw recall`'s semantic path never ran at all (found while building the banner).** `memory-recall.py` did `os.chdir(FRAMEWORK_ROOT)` then `from web.embeddings import hybrid_search`. A script's `sys.path[0]` is its own directory, not cwd, so the import raised `ModuleNotFoundError` on every run, in AEF too, and `except Exception: return None` silently dropped to keyword search. TermLink's instance (010 T-3336) is the same class one layer down: its index was never refreshed (no job), and `fw index reindex` could not import `web/` from a vendored consumer. The doctor freshness check and the audit canary both ran without FRAMEWORK_ROOT on the import path, and graded that as SKIP/INFO.
+6. **The behavioural backstop is a learning, not a mechanism.** L-687 says "recall before asking"; with a stale index, obeying it returns nothing useful, which teaches agents recall is worthless — the deja vu loop.
 
 **Prevention (this task + follow-ups):** (a) a must-have job set seeded into every consumer by fw init/fw upgrade, with a doctor/audit FAIL when a consumer lacks one (not just "in sync"); (b) freshness + liveness + canary query as an audit FAIL, a handover line and an operator push when red; (c) `fw recall` prints a loud banner when the index is stale or the embed path failed, so an empty answer is never mistaken for "nothing known"; (d) the 107/551 mid-query failure rate investigated separately.
 
@@ -346,6 +356,16 @@ cost_estimate_proposed:
 -->
 
 ## Decisions
+
+### 2026-10-03 — doctor runs the canary
+- **Chose:** one predicate everywhere, with the canary included in doctor (30s timeout; `FW_DOCTOR_INDEX_FAST=1` skips it).
+- **Why:** the brief asks for one predicate. T-3013 kept doctor embed-free so it would not "go quiet" when the embedder is down. Here a down embedder shows as a FAIL line rather than silence, and the other six checks run without it. Measured cost on the live index: about 5s.
+- **Rejected:** an embed-free doctor with the canary only in audit. That split is how consumers graded "unimportable" as SKIP/INFO for two months.
+
+### 2026-10-03 — `fw work-on` keeps keyword recall
+- **Chose:** fix `fw recall`'s import, so the semantic path now runs (~13s). focus.sh passes `--no-hybrid`, and recall is guarded so it never searches an absent index (that would start a full build).
+- **Why:** focus.sh gives recall 10s. With semantic search actually working, recall would be killed and print nothing. Keyword-only is what work-on effectively ran before.
+- **Rejected:** leaving the import broken behind a permanent banner (true, but noise); raising focus's timeout (slows every work-on).
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
