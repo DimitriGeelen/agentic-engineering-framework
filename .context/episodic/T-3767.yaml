@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3767: fw runme watch --help (and new --help) starts a watch for a runme named --help instead of printing usage
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-03T12:21:39Z
+# ============================================================================
+
+task_id: T-3767
+task_name: "fw runme watch --help (and new --help) starts a watch for a runme named --help instead of printing usage"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-03T12:15:37Z
+completed: 2026-10-03T12:20:30Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-03T14:20:23+02:00
+last_commit: 2026-10-03T14:20:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw runme <verb> --help prints usage; names may not start with '-' (watch --help used to wait 30 min for a runme called --help); tests. vendored runme.sh
+
+# Key outcomes
+outcomes:
+  - '`fw runme new|watch|path -h/--help` prints usage and exits 0 without creating or waiting on anything'
+  - 'A runme name starting with `-` is refused (exit 2) by every verb'
+  - 'Tests in tests/unit/t3675_runme.bats cover both (the watch case returns at once, not after the timeout)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/runme.sh'
+  - 'lib/runme.sh'
+  - '.tasks/active/T-3767-fw-runme-watch---help-and-new---help-sta.md'
+  - 'tests/unit/t3675_runme.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-03T14:20:23'
+    action: 'T-3767: fw runme <verb> --help prints usage; names may not start with ''-'' (watch --help used to wait 30 min for a runme called --help); tests'
+  - time: '2026-10-03T14:20:28'
+    action: 'T-3767: vendored runme.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 4
+  lines_added: 76
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3767-fw-runme-watch---help-and-new---help-sta.md
+generated_by: context-agent-hybrid
