@@ -462,6 +462,11 @@ def is_index_ready() -> bool:
         return False
 
 
+class IndexUnavailable(RuntimeError):
+    """The vector index cannot be used right now. Readers raise this instead of
+    building (T-3786); only `fw index reindex` builds, atomically."""
+
+
 def _get_db() -> sqlite3.Connection:
     """Get the database connection, reusing the existing index if available.
 
@@ -487,11 +492,20 @@ def _get_db() -> sqlite3.Connection:
                 _db_opened_at = time.time()
                 log.info("Reusing existing vector index with %d documents", count)
                 return _db
-        except Exception:
-            pass  # Fall through to full rebuild
+        except Exception as exc:
+            # T-3786: a reader must NEVER build. This used to fall through to
+            # build_index(), which unlinks the live index and rebuilds in place for
+            # hours; any transient error (sqlite locked during the hourly swap) in a
+            # timed-out caller (post-write hook, recall, Watchtower) wiped the index.
+            raise IndexUnavailable(
+                f"vector index at {DB_PATH} could not be opened ({type(exc).__name__}: "
+                f"{str(exc)[:120]}); left untouched — rebuild with: fw index reindex") from exc
+        raise IndexUnavailable(
+            f"vector index at {DB_PATH} has no documents; left untouched — "
+            "rebuild with: fw index reindex")
 
-    build_index()
-    return _db
+    raise IndexUnavailable(
+        f"no vector index at {DB_PATH}; build it with: fw index reindex")
 
 
 # ---------------------------------------------------------------------------
@@ -499,10 +513,44 @@ def _get_db() -> sqlite3.Connection:
 # ---------------------------------------------------------------------------
 
 def build_index() -> dict:
-    """Build a fresh vector index from all framework files.
+    """Build a fresh vector index from all framework files, ATOMICALLY (T-3786).
+
+    Builds into `<db>.building` and only then swaps it — and its manifest — over
+    the live index with os.replace. A build that is killed or fails leaves the
+    previous index and manifest exactly as they were. (It used to unlink the live
+    index first and build in place, so a killed build left an empty index.)
 
     Returns stats dict with num_docs, num_chunks, build_time_ms.
     """
+    global DB_PATH, _db, _db_opened_at
+    from web.corpus_manifest import manifest_path_for
+
+    real = DB_PATH
+    tmp = real.with_name(real.name + ".building")
+    for leftover in (tmp, manifest_path_for(tmp)):
+        if leftover.exists():
+            leftover.unlink()
+    _db = None
+    DB_PATH = tmp
+    try:
+        stats = _build_index_in_place()
+    finally:
+        DB_PATH = real
+    if _db is not None:
+        try:
+            _db.close()
+        except Exception:
+            pass
+        _db = None
+    os.replace(tmp, real)
+    if manifest_path_for(tmp).exists():
+        os.replace(manifest_path_for(tmp), manifest_path_for(real))
+    return stats
+
+
+def _build_index_in_place() -> dict:
+    """The build body. Writes to whatever DB_PATH names — build_index() points it
+    at a temporary file and swaps the result in; never call this on the live path."""
     global _db, _db_opened_at
 
     start = time.time()

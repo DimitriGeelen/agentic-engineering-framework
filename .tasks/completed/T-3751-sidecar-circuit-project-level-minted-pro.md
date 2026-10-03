@@ -6,16 +6,16 @@ description: >
   Inception: Sidecar circuit project level: minted project_id instead of the folder
   name (010-termlink T-3325 request)
 
-status: work-completed
+status: started-work
 workflow_type: inception
 owner: human
-horizon: null
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-02T22:57:45Z
-last_update: 2026-10-03T23:06:02Z
-date_finished: 2026-10-03T23:06:02Z
+last_update: 2026-10-02T23:29:58Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -122,15 +122,15 @@ The sidecar's five-level circuit (host / hub / project / session / agent, D-660,
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [x] Problem statement validated
+- [ ] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [x] Assumptions tested
+- [ ] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [x] Recommendation written with rationale
+- [ ] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [x] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -209,11 +209,7 @@ The address model is decided in substance through four operator rulings on 2026-
 
 ## Decision
 
-**Decision**: GO
-
-**Rationale**: The address model is decided in substance through four operator rulings on 2026-10-03, each after evidence and, for 2a, two independent 7-vendor reviews: IW-1 C (minted pid in the project slot, name display-only), 2a B (function names route, instance ids inside, exact-instance opt-in), 2b B (respawn opt-in per project, off by default) plus the amendment that no stranded message goes unnoticed. What remains is building it (T-3784) and agreeing name→id resolution with TermLink, whose operator rules first (IW-3, deferred to T-3784). GO authorises the build slices below; nothing in them switches respawn on.
-
-**Date**: 2026-10-03T23:06:02Z
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
@@ -222,35 +218,3 @@ The address model is decided in substance through four operator rulings on 2026-
 
 ### 2026-10-02T22:59:00Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-
-### 2026-10-03T23:06:02Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** The address model is decided in substance through four operator rulings on 2026-10-03, each after evidence and, for 2a, two independent 7-vendor reviews: IW-1 C (minted pid in the project slot, name display-only), 2a B (function names route, instance ids inside, exact-instance opt-in), 2b B (respawn opt-in per project, off by default) plus the amendment that no stranded message goes unnoticed. What remains is building it (T-3784) and agreeing name→id resolution with TermLink, whose operator rules first (IW-3, deferred to T-3784). GO authorises the build slices below; nothing in them switches respawn on.
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-3242509b
-- **Timestamp:** 2026-10-03T23:06:04Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-## Recommendation Verdict (v1.0)
-
-- **Scan ID:** RC-3cacd314
-- **Timestamp:** 2026-10-03T23:06:04Z
-- **Overall:** CONFIRMED
-- **Claims:** 4
-
-| Claim | Type | Status |
-|-------|------|--------|
-| `T-3784` | task | ✓ pass |
-| `T-3781` | task | ✓ pass |
-| `T-3782` | task | ✓ pass |
-| `T-3780` | task | ✓ pass |
-
-### 2026-10-03T23:06:02Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-- **Reason:** Inception decision: GO

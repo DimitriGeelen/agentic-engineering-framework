@@ -347,9 +347,10 @@ def search_ask():
                 pass
 
         if not index_ready:
-            yield sse_event("status", phase="index", message="Knowledge index is not built yet. Starting background build — please try again in ~60 seconds.")
-            _trigger_async_index_build()
-            yield sse_event("error", message="The embedding index is empty. A background build has been started — please try again in about 60 seconds.")
+            # T-3786: never build from a page view — a background build_index() here
+            # unlinked the live index on any transient read failure. Say so instead.
+            yield sse_event("status", phase="index", message="Knowledge index is unavailable (missing, empty or unreadable). It is never rebuilt from this page; rebuild with: fw index reindex")
+            yield sse_event("error", message="The embedding index is unavailable. Rebuild it with: fw index reindex")
             return
 
         # Phase 2: RAG retrieval

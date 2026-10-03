@@ -294,7 +294,15 @@ def main():
     elif args.no_think:
         think = False
 
-    result = ask(args.query, limit=args.limit, concise=args.concise, think=think)
+    try:
+        result = ask(args.query, limit=args.limit, concise=args.concise, think=think)
+    except Exception as exc:  # noqa: BLE001
+        from web.embeddings import IndexUnavailable
+        if not isinstance(exc, IndexUnavailable):
+            raise
+        # T-3786: the index is never built from here; say why and how to fix it.
+        print(f"fw ask: {exc}", file=sys.stderr)
+        sys.exit(3)
 
     if args.json_output:
         print(json.dumps(result, indent=2))
