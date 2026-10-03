@@ -23,8 +23,11 @@ FRAMEWORK_ROOT="${FRAMEWORK_ROOT:-$(cd "$SCRIPT_DIR/../.." && pwd)}"
 PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
 export FRAMEWORK_ROOT PROJECT_ROOT
 
-# Drain stdin (Claude Code sends hook input JSON); we do not need it.
-cat >/dev/null 2>&1 || true
+# Claude Code sends the hook input JSON on stdin. T-3684: its transcript_path is
+# what proves (later, from a detached process) that what this hook shows reached
+# the model — the HANDED_OVER receipt to the consult's sender.
+HOOK_INPUT="$(cat 2>/dev/null || true)"
+export HOOK_INPUT
 
 # T-3580 round 8 (N1): never in a review worker. Its prompt is exactly the review preamble and
 # the brief; a consult surfaced here would be a message from the task's producer to its reviewer.
@@ -32,6 +35,7 @@ cat >/dev/null 2>&1 || true
 [ -n "${FW_REVIEW_WORKER:-}" ] && exit 0
 
 FW_BIN="${FW_BIN:-$FRAMEWORK_ROOT/bin/fw}"
+export FW_BIN
 [ -x "$FW_BIN" ] || exit 0
 command -v termlink >/dev/null 2>&1 || exit 0
 
@@ -40,9 +44,7 @@ command -v termlink >/dev/null 2>&1 || exit 0
 # host too loaded to answer, NOT an absent mail rail — it says so in one line
 # instead of impersonating an empty inbox. Only absence (no termlink/fw, fw
 # failing outright) stays silent.
-# T-3684: --receipt — what this hook shows is RECEIVED, and the sender is told
-# so (from a detached process; the peek itself still never consumes).
-raw="$(timeout "${SIDECAR_INBOX_TIMEOUT:-5}" "$FW_BIN" sidecar inbox --peek --receipt --json 2>/dev/null)"
+raw="$(timeout "${SIDECAR_INBOX_TIMEOUT:-5}" "$FW_BIN" sidecar inbox --peek --json 2>/dev/null)"
 rc=$?
 if [ "$rc" -eq 124 ]; then
     python3 -c 'import json; print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": "# sidecar-inbox: inbox check timed out; consults may be pending, run fw sidecar inbox --peek (T-3681)"}}))' 2>/dev/null
@@ -55,7 +57,7 @@ fi
 # argv string over 131072 bytes (MAX_ARG_STRLEN) fails E2BIG before python starts —
 # which `|| exit 0` rendered identical to an empty inbox once the backlog passed ~128KB.
 read -r -d '' PYSRC <<'PY'
-import json, sys
+import json, os, secrets, subprocess, sys, uuid
 
 def emit(text):
     print(json.dumps({"hookSpecificOutput": {
@@ -114,25 +116,57 @@ def _off(m):
 
 msgs = sorted((m for m in msgs if isinstance(m, dict)), key=_off, reverse=True)
 total, shown = sum(len(l) + 1 for l in lines), 0
+# T-3684: one random token per surfacing; each shown block's header names the
+# consult id and this token. Only that exact header line, in this attempt's
+# hook_additional_context attachment, is accepted as HANDED_OVER evidence —
+# a peer body quoting an id cannot know the token.
+surfacing = secrets.token_hex(16)
+shown_msgs = []
 for m in msgs:
     who = m.get("from") or "unknown"
     conv = m.get("conversation_id") or "-"
     body = str(m.get("body") or "").strip()
     if len(body) > BODY_CAP:
         body = body[:BODY_CAP] + f"… [truncated, {len(body) - BODY_CAP} more chars]"
-    block = [f"## From {who}  [conversation: {conv}]  @offset {m.get('offset')}", body, ""]
+    header = f"## From {who}  [conversation: {conv}]  @offset {m.get('offset')}"
+    if m.get("client_msg_id"):
+        header += f"  [msg {m['client_msg_id']}]  [surfacing {surfacing}]"
+    block = [header, body, ""]
     size = sum(len(l) + 1 for l in block)
     if shown and total + size > TOTAL_CAP:
         break
     lines.extend(block)
     total += size
     shown += 1
+    shown_msgs.append(dict(m, _header=header))
 if shown < len(msgs):
     lines.append(f"({len(msgs) - shown} older consult(s) not shown — run `fw sidecar inbox` to read them.)")
     lines.append("")
 lines.append("(Surfaced by the sidecar-inbox hook, T-3407. This was a PEEK — the consult is still in your inbox until you read it with `fw sidecar inbox`.)")
 
 emit("\n".join(lines))
+sys.stdout.flush()
+
+# T-3684 receipts: RECEIVED now, HANDED_OVER once the transcript proves the model
+# got THIS surfacing — from a detached process, so the prompt is never held up.
+try:
+    transcript = (json.loads(os.environ.get("HOOK_INPUT") or "{}") or {}).get("transcript_path") or ""
+except Exception:
+    transcript = ""
+todo = [m for m in shown_msgs if m.get("client_msg_id") and m.get("from")]
+if todo:
+    try:
+        qdir = os.path.join(os.environ.get("PROJECT_ROOT", "."), ".context", "sidecar", "receipts-queue")
+        os.makedirs(qdir, exist_ok=True)
+        job = os.path.join(qdir, f"{uuid.uuid4()}.json")
+        with open(job, "w", encoding="utf-8") as fh:
+            json.dump({"messages": todo, "states": ["RECEIVED"], "by": "prompt-hook-peek",
+                       "finalize": {"transcript": transcript, "surfacing": surfacing}}, fh)
+        subprocess.Popen([os.environ["FW_BIN"], "sidecar", "receipts-flush", job],
+                         stdin=subprocess.DEVNULL, stdout=subprocess.DEVNULL,
+                         stderr=subprocess.DEVNULL, start_new_session=True)
+    except Exception:
+        pass   # receipts are best effort here; the surfacing above already happened
 PY
 
 printf '%s' "$raw" | python3 -c "$PYSRC" 2>/dev/null || exit 0

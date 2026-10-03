@@ -99,6 +99,10 @@ def build_post_command(msg: dict, *, binary: str | None = None,
         "--metadata", f"from_circuit={msg.get('from_circuit') or circuit.circuit_id('full')}",
         "--payload", msg["body"],
     ]
+    if msg.get("urgent"):
+        # T-3684: urgency survives the hub fallback (R5) — the receiving
+        # watcher injects it at once instead of waiting for readiness.
+        argv[argv.index("--payload"):argv.index("--payload")] = ["--metadata", "urgent=1"]
     hub = msg.get("hub")
     if hub:
         argv += ["--hub", hub]

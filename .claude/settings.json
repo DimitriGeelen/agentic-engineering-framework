@@ -30,6 +30,10 @@
           {
             "type": "command",
             "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook post-compact-resume"
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook sidecar-autostart"
           }
         ]
       },
@@ -39,6 +43,10 @@
           {
             "type": "command",
             "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook post-compact-resume"
+          },
+          {
+            "type": "command",
+            "command": "${CLAUDE_PROJECT_DIR}/bin/fw hook sidecar-autostart"
           }
         ]
       }

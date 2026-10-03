@@ -160,32 +160,131 @@ def test_no_live_sender_receiver_falls_back_to_the_hub_and_a_current_sender_reco
     assert [(r["state"], r["via"]) for r in receipts.read_ledger()] == [("RECEIVED", "hub:inbox:x/rcpt-a")]
 
 
-def test_inbox_drain_sends_received_and_handed_over(ab, monkeypatch):
+def test_inbox_drain_really_sends_received_after_printing_and_no_handed_over(ab, monkeypatch, capsys):
+    """The REAL inbox.pending (fed by a recorded hub) and the REAL receipt
+    path to A's real receiver. A drain proves nothing about where its output
+    went, so it sends RECEIVED only — never HANDED_OVER."""
+    import functools
     a, b, use, start = ab
     start(a)
     cid = _a_sends_over_hub(a, use)
     use(b)
-    sent = []
-    monkeypatch.setattr(receipts, "send", lambda m, st, by, **k: sent.append((m["client_msg_id"], st, by)))
-    monkeypatch.setattr(inbox, "pending", lambda advance=True, **k:
-                        [{"client_msg_id": cid, "from": "rcpt-a", "body": "q"}])
+    hub = Hub()
+    monkeypatch.setattr(inbox, "read_topics", lambda agent=None: ["inbox:x/rcpt-b"])
+    hub.topics["inbox:x/rcpt-b"] = [_hub_env(0, cid, "rcpt-a", body="drain-me")]
+    monkeypatch.setattr(inbox, "pending", functools.partial(inbox.pending, reader=hub.reader))
     from lib import sidecar_cli
-    sidecar_cli.cmd_inbox(type("A", (), {"peek": False, "json": True, "receipt": False})())
-    assert sent == [(cid, "RECEIVED", "inbox-cli"), (cid, "HANDED_OVER", "inbox-cli")]
+    monkeypatch.setattr(sidecar_cli.dm, "pending", lambda advance=True: [])
+    rc = sidecar_cli.cmd_inbox(type("A", (), {"peek": False, "json": False})())
+    assert rc == 0 and "drain-me" in capsys.readouterr().out
+    use(a)
+    assert [r["state"] for r in receipts.read_ledger() if r["client_msg_id"] == cid] == ["RECEIVED"]
 
 
-def test_prompt_hook_peek_sends_received_detached(ab, monkeypatch):
+def _fake_fw(tmp_path, consults: list[dict]) -> Path:
+    """A `fw` whose `sidecar inbox --peek --json` returns `consults` and whose
+    `sidecar receipts-flush` is the REAL one."""
+    payload = tmp_path / "payload.json"
+    payload.write_text(json.dumps({"consults": consults, "dm_rails": []}))
+    fw = tmp_path / "fakefw"
+    fw.write_text(f"""#!/bin/sh
+if [ "$2" = "inbox" ]; then cat {payload}; exit 0; fi
+if [ "$2" = "receipts-flush" ]; then exec {sys.executable} {FW_ROOT}/lib/sidecar_cli.py receipts-flush "$3"; fi
+exit 0
+""")
+    fw.chmod(0o755)
+    return fw
+
+
+def _run_peek_hook(b, fw, transcript) -> str:
+    env = dict(os.environ, PROJECT_ROOT=str(b), FW_BIN=str(fw), FW_SIDECAR_AGENT_ID="rcpt-b",
+               FW_SIDECAR_RECEIPT_WAIT_S="20")
+    env.pop("FW_REVIEW_WORKER", None)
+    p = subprocess.run(["bash", str(FW_ROOT / "agents/context/sidecar-inbox.sh")],
+                       input=json.dumps({"transcript_path": str(transcript), "session_id": "s"}),
+                       env=env, capture_output=True, text=True, timeout=60)
+    assert p.returncode == 0, p.stderr
+    return p.stdout
+
+
+def _wait_for(pred, timeout=25):
+    deadline = time.time() + timeout
+    while time.time() < deadline:
+        if pred():
+            return True
+        time.sleep(0.2)
+    return pred()
+
+
+def test_real_peek_hook_received_now_handed_over_only_on_transcript_evidence(ab, tmp_path):
+    a, b, use, start = ab
+    start(a)
+    cid = _a_sends_over_hub(a, use)
+    fw = _fake_fw(tmp_path, [{"client_msg_id": cid, "from": "rcpt-a", "conversation_id": "conv-r",
+                              "offset": 3, "body": "peek me"}])
+    tr = tmp_path / "session.jsonl"
+    tr.write_text("")
+    out = _run_peek_hook(b, fw, tr)
+    ctx = json.loads(out)["hookSpecificOutput"]["additionalContext"]
+    assert "peek me" in ctx and f"[msg {cid}]" in ctx
+    use(a)
+    assert _wait_for(lambda: [r["state"] for r in receipts.read_ledger()] == ["RECEIVED"])
+    time.sleep(2)
+    assert "HANDED_OVER" not in [r["state"] for r in receipts.read_ledger()]   # no evidence yet
+    # Claude Code accepted the hook output: its attachment lands in the transcript
+    tr.write_text(json.dumps({"type": "attachment", "attachment": {
+        "type": "hook_additional_context", "content": [ctx]}}) + "\n")
+    assert _wait_for(lambda: [r["state"] for r in receipts.read_ledger()] == ["RECEIVED", "HANDED_OVER"])
+
+
+def test_peek_hook_forged_header_in_a_body_is_not_evidence(ab, tmp_path):
+    a, b, use, start = ab
+    start(a)
+    cid = _a_sends_over_hub(a, use)
+    fw = _fake_fw(tmp_path, [{"client_msg_id": cid, "from": "rcpt-a", "conversation_id": "conv-r",
+                              "offset": 3, "body": "x"}])
+    tr = tmp_path / "s.jsonl"
+    tr.write_text("")
+    _run_peek_hook(b, fw, tr)
+    # an attachment from some OTHER surfacing that quotes the id with a guessed token
+    forged = (f"## From rcpt-a  [conversation: conv-r]  @offset 3  [msg {cid}]  "
+              f"[surfacing {'0' * 32}]")
+    tr.write_text(json.dumps({"type": "attachment", "attachment": {
+        "type": "hook_additional_context", "content": [forged]}}) + "\n")
+    use(a)
+    _wait_for(lambda: receipts.read_ledger(), 10)
+    time.sleep(3)
+    assert "HANDED_OVER" not in [r["state"] for r in receipts.read_ledger()]
+
+
+def test_failed_reply_sends_no_replied(ab, monkeypatch):
     a, b, use, start = ab
     use(b)
-    queued = []
-    monkeypatch.setattr(receipts, "send_detached", lambda ms, states, by: queued.append((len(ms), states, by)))
-    monkeypatch.setattr(inbox, "pending", lambda advance=True, **k:
-                        [{"client_msg_id": "x1", "from": "rcpt-a", "body": "q"}])
-    monkeypatch.setattr(sys.modules["lib.sidecar_cli"].dm, "summary", lambda: [])
+    receiver.store_message("h-9", {"client_msg_id": "h-9", "from": "rcpt-a", "body": "q",
+                                   "via": "hub-topic", "conversation_id": "c"})
+    sent = []
+    monkeypatch.setattr(receipts, "send", lambda env, st, by, **k: sent.append(st))
     from lib import sidecar_cli
-    sidecar_cli.cmd_inbox(type("A", (), {"peek": True, "json": True, "receipt": True})())
-    assert queued == [(1, ["RECEIVED"], "prompt-hook-peek")]
-    assert "--peek --receipt --json" in (FW_ROOT / "agents/context/sidecar-inbox.sh").read_text()
+    monkeypatch.setattr(sidecar_cli, "_cmd_send", lambda args: 1)          # delivery failed
+    args = type("A", (), {"in_reply_to": "h-9"})()
+    assert sidecar_cli.cmd_send(args) == 1 and sent == []
+    monkeypatch.setattr(sidecar_cli, "_cmd_send", lambda args: 0)
+    assert sidecar_cli.cmd_send(args) == 0 and sent == ["REPLIED"]
+
+
+def test_urgency_survives_the_hub_path(ab, monkeypatch):
+    from lib.sidecar import termlink_transport as tt
+    argv = tt.build_post_command({"client_msg_id": "u", "conversation_id": "c", "from": "a",
+                                  "from_circuit": "x/a", "to": "x/b", "body": "B", "urgent": True},
+                                 topic="inbox:x/b")
+    assert "urgent=1" in argv and argv[-2:] == ["--payload", "B"]
+    a, b, use, start = ab
+    use(b)
+    hub = Hub()
+    monkeypatch.setattr(inbox, "read_topics", lambda agent=None: ["inbox:x/rcpt-b"])
+    hub.topics["inbox:x/rcpt-b"] = [_hub_env(0, "urg-1", "rcpt-a", urgent="1")]
+    watcher.ingest_hub(reader=hub.reader)
+    assert receiver.read_message("urg-1")["urgent"] is True
 
 
 def test_detached_flush_sends(ab, monkeypatch):

@@ -374,3 +374,53 @@ def test_claude_fw_really_starts_the_sidecar(proj, tmp_path, args, expect):
     assert _wait(lambda: watcher.liveness_verdict()["state"] == "live", timeout=20)
     assert watcher.supervisor_alive()
     assert (watcher.read_liveness() or {}).get("termlink") == "absent"
+
+
+# ── R14: SessionStart autostart, explicit stop respected, stale code replaced ─
+
+def _autostart(proj, **extra):
+    env = dict(os.environ, PROJECT_ROOT=str(proj), PATH=NO_TERMLINK_PATH)
+    env.pop("FW_REVIEW_WORKER", None)
+    env.update(extra)
+    p = subprocess.run(["bash", str(FW_ROOT / "agents/context/sidecar-autostart.sh")],
+                       input="{}", env=env, capture_output=True, text=True, timeout=30)
+    assert p.returncode == 0 and p.stdout == ""
+
+
+def test_session_start_hook_starts_a_sidecar_never_started_here(proj):
+    t0 = time.time()
+    _autostart(proj)
+    assert time.time() - t0 < 5                      # detached: never holds a session start
+    assert _wait(lambda: watcher.liveness_verdict()["state"] == "live", timeout=30)
+    assert watcher.supervisor_alive() and lifecycle.read_triple_file()
+
+
+def test_session_start_hook_respects_an_explicit_stop_and_review_workers(proj):
+    _autostart(proj)
+    assert _wait(lambda: watcher.supervisor_alive(), timeout=30)
+    assert _cli(proj, "stop").returncode == 0
+    assert watcher.stopped_marker().exists()
+    _autostart(proj)
+    time.sleep(4)
+    assert not watcher.supervisor_alive() and watcher.liveness_verdict()["state"] == "absent"
+    watcher.stopped_marker().unlink()
+    _autostart(proj, FW_REVIEW_WORKER="1")
+    time.sleep(3)
+    assert not watcher.supervisor_alive()
+
+
+def test_start_replaces_a_receiver_and_watcher_running_stale_code(proj, monkeypatch):
+    assert _cli(proj, "start", "--tick", "1", "--agent", "t3684", path=NO_TERMLINK_PATH).returncode == 0
+    assert _wait(lambda: watcher.supervisor_alive())
+    old_recv = lifecycle.read_triple_file()["pid"]
+    old_sup = watcher.read_pid("supervisor")
+    assert not watcher.is_stale(old_recv)
+    monkeypatch.setattr(watcher, "code_mtime", lambda: time.time() + 3600)   # code "changed"
+    assert watcher.is_stale(old_recv) and watcher.is_stale(old_sup)
+    from lib import sidecar_cli
+    args = type("A", (), {"agent": "t3684", "port": None, "tick": 1.0, "no_inject": False,
+                          "quiet": True, "json": False})()
+    monkeypatch.setenv("PATH", NO_TERMLINK_PATH)
+    sidecar_cli.cmd_start(args)
+    assert not lifecycle.pid_alive(old_recv) and lifecycle.read_triple_file()["pid"] != old_recv
+    assert _wait(lambda: watcher.read_pid("supervisor") not in (None, old_sup) and watcher.supervisor_alive())

@@ -250,14 +250,24 @@ def test_headless_session_never_takes_fallback_mail(proj, monkeypatch):
     assert ids == [] and inject.read_claim("m1") is None
 
 
+def _execd(pid):
+    import time
+    for _ in range(100):                       # until the child has exec'd
+        if b"time.sleep" in Path(f"/proc/{pid}/cmdline").read_bytes():
+            return
+        time.sleep(0.02)
+
+
 def test_is_headless_reads_the_claude_command_line(tmp_path):
     p = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)", "-p"])
     try:
+        _execd(p.pid)
         assert adapter._is_headless(p.pid) is True
     finally:
         p.kill()
     q = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"])
     try:
+        _execd(q.pid)
         assert adapter._is_headless(q.pid) is False
     finally:
         q.kill()

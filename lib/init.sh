@@ -1032,6 +1032,10 @@ generate_claude_code_config() {
           {
             "type": "command",
             "command": "$fw_prefix hook post-compact-resume"
+          },
+          {
+            "type": "command",
+            "command": "$fw_prefix hook sidecar-autostart"
           }
         ]
       },
@@ -1041,6 +1045,10 @@ generate_claude_code_config() {
           {
             "type": "command",
             "command": "$fw_prefix hook post-compact-resume"
+          },
+          {
+            "type": "command",
+            "command": "$fw_prefix hook sidecar-autostart"
           }
         ]
       }

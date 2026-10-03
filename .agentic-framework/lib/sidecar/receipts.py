@@ -7,12 +7,15 @@ accepted it" — lib/sidecar/inbox.py sent no receipt. Now whichever path takes
 it off the topic tells the sender, once per state:
 
     RECEIVED     at once, when it is taken off the topic: the watcher's ingest
-                 (watcher.ingest_hub), `fw sidecar inbox` (drain), and the
-                 prompt hook's peek (sidecar-inbox.sh → `inbox --peek --receipt`)
-    HANDED_OVER  on injection, once the session transcript proves the model
-                 was given it (hooks.finalize → hooks._confirm), or when
-                 `fw sidecar inbox` printed it into the agent's own tool output
-    REPLIED      when our agent answers it with `fw sidecar send --in-reply-to`
+                 (watcher.ingest_hub), `fw sidecar inbox` (drain, after it has
+                 printed), and the prompt hook's peek (sidecar-inbox.sh, for
+                 exactly the consults it showed)
+    HANDED_OVER  only on transcript evidence: after injection (hooks.finalize →
+                 hooks._confirm), or after the peek hook's surfacing appears
+                 in the session transcript under its one-time token (flush).
+                 A `fw sidecar inbox` drain sends no HANDED_OVER: nothing
+                 proves where its output went.
+    REPLIED      when our agent's `fw sidecar send --in-reply-to` succeeded
 
 Delivery, receiver → sender:
   1. the sender's registered, live receiver: POST /ack {client_msg_id, state,
@@ -236,13 +239,56 @@ def send_detached(messages: list[dict], states: list[str], by: str) -> None:
                      env=dict(os.environ, PROJECT_ROOT=str(receiver._root())))
 
 
-def flush(path: str) -> list[dict]:
+FINALIZE_WAIT_S = float(os.environ.get("FW_SIDECAR_RECEIPT_WAIT_S") or 90)
+
+
+def _peek_in_transcript(transcript: str, header: str, surfacing: str) -> bool:
+    """Does the session transcript hold THIS surfacing's hook attachment with
+    the exact header line for the consult? (The harness's record, not ours.)"""
+    if not transcript or not header or not surfacing or surfacing not in header:
+        return False
+    try:
+        text = Path(transcript).read_text(encoding="utf-8", errors="replace")
+    except OSError:
+        return False
+    for line in text.splitlines():
+        if surfacing not in line or "hook_additional_context" not in line:
+            continue
+        try:
+            att = json.loads(line).get("attachment") or {}
+        except json.JSONDecodeError:
+            continue
+        if att.get("type") != "hook_additional_context":
+            continue
+        content = att.get("content")
+        body = "\n".join(content) if isinstance(content, list) else str(content)
+        if header in body.splitlines():
+            return True
+    return False
+
+
+def flush(path: str, wait_s: float = FINALIZE_WAIT_S, poll_s: float = 1.0) -> list[dict]:
+    """Run a queued receipt job. With `finalize` (the prompt hook's peek), also
+    send HANDED_OVER for each consult the transcript proves the model was
+    given in that surfacing — and never otherwise."""
+    import time
     p = Path(path)
     try:
         job = json.loads(p.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return []
-    rows = [send(m, s, by=job.get("by") or "queue")
-            for m in job.get("messages", []) for s in job.get("states", [])]
+    by = job.get("by") or "queue"
+    rows = [send(m, s, by=by) for m in job.get("messages", []) for s in job.get("states", [])]
+    fin = job.get("finalize") or {}
+    pending = [m for m in job.get("messages", []) if m.get("_header")]
+    deadline = time.time() + wait_s
+    while fin.get("transcript") and pending:
+        for m in list(pending):
+            if _peek_in_transcript(fin["transcript"], m["_header"], fin.get("surfacing") or ""):
+                rows.append(send(m, HANDED_OVER, by=by))
+                pending.remove(m)
+        if not pending or time.time() >= deadline:
+            break
+        time.sleep(poll_s)
     p.unlink(missing_ok=True)
     return rows

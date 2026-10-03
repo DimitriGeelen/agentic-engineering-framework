@@ -151,11 +151,11 @@ class Session:
         self.wrapper: subprocess.Popen | None = None
         self.tl: str | None = None
 
-    def launch(self) -> None:
+    def launch(self, **extra_env) -> None:
         log = BASE_DIR / f"{self.root.name}-{self.label}.claude-fw.log"
         self.wrapper = subprocess.Popen(
             [CLAUDE_FW, "--termlink", "--no-restart", "--model", MODEL, "hello"],
-            cwd=self.root, env=_env(), stdin=subprocess.DEVNULL,
+            cwd=self.root, env=_env(**extra_env), stdin=subprocess.DEVNULL,
             stdout=open(log, "wb"), stderr=subprocess.STDOUT, start_new_session=True)
         self.log = log
 
@@ -389,6 +389,54 @@ def test_2b_legacy_consult_answered_with_in_reply_to_gives_sender_replied(pair):
     assert row and row[0]["path"] == "hub" and row[0]["send_to_replied_s"] is not None, ev
 
 
+def test_2c_prompt_hook_peek_path_receipts_at_the_sender(pair):
+    """The OTHER hub-topic path: a project with NO sidecar running, whose
+    UserPromptSubmit has the peek hook (sidecar-inbox.sh). Its operator
+    prompts; the hook shows the consult; the sender gets RECEIVED, and
+    HANDED_OVER only once D's own transcript holds that surfacing."""
+    a = pair["a"]
+    d_root = _scratch(f"t3684d-{pair['run']}")
+    st = json.loads((d_root / ".claude/settings.json").read_text())
+    st["hooks"]["UserPromptSubmit"][0]["hooks"].insert(
+        0, {"type": "command", "command": f"{FW} hook sidecar-inbox"})
+    (d_root / ".claude/settings.json").write_text(json.dumps(st, indent=2))
+    d = Session(d_root, "D")
+    try:
+        d.launch(CLAUDE_FW_NO_SIDECAR="1")
+        d.bring_up()
+        assert json.loads(_run([FW, "sidecar", "liveness", "--json"], d_root).stdout)["state"] == "absent"
+        nonce = "".join(random.choices(string.ascii_lowercase, k=10))
+        empty = BASE_DIR / "empty-registry"
+        empty.mkdir(exist_ok=True)
+        res = _send(a, d_root.name, f"Peer check PEEK-{nonce}: no action and no reply needed.",
+                    registry=empty)
+        mid = res["client_msg_id"]
+        a_sent = _ts(json.loads((a / f".context/sidecar/outbox/{mid}.json").read_text())["created_at"])
+        time.sleep(3)
+        base._type(d.tl, "Operator here: hello — anything new for you? Answer in one line.")
+        recv = _wait(lambda: _first(_receipts(a), client_msg_id=mid, state="RECEIVED"), 90, 1)
+        ho = _wait(lambda: _first(_receipts(a), client_msg_id=mid, state="HANDED_OVER"), 120, 1)
+        surfaced = None
+        for path in _transcripts_of(d_root):
+            text = path.read_text(errors="replace")
+            if f"PEEK-{nonce}" in text and "hook_additional_context" in text:
+                surfaced = path.name
+        ev = {"msg": mid, "receipt_received": recv, "receipt_handed_over": ho,
+              "sender_send_to_received_s": recv and _ts(recv["ts"]) - a_sent,
+              "sender_send_to_handed_over_s": ho and _ts(ho["ts"]) - a_sent,
+              "d_transcript_with_consult": surfaced,
+              "d_receipts_sent": _jsonl(d_root / ".context/sidecar/receipts-sent.jsonl")}
+        _evidence("2c-peek-hook", ev)
+        assert recv and ho and surfaced, ev
+        assert all(r["by"] == "prompt-hook-peek" for r in ev["d_receipts_sent"]), ev
+    finally:
+        d.teardown()
+
+
+def _transcripts_of(root: Path) -> list[Path]:
+    return base._transcripts(root)
+
+
 def test_3_busy_gets_non_urgent_only_after_turn_ends_urgent_while_busy(pair):
     b, a = pair["B"], pair["a"]
     assert _wait(b.ready, 120), "B not idle"
@@ -411,6 +459,17 @@ def test_3_busy_gets_non_urgent_only_after_turn_ends_urgent_while_busy(pair):
     pty_has_urgent = _short(uid) in _pty(b.tl)
     assert u_inj, f"urgent never injected: {_events(pair['b'], uid)}"
 
+    # Urgent over the HUB path (R5 must survive the fallback): taken off the
+    # topic by the tick and typed while B is still busy.
+    u2_nonce = "".join(random.choices(string.ascii_lowercase, k=10))
+    empty = BASE_DIR / "empty-registry"
+    empty.mkdir(exist_ok=True)
+    _send(a, pair["b_name"], f"Peer check HUBURGENT-{u2_nonce}: no action and no reply needed.",
+          urgent=True, registry=empty)
+    u2id = _wait(lambda: _msg_id_in_b(pair["b"], f"HUBURGENT-{u2_nonce}"), 2 * TICK_S + 5, 1)
+    u2_inj = u2id and _wait(lambda: _first(_events(pair["b"], u2id), event="INJECT_ATTEMPT", ok=True), 10, 0.5)
+    busy_at_u2 = not b.ready()
+
     # the turn ends (sleep 90 + the reply) → B's own Stop → the tick injects N
     turn_end = _wait(lambda: b.ready() and time.time(), 240, 0.5)
     assert turn_end, "B's turn never ended"
@@ -428,8 +487,11 @@ def test_3_busy_gets_non_urgent_only_after_turn_ends_urgent_while_busy(pair):
                      "pty_has_line_while_busy": pty_has_urgent, "handed_over": u_ho,
                      "send_to_inject_s": _ts(u_inj["ts"]) - u_sent,
                      "send_to_handed_over_s": u_ho and _ts(u_ho["ts"]) - u_sent},
+          "hub_urgent": {"msg": u2id, "inject": u2_inj, "busy_at_inject": busy_at_u2},
           "b_events": _events(pair["b"])[-40:]}
     _evidence("3-busy-urgent", ev)
+    assert u2_inj and u2_inj.get("urgent_bypass") is True and busy_at_u2, ev
+    assert _ts(u2_inj["ts"]) < turn_end, ev
     assert u_inj.get("urgent_bypass") is True and busy_at_urgent and pty_has_urgent, ev
     assert _ts(u_inj["ts"]) < turn_end, ev                       # injected while busy
     assert n_inj and _ts(n_inj["ts"]) >= turn_end - 1.5, ev       # only after the turn ended

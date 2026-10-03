@@ -108,10 +108,12 @@ def _replied_receipt(args) -> None:
 
 
 def cmd_send(args) -> int:
-    try:
-        return _cmd_send(args)
-    finally:
+    rc = _cmd_send(args)
+    if rc == 0:
+        # REPLIED only for an answer that was actually delivered (RECEIVED by
+        # a receiver, or accepted by the hub).
         _replied_receipt(args)
+    return rc
 
 
 def _cmd_send(args) -> int:
@@ -163,19 +165,23 @@ def _cmd_send(args) -> int:
 
 def cmd_inbox(args) -> int:
     messages = inbox.pending(advance=not args.peek)
-    # T-3684: receipts on the hub-topic path. A drain hands the consult to the
-    # agent that ran it (its tool output), so RECEIVED and HANDED_OVER; the
-    # prompt hook's peek (--receipt) sends RECEIVED from a detached process,
-    # because the hook must return within its timeout.
-    if messages and not args.peek:
-        for m in messages:
-            for st in (receipts.RECEIVED, receipts.HANDED_OVER):
+    try:
+        return _print_inbox(args, messages)
+    finally:
+        # T-3684: a drain took these off the topic — RECEIVED to each sender,
+        # only AFTER the output was written. No HANDED_OVER from here: nothing
+        # proves where this output went (the transcript-proven paths do that).
+        # The prompt hook's peek sends its own receipts for what it showed.
+        if messages and not args.peek:
+            sys.stdout.flush()
+            for m in messages:
                 try:
-                    receipts.send(m, st, by="inbox-cli")
+                    receipts.send(m, receipts.RECEIVED, by="inbox-cli")
                 except Exception as e:  # never lose the consult over a receipt
-                    print(f"receipt {st} for {m.get('client_msg_id')} failed: {e}", file=sys.stderr)
-    elif messages and args.receipt:
-        receipts.send_detached(messages, [receipts.RECEIVED], by="prompt-hook-peek")
+                    print(f"receipt for {m.get('client_msg_id')} failed: {e}", file=sys.stderr)
+
+
+def _print_inbox(args, messages) -> int:
     # T-3442: `--peek` shows DM rail SUMMARIES (count/cursor/unread, no hub
     # drain of content) — the same shape `fw sidecar status` prints. A
     # non-peek call actually drains unread DM posts (like the consult inbox
@@ -478,10 +484,24 @@ def _start_receiver(agent: str, port, no_inject: bool, quiet: bool) -> tuple[int
     import time
 
     info = lifecycle.read_triple_file()
-    if info and lifecycle.is_receiver_alive(info) and lifecycle.health(str(info["url"])):
+    if (info and lifecycle.is_receiver_alive(info) and lifecycle.health(str(info["url"]))
+            and not watcher.is_stale(info.get("pid"))):
         if not quiet:
             print(f"receiver already running: pid={info['pid']} url={info['url']}")
         return 1, info
+    if info and lifecycle.is_receiver_alive(info):
+        # T-3685: running code older than what is on disk — replace it, so a
+        # fix (e.g. T-3745's per-session targeting) is actually live.
+        import signal as _sig
+        if not quiet:
+            print(f"receiver pid={info['pid']} runs stale code — restarting it")
+        os.kill(int(info["pid"]), _sig.SIGTERM)
+        for _ in range(50):
+            if not lifecycle.pid_alive(info["pid"]):
+                break
+            time.sleep(0.1)
+        if lifecycle.pid_alive(info["pid"]):
+            os.kill(int(info["pid"]), _sig.SIGKILL)
     if info:
         lifecycle.clear_triple_file()
 
@@ -525,8 +545,12 @@ def _start_receiver(agent: str, port, no_inject: bool, quiet: bool) -> tuple[int
 
 
 def _start_watcher(agent: str, tick, no_inject: bool, quiet: bool) -> dict:
-    """Enable + start the supervised watcher (T-3684/T-3685)."""
+    """Enable + start the supervised watcher (T-3684/T-3685). A supervisor or
+    watcher running stale code is replaced."""
     watcher.enable(agent, tick, inject_on=not no_inject)
+    if watcher.is_stale(watcher.read_pid("supervisor")) or watcher.is_stale(watcher.read_pid("watcher")):
+        watcher.stop_processes()
+        watcher.record_event("STALE_CODE_RESTART")
     res = watcher.start_supervisor()
     if not quiet:
         tl = "present" if __import__("shutil").which("termlink") else \
@@ -593,12 +617,26 @@ def cmd_ensure(args) -> int:
         return 0
     cfg = watcher.read_enabled()
     row = {"enabled": cfg is not None}
-    if cfg is None:
-        row["action"] = "not enabled (fw sidecar start enables it)"
+    if cfg is None and args.autostart and not watcher.stopped_marker().exists():
+        # SessionStart (R14): never started here → start it now.
+        agent = _agent_or_none()
+        if agent:
+            rc, _ = _start_receiver(agent, None, False, True)
+            res = _start_watcher(agent, None, False, True) if rc != 2 else {"reason": "receiver failed"}
+            row["action"] = f"autostarted: {res.get('reason') or 'started'}"
+        else:
+            row["action"] = "autostart: no agent name"
+    elif cfg is None:
+        row["action"] = ("explicitly stopped (fw sidecar start re-enables)"
+                         if watcher.stopped_marker().exists()
+                         else "not enabled (fw sidecar start enables it)")
     else:
         rc, _ = _start_receiver(str(cfg.get("agent") or _agent_or_none() or ""), None,
                                 not cfg.get("inject", True), True)
         row["receiver"] = {0: "restarted", 1: "running", 2: "FAILED"}[rc]
+        if watcher.is_stale(watcher.read_pid("supervisor")) or watcher.is_stale(watcher.read_pid("watcher")):
+            watcher.stop_processes()
+            watcher.record_event("STALE_CODE_RESTART")
         if watcher.supervisor_alive():
             row["action"] = "supervisor running"
         else:
@@ -788,8 +826,6 @@ def build_parser() -> argparse.ArgumentParser:
     box.add_argument("--json", action="store_true")
     box.add_argument("--peek", action="store_true",
                      help="do not advance the cursor")
-    box.add_argument("--receipt", action="store_true",
-                     help="with --peek: send RECEIVED receipts for what is shown (prompt hook)")
     box.set_defaults(func=cmd_inbox)
 
     st = sub.add_parser("status", help="out-of-band channel status from our own "
@@ -909,6 +945,8 @@ def build_parser() -> argparse.ArgumentParser:
                          "(cron sidecar-ensure-1m, @reboot, claude-fw)")
     en_.add_argument("--all", action="store_true",
                      help="every enabled project on this host")
+    en_.add_argument("--autostart", action="store_true",
+                     help="SessionStart: also start a sidecar never started here (not one explicitly stopped)")
     en_.add_argument("--json", action="store_true")
     en_.set_defaults(func=cmd_ensure)
 

@@ -194,7 +194,14 @@ def enable(agent: str, tick: float | None, inject_on: bool) -> dict:
            "project_root": str(root), "enabled_at": _now().isoformat()}
     enabled_path().write_text(json.dumps(cfg), encoding="utf-8")
     _host_enabled_file(root).write_text(json.dumps(cfg), encoding="utf-8")
+    stopped_marker().unlink(missing_ok=True)
     return cfg
+
+
+def stopped_marker() -> Path:
+    """Written by `fw sidecar stop`: an explicit stop is respected by the
+    SessionStart autostart hook (R14) until `fw sidecar start`."""
+    return _dir() / "stopped"
 
 
 def disable() -> None:
@@ -251,7 +258,7 @@ def ingest_hub(reader=None) -> dict:
             "from_circuit": m.get("from_circuit"),
             "conversation_id": m.get("conversation_id"),
             "body": m.get("body") or "",
-            "urgent": False,
+            "urgent": bool(m.get("urgent")),
             "via": "hub-topic",
             "hub_topic": m.get("topic"),
             "hub_offset": m.get("offset"),
@@ -617,10 +624,35 @@ def start_supervisor(wait_s: float = 15.0) -> dict:
     return {"started": True, "pid": proc.pid, "reason": f"no tick within {wait_s:.0f}s yet"}
 
 
-def stop_all(timeout: float = 10.0) -> dict:
-    """Disable, then stop supervisor and watcher (the supervisor's exit takes
-    its child; the watcher pidfile covers an orphan)."""
-    disable()
+def code_mtime() -> float:
+    """Newest mtime of the sidecar code a running process may have loaded."""
+    here = Path(__file__).resolve().parent
+    files = list(here.glob("*.py")) + [here.parent / "sidecar_cli.py"]
+    return max((f.stat().st_mtime for f in files if f.exists()), default=0.0)
+
+
+def process_started_at(pid) -> float | None:
+    """Wall-clock start of a process (from /proc), or None."""
+    if not lifecycle.pid_alive(pid):
+        return None
+    try:
+        start_ticks = int(Path(f"/proc/{pid}/stat").read_text().rsplit(")", 1)[1].split()[19])
+        btime = next(int(l.split()[1]) for l in Path("/proc/stat").read_text().splitlines()
+                     if l.startswith("btime"))
+        return btime + start_ticks / os.sysconf("SC_CLK_TCK")
+    except (OSError, ValueError, IndexError, StopIteration):
+        return None
+
+
+def is_stale(pid) -> bool:
+    """A live process started before the sidecar code on disk last changed —
+    it is running old code (the Watchtower-currency class, T-3282)."""
+    started = process_started_at(pid)
+    return started is not None and started < code_mtime()
+
+
+def stop_processes(timeout: float = 10.0) -> dict:
+    """Stop supervisor and watcher WITHOUT disabling (a restart)."""
     stopped = {}
     for which in ("supervisor", "watcher"):
         pid = read_pid(which)
@@ -633,6 +665,15 @@ def stop_all(timeout: float = 10.0) -> dict:
                 os.kill(pid, signal.SIGKILL)
             stopped[which] = pid
     return stopped
+
+
+def stop_all(timeout: float = 10.0) -> dict:
+    """Disable (and mark explicitly stopped), then stop supervisor and watcher
+    (the supervisor's exit takes its child; the watcher pidfile covers an
+    orphan)."""
+    disable()
+    stopped_marker().write_text(_now().isoformat(), encoding="utf-8")
+    return stop_processes(timeout)
 
 
 def ensure_all() -> list[dict]:
