@@ -273,6 +273,21 @@ def main():
     parser.add_argument("--limit", type=int, default=10, help="Max chunks to retrieve")
     args = parser.parse_args()
 
+    # T-3783: say so loudly when semantic recall is degraded, so a thin answer is
+    # never mistaken for "nothing known". stderr: --json stdout stays clean.
+    if os.environ.get("FW_RECALL_NO_BANNER") != "1":
+        try:
+            import importlib.util
+            _spec = importlib.util.spec_from_file_location(
+                "vector_index_health", os.path.join(FRAMEWORK_ROOT, "lib", "vector_index_health.py"))
+            _vih = importlib.util.module_from_spec(_spec)
+            _spec.loader.exec_module(_vih)
+            _line = _vih.degraded_banner(PROJECT_ROOT, FRAMEWORK_ROOT)
+        except Exception as _exc:  # noqa: BLE001
+            _line = f"semantic recall degraded: health check unavailable ({_exc}) — fix: fw doctor"
+        if _line:
+            print(_line, file=sys.stderr)
+
     think = None
     if args.think:
         think = True

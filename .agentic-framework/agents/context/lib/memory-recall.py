@@ -201,11 +201,27 @@ def load_open_tasks(exclude: str = None) -> list:
     return items
 
 
+# T-3783: why the semantic path failed on this run, for the degraded banner.
+_HYBRID_ERROR = None
+
+
 def search_hybrid(query: str, limit: int = 5):
     """Search using T-245 hybrid search, filtered to project memory."""
+    global _HYBRID_ERROR
     try:
         os.chdir(str(FRAMEWORK_ROOT))
-        from web.embeddings import hybrid_search
+        # T-3783: chdir does not put cwd on sys.path for a script (sys.path[0] is
+        # the script's dir), so `import web` failed on every run and recall fell
+        # back to keyword search silently — semantic recall never ran here.
+        if str(FRAMEWORK_ROOT) not in sys.path:
+            sys.path.insert(0, str(FRAMEWORK_ROOT))
+        from web.embeddings import hybrid_search, is_index_ready
+        # T-3783: never let a recall start a build — _get_db() falls through to a
+        # full build_index() when the index is missing or empty (hours, in the
+        # foreground). No index is a degraded recall, reported by the banner.
+        if not is_index_ready():
+            _HYBRID_ERROR = "no usable vector index"
+            return None
         results = hybrid_search(query, limit=limit * 3)
         # Filter to project memory files
         memory_results = []
@@ -213,8 +229,25 @@ def search_hybrid(query: str, limit: int = 5):
             if item.get("category") == "Project Memory":
                 memory_results.append(item)
         return memory_results[:limit]
-    except Exception:
+    except Exception as exc:
+        _HYBRID_ERROR = f"{type(exc).__name__}: {str(exc)[:120]}"
         return None
+
+
+def _print_degraded_banner():
+    """T-3783: one stderr line when semantic recall is degraded, so an empty or
+    keyword-only answer is never mistaken for "nothing known". Never raises."""
+    try:
+        import importlib.util
+        spec = importlib.util.spec_from_file_location(
+            "vector_index_health", str(FRAMEWORK_ROOT / "lib" / "vector_index_health.py"))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        line = mod.degraded_banner(PROJECT_ROOT, FRAMEWORK_ROOT, _HYBRID_ERROR)
+    except Exception as exc:  # noqa: BLE001
+        line = f"semantic recall degraded: health check unavailable ({exc}) — fix: fw doctor"
+    if line:
+        print(f"{YELLOW}{line}{NC}", file=sys.stderr)
 
 
 def search_keyword(query: str, items: list, limit: int = 5):
@@ -461,6 +494,8 @@ def main():
     # frontmatter, so it must not recall itself.
     lines = recall(query, limit=args.limit, use_hybrid=not args.no_hybrid,
                    exclude_task=args.task)
+    if not args.no_hybrid and os.environ.get("FW_RECALL_NO_BANNER") != "1":
+        _print_degraded_banner()
 
     if lines:
         print(f"{BOLD}Related knowledge:{NC}")

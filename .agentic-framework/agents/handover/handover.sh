@@ -444,6 +444,15 @@ RECENT_COMMITS=$(git -C "$PROJECT_ROOT" log -5 --pretty=format:"- %h %s" 2>/dev/
 # every handover, and nudge toward `fw integrate run` when merge-back is
 # overdue (behind > FW_BRANCH_BEHIND_WARN, default 50, shared with the
 # T-100143 doctor scan). Silent on master / detached / no origin/master.
+# T-3783: semantic recall health — one line in the handover when red (index
+# missing/stale/lagging, unimportable, canary miss, reindex job not seeded).
+# Empty when green, so a healthy project's handover is unchanged.
+VECIDX_LINE=""
+if [ -f "$FRAMEWORK_ROOT/lib/vector-index-health.sh" ] && [ "${FW_HANDOVER_NO_INDEX_HEALTH:-0}" != "1" ]; then
+    . "$FRAMEWORK_ROOT/lib/vector-index-health.sh"
+    VECIDX_LINE=$(vector_index_health_summary 2>/dev/null || true)
+fi
+
 BRANCH_DIVERGENCE=""
 MERGEBACK_NUDGE=""
 if [ -f "$FRAMEWORK_ROOT/lib/branch-hygiene.sh" ]; then
@@ -1431,6 +1440,8 @@ fi)
 See gaps register above.
 
 ## Suggested First Action
+
+${VECIDX_LINE}
 
 ${MERGEBACK_NUDGE}
 

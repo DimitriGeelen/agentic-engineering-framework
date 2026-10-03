@@ -4892,49 +4892,23 @@ if should_run_section "corpus-health"; then
 section_mark "corpus-health"
 echo "=== CORPUS HEALTH ==="
 
-_ch_json=$(cd "$PROJECT_ROOT" && timeout 90 python3 -c '
-import json, sys
-try:
-    from web.embeddings import corpus_health
-except Exception as exc:
-    print(json.dumps({"status": "unimportable", "detail": type(exc).__name__}))
-    sys.exit(0)
-try:
-    h = corpus_health()
-    print(json.dumps({"status": h.get("status"), "detail": h.get("detail", "")}))
-except Exception as exc:
-    print(json.dumps({"status": "error", "detail": str(exc)[:200]}))
-' 2>/dev/null || echo '{"status":"timeout","detail":"corpus_health did not return within 90s"}')
-
-_ch_status=$(echo "$_ch_json" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("status",""))' 2>/dev/null || echo "")
-_ch_detail=$(echo "$_ch_json" | python3 -c 'import json,sys; print(json.load(sys.stdin).get("detail",""))' 2>/dev/null || echo "")
-
-case "$_ch_status" in
-    ok)
-        pass "Corpus canaries: retrieval verified end to end"
-        ;;
-    fault)
-        # A planted document did not come back for its own paraphrase. Either
-        # the index is stale, embedding is dead, or chunks are being truncated —
-        # the canary cannot tell you which, only that retrieval is broken.
-        fail "Corpus canaries: FAULT — $_ch_detail" \
-             "A canary document is not the top hit for its own probe" \
-             "Rebuild the index (fw serve, then /search), then re-run: fw audit --section corpus-health"
-        ;;
-    unknown)
-        warn "Corpus canaries: index has no manifest — cannot verify" \
-             "$_ch_detail" \
-             "Index predates T-3011. Rebuild to plant canaries and write a manifest."
-        ;;
-    unimportable)
-        info "Corpus canaries: web.embeddings not importable here — skipped"
-        ;;
-    timeout|error|"")
-        warn "Corpus canaries: check did not complete" \
-             "${_ch_detail:-no output from corpus_health}" \
-             "Check the embedder: fw doctor, and Config.EMBED_HOST"
-        ;;
-esac
+# T-3783: one predicate, shared with fw doctor / handover / the reindex cron
+# (lib/vector_index_health.py). The previous body ran corpus_health() with
+# cwd=PROJECT_ROOT and no FRAMEWORK_ROOT on the import path, so in every
+# vendored consumer it reported "not importable — skipped" as INFO: the outage
+# was graded as a pass. Unimportable, missing, stale, lagging, canary-miss and
+# a missing index-reindex-hourly job are all FAIL now. Records the verdict and
+# pushes the operator once when it turns red.
+source "$FRAMEWORK_ROOT/lib/vector-index-health.sh"
+_ch_out=$(vector_index_health) || true
+while IFS='|' read -r _ch_v _ch_msg _ch_hint; do
+    case "$_ch_v" in
+        OK)   pass "Vector index — $_ch_msg" ;;
+        WARN) warn "Vector index — $_ch_msg" "lib/vector_index_health.py" "${_ch_hint:-fw doctor}" ;;
+        FAIL) fail "Vector index — $_ch_msg" "lib/vector_index_health.py (T-3783)" "${_ch_hint:-fw index reindex}" ;;
+        SKIP) info "Vector index — $_ch_msg" ;;
+    esac
+done < <(printf '%s\n' "$_ch_out" | tail -n +2)
 
 fi
 

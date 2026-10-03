@@ -192,7 +192,10 @@ os.replace(tmp_path, focus_file)
         local recall_script="$FRAMEWORK_ROOT/agents/context/lib/memory-recall.py"
         if [ -f "$recall_script" ]; then
             echo ""
-            timeout 10 python3 "$recall_script" --task "$task_id" --limit 5 2>/dev/null || true
+            # T-3783: --no-hybrid keeps this inside its 10s budget. Before T-3783 the
+            # semantic path never imported from a script, so this was keyword-only in
+            # practice; now that it imports it costs ~13s and would be killed silently.
+            timeout 10 python3 "$recall_script" --task "$task_id" --limit 5 --no-hybrid 2>/dev/null || true
         fi
 
         # Task briefing via semantic search (T-270)
@@ -200,7 +203,7 @@ os.replace(tmp_path, focus_file)
         local ask_script="$FRAMEWORK_ROOT/lib/ask.py"
         if [ -f "$ask_script" ]; then
             local briefing
-            briefing=$(timeout 15 python3 "$ask_script" --concise --no-think \
+            briefing=$(FW_RECALL_NO_BANNER=1 timeout 15 python3 "$ask_script" --concise --no-think \
                 "Brief me on task $task_id: $task_name. What prior work, patterns, and decisions are relevant? What should I watch out for?" \
                 2>/dev/null) || true
             if [ -n "$briefing" ]; then
