@@ -159,6 +159,7 @@ except:
 
     # Detailed analysis: detect cd to another project + write operations
     export _BOUNDARY_CMD="$COMMAND"
+    export _BOUNDARY_FW_LIB="$FRAMEWORK_ROOT/lib"   # T-3766: registered credential files
     MATCH_RESULT=$(python3 << 'PYEOF'
 import re, sys, os, subprocess
 
@@ -421,6 +422,59 @@ def _drop_termlink_segments(cmd, root):
         return cmd
 
 
+# T-3766: the sanctioned credential path. A segment whose COMMAND POSITION is
+# `[bin/|.agentic-framework/bin/]fw review credential` may name a credential
+# file the committed backend registry registers (its --source argument); that
+# exact token, in that segment only, is exempt from the read-side Pattern 4.
+# Nothing else is: the write patterns (1-3) run first and still see the path,
+# `cat <file>` in a sibling segment is not exempt, and an unregistered path in
+# the same segment still blocks. Fails closed: any error yields no exemption.
+def _registered_cred_files():
+    try:
+        sys.path.insert(0, os.environ.get('_BOUNDARY_FW_LIB', ''))
+        import review_cost, review_credential
+        return review_credential.registered_files(review_cost.policy_path(),
+                                                  review_cost.load_registry())
+    except Exception:
+        return set()
+
+
+def _cred_exempt_spans(cmd, root):
+    """[(start, end)] of registered-credential-file tokens inside fw-review-credential segments."""
+    try:
+        files = None
+        spans = []
+        mask = _strip_quoted(cmd)
+        for s, e in _split_segments(mask):
+            toks = list(re.finditer(r'\S+', mask[s:e]))
+            words = [t.group(0) for t in toks]
+            i = 0
+            while i < len(words) and _TL_ASSIGN.match(words[i]):
+                i += 1
+            if len(words) < i + 3:
+                continue
+            exe = words[i]
+            if exe.startswith('/') and not exe.startswith(root + '/'):
+                continue
+            if exe.rsplit('/', 1)[-1] != 'fw' or words[i + 1:i + 3] != ['review', 'credential']:
+                continue
+            # No substitution, redirect-in or subshell anywhere in the segment:
+            # `$( cat <file> )` would run INSIDE an exempt segment and put the
+            # file's content on fw's argv (and into argparse's error text).
+            if re.search(r'[$`<()]', mask[s:e]):
+                continue
+            if files is None:
+                files = _registered_cred_files()
+            for j in range(i + 3, len(toks)):
+                if toks[j].group(0) in files and words[j - 1] == '--source':
+                    spans.append((s + toks[j].start(), s + toks[j].end()))
+        return spans
+    except Exception:
+        return []
+
+
+_CRED_SPANS = _cred_exempt_spans(_strip_heredocs(command), project_root)
+
 command = _strip_heredocs(command)   # T-2920: must precede _strip_quoted
 command = _drop_termlink_segments(command, project_root)   # T-3076
 command = _strip_quoted(command)
@@ -540,6 +594,13 @@ READ_ALLOWED_EXACT = {
 # strip surrounding shell punctuation that can lead it (none expected after
 # whitespace split, but be defensive about trailing commas/semicolons).
 def _tok_iter(cmd):
+    # T-3766: blank the exempt credential-file tokens (length-preserving) first.
+    if _CRED_SPANS:
+        chars = list(cmd)
+        for s_, e_ in _CRED_SPANS:
+            for k in range(s_, e_):
+                chars[k] = ' '
+        cmd = ''.join(chars)
     for raw in re.split(r'[\s;&|()]+', cmd):
         if not raw:
             continue

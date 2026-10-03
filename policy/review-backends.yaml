@@ -125,6 +125,7 @@ backends:
       - 'https?://([a-z0-9-]+\.)*openrouter\.ai'
       - '(^|[;&|]\s*|/)openrouter\s'
       - '\$\{?OPENROUTER_API_KEY'
+      - '\breview\s+credential\s+openrouter\b.*--exec\b'
 
   - id: antigravity
     name: "Google Antigravity (agy CLI)"
