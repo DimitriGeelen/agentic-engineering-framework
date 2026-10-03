@@ -1,17 +1,10 @@
 ---
-id: T-3766
-name: "RCA: agents repeatedly ask the operator for the OpenRouter key (and other vendor
-  credentials) that the framework already holds — make credential location a registry
-  fact, not agent memory"
+id: T-3768
+name: "Project-boundary gate bypassed by quoted, escaped, relative or substituted paths (cat \"/root/x\", /roo\t/x, ../../root/x, here-string) — reads and writes classified SAFE"
 description: >
-  Third recurrence (L-687 2026-10-01 T-3670; 2026-10-03 T-3751 twice in one session).
-  Key lives in /root/.litellm-openrouter.env (T-2418, LiteLLM proxy EnvironmentFile);
-  fw recall surfaces only the generic L-687, not the path; policy/review-backends.yaml
-  has no key-source field; the project-boundary gate blocks reading it; review runners
-  expect OPENROUTER_API_KEY in env which nothing sets. Operator 2026-10-03: OpenRouter
-  key is default standard functionality — codify for all vendor agents.
+  Found by codex round 4 on T-3766 (docs/reports/T-3766-review-codex-r4.md), probing HEAD's classifier: the quote stripper (agents/context/check-project-boundary.sh:190) removes quoted arguments before read and write detection, and escaped/relative paths are not normalised. Pre-existing, general (any outside path, not only credentials). Same text-gate boundary as Tier 0 (T-2742), but these spellings are trivial. Fix: interpret quoted/escaped args, resolve relative paths against cwd, treat command substitution / here-strings conservatively; regression cases for every probe in the report plus the sanctioned resolver control.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-03T11:45:32Z
-last_update: '2026-10-03T12:00:24Z'
-date_finished:
+created: 2026-10-03T12:31:38Z
+last_update: 2026-10-03T12:31:38Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -57,38 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-10-03T11:46:47Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 3
-      F-AUTONOMY: 0
-      F3: 1
-      F1: 1
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=3 (body:fw-recall-or-memory-link); F-AUTONOMY=0 (no-signal); F3=1
-      (body/components:prompt-incidental); F1=1 
-      (body/components:context-fabric-incidental); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-03T12:00:24Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=303,acs=8)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3766: RCA: agents repeatedly ask the operator for the OpenRouter key (and other vendor credentials) that the framework already holds — make credential location a registry fact, not agent memory
+# T-3768: Project-boundary gate bypassed by quoted, escaped, relative or substituted paths (cat "/root/x", /roo\t/x, ../../root/x, here-string) — reads and writes classified SAFE
 
 ## Context
 
@@ -98,12 +62,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] RCA written in ## RCA (symptom, root cause, why structurally allowed, prevention) with the three dated recurrences
-- [x] policy/review-backends.yaml gains a `credential:` field per backend (env var name + file path(s), never the value); openrouter → OPENROUTER_API_KEY, /root/.litellm-openrouter.env; codex/opencode/antigravity record their auth source too
-- [x] One resolver (`fw review credential <backend> --check`) loads the key for a runner from env, else the registered file, never printing it; review runners (paid seats) use it so no agent ever needs the key path in memory
-- [x] The project-boundary gate allowlists exactly the registered credential files for the resolver (read-only), so the sanctioned path works without a bypass — the EXEMPTION is exact (codex r4: plain, quoted, split and escaped `--exec`, env prefixes, subshells, here-strings and relative resolver paths all get no exemption). The general boundary classifier's own pre-existing quote/escape/relative-path bypass (codex r4 finding, any outside path) is a separate bug: T-3768
-- [x] CLAUDE.md §Review and Dispatch Cost Ruling names the registry field and the resolver ("never ask the operator for a credential the registry names"); learning recorded; concern registered
-- [x] Test: resolver finds the key from file when env is empty, reports a clear error naming the registry entry when neither exists, and never writes the value to stdout/stderr
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -137,15 +97,6 @@ cost_estimate_proposed:
 -->
 
 ## Verification
-
-timeout 300 bats tests/unit/t3766_review_credential.bats > /tmp/.t3766v.out 2>&1 && ! grep -q "^not ok" /tmp/.t3766v.out
-test "$(grep -c '# skip' /tmp/.t3766v.out)" -eq 0
-timeout 300 bats tests/unit/t3586_review_cost.bats > /tmp/.t3766c.out 2>&1 && ! grep -q "^not ok" /tmp/.t3766c.out
-timeout 300 bats tests/unit/check_project_boundary.bats > /tmp/.t3766b.out 2>&1 && ! grep -q "^not ok" /tmp/.t3766b.out
-out=$(bin/fw review credential codex --check 2>&1); echo "$out" | grep -q "cli-login"
-python3 -c "import yaml; yaml.safe_load(open('.context/concerns.yaml')); yaml.safe_load(open('policy/review-backends.yaml'))"
-grep -q "Never ask the operator for a credential the registry names" CLAUDE.md
-bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -275,14 +226,6 @@ bin/fw vendor self --check
 
 ## RCA
 
-**Symptom:** the agent asks the operator for the OpenRouter key (or its location) although the framework set it up months ago. Recurrences: 2026-10-01 (T-3670, recorded as L-687: "asked for the OpenRouter key path (encoded in T-375)"); 2026-10-03 (T-3751) — first a hidden-key paste prompt, then "where is it?", then "I never received it" — before finding `/root/.litellm-openrouter.env` in git history (T-2418, commit f0251a904: LiteLLM proxy EnvironmentFile). Operator: "remember this, codify this … OpenRouter key is default standard functionality in our framework". Other agents (vendor/peer projects) hit the same.
-
-**Root cause:** the credential's LOCATION lives only in prose: a task body (T-2418, path not even named there — it is in a commit diff), a report (T-375 describes a Watchtower encrypted store that is not what is in use), and a learning that says "look it up" without saying where (L-687). Nothing machine-readable answers "where is the key for backend X?": `policy/review-backends.yaml` registers each backend's cost class and match patterns but not its credential source; the review runners read only `$OPENROUTER_API_KEY`, which no session sets.
-
-**Why structurally allowed:** (1) the knowledge lives in the agent's context, which compaction erases — the agent re-derives it per session, and asking the operator is the cheapest re-derivation; (2) `fw recall` surfaced the generic L-687 but not the path, because no learning carried it; (3) the project-boundary gate (T-559) blocks reading `/root/...`, so even a correct guess cannot be verified in-session, which nudges toward asking; (4) L-687 was a behavioural learning ("recall before asking") with no structural backing — the same class as G-019: a learning is not a prevention.
-
-**Prevention:** make the location a registry fact the code reads, so no agent needs to remember it: `credential:` field per backend in `policy/review-backends.yaml` (env var + file paths, never values); one resolver (`fw review credential <backend>`) used by every runner; the boundary gate allowlists exactly those registered files read-only; CLAUDE.md §Review and Dispatch Cost Ruling states "never ask the operator for a credential the registry names"; a test pins it. Same field for codex / opencode / antigravity so all vendor agents resolve the same way.
-
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -352,21 +295,6 @@ bin/fw vendor self --check
 
 ## Decisions
 
-### 2026-10-03 — how runners get the key
-- **Chose:** runners are launched through `fw review credential <backend> --exec -- <runner>`; no committed paid-seat runner exists to rewire (grep: the only reader of OPENROUTER_API_KEY outside the resolver is web/llm/manager.py).
-- **Why:** --exec puts the value in the child's environment only, masks it in the child's output, and checks the paid approval itself.
-- **Rejected:** wiring web/llm/manager.py to the resolver as a fallback — Watchtower would then make paid OpenRouter calls with no approved proposal, against the T-3583 cost ruling.
-
-### 2026-10-03 — exfiltration by registry edit
-- **Chose:** the resolver and the boundary hook read credential blocks from the registry as committed at HEAD (when git-tracked); --source must be a registered file; registered files must be regular, not group/world-writable, owned by root or the caller, <= 64 KiB; only the one named variable is parsed.
-- **Why:** an uncommitted edit cannot retarget the resolver, and a committed one is attributable in git history.
-- **Rejected:** an operator-only gate on credential edits — a hand edit bypasses any verb, as it does for cost_class today; the residual is documented in lib/review_credential.py.
-
-### 2026-10-03 — close after codex round 4 (parent session)
-- **Chose:** close T-3766 although round 4 ends VERDICT: FAIL. Round 4 marks AC1, AC2, AC3, AC5, AC6 MET, confirms the round-3 finding closed and the credential exemption exact (every probed spelling gets no exemption), and its only remaining finding is a PRE-EXISTING general weakness of the boundary classifier (quoted/escaped/relative/substituted outside paths classified SAFE), which it states "is not incorrect exemption spans introduced by the round-3 fix". That bug is filed as its own task, T-3768 (one bug, one task).
-- **Why:** holding T-3766 open would keep the credential fix off the release while the defect it is blocked on lives in a different component; the resolver is verified live (`fw review credential openrouter --check` resolved from the registered file, masked) and used for the T-3751 paid seats.
-- **Rejected:** a fifth round on T-3766 (would re-find the T-3768 bug); folding the classifier rewrite into T-3766 (compounds two bugs).
-
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -388,10 +316,7 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-03T11:45:32Z — task-created [task-create-agent]
+### 2026-10-03T12:31:38Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3766-rca-agents-repeatedly-ask-the-operator-f.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3768-project-boundary-gate-bypassed-by-quoted.md
 - **Context:** Initial task creation
-
-### 2026-10-03T11:46:46Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
