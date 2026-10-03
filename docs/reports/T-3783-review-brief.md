@@ -55,3 +55,15 @@ There are three new config keys, each in both `lib/config.sh` FW_CONFIG_REGISTRY
 - The cron check reads the registry, not `/etc/cron.d`. The registry-to-deployed leg is the existing doctor/audit cron-drift check (T-1771).
 - In the hermetic tests the canary goes through a stub `_semantic_search`, because real embeddings need Ollama. The real path is exercised live by doctor and audit on this host.
 - A project with no recorded full run and only fast-mode callers (recall/ask) gets the banner but no push. Pushes come from full runs: doctor, audit, handover and the hourly reindex, which every consumer now has.
+
+## Round 1 findings (codex, `T-3783-review-codex-r1.md`): what changed
+
+| finding | fix | pinned by |
+|---|---|---|
+| `finished_at: NaN` / `Infinity` passed | `_valid_ts`: finite, > 0, not more than 1h in the future; used by `check_manifest` and `check_age` | test "NaN, Infinity and future finished_at are red" |
+| freshness ignored edited decisions, episodics, reports and edits to existing items | `_source_drift`: files under `.tasks`, `.context/episodic`, `.context/project`, `docs/reports` (`.md/.yaml/.yml`, the indexer's suffixes) that are absent from the index's `file_state` or whose sha256 (hashed the way the indexer hashes) differs; hashed only when the mtime moved. Counted against `INDEX_MAX_LAG`. A touch without a content change does not count | test "content drift … beyond the limit is red" |
+| the canary checked paths, not the manifest token | new `check_token`: the manifest `canary_token` must appear in a `__fwcanary__/` row of the index (ro sqlite). Missing → FAIL "manifest and index are from different builds" | test "manifest from a different build … is red" |
+| `record()` race: two callers both claimed the transition | the read-compare-write runs under `fcntl.flock` on `vector-index-health.json.lock`, with per-pid tmp files | test "concurrent recorders claim one transition" (8 threads → 1 claim) |
+| a state-write failure could re-push on every run | an unwritable state claims no transition (the red stays in doctor, audit and handover) | test "an unwritable state claims no transition" |
+| a failed push is not retried | by design: `fw_notify` is fire-and-forget, and the requirement is once per transition, not per run. The red stays visible in doctor, audit (FAIL), the handover line, and the recall/ask banner | documented in the `record()` docstring |
+| legacy `web/embeddings.py:corpus_health()` returns `unknown` for a missing manifest | no rail calls it any more (grep: no callers outside its definition). doctor, audit, handover and reindex all use the new predicate | — |

@@ -38,7 +38,9 @@ Exit: 0 OK, 1 WARN, 2 FAIL (also printed as the first line in text mode).
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
+import math
 import os
 import re
 import sqlite3
@@ -68,6 +70,13 @@ def _env_num(name: str, default: float) -> float:
         return v if v >= 0 else default
     except ValueError:
         return default
+
+
+def _valid_ts(v, now: float) -> bool:
+    """A real build time: a finite positive number, not in the future.
+    NaN / Infinity / a far-future stamp would otherwise read as "fresh"."""
+    return (isinstance(v, (int, float)) and not isinstance(v, bool)
+            and math.isfinite(v) and 0 < v <= now + 3600)
 
 
 def _check(name, verdict, message, hint=""):
@@ -115,13 +124,14 @@ def check_index(path: Path):
     return _check("index", "OK", f"vector index opens ({n} chunks)")
 
 
-def check_manifest(manifest):
+def check_manifest(manifest, now: float | None = None):
+    now = time.time() if now is None else now
     if manifest is None:
         return _check("manifest", "FAIL",
                       "vector index has no readable manifest — age and canary unknowable",
                       f"Write one: {REMEDY_REINDEX}")
     fin = manifest.get("finished_at")
-    if not isinstance(fin, (int, float)) or isinstance(fin, bool) or fin <= 0:
+    if not _valid_ts(fin, now):
         return _check("manifest", "FAIL", "manifest has no valid finished_at",
                       f"Rewrite it: {REMEDY_REINDEX}")
     if not str(manifest.get("canary_token") or "").strip():
@@ -132,7 +142,7 @@ def check_manifest(manifest):
 
 def check_age(manifest, max_age_hours: float, now: float):
     fin = (manifest or {}).get("finished_at")
-    if not isinstance(fin, (int, float)) or isinstance(fin, bool) or fin <= 0:
+    if not _valid_ts(fin, now):
         return _check("age", "FAIL", "vector index age unknown (no manifest finished_at)",
                       f"Run: {REMEDY_REINDEX}")
     hours = (now - float(fin)) / 3600.0
@@ -174,6 +184,11 @@ def check_lag(path: Path, project_root: Path, max_lag: int):
             learn_chunks = [r[0] for r in db.execute(
                 "SELECT chunk_text FROM documents WHERE path = ?",
                 (".context/project/learnings.yaml",))]
+            try:
+                state = {r[0]: (r[1], r[2]) for r in db.execute(
+                    "SELECT path, content_hash, mtime FROM file_state")}
+            except sqlite3.Error:
+                state = {}   # index predates file_state: everything counts as drift
         finally:
             db.close()
     except Exception as exc:  # noqa: BLE001
@@ -191,11 +206,77 @@ def check_lag(path: Path, project_root: Path, max_lag: int):
     indexed_learn = set(_LEARN_RE.findall("\n".join(learn_chunks)))
     missing_learn = disk_learn - indexed_learn
 
-    detail = f"{len(missing_tasks)} task(s), {len(missing_learn)} learning(s) not in the index"
-    if len(missing_tasks) > max_lag or len(missing_learn) > max_lag:
+    drift = _source_drift(project_root, state)
+
+    detail = (f"{len(missing_tasks)} task(s), {len(missing_learn)} learning(s) not in the index; "
+              f"{drift} source file(s) new or changed since indexed")
+    if len(missing_tasks) > max_lag or len(missing_learn) > max_lag or drift > max_lag:
         return _check("lag", "FAIL", f"vector index lags the corpus: {detail} (limit {max_lag})",
                       f"Run: {REMEDY_REINDEX}")
     return _check("lag", "OK", detail)
+
+
+# The authored sources recall is for: tasks, learnings/decisions/patterns,
+# episodics, reports. A subset of web/search_utils.py AUTHORED_DIRS with the
+# same INDEXED_SUFFIXES, so a file counted here is one the reindex would index.
+DRIFT_DIRS = ((".tasks",), (".context", "episodic"), (".context", "project"), ("docs", "reports"))
+DRIFT_SUFFIXES = (".md", ".yaml", ".yml")
+
+
+def _source_drift(project_root: Path, state: dict) -> int:
+    """Files that are new, or whose content changed, since the index saw them.
+
+    Catches what id counts cannot: an edited decision, a new episodic or report,
+    a rewritten learning. Content is hashed the way the indexer hashes it, and
+    only for files whose mtime moved, so an unchanged corpus costs one stat per
+    file and no reads.
+    """
+    n = 0
+    for parts in DRIFT_DIRS:
+        d = project_root.joinpath(*parts)
+        if not d.is_dir():
+            continue
+        for f in d.rglob("*"):
+            if f.suffix not in DRIFT_SUFFIXES or not f.is_file():
+                continue
+            seen = state.get(f.relative_to(project_root).as_posix())
+            if seen is None:
+                n += 1
+                continue
+            try:
+                if f.stat().st_mtime <= float(seen[1]):
+                    continue
+                h = hashlib.sha256(f.read_text(errors="replace")
+                                   .encode("utf-8", errors="replace")).hexdigest()
+            except (OSError, ValueError, TypeError):
+                n += 1
+                continue
+            n += h != seen[0]
+    return n
+
+
+def check_token(path: Path, token: str):
+    """The manifest's canary token must be IN the index. verify_canaries checks
+    canary paths, which are identical in every build, so an index and a manifest
+    from different builds would otherwise pass."""
+    if not token:
+        return _check("token", "FAIL", "no canary token to look for", f"Run: {REMEDY_REINDEX}")
+    try:
+        db = _open_ro(path)
+        try:
+            hit = db.execute(
+                "SELECT 1 FROM documents WHERE path LIKE '__fwcanary__/%' "
+                "AND instr(chunk_text, ?) > 0 LIMIT 1", (token,)).fetchone()
+        finally:
+            db.close()
+    except Exception as exc:  # noqa: BLE001
+        return _check("token", "FAIL", f"canary token unreadable ({type(exc).__name__})",
+                      f"Rebuild it: {REMEDY_REINDEX}")
+    if not hit:
+        return _check("token", "FAIL",
+                      f"manifest canary {token} is not in the index — manifest and index "
+                      "are from different builds", f"Run: {REMEDY_REINDEX}")
+    return _check("token", "OK", f"canary {token} planted in the index")
 
 
 # Runs in a child exactly as `fw index reindex` does (bin/fw: cd PROJECT_ROOT,
@@ -347,7 +428,7 @@ def evaluate(project_root: Path, framework_root: Path, canary: bool = True,
     checks = []
     idx = check_index(path)
     checks.append(idx)
-    man = check_manifest(manifest)
+    man = check_manifest(manifest, now)
     checks.append(man)
     token = str((manifest or {}).get("canary_token") or "")
 
@@ -371,6 +452,9 @@ def evaluate(project_root: Path, framework_root: Path, canary: bool = True,
                              REMEDY_UPGRADE))
     else:
         checks.append(check_canary(child, token))
+    checks.append(check_token(path, token) if idx["verdict"] == "OK"
+                  else _check("token", "FAIL", "canary token unverifiable (no usable index)",
+                              f"Build it: {REMEDY_REINDEX}"))
     checks.append(check_cron(project_root))
     checks.append(check_usage(path, fail_pct, now))
 
@@ -386,24 +470,39 @@ def record(result: dict, project_root: Path) -> bool:
     "Turned red" = this FAIL follows a non-FAIL (or no prior record), so the
     operator push fires once per transition, not on every run. Only full runs
     record: a fast run cannot see the canary and must not flip red to green.
+
+    The read-compare-write runs under an exclusive flock, so two overlapping
+    runs (the cron reindex and a doctor) cannot both claim one transition. When
+    the state cannot be written, no transition is claimed: an unwritable state
+    would otherwise re-push on every run, and the red is still shown by
+    doctor/audit/handover. The push itself is fw_notify's fire-and-forget; a
+    lost push is not retried while the state stays red (by design: once per
+    transition, never per run).
     """
-    state = project_root / ".context" / "working" / STATE_NAME
-    prev = None
+    import fcntl  # noqa: PLC0415 — POSIX only, as is the framework
+    wdir = project_root / ".context" / "working"
+    state = wdir / STATE_NAME
     try:
-        prev = json.loads(state.read_text()).get("status")
-    except Exception:  # noqa: BLE001
-        prev = None
-    turned_red = result["status"] == "FAIL" and prev != "FAIL"
-    try:
-        state.parent.mkdir(parents=True, exist_ok=True)
-        tmp = state.with_suffix(".json.tmp")
-        tmp.write_text(json.dumps({
-            "status": result["status"], "ts": result["ts"], "previous": prev,
-            "reasons": [c["message"] for c in result["checks"] if c["verdict"] == "FAIL"],
-        }, indent=2))
-        tmp.replace(state)
+        wdir.mkdir(parents=True, exist_ok=True)
+        lock = open(wdir / (STATE_NAME + ".lock"), "a")
     except OSError:
-        pass
+        return False
+    with lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        try:
+            prev = json.loads(state.read_text()).get("status")
+        except Exception:  # noqa: BLE001
+            prev = None
+        turned_red = result["status"] == "FAIL" and prev != "FAIL"
+        try:
+            tmp = state.with_suffix(f".json.tmp.{os.getpid()}")
+            tmp.write_text(json.dumps({
+                "status": result["status"], "ts": result["ts"], "previous": prev,
+                "reasons": [c["message"] for c in result["checks"] if c["verdict"] == "FAIL"],
+            }, indent=2))
+            tmp.replace(state)
+        except OSError:
+            return False
     return turned_red
 
 

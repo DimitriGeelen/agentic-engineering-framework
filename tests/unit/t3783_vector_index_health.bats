@@ -55,7 +55,7 @@ teardown() { rm -rf "$TMPD"; }
 # build_index [age_hours] [with_canary=1] [extra_tasks=0]
 build_index() {
     local age="${1:-0}" canary="${2:-1}"
-    ( cd "$F" && AGE="$age" CAN="$canary" TOKEN="$TOKEN" DB="$P/.context/working/fw-vec-index.db" python3 - <<'PY'
+    ( cd "$F" && AGE="$age" CAN="$canary" TOKEN="$TOKEN" PROOT="$P" DB="$P/.context/working/fw-vec-index.db" python3 - <<'PY'
 import json, os, sqlite3, time
 from web.canary import all_canaries
 db = sqlite3.connect(os.environ["DB"])
@@ -67,6 +67,15 @@ if os.environ["CAN"] == "1":
     rows += [(d.path, d.text) for d in all_canaries(os.environ["TOKEN"])]
 for p, t in rows:
     db.execute("INSERT INTO documents (path,title,category,chunk_text) VALUES (?,?,?,?)", (p, p, "x", t))
+# file_state as the indexer writes it: every source file on disk, hashed.
+import hashlib, pathlib
+db.execute("CREATE TABLE file_state (path TEXT PRIMARY KEY, content_hash TEXT, mtime REAL, updated_at REAL)")
+root = pathlib.Path(os.environ["PROOT"])
+for f in root.rglob("*"):
+    if f.is_file() and f.suffix in (".md", ".yaml", ".yml") and "/working/" not in str(f):
+        h = hashlib.sha256(f.read_text(errors="replace").encode("utf-8", errors="replace")).hexdigest()
+        db.execute("INSERT INTO file_state VALUES (?,?,?,?)",
+                   (f.relative_to(root).as_posix(), h, f.stat().st_mtime, time.time()))
 db.commit()
 fin = time.time() - float(os.environ["AGE"]) * 3600
 json.dump({"finished_at": fin, "canary_token": os.environ["TOKEN"], "num_docs": len(rows)},
@@ -259,4 +268,75 @@ print('EMBED=[' + m.degraded_banner('$P', '$F', 'ModuleNotFoundError: web') + ']
         grep -q "\"$k|" "$ROOT/lib/config.sh"
         grep -q "(\"$k\"" "$ROOT/web/blueprints/config.py"
     done
+}
+
+# --- review round 1 (codex): the gaps it found, each pinned red ---
+
+@test "NaN, Infinity and future finished_at are red, never fresh" {
+    build_index 0
+    m="$P/.context/working/fw-vec-index.db.manifest.json"
+    for v in NaN Infinity 99999999999; do
+        python3 -c "import json,sys; d=json.load(open(sys.argv[1])); d['finished_at']=float('$v'); json.dump(d, open(sys.argv[1],'w'))" "$m"
+        run check --no-canary
+        [ "$status" -eq 2 ]
+        [[ "$output" == *"FAIL|manifest: manifest has no valid finished_at"* ]]
+        [[ "$output" == *"FAIL|age:"* ]]
+    done
+}
+
+@test "manifest from a different build than the index (token not planted) is red" {
+    build_index 0
+    TOKEN="FWCANARY-999" ; m="$P/.context/working/fw-vec-index.db.manifest.json"
+    python3 -c "import json,sys; d=json.load(open(sys.argv[1])); d['canary_token']='FWCANARY-999'; json.dump(d, open(sys.argv[1],'w'))" "$m"
+    run check
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"FAIL|token: manifest canary FWCANARY-999 is not in the index"* ]]
+}
+
+@test "content drift (edited decisions, new reports/episodics) beyond the limit is red" {
+    build_index 0
+    run check --no-canary
+    [[ "$output" == *"0 source file(s) new or changed"* ]]
+    mkdir -p "$P/docs/reports" "$P/.context/episodic"
+    for i in 1 2 3; do echo "r$i" > "$P/docs/reports/T-00$i-r.md"; echo "e: $i" > "$P/.context/episodic/T-00$i.yaml"; done
+    sleep 1; printf 'decisions:\n- id: D-001\n  changed: yes\n' > "$P/.context/project/decisions.yaml"
+    printf 'learnings:\n- id: L-001\n  learning: edited\n' > "$P/.context/project/learnings.yaml"
+    FW_INDEX_MAX_LAG=5 run check --no-canary
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"FAIL|lag: vector index lags the corpus: 0 task(s), 0 learning(s) not in the index; 8 source file(s) new or changed"* ]]
+    # a touch without a content change is not drift
+    build_index_fresh() { rm -f "$P/.context/working/fw-vec-index.db"*; build_index 0; }
+    build_index_fresh; sleep 1; touch "$P/.context/project/learnings.yaml"
+    run check --no-canary
+    [[ "$output" == *"; 0 source file(s) new or changed"* ]]
+}
+
+@test "concurrent recorders claim one transition, not two" {
+    build_index 48
+    run python3 - "$CHECK" "$P" "$F" <<'PY'
+import importlib.util, sys, threading
+s = importlib.util.spec_from_file_location("v", sys.argv[1]); m = importlib.util.module_from_spec(s); s.loader.exec_module(m)
+from pathlib import Path
+res = m.evaluate(Path(sys.argv[2]), Path(sys.argv[3]), canary=False)
+assert res["status"] == "FAIL"
+out, start = [], threading.Barrier(8)
+def go():
+    start.wait(); out.append(m.record(res, Path(sys.argv[2])))
+ts = [threading.Thread(target=go) for _ in range(8)]
+[t.start() for t in ts]; [t.join() for t in ts]
+print("CLAIMS", sum(out))
+PY
+    [[ "$output" == *"CLAIMS 1"* ]]
+}
+
+@test "an unwritable state claims no transition (no push storm)" {
+    build_index 48
+    run python3 -c "
+import importlib.util, sys
+from pathlib import Path
+s = importlib.util.spec_from_file_location('v', '$CHECK'); m = importlib.util.module_from_spec(s); s.loader.exec_module(m)
+res = {'status': 'FAIL', 'ts': 0, 'checks': []}
+print('CLAIM', m.record(res, Path('/proc/nonexistent-project')))
+"
+    [[ "$output" == *"CLAIM False"* ]]
 }
