@@ -288,10 +288,32 @@ def _age_s(since: datetime | None, now: datetime) -> float:
     return max(0.0, (now - since).total_seconds()) if since else 0.0
 
 
+PUSH_RETRY_S = 1800      # a FAILED push is retried, at most this often…
+PUSH_MAX_ATTEMPTS = 6    # …and at most this many times per (message, level)
+
+
 def _escalated_levels() -> dict[str, list[str]]:
-    out: dict[str, list[str]] = {}
+    """Levels that are DONE per item: pushed, deliberately not pushed (the
+    operator disabled push), or failed PUSH_MAX_ATTEMPTS times. A failed
+    attempt alone does not finish a level — it is retried (codex round 3)."""
+    rows: dict[tuple[str, str], list[dict]] = {}
     for r in _read(escalations_path()):
-        out.setdefault(str(r.get("key")), []).append(str(r.get("level")))
+        rows.setdefault((str(r.get("key")), str(r.get("level"))), []).append(r)
+    out: dict[str, list[str]] = {}
+    for (key, level), rs in rows.items():
+        failed = [r for r in rs if str(r.get("push", "")).startswith("failed")]
+        if len(failed) < len(rs) or len(failed) >= PUSH_MAX_ATTEMPTS:
+            out.setdefault(key, []).append(level)
+    return out
+
+
+def _last_failed_attempt() -> dict[tuple[str, str], datetime]:
+    out: dict[tuple[str, str], datetime] = {}
+    for r in _read(escalations_path()):
+        if str(r.get("push", "")).startswith("failed"):
+            ts = _ts(r.get("ts"))
+            if ts:
+                out[(str(r.get("key")), str(r.get("level")))] = ts
     return out
 
 
@@ -311,6 +333,26 @@ def inbound_items(now: datetime | None = None) -> list[dict]:
     for r in _read(recover_log_path()):
         recovers[str(r.get("id"))] = r
     out = []
+    # Hub messages taken off the topic whose store keeps failing (watcher
+    # spool): listed at once, closable only by an operator drop.
+    from .watcher import spooled
+    closed = _closures()
+    for env in spooled():
+        mid = str(env.get("client_msg_id") or "")
+        if not mid or mid in closed:
+            continue
+        since = _ts(env.get("_spooled_at")) or now
+        out.append({
+            "side": "inbound", "id": mid, "key": f"in:{mid}",
+            "peer": _safe(env.get("from"), "unknown"),
+            "conversation_id": _safe(env.get("conversation_id")),
+            "urgent": bool(env.get("urgent")), "via": "hub-topic",
+            "since": since.isoformat(), "age_s": round(_age_s(since, now)),
+            "waiting_since": env.get("_spooled_at"),
+            "reason": _safe_note(f"received but not stored: {env.get('_spool_error')}"),
+            "state": "store-failed", "escalated": levels.get(f"in:{mid}", []),
+            "last_recover": None, "actions": ["drop"],
+        })
     for mid in receiver.list_pending_messages():
         if is_closed_inbound(mid, replied):
             continue
@@ -439,7 +481,7 @@ def due_levels(item: dict) -> list[str]:
     # either side, or the send itself failed (codex round 2).
     no_recipient = item["state"] in ("no-live-recipient", "peer-has-no-live-recipient",
                                      "recover-unconfirmed", "undeliverable", "rejected",
-                                     "escalated")
+                                     "escalated", "store-failed")
     due = []
     if age_h >= warn_hours() or (item["urgent"] and no_recipient):
         due.append(LEVEL_WARN)
@@ -477,16 +519,29 @@ def default_notifier(title: str, message: str, click_url: str = "") -> str:
         return "sent" if proc.returncode == 0 else f"failed:exit {proc.returncode}"
     if not _notify_enabled():
         return "disabled"
-    fw_root = os.environ.get("FRAMEWORK_ROOT") or str(Path(__file__).resolve().parents[2])
-    script = ('. "$FRAMEWORK_ROOT/lib/notify.sh" && fw_notify "$1" "$2" manual framework "$3"')
+    # The same dispatcher and server lib/notify.sh:fw_notify uses, run in the
+    # FOREGROUND: fw_notify backgrounds it and returns 0 even when the
+    # dispatcher is missing, so its status cannot say whether a push went out
+    # (codex round 3). Here the dispatcher's own exit status is the outcome.
+    dispatcher = os.environ.get("SKILLS_DISPATCHER") or \
+        "/opt/150-skills-manager/skills/alerts/alert_dispatcher.py"
+    if not Path(dispatcher).is_file():
+        return f"failed:no alert dispatcher at {dispatcher}"[:200]
+    from .watcher import _framework_yaml_value
+    env = dict(os.environ)
+    url = os.environ.get("FW_NTFY_URL") or _framework_yaml_value("NTFY_URL")
+    if url:
+        env["NTFY_URL"] = url
+    body = f"{message}\n{click_url}" if click_url else message
     try:
-        proc = subprocess.run(["bash", "-c", script, "fw-notify", title, message, click_url],
-                              capture_output=True, text=True, timeout=30,
-                              env=dict(os.environ, FRAMEWORK_ROOT=fw_root,
-                                       PROJECT_ROOT=str(receiver._root())))
+        proc = subprocess.run([sys.executable, dispatcher, "--trigger", "manual",
+                               "--title", title, "--message", body or title],
+                              capture_output=True, text=True, timeout=60, env=env)
     except (OSError, subprocess.SubprocessError) as e:
         return f"failed:{e}"[:200]
-    return "sent" if proc.returncode == 0 else f"failed:exit {proc.returncode}"
+    if proc.returncode != 0:
+        return f"failed:exit {proc.returncode}: {(proc.stderr or '').strip()[-120:]}"[:200]
+    return "sent"
 
 
 def _watchtower_url() -> str:
@@ -520,11 +575,16 @@ def escalate(now: datetime | None = None, notifier=None) -> list[dict]:
     Called every tick; the ledger, not the tick, decides what is new."""
     notifier = notifier or default_notifier
     done = _escalated_levels()
+    last_fail = _last_failed_attempt()
+    clock = now or _now()
     rows = []
     url = _watchtower_url()
     for item in open_items(now):
         for level in due_levels(item):
             if level in done.get(item["key"], []):
+                continue
+            failed_at = last_fail.get((item["key"], level))
+            if failed_at and (clock - failed_at).total_seconds() < PUSH_RETRY_S:
                 continue
             title, body = _push_text(item, level)
             push = notifier(title, body, f"{url}/approvals#section-waiting" if url else "")
@@ -589,7 +649,19 @@ def drop(item_id: str, reason: str, by: str) -> dict:
     row = {"id": mid, "side": item["side"], "peer": item.get("peer"),
            "conversation_id": item.get("conversation_id"), "reason": reason.strip(),
            "by": by, "ts": _now().isoformat()}
-    if item["side"] == "inbound":
+    if item.get("state") == "store-failed":
+        # Never stored: the closure row is what removes it from the listing;
+        # the spool keeps retrying the store (harmless) until it succeeds.
+        from .watcher import spooled
+        row["spooled"] = True
+        env = next((e for e in spooled() if e.get("client_msg_id") == mid), {})
+        try:
+            r = receipts.send(env, DROPPED, by=f"operator:{by}",
+                              note=f"dropped by the operator: {reason.strip()}")
+            row["sender_told"], row["sender_told_via"] = bool(r.get("ok")), r.get("via") or r.get("error")
+        except Exception as e:
+            row["sender_told"], row["sender_told_via"] = False, f"{type(e).__name__}: {e}"[:200]
+    elif item["side"] == "inbound":
         _dropped_marker(mid).write_text(json.dumps(row), encoding="utf-8")
         receiver.record_event(mid, DROPPED, reason=reason.strip(), by=by)
         env = receiver.read_message(mid) or {}

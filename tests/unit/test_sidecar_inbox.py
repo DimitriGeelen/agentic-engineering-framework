@@ -153,7 +153,9 @@ def test_seen_set_is_bounded(mod, monkeypatch):
 
     state = mod.load_state()
     assert len(state["seen"]) == 3      # shared across topics since T-3433
-    assert state["seen"] == ["m7", "m8", "m9"]  # keeps the most recent
+    # keeps the most recent; since T-3782 a record is "<id>#<content hash>" so
+    # the same id with different content is not mistaken for a duplicate
+    assert [s.split("#", 1)[0] for s in state["seen"]] == ["m7", "m8", "m9"]
     assert state["topics"][mod.inbox_topic()]["cursor"] == 10
 
 

@@ -609,3 +609,86 @@ def test_unreadable_cutoff_fails_open(ab):
     (a / ".context/sidecar/waiting/epoch").write_text("garbage")
     later = datetime.now(timezone.utc) + timedelta(hours=5)
     assert [i["id"] for i in waiting.outbound_items(later)] == [old]
+
+
+# ── codex review round 3 regressions ────────────────────────────────────────
+
+def test_real_inbox_pending_passes_a_reused_id_with_new_content_to_ingest(ab, monkeypatch):
+    a, b, use, start = ab
+    use(b)
+    monkeypatch.setattr(inbox, "read_topics", lambda agent=None: ["inbox:x/wait-b"])
+    topic = [_hub_env(0, "hub-reuse", "first body")]
+    reader = lambda t, c, limit=100: [e for e in topic if e["offset"] >= c]  # noqa: E731
+    assert watcher.ingest_hub(reader=reader)["ingested"] == ["hub-reuse"]
+    topic.append(_hub_env(1, "hub-reuse", "first body"))            # true duplicate
+    assert watcher.ingest_hub(reader=reader)["ingested"] == []
+    topic.append(_hub_env(2, "hub-reuse", "a different second body"))  # same id, new content
+    got = watcher.ingest_hub(reader=reader)["ingested"]
+    assert len(got) == 1 and got[0] != "hub-reuse"
+    assert receiver.read_message(got[0])["body"] == "a different second body"
+
+
+def test_spool_is_replayed_even_when_the_hub_read_fails_and_is_listed_meanwhile(ab, monkeypatch):
+    a, b, use, start = ab
+    use(b)
+    monkeypatch.setattr(inbox, "read_topics", lambda agent=None: ["inbox:x/wait-b"])
+    real_store = receiver.store_message
+    monkeypatch.setattr(receiver, "store_message", lambda mid, env: (False, "failed to write message: EIO"))
+    topic = [_hub_env(0, "hub-spooled", "keep me")]
+    watcher.ingest_hub(reader=lambda t, c, limit=100: [e for e in topic if e["offset"] >= c])
+    # listed and escalated at once while it cannot be stored
+    items = [i for i in waiting.open_items() if i["id"] == "hub-spooled"]
+    assert items and items[0]["state"] == "store-failed" and items[0]["actions"] == ["drop"]
+    assert waiting.due_levels(items[0]) == []          # not urgent → threshold
+    assert waiting.due_levels(dict(items[0], urgent=True)) == ["warn"]
+    monkeypatch.setattr(receiver, "store_message", real_store)
+
+    def hub_down(*a, **k):
+        raise RuntimeError("hub unreachable")
+    rep = watcher.ingest_hub(reader=hub_down)
+    assert "error" in rep and rep["ingested"] == ["hub-spooled"]
+    assert watcher.spooled() == [] and "hub-spooled" in receiver.awaiting_handover()
+
+
+def test_spooled_message_can_be_dropped_by_the_operator(ab, monkeypatch):
+    a, b, use, start = ab
+    use(b)
+    monkeypatch.setattr(inbox, "read_topics", lambda agent=None: ["inbox:x/wait-b"])
+    monkeypatch.setattr(receiver, "store_message", lambda mid, env: (False, "EIO"))
+    watcher.ingest_hub(reader=lambda t, c, limit=100: [_hub_env(0, "hub-drop", "x")] if c == 0 else [])
+    row = waiting.drop("hub-drop", "cannot be stored, sender asked to resend", by="human")
+    assert row["spooled"] is True
+    assert [i for i in waiting.open_items() if i["id"] == "hub-drop"] == []
+
+
+def test_missing_dispatcher_is_a_failed_push_and_is_retried_not_suppressed(ab, monkeypatch):
+    a, b, use, start = ab
+    use(b)
+    monkeypatch.setenv("NTFY_ENABLED", "true")
+    monkeypatch.setenv("SKILLS_DISPATCHER", "/nonexistent/alert_dispatcher.py")
+    assert waiting.default_notifier("t", "m").startswith("failed:no alert dispatcher")
+    _store("m-push", urgent=True)
+    inject.deliver_pending(trigger="test", runner=_no_sessions)
+    t0 = datetime.now(timezone.utc)
+    rows = waiting.escalate(now=t0)
+    assert [r["push"][:7] for r in rows] == ["failed:"]
+    assert waiting.escalate(now=t0 + timedelta(minutes=5)) == []          # backoff, not per tick
+    calls = []
+    rows = waiting.escalate(now=t0 + timedelta(minutes=31),
+                            notifier=lambda t, m, u="": calls.append(t) or "sent")
+    assert [r["push"] for r in rows] == ["sent"] and len(calls) == 1
+    assert waiting.escalate(now=t0 + timedelta(hours=2), notifier=lambda *a: "sent") == []
+
+
+def test_a_push_that_keeps_failing_stops_after_the_attempt_cap(ab):
+    a, b, use, start = ab
+    use(b)
+    _store("m-cap", urgent=True)
+    inject.deliver_pending(trigger="test", runner=_no_sessions)
+    t0 = datetime.now(timezone.utc)
+    attempts = 0
+    for k in range(20):
+        attempts += len(waiting.escalate(now=t0 + timedelta(minutes=31 * k),
+                                         notifier=lambda *a: "failed:down"))
+    assert attempts == waiting.PUSH_MAX_ATTEMPTS
+    assert "m-cap" in [i["id"] for i in waiting.open_items()]   # still listed

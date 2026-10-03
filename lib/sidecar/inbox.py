@@ -23,6 +23,7 @@ answer, so building it prejudges nothing.
 
 from __future__ import annotations
 
+import hashlib
 import json
 import os
 import shutil
@@ -231,11 +232,18 @@ def pending(agent: str | None = None, *, reader=default_reader,
                                              note=note, since=since)
                 continue
             client_msg_id = meta.get("client_msg_id")
-            if client_msg_id and client_msg_id in seen_set:
+            # T-3782 (codex round 3): a duplicate is the same id WITH the same
+            # content. The same id with different content is a second message
+            # and must reach the receiver (watcher.ingest_hub keeps it under
+            # its topic/offset id) — never be dropped here. A bare-id entry is
+            # a pre-T-3782 seen record and still matches by id alone.
+            seen_key = (f"{client_msg_id}#" + hashlib.sha256(
+                str(env.get("payload_b64") or "").encode()).hexdigest()[:12]) if client_msg_id else None
+            if client_msg_id and (seen_key in seen_set or client_msg_id in seen_set):
                 continue  # duplicate the hub's TTL let through, or a dual post
             if client_msg_id:
-                seen_set.add(client_msg_id)
-                seen.append(client_msg_id)
+                seen_set.add(seen_key)
+                seen.append(seen_key)
             fresh.append({
                 "offset": offset,
                 "topic": topic,

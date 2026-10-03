@@ -243,31 +243,24 @@ def ingest_hub(reader=None) -> dict:
     (sidecar-inbox.sh, which only peeks) does not show these again: from here
     a hub consult travels the receiver path — flag, tick, inject, transcript
     evidence — like any direct message."""
+    # T-3782 (codex round 3): replay the retry spool FIRST, whatever happens
+    # to the hub read below — a spooled message must not wait on the hub.
+    retried = _drain_spool()
     if reader is None and shutil.which("termlink") is None:
-        return {"skipped": "termlink absent", "ingested": []}
+        return {"skipped": "termlink absent", "ingested": retried}
     kwargs = {"advance": True}
     if reader is not None:
         kwargs["reader"] = reader
     try:
         msgs = inbox.pending(**kwargs)
     except Exception as e:  # an unreadable hub must not stop the tick
-        return {"error": f"{type(e).__name__}: {e}"[:300], "ingested": []}
-    ingested = []
+        return {"error": f"{type(e).__name__}: {e}"[:300], "ingested": retried}
+    ingested = list(retried)
     # T-3782 (codex round 2): the cursor has already advanced, so a message
     # whose store fails must not be dropped — it goes to a retry spool that
-    # every tick drains first, and it is never logged as a "duplicate".
+    # every tick replays first, it is listed by the waiting register
+    # (lib/sidecar/waiting.py) and its sender is told it is waiting.
     spool = _ingest_spool()
-    pending_retry = _read_spool(spool)
-    if pending_retry:
-        spool.unlink(missing_ok=True)
-    for env in pending_retry:
-        ok, err = receiver.store_message(env["client_msg_id"], env)
-        if ok:
-            receiver.record_event(env["client_msg_id"], "INGESTED_FROM_HUB", retried=True)
-            ingested.append(env["client_msg_id"])
-            _received_receipt(env)
-        else:
-            _spool(spool, env, err)
     for m in msgs:
         mid = _hub_msg_id(m)
         envelope = {
@@ -316,6 +309,42 @@ def _ingest_spool() -> Path:
     return receiver._receiver_dir() / "ingest-retry.jsonl"
 
 
+def spooled() -> list[dict]:
+    """Hub messages taken off the topic whose store has not succeeded yet."""
+    return _read_spool(_ingest_spool())
+
+
+def _drain_spool() -> list[str]:
+    """Retry every spooled message. The spool is rewritten atomically with
+    what still fails — never unlinked before the replay, so a crash mid-replay
+    loses nothing (a message stored twice is idempotent)."""
+    spool = _ingest_spool()
+    entries = _read_spool(spool)
+    if not entries:
+        return []
+    stored, keep = [], []
+    lock_path = receiver._receiver_dir() / "ingest-retry.lock"
+    with open(lock_path, "a+") as lock:
+        fcntl.flock(lock, fcntl.LOCK_EX)
+        entries = _read_spool(spool)
+        for env in entries:
+            clean = {k: v for k, v in env.items() if not k.startswith("_spool")}
+            ok, err = receiver.store_message(env["client_msg_id"], clean)
+            if ok:
+                receiver.record_event(env["client_msg_id"], "INGESTED_FROM_HUB", retried=True)
+                stored.append(env["client_msg_id"])
+            else:
+                keep.append(dict(env, _spool_error=err))
+        tmp = spool.with_suffix(f".jsonl.{os.getpid()}.tmp")
+        tmp.write_text("".join(json.dumps(e) + "\n" for e in keep), encoding="utf-8")
+        os.replace(tmp, spool)
+        if not keep:
+            spool.unlink(missing_ok=True)
+    for mid in stored:
+        _received_receipt(receiver.read_message(mid) or {"client_msg_id": mid})
+    return stored
+
+
 def _read_spool(path: Path) -> list[dict]:
     out = []
     try:
@@ -335,12 +364,19 @@ def _spool(path: Path, envelope: dict, err: str) -> None:
     line, never silence."""
     try:
         with open(path, "a", encoding="utf-8") as fh:
-            fh.write(json.dumps(envelope) + "\n")
+            fh.write(json.dumps(dict(envelope, _spool_error=err,
+                                     _spooled_at=_now().isoformat())) + "\n")
         receiver.record_event(envelope.get("client_msg_id"), "INGEST_STORE_FAILED_SPOOLED",
                               reason=err)
     except OSError as e:
         receiver.record_event(envelope.get("client_msg_id"), "INGEST_STORE_FAILED_LOST",
                               reason=f"{err}; spool: {e}"[:300])
+    # The sender is told it waits (once): it reached us but is not stored.
+    try:
+        receipts.send(envelope, receipts.WAITING, by="watcher",
+                      note=f"received but not stored yet ({err}); retried every tick")
+    except Exception:
+        pass
 
 
 # ── 4. loopback self-probe ──────────────────────────────────────────────────

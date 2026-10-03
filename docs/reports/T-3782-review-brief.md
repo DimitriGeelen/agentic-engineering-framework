@@ -154,3 +154,21 @@ pushes (fw_notify) every (item, level) that is due and not yet in
 3. AC3: the cut-off is fail-closed at send (no cut-off → the send raises, nothing written)
    and fail-open when read (an existing but unreadable cut-off lists everything). Tests
    `test_send_fails_closed_when_the_cutoff_cannot_be_written`, `test_unreadable_cutoff_fails_open`.
+
+## Round 3 (codex, FAIL — last allowed round) → fixes, NOT independently re-reviewed
+1. AC1: `inbox.pending` dedupes on `<client_msg_id>#<content hash>`, so a reused id with
+   different content reaches `watcher.ingest_hub` (kept as a second message). Legacy
+   bare-id seen records still match by id (pre-T-3782 history only).
+2. AC2: `waiting.default_notifier` runs the same alert dispatcher fw_notify uses in the
+   FOREGROUND and takes its exit status (a missing dispatcher is `failed:`); a failed
+   push does not finish its level: retried at most every 30 min, up to 6 attempts
+   (`PUSH_RETRY_S`, `PUSH_MAX_ATTEMPTS`); the item stays listed regardless.
+3. AC3: the ingest spool is replayed at the start of every `ingest_hub`, before and
+   independent of the hub read, under a lock, rewritten atomically (never unlinked before
+   replay); a spooled message is listed (`store-failed`, drop-only), escalated (urgent at
+   once), and its sender gets WAITING_NO_RECIPIENT ("received but not stored").
+Tests: `test_real_inbox_pending_passes_a_reused_id_with_new_content_to_ingest`,
+`test_spool_is_replayed_even_when_the_hub_read_fails_and_is_listed_meanwhile`,
+`test_spooled_message_can_be_dropped_by_the_operator`,
+`test_missing_dispatcher_is_a_failed_push_and_is_retried_not_suppressed`,
+`test_a_push_that_keeps_failing_stops_after_the_attempt_cap`.
