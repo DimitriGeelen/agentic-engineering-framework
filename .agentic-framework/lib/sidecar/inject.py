@@ -197,10 +197,18 @@ def choose_target(urgent: bool, runner=subprocess.run) -> tuple[dict | None, str
     tagged, how = _tagged_sessions(runner)
     if tagged is None:
         return None, how
+    records = adapter.session_records()
+    # A headless `claude -p` session (a dispatched worker) is never a target,
+    # not even for an urgent bypass: it has no next prompt to surface the
+    # message, and it is nobody's interactive agent (adapter._is_headless).
+    # Its TermLink session does not count as "registered" either.
+    headless_tl = {r.get("termlink_session") for r in records if r.get("headless")}
+    tagged = [s for s in tagged if str(s.get("id")) not in headless_tl]
     tagged_ids = {str(s.get("id")) for s in tagged}
     _publish_injectable(sorted(tagged_ids))
-    candidates = [r for r in adapter.session_records()
-                  if r.get("termlink_session") in tagged_ids and r.get("alive") is not False]
+    candidates = [r for r in records
+                  if r.get("termlink_session") in tagged_ids and r.get("alive") is not False
+                  and not r.get("headless")]
     ready = [r for r in candidates if r.get("ready") is True]
     if ready:
         r = ready[0]
