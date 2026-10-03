@@ -613,9 +613,12 @@ def record_decision(task_id):
     log_hint = f" Log: {res.run_dir}" if res.run_dir else ""
     still_running_note = {
         _dr.LANDED_RUNNING: (
-            "Task completed. Follow-up steps (episodic memory, component links, "
-            "review links) are still finishing in the background — nothing needed "
-            "from you." + log_hint),
+            # DEFER parks the task; only go/no-go complete it (review r3).
+            ("Task completed. Follow-up steps (episodic memory, component links, "
+             "review links) are still finishing in the background — nothing needed "
+             "from you." if decision in ("go", "no-go") else
+             "The task stays open (deferred). Follow-up steps are still finishing "
+             "in the background — nothing needed from you.") + log_hint),
         _dr.LANDED_COMPLETING: (
             "The decision is saved. Completing the task is still running in the "
             "background — reload this page in a minute to see the result." + log_hint),

@@ -250,9 +250,13 @@ def surface(project_root, task_id: str):
         st = read_status(run)
         rel = os.path.relpath(run, project_root)
         if st.get("state") == "done":
-            if st.get("rc") == 0 and st.get("commit_ok") is not False:
+            if (st.get("rc") == 0 and st.get("commit_ok") is not False
+                    and st.get("episodic_ok") is not False):
                 break  # clean: everything older is superseded
             parts = []
+            if st.get("episodic_ok") is False:
+                parts.append(f"no episodic memory was generated — recover with: "
+                             f"bin/fw context generate-episodic {task_id}")
             if st.get("rc") != 0:
                 parts.append(f"the decide command exited with code {st.get('rc')} — "
                              f"check that the task is where you expect it")
@@ -311,6 +315,12 @@ def _run(run_dir: Path, fw_bin: str, task_id: str, decision: str, rationale: str
             time.sleep(0.5)
         rc = proc.returncode
     _write_status(run_dir, state="finished", rc=rc, finished=_now())
+    # update-task.sh reports a failed episodic generation as a warning and still
+    # exits 0, so check the artefact itself: a completed task with no episodic
+    # must not read as a clean run (review r3).
+    if decision in ("go", "no-go") and _primary_landed(task_id, decision):
+        ep = Path(PROJECT_ROOT) / ".context" / "episodic" / f"{task_id}.yaml"
+        _write_status(run_dir, episodic_ok=ep.is_file())
     commit_ok, commit_msg = True, "decision not recorded; nothing to commit"
     if _decision_recorded_in_task(task_id, decision):
         commit_ok, commit_msg = _commit_decision(task_id, decision, followup=True)

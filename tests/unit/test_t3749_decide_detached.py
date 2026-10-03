@@ -156,6 +156,32 @@ def test_landed_and_still_running_says_so(app_env, monkeypatch):
         assert bad not in html
 
 
+def test_defer_still_running_does_not_claim_completion(app_env, monkeypatch):
+    """Review r3: DEFER parks the task; the message must not say it completed."""
+    c, p, inc = app_env
+    (p / ".tasks/active/T-9713-x.md").write_text(
+        DECIDED.format(tid="T-9713").replace("work-completed", "started-work")
+               .replace("**Decision**: GO", "**Decision**: DEFER"))
+    monkeypatch.setattr(inc, "_run_decide", lambda *a, **k: inc._DecideResult(running=True))
+    with c.session_transaction() as sess:
+        sess["_csrf_token"] = "tok"
+    html = c.post("/inception/T-9713/decide",
+                  data={"decision": "defer", "rationale": "r", "_csrf_token": "tok"},
+                  headers={"HX-Request": "true"}).get_data(as_text=True)
+    assert "Decision recorded" in html and "DEFER" in html
+    assert "stays open (deferred)" in html
+    assert "Task completed" not in html
+
+
+def test_surface_reports_a_missing_episodic_on_an_otherwise_clean_run(tmp_path):
+    """Review r3: update-task.sh exits 0 when episodic generation fails."""
+    _run_dir(tmp_path, "T-9766", "20261003T000000000000Z",
+             '{"state": "done", "rc": 0, "commit_ok": true, "episodic_ok": false}')
+    msg = dr.surface(tmp_path, "T-9766") or ""
+    assert "no episodic memory was generated" in msg
+    assert "generate-episodic T-9766" in msg
+
+
 def test_landed_and_done_is_plain_success(app_env, monkeypatch):
     c, p, inc = app_env
     (p / ".tasks/completed/T-9702-x.md").write_text(DECIDED.format(tid="T-9702"))
@@ -365,6 +391,9 @@ def test_slow_chain_outlives_the_wait_and_is_not_killed(slow_chain, monkeypatch)
     # must be recorded and surfaced on the inception page, never silent.
     assert st["commit_ok"] is False
     assert "not committed" in (dr.surface(proj, "T-9750") or "")
+    # The fake chain writes no episodic: checked on the artefact, not the exit code.
+    assert st["episodic_ok"] is False
+    assert "no episodic memory was generated" in (dr.surface(proj, "T-9750") or "")
     # Lock released once the runner exits.
     end = time.monotonic() + 5
     while dr.is_running(proj, "T-9750") and time.monotonic() < end:

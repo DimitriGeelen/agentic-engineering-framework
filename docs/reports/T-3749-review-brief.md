@@ -1,7 +1,7 @@
 # T-3749 — independent review brief
 
 **Task:** `.tasks/active/T-3749-watchtower-inception-decide-times-out-at.md`
-**Commits:** `86a814b78` (code + tests), `30f6332e0` (task file, vendor sync, fabric card), `237cea348` (round-1 fixes)
+**Commits:** `86a814b78` (code + tests), `30f6332e0` (task file, vendor sync, fabric card), `237cea348` (round-1 fixes), `dd2e02d38` (round-2 fixes)
 
 ## The incident
 
@@ -79,6 +79,17 @@ Round 1 (`docs/reports/T-3749-review-codex-r1.md`) returned FAIL on:
 Remaining by design: if the primary result takes longer than
 `DECIDE_WAIT_SECONDS` (25 s), the response says the decision is still being
 recorded — truthful, not a failure, and the chain keeps going.
+
+## Round 2 → round 3 (commit `dd2e02d38`)
+
+Round 2 (`docs/reports/T-3749-review-codex-r2.md`) returned FAIL on:
+
+| Finding | Fix | Test |
+|---|---|---|
+| P1 runner dies between starting fw and recording `fw_pid` → lock free, chain alive | the runner passes the task-lock fd to fw (`pass_fds`), so fw and its children hold it; the lock is free only when the whole chain has ended. `fw_pid` check stays as a second line | `test_lock_survives_a_runner_killed_before_it_records_fw_pid` (erases `fw_pid`, SIGKILLs the runner, asserts `Busy`); a mutant with `pass_fds=()` fails it |
+| P2 exit 124 classified as a gate | `gate_exit(rc)` is now `0 < rc < 124`: 124 (timeout(1)), 125–127 (could not run), ≥128 (signal), negative, −1, None are all `LANDED_INTERRUPTED` | `test_only_a_plain_nonzero_exit_is_a_gate_refusal`, `test_classify` row 124 |
+| P2 `surface()` saw only the newest run | reports every failed / dead run since the last CLEAN run (done, rc 0, committed); a newer running or failed run cannot hide an older failure; a clean run supersedes older ones because it ran the whole chain (archive, episodic, commit) | `test_surface_newer_attempt_does_not_hide_an_older_failure`, `test_surface_a_clean_newer_run_supersedes_older_failures` |
+| AC2 wording vs. design | AC text now states the built design explicitly (the dispatch brief prescribed it: detach the decide, wait for the PRIMARY result, respond, keep running) | — |
 
 ## Commit / uncommitted-state handling (current)
 
