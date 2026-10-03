@@ -192,6 +192,34 @@ def _claude_ancestor_pid(start: int | None = None, depth: int = 16) -> int | Non
     return None
 
 
+def claude_in_pty(pty_pid: int | None, depth: int = 6) -> str | None:
+    """What `claude` runs under a TermLink PTY whose shell is `pty_pid`:
+    "interactive", "headless" (a `claude -p` worker), or None (no claude
+    process found, or it cannot be read). Breadth-first over /proc children;
+    the first claude found decides."""
+    if not pty_pid:
+        return None
+    level = [int(pty_pid)]
+    for _ in range(depth):
+        nxt = []
+        for pid in level:
+            try:
+                comm = Path(f"/proc/{pid}/comm").read_text().strip()
+            except OSError:
+                continue
+            if comm == "claude":
+                return "headless" if _is_headless(pid) else "interactive"
+            try:
+                kids = Path(f"/proc/{pid}/task/{pid}/children").read_text().split()
+            except OSError:
+                continue
+            nxt.extend(int(k) for k in kids if k.isdigit())
+        if not nxt:
+            return None
+        level = nxt
+    return None
+
+
 def session_identity(hook_input: dict) -> dict | None:
     """{session_id, transcript_path, termlink_session, claude_pid} for the
     session a hook fired in, or None when the hook input carries no

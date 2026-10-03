@@ -57,6 +57,8 @@ EOF
     export FRAMEWORK_ROOT="$SB/state" PROJECT_ROOT="$SB/state"
     export FW_SIDECAR_IDENTITY_FP=aaaaaaaaaaaaaaaa FW_SIDECAR_HUB_ID=testhub FW_SIDECAR_HOST=testhost
     export SIDECAR_INBOX_TIMEOUT=20
+    # Addressable, so a headless `claude -p` runner is not skipped by the hook (T-3684).
+    export FW_SIDECAR_AGENT_ID=t3559-agent
 }
 
 teardown() { [ -n "${SB:-}" ] && rm -rf "$SB"; return 0; }

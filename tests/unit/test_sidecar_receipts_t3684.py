@@ -175,8 +175,16 @@ def test_inbox_drain_really_sends_received_after_printing_and_no_handed_over(ab,
     monkeypatch.setattr(inbox, "pending", functools.partial(inbox.pending, reader=hub.reader))
     from lib import sidecar_cli
     monkeypatch.setattr(sidecar_cli.dm, "pending", lambda advance=True: [])
+    # ORDER: the consult must already be printed when the receipt is sent. The
+    # wrapper reads what was printed so far, then calls the REAL send.
+    printed_at_send, real_send = [], receipts.send
+
+    def send_after_print(env, state, by, **k):
+        printed_at_send.append(capsys.readouterr().out)
+        return real_send(env, state, by=by, **k)
+    monkeypatch.setattr(receipts, "send", send_after_print)
     rc = sidecar_cli.cmd_inbox(type("A", (), {"peek": False, "json": False})())
-    assert rc == 0 and "drain-me" in capsys.readouterr().out
+    assert rc == 0 and len(printed_at_send) == 1 and "drain-me" in printed_at_send[0]
     use(a)
     assert [r["state"] for r in receipts.read_ledger() if r["client_msg_id"] == cid] == ["RECEIVED"]
 

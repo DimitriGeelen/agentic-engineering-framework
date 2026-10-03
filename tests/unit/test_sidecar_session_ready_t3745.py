@@ -270,6 +270,71 @@ def test_headless_worker_in_a_tagged_pty_is_never_injected_not_even_urgent(proj,
     assert set(ids) == {"n1", "u1"}
 
 
+def test_urgent_no_record_fallback_needs_an_interactive_claude_seen_in_the_pty(proj, monkeypatch):
+    # codex round 3: a worker PTY registered before its first hook wrote a
+    # record was the "only registered session" urgent fallback target.
+    _store("u1", urgent=True)
+    seen = {}
+
+    def probe(pid):
+        seen["pid"] = pid
+        return probe.kind
+    monkeypatch.setattr(adapter, "claude_in_pty", probe)
+    for kind in ("headless", None):
+        probe.kind = kind
+        tl = Termlink([dict(_sessions("tl-w")[0], pid=4242)])
+        rep = inject.deliver_pending("tick", runner=tl)
+        assert tl.injects == [] and rep["injected"] == [] and inject.read_claim("u1") is None
+        assert seen["pid"] == 4242
+    probe.kind = "interactive"
+    tl = Termlink([dict(_sessions("tl-op")[0], pid=4243)])
+    assert inject.deliver_pending("tick", runner=tl)["injected"] == ["u1"]
+    assert tl.typed_into() == ["tl-op"]
+
+
+def test_headless_session_surfaces_nothing_even_with_a_pty_only_claim(proj, monkeypatch):
+    # codex round 3 reproduction: a PTY-only claim (session_id None) naming a
+    # worker's PTY; the worker's first prompt hook must not surface it.
+    _store("u1", urgent=True)
+    inject.claim_for("u1", {"session_id": None, "termlink_session": "tl-w"})
+    assert inject.is_claimed_for("u1", {"session_id": "worker", "termlink_session": "tl-w"})
+    monkeypatch.setattr(adapter, "_is_headless", lambda pid: True)
+    ids, out = _hook(monkeypatch, "prompt", "worker", "tl-w")
+    assert ids == [] and "body-u1" not in out
+    # an interactive session in that PTY does take it
+    monkeypatch.setattr(adapter, "_is_headless", lambda pid: False)
+    ids, out = _hook(monkeypatch, "prompt", "operator", "tl-w")
+    assert ids == ["u1"] and "body-u1" in out
+
+
+def test_claude_in_pty_reads_real_processes(tmp_path):
+    # A real process tree: shell → `claude` (comm) with or without -p.
+    import time
+    fake = tmp_path / "claude"
+    fake.write_text("#!/bin/bash\nsleep 30\n")
+    fake.chmod(0o755)
+    for args, want in (([], "interactive"), (["-p", "x"], "headless")):
+        sh = subprocess.Popen(["bash", "-c", f"{fake} {' '.join(args)}; true"])
+        try:
+            got = None
+            for _ in range(100):
+                got = adapter.claude_in_pty(sh.pid)
+                if got:
+                    break
+                time.sleep(0.05)
+            assert got == want
+        finally:
+            subprocess.run(["pkill", "-P", str(sh.pid)])
+            sh.kill()
+            sh.wait()
+    bare = subprocess.Popen(["sleep", "30"])
+    try:
+        assert adapter.claude_in_pty(bare.pid) is None
+    finally:
+        bare.kill()
+        bare.wait()
+
+
 def _execd(pid):
     import time
     for _ in range(100):                       # until the child has exec'd

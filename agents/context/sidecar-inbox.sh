@@ -34,6 +34,17 @@ export HOOK_INPUT
 # (The completion records any consult traffic addressed to the worker instead.)
 [ -n "${FW_REVIEW_WORKER:-}" ] && exit 0
 
+# T-3684 round 3: a headless `claude -p` session with no agent id of its own
+# would peek the PROJECT's inbox (agent_name() defaults to the project) and
+# receipt mail meant for the project's agent. A dispatched worker that is
+# addressable sets FW_SIDECAR_AGENT_ID and keeps reading its own inbox.
+if [ -z "${FW_SIDECAR_AGENT_ID:-}" ] && PYTHONPATH="$SCRIPT_DIR/../..${PYTHONPATH:+:$PYTHONPATH}" python3 -c '
+import sys
+from lib.sidecar import adapter
+sys.exit(0 if adapter._is_headless(adapter._claude_ancestor_pid()) else 1)' 2>/dev/null; then
+    exit 0
+fi
+
 FW_BIN="${FW_BIN:-$FRAMEWORK_ROOT/bin/fw}"
 export FW_BIN
 [ -x "$FW_BIN" ] || exit 0

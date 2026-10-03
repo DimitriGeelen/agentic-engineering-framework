@@ -273,8 +273,14 @@ def test_prompt_hook_via_fw_hook_wrapper_exits_fast_and_finalizes(env, tmp_path)
     tr = tmp_path / "wrapper.jsonl"
     tr.write_text("")
     e = dict(os.environ, PROJECT_ROOT=str(b))
+    # Run it the way Claude Code does: under an INTERACTIVE `claude` process
+    # (comm "claude", no -p). Otherwise a `claude -p` running this suite is the
+    # hook's nearest claude, and a headless session surfaces nothing (T-3684).
+    fake_claude = tmp_path / "claude"
+    fake_claude.write_text(f'#!/bin/bash\n"{FW_ROOT}/bin/fw" hook sidecar-receiver-adapter\n')
+    fake_claude.chmod(0o755)
     t0 = time.time()
-    proc = subprocess.run([str(FW_ROOT / "bin" / "fw"), "hook", "sidecar-receiver-adapter"],
+    proc = subprocess.run([str(fake_claude)],
                           input=json.dumps({"transcript_path": str(tr), "session_id": "sess-b"}), text=True, cwd=b,
                           env=e, capture_output=True, timeout=60)
     assert proc.returncode == 0 and time.time() - t0 < 15
@@ -376,10 +382,13 @@ def test_no_inject_when_not_ready(env, monkeypatch):
     assert tl.injects == []
 
 
-def test_urgent_bypasses_readiness(env):
+def test_urgent_bypasses_readiness(env, monkeypatch):
     b = env.project("t3693-b")
     env.use(b)
     _store("u1", urgent=True)
+    # No session record yet: the bypass needs an interactive claude seen in
+    # the PTY (T-3684 round 3; the refusal is tested in the T-3745 module).
+    monkeypatch.setattr(adapter, "claude_in_pty", lambda pid: "interactive")
     tl = FakeTermlink([_sess("tl-x", [inject.project_tag()])])
     rep = inject.deliver_pending("test", runner=tl)
     assert rep["injected"] == ["u1"] and len(tl.injects) == 1

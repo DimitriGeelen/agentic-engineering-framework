@@ -33,9 +33,37 @@ EOF
     export FAKE_LOG="$SANDBOX/calls.log"
     export PATH="$SANDBOX/bin:$PATH"
     export SIDECAR_INBOX_TIMEOUT=2
+    # An addressable agent: the hook reads whoever runs it, and a headless
+    # `claude -p` runner without an id of its own is skipped (T-3684, last test).
+    export FW_SIDECAR_AGENT_ID=bats-agent
 }
 
 teardown() { rm -rf "$SANDBOX"; }
+
+# A fake `claude` ancestor: /proc comm is "claude", and `-p` on its command
+# line makes the hook's session headless — as a dispatched worker's is.
+_as_claude() {
+    # `#!/bin/bash`, not `#!/usr/bin/env bash`: env re-execs and renames comm.
+    printf '#!/bin/bash\nbash "%s" < /dev/null\n' "$HOOK" > "$SANDBOX/claude"
+    chmod +x "$SANDBOX/claude"
+    "$SANDBOX/claude" "$@"
+}
+
+@test "headless claude -p with no agent id of its own: silent, the project's inbox is never read (T-3684)" {
+    export FAKE_INBOX='{"consults":[{"offset":0,"client_msg_id":"m1","from":"peer","conversation_id":"c","body":"for the project agent"}],"dm_rails":[]}'
+    unset FW_SIDECAR_AGENT_ID
+    run _as_claude -p
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+    [ ! -s "$FAKE_LOG" ]
+    # CONTROL 1: the same session interactive surfaces it.
+    run _as_claude
+    echo "$output" | grep -q 'for the project agent'
+    # CONTROL 2: headless but addressable (its own id) reads its own inbox.
+    export FW_SIDECAR_AGENT_ID=w-worker
+    run _as_claude -p
+    echo "$output" | grep -q 'for the project agent'
+}
 
 @test "empty inbox: no stdout, exit 0 — a silent turn costs nothing" {
     export FAKE_INBOX='{"consults":[],"dm_rails":[]}'
