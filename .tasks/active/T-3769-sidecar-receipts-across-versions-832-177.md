@@ -1,17 +1,8 @@
 ---
-id: T-3768
-name: "Project-boundary gate bypassed by quoted, escaped, relative or substituted
-  paths (cat \"/root/x\", /roo\t/x, ../../root/x, here-string) — reads and writes
-  classified SAFE"
+id: T-3769
+name: "Sidecar receipts across versions: 832 (1.7.740) and AEF nudge each other about messages already answered with --in-reply-to — REPLIED never crosses"
 description: >
-  Found by codex round 4 on T-3766 (docs/reports/T-3766-review-codex-r4.md), probing
-  HEAD's classifier: the quote stripper (agents/context/check-project-boundary.sh:190)
-  removes quoted arguments before read and write detection, and escaped/relative paths
-  are not normalised. Pre-existing, general (any outside path, not only credentials).
-  Same text-gate boundary as Tier 0 (T-2742), but these spellings are trivial. Fix:
-  interpret quoted/escaped args, resolve relative paths against cwd, treat command
-  substitution / here-strings conservatively; regression cases for every probe in
-  the report plus the sanctioned resolver control.
+  2026-10-03: AEF replied to 832's 02c52e69 and a7840f96 with --in-reply-to; 832's nudger keeps escalating (rung 3). Our reply 2184bade to 832 sits at HUB_ACCEPTED and our nudger escalates at them (attempt 6). Neither side's REPLIED reaches the other. Likely version skew: the receipt-on-every-path code (T-3684, unreleased) vs 832 on 1.7.740. Needs: a receipt wire format both versions understand or a negotiated fallback (an in_reply_to-bearing message from the peer counts as REPLIED for the referenced id on the receiving side's nudger), a version-skew e2e test, and a release so consumers get it.
 
 status: captured
 workflow_type: build
@@ -46,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-03T12:31:38Z
-last_update: '2026-10-03T12:45:40Z'
-date_finished:
+created: 2026-10-03T14:11:33Z
+last_update: 2026-10-03T14:11:33Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -59,37 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-03T12:45:20Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-03T12:45:40Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3768: Project-boundary gate bypassed by quoted, escaped, relative or substituted paths (cat "/root/x", /roo\t/x, ../../root/x, here-string) — reads and writes classified SAFE
+# T-3769: Sidecar receipts across versions: 832 (1.7.740) and AEF nudge each other about messages already answered with --in-reply-to — REPLIED never crosses
 
 ## Context
 
@@ -353,7 +316,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-10-03T12:31:38Z — task-created [task-create-agent]
+### 2026-10-03T14:11:33Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3768-project-boundary-gate-bypassed-by-quoted.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3769-sidecar-receipts-across-versions-832-177.md
 - **Context:** Initial task creation
