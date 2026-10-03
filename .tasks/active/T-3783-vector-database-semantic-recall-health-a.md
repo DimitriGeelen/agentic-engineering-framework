@@ -363,6 +363,7 @@ cost_estimate_proposed:
 
 ### 2026-10-03 — one deployment, one version (operator ruling, TermLink side)
 - **Chose:** deployment always goes with the same version; no mismatch. Measured: two TermLink hubs on .107 (PID 906293 /var/lib/termlink TCP 9100; PID 2919639 /tmp/termlink-0) and three termlink binary copies (all 0.12.103 today). Sent to 010 (sidecar t3336-vector-index fe30dbda + direct inject): one binary, one hub per host (T-3287 D6), one runtime dir, and a FAIL when two hubs or versions exist. AEF side: doctor WARN under T-3779.
+- **Refinement (operator, same day):** several versions/hubs on one host ARE legitimate for testing or isolation, but only as an EXPLICIT, declared option; the DEFAULT is one version so communication does not break down. An undeclared second hub or version is an error (doctor/audit), a declared one is reported as intended.
 
 ## Decision
 
