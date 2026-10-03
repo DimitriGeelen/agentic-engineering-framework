@@ -66,3 +66,14 @@ Agent corrections after re-reading docs/reports/T-3287-identity-taxonomy-circuit
   is what "a working equivalent" has to be matched on. D1 ruled identity is instance-,
   not role-identity; point 2 keeps instance ids and adds the role beside them.
 
+
+### 2026-10-03 — Decision 2a (after two 7-vendor reviews)
+- Operator asked for an external review of the model ("this warrants an external review"), then a
+  steelman/strawman + value-driver review of the options ("our standard … review").
+- Results: model review 7/7 ADOPT-WITH-CHANGES; option review 7/7 B. Agent's scoring corrected by the
+  reviewers (C net negative, A worse, B +1 not +2 on D1/D2, F2 and F-RECALL wrongly dropped).
+- Operator (Dutch, voice; paraphrased): "OK, I think we can go as we say." Read as: ruling B.
+  On item 7: two agents with one function can complement each other, but a running conversation belongs
+  to the instance it began with; if a message moves to another instance, is that conversation's context
+  lost? The context must travel — part of the context fabric — perhaps the receiving agent must fetch it.
+  "Maybe another mechanism … a later task." → T-3780.

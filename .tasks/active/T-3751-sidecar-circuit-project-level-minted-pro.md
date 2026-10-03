@@ -185,6 +185,14 @@ The minted id exists (T-3534, pid-16hex, back-filled by fw upgrade since T-3750)
 - **Rejected:** A keep path/basename (breaks on rename, the two forms already disagree); B id only (unreadable logs and inboxes); D defer (TermLink builds on folder names meanwhile).
 - **Left open:** name→id resolution (IW-3), topic migration (IW-2), fallback ladder (IW-4); two checkouts of one project on one host share an id — session level separates them (raise in IW-4). Reverses T-3287 D2 for the project slot only.
 
+### 2026-10-03 — Decision 2a: which address label routes (operator ruling, after two 7-vendor reviews)
+- **Chose:** B — the operator's two-name model (function + instance at every level) is the naming principle; FUNCTION names route (host FQDN, hub NAME, `pid`, `@agent` function); instance ids ride inside (IP, hub fingerprint, checkout/workspace id, vendor/model, lease); a sender pins one instance only with an explicit `exact-instance` marker (session + agent instance on the envelope).
+- **Why:** 7/7 reviewers recommended B in both reviews (model review: docs/reports/T-3751-review-*.md; option review with steelman/strawman + value drivers: docs/reports/T-3751-2a-review-*.md); only B's addresses survive certificate rotation, restarts and re-checkouts. Totals per reviewer B +22…+62, every other option lower.
+- **Rejected:** A (every label routes — ordinary churn becomes routing failure; −15…−70); C (hub keeps the rotating TLS fingerprint — orphans every durable inbox on rotation; net negative in 6/7); D (defer — TermLink is building now).
+- **Committed follow-ups (named by ≥5/7):** (1) TermLink hub-name contract, fingerprint as temporary hub label meanwhile; (2) migrate fingerprint-keyed inbox topics with dual-read; (3) several live instances of one function → stated pick rule or refusal, never silent ambiguity; (4) exact-instance miss → explicit failure, no fallback, no respawn; (5) one label classification matrix.
+- **Operator addition (item 3):** two instances of one function can complement each other, but an existing conversation is tied to the instance it started with; when a message moves to another instance, the conversation's context must follow (context fabric), possibly fetched by the receiving agent. Deferred to its own task: T-3780.
+- **Not decided here:** respawn (2b).
+
 ## Decision
 
 <!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
