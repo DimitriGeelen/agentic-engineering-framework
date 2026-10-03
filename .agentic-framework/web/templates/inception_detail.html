@@ -513,6 +513,33 @@
 </article>
 {% endif %}
 
+{# T-3749: decide outcome banners live OUTSIDE the active-only card: after a GO #}
+{# the task is in completed/, and a banner inside the card never rendered.      #}
+{% if request.args.get('notice') %}
+<div role="status" style="background: var(--pico-card-background-color); border: 1px solid #6b7280; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 0.75rem; font-size: 0.85rem;">
+    <strong>Where your decision stands</strong>
+    <span style="display: block; margin-top: 0.4rem; white-space: pre-wrap;">{{ request.args.get('notice') }}</span>
+</div>
+{% endif %}
+{% if decide_followup_warning %}
+<div role="alert" style="background: #fef3c7; border: 1px solid #f59e0b; color: #78350f; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 0.75rem; font-size: 0.85rem;">
+    <strong>Last decision needs a look.</strong>
+    <span style="display: block; margin-top: 0.4rem; white-space: pre-wrap;">{{ decide_followup_warning }}</span>
+</div>
+{% endif %}
+{# T-1746: warning banner for partial-success path (primary decision landed, side-effect failed). #}
+{# Without this block the `?warning=` redirect from the decide handler renders nothing — the user #}
+{# sees a clean reload and assumes success. T-1745 RCA RC3. #}
+{% if request.args.get('warning') %}
+<div role="alert" style="background: #fef3c7; border: 1px solid #f59e0b; color: #78350f; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 0.75rem; font-size: 0.85rem;">
+    <strong>Decision recorded with warning.</strong>
+    <code style="display: block; margin-top: 0.4rem; white-space: pre-wrap; background: rgba(255,255,255,0.5); padding: 0.4rem; border-radius: 4px;">{{ request.args.get('warning') }}</code>
+    <p style="margin: 0.4rem 0 0 0; font-size: 0.8rem; opacity: 0.85;">
+        The primary decision landed, but a side-effect (episodic generation, review emit) reported a warning.
+        Verify the <code>## Decision</code> block on this task before continuing.
+    </p>
+</div>
+{% endif %}
 {% if task._location == 'active' %}
 <article class="section-card">
     <header>{% if dec == 'pending' %}Record Decision{% else %}Record Superseding Decision{% endif %}</header>
@@ -523,19 +550,6 @@
         <p style="margin: 0.4rem 0 0 0; font-size: 0.8rem; opacity: 0.85;">
             Common causes: required Acceptance Criteria still unchecked, sovereignty gate, or task review marker missing.
             Re-submit after addressing the cause; previous attempts did NOT persist.
-        </p>
-    </div>
-    {% endif %}
-    {# T-1746: warning banner for partial-success path (primary decision landed, side-effect failed). #}
-    {# Without this block the `?warning=` redirect from the decide handler renders nothing — the user #}
-    {# sees a clean reload and assumes success. T-1745 RCA RC3. #}
-    {% if request.args.get('warning') %}
-    <div role="alert" style="background: #fef3c7; border: 1px solid #f59e0b; color: #78350f; padding: 0.75rem 1rem; border-radius: 6px; margin-bottom: 0.75rem; font-size: 0.85rem;">
-        <strong>Decision recorded with warning.</strong>
-        <code style="display: block; margin-top: 0.4rem; white-space: pre-wrap; background: rgba(255,255,255,0.5); padding: 0.4rem; border-radius: 4px;">{{ request.args.get('warning') }}</code>
-        <p style="margin: 0.4rem 0 0 0; font-size: 0.8rem; opacity: 0.85;">
-            The primary decision landed, but a side-effect (episodic generation, review emit) reported a warning.
-            Verify the <code>## Decision</code> block on this task before continuing.
         </p>
     </div>
     {% endif %}

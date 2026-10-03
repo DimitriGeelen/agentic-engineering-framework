@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T22:33:14Z
-last_update: 2026-10-03T12:16:28Z
+last_update: 2026-10-03T12:18:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -89,16 +89,56 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Watchtower ran `fw inception decide` under `run_fw_command(timeout=30)`. On
+T-3631 (2026-10-02) the chain ran past 30 s, was killed mid-chain, and the page
+reported "Automatic completion was blocked by a framework gate … Reason: Command
+timed out" — for a decision that had landed and a task that had completed.
+
+### Measured decide chain (before the fix)
+
+Harness: `tests/scripts/t3749-decide-timing.sh [--xtrace]` — local clone of this
+repo into a scratch dir, a synthetic inception filed there, the clone's `bin/fw`
+run the way Watchtower runs it (CLAUDECODE stripped, `--from-watchtower`). Real
+corpus size; no real task decided. Per-step times are from the `--xtrace` run
+(PS4 carries `$EPOCHREALTIME`, set through BASH_ENV because bash ignores an
+inherited PS4 as root); the plain run measured task-in-completed/ at 26.4 s and
+exit at 41.7 s.
+
+| # | Step | Window (s) | Wall (s) |
+|---|------|-----------:|---------:|
+| 1 | bin/fw start + decide preflight (readiness, review marker, disposition) | 0.0–0.6 | 0.6 |
+| 2 | Decision write (`## Decision` block, Human-AC tick, Updates entry) | 0.6–0.8 | 0.2 |
+| 3 | update-task.sh start + reviewer-verdict revalidation (`verdict_ledger.py apply`) | 0.8–2.5 | 1.7 |
+| 4 | AC / verification / recommendation gates | 2.5–2.7 | 0.2 |
+| 5 | **Self-deferral gate** (`lib/design_register.py self-deferral` — YAML-parses every task) | 2.8–23.1 | **20.3** |
+| 6 | Reviewer static scan | 23.1–23.4 | 0.3 |
+| 7 | Status write + `git mv` to completed/ — **primary result** | 23.4–23.5 | 0.1 |
+| 8 | Notify, focus clear | 23.5–23.6 | 0.1 |
+| 9 | Components auto-populate (grep/sed per fabric card + git mining) | 23.6–34.8 | 11.1 |
+| 10 | Episodic generation (incl. 0.9 s post-write index) | 34.8–37.3 | 2.6 |
+| 11 | Continuous-mode, archived-horizon invariant | 37.3–37.5 | 0.1 |
+| 12 | `emit_review` (review URL, link validator) | 37.5–39.6 | 2.2 |
+| | **Total** | | **39.6** |
+
+BVP estimate: not on this path (update-task.sh runs it only on `started-work`,
+backgrounded). Outcome backprop: inside step 11, <0.1 s.
+
+### After the fix
+
+`LazyTaskIndex` (step 5 loads only the ids a task names; the same predicate for
+the register close-check that build closes also paid): plain runs measured
+task-in-completed/ at **3.2 s** and exit at **18.0–18.3 s** (2 runs). The 15 s
+after the move (steps 9–12) now run in the detached runner; Watchtower answers
+on the primary result.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The decide chain is measured: wall time per step (decision write, completion, episodic, reviewer, BVP, other side effects) recorded in ## Context
-- [ ] A Watchtower GO returns well inside its timeout: the primary decision and completion run synchronously; slow side effects run detached and their outcome is logged, so a timeout can no longer cut the chain mid-flight
-- [ ] When the decision landed, Watchtower never says "Command timed out" / "Automatic completion was blocked"; it says what landed and what is still running
-- [ ] Regression test covers the message classification (landed + timed-out side effect → success wording)
+- [x] The decide chain is measured: wall time per step (decision write, completion, episodic, reviewer, BVP, other side effects) recorded in ## Context
+- [x] A Watchtower GO returns well inside its timeout: the primary decision and completion run synchronously; slow side effects run detached and their outcome is logged, so a timeout can no longer cut the chain mid-flight
+- [x] When the decision landed, Watchtower never says "Command timed out" / "Automatic completion was blocked"; it says what landed and what is still running
+- [x] Regression test covers the message classification (landed + timed-out side effect → success wording)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -130,6 +170,13 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] Recording an inception decision in Watchtower says what landed and what is still finishing
+  **Steps:**
+  1. Open Watchtower's approvals page (`cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url`, then add `/approvals`) or any pending inception at `/inception/T-XXXX`
+  2. Record a decision (GO / NO-GO / DEFER) on an inception you actually want decided
+  3. Read the message that replaces the decide form (or the banner after the page reloads)
+  **Expected:** Within a few seconds the message says "Decision recorded — GO" (or your choice); if follow-up steps are still running it adds a ⏳ line saying they are finishing in the background, with a log path. It never says "Command timed out", and it only says "blocked by a framework gate" when completion was really refused (with the gate's reason).
+  **If not:** Screenshot the message and note the task id and the time; the run's log is under `.context/working/decide/<task>-<time>/`.
 
 ## Verification
 
@@ -259,7 +306,22 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 600 python3 -m pytest tests/unit/test_t3749_decide_detached.py tests/unit/test_inception_decide_htmx_error.py tests/web/test_inception_decide_hardening.py tests/web/test_inception_decide_e2e.py tests/unit/test_decide_commit.py tests/unit/test_inception_decide_warning_widen.py tests/unit/test_t3694_design_register.py -q -p no:cacheprovider > /tmp/.t3749-pytest.out 2>&1 && grep -q passed /tmp/.t3749-pytest.out && ! grep -qE "[0-9]+ failed" /tmp/.t3749-pytest.out
+python3 -c "import ast,sys; [ast.parse(open(f).read()) for f in ('web/decide_runner.py','web/blueprints/inception.py','lib/design_register.py')]"
+grep -q "LazyTaskIndex(root) if tasks is None" lib/design_register.py
+python3 -c "s=open('web/blueprints/inception.py').read(); b=s[s.index('def record_decision'):s.index('def _decision_recorded_in_task')]; assert 'run_fw_command' not in b and '_run_decide(' in b"
+bin/fw vendor self --check
+bin/fw watchtower current
+
 ## RCA
+
+**Symptom:** GO on T-3631 in Watchtower showed "⚠ Your decision is saved. Automatic completion was blocked by a framework gate … Reason: Command timed out", while the decision had landed and the task had completed (reviewer stamp 27 s after the decision). The kill also left a stale index entry and, before T-3744, `horizon: now` on completed tasks.
+
+**Root cause:** two faults compounding. (1) Watchtower ran the whole decide chain synchronously under `run_fw_command(timeout=30)`, which kills the child on timeout and returns the string "Command timed out" as stderr; the route then classified "decision landed + non-zero" as a gate refusal, so a kill was worded as a gate. (2) The chain had grown to ~40 s: the T-3694 self-deferral gate YAML-parsed all ~3,700 task files on every close (20.3 s) to look up the few ids a task names, so the primary result alone took ~23 s — inside 30 s only by luck of the corpus size.
+
+**Why structurally allowed:** nothing measured close latency, so each gate added cost silently, and the Watchtower path had a fixed timeout that only ever failed after the corpus grew past it. The message classifier had two buckets (landed / not landed) and treated every non-zero as a gate, so "killed" had no word of its own.
+
+**Prevention:** the chain is never under a request timeout again (detached runner, own session, flock against double starts) and the message is classified from four observed facts (landed, completed, running, rc), pinned by `tests/unit/test_t3749_decide_detached.py` (a running chain can never be classified as a gate refusal; a slow fake chain outlives the wait and finishes). `tests/scripts/t3749-decide-timing.sh` re-measures the chain per step on the real corpus.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -328,7 +390,24 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** The kill is gone by construction (the decide runs in its own session with no timeout) and the primary result now lands in ~3 s instead of ~23 s, so Watchtower answers well inside its wait. Messages are classified from what actually happened, and every Agent AC is backed by a test. What remains is your read of the wording on a real decision (Human AC).
+**Evidence:**
+- Measured chain (## Context): task-in-completed/ 23.4 s → 3.2 s; exit 39.6–41.7 s → 18 s; the 20.3 s step was the self-deferral gate's full task index
+- `tests/unit/test_t3749_decide_detached.py`: 25 tests — classify table, wording per outcome (landed+running, landed+done, landed+gate-refused, not landed, pending, busy), slow fake chain outlives the wait, finishes in its own session, second launch refused, failed follow-up commit surfaced
+- Existing decide suites green after moving their mocks to `_run_decide` (htmx error, hardening, e2e with the real chain, vendored e2e, commit, warning widen)
+- Independent review: `docs/reports/T-3749-review-codex.md`
+
 ## Decisions
+
+### 2026-10-03 — where the chain stops being synchronous
+- **Chose:** detach the WHOLE `fw inception decide` (own session, per-task flock) and have Watchtower wait for the primary result (decision written, task in completed/), rather than splitting update-task.sh into a synchronous core and backgrounded side effects.
+- **Why:** update-task.sh's guarantees stay exactly as they are (same order, same gates, nothing moved); the only thing that changes is that no request timeout can reach the process. The speed-up came from the cheap safe fix in the one predicate that dominated (lazy index, same answers per id).
+- **Rejected:** backgrounding steps 9–12 inside update-task.sh — changes what a CLI close guarantees on return (components/episodic present) for every caller, to fix one caller. Raising the timeout — moves the cliff, keeps the kill.
+
+### 2026-10-03 — gate wording kept for a genuine refusal
+- **Chose:** "Automatic completion was blocked by a framework gate" still appears, but only when the chain FINISHED with the decision written and the task still in active/ (LANDED_GATE_REFUSED), with the gate's own reason. A still-running chain is LANDED_COMPLETING ("completing the task is still running"), and a kill can no longer happen.
+- **Why:** the brief requires the existing gate wording for a real refusal; the AC forbids it for the timeout case, which no longer exists.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

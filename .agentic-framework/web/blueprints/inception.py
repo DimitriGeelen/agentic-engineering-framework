@@ -20,6 +20,7 @@ from web.shared import (
 
 logger = logging.getLogger(__name__)
 from web.subprocess_utils import run_fw_command
+from web import decide_runner as _dr
 
 
 def _md(text):
@@ -500,6 +501,9 @@ def inception_detail(task_id):
         decision_matches_recommendation=decision_matches_recommendation,
         reviewer=reviewer,
         claims_verdict=claims_verdict,
+        # T-3749: the latest Watchtower decide run, when it ended badly in a way
+        # nothing else would show (follow-up commit failed, runner gone).
+        decide_followup_warning=_dr.surface(PROJECT_ROOT, task_id),
     )
 
 
@@ -556,10 +560,10 @@ def record_decision(task_id):
     # T-1262: pass --from-watchtower to exempt the T-1259 CLAUDECODE guard.
     # Flask inherits CLAUDECODE=1 from its parent Claude Code shell; without
     # this flag, Watchtower's decide POST is blocked by the agent-invocation guard.
-    stdout, stderr, ok = run_fw_command(
-        ["inception", "decide", task_id, decision, "--rationale", rationale, "--from-watchtower"],
-        timeout=30,
-    )
+    # T-3749: the chain runs DETACHED (web/decide_runner.py) and is never killed;
+    # we wait up to DECIDE_WAIT_SECONDS for the primary result, then answer.
+    res = _run_decide(task_id, decision, rationale)
+    chain_out, chain_err = res.out, res.err
 
     # T-1470: distinguish "primary decision landed" from "side-effect failure".
     # `fw inception decide` runs the primary decision FIRST (writes ## Decision
@@ -568,12 +572,18 @@ def record_decision(task_id):
     # surfaced as 500 even though the decision was already recorded — the
     # T-1455 GO incident (2026-04-25T07:22Z, T-1444 root cause).
     primary_landed = _decision_recorded_in_task(task_id, decision)
+    if res.busy:
+        outcome = _dr.BUSY
+    else:
+        outcome = _dr.classify(decision, landed=primary_landed,
+                               completed=_task_in_completed(task_id),
+                               running=res.running, rc=res.rc)
 
-    if not ok:
+    if outcome in (_dr.NOT_LANDED, _dr.LANDED_GATE_REFUSED, _dr.LANDED_FOLLOWUP_FAILED):
         import logging  # T-1223: log errors for debugging
         logging.getLogger(__name__).error(
-            "inception decide %s failed: primary_landed=%s stdout=%r stderr=%r",
-            task_id, primary_landed, stdout[:500], stderr[:500]
+            "inception decide %s: outcome=%s rc=%s run=%s out=%r err=%r",
+            task_id, outcome, res.rc, res.run_dir, chain_out[:500], chain_err[:500]
         )
 
     # T-2053: commit the decision so it is P-002-traceable. fw inception decide
@@ -581,8 +591,10 @@ def record_decision(task_id):
     # agent follow-up, so without this every Watchtower decision is left
     # uncommitted (T-2030). Graceful: a commit failure is non-fatal — surfaced as
     # a warning, never a 500, and the decision stays on disk.
+    # T-3749: committed as soon as it lands, even while the chain still runs; the
+    # runner commits again when the chain finishes (what the post-move steps wrote).
     commit_ok, commit_msg = True, ""
-    if ok or primary_landed:
+    if outcome in _dr.LANDED_OUTCOMES:
         commit_ok, commit_msg = _commit_decision(task_id, decision)
         if not commit_ok:
             import logging
@@ -590,25 +602,51 @@ def record_decision(task_id):
                 "decision %s recorded but not committed: %s", task_id, commit_msg
             )
 
+    import html as _html
+    # Shown wherever the chain is still running, so a reader can follow it.
+    log_hint = f" Log: {res.run_dir}" if res.run_dir else ""
+    still_running_note = {
+        _dr.LANDED_RUNNING: (
+            "Task completed. Follow-up steps (episodic memory, component links, "
+            "review links) are still finishing in the background — nothing needed "
+            "from you." + log_hint),
+        _dr.LANDED_COMPLETING: (
+            "The decision is saved. Completing the task is still running in the "
+            "background — reload this page in a minute to see the result." + log_hint),
+        _dr.PENDING: (
+            "Your decision is still being recorded — the command is running in the "
+            "background and has not been interrupted. Reload this page in a minute."
+            + log_hint),
+        _dr.BUSY: (
+            f"A decision for {task_id} is already being recorded by an earlier "
+            "click; this one was not started. Reload this page in a minute."),
+    }.get(outcome, "")
+
     # If called via htmx (e.g., from /approvals page), return inline fragment (T-643)
     if request.headers.get("HX-Request"):
-        if ok or primary_landed:
+        if outcome in _dr.LANDED_OUTCOMES:
             color = "#10b981" if decision == "go" else "#ef4444" if decision == "no-go" else "#6b7280"
             label = decision.upper()
             warning_html = ""
-            if not ok and primary_landed:
-                # T-1470: side-effect failure — show warning, not error.
+            if still_running_note:
+                warning_html += (
+                    f'<div style="color:var(--pico-muted-color); font-size:0.85rem; '
+                    f'margin-top:4px; white-space:pre-wrap;">'
+                    f'⏳ {_html.escape(still_running_note)}</div>'
+                )
+            if outcome == _dr.LANDED_GATE_REFUSED:
+                # T-1470 / T-3749: completion genuinely refused (the chain FINISHED
+                # with the decision written and the task still active) — show the
+                # gate wording with the real reason. A still-running chain never
+                # reaches here: it is LANDED_COMPLETING above.
                 # T-2219 (T-2217 Slice 1): widen 150 → 1500, HTML-escape, and use
                 # white-space:pre-wrap so multi-line stderr (e.g. the disposition
                 # gate's block message with bullet list + bypass options) renders
                 # readably instead of getting clipped at the first sentence.
-                # Mirrors the sibling escape+pre-wrap pattern at line ~579 (the
-                # pre-decision validation rejection path).
-                import html as _html
                 # T-3280: operator-facing translation — decision status + reason,
                 # bypass instructions and internal banners stripped.
-                _reason = _operator_facing_stderr((stderr or stdout)[:3000])[:1500]
-                warning_html = (
+                _reason = _operator_facing_stderr((chain_err or chain_out)[:3000])[:1500]
+                warning_html += (
                     f'<div style="color:#f59e0b; font-size:0.85rem; margin-top:4px; '
                     f'white-space:pre-wrap;">'
                     f'⚠ Your decision is saved. Automatic completion was blocked by a '
@@ -617,11 +655,22 @@ def record_decision(task_id):
                     f'Reason: {_html.escape(_reason)}'
                     f'</div>'
                 )
+            elif outcome == _dr.LANDED_FOLLOWUP_FAILED:
+                # T-3749: completion happened; a LATER step exited non-zero.
+                _reason = _operator_facing_stderr((chain_err or chain_out)[:3000])[:1500]
+                warning_html += (
+                    f'<div style="color:#f59e0b; font-size:0.85rem; margin-top:4px; '
+                    f'white-space:pre-wrap;">'
+                    f'⚠ Your decision is saved and the task is completed. A follow-up '
+                    f'step reported a problem — no action needed from you unless it '
+                    f'persists.{_html.escape(log_hint)}\n'
+                    f'Reason: {_html.escape(_reason)}'
+                    f'</div>'
+                )
             if not commit_ok:
                 # T-2053: decision recorded but the auto-commit failed — surface it
                 # (no silent failure); the decision is still on disk for a later commit.
                 # T-2219: widen 150 → 1500 + pre-wrap, matching sibling above.
-                import html as _html
                 warning_html += (
                     f'<div style="color:#f59e0b; font-size:0.85rem; margin-top:4px; '
                     f'white-space:pre-wrap;">'
@@ -635,6 +684,17 @@ def record_decision(task_id):
                 f'{warning_html}'
                 f'</div>'
             )
+        if outcome in (_dr.PENDING, _dr.BUSY):
+            # T-3749: not a failure and not a success yet. The fragment replaces the
+            # decide form, so the operator cannot start a second chain by re-clicking.
+            return (
+                f'<div class="go-decision" style="border:1px solid #6b7280; border-radius:6px; padding:0.6rem;">'
+                f'<strong>{task_id}</strong>: '
+                f'<span style="font-weight:700;">Decision in progress</span>'
+                f'<div style="color:var(--pico-muted-color); font-size:0.85rem; margin-top:4px; '
+                f'white-space:pre-wrap;">⏳ {_html.escape(still_running_note)}</div>'
+                f'</div>'
+            )
         # T-2051: the htmx failure path previously returned the reason with HTTP 500.
         # htmx (hx-swap="outerHTML") does not swap non-2xx responses, so .go-decision
         # was never replaced — the human saw the unchanged GO button and re-clicked
@@ -643,7 +703,6 @@ def record_decision(task_id):
         # fault. Return 200 with a swappable error fragment so htmx replaces the block
         # and the reason is visible inline. The logging.error above preserves
         # server-side observability regardless of the client-facing status.
-        import html as _html
         # T-3539: when the CLI exits non-zero having written NOTHING to either
         # stream, say exactly that. "Unknown error" is true but useless, and it
         # points the reader at Watchtower when the fault is upstream in the CLI.
@@ -667,7 +726,7 @@ def record_decision(task_id):
         # IW-N questions are undisposed, and 300 chars cut the list after
         # "Not yet disposed:\n    - IW" — clipping the one part the operator needed
         # and leaving a message that reads as a broken system rather than a gate.
-        _full = _operator_facing_stderr((stderr or stdout or _silent)[:3000]) or _silent
+        _full = _operator_facing_stderr((chain_err or chain_out or _silent)[:3000]) or _silent
         reason = _html.escape(_full[:1500])
         if len(_full) > 1500:
             # Say that it was cut, and where the rest is. A silently-clipped message
@@ -689,15 +748,17 @@ def record_decision(task_id):
     # T-1454 (OBS-017): non-htmx form path — surface failure via ?error= query param
     # so the rendered inception_detail page can show a banner. Without this,
     # the user sees a silent redirect and clicks GO repeatedly.
-    if not ok:
-        if primary_landed:
-            # T-1470: primary succeeded, surface as warning (not error).
-            # T-3284: sanitize like the htmx sibling above — this redirect path
-            # renders to the operator too, and previously leaked bypass flags.
-            warn = (_operator_facing_stderr((stderr or stdout or "")[:3000])
-                    or "side-effect warning")[:300]
-            return redirect(url_for("inception.inception_detail", task_id=task_id, warning=warn))
-        err = (_operator_facing_stderr((stderr or stdout or "")[:3000])
+    # T-3749: ?notice= for a chain that is still running (not a failure).
+    notice = still_running_note[:300] or None
+    if outcome in (_dr.LANDED_GATE_REFUSED, _dr.LANDED_FOLLOWUP_FAILED):
+        # T-1470: primary succeeded, surface as warning (not error).
+        # T-3284: sanitize like the htmx sibling above — this redirect path
+        # renders to the operator too, and previously leaked bypass flags.
+        warn = (_operator_facing_stderr((chain_err or chain_out or "")[:3000])
+                or "side-effect warning")[:300]
+        return redirect(url_for("inception.inception_detail", task_id=task_id, warning=warn))
+    if outcome == _dr.NOT_LANDED:
+        err = (_operator_facing_stderr((chain_err or chain_out or "")[:3000])
                or "Unknown error from fw inception decide")[:300]
         return redirect(url_for("inception.inception_detail", task_id=task_id, error=err))
 
@@ -706,8 +767,85 @@ def record_decision(task_id):
         return redirect(url_for(
             "inception.inception_detail", task_id=task_id,
             warning=f"Decision recorded but not committed: {commit_msg[:200]}",
+            notice=notice,
         ))
-    return redirect(url_for("inception.inception_detail", task_id=task_id))
+    return redirect(url_for("inception.inception_detail", task_id=task_id, notice=notice))
+
+
+# T-3749: how long the request waits for the PRIMARY result (decision written
+# and, for go/no-go, the task in completed/). Measured primary: ~3 s after the
+# lazy task index in lib/design_register.py; ~23 s before it. The chain is
+# never killed when this runs out — the response just says it is still running.
+DECIDE_WAIT_SECONDS = 25
+
+
+class _DecideResult:
+    """What one Watchtower decide produced by the time we answer."""
+
+    def __init__(self, out="", err="", rc=None, running=False, busy=False, run_dir=""):
+        self.out, self.err, self.rc = out, err, rc
+        self.running, self.busy, self.run_dir = running, busy, run_dir
+
+
+def _tail(path, n=3000):
+    try:
+        with open(path, "rb") as f:
+            data = f.read()
+    except OSError:
+        return ""
+    return data[-n:].decode("utf-8", "replace").strip()
+
+
+def _task_in_completed(task_id: str) -> bool:
+    import os
+    d = os.path.join(PROJECT_ROOT, ".tasks", "completed")
+    try:
+        return any(fn.startswith(f"{task_id}-") and fn.endswith(".md") for fn in os.listdir(d))
+    except OSError:
+        return False
+
+
+def _run_decide(task_id: str, decision: str, rationale: str,
+                wait: float = None) -> "_DecideResult":
+    """T-3749: launch the detached decide and wait for its primary result.
+
+    Returns as soon as the runner has exited, or the decision has landed and
+    (go/no-go) the task is in completed/, or `wait` seconds pass — whichever
+    is first. The runner keeps going in every case.
+    """
+    import os
+    import time
+    wait = DECIDE_WAIT_SECONDS if wait is None else wait
+    try:
+        run = _dr.launch(task_id, decision, rationale,
+                         project_root=PROJECT_ROOT, framework_root=FRAMEWORK_ROOT)
+    except _dr.Busy:
+        return _DecideResult(busy=True)
+    deadline = time.monotonic() + wait
+    while True:
+        exited = run.proc.poll() is not None
+        if exited:
+            break
+        if (decision in ("go", "no-go") and _task_in_completed(task_id)
+                and _decision_recorded_in_task(task_id, decision)):
+            break
+        if time.monotonic() >= deadline:
+            break
+        time.sleep(0.2)
+    st = _dr.read_status(run.run_dir)
+    state = st.get("state")
+    rc = st.get("rc")
+    fw_finished = state in ("finished", "done")
+    err = _tail(run.err_log)
+    if exited and not fw_finished:
+        # The runner died before recording an exit code: say so, with its log.
+        rc = -1
+        err = err or _tail(run.run_dir / "runner.log") or "decide runner exited unexpectedly"
+    return _DecideResult(
+        out=_tail(run.out_log), err=err, rc=rc,
+        running=not (exited or fw_finished), busy=False,
+        run_dir=os.path.relpath(run.run_dir, PROJECT_ROOT),
+    )
 
 
 def _decision_recorded_in_task(task_id: str, decision: str) -> bool:
@@ -787,7 +925,31 @@ def _is_decision_file(task_id: str, path: str) -> bool:
     )
 
 
-def _commit_decision(task_id: str, decision: str):
+def _commit_decision(task_id: str, decision: str, followup: bool = False):
+    """T-3749: serialised wrapper — see _commit_decision_unlocked.
+
+    Watchtower commits the decision as soon as it lands; the detached decide
+    runner (web/decide_runner.py) commits again when the chain finishes, to
+    capture what the post-move steps wrote (episodic, components, Updates).
+    Both may run at once, so they take one lock: two `git commit`s racing on
+    HEAD would fail one of them for no reason the operator could act on.
+    """
+    import fcntl
+    import os
+    lock_dir = os.path.join(PROJECT_ROOT, ".context", "working", "decide")
+    try:
+        os.makedirs(lock_dir, exist_ok=True)
+        fd = os.open(os.path.join(lock_dir, "commit.lock"), os.O_RDWR | os.O_CREAT, 0o600)
+    except OSError as e:
+        return False, f"cannot take the decision-commit lock: {e}"[:200]
+    try:
+        fcntl.flock(fd, fcntl.LOCK_EX)
+        return _commit_decision_unlocked(task_id, decision, followup)
+    finally:
+        os.close(fd)
+
+
+def _commit_decision_unlocked(task_id: str, decision: str, followup: bool = False):
     """T-2053: commit the recorded inception decision so it is P-002-traceable.
 
     `fw inception decide` writes the `## Decision` block, moves the task file
@@ -900,6 +1062,11 @@ def _commit_decision(task_id: str, decision: str):
                                or "git add failed").strip()[:200]
 
             msg = f"{task_id}: inception decision {decision.upper()} (via Watchtower)"
+            if followup:
+                # T-3749: the runner's commit after the chain finished — the
+                # post-move writes, or the whole decision if it got here first.
+                msg = (f"{task_id}: inception decision {decision.upper()} — "
+                       f"decide chain finished (via Watchtower)")
             commit = subprocess.run(
                 ["git", "commit", "-m", msg],
                 cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,

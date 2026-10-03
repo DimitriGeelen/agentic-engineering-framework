@@ -97,6 +97,60 @@ def task_index(root: Path) -> dict:
     return out
 
 
+class LazyTaskIndex(dict):
+    """task_index() for callers that look up a few ids (T-3749).
+
+    The close gates (self-deferral, close-check) consult only the ids a task
+    names, yet task_index() YAML-parses every task in the corpus: measured
+    20.3 s of a 23.4 s inception decide on this repo, which is what pushed
+    Watchtower's decide past its timeout. Same entries, loaded per id on
+    first lookup; a missing id stays missing.
+    """
+
+    def __init__(self, root: Path):
+        super().__init__()
+        self._root = root
+        self._missing: set = set()
+
+    def _load(self, tid) -> bool:
+        if dict.__contains__(self, tid):
+            return True
+        if tid in self._missing or not re.fullmatch(r"T-\d+", str(tid)):
+            return False
+        for loc in ("active", "completed"):
+            for p in sorted((self._root / ".tasks" / loc).glob(f"{tid}-*.md")):
+                try:
+                    text = p.read_text(errors="replace")
+                except OSError:
+                    continue
+                fm = _frontmatter(text)
+                dict.__setitem__(self, tid, {
+                    "location": loc,
+                    "status": str(fm.get("status") or ""),
+                    "name": str(fm.get("name") or ""),
+                    "path": p,
+                    "fm": fm,
+                    "text": text,
+                })
+        # task_index() lets completed/ overwrite active/ for a duplicated id;
+        # the loop order above reproduces that.
+        if dict.__contains__(self, tid):
+            return True
+        self._missing.add(tid)
+        return False
+
+    def __contains__(self, tid) -> bool:
+        return self._load(tid)
+
+    def __getitem__(self, tid):
+        if not self._load(tid):
+            raise KeyError(tid)
+        return dict.__getitem__(self, tid)
+
+    def get(self, tid, default=None):
+        return dict.__getitem__(self, tid) if self._load(tid) else default
+
+
 def is_live(info: dict | None) -> bool:
     """Active means in active/ and not already work-completed."""
     return bool(info) and info["location"] == "active" and info["status"] != "work-completed"
@@ -358,7 +412,7 @@ def self_deferrals(task_file: Path, root: Path, tasks: dict | None = None) -> li
         return []
     m = re.match(r"(T-\d+)", task_file.name)
     self_id = m.group(1) if m else str(_frontmatter(text).get("id") or "")
-    tasks = task_index(root) if tasks is None else tasks
+    tasks = LazyTaskIndex(root) if tasks is None else tasks
     problems, seen = [], set()
     own = _own_result_text(text)
     sentences = re.split(r"(?<=[.;!?])\s+|\n", own)
@@ -397,7 +451,7 @@ def close_check(task_file: Path, root: Path, tasks: dict | None = None) -> list:
         return []
     m = re.match(r"(T-\d+)", task_file.name)
     self_id = m.group(1) if m else ""
-    tasks = task_index(root) if tasks is None else tasks
+    tasks = LazyTaskIndex(root) if tasks is None else tasks
     fm = _frontmatter(text)
     problems = []
 
