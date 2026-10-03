@@ -16,7 +16,11 @@
 
 _runme_root() { echo "${PROJECT_ROOT:-$(pwd)}/.context/runme"; }
 
-_runme_valid_name() { [[ "$1" =~ ^[A-Za-z0-9._-]+$ ]]; }
+# T-3767: a leading '-' is never a name — `fw runme watch --help` used to wait
+# 30 min for a runme called "--help".
+_runme_valid_name() { [[ "$1" =~ ^[A-Za-z0-9._][A-Za-z0-9._-]*$ ]]; }
+
+_runme_usage() { sed -n '2,17p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//'; }
 
 runme_new() {
     local name="${1:-}"; shift || true
@@ -91,11 +95,12 @@ runme_watch() {
 
 runme_main() {
     local sub="${1:-}"; shift || true
+    case "${1:-}" in -h|--help) _runme_usage; return 0 ;; esac
     case "$sub" in
         new) runme_new "$@" ;;
         watch) runme_watch "$@" ;;
         path) _runme_valid_name "${1:-}" && echo "$(_runme_root)/$1/runme.sh" ;;
-        ""|-h|--help|help) sed -n '2,17p' "${BASH_SOURCE[0]}" | sed 's/^# \{0,1\}//' ;;
+        ""|-h|--help|help) _runme_usage ;;
         *) echo "fw runme: unknown subcommand '$sub' (new|watch|path)" >&2; return 2 ;;
     esac
 }
