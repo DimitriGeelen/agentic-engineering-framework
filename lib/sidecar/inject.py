@@ -163,14 +163,16 @@ def _publish_injectable(tagged_ids: list[str]) -> None:
         pass
 
 
-def project_has_injectable_session() -> bool:
-    """Did the injector's last decision find a TermLink session registered
-    for this project? No decision yet (no injector ran) reads as False: the
-    prompt hook is then the only way mail can reach an agent here."""
+def injector_found_no_session() -> bool:
+    """True only when an injector has DECIDED that no TermLink session is
+    registered for this project. No decision on record (no watcher has run
+    here, or an injector predating T-3684) is NOT that: then nothing may be
+    taken by whichever session happens to prompt (T-3745)."""
     try:
-        return bool(json.loads(_injectable_path().read_text(encoding="utf-8")).get("tagged"))
+        data = json.loads(_injectable_path().read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return False
+    return isinstance(data.get("tagged"), list) and not data["tagged"]
 
 
 def claim_for(msg_id: str, session: dict) -> None:

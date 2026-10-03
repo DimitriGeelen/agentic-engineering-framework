@@ -187,13 +187,15 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
         return []
     waiting = [i for i in receiver.awaiting_handover() if not _being_finalized(i, now)]
     ids = [i for i in waiting if inject.is_claimed_for(i, me)]
-    # A project with NO TermLink session registered for it (plain terminals
-    # only) has no injection target at all; the prompt hook is then the only
-    # way mail reaches an agent, so unclaimed mail may be taken here — and is
-    # claimed for this session first, so attribution stays with the session
-    # whose transcript will prove it. Where an injectable session exists, mail
-    # is left for the injector (the 055 case: fleet agent + operator terminal).
-    if not inject.project_has_injectable_session():
+    # A project where the injector has DECIDED no TermLink session is
+    # registered (plain terminals only) has no injection target at all; the
+    # prompt hook is then the only way mail reaches an agent, so unclaimed
+    # mail may be taken by an INTERACTIVE session — claimed for it first, so
+    # attribution stays with the session whose transcript will prove it.
+    # Never when no decision is on record, never in a headless `claude -p`
+    # session (a dispatched worker), and never where an injectable session
+    # exists (the 055 case: fleet agent + operator terminal).
+    if inject.injector_found_no_session() and not me.get("headless"):
         for i in waiting:
             if i not in ids and inject.read_claim(i) is None:
                 inject.claim_for(i, me)

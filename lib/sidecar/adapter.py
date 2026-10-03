@@ -200,12 +200,29 @@ def session_identity(hook_input: dict) -> dict | None:
     sid = _safe_sid((hook_input or {}).get("session_id") or "")
     if not sid:
         return None
+    pid = _claude_ancestor_pid()
     return {
         "session_id": sid,
         "transcript_path": str((hook_input or {}).get("transcript_path") or "") or None,
         "termlink_session": os.environ.get("TERMLINK_SESSION_ID") or None,
-        "claude_pid": _claude_ancestor_pid(),
+        "claude_pid": pid,
+        "headless": _is_headless(pid),
     }
+
+
+def _is_headless(claude_pid: int | None) -> bool:
+    """A `claude -p` / `--print` session (a dispatched worker, a script) is
+    nobody's interactive agent: it can never be injected into, and it must
+    never take a project's mail on its own prompts (seen live, T-3684: a
+    dispatched worker's prompt hook surfaced a peer consult meant for the
+    project's agent)."""
+    if not claude_pid:
+        return False
+    try:
+        args = Path(f"/proc/{claude_pid}/cmdline").read_bytes().split(b"\0")
+    except OSError:
+        return False
+    return any(a in (b"-p", b"--print") for a in args[1:])
 
 
 def set_session_ready(hook_input: dict, ready: bool) -> dict | None:

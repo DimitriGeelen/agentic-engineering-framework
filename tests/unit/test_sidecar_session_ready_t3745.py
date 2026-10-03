@@ -37,6 +37,9 @@ def proj(tmp_path, monkeypatch):
     monkeypatch.setenv("FW_SIDECAR_REGISTRY_DIR", str(tmp_path / "registry"))
     monkeypatch.delenv("FW_REVIEW_WORKER", raising=False)
     monkeypatch.delenv("TERMLINK_SESSION_ID", raising=False)
+    # Deterministic whoever runs the suite (an interactive shell, cron, or a
+    # `claude -p` worker — which would otherwise read as headless).
+    monkeypatch.setattr(adapter, "_claude_ancestor_pid", lambda *a, **k: None)
     return root
 
 
@@ -213,7 +216,7 @@ def test_plain_only_project_prompt_takes_and_claims_unclaimed_mail(proj, monkeyp
     still that session's, proven from its own transcript."""
     _store("m1")
     inject.deliver_pending("tick", runner=Termlink([]))      # publishes: no sessions
-    assert not inject.project_has_injectable_session()
+    assert inject.injector_found_no_session()
     ids, _ = _hook(monkeypatch, "prompt", "operator", "tl-none")
     assert ids == ["m1"] and inject.read_claim("m1")["session_id"] == "operator"
     ids2, _ = _hook(monkeypatch, "prompt", "someone-else", "tl-x")
@@ -225,6 +228,36 @@ def test_injectable_session_present_plain_session_takes_nothing(proj, monkeypatc
     _hook(monkeypatch, "prompt", "fleet", "tl-fleet")         # fleet busy
     _store("m1")
     inject.deliver_pending("tick", runner=Termlink(_sessions("tl-fleet")))
-    assert inject.project_has_injectable_session()
+    assert not inject.injector_found_no_session()
     ids, _ = _hook(monkeypatch, "prompt", "operator", "tl-op")
     assert ids == []
+
+
+def test_no_injector_decision_on_record_plain_session_takes_nothing(proj, monkeypatch):
+    """Seen live (T-3684): a project with a receiver but no injector decision
+    on record. A prompting session must not take the mail."""
+    _store("m1")
+    assert not inject.injector_found_no_session()
+    ids, _ = _hook(monkeypatch, "prompt", "worker", "tl-w")
+    assert ids == [] and inject.read_claim("m1") is None
+
+
+def test_headless_session_never_takes_fallback_mail(proj, monkeypatch):
+    _store("m1")
+    inject.deliver_pending("tick", runner=Termlink([]))      # decided: no sessions
+    monkeypatch.setattr(adapter, "_is_headless", lambda pid: True)
+    ids, _ = _hook(monkeypatch, "prompt", "claude-p-worker", "tl-w")
+    assert ids == [] and inject.read_claim("m1") is None
+
+
+def test_is_headless_reads_the_claude_command_line(tmp_path):
+    p = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)", "-p"])
+    try:
+        assert adapter._is_headless(p.pid) is True
+    finally:
+        p.kill()
+    q = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)"])
+    try:
+        assert adapter._is_headless(q.pid) is False
+    finally:
+        q.kill()
