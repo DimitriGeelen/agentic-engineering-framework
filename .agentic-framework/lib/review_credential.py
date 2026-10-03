@@ -31,11 +31,15 @@ The value never reaches stdout, stderr, an exception message or a process argume
 
 Exfiltration by registry edit: the credential blocks are read from the registry as
 committed at HEAD when the registry is tracked by git; a working-tree edit to any
-credential block is refused until it is committed (and so attributable). A registered
-file must be a regular file, not group/world-writable, owned by root or the caller, and
-at most 64 KiB. What this does NOT stop (same residual as Tier 0, T-2742): a command run
-under --exec has the value and can encode it past the output mask, and a same-user
-process can commit a registry change. The mask catches accidents, not intent.
+credential block is refused until it is committed (and so attributable); a git that
+cannot answer refuses. `files:` is allowed only on an approval_required backend, so a file
+credential reaches a child only under an operator-approved proposal (consumed under a lock,
+one approval per --exec). A registered file is opened component by component with
+O_NOFOLLOW and must be a regular, private (no group/other read or write) file owned by
+root or the caller, at most 64 KiB. What this does NOT stop (same residual as Tier 0,
+T-2742): a command run under --exec has the value and can encode it past the output mask,
+and a same-user process can commit a registry change (including approval_required, which
+set_backend refuses but a hand edit does not). The mask catches accidents, not intent.
 
 Which store is the source of truth: THIS registry + resolver, for review/dispatch
 runners. web/secrets_store.py is Watchtower's own Fernet-encrypted UI key store
@@ -72,19 +76,22 @@ def _looks_like_value(s: str) -> bool:
     return any(r.search(s) for r in VALUE_RES)
 
 
-def validate_credential(bid: str, cred: object) -> list[str]:
+def validate_credential(bid: str, cred: object, approval_required: bool = True) -> list[str]:
     """Errors for one backend's `credential:` block (called from review_cost.validate)."""
     if not isinstance(cred, dict) or not cred:
         return [f"{bid}: credential must be a non-empty mapping"]
     errs = []
-    for k in cred:
-        if k not in KEYS:
-            errs.append(f"{bid}: credential has unknown key {k!r} (allowed: {', '.join(KEYS)})")
+    # Never echo registry text in these messages: a key or value may be a pasted credential.
+    n_unknown = sum(1 for k in cred if k not in KEYS)
+    if n_unknown:
+        errs.append(f"{bid}: credential has {n_unknown} unknown key(s) (allowed: {', '.join(KEYS)})")
     for k, v in cred.items():
-        for s in (v if isinstance(v, list) else [v]):
+        name = f"credential.{k}" if k in KEYS else "a credential key"
+        for s in [k] + (v if isinstance(v, list) else [v]):
             if isinstance(s, str) and _looks_like_value(s):
-                errs.append(f"{bid}: credential.{k} looks like a credential VALUE — the registry "
+                errs.append(f"{bid}: {name} looks like a credential VALUE — the registry "
                             f"names where a credential is, never what it is")
+                break
     src = cred.get("source", "env-file")
     if src not in SOURCES:  # never echo the rejected text: it may be a pasted value
         errs.append(f"{bid}: credential.source must be one of {SOURCES}")
@@ -101,6 +108,12 @@ def validate_credential(bid: str, cred: object) -> list[str]:
                                 f"matching {PATH_RE.pattern}")
     if note is not None and not (isinstance(note, str) and note.strip()):
         errs.append(f"{bid}: credential.note must be non-empty text")
+    if files and approval_required is not True:
+        # Reading a credential FILE and handing it to a child is allowed only where every
+        # --exec needs an operator-approved proposal; otherwise a registry edit on an internal
+        # backend could point at any private KEY=VALUE file and pass it to an arbitrary child.
+        errs.append(f"{bid}: credential.files is allowed only on a backend with approval_required: "
+                    f"true (internal backends use env or the CLI's own login)")
     if src == "env-file" and not env:
         errs.append(f"{bid}: credential source env-file needs `env:`")
     if src in ("cli-login", "none"):
@@ -147,8 +160,11 @@ def committed_credentials(path: Path) -> dict[str, dict] | None:
             raise fail
         listed = _git(path, "ls-tree", "--name-only", "HEAD", "--", f"./{path.name}")
         if listed.returncode != 0:
-            if _git(path, "rev-parse", "--verify", "-q", "HEAD").returncode != 0:
-                return None  # unborn repository: nothing is committed yet
+            # Only a repository with no refs at all (unborn) has nothing committed; any other
+            # failure is operational and refuses.
+            refs = _git(path, "for-each-ref", "--count=1")
+            if refs.returncode == 0 and not refs.stdout.strip():
+                return None
             raise fail
         if not listed.stdout.strip():
             return None
@@ -199,18 +215,33 @@ def registered_files(path: Path, backends: list[dict]) -> set[str]:
 def _read_var(fpath: str, var: str) -> str | None:
     """The value of `var` in a KEY=VALUE file, or None when the file lacks it or is absent.
     Raises (with no content in the message) when the file is unsafe to read."""
-    if not os.path.lexists(fpath):
-        return None
-    if os.path.realpath(fpath) != fpath:
-        raise CredError(f"{fpath}: is or passes through a symlink — register the real path itself")
+    # Walk the path one component at a time from `/`, each opened relative to its parent's
+    # fd with O_NOFOLLOW: no component (parent or final) can be a symlink or be swapped for
+    # one between a check and the open.
+    parts = [c for c in fpath.split("/") if c]
+    dfd = os.open("/", os.O_RDONLY | os.O_DIRECTORY)
     try:
-        fd = os.open(fpath, os.O_RDONLY | os.O_NOFOLLOW | getattr(os, "O_NONBLOCK", 0))
-    except FileNotFoundError:
-        return None
-    except PermissionError:
-        raise CredError(f"{fpath}: not readable by this user")
-    except OSError:
-        raise CredError(f"{fpath}: cannot be opened safely (symlink or special file)")
+        for comp in parts[:-1]:
+            try:
+                nfd = os.open(comp, os.O_RDONLY | os.O_DIRECTORY | os.O_NOFOLLOW, dir_fd=dfd)
+            except FileNotFoundError:
+                return None
+            except PermissionError:
+                raise CredError(f"{fpath}: not readable by this user")
+            except OSError:
+                raise CredError(f"{fpath}: passes through a symlink or non-directory — register the real path")
+            os.close(dfd)
+            dfd = nfd
+        try:
+            fd = os.open(parts[-1], os.O_RDONLY | os.O_NOFOLLOW | os.O_NONBLOCK, dir_fd=dfd)
+        except FileNotFoundError:
+            return None
+        except PermissionError:
+            raise CredError(f"{fpath}: not readable by this user")
+        except OSError:
+            raise CredError(f"{fpath}: is a symlink or special file — register the real path")
+    finally:
+        os.close(dfd)
     with os.fdopen(fd, "rb") as fh:
         return _parse_var(fpath, var, fh)
 
@@ -221,6 +252,10 @@ def _parse_var(fpath: str, var: str, fh) -> str | None:
         raise CredError(f"{fpath}: not a regular file")
     if st.st_mode & (stat.S_IWGRP | stat.S_IWOTH):
         raise CredError(f"{fpath}: group/world-writable — refusing to trust it")
+    if st.st_mode & (stat.S_IRGRP | stat.S_IROTH):
+        # A credential store is private (0600/0400). This also bounds a retargeting registry
+        # edit: an ordinary readable file cannot be named as a credential source.
+        raise CredError(f"{fpath}: group/world-readable — a credential file must be private (chmod 600)")
     if st.st_uid not in (0, os.geteuid()):
         raise CredError(f"{fpath}: owned by uid {st.st_uid}, not root or the caller")
     if st.st_size > MAX_FILE:
@@ -344,6 +379,7 @@ def main(argv: list[str]) -> int:
             var, val, where = resolve(backend, path, a.source)
             print(f"{backend['id']}: {var} resolved from {where}: {_masked(val)}")
             return 0
+        task, prop = "", None
         if backend.get("approval_required"):
             task = a.task or _focused_task(rc_._roots()[0])
             prop = rc_.open_approval(task, backend["id"]) if task else None
@@ -354,7 +390,7 @@ def main(argv: list[str]) -> int:
                     f"  bin/fw review propose --task {task or 'T-XXX'} --backend {backend['id']} "
                     f"--why '...' --estimate-cost N   (the operator approves it)")
         var, val, _ = resolve(backend, path, a.source)
-        if backend.get("approval_required"):
+        if prop is not None:
             # One approval, one use: the cost record that consumes the proposal is written
             # BEFORE the child starts, so a second --exec cannot ride the same approval.
             rc_.log_cost(task=task, backend=backend["id"], tokens=None, cost=None,

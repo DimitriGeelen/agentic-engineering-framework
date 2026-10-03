@@ -97,7 +97,7 @@ open(p, "w").write(s)
 PY
     run rc list-backends
     [ "$status" -ne 0 ]
-    [[ "$output" == *"unknown key 'value'"* ]]
+    [[ "$output" == *"unknown key(s)"* ]]
     [[ "$output" == *"looks like a credential VALUE"* ]]
 }
 
@@ -221,7 +221,7 @@ PY
     point_openrouter_at "$REAL_CRED"
     run bash -c "$(printf '%q' "$BOUNDARY") <<<'$(hook_json "cat $REAL_CRED")'"
     [ "$status" -eq 2 ]
-    run bash -c "$(printf '%q' "$BOUNDARY") <<<'$(hook_json "bin/fw review credential openrouter --check --source $REAL_CRED")'"
+    run bash -c "$(printf '%q' "$BOUNDARY") <<<'$(hook_json "$PROJECT_ROOT/bin/fw review credential openrouter --check --source $REAL_CRED")'"
     [ "$status" -eq 0 ]
 }
 
@@ -239,11 +239,11 @@ PY
 
 @test "boundary: a path not registered in the registry is not exempt even as --source" {
     point_openrouter_at "$CRED"
-    run bash -c "$(printf '%q' "$BOUNDARY") <<<'$(hook_json "bin/fw review credential openrouter --check --source $REAL_CRED")'"
+    run bash -c "$(printf '%q' "$BOUNDARY") <<<'$(hook_json "$PROJECT_ROOT/bin/fw review credential openrouter --check --source $REAL_CRED")'"
     [ "$status" -eq 2 ]
 }
 
-# ── round-1 review findings (docs/reports/T-3766-review-codex.md) ────────────
+# ── round-1 review findings (docs/reports/T-3766-review-codex-r1.md) ────────────
 
 @test "R1-1: a multiline env value is refused and not echoed (it would straddle the line mask)" {
     export OPENROUTER_API_KEY="$(printf '%s\n%s' "$ENVVAL" "$FILEVAL")"
@@ -274,7 +274,7 @@ PY
         run bash -c "$(printf '%q' "$BOUNDARY") <<<'$(hook_json "$c")'"
         [ "$status" -eq 2 ] || { echo "not blocked: $c"; false; }
     done
-    run bash -c "$(printf '%q' "$BOUNDARY") <<<'$(hook_json ".agentic-framework/bin/fw review credential openrouter --check --source $REAL_CRED")'"
+    run bash -c "$(printf '%q' "$BOUNDARY") <<<'$(hook_json "$PROJECT_ROOT/.agentic-framework/bin/fw review credential openrouter --check --source $REAL_CRED")'"
     [ "$status" -eq 0 ]
 }
 
@@ -313,4 +313,79 @@ PY
     grep -q "\"proposal_id\": \"$pid\"" "$PROJECT_ROOT/.context/costs/reviews.jsonl"
     run rc credential openrouter --exec -- true
     [ "$status" -eq 1 ]; [[ "$output" == *"needs an approved, unused proposal"* ]]
+}
+
+# ── round-2 review findings ──────────────────────────────────────────────────
+
+@test "R2-1: an unknown credential KEY that looks like a value is refused and not echoed" {
+    python3 - "$POLICY" "$ENVVAL" <<'PY'
+import sys
+p, v = sys.argv[1], sys.argv[2]; s = open(p).read()
+s = s.replace("      env: OPENROUTER_API_KEY", "      env: OPENROUTER_API_KEY\n      " + v + ": x", 1)
+open(p, "w").write(s)
+PY
+    run rc list-backends
+    [ "$status" -ne 0 ]; [[ "$output" == *"unknown key"* ]]; no_value
+}
+
+@test "R2-2: exemption only for this project's fw by absolute path (PATH, cd, relative, assignment)" {
+    point_openrouter_at "$REAL_CRED"
+    for c in "PATH=/tmp fw review credential openrouter --check --source $REAL_CRED" \
+             "cd /tmp && bin/fw review credential openrouter --check --source $REAL_CRED" \
+             "bin/fw review credential openrouter --check --source $REAL_CRED" \
+             "X=1 $PROJECT_ROOT/bin/fw review credential openrouter --check --source $REAL_CRED"; do
+        run bash -c "$(printf '%q' "$BOUNDARY") <<<'$(hook_json "$c")'"
+        [ "$status" -eq 2 ] || { echo "not blocked: $c"; false; }
+    done
+}
+
+@test "R2-3: a git that discovers the repo but fails on HEAD refuses (no working-tree fallback)" {
+    mkdir "$TEST_TEMP_DIR/fakebin"
+    cat > "$TEST_TEMP_DIR/fakebin/git" <<SH
+#!/bin/sh
+case "\$3" in
+  rev-parse) echo "$PROJECT_ROOT"; exit 0 ;;
+  for-each-ref) echo "abc commit refs/heads/main"; exit 0 ;;
+  *) echo "fatal: transient failure" >&2; exit 128 ;;
+esac
+SH
+    chmod +x "$TEST_TEMP_DIR/fakebin/git"
+    PATH="$TEST_TEMP_DIR/fakebin:$PATH" run python3 "$RC" credential openrouter --check
+    [ "$status" -eq 1 ]; [[ "$output" == *"refusing"* ]]
+    no_value
+}
+
+@test "R2-3: credential.files on an internal (no-approval) backend is refused by validation" {
+    python3 - "$POLICY" "$CRED" <<'PY'
+import sys
+p, f = sys.argv[1], sys.argv[2]; s = open(p).read()
+old = '      source: cli-login\n      note: "codex login'
+assert old in s
+s = s.replace(old, '      source: env-file\n      env: OPENAI_API_KEY\n      files:\n        - ' + f + '\n      note: "codex login', 1)
+open(p, "w").write(s)
+PY
+    run rc list-backends
+    [ "$status" -ne 0 ]; [[ "$output" == *"credential.files is allowed only on a backend with approval_required"* ]]
+}
+
+@test "R2-3: a group/world-readable credential file is refused (control: 0600 resolves)" {
+    chmod 644 "$CRED"
+    run rc credential openrouter --check
+    [ "$status" -eq 1 ]; [[ "$output" == *"group/world-readable"* ]]
+    chmod 600 "$CRED"
+    run rc credential openrouter --check
+    [ "$status" -eq 0 ]
+}
+
+@test "R2-4: concurrent paid --exec on one approval: exactly one runs" {
+    focus T-9999
+    run rc propose --task T-9999 --backend openrouter --why "fixture" --estimate-cost 1
+    pid="$(echo "$output" | grep -o 'RP-[A-Za-z0-9-]*' | head -1)"
+    run rc approve "$pid" --i-am-human --reason fixture
+    for n in 1 2 3 4; do
+        ( python3 "$RC" credential openrouter --exec -- touch "$TEST_TEMP_DIR/ran.$n" >/dev/null 2>&1 ) &
+    done
+    wait
+    [ "$(ls "$TEST_TEMP_DIR"/ran.* 2>/dev/null | wc -l)" -eq 1 ]
+    [ "$(grep -c "\"proposal_id\": \"$pid\"" "$PROJECT_ROOT/.context/costs/reviews.jsonl")" -eq 1 ]
 }

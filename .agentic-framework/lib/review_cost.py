@@ -158,7 +158,8 @@ def validate(backends: object) -> list[str]:
         # T-3766: where the backend's credential lives (env var + files, or the CLI's own
         # login) — a location, never a value. review_credential owns the rules.
         if "credential" in b:
-            errs += _credential_mod().validate_credential(str(bid), b["credential"])
+            errs += _credential_mod().validate_credential(str(bid), b["credential"],
+                                                          b.get("approval_required") is True)
     kv: dict = {}
     for b in backends:
         if isinstance(b, dict) and b.get("worker_kind") and b.get("vendor"):
@@ -388,6 +389,26 @@ def log_cost(*, task: str, backend: str, purpose: str, tokens: int | None, cost:
     if not purpose.strip():
         raise CostError("--purpose is required")
     b = get_backend(backend)
+    with _ledger_lock():  # T-3766: check-then-append is atomic, so one approval is one use
+        return _log_cost_locked(b, task=task, backend=backend, purpose=purpose, tokens=tokens,
+                                cost=cost, proposal_id=proposal_id, evidence=evidence)
+
+
+class _ledger_lock:
+    def __enter__(self):
+        import fcntl
+        path = ledger(".reviews.lock")
+        path.parent.mkdir(parents=True, exist_ok=True)
+        self.fh = path.open("a")
+        fcntl.flock(self.fh, fcntl.LOCK_EX)
+        return self
+
+    def __exit__(self, *exc):
+        self.fh.close()  # releases the flock
+
+
+def _log_cost_locked(b: dict, *, task: str, backend: str, purpose: str, tokens: int | None,
+                     cost: float | None, proposal_id: str | None, evidence: str | None) -> dict:
     if b["approval_required"]:
         p = proposals().get(proposal_id or "")
         if not proposal_id or p is None:

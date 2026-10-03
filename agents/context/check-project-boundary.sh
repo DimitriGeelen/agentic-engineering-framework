@@ -422,8 +422,8 @@ def _drop_termlink_segments(cmd, root):
         return cmd
 
 
-# T-3766: the sanctioned credential path. A segment whose COMMAND POSITION is
-# `[bin/|.agentic-framework/bin/]fw review credential` may name a credential
+# T-3766: the sanctioned credential path. A segment whose first word is this
+# project's fw BY ABSOLUTE PATH, then `review credential`, may name a credential
 # file the committed backend registry registers (its --source argument); that
 # exact token, in that segment only, is exempt from the read-side Pattern 4.
 # Nothing else is: the write patterns (1-3) run first and still see the path,
@@ -448,17 +448,15 @@ def _cred_exempt_spans(cmd, root):
         for s, e in _split_segments(mask):
             toks = list(re.finditer(r'\S+', mask[s:e]))
             words = [t.group(0) for t in toks]
+            # Exactly this project's fw, by ABSOLUTE path, as the segment's first word: a
+            # relative `fw`/`bin/fw` resolves through PATH or the cwd (`PATH=/tmp fw ...`,
+            # `cd /tmp && bin/fw ...`), and an assignment prefix could redirect it.
             i = 0
-            while i < len(words) and _TL_ASSIGN.match(words[i]):
-                i += 1
-            if len(words) < i + 3:
+            if len(words) < 3:
                 continue
-            # Exactly this project's fw: no other executable that merely ends in `fw`.
-            exe = words[i]
-            fw_names = {'fw', 'bin/fw', './bin/fw', '.agentic-framework/bin/fw',
-                        './.agentic-framework/bin/fw', root + '/bin/fw',
-                        root + '/.agentic-framework/bin/fw'}
-            if exe not in fw_names or words[i + 1:i + 3] != ['review', 'credential']:
+            exe = words[0]
+            if exe not in (root + '/bin/fw', root + '/.agentic-framework/bin/fw') \
+                    or words[1:3] != ['review', 'credential']:
                 continue
             # No substitution, redirect-in or subshell anywhere in the segment:
             # `$( cat <file> )` would run INSIDE an exempt segment and put the

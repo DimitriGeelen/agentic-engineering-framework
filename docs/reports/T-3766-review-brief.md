@@ -69,7 +69,8 @@ credential value appears in this document.
   `$ \` < ( )`, may name a registered file **as the value of `--source`**; that exact token is
   blanked for the read-side Pattern 4 only (`:598`). Write patterns 1–3 run on the unblanked
   text. Registered set = `registered_files()` from the committed registry; any error → empty.
-- Live: `bin/fw review credential openrouter --check --source /root/.litellm-openrouter.env`
+- (Round 2: the exemption now requires the ABSOLUTE project fw path as the segment's first word.)
+- Live: `/opt/999-Agentic-Engineering-Framework/bin/fw review credential openrouter --check --source /root/.litellm-openrouter.env`
   passes the hook and resolves (masked); `cat /root/.litellm-openrouter.env` is blocked.
 - Tests: @test 16 (cat blocked / resolver allowed), 17 (sibling `&& cat`, `$( cat … )`,
   `> file`, bare positional path, unregistered `/root/.ssh/id_rsa` — all blocked), 18 (path not
@@ -113,3 +114,16 @@ credential value appears in this document.
 | 4 | Paid `--exec` checked but did not consume the approval | The consuming cost record (with `proposal_id`) is written before the child starts (`:360`) | @test "R1-4: one approval covers one --exec" |
 
 24/24 ok, 0 skip; regression suites green.
+
+## Round 2 (codex, VERDICT: FAIL; report kept as docs/reports/T-3766-review-codex-r2.md) — findings and fixes
+
+| # | Finding | Fix | Evidence |
+|---|---|---|---|
+| 1 | Unknown credential KEYS echoed in validation errors | Unknown keys are counted, never named; a value-looking key is reported as "a credential key" (`lib/review_credential.py` `validate_credential`, :79) | @test "R2-1" |
+| 2 | `PATH=/tmp fw …` and `cd /tmp && bin/fw …` still exempt | Exemption requires the segment's FIRST word to be this project's fw by absolute path (`$PROJECT_ROOT/bin/fw` or `$PROJECT_ROOT/.agentic-framework/bin/fw`); no assignment prefix, no relative name (`check-project-boundary.sh:458`) | @test "R2-2" (PATH, cd, relative, assignment all blocked); positive tests use the absolute path |
+| 3a | `ls-tree` + `rev-parse --verify` failures read as "unborn" → working-tree fallback | Only `for-each-ref --count=1` returning rc 0 with no refs counts as unborn; anything else refuses (:165). (`/` on this host is an unborn git repo, which is why the unborn case exists at all.) | @test "R2-3: a git that discovers the repo but fails on HEAD refuses" |
+| 3b | Parent component swappable between realpath and open | Path opened component by component from `/` with `O_DIRECTORY|O_NOFOLLOW` relative to the parent fd; final component `O_NOFOLLOW|O_NONBLOCK`; checks on `fstat` of the open fd (:226-236) | R1-3 symlinked-parent test; test 10 |
+| 3c | Committed retargeting; credential metadata attachable to an internal backend | `credential.files` is refused by validation unless the backend has `approval_required: true` (:115), so a file credential reaches a child only under an operator-approved, consumed proposal. Credential files must also be private: no group/other read (:255) — an ordinary readable file cannot be named. Residual: a same-user hand edit + commit of `approval_required` (set_backend refuses agents; a hand edit does not), documented. | @test "R2-3: credential.files on an internal backend is refused"; "R2-3: group/world-readable refused (control 0600)" |
+| 4 | Consumption not atomic | `log_cost` check-then-append runs under an exclusive `flock` on `.context/costs/.reviews.lock` (`lib/review_cost.py:392`) | @test "R2-4: concurrent paid --exec on one approval: exactly one runs" (4 parallel; 3/3 repeated runs green) |
+
+30/30 ok, 0 skip; t3586_review_cost, check_project_boundary, t3076, t2920, test_boundary_hook_arguments green. Live: real file is private (resolves), masked.
