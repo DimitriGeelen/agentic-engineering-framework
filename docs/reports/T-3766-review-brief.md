@@ -1,0 +1,100 @@
+# T-3766 — independent review brief
+
+Task: `.tasks/active/T-3766-rca-agents-repeatedly-ask-the-operator-f.md`.
+Problem: agents asked the operator for vendor credentials (OpenRouter above all) that the
+framework already holds, because the credential LOCATION lived only in prose. Fix: the
+location is a registry fact, read by one resolver. All output below is masked; no
+credential value appears in this document.
+
+## AC → evidence
+
+### AC1 — RCA with three dated recurrences
+- Task file `## RCA`: symptom (2026-10-01 T-3670/L-687; 2026-10-03 T-3751 twice), root
+  cause (location only in prose), why structurally allowed (compaction, recall miss,
+  boundary gate blocks verification, behavioural learning), prevention.
+
+### AC2 — `credential:` per backend, never a value
+- `policy/review-backends.yaml:39-44` (field doc), blocks at `:56` claude-code, `:72` codex,
+  `:90` opencode, `:108` local-gpu (`source: none`), `:119` openrouter
+  (`env: OPENROUTER_API_KEY`, `files: [/root/.litellm-openrouter.env]`), `:139` antigravity.
+  The CLI backends are `source: cli-login` with a `note:` naming the CLI's own login.
+- Validation: `lib/review_cost.py:158-161` calls `lib/review_credential.py:72`
+  `validate_credential`: allowed keys `source env files note` only; value-looking strings
+  refused (`:59` — `sk-/pk-/rk-` prefix or a 32+ char base64/hex run); env must match
+  `^[A-Z][A-Z0-9_]{1,63}$`; files absolute, no `..`; cli-login/none need a note and take no
+  env/files. `fw audit` WARNs on a backend with no credential block (`lib/review_cost.py:452`).
+- `/etc/watchtower/env` (named in history) does not exist on this host
+  (`ls: cannot access '/etc/watchtower/'`); not registered.
+- Tests: `t3766_review_credential.bats` @test 1 (seeded registry), 2 (`sk-` string refused,
+  control loads), 3 (base64 blob + unknown key refused).
+
+### AC3 — one resolver, never prints the value; runners use it
+- `fw review credential <backend> [--check] [--source F] [--task T] [--exec -- cmd...]`:
+  `lib/review_cost.py` `main` dispatches to `lib/review_credential.py:270`.
+- Order: env var first, then each registered file (`resolve`, `:206`). `--source` must be one of
+  the registered files (else refused). Files are parsed for exactly the one variable
+  (`_read_var`, `:168`), never sourced; must be a regular non-symlink file, not
+  group/world-writable, owned by root or the caller, <= 64 KiB. Error messages name the
+  variable, files and registry path, never file content.
+- Credential blocks come from the registry AS COMMITTED AT HEAD when the registry is in a git
+  work tree (`committed_credentials`, `:117`); an uncommitted credential edit is refused.
+- `--check` prints source + `**** (N chars)`. `--exec` puts the value only in the child's
+  environment (not argv) and rewrites the value to `****` in the child's stdout/stderr
+  (`_pump`, `:243`). A backend with `approval_required` needs an approved, unused proposal for
+  the focused task (`:302`), checked in the resolver itself.
+- Runners: no committed paid-seat runner exists (only reader of `OPENROUTER_API_KEY` outside
+  the resolver: `web/llm/manager.py`, deliberately NOT wired — it would make paid calls without
+  approval; see task `## Decisions`). Runners launch via `--exec`.
+- Live, this host:
+  ```
+  $ bin/fw review credential openrouter --check
+  openrouter: OPENROUTER_API_KEY resolved from file /root/.litellm-openrouter.env: **** (73 chars)
+  $ bin/fw review credential codex --check
+  codex: credential source cli-login — codex login with the ChatGPT account (~/.codex/auth.json) — the CLI authenticates itself
+  $ bin/fw review credential openrouter --exec -- true
+  ERROR: backend 'openrouter' is paid: --exec needs an approved, unused proposal for T-3766. ...
+  ```
+- Tests: @test 4 (env wins), 5 (env empty → file), 6 (file order), 7 (neither → error naming the
+  entry), 8 (other content not echoed), 9 (not sourced), 10 (world-writable / symlink refused),
+  11 (`--source` arbitrary path refused), 12 (cli-login), 13 (uncommitted credential edit
+  refused under git), 14 (paid `--exec` refused without approval, in the resolver AND by the
+  check-paid-backend hook via the new match `policy/review-backends.yaml:128`; control
+  `--check` passes), 15 (approved: child sees the variable; `printenv` output on stdout and
+  stderr is masked). Every resolution test asserts the fake value is absent from captured
+  output (`no_value`).
+
+### AC4 — boundary gate allowlists exactly the registered files, read-only, resolver only
+- `agents/context/check-project-boundary.sh:425-476` `_cred_exempt_spans`: a segment whose
+  command position is `[path/]fw review credential` (project-local fw only), containing no
+  `$ \` < ( )`, may name a registered file **as the value of `--source`**; that exact token is
+  blanked for the read-side Pattern 4 only (`:598`). Write patterns 1–3 run on the unblanked
+  text. Registered set = `registered_files()` from the committed registry; any error → empty.
+- Live: `bin/fw review credential openrouter --check --source /root/.litellm-openrouter.env`
+  passes the hook and resolves (masked); `cat /root/.litellm-openrouter.env` is blocked.
+- Tests: @test 16 (cat blocked / resolver allowed), 17 (sibling `&& cat`, `$( cat … )`,
+  `> file`, bare positional path, unregistered `/root/.ssh/id_rsa` — all blocked), 18 (path not
+  in the registry → blocked even as `--source`).
+
+### AC5 — CLAUDE.md, learning, concern
+- `CLAUDE.md:1722` (§Review and Dispatch Cost Ruling): registry field, resolver, "Never ask the
+  operator for a credential the registry names", names `web/secrets_store.py` as the separate
+  Watchtower store.
+- Learnings: L-690 (path, pre-existing) + new learning naming the resolver
+  (`.context/project/learnings.yaml`, task T-3766).
+- Concern `OBS-597` (`.context/concerns.yaml:1678`).
+
+### AC6 — tests
+- `timeout 300 bats tests/unit/t3766_review_credential.bats` → 18/18 ok, 0 skip. Hermetic: temp
+  registry copy, temp file with a fake value built at run time; the real /root file is never
+  read (the boundary tests feed command text only).
+- Regression: `t3586_review_cost.bats`, `check_project_boundary.bats`,
+  `t2920_boundary_heredoc_strip_order.bats`, `t3076_boundary_termlink_segment_scope.bats`,
+  `test_boundary_hook_arguments.bats`, `tier0_scope_boundary.bats` all green;
+  `pytest t3580_round5/round8, test_t3587_file_refs` 157 passed.
+
+## Known residuals (documented in `lib/review_credential.py` docstring)
+- A command run under `--exec` holds the value and can encode it past the output mask (the
+  mask catches accidents, not intent); for paid backends it needs an operator-approved proposal.
+- A same-user process can commit a registry change that retargets a credential file; it is then
+  attributable in git history, and the target must still pass the file checks and contain the
+  named variable.

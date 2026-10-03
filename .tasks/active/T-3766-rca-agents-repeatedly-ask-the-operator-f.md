@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-03T11:45:32Z
-last_update: 2026-10-03T11:46:46Z
+last_update: 2026-10-03T11:47:57Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,12 +88,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] RCA written in ## RCA (symptom, root cause, why structurally allowed, prevention) with the three dated recurrences
-- [ ] policy/review-backends.yaml gains a `credential:` field per backend (env var name + file path(s), never the value); openrouter → OPENROUTER_API_KEY, /root/.litellm-openrouter.env; codex/opencode/antigravity record their auth source too
-- [ ] One resolver (`fw review credential <backend> --check`) loads the key for a runner from env, else the registered file, never printing it; review runners (paid seats) use it so no agent ever needs the key path in memory
-- [ ] The project-boundary gate allowlists exactly the registered credential files for the resolver (read-only), so the sanctioned path works without a bypass
-- [ ] CLAUDE.md §Review and Dispatch Cost Ruling names the registry field and the resolver ("never ask the operator for a credential the registry names"); learning recorded; concern registered
-- [ ] Test: resolver finds the key from file when env is empty, reports a clear error naming the registry entry when neither exists, and never writes the value to stdout/stderr
+- [x] RCA written in ## RCA (symptom, root cause, why structurally allowed, prevention) with the three dated recurrences
+- [x] policy/review-backends.yaml gains a `credential:` field per backend (env var name + file path(s), never the value); openrouter → OPENROUTER_API_KEY, /root/.litellm-openrouter.env; codex/opencode/antigravity record their auth source too
+- [x] One resolver (`fw review credential <backend> --check`) loads the key for a runner from env, else the registered file, never printing it; review runners (paid seats) use it so no agent ever needs the key path in memory
+- [x] The project-boundary gate allowlists exactly the registered credential files for the resolver (read-only), so the sanctioned path works without a bypass
+- [x] CLAUDE.md §Review and Dispatch Cost Ruling names the registry field and the resolver ("never ask the operator for a credential the registry names"); learning recorded; concern registered
+- [x] Test: resolver finds the key from file when env is empty, reports a clear error naming the registry entry when neither exists, and never writes the value to stdout/stderr
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -127,6 +127,15 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 300 bats tests/unit/t3766_review_credential.bats > /tmp/.t3766v.out 2>&1 && ! grep -q "^not ok" /tmp/.t3766v.out
+test "$(grep -c '# skip' /tmp/.t3766v.out)" -eq 0
+timeout 300 bats tests/unit/t3586_review_cost.bats > /tmp/.t3766c.out 2>&1 && ! grep -q "^not ok" /tmp/.t3766c.out
+timeout 300 bats tests/unit/check_project_boundary.bats > /tmp/.t3766b.out 2>&1 && ! grep -q "^not ok" /tmp/.t3766b.out
+out=$(bin/fw review credential codex --check 2>&1); echo "$out" | grep -q "cli-login"
+python3 -c "import yaml; yaml.safe_load(open('.context/concerns.yaml')); yaml.safe_load(open('policy/review-backends.yaml'))"
+grep -q "Never ask the operator for a credential the registry names" CLAUDE.md
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -332,6 +341,16 @@ bvp_scores_proposed:
 -->
 
 ## Decisions
+
+### 2026-10-03 — how runners get the key
+- **Chose:** runners are launched through `fw review credential <backend> --exec -- <runner>`; no committed paid-seat runner exists to rewire (grep: the only reader of OPENROUTER_API_KEY outside the resolver is web/llm/manager.py).
+- **Why:** --exec puts the value in the child's environment only, masks it in the child's output, and checks the paid approval itself.
+- **Rejected:** wiring web/llm/manager.py to the resolver as a fallback — Watchtower would then make paid OpenRouter calls with no approved proposal, against the T-3583 cost ruling.
+
+### 2026-10-03 — exfiltration by registry edit
+- **Chose:** the resolver and the boundary hook read credential blocks from the registry as committed at HEAD (when git-tracked); --source must be a registered file; registered files must be regular, not group/world-writable, owned by root or the caller, <= 64 KiB; only the one named variable is parsed.
+- **Why:** an uncommitted edit cannot retarget the resolver, and a committed one is attributable in git history.
+- **Rejected:** an operator-only gate on credential edits — a hand edit bypasses any verb, as it does for cost_class today; the residual is documented in lib/review_credential.py.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
