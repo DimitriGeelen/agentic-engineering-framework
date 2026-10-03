@@ -1,0 +1,74 @@
+{
+  "run": "7y0peo",
+  "a": "/tmp/t3684-e2e-1890999-1791067083/t3782a-7y0peo",
+  "b": "/tmp/t3684-e2e-1890999-1791067083/t3782b-7y0peo",
+  "u": "b19e95a4-60d8-4e8d-afe2-da828d117718",
+  "n": "b812e5e3-1072-4702-8371-5144b84c70c7",
+  "sender_waiting_rows": [
+    {
+      "client_msg_id": "b19e95a4-60d8-4e8d-afe2-da828d117718",
+      "state": "WAITING_NO_RECIPIENT",
+      "by": "peer-receiver:t3782b-7y0peo",
+      "ts": "2026-10-03T22:38:29.295457+00:00",
+      "note": "no live recipient: no TermLink session for this project (tag claude + cwd /tmp/t3684-e2e-1890999-1791067083/t3782b-7y0peo); start the agent with claude-fw --termlink",
+      "since": "2026-10-03T22:38:29.278597+00:00"
+    },
+    {
+      "client_msg_id": "b812e5e3-1072-4702-8371-5144b84c70c7",
+      "state": "WAITING_NO_RECIPIENT",
+      "by": "peer-receiver:t3782b-7y0peo",
+      "ts": "2026-10-03T22:38:29.489598+00:00",
+      "note": "no live recipient: no TermLink session for this project (tag claude + cwd /tmp/t3684-e2e-1890999-1791067083/t3782b-7y0peo); start the agent with claude-fw --termlink",
+      "since": "2026-10-03T22:38:29.488041+00:00"
+    }
+  ],
+  "sender_told_within_s": 2.0,
+  "pushes": [
+    "URGENT Peer message waiting in t3782b-7y0peo|From t3782a-7y0peo, conversation t3684-t3782b-7y0peo, waiting 0.0 h (no-live-recipient). Recover: fw sidecar recover b19e95a4-60d8-4e8d-afe2-da828d117718 | drop: fw sidecar drop b19e95a4-60d8-4e8d-afe2-da828d117718 --reason ...",
+    "Peer message waiting in t3782b-7y0peo|From t3782a-7y0peo, conversation t3684-t3782b-7y0peo, waiting 0.0 h (no-live-recipient). Recover: fw sidecar recover b812e5e3-1072-4702-8371-5144b84c70c7 | drop: fw sidecar drop b812e5e3-1072-4702-8371-5144b84c70c7 --reason ..."
+  ],
+  "handover_has_section": true,
+  "negative_control_listed_s_after_send": 144.4,
+  "negative_control_listed": {
+    "side": "inbound",
+    "id": "b812e5e3-1072-4702-8371-5144b84c70c7",
+    "key": "in:b812e5e3-1072-4702-8371-5144b84c70c7",
+    "peer": "t3782a-7y0peo",
+    "conversation_id": "t3684-t3782b-7y0peo",
+    "urgent": false,
+    "via": "direct",
+    "since": "2026-10-03T22:38:29.423340+00:00",
+    "age_s": 144,
+    "waiting_since": "2026-10-03T22:38:29.488041+00:00",
+    "reason": "no TermLink session for this project (tag claude + cwd /tmp/t3684-e2e-1890999-1791067083/t3782b-7y0peo); start the agent with claude-fw --termlink",
+    "state": "no-live-recipient",
+    "escalated": [
+      "warn"
+    ],
+    "last_recover": null,
+    "actions": [
+      "recover",
+      "drop"
+    ]
+  },
+  "recover": {
+    "id": "b19e95a4-60d8-4e8d-afe2-da828d117718",
+    "event": "RECOVER_STARTED",
+    "by": "human",
+    "token": "3216df85489e3097",
+    "conversation_id": "t3684-t3782b-7y0peo",
+    "peer": "t3782a-7y0peo",
+    "log": "/tmp/t3684-e2e-1890999-1791067083/t3782b-7y0peo/.context/sidecar/waiting/recover/b19e95a4-60d8-4e8d-afe2-da828d117718.log",
+    "ts": "2026-10-03T22:40:54.062027+00:00",
+    "wrapper_pid": 1991014,
+    "termlink_session": "claude-master-1991014"
+  },
+  "recover_handed_over": {
+    "msg_id": "b19e95a4-60d8-4e8d-afe2-da828d117718",
+    "event": "HANDED_OVER",
+    "ts": "2026-10-03T22:40:58.136533+00:00",
+    "evidence": "recover-transcript:96b2a854-feaf-4059-8ec6-eb601aa6526f.jsonl"
+  },
+  "n_after_recover": "handed-over-to-recovered-agent",
+  "result": "PASS"
+}

@@ -53,7 +53,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-03T20:29:20Z
-last_update: 2026-10-03T21:47:25Z
+last_update: 2026-10-03T21:48:14Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,20 +99,32 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+T-3751 decision 2b (respawn off by default, T-3781) means a message for a dead or absent
+recipient WAITS; the operator's amendment is that the wait must never be silent and must
+have a manual recovery. Built as `lib/sidecar/waiting.py` (module docstring is the design
+of record) on top of the T-3684/T-3685/T-3745 receiver, watcher, injector and receipts.
+Review brief: `docs/reports/T-3782-review-brief.md`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A message for a recipient with no live agent gets an immediate sender receipt "waiting, no live recipient" (on every path: receiver and hub topic)
-- [ ] It escalates to the operator: fw_notify push at SIDECAR_CONSULT_WARN_HOURS (immediately when urgent), once per message per escalation level, never per tick
-- [ ] It is listed in the handover and on Watchtower /approvals until handled
-- [ ] `fw sidecar recover <client_msg_id>` (and a Watchtower button) starts the target project's agent session with the waiting message and its conversation_id pointer, logged; operator-only, never triggered by the peer
-- [ ] It closes only on a reply / HANDED_OVER or an explicit operator `fw sidecar drop <id> --reason "…"`, never by expiry alone
-- [ ] Live test: kill the recipient, send, assert sender receipt + operator notification + handover line + recover starts an agent that receives the message; negative control without recover stays listed
+- [x] A message for a recipient with no live agent gets an immediate sender receipt "waiting, no live recipient" (on every path: receiver and hub topic)
+- [x] It escalates to the operator: fw_notify push at SIDECAR_CONSULT_WARN_HOURS (immediately when urgent), once per message per escalation level, never per tick
+- [x] It is listed in the handover and on Watchtower /approvals until handled
+- [x] `fw sidecar recover <client_msg_id>` (and a Watchtower button) starts the target project's agent session with the waiting message and its conversation_id pointer, logged; operator-only, never triggered by the peer
+- [x] It closes only on a reply / HANDED_OVER or an explicit operator `fw sidecar drop <id> --reason "…"`, never by expiry alone
+- [x] Live test: kill the recipient, send, assert sender receipt + operator notification + handover line + recover starts an agent that receives the message; negative control without recover stays listed
 
 ### Human
+- [ ] [REVIEW] The /approvals card "Messages waiting for a recipient" is clear enough to act on from a phone
+  **Steps:**
+  1. Check something is waiting: `cd /opt/999-Agentic-Engineering-Framework && bin/fw sidecar waiting` (if it says none, ask the agent to stage one in a scratch project; a test run leaves none behind)
+  2. Get the Watchtower base URL: `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url`, open it with `/approvals#section-waiting` appended
+  3. Read the card: sender, how long it has waited, conversation, state/reason, and the Recover and Drop controls
+  **Expected:** Each card shows sender, age, conversation and both Recover and Drop (a reason box beside Drop); a message this project SENT shows Drop and says recover runs in the recipient's project; the summary bar shows a "Waiting" count
+  **If not:** Screenshot the card and note what is missing or unclear
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -144,6 +156,14 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_sidecar_waiting_t3782.py -q -p no:cacheprovider > /tmp/.t3782-unit.out 2>&1 && grep -q passed /tmp/.t3782-unit.out
+python3 -m pytest tests/unit/test_sidecar_receiver_t3693.py tests/unit/test_sidecar_receipts_t3684.py -q -p no:cacheprovider > /tmp/.t3782-reg.out 2>&1 && grep -q passed /tmp/.t3782-reg.out
+python3 -m pytest tests/web/test_t3782_waiting_card.py tests/web/test_t3600_approval_summary.py -q -p no:cacheprovider > /tmp/.t3782-web.out 2>&1 && grep -q passed /tmp/.t3782-web.out
+python3 -c "import json,glob; rows=[json.load(open(f)) for f in glob.glob('docs/reports/T-3782-e2e/T-3782-e2e-*.json')]; assert any(r.get('result')=='PASS' for r in rows), rows"
+bash -n bin/claude-fw && bash -n agents/handover/handover.sh
+bin/fw vendor self --check
+bin/fw watchtower current
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -312,6 +332,13 @@ bvp_scores_proposed:
 -->
 
 ## Recommendation
+
+**Recommendation:** DEFER
+**Rationale:** Everything the ACs ask for is built and tested: 32 unit tests, 4 web tests, and a live e2e that passed. The required independent review ended with VERDICT: FAIL in round 3, the last round allowed. Every round found a real gap and each one was fixed with a regression test. The round-3 findings (content-blind hub dedupe, fw_notify's always-0 exit status, the ingest spool's ordering and visibility) are fixed in 50497f68a, but no independent review has checked those fixes. That is an evidence gap, not a confidence gap: one more review round over 50497f68a is what is missing. A PASS there makes this GO.
+**Evidence:**
+- Live e2e `docs/reports/T-3782-e2e/T-3782-e2e-s5hbge.json`: sender told in 2.0 s; urgent push at once and the threshold push, once each; handover section; recover gave HANDED_OVER from the transcript within ~4 s; negative control still listed after 162 s
+- Reviews: `docs/reports/T-3782-review-codex-round{1,2,3}.md`; fixes listed per round in `docs/reports/T-3782-review-brief.md`
+- `bin/claude-fw` now shell-quotes each argument into the TermLink PTY line. This is a behaviour change for every `--termlink` launch.
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
