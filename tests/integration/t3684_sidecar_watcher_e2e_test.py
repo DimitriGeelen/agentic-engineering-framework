@@ -190,6 +190,16 @@ class Session:
                              f"records={_records(self.root)}; pty={_pty(self.tl, 30) if self.tl else '-'}; "
                              f"log={self.log.read_text()[-1500:]}")
 
+    def prompt(self, text: str) -> None:
+        """Type an operator prompt and make sure it was SUBMITTED: the
+        session's own record must go busy (run 7: a prompt with a non-ASCII
+        character sat unsubmitted in the input box)."""
+        assert text.isascii(), "keep operator prompts ASCII (run 7)"
+        base._type(self.tl, text)
+        if not _wait(lambda: not self.ready(), 10, 0.5):
+            base._key(self.tl, "Enter")
+            assert _wait(lambda: not self.ready(), 15, 0.5), f"{self.label}: prompt not submitted"
+
     def ready(self) -> bool:
         rec = _record_for(self.root, self.tl) if self.tl else None
         return bool(rec and rec.get("ready"))
@@ -375,8 +385,8 @@ def test_2b_legacy_consult_answered_with_in_reply_to_gives_sender_replied(pair):
     # therefore asks it — the reply is still produced by the real agent,
     # through the real `fw sidecar send --in-reply-to`.
     assert _wait(b.ready, 120)
-    base._type(b.tl, f"Operator here: please answer peer message {mid} now, using the exact "
-                     "reply command the sidecar showed you for it, with the body pong.")
+    b.prompt(f"Operator here: please answer peer message {mid} now, using the exact "
+             "reply command the sidecar showed you for it, with the body pong.")
     got["REPLIED"] = _wait(lambda: _first(_receipts(a), client_msg_id=mid, state="REPLIED"), 180, 1)
     lat = json.loads(_run([FW, "sidecar", "latency", "--json"], a).stdout)
     row = [m for m in lat["outbound"]["messages"] if m["client_msg_id"] == mid]
@@ -413,7 +423,7 @@ def test_2c_prompt_hook_peek_path_receipts_at_the_sender(pair):
         mid = res["client_msg_id"]
         a_sent = _ts(json.loads((a / f".context/sidecar/outbox/{mid}.json").read_text())["created_at"])
         time.sleep(3)
-        base._type(d.tl, "Operator here: hello — anything new for you? Answer in one line.")
+        d.prompt("Operator here: hello, anything new for you? Answer in one line.")
         recv = _wait(lambda: _first(_receipts(a), client_msg_id=mid, state="RECEIVED"), 90, 1)
         ho = _wait(lambda: _first(_receipts(a), client_msg_id=mid, state="HANDED_OVER"), 120, 1)
         surfaced = None

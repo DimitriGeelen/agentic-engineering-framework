@@ -276,7 +276,7 @@ register:
     source: "T-3397 IW-5"
     owner_task: T-3685
     status: built
-    evidence: "T-3685: every claude-fw session (with or without --termlink) starts its receiver + supervised watcher (bin/claude-fw sidecar_start; behavioural unit test_claude_fw_really_starts_the_sidecar runs the real wrapper); fw sidecar start / receiver start for anything else; cron sidecar-ensure-1m + @reboot restart any enabled sidecar on the host; fw doctor / fw audit WARN in any project where none runs (a plain `claude` launch is not covered by a launcher — the WARN is the rail)"
+    evidence: "T-3685: every session start in a framework project starts (or repairs) its sidecar — SessionStart hook sidecar-autostart (startup + resume; .claude/settings.json, lib/init.sh) runs fw sidecar ensure --autostart detached, whatever launched claude; claude-fw also starts it; an explicit fw sidecar stop is respected; cron sidecar-ensure-1m + @reboot restart any enabled sidecar on the host; fw doctor / fw audit WARN where none runs. Unit: test_session_start_hook_starts_a_sidecar_never_started_here, test_claude_fw_really_starts_the_sidecar"
 
   - id: R15
     text: "Always-on listener per agent session"
