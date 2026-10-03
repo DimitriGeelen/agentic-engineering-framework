@@ -17,16 +17,21 @@ import json
 import os
 import sys
 
-# Add project root to path so web modules are importable
-PROJECT_ROOT = os.environ.get("PROJECT_ROOT", os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-sys.path.insert(0, PROJECT_ROOT)
+# web/ is FRAMEWORK-owned: in a vendored consumer it lives under .agentic-framework/,
+# not PROJECT_ROOT, so FRAMEWORK_ROOT goes first on the path (T-3783, 010 T-3336:
+# `fw ask` died with "No module named web" in every vendored consumer).
+FRAMEWORK_ROOT = os.environ.get("FRAMEWORK_ROOT") or os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+PROJECT_ROOT = os.environ.get("PROJECT_ROOT", FRAMEWORK_ROOT)
+for _p in (PROJECT_ROOT, FRAMEWORK_ROOT):
+    if _p not in sys.path:
+        sys.path.insert(0, _p)
 
 from web.embeddings import rag_retrieve, build_index
 from web.ask import get_model, should_think, SYSTEM_PROMPT, format_rag_context
 
 import ollama
 
-sys.path.insert(0, os.path.join(PROJECT_ROOT, "lib"))
+sys.path.insert(0, os.path.join(FRAMEWORK_ROOT, "lib"))
 
 
 CONCISE_ADDENDUM = "\n\nBe extremely concise — answer in 2-3 sentences maximum."
