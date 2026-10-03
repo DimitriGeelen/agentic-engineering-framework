@@ -26,7 +26,9 @@ teardown() {
 }
 
 run_fw() {   # run_fw <args...>
-    run env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" "$FW" "$@"
+    # T-3747: a dispatched worker exports FW_SESSION_SCOPED_FOCUS=1 (T-3038), which
+    # moves focus to focus.<key>.yaml; this suite asserts the shared focus.yaml.
+    run env -u FW_SESSION_SCOPED_FOCUS -u FW_FOCUS_SESSION_KEY PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" "$FW" "$@"
 }
 
 # ── identical behaviour to `context focus` ─────────────────────────────────
