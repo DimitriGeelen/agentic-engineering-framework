@@ -64,11 +64,12 @@ if __package__ in (None, ""):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
     __package__ = "lib.sidecar"
 
-from . import circuit, direct, inbox, inject, lifecycle, receiver  # noqa: E402
+from . import circuit, direct, inbox, inject, lifecycle, receipts, receiver  # noqa: E402
 
 DEFAULT_TICK_S = 30
 STALL_TICKS = 2          # IW-2: seq not advanced for 2 ticks = not live
 STALL_GRACE_S = 5        # scheduling slack on top of 2 ticks
+HUNG_KILL_TICKS = STALL_TICKS + 1   # supervisor replaces a hung watcher one tick after it reads not-live
 SUPERVISE_POLL_S = 1.0
 TICK_LOG_CAP = 2000      # ticks.jsonl keeps the newest N non-idle ticks
 
@@ -261,6 +262,12 @@ def ingest_hub(reader=None) -> dict:
             receiver.record_event(mid, "INGESTED_FROM_HUB", topic=m.get("topic"),
                                   offset=m.get("offset"), hub_ts=m.get("ts"))
             ingested.append(mid)
+            # RECEIVED back to the sender at once (receipts.py, T-3684).
+            try:
+                receipts.send(envelope, receipts.RECEIVED, by="watcher")
+            except Exception as e:  # a receipt failure must not stop ingest
+                receiver.record_event(mid, "RECEIPT_FAILED", state="RECEIVED",
+                                      error=f"{type(e).__name__}: {e}"[:200])
         else:
             # The same id already stored (the peer dual-posted direct + hub):
             # the message is here once, which is the point.
@@ -552,9 +559,14 @@ def supervise() -> int:
                 child = _spawn(["run", "--tick", str(tick)], "watcher.log")
                 child_started = time.monotonic()
                 record_event("WATCHER_SPAWNED", pid=child.pid)
-            elif time.monotonic() - child_started > STALL_TICKS * tick + STALL_GRACE_S:
+            elif time.monotonic() - child_started > HUNG_KILL_TICKS * tick + STALL_GRACE_S:
+                # Report first, heal second: doctor/audit call the watcher
+                # not-live after STALL_TICKS; the supervisor replaces it one
+                # tick later, so a hang is both visible and self-healing.
                 v = liveness_verdict()
-                if v["state"] == "not-live" and any("stalled" in r for r in v["reasons"]):
+                age = v.get("age_s") or 0
+                if (v["state"] == "not-live" and any("stalled" in r for r in v["reasons"])
+                        and age > HUNG_KILL_TICKS * tick + STALL_GRACE_S):
                     record_event("WATCHER_HUNG_KILLED", pid=child.pid, reasons=v["reasons"])
                     try:
                         child.kill()

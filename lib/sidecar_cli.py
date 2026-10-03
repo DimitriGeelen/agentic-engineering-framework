@@ -29,7 +29,7 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from lib.sidecar import circuit, delivery, dm, e2e, inbox, outbox, retry, status as status_mod  # noqa: E402
 from lib.sidecar import termlink_transport as transport, receiver, lifecycle, adapter, direct, inject  # noqa: E402
-from lib.sidecar import latency as latency_mod, watcher  # noqa: E402
+from lib.sidecar import latency as latency_mod, receipts, watcher  # noqa: E402
 
 
 def cmd_whoami(args) -> int:
@@ -93,7 +93,28 @@ def _send_direct(args, entry: dict) -> int:
     return 0 if ok else 1
 
 
+def _replied_receipt(args) -> None:
+    """T-3684: answering a consult that came over the HUB topic tells its
+    sender REPLIED (a direct-path original records REPLIED in the sender's own
+    receiver already — direct.note_reply)."""
+    if not getattr(args, "in_reply_to", None):
+        return
+    env = receipts.origin(args.in_reply_to)
+    if env:
+        try:
+            receipts.send(env, receipts.REPLIED, by="reply")
+        except Exception as e:
+            print(f"REPLIED receipt failed: {e}", file=sys.stderr)
+
+
 def cmd_send(args) -> int:
+    try:
+        return _cmd_send(args)
+    finally:
+        _replied_receipt(args)
+
+
+def _cmd_send(args) -> int:
     # T-3693: a peer with a registered receiver is called directly (D-645 §2).
     # The hub topic path below stays as the fallback when no receiver was ever
     # registered for the name. A registered-but-down receiver is NOT rerouted:
@@ -142,6 +163,19 @@ def cmd_send(args) -> int:
 
 def cmd_inbox(args) -> int:
     messages = inbox.pending(advance=not args.peek)
+    # T-3684: receipts on the hub-topic path. A drain hands the consult to the
+    # agent that ran it (its tool output), so RECEIVED and HANDED_OVER; the
+    # prompt hook's peek (--receipt) sends RECEIVED from a detached process,
+    # because the hook must return within its timeout.
+    if messages and not args.peek:
+        for m in messages:
+            for st in (receipts.RECEIVED, receipts.HANDED_OVER):
+                try:
+                    receipts.send(m, st, by="inbox-cli")
+                except Exception as e:  # never lose the consult over a receipt
+                    print(f"receipt {st} for {m.get('client_msg_id')} failed: {e}", file=sys.stderr)
+    elif messages and args.receipt:
+        receipts.send_detached(messages, [receipts.RECEIVED], by="prompt-hook-peek")
     # T-3442: `--peek` shows DM rail SUMMARIES (count/cursor/unread, no hub
     # drain of content) — the same shape `fw sidecar status` prints. A
     # non-peek call actually drains unread DM posts (like the consult inbox
@@ -601,6 +635,19 @@ def cmd_latency(args) -> int:
     return 0
 
 
+def cmd_receipts(args) -> int:
+    rows = {"received": receipts.read_ledger(), "sent": receipts.read_sent()}
+    if args.json:
+        print(json.dumps(rows, indent=2))
+        return 0
+    for r in rows["received"]:
+        print(f"recv  {r['ts']}  {r['state']:<11} {r['client_msg_id']}  {r['by']} via {r.get('via')}")
+    for r in rows["sent"]:
+        print(f"sent  {r['ts']}  {r['state']:<11} {r['client_msg_id']}  to {r.get('to')} "
+              f"{'ok via ' + str(r.get('via')) if r.get('ok') else 'FAILED: ' + str(r.get('error'))}")
+    return 0
+
+
 def cmd_tick(args) -> int:
     """Run ONE watcher tick now, in the foreground (diagnostics)."""
     live = watcher.read_liveness() or {}
@@ -741,6 +788,8 @@ def build_parser() -> argparse.ArgumentParser:
     box.add_argument("--json", action="store_true")
     box.add_argument("--peek", action="store_true",
                      help="do not advance the cursor")
+    box.add_argument("--receipt", action="store_true",
+                     help="with --peek: send RECEIVED receipts for what is shown (prompt hook)")
     box.set_defaults(func=cmd_inbox)
 
     st = sub.add_parser("status", help="out-of-band channel status from our own "
@@ -871,6 +920,15 @@ def build_parser() -> argparse.ArgumentParser:
                          "(median, p95, max), from the ledgers")
     la_.add_argument("--json", action="store_true")
     la_.set_defaults(func=cmd_latency)
+
+    rf_ = sub.add_parser("receipts-flush", help=argparse.SUPPRESS)
+    rf_.add_argument("path")
+    rf_.set_defaults(func=lambda a: (receipts.flush(a.path), 0)[1])
+
+    rc_ = sub.add_parser("receipts", help="hub-path delivery receipts: received for what we "
+                         "sent, and sent for what we took off the topic (T-3684)")
+    rc_.add_argument("--json", action="store_true")
+    rc_.set_defaults(func=cmd_receipts)
 
     tk_ = sub.add_parser("tick", help="run one watcher tick now, in the foreground")
     tk_.set_defaults(func=cmd_tick)

@@ -25,7 +25,7 @@ import pytest
 FW_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(FW_ROOT))
 
-from lib.sidecar import adapter, direct, hooks, inject, latency, lifecycle, receiver, watcher  # noqa: E402
+from lib.sidecar import adapter, direct, hooks, inject, latency, lifecycle, receipts, receiver, watcher  # noqa: E402
 
 CLI = [sys.executable, str(FW_ROOT / "lib" / "sidecar_cli.py")]
 NO_TERMLINK_PATH = "/usr/bin:/bin"   # termlink lives in /usr/local/bin and ~/.local/bin here
@@ -202,12 +202,13 @@ def test_legacy_topic_consult_is_ingested_once_and_injected(proj, monkeypatch):
     assert watcher.run_tick(2, 30.0, runner=tl, hub_reader=reader)["hub"]["ingested"] == []
 
 
-def test_legacy_sender_confirm_is_skipped_explicitly(proj):
+def test_legacy_sender_gets_a_handed_over_receipt_not_a_skip(proj, monkeypatch):
     receiver.store_message("legacy-2", {"client_msg_id": "legacy-2", "from": "old-peer",
                                         "body": "b", "via": "hub-topic"})
+    sent = []
+    monkeypatch.setattr(receipts, "send", lambda env, st, by, **k: sent.append((env["client_msg_id"], st, by)))
     hooks._confirm("legacy-2", receiver.read_message("legacy-2"), "t3684")
-    ev = [e for e in receiver.read_events("legacy-2") if e["event"] == "CONFIRM_SKIPPED"]
-    assert ev and "legacy hub-topic" in ev[0]["reason"]
+    assert sent == [("legacy-2", "HANDED_OVER", "prompt-hook")]
 
 
 def test_hub_skipped_visibly_when_termlink_absent(proj, monkeypatch):
@@ -343,7 +344,33 @@ def test_cron_registry_has_the_keepalive_and_boot_legs():
     assert jobs["sidecar-ensure-1m"]["status"] == jobs["sidecar-ensure-boot"]["status"] == "active"
 
 
-def test_claude_fw_termlink_starts_the_sidecar_and_says_so_without_termlink():
+def test_claude_fw_starts_the_sidecar_for_every_session_and_says_when_inert():
     src = (FW_ROOT / "bin" / "claude-fw").read_text()
     assert "sidecar start --quiet --json" in src
-    assert "sidecar watcher NOT started — TermLink absent" in src
+    assert "INERT for injection — TermLink absent" in src
+    assert "no --termlink: peer messages reach the agent at its next prompt" in src
+
+
+@pytest.mark.parametrize("args,expect", [
+    (["--termlink"], "INERT for injection — TermLink absent"),
+    ([], "no --termlink: peer messages reach the agent at its next prompt"),
+])
+def test_claude_fw_really_starts_the_sidecar(proj, tmp_path, args, expect):
+    """Run the REAL bin/claude-fw with a stub `claude` on a PATH without
+    termlink: the wrapper's own sidecar_start must leave a live, supervised
+    watcher in the project and print the inert line."""
+    stub = tmp_path / "stubbin"
+    stub.mkdir()
+    (stub / "claude").write_text("#!/bin/sh\necho stub-claude\nexit 0\n")
+    (stub / "claude").chmod(0o755)
+    env = {"HOME": os.environ["HOME"], "PATH": f"{stub}:{NO_TERMLINK_PATH}",
+           "FW_SIDECAR_ENABLED_DIR": os.environ["FW_SIDECAR_ENABLED_DIR"],
+           "FW_SIDECAR_REGISTRY_DIR": os.environ["FW_SIDECAR_REGISTRY_DIR"],
+           "FW_SIDECAR_AGENT_ID": "t3684"}
+    out = subprocess.run([str(FW_ROOT / "bin" / "claude-fw"), *args, "--no-restart"],
+                         cwd=proj, env=env, capture_output=True, text=True, timeout=180)
+    text = out.stdout + out.stderr
+    assert expect in text and "stub-claude" in text, text[-2000:]
+    assert _wait(lambda: watcher.liveness_verdict()["state"] == "live", timeout=20)
+    assert watcher.supervisor_alive()
+    assert (watcher.read_liveness() or {}).get("termlink") == "absent"

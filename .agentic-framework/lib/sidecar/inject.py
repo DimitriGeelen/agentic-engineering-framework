@@ -145,6 +145,39 @@ def _tagged_sessions(runner) -> tuple[list[dict] | None, str]:
     return tagged, f"tag claude + cwd {root}"
 
 
+def _injectable_path() -> Path:
+    return receiver._receiver_dir() / "injectable.json"
+
+
+def _publish_injectable(tagged_ids: list[str]) -> None:
+    """Record what the last target decision saw: the TermLink sessions
+    registered for this project. The prompt hook reads it (cheaply — it must
+    not run `termlink discover`) to decide whether a plain, non-TermLink
+    session may take unclaimed mail."""
+    try:
+        tmp = _injectable_path().with_suffix(f".json.{os.getpid()}.tmp")
+        tmp.write_text(json.dumps({"at": datetime.now(timezone.utc).isoformat(),
+                                   "tagged": tagged_ids}), encoding="utf-8")
+        os.replace(tmp, _injectable_path())
+    except OSError:
+        pass
+
+
+def project_has_injectable_session() -> bool:
+    """Did the injector's last decision find a TermLink session registered
+    for this project? No decision yet (no injector ran) reads as False: the
+    prompt hook is then the only way mail can reach an agent here."""
+    try:
+        return bool(json.loads(_injectable_path().read_text(encoding="utf-8")).get("tagged"))
+    except (OSError, json.JSONDecodeError):
+        return False
+
+
+def claim_for(msg_id: str, session: dict) -> None:
+    """Claim a message for the session that is about to surface it itself."""
+    _write_claim(msg_id, datetime.now(timezone.utc), session)
+
+
 def choose_target(urgent: bool, runner=subprocess.run) -> tuple[dict | None, str]:
     """Pick the ONE session to type into, from per-session records (T-3745).
 
@@ -163,6 +196,7 @@ def choose_target(urgent: bool, runner=subprocess.run) -> tuple[dict | None, str
     if tagged is None:
         return None, how
     tagged_ids = {str(s.get("id")) for s in tagged}
+    _publish_injectable(sorted(tagged_ids))
     candidates = [r for r in adapter.session_records()
                   if r.get("termlink_session") in tagged_ids and r.get("alive") is not False]
     ready = [r for r in candidates if r.get("ready") is True]

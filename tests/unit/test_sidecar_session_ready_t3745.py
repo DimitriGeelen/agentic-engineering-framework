@@ -202,3 +202,29 @@ def test_stop_hook_via_fw_hook_writes_the_session_record(proj):
                    text=True, cwd=proj, env=e, timeout=60, check=True)
     rec = json.loads((proj / ".context/sidecar/sessions/abc-123.json").read_text())
     assert rec["ready"] is True and rec["termlink_session"] == "tl-real"
+
+
+# ── plain-terminal-only projects (no injection target exists) ───────────────
+
+def test_plain_only_project_prompt_takes_and_claims_unclaimed_mail(proj, monkeypatch):
+    """No TermLink session is registered for this project (the injector's last
+    decision found none): the prompt hook is the only way in, so the session
+    that prompts takes the mail — claimed for itself first, so HANDED_OVER is
+    still that session's, proven from its own transcript."""
+    _store("m1")
+    inject.deliver_pending("tick", runner=Termlink([]))      # publishes: no sessions
+    assert not inject.project_has_injectable_session()
+    ids, _ = _hook(monkeypatch, "prompt", "operator", "tl-none")
+    assert ids == ["m1"] and inject.read_claim("m1")["session_id"] == "operator"
+    ids2, _ = _hook(monkeypatch, "prompt", "someone-else", "tl-x")
+    assert ids2 == []                                          # claimed: not twice
+
+
+def test_injectable_session_present_plain_session_takes_nothing(proj, monkeypatch):
+    _hook(monkeypatch, "stop", "fleet", "tl-fleet")
+    _hook(monkeypatch, "prompt", "fleet", "tl-fleet")         # fleet busy
+    _store("m1")
+    inject.deliver_pending("tick", runner=Termlink(_sessions("tl-fleet")))
+    assert inject.project_has_injectable_session()
+    ids, _ = _hook(monkeypatch, "prompt", "operator", "tl-op")
+    assert ids == []

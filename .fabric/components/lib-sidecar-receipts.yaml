@@ -1,0 +1,21 @@
+id: lib/sidecar/receipts.py
+name: receipts
+type: script
+subsystem: framework-core
+location: lib/sidecar/receipts.py
+tags: []
+
+purpose: "arc-011 sidecar — receipts for consults that arrive on the HUB TOPIC."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-03
+created_by: unknown

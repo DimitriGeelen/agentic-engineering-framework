@@ -135,11 +135,11 @@ def _confirm(msg_id: str, envelope: dict, me: str) -> None:
     """CONFIRM-2: tell the sender's receiver this message reached the agent."""
     sender = envelope.get("from")
     if envelope.get("via") == "hub-topic":
-        # T-3684: picked up from the legacy hub topic by the watcher. The
-        # sender posted it the pre-receiver way and has no SENT row a /ack
-        # could land on; its own hub-path ledger closes on our reply.
-        receiver.record_event(msg_id, "CONFIRM_SKIPPED",
-                              reason="legacy hub-topic sender: no direct ledger to confirm into")
+        # T-3684: picked up from the hub topic by the watcher. The sender has
+        # no direct-ledger row; it gets a HANDED_OVER receipt instead
+        # (receipts.py: its live receiver, else its hub inbox topic).
+        from . import receipts
+        receipts.send(envelope, receipts.HANDED_OVER, by="prompt-hook")
         return
     entry = lifecycle.lookup(sender) if sender else None
     if not entry or not entry.get("live"):
@@ -185,8 +185,19 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
     my_sid = (me or {}).get("session_id")
     if not my_sid:
         return []
-    ids = [i for i in receiver.awaiting_handover()
-           if not _being_finalized(i, now) and inject.is_claimed_for(i, me)]
+    waiting = [i for i in receiver.awaiting_handover() if not _being_finalized(i, now)]
+    ids = [i for i in waiting if inject.is_claimed_for(i, me)]
+    # A project with NO TermLink session registered for it (plain terminals
+    # only) has no injection target at all; the prompt hook is then the only
+    # way mail reaches an agent, so unclaimed mail may be taken here — and is
+    # claimed for this session first, so attribution stays with the session
+    # whose transcript will prove it. Where an injectable session exists, mail
+    # is left for the injector (the 055 case: fleet agent + operator terminal).
+    if not inject.project_has_injectable_session():
+        for i in waiting:
+            if i not in ids and inject.read_claim(i) is None:
+                inject.claim_for(i, me)
+                ids.append(i)
     messages = [m for m in (receiver.read_message(i) for i in ids) if m]
     if not messages:
         return []

@@ -84,6 +84,10 @@ def _ledger(root: Path) -> list[dict]:
     return _jsonl(root / ".context/sidecar/direct-ack.jsonl")
 
 
+def _receipts(root: Path) -> list[dict]:
+    return _jsonl(root / ".context/sidecar/receipts.jsonl")
+
+
 def _events(root: Path, mid: str | None = None) -> list[dict]:
     rows = _jsonl(root / ".context/sidecar/receiver/events.jsonl")
     return [r for r in rows if mid is None or r.get("msg_id") == mid]
@@ -332,14 +336,50 @@ def test_2_legacy_hub_topic_post_picked_up_within_60s(pair):
     got, lat = _handed_over_within(pair, mid, sent_at, 60, 90)
     inj = [e for e in _events(pair["b"], mid) if e["event"] == "INJECT_ATTEMPT" and e.get("ok")]
     ingest = _first(_events(pair["b"], mid), event="INGESTED_FROM_HUB")
+    # Receipts at the SENDER (operator 2026-10-03): RECEIVED at once, then
+    # HANDED_OVER — rows in A's receipts ledger, timed from A's own outbox.
+    a_sent = _ts(json.loads((a / f".context/sidecar/outbox/{mid}.json").read_text())["created_at"])
+    rcpt = lambda st: _first(_receipts(a), client_msg_id=mid, state=st)  # noqa: E731
+    a_recv = _wait(lambda: rcpt("RECEIVED"), 60, 1)
+    a_ho = _wait(lambda: rcpt("HANDED_OVER"), 60, 1)
     ev = {"msg": mid, "via": msg.get("via"), "hub_ts": hub_ts,
           "send_to_received_s": _ts(ingest["ts"]) - sent_at, "send_to_handed_over_s": lat,
           "inject_triggers": [e["trigger"] for e in inj], "b_events": _events(pair["b"], mid),
-          "transcript": base._surfaced_in_transcript(pair["b"], f"LEGACY-{nonce}")}
+          "transcript": base._surfaced_in_transcript(pair["b"], f"LEGACY-{nonce}"),
+          "sender_receipt_received": a_recv, "sender_receipt_handed_over": a_ho,
+          "sender_send_to_received_s": a_recv and _ts(a_recv["ts"]) - a_sent,
+          "sender_send_to_handed_over_s": a_ho and _ts(a_ho["ts"]) - a_sent}
     _evidence("2-legacy-topic", ev)
     assert msg.get("via") == "hub-topic" and inj and inj[0]["trigger"] == "tick", ev
     assert lat <= 60, ev
     assert ev["transcript"], ev
+    assert a_recv and ev["sender_send_to_received_s"] <= 60, ev
+    assert a_ho and a_ho["by"] == f"peer:{pair['b_name']}", ev
+
+
+def test_2b_legacy_consult_answered_with_in_reply_to_gives_sender_replied(pair):
+    b, a = pair["B"], pair["a"]
+    assert _wait(b.ready, 120), "B not idle"
+    nonce = "".join(random.choices(string.ascii_lowercase, k=10))
+    empty = BASE_DIR / "empty-registry"
+    empty.mkdir(exist_ok=True)
+    _send(a, pair["b_name"], f"Peer check REPLY-{nonce}: answer me now by running the reply "
+                             "command shown under this message, with the body pong. "
+                             "Nothing else.", registry=empty)
+    mid = _wait(lambda: _msg_id_in_b(pair["b"], f"REPLY-{nonce}"), 70, 1)
+    assert mid, "watcher never ingested the hub-topic consult"
+    a_sent = _ts(json.loads((a / f".context/sidecar/outbox/{mid}.json").read_text())["created_at"])
+    got = {st: _wait(lambda st=st: _first(_receipts(a), client_msg_id=mid, state=st), 180, 1)
+           for st in ("RECEIVED", "HANDED_OVER", "REPLIED")}
+    lat = json.loads(_run([FW, "sidecar", "latency", "--json"], a).stdout)
+    row = [m for m in lat["outbound"]["messages"] if m["client_msg_id"] == mid]
+    ev = {"msg": mid, "receipts": got, "latency_row": row,
+          "sender_send_to_s": {st: got[st] and _ts(got[st]["ts"]) - a_sent for st in got},
+          "b_receipts_sent": [r for r in _jsonl(pair["b"] / ".context/sidecar/receipts-sent.jsonl")
+                              if r.get("client_msg_id") == mid]}
+    _evidence("2b-replied", ev)
+    assert all(got.values()), ev
+    assert row and row[0]["path"] == "hub" and row[0]["send_to_replied_s"] is not None, ev
 
 
 def test_3_busy_gets_non_urgent_only_after_turn_ends_urgent_while_busy(pair):
@@ -406,10 +446,29 @@ def test_4_watcher_killed_reported_not_live_and_restarted(pair):
     b_root = pair["b"]
     wdir = b_root / ".context/sidecar/watcher"
     pid = lambda w: int((wdir / f"{w}.pid").read_text())  # noqa: E731
-    # (a) SIGKILL the watcher alone: its supervisor respawns it
+    liveness = lambda: json.loads(_run([FW, "sidecar", "liveness", "--json"], b_root).stdout)["state"]  # noqa: E731
+    # (a) SIGKILL the watcher alone: its supervisor respawns it within seconds
     w1 = pid("watcher")
     os.kill(w1, signal.SIGKILL)
     assert _wait(lambda: pid("watcher") != w1, 15, 0.5), "supervisor did not respawn the watcher"
+    # (a2) the watcher is HUNG (SIGSTOP — alive, ticking nothing). Nobody acts:
+    #      doctor and audit report it not live after 2 ticks, and the
+    #      supervisor itself replaces it one tick later.
+    assert _wait(lambda: liveness() == "live", 2 * TICK_S, 2)
+    w_hung = pid("watcher")
+    os.kill(w_hung, signal.SIGSTOP)
+    hung_at = time.time()
+    assert _wait(lambda: liveness() == "not-live", 2 * TICK_S + 20, 2)
+    doctor_hung = _doctor_line(b_root)
+    audit_hung = _audit_lines(b_root)
+    healed = _wait(lambda: pid("watcher") != w_hung and liveness() == "live", 3 * TICK_S + 30, 2)
+    healed_after_s = time.time() - hung_at
+    hung_killed = [e for e in _jsonl(wdir / "events.jsonl")
+                   if e.get("event") == "WATCHER_HUNG_KILLED" and e.get("pid") == w_hung]
+    try:
+        os.kill(w_hung, signal.SIGKILL)       # in case it was not reaped
+    except ProcessLookupError:
+        pass
     # (b) kill supervisor AND watcher: nothing ticks; doctor and audit say not live
     s2, w2 = pid("supervisor"), pid("watcher")
     os.kill(s2, signal.SIGKILL)
@@ -425,10 +484,16 @@ def test_4_watcher_killed_reported_not_live_and_restarted(pair):
                  ["state"] == "live", 30, 1)
     doctor_after = _doctor_line(b_root)
     ev = {"respawned_watcher": [w1, pid("watcher")], "killed_at": killed_at,
+          "hung": {"pid": w_hung, "doctor": doctor_hung, "audit": audit_hung,
+                   "healed_by_supervisor": bool(healed), "healed_after_s": healed_after_s,
+                   "hung_killed_event": hung_killed},
           "doctor_not_live": doctor, "audit_not_live": audit, "ensure": ens.stdout,
           "doctor_after_ensure": doctor_after,
-          "watcher_events": _jsonl(wdir / "events.jsonl")[-12:]}
+          "watcher_events": _jsonl(wdir / "events.jsonl")[-20:]}
     _evidence("4-kill", ev)
+    assert "FAIL" in doctor_hung and "NOT live" in doctor_hung, ev
+    assert "[FAIL] Sidecar watcher NOT live" in audit_hung, ev
+    assert healed and hung_killed, ev
     assert "FAIL" in doctor and "NOT live" in doctor, ev
     assert "[FAIL] Sidecar watcher NOT live" in audit, ev
     assert "supervisor restarted" in ens.stdout and back, ev

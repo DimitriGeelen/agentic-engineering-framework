@@ -31,7 +31,7 @@ if __package__ in (None, ""):
     sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
     __package__ = "lib.sidecar"
 
-from . import direct, inject, lifecycle, receiver  # noqa: E402
+from . import direct, inject, lifecycle, receipts, receiver  # noqa: E402
 
 MAX_BODY = 10 * 1024 * 1024
 
@@ -111,9 +111,13 @@ class ReceiverHandler(http.server.BaseHTTPRequestHandler):
         payload = self._read_json()
         if payload is None:
             return
-        ok = direct.confirm_from_peer(str(payload.get("client_msg_id", "")),
-                                      str(payload.get("state", "")),
-                                      payload.get("peer"))
+        cid, state = str(payload.get("client_msg_id", "")), str(payload.get("state", ""))
+        ok = direct.confirm_from_peer(cid, state, payload.get("peer"))
+        if not ok:
+            # T-3684: a receipt (RECEIVED / HANDED_OVER / REPLIED) for a
+            # consult we sent over the HUB topic — recorded only if our
+            # outbox sent that id to that peer.
+            ok = receipts.record_from_peer(cid, state, payload.get("peer"), via="direct")
         self._reply(200 if ok else 404,
                     {"recorded": ok, "client_msg_id": payload.get("client_msg_id")})
 

@@ -190,6 +190,7 @@ def test_prompt_hook_surfaces_untrusted_then_hands_over_and_confirms(env, tmp_pa
 
     env.use(b)
     buf = io.StringIO()
+    inject._publish_injectable(["tl-fleet"])   # T-3745: an injectable session exists here
     assert hooks.prompt(SB, out=buf, spawn=False) == []      # T-3745: not claimed for it
     _claim(cid)
     assert hooks.prompt({"session_id": "sess-other"}, out=buf, spawn=False) == []
@@ -226,6 +227,7 @@ def test_no_transcript_evidence_means_no_hand_over_and_release(env, tmp_path):
     env.use(b)
     _store("m-x")
     _claim("m-x")
+    inject._publish_injectable(["tl-fleet"])   # T-3745: unclaimed mail is the injector's
     assert hooks.prompt(SB, out=io.StringIO(), spawn=False) == ["m-x"]
     empty = tmp_path / "t.jsonl"
     empty.write_text(json.dumps({"type": "user", "message": {"content": "hi"}}) + "\n")

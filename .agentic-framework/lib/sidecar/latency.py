@@ -3,9 +3,13 @@
 T-3684. Operator, 2026-10-02: "responding it has been received should take
 place pretty quick." This measures it from the ledgers, never from a claim:
 
-OUTBOUND (messages WE sent, our sender ledger .context/sidecar/direct-ack.jsonl)
+OUTBOUND (messages WE sent)
+  direct path — our sender ledger .context/sidecar/direct-ack.jsonl:
     send→RECEIVED     SENT row ts → RECEIVED row ts  (CONFIRM-1, the HTTP answer)
     send→HANDED_OVER  SENT row ts → HANDED_OVER row ts (CONFIRM-2 from the peer)
+    send→REPLIED      SENT row ts → REPLIED row ts
+  hub path — our outbox message's created_at → the peer's receipt rows in
+  .context/sidecar/receipts.jsonl (lib/sidecar/receipts.py), same three legs.
 
 INBOUND (messages our receiver holds, .context/sidecar/receiver/)
     send→RECEIVED     the sender's send time → our STORED event
@@ -20,10 +24,11 @@ counted as `open`. Summary per leg: n, median, p95, max (seconds).
 
 from __future__ import annotations
 
+import json
 import math
 from datetime import datetime, timezone
 
-from . import direct, receiver
+from . import direct, outbox, receipts, receiver
 
 
 def _ts(value) -> datetime | None:
@@ -68,10 +73,36 @@ def outbound() -> list[dict]:
             continue
         t0 = _ts(sent.get("ts"))
         out.append({
-            "client_msg_id": cid, "to": sent.get("target"),
+            "client_msg_id": cid, "to": sent.get("target"), "path": "direct",
             "sent_at": sent.get("ts"),
             "send_to_received_s": _secs(t0, _ts((states.get(direct.RECEIVED) or {}).get("ts"))),
             "send_to_handed_over_s": _secs(t0, _ts((states.get(direct.HANDED_OVER) or {}).get("ts"))),
+            "send_to_replied_s": _secs(t0, _ts((states.get(direct.REPLIED) or {}).get("ts"))),
+        })
+    # Hub-path sends: our outbox message + the peer's receipts.
+    rc: dict[str, dict] = {}
+    for r in receipts.read_ledger():
+        rc.setdefault(str(r.get("client_msg_id")), {}).setdefault(r.get("state"), r)
+    try:
+        files = sorted(outbox._outbox_dir().glob("*.json"))
+    except OSError:
+        files = []
+    for f in files:
+        try:
+            msg = json.loads(f.read_text(encoding="utf-8"))
+        except (OSError, ValueError):
+            continue
+        cid = str(msg.get("client_msg_id") or f.stem)
+        if cid in first:
+            continue
+        t0 = _ts(msg.get("created_at"))
+        got = rc.get(cid, {})
+        out.append({
+            "client_msg_id": cid, "to": msg.get("to"), "path": "hub",
+            "sent_at": msg.get("created_at"),
+            "send_to_received_s": _secs(t0, _ts((got.get(receipts.RECEIVED) or {}).get("ts"))),
+            "send_to_handed_over_s": _secs(t0, _ts((got.get(receipts.HANDED_OVER) or {}).get("ts"))),
+            "send_to_replied_s": _secs(t0, _ts((got.get(receipts.REPLIED) or {}).get("ts"))),
         })
     return out
 
@@ -89,7 +120,10 @@ def inbound() -> list[dict]:
         stored = _ts((ev.get("STORED") or {}).get("ts")) or _ts(msg.get("_stored_at"))
         handed = _ts((ev.get("HANDED_OVER") or {}).get("ts"))
         injects = [e for e in receiver.read_events(mid) if e.get("event") == "INJECT_ATTEMPT"]
+        replied = [r for r in receipts.read_sent()
+                   if r.get("client_msg_id") == mid and r.get("state") == receipts.REPLIED and r.get("ok")]
         out.append({
+            "send_to_replied_s": _secs(sent, _ts(replied[0]["ts"])) if replied else None,
             "msg_id": mid, "from": msg.get("from"), "via": via,
             "urgent": bool(msg.get("urgent")),
             "sent_at": sent.isoformat() if sent else None,
@@ -102,16 +136,13 @@ def inbound() -> list[dict]:
 
 def report() -> dict:
     o, i = outbound(), inbound()
-    return {
-        "outbound": {"messages": o,
-                     "send_to_received": summarise([m["send_to_received_s"] for m in o]),
-                     "send_to_handed_over": summarise([m["send_to_handed_over_s"] for m in o]),
-                     "open": sum(1 for m in o if m["send_to_handed_over_s"] is None)},
-        "inbound": {"messages": i,
-                    "send_to_received": summarise([m["send_to_received_s"] for m in i]),
-                    "send_to_handed_over": summarise([m["send_to_handed_over_s"] for m in i]),
-                    "open": sum(1 for m in i if m["send_to_handed_over_s"] is None)},
-    }
+    def side(ms):
+        return {"messages": ms,
+                "send_to_received": summarise([m["send_to_received_s"] for m in ms]),
+                "send_to_handed_over": summarise([m["send_to_handed_over_s"] for m in ms]),
+                "send_to_replied": summarise([m["send_to_replied_s"] for m in ms]),
+                "open": sum(1 for m in ms if m["send_to_handed_over_s"] is None)}
+    return {"outbound": side(o), "inbound": side(i)}
 
 
 def render(rep: dict) -> str:
@@ -119,7 +150,7 @@ def render(rep: dict) -> str:
     for side in ("outbound", "inbound"):
         r = rep[side]
         lines.append(f"{side} ({len(r['messages'])} message(s), {r['open']} without HANDED_OVER)")
-        for leg in ("send_to_received", "send_to_handed_over"):
+        for leg in ("send_to_received", "send_to_handed_over", "send_to_replied"):
             s = r[leg]
             if not s["n"]:
                 lines.append(f"  {leg.replace('_', ' '):<22} n=0")
@@ -128,7 +159,8 @@ def render(rep: dict) -> str:
                              f"p95={s['p95']}s max={s['max']}s")
         for m in r["messages"][-20:]:
             ident = m.get("client_msg_id") or m.get("msg_id")
-            extra = f" via={m['via']}" if "via" in m else ""
+            extra = f" via={m['via']}" if "via" in m else f" path={m.get('path')}"
             lines.append(f"    {ident[:36]:<36} recv={m['send_to_received_s']}s "
-                         f"handed_over={m['send_to_handed_over_s']}s{extra}")
+                         f"handed_over={m['send_to_handed_over_s']}s "
+                         f"replied={m['send_to_replied_s']}s{extra}")
     return "\n".join(lines)

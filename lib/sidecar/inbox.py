@@ -213,6 +213,16 @@ def pending(agent: str | None = None, *, reader=default_reader,
             if isinstance(offset, int):
                 highest = max(highest, offset + 1)
             meta = env.get("metadata") or {}
+            if meta.get("kind") == "receipt":
+                # T-3684: a delivery receipt for a consult WE sent, posted to
+                # our topic by a peer with no reachable receiver. It is ledger
+                # data, never a consult: recorded (only if we really sent that
+                # id to that peer) and never surfaced or counted as unread.
+                from . import receipts
+                receipts.record_from_peer(str(meta.get("receipt_for") or ""),
+                                          str(meta.get("receipt_state") or ""),
+                                          meta.get("from_agent"), via=f"hub:{topic}")
+                continue
             client_msg_id = meta.get("client_msg_id")
             if client_msg_id and client_msg_id in seen_set:
                 continue  # duplicate the hub's TTL let through, or a dual post

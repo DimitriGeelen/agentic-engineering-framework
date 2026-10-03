@@ -40,7 +40,9 @@ command -v termlink >/dev/null 2>&1 || exit 0
 # host too loaded to answer, NOT an absent mail rail — it says so in one line
 # instead of impersonating an empty inbox. Only absence (no termlink/fw, fw
 # failing outright) stays silent.
-raw="$(timeout "${SIDECAR_INBOX_TIMEOUT:-5}" "$FW_BIN" sidecar inbox --peek --json 2>/dev/null)"
+# T-3684: --receipt — what this hook shows is RECEIVED, and the sender is told
+# so (from a detached process; the peek itself still never consumes).
+raw="$(timeout "${SIDECAR_INBOX_TIMEOUT:-5}" "$FW_BIN" sidecar inbox --peek --receipt --json 2>/dev/null)"
 rc=$?
 if [ "$rc" -eq 124 ]; then
     python3 -c 'import json; print(json.dumps({"hookSpecificOutput": {"hookEventName": "UserPromptSubmit", "additionalContext": "# sidecar-inbox: inbox check timed out; consults may be pending, run fw sidecar inbox --peek (T-3681)"}}))' 2>/dev/null
