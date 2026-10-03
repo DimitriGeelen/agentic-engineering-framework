@@ -5086,3 +5086,9 @@ X'` returning empty group."
   task: T-3766
   date: 2026-10-03
   context: Added via context agent
+- id: L-692
+  learning: "A framework cron job added only to AEF's own .context/cron-registry.yaml never reaches consumers: lib/cron-seed.sh seeds an explicit list (one job until T-3783). The hourly vector reindex ran in 2 of 49 projects for months; doctor said 'in sync' because registry and crontab agreed on lacking it. When adding a job every project needs, add it to lib/cron-seed.sh too, and check consumers carry the must-have set."
+  source: P-001
+  task: T-3783
+  date: 2026-10-03
+  context: Added via context agent
