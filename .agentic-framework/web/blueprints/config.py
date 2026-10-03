@@ -53,6 +53,7 @@ SETTINGS = [
     ("RELEASE_BRANCH", "master", "The consumer install surface — the branch fw release tag-and-release fast-forwards before cutting the tag; nothing authors it directly; T-3185/T-3190"),
     ("RELEASE_TAG_PATTERN", "v[0-9]*", "Glob for release tags read by fw release status; prefixed semver (designer-vX.Y.Z) is tried when nothing matches, else no matching tag and UNKNOWN commits, never 0; T-3585"),
     ("RETIRE_WHEN_ADVISORY", "1", "Enable the audit retire_when advisory rail for free drivers; 0 silences the section; T-2169"),
+    ("SIDECAR_TICK", "30", "Seconds between ticks of the always-on sidecar watcher: drains hub inbox topics, injects waiting peer messages (urgent at once, others only into a ready session), escalates unconfirmed sends, self-probes and writes liveness.yaml; T-3684/T-3685"),
     ("SIDECAR_CONSULT_WARN_HOURS", "4", "Hours an inbound peer consult may sit unread on the sidecar inbox before fw audit and fw doctor WARN; far below the sibling dm: rail's 24 because a consult is a peer blocked on an answer; T-3544 / OBS-567"),
     ("DELEGATION_SURFACE_WARN", "50", "Operator-only open-Human-criteria count above which fw audit and fw doctor WARN, but only while reviewer-closeable is 0 (lib/delegation.py:surface_verdict); T-3445 / D-626"),
     ("GITIGNORE_REGISTER_ADVISORY", "1", "Enable the audit WARN for .gitignore comment blocks that defer work without naming a T-/G-/OBS-/L- entry; 0 silences it; T-2994"),
