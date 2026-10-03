@@ -74,3 +74,12 @@ There are three new config keys, each in both `lib/config.sh` FW_CONFIG_REGISTRY
 |---|---|---|
 | drift skipped hashing when the mtime had not moved, so a restored file with an old timestamp hid changed content | every source file is hashed, with no mtime shortcut (~8k files / 64 MB, 0.8s measured on AEF) | test "changed content under a preserved (old) timestamp still counts as drift" |
 | an older OK recorded after a newer FAIL overwrote it, making the next FAIL a false second transition | `record()` discards an observation whose `ts` (evaluation start time) is older than the stored one, under the same flock | test "an older OK finishing after a newer FAIL does not overwrite it" |
+
+## Round 3 findings (codex, `T-3783-review-codex-r3.md`): what changed
+
+| finding | fix | pinned by |
+|---|---|---|
+| deleted sources still served by the index never counted | `_source_drift` also counts every `file_state` path under the drift dirs that no longer exists on disk | test "deleted sources the index still serves count as drift" |
+| a checker crash in a full run set `full=False`, so it was never recorded and never pushed | the crash verdict keeps `full` = (canary requested), so it is recorded and claims the transition | test "a crash in a full run is recorded and claims the transition" |
+| `FW_INDEX_MAX_LAG=Infinity` crashed `int()` (and NaN could disable a limit) | `_env_num` accepts only finite, non-negative values and otherwise falls back to the default | test "non-finite config values fall back to defaults" |
+| legacy `web/embeddings.py:index_freshness()` (db-mtime fallback) and the Watchtower `/health` JSON can still say ok without a manifest | out of scope: neither is one of this task's surfaces (doctor, audit, handover, push, recall/ask banner), and none of those use them any more. A follow-up can switch `/health` to `lib/vector_index_health.py` | — |

@@ -67,7 +67,8 @@ REMEDY_UPGRADE = "fw upgrade   (re-seeds the cron job and the vendored web/)"
 def _env_num(name: str, default: float) -> float:
     try:
         v = float(os.environ.get(name, "") or default)
-        return v if v >= 0 else default
+        # NaN/Infinity would crash int() or disable a limit (review round 3).
+        return v if (math.isfinite(v) and v >= 0) else default
     except ValueError:
         return default
 
@@ -251,6 +252,13 @@ def _source_drift(project_root: Path, state: dict) -> int:
                 n += 1
                 continue
             n += h != seen[0]
+    # Deleted sources the index still serves are drift too (review round 3):
+    # recall would keep answering from content that no longer exists.
+    prefixes = tuple("/".join(parts) + "/" for parts in DRIFT_DIRS)
+    for rel in state:
+        if (rel.startswith(prefixes) and rel.endswith(DRIFT_SUFFIXES)
+                and not (project_root / rel).is_file()):
+            n += 1
     return n
 
 
@@ -567,7 +575,9 @@ def main(argv=None) -> int:
     try:
         res = evaluate(pr, fr, canary=not a.no_canary)
     except Exception as exc:  # noqa: BLE001 — never silent
-        res = {"status": "FAIL", "full": False, "ts": time.time(), "project_root": str(pr),
+        # A crash is a red verdict like any other: a full run records it and
+        # can push (review round 3 — it used to set full=False and stay silent).
+        res = {"status": "FAIL", "full": not a.no_canary, "ts": time.time(), "project_root": str(pr),
                "checks": [_check("check", "FAIL", f"vector index check crashed: {exc}",
                                  "Report it; run: fw doctor")]}
     if a.banner:

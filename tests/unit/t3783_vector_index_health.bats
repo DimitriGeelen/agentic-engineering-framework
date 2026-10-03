@@ -372,3 +372,40 @@ PY
     [[ "$output" == *"B False"* ]]
     [[ "$output" == *"C False"* ]]
 }
+
+# --- review round 3 (codex) ---
+
+@test "deleted sources the index still serves count as drift" {
+    mkdir -p "$P/docs/reports"
+    for i in 1 2 3; do echo "r$i" > "$P/docs/reports/T-00$i-r.md"; done
+    build_index 0
+    rm "$P/docs/reports/"*.md
+    FW_INDEX_MAX_LAG=2 run check --no-canary
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"; 3 source file(s) new or changed"* ]]
+}
+
+@test "non-finite config values fall back to defaults instead of crashing or disabling a limit" {
+    build_index 48
+    FW_INDEX_MAX_LAG=Infinity FW_INDEX_MAX_AGE_HOURS=NaN run check --no-canary
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"FAIL|age: vector index 2.0 days old (limit 24h"* ]]
+    [[ "$output" != *"crashed"* ]]
+}
+
+@test "a crash in a full run is recorded and claims the transition (push path)" {
+    build_index 0
+    run python3 - "$CHECK" "$P" "$F" <<'PY'
+import importlib.util, sys, io, contextlib
+s = importlib.util.spec_from_file_location("v", sys.argv[1]); m = importlib.util.module_from_spec(s); s.loader.exec_module(m)
+def boom(*a, **k): raise RuntimeError("injected")
+m.evaluate = boom
+buf = io.StringIO()
+with contextlib.redirect_stdout(buf):
+    rc = m.main(["--project-root", sys.argv[2], "--framework-root", sys.argv[3], "--record"])
+print("RC", rc); print(buf.getvalue())
+PY
+    [[ "$output" == *"RC 2"* ]]
+    [[ "$output" == *"FAIL|check: vector index check crashed: injected"* ]]
+    [[ "$output" == *"TURNED_RED"* ]]
+}
