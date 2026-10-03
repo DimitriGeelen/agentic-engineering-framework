@@ -67,3 +67,10 @@ There are three new config keys, each in both `lib/config.sh` FW_CONFIG_REGISTRY
 | a state-write failure could re-push on every run | an unwritable state claims no transition (the red stays in doctor, audit and handover) | test "an unwritable state claims no transition" |
 | a failed push is not retried | by design: `fw_notify` is fire-and-forget, and the requirement is once per transition, not per run. The red stays visible in doctor, audit (FAIL), the handover line, and the recall/ask banner | documented in the `record()` docstring |
 | legacy `web/embeddings.py:corpus_health()` returns `unknown` for a missing manifest | no rail calls it any more (grep: no callers outside its definition). doctor, audit, handover and reindex all use the new predicate | — |
+
+## Round 2 findings (codex, `T-3783-review-codex-r2.md`): what changed
+
+| finding | fix | pinned by |
+|---|---|---|
+| drift skipped hashing when the mtime had not moved, so a restored file with an old timestamp hid changed content | every source file is hashed, with no mtime shortcut (~8k files / 64 MB, 0.8s measured on AEF) | test "changed content under a preserved (old) timestamp still counts as drift" |
+| an older OK recorded after a newer FAIL overwrote it, making the next FAIL a false second transition | `record()` discards an observation whose `ts` (evaluation start time) is older than the stored one, under the same flock | test "an older OK finishing after a newer FAIL does not overwrite it" |

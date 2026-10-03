@@ -340,3 +340,35 @@ print('CLAIM', m.record(res, Path('/proc/nonexistent-project')))
 "
     [[ "$output" == *"CLAIM False"* ]]
 }
+
+# --- review round 2 (codex) ---
+
+@test "changed content under a preserved (old) timestamp still counts as drift" {
+    build_index 0
+    f="$P/.context/project/learnings.yaml"
+    old=$(stat -c %Y "$f")
+    printf 'learnings:\n- id: L-001\n  learning: silently restored\n' > "$f"
+    touch -d "@$((old - 3600))" "$f"
+    FW_INDEX_MAX_LAG=0 run check --no-canary
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"; 1 source file(s) new or changed"* ]]
+}
+
+@test "an older OK finishing after a newer FAIL does not overwrite it (no false second transition)" {
+    build_index 0
+    run python3 - "$CHECK" "$P" <<'PY'
+import importlib.util, sys
+from pathlib import Path
+s = importlib.util.spec_from_file_location("v", sys.argv[1]); m = importlib.util.module_from_spec(s); s.loader.exec_module(m)
+P = Path(sys.argv[2])
+ok_old = {"status": "OK", "ts": 100.0, "checks": []}
+fail_new = {"status": "FAIL", "ts": 200.0, "checks": []}
+fail_newer = {"status": "FAIL", "ts": 300.0, "checks": []}
+print("A", m.record(fail_new, P))     # turns red: True
+print("B", m.record(ok_old, P))       # stale observation: discarded
+print("C", m.record(fail_newer, P))   # still red: no second push
+PY
+    [[ "$output" == *"A True"* ]]
+    [[ "$output" == *"B False"* ]]
+    [[ "$output" == *"C False"* ]]
+}

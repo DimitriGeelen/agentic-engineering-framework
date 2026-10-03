@@ -145,7 +145,7 @@ def check_age(manifest, max_age_hours: float, now: float):
     if not _valid_ts(fin, now):
         return _check("age", "FAIL", "vector index age unknown (no manifest finished_at)",
                       f"Run: {REMEDY_REINDEX}")
-    hours = (now - float(fin)) / 3600.0
+    hours = (now - float(fin or 0)) / 3600.0
     if hours > max_age_hours:
         return _check("age", "FAIL",
                       f"vector index {hours / 24:.1f} days old "
@@ -227,9 +227,10 @@ def _source_drift(project_root: Path, state: dict) -> int:
     """Files that are new, or whose content changed, since the index saw them.
 
     Catches what id counts cannot: an edited decision, a new episodic or report,
-    a rewritten learning. Content is hashed the way the indexer hashes it, and
-    only for files whose mtime moved, so an unchanged corpus costs one stat per
-    file and no reads.
+    a rewritten learning. Every file is hashed the way the indexer hashes it —
+    no mtime shortcut, because a restored/copied file can carry a changed body
+    under an old timestamp (review round 2). Measured: ~8k files / 64 MB in
+    0.8s on AEF.
     """
     n = 0
     for parts in DRIFT_DIRS:
@@ -244,8 +245,6 @@ def _source_drift(project_root: Path, state: dict) -> int:
                 n += 1
                 continue
             try:
-                if f.stat().st_mtime <= float(seen[1]):
-                    continue
                 h = hashlib.sha256(f.read_text(errors="replace")
                                    .encode("utf-8", errors="replace")).hexdigest()
             except (OSError, ValueError, TypeError):
@@ -490,9 +489,15 @@ def record(result: dict, project_root: Path) -> bool:
     with lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
         try:
-            prev = json.loads(state.read_text()).get("status")
+            stored = json.loads(state.read_text())
+            prev, prev_ts = stored.get("status"), float(stored.get("ts") or 0)
         except Exception:  # noqa: BLE001
-            prev = None
+            prev, prev_ts = None, 0.0
+        # An observation older than the recorded one is discarded: a slow OK
+        # finishing after a newer FAIL must not overwrite it (that would make
+        # the next FAIL a second, false "transition" — review round 2).
+        if float(result.get("ts") or 0) < prev_ts:
+            return False
         turned_red = result["status"] == "FAIL" and prev != "FAIL"
         try:
             tmp = state.with_suffix(f".json.tmp.{os.getpid()}")
