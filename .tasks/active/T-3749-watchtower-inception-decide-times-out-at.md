@@ -395,8 +395,9 @@ bin/fw watchtower current
 **Evidence:**
 - Measured chain (## Context): task-in-completed/ 23.4 s → 3.2 s; exit 39.6–41.7 s → 18 s; the 20.3 s step was the self-deferral gate's full task index
 - `tests/unit/test_t3749_decide_detached.py`: 25 tests — classify table, wording per outcome (landed+running, landed+done, landed+gate-refused, not landed, pending, busy), slow fake chain outlives the wait, finishes in its own session, second launch refused, failed follow-up commit surfaced
-- Existing decide suites green after moving their mocks to `_run_decide` (htmx error, hardening, e2e with the real chain, vendored e2e, commit, warning widen)
-- Independent review: `docs/reports/T-3749-review-codex.md`
+- Existing decide suites green after moving their mocks to `_run_decide` (htmx error, hardening, e2e with the real chain, vendored e2e, commit, warning widen); all 6 `## Verification` lines pass (101 tests in line 1)
+- Independent review (codex, 3 rounds, `docs/reports/T-3749-review-codex-r{1,2,3}.md`): every round FAIL, every finding fixed with a test (`docs/reports/T-3749-review-brief.md` maps each one). Round 3's two P2s (DEFER wording, missing-episodic surfacing) are fixed in `382200b80` but were **not re-reviewed** — the 3-round cap was reached. A 4th round is your call.
+- Known, outside this task: `tests/unit/test_operator_facing_stderr.py::test_every_stderr_render_site_is_sanitized` is red on `web/blueprints/approvals.py:741` (T-3694, `749067324`), unchanged here
 
 ## Decisions
 

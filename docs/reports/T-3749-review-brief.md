@@ -91,6 +91,17 @@ Round 2 (`docs/reports/T-3749-review-codex-r2.md`) returned FAIL on:
 | P2 `surface()` saw only the newest run | reports every failed / dead run since the last CLEAN run (done, rc 0, committed); a newer running or failed run cannot hide an older failure; a clean run supersedes older ones because it ran the whole chain (archive, episodic, commit) | `test_surface_newer_attempt_does_not_hide_an_older_failure`, `test_surface_a_clean_newer_run_supersedes_older_failures` |
 | AC2 wording vs. design | AC text now states the built design explicitly (the dispatch brief prescribed it: detach the decide, wait for the PRIMARY result, respond, keep running) | — |
 
+## Round 3 (commit `382200b80`) — fixed, NOT re-reviewed (3-round cap)
+
+Round 3 (`docs/reports/T-3749-review-codex-r3.md`) returned FAIL on two P2s;
+all other checks were MET (no overlapping-launch path, no gate wording for a
+timeout or exit 124). Both were fixed after the review:
+
+| Finding | Fix | Test |
+|---|---|---|
+| DEFER still running said "Task completed" | LANDED_RUNNING wording depends on the decision: go/no-go "Task completed…", defer "The task stays open (deferred)…" | `test_defer_still_running_does_not_claim_completion` |
+| missing episodic on a completed task read as a clean run (update-task.sh exits 0 on that failure) | runner checks `.context/episodic/<task>.yaml` after fw exits and records `episodic_ok`; `surface()` treats `false` as not clean and names the recovery command | `test_surface_reports_a_missing_episodic_on_an_otherwise_clean_run`; slow-chain test asserts `episodic_ok: false` end to end |
+
 ## Commit / uncommitted-state handling (current)
 
 - The runner commits the decision as soon as it lands (task in completed/ for
