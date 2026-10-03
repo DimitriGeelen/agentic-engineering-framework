@@ -270,7 +270,17 @@ def deliver_pending(trigger: str = "manual", runner=subprocess.run) -> dict:
     lock_path = receiver._receiver_dir() / "inject.lock"
     with open(lock_path, "a+") as lock:
         fcntl.flock(lock, fcntl.LOCK_EX)
-        return _deliver_locked(trigger, runner)
+        report = _deliver_locked(trigger, runner)
+    # T-3782: no live recipient → the sender is told at once (WAITING_NO_RECIPIENT,
+    # once per message). Outside the lock: it may post to the hub.
+    if report.get("no_recipient"):
+        from . import waiting
+        try:
+            report["waiting_receipts"] = len(waiting.note_no_recipient(
+                report["no_recipient"], report["reason"]))
+        except Exception as e:  # never let a receipt stop delivery
+            report["waiting_receipts_error"] = f"{type(e).__name__}: {e}"[:200]
+    return report
 
 
 def _blocked(msg_id: str, trigger: str, reason: str) -> None:
@@ -284,8 +294,12 @@ def _blocked(msg_id: str, trigger: str, reason: str) -> None:
 
 
 def _deliver_locked(trigger: str, runner) -> dict:
+    from . import waiting as waiting_mod
     now = datetime.now(timezone.utc)
-    waiting = [m for m in receiver.awaiting_handover() if not _recently_injected(m, now)]
+    # T-3782: a message an operator is recovering belongs to the session being
+    # started for it; typing it into another session would deliver it twice.
+    waiting = [m for m in receiver.awaiting_handover() if not _recently_injected(m, now)
+               and not waiting_mod.recovering(m)]
     report = {"trigger": trigger, "waiting": len(waiting), "injected": [],
               "session": None, "target_session_id": None, "reason": ""}
     if not waiting:
@@ -295,6 +309,7 @@ def _deliver_locked(trigger: str, runner) -> dict:
         report["reason"] = "injection disabled (receiver started with --no-inject)"
         for m in waiting:
             _blocked(m, trigger, report["reason"])
+        report["no_recipient"] = list(waiting)
         return report
     urgent = [m for m in waiting if (receiver.read_message(m) or {}).get("urgent")]
     target, why = choose_target(bool(urgent), runner)
@@ -303,6 +318,8 @@ def _deliver_locked(trigger: str, runner) -> dict:
         if not why.startswith("agent not ready"):
             for m in waiting:
                 _blocked(m, trigger, why)
+        if waiting_mod.is_no_recipient(why):
+            report["no_recipient"] = list(waiting)
         return report
     # A busy target takes only the urgent messages; the rest wait for its Stop.
     batch = waiting if target["ready"] else urgent

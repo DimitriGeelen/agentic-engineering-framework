@@ -683,7 +683,14 @@ while true; do
         # Inject claude command into TermLink PTY session. T-3346: the trailing
         # printf is the exit signal — see _tl_claude_exit_code. $? and quotes are
         # escaped so they reach the PTY shell literally.
-        termlink_inject "claude ${CLAUDE_ARGS[*]}; printf '__CLAUDE_FW_EXIT_%s__\n' \"\$?\""
+        # T-3782: each argument is shell-quoted (printf %q) — the PTY shell
+        # re-parses this line, so a multi-word argument (a first prompt, as
+        # `fw sidecar recover` passes) must arrive as ONE argument, and any
+        # quote, $ or newline in it must stay data. %q of an empty array is
+        # one '' — skipped so a bare relaunch stays `claude`.
+        _tl_args=""
+        [ "${#CLAUDE_ARGS[@]}" -gt 0 ] && _tl_args=$(printf ' %q' "${CLAUDE_ARGS[@]}")
+        termlink_inject "claude${_tl_args}; printf '__CLAUDE_FW_EXIT_%s__\n' \"\$?\""
         _TL_PING_FAILS=0 # T-3648: each run starts with a clean failure count
         # Wait for claude to exit by polling the PTY for shell prompt
         # We check if claude process is still running inside the session

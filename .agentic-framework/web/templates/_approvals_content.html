@@ -14,6 +14,13 @@
         <span class="stat-breakdown">Workers awaiting answer</span>
     </a>
     {% endif %}
+    {% if waiting_messages or waiting_error %}
+    <a href="#section-waiting" class="approval-stat approval-stat-group ac-active" style="text-decoration:none; color:inherit;">
+        <span class="stat-value">{{ waiting_messages|length if not waiting_error else '?' }}</span>
+        <span class="stat-label">Waiting</span>
+        <span class="stat-breakdown">Messages with no recipient</span>
+    </a>
+    {% endif %}
     {% if arc_close_count and arc_close_count > 0 %}
     <a href="#section-arc-closure" class="approval-stat approval-stat-group decisions-active" style="text-decoration:none; color:inherit;">
         <span class="stat-value">{{ arc_close_count }}</span>
@@ -473,6 +480,57 @@
 {% endfor %}
 {% endif %}
 
+<!-- T-3782: peer messages waiting for a recipient — listed until handed over, answered or dropped -->
+{% if waiting_messages or waiting_error %}
+<h2 id="section-waiting" class="approvals-group-heading">Messages waiting for a recipient</h2>
+<div class="section-header">
+    <h3>Nobody has taken these</h3>
+    <small>{{ waiting_messages|length }} message{{ '' if waiting_messages|length == 1 else 's' }} — they never expire; each stays here until handed over, answered, or dropped by you</small>
+</div>
+{% if waiting_error %}
+<div class="approval-card pending">
+    <div class="approval-risk"><span style="color:var(--wt-danger);">[ERROR]</span> The waiting list could not be read</div>
+    <div class="approval-meta">{{ waiting_error }} — run <code>fw sidecar waiting</code> in this project.</div>
+</div>
+{% endif %}
+{% for wm in waiting_messages %}
+<div class="approval-card pending">
+    <div class="approval-risk">
+        {% if wm.urgent %}<span style="color:var(--wt-danger);">[URGENT]</span>{% endif %}
+        {% if wm.side == 'inbound' %}From <strong>{{ wm.peer or 'unknown' }}</strong>{% else %}Sent to <strong>{{ wm.peer or 'unknown' }}</strong>{% endif %}
+        <span style="color:var(--pico-muted-color); font-weight:normal; font-size:0.85rem;">— waiting {{ wm.age_label }} · {{ wm.state }}</span>
+    </div>
+    <div class="approval-meta">
+        Conversation <code>{{ wm.conversation_id or '-' }}</code>
+        · message <code>{{ wm.id[:12] }}</code>
+        · {{ wm.side }} via {{ wm.via }}
+        {% if wm.escalated %} · pushed: {{ wm.escalated|join(', ') }}{% endif %}
+        {% if wm.last_recover %} · last recover: {{ wm.last_recover.event }} {{ (wm.last_recover.ts or '')[:16] }}{% endif %}
+    </div>
+    {% if wm.reason %}<div style="font-size:0.8rem; color:var(--pico-muted-color);">Reason: {{ wm.reason }}</div>{% endif %}
+    <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; margin-top:0.5rem;">
+        {% if 'recover' in wm.actions %}
+        <form hx-post="/api/sidecar/recover" hx-target="#waiting-result-{{ loop.index }}" hx-swap="innerHTML" style="margin:0;"
+              hx-confirm="Start this project's agent (claude-fw --termlink) with this message as its first prompt?">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="msg_id" value="{{ wm.id }}">
+            <button type="submit" class="outline" style="margin:0; padding:0.25rem 0.75rem;">Recover</button>
+        </form>
+        {% else %}
+        <small style="color:var(--pico-muted-color);">Recover runs in the recipient's project.</small>
+        {% endif %}
+        <form hx-post="/api/sidecar/drop" hx-target="#waiting-result-{{ loop.index }}" hx-swap="innerHTML" style="margin:0; display:flex; gap:0.5rem; align-items:center;">
+            <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="msg_id" value="{{ wm.id }}">
+            <input type="text" name="reason" placeholder="Reason for dropping (required)" required style="margin:0; padding:0.25rem 0.5rem; min-width:16rem;">
+            <button type="submit" class="secondary outline" style="margin:0; padding:0.25rem 0.75rem;">Drop</button>
+        </form>
+    </div>
+    <div id="waiting-result-{{ loop.index }}"></div>
+</div>
+{% endfor %}
+{% endif %}
+
 <!-- T-1416 (T-1388 B6 / F5): Verifications group (Section C) -->
 {% if pending_acs %}
 <h2 id="section-verifications" class="approvals-group-heading">Verifications</h2>
@@ -741,7 +799,7 @@ function filterACs(filter) {
 {% endif %}
 
 <!-- Empty state -->
-{% if not pending_tier0 and not pending_go and not pending_acs and not paused_dispatches %}
+{% if not pending_tier0 and not pending_go and not pending_acs and not paused_dispatches and not waiting_messages and not waiting_error %}
 <div class="empty-state">
     <p>Nothing needs your attention.</p>
     <p><small>Tier 0 gates, inception decisions, and human acceptance criteria will appear here when pending.</small></p>

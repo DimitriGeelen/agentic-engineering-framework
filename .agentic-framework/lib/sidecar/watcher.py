@@ -23,6 +23,9 @@ default 30):
   3. deadline: our own sent messages whose HANDED_OVER never came are
      ESCALATED (direct.escalate_expired) — the sender sees it within a tick,
      not at the next 5-minute sweep.
+  3b. T-3782: messages waiting for a recipient (inbound: no live agent;
+     outbound: the peer has not handed ours over) are pushed to the operator
+     at the warn and overdue levels, once each (lib/sidecar/waiting.py).
   4. liveness (R7): seq += 1, a loopback self-probe of our own receiver over
      the same authenticated HTTP path a peer uses, and
      .context/sidecar/liveness.yaml {identity, seq, last_probe_at,
@@ -423,6 +426,14 @@ def run_tick(seq: int, tick_s: float, runner=subprocess.run, hub_reader=None) ->
         report["escalated"] = direct.escalate_expired()
     except Exception as e:
         report["escalated_error"] = f"{type(e).__name__}: {e}"[:300]
+    # T-3782: a message waiting for a recipient (or not handed over by its
+    # peer) is pushed to the operator once per level; the ledger dedupes.
+    try:
+        from . import waiting
+        report["operator_escalations"] = [
+            {k: r[k] for k in ("id", "side", "level", "push")} for r in waiting.escalate()]
+    except Exception as e:
+        report["operator_escalations_error"] = f"{type(e).__name__}: {e}"[:300]
     probe = self_probe()
     report["probe"] = probe
     write_liveness({
@@ -436,6 +447,7 @@ def run_tick(seq: int, tick_s: float, runner=subprocess.run, hub_reader=None) ->
     report["elapsed_ms"] = round((time.monotonic() - t0) * 1000, 1)
     if (report["hub"].get("ingested") or report["hub"].get("error")
             or (report.get("deliver") or {}).get("injected") or report.get("escalated")
+            or report.get("operator_escalations") or report.get("operator_escalations_error")
             or not probe["ok"] or "error" in (report.get("deliver") or {})):
         _log_tick(report)
     return report

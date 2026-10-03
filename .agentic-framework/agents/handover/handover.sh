@@ -1410,6 +1410,38 @@ PYEOF
     } >> "$HANDOVER_FILE"
 fi
 
+# T-3782: peer messages waiting for a recipient (no live agent here, or ours
+# not handed over by the peer) — listed in every handover until handled
+# (HANDED_OVER / REPLIED) or dropped by the operator. Silent when none.
+if [ -f "$FRAMEWORK_ROOT/lib/sidecar/waiting.py" ] && [ "${FW_HANDOVER_NO_SIDECAR_WAITING:-0}" != "1" ]; then
+    _sw_out=$(PROJECT_ROOT="$PROJECT_ROOT" timeout 30 python3 "$FRAMEWORK_ROOT/lib/sidecar_cli.py" waiting 2>&1)
+    _sw_rc=$?
+    if [ "$_sw_rc" -ne 0 ]; then
+        {
+            echo "## Messages Waiting for a Recipient"
+            echo ""
+            echo "**Could not be listed** (exit $_sw_rc) — run \`fw sidecar waiting\`:"
+            echo ""
+            echo '```'
+            printf '%s\n' "$_sw_out" | tail -5
+            echo '```'
+            echo ""
+        } >> "$HANDOVER_FILE"
+    elif ! printf '%s\n' "$_sw_out" | grep -q '^No messages waiting'; then
+        {
+            echo "## Messages Waiting for a Recipient"
+            echo ""
+            echo "A peer message nobody has taken stays here until it is handed over, answered,"
+            echo "or dropped by the operator. Watchtower: /approvals#section-waiting."
+            echo ""
+            echo '```'
+            printf '%s\n' "$_sw_out"
+            echo '```'
+            echo ""
+        } >> "$HANDOVER_FILE"
+    fi
+fi
+
 cat >> "$HANDOVER_FILE" << EOF
 ## Decisions Made This Session
 
