@@ -46,6 +46,7 @@ from web import decide_runner as dr  # noqa: E402
     # defer never completes the task: landed is the whole primary result
     ("defer", True, False, True, None, dr.LANDED_RUNNING),
     ("defer", True, False, False, 0, dr.LANDED_DONE),
+    ("defer", True, False, False, 1, dr.LANDED_FOLLOWUP_FAILED),   # review r4: wording must say parked
     # killed / crashed with the decision written: never gate wording (review r1)
     ("go", True, False, False, -9, dr.LANDED_INTERRUPTED),
     ("go", True, False, False, 137, dr.LANDED_INTERRUPTED),
@@ -561,3 +562,39 @@ def test_lazy_task_index_matches_task_index(tmp_path):
         assert lazy.get(tid) == full.get(tid), tid
     with pytest.raises(KeyError):
         lazy["T-999"]
+
+
+def test_defer_followup_failure_does_not_claim_completion(app_env, monkeypatch):
+    """Review r4 (Google): a DEFER whose follow-up exits non-zero said
+    'the task is completed'. DEFER parks the task; the wording must say so."""
+    c, p, inc = app_env
+    (p / ".tasks/active/T-9714-x.md").write_text(
+        DECIDED.format(tid="T-9714").replace("work-completed", "started-work")
+               .replace("**Decision**: GO", "**Decision**: DEFER"))
+    monkeypatch.setattr(inc, "_run_decide", lambda *a, **k: inc._DecideResult(
+        err="episodic failed", rc=1, run_dir=".context/working/decide/T-9714-run"))
+    with c.session_transaction() as sess:
+        sess["_csrf_token"] = "tok"
+    html = c.post("/inception/T-9714/decide",
+                  data={"decision": "defer", "rationale": "r", "_csrf_token": "tok"},
+                  headers={"HX-Request": "true"}).get_data(as_text=True)
+    assert "task is completed" not in html
+    assert "Task completed" not in html
+    assert "parked (DEFER)" in html
+    for bad in FORBIDDEN:
+        assert bad not in html
+
+
+def test_pid_is_decide_falls_back_to_liveness_on_empty_cmdline(monkeypatch):
+    """Review r4 (Google): a hardened /proc reads 0 bytes without OSError;
+    that is no evidence of pid reuse, so a live pid still counts."""
+    import builtins, io, os as _os
+    real_open = builtins.open
+
+    def fake_open(path, *a, **k):
+        if str(path).startswith("/proc/") and str(path).endswith("/cmdline"):
+            return io.BytesIO(b"")
+        return real_open(path, *a, **k)
+
+    monkeypatch.setattr(builtins, "open", fake_open)
+    assert dr._pid_is_decide(_os.getpid(), "T-9715") is True
