@@ -276,7 +276,7 @@ register:
     source: "T-3397 IW-5"
     owner_task: T-3685
     status: built
-    evidence: "T-3685: fw sidecar start / receiver start run receiver + supervised watcher (watcher.py supervise); claude-fw --termlink starts it; cron sidecar-ensure-1m + @reboot restart any enabled sidecar on the host; doctor/audit WARN where none runs"
+    evidence: "T-3685: every claude-fw session (with or without --termlink) starts its receiver + supervised watcher (bin/claude-fw sidecar_start; behavioural unit test_claude_fw_really_starts_the_sidecar runs the real wrapper); fw sidecar start / receiver start for anything else; cron sidecar-ensure-1m + @reboot restart any enabled sidecar on the host; fw doctor / fw audit WARN in any project where none runs (a plain `claude` launch is not covered by a launcher — the WARN is the rail)"
 
   - id: R15
     text: "Always-on listener per agent session"

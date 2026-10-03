@@ -363,14 +363,21 @@ def test_2b_legacy_consult_answered_with_in_reply_to_gives_sender_replied(pair):
     nonce = "".join(random.choices(string.ascii_lowercase, k=10))
     empty = BASE_DIR / "empty-registry"
     empty.mkdir(exist_ok=True)
-    _send(a, pair["b_name"], f"Peer check REPLY-{nonce}: answer me now by running the reply "
-                             "command shown under this message, with the body pong. "
-                             "Nothing else.", registry=empty)
+    _send(a, pair["b_name"], f"Peer check REPLY-{nonce}: please answer with the word pong.",
+          registry=empty)
     mid = _wait(lambda: _msg_id_in_b(pair["b"], f"REPLY-{nonce}"), 70, 1)
     assert mid, "watcher never ingested the hub-topic consult"
     a_sent = _ts(json.loads((a / f".context/sidecar/outbox/{mid}.json").read_text())["created_at"])
-    got = {st: _wait(lambda st=st: _first(_receipts(a), client_msg_id=mid, state=st), 180, 1)
-           for st in ("RECEIVED", "HANDED_OVER", "REPLIED")}
+    got = {st: _wait(lambda st=st: _first(_receipts(a), client_msg_id=mid, state=st), 90, 1)
+           for st in ("RECEIVED", "HANDED_OVER")}
+    # The REPLY is the agent's to make, and run 5 showed haiku declining a
+    # peer's request to run a command (correctly cautious). Its OPERATOR
+    # therefore asks it — the reply is still produced by the real agent,
+    # through the real `fw sidecar send --in-reply-to`.
+    assert _wait(b.ready, 120)
+    base._type(b.tl, f"Operator here: please answer peer message {mid} now, using the exact "
+                     "reply command the sidecar showed you for it, with the body pong.")
+    got["REPLIED"] = _wait(lambda: _first(_receipts(a), client_msg_id=mid, state="REPLIED"), 180, 1)
     lat = json.loads(_run([FW, "sidecar", "latency", "--json"], a).stdout)
     row = [m for m in lat["outbound"]["messages"] if m["client_msg_id"] == mid]
     ev = {"msg": mid, "receipts": got, "latency_row": row,
