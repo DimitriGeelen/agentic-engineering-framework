@@ -175,12 +175,11 @@ def post_with_token(entry: dict, path: str, payload: dict,
 
 def _mark_epoch() -> None:
     """T-3782: the waiting register's outbound cut-off must exist BEFORE the
-    first message is sent, or that message would fall before it forever."""
-    try:
-        from . import waiting
-        waiting.epoch()
-    except Exception:
-        pass
+    first message is sent, or that message would fall before it forever.
+    Fail-closed (codex round 2): if it cannot be written, the send fails
+    loudly rather than producing a message no listing will ever show."""
+    from . import waiting
+    waiting.epoch()
 
 
 def send(entry: dict, *, from_id: str, to: str, body: str, conversation_id: str,

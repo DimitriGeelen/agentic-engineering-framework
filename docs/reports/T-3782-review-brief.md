@@ -127,3 +127,30 @@ pushes (fw_notify) every (item, level) that is due and not yet in
   tick); the item stays in the handover and on /approvals.
 - Recover starts the agent in THIS project only; for an outbound item it refuses and says
   so (the recipient's project must run it).
+
+## Round 1 (codex, FAIL) → fixes (commit dc362eb1c)
+1. AC1: "agent not ready: no session …" (registered PTY, no live agent session) is now
+   no-recipient (`waiting.is_no_recipient`, `_NO_LIVE_SESSION`). Test
+   `test_dead_agent_in_a_surviving_pty_is_no_recipient_for_a_normal_message`.
+2. AC2: `direct.send` records `urgent` on the SENT row; outbound items read it. Test
+   `test_urgent_direct_send_is_urgent_on_the_sender_side`.
+3. AC3: the outbound cut-off (`waiting.epoch`) is created by `outbox.write_message` and
+   `direct.send` before the message exists. Test `test_outbound_cutoff_exists_before_the_first_send`.
+4. AC4: peer metadata printed outside PEER-DATA (sender, conversation, id — hook headers,
+   reply command, recover preamble, listing/handover/push) goes through
+   `hooks.safe_meta`: a value outside `[A-Za-z0-9._:/@=+-]{1,128}` is replaced wholesale
+   by `invalid-<sha10>`. Receipt notes are one printable line. Test
+   `test_peer_metadata_cannot_carry_instructions_outside_the_markers`.
+
+## Round 2 (codex, FAIL) → fixes
+1. AC1: hub ingest no longer loses a message whose store fails after the cursor advanced:
+   it is spooled (`receiver/ingest-retry.jsonl`) and retried first on every tick; a
+   same-id/different-content post is stored as a second message under its topic/offset
+   id (`watcher.ingest_hub`). Tests `test_hub_message_whose_store_fails_is_spooled_and_retried_not_lost`,
+   `test_hub_id_reused_with_different_content_is_kept_as_a_second_message`.
+2. AC2: urgent pushes at once for every can't-be-taken state, including failed sends
+   (undeliverable / rejected / escalated) and recover-unconfirmed (`waiting.due_levels`).
+   Test `test_urgent_failed_send_pushes_at_once`.
+3. AC3: the cut-off is fail-closed at send (no cut-off → the send raises, nothing written)
+   and fail-open when read (an existing but unreadable cut-off lists everything). Tests
+   `test_send_fails_closed_when_the_cutoff_cannot_be_written`, `test_unreadable_cutoff_fails_open`.

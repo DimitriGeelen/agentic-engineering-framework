@@ -253,6 +253,21 @@ def ingest_hub(reader=None) -> dict:
     except Exception as e:  # an unreadable hub must not stop the tick
         return {"error": f"{type(e).__name__}: {e}"[:300], "ingested": []}
     ingested = []
+    # T-3782 (codex round 2): the cursor has already advanced, so a message
+    # whose store fails must not be dropped — it goes to a retry spool that
+    # every tick drains first, and it is never logged as a "duplicate".
+    spool = _ingest_spool()
+    pending_retry = _read_spool(spool)
+    if pending_retry:
+        spool.unlink(missing_ok=True)
+    for env in pending_retry:
+        ok, err = receiver.store_message(env["client_msg_id"], env)
+        if ok:
+            receiver.record_event(env["client_msg_id"], "INGESTED_FROM_HUB", retried=True)
+            ingested.append(env["client_msg_id"])
+            _received_receipt(env)
+        else:
+            _spool(spool, env, err)
     for m in msgs:
         mid = _hub_msg_id(m)
         envelope = {
@@ -268,22 +283,64 @@ def ingest_hub(reader=None) -> dict:
             "hub_ts": m.get("ts"),
         }
         ok, err = receiver.store_message(mid, envelope)
+        if not ok and err.startswith("conflict"):
+            # Same id, DIFFERENT content: a second message, not a duplicate
+            # (a same-content dual post is accepted by store_message). Kept
+            # under the topic/offset id so it is not lost (T-3782).
+            alt = "hub-" + hashlib.sha256(f"{m.get('topic')}|{m.get('offset')}".encode()).hexdigest()[:16]
+            receiver.record_event(mid, "HUB_ID_CONFLICT", stored_as=alt,
+                                  topic=m.get("topic"), offset=m.get("offset"))
+            envelope = dict(envelope, client_msg_id=alt, original_client_msg_id=mid)
+            mid = alt
+            ok, err = receiver.store_message(mid, envelope)
         if ok:
             receiver.record_event(mid, "INGESTED_FROM_HUB", topic=m.get("topic"),
                                   offset=m.get("offset"), hub_ts=m.get("ts"))
             ingested.append(mid)
-            # RECEIVED back to the sender at once (receipts.py, T-3684).
-            try:
-                receipts.send(envelope, receipts.RECEIVED, by="watcher")
-            except Exception as e:  # a receipt failure must not stop ingest
-                receiver.record_event(mid, "RECEIPT_FAILED", state="RECEIVED",
-                                      error=f"{type(e).__name__}: {e}"[:200])
+            _received_receipt(envelope)
         else:
-            # The same id already stored (the peer dual-posted direct + hub):
-            # the message is here once, which is the point.
-            receiver.record_event(mid, "HUB_DUPLICATE_SKIPPED", reason=err,
-                                  topic=m.get("topic"), offset=m.get("offset"))
+            _spool(spool, envelope, err)
     return {"ingested": ingested}
+
+
+def _received_receipt(envelope: dict) -> None:
+    """RECEIVED back to the sender at once (receipts.py, T-3684)."""
+    try:
+        receipts.send(envelope, receipts.RECEIVED, by="watcher")
+    except Exception as e:  # a receipt failure must not stop ingest
+        receiver.record_event(envelope.get("client_msg_id"), "RECEIPT_FAILED", state="RECEIVED",
+                              error=f"{type(e).__name__}: {e}"[:200])
+
+
+def _ingest_spool() -> Path:
+    return receiver._receiver_dir() / "ingest-retry.jsonl"
+
+
+def _read_spool(path: Path) -> list[dict]:
+    out = []
+    try:
+        for ln in path.read_text(encoding="utf-8").splitlines():
+            try:
+                out.append(json.loads(ln))
+            except json.JSONDecodeError:
+                continue
+    except OSError:
+        pass
+    return out
+
+
+def _spool(path: Path, envelope: dict, err: str) -> None:
+    """Keep a hub message whose store failed; retried every tick. If even the
+    spool cannot be written, the failure is at least an event and a tick-log
+    line, never silence."""
+    try:
+        with open(path, "a", encoding="utf-8") as fh:
+            fh.write(json.dumps(envelope) + "\n")
+        receiver.record_event(envelope.get("client_msg_id"), "INGEST_STORE_FAILED_SPOOLED",
+                              reason=err)
+    except OSError as e:
+        receiver.record_event(envelope.get("client_msg_id"), "INGEST_STORE_FAILED_LOST",
+                              reason=f"{err}; spool: {e}"[:300])
 
 
 # ── 4. loopback self-probe ──────────────────────────────────────────────────

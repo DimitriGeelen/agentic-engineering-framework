@@ -105,11 +105,10 @@ def write_message(from_id: str, to: str, body: str, conversation_id: str,
     client_msg_id = str(uuid.uuid4())
     outbox = _outbox_dir()
     # T-3782: the waiting register's outbound cut-off exists before any send.
-    try:
-        from . import waiting
-        waiting.epoch()
-    except Exception:
-        pass
+    # Fail-closed: no cut-off, no send (a message sent before a cut-off that
+    # is written later would be invisible forever — codex round 2).
+    from . import waiting
+    waiting.epoch()
     msg = {
         "client_msg_id": client_msg_id,
         "from": from_id,

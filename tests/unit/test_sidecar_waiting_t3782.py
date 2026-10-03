@@ -537,3 +537,75 @@ def test_peer_metadata_cannot_carry_instructions_outside_the_markers(ab):
     item = [i for i in waiting.open_items() if i["id"] == "m-meta"][0]
     assert "\n" not in item["peer"] + item["conversation_id"]
     assert "\n" not in waiting.render([item]).split("reason:")[0].splitlines()[1]
+
+
+# ── codex review round 2 regressions ────────────────────────────────────────
+
+def _hub_env(offset, cmid, body):
+    return {"offset": offset, "ts": 1, "payload_b64": base64.b64encode(body.encode()).decode(),
+            "metadata": {"client_msg_id": cmid, "from_agent": "wait-a", "conversation_id": "c"}}
+
+
+def test_hub_message_whose_store_fails_is_spooled_and_retried_not_lost(ab, monkeypatch):
+    a, b, use, start = ab
+    use(b)
+    monkeypatch.setattr(inbox, "read_topics", lambda agent=None: ["inbox:x/wait-b"])
+    real_store = receiver.store_message
+    monkeypatch.setattr(receiver, "store_message", lambda mid, env: (False, "failed to write message: disk full"))
+    topic = [_hub_env(0, "hub-lost-1", "keep me")]
+    rep = watcher.ingest_hub(reader=lambda t, c, limit=100: [e for e in topic if e["offset"] >= c])
+    assert rep["ingested"] == []
+    assert [e["event"] for e in receiver.read_events("hub-lost-1")] == ["INGEST_STORE_FAILED_SPOOLED"]
+    monkeypatch.setattr(receiver, "store_message", real_store)
+    # the cursor has moved on; the next tick still stores it from the spool
+    rep = watcher.ingest_hub(reader=lambda t, c, limit=100: [e for e in topic if e["offset"] >= c])
+    assert rep["ingested"] == ["hub-lost-1"] and "hub-lost-1" in receiver.awaiting_handover()
+    assert not watcher._ingest_spool().exists()
+
+
+def test_hub_id_reused_with_different_content_is_kept_as_a_second_message(ab, monkeypatch):
+    a, b, use, start = ab
+    use(b)
+    monkeypatch.setattr(inbox, "read_topics", lambda agent=None: ["inbox:x/wait-b"])
+    _store("hub-dup-1", body="first")
+    topic = [_hub_env(0, "hub-dup-1", "a different second message")]
+    rep = watcher.ingest_hub(reader=lambda t, c, limit=100: [e for e in topic if e["offset"] >= c])
+    assert len(rep["ingested"]) == 1 and rep["ingested"][0].startswith("hub-")
+    assert rep["ingested"][0] != "hub-dup-1"
+    assert receiver.read_message(rep["ingested"][0])["body"] == "a different second message"
+
+
+def test_urgent_failed_send_pushes_at_once(ab):
+    a, b, use, start = ab
+    use(a)
+    waiting.epoch()
+    direct.record("m-undel", direct.SENT, by="sender", target="wait-b", urgent=True)
+    direct.record("m-undel", direct.UNDELIVERABLE, by="sender", error="receiver down")
+    item = [i for i in waiting.outbound_items() if i["id"] == "m-undel"][0]
+    assert item["urgent"] and item["state"] == "undeliverable"
+    assert waiting.due_levels(item) == ["warn"]
+
+
+def test_send_fails_closed_when_the_cutoff_cannot_be_written(ab, monkeypatch):
+    a, b, use, start = ab
+    use(a)
+
+    def boom():
+        raise OSError("read-only file system")
+    monkeypatch.setattr(waiting, "epoch", boom)
+    with pytest.raises(OSError):
+        outbox.write_message(from_id="wait-a", to="wait-b", body="x", conversation_id="c")
+    assert list(outbox._outbox_dir().glob("*.json")) == []
+    with pytest.raises(OSError):
+        direct.send({"url": "http://127.0.0.1:9", "token_file": "/nonexistent"}, from_id="wait-a",
+                    to="wait-b", body="x", conversation_id="c", retries=1, sleep=lambda s: None)
+    assert direct.read_ledger() == []
+
+
+def test_unreadable_cutoff_fails_open(ab):
+    a, b, use, start = ab
+    use(a)
+    old = outbox.write_message(from_id="wait-a", to="wait-b", body="x", conversation_id="c")
+    (a / ".context/sidecar/waiting/epoch").write_text("garbage")
+    later = datetime.now(timezone.utc) + timedelta(hours=5)
+    assert [i["id"] for i in waiting.outbound_items(later)] == [old]

@@ -125,21 +125,31 @@ def recover_log_path() -> Path:
     return _dir() / "recover.jsonl"
 
 
+_EPOCH_UNREADABLE = datetime(1970, 1, 1, tzinfo=timezone.utc)
+
+
 def epoch() -> datetime:
-    """When this module first ran here. Written once, never moved."""
+    """When this module first ran here (the outbound cut-off). Written once,
+    never moved; created by the first send (outbox.write_message,
+    direct.send), which fails if it cannot be written. A cut-off file that
+    exists but cannot be read or parsed fails OPEN — everything is listed —
+    because a wrong cut-off would hide messages and a missing one only adds
+    old ones."""
     p = _dir() / "epoch"
-    try:
-        dt = _ts(p.read_text(encoding="utf-8").strip())
-        if dt:
-            return dt
-    except OSError:
-        pass
+    if p.exists():
+        try:
+            return _ts(p.read_text(encoding="utf-8").strip()) or _EPOCH_UNREADABLE
+        except OSError:
+            return _EPOCH_UNREADABLE
     now = _now()
     try:
-        with open(p, "x", encoding="utf-8") as fh:
-            fh.write(now.isoformat())
+        fd = os.open(p, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o644)
     except FileExistsError:
-        return _ts(p.read_text(encoding="utf-8").strip()) or now
+        return epoch()
+    with os.fdopen(fd, "w", encoding="utf-8") as fh:
+        fh.write(now.isoformat())
+        fh.flush()
+        os.fsync(fh.fileno())
     return now
 
 
@@ -425,7 +435,11 @@ def open_items(now: datetime | None = None) -> list[dict]:
 
 def due_levels(item: dict) -> list[str]:
     age_h = item["age_s"] / 3600
-    no_recipient = item["state"] in ("no-live-recipient", "peer-has-no-live-recipient")
+    # Urgent: at once whenever nobody can take it — no live recipient on
+    # either side, or the send itself failed (codex round 2).
+    no_recipient = item["state"] in ("no-live-recipient", "peer-has-no-live-recipient",
+                                     "recover-unconfirmed", "undeliverable", "rejected",
+                                     "escalated")
     due = []
     if age_h >= warn_hours() or (item["urgent"] and no_recipient):
         due.append(LEVEL_WARN)
