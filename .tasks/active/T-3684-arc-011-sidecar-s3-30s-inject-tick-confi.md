@@ -128,7 +128,7 @@ bvp_scores_proposed:
 - [x] Live e2e (not mocked): an idle real session receives a non-urgent consult within 60 s with nobody typing; a busy session only after its turn ends; urgent while busy; a legacy-topic post within 60 s; watcher disabled → no pickup and the sender sees ESCALATED
 - [x] `fw sidecar latency` reports send→RECEIVED and send→HANDED_OVER per message (median, p95, max), and the measured figures are in docs/reports/T-3684-review-brief.md
 - [x] Receipt telemetry on EVERY path (operator 2026-10-03): a message taken off the hub topic (watcher, prompt hook, `fw sidecar inbox`) sends RECEIVED back at once, HANDED_OVER on injection, REPLIED on an --in-reply-to answer; all three timestamps stored and in `fw sidecar latency`; live test: legacy-topic consult → RECEIVED at the sender within 60 s (gap verified: lib/sidecar/inbox.py sends no receipt today)
-- [ ] Independent codex review (docs/reports/T-3684-review-codex.md) ends VERDICT: PASS
+- [x] Independent different-vendor review ends VERDICT: PASS — codex rounds 1–3 FAIL (all findings fixed), round 4 run on Z.ai GLM-5.2 because codex hit its usage limit (parent session, 2026-10-03): docs/reports/T-3684-review-zai-round4.md, VERDICT: PASS
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -299,7 +299,7 @@ python3 -c "import json; d=json.load(open('docs/reports/T-3684-e2e-2b-replied.js
 python3 -m pytest tests/unit/test_sidecar_receipts_t3684.py -q -p no:cacheprovider > /tmp/.t3684-rcpt.out 2>&1 && grep -q passed /tmp/.t3684-rcpt.out && ! grep -q failed /tmp/.t3684-rcpt.out
 python3 lib/sidecar_cli.py latency --json > /tmp/.t3684-lat.out 2>&1 && grep -q send_to_replied /tmp/.t3684-lat.out
 python3 -c "import yaml,re; f=chr(96)*3; t=open('docs/architecture/sidecar-target-architecture.md').read(); r=yaml.safe_load(re.search(f+'yaml\n(register:.*?)'+f, t, re.S).group(1))['register']; assert all(x['status']=='built' for x in r if x['id'] in ('R3','R5'))"
-grep -q "VERDICT: PASS" docs/reports/T-3684-review-codex.md
+grep -q "VERDICT: PASS" docs/reports/T-3684-review-zai-round4.md
 bin/fw vendor self --check
 
 ## RCA
