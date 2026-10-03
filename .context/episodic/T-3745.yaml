@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3745: Sidecar receiver is per PROJECT, not per SESSION: one session's Stop hook marks ready while another (fleet agent) is mid-turn, and the next prompting session takes HANDED_OVER for mail it never saw — bind ready flag and handover to session_id
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-03T14:42:32Z
+# ============================================================================
+
+task_id: T-3745
+task_name: "Sidecar receiver is per PROJECT, not per SESSION: one session's Stop hook marks ready while another (fleet agent) is mid-turn, and the next prompting session takes HANDED_OVER for mail it never saw — bind ready flag and handover to session_id"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-02T19:56:47Z
+completed: 2026-10-03T14:41:56Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-03T01:13:19+02:00
+last_commit: 2026-10-03T02:06:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ready flag and hand-over keyed on the hook's session_id — inject only into the session whose own record is ready; prompt hook surfaces only messages claimed for its session. plain-session fallback only when an injector has DECIDED no TermLink session is registered, and never in a headless claude -p session — a dispatched worker's prompt hook took a peer consult in the live repo (fixed; consult answered factually to 055 and flagged)
+
+# Key outcomes
+outcomes:
+  - 'ready-for-input state is keyed by hook session_id (and transcript_path); the watcher injects only into the session whose own flag is ready, never into a busy sibling session in the same project'
+  - 'HANDED_OVER is attributed only to the session that was injected, from that session''s transcript, not to whichever session prompts next'
+  - 'Test with two sessions in one project: one busy, one idle → a non-urgent consult lands in the idle one only; the busy one''s PTY receives nothing'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'plain-session fallback only when an injector has DECIDED no TermLink session is registered, and never in a headless claude -p session — a dispatched worker''s prompt hook took a peer consult in the live repo (fixed; consult answered factually to 055 and flagged)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/adapter.py'
+  - '.agentic-framework/lib/sidecar/hooks.py'
+  - '.agentic-framework/lib/sidecar/inject.py'
+  - 'lib/sidecar/adapter.py'
+  - 'lib/sidecar/hooks.py'
+  - 'lib/sidecar/inject.py'
+  - 'tests/unit/test_sidecar_receiver_t3693.py'
+  - 'tests/unit/test_sidecar_session_ready_t3745.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-03T01:13:19'
+    action: 'T-3745: ready flag and hand-over keyed on the hook''s session_id — inject only into the session whose own record is ready; prompt hook surfaces only messages claimed for its session'
+  - time: '2026-10-03T02:06:50'
+    action: 'T-3745: plain-session fallback only when an injector has DECIDED no TermLink session is registered, and never in a headless claude -p session — a dispatched worker''s prompt hook took a peer consult in the live repo (fixed; consult answered factually to 055 and flagged)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 1125 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, sidecar, arc-011, 055-report, T-3693]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1125
+  commits: 2
+  files_changed: 8
+  lines_added: 700
+  lines_removed: 114
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3745-sidecar-receiver-is-per-project-not-per-.md
+generated_by: context-agent-hybrid

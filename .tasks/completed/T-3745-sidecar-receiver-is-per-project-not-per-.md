@@ -12,12 +12,12 @@ description: >
   Fix: key ready flag and handover on hook session_id/transcript_path; inject only
   into the session that set ready. MUST be fixed before or within T-3684 (the watcher).
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, sidecar, arc-011, 055-report, T-3693]
-components: []
+components: [lib/sidecar/adapter.py, lib/sidecar/hooks.py, lib/sidecar/inject.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T19:56:47Z
-last_update: '2026-10-02T20:00:44Z'
-date_finished:
+last_update: 2026-10-03T14:41:56Z
+date_finished: 2026-10-03T14:41:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -98,9 +98,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] ready-for-input state is keyed by hook session_id (and transcript_path); the watcher injects only into the session whose own flag is ready, never into a busy sibling session in the same project
-- [ ] HANDED_OVER is attributed only to the session that was injected, from that session's transcript, not to whichever session prompts next
-- [ ] Test with two sessions in one project: one busy, one idle → a non-urgent consult lands in the idle one only; the busy one's PTY receives nothing
+- [x] ready-for-input state is keyed by hook session_id (and transcript_path); the watcher injects only into the session whose own flag is ready, never into a busy sibling session in the same project
+- [x] HANDED_OVER is attributed only to the session that was injected, from that session's transcript, not to whichever session prompts next
+- [x] Test with two sessions in one project: one busy, one idle → a non-urgent consult lands in the idle one only; the busy one's PTY receives nothing
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -261,7 +261,19 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/test_sidecar_session_ready_t3745.py tests/unit/test_sidecar_receiver_t3693.py -q -p no:cacheprovider > /tmp/.t3745-unit.out 2>&1 && grep -q passed /tmp/.t3745-unit.out && ! grep -q failed /tmp/.t3745-unit.out
+python3 -c "import json; d=json.load(open('docs/reports/T-3684-e2e-6-two-sessions.json')); assert d['inject']['session']==d['c2'] and d['handed_over']['evidence']=='transcript:%s.jsonl' % d['c2_session_id'] and d['c2_pty_has_line'] and not d['c1_pty_has_line'] and not d['c1_pty_has_any_sidecar_line'] and d['c1_busy_at_check']"
+bin/fw vendor self --check
+
 ## RCA
+
+**Symptom:** 055 @117 — two Claude sessions in one project (a `claude-fw --termlink` fleet agent and the operator's terminal). The watcher-to-be would have typed the doorbell into the fleet agent while it was mid-turn, and the next session to prompt was credited HANDED_OVER for mail it never saw.
+
+**Root cause:** `.context/sidecar/ready-for-input.yaml` was one file per PROJECT with no session in it; any session's Stop hook set it, and `inject.py` read it to decide whether to type into the single TermLink session it resolved. The prompt hook surfaced every waiting message in whichever session prompted, with nothing tying the surfaced message to the session the line was typed into.
+
+**Why structurally allowed:** T-3693's live e2e had exactly one Claude session per project, so readiness-of-the-project and readiness-of-the-target were the same fact in every test; the two-session case was never exercised. The hook input carries `session_id`, but nothing keyed on it.
+
+**Prevention:** Per-session records keyed on the hook's `session_id` (+ `TERMLINK_SESSION_ID`, claude pid) are the only input to injection; the injector writes a claim naming the target session before typing and the prompt hook surfaces only claimed-for-me messages. Pinned by tests/unit/test_sidecar_session_ready_t3745.py (10 tests, including the 055 scenario) and the live two-session e2e (tests/integration/t3684_sidecar_watcher_e2e_test.py::test_6).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -357,3 +369,18 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3745-sidecar-receiver-is-per-project-not-per-.md
 - **Context:** Initial task creation
+
+### 2026-10-02T23:08:44Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3f0e14b4
+- **Timestamp:** 2026-10-03T14:42:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-03T14:41:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -10,13 +10,13 @@ description: >
   runs a sidecar), arc-011 §5 self-check-ears (an agent with a dead listener knows
   it is deaf). Gap rows R7, R14, R15 in T-3682 audit.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [sidecar, arc-011, design-conformance, T-3682]
 arc_id: arc-011
-components: []
+components: [agents/audit/audit.sh, bin/claude-fw, bin/fw, lib/config.sh, lib/sidecar/adapter.py, lib/sidecar-audit.sh, lib/sidecar_cli.py, lib/sidecar/hooks.py, lib/sidecar/latency.py, lib/sidecar/lifecycle.py, lib/sidecar/receiver.py, lib/sidecar/watcher.py, tests/unit/t3561_adapter.py, tests/unit/t3561_e2e_nonce.py, tests/unit/t3561_receiver_storage.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T22:59:31Z
-last_update: '2026-10-01T23:15:35Z'
-date_finished:
+last_update: 2026-10-03T14:42:53Z
+date_finished: 2026-10-03T14:42:53Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -96,11 +96,11 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Design register rows R7 (liveness.yaml + 30 s self-probe), R14 (every agent runs a sidecar) and R15 (always-on listener per agent session) in docs/architecture/sidecar-target-architecture.md §7 are built and set to `status: built` with evidence (owner assigned by T-3691/T-3694)
+- [x] Design register rows R7 (liveness.yaml + 30 s self-probe), R14 (every agent runs a sidecar) and R15 (always-on listener per agent session) in docs/architecture/sidecar-target-architecture.md §7 are built and set to `status: built` with evidence (owner assigned by T-3691/T-3694)
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Each tick increments seq, runs the loopback self-probe and writes .context/sidecar/liveness.yaml {identity, seq, last_probe_at, last_probe_ok, last_probe_latency_ms}
-- [ ] The watcher is started with the receiver (`fw sidecar receiver start` or `fw sidecar start`), restarted by its supervisor when killed, survives reboot by the repo's existing supervision pattern, and shows in `fw sidecar status`; `claude-fw --termlink` sessions get one; inert and visibly so without TermLink
-- [ ] `fw doctor` and `fw audit` WARN/FAIL when the watcher is not live (seq stalled 2 ticks or probe failed); live test: kill the watcher → not-live reported → supervisor restarts it
+- [x] Each tick increments seq, runs the loopback self-probe and writes .context/sidecar/liveness.yaml {identity, seq, last_probe_at, last_probe_ok, last_probe_latency_ms}
+- [x] The watcher is started with the receiver (`fw sidecar receiver start` or `fw sidecar start`), restarted by its supervisor when killed, survives reboot by the repo's existing supervision pattern, and shows in `fw sidecar status`; `claude-fw --termlink` sessions get one; inert and visibly so without TermLink
+- [x] `fw doctor` and `fw audit` WARN/FAIL when the watcher is not live (seq stalled 2 ticks or probe failed); live test: kill the watcher → not-live reported → supervisor restarts it
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -261,6 +261,15 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/test_sidecar_watcher_t3684.py -q -p no:cacheprovider > /tmp/.t3685-unit.out 2>&1 && grep -q passed /tmp/.t3685-unit.out && ! grep -q failed /tmp/.t3685-unit.out
+timeout 300 bats tests/unit/sidecar_audit_rail.bats > /tmp/.t3685-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3685-bats.out
+test "$(grep -c '# skip' /tmp/.t3685-bats.out)" -eq 0
+python3 -c "import json; d=json.load(open('docs/reports/T-3684-e2e-4-kill.json')); assert 'NOT live' in d['doctor_not_live'] and '[FAIL] Sidecar watcher NOT live' in d['audit_not_live'] and 'supervisor restarted' in d['ensure'] and 'live' in d['doctor_after_ensure']"
+python3 -c "import yaml,re; f=chr(96)*3; t=open('docs/architecture/sidecar-target-architecture.md').read(); r=yaml.safe_load(re.search(f+'yaml\n(register:.*?)'+f, t, re.S).group(1))['register']; assert all(x['status']=='built' for x in r if x['id'] in ('R7','R14','R15'))"
+python3 -c "import json; h=json.load(open('docs/reports/T-3684-e2e-4-kill.json'))['hung']; assert 'NOT live' in h['doctor'] and '[FAIL] Sidecar watcher NOT live' in h['audit'] and h['healed_by_supervisor'] and h['hung_killed_event']"
+out=$(bin/fw doctor 2>&1); echo "$out" | grep -q "Cron registry in sync" && ! echo "$out" | grep -q "Cron registry edited but not generated"
+bin/fw vendor self --check
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -300,6 +309,11 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-10-03 — supervision pattern and liveness predicate
+- **What changed:** The repo has no systemd-user pattern for framework daemons; its supervision pattern is the cron registry (→ /etc/cron.d, flock). A 30 s tick cannot be a cron line, so the watcher is a loop inside a supervised process: `watcher.py supervise` runs it as a child, respawns it on exit, kills and replaces it when its seq stalls (hung tick — reproduced with SIGSTOP), and restarts a dead receiver. The supervisor itself is restarted by `fw sidecar ensure --all` (cron `sidecar-ensure-1m` + `@reboot`) over a HOST enabled-registry, so consumer projects on this host are covered, not only this repo.
+- **Plan impact:** "seq stalled for 2 ticks" is evaluated by one-shot readers (doctor, audit) as `now - updated_at > 2*tick + 5 s`; the supervisor applies the same predicate. "Not enabled" reads `absent` (doctor/audit WARN, R14), never live.
+- **Triggered:** none. Live run 1 caught a watcher SIGKILLed between typing a line and recording INJECT_ATTEMPT; an INJECT_TYPING row is now written before the keystrokes.
 
 ## Recommendation
 
@@ -357,3 +371,23 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3685-arc-011-sidecar-s-live-always-on-per-age.md
 - **Context:** Initial task creation
+
+### 2026-10-02T23:31:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-dab5093b
+- **Timestamp:** 2026-10-03T14:47:51Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Each tick increments seq, runs the loopback self-probe and writes .context/sidecar/liveness.yaml {identity, seq, last_probe_at, last_probe_ok, last_probe_latency_ms}
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/sidecar/liveness.yaml in: Each tick increments seq, runs the loopback self-probe and writes .context/sidecar/liveness.yaml {identity, seq, last_probe_at, last_probe_ok, last_pr`
+
+### 2026-10-03T14:42:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

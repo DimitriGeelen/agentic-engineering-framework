@@ -1,0 +1,220 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3684: arc-011 sidecar S3: 30s inject tick (configurable) + harness-asserted ready flag (Stop hook sets ready-for-input, UserPromptSubmit clears) + urgent hard bypass + idle-session wake
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-03T14:50:36Z
+# ============================================================================
+
+task_id: T-3684
+task_name: "arc-011 sidecar S3: 30s inject tick (configurable) + harness-asserted ready flag (Stop hook sets ready-for-input, UserPromptSubmit clears) + urgent hard bypass + idle-session wake"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T22:58:50Z
+completed: 2026-10-03T14:48:27Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-10-03T01:04:59+02:00
+last_commit: 2026-10-03T16:41:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  real ACs for the watcher build (T-3684, T-3685, T-3745) before dispatch. file build tasks from operator GOs — T-3726 F1-F5 (T-3753..T-3757; F6 = T-3709) and T-3631 slices (T-3758 retire framework:pickup, T-3759 backlog triage). receipt-on-every-path AC (operator 2026-10-03); file T-3760 review marker, T-3761 e2e receiver leak, T-3762 no-receiver sender status, T-3763 pickup remote push. supervised sidecar watcher — SIDECAR_TICK (default 30 s) tick drains hub inbox topics, injects (urgent now, else only into a ready session), escalates, self-probes and writes liveness.yaml (T-3685); fw sidecar start|stop|ensure|liveness|latency|tick; doctor/audit FAIL when not live; cron keep-alive + @reboot; claude-fw --termlink starts it. live e2e (6/6, real claude-fw --termlink sessions) — idle, legacy topic, busy/urgent, kill, negative control, two sessions; INJECT_TYPING before keystrokes; watcher in fw sidecar status; register R3/R5/R7/R14/R15 built; vendored copies. review brief + latency reports. receipt telemetry on every hub-topic path — RECEIVED on take-off (watcher, fw sidecar inbox, prompt-hook peek), HANDED_OVER on transcript-proven injection, REPLIED on --in-reply-to; via the sender's receiver /ack, else a kind=receipt hub post; sender-side receipts.jsonl in fw sidecar latency (+send→REPLIED). Codex round-1 fixes: claude-fw starts the sidecar for every session (R14), plain-terminal-only projects surface unclaimed mail, supervisor heals a hung watcher one tick after it reads not-live. e2e 2b — the operator asks B to answer (haiku declined a peer's command in run 5); R14 evidence covers every claude-fw session. round-2 review brief, run-6 live evidence (7/7), latency reports, round-1 codex review (FAIL). codex round-2 fixes — inbox drain sends RECEIVED only after printing (no unproven HANDED_OVER); REPLIED only on a delivered reply; urgency survives the hub path (urgent=1 metadata end to end); the peek hook sends receipts for exactly what it showed, HANDED_OVER only on transcript evidence under a one-time surfacing token; SessionStart sidecar-autostart (R14, explicit stop respected); start/ensure replace a receiver or watcher running stale code. e2e operator prompts are ASCII and confirmed submitted (run 7: an em dash left the 2c prompt unsubmitted); R14 evidence names the SessionStart autostart. round 3 — a headless claude -p session is never an inject target, not even for an urgent bypass or the only-registered-session fallback, and its PTY does not count as a registered interactive session; urgent hub-topic consult injected on the tick into a busy session (unit); sidecar unit fixtures pin non-headless so a claude -p runner gets the same result. vendored inject.py. round-3 review brief; live e2e run 8 (e9c6bbb46) and run 9 (f7c7f1d2c) 8/8 each with evidence and latencies; round-1 and round-2 codex reviews committed. codex round-3 fixes — the urgent no-record fallback types into a PTY only when an interactive claude is seen running in it (adapter.claude_in_pty); a headless session's prompt hook surfaces none of the receiver's mail, claimed for its PTY or not; the peek hook stays silent in a headless claude -p with no agent id of its own; drain test asserts print-before-receipt order; round-3 review (FAIL). vendored round-3 sidecar fixes. round-4 review brief; live e2e run 10 (bf07a0255) 8/8 with evidence and latencies. round-4 review aborted at codex usage limit (no verdict); open state recorded in the task Context. round-4 independent review on Z.ai — VERDICT: PASS (all ACs of T-3684/T-3685/T-3745 met; measured idle pickup 1.43 s, hub RECEIVED at sender 14.90 s); T-3749 round 4 on Google — FAIL on AC3
+
+# Key outcomes
+outcomes:
+  - 'Design register rows R3 (30 s configurable tick) and R5 (urgent bypass) in docs/architecture/sidecar-target-architecture.md §7 are built and set to `status: built` with evidence (owner assigned by T-3694)'
+  - 'A supervised watcher loop ticks every SIDECAR_TICK seconds (config key in lib/config.sh FW_CONFIG_REGISTRY, default 30); each tick checks the receiver''s flagged messages AND the agent''s hub inbox topic(s) (legacy topic covered until T-3690)'
+  - 'Urgent consults inject immediately regardless of the ready flag; non-urgent inject only when the target session is ready; HANDED_OVER only on transcript evidence; the sender is informed (CONFIRM-2)'
+  - 'Live e2e (not mocked): an idle real session receives a non-urgent consult within 60 s with nobody typing; a busy session only after its turn ends; urgent while busy; a legacy-topic post within 60 s; watcher disabled → no pickup and the sender sees ESCALATED'
+  - '`fw sidecar latency` reports send→RECEIVED and send→HANDED_OVER per message (median, p95, max), and the measured figures are in docs/reports/T-3684-review-brief.md'
+  - 'Receipt telemetry on EVERY path (operator 2026-10-03): a message taken off the hub topic (watcher, prompt hook, `fw sidecar inbox`) sends RECEIVED back at once, HANDED_OVER on injection, REPLIED on an --in-reply-to answer; all three timestamps stored and in `fw sidecar latency`; live test: legacy-topic consult → RECEIVED at the sender within 60 s (gap verified: lib/sidecar/inbox.py sends no receipt today)'
+  - 'Independent different-vendor review ends VERDICT: PASS — codex rounds 1–3 FAIL (all findings fixed), round 4 run on Z.ai GLM-5.2 because codex hit its usage limit (parent session, 2026-10-03): docs/reports/T-3684-review-zai-round4.md, VERDICT: PASS'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'vendored round-3 sidecar fixes'
+    source: git-mined
+  - description: 'codex round-3 fixes — the urgent no-record fallback types into a PTY only when an interactive claude is seen running in it (adapter.claude_in_pty); a headless session''s prompt hook surfaces none of the receiver''s mail, claimed for its PTY or not; the peek hook stays silent in a headless claude -p with no agent id of its own; drain test asserts print-before-receipt order; round-3 review (FAIL)'
+    source: git-mined
+  - description: 'round 3 — a headless claude -p session is never an inject target, not even for an urgent bypass or the only-registered-session fallback, and its PTY does not count as a registered interactive session; urgent hub-topic consult injected on the tick into a busy session (unit); sidecar unit fixtures pin non-headless so a claude -p runner gets the same result'
+    source: git-mined
+  - description: 'codex round-2 fixes — inbox drain sends RECEIVED only after printing (no unproven HANDED_OVER); REPLIED only on a delivered reply; urgency survives the hub path (urgent=1 metadata end to end); the peek hook sends receipts for exactly what it showed, HANDED_OVER only on transcript evidence under a one-time surfacing token; SessionStart sidecar-autostart (R14, explicit stop respected); start/ensure replace a receiver or watcher running stale code'
+    source: git-mined
+  - description: 'receipt telemetry on every hub-topic path — RECEIVED on take-off (watcher, fw sidecar inbox, prompt-hook peek), HANDED_OVER on transcript-proven injection, REPLIED on --in-reply-to; via the sender''s receiver /ack, else a kind=receipt hub post; sender-side receipts.jsonl in fw sidecar latency (+send→REPLIED). Codex round-1 fixes: claude-fw starts the sidecar for every session (R14), plain-terminal-only projects surface unclaimed mail, supervisor heals a hung watcher one tick after it reads not-live'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/context/sidecar-autostart.sh'
+  - '.agentic-framework/agents/context/sidecar-inbox.sh'
+  - '.agentic-framework/bin/claude-fw'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/sidecar/adapter.py'
+  - '.agentic-framework/lib/sidecar-audit.sh'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/hooks.py'
+  - '.agentic-framework/lib/sidecar/http_server.py'
+  - '.agentic-framework/lib/sidecar/inbox.py'
+  - '.agentic-framework/lib/sidecar/inject.py'
+  - '.agentic-framework/lib/sidecar/latency.py'
+  - '.agentic-framework/lib/sidecar/lifecycle.py'
+  - '.agentic-framework/lib/sidecar/receipts.py'
+  - '.agentic-framework/lib/sidecar/termlink_transport.py'
+  - '.agentic-framework/lib/sidecar/watcher.py'
+  - 'agents/audit/audit.sh'
+  - 'agents/context/sidecar-autostart.sh'
+  - 'agents/context/sidecar-inbox.sh'
+  - 'bin/claude-fw'
+  - 'bin/fw'
+  - '.claude/settings.json'
+  - '.context/costs/reviews.jsonl'
+  - '.context/cron/agentic-audit.crontab'
+  - '.context/cron-registry.yaml'
+  - '.context/project/enforcement-baseline.sha256'
+  - '.context/sidecar/.gitignore'
+  - 'docs/architecture/sidecar-target-architecture.md'
+  - 'docs/reports/T-3684-e2e-1-idle.json'
+  - 'docs/reports/T-3684-e2e-2b-replied.json'
+  - 'docs/reports/T-3684-e2e-2c-peek-hook.json'
+  - 'docs/reports/T-3684-e2e-2-legacy-topic.json'
+  - 'docs/reports/T-3684-e2e-3-busy-urgent.json'
+  - 'docs/reports/T-3684-e2e-4-kill.json'
+  - 'docs/reports/T-3684-e2e-5-negative-control.json'
+  - 'docs/reports/T-3684-e2e-6-two-sessions.json'
+  - 'docs/reports/T-3684-e2e-run10.log'
+  - 'docs/reports/T-3684-e2e-run7.log'
+  - 'docs/reports/T-3684-e2e-run8.log'
+  - 'docs/reports/T-3684-e2e-run9.log'
+  - 'docs/reports/T-3684-e2e-run.log'
+  - 'docs/reports/T-3684-latency-A.txt'
+  - 'docs/reports/T-3684-latency-B.json'
+  - 'docs/reports/T-3684-review-brief.md'
+  - 'docs/reports/T-3684-review-codex.md'
+  - 'docs/reports/T-3684-review-codex-round1.md'
+  - 'docs/reports/T-3684-review-codex-round3.md'
+  - 'docs/reports/T-3684-review-codex-round4-aborted.log'
+  - 'docs/reports/T-3684-review-zai-round4.md'
+  - 'docs/reports/T-3749-review-google-round4.md'
+  - '.fabric/components/agents-context-sidecar-autostart.yaml'
+  - '.fabric/components/lib-sidecar-latency.yaml'
+  - '.fabric/components/lib-sidecar-receipts.yaml'
+  - '.fabric/components/lib-sidecar-watcher.yaml'
+  - '.fabric/components/tests-integration-t3684_sidecar_watcher_e2e_test.yaml'
+  - 'lib/config.sh'
+  - 'lib/init.sh'
+  - 'lib/sidecar/adapter.py'
+  - 'lib/sidecar-audit.sh'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/hooks.py'
+  - 'lib/sidecar/http_server.py'
+  - 'lib/sidecar/inbox.py'
+  - 'lib/sidecar/inject.py'
+  - 'lib/sidecar/latency.py'
+  - 'lib/sidecar/lifecycle.py'
+  - 'lib/sidecar/receipts.py'
+  - 'lib/sidecar/termlink_transport.py'
+  - 'lib/sidecar/watcher.py'
+  - '.tasks/active/T-3684-arc-011-sidecar-s3-30s-inject-tick-confi.md'
+  - '.tasks/active/T-3685-arc-011-sidecar-s-live-always-on-per-age.md'
+  - '.tasks/active/T-3745-sidecar-receiver-is-per-project-not-per-.md'
+  - '.tasks/active/T-3753-t-3726-f2-one-inception-readiness-api-fw.md'
+  - '.tasks/active/T-3754-t-3726-f1-watchtower-inception-page-hide.md'
+  - '.tasks/active/T-3755-t-3726-f3-handoff-output-contract-for-fw.md'
+  - '.tasks/active/T-3756-t-3726-f4-go-creates-a-binding-delivery-.md'
+  - '.tasks/active/T-3757-t-3726-f5-independent-acceptance--closin.md'
+  - '.tasks/active/T-3758-t-3631-retire-frameworkpickup-as-an-inbo.md'
+  - '.tasks/active/T-3759-t-3631-one-pass-triage-of-the-frameworkp.md'
+  - '.tasks/active/T-3760-human-fw-inception-decide-refused-with-t.md'
+  - '.tasks/active/T-3761-t-3693-e2e-test-leaks-its-two-sidecar-re.md'
+  - '.tasks/active/T-3762-sidecar-sender-keeps-retrying-toward-rec.md'
+  - '.tasks/active/T-3763-fw-pickup-send---remote-still-uses-depre.md'
+  - 'tests/integration/t3684_sidecar_watcher_e2e_test.py'
+  - 'tests/unit/conftest.py'
+  - 'tests/unit/sidecar_inbox_hook.bats'
+  - 'tests/unit/t3559_sidecar_inbox_contract.bats'
+  - 'tests/unit/test_sidecar_receipts_t3684.py'
+  - 'tests/unit/test_sidecar_receiver_t3693.py'
+  - 'tests/unit/test_sidecar_session_ready_t3745.py'
+  - 'tests/unit/test_sidecar_watcher_t3684.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-03T01:04:59'
+    action: 'T-3684: real ACs for the watcher build (T-3684, T-3685, T-3745) before dispatch'
+  - time: '2026-10-03T01:11:29'
+    action: 'T-3684: file build tasks from operator GOs — T-3726 F1-F5 (T-3753..T-3757; F6 = T-3709) and T-3631 slices (T-3758 retire framework:pickup, T-3759 backlog triage)'
+  - time: '2026-10-03T01:16:34'
+    action: 'T-3684: receipt-on-every-path AC (operator 2026-10-03); file T-3760 review marker, T-3761 e2e receiver leak, T-3762 no-receiver sender status, T-3763 pickup remote push'
+  - time: '2026-10-03T01:30:24'
+    action: 'T-3684: supervised sidecar watcher — SIDECAR_TICK (default 30 s) tick drains hub inbox topics, injects (urgent now, else only into a ready session), escalates, self-probes and writes liveness.yaml (T-3685); fw sidecar start|stop|ensure|liveness|latency|tick; doctor/audit FAIL when not live; cron keep-alive + @reboot; claude-fw --termlink starts it'
+  - time: '2026-10-03T01:49:54'
+    action: 'T-3684: live e2e (6/6, real claude-fw --termlink sessions) — idle, legacy topic, busy/urgent, kill, negative control, two sessions; INJECT_TYPING before keystrokes; watcher in fw sidecar status; register R3/R5/R7/R14/R15 built; vendored copies'
+  - time: '2026-10-03T01:51:08'
+    action: 'T-3684: review brief + latency reports'
+  - time: '2026-10-03T02:02:39'
+    action: 'T-3684: receipt telemetry on every hub-topic path — RECEIVED on take-off (watcher, fw sidecar inbox, prompt-hook peek), HANDED_OVER on transcript-proven injection, REPLIED on --in-reply-to; via the sender''s receiver /ack, else a kind=receipt hub post; sender-side receipts.jsonl in fw sidecar latency (+send→REPLIED). Codex round-1 fixes: claude-fw starts the sidecar for every session (R14), plain-terminal-only projects surface unclaimed mail, supervisor heals a hung watcher one tick after it reads not-live'
+  - time: '2026-10-03T02:24:19'
+    action: 'T-3684: e2e 2b — the operator asks B to answer (haiku declined a peer''s command in run 5); R14 evidence covers every claude-fw session'
+  - time: '2026-10-03T02:34:56'
+    action: 'T-3684: round-2 review brief, run-6 live evidence (7/7), latency reports, round-1 codex review (FAIL)'
+  - time: '2026-10-03T02:48:06'
+    action: 'T-3684: codex round-2 fixes — inbox drain sends RECEIVED only after printing (no unproven HANDED_OVER); REPLIED only on a delivered reply; urgency survives the hub path (urgent=1 metadata end to end); the peek hook sends receipts for exactly what it showed, HANDED_OVER only on transcript evidence under a one-time surfacing token; SessionStart sidecar-autostart (R14, explicit stop respected); start/ensure replace a receiver or watcher running stale code'
+  - time: '2026-10-03T03:00:41'
+    action: 'T-3684: e2e operator prompts are ASCII and confirmed submitted (run 7: an em dash left the 2c prompt unsubmitted); R14 evidence names the SessionStart autostart'
+  - time: '2026-10-03T14:56:18'
+    action: 'T-3684: round 3 — a headless claude -p session is never an inject target, not even for an urgent bypass or the only-registered-session fallback, and its PTY does not count as a registered interactive session; urgent hub-topic consult injected on the tick into a busy session (unit); sidecar unit fixtures pin non-headless so a claude -p runner gets the same result'
+  - time: '2026-10-03T14:56:27'
+    action: 'T-3684: vendored inject.py'
+  - time: '2026-10-03T15:11:26'
+    action: 'T-3684: round-3 review brief; live e2e run 8 (e9c6bbb46) and run 9 (f7c7f1d2c) 8/8 each with evidence and latencies; round-1 and round-2 codex reviews committed'
+  - time: '2026-10-03T15:23:37'
+    action: 'T-3684: codex round-3 fixes — the urgent no-record fallback types into a PTY only when an interactive claude is seen running in it (adapter.claude_in_pty); a headless session''s prompt hook surfaces none of the receiver''s mail, claimed for its PTY or not; the peek hook stays silent in a headless claude -p with no agent id of its own; drain test asserts print-before-receipt order; round-3 review (FAIL)'
+  - time: '2026-10-03T15:23:47'
+    action: 'T-3684: vendored round-3 sidecar fixes'
+  - time: '2026-10-03T15:39:10'
+    action: 'T-3684: round-4 review brief; live e2e run 10 (bf07a0255) 8/8 with evidence and latencies'
+  - time: '2026-10-03T15:41:01'
+    action: 'T-3684: round-4 review aborted at codex usage limit (no verdict); open state recorded in the task Context'
+  - time: '2026-10-03T16:41:33'
+    action: 'T-3684: round-4 independent review on Z.ai — VERDICT: PASS (all ACs of T-3684/T-3685/T-3745 met; measured idle pickup 1.43 s, hub RECEIVED at sender 14.90 s); T-3749 round 4 on Google — FAIL on AC3'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 19 commit(s), 2389 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [sidecar, arc-011, design-conformance, T-3682]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2389
+  commits: 20
+  files_changed: 97
+  lines_added: 12677
+  lines_removed: 1650
+  footprint_refreshed_at: '2026-10-03T14:50:48Z'
+  footprint_refreshed_by_commit: 335a13a56
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3684-arc-011-sidecar-s3-30s-inject-tick-confi.md
+generated_by: context-agent-hybrid
