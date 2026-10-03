@@ -127,3 +127,13 @@ credential value appears in this document.
 | 4 | Consumption not atomic | `log_cost` check-then-append runs under an exclusive `flock` on `.context/costs/.reviews.lock` (`lib/review_cost.py:392`) | @test "R2-4: concurrent paid --exec on one approval: exactly one runs" (4 parallel; 3/3 repeated runs green) |
 
 30/30 ok, 0 skip; t3586_review_cost, check_project_boundary, t3076, t2920, test_boundary_hook_arguments green. Live: real file is private (resolves), masked.
+
+## Round 3 (codex, VERDICT: FAIL; docs/reports/T-3766-review-codex-r3.md) — one finding, fixed, NOT re-reviewed
+
+Round 3 confirmed every round-2 fix and AC1/2/3/5/6 MET; one AC4 finding remained:
+
+| # | Finding | Fix | Evidence |
+|---|---|---|---|
+| 1 | The `--exec` cutoff scanned text: `'--exec'`, `--ex""ec` are `--exec` to the shell, so a child's `--source FILE` got the exemption | The cutoff is replaced by a strict grammar: the exempt segment must be exactly `<abs fw> review credential <backend-id> [--check] --source <file> [--check]`, and its RAW text may contain no quote, backslash, `$`, backtick, `<`, `>`, `(`, `)`; any other word (`--exec`, `--task`, extras) means no exemption (`check-project-boundary.sh`, "A strict GRAMMAR"). Resolver argparse also has `allow_abbrev=False`. | @test "R3: exemption is a strict grammar…" (absolute-path `--exec`, `'--exec'`, `--ex""ec`, `--ex\ec`, `--task`, extra word, `>` all blocked; two absolute-path controls allowed) |
+
+31/31 ok, 0 skip; boundary and review-cost regression suites green. The three-round review cap is reached, so this fix has NOT had an independent review.

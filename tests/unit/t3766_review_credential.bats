@@ -377,6 +377,31 @@ PY
     [ "$status" -eq 0 ]
 }
 
+@test "R3: exemption is a strict grammar — shell-equivalent --exec spellings and extra args get none" {
+    point_openrouter_at "$REAL_CRED"
+    FW="$PROJECT_ROOT/bin/fw"
+    blocked=(
+        "$FW review credential openrouter --exec -- tool --source $REAL_CRED"
+        "$FW review credential openrouter '--exec' -- tool --source $REAL_CRED"
+        "$FW review credential openrouter --ex\"\"ec -- tool --source $REAL_CRED"
+        "$FW review credential openrouter --ex\\ec -- tool --source $REAL_CRED"
+        "$FW review credential openrouter --task T-1 --source $REAL_CRED"
+        "$FW review credential openrouter --source $REAL_CRED extra"
+        "$FW review credential openrouter --source $REAL_CRED > /tmp/out"
+    )
+    for c in "${blocked[@]}"; do
+        hook_json "$c" > "$TEST_TEMP_DIR/in.json"
+        run bash "$BOUNDARY" < "$TEST_TEMP_DIR/in.json"
+        [ "$status" -eq 2 ] || { echo "not blocked: $c"; false; }
+    done
+    for c in "$FW review credential openrouter --source $REAL_CRED" \
+             "$FW review credential openrouter --check --source $REAL_CRED --check"; do
+        hook_json "$c" > "$TEST_TEMP_DIR/in.json"
+        run bash "$BOUNDARY" < "$TEST_TEMP_DIR/in.json"
+        [ "$status" -eq 0 ] || { echo "control blocked: $c"; false; }
+    done
+}
+
 @test "R2-4: concurrent paid --exec on one approval: exactly one runs" {
     focus T-9999
     run rc propose --task T-9999 --backend openrouter --why "fixture" --estimate-cost 1

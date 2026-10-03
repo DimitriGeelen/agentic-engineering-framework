@@ -451,26 +451,40 @@ def _cred_exempt_spans(cmd, root):
             # Exactly this project's fw, by ABSOLUTE path, as the segment's first word: a
             # relative `fw`/`bin/fw` resolves through PATH or the cwd (`PATH=/tmp fw ...`,
             # `cd /tmp && bin/fw ...`), and an assignment prefix could redirect it.
-            i = 0
             if len(words) < 3:
                 continue
             exe = words[0]
             if exe not in (root + '/bin/fw', root + '/.agentic-framework/bin/fw') \
                     or words[1:3] != ['review', 'credential']:
                 continue
-            # No substitution, redirect-in or subshell anywhere in the segment:
-            # `$( cat <file> )` would run INSIDE an exempt segment and put the
-            # file's content on fw's argv (and into argparse's error text).
-            if re.search(r'[$`<()]', mask[s:e]):
+            # A strict GRAMMAR, not a cutoff (round 3: `'--exec'` and `--ex""ec` are
+            # `--exec` to the shell but not to a text scan, so a child's `--source`
+            # slipped through). The exempt segment must be exactly
+            #     <abs fw> review credential <backend-id> [--check] --source <file> [--check]
+            # with no quote, backslash, `$`, backtick, `<`, `>`, `(` or `)` anywhere in
+            # its RAW text. Anything else (--exec, --task, extra words) gets no exemption.
+            if re.search(r'[\'"\\$`<>()]', cmd[s:e]):
+                continue
+            rest = words[3:]
+            if not rest or not re.match(r'^[a-z0-9][a-z0-9-]*$', rest[0]):
+                continue
+            src_idx = None
+            k, ok = 1, True
+            while k < len(rest):
+                if rest[k] == '--check':
+                    k += 1
+                elif rest[k] == '--source' and src_idx is None and k + 1 < len(rest):
+                    src_idx = 3 + k + 1
+                    k += 2
+                else:
+                    ok = False
+                    break
+            if not ok or src_idx is None:
                 continue
             if files is None:
                 files = _registered_cred_files()
-            # Only the resolver's own arguments: everything after --exec is the CHILD
-            # command, which the exemption must never cover.
-            stop = words.index('--exec') if '--exec' in words[i + 3:] else len(toks)
-            for j in range(i + 3, stop):
-                if toks[j].group(0) in files and words[j - 1] == '--source':
-                    spans.append((s + toks[j].start(), s + toks[j].end()))
+            if words[src_idx] in files:
+                spans.append((s + toks[src_idx].start(), s + toks[src_idx].end()))
         return spans
     except Exception:
         return []

@@ -359,7 +359,7 @@ def main(argv: list[str]) -> int:
         if not cmd:
             print("ERROR: --exec needs a command: --exec -- <cmd...>", file=sys.stderr)
             return 1
-    ap = argparse.ArgumentParser(prog="fw review credential",
+    ap = argparse.ArgumentParser(prog="fw review credential", allow_abbrev=False,
                                  description="Resolve a backend's credential from the registry (T-3766). "
                                              "Never prints the value.")
     ap.add_argument("backend")
