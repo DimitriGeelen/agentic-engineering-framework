@@ -230,6 +230,14 @@ def choose_target(urgent: bool, runner=subprocess.run) -> tuple[dict | None, str
                  "ready": False},
                 f"URGENT bypass: session {r.get('session_id')} busy in {r['termlink_session']}")
     if len(tagged) == 1:
+        # No record yet, so nothing says whether this PTY holds an agent. Type
+        # into it only when an INTERACTIVE claude is seen running in it — never
+        # a headless worker, never a bare shell, never on no evidence.
+        kind = adapter.claude_in_pty(tagged[0].get("pid"))
+        if kind != "interactive":
+            return None, (f"URGENT bypass refused: only registered session "
+                          f"{tagged[0].get('id')} has no record and runs "
+                          f"{kind or 'no claude that could be seen'}")
         return ({"session_id": None, "termlink_session": str(tagged[0].get("id")),
                  "ready": False},
                 f"URGENT bypass: only registered session {tagged[0].get('id')} (no record yet)")

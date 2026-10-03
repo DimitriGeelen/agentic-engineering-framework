@@ -185,6 +185,12 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
     my_sid = (me or {}).get("session_id")
     if not my_sid:
         return []
+    # A headless `claude -p` session (a dispatched worker) is nobody's
+    # interactive agent: it surfaces none of the receiver's mail, claimed for
+    # its PTY or not. A claim it holds expires (REINJECT_AFTER_S) and is retried
+    # into an interactive session.
+    if me.get("headless"):
+        return []
     waiting = [i for i in receiver.awaiting_handover() if not _being_finalized(i, now)]
     ids = [i for i in waiting if inject.is_claimed_for(i, me)]
     # A project where the injector has DECIDED no TermLink session is
