@@ -77,3 +77,12 @@ Agent corrections after re-reading docs/reports/T-3287-identity-taxonomy-circuit
   to the instance it began with; if a message moves to another instance, is that conversation's context
   lost? The context must travel — part of the context fabric — perhaps the receiving agent must fetch it.
   "Maybe another mechanism … a later task." → T-3780.
+
+### 2026-10-03 — Decision 2b (respawn)
+- Brief: A never (+3), B opt-in per project, guarded, default off (+45, recommended), C always (−26),
+  D defer (+3). Agent correction stated first: D5 does not cover a peer's message (7/7 reviewers).
+- Operator: "Proceed as suggested." Read as: ruling B.
+- Operator amendment, two messages right after: "what do we do if it falters, breaks off — we do want a
+  recovery mechanism even if it's not automatic"; "what you won't prevent is it goes by unnoticed and it
+  never gets executed." Read as: the default (no respawn) must never be silent; a stranded message must
+  escalate and be recoverable by one operator action. → T-3782 (now), T-3781 (later).

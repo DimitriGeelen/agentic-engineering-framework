@@ -193,6 +193,13 @@ The minted id exists (T-3534, pid-16hex, back-filled by fw upgrade since T-3750)
 - **Operator addition (item 3):** two instances of one function can complement each other, but an existing conversation is tied to the instance it started with; when a message moves to another instance, the conversation's context must follow (context fabric), possibly fetched by the receiving agent. Deferred to its own task: T-3780.
 - **Not decided here:** respawn (2b).
 
+### 2026-10-03 — Decision 2b: may an inbound message start a new agent (operator ruling)
+- **Chose:** B — guarded respawn-by-function, opt-in per project, switch OFF by default; conditions: budget cap, restart intensity (N per period then stop + alert), home host only, authenticated sender, recovery checkpoint, fencing claim; any unmet condition behaves as A (message waits in the project inbox). Build: T-3781 (horizon later).
+- **Why:** delivers the operator's self-healing intent with the guardrails 7/7 reviewers required; nothing switches on without a per-project operator ruling (score B +45 vs A +3, D +3, C −26).
+- **Rejected:** A never (stranded messages until a human notices); C always (wallet drain, context-blind replacements, spoofable today; D5 does not cover a peer's message — 7/7); D defer (design questions stay open).
+- **Prerequisites before any project may switch it on:** TermLink per-agent signing identity (T-1448 class); conversation-context continuity (T-3780). Budget and restart numbers are operator rulings.
+- **Operator amendment (same day):** even with respawn off, a broken-off recipient needs a recovery path, manual if not automatic; the one failure to prevent is a message going unnoticed and never executed. → T-3782 (horizon now): escalation to sender and operator, handover/Watchtower listing, `fw sidecar recover <msg>` one-command manual recovery, closed only by reply/hand-over or an explicit operator drop.
+
 ## Decision
 
 <!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
