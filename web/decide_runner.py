@@ -12,17 +12,22 @@ Shape of the fix:
 * `launch()` starts `python3 -m web.decide_runner --run …` in its own session
   (start_new_session), so neither a request timeout nor a Watchtower restart
   reaches it. The runner runs the decide with no timeout, logs stdout/stderr
-  to a run directory under .context/working/decide/, records the exit code in
-  status.json, then commits whatever the chain wrote after Watchtower's own
-  commit (episodic, components, Updates).
+  to a run directory under .context/working/decide/, and records progress and
+  the exit code in status.json. It commits the decision as soon as it lands
+  and again when the chain ends (episodic, components, Updates) — the request
+  itself never commits, so it never waits on git or the commit lock.
 * One chain per task: launch() takes an exclusive flock on
   .context/working/decide/<task>.lock and hands it to the runner, which holds
-  it until it exits. A second GO click while a chain is running gets `Busy`.
+  it until it exits; if the runner died while its fw still runs (fw_pid in
+  status.json, checked against /proc), launch() refuses too. A second GO
+  click while a chain is running gets `Busy`.
 * `classify()` turns (landed, completed, running, rc) into one outcome; the
-  blueprint words its message from that, so a still-running chain is never
-  described as a timeout or a gate refusal.
-* `surface()` reports a run whose follow-up commit failed, or whose process
-  died before finishing, on the inception page (no silent uncommitted state).
+  blueprint words its message from that. A still-running chain is never
+  described as a timeout or a gate refusal, and only a plain non-zero exit
+  (a gate's own refusal) gets gate wording — a signal or crash is
+  LANDED_INTERRUPTED.
+* `surface()` reports, on the inception page, a run that exited non-zero, a
+  commit that failed, or a runner that died before finishing.
 """
 from __future__ import annotations
 
@@ -32,6 +37,7 @@ import os
 import subprocess
 import sys
 import threading
+import time
 from dataclasses import dataclass
 from datetime import datetime, timezone
 from pathlib import Path
@@ -46,10 +52,21 @@ LANDED_RUNNING = "landed_running"    # decision + completion landed, follow-ups 
 LANDED_DONE = "landed_done"          # everything finished, exit 0
 LANDED_GATE_REFUSED = "landed_gate_refused"  # decision written, completion refused
 LANDED_FOLLOWUP_FAILED = "landed_followup_failed"  # completed, a later step exited non-zero
+LANDED_INTERRUPTED = "landed_interrupted"  # decision written, chain stopped abnormally
 BUSY = "busy"                        # another chain for this task is still running
 
 LANDED_OUTCOMES = {LANDED_COMPLETING, LANDED_RUNNING, LANDED_DONE,
-                   LANDED_GATE_REFUSED, LANDED_FOLLOWUP_FAILED}
+                   LANDED_GATE_REFUSED, LANDED_FOLLOWUP_FAILED, LANDED_INTERRUPTED}
+
+
+def gate_exit(rc) -> bool:
+    """A refusal the chain itself reported: a plain non-zero exit.
+
+    Gates exit 1/2. A negative rc is a signal (subprocess), >=128 is a shell's
+    128+N for a killed child, -1 is the runner's "died without an exit code",
+    None is "unknown" — none of those is a gate, so none gets gate wording.
+    """
+    return isinstance(rc, int) and 0 < rc < 128
 
 
 class Busy(Exception):
@@ -101,21 +118,59 @@ def _now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
-def is_running(project_root, task_id: str) -> bool:
-    """True while a runner holds this task's lock."""
-    p = lock_path(project_root, task_id)
-    if not p.exists():
+def _runs(project_root, task_id: str) -> list:
+    sdir = state_dir(project_root)
+    if not sdir.is_dir():
+        return []
+    return sorted(p for p in sdir.glob(f"{task_id}-*") if p.is_dir())
+
+
+def _pid_is_decide(pid, task_id: str) -> bool:
+    """Is `pid` alive and still the `fw inception decide <task_id>` we started?
+
+    /proc/<pid>/cmdline guards against pid reuse; without /proc, liveness only.
+    """
+    if not isinstance(pid, int) or pid <= 0:
         return False
-    fd = os.open(p, os.O_RDWR)
     try:
-        fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except BlockingIOError:
-        return True
-    else:
-        fcntl.flock(fd, fcntl.LOCK_UN)
+        os.kill(pid, 0)
+    except ProcessLookupError:
         return False
-    finally:
-        os.close(fd)
+    except PermissionError:
+        pass
+    try:
+        with open(f"/proc/{pid}/cmdline", "rb") as f:
+            argv = f.read().split(b"\0")
+    except OSError:
+        return True
+    return b"decide" in argv and task_id.encode() in argv
+
+
+def _live_chain(project_root, task_id: str) -> bool:
+    """A decide whose runner is gone but whose fw process still runs."""
+    for run in reversed(_runs(project_root, task_id)):
+        st = read_status(run)
+        if st.get("state") in ("finished", "done"):
+            return False
+        if _pid_is_decide(st.get("fw_pid"), task_id):
+            return True
+    return False
+
+
+def is_running(project_root, task_id: str) -> bool:
+    """True while a runner holds this task's lock, or its fw still runs."""
+    p = lock_path(project_root, task_id)
+    if p.exists():
+        fd = os.open(p, os.O_RDWR)
+        try:
+            fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except BlockingIOError:
+            return True
+        else:
+            fcntl.flock(fd, fcntl.LOCK_UN)
+        finally:
+            os.close(fd)
+    return _live_chain(project_root, task_id)
 
 
 def launch(task_id: str, decision: str, rationale: str, *,
@@ -128,6 +183,10 @@ def launch(task_id: str, decision: str, rationale: str, *,
         try:
             fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
         except BlockingIOError:
+            raise Busy(task_id)
+        # The lock belongs to the runner. If the runner died while its fw kept
+        # going, the lock is free but the chain is not: refuse that too.
+        if _live_chain(project_root, task_id):
             raise Busy(task_id)
         stamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%S%fZ")
         run_dir = sdir / f"{task_id}-{stamp}"
@@ -163,7 +222,9 @@ def classify(decision: str, *, landed: bool, completed: bool, running: bool,
     completes = decision in ("go", "no-go")
     if landed:
         if completes and not completed:
-            return LANDED_COMPLETING if running else LANDED_GATE_REFUSED
+            if running:
+                return LANDED_COMPLETING
+            return LANDED_GATE_REFUSED if gate_exit(rc) else LANDED_INTERRUPTED
         if running:
             return LANDED_RUNNING
         return LANDED_DONE if rc == 0 else LANDED_FOLLOWUP_FAILED
@@ -173,23 +234,26 @@ def classify(decision: str, *, landed: bool, completed: bool, running: bool,
 def surface(project_root, task_id: str):
     """A warning about the latest Watchtower decide for this task, or None.
 
-    Reports what would otherwise be silent: the follow-up commit failed, or
-    the runner is gone without having recorded that it finished.
+    Reports what would otherwise be silent once the request has returned:
+    the chain exited non-zero, a commit failed, or the runner is gone without
+    having recorded that it finished.
     """
-    sdir = state_dir(project_root)
-    if not sdir.is_dir():
-        return None
-    runs = sorted(p for p in sdir.glob(f"{task_id}-*") if p.is_dir())
+    runs = _runs(project_root, task_id)
     if not runs:
         return None
     run = runs[-1]
     st = read_status(run)
     rel = os.path.relpath(run, project_root)
     if st.get("state") == "done":
+        problems = []
+        if st.get("rc") != 0:
+            problems.append(f"the decide command exited with code {st.get('rc')} — "
+                            f"check that the task is where you expect it")
         if st.get("commit_ok") is False:
-            return (f"The decision's follow-up writes are not committed: "
-                    f"{st.get('commit_msg', '')} (log: {rel})")
-        return None
+            problems.append(f"its writes are not committed: {st.get('commit_msg', '')}")
+        if not problems:
+            return None
+        return f"The last decide run for {task_id}: " + "; ".join(problems) + f" (log: {rel})"
     if is_running(project_root, task_id):
         return None
     return (f"The decide run for {task_id} stopped before it finished "
@@ -198,18 +262,39 @@ def surface(project_root, task_id: str):
 
 # ---------------------------------------------------------------- runner side
 
+def _primary_landed(task_id: str, decision: str) -> bool:
+    from web.blueprints.inception import _decision_recorded_in_task, _task_in_completed
+    if not _decision_recorded_in_task(task_id, decision):
+        return False
+    return decision not in ("go", "no-go") or _task_in_completed(task_id)
+
+
 def _run(run_dir: Path, fw_bin: str, task_id: str, decision: str, rationale: str) -> int:
+    """Run the chain to its end; commit the decision when it lands, and again at the end.
+
+    Both commits happen HERE, not in the request: the request must answer on
+    the primary result and never wait on git or on the commit lock.
+    """
     from web.shared import PROJECT_ROOT  # env PROJECT_ROOT set by launch()
+    from web.blueprints.inception import _commit_decision, _decision_recorded_in_task
     _write_status(run_dir, state="running", pid=os.getpid())
     with open(run_dir / "stdout.log", "ab") as out, open(run_dir / "stderr.log", "ab") as err:
         # No timeout, on purpose: the chain must run to its end (T-3749).
-        rc = subprocess.call(
+        proc = subprocess.Popen(
             [fw_bin, "inception", "decide", task_id,
              decision, "--rationale", rationale, "--from-watchtower"],
             cwd=str(PROJECT_ROOT), stdin=subprocess.DEVNULL, stdout=out, stderr=err,
         )
+        _write_status(run_dir, fw_pid=proc.pid)
+        primary_committed = False
+        while proc.poll() is None:
+            if not primary_committed and _primary_landed(task_id, decision):
+                ok, msg = _commit_decision(task_id, decision)
+                _write_status(run_dir, primary_commit_ok=ok, primary_commit_msg=msg)
+                primary_committed = True
+            time.sleep(0.5)
+        rc = proc.returncode
     _write_status(run_dir, state="finished", rc=rc, finished=_now())
-    from web.blueprints.inception import _commit_decision, _decision_recorded_in_task
     commit_ok, commit_msg = True, "decision not recorded; nothing to commit"
     if _decision_recorded_in_task(task_id, decision):
         commit_ok, commit_msg = _commit_decision(task_id, decision, followup=True)

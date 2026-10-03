@@ -1,0 +1,20 @@
+Found three substantive failure paths.
+
+1. **P1 — Failed detached chains can disappear from the UI.** The runner records `rc`, then sets `state="done"` even when the chain failed. If committing the partial result succeeds, `surface()` returns no warning because it checks only `commit_ok`. A chain that fails after the HTTP response can therefore leave incomplete archival or follow-up work with no persistent UI signal. The failure remains in logs. Confirmed with an in-memory probe: `{state: "done", rc: 137, commit_ok: true}` → `None`. See [runner completion](/opt/999-Agentic-Engineering-Framework/web/decide_runner.py:211) and [surface](/opt/999-Agentic-Engineering-Framework/web/decide_runner.py:188).
+
+2. **P1 — GO response time is still unbounded.** After the bounded decide wait, the route synchronously calls `_commit_decision`. That takes a blocking, repository-wide `flock` with no deadline, followed by several Git commands with individual 30-second timeouts. A slow commit or another decision holding the lock can push the request beyond its timeout. Detachment protects the chain, but does not guarantee a timely response. See [route commit](/opt/999-Agentic-Engineering-Framework/web/blueprints/inception.py:597) and [blocking lock](/opt/999-Agentic-Engineering-Framework/web/blueprints/inception.py:947).
+
+3. **P1 — Runner death releases duplicate-execution protection while fw can survive.** The task lock is passed to the runner, but not to its fw subprocess. If the runner alone dies, fw can continue while the lock becomes available. Another GO can then launch a concurrent chain. Ordinary overlapping clicks are correctly rejected while the runner remains alive. See [inherited runner lock](/opt/999-Agentic-Engineering-Framework/web/decide_runner.py:150) and [fw subprocess launch](/opt/999-Agentic-Engineering-Framework/web/decide_runner.py:206).
+
+| Agent AC | Result | Evidence |
+|---|---|---|
+| Chain measured per step in Context | **MET** | The task records 12 timed steps, before/after totals, and explicitly accounts for BVP. The [measurement harness](/opt/999-Agentic-Engineering-Framework/tests/scripts/t3749-decide-timing.sh) supports tracing the real chain in a clone. Measurements were not independently rerun here. |
+| GO returns well inside its timeout; primary work synchronous, slow effects detached and logged | **NOT MET** | The documented whole-chain detachment protects against the original request timeout, but synchronous commit locking still makes response latency unbounded. Primary completion is also not guaranteed before the 25-second wait expires. |
+| Landed decisions never receive timeout/false gate wording | **NOT MET** | `classify()` treats every stopped GO/NO-GO with an incomplete task as a gate refusal, without examining `rc`. Direct probes with `rc=-9` and `rc=124` both returned `landed_gate_refused`; the [route renders the gate claim](/opt/999-Agentic-Engineering-Framework/web/blueprints/inception.py:637). The original request-generated “Command timed out” source is removed, but abnormal termination is still misclassified. |
+| Regression test covers landed + timed-out side effect → success wording | **NOT MET** | The [new tests](/opt/999-Agentic-Engineering-Framework/tests/unit/test_t3749_decide_detached.py) cover mocked running states and early return on completion. The slow-chain test returns around the primary result with `wait=10`; its three-second tail never exercises wait expiry. No test injects the specified timeout outcome and verifies the resulting wording. |
+
+Failed follow-up commits and runner deaths do have warning paths, but those do not cover a failed chain whose partial writes committed successfully.
+
+Validation was limited by the read-only environment: pytest encountered 12 fixture-setup errors because no temporary directory was writable. The in-memory classifier and warning probes ran successfully. No files were changed; `fw handover --commit` also requires unavailable write access.
+
+**VERDICT: FAIL**

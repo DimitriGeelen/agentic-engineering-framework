@@ -579,7 +579,12 @@ def record_decision(task_id):
                                completed=_task_in_completed(task_id),
                                running=res.running, rc=res.rc)
 
-    if outcome in (_dr.NOT_LANDED, _dr.LANDED_GATE_REFUSED, _dr.LANDED_FOLLOWUP_FAILED):
+    if outcome == _dr.NOT_LANDED and not _dr.gate_exit(res.rc):
+        # Killed or crashed, not refused: say that, not "failed with no output".
+        chain_err = (f"The decide command stopped unexpectedly (exit {res.rc}) before "
+                     f"recording the decision. Log: {res.run_dir}\n" + chain_err)
+    if outcome in (_dr.NOT_LANDED, _dr.LANDED_GATE_REFUSED, _dr.LANDED_FOLLOWUP_FAILED,
+                   _dr.LANDED_INTERRUPTED):
         import logging  # T-1223: log errors for debugging
         logging.getLogger(__name__).error(
             "inception decide %s: outcome=%s rc=%s run=%s out=%r err=%r",
@@ -591,11 +596,12 @@ def record_decision(task_id):
     # agent follow-up, so without this every Watchtower decision is left
     # uncommitted (T-2030). Graceful: a commit failure is non-fatal — surfaced as
     # a warning, never a 500, and the decision stays on disk.
-    # T-3749: committed as soon as it lands, even while the chain still runs; the
-    # runner commits again when the chain finishes (what the post-move steps wrote).
-    commit_ok, commit_msg = True, ""
+    # T-3749: the detached runner commits (web/decide_runner.py) — once as soon as
+    # the decision lands, again when the chain ends — so this request never waits
+    # on git or the commit lock. We report what it has recorded so far; a failure
+    # after we answer is shown on the inception page (decide_runner.surface).
+    commit_ok, commit_msg = res.commit_ok, res.commit_msg
     if outcome in _dr.LANDED_OUTCOMES:
-        commit_ok, commit_msg = _commit_decision(task_id, decision)
         if not commit_ok:
             import logging
             logging.getLogger(__name__).warning(
@@ -653,6 +659,19 @@ def record_decision(task_id):
                     f'framework gate — the agent session can recover this '
                     f'(fw inception sweep); no action needed from you unless it persists.\n'
                     f'Reason: {_html.escape(_reason)}'
+                    f'</div>'
+                )
+            elif outcome == _dr.LANDED_INTERRUPTED:
+                # T-3749: the chain stopped abnormally (signal, crash) with the
+                # decision written and the task not completed. Not a gate.
+                _reason = _operator_facing_stderr((chain_err or chain_out)[:3000])[:1500]
+                warning_html += (
+                    f'<div style="color:#f59e0b; font-size:0.85rem; margin-top:4px; '
+                    f'white-space:pre-wrap;">'
+                    f'⚠ The decision is saved, but the decide command stopped (exit '
+                    f'{_html.escape(str(res.rc))}) before completing the task — the agent '
+                    f'session can finish it (fw inception sweep).{_html.escape(log_hint)}\n'
+                    f'Last output: {_html.escape(_reason)}'
                     f'</div>'
                 )
             elif outcome == _dr.LANDED_FOLLOWUP_FAILED:
@@ -750,6 +769,11 @@ def record_decision(task_id):
     # the user sees a silent redirect and clicks GO repeatedly.
     # T-3749: ?notice= for a chain that is still running (not a failure).
     notice = still_running_note[:300] or None
+    if outcome == _dr.LANDED_INTERRUPTED:
+        return redirect(url_for(
+            "inception.inception_detail", task_id=task_id,
+            warning=(f"The decide command stopped (exit {res.rc}) before completing the "
+                     f"task; the decision is saved.{log_hint}")[:300]))
     if outcome in (_dr.LANDED_GATE_REFUSED, _dr.LANDED_FOLLOWUP_FAILED):
         # T-1470: primary succeeded, surface as warning (not error).
         # T-3284: sanitize like the htmx sibling above — this redirect path
@@ -782,9 +806,12 @@ DECIDE_WAIT_SECONDS = 25
 class _DecideResult:
     """What one Watchtower decide produced by the time we answer."""
 
-    def __init__(self, out="", err="", rc=None, running=False, busy=False, run_dir=""):
+    def __init__(self, out="", err="", rc=None, running=False, busy=False, run_dir="",
+                 commit_ok=True, commit_msg=""):
         self.out, self.err, self.rc = out, err, rc
         self.running, self.busy, self.run_dir = running, busy, run_dir
+        # What the runner's commits reported by the time we answer (T-3749).
+        self.commit_ok, self.commit_msg = commit_ok, commit_msg
 
 
 def _tail(path, n=3000):
@@ -841,10 +868,18 @@ def _run_decide(task_id: str, decision: str, rationale: str,
         # The runner died before recording an exit code: say so, with its log.
         rc = -1
         err = err or _tail(run.run_dir / "runner.log") or "decide runner exited unexpectedly"
+    commit_ok, commit_msg = True, ""
+    if state == "done":
+        commit_ok, commit_msg = st.get("commit_ok", True), st.get("commit_msg", "")
+    elif st.get("primary_commit_ok") is False:
+        commit_ok = False
+        commit_msg = (f"{st.get('primary_commit_msg', '')} — the runner retries when "
+                      f"the chain ends")
     return _DecideResult(
         out=_tail(run.out_log), err=err, rc=rc,
         running=not (exited or fw_finished), busy=False,
         run_dir=os.path.relpath(run.run_dir, PROJECT_ROOT),
+        commit_ok=commit_ok, commit_msg=commit_msg,
     )
 
 
@@ -928,11 +963,11 @@ def _is_decision_file(task_id: str, path: str) -> bool:
 def _commit_decision(task_id: str, decision: str, followup: bool = False):
     """T-3749: serialised wrapper — see _commit_decision_unlocked.
 
-    Watchtower commits the decision as soon as it lands; the detached decide
-    runner (web/decide_runner.py) commits again when the chain finishes, to
-    capture what the post-move steps wrote (episodic, components, Updates).
-    Both may run at once, so they take one lock: two `git commit`s racing on
-    HEAD would fail one of them for no reason the operator could act on.
+    The detached decide runner (web/decide_runner.py) commits the decision as
+    soon as it lands and again when the chain finishes, to capture what the
+    post-move steps wrote (episodic, components, Updates). Runs for different
+    tasks may commit at once, so they take one lock: two `git commit`s racing
+    on HEAD would fail one of them for no reason the operator could act on.
     """
     import fcntl
     import os

@@ -46,6 +46,13 @@ from web import decide_runner as dr  # noqa: E402
     # defer never completes the task: landed is the whole primary result
     ("defer", True, False, True, None, dr.LANDED_RUNNING),
     ("defer", True, False, False, 0, dr.LANDED_DONE),
+    # killed / crashed with the decision written: never gate wording (review r1)
+    ("go", True, False, False, -9, dr.LANDED_INTERRUPTED),
+    ("go", True, False, False, 137, dr.LANDED_INTERRUPTED),
+    ("go", True, False, False, 124, dr.LANDED_GATE_REFUSED),  # <128: a plain exit code
+    ("go", True, False, False, -1, dr.LANDED_INTERRUPTED),
+    ("go", True, False, False, None, dr.LANDED_INTERRUPTED),
+    ("go", True, False, False, 0, dr.LANDED_INTERRUPTED),
 ])
 def test_classify(decision, landed, completed, running, rc, expected):
     assert dr.classify(decision, landed=landed, completed=completed,
@@ -57,6 +64,12 @@ def test_a_running_chain_is_never_a_gate_refusal():
         for landed in (True, False):
             out = dr.classify("go", landed=landed, completed=completed, running=True, rc=None)
             assert out not in (dr.LANDED_GATE_REFUSED, dr.NOT_LANDED, dr.LANDED_FOLLOWUP_FAILED)
+
+
+def test_only_a_plain_nonzero_exit_is_a_gate_refusal():
+    for rc in (None, -15, -9, -1, 0, 128, 137, 143, 255):
+        out = dr.classify("go", landed=True, completed=False, running=False, rc=rc)
+        assert out != dr.LANDED_GATE_REFUSED, rc
 
 
 # ---------------------------------------------------------------- 2. route wording
@@ -208,6 +221,50 @@ def test_second_click_while_running_is_refused_not_restarted(app_env, monkeypatc
         assert bad not in html
 
 
+def test_landed_and_killed_is_not_a_gate_claim(app_env, monkeypatch):
+    c, p, inc = app_env
+    (p / ".tasks/active/T-9709-x.md").write_text(
+        DECIDED.format(tid="T-9709").replace("work-completed", "started-work"))
+    monkeypatch.setattr(inc, "_run_decide", lambda *a, **k: inc._DecideResult(
+        err="", rc=-9, run_dir=".context/working/decide/T-9709-run"))
+    html = _post(c, "T-9709").get_data(as_text=True)
+    assert "Decision recorded" in html
+    assert "stopped (exit -9) before completing the task" in html
+    for bad in FORBIDDEN:
+        assert bad not in html
+
+
+def test_not_landed_and_killed_says_it_stopped(app_env, monkeypatch):
+    c, p, inc = app_env
+    (p / ".tasks/active/T-9710-x.md").write_text(UNDECIDED.format(tid="T-9710"))
+    monkeypatch.setattr(inc, "_run_decide", lambda *a, **k: inc._DecideResult(
+        err="", rc=-9, run_dir=".context/working/decide/T-9710-run"))
+    html = _post(c, "T-9710").get_data(as_text=True)
+    assert "Decision not recorded" in html
+    assert "stopped unexpectedly (exit -9)" in html
+    assert "blocked by a framework gate" not in html
+
+
+def test_request_does_not_commit(app_env, monkeypatch):
+    """The runner commits; the request must never wait on git or the commit lock."""
+    c, p, inc = app_env
+    (p / ".tasks/completed/T-9711-x.md").write_text(DECIDED.format(tid="T-9711"))
+    calls = []
+    monkeypatch.setattr(inc, "_commit_decision", lambda *a, **k: calls.append(a) or (True, ""))
+    monkeypatch.setattr(inc, "_run_decide", lambda *a, **k: inc._DecideResult(running=True))
+    _post(c, "T-9711")
+    assert calls == []
+
+
+def test_runner_reported_commit_failure_is_shown(app_env, monkeypatch):
+    c, p, inc = app_env
+    (p / ".tasks/completed/T-9712-x.md").write_text(DECIDED.format(tid="T-9712"))
+    monkeypatch.setattr(inc, "_run_decide", lambda *a, **k: inc._DecideResult(
+        rc=0, commit_ok=False, commit_msg="pre-commit hook refused"))
+    html = _post(c, "T-9712").get_data(as_text=True)
+    assert "Decision recorded but not committed" in html and "pre-commit hook refused" in html
+
+
 def test_form_path_landed_running_redirects_with_notice_not_warning(app_env, monkeypatch):
     c, p, inc = app_env
     (p / ".tasks/completed/T-9708-x.md").write_text(DECIDED.format(tid="T-9708"))
@@ -227,7 +284,7 @@ import os, sys, time, pathlib
 root = pathlib.Path(os.environ["PROJECT_ROOT"])
 tid, decision = sys.argv[3], sys.argv[4]
 src = next((root / ".tasks/active").glob(tid + "-*.md"))
-time.sleep(0.3)
+time.sleep(float(os.environ.get("SLOW_FW_PRE", "0.3")))
 text = src.read_text().replace("<!-- fw inception decide T-XXX go|no-go -->",
                                "**Decision**: " + decision.upper())
 dst = root / ".tasks/completed" / src.name
@@ -314,6 +371,73 @@ def test_slow_chain_outlives_the_wait_and_is_not_killed(slow_chain, monkeypatch)
     assert not dr.is_running(proj, "T-9750")
 
 
+def test_chain_slower_than_the_wait_through_the_real_route(slow_chain, monkeypatch):
+    """Wait expiry (review r1): the request answers 'in progress' and the chain
+    still finishes and commits — nothing mocked between route and runner."""
+    proj, fake = slow_chain
+    monkeypatch.setenv("SLOW_FW_PRE", "2.5")   # decision lands AFTER the 1 s wait
+    monkeypatch.setenv("SLOW_FW_TAIL", "0.5")
+    (proj / ".framework.yaml").write_text(f"framework_path: {REPO_ROOT}\n")
+    monkeypatch.setenv("PROJECT_ROOT", str(proj))
+    import web.shared
+    import web.blueprints.inception
+    importlib.reload(web.shared)
+    inc = importlib.reload(web.blueprints.inception)
+    import web.app
+    importlib.reload(web.app)
+    monkeypatch.setattr(inc, "FRAMEWORK_ROOT", fake)
+    monkeypatch.setattr(inc, "DECIDE_WAIT_SECONDS", 1)
+    app = web.app.create_app()
+    app.config["TESTING"] = True
+    with app.test_client() as c:
+        t0 = time.monotonic()
+        html = _post(c, "T-9750").get_data(as_text=True)
+        assert time.monotonic() - t0 < 2.4
+    assert "Decision in progress" in html
+    for bad in FORBIDDEN + ("Decision recorded",):
+        assert bad not in html
+    # Not killed: it lands, finishes, and the runner records its commits.
+    assert _wait_for(proj / "chain-finished", 15)
+    run = sorted((proj / ".context/working/decide").glob("T-9750-*"))[-1]
+    end = time.monotonic() + 15
+    while dr.read_status(run).get("state") != "done" and time.monotonic() < end:
+        time.sleep(0.1)
+    st = dr.read_status(run)
+    assert st["state"] == "done" and st["rc"] == 0
+    assert "primary_commit_ok" in st      # committed as soon as it landed
+    assert inc._task_in_completed("T-9750")
+
+
+def test_dead_runner_with_live_fw_still_blocks_a_second_launch(tmp_path):
+    """Review r1: the lock dies with the runner; a surviving fw must still count."""
+    import subprocess
+    proj = tmp_path
+    run = proj / ".context/working/decide/T-9770-20261003T000000000000Z"
+    run.mkdir(parents=True)
+    fw = subprocess.Popen([sys.executable, "-c", "import time; time.sleep(30)",
+                           "inception", "decide", "T-9770"])
+    try:
+        (run / "status.json").write_text(
+            '{"state": "running", "pid": 1, "fw_pid": %d}' % fw.pid)
+        assert dr.is_running(proj, "T-9770")
+        with pytest.raises(dr.Busy):
+            dr.launch("T-9770", "go", "r", project_root=proj, framework_root=tmp_path)
+        assert dr.surface(proj, "T-9770") is None   # still running: nothing to report
+    finally:
+        fw.kill()
+        fw.wait()
+    assert not dr.is_running(proj, "T-9770")
+    assert "stopped before it finished" in (dr.surface(proj, "T-9770") or "")
+
+
+def test_surface_reports_a_failed_chain_even_when_its_commit_succeeded(tmp_path):
+    run = tmp_path / ".context/working/decide/T-9763-20261003T000000000000Z"
+    run.mkdir(parents=True)
+    (run / "status.json").write_text('{"state": "done", "rc": 137, "commit_ok": true}')
+    msg = dr.surface(tmp_path, "T-9763")
+    assert msg and "exited with code 137" in msg
+
+
 def test_surface_reports_a_runner_that_died_before_finishing(tmp_path):
     run = tmp_path / ".context/working/decide/T-9760-20261003T000000000000Z"
     run.mkdir(parents=True)
@@ -334,7 +458,7 @@ def test_surface_reports_an_uncommitted_followup(tmp_path):
 def test_surface_is_silent_for_a_clean_run(tmp_path):
     run = tmp_path / ".context/working/decide/T-9762-20261003T000000000000Z"
     run.mkdir(parents=True)
-    (run / "status.json").write_text('{"state": "done", "commit_ok": true}')
+    (run / "status.json").write_text('{"state": "done", "rc": 0, "commit_ok": true}')
     assert dr.surface(tmp_path, "T-9762") is None
 
 
