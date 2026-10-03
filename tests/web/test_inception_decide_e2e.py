@@ -245,9 +245,11 @@ def test_inception_decide_failure_redirects_with_error_param(consumer_project, m
 
     # Mock the underlying fw call to fail
     import web.blueprints.inception as inception_bp
+    # T-3749: decide runs detached through _run_decide; fake a finished failure.
     monkeypatch.setattr(
-        inception_bp, "run_fw_command",
-        lambda *args, **kwargs: ("", "Required AC unchecked: foo", False),
+        inception_bp, "_run_decide",
+        lambda *args, **kwargs: inception_bp._DecideResult(
+            out="", err="Required AC unchecked: foo", rc=1),
     )
 
     resp = client.post(
@@ -278,9 +280,11 @@ def test_inception_decide_failure_htmx_surfaces_swappable_error(consumer_project
     client, csrf = _flask_client(monkeypatch)
 
     import web.blueprints.inception as inception_bp
+    # T-3749: decide runs detached through _run_decide; fake a finished failure.
     monkeypatch.setattr(
-        inception_bp, "run_fw_command",
-        lambda *args, **kwargs: ("", "Required AC unchecked: foo", False),
+        inception_bp, "_run_decide",
+        lambda *args, **kwargs: inception_bp._DecideResult(
+            out="", err="Required AC unchecked: foo", rc=1),
     )
 
     resp = client.post(

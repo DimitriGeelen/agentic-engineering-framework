@@ -45,7 +45,9 @@ def client(tmp_path, monkeypatch):
 
 def _patch_fw(monkeypatch, stdout, stderr, ok):
     import web.blueprints.inception as inc
-    monkeypatch.setattr(inc, "run_fw_command", lambda *a, **k: (stdout, stderr, ok))
+    # T-3749: decide runs detached through _run_decide; fake its result.
+    monkeypatch.setattr(inc, "_run_decide", lambda *a, **k: inc._DecideResult(
+        out=stdout, err=stderr, rc=0 if ok else 1))
 
 
 def _write_active_task(p, task_id, *, with_decision=False):

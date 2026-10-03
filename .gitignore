@@ -143,3 +143,5 @@ docs/reports/T-3239-continuous-loop-demo/.livefire-run-copy.sh
 
 # T-3627: rotated Watchtower logs (watchtower_rotate_log) are local evidence, not history
 .context/working/watchtower.log.*
+# T-3749: Watchtower decide runs (logs, status, locks) — host detail, never committed
+.context/working/decide/

@@ -4,7 +4,7 @@ When `fw inception decide` records the primary decision but a downstream
 side-effect (episodic gen, emit_review, status update) fails, the endpoint
 must return 200 with a warning, NOT 500 — the user has already committed.
 
-This test mocks `run_fw_command` to control exit code while the task body
+This test mocks `_run_decide` (T-3749; was run_fw_command) to control exit code while the task body
 on disk shows the decision recorded.
 """
 from __future__ import annotations
@@ -88,6 +88,12 @@ def consumer_project(tmp_path, monkeypatch):
     return tmp_path
 
 
+def _fake_run(stdout, stderr, ok):
+    """T-3749: decide runs detached through _run_decide; fake a finished run."""
+    import web.blueprints.inception as inc
+    return inc._DecideResult(out=stdout, err=stderr, rc=0 if ok else 1)
+
+
 def _flask_client():
     from web.app import app
     app.config["TESTING"] = True
@@ -114,11 +120,11 @@ def test_decide_returns_200_when_primary_landed_and_side_effect_failed(consumer_
 
     client, csrf = _flask_client()
 
-    # Mock run_fw_command to return ok=False (side-effect failed) but the
+    # Mock _run_decide to return a failed exit (side-effect failed) but the
     # task body on disk already shows the decision (primary landed).
     with mock.patch(
-        "web.blueprints.inception.run_fw_command",
-        return_value=("primary recorded\n", "episodic gen failed: yaml parse error\n", False),
+        "web.blueprints.inception._run_decide",
+        return_value=_fake_run("primary recorded\n", "episodic gen failed: yaml parse error\n", False),
     ):
         # Non-htmx form path
         resp = client.post(
@@ -145,8 +151,8 @@ def test_decide_htmx_returns_200_warning_when_primary_landed(consumer_project):
     client, csrf = _flask_client()
 
     with mock.patch(
-        "web.blueprints.inception.run_fw_command",
-        return_value=("ok\n", "warn: side-effect blip\n", False),
+        "web.blueprints.inception._run_decide",
+        return_value=_fake_run("ok\n", "warn: side-effect blip\n", False),
     ):
         resp = client.post(
             f"/inception/{task_id}/decide",
@@ -175,8 +181,8 @@ def test_decide_returns_500_when_primary_did_not_land(consumer_project):
     client, csrf = _flask_client()
 
     with mock.patch(
-        "web.blueprints.inception.run_fw_command",
-        return_value=("", "fatal: review marker missing\n", False),
+        "web.blueprints.inception._run_decide",
+        return_value=_fake_run("", "fatal: review marker missing\n", False),
     ):
         resp = client.post(
             f"/inception/{task_id}/decide",
@@ -207,8 +213,8 @@ def test_decide_htmx_surfaces_error_when_primary_did_not_land(consumer_project):
     client, csrf = _flask_client()
 
     with mock.patch(
-        "web.blueprints.inception.run_fw_command",
-        return_value=("", "fatal\n", False),
+        "web.blueprints.inception._run_decide",
+        return_value=_fake_run("", "fatal\n", False),
     ):
         resp = client.post(
             f"/inception/{task_id}/decide",
