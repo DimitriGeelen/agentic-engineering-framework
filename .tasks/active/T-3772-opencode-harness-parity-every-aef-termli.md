@@ -74,7 +74,8 @@ Measured gap (055 T-439): a Claude Code agent gets 36 fw hooks + slash commands 
 4. `/session/status` is `{}` when idle, a non-idle type when busy.
 5. Reusing `fw hook sidecar-inbox` output unchanged (additionalContext) works as the delivery text; peek never consumes; dedup by content.
 6. The project's fw path must be overridable for tests (055 uses AEF_MAIL_FW).
-055 ships a MAIL-ONLY interim plugin via its cockpit launcher now and retires it when this lands.
+7. A project whose sidecar inbox was never used needs the hub anchor seed (`.context/sidecar/hub-id`, 055 OBS-024) before mail reaches it: fw init / fw upgrade must seed it for every fresh install (055 cc5bc7e8).
+055 ships a MAIL-ONLY interim plugin via its cockpit launcher now and retires it when this lands; proven live both ways on opencode agents 020 and 0506 (2026-10-03).
 
 ## Assumptions
 
