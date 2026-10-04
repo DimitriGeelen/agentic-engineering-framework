@@ -813,3 +813,18 @@ entries:
   added: '2026-10-04'
   expires: '2026-10-18'
   added_by: human
+- leg: bats
+  name: 'check_render_surface_human_ac_sigpipe.bats: T-1900: pre-fix pattern (head -3) DID die with SIGPIPE
+    — regression sentinel'
+  file: check_render_surface_human_ac_sigpipe.bats
+  owner: T-3810
+  added: '2026-10-04'
+  expires: '2026-10-18'
+  added_by: human
+- leg: bats
+  name: 'hook_telemetry.bats: performance: 1000 fires under 5000ms (<5ms each, T-1626 budget)'
+  file: hook_telemetry.bats
+  owner: T-3810
+  added: '2026-10-04'
+  expires: '2026-10-18'
+  added_by: human
