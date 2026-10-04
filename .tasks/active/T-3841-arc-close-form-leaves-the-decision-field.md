@@ -7,12 +7,12 @@ description: >
   055 msg 01ee2716 (addendum to c21841e6), observed closing arc-001 via Watchtower
   2026-10-04T17:33Z.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [lib/arc.sh, web/blueprints/arcs.py, web/templates/arc_close.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T17:37:35Z
-last_update: 2026-10-04T18:15:52Z
-date_finished:
+last_update: 2026-10-04T18:19:51Z
+date_finished: 2026-10-04T18:19:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -99,12 +99,12 @@ in two cases:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] On GET /arcs/<slug>/close with a close recommendation present, the decision textarea is pre-filled with the verdict and rationale on one line, plus the source task ("CLOSE — <rationale> (agent recommendation, T-XXX)"). It stays editable, and a hint under the field says it was pre-filled
-- [ ] Without a recommendation the textarea stays empty (no fabricated decision); on a POST re-render (validation error) the operator's submitted text wins over the pre-fill
-- [ ] Submitting the pre-filled form unchanged passes that text as `--decision` to `fw arc close`
-- [ ] `arc_close` records the decision even when the arc YAML has no `decision:` line, and a decision containing `"`, `\` or a newline round-trips through `yaml.safe_load` unchanged
-- [ ] Tests: `tests/web/test_t3841_arc_close_decision_prefill.py` and `tests/unit/t3841_arc_close_decision_write.bats` fail before and pass after
-- [ ] Watchtower restarted and `bin/fw watchtower current` passes; vendored copy synced
+- [x] On GET /arcs/<slug>/close with a close recommendation present, the decision textarea is pre-filled with the verdict and rationale on one line, plus the source task ("CLOSE — <rationale> (agent recommendation, T-XXX)"). It stays editable, and a hint under the field says it was pre-filled
+- [x] Without a recommendation the textarea stays empty (no fabricated decision); on a POST re-render (validation error) the operator's submitted text wins over the pre-fill
+- [x] Submitting the pre-filled form unchanged passes that text as `--decision` to `fw arc close`
+- [x] `arc_close` records the decision even when the arc YAML has no `decision:` line, and a decision containing `"`, `\` or a newline round-trips through `yaml.safe_load` unchanged
+- [x] Tests: `tests/web/test_t3841_arc_close_decision_prefill.py` and `tests/unit/t3841_arc_close_decision_write.bats` fail before and pass after
+- [x] Watchtower restarted and `bin/fw watchtower current` passes; vendored copy synced
 
 ### Human
 - [ ] [REVIEW] Pre-filled decision on the arc close form reads as the agent's suggestion, not as something already decided
@@ -293,6 +293,14 @@ bash -c 'set -e; for f in lib/arc.sh web/blueprints/arcs.py web/templates/arc_cl
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** 055 closed arc-001 through Watchtower and the arc page read "Decision: unspecified". The card above the form showed the agent's CLOSE recommendation and rationale the whole time.
+
+**Root cause:** T-1960 pre-filled the demo field from the recommendation but not the decision field. On GET, `prev_decision` was hard-wired to `""`, so an unchanged submit sent no `--decision`. Separately, `arc_close`'s writer dropped a decision when the YAML had no `decision:` line, because `re.sub` silently matches nothing. It also crashed or mangled a decision containing `\`, because the value was used as a regex replacement string.
+
+**Why structurally allowed:** Nothing tested the GET → submit → YAML round-trip; tests covered the gates (demo, §ACD), not what gets recorded. And `re.sub` on a missing key is a silent no-op.
+
+**Prevention:** tests/web/test_t3841_arc_close_decision_prefill.py pins pre-fill → unchanged submit → `--decision`. tests/unit/t3841_arc_close_decision_write.bats pins the missing-line and escape round-trips through `yaml.safe_load`.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -346,6 +354,16 @@ bash -c 'set -e; for f in lib/arc.sh web/blueprints/arcs.py web/templates/arc_cl
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The close form now pre-fills the decision with the recommendation shown above it, as one editable line naming its source task, just as the demo field is pre-filled. An unchanged submit records that text instead of `decision: null`. While tracing the write path I found two more ways a typed decision was lost: an arc YAML with no `decision:` line, and a backslash in the text. Both are fixed in the same writer. Everything the agent can check is green. What remains is your read of how the pre-fill and its hint come across, which is the [REVIEW] criterion.
+
+**Evidence:**
+- Code: 32102047f (web/blueprints/arcs.py `_suggested_decision` + route; arc_close.html hint; lib/arc.sh writer uses `json.dumps` + lambda repl + append-if-missing). Vendor: 12b060908.
+- Tests: t3841_arc_close_decision_write.bats 3/3; test_t3841_arc_close_decision_prefill.py 5/5, with test_t3843 8/8 alongside. Against HEAD~ code, 2/3 bats and 3/5 pytest fail. The ones that pass both ways are deliberate guards: the template-line case, no recommendation means an empty field, and a re-render keeps the operator's text.
+- Neighbours green: arc_lifecycle_state_machine, arc_dual_identity_verbs, arc_review_verb, t3843 bats (41 ok); test_arc_close_agent_gate + test_arc_headline_demo (23 passed).
+- `bin/fw watchtower restart` then `bin/fw watchtower current`: current.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -377,3 +395,15 @@ bash -c 'set -e; for f in lib/arc.sh web/blueprints/arcs.py web/templates/arc_cl
 ### 2026-10-04T18:15:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9bdbe68f
+- **Timestamp:** 2026-10-04T18:20:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-04T18:19:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
