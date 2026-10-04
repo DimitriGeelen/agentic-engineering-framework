@@ -1,0 +1,102 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3840: UserPromptSubmit sidecar receiver re-surfaces the SAME already-read and already-answered messages at every prompt (26 per prompt on 2026-10-04, including 18 rescued 1409 messages answered hours earlier) while 'fw sidecar inbox' reports nothing pending — the two disagree on what is unread
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-04T20:58:30Z
+# ============================================================================
+
+task_id: T-3840
+task_name: "UserPromptSubmit sidecar receiver re-surfaces the SAME already-read and already-answered messages at every prompt (26 per prompt on 2026-10-04, including 18 rescued 1409 messages answered hours earlier) while 'fw sidecar inbox' reports nothing pending — the two disagree on what is unread"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-04T16:32:36Z
+completed: 2026-10-04T20:56:09Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-04T22:52:49+02:00
+last_commit: 2026-10-04T22:56:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  one shown/answered ledger for receiver hook + fw sidecar inbox; hook frame capped under the 10KB persist threshold. regression tests — fixture inbox across consecutive hook runs, replied/rescued/unconfirmed/frame-cap/shared-ledger legs; fabric cards. vendor sync of shown/answered ledger → .agentic-framework/lib. RCA, Decisions (one-ledger + re-surface bound), Verification, ACs ticked
+
+# Key outcomes
+outcomes:
+  - 'Root cause of the repeat surfacing is identified from live state (events.jsonl / state files) and written in ## RCA'
+  - 'One seen/answered ledger is read and written by BOTH the UserPromptSubmit receiver hook (lib/sidecar/hooks.py prompt) and `fw sidecar inbox` (lib/sidecar/inbox.py), keyed by msg id (client_msg_id or msg_id, sender-independent, so "unknown"/hub-relayed/rescued messages are covered)'
+  - 'A message the hook has surfaced once is not surfaced on later prompts, even when the finalizer cannot confirm HANDED_OVER from the transcript (at most one re-surface for a peeked-but-unconfirmed message — stated in ## Decisions)'
+  - 'A message we replied to (`fw sidecar send --in-reply-to <id>`, or its base id for `-nudge-N`) is never surfaced again by the hook'
+  - 'Genuinely new mail always surfaces'
+  - 'Regression tests with a fixture inbox: same N messages across 3 consecutive hook runs surface on run 1 only; a replied message never surfaces again; a new message on run 3 surfaces'
+  - 'Existing sidecar test files stay green; vendor copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'regression tests — fixture inbox across consecutive hook runs, replied/rescued/unconfirmed/frame-cap/shared-ledger legs; fabric cards'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-04 — where the one ledger lives, and the re-surface bound'
+    chose: 'a new `shown` table in the existing `.context/sidecar/inbox-state.json`, owned by `lib/sidecar/seen.py`, written under a flock by both the receiver hook and `fw sidecar inbox`. Every row is keyed under every id the message has: the receiver file id, the envelope `client_msg_id`/`msg_id`, and the base of each (`-nudge-N` stripped). Sender is never part of the key, so "unknown"/rescued mail is covered. "Answered" is derived only from what WE sent: receipts-sent REPLIED rows, outbox `in_reply_to`, and direct-ledger `in_reply_to`. - **Safety bound (stated):** never-shown mail always surfaces. A message shown once may surface ONE more time, and only when that showing is not proof of delivery: it was a non-draining `--peek`, or the finalizer''s last outcome for it is `HANDOVER_UNCONFIRMED` (hook killed, output discarded). After two showings it is never surfaced by the hook or the inbox again. It stays in the waiting register (`fw sidecar waiting`) and its escalation path. Answered mail is never surfaced, whatever its count. - **Frame cap:** the hook frame is held to 8000 chars, under the measured ~10 KB persist limit. Messages that do not fit are not marked shown; they surface at the next prompt, urgent first, then oldest first. One oversized message is always shown, with its body shortened to fit.'
+    rationale: 'the inbox''s `seen` list is drained by the watcher, so it records transport progress, not delivery to the agent. Reusing it would have hidden every watcher-ingested message from the hook.'
+    alternatives_rejected: ['(a) reusing `seen` as-is — wrong semantics, see above; (b) a second state file — that would recreate the two-ledger split this task removes; (c) following the `<persisted-output>` file path as HANDED_OVER evidence — the model only received the preview, so that would certify mail it never read. - **Test change:** `test_attachment_from_an_earlier_attempt_does_not_certify_a_later_one` now records the `HANDOVER_UNCONFIRMED` event that, in production, is what declares an attempt lost. Removing the marker alone no longer licenses a re-surface.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/hooks.py'
+  - '.agentic-framework/lib/sidecar/inbox.py'
+  - '.agentic-framework/lib/sidecar/seen.py'
+  - '.fabric/components/lib-sidecar-seen.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_seen_ledger_t3840.yaml'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/hooks.py'
+  - 'lib/sidecar/inbox.py'
+  - 'lib/sidecar/seen.py'
+  - '.tasks/active/T-3840-userpromptsubmit-sidecar-receiver-re-sur.md'
+  - 'tests/unit/test_sidecar_receiver_t3693.py'
+  - 'tests/unit/test_sidecar_seen_ledger_t3840.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-04T22:52:49'
+    action: 'T-3840: one shown/answered ledger for receiver hook + fw sidecar inbox; hook frame capped under the 10KB persist threshold'
+  - time: '2026-10-04T22:54:48'
+    action: 'T-3840: regression tests — fixture inbox across consecutive hook runs, replied/rescued/unconfirmed/frame-cap/shared-ledger legs; fabric cards'
+  - time: '2026-10-04T22:55:04'
+    action: 'T-3840: vendor sync of shown/answered ledger → .agentic-framework/lib'
+  - time: '2026-10-04T22:56:09'
+    action: 'T-3840: RCA, Decisions (one-ledger + re-surface bound), Verification, ACs ticked'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 263 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 263
+  commits: 4
+  files_changed: 13
+  lines_added: 1179
+  lines_removed: 57
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3840-userpromptsubmit-sidecar-receiver-re-sur.md
+generated_by: context-agent-hybrid
