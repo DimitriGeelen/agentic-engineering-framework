@@ -535,3 +535,67 @@ assert env.get("TERMLINK_TASK_GOVERNANCE") == "1", env
 assert s.get("mine") == {"command": "my-server"}, s.get("mine")
 PY
 }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# T-3831 (ring20-dashboard T-2460): an old ~/.local/bin/fw symlink into the
+# consumer's OWN vendored copy aborted the whole upgrade at step 4c. The T-1278
+# guard read "FRAMEWORK.md beside bin/fw" as "framework repo", but every vendored
+# copy ships FRAMEWORK.md since T-2805. The vendor's .upstream sentinel (T-2232)
+# is the discriminator: a vendored copy has it, the framework repo never does.
+# ─────────────────────────────────────────────────────────────────────────────
+
+@test "T-3831: a ~/.local/bin/fw symlink into the consumer's vendored copy is skipped, not fatal" {
+    local upstream_bare="$TEST_TEMP_DIR/upstream.git"
+    local proj="$TEST_TEMP_DIR/shim-proj"
+    make_upstream_bare "$upstream_bare"
+    overlay_upstream "$upstream_bare" bin/fw lib/upgrade.sh lib/init.sh
+
+    "$FRAMEWORK_ROOT/bin/fw" vendor --target "$proj" --source "$FRAMEWORK_ROOT" >/dev/null
+    cat > "$proj/.framework.yaml" <<YAML
+project_name: shim-proj
+version: $(tr -d '\n' < "$proj/.agentic-framework/VERSION")
+provider: claude
+upstream_repo: file://$upstream_bare
+YAML
+    # premise: the vendored copy carries both FRAMEWORK.md and the sentinel
+    [ -f "$proj/.agentic-framework/FRAMEWORK.md" ]
+    [ -f "$proj/.agentic-framework/.upstream" ]
+    mkdir -p "$TEST_TEMP_DIR/home/.local/bin"
+    ln -s "$proj/.agentic-framework/bin/fw" "$TEST_TEMP_DIR/home/.local/bin/fw"
+
+    run fresh_run "$proj" upgrade "$proj"
+    [ "$status" -eq 0 ] || { echo "$output"; false; }
+    [[ "$output" != *"REFUSED"* ]] || { echo "$output"; false; }
+    [[ "$output" == *"Upgrade Complete"* ]] || { echo "$output"; false; }
+    # the link is left as it was, and the vendored bin/fw is still the real CLI
+    [ -L "$TEST_TEMP_DIR/home/.local/bin/fw" ]
+    [ "$(readlink "$TEST_TEMP_DIR/home/.local/bin/fw")" = "$proj/.agentic-framework/bin/fw" ]
+    ! cmp -s "$FRAMEWORK_ROOT/bin/fw-router" "$proj/.agentic-framework/bin/fw"
+    ! cmp -s "$FRAMEWORK_ROOT/bin/fw-shim" "$proj/.agentic-framework/bin/fw"
+    [[ "$output" == *"links into a vendored copy"* ]] || { echo "$output"; false; }
+}
+
+@test "T-3831: a ~/.local/bin/fw symlink into a framework repo (no .upstream) is still refused" {
+    local upstream_bare="$TEST_TEMP_DIR/upstream.git"
+    local proj="$TEST_TEMP_DIR/shim-proj2"
+    local fwrepo="$TEST_TEMP_DIR/fwrepo"
+    make_upstream_bare "$upstream_bare"
+    overlay_upstream "$upstream_bare" bin/fw lib/upgrade.sh lib/init.sh
+    git clone --quiet "$upstream_bare" "$fwrepo"
+    [ ! -e "$fwrepo/.upstream" ]
+
+    "$FRAMEWORK_ROOT/bin/fw" vendor --target "$proj" --source "$FRAMEWORK_ROOT" >/dev/null
+    cat > "$proj/.framework.yaml" <<YAML
+project_name: shim-proj2
+version: $(tr -d '\n' < "$proj/.agentic-framework/VERSION")
+provider: claude
+upstream_repo: file://$upstream_bare
+YAML
+    mkdir -p "$TEST_TEMP_DIR/home/.local/bin"
+    ln -s "$fwrepo/bin/fw" "$TEST_TEMP_DIR/home/.local/bin/fw"
+    local before; before="$(md5sum < "$fwrepo/bin/fw")"
+
+    run fresh_run "$proj" upgrade "$proj"
+    [[ "$output" == *"REFUSED"* ]] || { echo "$output"; false; }
+    [ "$(md5sum < "$fwrepo/bin/fw")" = "$before" ]
+}
