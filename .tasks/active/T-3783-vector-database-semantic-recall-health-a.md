@@ -335,6 +335,14 @@ bin/fw watchtower current
 
 ## Recommendation
 
+**Recommendation:** GO
+**Rationale:** The two reasons recall froze for months in 47 of 49 projects are fixed (every consumer is seeded with the hourly reindex; reindex and fw ask import the framework's web/ and fail loudly), and a single health check now FAILs in doctor and audit, adds a handover line and pushes you once when the index is missing, empty, stale, lagging, unimportable or its canary misses. The final independent review's remaining items are filed (T-3787) or fixed with a test (start-failure transition). What remains is your look at the two Watchtower surfaces.
+**Evidence:**
+- Fixes: c62bab1bc, 39769059c (reach); b007bc535 and successors (health predicate lib/vector_index_health.py + wiring); 2899535e2 (start-failure transition)
+- Tests: tests/unit/t3783_vector_index_reach.bats (4), tests/unit/t3783_vector_index_health.bats (30/30)
+- Reviews: docs/reports/T-3783-review-codex-r1..r4.md, -final.md (findings fixed or filed; see ## Decisions)
+- Live: the check reported FAIL "vector index has 0 documents" at 00:12 on 2026-10-04 — it caught the T-3786 wipe
+
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
      shape is copied rather than reinvented.
