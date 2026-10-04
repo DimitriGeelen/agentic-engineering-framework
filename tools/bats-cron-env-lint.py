@@ -9,6 +9,9 @@ dimitri-mint-dev, each running fw docs --all daily — load 41 on 24 cores).
 Check: any .bats file that runs a shell command containing 'schedule install' or 'cron install'
 must have 'FW_CRON_INSTALL_DIR' in its setup or within the test itself.
 
+Usage: bats-cron-env-lint.py [DIR ...]   (default: <repo>/tests/unit)
+T-3791: wired into tests/lint/bats-cron-env-lint.bats, so a violation reddens the lint suite.
+
 Exit: 0 if all checks pass, 1 if violations found.
 """
 
@@ -16,11 +19,12 @@ import re
 import sys
 from pathlib import Path
 
-def check_bats_cron_env():
-    tests_dir = Path("tests/unit")
+def check_bats_cron_env(dirs=None):
+    if not dirs:
+        dirs = [Path(__file__).resolve().parent.parent / "tests" / "unit"]
     violations = []
 
-    for bats_file in sorted(tests_dir.glob("*.bats")):
+    for bats_file in sorted(f for d in dirs for f in Path(d).glob("*.bats")):
         with open(bats_file) as f:
             content = f.read()
 
@@ -59,4 +63,4 @@ def check_bats_cron_env():
         return 0
 
 if __name__ == "__main__":
-    sys.exit(check_bats_cron_env())
+    sys.exit(check_bats_cron_env(sys.argv[1:]))

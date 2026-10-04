@@ -97,9 +97,20 @@ teardown() {
     rm -rf "$empty"
 }
 
-@test "t6: non-existent inherited dir is stale → re-resolves to cwd's project" {
+# T-3791 deliberately replaced t6's contract: a non-existent PROJECT_ROOT used to be
+# re-resolved to the cwd's project; it is now REFUSED (exit 2), because cron lines
+# `PROJECT_ROOT=<torn-down tmp> fw docs --all` silently ran against the wrong project.
+# Inside a Claude Code hook context (valid CLAUDE_PROJECT_DIR) it still re-resolves.
+@test "t6: non-existent inherited dir is refused outside a hook context (T-3791)" {
     cd "$REAL"
     run env -u CLAUDE_PROJECT_DIR HOME="/nonexistent-home-xyz" PROJECT_ROOT="/no/such/dir/anywhere" bash "$FW" version
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"PROJECT_ROOT does not exist: /no/such/dir/anywhere"* ]]
+}
+
+@test "t6b: non-existent inherited dir + valid CLAUDE_PROJECT_DIR → re-resolves (hook context)" {
+    cd "$REAL"
+    run env HOME="/nonexistent-home-xyz" CLAUDE_PROJECT_DIR="$REAL" PROJECT_ROOT="/no/such/dir/anywhere" bash "$FW" version
     [ "$status" -eq 0 ]
     echo "$output" | grep -q "Project:.*$REAL"
 }

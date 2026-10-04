@@ -30,10 +30,18 @@ setup() {
     export PROJECT_ROOT="$TEST_PROJECT"
     export FW_CRON_INSTALL_DIR="$TEST_CRON_DIR"
     CRON_SOURCE="$TEST_PROJECT/.context/cron/agentic-audit.crontab"
+    CROND_BEFORE="$(_crond_listing)"
 }
 
 teardown() {
     [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
+    # T-3791: no test in this file may change the real /etc/cron.d (any name, size or mtime).
+    [ "$(_crond_listing)" = "$CROND_BEFORE" ]
+}
+
+# T-3791: name + size + mtime of every entry in /etc/cron.d, sorted.
+_crond_listing() {
+    find /etc/cron.d -mindepth 1 -maxdepth 1 -printf '%f %s %T@\n' 2>/dev/null | sort
 }
 
 _write_distinctive_registry() {
@@ -79,16 +87,17 @@ EOF
 @test "T-3070: with NO registry present, the legacy hardcoded template path still works (pre-T-448 consumer compat)" {
     rm -f "$TEST_PROJECT/.context/cron-registry.yaml"
 
-    # T-3790: Verify /etc/cron.d is not touched - capture before state
-    before_etc_cron_d=$(ls -la /etc/cron.d 2>/dev/null | wc -l)
+    # T-3790/T-3791: /etc/cron.d must not be touched — compare the full listing
+    # (name, size, mtime), not a line count: a replaced file keeps the count.
+    before_etc_cron_d=$(_crond_listing)
 
     run "$FRAMEWORK_ROOT/agents/audit/audit.sh" schedule install
     [ "$status" -eq 0 ]
     grep -q "T-184 + T-196 + T-602 + T-604" "$CRON_SOURCE"
 
     # T-3790: Verify /etc/cron.d was not modified (legacy path also respects FW_CRON_INSTALL_DIR)
-    after_etc_cron_d=$(ls -la /etc/cron.d 2>/dev/null | wc -l)
-    [ "$before_etc_cron_d" -eq "$after_etc_cron_d" ]
+    after_etc_cron_d=$(_crond_listing)
+    [ "$before_etc_cron_d" = "$after_etc_cron_d" ]
 }
 
 @test "T-3070: 'fw cron generate' points its install hint at 'fw cron install', not the legacy dual-writer" {

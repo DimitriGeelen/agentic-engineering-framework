@@ -214,6 +214,20 @@ _passwd_home_canon() {
     return 0
 }
 
+# T-3791: a PROJECT_ROOT that names a path which does not exist is refused, not
+# re-resolved. Cron lines carry `PROJECT_ROOT="<dir>" fw <verb>`; when <dir> is a
+# torn-down test temp dir, re-resolution fell back to the cwd walk / FRAMEWORK_ROOT
+# and ran the job (`fw docs --all`, `fw audit`, oe sections) against the wrong
+# project every day (T-3790: 26 ghost cron files, load 41). Exception: inside a
+# Claude Code hook context (valid CLAUDE_PROJECT_DIR), where a vanished inherited
+# root is still re-resolved (T-2390/T-2391) rather than failing every hook.
+if [ -n "${PROJECT_ROOT:-}" ] && [ ! -e "$PROJECT_ROOT" ] && \
+   ! { [ -n "${CLAUDE_PROJECT_DIR:-}" ] && \
+       { [ -f "$CLAUDE_PROJECT_DIR/.framework.yaml" ] || [ -d "$CLAUDE_PROJECT_DIR/.tasks" ]; }; }; then
+    echo "fw: PROJECT_ROOT does not exist: $PROJECT_ROOT — refusing to run (unset it or point it at a project)" >&2
+    exit 2
+fi
+
 # Resolve PROJECT_ROOT
 if [ -z "${PROJECT_ROOT:-}" ] || _project_root_is_stale "${PROJECT_ROOT:-}"; then
     # T-2390: prefer CLAUDE_PROJECT_DIR when set + valid. Claude Code exports it
