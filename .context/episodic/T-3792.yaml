@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3792: UserPromptSubmit sidecar peek surfaces delivery receipts (sidecar.receipt) as pending consults — exclude them or collapse to one count line (055 finding b3e9a29e)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-04T15:02:49Z
+# ============================================================================
+
+task_id: T-3792
+task_name: "UserPromptSubmit sidecar peek surfaces delivery receipts (sidecar.receipt) as pending consults — exclude them or collapse to one count line (055 finding b3e9a29e)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T08:08:19Z
+completed: 2026-10-04T15:02:24Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-04T17:02:16+02:00
+last_commit: 2026-10-04T17:02:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  peek recognised receipts by metadata.kind only and never related a nudge to its answered base → is_receipt() covers msg_type/body marks, surface_filter holds back receipts and answered/repeat nudges behind one count line. vendor sync of the peek filter → .agentic-framework/{lib/sidecar/inbox.py,agents/context/sidecar-inbox.sh}
+
+# Key outcomes
+outcomes:
+  - 'Delivery receipts (`msg_type sidecar.receipt`, `metadata.kind=receipt`, or a `[sidecar receipt]` body from an older sender) are never surfaced or counted as pending mail by the peek'
+  - 'Nudges (`<base>-nudge-N`) whose base consult this agent already answered (REPLIED sent) are not surfaced; unanswered nudges for the same base collapse to one entry'
+  - 'Whenever real mail is surfaced, everything held back is reported in ONE count line; the header count is the number actually pending. When only receipts/answered nudges are present the turn stays silent (they are not mail; peek never drains them, so a line would repeat at every prompt forever)'
+  - 'Regression tests (python unit + hook bats) pin receipt exclusion, answered-nudge collapse and the single count line, with a control that a real consult still surfaces'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/sidecar-inbox.sh'
+  - '.agentic-framework/lib/sidecar/inbox.py'
+  - 'agents/context/sidecar-inbox.sh'
+  - 'lib/sidecar/inbox.py'
+  - '.tasks/active/T-3792-userpromptsubmit-sidecar-peek-surfaces-d.md'
+  - 'tests/unit/sidecar_inbox_hook.bats'
+  - 'tests/unit/test_sidecar_peek_filter_t3792.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-04T17:02:16'
+    action: 'T-3792: peek recognised receipts by metadata.kind only and never related a nudge to its answered base → is_receipt() covers msg_type/body marks, surface_filter holds back receipts and answered/repeat nudges behind one count line'
+  - time: '2026-10-04T17:02:17'
+    action: 'T-3792: vendor sync of the peek filter → .agentic-framework/{lib/sidecar/inbox.py,agents/context/sidecar-inbox.sh}'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 414 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 414
+  commits: 2
+  files_changed: 7
+  lines_added: 674
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3792-userpromptsubmit-sidecar-peek-surfaces-d.md
+generated_by: context-agent-hybrid
