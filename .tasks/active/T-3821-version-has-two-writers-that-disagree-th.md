@@ -1,10 +1,14 @@
 ---
 id: T-3821
-name: "VERSION has two writers that disagree: the pre-push hook re-stamps the working-tree VERSION from git describe (1.7.<commits>) on every push, while fw release reconciles it to the tag (T-3242); after a push the tree reads 1.7.x against a committed 1.8.0, so the reconcile commit is empty and the release refuses"
+name: "VERSION has two writers that disagree: the pre-push hook re-stamps the working-tree
+  VERSION from git describe (1.7.<commits>) on every push, while fw release reconciles
+  it to the tag (T-3242); after a push the tree reads 1.7.x against a committed 1.8.0,
+  so the reconcile commit is empty and the release refuses"
 description: >
-  RCA: docs/reports/T-3785-v1.8.0-release-rca.md (2026-10-04, v1.8.0 cut in three attempts).
+  RCA: docs/reports/T-3785-v1.8.0-release-rca.md (2026-10-04, v1.8.0 cut in three
+  attempts).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T14:01:51Z
-last_update: 2026-10-04T14:01:51Z
-date_finished: null
+last_update: 2026-10-04T14:39:43Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-04T14:15:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-04T14:15:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3821: VERSION has two writers that disagree: the pre-push hook re-stamps the working-tree VERSION from git describe (1.7.<commits>) on every push, while fw release reconciles it to the tag (T-3242); after a push the tree reads 1.7.x against a committed 1.8.0, so the reconcile commit is empty and the release refuses
@@ -62,8 +94,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The pre-push hook (agents/git/lib/hooks.sh) no longer writes VERSION when VERSION is tracked by git, and says so. An untracked (generated) VERSION is still stamped from `git describe` (T-648)
+- [x] `release_reconcile_version` treats "VERSION already equals HEAD's committed content" as success: no empty commit, returns 0
+- [x] The release decides whether to reconcile, and runs its DECREASE check, against HEAD's committed VERSION, not the working-tree file, so a hook-stamped tree neither empties the reconcile nor falsely refuses
+- [x] Regression tests in `tests/unit/t3821_version_single_writer.bats` cover the stamped-tree release (succeeds, tag carries the release version), the already-committed case (no empty commit), and the hook's tracked/untracked branches; existing release and T-3242 tests stay green
+- [x] Decision recorded in `## Decisions`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -223,8 +258,26 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n lib/release.sh
+bash -n agents/git/lib/hooks.sh
+timeout 300 bats tests/unit/t3821_version_single_writer.bats > /tmp/.t3821a 2>&1 && ! grep -q "^not ok" /tmp/.t3821a
+test "$(grep -c '# skip' /tmp/.t3821a)" -eq 0
+timeout 300 bats tests/unit/t3242_version_tag_reconcile.bats > /tmp/.t3821b 2>&1 && ! grep -q "^not ok" /tmp/.t3821b
+timeout 300 bats tests/unit/t3820_release_full_rollback.bats > /tmp/.t3821c 2>&1 && ! grep -q "^not ok" /tmp/.t3821c
+timeout 300 bats tests/unit/t3190_release_master_ff.bats > /tmp/.t3821d 2>&1 && ! grep -q "^not ok" /tmp/.t3821d
+# Scoped vendor parity: the repo-wide --check also sees lib/sidecar/* drift owned by a concurrent worker.
+cmp -s lib/release.sh .agentic-framework/lib/release.sh
+cmp -s agents/git/lib/hooks.sh .agentic-framework/agents/git/lib/hooks.sh
 
 ## RCA
+
+**Symptom:** v1.8.0 attempt 2 refused with "VERSION reconciliation commit failed". VERSION=1.8.0 was already committed. The pre-push hook had re-stamped the working tree to `1.7.<commits>`. The release wrote 1.8.0 back, and the commit came out empty.
+
+**Root cause:** two writers for one tracked file. The T-648 pre-push stamp writes `<major.minor>.<commits since tag>` into the working tree on every push. T-3242 made `fw release` reconcile VERSION to the tag. The release graded the **working tree**, which the hook had just rewritten, not HEAD's committed content. It also treated "nothing to commit" as a failure. The same grading could refuse a patch release as a false DECREASE (stamp 1.8.300 > v1.8.1).
+
+**Why structurally allowed:** T-3242 introduced the second writer without retiring the first. Its tests always committed VERSION and never ran the hook stamp, so "tree ≠ commit" was never a fixture.
+
+**Prevention:** one writer, chosen and enforced: the hook skips a tracked VERSION. Defence in depth for hooks installed before this change (installed `.git/hooks/pre-push` copies keep stamping until `fw git install-hooks` is re-run): the release grades committed content and treats "already equal" as success. Pinned by `tests/unit/t3821_version_single_writer.bats`. Full RCA: `docs/reports/T-3785-v1.8.0-release-rca.md`.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -304,6 +357,12 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-04 — who writes VERSION
+- **Chose:** both legs. (1) `fw release` is the only writer of a **tracked** VERSION: the pre-push hook skips a tracked VERSION and says so, and still stamps an **untracked** (generated) one, which is what T-648 was for. (2) `release_reconcile_version` treats "already equal to HEAD's committed content" as success, and the release grades HEAD's committed VERSION rather than the working tree.
+- **Why:** consumers read the **committed** VERSION on master (`fw upgrade`). `fw version` in a git checkout derives the same `<major.minor>.<commits>` string from `git describe` (bin/fw `_derive_version`) and never reads the file. Vendored copies get VERSION written from `$FW_VERSION` at vendor time (bin/fw `do_vendor`). So stamping the tracked file served no reader. It only made the tree disagree with the commit, and once committed it was the non-monotonic counter T-3242 forbids. Leg 2 is needed because installed hooks are copies: every existing clone (and consumer) keeps stamping until `fw git install-hooks` is re-run.
+- **Rejected:** hook-only (installed hooks stay old, so attempt 2 recurs until every clone reinstalls); release-only (the tree stays dirty after every push and a sweeping commit can still commit the counter); removing the stamp entirely (T-1253 Path 3: a regression for projects that keep VERSION untracked and generated).
+- **Not changed:** `fw version sync` (lib/version.sh), a manual third writer, is already floored at the latest tag (T-3242).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -320,3 +379,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3821-version-has-two-writers-that-disagree-th.md
 - **Context:** Initial task creation
+
+### 2026-10-04T14:39:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -1248,7 +1248,19 @@ if [ -z "$AUDIT_SCRIPT" ]; then
 fi
 
 # Stamp VERSION file from git describe (T-648: git-derived versioning)
-_version=$(git describe --tags --match 'v[0-9]*' 2>/dev/null) || true
+#
+# T-3821: only an UNTRACKED (generated) VERSION is stamped. A tracked VERSION
+# has exactly one writer, `fw release` (tag-as-canonical, T-3242). Stamping it
+# here rewrote the working tree to <major.minor>.<commits> on every push, so
+# after any push it disagreed with the commit, the release's reconcile commit
+# went empty, and v1.8.0 attempt 2 refused. `fw version` does not need the
+# file in a git checkout — it derives the same string from git describe.
+_version=""
+if git -C "$PROJECT_ROOT" ls-files --error-unmatch VERSION >/dev/null 2>&1; then
+    echo "VERSION is tracked — not stamped (fw release is its only writer, T-3821)"
+else
+    _version=$(git describe --tags --match 'v[0-9]*' 2>/dev/null) || true
+fi
 if [ -n "$_version" ]; then
     _version="${_version#v}"
     if [[ "$_version" == *-*-* ]]; then
