@@ -1,0 +1,21 @@
+id: tests/fresh_machine_helper.bash
+name: fresh_machine_helper
+type: script
+subsystem: tests
+location: tests/fresh_machine_helper.bash
+tags: []
+
+purpose: "Shared helpers for the fresh-machine simulation files (T-1635, T-3747): Split out because one file outgrew the unit runner's 900s per-file cap under full-suite load. Both files are the §Consumer-Facing Command Hygiene guard."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-04
+created_by: unknown
