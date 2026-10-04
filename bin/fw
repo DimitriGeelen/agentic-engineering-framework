@@ -2599,7 +2599,9 @@ PY
     # projects passed as "WARN, 9 days old" or as SKIP (unimportable).
     # The canary embeds (~5-10s); FW_DOCTOR_INDEX_FAST=1 skips it.
     source "$FRAMEWORK_ROOT/lib/vector-index-health.sh"
-    if [ "${FW_DOCTOR_INDEX_FAST:-0}" = "1" ]; then
+    # T-3747: --quick skips the canary like the other network probes (it embeds
+    # through Ollama); the embed-free checks — index, manifest, age, lag, cron — run.
+    if [ "${FW_DOCTOR_INDEX_FAST:-0}" = "1" ] || [ "$quick_mode" = "1" ]; then
         _idx_out=$(vector_index_health --no-canary) || true
     else
         _idx_out=$(FW_INDEX_CANARY_TIMEOUT="${FW_INDEX_CANARY_TIMEOUT:-30}" vector_index_health) || true

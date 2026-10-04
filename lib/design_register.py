@@ -51,6 +51,15 @@ except ImportError:
     sys.path.insert(0, str(Path(__file__).parent))
     from arc_membership import scan_tasks_by_arc_id  # noqa: F401
 
+# T-3747: libyaml's loader when present. The pure-Python one spent ~22 s of every
+# `fw doctor` (and of each /approvals render) parsing ~3.8k task frontmatters.
+_SafeLoader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+
+
+def _yaml_load(text: str):
+    return yaml.load(text, Loader=_SafeLoader)  # noqa: S506 — a SafeLoader
+
+
 TASK_ID_RE = re.compile(r"\bT-\d{3,}\b")
 _FENCE_RE = re.compile(r"```ya?ml[ \t]*\n(.*?)```", re.DOTALL)
 
@@ -64,7 +73,7 @@ def _frontmatter(text: str) -> dict:
     if end < 0:
         return {}
     try:
-        fm = yaml.safe_load(text[3:end]) or {}
+        fm = _yaml_load(text[3:end]) or {}
     except yaml.YAMLError:
         return {}
     return fm if isinstance(fm, dict) else {}
@@ -177,7 +186,7 @@ def parse_register(path: Path) -> list:
         if not re.match(r"\s*register:", block):
             continue
         try:
-            data = yaml.safe_load(block)
+            data = _yaml_load(block)
         except yaml.YAMLError:
             continue
         for r in (data or {}).get("register") or []:
@@ -193,7 +202,7 @@ def _arc_files(root: Path) -> list:
 
 def _load_arc(p: Path) -> dict:
     try:
-        data = yaml.safe_load(p.read_text(errors="replace")) or {}
+        data = _yaml_load(p.read_text(errors="replace")) or {}
     except (OSError, yaml.YAMLError):
         return {}
     return data if isinstance(data, dict) else {}
