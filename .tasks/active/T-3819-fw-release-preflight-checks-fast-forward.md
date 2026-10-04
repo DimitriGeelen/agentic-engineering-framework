@@ -1,10 +1,14 @@
 ---
 id: T-3819
-name: "fw release preflight checks fast-forwardability against the LOCAL master ref only (release_ff_state, no fetch): origin/master had a commit (ring20 eb49ff9) the local ref did not, so preflight said 'clean' and the release only failed at push time, after it had already committed VERSION and tagged"
+name: "fw release preflight checks fast-forwardability against the LOCAL master ref
+  only (release_ff_state, no fetch): origin/master had a commit (ring20 eb49ff9) the
+  local ref did not, so preflight said 'clean' and the release only failed at push
+  time, after it had already committed VERSION and tagged"
 description: >
-  RCA: docs/reports/T-3785-v1.8.0-release-rca.md (2026-10-04, v1.8.0 cut in three attempts).
+  RCA: docs/reports/T-3785-v1.8.0-release-rca.md (2026-10-04, v1.8.0 cut in three
+  attempts).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T14:00:18Z
-last_update: 2026-10-04T14:00:18Z
-date_finished: null
+last_update: 2026-10-04T14:30:47Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-04T14:15:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-04T14:15:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3819: fw release preflight checks fast-forwardability against the LOCAL master ref only (release_ff_state, no fetch): origin/master had a commit (ring20 eb49ff9) the local ref did not, so preflight said 'clean' and the release only failed at push time, after it had already committed VERSION and tagged
@@ -62,8 +94,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Preflight queries the release branch on every push remote (`git ls-remote`, then a `FETCH_HEAD`-only fetch when the object is missing) before any VERSION commit or tag
+- [x] A remote whose release branch is not an ancestor of HEAD refuses the release, names the foreign commit(s), and says "merge <remote>/<branch> into your dev branch first"; no tag, no commit, HEAD unchanged
+- [x] An unreachable remote refuses unless `--offline` is passed; `--offline` says explicitly that the remote check was skipped; a repo with no remotes says the check is skipped because nothing is published
+- [x] `--dry-run` runs the same remote check and reports the refusal
+- [x] Regression tests in `tests/unit/t3819_release_remote_preflight.bats` (fixture: bare origin with a commit on master the clone lacks); existing release tests stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -223,8 +258,23 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n lib/release.sh
+timeout 300 bats tests/unit/t3819_release_remote_preflight.bats > /tmp/.t3819a 2>&1 && ! grep -q "^not ok" /tmp/.t3819a
+test "$(grep -c '# skip' /tmp/.t3819a)" -eq 0
+timeout 300 bats tests/unit/t3190_release_master_ff.bats > /tmp/.t3819b 2>&1 && ! grep -q "^not ok" /tmp/.t3819b
+timeout 300 bats tests/unit/t3193_release_tag_push_failure.bats > /tmp/.t3819c 2>&1 && ! grep -q "^not ok" /tmp/.t3819c
+timeout 300 bats tests/unit/lib_release.bats > /tmp/.t3819d 2>&1 && ! grep -q "^not ok" /tmp/.t3819d
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** v1.8.0 attempt 1 — preflight graded `master` "clean", the release committed VERSION and tagged, then the `master` push was rejected as non-fast-forward because `origin/master` held `eb49ff9` (a peer's direct commit).
+
+**Root cause:** `release_ff_state` compared HEAD with `refs/heads/master` only. It was read-only "by construction: no network", so a commit on the remote was invisible until the push.
+
+**Why structurally allowed:** the T-3190 tests had no remote that was ahead of the local ref. They covered local branch-ahead and divergence only, so "local ref = install surface" was never tested.
+
+**Prevention:** `release_remote_ff_check` asks every push remote (ls-remote, plus a FETCH_HEAD-only fetch) before anything is written. An unreachable remote refuses unless `--offline`. Pinned by `tests/unit/t3819_release_remote_preflight.bats` (bare origin plus a peer clone pushing a foreign commit). Full RCA: `docs/reports/T-3785-v1.8.0-release-rca.md`.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -304,6 +354,11 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-04 — no remote / unreachable remote
+- **Chose:** no remotes → pass with an explicit "No remotes configured — check skipped (nothing is published)". Unreachable remote → REFUSE unless `--offline`, which prints "remote fast-forward check SKIPPED".
+- **Why:** a check that could not run is not a check that passed (the G-096 false-green). With no remotes there is no install surface to grade.
+- **Rejected:** warn-and-continue when offline. That is exactly the "clean" verdict that produced attempt 1.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -320,3 +375,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3819-fw-release-preflight-checks-fast-forward.md
 - **Context:** Initial task creation
+
+### 2026-10-04T14:30:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

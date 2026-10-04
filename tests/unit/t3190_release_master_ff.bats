@@ -187,9 +187,11 @@ _no_tag()   { ! git -C "$REPO" rev-parse -q --verify "refs/tags/$1" >/dev/null 2
 
 # ── The local advance is not the release: the remote must receive it ─────
 
+# T-3819: an unreachable remote is now refused at preflight, before anything is
+# written. --offline skips that check, which is what still reaches this push leg.
 @test "REFUSES to publish when the release branch reaches no remote" {
     git -C "$REPO" remote add broken "$TEST_TEMP_DIR/nonexistent.git"
-    _release
+    _release --offline
     [ "$status" -eq 1 ]
     [[ "$output" =~ "reached no remote" ]]
     _no_tag v1.0.1
@@ -198,7 +200,7 @@ _no_tag()   { ! git -C "$REPO" rev-parse -q --verify "refs/tags/$1" >/dev/null 2
 @test "the failed publish ROLLS BACK the local branch too" {
     before="$(_sha master)"
     git -C "$REPO" remote add broken "$TEST_TEMP_DIR/nonexistent.git"
-    _release
+    _release --offline
     [ "$(_sha master)" = "$before" ]
 }
 

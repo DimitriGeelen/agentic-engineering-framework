@@ -182,11 +182,86 @@ release_ff_state() {
 }
 
 # ---------------------------------------------------------------------------
+# release_remote_ff_check <root> <release_branch> <offline:true|false>
+#   T-3819: release_ff_state grades the LOCAL ref only. v1.8.0 attempt 1 was
+#   graded "clean" while origin/master held a commit (eb49ff9) the local ref
+#   did not; the release committed VERSION, tagged, and only learned the truth
+#   when the push was rejected. This asks every push remote BEFORE anything is
+#   written: is your <release_branch> an ancestor of HEAD?
+#
+#   Returns 0 when every remote can fast-forward (or lacks the branch, which the
+#   push will create), 1 when any remote refuses or cannot be reached.
+#
+#   Decided explicitly, and said in the output:
+#     no remotes   -> pass; nothing is published, so there is nothing to grade.
+#     unreachable  -> REFUSE, unless --offline. A check that could not run is
+#                     not a check that passed (the G-096 false-green shape).
+#     --offline    -> pass, with a warning that the remote was NOT inspected.
+#
+#   Writes no ref: ls-remote, plus a FETCH_HEAD-only fetch when the remote tip
+#   is not already in the local object store.
+# ---------------------------------------------------------------------------
+release_remote_ff_check() {
+    local root="$1" rb="$2" offline="${3:-false}"
+    local remotes
+    remotes="$(git -C "$root" remote 2>/dev/null)"
+    if [ -z "$remotes" ]; then
+        echo "No remotes configured — remote fast-forward check skipped (nothing is published)."
+        return 0
+    fi
+    if [ "$offline" = true ]; then
+        echo -e "${YELLOW}--offline: remote fast-forward check SKIPPED${NC} — '$rb' on the remote(s) was not inspected; the push may still be refused." >&2
+        return 0
+    fi
+    local head_sha remote rsha refused=0
+    head_sha="$(git -C "$root" rev-parse HEAD 2>/dev/null)"
+    while IFS= read -r remote; do
+        [ -z "$remote" ] && continue
+        local listing
+        if ! listing="$(git -C "$root" ls-remote --heads "$remote" "refs/heads/$rb" 2>/dev/null)"; then
+            echo -e "${RED}REFUSING to release:${NC} cannot reach remote '$remote' to check '$rb'." >&2
+            echo "  Whether '$remote/$rb' can fast-forward to HEAD is unknown, and an unknown is" >&2
+            echo "  not a pass. Fix the remote, or re-run with --offline to release without" >&2
+            echo "  the remote check. No tag was created." >&2
+            refused=1; continue
+        fi
+        rsha="$(echo "$listing" | awk -v r="refs/heads/$rb" '$2 == r {print $1; exit}')"
+        if [ -z "$rsha" ]; then
+            echo "Remote '$remote' has no '$rb' yet — the push will create it."
+            continue
+        fi
+        if ! git -C "$root" cat-file -e "${rsha}^{commit}" 2>/dev/null; then
+            if ! git -C "$root" fetch -q --no-tags "$remote" "refs/heads/$rb" 2>/dev/null \
+                || ! git -C "$root" cat-file -e "${rsha}^{commit}" 2>/dev/null; then
+                echo -e "${RED}REFUSING to release:${NC} could not fetch '$remote/$rb' ($rsha) to grade it." >&2
+                echo "  Re-run with --offline to release without the remote check. No tag was created." >&2
+                refused=1; continue
+            fi
+        fi
+        if [ "$rsha" = "$head_sha" ] || git -C "$root" merge-base --is-ancestor "$rsha" "$head_sha" 2>/dev/null; then
+            echo "Remote '$remote/$rb' is an ancestor of HEAD — fast-forward available."
+        else
+            echo -e "${RED}REFUSING to release:${NC} '$remote/$rb' has commit(s) HEAD does not contain:" >&2
+            git -C "$root" log --oneline -n 10 "${head_sha}..${rsha}" 2>/dev/null | sed 's/^/    /' >&2
+            echo "  Pushing '$rb' would be rejected as non-fast-forward — after the release had" >&2
+            echo "  already committed VERSION and tagged (v1.8.0 attempt 1, T-3819)." >&2
+            echo "  Fix: merge $remote/$rb into your dev branch first:" >&2
+            echo "    git fetch $remote $rb && git merge $remote/$rb" >&2
+            echo "  No tag was created." >&2
+            refused=1
+        fi
+    done <<< "$remotes"
+    return $refused
+}
+
+# ---------------------------------------------------------------------------
 # release_tag_and_release  — main entrypoint
-#   Flags: --dry-run, --bump {patch|minor|major}, --repo <owner/name>
+#   Flags: --dry-run, --bump {patch|minor|major}, --repo <owner/name>,
+#          --offline (skip the remote fast-forward check, T-3819)
 # ---------------------------------------------------------------------------
 release_tag_and_release() {
     local dry_run=false
+    local offline=false
     local bump=patch
     local gh_repo=""
     local root="${PROJECT_ROOT:-$(pwd)}"
@@ -194,6 +269,7 @@ release_tag_and_release() {
     while [ $# -gt 0 ]; do
         case "$1" in
             --dry-run) dry_run=true ;;
+            --offline) offline=true ;;
             --bump)    bump="$2"; shift ;;
             --repo)    gh_repo="$2"; shift ;;
             *) echo "Unknown flag: $1" >&2; return 2 ;;
@@ -274,6 +350,15 @@ release_tag_and_release() {
             return 1
             ;;
     esac
+
+    # T-3819: the local verdict above is only half the question — a remote can
+    # hold a commit the local ref does not. Asked here, before VERSION is
+    # committed or a tag exists, and in --dry-run too.
+    if [ "$ff_state" = "clean" ] || [ "$ff_state" = "uptodate" ]; then
+        if ! release_remote_ff_check "$root" "$release_branch" "$offline"; then
+            return 1
+        fi
+    fi
 
     if $dry_run; then
         echo -e "${CYAN}would tag $next${NC} ($commits commits since $latest, bump=$bump)"
@@ -490,7 +575,7 @@ release_main() {
     shift || true
 
     case "$subcmd" in
-        tag-and-release|""|--dry-run|--bump|--repo)
+        tag-and-release|""|--dry-run|--bump|--repo|--offline)
             # If first arg was actually a flag, it belongs to tag-and-release
             if [[ "$subcmd" == --* ]]; then
                 set -- "$subcmd" "$@"
@@ -510,6 +595,8 @@ Subcommands:
 
 Flags (for tag-and-release):
   --dry-run         Show what would happen, change nothing
+  --offline         Skip the remote fast-forward check (an unreachable remote
+                    otherwise refuses the release, T-3819)
   --bump LEVEL      patch (default) | minor | major
   --repo OWNER/NAME Override gh release target repo
 EOF
