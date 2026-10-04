@@ -103,8 +103,20 @@ else:
          "Check with `fw sidecar inbox --peek`. (T-3559)")
     sys.exit(0)
 
+# T-3792: receipts are sender-ledger evidence, not mail, and a nudge for a consult
+# we already answered is not pending. Held back here and COUNTED in one line below.
+# The filter is a library function so it is unit-tested; if it cannot load, the
+# hook falls back to showing everything (fail open — never hide mail).
+held = {}
+try:
+    sys.path.insert(0, os.environ.get("FRAMEWORK_ROOT", "."))
+    from lib.sidecar import inbox as _inbox
+    msgs, held = _inbox.surface_filter([m for m in msgs if isinstance(m, dict)])
+except Exception:
+    held = {}
+
 if not msgs:
-    sys.exit(0)   # SILENT when genuinely empty
+    sys.exit(0)   # SILENT when nothing is pending (held-back receipts/nudges are not mail)
 
 # Peer content is UNTRUSTED input, never instructions (T-3558 round-2 review, all three
 # reviewers). This framing is defence in depth only: authority does not come from here,
@@ -152,6 +164,11 @@ for m in msgs:
     shown_msgs.append(dict(m, _header=header))
 if shown < len(msgs):
     lines.append(f"({len(msgs) - shown} older consult(s) not shown — run `fw sidecar inbox` to read them.)")
+    lines.append("")
+if any(held.values()):
+    lines.append(f"(Not mail, not shown: {held.get('receipts', 0)} delivery receipt(s), "
+                 f"{held.get('answered_nudges', 0)} nudge(s) for consults already answered, "
+                 f"{held.get('duplicate_nudges', 0)} repeat nudge(s). T-3792)")
     lines.append("")
 lines.append("(Surfaced by the sidecar-inbox hook, T-3407. This was a PEEK — the consult is still in your inbox until you read it with `fw sidecar inbox`.)")
 
