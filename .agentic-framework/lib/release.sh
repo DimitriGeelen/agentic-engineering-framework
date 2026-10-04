@@ -137,6 +137,12 @@ release_reconcile_version() {
         paths+=(".agentic-framework/VERSION")
     fi
     git -C "$root" add -- "${paths[@]}" || return 1
+    # T-3821: already equal to HEAD's committed content is success, not an
+    # empty commit. (A hook-stamped working tree used to send the release down
+    # here with nothing to commit; `git commit` failed and the release refused.)
+    if git -C "$root" diff --cached --quiet HEAD -- "${paths[@]}" 2>/dev/null; then
+        return 0
+    fi
     # Pathspec commit: other staged/unstaged work in the tree stays out of it.
     git -C "$root" commit -q -m "$next: reconcile VERSION to $want (tag-as-canonical, T-3242)" -- "${paths[@]}"
 }
@@ -358,9 +364,24 @@ release_tag_and_release() {
     # T-3190 fast-forward gate: better no release than one that tells
     # consumers they downgraded. Repos without a VERSION file have no second
     # answer to reconcile and are left alone (keeps consumer repos untouched).
-    local want_ver="${next#v}" ver_file="$root/VERSION" cur_file_ver=""
+    # T-3821: graded against HEAD's COMMITTED VERSION, not the working tree.
+    # The tree can carry a pre-push stamp (<major.minor>.<commits>, from hooks
+    # installed before T-3821) that is neither what consumers read nor what the
+    # tag will carry: grading it made the reconcile commit go empty (v1.8.0
+    # attempt 2) and could refuse a patch release as a false DECREASE.
+    # needs_reconcile also covers a stale vendored copy beside a current root.
+    local want_ver="${next#v}" ver_file="$root/VERSION" cur_file_ver="" needs_reconcile=false
     if [ -f "$ver_file" ]; then
-        cur_file_ver="$(tr -d '[:space:]' < "$ver_file")"
+        if git -C "$root" cat-file -e HEAD:VERSION 2>/dev/null; then
+            cur_file_ver="$(git -C "$root" show HEAD:VERSION 2>/dev/null | tr -d '[:space:]')"
+        else
+            cur_file_ver="$(tr -d '[:space:]' < "$ver_file")"
+        fi
+        [ "$cur_file_ver" != "$want_ver" ] && needs_reconcile=true
+        if [ -f "$root/.agentic-framework/VERSION" ] \
+            && [ "$(git -C "$root" show HEAD:.agentic-framework/VERSION 2>/dev/null | tr -d '[:space:]')" != "$want_ver" ]; then
+            needs_reconcile=true
+        fi
         if [ -n "$cur_file_ver" ] && release_version_lt "$want_ver" "$cur_file_ver"; then
             echo -e "${RED}REFUSING to release:${NC} tag $next would DECREASE VERSION ($cur_file_ver → $want_ver)." >&2
             echo "  VERSION is ahead of the tag line — a consumer reading VERSION would" >&2
@@ -418,7 +439,7 @@ release_tag_and_release() {
     if $dry_run; then
         echo -e "${CYAN}would tag $next${NC} ($commits commits since $latest, bump=$bump)"
         if [ -f "$ver_file" ]; then
-            if [ "$cur_file_ver" != "$want_ver" ]; then
+            if $needs_reconcile; then
                 echo -e "${CYAN}would reconcile VERSION${NC} $cur_file_ver → $want_ver (tag-as-canonical, T-3242)"
             else
                 echo "VERSION already $want_ver — no reconciliation needed"
@@ -445,7 +466,7 @@ release_tag_and_release() {
         release_version_restore "$root" "$ver_snap" "$pre_head" "$reconciled_sha"
         ver_snap=""
     }
-    if [ -f "$ver_file" ] && [ "$cur_file_ver" != "$want_ver" ]; then
+    if [ -f "$ver_file" ] && $needs_reconcile; then
         echo -e "${CYAN}Reconciling VERSION $cur_file_ver → $want_ver (tag-as-canonical)...${NC}"
         ver_snap="$(release_version_snapshot "$root")"
         if ! release_reconcile_version "$root" "$next"; then
@@ -455,6 +476,8 @@ release_tag_and_release() {
             return 1
         fi
         reconciled_sha="$(git -C "$root" rev-parse HEAD 2>/dev/null)"
+        # Nothing committed (already equal to HEAD, T-3821): nothing to revert.
+        [ "$reconciled_sha" = "$pre_head" ] && reconciled_sha=""
         ff_state="$(release_ff_state "$root" "$release_branch")"
         ff_count=0
         if [ "$ff_state" = "clean" ]; then
