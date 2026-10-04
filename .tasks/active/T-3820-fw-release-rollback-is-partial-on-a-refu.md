@@ -1,10 +1,14 @@
 ---
 id: T-3820
-name: "fw release rollback is partial: on a refused master push it restores master and deletes the tag but leaves the VERSION-reconcile commit on the development branch, so the next ordinary bleeding-edge push publishes VERSION=1.8.0 with no release (it reached master and consumers installed '1.8.0' before the tag existed)"
+name: "fw release rollback is partial: on a refused master push it restores master
+  and deletes the tag but leaves the VERSION-reconcile commit on the development branch,
+  so the next ordinary bleeding-edge push publishes VERSION=1.8.0 with no release
+  (it reached master and consumers installed '1.8.0' before the tag existed)"
 description: >
-  RCA: docs/reports/T-3785-v1.8.0-release-rca.md (2026-10-04, v1.8.0 cut in three attempts).
+  RCA: docs/reports/T-3785-v1.8.0-release-rca.md (2026-10-04, v1.8.0 cut in three
+  attempts).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T14:01:10Z
-last_update: 2026-10-04T14:01:10Z
-date_finished: null
+last_update: 2026-10-04T14:35:33Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-04T14:15:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-04T14:15:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3820: fw release rollback is partial: on a refused master push it restores master and deletes the tag but leaves the VERSION-reconcile commit on the development branch, so the next ordinary bleeding-edge push publishes VERSION=1.8.0 with no release (it reached master and consumers installed '1.8.0' before the tag existed)
@@ -62,8 +94,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Every refusal after the VERSION reconcile commit (tag creation failure, local fast-forward failure, release branch reaching no remote) also reverts that commit: HEAD returns to its pre-release sha via a compare-and-swap `update-ref`, and the index entry and working-tree bytes of VERSION (plus the vendored copy) are restored exactly
+- [x] The revert only fires when HEAD is still the reconcile commit; otherwise it refuses to move HEAD and says why
+- [x] The rollback message names what was undone, including the reconcile commit
+- [x] Regression tests in `tests/unit/t3820_release_full_rollback.bats` prove that HEAD, VERSION bytes and staged VERSION equal their pre-release state after each refused publish, with a control leg where the publish succeeds and the reconcile commit stays; existing release tests stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -223,8 +257,25 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n lib/release.sh
+timeout 300 bats tests/unit/t3820_release_full_rollback.bats > /tmp/.t3820a 2>&1 && ! grep -q "^not ok" /tmp/.t3820a
+test "$(grep -c '# skip' /tmp/.t3820a)" -eq 0
+timeout 300 bats tests/unit/t3819_release_remote_preflight.bats > /tmp/.t3820b 2>&1 && ! grep -q "^not ok" /tmp/.t3820b
+timeout 300 bats tests/unit/t3190_release_master_ff.bats > /tmp/.t3820c 2>&1 && ! grep -q "^not ok" /tmp/.t3820c
+timeout 300 bats tests/unit/t3193_release_tag_push_failure.bats > /tmp/.t3820d 2>&1 && ! grep -q "^not ok" /tmp/.t3820d
+timeout 300 bats tests/unit/t3242_version_tag_reconcile.bats > /tmp/.t3820e 2>&1 && ! grep -q "^not ok" /tmp/.t3820e
+# Scoped vendor parity: the repo-wide --check also sees lib/sidecar/* drift owned by a concurrent worker.
+cmp -s lib/release.sh .agentic-framework/lib/release.sh
 
 ## RCA
+
+**Symptom:** after v1.8.0 attempt 1 was refused, `bleeding-edge` still carried `1fa02d534` ("reconcile VERSION to 1.8.0"). The next ordinary push published VERSION=1.8.0 with no tag or release behind it.
+
+**Root cause:** the push-failure rollback in `release_tag_and_release` undid only what it named (`branch -f master <before>`, `tag -d`). The reconcile commit was made earlier, by `release_reconcile_version`, and no refusal path knew about it. The tag-failure and local-ff-failure paths had the same gap, and so did a failed reconcile commit itself (VERSION was left written and staged).
+
+**Why structurally allowed:** the rollback tests (t3190, t3193) used fixtures with no VERSION file, so the reconcile leg never ran under a refusal. The T-3242 tests covered reconcile only on the success path.
+
+**Prevention:** `release_version_snapshot` / `release_version_restore` run on every refusal after the reconcile. The revert is a compare-and-swap `update-ref`, plus the exact index entry and bytes. Pinned by `tests/unit/t3820_release_full_rollback.bats`: four refusal paths plus the concurrent-commit refusal, with a success control. Full RCA: `docs/reports/T-3785-v1.8.0-release-rca.md`.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -304,6 +355,12 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-04 — revert the reconcile commit vs. commit it after publish
+- **Chose:** keep the reconcile commit before the tag, and have every refusal before publication revert it: compare-and-swap `update-ref HEAD <pre> <reconcile>`, then restore the exact index entry and bytes.
+- **Why:** T-3242 requires the tagged commit to carry the version the tag names, and `master` must fast-forward to that same commit before it is pushed. So the commit has to exist before publish. "Commit after publish" would tag and publish a commit with the old VERSION.
+- **Rejected:** `git revert` (adds a second commit, and the dev branch history then shows a release that never happened); `reset --hard` (would discard unrelated working-tree changes). If HEAD has moved past the reconcile commit, the rollback refuses to move HEAD and prints the `git revert` command instead.
+- **Scope kept:** once the release branch has reached a remote, nothing is reverted (T-3193 holds the release open).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -320,3 +377,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3820-fw-release-rollback-is-partial-on-a-refu.md
 - **Context:** Initial task creation
+
+### 2026-10-04T14:35:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

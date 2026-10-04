@@ -142,6 +142,61 @@ release_reconcile_version() {
 }
 
 # ---------------------------------------------------------------------------
+# release_version_snapshot <root>  /  release_version_restore <root> <snap> <pre_head> <reconciled_sha>
+#   T-3820: v1.8.0 attempt 1's rollback restored master and deleted the tag but
+#   left the VERSION-reconcile commit on the dev branch; the next ordinary push
+#   published "1.8.0" with no release behind it. The reconcile commit cannot
+#   move after publish (the tag must point at it, T-3242), so every refusal
+#   after it reverts it instead.
+#
+#   snapshot: echoes a temp dir holding the exact working-tree bytes and index
+#   entry of VERSION and .agentic-framework/VERSION, as they were pre-release.
+#   restore:  moves HEAD back from <reconciled_sha> to <pre_head> with a
+#   compare-and-swap update-ref (refuses if HEAD moved on since), then puts the
+#   index entries and bytes back. <reconciled_sha> empty = no commit was made
+#   (e.g. the reconcile commit itself failed): only the files are restored.
+# ---------------------------------------------------------------------------
+release_version_snapshot() {
+    local root="$1" snap p key
+    snap="$(mktemp -d -t fw-release-version-XXXXXX)" || return 1
+    for p in VERSION .agentic-framework/VERSION; do
+        key="${p//\//__}"
+        if [ -f "$root/$p" ]; then cp -p "$root/$p" "$snap/$key.bytes"; fi
+        git -C "$root" ls-files -s -- "$p" > "$snap/$key.index" 2>/dev/null
+    done
+    echo "$snap"
+}
+
+release_version_restore() {
+    local root="$1" snap="$2" pre_head="$3" reconciled="$4" p key rc=0
+    if [ -n "$reconciled" ]; then
+        if git -C "$root" update-ref -m "fw release: revert VERSION reconcile (T-3820)" \
+                HEAD "$pre_head" "$reconciled" 2>/dev/null; then
+            echo "  Reverted the VERSION reconcile commit ${reconciled:0:9}; HEAD is back at ${pre_head:0:9}." >&2
+        else
+            echo -e "  ${RED}NOT reverted:${NC} HEAD is no longer the reconcile commit ${reconciled:0:9}," >&2
+            echo "  so moving it could discard someone else's work. Revert it by hand:" >&2
+            echo "    git revert ${reconciled}" >&2
+            rc=1
+        fi
+    fi
+    [ -d "$snap" ] || return $rc
+    for p in VERSION .agentic-framework/VERSION; do
+        key="${p//\//__}"
+        if [ -s "$snap/$key.index" ]; then
+            git -C "$root" update-index --index-info < "$snap/$key.index" 2>/dev/null || rc=1
+        else
+            git -C "$root" rm -q --cached --ignore-unmatch -- "$p" >/dev/null 2>&1
+        fi
+        if [ -f "$snap/$key.bytes" ]; then
+            cp -p "$snap/$key.bytes" "$root/$p" || rc=1
+        fi
+    done
+    rm -rf "$snap"
+    return $rc
+}
+
+# ---------------------------------------------------------------------------
 # release_ff_state <root> <release_branch>
 #   Can <release_branch> fast-forward to HEAD? Echoes exactly one of:
 #     missing      — no such local branch (consumer repo, fresh clone)
@@ -381,13 +436,25 @@ release_tag_and_release() {
     # carries the version the tag names (T-3242). HEAD moves by one commit, so
     # the fast-forward leg is recomputed — the refuse cases (branch-ahead /
     # diverged) already fired above and cannot newly appear from advancing HEAD.
+    # T-3820: everything below that refuses must leave HEAD and VERSION as they
+    # are now. _undo puts them back (and is a no-op when nothing was reconciled).
+    local pre_head reconciled_sha="" ver_snap=""
+    pre_head="$(git -C "$root" rev-parse HEAD 2>/dev/null)"
+    _release_undo_reconcile() {
+        [ -n "$ver_snap" ] || return 0
+        release_version_restore "$root" "$ver_snap" "$pre_head" "$reconciled_sha"
+        ver_snap=""
+    }
     if [ -f "$ver_file" ] && [ "$cur_file_ver" != "$want_ver" ]; then
         echo -e "${CYAN}Reconciling VERSION $cur_file_ver → $want_ver (tag-as-canonical)...${NC}"
+        ver_snap="$(release_version_snapshot "$root")"
         if ! release_reconcile_version "$root" "$next"; then
             echo -e "${RED}REFUSING to release:${NC} VERSION reconciliation commit failed." >&2
-            echo "  No tag was created. Check the working tree state of VERSION and retry." >&2
+            _release_undo_reconcile
+            echo "  No tag was created; VERSION restored. Check the working tree state of VERSION and retry." >&2
             return 1
         fi
+        reconciled_sha="$(git -C "$root" rev-parse HEAD 2>/dev/null)"
         ff_state="$(release_ff_state "$root" "$release_branch")"
         ff_count=0
         if [ "$ff_state" = "clean" ]; then
@@ -400,6 +467,7 @@ release_tag_and_release() {
     echo -e "${CYAN}Creating annotated tag $next...${NC}"
     if ! git -C "$root" tag -a "$next" -m "$next: auto-release ($commits commits since $latest)"; then
         echo -e "${RED}Failed to create tag${NC}" >&2
+        _release_undo_reconcile
         return 1
     fi
 
@@ -415,6 +483,7 @@ release_tag_and_release() {
             echo -e "${RED}Failed to advance local '$release_branch'${NC} — is it checked out in a worktree?" >&2
             git -C "$root" tag -d "$next" >/dev/null 2>&1
             echo "  Tag $next was removed; nothing was published." >&2
+            _release_undo_reconcile
             return 1
         fi
         # The LOCAL fast-forward succeeding does not mean the install surface
@@ -442,6 +511,7 @@ release_tag_and_release() {
             git -C "$root" branch -f "$release_branch" "$rb_before" >/dev/null 2>&1
             git -C "$root" tag -d "$next" >/dev/null 2>&1
             echo "  Rolled back: $release_branch restored, tag $next removed; nothing was published." >&2
+            _release_undo_reconcile
             return 1
         fi
     elif [ "$ff_state" = "missing" ]; then
@@ -449,6 +519,10 @@ release_tag_and_release() {
     else
         echo -e "${GREEN}$release_branch already at HEAD — no fast-forward needed${NC}"
     fi
+    # Past this point the reconcile commit may be published on the release
+    # branch; it is never reverted from here on (T-3193 holds the release open).
+    [ -n "$ver_snap" ] && rm -rf "$ver_snap"
+    ver_snap=""
 
     # Push tag to every remote
     # (failed is declared above, with the release-branch push that also sets it)
