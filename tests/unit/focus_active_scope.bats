@@ -44,7 +44,10 @@ _sandbox() {
 
 _focus() {
     local root="$1"; shift
-    PROJECT_ROOT="$root" TASKS_DIR="$root/.tasks" CONTEXT_DIR="$root/.context" \
+    # T-3747: a dispatched worker exports FW_SESSION_SCOPED_FOCUS=1 (T-3038), which
+    # moves focus to focus.<key>.yaml; this suite asserts the shared focus.yaml.
+    env -u FW_SESSION_SCOPED_FOCUS -u FW_FOCUS_SESSION_KEY \
+        PROJECT_ROOT="$root" TASKS_DIR="$root/.tasks" CONTEXT_DIR="$root/.context" \
         bash "$CONTEXT_SH" focus "$@" 2>&1
 }
 
