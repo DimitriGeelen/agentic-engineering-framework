@@ -180,8 +180,8 @@ PY
     [ "$status" -eq 0 ]
     echo "$output" | grep -q 'please review the RCA'
     echo "$output" | grep -q 'Pending peer consult(s): 1 '
-    ! echo "$output" | grep -q 'no action or reply needed'
-    ! echo "$output" | grep -q 'base-a-nudge'
+    [[ "$output" != *'no action or reply needed'* ]]
+    [[ "$output" != *'base-a-nudge'* ]]
     [ "$(echo "$output" | grep -o 'Not mail, not shown' | wc -l)" -eq 1 ]
     echo "$output" | grep -q '1 delivery receipt(s), 2 nudge(s) for consults already answered, 0 repeat nudge(s)'
 }
