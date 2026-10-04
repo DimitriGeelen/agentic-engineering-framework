@@ -311,16 +311,22 @@ do_promote() {
     local obs_id=""
     local task_type="build"
     local allow_duplicate=false
+    # 832 T-912/T-1027: owner defaults to agent (--owner overrides). A promoted observation is
+    # "this needs doing", not "only the operator can close this"; hard-coding human made every
+    # promotion an operator-only decision on the delegation surface.
+    local task_owner="agent"
     while [ $# -gt 0 ]; do
         case "$1" in
             --type|-t) task_type="$2"; shift 2 ;;
+            --owner|-o) task_owner="$2"; shift 2 ;;
             --allow-duplicate) allow_duplicate=true; shift ;;
             -h|--help)
-                echo "Usage: fw note promote OBS-NNN [--type <build|inception|...>] [--allow-duplicate]"
+                echo "Usage: fw note promote OBS-NNN [--type <build|inception|...>] [--owner <agent|human>] [--allow-duplicate]"
+                echo "  --owner defaults to agent."
                 return 0 ;;
             -*)
                 echo -e "${RED}Unknown flag: $1${NC}" >&2
-                echo "Usage: fw note promote OBS-NNN [--type <build|inception|...>]" >&2
+                echo "Usage: fw note promote OBS-NNN [--type <build|inception|...>] [--owner <agent|human>]" >&2
                 return 1 ;;
             *)
                 if [ -z "$obs_id" ]; then obs_id="$1"; else
@@ -368,18 +374,56 @@ do_promote() {
     echo -e "${YELLOW}Promoting $obs_id to task (type: $task_type)...${NC}"
     echo ""
 
-    # Create task
-    PROJECT_ROOT="$PROJECT_ROOT" "$FRAMEWORK_ROOT/agents/task-create/create-task.sh" \
-        --name "$text" \
-        --description "Promoted from observation $obs_id" \
-        --type "$task_type" \
-        --owner human
+    # Create task. Output is CAPTURED so the created id can be read back, then re-printed in full.
+    local create_out create_rc=0
+    local -a create_args=(--name "$text" --description "Promoted from observation $obs_id"
+                          --type "$task_type" --owner "$task_owner")
+    create_out=$(PROJECT_ROOT="$PROJECT_ROOT" "$FRAMEWORK_ROOT/agents/task-create/create-task.sh" \
+        "${create_args[@]}" 2>&1) || create_rc=$?
+    printf '%s\n' "$create_out"
+    if [ "$create_rc" -ne 0 ]; then
+        echo -e "${RED}promote: task creation failed (rc=$create_rc)${NC}" >&2
+        echo "  $obs_id is left PENDING — an observation marked promoted with no task behind it" >&2
+        echo "  is worse than one still in the queue." >&2
+        return 1
+    fi
 
-    # Mark as promoted
-    _sed_i "/id: $obs_id/,/promoted_to:/{s/status: pending/status: promoted/;s/promoted_to: null/promoted_to: task/}" "$INBOX_FILE"
+    # T-912: record the REAL task id. 1.7.740 wrote the literal 'task' into promoted_to, so the field
+    # was filled with a constant and nothing linked an observation to the task it turned into.
+    local new_id
+    new_id=$(printf '%s\n' "$create_out" | sed -n 's/^ID:[[:space:]]*\(T-[0-9][0-9]*\).*/\1/p' | head -1)
+    if [ -z "$new_id" ]; then
+        echo -e "${RED}promote: could not read the created task id from create-task.sh output${NC}" >&2
+        echo "  $obs_id is left PENDING rather than marked with a placeholder." >&2
+        return 1
+    fi
+
+    # The REVERSE link, in a field a query can read (the description's prose is not an index).
+    local task_file
+    task_file=$(printf '%s\n' "$create_out" | sed -n 's/^File:[[:space:]]*\(.*[^[:space:]]\)[[:space:]]*$/\1/p' | head -1)
+    if [ -n "$task_file" ] && [ -f "$task_file" ]; then
+        OBS_ID="$obs_id" TASK_FILE="$task_file" python3 -c '
+import os, sys
+f, obs = os.environ["TASK_FILE"], os.environ["OBS_ID"]
+lines = open(f, encoding="utf-8").read().split("\n")
+if any(ln.startswith("observation:") for ln in lines):
+    sys.exit(0)
+for i, ln in enumerate(lines):
+    if ln.startswith("id: "):
+        lines.insert(i + 1, "observation: %s" % obs)
+        break
+else:
+    sys.exit(1)
+open(f, "w", encoding="utf-8").write("\n".join(lines))
+' || echo "  (warning: could not add the observation backlink to $task_file)" >&2
+    fi
+
+    # Mark as promoted, with the id rather than a constant.
+    _sed_i "/id: $obs_id/,/promoted_to:/{s/status: pending/status: promoted/;s/promoted_to: null/promoted_to: $new_id/}" "$INBOX_FILE"
 
     echo ""
-    echo -e "${GREEN}$obs_id promoted to task${NC}"
+    echo -e "${GREEN}$obs_id promoted to $new_id${NC} (owner: $task_owner)"
+    echo "  $obs_id.promoted_to → $new_id, and $new_id.observation → $obs_id"
 }
 
 do_dismiss() {
