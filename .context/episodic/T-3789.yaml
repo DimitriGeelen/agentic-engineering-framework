@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3789: fw recall mapped every semantic hit on learnings.yaml to L-001 ('First learning') and filtered memory from a 15-hit pool, so semantic recall never returned real learnings even with a healthy index
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-04T07:20:10Z
+# ============================================================================
+
+task_id: T-3789
+task_name: "fw recall mapped every semantic hit on learnings.yaml to L-001 ('First learning') and filtered memory from a 15-hit pool, so semantic recall never returned real learnings even with a healthy index"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T07:17:42Z
+completed: 2026-10-04T07:19:45Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-04T09:19:39+02:00
+last_commit: 2026-10-04T09:19:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw recall returns the real learnings — hits map by text overlap (L-001 'First learning' swallowed every learnings.yaml hit); memory filter draws from a wide pool (15 hits were all tasks/reports → silent keyword fallback); tests. vendored memory-recall.py
+
+# Key outcomes
+outcomes:
+  - 'A vector hit maps to the knowledge item it came from by >= 40 chars of real text overlap (tags/YAML keys stripped); no match otherwise — L-001 no longer swallows hits'
+  - 'The memory filter draws from a pool of max(80, limit*16) ranked hits, so memory hits are not crowded out by task files/reports'
+  - 'Live check: ''where is the OpenRouter key stored'' → L-690; ''vector reindex cron job missing in consumers'' → L-692; tests/unit/test_t3789_recall_hit_mapping.py 4/4, test_recall_telemetry.py and t3056_recall_open_tasks.bats green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/memory-recall.py'
+  - 'agents/context/lib/memory-recall.py'
+  - '.tasks/active/T-3789-fw-recall-mapped-every-semantic-hit-on-l.md'
+  - 'tests/unit/test_t3789_recall_hit_mapping.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-04T09:19:39'
+    action: 'T-3789: fw recall returns the real learnings — hits map by text overlap (L-001 ''First learning'' swallowed every learnings.yaml hit); memory filter draws from a wide pool (15 hits were all tasks/reports → silent keyword fallback); tests'
+  - time: '2026-10-04T09:19:44'
+    action: 'T-3789: vendored memory-recall.py'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 4
+  lines_added: 479
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3789-fw-recall-mapped-every-semantic-hit-on-l.md
+generated_by: context-agent-hybrid
