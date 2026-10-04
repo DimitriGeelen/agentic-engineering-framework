@@ -97,6 +97,8 @@ bvp_scores_proposed:
 
 ## Context
 
+055's written RCA with the operator dialogue: /opt/055-agentic-fleet-cockpit/docs/reports/T-454-arc-close-recommendation-rca.md (received 2026-10-04).
+
 055 (agentic-fleet-cockpit) built and tested this in its vendored copy (T-454, patch +
 pytest + screenshots — see description). This task ports it into the framework, reviewed
 rather than applied. Today `_anchor_recommendation` (web/blueprints/arcs.py) reads only the
