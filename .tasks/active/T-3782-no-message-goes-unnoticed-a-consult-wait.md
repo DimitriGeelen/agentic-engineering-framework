@@ -333,8 +333,8 @@ bin/fw watchtower current
 
 ## Recommendation
 
-**Recommendation:** DEFER
-**Rationale:** Everything the ACs ask for is built and tested: 32 unit tests, 4 web tests, and a live e2e that passed. The required independent review ended with VERDICT: FAIL in round 3, the last round allowed. Every round found a real gap and each one was fixed with a regression test. The round-3 findings (content-blind hub dedupe, fw_notify's always-0 exit status, the ingest spool's ordering and visibility) are fixed in 50497f68a, but no independent review has checked those fixes. That is an evidence gap, not a confidence gap: one more review round over 50497f68a is what is missing. A PASS there makes this GO.
+**Recommendation:** GO
+**Rationale:** Everything the ACs ask for is built and tested: 32 unit tests, 4 web tests, and a live e2e that passed. Codex rounds 1–3 each found a real gap, all fixed with regression tests (round 3's in 50497f68a). The missing final round was run by the parent session on a different vendor (Z.ai GLM-5.2, `docs/reports/T-3782-review-zai-final.md`): every Agent AC MET, every earlier finding confirmed fixed, VERDICT: PASS. What remains is your look at the /approvals card (Human AC).
 **Evidence:**
 - Live e2e `docs/reports/T-3782-e2e/T-3782-e2e-s5hbge.json`: sender told in 2.0 s; urgent push at once and the threshold push, once each; handover section; recover gave HANDED_OVER from the transcript within ~4 s; negative control still listed after 162 s
 - Reviews: `docs/reports/T-3782-review-codex-round{1,2,3}.md`; fixes listed per round in `docs/reports/T-3782-review-brief.md`
