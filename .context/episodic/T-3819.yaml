@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3819: fw release preflight checks fast-forwardability against the LOCAL master ref only (release_ff_state, no fetch): origin/master had a commit (ring20 eb49ff9) the local ref did not, so preflight said 'clean' and the release only failed at push time, after it had already committed VERSION and tagged
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-04T14:35:04Z
+# ============================================================================
+
+task_id: T-3819
+task_name: "fw release preflight checks fast-forwardability against the LOCAL master ref only (release_ff_state, no fetch): origin/master had a commit (ring20 eb49ff9) the local ref did not, so preflight said 'clean' and the release only failed at push time, after it had already committed VERSION and tagged"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-04T14:00:18Z
+completed: 2026-10-04T14:34:29Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-04T16:34:01+02:00
+last_commit: 2026-10-04T16:34:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  release preflight graded fast-forward against the local master ref only → ask every push remote (ls-remote + FETCH_HEAD fetch) before VERSION/tag; unreachable refuses unless --offline. vendor sync lib/release.sh → .agentic-framework
+
+# Key outcomes
+outcomes:
+  - 'Preflight queries the release branch on every push remote (`git ls-remote`, then a `FETCH_HEAD`-only fetch when the object is missing) before any VERSION commit or tag'
+  - 'A remote whose release branch is not an ancestor of HEAD refuses the release, names the foreign commit(s), and says "merge <remote>/<branch> into your dev branch first"; no tag, no commit, HEAD unchanged'
+  - 'An unreachable remote refuses unless `--offline` is passed; `--offline` says explicitly that the remote check was skipped; a repo with no remotes says the check is skipped because nothing is published'
+  - '`--dry-run` runs the same remote check and reports the refusal'
+  - 'Regression tests in `tests/unit/t3819_release_remote_preflight.bats` (fixture: bare origin with a commit on master the clone lacks); existing release tests stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-04 — no remote / unreachable remote'
+    chose: 'no remotes → pass with an explicit "No remotes configured — check skipped (nothing is published)". Unreachable remote → REFUSE unless `--offline`, which prints "remote fast-forward check SKIPPED".'
+    rationale: 'a check that could not run is not a check that passed (the G-096 false-green). With no remotes there is no install surface to grade.'
+    alternatives_rejected: ['warn-and-continue when offline. That is exactly the "clean" verdict that produced attempt 1.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/release.sh'
+  - 'lib/release.sh'
+  - '.tasks/active/T-3819-fw-release-preflight-checks-fast-forward.md'
+  - 'tests/unit/t3190_release_master_ff.bats'
+  - 'tests/unit/t3819_release_remote_preflight.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-04T16:34:01'
+    action: 'T-3819: release preflight graded fast-forward against the local master ref only → ask every push remote (ls-remote + FETCH_HEAD fetch) before VERSION/tag; unreachable refuses unless --offline'
+  - time: '2026-10-04T16:34:13'
+    action: 'T-3819: vendor sync lib/release.sh → .agentic-framework'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 34 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 34
+  commits: 2
+  files_changed: 5
+  lines_added: 393
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3819-fw-release-preflight-checks-fast-forward.md
+generated_by: context-agent-hybrid

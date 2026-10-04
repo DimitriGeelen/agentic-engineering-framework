@@ -8,12 +8,12 @@ description: >
   RCA: docs/reports/T-3785-v1.8.0-release-rca.md (2026-10-04, v1.8.0 cut in three
   attempts).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/release.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T14:00:18Z
-last_update: 2026-10-04T14:30:47Z
-date_finished:
+last_update: 2026-10-04T14:34:29Z
+date_finished: 2026-10-04T14:34:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -264,7 +264,8 @@ test "$(grep -c '# skip' /tmp/.t3819a)" -eq 0
 timeout 300 bats tests/unit/t3190_release_master_ff.bats > /tmp/.t3819b 2>&1 && ! grep -q "^not ok" /tmp/.t3819b
 timeout 300 bats tests/unit/t3193_release_tag_push_failure.bats > /tmp/.t3819c 2>&1 && ! grep -q "^not ok" /tmp/.t3819c
 timeout 300 bats tests/unit/lib_release.bats > /tmp/.t3819d 2>&1 && ! grep -q "^not ok" /tmp/.t3819d
-bin/fw vendor self --check
+# Scoped vendor parity: the repo-wide --check also sees lib/sidecar/* drift owned by a concurrent worker.
+cmp -s lib/release.sh .agentic-framework/lib/release.sh
 
 ## RCA
 
@@ -378,3 +379,15 @@ bin/fw vendor self --check
 
 ### 2026-10-04T14:30:47Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-70f19bc0
+- **Timestamp:** 2026-10-04T14:34:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-04T14:34:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
