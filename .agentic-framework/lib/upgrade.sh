@@ -1940,6 +1940,11 @@ CRONREGEOF
     # no longer consults it at all. Detection stays in `fw doctor`, which
     # reports the directory and the rm -rf to run.
 
+    # T-3836: snapshot .mcp.json before step 5 — settings regeneration runs
+    # lib/init.sh code that has rewritten it before. Step 6 compares against this.
+    local _mcp_snapshot=""
+    [ -f "$target_dir/.mcp.json" ] && _mcp_snapshot=$(cat "$target_dir/.mcp.json" 2>/dev/null || true)
+
     # ── 5. .claude/settings.json (hooks config) ──
     echo -e "${YELLOW}[5/10] Claude Code hooks (.claude/settings.json)${NC}"
 
@@ -2206,6 +2211,61 @@ print(sum(len(v) for v in data.get('hooks', {}).values()))
     # Framework-recommended MCP servers
     local recommended_servers='{"context7":1,"playwright":1,"termlink":1,"fw":1}'
 
+    if [ -f "$mcp_file" ] && [ -n "$_mcp_snapshot" ]; then
+        # T-3836: compare against the pre-step-5 snapshot. Any server, or any env
+        # key of a server, that existed before this upgrade and is gone now was
+        # dropped by the upgrade itself — restore it and name it. "OK" below is
+        # only printed when nothing had to be restored.
+        local _mcp_restored
+        _mcp_restored=$(MCP_FILE="$mcp_file" MCP_SNAPSHOT="$_mcp_snapshot" \
+            MCP_DRY="$([ "$dry_run" = true ] && echo 1)" python3 -c "
+import json, os
+def servers_of(raw):
+    if not isinstance(raw, dict):
+        return {}
+    s = raw.get('mcpServers') if isinstance(raw.get('mcpServers'), dict) else raw
+    return s if isinstance(s, dict) else {}
+try:
+    before = servers_of(json.loads(os.environ['MCP_SNAPSHOT']))
+except ValueError:
+    before = {}
+p = os.environ['MCP_FILE']
+with open(p) as f:
+    raw = json.load(f)
+now = servers_of(raw)
+restored = []
+for name, entry in before.items():
+    if name not in now:
+        now[name] = entry
+        restored.append(f'server {name}')
+        continue
+    if not isinstance(entry, dict) or not isinstance(now[name], dict):
+        continue
+    for field, val in entry.items():
+        if field == 'env' and isinstance(val, dict):
+            env_now = now[name].get('env') if isinstance(now[name].get('env'), dict) else {}
+            for k, v in val.items():
+                if k not in env_now:
+                    env_now[k] = v
+                    restored.append(f'{name}.env.{k}')
+            now[name]['env'] = env_now
+        elif field not in now[name]:
+            now[name][field] = val
+            restored.append(f'{name}.{field}')
+if restored and not os.environ.get('MCP_DRY'):
+    with open(p, 'w') as f:
+        json.dump({'mcpServers': now}, f, indent=2)
+        f.write('\n')
+print(', '.join(restored))
+" 2>/dev/null || echo "parse-error")
+        if [ "$_mcp_restored" = "parse-error" ]; then
+            echo -e "  ${YELLOW}WARN${NC}  .mcp.json could not be compared with its pre-upgrade copy (parse error)"
+        elif [ -n "$_mcp_restored" ]; then
+            changes=$((changes + 1))
+            echo -e "  ${YELLOW}RESTORED${NC}  dropped during this upgrade: $_mcp_restored"
+        fi
+    fi
+
     if [ -f "$mcp_file" ]; then
         # Check for missing recommended servers. T-1354: servers live under
         # top-level `mcpServers` key (Claude Code schema). If an older file
@@ -2260,8 +2320,10 @@ with open(mcp_file, 'w') as f:
 " 2>/dev/null
                 echo -e "  ${GREEN}UPDATED${NC}  Added missing MCP servers: $missing_mcp_names (preserved $existing_count existing)"
             fi
-        else
+        elif [ -z "${_mcp_restored:-}" ] || [ "${_mcp_restored:-}" = "parse-error" ]; then
             echo -e "  ${GREEN}OK${NC}  $existing_count MCP server(s) configured (all recommended present)"
+        else
+            echo -e "  ${GREEN}OK${NC}  $existing_count MCP server(s) configured after restore (all recommended present)"
         fi
     else
         changes=$((changes + 1))
