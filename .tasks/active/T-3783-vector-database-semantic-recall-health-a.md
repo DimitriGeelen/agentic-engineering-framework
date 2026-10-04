@@ -12,12 +12,12 @@ description: >
   fw audit (FAIL), the handover and an operator push; plus the RCA of why two months
   of staleness went unnoticed.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/audit/audit.sh, agents/context/lib/focus.sh, agents/context/lib/memory-recall.py, agents/handover/handover.sh, bin/fw, lib/ask.py, lib/config.sh, lib/cron-seed.sh, lib/vector_index_health.py, lib/vector-index-health.sh, web/blueprints/config.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-03T20:35:51Z
-last_update: 2026-10-03T21:03:03Z
-date_finished:
+last_update: 2026-10-04T00:24:32Z
+date_finished: 2026-10-04T00:24:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -424,3 +424,20 @@ bin/fw watchtower current
 
 ### 2026-10-03T20:36:45Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ed5ae0c3
+- **Timestamp:** 2026-10-04T00:25:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Human)** — [REVIEW] Watchtower shows the vector-index settings and says plainly when semantic recall is unavailable
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='names `fw index reindex`' in Expected: the three settings are listed with readable descriptions; the Ask page says the knowledge index is unavailable and names `fw index reindex`,`
+
+### 2026-10-04T00:24:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
