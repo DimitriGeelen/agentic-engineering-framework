@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3803: Sidecar inbox topic is never created for its owner: agent a fresh project's inbox returns 'unknown topic' until a peer posts with --ensure-topic, and fw sidecar status shows 0 without saying the topic is missing (ring20-dashboard + ring20-manager, v1.7.0)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-04T14:44:00Z
+# ============================================================================
+
+task_id: T-3803
+task_name: "Sidecar inbox topic is never created for its owner: agent a fresh project's inbox returns 'unknown topic' until a peer posts with --ensure-topic, and fw sidecar status shows 0 without saying the topic is missing (ring20-dashboard + ring20-manager, v1.7.0)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T10:11:39Z
+completed: 2026-10-04T14:43:41Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-04T16:43:34+02:00
+last_commit: 2026-10-04T16:43:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  only senders' --ensure-topic ever created the owner's inbox topic, and the reader turned 'unknown topic' into 0 → receiver start/start/ensure create it (idempotent), status reports a missing topic as FAIL by name. vendor sync of the inbox-topic fix → .agentic-framework/lib/sidecar/{inbox.py,sidecar_cli.py}
+
+# Key outcomes
+outcomes:
+  - 'Receiver start and `fw sidecar ensure` create the owner''s own inbox topic (idempotent; a create failure is reported, not swallowed)'
+  - '`fw sidecar status` reports a missing inbox topic as FAIL naming the topic, instead of a silent 0'
+  - 'Regression tests cover topic creation and the missing-topic status line, with a fake termlink runner'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'vendor sync of the inbox-topic fix → .agentic-framework/lib/sidecar/{inbox.py,sidecar_cli.py}'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/inbox.py'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/inbox.py'
+  - '.tasks/active/T-3803-sidecar-inbox-topic-is-never-created-for.md'
+  - 'tests/unit/test_sidecar_inbox_topic_t3803.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-04T16:43:34'
+    action: 'T-3803: only senders'' --ensure-topic ever created the owner''s inbox topic, and the reader turned ''unknown topic'' into 0 → receiver start/start/ensure create it (idempotent), status reports a missing topic as FAIL by name'
+  - time: '2026-10-04T16:43:35'
+    action: 'T-3803: vendor sync of the inbox-topic fix → .agentic-framework/lib/sidecar/{inbox.py,sidecar_cli.py}'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 272 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 272
+  commits: 2
+  files_changed: 6
+  lines_added: 762
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3803-sidecar-inbox-topic-is-never-created-for.md
+generated_by: context-agent-hybrid
