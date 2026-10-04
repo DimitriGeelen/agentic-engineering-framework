@@ -2683,8 +2683,57 @@ DRIFTEOF
              "expand_patterns.py returned: ${drift_result:-<no output>}" \
              "Run: python3 agents/fabric/lib/expand_patterns.py .fabric/watch-patterns.yaml ."
     elif [ "$drift_unreg" -gt 0 ] 2>/dev/null; then
-        warn "Fabric drift: $drift_unreg source file(s) have no fabric card" \
-             "$drift_unreg unregistered files matching watch-patterns.yaml" \
+        # T-525 (832-local, redesigned onto the T-2735 drift block under T-1005): the raw
+        # unregistered count is a DIFFERENCE of two independently moving quantities --
+        # watched grows with the tree, registered only when someone writes a card -- so
+        # "twenty files added, not carded" and "twenty cards DELETED" printed the same line.
+        # State the ratio and compare registered with the most recent prior daily report,
+        # naming a FALL; with no comparable prior, ABSTAIN rather than print a zero delta.
+        # Severity deliberately unchanged (still WARN, still gated on unregistered > 0).
+        # Cron reports are excluded: they run a reduced section set without this line.
+        fabric_registered=$drift_total   # registered card count (T-525 naming; T-549 mutates these lines)
+        fabric_prev=$({ python3 - "${FABRIC_HISTORY_DIR:-$CONTEXT_DIR/audits}" <<'PYEOF' 2>/dev/null || true
+import glob, os, re, sys
+best = None
+for path in sorted(glob.glob(os.path.join(sys.argv[1], "????-??-??.yaml"))):
+    day = os.path.basename(path)[:-5]
+    if not re.fullmatch(r"\d{4}-\d{2}-\d{2}", day):
+        continue
+    try:
+        with open(path) as fh:
+            m = re.search(r"Fabric:\s*(\d+)\s+registered", fh.read())
+    except Exception:
+        continue
+    if m:
+        best = (day, m.group(1))      # sorted() => last match is the most recent day
+if best:
+    print("%s %s" % best)
+PYEOF
+        } || true)
+        fabric_prev_day=$(echo "$fabric_prev" | awk '{print $1}')
+        fabric_prev_reg=$(echo "$fabric_prev" | awk '{print $2}')
+        if [ -n "$fabric_prev_day" ] && [ "$fabric_prev_day" = "$(date +%Y-%m-%d)" ]; then
+            fabric_prev_day="earlier today"
+        fi
+        fabric_pct=0
+        [ "${drift_watched:-0}" -gt 0 ] && fabric_pct=$(( fabric_registered * 100 / drift_watched ))
+        if [ -z "$fabric_prev_reg" ]; then
+            fabric_dir_note="direction not evaluated — no prior audit report carries a Fabric line"
+            fabric_dir_evidence="first comparable run on this install"
+        elif [ "$fabric_registered" -lt "$fabric_prev_reg" ]; then
+            fabric_dir_note="CARD LOSS: $(( fabric_prev_reg - fabric_registered )) fewer cards than $fabric_prev_day ($fabric_prev_reg -> $fabric_registered)"
+            fabric_dir_evidence="registered cards FELL — this is not the accepted growth case; a deleted or malformed card stops participating in component resolution and its own file then reports as unregistered"
+        elif [ "$fabric_registered" -eq "$fabric_prev_reg" ]; then
+            fabric_dir_note="cards flat since $fabric_prev_day ($fabric_registered)"
+            fabric_dir_evidence="registered is unchanged while the watch set moves, so any change in the unregistered count is tree growth, not carding activity"
+        else
+            fabric_dir_note="+$(( fabric_registered - fabric_prev_reg )) cards since $fabric_prev_day"
+            fabric_dir_evidence="registered GREW; a rising unregistered count alongside this is tree growth outpacing carding, not regression"
+        fi
+        # T-2735 keeps ONE coverage claim, the "Fabric drift: N source file(s)" line; the ratio and the
+        # direction ride on that line rather than becoming a second "registered, N unregistered" claim.
+        warn "Fabric drift: $drift_unreg source file(s) have no fabric card — ${fabric_pct}% covered ($fabric_registered of $drift_watched watched; ${fabric_dir_note})" \
+             "$drift_unreg file(s) matching watch-patterns.yaml have no component card; $fabric_dir_evidence" \
              "Run: fw fabric scan"
     else
         # T-2737: state the size of the set that was actually measured. The old
