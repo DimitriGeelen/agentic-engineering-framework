@@ -68,7 +68,7 @@
         Agent Recommendation
         <span class="verdict-badge verdict-{{ recommendation.verdict }}">{{ recommendation.verdict }}</span>
         {% if recommendation.anchor_id %}
-        <span class="anchor-rec-sub">from anchor task <a href="/tasks/{{ recommendation.anchor_id }}">{{ recommendation.anchor_id }}</a></span>
+        <span class="anchor-rec-sub">from {% if recommendation.source == "close_task" %}close-out{% else %}anchor{% endif %} task <a href="/tasks/{{ recommendation.anchor_id }}">{{ recommendation.anchor_id }}</a></span>
         {% endif %}
     </h2>
     {% if recommendation.rationale_html %}
@@ -90,11 +90,15 @@
     {% endif %}
 </section>
 {% else %}
-<div class="empty-rec">
-    <strong>No agent recommendation yet.</strong>
-    The anchor task does not have a <code>## Recommendation</code> block.
-    {% if arc.anchor_task %}
-    Open <a href="/tasks/{{ arc.anchor_task }}">{{ arc.anchor_task }}</a> and write one before closing.
+<div class="empty-rec" data-testid="arc-rec-missing">
+    <strong>No close recommendation yet.</strong>
+    {# T-3843: the close-out task (arc `close_task:`) carries it; the anchor is the fallback. #}
+    Neither the close-out task nor the anchor task has a <code>## Recommendation</code> block.
+    {% if recommendation and recommendation.expected_task %}
+    Open <a href="/tasks/{{ recommendation.expected_task }}">{{ recommendation.expected_task }}</a> and write one before closing
+    (<code>**Recommendation:** CLOSE</code> or KEEP-OPEN, <code>**Rationale:**</code>, <code>**Evidence:**</code>).
+    {% else %}
+    Set <code>close_task:</code> in the arc file to name the close-out task, and write one there.
     {% endif %}
 </div>
 {% endif %}

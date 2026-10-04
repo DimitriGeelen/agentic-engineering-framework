@@ -52,6 +52,9 @@
     .anchor-rec .rec-body { margin: 0.5rem 0 0 0; }
     .anchor-rec .rec-body p { margin: 0.3rem 0; }
     .anchor-rec .rec-body ul { margin: 0.3rem 0 0.3rem 1.2rem; padding: 0; }
+    /* T-3843: a missing close recommendation is shown, never silently omitted. */
+    .anchor-rec-missing { border: 2px solid var(--wt-danger); }
+    .anchor-rec-missing p { margin: 0.3rem 0 0 0; }
 </style>
 
 <p><a href="/arcs/{{ arc_slug }}">← Back to arc detail</a></p>
@@ -83,7 +86,7 @@
         Agent Recommendation
         <span class="verdict-badge verdict-{{ recommendation.verdict }}">{{ recommendation.verdict }}</span>
         {% if recommendation.anchor_id %}
-        <span class="anchor-rec-sub">from anchor task <a href="/tasks/{{ recommendation.anchor_id }}">{{ recommendation.anchor_id }}</a></span>
+        <span class="anchor-rec-sub">from {% if recommendation.source == "close_task" %}close-out{% else %}anchor{% endif %} task <a href="/tasks/{{ recommendation.anchor_id }}">{{ recommendation.anchor_id }}</a></span>
         {% endif %}
     </h2>
     {% if recommendation.rationale_html %}
@@ -103,6 +106,17 @@
         Demo pre-fill: <code>{{ recommendation.suggested_demo }}</code> — edit below if not the right one.
     </p>
     {% endif %}
+</section>
+{% else %}
+{# T-3843 (055 T-454): tasks get no review URL without a Recommendation (T-2421);
+   an arc close shows the same gap, visibly, instead of omitting the card. #}
+<section class="anchor-rec anchor-rec-missing" data-verdict="missing" data-testid="arc-rec-missing">
+    <h2>No close recommendation yet</h2>
+    <p>The agent has not written a recommendation and rationale for closing this arc.
+    It belongs in the <code>## Recommendation</code> section of
+    {% if recommendation and recommendation.expected_task %}task <a href="/tasks/{{ recommendation.expected_task }}">{{ recommendation.expected_task }}</a>{% else %}the arc's close-out task (set <code>close_task:</code> in the arc file){% endif %}:
+    <code>**Recommendation:** CLOSE</code> (or KEEP-OPEN), <code>**Rationale:**</code>, <code>**Evidence:**</code>.</p>
+    <p>You can still close; you would be deciding without the agent's judgement.</p>
 </section>
 {% endif %}
 

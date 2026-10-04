@@ -744,11 +744,14 @@ def _load_close_ready_arcs(threshold: float = 0.80) -> list[dict]:
             continue
 
         rec = _anchor_recommendation(arc)
-        anchor_id = rec.get("anchor_id", "") or str(arc.get("anchor_task") or "").strip()
+        # T-3843: expected_task is the arc's close_task when set, else its anchor.
+        anchor_id = (rec.get("anchor_id", "") or rec.get("expected_task", "")
+                     or str(arc.get("anchor_task") or "").strip())
+        _rec_role = "close-out task" if str(arc.get("close_task") or "").strip() else "anchor"
         blocked_reason = ""
         if not rec.get("present"):
             blocked_reason = (
-                f"anchor {anchor_id or '(none set)'} has no Recommendation section — the agent "
+                f"{_rec_role} {anchor_id or '(none set)'} has no Recommendation section — the agent "
                 f"advisory that closure review reads. Until it is written the arc cannot be "
                 f"judged, only counted."
             ) if anchor_id else (
