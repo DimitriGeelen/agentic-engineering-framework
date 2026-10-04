@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3793: Self-deferral gate (T-3694) scans the task's H1 title: a task titled 'T-X follow-up: …' refuses to close as deferring to its own (completed) parent
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-04T08:16:38Z
+# ============================================================================
+
+task_id: T-3793
+task_name: "Self-deferral gate (T-3694) scans the task's H1 title: a task titled 'T-X follow-up: …' refuses to close as deferring to its own (completed) parent"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T08:14:05Z
+completed: 2026-10-04T08:16:05Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-04T10:16:04+02:00
+last_commit: 2026-10-04T10:16:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  self-deferral gate: H1 title 'T-X follow-up: …' read as a deferral to T-X → skip the task's own '# T-NNNN:' title line
+
+# Key outcomes
+outcomes:
+  - '`lib/design_register.py self-deferral` ignores the task''s own `# T-NNNN: <name>` H1 title line, so a title "T-X follow-up: …" with T-X completed is not refused'
+  - 'Regression test in `tests/unit/test_t3694_design_register.py` (title case passes; the same sentence in `## Recommendation` is still refused); existing T-3694 tests stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/design_register.py'
+  - 'lib/design_register.py'
+  - 'tests/unit/test_t3694_design_register.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-04T10:16:04'
+    action: 'T-3793: self-deferral gate: H1 title ''T-X follow-up: …'' read as a deferral to T-X → skip the task''s own ''# T-NNNN:'' title line'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 3
+  lines_added: 22
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3793-self-deferral-gate-t-3694-scans-the-task.md
+generated_by: context-agent-hybrid
