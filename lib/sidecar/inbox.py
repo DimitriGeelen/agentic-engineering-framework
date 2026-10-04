@@ -236,6 +236,68 @@ def _decode(envelope: dict) -> str:
     return envelope.get("payload") or ""
 
 
+#: Envelope msg_types that are delivery receipts, never mail (T-3792).
+RECEIPT_MSG_TYPES = frozenset({"sidecar.receipt", "receipt"})
+RECEIPT_BODY_PREFIX = "[sidecar receipt]"
+
+
+def is_receipt(envelope: dict) -> bool:
+    """A delivery receipt, by any of the three marks a sender has used (T-3792).
+
+    `metadata.kind=receipt` is the current mark (T-3684). The envelope's own
+    `msg_type` (`sidecar.receipt`, or termlink's `receipt`) and the fixed body
+    prefix catch receipts whose metadata lacks `kind` — 055 measured ~24 of 28
+    surfaced entries as receipts. A receipt only ever hides itself.
+    """
+    meta = envelope.get("metadata") or {}
+    if meta.get("kind") == "receipt" or envelope.get("msg_type") in RECEIPT_MSG_TYPES:
+        return True
+    return _decode(envelope).lstrip().startswith(RECEIPT_BODY_PREFIX)
+
+
+def surface_filter(msgs: list[dict], answered: set[str] | None = None) -> tuple[list[dict], dict]:
+    """What the prompt-hook peek should show, and what it held back (T-3792).
+
+    Held back, and COUNTED (the caller prints one line — never a silent drop):
+      receipts          — anything `is_receipt` would have caught upstream
+      answered_nudges   — `<base>-nudge-N` whose base consult we have already
+                          answered (a REPLIED receipt sent for it)
+      duplicate_nudges  — a further nudge for a base that is already shown
+                          (itself, or a newer nudge for it)
+    Newest first, so the nudge kept for a base is the latest one.
+    """
+    from .receipts import REPLIED, base_id, read_sent
+    if answered is None:
+        answered = {base_id(r.get("client_msg_id")) for r in read_sent()
+                    if r.get("state") == REPLIED and r.get("ok")}
+    counts = {"receipts": 0, "answered_nudges": 0, "duplicate_nudges": 0}
+    present = {m.get("client_msg_id") for m in msgs
+               if m.get("client_msg_id") and base_id(m["client_msg_id"]) == m["client_msg_id"]}
+
+    def _off(m):
+        o = m.get("offset")
+        return o if isinstance(o, (int, float)) else -1
+
+    kept, nudged = [], set()
+    for m in sorted(msgs, key=_off, reverse=True):
+        if (m.get("msg_type") in RECEIPT_MSG_TYPES
+                or str(m.get("body") or "").lstrip().startswith(RECEIPT_BODY_PREFIX)):
+            counts["receipts"] += 1
+            continue
+        cid = str(m.get("client_msg_id") or "")
+        base = base_id(cid)
+        if cid and base != cid:
+            if base in answered:
+                counts["answered_nudges"] += 1
+                continue
+            if base in present or base in nudged:
+                counts["duplicate_nudges"] += 1
+                continue
+            nudged.add(base)
+        kept.append(m)
+    return kept, counts
+
+
 def pending(agent: str | None = None, *, reader=default_reader,
             advance: bool = True, limit: int = DEFAULT_LIMIT) -> list[dict]:
     """Consults addressed to this agent that have not been shown before.
@@ -272,7 +334,7 @@ def pending(agent: str | None = None, *, reader=default_reader,
             if isinstance(offset, int):
                 highest = max(highest, offset + 1)
             meta = env.get("metadata") or {}
-            if meta.get("kind") == "receipt":
+            if is_receipt(env):
                 # T-3684: a delivery receipt for a consult WE sent, posted to
                 # our topic by a peer with no reachable receiver. It is ledger
                 # data, never a consult: recorded (only if we really sent that

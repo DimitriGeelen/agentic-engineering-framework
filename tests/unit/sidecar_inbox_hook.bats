@@ -166,3 +166,32 @@ PY
     [ -z "$output" ]
     [ ! -f "$FAKE_LOG" ]
 }
+
+@test "receipts and answered nudges are held back; one count line; the real consult surfaces (T-3792)" {
+    export PROJECT_ROOT="$SANDBOX/proj"
+    mkdir -p "$PROJECT_ROOT/.context/sidecar"
+    printf '%s\n' '{"client_msg_id":"base-a","state":"REPLIED","ok":true}' > "$PROJECT_ROOT/.context/sidecar/receipts-sent.jsonl"
+    export FAKE_INBOX='{"consults":[
+      {"offset":1,"client_msg_id":"r1","from":"p","conversation_id":"c","body":"[sidecar receipt] RECEIVED for message x from p. Automatic delivery receipt — no action or reply needed."},
+      {"offset":2,"client_msg_id":"base-a-nudge-5","from":"p","conversation_id":"c","body":"[nudge] an unread consult"},
+      {"offset":3,"client_msg_id":"base-a-nudge-6","from":"p","conversation_id":"c","body":"[nudge] an unread consult"},
+      {"offset":4,"client_msg_id":"real-1","from":"p","conversation_id":"c","body":"please review the RCA"}],"dm_rails":[]}'
+    run bash "$HOOK" < /dev/null
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q 'please review the RCA'
+    echo "$output" | grep -q 'Pending peer consult(s): 1 '
+    ! echo "$output" | grep -q 'no action or reply needed'
+    ! echo "$output" | grep -q 'base-a-nudge'
+    [ "$(echo "$output" | grep -o 'Not mail, not shown' | wc -l)" -eq 1 ]
+    echo "$output" | grep -q '1 delivery receipt(s), 2 nudge(s) for consults already answered, 0 repeat nudge(s)'
+}
+
+@test "only receipts and answered nudges pending: silent turn (T-3792)" {
+    export PROJECT_ROOT="$SANDBOX/proj"
+    mkdir -p "$PROJECT_ROOT/.context/sidecar"
+    printf '%s\n' '{"client_msg_id":"base-a","state":"REPLIED","ok":true}' > "$PROJECT_ROOT/.context/sidecar/receipts-sent.jsonl"
+    export FAKE_INBOX='{"consults":[{"offset":1,"client_msg_id":"r1","from":"p","conversation_id":"c","body":"[sidecar receipt] REPLIED for message x"},{"offset":2,"client_msg_id":"base-a-nudge-9","from":"p","conversation_id":"c","body":"[nudge] x"}],"dm_rails":[]}'
+    run bash "$HOOK" < /dev/null
+    [ "$status" -eq 0 ]
+    [ -z "$output" ]
+}
