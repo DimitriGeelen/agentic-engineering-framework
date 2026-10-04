@@ -1,10 +1,15 @@
 ---
 id: T-3822
-name: "fw release publishes non-atomically: master is pushed, then the tag goes through a separate full pre-push audit (~5+ min under load), so consumers see and install the new VERSION on master while the release command still reports it unfinished; push branch and tag in one atomic push and skip the structure audit for a tag-only push"
+name: "fw release publishes non-atomically: master is pushed, then the tag goes through
+  a separate full pre-push audit (~5+ min under load), so consumers see and install
+  the new VERSION on master while the release command still reports it unfinished;
+  push branch and tag in one atomic push and skip the structure audit for a tag-only
+  push"
 description: >
-  RCA: docs/reports/T-3785-v1.8.0-release-rca.md (2026-10-04, v1.8.0 cut in three attempts).
+  RCA: docs/reports/T-3785-v1.8.0-release-rca.md (2026-10-04, v1.8.0 cut in three
+  attempts).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T14:02:33Z
-last_update: 2026-10-04T14:02:33Z
-date_finished: null
+last_update: 2026-10-04T14:48:43Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-04T14:15:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-04T14:15:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3822: fw release publishes non-atomically: master is pushed, then the tag goes through a separate full pre-push audit (~5+ min under load), so consumers see and install the new VERSION on master while the release command still reports it unfinished; push branch and tag in one atomic push and skip the structure audit for a tag-only push
@@ -62,8 +95,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Publication is ONE `git push --atomic <remote> refs/heads/<branch>:refs/heads/<branch> refs/tags/<tag>:refs/tags/<tag>` per remote (tag-only when no local release branch exists), so on each remote both refs land or neither does
+- [x] A refused atomic push is retried (audit-lock contention); when the release reaches NO remote, the release branch, the tag and the VERSION reconcile commit are all rolled back (T-3190/T-3820 semantics), and no GitHub Release is created
+- [x] The pre-push hook runs once per remote for a release, not once for the branch and again for the tag
+- [x] Regression tests in `tests/unit/t3822_release_atomic_publish.bats`: a remote rejecting only the tag ends with neither ref on that remote, the pre-push invocation count is 1, plus a success control leg; t3193 is updated to the atomic semantics; existing release tests stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -223,8 +258,26 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n lib/release.sh
+timeout 300 bats tests/unit/t3822_release_atomic_publish.bats > /tmp/.t3822a 2>&1 && ! grep -q "^not ok" /tmp/.t3822a
+test "$(grep -c '# skip' /tmp/.t3822a)" -eq 0
+timeout 300 bats tests/unit/t3193_release_tag_push_failure.bats > /tmp/.t3822b 2>&1 && ! grep -q "^not ok" /tmp/.t3822b
+timeout 300 bats tests/unit/t3190_release_master_ff.bats > /tmp/.t3822c 2>&1 && ! grep -q "^not ok" /tmp/.t3822c
+timeout 300 bats tests/unit/t3820_release_full_rollback.bats > /tmp/.t3822d 2>&1 && ! grep -q "^not ok" /tmp/.t3822d
+timeout 300 bats tests/unit/t3819_release_remote_preflight.bats > /tmp/.t3822e 2>&1 && ! grep -q "^not ok" /tmp/.t3822e
+timeout 300 bats tests/unit/t3242_version_tag_reconcile.bats > /tmp/.t3822f 2>&1 && ! grep -q "^not ok" /tmp/.t3822f
+# Scoped vendor parity: the repo-wide --check also sees lib/sidecar/* drift owned by a concurrent worker.
+cmp -s lib/release.sh .agentic-framework/lib/release.sh
 
 ## RCA
+
+**Symptom:** v1.8.0 attempt 3: consumers installed "1.8.0" from master while the release still reported itself unfinished. `master` had been pushed, and the tag was minutes behind, going through a second full pre-push audit.
+
+**Root cause:** publishing was two pushes per remote: the release branch first, then the tag in a separate loop. Each push ran the full pre-push structure audit. For the length of the second audit, the install surface carried a version no tag named, and if the tag push had failed it would have stayed that way (T-3193's "hold open" state).
+
+**Why structurally allowed:** T-3193 treated "branch published, tag refused" as a state to manage (hold the release open) instead of one to make impossible. Its tests pinned that half-published state as correct behaviour.
+
+**Prevention:** one `git push --atomic <remote> <branch> <tag>` per remote. On each remote, both refs land or neither does. The pre-push hook runs once, with both ref lines. When no remote took the push, everything rolls back (T-3190/T-3820). Pinned by `tests/unit/t3822_release_atomic_publish.bats`, which a mutation without `--atomic` turns red (3 tests). t3193's AC3 tests were rewritten to the atomic semantics. Full RCA: `docs/reports/T-3785-v1.8.0-release-rca.md`.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -304,6 +357,12 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-04 — atomic push vs. tag-only audit skip
+- **Chose:** one `git push --atomic` per remote carrying both refs, with the existing 3× retry. When the release reaches no remote, the branch, tag and reconcile commit roll back. When it reaches some remotes, the release stands, the failures are reported and the command exits non-zero.
+- **Why:** atomicity closes the consumer window, and one push means one audit per remote. Together they remove the T-3193 hold-open state on a single remote, so the release is either fully published or fully rolled back.
+- **Rejected:** keeping two pushes and skipping the audit for a tag-only push (RCA prevention item 4, alt). That shortens the window but does not close it, and changing the hook's audit scope is a governance change outside this bug. Cross-remote atomicity is impossible with git and is not attempted; partial multi-remote success is reported.
+- **Superseded:** t3193 AC3 ("hold the release open, keep the local tag"). Its tests were rewritten to assert the atomic outcome.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -320,3 +379,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3822-fw-release-publishes-non-atomically-mast.md
 - **Context:** Initial task creation
+
+### 2026-10-04T14:48:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

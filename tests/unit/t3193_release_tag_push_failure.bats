@@ -92,6 +92,7 @@ _gh_not_called()   { [ ! -f "$GH_MARKER" ]; }
 _remote_has_tag()  { git -C "$ORIGIN" rev-parse -q --verify "refs/tags/$1" >/dev/null 2>&1; }
 _remote_no_tag()   { ! git -C "$ORIGIN" rev-parse -q --verify "refs/tags/$1" >/dev/null 2>&1; }
 _local_has_tag()   { git -C "$REPO" rev-parse -q --verify "refs/tags/$1" >/dev/null 2>&1; }
+_local_no_tag()    { ! git -C "$REPO" rev-parse -q --verify "refs/tags/$1" >/dev/null 2>&1; }
 
 # ── CONTROL LEG (AC6) ─────────────────────────────────────────────────────
 # Everything below asserts a refusal. This asserts the feature works when
@@ -136,29 +137,34 @@ _local_has_tag()   { git -C "$REPO" rev-parse -q --verify "refs/tags/$1" >/dev/n
     _remote_no_tag v1.0.1
 }
 
-# ── AC3: which invariant wins ─────────────────────────────────────────────
+# ── AC3, superseded by T-3822: the push is atomic ─────────────────────────
+# T-3193 originally held the release OPEN here: master was already published,
+# the tag was refused, and retracting master would mean a force-push. T-3822
+# publishes branch + tag in ONE `git push --atomic` per remote, so a refused tag
+# now means master did not land either. Nothing is published, and the
+# T-3190/T-3820 rollback applies. The half-published state these tests used to
+# pin cannot arise on a single remote any more; they pin that instead.
 
-@test "the already-pushed release branch is NOT rolled back" {
-    # The branch-push guard CAN roll back, because it fires when the branch
-    # reached no remote — nothing published, nothing to retract. Here master IS
-    # published and consumers may have fetched it, so retracting means a force
-    # push to the install surface. The release is held open instead.
+@test "T-3822: tag refused -> master did NOT land on the remote either (atomic)" {
+    before="$(_remote_sha master)"
     _reject_tags_on_origin
     _release
-    [ "$(_remote_sha master)" = "$(_local_sha bleeding-edge)" ]
+    [ "$(_remote_sha master)" = "$before" ]
 }
 
-@test "the local tag is KEPT so the release can be resumed" {
+@test "T-3822: tag refused -> local tag removed and local master rolled back" {
+    master_before="$(_local_sha master)"
     _reject_tags_on_origin
     _release
-    _local_has_tag v1.0.1
+    _local_no_tag v1.0.1
+    [ "$(_local_sha master)" = "$master_before" ]
 }
 
-@test "the refusal names the resume path and the reason master stands" {
+@test "T-3822: the refusal says nothing was published" {
     _reject_tags_on_origin
     _release
-    [[ "$output" =~ "release tag-and-release" ]]
-    [[ "$output" =~ "not being rolled back" ]]
+    [[ "$output" =~ "nothing was published" ]]
+    [[ "$output" =~ "atomic" ]]
 }
 
 # ── AC2: retry rather than fail on first contention ───────────────────────
