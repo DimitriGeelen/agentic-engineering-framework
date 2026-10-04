@@ -2885,6 +2885,53 @@ def _expand_write_set(patterns: list[str]) -> set[str] | None:
     return expand_globs(patterns, str(PROJECT_ROOT))
 
 
+# ---- T-542 (832-local, re-applied on 1.7.740 under T-1005) -----------------
+# A third blast-radius source after components: and write_set:. Upstream T-3068
+# already returns None for an unmeasured radius (T-542's first half); what it
+# lacks is evidence for the open tasks that declare neither field -- in this repo
+# most of them. Source paths NAMED IN THE BODY AND PRESENT IN THE TREE are that
+# evidence: the existence check makes it a measurement rather than a word count,
+# and a renamed file stops counting the moment the rename lands.
+#
+# Repo-relative source path as written in prose: at least one directory segment,
+# then a known source extension. The extension list is deliberately closed -- an
+# open one matches version strings and sentence-ending abbreviations.
+_BODY_PATH_RE = re.compile(
+    r"(?<![\w/.-])((?:[A-Za-z0-9_.-]+/)+[A-Za-z0-9_.-]+"
+    r"\.(?:py|sh|js|mjs|css|html|yaml|yml|json|md|bpmn))"
+)
+
+_TEMPLATE_PATHS_CACHE: set[str] | None = None
+
+
+def _template_paths(root: Path) -> set[str]:
+    """Source paths named by the TASK TEMPLATES themselves.
+
+    Every task created from a template inherits those lines, so counting them
+    measures the template, not the task (measured: 7 of 59 tasks had no signal
+    except the template's own paths). PL-239: subtract what every member of the
+    corpus shares. Trade-off, stated: a task that genuinely works on a
+    template-cited path loses that one path.
+    """
+    global _TEMPLATE_PATHS_CACHE
+    if _TEMPLATE_PATHS_CACHE is None:
+        acc: set[str] = set()
+        for tpl in sorted((root / ".tasks" / "templates").glob("*.md")):
+            try:
+                acc |= set(_BODY_PATH_RE.findall(tpl.read_text(encoding="utf-8")))
+            except OSError:
+                continue
+        _TEMPLATE_PATHS_CACHE = acc
+    return _TEMPLATE_PATHS_CACHE
+
+
+def _paths_named_in_body(body: str, root: Path) -> set[str]:
+    """Distinct repo-relative source paths named in the body THAT EXIST, minus
+    template-inherited ones."""
+    named = {p for p in _BODY_PATH_RE.findall(body) if (root / p).is_file()}
+    return named - _template_paths(root)
+
+
 def score_blast_radius(fm: dict, body: str, tags: list[str]) -> tuple[int | None, list[str]]:
     """Heuristic: count `components:` entries → 1/3/5/7/9 scale, or None if unknown.
 
@@ -3009,6 +3056,18 @@ def score_blast_radius(fm: dict, body: str, tags: list[str]) -> tuple[int | None
         if k <= 6: return 5, [f"→5 ({src})"]
         if k <= 9: return 7, [f"→7 ({src})"]
         return 9, [f"→9 ({src}-cross-cutting)"]
+
+    # T-542 (832-local): body paths that exist, after the two declared sources.
+    named = _paths_named_in_body(body, PROJECT_ROOT)
+    if named:
+        k = len(named)
+        src = f"{k}-body-paths"
+        ev = [f"paths:{','.join(sorted(named)[:4])}"]
+        if k == 1: return 1, [f"→1 ({src})"] + ev
+        if k <= 3: return 3, [f"→3 ({src})"] + ev
+        if k <= 6: return 5, [f"→5 ({src})"] + ev
+        if k <= 9: return 7, [f"→7 ({src})"] + ev
+        return 9, [f"→9 ({src}-cross-cutting)"] + ev
 
     return None, ["→? (no-components-UNMEASURED-not-zero)"]
 
