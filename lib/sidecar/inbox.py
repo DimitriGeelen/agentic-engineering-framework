@@ -144,6 +144,64 @@ def _binary() -> str:
     return shutil.which("termlink") or "termlink"
 
 
+def topic_present(topic: str, *, runner=subprocess.run, binary: str | None = None,
+                  timeout: int = 15) -> tuple[bool | None, str]:
+    """(present, reason) for one hub topic (T-3803).
+
+    True/False when the hub answered, None when it could not be asked. The
+    distinction matters: `default_reader` turns the hub's "unknown topic"
+    refusal into an empty list, so a missing inbox and an empty one used to
+    read the same — `fw sidecar status` printed 0 either way.
+    """
+    argv = [binary or _binary(), "channel", "list", "--prefix", topic, "--json"]
+    try:
+        proc = runner(argv, capture_output=True, text=True, timeout=timeout)
+    except (OSError, subprocess.SubprocessError) as e:
+        return None, f"termlink channel list failed: {e}"
+    if proc.returncode != 0:
+        return None, ((proc.stderr or proc.stdout or "").strip()[:200]
+                      or f"termlink channel list exited {proc.returncode}")
+    try:
+        names = {t.get("name") for t in json.loads(proc.stdout or "{}").get("topics", [])}
+    except (json.JSONDecodeError, AttributeError):
+        return None, "termlink channel list returned unparseable output"
+    if topic in names:
+        return True, "present"
+    return False, f"topic {topic} does not exist on the hub"
+
+
+def ensure_topic(agent: str | None = None, *, runner=subprocess.run,
+                 binary: str | None = None, timeout: int = 15) -> dict:
+    """Create this agent's own inbox topic if the hub does not have it (T-3803).
+
+    Until this existed nothing on the RECEIVING side ever created the topic:
+    only a sender's `channel post --ensure-topic` did. A fresh project's
+    `fw sidecar inbox` therefore read "unknown topic" (swallowed to empty)
+    until some peer happened to write first — reported on ring20 .121/.122.
+
+    Idempotent: a present topic is left alone (its retention untouched — the
+    hub refuses a re-create that would change it). Returns
+    `{topic, ok, action, reason}`; `action` is one of exists/created/failed.
+    """
+    topic = inbox_topic(agent)
+    present, reason = topic_present(topic, runner=runner, binary=binary, timeout=timeout)
+    if present:
+        return {"topic": topic, "ok": True, "action": "exists", "reason": reason}
+    argv = [binary or _binary(), "channel", "create", topic, "--json"]
+    try:
+        proc = runner(argv, capture_output=True, text=True, timeout=timeout)
+    except (OSError, subprocess.SubprocessError) as e:
+        return {"topic": topic, "ok": False, "action": "failed",
+                "reason": f"termlink channel create failed: {e}"}
+    out = (proc.stderr or "") + (proc.stdout or "")
+    if proc.returncode == 0:
+        return {"topic": topic, "ok": True, "action": "created", "reason": "created"}
+    if "already exists" in out:  # a peer created it between list and create
+        return {"topic": topic, "ok": True, "action": "exists", "reason": "present"}
+    return {"topic": topic, "ok": False, "action": "failed",
+            "reason": out.strip()[:200] or f"termlink channel create exited {proc.returncode}"}
+
+
 def default_reader(topic: str, cursor: int, limit: int = DEFAULT_LIMIT,
                    *, binary: str | None = None, timeout: int = 15) -> list[dict]:
     """Drain a topic from `cursor`. Returns raw envelopes, one per line."""

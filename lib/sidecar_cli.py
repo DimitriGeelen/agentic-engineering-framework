@@ -244,6 +244,29 @@ def _inbound_or_unknown() -> dict:
         return {"unread": None, "topics": [], "reason": str(exc)}
 
 
+def _inbox_topic_check() -> dict:
+    """OK / FAIL / UNKNOWN for this agent's own inbox topic (T-3803).
+
+    FAIL names the topic and the remedy. UNKNOWN when it could not be asked
+    (no termlink, no address, hub refused the list) — never OK by default.
+    """
+    import shutil
+    if shutil.which("termlink") is None:
+        return {"verdict": "UNKNOWN", "topic": None, "reason": "termlink absent"}
+    try:
+        topic = inbox.inbox_topic()
+    except circuit.CircuitError as exc:
+        return {"verdict": "UNKNOWN", "topic": None, "reason": str(exc)}
+    present, reason = inbox.topic_present(topic)
+    if present:
+        return {"verdict": "OK", "topic": topic, "reason": topic}
+    if present is False:
+        return {"verdict": "FAIL", "topic": topic,
+                "reason": f"{topic} does not exist on the hub; peers' consults "
+                          "cannot be read until it does (fw sidecar ensure creates it)"}
+    return {"verdict": "UNKNOWN", "topic": topic, "reason": reason}
+
+
 def cmd_status(args) -> int:
     snap = status_mod.snapshot()
     # T-3442: DM rail summary is queried HERE, separately from
@@ -263,6 +286,7 @@ def cmd_status(args) -> int:
     # answer "no consults waiting" when what it means is "I could not look" —
     # that false green is the whole subject of this task.
     inbound = _inbound_or_unknown()
+    topic_check = _inbox_topic_check()
     probe = None
     if args.probe:
         # Kept apart from the file-derived numbers on purpose: the hub's
@@ -273,6 +297,7 @@ def cmd_status(args) -> int:
         payload = dict(snap)
         payload["dm_rails"] = dm_rows
         payload["inbound"] = inbound
+        payload["inbox_topic_check"] = topic_check
         if probe is not None:
             payload["hub_probe"] = probe
         payload["watcher"] = dict(watcher.liveness_verdict(), supervisor_alive=watcher.supervisor_alive())
@@ -282,6 +307,9 @@ def cmd_status(args) -> int:
     # Printed unconditionally, including the zero. "inbound unread: 0" is a
     # measurement; the absence of a line is indistinguishable from a check
     # that was never made, which is the state this whole task is about.
+    # T-3803: a missing topic is a FAIL by name, not a silent 0 — the reader
+    # turns the hub's "unknown topic" into an empty list.
+    print(f"inbox topic:      {topic_check['verdict']} — {topic_check['reason']}")
     if inbound["unread"] is None:
         print(f"inbound unread:   unknown — {inbound.get('reason', 'no address')}")
     else:
@@ -564,6 +592,29 @@ def _start_watcher(agent: str, tick, no_inject: bool, quiet: bool) -> dict:
     return res
 
 
+def _ensure_inbox_topic(agent: str | None, quiet: bool) -> dict:
+    """T-3803: create the owner's inbox topic at receiver start / ensure.
+
+    Before this, only a sender's `--ensure-topic` post created it, so a fresh
+    project read "unknown topic" until a peer happened to write first. A
+    failure is printed (stderr), never swallowed; termlink absent is reported
+    as skipped, since there is no hub to create it on.
+    """
+    import shutil
+    if shutil.which("termlink") is None:
+        return {"topic": None, "ok": False, "action": "skipped", "reason": "termlink absent"}
+    try:
+        row = inbox.ensure_topic(agent or None)
+    except circuit.CircuitError as exc:  # no address: report, never abort the start
+        row = {"topic": None, "ok": False, "action": "failed", "reason": str(exc)}
+    if not row["ok"]:
+        print(f"inbox topic: FAIL — could not create {row['topic']}: {row['reason']}",
+              file=sys.stderr)
+    elif not quiet:
+        print(f"inbox topic: {row['action']} {row['topic']}")
+    return row
+
+
 def cmd_receiver_start(args) -> int:
     """Start the per-agent receiver (T-3693) and, unless --no-watcher, its
     supervised watcher (T-3684/T-3685).
@@ -577,6 +628,8 @@ def cmd_receiver_start(args) -> int:
     if not agent:
         return 2
     rc, _info = _start_receiver(agent, args.port, args.no_inject, args.quiet)
+    if rc != 2:
+        _ensure_inbox_topic(agent, args.quiet)
     if rc == 0 and not args.no_watcher:
         _start_watcher(agent, args.tick, args.no_inject, args.quiet)
     return rc
@@ -591,9 +644,10 @@ def cmd_start(args) -> int:
     rc, info = _start_receiver(agent, args.port, args.no_inject, args.quiet)
     if rc == 2:
         return 2
+    topic_row = _ensure_inbox_topic(agent, args.quiet or args.json)
     res = _start_watcher(agent, args.tick, args.no_inject, args.quiet)
     if args.json:
-        print(json.dumps({"receiver": info, "watcher": res, "tick_s": watcher.tick_seconds(args.tick),
+        print(json.dumps({"receiver": info, "watcher": res, "inbox_topic": topic_row, "tick_s": watcher.tick_seconds(args.tick),
                           "liveness": watcher.liveness_verdict()["state"]}))
     return 0 if (res.get("started") or res.get("reason") == "already running") else 2
 
@@ -646,6 +700,11 @@ def cmd_ensure(args) -> int:
             res = watcher.start_supervisor()
             watcher.record_event("SUPERVISOR_ENSURED", result=res.get("reason") or "started")
             row["action"] = f"supervisor restarted pid={res.get('pid')}"
+    # T-3803: every ensure (cron, @reboot, SessionStart) also makes sure the
+    # owner's inbox topic exists, enabled or not — `fw sidecar inbox` reads it
+    # either way, and an absent topic otherwise stays absent until a peer posts.
+    t = _ensure_inbox_topic((cfg or {}).get("agent") or None, True)
+    row["inbox_topic"] = {"topic": t["topic"], "action": t["action"], "reason": t["reason"]}
     if args.json:
         print(json.dumps(row))
     else:
