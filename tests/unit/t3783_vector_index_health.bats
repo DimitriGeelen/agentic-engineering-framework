@@ -409,3 +409,16 @@ PY
     [[ "$output" == *"FAIL|check: vector index check crashed: injected"* ]]
     [[ "$output" == *"TURNED_RED"* ]]
 }
+
+@test "T-3783 final review: a checker that cannot start is recorded and pushed once on the transition" {
+    local root="$BATS_TEST_TMPDIR/startfail"; mkdir -p "$root/.context/working" "$BATS_TEST_TMPDIR/bin"
+    printf '#!/bin/sh\nexit 1\n' > "$BATS_TEST_TMPDIR/bin/python3"; chmod +x "$BATS_TEST_TMPDIR/bin/python3"
+    run bash -c "
+        export PATH='$BATS_TEST_TMPDIR/bin':\$PATH FRAMEWORK_ROOT='$BATS_TEST_DIRNAME/../..' PROJECT_ROOT='$root'
+        source '$BATS_TEST_DIRNAME/../../lib/vector-index-health.sh'
+        n=0; fw_notify() { n=\$((n+1)); }
+        vector_index_health >/dev/null; vector_index_health >/dev/null
+        echo notified=\$n"
+    [[ "$output" == *"notified=1"* ]]
+    grep -q '"status": "FAIL"' "$root/.context/working/vector-index-health.json"
+}
