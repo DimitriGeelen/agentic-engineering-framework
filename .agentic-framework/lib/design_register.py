@@ -43,6 +43,14 @@ from pathlib import Path
 
 import yaml
 
+# Import arc_membership with fallback for script execution
+try:
+    from lib.arc_membership import scan_tasks_by_arc_id
+except ImportError:
+    # When run as a script, lib is in the same directory
+    sys.path.insert(0, str(Path(__file__).parent))
+    from arc_membership import scan_tasks_by_arc_id  # noqa: F401
+
 TASK_ID_RE = re.compile(r"\bT-\d{3,}\b")
 _FENCE_RE = re.compile(r"```ya?ml[ \t]*\n(.*?)```", re.DOTALL)
 
@@ -324,10 +332,20 @@ def stale_keystones(root: Path, days: float = 3.0, now: datetime | None = None,
                 reasons.setdefault(str(tid), set()).add(f"named as {key} of arc {slug}")
                 arc_of.setdefault(str(tid), slug)
 
-    for tid, info in tasks.items():
-        arc_id = str(info["fm"].get("arc_id") or "").strip()
-        if arc_id and (_KEYSTONE_NAME_RE.search(info["name"]) or _S1_RE.search(info["name"])):
-            reasons.setdefault(tid, set()).add(f"keystone/slice 1 of arc {arc_slug_by_id.get(arc_id, arc_id)}")
+    # Use canonical arc_membership to handle both arc_id field and legacy arc: tags
+    arc_tasks = scan_tasks_by_arc_id(root)
+    for arc_id, task_paths in arc_tasks.items():
+        for path in task_paths:
+            # Extract task id from path (e.g., ".tasks/active/T-123-..." → "T-123")
+            m = re.search(r"(T-\d+)", path)
+            if not m:
+                continue
+            tid = m.group(1)
+            info = tasks.get(tid)
+            if not info:
+                continue
+            if _KEYSTONE_NAME_RE.search(info["name"]) or _S1_RE.search(info["name"]):
+                reasons.setdefault(tid, set()).add(f"keystone/slice 1 of arc {arc_slug_by_id.get(arc_id, arc_id)}")
 
     out = []
     for tid, why in reasons.items():
