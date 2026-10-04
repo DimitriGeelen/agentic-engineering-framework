@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3832: fw vendor visibility check (T-3144) enumerates every file on disk under .agentic-framework/ (find) instead of what do_vendor wrote, so pre-existing ignored files (a stale clone's .context/.tasks/tests, 11,370 on ring20-dashboard) fail the update with 12,135 'invisible' files
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-04T19:03:34Z
+# ============================================================================
+
+task_id: T-3832
+task_name: "fw vendor visibility check (T-3144) enumerates every file on disk under .agentic-framework/ (find) instead of what do_vendor wrote, so pre-existing ignored files (a stale clone's .context/.tasks/tests, 11,370 on ring20-dashboard) fail the update with 12,135 'invisible' files"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T15:27:20Z
+completed: 2026-10-04T19:03:07Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-04T20:49:14+02:00
+last_commit: 2026-10-04T20:49:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the T-3144 visibility check enumerated every file on disk under .agentic-framework/ (find), so ignored leftovers that also exist in the source failed the vendor → do_vendor passes a manifest of what it wrote, the check judges only that, counts leftovers unjudged, and names an invisible pinned designer build and lib/ts/dist/*.js. vendor sync of the write-manifest visibility check → .agentic-framework/{bin/fw,lib/vendor-visibility.sh}
+
+# Key outcomes
+outcomes:
+  - '`do_vendor` records the files it wrote (every include, the pinned designer build, VERSION, sentinels, FRAMEWORK.md) and the visibility check judges exactly that list; pre-existing ignored files under `.agentic-framework/` that the vendor did not write never fail the vendor (count reported as not judged)'
+  - 'When the pinned designer build (T-3064) or `lib/ts/dist/*.js` are among the invisible files, the FAIL output names them explicitly'
+  - 'Regression tests: in tests/unit/vendor_visibility.bats (manifest judged, leftovers not, named callouts) and a live `fw vendor` in tests/unit/upgrade_fresh_machine_simulation.bats over a consumer carrying ignored leftovers that also exist in the source (fails before the fix, passes after); both files stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/vendor-visibility.sh'
+  - 'bin/fw'
+  - '.context/episodic/T-3831.yaml'
+  - 'lib/vendor-visibility.sh'
+  - '.tasks/active/T-3832-fw-vendor-visibility-check-t-3144-enumer.md'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats'
+  - 'tests/unit/vendor_visibility.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-04T20:49:14'
+    action: 'T-3832: the T-3144 visibility check enumerated every file on disk under .agentic-framework/ (find), so ignored leftovers that also exist in the source failed the vendor → do_vendor passes a manifest of what it wrote, the check judges only that, counts leftovers unjudged, and names an invisible pinned designer build and lib/ts/dist/*.js'
+  - time: '2026-10-04T20:49:19'
+    action: 'T-3832: vendor sync of the write-manifest visibility check → .agentic-framework/{bin/fw,lib/vendor-visibility.sh}'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 215 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 215
+  commits: 2
+  files_changed: 8
+  lines_added: 567
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3832-fw-vendor-visibility-check-t-3144-enumer.md
+generated_by: context-agent-hybrid
