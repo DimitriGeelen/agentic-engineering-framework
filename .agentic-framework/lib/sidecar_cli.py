@@ -78,7 +78,8 @@ def _send_direct(args, entry: dict) -> int:
     """T-3693: the peer has a registered receiver — call its API directly."""
     row = direct.send(entry, from_id=inbox.agent_id(), to=args.to, body=args.body,
                       conversation_id=args.conversation or f"consult-{args.to}",
-                      urgent=args.urgent, in_reply_to=args.in_reply_to,
+                      urgent=args.urgent,
+                      in_reply_to=receipts.base_id(args.in_reply_to) if args.in_reply_to else None,
                       handover_deadline_s=args.handover_deadline,
                       retries=args.retries)
     ok = row["state"] == direct.RECEIVED
@@ -102,8 +103,12 @@ def _replied_receipt(args) -> None:
     receiver already — direct.note_reply)."""
     if not getattr(args, "in_reply_to", None):
         return
-    env = receipts.origin(args.in_reply_to)
+    # T-3804: answering a nudge (`<base>-nudge-N`) answers its consult. The
+    # receipt names the BASE id — the only one the sender's outbox knows.
+    base = receipts.base_id(args.in_reply_to)
+    env = receipts.origin(args.in_reply_to) or receipts.origin(base)
     if env:
+        env = dict(env, client_msg_id=base)
         try:
             receipts.send(env, receipts.REPLIED, by="reply")
         except Exception as e:
@@ -141,7 +146,8 @@ def _cmd_send(args) -> int:
     client_msg_id = outbox.write_message(
         from_id=inbox.agent_id(), to=target, body=args.body,
         conversation_id=args.conversation or f"consult-{args.to}",
-        urgent=args.urgent, hub=args.hub)
+        urgent=args.urgent, hub=args.hub,
+        in_reply_to=receipts.base_id(args.in_reply_to) if args.in_reply_to else None)
 
     result = delivery.deliver(client_msg_id, transport.termlink_transport,
                               transport.probe_hub)

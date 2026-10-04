@@ -107,6 +107,11 @@ def build_post_command(msg: dict, *, binary: str | None = None,
         "--metadata", f"from_circuit={msg.get('from_circuit') or circuit.circuit_id('full')}",
         "--payload", msg["body"],
     ]
+    if msg.get("in_reply_to"):
+        # T-3804: NOT metadata.in_reply_to — termlink reads that key as a
+        # parent OFFSET for its thread views. A message id gets its own key.
+        argv[argv.index("--payload"):argv.index("--payload")] = [
+            "--metadata", f"in_reply_to_msg_id={msg['in_reply_to']}"]
     if msg.get("urgent"):
         # T-3684: urgency survives the hub fallback (R5) — the receiving
         # watcher injects it at once instead of waiting for readiness.

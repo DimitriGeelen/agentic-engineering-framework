@@ -156,15 +156,55 @@ def answered_conversations(*, reader=inbox.default_reader,
     would hide them from the agent, which is a worse bug than the one this
     fixes.
     """
+    return reply_signals(reader=reader, agent=agent)[0]
+
+
+#: Page cap for the reply walk: 1000 pages x DEFAULT_LIMIT records. A guard
+#: against a reader that never stops returning, not a window on the topic.
+MAX_PAGES = 1000
+
+
+def reply_signals(*, reader=inbox.default_reader,
+                  agent: str | None = None) -> tuple[set[str], set[str]]:
+    """(answered conversation ids, replied-to base message ids) in our inbox.
+
+    T-3804: the walk PAGES to the end of every topic. It used to read one page
+    from cursor 0 — the first DEFAULT_LIMIT (100) records — so on a busy inbox
+    every reply past offset 99 was invisible. Measured on 832-Workflow-
+    designer's topic: 493 records, and every one of 999's replies on the
+    nudged conversation sat at offset 144 or later, so the sweep nudged 5-10
+    times after each consult had been answered.
+
+    Receipts (`kind=receipt`) are not replies and never count. A reply that
+    names the message it answers (`in_reply_to_msg_id`, carried by
+    `fw sidecar send --in-reply-to`) also settles that message by id, with any
+    `-nudge-N` suffix resolved to the consult it points at.
+    """
+    from .receipts import base_id
     me = agent or inbox.agent_id()
     answered: set[str] = set()
+    replied: set[str] = set()
     for topic in inbox.read_topics(me):
-        for env in reader(topic, 0, inbox.DEFAULT_LIMIT) or []:
-            meta = env.get("metadata") or {}
-            conversation = meta.get("conversation_id")
-            if conversation and meta.get("from_agent") != me:
-                answered.add(conversation)
-    return answered
+        cursor = 0
+        for _ in range(MAX_PAGES):
+            page = reader(topic, cursor, inbox.DEFAULT_LIMIT) or []
+            highest = cursor
+            for env in page:
+                offset = env.get("offset")
+                if isinstance(offset, int):
+                    highest = max(highest, offset + 1)
+                meta = env.get("metadata") or {}
+                if meta.get("kind") == "receipt" or meta.get("from_agent") == me:
+                    continue
+                conversation = meta.get("conversation_id")
+                if conversation:
+                    answered.add(conversation)
+                if meta.get("in_reply_to_msg_id"):
+                    replied.add(base_id(meta["in_reply_to_msg_id"]))
+            if len(page) < inbox.DEFAULT_LIMIT or highest <= cursor:
+                break
+            cursor = highest
+    return answered, replied
 
 
 def _fw_binary() -> str | None:
@@ -253,11 +293,24 @@ def sweep(*, now: str | datetime | None = None,
     if not rows:
         return report
 
-    answered = answered_conversations(reader=reader)
+    answered, replied_on_topic = reply_signals(reader=reader)
+    # T-3804: a REPLIED receipt from the addressee settles the consult too —
+    # it arrives by hub or by our receiver's /ack and lands in one ledger.
+    from . import receipts
+    replied = replied_on_topic | receipts.replied_ids()
 
     for cmid, row in sorted(rows.items()):
         attempts, next_rung, due_at = ladder_position(row)
         posted = row.get("state") in (outbox.INJECTED_NOW, outbox.INJECTED_LATER)
+
+        if cmid in replied:
+            # Settled now, whether or not a rung is due: an answered consult
+            # must never be nudged again.
+            _close(cmid, row, attempts, row.get("state"), f"{ANSWERED}: REPLIED {cmid}")
+            report["answered"] += 1
+            report["actions"].append({"client_msg_id": cmid, "verb": ANSWERED,
+                                      "via": "replied"})
+            continue
 
         if attempts >= retry_ladder.MAX_ATTEMPTS or next_rung is None:
             _close(cmid, row, attempts, outbox.UNKNOWN, EXHAUSTED)
