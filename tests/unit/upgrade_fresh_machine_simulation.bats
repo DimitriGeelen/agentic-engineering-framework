@@ -570,9 +570,12 @@ YAML
     # the link is left as it was, and the vendored bin/fw is still the real CLI
     [ -L "$TEST_TEMP_DIR/home/.local/bin/fw" ]
     [ "$(readlink "$TEST_TEMP_DIR/home/.local/bin/fw")" = "$proj/.agentic-framework/bin/fw" ]
-    ! cmp -s "$FRAMEWORK_ROOT/bin/fw-router" "$proj/.agentic-framework/bin/fw"
-    ! cmp -s "$FRAMEWORK_ROOT/bin/fw-shim" "$proj/.agentic-framework/bin/fw"
     [[ "$output" == *"links into a vendored copy"* ]] || { echo "$output"; false; }
+    # (run resets $output, so the output assertion above must come first)
+    run cmp -s "$FRAMEWORK_ROOT/bin/fw-router" "$proj/.agentic-framework/bin/fw"
+    [ "$status" -ne 0 ]
+    run cmp -s "$FRAMEWORK_ROOT/bin/fw-shim" "$proj/.agentic-framework/bin/fw"
+    [ "$status" -ne 0 ]
 }
 
 @test "T-3831: a ~/.local/bin/fw symlink into a framework repo (no .upstream) is still refused" {
