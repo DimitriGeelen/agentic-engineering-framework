@@ -96,13 +96,13 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Root cause of the repeat surfacing is identified from live state (events.jsonl / state files) and written in ## RCA
-- [ ] One seen/answered ledger is read and written by BOTH the UserPromptSubmit receiver hook (lib/sidecar/hooks.py prompt) and `fw sidecar inbox` (lib/sidecar/inbox.py), keyed by msg id (client_msg_id or msg_id, sender-independent, so "unknown"/hub-relayed/rescued messages are covered)
-- [ ] A message the hook has surfaced once is not surfaced on later prompts, even when the finalizer cannot confirm HANDED_OVER from the transcript (at most one re-surface for a peeked-but-unconfirmed message — stated in ## Decisions)
-- [ ] A message we replied to (`fw sidecar send --in-reply-to <id>`, or its base id for `-nudge-N`) is never surfaced again by the hook
-- [ ] Genuinely new mail always surfaces
-- [ ] Regression tests with a fixture inbox: same N messages across 3 consecutive hook runs surface on run 1 only; a replied message never surfaces again; a new message on run 3 surfaces
-- [ ] Existing sidecar test files stay green; vendor copy in sync
+- [x] Root cause of the repeat surfacing is identified from live state (events.jsonl / state files) and written in ## RCA
+- [x] One seen/answered ledger is read and written by BOTH the UserPromptSubmit receiver hook (lib/sidecar/hooks.py prompt) and `fw sidecar inbox` (lib/sidecar/inbox.py), keyed by msg id (client_msg_id or msg_id, sender-independent, so "unknown"/hub-relayed/rescued messages are covered)
+- [x] A message the hook has surfaced once is not surfaced on later prompts, even when the finalizer cannot confirm HANDED_OVER from the transcript (at most one re-surface for a peeked-but-unconfirmed message — stated in ## Decisions)
+- [x] A message we replied to (`fw sidecar send --in-reply-to <id>`, or its base id for `-nudge-N`) is never surfaced again by the hook
+- [x] Genuinely new mail always surfaces
+- [x] Regression tests with a fixture inbox: same N messages across 3 consecutive hook runs surface on run 1 only; a replied message never surfaces again; a new message on run 3 surfaces
+- [x] Existing sidecar test files stay green; vendor copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -262,8 +262,27 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest -q tests/unit/test_sidecar_seen_ledger_t3840.py > /tmp/.t3840-a.out 2>&1 && grep -q passed /tmp/.t3840-a.out
+python3 -m pytest -q tests/unit/test_sidecar_receiver_t3693.py tests/unit/test_sidecar_inbox.py tests/unit/test_sidecar_peek_filter_t3792.py tests/unit/test_sidecar_reply_settles_t3804.py tests/unit/test_sidecar_watcher_t3684.py > /tmp/.t3840-b.out 2>&1 && grep -q passed /tmp/.t3840-b.out
+timeout 300 bats tests/unit/sidecar_inbox_hook.bats > /tmp/.t3840-c.out 2>&1 && ! grep -q "^not ok" /tmp/.t3840-c.out
+test "$(grep -c '# skip' /tmp/.t3840-c.out)" -eq 0
+python3 -c "import sys; sys.path.insert(0,'.'); from lib.sidecar import hooks; assert hooks.FRAME_CAP < 9500"
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** at every operator prompt the UserPromptSubmit receiver hook surfaced the same 18-29 messages again. They included 18 rescued 1409 messages answered hours earlier and originals already answered with `--in-reply-to`. Meanwhile `fw sidecar inbox` said "no pending consults", and a real new pickup from 055 (c21841e6) was lost in the repeat list.
+
+**Root cause:** there were two independent faults.
+1. **The hook's output was over Claude Code's inline limit.** Above about 10,000 chars (measured on this host's transcripts: largest inline 9,696 B, smallest persisted 10.2 KB), the harness stores a hook's additionalContext in a file. The transcript, and so the model, get only a 2 KB `<persisted-output>` preview. The finalizer (hooks.finalize) correctly found no header for any message after the first, recorded `HANDOVER_UNCONFIRMED` (349 times on 2026-10-04, against 60 HANDED_OVER) and released them. The next prompt surfaced all of them again, so the frame stayed over the limit and the loop never ended. More mail made it worse.
+2. **The hook had no seen/answered state of its own.** Its only exit was transcript-proven HANDED_OVER. A reply we had sent did not remove a message from its list. The inbox's `seen` list in inbox-state.json could not stand in: the watcher drains the hub topic through `inbox.pending(advance=True)`, so `seen` means "taken off the topic", not "shown to the agent". That is why `fw sidecar inbox` (reading `seen`) and the hook (reading receiver files) disagreed.
+
+**Why structurally allowed:** the T-3693 tests drove the finalizer with a hand-written transcript holding the whole frame inline. Nothing modelled the harness's persist limit, and no test ran the hook more than once against the same inbox without a finalizer. "Unconfirmed → release" was a safety rule with no upper bound.
+
+**Prevention:**
+- `tests/unit/test_sidecar_seen_ledger_t3840.py` covers three consecutive hook runs over a fixture inbox, plus the replied, rescued, unconfirmed-once and frame-cap legs and the shared-ledger leg.
+- `hooks.FRAME_CAP` (8000) keeps every frame inline.
+- `seen.may_show` caps re-surfacing at once.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -333,6 +352,14 @@ bvp_scores_proposed:
 -->
 
 ## Decisions
+
+### 2026-10-04 — where the one ledger lives, and the re-surface bound
+- **Chose:** a new `shown` table in the existing `.context/sidecar/inbox-state.json`, owned by `lib/sidecar/seen.py`, written under a flock by both the receiver hook and `fw sidecar inbox`. Every row is keyed under every id the message has: the receiver file id, the envelope `client_msg_id`/`msg_id`, and the base of each (`-nudge-N` stripped). Sender is never part of the key, so "unknown"/rescued mail is covered. "Answered" is derived only from what WE sent: receipts-sent REPLIED rows, outbox `in_reply_to`, and direct-ledger `in_reply_to`.
+- **Safety bound (stated):** never-shown mail always surfaces. A message shown once may surface ONE more time, and only when that showing is not proof of delivery: it was a non-draining `--peek`, or the finalizer's last outcome for it is `HANDOVER_UNCONFIRMED` (hook killed, output discarded). After two showings it is never surfaced by the hook or the inbox again. It stays in the waiting register (`fw sidecar waiting`) and its escalation path. Answered mail is never surfaced, whatever its count.
+- **Frame cap:** the hook frame is held to 8000 chars, under the measured ~10 KB persist limit. Messages that do not fit are not marked shown; they surface at the next prompt, urgent first, then oldest first. One oversized message is always shown, with its body shortened to fit.
+- **Why:** the inbox's `seen` list is drained by the watcher, so it records transport progress, not delivery to the agent. Reusing it would have hidden every watcher-ingested message from the hook.
+- **Rejected:** (a) reusing `seen` as-is — wrong semantics, see above; (b) a second state file — that would recreate the two-ledger split this task removes; (c) following the `<persisted-output>` file path as HANDED_OVER evidence — the model only received the preview, so that would certify mail it never read.
+- **Test change:** `test_attachment_from_an_earlier_attempt_does_not_certify_a_later_one` now records the `HANDOVER_UNCONFIRMED` event that, in production, is what declares an attempt lost. Removing the marker alone no longer licenses a re-surface.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
