@@ -222,7 +222,11 @@ def search_hybrid(query: str, limit: int = 5):
         if not is_index_ready():
             _HYBRID_ERROR = "no usable vector index"
             return None
-        results = hybrid_search(query, limit=limit * 3)
+        # Project Memory is filtered AFTER ranking, and task files / reports usually
+        # outrank learnings.yaml chunks, so a pool of limit*3 often held zero memory
+        # hits and recall silently fell back to keyword (2026-10-04). Ask for a wide
+        # pool; the vector query cost barely changes with the limit.
+        results = hybrid_search(query, limit=max(80, limit * 16))
         # Filter to project memory files
         memory_results = []
         for item in results.get("results", []):
@@ -409,6 +413,37 @@ def format_item(item: dict, prefix: str = "  ") -> str:
     return f"{prefix}{color}{item['id']}{NC}: {text}{DIM}{suffix}{NC}"
 
 
+def _norm_text(s: str) -> str:
+    """Lowercase, drop search highlight tags and YAML key/quote noise, squeeze spaces."""
+    s = re.sub(r"<[^>]+>", "", s or "")
+    s = re.sub(r"^\s*-?\s*(id:\s*\S+\s*)?(learning|pattern|decision|description|text|name)\s*:\s*", "", s, flags=re.I)
+    return re.sub(r"\s+", " ", s).strip().strip("\"'").lower()
+
+
+def _match_hit_to_item(hit: dict, items: list):
+    """Map one vector hit to the knowledge item it came from — by real text overlap.
+
+    T-3786 follow-up (2026-10-04): the old rule matched ANY item whose first three
+    words (len > 3) appeared anywhere in the snippet, scanning items in file order,
+    so L-001 ("First learning") swallowed every hit on learnings.yaml — semantic
+    recall returned L-001 for every query while the index itself was healthy.
+    Now: a hit maps only when at least 40 characters of normalised text overlap
+    (item prefix in the snippet, or snippet prefix in the item); otherwise no match.
+    """
+    snip = _norm_text(hit.get("snippet", ""))
+    if len(snip) < 20:
+        return None
+    probe = snip[:60].rstrip(". ")
+    for item in items:
+        text = _norm_text(item.get("text", ""))
+        if len(text) < 20:
+            continue
+        head = text[:60]
+        if (len(head) >= 40 and head in snip) or (len(probe) >= 40 and probe in text):
+            return item
+    return None
+
+
 def _recall_knowledge(query: str, limit: int, use_hybrid: bool) -> list:
     """The original three-source recall, unchanged in behaviour."""
     items = load_knowledge_items()
@@ -423,15 +458,9 @@ def _recall_knowledge(query: str, limit: int, use_hybrid: bool) -> list:
             # Map hybrid results back to knowledge items by matching content
             matched = []
             for hr in hybrid_results:
-                snippet = hr.get("snippet", "").lower()
-                title = hr.get("title", "").lower()
-                for item in items:
-                    item_text = item["text"].lower()
-                    if item_text in snippet or item_text in title or \
-                       any(w in snippet for w in item_text.split()[:3] if len(w) > 3):
-                        if item not in matched:
-                            matched.append(item)
-                            break
+                item = _match_hit_to_item(hr, items)
+                if item is not None and item not in matched:
+                    matched.append(item)
             if matched:
                 return [format_item(m) for m in matched[:limit]]
 
