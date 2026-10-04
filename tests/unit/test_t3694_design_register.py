@@ -247,6 +247,20 @@ def test_self_deferral_formatting_does_not_hide_target(tmp_path, prose):
     assert r.returncode == 1 and "T-0404 does not exist" in r.stdout
 
 
+def test_self_deferral_ignores_h1_title_naming_parent(tmp_path):
+    """T-3793: T-3791 was titled 'T-3790 follow-up: …' and refused because T-3790
+    was completed. The title names the parent, not a deferral; the same sentence in
+    the task's own result is still a deferral."""
+    task(tmp_path, "T-0101", loc="completed", status="work-completed")
+    p = tmp_path / ".tasks" / "active" / "T-0100-fixture.md"
+    task(tmp_path, "T-0100")
+    p.write_text(p.read_text().replace("# T-0100\n", "# T-0100: T-0101 follow-up: close its gaps\n"))
+    assert cli(tmp_path, "self-deferral", str(p)).returncode == 0
+    p.write_text(p.read_text() + "\n## Recommendation\n\nT-0101 follow-up remains.\n")
+    r = cli(tmp_path, "self-deferral", str(p))
+    assert r.returncode == 1 and "T-0101 is not active" in r.stdout
+
+
 def test_self_deferral_list_items_stay_separate(tmp_path):
     """Joining wrapped lines must not glue a list item onto the next one."""
     body = "## Evolution\n\n- Scope was deferred to later in this task.\n- T-0404 is cited as evidence.\n"

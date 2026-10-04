@@ -418,6 +418,10 @@ def _own_result_text(text: str) -> str:
             continue
         if skip:
             continue
+        # T-3793: the `# T-NNNN: <name>` title names the task, not a deferral by
+        # it — "T-3790 follow-up: …" names the parent this task follows.
+        if re.match(r"^#\s+T-\d+\b", line):
+            continue
         # A wrapped line continues the previous unit, so "deferred to\nT-1234"
         # is one sentence. Blank lines, list items, headings and table rows
         # start a new unit.
