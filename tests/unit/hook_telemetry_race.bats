@@ -40,6 +40,11 @@ _keycount()   { grep -c . "$1"; }
 _dupecount()  { cut -d= -f1 "$1" | sort | uniq -d | grep -c . || true; }
 
 @test "T-3371: concurrent increments are not lost" {
+    # The subject is the lock, not its 2s wait bound. Under full-suite load a
+    # waiter can starve past 2s and take the designed degrade-to-allow path
+    # (lock-free, lossy — L-331), which read as "increments lost" (T-3747).
+    # A generous wait keeps the assertion about serialisation only.
+    export FW_TELEMETRY_LOCK_WAIT=120
     _hammer _fw_telemetry_increment "$COUNTER"
 
     local expected=$(( PROCS * ITERS ))
