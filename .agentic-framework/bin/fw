@@ -6381,12 +6381,43 @@ EOF
                     echo -e "${RED}ERROR:${NC} No cron registry found at $_cron_registry"
                     exit 1
                 fi
-                python3 -c "
-import yaml, os, re, sys
+                # T-3835: cron lines must name a fw that outlives this process.
+                # `fw upgrade` from a vendored consumer runs from a temp clone
+                # (/tmp/fw-upstream-XXXXXX/fw) that is deleted at exit, so
+                # $FRAMEWORK_ROOT is the wrong answer there. A consumer's own
+                # vendored copy is its durable fw; the framework repo itself
+                # (FRAMEWORK_ROOT == PROJECT_ROOT) keeps bin/fw.
+                _cron_fw="$FRAMEWORK_ROOT/bin/fw"
+                if [ "$(cd "$FRAMEWORK_ROOT" 2>/dev/null && pwd -P)" != "$(cd "$PROJECT_ROOT" && pwd -P)" ] \
+                    && [ -x "$PROJECT_ROOT/.agentic-framework/bin/fw" ]; then
+                    _cron_fw="$PROJECT_ROOT/.agentic-framework/bin/fw"
+                fi
+                FW_CRON_FW_PATH="$_cron_fw" python3 -c "
+import yaml, os, re, sys, tempfile
 
 project_root = '$PROJECT_ROOT'
-fw_path = '$FRAMEWORK_ROOT/bin/fw'
+fw_path = os.environ['FW_CRON_FW_PATH']
 registry_file = '$_cron_registry'
+
+# T-3835: refuse a fw path that will not exist when cron runs it — missing now,
+# or under a temp dir and outside the project (a temp clone, deleted on exit).
+# A project that itself lives under /tmp (tests) may use its own vendored fw.
+def _real(p):
+    return os.path.realpath(p)
+_temp_roots = {_real(t) for t in ('/tmp', '/var/tmp', tempfile.gettempdir(), os.environ.get('TMPDIR') or '/tmp')}
+_fw_real, _proj_real = _real(fw_path), _real(project_root)
+def _under(p, root):
+    return p == root or p.startswith(root.rstrip('/') + '/')
+_fw_problem = None
+if not (os.path.isfile(fw_path) and os.access(fw_path, os.X_OK)):
+    _fw_problem = 'does not exist or is not executable'
+elif any(_under(_fw_real, t) for t in _temp_roots) and not _under(_fw_real, _proj_real):
+    _fw_problem = 'is under a temp dir outside the project (deleted when its process ends)'
+if _fw_problem:
+    print(f'ERROR: refusing to generate cron lines — fw path {fw_path} {_fw_problem}.', file=sys.stderr)
+    print('Every job would run a missing binary once installed. Nothing written.', file=sys.stderr)
+    print(f'Run fw cron generate from the project with its durable fw: {project_root}/.agentic-framework/bin/fw cron generate', file=sys.stderr)
+    sys.exit(1)
 
 data = yaml.safe_load(open(registry_file))
 jobs = data.get('jobs', [])
