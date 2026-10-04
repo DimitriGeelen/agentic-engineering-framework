@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3821: VERSION has two writers that disagree: the pre-push hook re-stamps the working-tree VERSION from git describe (1.7.<commits>) on every push, while fw release reconciles it to the tag (T-3242); after a push the tree reads 1.7.x against a committed 1.8.0, so the reconcile commit is empty and the release refuses
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-04T14:48:30Z
+# ============================================================================
+
+task_id: T-3821
+task_name: "VERSION has two writers that disagree: the pre-push hook re-stamps the working-tree VERSION from git describe (1.7.<commits>) on every push, while fw release reconciles it to the tag (T-3242); after a push the tree reads 1.7.x against a committed 1.8.0, so the reconcile commit is empty and the release refuses"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-04T14:01:51Z
+completed: 2026-10-04T14:47:56Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-04T16:45:50+02:00
+last_commit: 2026-10-04T16:46:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  VERSION had two writers (pre-push stamp vs release reconcile) → hook skips a tracked VERSION; release grades HEAD's committed VERSION and treats already-equal as success. vendor sync lib/release.sh agents/git/lib/hooks.sh → .agentic-framework
+
+# Key outcomes
+outcomes:
+  - 'The pre-push hook (agents/git/lib/hooks.sh) no longer writes VERSION when VERSION is tracked by git, and says so. An untracked (generated) VERSION is still stamped from `git describe` (T-648)'
+  - '`release_reconcile_version` treats "VERSION already equals HEAD''s committed content" as success: no empty commit, returns 0'
+  - 'The release decides whether to reconcile, and runs its DECREASE check, against HEAD''s committed VERSION, not the working-tree file, so a hook-stamped tree neither empties the reconcile nor falsely refuses'
+  - 'Regression tests in `tests/unit/t3821_version_single_writer.bats` cover the stamped-tree release (succeeds, tag carries the release version), the already-committed case (no empty commit), and the hook''s tracked/untracked branches; existing release and T-3242 tests stay green'
+  - 'Decision recorded in `## Decisions`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-04 — who writes VERSION'
+    chose: 'both legs. (1) `fw release` is the only writer of a **tracked** VERSION: the pre-push hook skips a tracked VERSION and says so, and still stamps an **untracked** (generated) one, which is what T-648 was for. (2) `release_reconcile_version` treats "already equal to HEAD''s committed content" as success, and the release grades HEAD''s committed VERSION rather than the working tree.'
+    rationale: 'consumers read the **committed** VERSION on master (`fw upgrade`). `fw version` in a git checkout derives the same `<major.minor>.<commits>` string from `git describe` (bin/fw `_derive_version`) and never reads the file. Vendored copies get VERSION written from `$FW_VERSION` at vendor time (bin/fw `do_vendor`). So stamping the tracked file served no reader. It only made the tree disagree with the commit, and once committed it was the non-monotonic counter T-3242 forbids. Leg 2 is needed because installed hooks are copies: every existing clone (and consumer) keeps stamping until `fw git install-hooks` is re-run.'
+    alternatives_rejected: ['hook-only (installed hooks stay old, so attempt 2 recurs until every clone reinstalls); release-only (the tree stays dirty after every push and a sweeping commit can still commit the counter); removing the stamp entirely (T-1253 Path 3: a regression for projects that keep VERSION untracked and generated). - **Not changed:** `fw version sync` (lib/version.sh), a manual third writer, is already floored at the latest tag (T-3242).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.agentic-framework/lib/release.sh'
+  - 'agents/git/lib/hooks.sh'
+  - 'lib/release.sh'
+  - '.tasks/active/T-3821-version-has-two-writers-that-disagree-th.md'
+  - 'tests/unit/t3821_version_single_writer.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-04T16:45:50'
+    action: 'T-3821: VERSION had two writers (pre-push stamp vs release reconcile) → hook skips a tracked VERSION; release grades HEAD''s committed VERSION and treats already-equal as success'
+  - time: '2026-10-04T16:46:06'
+    action: 'T-3821: vendor sync lib/release.sh agents/git/lib/hooks.sh → .agentic-framework'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 46 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 46
+  commits: 2
+  files_changed: 6
+  lines_added: 277
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3821-version-has-two-writers-that-disagree-th.md
+generated_by: context-agent-hybrid
