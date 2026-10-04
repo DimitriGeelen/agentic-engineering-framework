@@ -105,6 +105,13 @@ cost_estimate_proposed:
 - [x] Tests: stale index, missing index and failing canary each produce the red result (hermetic fixtures)
 
 ### Human
+- [ ] [REVIEW] Watchtower shows the vector-index settings and says plainly when semantic recall is unavailable
+  **Steps:**
+  1. Open http://192.168.10.107:3002/config and find INDEX_MAX_AGE_HOURS, INDEX_MAX_LAG and RECALL_FAIL_PCT_WARN.
+  2. While the index is being rebuilt (it was wiped on 2026-10-04, T-3786), open the Ask page in Watchtower and ask any question.
+  **Expected:** the three settings are listed with readable descriptions; the Ask page says the knowledge index is unavailable and names `fw index reindex`, instead of hanging or promising a background build.
+  **If not:** note which page and what it showed.
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
