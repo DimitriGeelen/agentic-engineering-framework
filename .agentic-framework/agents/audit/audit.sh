@@ -28,8 +28,14 @@ if [ "${1:-}" = "schedule" ]; then
     shift
     # T-602: Project-specific cron filename to prevent multi-project collision
     # T-604: Cron definitions are git-tracked in PROJECT_ROOT/.context/cron/
+    # T-3790: Validate PROJECT_ROOT exists before proceeding
+    if [ ! -d "$PROJECT_ROOT" ]; then
+        echo "ERROR: PROJECT_ROOT does not exist: $PROJECT_ROOT" >&2
+        exit 1
+    fi
     project_slug=$(basename "$PROJECT_ROOT" | tr '[:upper:]' '[:lower:]' | sed 's/[^a-z0-9_-]/-/g')
-    CRON_INSTALL="/etc/cron.d/agentic-audit-${project_slug}"
+    CRON_INSTALL_DIR="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"
+    CRON_INSTALL="$CRON_INSTALL_DIR/agentic-audit-${project_slug}"
     CRON_SOURCE="$PROJECT_ROOT/.context/cron/agentic-audit.crontab"
     LEGACY_CRON_FILE="/etc/cron.d/agentic-audit"
     FW_PATH="$(readlink -f "$FRAMEWORK_ROOT/bin/fw" 2>/dev/null || echo "$FRAMEWORK_ROOT/bin/fw")"
