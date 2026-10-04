@@ -75,10 +75,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 211
-  commits: 3
-  files_changed: 6
-  lines_added: 475
-  lines_removed: 18
+  commits: 4
+  files_changed: 8
+  lines_added: 577
+  lines_removed: 23
+  footprint_refreshed_at: '2026-10-04T20:01:56Z'
+  footprint_refreshed_by_commit: 35231fadc
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3837-binfw-doctor-aborts-without-a-summary-un.md
