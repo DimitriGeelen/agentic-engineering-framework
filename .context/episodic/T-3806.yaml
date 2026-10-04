@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3806: fw sidecar send --hub <remote> is refused unconditionally: probe_hub() returns not-ok for every remote hub ('version floor unestablished — supply hub credentials') but no code path accepts hub credentials, so cross-host sidecar send can never succeed (ring20 .121/.122, v1.7.0 and bleeding-edge alike)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-04T14:48:33Z
+# ============================================================================
+
+task_id: T-3806
+task_name: "fw sidecar send --hub <remote> is refused unconditionally: probe_hub() returns not-ok for every remote hub ('version floor unestablished — supply hub credentials') but no code path accepts hub credentials, so cross-host sidecar send can never succeed (ring20 .121/.122, v1.7.0 and bleeding-edge alike)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T10:47:52Z
+completed: 2026-10-04T14:48:12Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-04T16:47:56+02:00
+last_commit: 2026-10-04T16:48:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  probe_hub stopped at the unauthenticated TLS rung and refused every remote hub → authenticated version read via the hub's hubs.toml profile (termlink fleet doctor / hub.version), floor checked, missing credential refused by name. vendor sync of the authenticated remote probe → .agentic-framework/lib/sidecar/termlink_transport.py
+
+# Key outcomes
+outcomes:
+  - '`probe_hub(<remote>)` resolves the hub''s credential from termlink''s own `~/.termlink/hubs.toml` profile (by profile name or address), reads the hub version through an authenticated termlink call, and passes when the version meets VERSION_FLOOR'
+  - 'Below-floor, unreadable-version and auth-failed results are refused with the reason'
+  - 'A missing credential is refused by name: no profile for the hub (names hubs.toml and the `termlink remote profile add` remedy), or a profile whose secret_file is missing/unreadable (names the profile and the path)'
+  - 'Regression tests with a fake runner and a temp hubs.toml cover pass, below-floor, no-profile, missing-secret, auth-fail'
+  - 'docs/reports/T-3806-cross-hub-send.md records the mechanism found, its cost, and the TermLink-side need for a single-hub authenticated version read'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/termlink_transport.py'
+  - 'docs/reports/T-3806-cross-hub-send.md'
+  - 'lib/sidecar/termlink_transport.py'
+  - '.tasks/active/T-3806-fw-sidecar-send---hub-remote-is-refused-.md'
+  - 'tests/unit/test_sidecar_remote_probe_t3806.py'
+  - 'tests/unit/test_sidecar_termlink_transport.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-04T16:47:56'
+    action: 'T-3806: probe_hub stopped at the unauthenticated TLS rung and refused every remote hub → authenticated version read via the hub''s hubs.toml profile (termlink fleet doctor / hub.version), floor checked, missing credential refused by name'
+  - time: '2026-10-04T16:48:06'
+    action: 'T-3806: vendor sync of the authenticated remote probe → .agentic-framework/lib/sidecar/termlink_transport.py'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 240 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 240
+  commits: 2
+  files_changed: 6
+  lines_added: 804
+  lines_removed: 22
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3806-fw-sidecar-send---hub-remote-is-refused-.md
+generated_by: context-agent-hybrid
