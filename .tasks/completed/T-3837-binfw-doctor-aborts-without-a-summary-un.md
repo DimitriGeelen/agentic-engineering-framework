@@ -7,12 +7,12 @@ description: >
   ring20-dashboard T-2460 msg 6b1ada91 (vendored consumer upgrade 1.7.0 -> 1.8.0);
   they carry local patches for 3-5.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, tests/unit/t3837_doctor_errexit_captures.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T16:30:14Z
-last_update: 2026-10-04T19:26:36Z
-date_finished:
+last_update: 2026-10-04T20:01:17Z
+date_finished: 2026-10-04T20:01:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -367,3 +367,15 @@ bin/fw vendor self --check
 
 ### 2026-10-04T19:26:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-93acf748
+- **Timestamp:** 2026-10-04T20:01:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-04T20:01:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

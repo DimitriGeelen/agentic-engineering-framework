@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3837: bin/fw doctor aborts without a summary under set -euo pipefail: four 'x=$(cmd); rc=$?' captures exit before rc is recorded (TermLink topic list ~L3504, DM-rail ~L3540, BVP scorability ~L2326, sidecar watcher ~L3596)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-04T20:01:43Z
+# ============================================================================
+
+task_id: T-3837
+task_name: "bin/fw doctor aborts without a summary under set -euo pipefail: four 'x=$(cmd); rc=$?' captures exit before rc is recorded (TermLink topic list ~L3504, DM-rail ~L3540, BVP scorability ~L2326, sidecar watcher ~L3596)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T16:30:14Z
+completed: 2026-10-04T20:01:17Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-04T21:53:58+02:00
+last_commit: 2026-10-04T22:01:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  doctor captured fallible commands as x=$(cmd); rc=$? (and bare x=$(cmd)) under set -euo pipefail, so a non-zero rc killed doctor before its summary → x=$(cmd) && rc=0 || rc=$? at the four rc sites, || x="" at the termlink topic-list, termlink --version and audit-timing captures; lint + hub-down doctor test. vendor sync of errexit-safe doctor captures → .agentic-framework/bin/fw. fabric card for the errexit-capture doctor test
+
+# Key outcomes
+outcomes:
+  - 'The four `x=$(cmd); rc=$?` captures in `do_doctor` (BVP scorability, DM rail, consult inbox, sidecar watcher) use `x=$(cmd) && rc=0 || rc=$?`, and the bare TermLink topic-list capture cannot abort doctor; no other `x=$(cmd); rc=$?` remains in bin/fw or lib/'
+  - '`fw doctor` with a failing `termlink` on PATH runs to its summary instead of exiting mid-check'
+  - 'Regression test (bats) fails before the fix and passes after: doctor under a failing termlink stub reaches the summary, plus a static lint that no `x=$(cmd); rc=$?` capture exists in bin/fw or lib/'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.context/episodic/T-3833.yaml'
+  - '.fabric/components/tests-unit-t3837_doctor_errexit_captures.yaml'
+  - '.tasks/active/T-3837-binfw-doctor-aborts-without-a-summary-un.md'
+  - 'tests/unit/t3837_doctor_errexit_captures.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-04T21:53:58'
+    action: 'T-3837: doctor captured fallible commands as x=$(cmd); rc=$? (and bare x=$(cmd)) under set -euo pipefail, so a non-zero rc killed doctor before its summary → x=$(cmd) && rc=0 || rc=$? at the four rc sites, || x="" at the termlink topic-list, termlink --version and audit-timing captures; lint + hub-down doctor test'
+  - time: '2026-10-04T21:54:04'
+    action: 'T-3837: vendor sync of errexit-safe doctor captures → .agentic-framework/bin/fw'
+  - time: '2026-10-04T22:01:16'
+    action: 'T-3837: fabric card for the errexit-capture doctor test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 211 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 211
+  commits: 3
+  files_changed: 6
+  lines_added: 475
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3837-binfw-doctor-aborts-without-a-summary-un.md
+generated_by: context-agent-hybrid
