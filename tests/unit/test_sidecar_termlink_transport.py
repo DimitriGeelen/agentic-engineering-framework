@@ -17,6 +17,8 @@ def mod(tmp_path, monkeypatch):
     monkeypatch.setenv("FW_SIDECAR_HOST", "host107.ring20.lan")
     monkeypatch.setenv("FW_SIDECAR_AGENT_ID", "agentA")
     monkeypatch.setenv("FW_FOCUS_SESSION_KEY", "agentA")
+    # T-3806: the remote probe reads ~/.termlink/hubs.toml — never the real one here.
+    monkeypatch.setenv("HOME", str(tmp_path))
     import lib.sidecar.outbox as outbox
     import lib.sidecar.circuit as circuit
     import lib.sidecar.delivery as delivery

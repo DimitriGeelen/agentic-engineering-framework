@@ -24,15 +24,23 @@ gate rather than a follow-up, so a hub whose version cannot be established is
 **refused** — and the refusal says *version floor unestablished*, never
 "unreachable", because collapsing those two is how a reachable-but-incapable
 hub gets treated as a valid send target. The local hub (`hub: None`, the
-degenerate case) can clear every rung, so it is the one that passes today.
+degenerate case) can clear every rung.
+
+T-3806: a remote hub clears the version rung through an AUTHENTICATED read,
+using the credential termlink already holds for it — its `~/.termlink/hubs.toml`
+profile (secret_file + TOFU pin) — via `termlink fleet doctor --json`, which
+calls `hub.version` per profile. No profile, or an unreadable secret_file, is
+refused by name. docs/reports/T-3806-cross-hub-send.md.
 """
 
 from __future__ import annotations
 
 import json
+import os
 import re
 import shutil
 import subprocess
+from pathlib import Path
 
 from . import circuit
 from .delivery import ProbeResult, TransportError
@@ -149,7 +157,8 @@ def parse_version(text: str) -> tuple[int, int, int] | None:
 
 def probe_hub(hub: str | None, *, runner=subprocess.run,
               binary: str | None = None,
-              floor: tuple[int, int, int] = VERSION_FLOOR) -> ProbeResult:
+              floor: tuple[int, int, int] = VERSION_FLOOR,
+              hubs_file: Path | None = None) -> ProbeResult:
     """Grade a hub as a send target. Refuses what it cannot establish."""
     binary = binary or _binary()
 
@@ -170,19 +179,113 @@ def probe_hub(hub: str | None, *, runner=subprocess.run,
         return ProbeResult(
             True, f"local hub, termlink {'.'.join(map(str, version))} meets floor")
 
+    # `hub probe` wants an address; a hubs.toml profile name resolves to its own.
+    named, _ = hub_profiles(hub, hubs_file)
+    address = next((p["address"] for p in named if p["name"] == hub and p.get("address")), hub)
     try:
-        proc = runner([binary, "hub", "probe", hub, "--json"],
+        proc = runner([binary, "hub", "probe", address, "--json"],
                       capture_output=True, text=True, timeout=10)
     except (OSError, subprocess.SubprocessError) as exc:
         return ProbeResult(False, f"hub {hub} unreachable: {exc}")
     if proc.returncode != 0:
         return ProbeResult(False, f"hub {hub} unreachable: TLS handshake failed")
 
-    # Reachable. That is a strictly weaker claim than capable, and saying so
-    # is the gate: there is no unauthenticated version read, so the floor is
-    # unestablished and the hub is not yet a valid send target (T-2415).
-    return ProbeResult(
-        False,
-        f"hub {hub} is reachable but its version floor is unestablished — "
-        "no unauthenticated version read exists (T-2415); supply hub "
-        "credentials to clear this gate")
+    # Reachable. That is a strictly weaker claim than capable (T-2415): the
+    # version needs an AUTHENTICATED read. T-3806: use the credential termlink
+    # already holds for this hub (its hubs.toml profile) rather than refusing
+    # every remote hub with advice no code path could follow.
+    return _authenticated_floor(hub, runner=runner, binary=binary,
+                                floor=floor, hubs_file=hubs_file)
+
+
+def hubs_toml_path() -> Path:
+    """termlink's saved hub profiles (`termlink remote profile`)."""
+    return Path.home() / ".termlink" / "hubs.toml"
+
+
+def hub_profiles(hub: str, hubs_file: Path | None = None) -> tuple[list[dict], str | None]:
+    """Profiles in hubs.toml naming `hub` by profile name or address.
+
+    Returns (profiles, error). `error` is set when the file is absent or
+    unparseable — itself a missing-credential answer, named by path.
+    """
+    import tomllib
+    path = Path(hubs_file) if hubs_file else hubs_toml_path()
+    if not path.exists():
+        return [], f"no termlink hub profiles file at {path}"
+    try:
+        data = tomllib.loads(path.read_text(encoding="utf-8"))
+    except (OSError, tomllib.TOMLDecodeError) as exc:
+        return [], f"{path} is unreadable: {exc}"
+    out = []
+    for name, prof in (data.get("hubs") or {}).items():
+        if isinstance(prof, dict) and hub in (name, prof.get("address")):
+            out.append(dict(prof, name=name))
+    return out, None
+
+
+def _credential_gap(hub: str, profiles: list[dict], err: str | None, path: Path) -> str | None:
+    """Exactly which credential is missing, and where it is configured — or None."""
+    head = f"hub {hub} is reachable but its version floor is unestablished: "
+    remedy = f"add one with `termlink remote profile add <name> {hub} --secret-file <path>`"
+    if err:
+        return f"{head}{err}; {remedy}"
+    if not profiles:
+        return f"{head}no profile in {path} has name or address {hub}; {remedy}"
+    gaps = []
+    for prof in profiles:
+        if prof.get("secret"):
+            return None
+        sf = prof.get("secret_file")
+        if not sf:
+            gaps.append(f"profile {prof['name']} in {path} sets neither secret_file nor secret")
+        elif not os.access(sf, os.R_OK):
+            gaps.append(f"profile {prof['name']} in {path} names secret_file {sf}, "
+                        "which is missing or unreadable")
+        else:
+            return None
+    return head + "; ".join(gaps)
+
+
+def _authenticated_floor(hub: str, *, runner, binary: str, floor, hubs_file) -> ProbeResult:
+    path = Path(hubs_file) if hubs_file else hubs_toml_path()
+    profiles, err = hub_profiles(hub, path)
+    gap = _credential_gap(hub, profiles, err, path)
+    if gap:
+        return ProbeResult(False, gap)
+
+    # The one authenticated, per-profile version read the termlink CLI offers:
+    # `fleet doctor` calls `hub.version` on every hubs.toml profile with that
+    # profile's secret and TOFU pin. It walks the whole fleet (no single-hub
+    # filter) — docs/reports/T-3806-cross-hub-send.md has the cost and the
+    # TermLink-side ask.
+    try:
+        proc = runner([binary, "fleet", "doctor", "--json", "--timeout", "5"],
+                      capture_output=True, text=True, timeout=90)
+    except (OSError, subprocess.SubprocessError) as exc:
+        return ProbeResult(False, f"hub {hub}: authenticated version read failed: {exc}")
+    try:
+        rows = json.loads(proc.stdout or "{}").get("hubs") or []
+    except (json.JSONDecodeError, AttributeError):
+        return ProbeResult(False, f"hub {hub}: authenticated version read returned "
+                                  "unparseable output (termlink fleet doctor --json)")
+    names = [p["name"] for p in profiles]
+    mine = [r for r in rows if r.get("hub") in names]
+    if not mine:
+        return ProbeResult(False, f"hub {hub}: termlink fleet doctor did not report "
+                                  f"profile {', '.join(names)}")
+    failures = []
+    for row in mine:
+        version = parse_version(f"termlink {row.get('hub_version') or ''}")
+        if row.get("status") != "ok" or version is None:
+            failures.append(
+                f"profile {row.get('hub')} (secret {row.get('secret_source') or 'unknown'}): "
+                f"{row.get('error') or row.get('diagnostic') or 'no hub_version reported'}")
+            continue
+        vs, fs = ".".join(map(str, version)), ".".join(map(str, floor))
+        if version < floor:
+            return ProbeResult(False, f"hub {hub} runs termlink {vs}, below the version floor {fs}")
+        return ProbeResult(True, f"hub {hub} (profile {row['hub']}), authenticated, "
+                                 f"termlink {vs} meets floor")
+    return ProbeResult(False, f"hub {hub} is reachable but the authenticated version read "
+                              "failed: " + "; ".join(failures))
