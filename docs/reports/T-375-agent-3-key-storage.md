@@ -10,7 +10,7 @@
 - **NOT installed**: `keyring`
 - **Git protection**: `.gitignore` exists but minimal (no `.env` rule currently)
 - **requirements.txt**: flask, gunicorn, pyyaml, ruamel.yaml, markdown2, bleach, ollama, sqlite-vec, tantivy
-- **machine-id available**: `/etc/machine-id` exists (tested: `c1db32d067464686a530ef500a648293`)
+- **machine-id available**: `/etc/machine-id` exists (tested: `<host machine-id, redacted - T-3788>`)
 - **Fernet verified working**: encrypt/decrypt roundtrip confirmed with PBKDF2 key derivation from machine-id
 
 ---
