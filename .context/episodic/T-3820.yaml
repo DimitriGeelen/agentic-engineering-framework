@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3820: fw release rollback is partial: on a refused master push it restores master and deletes the tag but leaves the VERSION-reconcile commit on the development branch, so the next ordinary bleeding-edge push publishes VERSION=1.8.0 with no release (it reached master and consumers installed '1.8.0' before the tag existed)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-04T14:39:13Z
+# ============================================================================
+
+task_id: T-3820
+task_name: "fw release rollback is partial: on a refused master push it restores master and deletes the tag but leaves the VERSION-reconcile commit on the development branch, so the next ordinary bleeding-edge push publishes VERSION=1.8.0 with no release (it reached master and consumers installed '1.8.0' before the tag existed)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-04T14:01:10Z
+completed: 2026-10-04T14:38:34Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-04T16:38:22+02:00
+last_commit: 2026-10-04T16:38:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  refused publish left the VERSION-reconcile commit on the dev branch → snapshot VERSION before reconcile and revert (CAS update-ref + exact index/bytes) on every refusal before publication. vendor sync lib/release.sh → .agentic-framework
+
+# Key outcomes
+outcomes:
+  - 'Every refusal after the VERSION reconcile commit (tag creation failure, local fast-forward failure, release branch reaching no remote) also reverts that commit: HEAD returns to its pre-release sha via a compare-and-swap `update-ref`, and the index entry and working-tree bytes of VERSION (plus the vendored copy) are restored exactly'
+  - 'The revert only fires when HEAD is still the reconcile commit; otherwise it refuses to move HEAD and says why'
+  - 'The rollback message names what was undone, including the reconcile commit'
+  - 'Regression tests in `tests/unit/t3820_release_full_rollback.bats` prove that HEAD, VERSION bytes and staged VERSION equal their pre-release state after each refused publish, with a control leg where the publish succeeds and the reconcile commit stays; existing release tests stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'refused publish left the VERSION-reconcile commit on the dev branch → snapshot VERSION before reconcile and revert (CAS update-ref + exact index/bytes) on every refusal before publication'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-04 — revert the reconcile commit vs. commit it after publish'
+    chose: 'keep the reconcile commit before the tag, and have every refusal before publication revert it: compare-and-swap `update-ref HEAD <pre> <reconcile>`, then restore the exact index entry and bytes.'
+    rationale: 'T-3242 requires the tagged commit to carry the version the tag names, and `master` must fast-forward to that same commit before it is pushed. So the commit has to exist before publish. "Commit after publish" would tag and publish a commit with the old VERSION.'
+    alternatives_rejected: ['`git revert` (adds a second commit, and the dev branch history then shows a release that never happened); `reset --hard` (would discard unrelated working-tree changes). If HEAD has moved past the reconcile commit, the rollback refuses to move HEAD and prints the `git revert` command instead. - **Scope kept:** once the release branch has reached a remote, nothing is reverted (T-3193 holds the release open).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/release.sh'
+  - 'lib/release.sh'
+  - '.tasks/active/T-3820-fw-release-rollback-is-partial-on-a-refu.md'
+  - 'tests/unit/t3820_release_full_rollback.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-04T16:38:22'
+    action: 'T-3820: refused publish left the VERSION-reconcile commit on the dev branch → snapshot VERSION before reconcile and revert (CAS update-ref + exact index/bytes) on every refusal before publication'
+  - time: '2026-10-04T16:38:28'
+    action: 'T-3820: vendor sync lib/release.sh → .agentic-framework'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 37 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 37
+  commits: 2
+  files_changed: 4
+  lines_added: 364
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3820-fw-release-rollback-is-partial-on-a-refu.md
+generated_by: context-agent-hybrid
