@@ -678,6 +678,25 @@ def _anchor_recommendation(arc: dict[str, Any]) -> dict[str, Any]:
     return out
 
 
+def _suggested_decision(rec: dict[str, Any]) -> str:
+    """T-3841: one-line decision text from a close recommendation, '' without one.
+
+    "CLOSE — <rationale> (agent recommendation, T-XXX)". Whitespace is collapsed
+    so the arc YAML gets a single-line `decision:` value.
+    """
+    if not rec.get("present"):
+        return ""
+    verdict = str(rec.get("verdict") or "").strip()
+    if verdict in ("", "?"):
+        verdict = ""
+    rationale = " ".join(str(rec.get("rationale") or "").split())
+    text = " — ".join(p for p in (verdict, rationale) if p)
+    if not text:
+        return ""
+    src = str(rec.get("anchor_id") or "").strip()
+    return f"{text} (agent recommendation{', ' + src if src else ''})"
+
+
 def _arc_reports(arc_id: str) -> list[dict[str, str]]:
     """Find docs/reports/<arc_id>-*.md files for this arc.
 
@@ -1547,6 +1566,17 @@ def arc_close_surface(arc_id):
     if not prev_demo_value and recommendation.get("suggested_demo"):
         prev_demo_value = recommendation["suggested_demo"]
 
+    # T-3841 (055): pre-fill the decision with the recommendation shown above, the
+    # way the demo is. Left unchanged, the arc records the agent's verdict and
+    # rationale instead of `decision: null` ("Decision: unspecified"). A POST
+    # re-render keeps whatever the operator submitted, even an empty field.
+    decision_prefilled = False
+    if request.method == "POST":
+        prev_decision = request.form.get("decision", "")
+    else:
+        prev_decision = _suggested_decision(recommendation)
+        decision_prefilled = bool(prev_decision)
+
     return render_page(
         "arc_close.html",
         page_title=f"Close arc: {arc.get('name', arc_id)}",
@@ -1561,7 +1591,8 @@ def arc_close_surface(arc_id):
         error_msg=error_msg,
         prev_demo_mode=request.form.get("demo_mode", "") if request.method == "POST" else "",
         prev_demo_value=prev_demo_value,
-        prev_decision=request.form.get("decision", "") if request.method == "POST" else "",
+        prev_decision=prev_decision,
+        decision_prefilled=decision_prefilled,
         prev_justification=request.form.get("justification", "") if request.method == "POST" else "",
     )
 

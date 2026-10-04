@@ -171,6 +171,9 @@
         <label for="decision">Decision narrative (the GO/NO-GO outcome — your answer to the three §ACD questions)</label>
         <textarea id="decision" name="decision" rows="4"
                   placeholder="Short narrative — what shipped, what fired, what's left as known gap.">{{ prev_decision }}</textarea>
+        {% if decision_prefilled %}
+        <small class="muted" data-testid="decision-prefilled">Pre-filled from the agent's recommendation above — edit or replace it; this text is recorded as the arc's decision.</small>
+        {% endif %}
     </div>
 
     <div class="form-actions">
