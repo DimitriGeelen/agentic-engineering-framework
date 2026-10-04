@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3822: fw release publishes non-atomically: master is pushed, then the tag goes through a separate full pre-push audit (~5+ min under load), so consumers see and install the new VERSION on master while the release command still reports it unfinished; push branch and tag in one atomic push and skip the structure audit for a tag-only push
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-04T14:57:45Z
+# ============================================================================
+
+task_id: T-3822
+task_name: "fw release publishes non-atomically: master is pushed, then the tag goes through a separate full pre-push audit (~5+ min under load), so consumers see and install the new VERSION on master while the release command still reports it unfinished; push branch and tag in one atomic push and skip the structure audit for a tag-only push"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-04T14:02:33Z
+completed: 2026-10-04T14:55:44Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-04T16:55:18+02:00
+last_commit: 2026-10-04T16:55:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  release pushed master and tag separately (two audits, consumer window, half-publish) → one git push --atomic <remote> <branch> <tag> per remote; no-remote rolls back branch, tag and reconcile commit
+
+# Key outcomes
+outcomes:
+  - 'Publication is ONE `git push --atomic <remote> refs/heads/<branch>:refs/heads/<branch> refs/tags/<tag>:refs/tags/<tag>` per remote (tag-only when no local release branch exists), so on each remote both refs land or neither does'
+  - 'A refused atomic push is retried (audit-lock contention); when the release reaches NO remote, the release branch, the tag and the VERSION reconcile commit are all rolled back (T-3190/T-3820 semantics), and no GitHub Release is created'
+  - 'The pre-push hook runs once per remote for a release, not once for the branch and again for the tag'
+  - 'Regression tests in `tests/unit/t3822_release_atomic_publish.bats`: a remote rejecting only the tag ends with neither ref on that remote, the pre-push invocation count is 1, plus a success control leg; t3193 is updated to the atomic semantics; existing release tests stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-04 — atomic push vs. tag-only audit skip'
+    chose: 'one `git push --atomic` per remote carrying both refs, with the existing 3× retry. When the release reaches no remote, the branch, tag and reconcile commit roll back. When it reaches some remotes, the release stands, the failures are reported and the command exits non-zero.'
+    rationale: 'atomicity closes the consumer window, and one push means one audit per remote. Together they remove the T-3193 hold-open state on a single remote, so the release is either fully published or fully rolled back.'
+    alternatives_rejected: ['keeping two pushes and skipping the audit for a tag-only push (RCA prevention item 4, alt). That shortens the window but does not close it, and changing the hook''s audit scope is a governance change outside this bug. Cross-remote atomicity is impossible with git and is not attempted; partial multi-remote success is reported.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/release.sh'
+  - '.tasks/active/T-3822-fw-release-publishes-non-atomically-mast.md'
+  - 'tests/unit/t3193_release_tag_push_failure.bats'
+  - 'tests/unit/t3822_release_atomic_publish.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-04T16:55:18'
+    action: 'T-3822: release pushed master and tag separately (two audits, consumer window, half-publish) → one git push --atomic <remote> <branch> <tag> per remote; no-remote rolls back branch, tag and reconcile commit'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 53 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 53
+  commits: 1
+  files_changed: 4
+  lines_added: 285
+  lines_removed: 101
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3822-fw-release-publishes-non-atomically-mast.md
+generated_by: context-agent-hybrid
