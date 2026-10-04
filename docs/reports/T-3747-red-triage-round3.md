@@ -73,4 +73,18 @@ A full `fw doctor` takes 160 s on this host: the web smoke test 57 s (6 endpoint
 
 ## Push
 
-See the commit after this one, or the worker's final output.
+`git push origin bleeding-edge` was **refused** by the pre-push gate (rc=1):
+
+```
+AUDIT-SCOPE: fails=1 ref=1 worktree=0
+=== END AUDIT ===
+ERROR: Push blocked - audit has FAILURES
+  1 failure(s) are REF-scoped — present in the commit being
+  pushed, not just in your working tree.
+Fix the issues above before pushing.
+Bypass: git push --no-verify
+  (In agent context, Tier 0 will prompt for approval on --no-verify.)
+error: failed to push some refs to 'https://onedev.docker.ring20.geelenandcompany.com/agentic-engineering-framework.git'
+```
+
+The one FAIL is the unit-suite ratchet (11 NEW reds, all filed above). Only 4 commits are unpushed, because handover_digest.bats had already pushed the rest (OBS-599). To unblock: fix the filed tasks, or the operator decides whether to baseline the load-dependent reds.
