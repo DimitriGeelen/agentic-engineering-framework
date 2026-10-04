@@ -17,12 +17,12 @@ description: >
   pipefail. Follow-up T-3841 (pre-fill the close form's decision field) depends on
   this. Render surface: needs a [REVIEW] Human AC.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [lib/arc.sh, tests/unit/arc_review_verb.bats, web/blueprints/approvals.py, web/blueprints/arcs.py, web/templates/arc_close.html, web/templates/arc_review.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -51,8 +51,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T17:42:40Z
-last_update: 2026-10-04T18:06:18Z
-date_finished:
+last_update: 2026-10-04T18:15:11Z
+date_finished: 2026-10-04T18:15:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -107,15 +107,15 @@ unlike `fw task review` (T-2421), which refuses.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Arc YAML accepts an optional `close_task: T-XXX`; `_anchor_recommendation` reads its `## Recommendation` first, falls back to `anchor_task`, and reports which source it used (`source` = close_task|anchor_task) plus the task the agent is expected to write in (`expected_task`)
-- [ ] /arcs/<slug>/close and /arcs/<slug>/review label the card "from close-out task" or "from anchor task" accordingly
-- [ ] When neither task carries a substantive recommendation, both pages render a visible card (`data-testid="arc-rec-missing"`, "No close recommendation yet") naming the expected task and the format; the close form still renders and still submits
-- [ ] `fw arc review <slug>` exits 1 and emits no URL when there is no substantive recommendation, naming the task (or telling the agent to set `close_task:`) and the CLOSE|KEEP-OPEN/Rationale/Evidence format; it reuses `audit_inception_recommendation` (lib/task-audit.sh) rather than a new parser
-- [ ] `FW_ALLOW_EMPTY_RECOMMENDATION=1` lets `fw arc review` emit anyway, with a NOTE and a Tier-2 entry in `.context/working/.gate-bypass-log.yaml`, the same as the other legs of that bypass
-- [ ] The task-file lookup in arc_review is a glob loop, not `ls <glob> | head`, so a missing task cannot abort fw under `set -euo pipefail`
-- [ ] `close_task:` is documented where arc YAML fields are (arc create template comment / `fw arc help`)
-- [ ] New tests (`tests/unit/t3843_arc_close_recommendation.bats`, `tests/web/test_t3843_arc_close_recommendation.py`), ported from 055's test, run against a scratch project, fail before the change and pass after; `tests/unit/arc_review_verb.bats` updated for the new refusal and green
-- [ ] Watchtower restarted and `bin/fw watchtower current` passes; vendored copy synced
+- [x] Arc YAML accepts an optional `close_task: T-XXX`; `_anchor_recommendation` reads its `## Recommendation` first, falls back to `anchor_task`, and reports which source it used (`source` = close_task|anchor_task) plus the task the agent is expected to write in (`expected_task`)
+- [x] /arcs/<slug>/close and /arcs/<slug>/review label the card "from close-out task" or "from anchor task" accordingly
+- [x] When neither task carries a substantive recommendation, both pages render a visible card (`data-testid="arc-rec-missing"`, "No close recommendation yet") naming the expected task and the format; the close form still renders and still submits
+- [x] `fw arc review <slug>` exits 1 and emits no URL when there is no substantive recommendation, naming the task (or telling the agent to set `close_task:`) and the CLOSE|KEEP-OPEN/Rationale/Evidence format; it reuses `audit_inception_recommendation` (lib/task-audit.sh) rather than a new parser
+- [x] `FW_ALLOW_EMPTY_RECOMMENDATION=1` lets `fw arc review` emit anyway, with a NOTE and a Tier-2 entry in `.context/working/.gate-bypass-log.yaml`, the same as the other legs of that bypass
+- [x] The task-file lookup in arc_review is a glob loop, not `ls <glob> | head`, so a missing task cannot abort fw under `set -euo pipefail`
+- [x] `close_task:` is documented where arc YAML fields are (arc create template comment / `fw arc help`)
+- [x] New tests (`tests/unit/t3843_arc_close_recommendation.bats`, `tests/web/test_t3843_arc_close_recommendation.py`), ported from 055's test, run against a scratch project, fail before the change and pass after; `tests/unit/arc_review_verb.bats` updated for the new refusal and green
+- [x] Watchtower restarted and `bin/fw watchtower current` passes; vendored copy synced
 
 ### Human
 - [ ] [REVIEW] Close-recommendation card wording and placement read right on the arc close page
@@ -281,7 +281,8 @@ timeout 300 bats tests/unit/t3843_arc_close_recommendation.bats tests/unit/arc_r
 test "$(grep -c '# skip' /tmp/.t3843-bats.out)" -eq 0
 timeout 300 python3 -m pytest tests/web/test_t3843_arc_close_recommendation.py -q > /tmp/.t3843-py.out 2>&1 && grep -q passed /tmp/.t3843-py.out
 bin/fw watchtower current
-bin/fw vendor self --check
+# Scoped to this task's files: a repo-wide `vendor self --check` reports another worker's in-flight lib/{init,upgrade}.sh.
+bash -c 'set -e; for f in lib/arc.sh web/blueprints/arcs.py web/blueprints/approvals.py web/templates/arc_close.html web/templates/arc_review.html; do cmp -s "$f" ".agentic-framework/$f"; done'
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
 # Verification block. Otherwise the canonical hash diverges and `fw doctor`
@@ -358,6 +359,23 @@ bin/fw vendor self --check
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** 055's T-454 is ported and reviewed, not applied verbatim. An arc close now reads the close-out task (`close_task:`) before the anchor. `fw arc review` refuses to hand out a close URL without a recommendation, as `fw task review` already does (T-2421). Both pages show a visible "No close recommendation yet" card instead of nothing, and the operator can still close. Everything the agent can check is green. What remains is your read of the card's wording and placement on the live pages, which is the [REVIEW] criterion.
+
+**Evidence:**
+- Code: d33fdbadd (lib/arc.sh arc_review gate + `close_task:` template comment; web/blueprints/arcs.py `_anchor_recommendation`; arc_close.html / arc_review.html cards; approvals.py blocked-reason names the close-out task). Vendor: 5b9c5c870.
+- Changes from 055's patch:
+  - The page uses the same substance test as the CLI gate (`_REC_LINE_RE` mirrors `audit_inception_recommendation`), so the page and `fw arc review` cannot disagree. 055 only checked for a non-empty section.
+  - The bypass is logged Tier-2 through the existing `_log_empty_recommendation_bypass`.
+  - The card is styled through a class with `--wt-danger` rather than inline Pico vars.
+  - An anchor-only refusal suggests setting `close_task:`.
+  - `close_task: null` is treated as unset.
+- Tests: tests/unit/t3843_arc_close_recommendation.bats 6/6 and tests/unit/arc_review_verb.bats 10/10 (fixture given a recommendation); tests/web/test_t3843_arc_close_recommendation.py 8/8. Run against HEAD~ code, 5/6 bats and 7/8 pytest fail. The tests that pass both ways are the anchor-fallback behaviour that already existed.
+- Live corpus: no arc's "recommendation present" state changed (0 diffs across .context/arcs/), so /approvals is unaffected.
+- `bin/fw watchtower restart` then `bin/fw watchtower current`: current.
+- Pre-existing reds seen in neighbouring files, not caused here: approvals_close_ready_arcs.bats 5 (baselined; missing policy fixture, same on HEAD~1); test_approvals_blocked_arcs.py::test_threshold_still_bounds_the_queue (live-corpus readiness drift, dispatch-safety at 0.58, rec state unchanged).
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -388,3 +406,15 @@ bin/fw vendor self --check
 
 ### 2026-10-04T18:06:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c42bcfa4
+- **Timestamp:** 2026-10-04T18:15:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-04T18:15:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
