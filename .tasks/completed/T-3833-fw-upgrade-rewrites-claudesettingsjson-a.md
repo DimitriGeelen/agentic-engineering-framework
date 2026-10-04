@@ -7,12 +7,12 @@ description: >
   832 msg 8a464451: the 1.7.740 upgrade dropped two 832 project hooks without a word
   (restored as 832 T-1013); 832 now re-checks project hooks after every fw upgrade.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/settings_merge.py, lib/upgrade.sh, tests/unit/settings_regenerate_preserves_hooks.bats, tests/unit/upgrade_fresh_machine_simulation.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T15:28:03Z
-last_update: 2026-10-04T19:03:43Z
-date_finished:
+last_update: 2026-10-04T19:25:35Z
+date_finished: 2026-10-04T19:25:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -368,3 +368,15 @@ bin/fw vendor self --check
 
 ### 2026-10-04T19:03:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d311c176
+- **Timestamp:** 2026-10-04T19:26:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-04T19:25:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

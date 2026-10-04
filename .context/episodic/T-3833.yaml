@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3833: fw upgrade rewrites .claude/settings.json and silently drops project-registered (non-framework) hooks — preserve non-framework hook entries, or at least name every entry it removed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-04T19:26:28Z
+# ============================================================================
+
+task_id: T-3833
+task_name: "fw upgrade rewrites .claude/settings.json and silently drops project-registered (non-framework) hooks — preserve non-framework hook entries, or at least name every entry it removed"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T15:28:03Z
+completed: 2026-10-04T19:25:35Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-04T21:25:23+02:00
+last_commit: 2026-10-04T21:25:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  settings regeneration folded back only framework hooks (T-677 dropped every other one) and the upgrade discarded the merge's output → carry project hooks (KEPT), name every entry not carried (REMOVED), surface those lines in the upgrade. vendor sync of project-hook preservation → .agentic-framework/lib/{settings_merge.py,upgrade.sh}
+
+# Key outcomes
+outcomes:
+  - 'Settings regeneration (`lib/settings_merge.py`, used by `fw upgrade` / `fw init --force`) carries forward project-registered, non-framework hook entries; a hook already present in the new file with the same command is not duplicated'
+  - 'Any hook entry from the previous settings.json that does not survive the regeneration is named in the output (`REMOVED <event> <command>`), never dropped silently'
+  - 'Regression tests: unit tests for the merge (project hook kept, removal named) and a live upgrade in tests/unit/upgrade_fresh_machine_simulation.bats keeping a project hook (fails before the fix, passes after); the file stays green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/settings_merge.py'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.context/episodic/T-3832.yaml'
+  - 'lib/settings_merge.py'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-3833-fw-upgrade-rewrites-claudesettingsjson-a.md'
+  - 'tests/unit/settings_regenerate_preserves_hooks.bats'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-04T21:25:23'
+    action: 'T-3833: settings regeneration folded back only framework hooks (T-677 dropped every other one) and the upgrade discarded the merge''s output → carry project hooks (KEPT), name every entry not carried (REMOVED), surface those lines in the upgrade'
+  - time: '2026-10-04T21:25:34'
+    action: 'T-3833: vendor sync of project-hook preservation → .agentic-framework/lib/{settings_merge.py,upgrade.sh}'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 237 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 237
+  commits: 2
+  files_changed: 8
+  lines_added: 561
+  lines_removed: 49
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3833-fw-upgrade-rewrites-claudesettingsjson-a.md
+generated_by: context-agent-hybrid
