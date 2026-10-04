@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3835: HIGH: fw upgrade in a consumer regenerates .context/cron/agentic-audit.crontab with every job pointing at the upgrade's temp clone (/tmp/fw-upstream-XXXX/fw/bin/fw), deleted when the upgrade ends — fw cron install then breaks every audit job silently
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-04T18:04:06Z
+# ============================================================================
+
+task_id: T-3835
+task_name: "HIGH: fw upgrade in a consumer regenerates .context/cron/agentic-audit.crontab with every job pointing at the upgrade's temp clone (/tmp/fw-upstream-XXXX/fw/bin/fw), deleted when the upgrade ends — fw cron install then breaks every audit job silently"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T16:28:48Z
+completed: 2026-10-04T18:02:58Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-04T20:02:27+02:00
+last_commit: 2026-10-04T20:02:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  cron generate baked $FRAMEWORK_ROOT/bin/fw — the upgrade's temp clone — into every job → resolve the consumer's durable .agentic-framework/bin/fw, refuse a missing or temp-dir fw path, show the refusal in upgrade. vendor sync of the durable cron fw path → .agentic-framework/{bin/fw,lib/upgrade.sh}
+
+# Key outcomes
+outcomes:
+  - '`fw cron generate` in a vendored consumer writes every fw invocation as the consumer''s durable `.agentic-framework/bin/fw`, even when the invoking fw is a temp clone (the `fw upgrade` path)'
+  - '`fw cron generate` refuses (exit 1, nothing written) when the resolved fw path does not exist, or lies under a temp dir outside the project'
+  - 'Regression test in tests/unit/upgrade_fresh_machine_simulation.bats reproduces the temp-clone path, fails before the fix, passes after; the file stays green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'bin/fw'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-3835-high-fw-upgrade-in-a-consumer-regenerate.md'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-04T20:02:27'
+    action: 'T-3835: cron generate baked $FRAMEWORK_ROOT/bin/fw — the upgrade''s temp clone — into every job → resolve the consumer''s durable .agentic-framework/bin/fw, refuse a missing or temp-dir fw path, show the refusal in upgrade'
+  - time: '2026-10-04T20:02:43'
+    action: 'T-3835: vendor sync of the durable cron fw path → .agentic-framework/{bin/fw,lib/upgrade.sh}'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 94 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 94
+  commits: 2
+  files_changed: 6
+  lines_added: 539
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3835-high-fw-upgrade-in-a-consumer-regenerate.md
+generated_by: context-agent-hybrid

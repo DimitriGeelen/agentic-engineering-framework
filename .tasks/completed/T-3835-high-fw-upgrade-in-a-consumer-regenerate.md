@@ -7,12 +7,12 @@ description: >
   ring20-dashboard T-2460 msg 6b1ada91 (vendored consumer upgrade 1.7.0 -> 1.8.0);
   they carry local patches for 3-5.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/upgrade.sh, tests/unit/upgrade_fresh_machine_simulation.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T16:28:48Z
-last_update: 2026-10-04T17:42:27Z
-date_finished:
+last_update: 2026-10-04T18:02:58Z
+date_finished: 2026-10-04T18:02:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -93,9 +93,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw cron generate` in a vendored consumer writes every fw invocation as the consumer's durable `.agentic-framework/bin/fw`, even when the invoking fw is a temp clone (the `fw upgrade` path)
-- [ ] `fw cron generate` refuses (exit 1, nothing written) when the resolved fw path does not exist, or lies under a temp dir outside the project
-- [ ] Regression test in tests/unit/upgrade_fresh_machine_simulation.bats reproduces the temp-clone path, fails before the fix, passes after; the file stays green
+- [x] `fw cron generate` in a vendored consumer writes every fw invocation as the consumer's durable `.agentic-framework/bin/fw`, even when the invoking fw is a temp clone (the `fw upgrade` path)
+- [x] `fw cron generate` refuses (exit 1, nothing written) when the resolved fw path does not exist, or lies under a temp dir outside the project
+- [x] Regression test in tests/unit/upgrade_fresh_machine_simulation.bats reproduces the temp-clone path, fails before the fix, passes after; the file stays green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -368,3 +368,15 @@ bin/fw vendor self --check
 
 ### 2026-10-04T17:42:27Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9cfa3001
+- **Timestamp:** 2026-10-04T18:03:49Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-04T18:02:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
