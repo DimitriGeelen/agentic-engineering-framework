@@ -132,7 +132,9 @@ YAML
     local fw_src="$FRAMEWORK_ROOT/lib/upgrade.sh"
     # Count subshell-scoped sites — must be ≥2 (the two F6 patch sites)
     local count
-    count=$(grep -cE '^\s*\(\s*force=true\s*;\s*generate_claude_code_config' "$fw_src")
+    # T-3833 captures the first site's output — `_regen_out=$( ( force=true; … ) )`
+    # is the same subshell scope inside a command substitution, so accept it.
+    count=$(grep -cE '^\s*([A-Za-z_][A-Za-z0-9_]*=\$\(\s*)?\(\s*force=true\s*;\s*generate_claude_code_config' "$fw_src")
     [ "$count" -ge 2 ]
     # Negative: no leaked, non-subshell pattern should remain
     ! grep -qE '^\s*force=true\s*$' "$fw_src" \
