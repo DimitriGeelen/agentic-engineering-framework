@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3836: fw upgrade drops env.TERMLINK_RUNTIME_DIR from the existing termlink server in .mcp.json while step 6 prints 'OK ... all recommended present' — the termlink MCP then reads /tmp/termlink-0 (the T-3424 store split)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-04T18:24:19Z
+# ============================================================================
+
+task_id: T-3836
+task_name: "fw upgrade drops env.TERMLINK_RUNTIME_DIR from the existing termlink server in .mcp.json while step 6 prints 'OK ... all recommended present' — the termlink MCP then reads /tmp/termlink-0 (the T-3424 store split)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T16:29:29Z
+completed: 2026-10-04T18:23:20Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-04T20:23:06+02:00
+last_commit: 2026-10-04T20:23:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  upgrade's force=true settings regeneration also rewrote .mcp.json from the template, dropping server env and custom servers, and step 6 checked names only → merge into an existing .mcp.json, snapshot before step 5 and restore+name anything dropped in step 6. vendor sync of the .mcp.json merge + step-6 restore → .agentic-framework/lib/{init.sh,upgrade.sh}
+
+# Key outcomes
+outcomes:
+  - '`generate_claude_code_config` (lib/init.sh) never overwrites an existing `.mcp.json` server entry, even under `force=true`; it only adds missing template servers'
+  - 'Step 6 of `fw upgrade` compares every server against a snapshot taken before step 5: any server or env key dropped since is restored and named (`RESTORED ...`), and "all recommended present" prints only when nothing was dropped'
+  - 'Regression test in tests/unit/upgrade_fresh_machine_simulation.bats: a live upgrade keeps `env.TERMLINK_RUNTIME_DIR` (fails before the fix); the file stays green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.context/episodic/T-3835.yaml'
+  - 'lib/init.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-3836-fw-upgrade-drops-envtermlinkruntimedir-f.md'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-04T20:23:06'
+    action: 'T-3836: upgrade''s force=true settings regeneration also rewrote .mcp.json from the template, dropping server env and custom servers, and step 6 checked names only → merge into an existing .mcp.json, snapshot before step 5 and restore+name anything dropped in step 6'
+  - time: '2026-10-04T20:23:16'
+    action: 'T-3836: vendor sync of the .mcp.json merge + step-6 restore → .agentic-framework/lib/{init.sh,upgrade.sh}'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 113 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 113
+  commits: 2
+  files_changed: 7
+  lines_added: 614
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3836-fw-upgrade-drops-envtermlinkruntimedir-f.md
+generated_by: context-agent-hybrid
