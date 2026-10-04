@@ -2336,7 +2336,7 @@ else:
         # shellcheck source=/dev/null
         source "$_bvp_scor_lib"
         local _bvp_rows _bvp_rc _bvp_n
-        _bvp_rows=$(fw_bvp_unscorable_drivers "$PROJECT_ROOT" 2>/dev/null); _bvp_rc=$?
+        _bvp_rows=$(fw_bvp_unscorable_drivers "$PROJECT_ROOT" 2>/dev/null) && _bvp_rc=0 || _bvp_rc=$?  # T-3837: set -e
         if [ "$_bvp_rc" -eq 2 ]; then
             echo -e "  ${YELLOW}WARN${NC}  BVP driver scorability scan did not run"
             echo -e "         Run: bin/fw bvp driver --validate-scoring <file>  (estimator unimportable or policy YAML broken)"
@@ -3406,7 +3406,7 @@ for e in d.get('errors',[])[:3]:
     # Check: TermLink (optional cross-terminal session communication)
     if command -v termlink >/dev/null 2>&1; then
         local tl_version
-        tl_version=$(termlink --version 2>/dev/null | head -1)
+        tl_version=$(termlink --version 2>/dev/null | head -1) || tl_version=""  # T-3837: pipefail
         echo -e "  ${GREEN}OK${NC}  TermLink ($tl_version)"
 
         # T-3040: a topic that does not exist on the LOCAL hub REJECTS posts
@@ -3421,7 +3421,9 @@ for e in d.get('errors',[])[:3]:
         if _doctor_quick_skip "TermLink topic existence check"; then :; else
         local _tl_expected_topics="framework:pickup broadcast:global broadcast-chat"
         local _tl_topic_list _tl_missing_topics=""
-        _tl_topic_list=$(termlink channel list --json 2>/dev/null)
+        # T-3837: a down hub makes `channel list` exit non-zero; under set -e the
+        # bare assignment aborted doctor here. Empty list = the check below skips.
+        _tl_topic_list=$(termlink channel list --json 2>/dev/null) || _tl_topic_list=""
         if [ -n "$_tl_topic_list" ]; then
             local _tl_topic
             for _tl_topic in $_tl_expected_topics; do
@@ -3457,7 +3459,7 @@ sys.exit(0 if '$_tl_topic' in names else 1)
             # shellcheck source=/dev/null
             source "$FRAMEWORK_ROOT/lib/sidecar-audit.sh"
             local _dm_rows _dm_rc
-            _dm_rows=$(fw_sidecar_dm_stale_facts "$PROJECT_ROOT" 24); _dm_rc=$?
+            _dm_rows=$(fw_sidecar_dm_stale_facts "$PROJECT_ROOT" 24) && _dm_rc=0 || _dm_rc=$?  # T-3837: set -e
             if [ "$_dm_rc" -eq 2 ]; then
                 _doctor_warn_host "DM-rail staleness check could not run (fw sidecar dm-stale --json produced no readable output)"
             elif [ "$_dm_rc" -eq 0 ] && [ -n "$_dm_rows" ]; then
@@ -3478,7 +3480,7 @@ sys.exit(0 if '$_tl_topic' in names else 1)
             # consumption "the gap, and it is ours". Same fact-function
             # contract, same WARN shape, deliberately not a second idiom.
             local _ib_rows _ib_rc
-            _ib_rows=$(fw_sidecar_inbox_stale_facts "$PROJECT_ROOT" "$(fw_config SIDECAR_CONSULT_WARN_HOURS)"); _ib_rc=$?
+            _ib_rows=$(fw_sidecar_inbox_stale_facts "$PROJECT_ROOT" "$(fw_config SIDECAR_CONSULT_WARN_HOURS)") && _ib_rc=0 || _ib_rc=$?  # T-3837: set -e
             if [ "$_ib_rc" -eq 2 ]; then
                 _doctor_warn_host "Consult-inbox backlog check could not run (fw sidecar inbox-stale --json produced no readable output)"
             elif [ "$_ib_rc" -eq 0 ] && [ -n "$_ib_rows" ]; then
@@ -3510,7 +3512,7 @@ sys.exit(0 if '$_tl_topic' in names else 1)
         # shellcheck source=/dev/null
         source "$FRAMEWORK_ROOT/lib/sidecar-audit.sh"
         local _sw _sw_rc _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why
-        _sw=$(fw_sidecar_watcher_facts "$PROJECT_ROOT"); _sw_rc=$?
+        _sw=$(fw_sidecar_watcher_facts "$PROJECT_ROOT") && _sw_rc=0 || _sw_rc=$?  # T-3837: set -e
         if [ "$_sw_rc" -ne 0 ]; then
             echo -e "  ${RED}FAIL${NC}  Sidecar watcher liveness could not be read (fw sidecar liveness --json)"
             issues=$((issues + 1))
@@ -4644,7 +4646,9 @@ except Exception as e:
     # older audit.sh wrote.
     local _sts_days _sts_ts
     _sts_days=$(fw_config "AUDIT_STRUCTURE_TIMING_STALE_DAYS" 7)
-    _sts_ts=$(fw_audit_timing_last_measured_at "$PROJECT_ROOT" "structure" 2>/dev/null)
+    # T-3837: non-zero when never measured (any fresh consumer); under set -e a
+    # bare capture aborted doctor here, one check before its summary.
+    _sts_ts=$(fw_audit_timing_last_measured_at "$PROJECT_ROOT" "structure" 2>/dev/null) || _sts_ts=""
     if [ -z "$_sts_ts" ]; then
         echo -e "  ${CYAN}INFO${NC}  Structure-section timing not measured yet — run 'fw audit --section structure' (or push) once to populate it"
     elif fw_audit_timing_is_stale "$PROJECT_ROOT" "structure" "$_sts_days"; then
