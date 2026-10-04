@@ -48,8 +48,10 @@ def test_no_go_verdict_uses_danger_token():
     close, review = _txt("arc_close.html"), _txt("arc_review.html")
     assert ".verdict-NO-GO { background: var(--wt-danger);" in close
     assert ".verdict-NO-GO { background: var(--wt-danger);" in review
-    # arc_close error banner also converted (2 danger uses total in arc_close)
-    assert close.count("var(--wt-danger)") == 2
+    # arc_close error banner also converted, and the T-3843 "no close
+    # recommendation yet" card borders in the token too (3 danger uses total)
+    assert ".anchor-rec-missing { border: 2px solid var(--wt-danger); }" in close
+    assert close.count("var(--wt-danger)") == 3
 
 
 def test_converted_semantic_hexes_are_gone():
