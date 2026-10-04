@@ -28,8 +28,14 @@
 
 # Returns 0 = all visible (or target is not a git repo), 1 = some invisible,
 # 2 = refused (enumerated nothing — see below).
+#
+# T-3832: $4 (optional) is a manifest — one path per line, relative to $dest —
+# of the files the vendor run actually WROTE. When given, it is the only set
+# judged; everything else on disk under $dest is a leftover, counted and never
+# judged. Without it the old enumeration (find under $dest, minus runtime state
+# and files absent from $source) is kept for direct callers.
 fw_vendor_check_visibility() {
-    local dest="$1" target="$2" source="${3:-}"
+    local dest="$1" target="$2" source="${3:-}" manifest="${4:-}"
 
     # A consumer that is not a git repo cannot hide anything. Not a finding.
     if ! git -C "$target" rev-parse --git-dir >/dev/null 2>&1; then
@@ -58,6 +64,19 @@ fw_vendor_check_visibility() {
     # as something the vendor wrote.
     local -a files=() foreign=()
     local f
+    if [ -n "$manifest" ] && [ -f "$manifest" ]; then
+        # Judged set = the manifest (deduped, only files really on disk).
+        while IFS= read -r f; do
+            [ -n "$f" ] && [ -f "$dest/$f" ] && files+=("$rel/$f")
+        done < <(sort -u "$manifest")
+        # Leftovers = on disk but not written by this run. Counted, not judged.
+        while IFS= read -r f; do
+            [ -n "$f" ] && foreign+=("$f")
+        done < <(comm -23 \
+            <(cd "$target" && find "$rel" -type f -not -path '*/__pycache__/*' \
+                -not -name '*.pyc' -not -name '.DS_Store' 2>/dev/null | LC_ALL=C sort -u) \
+            <(sed "s|^|$rel/|" "$manifest" | LC_ALL=C sort -u))
+    else
     while IFS= read -r f; do
         [ -n "$f" ] || continue
         case "$f" in
@@ -72,6 +91,7 @@ fw_vendor_check_visibility() {
         -not -path '*/__pycache__/*' \
         -not -name '*.pyc' \
         -not -name '.DS_Store' 2>/dev/null)
+    fi
 
     if [ "${#foreign[@]}" -gt 0 ]; then
         echo "" >&2
@@ -158,6 +178,24 @@ fw_vendor_check_visibility() {
             }
         }
     ' | sort -k2 -rn >&2
+
+    # T-3832: two vendored artefacts are easy to lose to a consumer .gitignore
+    # and fail far from vendoring when they are — name them outright.
+    local _pin_hidden _dist_hidden
+    _pin_hidden=$(printf '%s\n' "$ignored_paths" | grep -E "^$rel/vendor/designer/aef-workflow-designer-[^/]*\.html$" || true)
+    _dist_hidden=$(printf '%s\n' "$ignored_paths" | grep -cE "^$rel/lib/ts/dist/[^/]*\.js$" || true)
+    if [ -n "$_pin_hidden" ] || [ "${_dist_hidden:-0}" -gt 0 ]; then
+        echo "" >&2
+        echo "  Named, because they fail far from here:" >&2
+        if [ -n "$_pin_hidden" ]; then
+            printf '    pinned designer build (T-3064): %s\n' "$_pin_hidden" | head -3 >&2
+            echo "      → /designer renders an error page in every clone without it" >&2
+        fi
+        if [ "${_dist_hidden:-0}" -gt 0 ]; then
+            echo "    lib/ts/dist/*.js: $_dist_hidden compiled file(s) invisible ($rel/lib/ts/dist/)" >&2
+            echo "      → lib/runtime.sh and init validation run these; absent in every clone" >&2
+        fi
+    fi
 
     echo "" >&2
     echo "  Fix in the TARGET's .gitignore — re-include each path above:" >&2
