@@ -25,6 +25,7 @@ do_impact() {
     echo ""
 
     # Use Python for graph traversal
+    local _rc=0
     python3 -c "
 import yaml, glob, os, sys
 
@@ -70,6 +71,15 @@ for cid, data in cards.items():
     if not loc:
         continue
     for dep in data.get('depends_on', []):
+        # T-908: 24 of 704 depends_on entries in this corpus are PLAIN STRINGS, not
+        # {type,target} dicts — both shapes are in committed cards. dep.get() on a str
+        # raised AttributeError, the traceback went to 2>/dev/null, and the whole verb
+        # printed its header and stopped. Three procAsFit rounds read that as an EMPTY
+        # IMPACT CHAIN and one of them changed a shared harness on the strength of it.
+        # A bare string carries no edge type, so it is treated as an untyped dependency:
+        # counted as a structural edge, never as a write.
+        if not isinstance(dep, dict):
+            dep = {'type': '', 'target': str(dep)}
         dtype = dep.get('type', '')
         target = dep.get('target', '')
         if dtype == 'writes':
@@ -101,6 +111,8 @@ def traverse(component_data, depth, prefix=''):
 
     # What does this component write to?
     for dep in component_data.get('depends_on', []):
+        if not isinstance(dep, dict):   # T-908: str entries exist in committed cards
+            dep = {'type': '', 'target': str(dep)}
         if dep.get('type') == 'writes':
             target_id = dep.get('target', '')
             # Find the target card
@@ -129,6 +141,8 @@ def traverse(component_data, depth, prefix=''):
         if data.get('location', '') in visited:
             continue
         for dep in data.get('depends_on', []):
+            if not isinstance(dep, dict):   # T-908
+                dep = {'type': '', 'target': str(dep)}
             target = dep.get('target', '')
             if target in (my_id, my_name, loc) and dep.get('type') in ('renders', 'calls', 'triggers'):
                 dep_loc = data.get('location', cid)
@@ -145,7 +159,36 @@ if total[0] == 0:
 else:
     print(f'')
     print(f'{total[0]} downstream component(s) affected')
-" 2>/dev/null
+" || _rc=$?
+    # T-908, TWO fixes on this line and the block below.
+    #
+    # 1. The `2>/dev/null` that used to sit on the closing quote is GONE, and its
+    #    absence is the point. A traceback here was discarded, so a CRASH printed the
+    #    header and nothing else — indistinguishable from a real empty chain, in the
+    #    reassuring direction. Three procAsFit rounds independently reported "impact
+    #    prints an empty chain" and none could see why: the why was on the stream
+    #    being thrown away.
+    #
+    # 2. `|| _rc=$?` rather than a bare `local _rc=$?` on the next line. fabric.sh:26
+    #    sets `-euo pipefail`, so errexit terminated the function the instant python
+    #    exited non-zero and the refusal below was UNREACHABLE DEAD CODE. Measured by
+    #    injecting a crash: the traceback appeared, the exit was 1, and the message
+    #    never printed. The `||` is what makes the failure survivable long enough to
+    #    be reported. Caught only because the control was run before the fix was
+    #    believed.
+    #
+    # The verdict is no longer swallowed either: `return 0` unconditionally meant a
+    # caller could not distinguish a computed answer from a failed one, and CLAUDE.md
+    # sends the agent here BEFORE modifying a file, so a silent failure reads as
+    # permission to proceed.
+    if [ "$_rc" -ne 0 ]; then
+        echo "" >&2
+        echo -e "${RED}IMPACT NOT COMPUTED${NC} (traversal exited $_rc) — this is NOT 'nothing depends on this file'." >&2
+        echo "  Nothing above was measured. Do not read the absence of downstream" >&2
+        echo "  components as permission to change this file." >&2
+        echo "  Cross-check with: fw fabric deps $rel_path" >&2
+        return "$_rc"
+    fi
 
     return 0
 }
@@ -195,9 +238,19 @@ import yaml
 with open('$card') as f:
     data = yaml.safe_load(f)
 for dep in data.get('depends_on', []):
+
+    if not isinstance(dep, dict):   # T-908
+        dep = {'type': '', 'target': str(dep)}
     if dep.get('type') == 'writes':
         print(f'    writes \u2192 {dep[\"target\"]}')
-" 2>/dev/null
+"
+                # T-908: stderr mask removed here too. do_impact carried the
+                # identical `" 2>/dev/null` and it turned an AttributeError into a
+                # silent empty answer for three procAsFit rounds. This is the SIBLING
+                # verb, and CLAUDE.md tells the agent to run it BEFORE COMMITTING —
+                # so a swallowed failure here reads as "no blast radius, safe to
+                # commit". Found by a verification leg that was too loose and
+                # matched the sibling by accident.
                 total_impact=$((total_impact + 1))
                 break
             fi
