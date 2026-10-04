@@ -51,6 +51,22 @@ created: 2026-01-01T00:00:00Z
 constituent_tasks: []
 YAML
 
+    # T-3843: fw arc review refuses without a close recommendation, so the
+    # happy-path anchor carries one (that gate is pinned in
+    # t3843_arc_close_recommendation.bats).
+    mkdir -p "$PROJECT_ROOT/.tasks/active"
+    cat > "$PROJECT_ROOT/.tasks/active/T-9991-sample.md" <<'MD'
+---
+id: T-9991
+---
+
+## Recommendation
+
+**Recommendation:** CLOSE
+
+**Rationale:** fixture
+MD
+
     # shellcheck disable=SC1091
     source "$FRAMEWORK_ROOT/lib/arc.sh"
 }

@@ -461,6 +461,9 @@ name: ${name_yaml}
 description: ${desc_yaml}
 status: ${initial_status}
 anchor_task: ${anchor}
+# close_task: T-XXX  # T-3843: the arc's close-out task. Its ## Recommendation (CLOSE|KEEP-OPEN,
+#                    # Rationale, Evidence) is the close recommendation on /arcs/<slug>/close and
+#                    # gates fw arc review; anchor_task is the fallback when unset.
 headline_mechanic: ${hm_yaml}
 demo_evidence: null
 created: ${now}
@@ -1326,6 +1329,53 @@ arc_review() {
         return 1
     fi
 
+    # T-3843 (055 T-454): no close URL without the agent's close recommendation —
+    # the rule `fw task review` already has (T-2421). It is read from the arc's
+    # close-out task (`close_task:`), falling back to the anchor, which is usually
+    # the arc's first design task. Same parser as the task gate; same bypass.
+    local close_task rec_task rec_file="" _f
+    close_task=$(awk '/^close_task:[[:space:]]/ {print $2; exit}' "$arc_path" | tr -d ' "')
+    case "$close_task" in null|'~') close_task="" ;; esac
+    rec_task="${close_task:-$anchor}"
+    if [ -n "$rec_task" ]; then
+        # A glob loop, not `ls <glob> | head`: with no match that pipeline
+        # aborts fw under `set -euo pipefail` (055 T-454).
+        for _f in "$PROJECT_ROOT"/.tasks/active/"$rec_task"-*.md "$PROJECT_ROOT"/.tasks/completed/"$rec_task"-*.md; do
+            if [ -f "$_f" ]; then rec_file="$_f"; break; fi
+        done
+    fi
+    if ! declare -F audit_inception_recommendation >/dev/null 2>&1; then
+        # shellcheck source=lib/task-audit.sh
+        source "${FRAMEWORK_ROOT:-${PROJECT_ROOT:-.}}/lib/task-audit.sh" 2>/dev/null || true
+    fi
+    if [ -z "$rec_file" ] || ! audit_inception_recommendation "$rec_file" 2>/dev/null; then
+        if [ "${FW_ALLOW_EMPTY_RECOMMENDATION:-}" = "1" ]; then
+            if ! declare -F _log_empty_recommendation_bypass >/dev/null 2>&1; then
+                # shellcheck source=lib/review.sh
+                source "${FRAMEWORK_ROOT:-${PROJECT_ROOT:-.}}/lib/review.sh" 2>/dev/null || true
+            fi
+            if declare -F _log_empty_recommendation_bypass >/dev/null 2>&1; then
+                _log_empty_recommendation_bypass "${rec_task:-$id}" "arc_review" "${rec_file:-$arc_path}"
+            fi
+            echo "NOTE: arc '$id' has no close recommendation — emitting anyway (FW_ALLOW_EMPTY_RECOMMENDATION=1, logged)." >&2
+        else
+            echo "BLOCKED: arc '$id' has no close recommendation — no close URL emitted." >&2
+            if [ -n "$rec_task" ]; then
+                local _src="anchor_task"
+                [ -n "$close_task" ] && _src="close_task"
+                echo "  Write it in the ## Recommendation section of $rec_task ($_src):" >&2
+                [ -z "$close_task" ] && echo "  (or set close_task: T-XXX in $arc_path to name the arc's close-out task)" >&2
+            else
+                echo "  Set close_task: T-XXX in $arc_path (the close-out task) and write it there:" >&2
+            fi
+            echo "    **Recommendation:** CLOSE | KEEP-OPEN" >&2
+            echo "    **Rationale:** why — what shipped, what remains" >&2
+            echo "    **Evidence:** the demo (docs/reports/... or URL) and the checks behind it" >&2
+            echo "  Bypass (logged Tier-2): FW_ALLOW_EMPTY_RECOMMENDATION=1 fw arc review $id" >&2
+            return 1
+        fi
+    fi
+
     # Source Watchtower helper for URL resolution (per-project port, T-885/T-1287/T-1376).
     if ! declare -F _watchtower_url >/dev/null 2>&1; then
         # shellcheck source=lib/watchtower.sh
@@ -1344,6 +1394,7 @@ arc_review() {
     [ -n "$name" ]   && echo "  Name:   $name"
     [ -n "$status" ] && echo "  Status: $status"
     [ -n "$anchor" ] && echo "  Anchor: $anchor"
+    [ -n "$close_task" ] && echo "  Close-out: $close_task"
     echo ""
     echo "  $review_url"
     echo ""
