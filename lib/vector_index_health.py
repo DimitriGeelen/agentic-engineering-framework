@@ -125,6 +125,22 @@ def check_index(path: Path):
     return _check("index", "OK", f"vector index opens ({n} chunks)")
 
 
+def project_initialized_at(project_root: Path):
+    """Epoch of `initialized_at:` in .framework.yaml (written once by fw init), or None."""
+    try:
+        text = (project_root / ".framework.yaml").read_text(errors="replace")
+    except OSError:
+        return None
+    m = re.search(r"^initialized_at:\s*['\"]?([0-9T:+\-.Z]+)", text, re.M)
+    if not m:
+        return None
+    try:
+        from datetime import datetime
+        return datetime.fromisoformat(m.group(1).replace("Z", "+00:00")).timestamp()
+    except ValueError:
+        return None
+
+
 def check_manifest(manifest, now: float | None = None):
     now = time.time() if now is None else now
     if manifest is None:
@@ -433,6 +449,24 @@ def evaluate(project_root: Path, framework_root: Path, canary: bool = True,
     path = db_path(project_root)
     manifest = read_manifest(path)
     checks = []
+
+    # T-3747: a project initialized less than INDEX_MAX_AGE_HOURS ago whose index was
+    # never built (no file, no manifest) is "not built yet", not broken: the hourly
+    # reindex has not had its window, and the age check already tolerates an index
+    # that old. WARN, not FAIL. The cron check below still FAILs when nothing is
+    # scheduled to build it, and an index that existed and vanished still FAILs.
+    init_at = project_initialized_at(project_root)
+    if (manifest is None and not path.exists() and init_at is not None
+            and 0 <= now - init_at < max_age * 3600):
+        checks.append(_check(
+            "index", "WARN",
+            f"vector index not built yet (project initialized {(now - init_at) / 3600:.1f}h ago, "
+            f"limit {max_age:g}h)", f"Build it now: {REMEDY_REINDEX}"))
+        checks.append(check_cron(project_root))
+        verdicts = [c["verdict"] for c in checks]
+        status = "FAIL" if "FAIL" in verdicts else "WARN"
+        return {"status": status, "full": canary, "ts": now,
+                "project_root": str(project_root), "checks": checks}
     idx = check_index(path)
     checks.append(idx)
     man = check_manifest(manifest, now)

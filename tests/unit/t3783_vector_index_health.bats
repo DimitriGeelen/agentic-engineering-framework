@@ -118,6 +118,30 @@ check() { python3 "$CHECK" --project-root "$P" --framework-root "$F" "$@"; }
     [ ! -f "$P/.context/working/fw-vec-index.db.searched" ]
 }
 
+@test "T-3747: never-built index in a project initialized < INDEX_MAX_AGE_HOURS ago WARNs, not FAILs" {
+    printf 'project_name: p\ninitialized_at: %s\n' "$(date -u -d '-2 hours' +%Y-%m-%dT%H:%M:%SZ)" > "$P/.framework.yaml"
+    run check
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"WARN|index: vector index not built yet"* ]]
+    [[ "$output" != *"FAIL|"* ]]
+    [ ! -f "$P/.context/working/fw-vec-index.db.searched" ]
+}
+
+@test "T-3747: the not-built-yet grace still FAILs without the reindex cron job" {
+    printf 'project_name: p\ninitialized_at: %s\n' "$(date -u -d '-2 hours' +%Y-%m-%dT%H:%M:%SZ)" > "$P/.framework.yaml"
+    rm "$P/.context/cron-registry.yaml"
+    run check
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"FAIL|cron:"* ]]
+}
+
+@test "T-3747: never-built index in a project initialized beyond INDEX_MAX_AGE_HOURS is red" {
+    printf 'project_name: p\ninitialized_at: %s\n' "$(date -u -d '-30 hours' +%Y-%m-%dT%H:%M:%SZ)" > "$P/.framework.yaml"
+    run check
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"FAIL|index: vector index missing"* ]]
+}
+
 @test "missing manifest is red, never unknown" {
     build_index 0
     rm "$P/.context/working/fw-vec-index.db.manifest.json"
