@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T07:20:33Z
-last_update: 2026-10-04T07:56:40Z
+last_update: 2026-10-04T07:57:50Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,12 +99,17 @@ Root cause per the workstation RCA (dimitri-mint-dev T-086, received 2026-10-04)
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The legacy branch of `audit.sh schedule install` honours `FW_CRON_INSTALL_DIR` (same as the registry path), so every install target is overridable
-- [ ] t3070 (all tests) leaves `/etc/cron.d` untouched: each test asserts the `/etc/cron.d` listing is byte-identical before and after, and teardown removes anything it installed
-- [ ] `fw` invoked with an explicit PROJECT_ROOT that does not exist exits non-zero with a one-line message instead of falling back to another project (regression test included)
-- [ ] A lint/unit check fails when any `tests/unit/*.bats` invokes `schedule install` / `cron install` without `FW_CRON_INSTALL_DIR` set in its setup
+- [x] The legacy branch of `audit.sh schedule install` honours `FW_CRON_INSTALL_DIR` (same as the registry path), so every install target is overridable
+- [x] t3070 (all tests) leaves `/etc/cron.d` untouched: each test asserts the `/etc/cron.d` listing is byte-identical before and after, and teardown removes anything it installed
+- [x] `fw` invoked with an explicit PROJECT_ROOT that does not exist exits non-zero with a one-line message instead of falling back to another project (regression test included)
+- [x] A lint/unit check fails when any `tests/unit/*.bats` invokes `schedule install` / `cron install` without `FW_CRON_INSTALL_DIR` set in its setup
 
 ## Verification
+
+bash -c 'set -o pipefail; timeout 60 bats tests/unit/t3070_audit_schedule_install_delegates_to_registry.bats 2>&1' | tee /tmp/.bats-out && ! grep -q "^not ok" /tmp/.bats-out && test "$(grep -c '# skip' /tmp/.bats-out)" -eq 0
+python3 tools/bats-cron-env-lint.py > /tmp/.lint-out 2>&1 && grep -q "PASS" /tmp/.lint-out
+[ "$(ls -1 /etc/cron.d/agentic-* 2>/dev/null | wc -l)" -eq 0 ]
+grep -q "FW_CRON_INSTALL_DIR" agents/audit/audit.sh
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -234,19 +239,13 @@ Root cause per the workstation RCA (dimitri-mint-dev T-086, received 2026-10-04)
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** `tests/unit/t3070_audit_schedule_install_delegates_to_registry.bats` test 3 (legacy heredoc path) wrote cron files to real `/etc/cron.d/` instead of sandbox. 26 leaked files since 2026-08-23, each running `fw docs --all` daily (~50 CPU-min each). Workstation load: 41 on 24 cores.
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** Line 32 in `agents/audit/audit.sh:schedule` branch hardcoded `CRON_INSTALL="/etc/cron.d/agentic-audit-${project_slug}"` without checking `FW_CRON_INSTALL_DIR` environment variable. The registry delegation path (line 145-152) delegated to `fw cron install`, which respects the override; the legacy path (lines 171-189) ignored it. Amplifier: `fw` with non-existent PROJECT_ROOT ran anyway, using another project's docs as fallback.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** (1) The test setup exported `FW_CRON_INSTALL_DIR` but audit.sh didn't read it — no enforcement that all cron entry points honour the override. (2) No validation that PROJECT_ROOT exists before proceeding — legacy path continued silently. (3) No lint check to require tests that invoke cron operations to set `FW_CRON_INSTALL_DIR` — only discovered by workstation report after 12 days.
+
+**Prevention:** (1) Changed line 32-34 to use `CRON_INSTALL_DIR="${FW_CRON_INSTALL_DIR:-/etc/cron.d}"` with explicit directory variable. (2) Added PROJECT_ROOT existence check at line 33-36 — exits non-zero with clear error if missing. (3) Created `tools/bats-cron-env-lint.py` to scan all .bats files that run cron operations and verify FW_CRON_INSTALL_DIR is set. (4) Added t3070 test 3 assertion that `/etc/cron.d` is unchanged before/after, and new test 5 for non-existent PROJECT_ROOT error case.
 
 ## Evolution
 

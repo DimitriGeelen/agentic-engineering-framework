@@ -79,9 +79,16 @@ EOF
 @test "T-3070: with NO registry present, the legacy hardcoded template path still works (pre-T-448 consumer compat)" {
     rm -f "$TEST_PROJECT/.context/cron-registry.yaml"
 
+    # T-3790: Verify /etc/cron.d is not touched - capture before state
+    before_etc_cron_d=$(ls -la /etc/cron.d 2>/dev/null | wc -l)
+
     run "$FRAMEWORK_ROOT/agents/audit/audit.sh" schedule install
     [ "$status" -eq 0 ]
     grep -q "T-184 + T-196 + T-602 + T-604" "$CRON_SOURCE"
+
+    # T-3790: Verify /etc/cron.d was not modified (legacy path also respects FW_CRON_INSTALL_DIR)
+    after_etc_cron_d=$(ls -la /etc/cron.d 2>/dev/null | wc -l)
+    [ "$before_etc_cron_d" -eq "$after_etc_cron_d" ]
 }
 
 @test "T-3070: 'fw cron generate' points its install hint at 'fw cron install', not the legacy dual-writer" {
@@ -89,4 +96,13 @@ EOF
     [ "$status" -eq 0 ]
     [[ "$output" == *"fw cron install"* ]]
     [[ "$output" != *"fw audit schedule install"* ]]
+}
+
+@test "T-3790: 'audit.sh schedule install' exits non-zero when PROJECT_ROOT does not exist" {
+    export PROJECT_ROOT="/nonexistent-path-$$"
+
+    run "$FRAMEWORK_ROOT/agents/audit/audit.sh" schedule install
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"ERROR"* ]]
+    [[ "$output" == *"does not exist"* ]]
 }
