@@ -76,10 +76,16 @@ EOF
         done
     } > "$TMPROOT/.context/inbox.yaml"
 
+    # T-3747: --no-commit and PROJECT_ROOT=$TMPROOT. handover.sh defaults to
+    # AUTO_COMMIT=true and resolved PROJECT_ROOT to the real repo (the cwd), so
+    # every run of this file ran `git -C <real repo> push origin HEAD` — it pushed
+    # bleeding-edge to origin on 2026-10-04 10:49 from inside the unit suite — and
+    # fired an fw_notify "Session Ended" push. NTFY_ENABLED=0 silences the latter.
     _gen() {  # $1 = digest flag, $2 = session id
-        env TASKS_DIR="$TMPROOT/.tasks" CONTEXT_DIR="$TMPROOT/.context" \
+        env PROJECT_ROOT="$TMPROOT" NTFY_ENABLED=0 \
+            TASKS_DIR="$TMPROOT/.tasks" CONTEXT_DIR="$TMPROOT/.context" \
             HANDOVER_DIR="$TMPROOT/out-$1" FW_HANDOVER_DIGEST="$1" \
-            bash "$FW_ROOT/agents/handover/handover.sh" --session "$2" \
+            bash "$FW_ROOT/agents/handover/handover.sh" --session "$2" --no-commit \
             >/dev/null 2>&1 || true
     }
     mkdir -p "$TMPROOT/out-0" "$TMPROOT/out-1"
