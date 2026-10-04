@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3831: fw upgrade step 4c aborts the whole upgrade when ~/.local/bin/fw is an old symlink into the consumer's OWN vendored copy: the T-1278 guard reads FRAMEWORK.md beside bin/fw as 'framework repo', but every vendored copy carries FRAMEWORK.md since T-2805 — discriminate on the vendor .upstream sentinel (T-2232) instead
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-04T18:44:43Z
+# ============================================================================
+
+task_id: T-3831
+task_name: "fw upgrade step 4c aborts the whole upgrade when ~/.local/bin/fw is an old symlink into the consumer's OWN vendored copy: the T-1278 guard reads FRAMEWORK.md beside bin/fw as 'framework repo', but every vendored copy carries FRAMEWORK.md since T-2805 — discriminate on the vendor .upstream sentinel (T-2232) instead"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T15:26:37Z
+completed: 2026-10-04T18:43:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-04T20:43:10+02:00
+last_commit: 2026-10-04T20:43:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  step 4c read FRAMEWORK.md beside bin/fw as 'framework repo', but every vendored copy ships it since T-2805, so a ~/.local/bin/fw link into the consumer's own copy aborted the upgrade → discriminate on the T-2232 .upstream sentinel: skip and leave a link into a vendored copy, still refuse a framework repo. vendor sync of the .upstream discriminator → .agentic-framework/lib/upgrade.sh
+
+# Key outcomes
+outcomes:
+  - 'Step 4c tells a vendored copy (has the T-2232 `.upstream` sentinel) from a framework repo (never has one); a `~/.local/bin/fw` symlink into a vendored copy is SKIPPED and left in place, and the upgrade continues to completion'
+  - 'A symlink into a real framework repo (FRAMEWORK.md, no `.upstream`) is still REFUSED (T-1278 guard intact)'
+  - 'Regression test in tests/unit/upgrade_fresh_machine_simulation.bats reproduces the abort (fails before the fix, passes after); the file stays green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.context/episodic/T-3836.yaml'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-3831-fw-upgrade-step-4c-aborts-the-whole-upgr.md'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-04T20:43:10'
+    action: 'T-3831: step 4c read FRAMEWORK.md beside bin/fw as ''framework repo'', but every vendored copy ships it since T-2805, so a ~/.local/bin/fw link into the consumer''s own copy aborted the upgrade → discriminate on the T-2232 .upstream sentinel: skip and leave a link into a vendored copy, still refuse a framework repo'
+  - time: '2026-10-04T20:43:16'
+    action: 'T-3831: vendor sync of the .upstream discriminator → .agentic-framework/lib/upgrade.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 196 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 196
+  commits: 2
+  files_changed: 5
+  lines_added: 466
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3831-fw-upgrade-step-4c-aborts-the-whole-upgr.md
+generated_by: context-agent-hybrid
