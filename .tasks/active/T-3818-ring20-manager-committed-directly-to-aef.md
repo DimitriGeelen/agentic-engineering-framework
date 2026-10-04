@@ -15,7 +15,7 @@ description: >
   AEF repo, and the sanctioned path for a change ring20 needs in AEF (sidecar request/pickup
   to 999, or a PR into bleeding-edge).
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
 horizon: now
@@ -27,7 +27,7 @@ confirmed_by: operator
 confirmed_at: 2026-10-04T13:34:11Z
 confirmed_via: human   # operator ruling 2026-10-04: "give the very high value", "on horizon now, picked up soon after this"
 created: 2026-10-04T13:34:11Z
-last_update: '2026-10-04T13:45:21Z'
+last_update: 2026-10-04T22:34:33Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -46,6 +46,23 @@ cost_estimate_proposed:
       effort: 6
     rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
       (workflow:inception); effort=6 (lines=112,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-04T22:34:34Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -76,6 +93,23 @@ cost_estimate_proposed:
      §Disposition Gate. Bypass: --skip-disposition-gate "rationale" (direct) or
      FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
 -->
+
+- **IW-1: Which identity and credential did ring20-manager push to AEF master with, and what other write access to the AEF repo does ring20 rely on?**
+  confidence: 0
+  disposition:
+  rationale: asked ring20-manager on sidecar conversation aef-master-protection (msg e45cd15c, 2026-10-04)
+- **IW-2: Does ring20 object to OneDev branch protection on master (release fast-forwards only, no direct pushes)?**
+  confidence: 0
+  disposition:
+  rationale: same message
+- **IW-3: Which path should ring20 use for future AEF changes — sidecar request to 999, patch bundle (832 style), or a branch/PR into bleeding-edge?**
+  confidence: 1
+  disposition:
+  rationale: release-train model (CLAUDE.md §Release-Train) makes bleeding-edge the only authored branch; ring20's preference asked
+- **IW-4: Does any ring20 automation (CI, mirror, timers) write AEF master or tags that protection would break?**
+  confidence: 0
+  disposition:
+  rationale: eb49ff9 edited .onedev-buildspec.yml (the GitHub mirror job lives there); asked ring20-manager
 
 ## Exploration Plan
 
@@ -160,3 +194,6 @@ cost_estimate_proposed:
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-10-04T22:34:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
