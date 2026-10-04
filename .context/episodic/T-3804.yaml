@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3804: Sidecar nudges never stop after the consult is answered: 832's cf10f23e nudged 7+ times (rungs 2-3) although 999 replied --in-reply-to it and read the inbox ('no pending consults'); already-answered messages also re-surface at every prompt
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-04T14:56:04Z
+# ============================================================================
+
+task_id: T-3804
+task_name: "Sidecar nudges never stop after the consult is answered: 832's cf10f23e nudged 7+ times (rungs 2-3) although 999 replied --in-reply-to it and read the inbox ('no pending consults'); already-answered messages also re-surface at every prompt"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T10:40:07Z
+completed: 2026-10-04T14:55:31Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-04T16:55:25+02:00
+last_commit: 2026-10-04T16:55:26+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  sweep read only the first 100 inbox records, ignored REPLIED receipts and dropped -nudge-N ids → paged reply walk, REPLIED/in_reply_to_msg_id settle the ladder, nudge ids resolve to their base. vendor sync of the reply-settles fix → .agentic-framework/lib/sidecar/
+
+# Key outcomes
+outcomes:
+  - 'Root cause located with evidence from .context/sidecar (receipts-sent.jsonl, outbox, direct ledger) and recorded in ## RCA'
+  - 'Sender side: a REPLIED receipt from the addressee settles the consult on the retry ladder (row closed `answered`), so the sweep sends no further nudge or re-post'
+  - 'A receipt or reply naming a nudge id (`<base>-nudge-N`) resolves to its base id and settles the base consult'
+  - 'Receiver side: a reply (`fw sidecar send --in-reply-to <id>`) is recognisable by the sender''s sweep whichever path it took (hub or direct)'
+  - 'Regression tests pin each of the above'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'vendor sync of the reply-settles fix → .agentic-framework/lib/sidecar/'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/release.sh'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/outbox.py'
+  - '.agentic-framework/lib/sidecar/receipts.py'
+  - '.agentic-framework/lib/sidecar/retry.py'
+  - '.agentic-framework/lib/sidecar/termlink_transport.py'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/outbox.py'
+  - 'lib/sidecar/receipts.py'
+  - 'lib/sidecar/retry.py'
+  - 'lib/sidecar/termlink_transport.py'
+  - '.tasks/active/T-3804-sidecar-nudges-never-stop-after-the-cons.md'
+  - 'tests/unit/test_sidecar_reply_settles_t3804.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-04T16:55:25'
+    action: 'T-3804: sweep read only the first 100 inbox records, ignored REPLIED receipts and dropped -nudge-N ids → paged reply walk, REPLIED/in_reply_to_msg_id settle the ladder, nudge ids resolve to their base'
+  - time: '2026-10-04T16:55:26'
+    action: 'T-3804: vendor sync of the reply-settles fix → .agentic-framework/lib/sidecar/'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 255 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 255
+  commits: 2
+  files_changed: 13
+  lines_added: 845
+  lines_removed: 104
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3804-sidecar-nudges-never-stop-after-the-cons.md
+generated_by: context-agent-hybrid
