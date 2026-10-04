@@ -1707,3 +1707,28 @@
   - L-687
   - L-690
   follow_up_task: null
+- id: OBS-599
+  type: structural
+  severity: high
+  surface: 'unit suite → agents/handover/handover.sh → git push of the real repo'
+  detected_in: T-3747
+  symptom: 'Running tests/unit/handover_digest.bats pushed bleeding-edge to origin
+    (2026-10-04 10:49, a89ddc6ca; again for 68643a1de) through the full pre-push gate,
+    and fired an fw_notify "Session Ended" push, from inside the unit suite.'
+  root_cause: 'handover.sh defaults AUTO_COMMIT=true. The test set only TASKS_DIR /
+    CONTEXT_DIR / HANDOVER_DIR, so PROJECT_ROOT resolved to the real repo; the commit
+    of a handover file outside the repo failed, but _push_to_remotes ran anyway and
+    pushed the real HEAD.'
+  prevention: 'Test fixed (27613a681: --no-commit, PROJECT_ROOT=$TMPROOT,
+    NTFY_ENABLED=0). Structural guard still open: T-3798 (handover.sh refuses to
+    commit/push when HANDOVER_DIR is outside PROJECT_ROOT, and/or a lint for .bats
+    that execute handover.sh without --no-commit).'
+  blast_radius: any test or script that runs handover.sh against fixtures; every
+    suite run pushed unreviewed local commits.
+  observed: '2026-10-04'
+  status: open
+  related:
+  - T-3747
+  - T-3798
+  - T-3028
+  follow_up_task: T-3798
