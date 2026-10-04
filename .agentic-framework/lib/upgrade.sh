@@ -2089,7 +2089,12 @@ print(f'{len(fw_hooks)}|{len(consumer_hooks)}|{len(missing)}|{stale}|{missing_na
                 # set -e mid-function — a stuck-on force=true crosses governance
                 # (the flag is a sovereignty bypass). Subshell makes the override
                 # impossible to leak; the parent's `force` stays untouched.
-                ( force=true; generate_claude_code_config "$target_dir" ) >/dev/null
+                # T-3833: output is captured, not discarded — the merge's
+                # KEPT/CARRIED/REMOVED lines are how an operator learns what
+                # happened to hooks the template does not own.
+                local _regen_out
+                _regen_out=$( ( force=true; generate_claude_code_config "$target_dir" ) )
+                printf '%s\n' "$_regen_out" | grep -E '^ +(CARRIED|KEPT|REMOVED) ' || true
 
                 local hook_analysis_after missing_count_after missing_names_after stale_after nonportable_after
                 hook_analysis_after=$(_t2912_hook_gap "$settings_file")
