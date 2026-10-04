@@ -2,7 +2,8 @@
 # lib/release.sh - Release tagging + GitHub Release automation (T-1256)
 #
 # Cuts a new annotated tag based on the latest v* tag (bumping patch by default),
-# pushes to all remotes with --follow-tags, and creates a GitHub Release if gh
+# fast-forwards the release branch, pushes branch + tag to every remote in ONE
+# atomic push per remote (T-3822), and creates a GitHub Release if gh
 # is available. Idempotent: exits cleanly when there are no commits since the
 # latest tag.
 #
@@ -399,9 +400,8 @@ release_tag_and_release() {
     # `master` must fail loudly here rather than tag, push, exit 0, and leave
     # the operator with every signal saying it worked.
     local release_branch="${FW_RELEASE_BRANCH:-master}"
-    # Declared here, not at the tag-push loop below: the release-branch push
-    # runs FIRST and must be able to record its own failure. A `local failed=0`
-    # after that point would silently reset it.
+    # Declared here, before the publish loop that sets it (T-3822 merged the
+    # old branch-push and tag-push loops into one atomic push per remote).
     local failed=0
     local ff_state ff_count=0
     ff_state="$(release_ff_state "$root" "$release_branch")"
@@ -494,13 +494,12 @@ release_tag_and_release() {
         return 1
     fi
 
-    # Advance the install surface BEFORE publishing the tag. A tag pushed to a
-    # commit that `master` never received is worse than no tag: it advertises a
-    # release that consumers cannot obtain. If the advance fails, the local tag
-    # is removed so a retry is clean.
+    # Advance the local install surface, then publish branch AND tag together.
+    # If the local advance fails, the tag (and reconcile commit) are removed so
+    # a retry is clean.
+    local rb_before="" publish_branch=false
     if [ "$ff_state" = "clean" ]; then
         echo -e "${CYAN}Fast-forwarding $release_branch ($ff_count commit(s))...${NC}"
-        local rb_before
         rb_before="$(git -C "$root" rev-parse "refs/heads/${release_branch}" 2>/dev/null)"
         if ! git -C "$root" branch -f "$release_branch" HEAD 2>&1; then
             echo -e "${RED}Failed to advance local '$release_branch'${NC} — is it checked out in a worktree?" >&2
@@ -509,67 +508,48 @@ release_tag_and_release() {
             _release_undo_reconcile
             return 1
         fi
-        # The LOCAL fast-forward succeeding does not mean the install surface
-        # moved — release_ff_state only inspects the local ref. A remote can
-        # still reject the push as non-fast-forward (someone else wrote the
-        # branch), so reaching NO remote at all means the release did not
-        # happen and the tag must not survive to advertise it.
-        local rb_pushed=0 rb_attempted=0
-        while IFS= read -r remote; do
-            [ -z "$remote" ] && continue
-            rb_attempted=$((rb_attempted + 1))
-            echo -e "${CYAN}Pushing $release_branch to $remote...${NC}"
-            if git -C "$root" push "$remote" "refs/heads/${release_branch}:refs/heads/${release_branch}" 2>&1; then
-                echo -e "  ${GREEN}✓ $remote${NC}"
-                rb_pushed=$((rb_pushed + 1))
-            else
-                echo -e "  ${YELLOW}WARN: push of $release_branch to $remote failed${NC}" >&2
-                failed=1
-            fi
-        done < <(git -C "$root" remote 2>/dev/null)
-        if [ "$rb_attempted" -gt 0 ] && [ "$rb_pushed" -eq 0 ]; then
-            echo -e "${RED}REFUSING to publish:${NC} '$release_branch' reached no remote." >&2
-            echo "  The local branch advanced but no consumer can see it, so the tag" >&2
-            echo "  would advertise a release nobody can obtain." >&2
-            git -C "$root" branch -f "$release_branch" "$rb_before" >/dev/null 2>&1
-            git -C "$root" tag -d "$next" >/dev/null 2>&1
-            echo "  Rolled back: $release_branch restored, tag $next removed; nothing was published." >&2
-            _release_undo_reconcile
-            return 1
-        fi
+        publish_branch=true
     elif [ "$ff_state" = "missing" ]; then
         echo -e "${YELLOW}No local '$release_branch' — skipping the fast-forward${NC}" >&2
     else
         echo -e "${GREEN}$release_branch already at HEAD — no fast-forward needed${NC}"
+        # Still published: the remote may be behind the local ref (T-3819 has
+        # already proved it is an ancestor), and an equal remote is a no-op.
+        publish_branch=true
     fi
-    # Past this point the reconcile commit may be published on the release
-    # branch; it is never reverted from here on (T-3193 holds the release open).
-    [ -n "$ver_snap" ] && rm -rf "$ver_snap"
-    ver_snap=""
 
-    # Push tag to every remote
-    # (failed is declared above, with the release-branch push that also sets it)
+    # ── Publish: ONE atomic push per remote (T-3822) ─────────────────────
+    # v1.8.0 attempt 3 pushed `master`, then pushed the tag through a second
+    # full pre-push audit minutes later; consumers ran `fw upgrade` from master
+    # in between and installed a "1.8.0" no tag named. `--atomic` makes each
+    # remote take both refs or neither, and one push means the pre-push hook
+    # (and its audit) runs once per remote, not once per ref.
     #
-    # T-3193: this leg is the mirror image of the release-branch guard above,
-    # and it used to have none. The branch push refuses when it reaches no
-    # remote; the tag push only set `failed` and fell through to `gh release
-    # create`, which happily published a GitHub Release naming a tag that no
-    # remote has. Consumers then see the install surface at the new commit,
-    # nothing naming it, and a release page asserting the release shipped.
+    # Atomicity also retires the old T-3193 "hold the release open" state
+    # (branch published, tag refused): on a single remote it can no longer
+    # arise. What remains is per-remote all-or-nothing:
+    #   - no remote took the push -> nothing was published anywhere, so the
+    #     branch, tag and reconcile commit are all rolled back (T-3190/T-3820);
+    #   - some remotes took it    -> the release IS published; the failures are
+    #     reported and the command exits non-zero, nothing is retracted.
     #
-    # Retry before giving up (AC2). The observed cause was not a broken remote
-    # — it was our own pre-push audit lock, held by the daily cron. That is the
-    # COMMON case, not the rare one, and failing a release on first contention
-    # turns a two-minute wait into a half-published release.
-    local tag_pushed=0 tag_attempted=0
-    local remote
+    # Retry before giving up (T-3193 AC2): the common refusal is our own
+    # pre-push audit lock held by cron, which clears on its own.
+    local refspecs=()
+    $publish_branch && refspecs+=("refs/heads/${release_branch}:refs/heads/${release_branch}")
+    refspecs+=("refs/tags/${next}:refs/tags/${next}")
+    local pub_ok=0 pub_attempted=0 remote
     while IFS= read -r remote; do
         [ -z "$remote" ] && continue
-        tag_attempted=$((tag_attempted + 1))
-        echo -e "${CYAN}Pushing $next to $remote...${NC}"
+        pub_attempted=$((pub_attempted + 1))
+        if $publish_branch; then
+            echo -e "${CYAN}Pushing $release_branch + $next to $remote (atomic)...${NC}"
+        else
+            echo -e "${CYAN}Pushing $next to $remote (atomic)...${NC}"
+        fi
         local _try _ok=0
         for _try in 1 2 3; do
-            if git -C "$root" push "$remote" "$next" 2>&1; then
+            if git -C "$root" push --atomic "$remote" "${refspecs[@]}" 2>&1; then
                 _ok=1
                 break
             fi
@@ -580,37 +560,28 @@ release_tag_and_release() {
         done
         if [ "$_ok" -eq 1 ]; then
             echo -e "  ${GREEN}✓ $remote${NC}"
-            tag_pushed=$((tag_pushed + 1))
+            pub_ok=$((pub_ok + 1))
         else
-            echo -e "  ${YELLOW}WARN: push to $remote failed after 3 attempts${NC}" >&2
+            echo -e "  ${YELLOW}WARN: atomic push to $remote failed after 3 attempts — neither ref landed there${NC}" >&2
             failed=1
         fi
     done < <(git -C "$root" remote 2>/dev/null)
 
-    # T-3193 (AC3): which invariant wins when the branch already advanced?
-    #
-    # HOLD THE RELEASE OPEN. Do NOT roll the release branch back.
-    #
-    # By this point `$release_branch` has been pushed and consumers may already
-    # have fetched it. Retracting it means a force-push to the install surface
-    # — a Tier 0 action, destructive, and one that breaks anyone who pulled in
-    # between. The branch-push guard above CAN roll back precisely because it
-    # fires when the branch reached NO remote, so there is nothing published to
-    # retract. Here there is.
-    #
-    # So the release stays open: the local tag survives, no GitHub Release is
-    # created, the command exits non-zero, and re-running it pushes the tag.
-    # The visible state is "master advanced, tag pending" — untidy, honest, and
-    # recoverable — rather than "release published, tag missing", which is
-    # tidy, false, and the thing this guard exists to prevent.
-    if [ "$tag_attempted" -gt 0 ] && [ "$tag_pushed" -eq 0 ]; then
-        echo -e "${RED}REFUSING to publish:${NC} tag $next reached no remote." >&2
-        echo "  '$release_branch' HAS been pushed and is not being rolled back —" >&2
-        echo "  retracting a published install surface is worse than an untagged one." >&2
-        echo "  No GitHub Release was created; the local tag $next is kept." >&2
-        echo "  Resume with: bin/fw release tag-and-release   (re-pushes the tag)" >&2
+    if [ "$pub_attempted" -gt 0 ] && [ "$pub_ok" -eq 0 ]; then
+        echo -e "${RED}REFUSING to publish:${NC} the release reached no remote." >&2
+        echo "  Each push was atomic, so no remote has '$release_branch' or $next from" >&2
+        echo "  this release: nothing was published and nothing needs retracting." >&2
+        [ -n "$rb_before" ] && git -C "$root" branch -f "$release_branch" "$rb_before" >/dev/null 2>&1
+        git -C "$root" tag -d "$next" >/dev/null 2>&1
+        echo "  Rolled back: $release_branch restored, tag $next removed; nothing was published." >&2
+        _release_undo_reconcile
+        echo "  No GitHub Release was created. Fix the remote and re-run the release." >&2
         return 1
     fi
+    # Published on at least one remote: the reconcile commit is now public and
+    # is never reverted from here on.
+    [ -n "$ver_snap" ] && rm -rf "$ver_snap"
+    ver_snap=""
 
     # Create GitHub Release (best-effort)
     if command -v gh >/dev/null 2>&1; then

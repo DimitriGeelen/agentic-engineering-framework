@@ -43,6 +43,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
 import sys
 import uuid
@@ -101,6 +102,28 @@ def read_ledger() -> list[dict]:
     return _read(ledger_path())
 
 
+_NUDGE_SUFFIX = re.compile(r"-nudge-\d+$")
+
+
+def base_id(client_msg_id: str | None) -> str:
+    """The consult a nudge points at (T-3804). The retry ladder posts nudges
+    as `<base>-nudge-N` (retry.default_nudge); a receipt or reply naming one
+    is about the base consult, which is the only id the sender's outbox and
+    ladder know."""
+    return _NUDGE_SUFFIX.sub("", str(client_msg_id or ""))
+
+
+def replied_ids() -> set[str]:
+    """Base ids of consults WE sent that the addressee has REPLIED to (T-3804).
+
+    Every REPLIED receipt lands here, whichever way it came — the hub topic
+    (inbox.pending) or our receiver's POST /ack — and record_from_peer has
+    already checked it is from the addressee of a message we really sent. The
+    retry sweep reads this so a reply settles the ladder."""
+    return {base_id(r.get("client_msg_id")) for r in read_ledger()
+            if r.get("state") == REPLIED and r.get("client_msg_id")}
+
+
 def read_sent() -> list[dict]:
     return _read(sent_path())
 
@@ -121,6 +144,8 @@ def record_from_peer(client_msg_id: str, state: str, peer: str | None, via: str,
     a peer that is not the addressee, or a state already recorded."""
     if state not in STATES or not peer or not client_msg_id:
         return False
+    # T-3804: a receipt for one of our nudges is a receipt for its consult.
+    client_msg_id = base_id(client_msg_id)
     if "/" in client_msg_id or ".." in client_msg_id:
         return False
     try:

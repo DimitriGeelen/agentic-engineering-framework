@@ -93,7 +93,8 @@ def _now_iso() -> str:
 
 
 def write_message(from_id: str, to: str, body: str, conversation_id: str,
-                   urgent: bool = False, hub: str | None = None) -> str:
+                   urgent: bool = False, hub: str | None = None,
+                   in_reply_to: str | None = None) -> str:
     """Write a message file, then its flag file. Returns client_msg_id.
 
     Ordering is the whole point: the message file is written to a temp path
@@ -119,6 +120,10 @@ def write_message(from_id: str, to: str, body: str, conversation_id: str,
         "body": body,
         "created_at": _now_iso(),
     }
+    if in_reply_to:
+        # T-3804: the id this answers, so the original sender's retry sweep
+        # can settle it by id (transport carries it as in_reply_to_msg_id).
+        msg["in_reply_to"] = in_reply_to
 
     msg_path = outbox / f"{client_msg_id}.json"
     tmp_path = outbox / f"{client_msg_id}.json.tmp"
