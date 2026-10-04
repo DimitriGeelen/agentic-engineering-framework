@@ -1900,12 +1900,21 @@ CRONREGEOF
                     # printed "=== Upgrade Complete ===" and exited 0.
                     local _shim_link_dir
                     _shim_link_dir=$(dirname "$link_target" 2>/dev/null || echo "")
-                    if [ -n "$_shim_link_dir" ] && [ -f "$_shim_link_dir/../FRAMEWORK.md" ]; then
+                    # T-3831: FRAMEWORK.md alone does not mean "framework repo" —
+                    # every vendored copy ships it since T-2805. The vendor's
+                    # .upstream sentinel (T-2232) does: a vendored copy has it,
+                    # the framework repo never does. A link into a vendored copy
+                    # is a working (if old-style) entry point: leave it, go on.
+                    if [ -n "$_shim_link_dir" ] && [ -f "$_shim_link_dir/../FRAMEWORK.md" ] \
+                        && [ -f "$_shim_link_dir/../.upstream" ]; then
+                        echo -e "  ${CYAN}SKIP${NC}  $current_fw links into a vendored copy ($_shim_link_dir/..) — left as is"
+                        echo -e "         Not replacing it: writing the shim through it would overwrite that copy's bin/fw."
+                    elif [ -n "$_shim_link_dir" ] && [ -f "$_shim_link_dir/../FRAMEWORK.md" ]; then
                         echo -e "  ${RED}REFUSED${NC}  $current_fw resolves into a framework repo ($_shim_link_dir/..)"
                         echo -e "         Refusing to overwrite a framework repo's bin/fw with the shim."
                         echo -e "         Inspect: ls -la $current_fw && readlink -f $current_fw"
                         return 1
-                    fi
+                    else
                     # T-1278: remove symlink before copy. Plain `cp` follows the
                     # destination symlink and writes the shim *through* it into
                     # the framework repo's bin/fw, corrupting the real CLI into
@@ -1917,6 +1926,7 @@ CRONREGEOF
                     echo -e "  ${GREEN}MIGRATED${NC}  Replaced global symlink with project-detecting shim"
                     echo -e "  ${CYAN}INFO${NC}  Shim migration: fw now routes to the project you're standing in"
                     echo -e "  ${CYAN}INFO${NC}  Each project uses its own framework version (no global install dependency)"
+                    fi
                 fi
             fi
         elif [ -f "$current_fw" ] && ! grep -q 'find_fw' "$current_fw" 2>/dev/null; then
