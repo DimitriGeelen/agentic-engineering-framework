@@ -1,0 +1,21 @@
+id: lib/sidecar/seen.py
+name: seen
+type: script
+subsystem: framework-core
+location: lib/sidecar/seen.py
+tags: []
+
+purpose: "arc-011 sidecar — the ONE seen/answered ledger for inbound mail (T-3840)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-04
+created_by: unknown

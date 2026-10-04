@@ -1,0 +1,21 @@
+id: tests/unit/test_sidecar_seen_ledger_t3840.py
+name: test_sidecar_seen_ledger_t3840
+type: script
+subsystem: tests
+location: tests/unit/test_sidecar_seen_ledger_t3840.py
+tags: []
+
+purpose: "T-3840 — the receiver hook re-surfaced the same messages at every prompt."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-04
+created_by: unknown
