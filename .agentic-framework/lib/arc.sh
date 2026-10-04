@@ -929,14 +929,21 @@ arc_close() {
     fi
 
     python3 - "$f" "$now" "$decision" "$demo" "$closed_via" <<'PY'
-import re, sys
+import json, re, sys
 fn, now, decision, demo, closed_via = sys.argv[1], sys.argv[2], sys.argv[3], sys.argv[4], sys.argv[5]
 text = open(fn).read()
 text = re.sub(r'^status:.*$', 'status: closed', text, count=1, flags=re.MULTILINE)
 text = re.sub(r'^closed_at:.*$', f'closed_at: {now}', text, count=1, flags=re.MULTILINE)
 if decision:
-    safe = decision.replace('"', '\\"')
-    text = re.sub(r'^decision:.*$', f'decision: "{safe}"', text, count=1, flags=re.MULTILINE)
+    # T-3841: a JSON string is a valid YAML double-quoted scalar, so `"`, `\` and
+    # newlines round-trip; the lambda keeps re.sub from reading `\` in the value
+    # as a group reference; an arc without a `decision:` line gets one appended
+    # instead of the decision being dropped.
+    line = f'decision: {json.dumps(decision, ensure_ascii=False)}'
+    if re.search(r'^decision:', text, re.MULTILINE):
+        text = re.sub(r'^decision:.*$', lambda _m: line, text, count=1, flags=re.MULTILINE)
+    else:
+        text = text.rstrip("\n") + f'\n{line}\n'
 safe_demo = demo.replace('"', '\\"')
 if re.search(r'^demo_evidence:', text, re.MULTILINE):
     text = re.sub(r'^demo_evidence:.*$', f'demo_evidence: "{safe_demo}"', text, count=1, flags=re.MULTILINE)
