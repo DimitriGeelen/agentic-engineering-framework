@@ -626,3 +626,36 @@ YAML
     [[ "$output" == *"NOT written by the vendor"* ]] || { echo "$output"; false; }
     [[ "$output" == *"Vendored successfully"* ]]
 }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# T-3833 (832 msg 8a464451): `fw upgrade` regenerated .claude/settings.json and
+# silently dropped project-registered (non-framework) hooks.
+# ─────────────────────────────────────────────────────────────────────────────
+
+@test "T-3833: live fw upgrade keeps project-registered hooks in .claude/settings.json and says so" {
+    local upstream_bare="$TEST_TEMP_DIR/upstream.git"
+    local proj="$TEST_TEMP_DIR/hooks-proj"
+    make_upstream_bare "$upstream_bare"
+    overlay_upstream "$upstream_bare" bin/fw lib/upgrade.sh lib/init.sh lib/settings_merge.py
+
+    "$FRAMEWORK_ROOT/bin/fw" vendor --target "$proj" --source "$FRAMEWORK_ROOT" >/dev/null
+    cat > "$proj/.framework.yaml" <<YAML
+project_name: hooks-proj
+version: $(tr -d '\n' < "$proj/.agentic-framework/VERSION")
+provider: claude
+upstream_repo: file://$upstream_bare
+YAML
+    # framework hooks missing → step 5 takes the regenerate branch
+    mkdir -p "$proj/.claude"
+    cat > "$proj/.claude/settings.json" <<'JSON'
+{"hooks": {"PreToolUse": [
+  {"matcher": "Bash", "hooks": [{"type": "command", "command": "${CLAUDE_PROJECT_DIR}/scripts/project-guard.sh"}]}
+]}}
+JSON
+
+    run fresh_run "$proj" upgrade "$proj"
+    [ "$status" -eq 0 ] || { echo "$output"; false; }
+    grep -q 'scripts/project-guard.sh' "$proj/.claude/settings.json" || { cat "$proj/.claude/settings.json"; false; }
+    grep -q 'fw hook check-active-task' "$proj/.claude/settings.json"
+    [[ "$output" == *"KEPT  PreToolUse  \${CLAUDE_PROJECT_DIR}/scripts/project-guard.sh"* ]] || { echo "$output"; false; }
+}

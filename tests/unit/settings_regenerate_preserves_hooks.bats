@@ -105,12 +105,35 @@ for ev, entries in (d.get('hooks') or {}).items():
     echo "$output" | grep -q 'CARRIED.*check-arc-id'
 }
 
-@test "T-2710: foreign non-framework hooks are still dropped (T-677 preserved)" {
+@test "T-3833: project-registered non-framework hooks are kept and reported (supersedes T-677)" {
+    # 832 (msg 8a464451): the 1.7.740 upgrade dropped two project hooks without a
+    # word. Project hooks are the project's, not the template's to delete.
     run python3 "$MERGE" "$TMP/new.json" "$TMP/prev.json"
     [ "$status" -eq 0 ]
-    # T-677 deliberately replaces third-party hooks; this fix must not reverse it.
+    echo "$output" | grep -q 'KEPT  PreToolUse  /usr/local/bin/vnx-guard check'
     run grep -c 'vnx-guard' "$TMP/new.json"
-    [ "$output" = "0" ]
+    [ "$output" = "1" ]
+    # idempotent: a second regenerate over the merged file does not duplicate it
+    cp "$TMP/new.json" "$TMP/prev2.json"
+    run python3 "$MERGE" "$TMP/new.json" "$TMP/prev2.json"
+    [ "$status" -eq 0 ]
+    run grep -c 'vnx-guard' "$TMP/new.json"
+    [ "$output" = "1" ]
+}
+
+@test "T-3833: an entry that does not survive the regenerate is named, never silent" {
+    # A legacy .agentic-framework script hook is superseded by the template and
+    # not carried — that removal must appear in the output.
+    python3 - "$TMP/prev.json" <<'PY'
+import json, sys
+p = sys.argv[1]; d = json.load(open(p))
+d["hooks"]["PreToolUse"].append({"matcher": "Bash", "hooks": [{"type": "command",
+    "command": ".agentic-framework/agents/context/legacy-gate.sh"}]})
+json.dump(d, open(p, "w"))
+PY
+    run python3 "$MERGE" "$TMP/new.json" "$TMP/prev.json"
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q 'REMOVED  PreToolUse  .agentic-framework/agents/context/legacy-gate.sh'
 }
 
 @test "T-2710: template wins for hooks it defines (T-2709 path fix keeps propagating)" {

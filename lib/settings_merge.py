@@ -18,13 +18,15 @@ previous file back over it:
 upgrade. A merge that preferred the on-disk copy would freeze every consumer
 at whatever it was initialised with.
 
-Only *framework* hooks are carried (command matches `fw hook <name>`). Foreign
-hooks from other tooling are still dropped — that is T-677's explicit decision
-("project-specific hooks from other systems are not compatible"), and this
-helper deliberately does not reverse it.
+T-3833 reverses T-677's "drop foreign hooks": project-registered, non-framework
+hooks are carried forward too (832 lost two to an upgrade, silently). The one
+class still not carried — legacy `.agentic-framework/...` script hooks the
+template supersedes — is named on output, so nothing leaves without a line.
 
 Usage:  settings_merge.py <new-settings.json> <previous-snapshot.json>
-Output: one "  CARRIED  <event>  <name>" line per preserved item (stdout).
+Output: one "  CARRIED  <event>  <name>" line per preserved framework item,
+        "  KEPT  <event>  <command>" per preserved project hook, and
+        "  REMOVED  <event>  <command>  (...)" per entry not carried (stdout).
 Exit:   0 on success (including nothing-to-carry), 1 on unreadable input.
 """
 import json
@@ -56,20 +58,53 @@ def collect_names(doc: dict) -> set:
     return names
 
 
+def _key(hook: dict) -> str:
+    return json.dumps(hook, sort_keys=True)
+
+
 def merge(new_doc: dict, prev_doc: dict):
-    """Fold prev_doc's non-template content into new_doc. Returns carried list."""
-    carried = []
+    """Fold prev_doc's non-template content into new_doc.
+
+    Returns (carried, kept, removed):
+      carried  framework hooks the template does not define   (event, name)
+      kept     project-registered, non-framework hooks        (event, command)
+      removed  entries that did not survive, each one named   (event, command)
+
+    T-3833: non-framework hooks are the PROJECT's (832 lost two to a 1.7.740
+    upgrade, without a word). They are carried forward; this supersedes T-677's
+    drop-foreign-hooks rule. What is still not carried is a legacy framework
+    script hook (`.agentic-framework/...` without `fw hook <name>`), which the
+    template supersedes — and it is reported, never dropped silently.
+    """
+    carried, kept, removed = [], [], []
     template_names = collect_names(new_doc)
     hooks = new_doc.setdefault("hooks", {})
+    present = {
+        (event, _key(h))
+        for event, entries in hooks.items()
+        for entry in entries or []
+        for h in entry.get("hooks") or []
+    }
 
     for event, entries in (prev_doc.get("hooks") or {}).items():
         for entry in entries or []:
-            keep = [
-                h
-                for h in (entry.get("hooks") or [])
-                if hook_name(h.get("command", ""))
-                and hook_name(h.get("command", "")) not in template_names
-            ]
+            keep = []
+            for h in entry.get("hooks") or []:
+                cmd = h.get("command", "")
+                name = hook_name(cmd)
+                if name:
+                    if name not in template_names:
+                        keep.append(h)
+                        carried.append((event, name))
+                    # else: template wins (T-2709) — replaced, not removed
+                elif ".agentic-framework/" in cmd:
+                    removed.append((event, cmd))
+                elif (event, _key(h)) in present:
+                    continue  # already in the new file — not removed, not duplicated
+                else:
+                    keep.append(h)
+                    kept.append((event, cmd or _key(h)))
+                    present.add((event, _key(h)))
             if not keep:
                 continue
             # Append as its own entry rather than folding into an existing
@@ -79,8 +114,6 @@ def merge(new_doc: dict, prev_doc: dict):
             hooks.setdefault(event, []).append(
                 {"matcher": entry.get("matcher", ""), "hooks": keep}
             )
-            for h in keep:
-                carried.append((event, hook_name(h.get("command", ""))))
 
     # Top-level keys the template does not own (permissions, env, model, ...).
     # Same defect, same fix: the template is not a complete description of the
@@ -90,7 +123,7 @@ def merge(new_doc: dict, prev_doc: dict):
             new_doc[key] = value
             carried.append(("(top-level)", key))
 
-    return carried
+    return carried, kept, removed
 
 
 def write_atomic(path: str, doc: dict) -> None:
@@ -124,11 +157,15 @@ def main(argv) -> int:
         print(f"settings_merge: cannot merge ({e})", file=sys.stderr)
         return 1
 
-    carried = merge(new_doc, prev_doc)
-    if carried:
+    carried, kept, removed = merge(new_doc, prev_doc)
+    if carried or kept:
         write_atomic(new_path, new_doc)
-        for event, name in carried:
-            print(f"  CARRIED  {event}  {name}")
+    for event, name in carried:
+        print(f"  CARRIED  {event}  {name}")
+    for event, cmd in kept:
+        print(f"  KEPT  {event}  {cmd}")
+    for event, cmd in removed:
+        print(f"  REMOVED  {event}  {cmd}  (legacy framework hook, superseded by the template)")
     return 0
 
 
