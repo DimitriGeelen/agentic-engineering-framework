@@ -325,6 +325,14 @@ def pending(agent: str | None = None, *, reader=default_reader,
                 seen_set.add(cmid)
                 seen.append(cmid)
 
+    # T-3840: the one shown/answered ledger (lib/sidecar/seen.py). A consult
+    # our agent already answered, or already had shown to it by the receiver
+    # hook or an earlier drain, is not a pending consult — it is skipped
+    # here (the cursor still moves past it), for the CLI and the watcher alike.
+    from . import seen as seen_mod
+    shown_table = seen_mod.shown()
+    answered = seen_mod.answered_ids()
+
     fresh = []
     for topic in topics:
         entry = state["topics"].setdefault(topic, {"cursor": 0})
@@ -364,6 +372,9 @@ def pending(agent: str | None = None, *, reader=default_reader,
             if client_msg_id:
                 seen_set.add(seen_key)
                 seen.append(seen_key)
+                keys = seen_mod.keys_for(client_msg_id)
+                if keys & answered or not seen_mod.may_show(keys, shown_table):
+                    continue
             fresh.append({
                 "offset": offset,
                 "topic": topic,
@@ -379,10 +390,13 @@ def pending(agent: str | None = None, *, reader=default_reader,
             entry["cursor"] = highest
 
     if advance:
-        state["seen"] = seen[-SEEN_CAP:]
-        for entry in state.get("topics", {}).values():
-            entry.pop("seen", None)   # superseded by the shared set
-        save_state(state)
+        # T-3840: merged under the ledger lock, so a `shown` row the receiver
+        # hook wrote while this ran is not overwritten by this stale copy.
+        with seen_mod.update() as disk:
+            disk["topics"] = state["topics"]
+            disk["seen"] = seen[-SEEN_CAP:]
+            for entry in disk["topics"].values():
+                entry.pop("seen", None)   # superseded by the shared set
 
     return fresh
 

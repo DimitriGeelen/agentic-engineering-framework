@@ -48,6 +48,13 @@ if __package__ in (None, ""):
 from . import adapter, circuit, direct, inject, lifecycle, receiver  # noqa: E402
 
 BODY_CAP = 4000
+# T-3840: Claude Code keeps a hook's additionalContext inline only up to ~10,000
+# chars (measured: 9.7 KB inline, 10.2 KB persisted). Above that the transcript
+# — and the model — get a 2 KB preview plus a file path, so every message after
+# the first was never really handed over, the finalizer (correctly) found no
+# evidence, and the whole list came back at every prompt. Stay well under it;
+# what does not fit surfaces at the next prompt.
+FRAME_CAP = 8000
 FINALIZE_WAIT_S = 90        # how long the finalizer looks for transcript evidence
 SURFACING_HOLD_S = 120      # a message being finalized is not surfaced twice
 OPEN, CLOSE = "<<<PEER-DATA", "PEER-DATA>>>"
@@ -118,7 +125,41 @@ def _header(msg: dict, surfacing: str) -> str:
     return f"## from {sender}  [conversation {conv}]  [msg {mid}]  [surfacing {surfacing}]"
 
 
-def _frame(messages: list[dict], surfacing: str) -> str:
+def _block(msg: dict, surfacing: str, fw: str, body_cap: int = BODY_CAP) -> list[str]:
+    body = str(msg.get("body", "")).strip()
+    if len(body) > body_cap:
+        body = body[:body_cap] + f" [truncated, {len(body) - body_cap} more chars]"
+    body = body.replace(OPEN, "<<<peer-data").replace(CLOSE, "peer-data>>>")
+    sender = safe_meta(msg.get("from"), "unknown")
+    conv = safe_meta(msg.get("conversation_id"), "-")
+    mid = safe_meta(msg.get("client_msg_id") or msg.get("msg_id"), "?")
+    return [
+        _header(msg, surfacing),
+        OPEN,
+        body,
+        CLOSE,
+        f"reply: {fw} sidecar send --to {sender} --conversation {conv} "
+        f"--in-reply-to {mid} --body '<your answer>'",
+        "",
+    ]
+
+
+def _fit(messages: list[dict], surfacing: str, cap: int = FRAME_CAP) -> tuple[list[dict], str]:
+    """The messages that fit in one frame under `cap`, and that frame. At
+    least one message is always shown (its body shortened to fit)."""
+    for n in range(len(messages), 0, -1):
+        text = _frame(messages[:n], surfacing, deferred=len(messages) - n)
+        if len(text) <= cap or n == 1:
+            break
+    if len(text) > cap:
+        over = len(text) - cap
+        body_cap = max(200, min(BODY_CAP, len(str(messages[0].get("body", "")).strip())) - over - 64)
+        text = _frame(messages[:1], surfacing, deferred=len(messages) - 1, body_cap=body_cap)
+    return messages[:n], text
+
+
+def _frame(messages: list[dict], surfacing: str, deferred: int = 0,
+           body_cap: int = BODY_CAP) -> str:
     fw = _fw_bin()
     lines = [
         f"# Sidecar receiver: {len(messages)} message(s) from other agents (T-3693)",
@@ -131,22 +172,10 @@ def _frame(messages: list[dict], surfacing: str) -> str:
         "",
     ]
     for msg in messages:
-        body = str(msg.get("body", "")).strip()
-        if len(body) > BODY_CAP:
-            body = body[:BODY_CAP] + f" [truncated, {len(body) - BODY_CAP} more chars]"
-        body = body.replace(OPEN, "<<<peer-data").replace(CLOSE, "peer-data>>>")
-        sender = safe_meta(msg.get("from"), "unknown")
-        conv = safe_meta(msg.get("conversation_id"), "-")
-        mid = safe_meta(msg.get("client_msg_id") or msg.get("msg_id"), "?")
-        lines += [
-            _header(msg, surfacing),
-            OPEN,
-            body,
-            CLOSE,
-            f"reply: {fw} sidecar send --to {sender} --conversation {conv} "
-            f"--in-reply-to {mid} --body '<your answer>'",
-            "",
-        ]
+        lines += _block(msg, surfacing, fw, body_cap)
+    if deferred:
+        lines.append(f"({deferred} more message(s) waiting — they surface at your next "
+                     f"prompt; `{fw} sidecar waiting` lists them.)")
     return "\n".join(lines)
 
 
@@ -229,16 +258,41 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
             if i not in ids and inject.read_claim(i) is None:
                 inject.claim_for(i, me)
                 ids.append(i)
-    messages = [m for m in (receiver.read_message(i) for i in ids) if m]
-    if not messages:
+    # T-3840: the one shown/answered ledger, shared with `fw sidecar inbox`
+    # (lib/sidecar/seen.py). Answered → never again. Shown → not again, unless
+    # the finalizer recorded that showing as unconfirmed (once).
+    from . import seen as seen_mod
+    table = seen_mod.shown()
+    answered = seen_mod.answered_ids()
+    unconfirmed = _unconfirmed_ids() if table else set()
+    by_id: dict[str, dict] = {}
+    for i in ids:
+        m = receiver.read_message(i)
+        if not m:
+            continue
+        keys = seen_mod.keys_for(i, m)
+        if keys & answered:
+            continue
+        if not seen_mod.may_show(keys, table, unconfirmed=i in unconfirmed):
+            continue
+        by_id[i] = m
+    # Urgent first, then oldest first; the rest of the order is stable.
+    order = sorted(by_id, key=lambda i: (not by_id[i].get("urgent"),
+                                         str(by_id[i].get("_stored_at") or ""), i))
+    if not order:
         return []
-    surfaced = [str(m.get("client_msg_id")) for m in messages]
     surfacing = secrets.token_hex(16)
+    messages, frame = _fit([by_id[i] for i in order], surfacing)
+    surfaced = [str(m.get("client_msg_id")) for m in messages]
     out.write(json.dumps({"hookSpecificOutput": {
         "hookEventName": "UserPromptSubmit",
-        "additionalContext": _frame(messages, surfacing),
+        "additionalContext": frame,
     }}) + "\n")
     out.flush()
+    try:
+        seen_mod.mark_shown([(i, by_id[i]) for i in order[:len(messages)]], by="hook")
+    except Exception:
+        _log_error("mark_shown")
     for mid in surfaced:
         try:
             _surfacing_marker(mid).write_text(surfacing, encoding="utf-8")
@@ -253,6 +307,16 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
             env=dict(os.environ, PROJECT_ROOT=str(receiver._root())),
             start_new_session=True)
     return surfaced
+
+
+def _unconfirmed_ids() -> set[str]:
+    """Message ids whose LAST hand-over outcome is HANDOVER_UNCONFIRMED: the
+    harness shows the model never got them (hook killed, output discarded)."""
+    last: dict[str, str] = {}
+    for row in receiver.read_events():
+        if row.get("event") in ("HANDOVER_UNCONFIRMED", receiver.HANDED_OVER):
+            last[str(row.get("msg_id"))] = row["event"]
+    return {m for m, ev in last.items() if ev == "HANDOVER_UNCONFIRMED"}
 
 
 def _in_transcript(transcript: str, msg_id: str, surfacing: str | None) -> bool:

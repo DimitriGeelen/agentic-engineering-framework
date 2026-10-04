@@ -749,6 +749,9 @@ def test_attachment_from_an_earlier_attempt_does_not_certify_a_later_one(env, tm
     old_token = hooks._surfacing_token("m-r")
     # attempt 1 is declared lost; the message is surfaced again with a new token
     hooks._surfacing_marker("m-r").unlink()
+    # T-3840: "lost" is what the finalizer records; only then may a shown
+    # message surface again (seen.may_show).
+    receiver.record_event("m-r", "HANDOVER_UNCONFIRMED", reason="test: attempt 1 lost")
     second = io.StringIO()
     assert hooks.prompt(SB, out=second, spawn=False) == ["m-r"]
     new_token = hooks._surfacing_token("m-r")
