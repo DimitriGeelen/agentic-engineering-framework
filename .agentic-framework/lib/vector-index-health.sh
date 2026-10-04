@@ -33,6 +33,11 @@ vector_index_health() {
         # The checker itself could not run — that is a FAIL, never a skip.
         out="FAIL"$'\n'"FAIL|check: vector index health check did not run (python3 missing?)|Run: python3 $FRAMEWORK_ROOT/lib/vector_index_health.py"
         rc=2
+        # Review final round: a checker that cannot START must still be recorded and
+        # pushed once on the transition — without python, since python is what failed.
+        if [ -n "$record_flag" ] && _vih_record_fail_without_python; then
+            out="$out"$'\n'"TURNED_RED"
+        fi
     fi
     if printf '%s\n' "$out" | grep -qx "TURNED_RED"; then
         out=$(printf '%s\n' "$out" | grep -vx "TURNED_RED")
@@ -40,6 +45,20 @@ vector_index_health() {
     fi
     printf '%s\n' "$out"
     return "$rc"
+}
+
+# _vih_record_fail_without_python — record a FAIL verdict in the same state file the
+# python recorder uses (.context/working/vector-index-health.json), atomically.
+# Returns 0 only when this call turned the state red (previous status not FAIL).
+_vih_record_fail_without_python() {
+    local dir="${PROJECT_ROOT:-$PWD}/.context/working" prev tmp
+    local state="$dir/vector-index-health.json"
+    mkdir -p "$dir" 2>/dev/null || return 1
+    prev=$(grep -o '"status"[[:space:]]*:[[:space:]]*"[A-Z]*"' "$state" 2>/dev/null | head -1 | grep -o '[A-Z]*"$' | tr -d '"')
+    tmp="$state.tmp.$$"
+    printf '{\n  "status": "FAIL",\n  "ts": %s,\n  "previous": "%s",\n  "reasons": ["vector index health check did not run (python3 missing?)"]\n}\n' \
+        "$(date +%s)" "${prev:-UNKNOWN}" > "$tmp" 2>/dev/null && mv -f "$tmp" "$state" 2>/dev/null || { rm -f "$tmp"; return 1; }
+    [ "${prev:-}" != "FAIL" ]
 }
 
 _vih_notify_red() {
