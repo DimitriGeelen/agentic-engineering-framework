@@ -410,3 +410,84 @@ YAML
     if echo "$out" | grep -q "\.agentic-framework"; then echo "$out"; false; fi
     [ ! -d "$proj/.agentic-framework/.context/sidecar" ]
 }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# T-3835 (ring20-dashboard T-2460): `fw upgrade` from a vendored consumer runs in
+# a temp clone (/tmp/fw-upstream-XXXXXX/fw). Regenerating the crontab from there
+# baked that path into every job, then the clone was deleted at exit — `fw cron
+# install` would have deployed a crontab whose every line runs a missing binary.
+# ─────────────────────────────────────────────────────────────────────────────
+
+# The upstream bare is cloned from committed HEAD; overlay the working-tree
+# copies of the named files as one extra commit so the test judges the code
+# under edit, not the last commit.
+overlay_upstream() {
+    local bare="$1"; shift
+    local wc="$TEST_TEMP_DIR/overlay-wc"
+    git clone --quiet "$bare" "$wc" 2>/dev/null
+    local f
+    for f in "$@"; do cp "$FRAMEWORK_ROOT/$f" "$wc/$f"; done
+    git -C "$wc" add -- "$@"
+    git -C "$wc" -c user.name=t -c user.email=t@t commit --quiet --no-gpg-sign -m "overlay" >/dev/null 2>&1 || true
+    git -C "$wc" push --quiet origin HEAD 2>/dev/null
+    rm -rf "$wc"
+}
+
+@test "T-3835: live fw upgrade regenerates the crontab against the consumer's durable fw, never the temp clone" {
+    local upstream_bare="$TEST_TEMP_DIR/upstream.git"
+    local proj="$TEST_TEMP_DIR/cron-proj"
+    make_upstream_bare "$upstream_bare"
+    overlay_upstream "$upstream_bare" bin/fw lib/upgrade.sh
+
+    "$FRAMEWORK_ROOT/bin/fw" vendor --target "$proj" --source "$FRAMEWORK_ROOT" >/dev/null
+    cat > "$proj/.framework.yaml" <<YAML
+project_name: cron-proj
+version: $(tr -d '\n' < "$proj/.agentic-framework/VERSION")
+provider: claude
+upstream_repo: file://$upstream_bare
+YAML
+    # an existing registry missing every framework-owned job → the upgrade adds
+    # them (T-3673) and regenerates the crontab source
+    mkdir -p "$proj/.context/cron" "$proj/.tasks/active" "$proj/.tasks/completed"
+    printf 'jobs: []\n' > "$proj/.context/cron-registry.yaml"
+
+    # cwd = the consumer, so the bare-from-consumer guard hands off to the
+    # /tmp/fw-upstream-XXXXXX clone exactly as it does in the field
+    run fresh_run "$proj" upgrade "$proj"
+    [ "$status" -eq 0 ] || { echo "$output"; false; }
+    [[ "$output" == *"fw-upstream-"* ]] || { echo "premise: upgrade did not run from a temp clone: $output"; false; }
+
+    local tab="$proj/.context/cron/agentic-audit.crontab"
+    [ -f "$tab" ] || { echo "no crontab generated: $output"; false; }
+    grep -q "\"$proj/.agentic-framework/bin/fw\"" "$tab" || { cat "$tab"; false; }
+    if grep -q "fw-upstream-" "$tab"; then cat "$tab"; false; fi
+    # every fw path the crontab invokes must exist after the upgrade has exited
+    local p
+    while IFS= read -r p; do
+        [ -x "$p" ] || { echo "crontab invokes missing fw: $p"; false; }
+    done < <(grep -oE '"[^"]*/bin/fw"' "$tab" | tr -d '"' | sort -u)
+}
+
+@test "T-3835: fw cron generate refuses a temp-dir fw outside the project and writes nothing" {
+    local proj="$TEST_TEMP_DIR/cron-guard"
+    local clone="$TEST_TEMP_DIR/fw-upstream-XXXX/fw"
+    mkdir -p "$proj/.context/cron" "$proj/.tasks/active" "$(dirname "$clone")"
+    git clone --quiet --shared "$FRAMEWORK_ROOT" "$clone"
+    cp "$FRAMEWORK_ROOT/bin/fw" "$clone/bin/fw"   # judge the working tree
+    git -C "$proj" init --quiet
+    printf 'project_name: cron-guard\nprovider: claude\n' > "$proj/.framework.yaml"
+    cat > "$proj/.context/cron-registry.yaml" <<'YAML'
+jobs:
+  - id: audit-x
+    name: audit
+    schedule: "0 * * * *"
+    command: fw audit
+    status: active
+YAML
+    # no vendored copy in the project → the only fw is the temp clone
+    run bash -c "cd '$proj' && env -i PATH=/usr/local/bin:/usr/bin:/bin HOME='$TEST_TEMP_DIR/home' \
+        PROJECT_ROOT='$proj' FRAMEWORK_ROOT='$clone' '$clone/bin/fw' cron generate"
+    [ "$status" -ne 0 ] || { echo "$output"; false; }
+    [[ "$output" == *"refusing"* ]] || { echo "$output"; false; }
+    [ ! -e "$proj/.context/cron/agentic-audit.crontab" ]
+}

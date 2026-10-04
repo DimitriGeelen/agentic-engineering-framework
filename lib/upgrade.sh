@@ -1747,9 +1747,16 @@ CRONREGEOF
             esac
         done <<< "$_cs_out"
         if [ "$_cs_added" -gt 0 ] && [ "$dry_run" != true ]; then
-            (cd "$target_dir" && PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/bin/fw" cron generate >/dev/null 2>&1) \
-                && echo -e "  ${GREEN}OK${NC}  Cron source regenerated — run 'fw cron install' to deploy" \
-                || echo -e "  ${YELLOW}WARN${NC}  'fw cron generate' failed — run it manually, then 'fw cron install'"
+            # T-3835: $FRAMEWORK_ROOT may be the temp upstream clone; generate
+            # resolves the consumer's durable fw itself and refuses a temp one.
+            # Its refusal is shown, not swallowed.
+            local _cg_out
+            if _cg_out=$(cd "$target_dir" && PROJECT_ROOT="$target_dir" "$FRAMEWORK_ROOT/bin/fw" cron generate 2>&1); then
+                echo -e "  ${GREEN}OK${NC}  Cron source regenerated — run 'fw cron install' to deploy"
+            else
+                echo -e "  ${YELLOW}WARN${NC}  'fw cron generate' failed — run it manually, then 'fw cron install'"
+                printf '%s\n' "$_cg_out" | sed 's/^/        /'
+            fi
         fi
     fi
 
