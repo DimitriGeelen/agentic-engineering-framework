@@ -177,6 +177,17 @@ def cmd_inbox(args) -> int:
     try:
         return _print_inbox(args, messages)
     finally:
+        # T-3840: what was printed is recorded in the one shown ledger the
+        # receiver hook reads too. A peek counts as a weaker showing: the
+        # message may come back once more (seen.may_show).
+        if messages:
+            try:
+                from lib.sidecar import seen as seen_mod
+                seen_mod.mark_shown([(str(m.get("client_msg_id") or ""), m) for m in messages
+                                     if m.get("client_msg_id")],
+                                    by="peek" if args.peek else "inbox-cli")
+            except Exception as e:
+                print(f"shown ledger update failed: {e}", file=sys.stderr)
         # T-3684: a drain took these off the topic — RECEIVED to each sender,
         # only AFTER the output was written. No HANDED_OVER from here: nothing
         # proves where this output went (the transcript-proven paths do that).
