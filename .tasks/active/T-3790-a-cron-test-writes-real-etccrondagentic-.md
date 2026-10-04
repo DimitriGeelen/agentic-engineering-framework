@@ -1,10 +1,20 @@
 ---
 id: T-3790
-name: "A cron test writes REAL /etc/cron.d/agentic-audit-proj-schedule-install-<hash> files for /tmp projects and never removes them: 26 accumulated since 2026-08-23; each runs fw docs --all daily (~50 CPU-min) — load 41 on 24 cores (workstation report)"
+name: "A cron test writes REAL /etc/cron.d/agentic-audit-proj-schedule-install-<hash>
+  files for /tmp projects and never removes them: 26 accumulated since 2026-08-23;
+  each runs fw docs --all daily (~50 CPU-min) — load 41 on 24 cores (workstation report)"
 description: >
-  dimitri-mint-dev (on behalf of the operator) 4c8e8458, 2026-10-04: the test creating /tmp/tmp.XXXX/proj-schedule-install projects (fw cron install / schedule-install) installs into the real /etc/cron.d and never cleans up; latest 2026-10-04 03:02 (tonight's suite runs). Workstation killed 78 /tmp-rooted docgen processes; operator moved the 26 files to /root/cron-d-leaked-backup-20261004/. Fix: the test installs into a sandboxed cron dir (env override) with a trap cleanup; fw cron install refuses a PROJECT_ROOT under /tmp unless an explicit test override; generated cron lines skip when PROJECT_ROOT no longer exists. Same class as T-3771/T-3761 (tests touching live host state).
+  dimitri-mint-dev (on behalf of the operator) 4c8e8458, 2026-10-04: the test creating
+  /tmp/tmp.XXXX/proj-schedule-install projects (fw cron install / schedule-install)
+  installs into the real /etc/cron.d and never cleans up; latest 2026-10-04 03:02
+  (tonight's suite runs). Workstation killed 78 /tmp-rooted docgen processes; operator
+  moved the 26 files to /root/cron-d-leaked-backup-20261004/. Fix: the test installs
+  into a sandboxed cron dir (env override) with a trap cleanup; fw cron install refuses
+  a PROJECT_ROOT under /tmp unless an explicit test override; generated cron lines
+  skip when PROJECT_ROOT no longer exists. Same class as T-3771/T-3761 (tests touching
+  live host state).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T07:20:33Z
-last_update: 2026-10-04T07:20:33Z
-date_finished: null
+last_update: 2026-10-04T07:56:40Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,51 +60,49 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-04T07:30:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-04T07:30:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3790: A cron test writes REAL /etc/cron.d/agentic-audit-proj-schedule-install-<hash> files for /tmp projects and never removes them: 26 accumulated since 2026-08-23; each runs fw docs --all daily (~50 CPU-min) — load 41 on 24 cores (workstation report)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Root cause per the workstation RCA (dimitri-mint-dev T-086, received 2026-10-04): `tests/unit/t3070_audit_schedule_install_delegates_to_registry.bats` test 3 removes the registry and so runs the legacy heredoc branch of `agents/audit/audit.sh schedule install`, whose target `CRON_INSTALL="/etc/cron.d/agentic-audit-${project_slug}"` (L32) ignores `FW_CRON_INSTALL_DIR`; as root `_cron_copy_to_system` writes it directly; the basename-collision branch (L172–178) adds a new `-<md5:8>` file per run; teardown removes only the temp dir. Amplifier: `fw` with a non-existent PROJECT_ROOT runs anyway — the ghost `fw docs --all` regenerated 999's own docs, 26 at once.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+- [ ] The legacy branch of `audit.sh schedule install` honours `FW_CRON_INSTALL_DIR` (same as the registry path), so every install target is overridable
+- [ ] t3070 (all tests) leaves `/etc/cron.d` untouched: each test asserts the `/etc/cron.d` listing is byte-identical before and after, and teardown removes anything it installed
+- [ ] `fw` invoked with an explicit PROJECT_ROOT that does not exist exits non-zero with a one-line message instead of falling back to another project (regression test included)
+- [ ] A lint/unit check fails when any `tests/unit/*.bats` invokes `schedule install` / `cron install` without `FW_CRON_INSTALL_DIR` set in its setup
 
 ## Verification
 
@@ -320,3 +328,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3790-a-cron-test-writes-real-etccrondagentic-.md
 - **Context:** Initial task creation
+
+### 2026-10-04T07:56:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
