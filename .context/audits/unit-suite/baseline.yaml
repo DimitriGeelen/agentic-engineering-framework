@@ -734,3 +734,82 @@ entries:
   owner: T-3605
   added: '2026-10-01'
   expires: '2026-10-15'
+- leg: bats
+  name: 'audit.bats: audit runs structure section'
+  file: audit.bats
+  owner: T-3747
+  added: '2026-10-04'
+  expires: '2026-10-18'
+  added_by: human
+- leg: bats
+  name: 'bvp_auto_promote.bats: OFF default: enabled=false produces no-op + clear message'
+  file: bvp_auto_promote.bats
+  owner: T-3747
+  added: '2026-10-04'
+  expires: '2026-10-18'
+  added_by: human
+- leg: bats
+  name: 'bvp_auto_promote.bats: max_concurrent ceiling refuses promotion when no headroom'
+  file: bvp_auto_promote.bats
+  owner: T-3747
+  added: '2026-10-04'
+  expires: '2026-10-18'
+  added_by: human
+- leg: bats
+  name: 'bvp_auto_promote_enable.bats: --enable with valid rationale + override flips policy true + logs
+    enable event'
+  file: bvp_auto_promote_enable.bats
+  owner: T-3747
+  added: '2026-10-04'
+  expires: '2026-10-18'
+  added_by: human
+- leg: bats
+  name: 'focus_active_scope.bats: T-2874: SMOKE — the sandbox is the tree actually being read'
+  file: focus_active_scope.bats
+  owner: T-3747
+  added: '2026-10-04'
+  expires: '2026-10-18'
+  added_by: human
+- leg: bats
+  name: 'focus_active_scope.bats: T-2874: CONTROL — focusing an ACTIVE id still works'
+  file: focus_active_scope.bats
+  owner: T-3747
+  added: '2026-10-04'
+  expires: '2026-10-18'
+  added_by: human
+- leg: bats
+  name: 'hook_telemetry_race.bats: T-3371: per-fire cost stays under the documented 5ms budget'
+  file: hook_telemetry_race.bats
+  owner: T-3747
+  added: '2026-10-04'
+  expires: '2026-10-18'
+  added_by: human
+- leg: bats
+  name: 'self_vendor_version.bats: fw vendor self --check does NOT flag VERSION (sync-only by design)'
+  file: self_vendor_version.bats
+  owner: T-3747
+  added: '2026-10-04'
+  expires: '2026-10-18'
+  added_by: human
+- leg: bats
+  name: 't2243_doctor_self_vendor_templates.bats: t2243 t1: no templates drift → templates class absent
+    from WARN list'
+  file: t2243_doctor_self_vendor_templates.bats
+  owner: T-3747
+  added: '2026-10-04'
+  expires: '2026-10-18'
+  added_by: human
+- leg: bats
+  name: 't3459_metrics_quality_cache.bats: an expired timestamp forces a recompute'
+  file: t3459_metrics_quality_cache.bats
+  owner: T-3747
+  added: '2026-10-04'
+  expires: '2026-10-18'
+  added_by: human
+- leg: bats
+  name: 'test_audit_watchdog_fd.bats: no fd > 2 leaks to orphan watchdog after fw audit (pipe-fd-3 regression)'
+  file: test_audit_watchdog_fd.bats
+  owner: T-3747
+  added: '2026-10-04'
+  expires: '2026-10-18'
+  added_by: human
