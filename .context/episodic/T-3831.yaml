@@ -72,10 +72,12 @@ metrics:
   #             counters are null (absent measurement), NOT zero (T-3129).
   git_mining: ok
   wall_clock_minutes: 196
-  commits: 2
-  files_changed: 5
-  lines_added: 466
-  lines_removed: 8
+  commits: 3
+  files_changed: 7
+  lines_added: 565
+  lines_removed: 13
+  footprint_refreshed_at: '2026-10-04T18:44:47Z'
+  footprint_refreshed_by_commit: 008a3bc13
 
 # Metadata
 source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3831-fw-upgrade-step-4c-aborts-the-whole-upgr.md

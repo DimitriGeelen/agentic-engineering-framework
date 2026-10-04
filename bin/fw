@@ -954,8 +954,30 @@ UPSTREAM
     if [ -f "$FRAMEWORK_ROOT/lib/vendor-visibility.sh" ]; then
         # shellcheck source=lib/vendor-visibility.sh
         source "$FRAMEWORK_ROOT/lib/vendor-visibility.sh"
+        # T-3832: judge what THIS run wrote, not what is on disk under $dest. A
+        # consumer's .agentic-framework/ can carry thousands of ignored files
+        # from older layouts (ring20-dashboard: 11,370) that also exist in the
+        # source; `find` counted them as vendored and failed the update. Each
+        # include dir was just mirrored by rsync --delete (or rm -rf + cp), so
+        # its on-disk contents ARE the write; single files are listed by name.
+        local _vis_manifest _vis_item
+        _vis_manifest=$(mktemp "${TMPDIR:-/tmp}/fw-vendor-manifest-XXXXXX")
+        {
+            for _vis_item in "${includes[@]}"; do
+                if [ -d "$vendor_source/$_vis_item" ] && [ -d "$dest/$_vis_item" ]; then
+                    (cd "$dest" && find "$_vis_item" -type f \
+                        -not -path '*/__pycache__/*' -not -name '*.pyc' -not -name '.DS_Store')
+                elif [ -f "$vendor_source/$_vis_item" ]; then
+                    printf '%s\n' "$_vis_item"
+                fi
+            done
+            if [ -n "${_vd_rel:-}" ] && [ -f "$dest/$_vd_rel" ]; then printf '%s\n' "$_vd_rel"; fi
+            printf '%s\n' VERSION .fw-not-a-project .gitignore FRAMEWORK.md
+            if [ -n "${_vendor_origin:-}" ] && [ -f "$dest/.upstream" ]; then printf '%s\n' .upstream; fi
+        } > "$_vis_manifest"
         local _vis_rc=0
-        fw_vendor_check_visibility "$dest" "$target" "$vendor_source" || _vis_rc=$?
+        fw_vendor_check_visibility "$dest" "$target" "$vendor_source" "$_vis_manifest" || _vis_rc=$?
+        rm -f "$_vis_manifest"
         if [ "$_vis_rc" -ne 0 ]; then
             if [ "${FW_ALLOW_INVISIBLE_VENDOR:-0}" = "1" ]; then
                 log_gate_bypass "FW_ALLOW_INVISIBLE_VENDOR" \

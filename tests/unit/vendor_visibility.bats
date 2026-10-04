@@ -163,3 +163,41 @@ _stale_allowlist() {
     [ "$status" -eq 0 ]
     echo "$output" | grep -q 'stray/f'
 }
+
+# ── T-3832: judge the manifest of what the vendor WROTE, not what is on disk ──
+
+@test "T-3832: with a manifest, ignored leftovers on disk are counted, never judged" {
+    printf '%s\n' '.agentic-framework/old/' > "$C/.gitignore"
+    mkdir -p "$C/.agentic-framework/old"
+    for i in 1 2 3; do echo x > "$C/.agentic-framework/old/f$i"; done
+    M="$BATS_TEST_TMPDIR/manifest"
+    printf '%s\n' tools/corpus_explain.py bin/fw > "$M"
+    run fw_vendor_check_visibility "$C/.agentic-framework" "$C" "" "$M"
+    [ "$status" -eq 0 ] || { echo "$output"; false; }
+    echo "$output" | grep -q '3 file(s) under .agentic-framework were NOT written by the vendor'
+    if echo "$output" | grep -q 'invisible to git'; then echo "$output"; false; fi
+}
+
+@test "T-3832: with a manifest, an invisible WRITTEN file still fails" {
+    printf '%s\n' '.agentic-framework/tools/' > "$C/.gitignore"
+    M="$BATS_TEST_TMPDIR/manifest"
+    printf '%s\n' tools/corpus_explain.py bin/fw > "$M"
+    run fw_vendor_check_visibility "$C/.agentic-framework" "$C" "" "$M"
+    [ "$status" -eq 1 ]
+    echo "$output" | grep -q '1 of 2 vendored file(s) are invisible'
+}
+
+@test "T-3832: an invisible pinned designer build and lib/ts/dist/*.js are named outright" {
+    mkdir -p "$C/.agentic-framework/vendor/designer" "$C/.agentic-framework/lib/ts/dist"
+    echo '<html>' > "$C/.agentic-framework/vendor/designer/aef-workflow-designer-0.14.0.html"
+    echo 'x' > "$C/.agentic-framework/lib/ts/dist/fw-util.js"
+    echo 'x' > "$C/.agentic-framework/lib/ts/dist/loop-detect.js"
+    printf '%s\n' '*.html' 'dist/' > "$C/.gitignore"
+    M="$BATS_TEST_TMPDIR/manifest"
+    printf '%s\n' bin/fw vendor/designer/aef-workflow-designer-0.14.0.html \
+        lib/ts/dist/fw-util.js lib/ts/dist/loop-detect.js > "$M"
+    run fw_vendor_check_visibility "$C/.agentic-framework" "$C" "" "$M"
+    [ "$status" -eq 1 ]
+    echo "$output" | grep -q 'pinned designer build (T-3064): .agentic-framework/vendor/designer/aef-workflow-designer-0.14.0.html'
+    echo "$output" | grep -q 'lib/ts/dist/\*.js: 2 compiled file(s) invisible'
+}

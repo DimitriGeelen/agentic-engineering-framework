@@ -599,3 +599,30 @@ YAML
     [[ "$output" == *"REFUSED"* ]] || { echo "$output"; false; }
     [ "$(md5sum < "$fwrepo/bin/fw")" = "$before" ]
 }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# T-3832 (ring20-dashboard T-2460): the T-3144 visibility check enumerated every
+# file on disk under .agentic-framework/ (find), not what the vendor wrote. A
+# consumer carrying 11,370 pre-existing ignored files there failed the update.
+# The leftovers here also exist in the source, which is what defeated T-3677's
+# "absent from source = foreign" filter.
+# ─────────────────────────────────────────────────────────────────────────────
+
+@test "T-3832: live fw vendor ignores ignored leftovers it did not write, even when they exist in the source" {
+    local proj="$TEST_TEMP_DIR/vis-proj"
+    mkdir -p "$proj"
+    git -C "$proj" init --quiet
+    "$FRAMEWORK_ROOT/bin/fw" vendor --target "$proj" --source "$FRAMEWORK_ROOT" >/dev/null 2>&1
+
+    # a stale tree from an older vendor layout: not an include today, present in
+    # the source, and ignored by the consumer
+    mkdir -p "$proj/.agentic-framework/tests/unit"
+    cp "$FRAMEWORK_ROOT/tests/unit/vendor_visibility.bats" "$proj/.agentic-framework/tests/unit/"
+    printf '.agentic-framework/tests/\n' > "$proj/.gitignore"
+
+    run "$FRAMEWORK_ROOT/bin/fw" vendor --target "$proj" --source "$FRAMEWORK_ROOT"
+    [ "$status" -eq 0 ] || { echo "$output"; false; }
+    [[ "$output" != *"invisible to git"* ]] || { echo "$output"; false; }
+    [[ "$output" == *"NOT written by the vendor"* ]] || { echo "$output"; false; }
+    [[ "$output" == *"Vendored successfully"* ]]
+}
