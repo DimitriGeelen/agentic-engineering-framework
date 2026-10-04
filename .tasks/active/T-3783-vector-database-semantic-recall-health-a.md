@@ -385,6 +385,11 @@ bin/fw watchtower current
 - **Chose:** deployment always goes with the same version; no mismatch. Measured: two TermLink hubs on .107 (PID 906293 /var/lib/termlink TCP 9100; PID 2919639 /tmp/termlink-0) and three termlink binary copies (all 0.12.103 today). Sent to 010 (sidecar t3336-vector-index fe30dbda + direct inject): one binary, one hub per host (T-3287 D6), one runtime dir, and a FAIL when two hubs or versions exist. AEF side: doctor WARN under T-3779.
 - **Refinement (operator, same day):** several versions/hubs on one host ARE legitimate for testing or isolation, but only as an EXPLICIT, declared option; the DEFAULT is one version so communication does not break down. An undeclared second hub or version is an error (doctor/audit), a declared one is reported as intended.
 
+### 2026-10-04 — close after the final review (parent session)
+- **Chose:** close with the final codex round (docs/reports/T-3783-review-codex-final.md) at VERDICT: FAIL, because its two remaining findings are handled: (1) "repeated audit notifications" is the GENERIC audit notify-on-every-FAIL behaviour (agents/audit/audit.sh ~8570), pre-existing and not vector-specific → its own bug T-3787; (2) "a checker that cannot start records no transition" → fixed by the parent in 2899535e2 (shell-side FAIL record + one push on the transition, no python needed) with a test (t3783 suite 30/30) — NOT re-reviewed. Every other AC is MET in the final round, and all earlier findings are confirmed fixed or documented (notification is fire-and-forget, no retry; legacy manifest checks outside the new predicate).
+- **Why:** the live index was just wiped by T-3786 (now fixed) — the health check is the only thing that would have caught it, so shipping it now outweighs a fifth review round.
+- **Rejected:** a fifth codex round before close (one finding is another component's bug; the other is a 12-line shell fix with a direct test).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
