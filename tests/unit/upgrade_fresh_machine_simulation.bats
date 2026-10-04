@@ -491,3 +491,47 @@ YAML
     [[ "$output" == *"refusing"* ]] || { echo "$output"; false; }
     [ ! -e "$proj/.context/cron/agentic-audit.crontab" ]
 }
+
+# ─────────────────────────────────────────────────────────────────────────────
+# T-3836 (ring20-dashboard T-2460): `fw upgrade` regenerated .claude/settings.json
+# with force=true, and the same function rewrote .mcp.json from the template —
+# dropping env.TERMLINK_RUNTIME_DIR (the T-3424 store split) while step 6 said
+# "OK ... all recommended present".
+# ─────────────────────────────────────────────────────────────────────────────
+
+@test "T-3836: live fw upgrade keeps existing .mcp.json server env keys and custom servers" {
+    local upstream_bare="$TEST_TEMP_DIR/upstream.git"
+    local proj="$TEST_TEMP_DIR/mcp-proj"
+    make_upstream_bare "$upstream_bare"
+    overlay_upstream "$upstream_bare" bin/fw lib/upgrade.sh lib/init.sh
+
+    "$FRAMEWORK_ROOT/bin/fw" vendor --target "$proj" --source "$FRAMEWORK_ROOT" >/dev/null
+    cat > "$proj/.framework.yaml" <<YAML
+project_name: mcp-proj
+version: $(tr -d '\n' < "$proj/.agentic-framework/VERSION")
+provider: claude
+upstream_repo: file://$upstream_bare
+YAML
+    cat > "$proj/.mcp.json" <<'JSON'
+{"mcpServers": {
+  "context7": {"command": "npx", "args": ["-y", "@upstash/context7-mcp"]},
+  "playwright": {"command": "npx", "args": ["@playwright/mcp@latest", "--no-sandbox"]},
+  "termlink": {"command": "termlink", "args": ["mcp", "serve"],
+               "env": {"TERMLINK_RUNTIME_DIR": "/var/lib/termlink", "TERMLINK_TASK_GOVERNANCE": "1"}},
+  "fw": {"command": "python3", "args": [".agentic-framework/agents/mcp/framework_mcp_server.py"]},
+  "mine": {"command": "my-server"}
+}}
+JSON
+
+    run fresh_run "$proj" upgrade "$proj"
+    [ "$status" -eq 0 ] || { echo "$output"; false; }
+
+    python3 - "$proj/.mcp.json" <<'PY' || { cat "$proj/.mcp.json"; false; }
+import json, sys
+s = json.load(open(sys.argv[1]))["mcpServers"]
+env = s["termlink"].get("env") or {}
+assert env.get("TERMLINK_RUNTIME_DIR") == "/var/lib/termlink", env
+assert env.get("TERMLINK_TASK_GOVERNANCE") == "1", env
+assert s.get("mine") == {"command": "my-server"}, s.get("mine")
+PY
+}

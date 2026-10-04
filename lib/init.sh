@@ -1313,7 +1313,40 @@ print(n)
     fi
 
     # --- .mcp.json (MCP server configuration for Claude Code) ---
-    if [ ! -f "$dir/.mcp.json" ] || [ "${force:-false}" = true ]; then
+    # T-3836: an existing .mcp.json is MERGED, never rewritten — even under
+    # force=true, which `fw upgrade` sets to regenerate settings.json. The old
+    # overwrite dropped every server's env (TERMLINK_RUNTIME_DIR, T-3424) and
+    # every project-added server. Only template servers that are absent are added.
+    if [ -f "$dir/.mcp.json" ] && [ "${force:-false}" = true ]; then
+        local _mcp_added
+        if _mcp_added=$(MCP_FILE="$dir/.mcp.json" python3 -c "
+import json, os
+p = os.environ['MCP_FILE']
+with open(p) as f:
+    raw = json.load(f)
+servers = raw.get('mcpServers') if isinstance(raw.get('mcpServers'), dict) else dict(raw)
+defaults = {
+    'context7': {'command': 'npx', 'args': ['-y', '@upstash/context7-mcp']},
+    'playwright': {'command': 'npx', 'args': ['@playwright/mcp@latest', '--no-sandbox']},
+    'termlink': {'command': 'termlink', 'args': ['mcp', 'serve']},
+    'fw': {'command': 'python3', 'args': ['.agentic-framework/agents/mcp/framework_mcp_server.py']},
+}
+added = [k for k in defaults if k not in servers]
+for k in added:
+    servers[k] = defaults[k]
+if added or not isinstance(raw.get('mcpServers'), dict):
+    out = dict(raw) if isinstance(raw.get('mcpServers'), dict) else {}
+    out['mcpServers'] = servers
+    with open(p, 'w') as f:
+        json.dump(out, f, indent=2)
+        f.write('\n')
+print(','.join(added))
+" 2>/dev/null); then
+            echo -e "  ${GREEN}OK${NC}  .mcp.json kept (existing servers and env untouched${_mcp_added:+; added $_mcp_added})"
+        else
+            echo -e "  ${YELLOW}WARN${NC}  .mcp.json exists but did not parse — left untouched"
+        fi
+    elif [ ! -f "$dir/.mcp.json" ]; then
         cat > "$dir/.mcp.json" << 'MCPJSON'
 {
   "mcpServers": {
