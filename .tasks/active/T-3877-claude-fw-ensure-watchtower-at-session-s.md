@@ -93,15 +93,15 @@ Reference: 055's vendored T-467 patch (`lib/watchtower-ensure.sh`, called from `
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `lib/watchtower-ensure.sh: fw_watchtower_ensure` behaves as follows:
+- [x] `lib/watchtower-ensure.sh: fw_watchtower_ensure` behaves as follows:
   - running for this project → no-op;
   - otherwise it starts it through `bin/watchtower.sh start`, so the port comes from T-3876's `choose_port`;
   - a flock makes concurrent sessions after a reboot start it once;
   - it always returns 0 and logs to `.context/working/watchtower-ensure.log`;
   - `FW_WATCHTOWER_ENSURE=0` disables it.
-- [ ] `post-compact-resume.sh` calls it DETACHED (`setsid`, stdin from /dev/null) before any early exit, so it runs on startup, resume and compact, and never delays or fails the hook. No `.claude/settings.json` change (B-005, template parity).
-- [ ] `fw doctor`: "Watchtower not running" becomes a WARN (counted), not a SKIP, and names `fw serve`.
-- [ ] bats tests with a stub `watchtower.sh` cover: already running → no start; not running → one start; disabled → no start; start failure → still rc 0 and logged; two concurrent calls → one start. Vendored copy in sync.
+- [x] `post-compact-resume.sh` calls it DETACHED (`setsid`, stdin from /dev/null) before any early exit, so it runs on startup, resume and compact, and never delays or fails the hook. No `.claude/settings.json` change (B-005, template parity). Live, the hook took 183 ms; Watchtower came back on 3000 within seconds (HTTP 200).
+- [x] `fw doctor`: "Watchtower not running" becomes a WARN (counted), not a SKIP, and names `fw serve`. This applies only where a Watchtower is expected (`watchtower.log` exists or a PORT is configured); throwaway and test projects keep SKIP.
+- [x] bats tests with a stub `watchtower.sh` cover: already running → no start; not running → one start; disabled → no start; start failure → still rc 0 and logged; two concurrent calls → one start. Vendored copy in sync.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -261,8 +261,28 @@ Reference: 055's vendored T-467 patch (`lib/watchtower-ensure.sh`, called from `
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 120 bats tests/unit/t3877_watchtower_ensure.bats > /tmp/.t3877 2>&1 && ! grep -q "^not ok" /tmp/.t3877
+test "$(grep -c '# skip' /tmp/.t3877)" -eq 0
+bash -n lib/watchtower-ensure.sh && bash -n agents/context/post-compact-resume.sh && bash -n bin/fw
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** after the 2026-10-05 reboot, Watchtower stayed down until a human noticed. Here it was started by hand at 13:50; at 055 it was down about 80 minutes. Every review link handed out was dead in the meantime.
+
+**Root cause:** no component owned "Watchtower should be running":
+- `claude-fw` has no Watchtower step, and no SessionStart hook started it;
+- there is no system unit;
+- `fw doctor` reported the state as SKIP, not as a finding.
+
+**Why structurally allowed:**
+- Watchtower was treated as an optional, start-by-hand tool, while the framework hands out its URLs as the primary review surface (T-679). The dependency grew; nothing grew with it.
+- The sidecar got exactly this treatment in T-3685 (`sidecar-autostart`), but Watchtower was never brought in line.
+
+**Prevention:**
+- The detached ensure step runs on every session start, cold starts included.
+- doctor WARNs (counted) when a project that runs a Watchtower has none.
+- Tests cover no-op, start, disable, failure and concurrency, and pin the call order in the hook.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
