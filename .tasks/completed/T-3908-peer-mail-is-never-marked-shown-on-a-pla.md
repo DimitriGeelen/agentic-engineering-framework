@@ -9,12 +9,12 @@ description: >
   the nudger reads (receipts? shown?) and whether the prompt-hook path on a plain
   session writes it. Related: T-3891 (plain claude-fw cannot be woken by injection).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/sidecar_cli.py, lib/sidecar/receipts.py, lib/sidecar/retry.py, lib/sidecar/status.py, tests/unit/test_sidecar_sweep.py]
 related_tasks: []
 origin: {kind: "peer", source: "ring20-dashboard", ref: "msg b84d82e2"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -44,8 +44,8 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "msg b84d82e2"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T22:00:28Z
-last_update: 2026-10-05T23:36:33Z
-date_finished:
+last_update: 2026-10-05T23:36:34Z
+date_finished: 2026-10-05T23:36:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -389,3 +389,15 @@ bin/fw vendor self --check
 ### 2026-10-05T23:31:11Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5c0f3908
+- **Timestamp:** 2026-10-05T23:36:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-05T23:36:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
