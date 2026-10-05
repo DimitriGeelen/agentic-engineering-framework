@@ -154,3 +154,37 @@ EOF
     run grep -c "_render_surface_git_touched_paths" "$FRAMEWORK_ROOT/lib/render_surface.sh"
     [ "$output" -ge 3 ]
 }
+
+# ---- T-3904: a SUBJECT can mention another task too ---------------------
+# Measured 2026-10-05: "T-3897: origin badge … T-3899/T-3900 … filed" donated
+# T-3897's web/ edits to T-3899 and blocked T-3899's close on the render gate.
+
+subject_donor_commit() {
+    echo "six" > web/templates/subject-donor.html
+    git add -A
+    git commit -qm "T-9006: render edit — T-9001 filed alongside"
+}
+
+@test "T-3904: a mid-subject mention does NOT donate when the task has its own prefixed commit" {
+    subject_donor_commit
+    run touched T-9001
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q "lib/alpha.sh"
+    ! echo "$output" | grep -q "web/templates/subject-donor.html"
+}
+
+@test "T-3904/control: the subject's author still owns the render file" {
+    subject_donor_commit
+    run touched T-9006
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q "web/templates/subject-donor.html"
+}
+
+@test "T-3904/fallback: a task named only mid-subject still resolves" {
+    echo "seven" > web/templates/mid-only.html
+    git add -A
+    git commit -qm "chore: tidy, see T-9007"
+    run touched T-9007
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q "web/templates/mid-only.html"
+}

@@ -87,13 +87,25 @@ _render_surface_subject_shas() {
     # The id must not be followed by another digit, so T-318 does not match a
     # T-3186 commit. That prefix collision was live in the whole-message form
     # too and is fixed here for both paths.
+    #
+    # T-3904: a subject can MENTION another task too ("T-3897: … T-3899 filed"),
+    # which donated T-3897's web/ edits to T-3899 and blocked its close. The
+    # subject that OPENS with the id is the author's claim (P-002), so those
+    # commits win whenever any exists; a mid-subject mention is used only for a
+    # task no subject opens with — this can remove false positives, never
+    # evidence.
     local task_id="$1"
     git log --all --pretty=format:'%H %s' --grep "$task_id" -- . 2>/dev/null \
         | awk -v tid="$task_id" '
             {
                 sha = $1
                 subj = substr($0, length(sha) + 2)
-                if (subj ~ tid "([^0-9]|$)") print sha
+                if (subj ~ "^" tid "([^0-9]|$)") owned[++no] = sha
+                else if (subj ~ tid "([^0-9]|$)") mentioned[++nm] = sha
+            }
+            END {
+                if (no) { for (i = 1; i <= no; i++) print owned[i] }
+                else    { for (i = 1; i <= nm; i++) print mentioned[i] }
             }
         '
 }
