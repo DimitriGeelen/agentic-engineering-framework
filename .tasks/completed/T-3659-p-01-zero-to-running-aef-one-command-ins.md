@@ -13,7 +13,7 @@ workflow_type: inception
 owner: human
 horizon: null
 tags: []
-components: []
+components: [agents/task-create/create-task.sh, lib/inception.sh, lib/task_origin.py, tests/unit/t3897_create_task_origin.bats, tests/web/test_t3897_task_origin.py, web/blueprints/approvals.py, web/templates/_approvals_content.html, web/templates/_origin_badge.html]
 related_tasks: []
 origin: {kind: "proposal", source: "P-01 (external, unratified, 2026-09-29)", ref: "pasted by the operator 2026-10-01"}
 created: 2026-10-01T15:01:12Z
