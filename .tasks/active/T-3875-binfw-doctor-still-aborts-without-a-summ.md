@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T13:24:27Z
-last_update: 2026-10-05T13:54:57Z
+last_update: 2026-10-05T13:55:57Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,9 +97,9 @@ Two `set -euo pipefail` abort sites in `do_doctor` that T-3837 did not cover, re
 ## Acceptance Criteria
 
 ### Agent
-- [ ] (a) A failing `audit_timing.py` no longer ends doctor; doctor still prints its summary
-- [ ] (b) The slowest-phases block cannot end doctor via SIGPIPE: the top-3 selection happens without a downstream early-closing reader
-- [ ] Regression test reproduces both aborts on the unfixed code (pipefail/errexit harness on the extracted constructs) and passes on the fixed code; `bash -n bin/fw`; vendored copy in sync
+- [x] (a) A failing `audit_timing.py` no longer ends doctor; doctor still prints its summary
+- [x] (b) The slowest-phases block cannot end doctor via SIGPIPE: the top-3 selection happens without a downstream early-closing reader. A third site of the same shape was found and fixed too: `_doctor_killed_report`'s `head -5`.
+- [x] Regression test reproduces both aborts on the unfixed code (pipefail/errexit harness on the extracted constructs) and passes on the fixed code; `bash -n bin/fw`; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -259,8 +259,30 @@ Two `set -euo pipefail` abort sites in `do_doctor` that T-3837 did not cover, re
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 120 bats tests/unit/t3875_doctor_set_e_sites.bats > /tmp/.t3875 2>&1 && ! grep -q "^not ok" /tmp/.t3875
+test "$(grep -c '# skip' /tmp/.t3875)" -eq 0
+bash -n bin/fw
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** on ring20-dashboard's 1.8.1, `fw doctor` ended before printing its summary. Their observed abort was the "slowest phases" listing.
+
+**Root cause:**
+- `bin/fw` runs under `set -euo pipefail`. In `sort | head -N | while`, `head` exits after N lines. If `sort` is still writing, it takes SIGPIPE (141). pipefail makes the pipeline fail, and errexit ends doctor.
+- Separately, `_at_out=$(python3 …)` had no `|| fallback`, so any non-zero exit of `audit_timing.py` ended doctor.
+
+**Why structurally allowed:**
+- T-3837 fixed the `x=$(cmd); rc=$?` sites by enumeration, not by shape, so both of these shapes stayed.
+- The SIGPIPE case is a race: it fires only when sort's output outruns head. Ordinary test runs, with a small phase log, never trip it.
+- A third copy of the head-pipeline (`_doctor_killed_report`, head -5) was invisible for the same reason.
+
+**Prevention:**
+- `t3875_doctor_set_e_sites.bats` extracts every `_DOCTOR_PHASE_LOG | sort` pipeline from `bin/fw` and asserts:
+  - there are exactly 2;
+  - none pipes into `head`;
+  - each survives a 30000-line log under pipefail+errexit.
+- A control proves the old construct dies on the same input. The tests fail 3/4 against the pre-fix `bin/fw`.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
