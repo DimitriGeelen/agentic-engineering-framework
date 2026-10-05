@@ -93,8 +93,11 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] When step 3b ADDED cron jobs in a real run, the closing "Next steps" includes `N new cron job(s) (<ids>) are NOT running yet — deploy: cd <target> && fw cron install`. It is absent when nothing was added and in dry runs.
-- [ ] A test asserts both the presence (jobs added) and the absence (none added), driven through the real summary code with the step-3b result injected. Existing upgrade suites stay green (fresh-machine simulation, t2912); vendored copy in sync.
+- [x] When step 3b ADDED cron jobs in a real run, the closing "Next steps" includes `N new cron job(s) (<ids>) are NOT running yet — deploy: cd <target> && fw cron install`. It is absent when nothing was added and in dry runs.
+- [x] A test asserts both the presence (jobs added) and the absence (none added). Existing upgrade suites stay green (fresh-machine simulation, t2912, t3884: 27/27); vendored copy in sync.
+  - Narrower than first written: the test drives the real `_t3882_cron_next_step` helper extracted from `lib/upgrade.sh`.
+  - It pins the wiring statically: the append is in the non-dry-run ADDED branch, the summary calls the helper, and the variable is declared.
+  - It does NOT run a full `fw upgrade` with an injected missing job.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -254,8 +257,20 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 120 bats tests/unit/t3882_upgrade_cron_next_step.bats > /tmp/.t3882 2>&1 && ! grep -q "^not ok" /tmp/.t3882
+test "$(grep -c '# skip' /tmp/.t3882)" -eq 0
+bash -n lib/upgrade.sh
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** after 832's 1.8.2 upgrade, `index-reindex-hourly` was in the registry but not installed. 832 first reported it installed, because what they had counted was a dry run.
+
+**Root cause:** the registry → deployed step is a separate operator action (`fw cron install`). The upgrade named it once, as an OK line inside step 3b. The closing summary, the part people act on, listed review, commit and doctor, but not cron.
+
+**Why structurally allowed:** the next-steps block is static text written before step 3b learned to add jobs (T-3673). Nothing ties a step's outstanding action to the summary.
+
+**Prevention:** step 3b records the ids it actually added in a real run, and the summary prints them with the install command. Tests pin the line and its absence.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
