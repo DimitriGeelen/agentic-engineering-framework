@@ -7,12 +7,12 @@ description: >
   and ring20-manager (f954887a, 8957c699) before the real body; recipients had to
   be told to ignore them.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, sidecar]
-components: []
+components: [lib/sidecar_cli.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T14:53:29Z
-last_update: 2026-10-05T16:30:12Z
-date_finished:
+last_update: 2026-10-05T16:31:56Z
+date_finished: 2026-10-05T16:31:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -371,3 +371,15 @@ bin/fw vendor self --check
 ### 2026-10-05T16:30:12Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f7b8c5ae
+- **Timestamp:** 2026-10-05T16:32:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-05T16:31:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
