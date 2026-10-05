@@ -686,6 +686,12 @@ def _suggested_decision(rec: dict[str, Any]) -> str:
     """
     if not rec.get("present"):
         return ""
+    # T-3894: only a close-out task judges whether the arc is DONE. An anchor's
+    # recommendation is about STARTING it (continuous-run offered its June
+    # "GO — spike walk completed" as the closing verdict of an arc that does
+    # not work) — so it is shown in the card, never proposed as the decision.
+    if rec.get("source") != "close_task":
+        return ""
     verdict = str(rec.get("verdict") or "").strip()
     if verdict in ("", "?"):
         verdict = ""
@@ -1563,7 +1569,10 @@ def arc_close_surface(arc_id):
     recommendation = _anchor_recommendation(arc)
 
     prev_demo_value = request.form.get("demo_value", "") if request.method == "POST" else ""
-    if not prev_demo_value and recommendation.get("suggested_demo"):
+    # T-3894: the demo is evidence the arc WORKS — only a close-out task may
+    # suggest it (an anchor's exploration report is not that evidence).
+    if (not prev_demo_value and recommendation.get("suggested_demo")
+            and recommendation.get("source") == "close_task"):
         prev_demo_value = recommendation["suggested_demo"]
 
     # T-3841 (055): pre-fill the decision with the recommendation shown above, the

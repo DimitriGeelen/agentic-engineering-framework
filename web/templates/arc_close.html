@@ -89,6 +89,14 @@
         <span class="anchor-rec-sub">from {% if recommendation.source == "close_task" %}close-out{% else %}anchor{% endif %} task <a href="/tasks/{{ recommendation.anchor_id }}">{{ recommendation.anchor_id }}</a></span>
         {% endif %}
     </h2>
+    {% if recommendation.source == "anchor_task" %}
+    {# T-3894: an anchor's recommendation is about STARTING the arc — never offered as the closing verdict. #}
+    <p class="muted" data-testid="anchor-not-closeout" style="margin-top: 0;">
+        This is the anchor task's recommendation — a decision about <em>starting</em> the arc, not an
+        assessment of whether it is done. It is shown for context and is not pre-filled below. A close-out
+        assessment belongs in the arc's close-out task (set <code>close_task:</code> in the arc file).
+    </p>
+    {% endif %}
     {% if recommendation.rationale_html %}
     <div class="rec-body">
         <strong>Rationale</strong>

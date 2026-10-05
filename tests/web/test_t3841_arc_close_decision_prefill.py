@@ -39,6 +39,9 @@ def scratch(tmp_path, monkeypatch):
         "withrec": dict(base, id="arc-801", slug="withrec", name="With", anchor_task="T-901",
                         close_task="T-902"),
         "norec": dict(base, id="arc-802", slug="norec", name="Without", anchor_task="T-901"),
+        # T-3894: only the ANCHOR carries a recommendation (the continuous-run case)
+        "anchoronly": dict(base, id="arc-803", slug="anchoronly", name="Anchor only",
+                           anchor_task="T-902"),
     }
     monkeypatch.setattr(arcs, "PROJECT_ROOT", tmp_path)
     monkeypatch.setattr(arcs, "_read_arc", lambda i: dict(registry[i]) if i in registry else None)
@@ -70,6 +73,25 @@ def test_get_prefills_the_decision(client):
     page = client.get("/arcs/withrec/close").get_data(as_text=True)
     assert _textarea(page) == EXPECTED
     assert 'data-testid="decision-prefilled"' in page
+
+
+def test_t3894_anchor_only_recommendation_is_shown_but_never_prefilled(client):
+    """Operator 2026-10-05: continuous-run's close form proposed its anchor's June
+    'GO — spike walk completed' as the closing verdict of an arc that does not work."""
+    page = client.get("/arcs/anchoronly/close").get_data(as_text=True)
+    assert _textarea(page) == ""
+    assert 'data-testid="decision-prefilled"' not in page
+    assert 'data-testid="anchor-not-closeout"' in page
+    m = re.search(r'id="demo_value"[^>]*value="([^"]*)"', page, re.S)
+    assert m and m.group(1) == "", "an anchor's report must not be offered as demo evidence"
+
+
+def test_t3894_close_task_recommendation_still_prefills_decision_and_demo(client):
+    page = client.get("/arcs/withrec/close").get_data(as_text=True)
+    assert _textarea(page) == EXPECTED
+    assert 'data-testid="anchor-not-closeout"' not in page
+    m = re.search(r'id="demo_value"[^>]*value="([^"]*)"', page, re.S)
+    assert m and m.group(1) == "docs/reports/probe.md"
 
 
 def test_t3893_greyed_out_close_button_says_why(client):

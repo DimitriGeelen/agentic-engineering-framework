@@ -6,6 +6,7 @@ description: "Closes the compact-resume loop so a long-running agent self-compac
   run-length cap, and discard manifest. Sibling of orchestrator-rethink."
 status: in-progress
 anchor_task: T-2158
+close_task: T-3895   # T-3894/T-3895 (2026-10-05): the close-out assessment — does the loop work today, fix or abandon
 headline_mechanic: "agent crosses the context-budget threshold without operator relay
   -> checkpoint.sh fires self-trigger -> handover + resume via claude-fw -> operator
   observes multi-cycle continuous session whose iteration counter, directive, and
