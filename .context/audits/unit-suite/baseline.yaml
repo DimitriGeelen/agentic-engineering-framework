@@ -828,3 +828,33 @@ entries:
   added: '2026-10-04'
   expires: '2026-10-18'
   added_by: human
+- leg: bats
+  name: 't3511_parked_merge_guard.bats: clean merge of a PARKED branch is refused'
+  file: t3511_parked_merge_guard.bats
+  owner: T-3797
+  added: '2026-10-05'
+  expires: '2026-10-19'
+  added_by: human
+- leg: bats
+  name: 't3511_parked_merge_guard.bats: missing guard degrades to ALLOW but warns on stderr'
+  file: t3511_parked_merge_guard.bats
+  owner: T-3797
+  added: '2026-10-05'
+  expires: '2026-10-19'
+  added_by: human
+- leg: bats
+  name: 't3636_objectives_seed.bats: T-3636: existing-project T-007 passes the onboarding gate''s write-time
+    check'
+  file: t3636_objectives_seed.bats
+  owner: T-3797
+  added: '2026-10-05'
+  expires: '2026-10-19'
+  added_by: human
+- leg: bats
+  name: 't3662_watchtower_port_allocation.bats: two unconfigured projects get different ports, each serving
+    itself, each recorded'
+  file: t3662_watchtower_port_allocation.bats
+  owner: T-3797
+  added: '2026-10-05'
+  expires: '2026-10-19'
+  added_by: human
