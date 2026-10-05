@@ -96,10 +96,12 @@ TermLink T-3345 has been live on all three hubs since 2026-10-05 (010 msgs hub-1
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `remote_hub_id` reads `hub_id` from the authenticated `termlink remote ping <hub> --json` first, and caches it with `source: authenticated`
-- [ ] When the hub returns `hub_id: null` (or the ping lacks the field: an old hub), it falls back to the fingerprint path, prints ONE stderr warning naming the hub, and caches `source: fingerprint`
-- [ ] When both are readable and disagree, it REFUSES (AddressError), and never picks one silently
-- [ ] Unit tests with a fake runner cover authenticated, null-fallback and mismatch-refusal; the T-3855 / T-3880 addressing tests stay green; live: `--to ring20-dashboard --hub ring20-dashboard` still resolves to `inbox:1389a831016c4bf1/ring20-dashboard`
+- [x] `remote_hub_id` reads `hub_id` from the authenticated `termlink remote ping <hub> --json` first, and caches it with `source: authenticated`
+- [x] When the hub returns `hub_id: null` (or the ping lacks the field: an old hub), it falls back to the fingerprint path, prints ONE stderr warning naming the hub, and caches `source: fingerprint`
+- [x] When both are readable and disagree, it REFUSES (AddressError), and never picks one silently.
+  - The comparison is `hub_instance_id` against the presented certificate fingerprint, NOT `hub_id` against the fingerprint prefix.
+  - `hub_id` will stop equalling the prefix once TermLink mints canonical ids, and comparing it would then refuse every hub.
+- [x] Unit tests with a fake runner cover authenticated, null-fallback and mismatch-refusal; the T-3855 / T-3880 addressing tests stay green; live: `--to ring20-dashboard --hub ring20-dashboard` still resolves to `inbox:1389a831016c4bf1/ring20-dashboard`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -259,6 +261,8 @@ TermLink T-3345 has been live on all three hubs since 2026-10-05 (010 msgs hub-1
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_sidecar_cross_hub_t3855.py tests/unit/test_sidecar_circuit.py tests/unit/test_sidecar_termlink_transport.py -q > /tmp/.t3873 2>&1 && grep -q passed /tmp/.t3873
+bin/fw vendor self --check
 
 ## RCA
 
