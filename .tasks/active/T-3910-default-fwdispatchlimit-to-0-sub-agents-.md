@@ -4,12 +4,12 @@ name: "Default FW_DISPATCH_LIMIT to 0: sub-agents run as TermLink workers, never
 description: >
   Default FW_DISPATCH_LIMIT to 0: sub-agents run as TermLink workers, never through the vendor harness's built-in Agent tool (operator ruling 2026-10-06)
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/context/check-agent-dispatch.sh, agents/termlink/termlink.sh, bin/fw, lib/config-file.sh, lib/config.sh, tests/governance/test_pretooluse_gates.bats, tests/unit/lib_config.bats, tests/unit/t3910_dispatch_limits.bats, web/blueprints/config.py]
 related_tasks: []
 origin: {kind: "operator", ref: "2026-10-06 'default the sub-agent limit to zero as things should go to termlink'"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -39,8 +39,8 @@ origin: {kind: "operator", ref: "2026-10-06 'default the sub-agent limit to zero
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T23:50:46Z
-last_update: 2026-10-05T23:56:49Z
-date_finished: null
+last_update: 2026-10-05T23:57:12Z
+date_finished: 2026-10-05T23:57:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -318,6 +318,28 @@ bin/fw watchtower current
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** This implements your ruling as given.
+- The harness's own sub-agent dispatcher (Claude Code's Agent tool, or any vendor's equivalent) is off by default: `FW_DISPATCH_LIMIT` is 0, so the first such dispatch is blocked and pointed to `fw termlink dispatch`.
+- TermLink dispatch is allowed up to 5 concurrent workers per project, now enforced in code; before this, the "max 5" existed only in CLAUDE.md.
+- At the cap, the refusal tells the agent to ask you for a higher number (10, 15, 20 …) and never to raise it itself.
+
+Two things were kept on purpose:
+- On a host without TermLink, the harness dispatch is still allowed with a note, so consumers without TermLink are not left with no dispatch path at all.
+- `fw dispatch approve` remains as a 5-minute exception, now labelled operator-only. It is not structurally gated against an agent running it; say if you want it gated like `fw tier0 approve`.
+
+**Evidence:**
+- `tests/unit/t3910_dispatch_limits.bats`, 6 of 6 green, covering:
+  - the default of 0;
+  - the gate blocking harness dispatch #1;
+  - the 6th worker refused, with the ask-the-operator line;
+  - `FW_TERMLINK_MAX_WORKERS=6` passes;
+  - finished workers and another project's workers hold no slot;
+  - a control where the cap does fill.
+- The config-registry parity lint and `lib_config.bats` pass (33/33); the governance gate test passes.
+- Watchtower restarted; /config shows both keys.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -345,3 +367,15 @@ bin/fw watchtower current
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3910-default-fwdispatchlimit-to-0-sub-agents-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0026ef44
+- **Timestamp:** 2026-10-05T23:57:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-05T23:57:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
