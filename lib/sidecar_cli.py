@@ -231,7 +231,7 @@ def _print_inbox(args, messages) -> int:
         print(f"no pending consults on {inbox.inbox_topic()}")
         return 0
     for msg in messages:
-        sender = msg.get("from") or "unknown"
+        sender = inbox.sender_label(msg)   # T-3855: never "unknown"
         print(f"--- consult @{msg.get('offset')} from {sender} "
               f"[{msg.get('conversation_id')}] ---")
         print(msg.get("body", ""))
@@ -242,7 +242,7 @@ def _print_inbox(args, messages) -> int:
                   f"cursor={row['cursor']} unread={row['unread']}")
     else:
         for msg in dm_posts:
-            sender = msg.get("from") or "unknown"
+            sender = msg.get("from") or inbox.UNATTRIBUTED
             print(f"--- dm @{msg.get('offset')} on {msg.get('topic')} "
                   f"from {sender} ---")
             print(msg.get("body", ""))
@@ -343,7 +343,7 @@ def cmd_status(args) -> int:
     for row in inbound["topics"]:
         age = "unknown" if row["age_hours"] is None else f"{row['age_hours']}h"
         print(f"  {row['topic']}: {row['unread']} unread, oldest {age}"
-              f" from {row['oldest_from'] or 'unknown'}")
+              f" from {row['oldest_from'] or inbox.UNATTRIBUTED}")
     if dm_rows:
         print("dm rails:")
         for row in dm_rows:
@@ -522,7 +522,7 @@ def cmd_inbox_stale(args) -> int:
         return 0
     for row in rows:
         age = "unknown" if row["age_hours"] is None else row["age_hours"]
-        print(f"{row['topic']}\t{row['unread']}\t{age}\t{row['oldest_from'] or 'unknown'}")
+        print(f"{row['topic']}\t{row['unread']}\t{age}\t{row['oldest_from'] or inbox.UNATTRIBUTED}")
     return 0
 
 

@@ -236,6 +236,48 @@ def _decode(envelope: dict) -> str:
     return envelope.get("payload") or ""
 
 
+#: T-3855 (ring20 §3.6): what a message with no sender metadata is called.
+#: Never "unknown" — that reads as "we lost it"; this says what it is.
+UNATTRIBUTED = "unattributed (raw post)"
+
+
+def sender_of(meta: dict) -> str | None:
+    """The sender's name from envelope metadata: `from_agent`, else the name
+    its `from_circuit` carries. None only for a raw post with neither."""
+    meta = meta or {}
+    if meta.get("from_agent"):
+        return str(meta["from_agent"])
+    cid = str(meta.get("from_circuit") or "")
+    if cid:
+        parts = circuit.parse_circuit(cid)
+        return parts.get("agent") or parts.get("project") or None
+    return None
+
+
+def sender_label(msg: dict) -> str:
+    """How to NAME a message's sender to a human or agent (T-3855)."""
+    return str(msg.get("from") or sender_of({"from_circuit": msg.get("from_circuit")})
+               or UNATTRIBUTED)
+
+
+def reply_address(msg: dict) -> str | None:
+    """What to type as `--to` to answer `msg`. The sender's circuit when it
+    lives on another hub (so the reply lands in ITS namespace, not ours);
+    else its name. None for a raw post — there is nobody to address."""
+    cid = str(msg.get("from_circuit") or "")
+    if cid:
+        from . import addressing
+        bare = addressing.strip_host(cid)
+        hub = circuit.parse_circuit(bare).get("hub")
+        try:
+            own = circuit.hub_id()
+        except circuit.CircuitError:
+            own = None
+        if hub and hub != own:
+            return bare
+    return msg.get("from") or sender_of({"from_circuit": cid}) or None
+
+
 #: Envelope msg_types that are delivery receipts, never mail (T-3792).
 RECEIPT_MSG_TYPES = frozenset({"sidecar.receipt", "receipt"})
 RECEIPT_BODY_PREFIX = "[sidecar receipt]"
@@ -375,11 +417,19 @@ def pending(agent: str | None = None, *, reader=default_reader,
                 keys = seen_mod.keys_for(client_msg_id)
                 if keys & answered or not seen_mod.may_show(keys, shown_table):
                     continue
+            # T-3855: a sender that told us its circuit is a peer we can answer
+            # on its own hub — learn it (the peer directory).
+            if meta.get("from_circuit"):
+                from . import addressing
+                try:
+                    addressing.learn(meta.get("from_agent"), meta.get("from_circuit"))
+                except Exception:
+                    pass
             fresh.append({
                 "offset": offset,
                 "topic": topic,
                 "client_msg_id": client_msg_id,
-                "from": meta.get("from_agent"),
+                "from": sender_of(meta),
                 "from_circuit": meta.get("from_circuit"),
                 "conversation_id": meta.get("conversation_id"),
                 "urgent": str(meta.get("urgent") or "").lower() in ("1", "true", "yes"),

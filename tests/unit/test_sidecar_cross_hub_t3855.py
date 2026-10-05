@@ -240,3 +240,57 @@ def test_receipt_for_a_local_sender_has_no_hub_flag(env):
                          "from_circuit": f"{OWN}/010-termlink", "conversation_id": "c"},
                         receipts.RECEIVED, by="t", runner=_receipt_runner(posts))
     assert row["ok"] and "--hub" not in posts[0]
+
+
+# ── leg 3: attribution ──────────────────────────────────────────────────────
+
+def _env(offset, meta, body=b"hello"):
+    import base64
+    return {"offset": offset, "ts": 1, "payload_b64": base64.b64encode(body).decode(),
+            "metadata": meta}
+
+
+def test_sender_named_from_circuit_when_from_agent_is_missing_and_raw_is_labelled(env, monkeypatch):
+    from lib.sidecar import inbox
+    importlib.reload(inbox)
+    monkeypatch.setattr(inbox, "read_topics", lambda agent=None: ["inbox:t"])
+    envs = [_env(0, {"client_msg_id": "a1", "from_circuit": f"//h/{THEIRS}/ring20-dashboard"}),
+            _env(1, {"client_msg_id": "a2", "from_agent": "peer-x"}),
+            _env(2, {})]
+    msgs = inbox.pending(reader=lambda t, c, limit=100: [e for e in envs if e["offset"] >= c])
+    labels = [inbox.sender_label(m) for m in msgs]
+    assert labels == ["ring20-dashboard", "peer-x", "unattributed (raw post)"]
+    assert "unknown" not in " ".join(labels)
+
+
+def test_hook_header_never_says_unknown_and_raw_post_gets_no_reply_line(env):
+    from lib.sidecar import hooks
+    importlib.reload(hooks)
+    attributed = hooks._block({"from_circuit": f"{THEIRS}/ring20-dashboard",
+                               "client_msg_id": "m", "conversation_id": "c", "body": "b"},
+                              "tok", "fw")
+    assert attributed[0].startswith("## from ring20-dashboard ")
+    # remote sender: the reply goes to ITS circuit, so it lands in its namespace
+    assert f"--to {THEIRS}/ring20-dashboard " in attributed[4]
+    raw = hooks._block({"client_msg_id": "m", "body": "b"}, "tok", "fw")
+    assert raw[0].startswith("## from unattributed (raw post) ")
+    assert "--to" not in raw[4] and "raw post" in raw[4]
+
+
+def test_received_envelope_teaches_the_peer_directory(env, monkeypatch):
+    from lib.sidecar import inbox
+    importlib.reload(inbox)
+    monkeypatch.setattr(inbox, "read_topics", lambda agent=None: ["inbox:t"])
+    envs = [_env(0, {"client_msg_id": "p1", "from_agent": "ring20-dashboard",
+                     "from_circuit": f"//dash/{THEIRS}/ring20-dashboard"})]
+    inbox.pending(reader=lambda t, c, limit=100: [e for e in envs if e["offset"] >= c])
+    assert env.peer("ring20-dashboard")["circuit"] == f"{THEIRS}/ring20-dashboard"
+
+
+def test_cli_inbox_print_labels_raw_posts(env, monkeypatch, capsys):
+    from lib import sidecar_cli as cli
+    importlib.reload(cli)
+    monkeypatch.setattr(cli.dm, "pending", lambda advance=True: [])
+    args = type("A", (), {"peek": False, "json": False})()
+    cli._print_inbox(args, [{"offset": 3, "conversation_id": "c", "body": "x"}])
+    assert "from unattributed (raw post)" in capsys.readouterr().out
