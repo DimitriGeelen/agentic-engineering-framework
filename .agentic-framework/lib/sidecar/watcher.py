@@ -461,11 +461,20 @@ def read_liveness() -> dict | None:
 
 
 def has_inbox() -> bool:
-    """Does this agent have a sidecar inbox — has it ever read, sent, been
-    started, or resolved its own address here? (T-3855)"""
+    """Does this agent have a sidecar inbox — has it ever read, sent, or been
+    started here? (T-3855)
+
+    Not `hub-id` and not a bare `outbox/` directory: read-only checks (fw
+    audit's own sidecar sections) write the hub-id cache and create an empty
+    outbox, so counting them made every audit FAIL on its own side effects in
+    any project that never used the sidecar (T-3747 round 5)."""
     d = receiver._root() / ".context" / "sidecar"
-    return any(p.exists() for p in (d / "inbox-state.json", d / "outbox",
-                                    d / "watcher" / "enabled.json", d / "hub-id"))
+    if (d / "inbox-state.json").exists() or (d / "watcher" / "enabled.json").exists():
+        return True
+    try:
+        return any(p.is_file() for p in (d / "outbox").iterdir())
+    except OSError:
+        return False
 
 
 def wake_verdict(verdict: dict | None = None) -> dict:
