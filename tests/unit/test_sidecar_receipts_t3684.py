@@ -274,7 +274,9 @@ def test_failed_reply_sends_no_replied(ab, monkeypatch):
     monkeypatch.setattr(receipts, "send", lambda env, st, by, **k: sent.append(st))
     from lib import sidecar_cli
     monkeypatch.setattr(sidecar_cli, "_cmd_send", lambda args: 1)          # delivery failed
-    args = type("A", (), {"in_reply_to": "h-9"})()
+    # T-3902: argparse always sets .body (--body is required); T-3889's
+    # empty-body refusal reads it before either path runs.
+    args = type("A", (), {"in_reply_to": "h-9", "body": "the answer"})()
     assert sidecar_cli.cmd_send(args) == 1 and sent == []
     monkeypatch.setattr(sidecar_cli, "_cmd_send", lambda args: 0)
     assert sidecar_cli.cmd_send(args) == 0 and sent == ["REPLIED"]

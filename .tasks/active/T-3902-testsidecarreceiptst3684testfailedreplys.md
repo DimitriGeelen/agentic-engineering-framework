@@ -9,7 +9,7 @@ description: >
   so new since the last nightly. Likely fix: give the fixture a body (or make the
   reply path not read args.body).
 
-status: captured
+status: started-work
 workflow_type: test
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T21:35:03Z
-last_update: '2026-10-05T21:45:48Z'
+last_update: 2026-10-05T22:42:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,8 +96,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `test_failed_reply_sends_no_replied` gives its fake args object a non-empty `.body`. argparse always sets it, because `--body` is required. The test still asserts that a failed reply sends no REPLIED and a successful one sends exactly REPLIED.
+- [x] The whole file `tests/unit/test_sidecar_receipts_t3684.py` passes. The production code is unchanged: T-3889's empty-body refusal is correct, and the fixture predated it.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -131,6 +131,8 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 300 python3 -m pytest tests/unit/test_sidecar_receipts_t3684.py -q -p no:cacheprovider > /tmp/.t3902 2>&1 && grep -q passed /tmp/.t3902 && ! grep -q failed /tmp/.t3902
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -354,3 +356,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3902-testsidecarreceiptst3684testfailedreplys.md
 - **Context:** Initial task creation
+
+### 2026-10-05T22:41:26Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
