@@ -1,0 +1,21 @@
+id: tests/unit/t3878_runme_pending.bats
+name: t3878_runme_pending
+type: script
+subsystem: tests
+location: tests/unit/t3878_runme_pending.bats
+tags: []
+
+purpose: "T-3878: a `fw runme watch` dies with the session that armed it, so an operator's run after an agent restart went unobserved (832 T-1050; here the pre-reboot waits ended \"stopped\")."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-05
+created_by: unknown

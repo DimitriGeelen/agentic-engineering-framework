@@ -371,6 +371,22 @@ ${DIRECTIVE_SECTION}"
     fi
 fi
 
+# T-3878: a runme watch dies with the session that armed it. Name anything
+# handed over to the operator that nobody is watching any more.
+if [ -f "$FRAMEWORK_ROOT/lib/runme.sh" ]; then
+    _runme_findings=$(PROJECT_ROOT="$PROJECT_ROOT" bash -c '. "$1/lib/runme.sh" && runme_pending' _ "$FRAMEWORK_ROOT" 2>/dev/null | grep -v '^runme: nothing pending$' || true)
+    if [ -n "$_runme_findings" ]; then
+        CONTEXT="${CONTEXT}
+
+## Operator Runmes Needing Attention (T-3878)
+
+\`\`\`
+${_runme_findings}
+\`\`\`
+Act on these before other work: re-arm a lost watch so the operator's run is observed."
+    fi
+fi
+
 CONTEXT="${CONTEXT}
 
 ## Post-Compact Budget Note (T-1728)

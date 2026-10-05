@@ -11,10 +11,10 @@ description: >
   record (b304i7hcr). Generalisation (832): any wake-on-event link an agent arms should
   be re-derivable from durable state at session start.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [runme, wake, 832-report]
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T13:29:40Z
-last_update: '2026-10-05T13:45:45Z'
+last_update: 2026-10-05T17:07:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -107,9 +107,14 @@ For AEF this belongs in `fw runme watch`, plus a section in `fw sidecar alerts` 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw runme watch <name>` writes `.context/runme/<name>/watch.json` = {watch_pid, arming_claude_pid (nearest ancestor whose cmdline is claude, else null), armed_at}. It is removed when the watch reports EXIT and kept on timeout or kill.
+- [ ] `fw runme pending [--json]` classifies each runme dir (newer than 7 days) and prints one line per finding, naming the re-arm command:
+  - WATCH LOST: a watch record exists, the run has no EXIT, and the arming claude is gone, or the watcher itself is gone.
+  - RUN IN FLIGHT: START without EXIT, and a process is running that runme.sh.
+  - RUN ENDED WITHOUT RECORD: START without EXIT, and nothing is running it.
+  - Prints `runme: nothing pending` when clean.
+- [ ] `post-compact-resume.sh` adds its findings to the session-start context (only when there are findings), so a restarted agent is told without asking.
+- [ ] bats tests with temp runme dirs and live/dead fake processes cover each class, the record lifecycle (removed on EXIT, kept on timeout), and the clean case. Existing runme tests stay green; vendored copy in sync.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -366,3 +371,7 @@ For AEF this belongs in `fw runme watch`, plus a section in `fw sidecar alerts` 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3878-runme-wake-link-dies-with-the-session-th.md
 - **Context:** Initial task creation
+
+### 2026-10-05T17:07:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
