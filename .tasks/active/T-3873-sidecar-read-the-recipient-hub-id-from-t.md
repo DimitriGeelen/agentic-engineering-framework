@@ -11,7 +11,7 @@ description: >
   live on .107 canonical hub until 010's operator runs their install+restart runme;
   010 will confirm on the same conversation — start after that.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T12:43:58Z
-last_update: 2026-10-05T14:10:34Z
+last_update: 2026-10-05T14:33:15Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,14 +91,15 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+TermLink T-3345 has been live on all three hubs since 2026-10-05 (010 msgs hub-19ff…, hub-2eaf…). Measured: `termlink remote ping ring20-dashboard --json` (profile name, authenticated with the hubs.toml secret) returns `hub_id` "1389a831016c4bf1" and `hub_instance_id` "sha256:1389a831…". Today `addressing.remote_hub_id` derives the id from the unauthenticated `hub probe` certificate fingerprint plus the TOFU pin.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `remote_hub_id` reads `hub_id` from the authenticated `termlink remote ping <hub> --json` first, and caches it with `source: authenticated`
+- [ ] When the hub returns `hub_id: null` (or the ping lacks the field: an old hub), it falls back to the fingerprint path, prints ONE stderr warning naming the hub, and caches `source: fingerprint`
+- [ ] When both are readable and disagree, it REFUSES (AddressError), and never picks one silently
+- [ ] Unit tests with a fake runner cover authenticated, null-fallback and mismatch-refusal; the T-3855 / T-3880 addressing tests stay green; live: `--to ring20-dashboard --hub ring20-dashboard` still resolves to `inbox:1389a831016c4bf1/ring20-dashboard`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -358,3 +359,6 @@ bvp_scores_proposed:
 
 ### 2026-10-05T14:10:34Z — status-update [task-update-agent]
 - **Change:** horizon: next → now
+
+### 2026-10-05T14:33:15Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

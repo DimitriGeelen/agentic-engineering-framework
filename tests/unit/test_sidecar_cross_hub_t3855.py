@@ -51,10 +51,13 @@ def env(tmp_path, monkeypatch):
     return addressing
 
 
-def _runner(calls=None, fp=THEIR_FP, pin=THEIR_FP, topics=()):
+def _runner(calls=None, fp=THEIR_FP, pin=THEIR_FP, topics=(), auth=THEIRS, inst=THEIR_FP):
     def run(argv, **kw):
         if calls is not None:
             calls.append(argv[1:])
+        if argv[1:3] == ["remote", "ping"]:
+            # T-3873: the authenticated hub.version answer (TermLink T-3345)
+            return _Proc(0, json.dumps({"ok": True, "hub_id": auth, "hub_instance_id": inst}))
         if argv[1:3] == ["hub", "probe"]:
             return _Proc(0, json.dumps({"address": argv[3], "fingerprint": fp, "ok": True}))
         if argv[1:3] == ["tofu", "list"]:
@@ -146,6 +149,36 @@ def test_peer_directory_learned_from_from_circuit_routes_a_bare_reply(env):
     w = env.resolve("ring20-dashboard", runner=_runner())
     assert w["topic"] == f"inbox:{THEIRS}/ring20-dashboard"
     assert w["hub"] == "ring20-dashboard"
+
+
+def test_t3873_hub_id_comes_from_the_authenticated_call(env):
+    calls = []
+    hid, _ = env.remote_hub_id("ring20-dashboard", runner=_runner(calls), use_cache=False)
+    assert hid == THEIRS
+    assert ["remote", "ping", "ring20-dashboard", "--json"] in calls
+    assert env.load_peers()["hubs"]["ring20-dashboard"]["source"] == "authenticated"
+
+
+def test_t3873_authenticated_id_is_read_not_derived(env):
+    """Once canonical-id minting lands, hub_id is NOT the fingerprint prefix;
+    the authenticated value must win (010: 'read hub_id, never derive it')."""
+    minted = "0123456789abcdef"
+    hid, _ = env.remote_hub_id("ring20-dashboard", runner=_runner(auth=minted), use_cache=False)
+    assert hid == minted
+
+
+def test_t3873_null_hub_id_falls_back_to_fingerprint_with_a_warning(env, capsys):
+    hid, _ = env.remote_hub_id("ring20-dashboard", runner=_runner(auth=None, inst=None),
+                               use_cache=False)
+    assert hid == THEIRS
+    assert "no authenticated hub_id" in capsys.readouterr().err
+    assert env.load_peers()["hubs"]["ring20-dashboard"]["source"] == "fingerprint"
+
+
+def test_t3873_instance_and_certificate_disagree_refuses(env):
+    other = "sha256:" + "ff" * 32
+    with pytest.raises(env.AddressError, match="does not match the certificate"):
+        env.remote_hub_id("ring20-dashboard", runner=_runner(inst=other), use_cache=False)
 
 
 ATTACKER = "deadbeefdeadbeef"
@@ -395,7 +428,7 @@ def test_follow_argv_uses_the_profile_of_our_own_hub(env, monkeypatch):
     importlib.reload(watcher)
     monkeypatch.setattr(watcher.shutil, "which", lambda b: "/usr/bin/termlink")
     own_fp = "sha256:" + OWN + "206a6ce20278a319e8dda6b6b4d6d5872105acccdc546d66"
-    argv, why = watcher.follow_argv(runner=_runner(fp=own_fp, pin=own_fp))
+    argv, why = watcher.follow_argv(runner=_runner(fp=own_fp, pin=own_fp, auth=OWN, inst=own_fp))
     assert argv == ["termlink", "channel", "subscribe", "inbox.queued", "--push", "--hub", ADDR]
     # a profile that is NOT our hub cannot carry our wake frames
     env.load_peers()  # cache was written for OWN; clear it to test the refusal

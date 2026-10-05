@@ -36,7 +36,9 @@ from __future__ import annotations
 
 import json
 import os
+import re
 import subprocess
+import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -179,6 +181,22 @@ def _tofu_pin(address: str, runner) -> str | None:
     return None
 
 
+def _authenticated_hub_id(hub: str, runner) -> tuple[str | None, str | None]:
+    """(hub_id, hub_instance_id) from `termlink remote ping <hub> --json`, or
+    (None, None) when the call fails or the hub does not report an id."""
+    try:
+        proc = runner([_binary(), "remote", "ping", hub, "--json"],
+                      capture_output=True, text=True, timeout=15)
+        doc = json.loads(proc.stdout or "{}") if proc.returncode == 0 else {}
+    except (OSError, subprocess.SubprocessError, json.JSONDecodeError):
+        return None, None
+    hid = doc.get("hub_id") if isinstance(doc, dict) else None
+    if not isinstance(hid, str) or not re.fullmatch(r"[0-9a-f]{%d}" % circuit.HUB_ID_LEN, hid):
+        return None, None
+    inst = doc.get("hub_instance_id")
+    return hid, inst if isinstance(inst, str) else None
+
+
 def remote_hub_id(hub: str, *, runner=subprocess.run, hubs_file: Path | None = None,
                   use_cache: bool = True) -> tuple[str, str]:
     """(hub_id, address) for a `--hub` value (a hubs.toml profile name or an
@@ -199,6 +217,13 @@ def remote_hub_id(hub: str, *, runner=subprocess.run, hubs_file: Path | None = N
     if use_cache and cached and cached.get("address") == address and cached.get("hub_id"):
         return cached["hub_id"], address
 
+    # T-3873: the hub states its own id over an AUTHENTICATED call (TermLink
+    # T-3345: `remote ping --json` → hub_id, hub_instance_id). Read it; never
+    # derive it — hub_id stops being the fingerprint prefix once canonical-id
+    # minting lands. The fingerprint stays only as the warned fallback for hubs
+    # that return no hub_id.
+    auth_id, auth_inst = _authenticated_hub_id(hub, runner)
+
     try:
         proc = runner([_binary(), "hub", "probe", address, "--json"],
                       capture_output=True, text=True, timeout=10)
@@ -216,8 +241,21 @@ def remote_hub_id(hub: str, *, runner=subprocess.run, hubs_file: Path | None = N
         raise AddressError(
             f"hub {hub} ({address}) presents certificate {live[:16]} but termlink's TOFU pin "
             f"is {pinned[:16]} — refusing to address it (`termlink tofu verify {address}`)")
-    hid = live[:circuit.HUB_ID_LEN]
-    data["hubs"][hub] = {"hub_id": hid, "address": address,
+    if auth_id:
+        # The instance the authenticated call reached must be the certificate
+        # we were shown; a disagreement is never resolved by picking one.
+        inst = _fingerprint_hex(auth_inst) if auth_inst else None
+        if inst and inst != live:
+            raise AddressError(
+                f"hub {hub} ({address}): authenticated hub_instance_id {inst[:16]} does not "
+                f"match the certificate it presents ({live[:16]}) — refusing to address it")
+        hid, source = auth_id, "authenticated"
+    else:
+        hid, source = live[:circuit.HUB_ID_LEN], "fingerprint"
+        print(f"fw sidecar: WARNING: hub {hub} returned no authenticated hub_id (TermLink "
+              f"older than T-3345?); using its certificate fingerprint prefix {hid}",
+              file=sys.stderr)
+    data["hubs"][hub] = {"hub_id": hid, "address": address, "source": source,
                          "tofu_pinned": bool(pinned), "read_at": _now()}
     try:
         _save_peers(data)
