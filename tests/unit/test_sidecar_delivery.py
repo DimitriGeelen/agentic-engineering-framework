@@ -16,9 +16,50 @@ def sidecar(tmp_path, monkeypatch):
     return delivery, outbox
 
 
+REMOTE = "1389a831016c4bf1"
+
+
 def _store(outbox, hub=None, to="agentB"):
+    # T-3887: since T-3855 a row with a remote hub always carries a full
+    # circuit (addressing.resolve). A bare name + remote hub is the legacy
+    # pre-1.8.2 shape, refused by deliver — tests that want it ask explicitly.
+    if hub and "/" not in to:
+        to = f"{REMOTE}/{to}"
     return outbox.write_message(from_id="agentA", to=to, body="hi",
                                 conversation_id="conv-1", hub=hub)
+
+
+def _store_legacy(outbox, hub, to="ring20-manager"):
+    return outbox.write_message(from_id="agentA", to=to, body="hi",
+                                conversation_id="conv-1", hub=hub)
+
+
+def test_t3887_legacy_bare_name_with_remote_hub_is_never_posted(sidecar):
+    """ring20-manager: a 1.8.0 row (bare to + remote hub) was re-posted by every
+    sweep into the SENDER's own hub inbox, where nobody reads it."""
+    delivery, outbox = sidecar
+    cmid = _store_legacy(outbox, hub="ring20-management")
+    sent, transport = _recording_transport()
+    probed = []
+    result = delivery.deliver(cmid, transport, lambda h: probed.append(h) or delivery.ProbeResult(ok=True))
+    assert sent == [] and probed == []
+    assert result.delivered is False and result.state == outbox.UNKNOWN
+    row = outbox.latest_ack_state(cmid)
+    assert row["state"] == outbox.UNKNOWN
+    assert row["error"].startswith("ladder-unretryable: pre-T-3855 address")
+    assert "fw sidecar send --to ring20-manager --hub ring20-management" in row["error"]
+    assert cmid not in outbox.list_pending()
+
+
+def test_t3887_circuit_row_and_local_bare_row_are_still_posted(sidecar):
+    delivery, outbox = sidecar
+    remote = outbox.write_message(from_id="agentA", to=f"{REMOTE}/ring20-dashboard",
+                                  body="hi", conversation_id="c", hub="ring20-dashboard")
+    local = _store(outbox, hub=None, to="agentB")
+    sent, transport = _recording_transport()
+    assert delivery.deliver(remote, transport).delivered is True
+    assert delivery.deliver(local, transport).delivered is True
+    assert len(sent) == 2
 
 
 def _recording_transport():

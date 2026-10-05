@@ -1,13 +1,17 @@
 ---
 id: T-3887
-name: "fw sidecar send --hub that is REFUSED (e.g. 'version floor unestablished', T-2415 path) must store/post nothing: ring20 saw the refused message stored in its OWN hub's inbox for that name, where nobody reads it — verify on 1.8.2 (T-3855 changed send) and fix if it persists"
+name: "fw sidecar send --hub that is REFUSED (e.g. 'version floor unestablished',
+  T-2415 path) must store/post nothing: ring20 saw the refused message stored in its
+  OWN hub's inbox for that name, where nobody reads it — verify on 1.8.2 (T-3855 changed
+  send) and fix if it persists"
 description: >
-  ring20-manager msg 92720ad9 (2026-10-05, v1.8.0 -> v1.8.2; their review docs/reports/T-2241-v182-post-upgrade-review.md). Finding 5, observed on 1.8.0.
+  ring20-manager msg 92720ad9 (2026-10-05, v1.8.0 -> v1.8.2; their review docs/reports/T-2241-v182-post-upgrade-review.md).
+  Finding 5, observed on 1.8.0.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, sidecar, ring20-report]
 components: []
 related_tasks: []
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T14:50:26Z
-last_update: 2026-10-05T14:50:26Z
-date_finished: null
+last_update: 2026-10-05T16:44:02Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +54,53 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-05T15:00:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-05T15:01:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3887: fw sidecar send --hub that is REFUSED (e.g. 'version floor unestablished', T-2415 path) must store/post nothing: ring20 saw the refused message stored in its OWN hub's inbox for that name, where nobody reads it — verify on 1.8.2 (T-3855 changed send) and fix if it persists
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Localised 2026-10-05.**
+- The refusal itself is by design. `delivery.deliver` records a probe-refused send (version floor) as STORED in OUR local outbox for the retry sweep, and posts nothing.
+- The defect is in the retry. A row written BEFORE T-3855 (1.8.0) carries a bare `to` (e.g. `ring20-manager`) plus a remote `hub`. `termlink_transport.topic_for` → `circuit.topic_for_name(bare)` resolves a bare name in the SENDER's namespace.
+- So every sweep retry of such a row posts it into the sender's own hub inbox, where nobody reads it. That is ring20-manager's observation, and it continues after upgrading to 1.8.2.
+- The T-3855 report noted these legacy rows ("87 outbound rows… need an operator drop or a resend") but left the sweep re-posting them.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Measured: how many rows in this repo's outbox are legacy (remote `hub` with a bare `to`), and how many are still pending
+- [ ] `delivery.deliver` never posts a row whose `hub` is remote while its `to` has no circuit (`/`). It records it UNDELIVERABLE (terminal, flag consumed) with the reason "pre-T-3855 address in the sender's namespace — resend with fw sidecar send --to <name> --hub <hub>". No transport call.
+- [ ] Rows with a full circuit, and local rows with a bare `to`, are unaffected
+- [ ] Unit tests: a legacy row is not posted and is recorded UNDELIVERABLE; a circuit row is posted; a local bare row is posted. Existing delivery/sweep suites stay green; vendored copy in sync.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -320,3 +357,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3887-fw-sidecar-send---hub-that-is-refused-eg.md
 - **Context:** Initial task creation
+
+### 2026-10-05T16:44:02Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

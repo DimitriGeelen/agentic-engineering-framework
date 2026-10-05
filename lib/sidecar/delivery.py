@@ -126,6 +126,18 @@ def deliver(client_msg_id: str, transport, probe=always_ok_probe, *,
                           error=error, attempts=attempts,
                           next_retry_at=next_retry_at, rung=rung)
 
+    # T-3887: a row written before T-3855 carries a bare `to` with a REMOTE hub.
+    # topic_for resolves a bare name in OUR namespace, so every retry posted it
+    # into the sender's own hub inbox, where nobody reads it (ring20-manager,
+    # after its 1.8.0 refusal). Never post it: dead-letter it (the audit rail
+    # counts ladder-unretryable) with the resend command.
+    if hub and "/" not in str(target or ""):
+        reason = (f"ladder-unretryable: pre-T-3855 address {target!r} would land in the "
+                  f"sender's own namespace — resend: fw sidecar send --to {target} --hub {hub}")
+        _record(outbox.UNKNOWN, reason)
+        _consume_flag(client_msg_id)
+        return DeliveryResult(client_msg_id, outbox.UNKNOWN, False, reason)
+
     verdict = probe(hub)
     if not verdict.ok:
         reason = f"hub-refused: {verdict.reason}"
