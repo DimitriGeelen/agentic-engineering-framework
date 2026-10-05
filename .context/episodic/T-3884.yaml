@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3884: After an upgrade that rewrites .claude/settings.json, fw doctor reports 'Enforcement baseline CHANGED' while upgrade step 10 says 'baseline exists' — upgrade should refresh (or report) the enforcement baseline it invalidated
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T16:29:46Z
+# ============================================================================
+
+task_id: T-3884
+task_name: "After an upgrade that rewrites .claude/settings.json, fw doctor reports 'Enforcement baseline CHANGED' while upgrade step 10 says 'baseline exists' — upgrade should refresh (or report) the enforcement baseline it invalidated"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T14:48:18Z
+completed: 2026-10-05T16:29:25Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-05T18:29:01+02:00
+last_commit: 2026-10-05T18:29:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  upgrade step 10 refreshes the enforcement baseline the upgrade itself invalidated — and refuses to launder a drift that predates the upgrade. ACs, verification, RCA
+
+# Key outcomes
+outcomes:
+  - 'The upgrade records, before any step touches settings.json, whether the baseline matched (`fw enforcement status` or the same hash).'
+  - 'Step 10:'
+  - 'Dry run reports WOULD REFRESH and writes nothing.'
+  - 'Regression test drives the step-10 decision for all four states, including the refusal to launder a pre-upgrade drift. Existing upgrade suites stay green (fresh-machine simulation, t2912); vendored copy in sync.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.fabric/components/tests-unit-t3884_upgrade_enforcement_baseline.yaml'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-3884-after-an-upgrade-that-rewrites-claudeset.md'
+  - 'tests/unit/t3884_upgrade_enforcement_baseline.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T18:29:01'
+    action: 'T-3884: upgrade step 10 refreshes the enforcement baseline the upgrade itself invalidated — and refuses to launder a drift that predates the upgrade'
+  - time: '2026-10-05T18:29:23'
+    action: 'T-3884: ACs, verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 101 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, upgrade, doctor, ring20-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 101
+  commits: 2
+  files_changed: 5
+  lines_added: 283
+  lines_removed: 50
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3884-after-an-upgrade-that-rewrites-claudeset.md
+generated_by: context-agent-hybrid
