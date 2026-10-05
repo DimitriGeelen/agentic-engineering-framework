@@ -241,7 +241,18 @@ do_init() {
             echo -e "  ${YELLOW}RECOVER${NC}  .agentic-framework/ exists but has no FRAMEWORK.md — re-vendoring over the partial copy"
         fi
         echo -e "${BOLD}Vendoring framework into project...${NC}"
-        do_vendor --target "$target_dir"
+        # T-3850 refuses a vendor that would delete files it did not write. With
+        # the marker present, everything under .agentic-framework/ came from the
+        # interrupted copy (the marker is written before vendoring and removed
+        # only on success) — including a killed copy's temp files, which the
+        # check reads as consumer locals. So that one case proceeds; the debris
+        # is still backed up and the bypass logged. Without the marker (no
+        # FRAMEWORK.md only) a consumer could own files there: keep the refusal.
+        local -a _vendor_args=(--target "$target_dir")
+        if [ "$_resuming_partial_init" = true ] && [ -d "$target_dir/.agentic-framework" ]; then
+            _vendor_args+=(--allow-delete-locals)
+        fi
+        do_vendor "${_vendor_args[@]}"
         echo ""
     else
         echo -e "  ${YELLOW}SKIP${NC}  .agentic-framework/ already exists (use --force to re-vendor)"
