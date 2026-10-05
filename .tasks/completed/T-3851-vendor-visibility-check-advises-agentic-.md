@@ -12,12 +12,12 @@ description: >
   Also 3.1: when upstream_repo is far behind, the downgrade refusal should name the
   canonical release source.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/vendor-visibility.sh, tests/unit/vendor_visibility.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T07:10:47Z
-last_update: 2026-10-05T08:17:12Z
-date_finished:
+last_update: 2026-10-05T08:21:48Z
+date_finished: 2026-10-05T08:21:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -103,11 +103,11 @@ is split out to T-3865.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] do_vendor's visibility manifest is built from the vendor's own copy list (source files under the includes that landed in dest), not from whatever is on disk under dest — a consumer-local file kept by `.fwvendor-preserve.yaml` (T-3850) is never judged.
-- [ ] Without a manifest, a target file is judged only if it is under the vendor's copy list; existing in the source checkout is not enough (`.context/*` other than `.context/designer/projects/`, `.tasks/*` other than `.tasks/templates/`, `.fabric/`, `.pytest_cache/` are never judged).
-- [ ] `.context/sidecar/`, `.context/scans/`, `.context/audits/` and `.context/project/` are named runtime exclusions alongside `.context/working/` and `.context/secrets/`.
-- [ ] The advice never prints a re-include of `.agentic-framework/.context` or of any parent of `.context/working/`; a hidden `.context/designer/projects/` gets a warning that names the hazard instead.
-- [ ] `tests/unit/vendor_visibility.bats` covers all of the above with fixtures and stays green, as do `t3850_vendor_preserve_locals.bats` and `fw_vendor_completeness.bats`.
+- [x] do_vendor's visibility manifest is built from the vendor's own copy list (source files under the includes that landed in dest), not from whatever is on disk under dest — a consumer-local file kept by `.fwvendor-preserve.yaml` (T-3850) is never judged.
+- [x] Without a manifest, a target file is judged only if it is under the vendor's copy list; existing in the source checkout is not enough (`.context/*` other than `.context/designer/projects/`, `.tasks/*` other than `.tasks/templates/`, `.fabric/`, `.pytest_cache/` are never judged).
+- [x] `.context/sidecar/`, `.context/scans/`, `.context/audits/` and `.context/project/` are named runtime exclusions alongside `.context/working/` and `.context/secrets/`.
+- [x] The advice never prints a re-include of `.agentic-framework/.context` or of any parent of `.context/working/`; a hidden `.context/designer/projects/` gets a warning that names the hazard instead.
+- [x] `tests/unit/vendor_visibility.bats` covers all of the above with fixtures and stays green, as do `t3850_vendor_preserve_locals.bats` and `fw_vendor_completeness.bats`.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -267,8 +267,36 @@ is split out to T-3865.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n bin/fw && bash -n lib/vendor-visibility.sh
+timeout 300 bats tests/unit/vendor_visibility.bats > /tmp/.t3851-v1.out 2>&1 && ! grep -q "^not ok" /tmp/.t3851-v1.out
+test "$(grep -c '# skip' /tmp/.t3851-v1.out)" -eq 0
+timeout 300 bats tests/unit/t3850_vendor_preserve_locals.bats > /tmp/.t3851-v2.out 2>&1 && ! grep -q "^not ok" /tmp/.t3851-v2.out
+timeout 300 bats tests/unit/fw_vendor_completeness.bats > /tmp/.t3851-v3.out 2>&1 && ! grep -q "^not ok" /tmp/.t3851-v3.out
+grep -q "context/sidecar/\*" lib/vendor-visibility.sh && grep -q 'top == ".context"' lib/vendor-visibility.sh
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** run from a full framework clone, `fw vendor`'s visibility check counted
+`.agentic-framework/.context/*` runtime files in the target (sidecar hub-id, scans, audits,
+project) as vendored and advised `!.agentic-framework/.context` — which would have re-included
+`.context/working/.fw-secret-key`.
+
+**Root cause:** two proxies for "the vendor wrote this". The no-manifest branch accepted
+"the same relative path exists in the source", which is true of everything a full clone's
+own runtime `.context/` holds; its exclusion list named only `working/` and `secrets/`.
+The advice printed one `!<root>/<top>` per top-level directory with no notion that
+`.context` is the parent of a secret-bearing directory. And since T-3850, do_vendor's
+manifest was "whatever is on disk under each include", which now includes preserved locals.
+
+**Why structurally allowed:** T-3677 patched the specific `.context/working` path rather than
+the class (runtime state under the vendored root), and the advice generator was never tested
+against "apply the advice, is the secret still ignored?".
+
+**Prevention:** one predicate (`_fw_vendor_runtime_path`) applied in both branches; the
+manifest is built from the vendor's copy list; the advice cannot emit `.context`; and
+`vendor_visibility.bats` now applies every printed `!` line to a fixture and asserts
+`.fw-secret-key` stays ignored.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -367,3 +395,15 @@ is split out to T-3865.
 
 ### 2026-10-05T08:17:12Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-507d5a2b
+- **Timestamp:** 2026-10-05T08:22:07Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-05T08:21:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

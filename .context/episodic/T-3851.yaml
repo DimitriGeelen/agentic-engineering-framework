@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3851: Vendor visibility check advises '!.agentic-framework/.context' when run from a full framework clone: it counts a target file as vendored when the same relative path exists in the SOURCE repo (whose .context holds decisions/learnings/audits/sidecar hub-id); following the advice would un-ignore .context/working/.fw-secret-key (T-3677 hazard) — count only the vendor's include list, never advise un-ignoring .agentic-framework/.context wholesale
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T08:22:22Z
+# ============================================================================
+
+task_id: T-3851
+task_name: "Vendor visibility check advises '!.agentic-framework/.context' when run from a full framework clone: it counts a target file as vendored when the same relative path exists in the SOURCE repo (whose .context holds decisions/learnings/audits/sidecar hub-id); following the advice would un-ignore .context/working/.fw-secret-key (T-3677 hazard) — count only the vendor's include list, never advise un-ignoring .agentic-framework/.context wholesale"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T07:10:47Z
+completed: 2026-10-05T08:21:48Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-05T10:21:03+02:00
+last_commit: 2026-10-05T10:21:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  vendor visibility judges only the vendor's copy list; never advises re-including .agentic-framework/.context. vendor-sync bin/fw and lib/vendor-visibility.sh
+
+# Key outcomes
+outcomes:
+  - 'do_vendor''s visibility manifest is built from the vendor''s own copy list (source files under the includes that landed in dest), not from whatever is on disk under dest — a consumer-local file kept by `.fwvendor-preserve.yaml` (T-3850) is never judged.'
+  - 'Without a manifest, a target file is judged only if it is under the vendor''s copy list; existing in the source checkout is not enough (`.context/*` other than `.context/designer/projects/`, `.tasks/*` other than `.tasks/templates/`, `.fabric/`, `.pytest_cache/` are never judged).'
+  - '`.context/sidecar/`, `.context/scans/`, `.context/audits/` and `.context/project/` are named runtime exclusions alongside `.context/working/` and `.context/secrets/`.'
+  - 'The advice never prints a re-include of `.agentic-framework/.context` or of any parent of `.context/working/`; a hidden `.context/designer/projects/` gets a warning that names the hazard instead.'
+  - '`tests/unit/vendor_visibility.bats` covers all of the above with fixtures and stays green, as do `t3850_vendor_preserve_locals.bats` and `fw_vendor_completeness.bats`.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/vendor-visibility.sh'
+  - 'bin/fw'
+  - 'lib/vendor-visibility.sh'
+  - '.tasks/active/T-3851-vendor-visibility-check-advises-agentic-.md'
+  - 'tests/unit/t3850_vendor_preserve_locals.bats'
+  - 'tests/unit/vendor_visibility.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T10:21:03'
+    action: 'T-3851: vendor visibility judges only the vendor''s copy list; never advises re-including .agentic-framework/.context'
+  - time: '2026-10-05T10:21:22'
+    action: 'T-3851: vendor-sync bin/fw and lib/vendor-visibility.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 71 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 71
+  commits: 2
+  files_changed: 7
+  lines_added: 519
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3851-vendor-visibility-check-advises-agentic-.md
+generated_by: context-agent-hybrid
