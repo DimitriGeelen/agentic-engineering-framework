@@ -1,8 +1,15 @@
 ---
 id: T-3878
-name: "runme wake-link dies with the session that armed it: 'fw runme watch' runs as a background task of the agent session, so an exit/restart between handing over runme.sh and the operator running it leaves nothing listening — at session start, find handed-over runmes with no RUNME EXIT in run.log, re-arm the watch and announce it in the session-start check"
+name: "runme wake-link dies with the session that armed it: 'fw runme watch' runs
+  as a background task of the agent session, so an exit/restart between handing over
+  runme.sh and the operator running it leaves nothing listening — at session start,
+  find handed-over runmes with no RUNME EXIT in run.log, re-arm the watch and announce
+  it in the session-start check"
 description: >
-  832 msg 3f3af9e3 (2026-10-05, their T-1050): their 1.8.2 upgrade run started unobserved. Same here: background waits from the pre-reboot session ended 'stopped' with no record (b304i7hcr). Generalisation (832): any wake-on-event link an agent arms should be re-derivable from durable state at session start.
+  832 msg 3f3af9e3 (2026-10-05, their T-1050): their 1.8.2 upgrade run started unobserved.
+  Same here: background waits from the pre-reboot session ended 'stopped' with no
+  record (b304i7hcr). Generalisation (832): any wake-on-event link an agent arms should
+  be re-derivable from durable state at session start.
 
 status: captured
 workflow_type: build
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T13:29:40Z
-last_update: 2026-10-05T13:29:40Z
-date_finished: null
+last_update: '2026-10-05T13:45:45Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,13 +57,52 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-05T13:45:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-05T13:45:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3878: runme wake-link dies with the session that armed it: 'fw runme watch' runs as a background task of the agent session, so an exit/restart between handing over runme.sh and the operator running it leaves nothing listening — at session start, find handed-over runmes with no RUNME EXIT in run.log, re-arm the watch and announce it in the session-start check
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Reference design: 832's T-1050** (msg 5c9c7141, 2026-10-05; peer data; files in 832: `tools/runme-watch.sh`, `tools/session-start-alerts.py`, `tests/test_t1050_runme_alerts.py`; 9 offline legs).
+
+1. The watcher writes `.context/working/runme.watch` recording its own pid, the ARMING claude pid (parent chain walked to comm=claude) and the time.
+   - The file is removed when the watcher reports an event (the agent re-arms).
+   - It is KEPT on timeout or kill.
+2. The session-start check prints "Runme / live agents" BEFORE the mail check, so a failing hub cannot hide it:
+   - **WATCH LOST**: the record's claude pid is not this session's (gone, or a different live session). It prints the re-arm command.
+   - **RUN IN FLIGHT** / **RUN ENDED WITHOUT RECORD**: the last `started` has no done/STOPPED. The two are split on whether a runme.sh is still running, since a reboot or kill leaves no trap record.
+   - **OTHER LIVE CLAUDE**: fallback until T-3890 (now done).
+3. Key design point: the arming SESSION's identity matters, not whether the watcher process lives. An orphaned watcher wakes nobody.
+
+For AEF this belongs in `fw runme watch`, plus a section in `fw sidecar alerts` (T-3856) or a sibling session-start verb.
 
 ## Acceptance Criteria
 
