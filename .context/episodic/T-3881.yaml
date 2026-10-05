@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3881: Every consumer fw upgrade ends '1 step(s) failed': step [5/10] expects hooks PreToolUse:check-paid-backend, PreToolUse:check-worktree-governance-write and Stop:stop-driver.sh, but lib/init.sh generate_claude_code_config's template never writes them (the framework repo's own .claude/settings.json has them) — add them to the template (or drop from the expected list, with reason)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T14:25:30Z
+# ============================================================================
+
+task_id: T-3881
+task_name: "Every consumer fw upgrade ends '1 step(s) failed': step [5/10] expects hooks PreToolUse:check-paid-backend, PreToolUse:check-worktree-governance-write and Stop:stop-driver.sh, but lib/init.sh generate_claude_code_config's template never writes them (the framework repo's own .claude/settings.json has them) — add them to the template (or drop from the expected list, with reason)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T14:09:51Z
+completed: 2026-10-05T14:25:04Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-05T16:10:45+02:00
+last_commit: 2026-10-05T16:25:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file consumer-upgrade hook-template defect; T-3873 to horizon now (TermLink T-3345 live). consumer template writes the 3 hooks every upgrade reported missing; agents/context/X.sh and 'fw hook X' compare as one hook. verification, RCA
+
+# Key outcomes
+outcomes:
+  - 'Measured gap: the full set of (event, hook) pairs in our settings.json that the template lacks is listed in this task, not just the 3 reported. Measured: framework 32, template 29. The missing pairs are exactly PreToolUse:check-paid-backend, PreToolUse:check-worktree-governance-write and Stop:stop-driver.sh; the template has nothing extra.'
+  - 'The template writes every missing hook, in the `$fw_prefix hook <name>` form, with the same matcher and timeout. Names compare equal.'
+  - 'Parity test: the template generated into a temp consumer contains every (event, hook) pair of our settings.json. No allowlist was needed. It fails on the pre-fix template (3/4 red).'
+  - 'Existing init/upgrade hook tests stay green (lib_init, t2912, settings_regenerate_preserves_hooks); vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/hook_parity.py'
+  - '.agentic-framework/lib/init.sh'
+  - '.fabric/components/tests-unit-t3881_template_hook_parity.yaml'
+  - 'lib/hook_parity.py'
+  - 'lib/init.sh'
+  - '.tasks/active/T-3873-sidecar-read-the-recipient-hub-id-from-t.md'
+  - '.tasks/active/T-3881-every-consumer-fw-upgrade-ends-1-steps-f.md'
+  - 'tests/unit/t3881_template_hook_parity.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T16:10:45'
+    action: 'T-3881: file consumer-upgrade hook-template defect; T-3873 to horizon now (TermLink T-3345 live)'
+  - time: '2026-10-05T16:19:39'
+    action: 'T-3881: consumer template writes the 3 hooks every upgrade reported missing; agents/context/X.sh and ''fw hook X'' compare as one hook'
+  - time: '2026-10-05T16:25:03'
+    action: 'T-3881: verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 15 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, upgrade, consumer, hooks, ring20-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 15
+  commits: 3
+  files_changed: 8
+  lines_added: 517
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3881-every-consumer-fw-upgrade-ends-1-steps-f.md
+generated_by: context-agent-hybrid
