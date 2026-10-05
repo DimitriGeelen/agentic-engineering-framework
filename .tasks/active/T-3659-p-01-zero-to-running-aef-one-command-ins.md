@@ -16,7 +16,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-01T15:01:12Z
-last_update: '2026-10-01T15:15:19Z'
+last_update: 2026-10-05T19:41:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -69,23 +69,23 @@ cost_estimate_proposed:
 
 - **IW-1: Skip onboarding for everyone, or offer "guided vs quickstart" at install?** Recommendation: both, with quickstart as the default, but only together with IW-3, so the governance gates are met rather than skipped.
   confidence: 2
-  disposition:
-  rationale:
+  disposition: answered
+  rationale: Offer both; quickstart is the default, and it ships only with IW-3's goal+first-task step, so the onboarding gates are satisfied rather than skipped. The operator's GO on this inception adopts it.
 
 - **IW-2: WSL distros often default to root: accept it, or have install.ps1 create a normal user?** Recommendation: create a normal user (root amplified the T-2787/T-3610 leaks and hides permission bugs).
   confidence: 2
-  disposition:
-  rationale:
+  disposition: answered
+  rationale: install.ps1 creates a normal user, because running as root amplified the T-2787/T-3610 leaks and hides permission bugs (P-01 report, WSL findings). The operator's GO adopts it.
 
 - **IW-3: Should the installer ask for the project goal and create the first task with ACs?** Recommendation: yes. Write objectives.yaml (T-3535/T-3636) and the first task via `fw work-on --ac` (T-3664).
   confidence: 2
-  disposition:
-  rationale:
+  disposition: answered
+  rationale: Yes. The installer asks for the goal, writes objectives.yaml (T-3535/T-3636) and creates the first task with ACs via fw work-on --ac (T-3664), so a quickstart project starts governed. The operator's GO adopts it.
 
 - **IW-4: Where does the kit live: the framework repo under install/, or a separate quickstart repo?** Recommendation: the framework repo under install/, versioned and released with the framework (a separate repo drifts, as 055's stale vendored copy shows).
   confidence: 3
-  disposition:
-  rationale:
+  disposition: answered
+  rationale: The framework repo under install/, versioned and released with the framework. A separate repo drifts, as 055's stale vendored copy (1.7.825 while AEF shipped 1.8.x) shows.
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
@@ -169,11 +169,26 @@ cost_estimate_proposed:
 
 Instrumented evidence on one Windows 10 machine (framework 1.7.0 @29f3b02): documented native Git Bash route 15m51s and blocked (Watchtower cannot start, doctor exit 1); WSL by hand 1m49s with ~10 manual fixes; P-01 Install-AEF.ps1 127s with 0 manual fixes, two projects side by side on :3000/:3001. 57 findings, each mapped to a P-01 workaround. GO on the landing shape (installer quickstart mode + install.ps1 + framework fixes that retire workarounds); the four open questions are design choices with recommendations in the artifact, not evidence gaps.
 
-**Evidence:**
+**What your GO adopts:**
+- IW-1: the installer offers guided and quickstart, with quickstart as the default, and only together with IW-3.
+- IW-2: install.ps1 creates a normal (non-root) user.
+- IW-3: the installer asks for the project goal and creates the first task with acceptance criteria.
+- IW-4: the kit lives in the framework repo under `install/`, released with the framework.
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+Each is recorded as an answered disposition above. A NO-GO rejects the installer route, and the seven defect tasks below stand on their own either way.
+
+**Evidence:**
+- Research artifact: `docs/reports/T-3659-p01-zero-to-running.md`. The source is the external proposal "P-01 — Zero-to-running AEF" (2026-09-29, unratified), pasted by the operator on 2026-10-01.
+- Measured on Windows 10, framework 1.7.0:
+  - native Git Bash: 15m51s, blocked;
+  - WSL by hand: 1m49s with ~10 fixes;
+  - P-01 Install-AEF.ps1: 127s with 0 fixes.
+- 57 findings. The defects are filed independently of this decision: T-3660, T-3661, T-3662, T-3663, T-3664, T-3665 (CRLF silently disables the secret scan) and T-3666.
+- State on 2026-10-05:
+  - shipped: T-3660 (watchtower detach), T-3661 (status exit codes) and T-3665 (CRLF secret scan);
+  - T-3662 (per-project port) is done and awaiting review;
+  - T-3663, T-3664 and T-3666 are still open.
+- Today's T-3876/T-3877 (one port rule, Watchtower ensured at session start) also narrow the gap P-01 works around.
 
 ## Decisions
 
