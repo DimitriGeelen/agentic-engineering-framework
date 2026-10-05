@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3905: sidecar: a send the hub REFUSED on credentials is stored as retryable and later delivered by the watcher under another credential (ring20 s6 step 6: wrong-secret negative 17d2856f arrived at B) — a credential refusal must be final: terminal, never retried, resend after fixing the credential
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T21:57:50Z
+# ============================================================================
+
+task_id: T-3905
+task_name: "sidecar: a send the hub REFUSED on credentials is stored as retryable and later delivered by the watcher under another credential (ring20 s6 step 6: wrong-secret negative 17d2856f arrived at B) — a credential refusal must be final: terminal, never retried, resend after fixing the credential"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T21:50:59Z
+completed: 2026-10-05T21:57:29Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-05T23:57:28+02:00
+last_commit: 2026-10-05T23:57:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  a send the hub refused on credentials is final — terminal, flag consumed, never re-posted by the sweep (ring20 s6 step 6: a wrong-secret message was delivered by the watcher holding the right secret); G-109 registered
+
+# Key outcomes
+outcomes:
+  - '`ProbeResult` carries `credential_refused`. `_authenticated_floor` sets it in two cases:'
+  - '`delivery.deliver` handles a credential refusal as follows:'
+  - '`fw sidecar send` exits non-zero on it (already true for any non-delivery; pinned by a test).'
+  - 'Tests:'
+  - 'G-109 registered in concerns.yaml.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/delivery.py'
+  - '.agentic-framework/lib/sidecar/termlink_transport.py'
+  - '.context/project/concerns.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_credential_refused_t3905.yaml'
+  - 'lib/sidecar/delivery.py'
+  - 'lib/sidecar/termlink_transport.py'
+  - '.tasks/active/T-3905-sidecar-a-send-the-hub-refused-on-creden.md'
+  - 'tests/unit/test_sidecar_credential_refused_t3905.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T23:57:28'
+    action: 'T-3905: a send the hub refused on credentials is final — terminal, flag consumed, never re-posted by the sweep (ring20 s6 step 6: a wrong-secret message was delivered by the watcher holding the right secret); G-109 registered'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 6 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6
+  commits: 1
+  files_changed: 8
+  lines_added: 647
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3905-sidecar-a-send-the-hub-refused-on-creden.md
+generated_by: context-agent-hybrid

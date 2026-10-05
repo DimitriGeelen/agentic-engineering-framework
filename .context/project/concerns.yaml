@@ -5351,7 +5351,7 @@ concerns:
     probe refusal as STORED (retryable) whatever the reason; the outbox is per project while the credential
     is per HOME/profile, so the retry is not the same principal as the send.'
   severity: high
-  status: open
+  status: mitigated
   detected_in: T-3905
   observed: '2026-10-05'
   reported_by: ring20-dashboard (msg b84d82e2) and ring20-manager (msg bf0c29de), s6 joint test
@@ -5359,8 +5359,10 @@ concerns:
     message delivered by whoever next runs the project's watcher
   detection_gap: No test sent with a refused credential and then ran the sweep; the negative test the spec
     named ("wrong secret must not arrive") existed only in the peer's joint-test plan.
-  what_remains: Fix is T-3905 (credential refusal is terminal, never retried). Exit code on 1.8.2 reported 0;
-    current CLI returns 1 — confirm with the peer on upgrade.
+  what_remains: 'Fixed on bleeding-edge by T-3905 (credential refusal terminal, flag consumed, sweep never re-posts;
+    8 tests incl. a sweep run with a working credential). Mitigated, not resolved: not yet released, and the live
+    negative (ring20 s6 step 6) has not been re-run against the fix. Exit code on 1.8.2 reported 0; current CLI
+    returns 1 — confirm on the re-run.'
   related_tasks:
   - T-3905
   - T-3855
