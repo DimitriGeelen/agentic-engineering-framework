@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3900: sidecar injector: several live sessions share one fw-project tag and the pick is silent — name every candidate and the chosen one in the ledger, WARN in fw sidecar status (ring20-dashboard t2459 s6)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T21:49:08Z
+# ============================================================================
+
+task_id: T-3900
+task_name: "sidecar injector: several live sessions share one fw-project tag and the pick is silent — name every candidate and the chosen one in the ledger, WARN in fw sidecar status (ring20-dashboard t2459 s6)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T21:07:37Z
+completed: 2026-10-05T21:48:32Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-05T23:48:30+02:00
+last_commit: 2026-10-05T23:48:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  several sessions on one project tag are named, not silently resolved — the injector's reason lists every session, its state and the pick; fw sidecar status WARNs; T-3745's newest-ready rule unchanged
+
+# Key outcomes
+outcomes:
+  - 'When more than one registered session for the project is a candidate, the `choose_target` reason (written to the receiver ledger) names every candidate and says which was picked and why. The single-session reason is unchanged.'
+  - '`injectable.json` records the candidates alongside the tagged ids.'
+  - '`fw sidecar status` prints a WARN line when more than one TermLink session is registered for the project. The line names them and says how to end a stale one.'
+  - 'The T-3745 behaviour is unchanged: the newest ready session wins, and a busy sibling never receives an injection. Existing inject tests stay green.'
+  - 'New tests:'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/inject.py'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/inject.py'
+  - '.tasks/active/T-3900-sidecar-injector-two-live-ready-sessions.md'
+  - 'tests/unit/test_sidecar_receiver_t3693.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T23:48:30'
+    action: 'T-3900: several sessions on one project tag are named, not silently resolved — the injector''s reason lists every session, its state and the pick; fw sidecar status WARNs; T-3745''s newest-ready rule unchanged'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 40 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 40
+  commits: 1
+  files_changed: 6
+  lines_added: 219
+  lines_removed: 25
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3900-sidecar-injector-two-live-ready-sessions.md
+generated_by: context-agent-hybrid

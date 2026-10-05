@@ -13,12 +13,12 @@ description: >
   operator's call) to FLAG: the ledger reason names every candidate and which was
   picked, and fw sidecar status WARNs when more than one session is registered.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/task-create/create-task.sh, lib/inception.sh, lib/sidecar_cli.py, lib/sidecar/inject.py, lib/task_origin.py, tests/unit/t3897_create_task_origin.bats, tests/web/test_t3897_task_origin.py, web/blueprints/approvals.py, web/templates/_approvals_content.html, web/templates/_origin_badge.html]
 related_tasks: []
 origin: {kind: "peer", source: "ring20-dashboard", ref: "msg 60bda462 (t2459-s6-joint-test)"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -48,8 +48,8 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "msg 60bda462 (t2459-s6-
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T21:07:37Z
-last_update: 2026-10-05T21:48:30Z
-date_finished:
+last_update: 2026-10-05T21:48:32Z
+date_finished: 2026-10-05T21:48:32Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -389,3 +389,15 @@ The stale one was the only READY candidate, so a wake would be typed where no on
 
 ### 2026-10-05T21:43:24Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9f16e42e
+- **Timestamp:** 2026-10-05T21:48:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-05T21:48:32Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
