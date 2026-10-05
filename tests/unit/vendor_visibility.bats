@@ -201,3 +201,48 @@ _stale_allowlist() {
     echo "$output" | grep -q 'pinned designer build (T-3064): .agentic-framework/vendor/designer/aef-workflow-designer-0.14.0.html'
     echo "$output" | grep -q 'lib/ts/dist/\*.js: 2 compiled file(s) invisible'
 }
+
+# ── T-3851 (ring20 T-2226 finding 2): runtime .context never judged, never advised ──
+
+@test "T-3851: runtime .context dirs that exist in a full-clone source are foreign, not vendored" {
+    printf '%s\n' '.agentic-framework/*' '!.agentic-framework/bin' '!.agentic-framework/tools' > "$C/.gitignore"
+    S="$BATS_TEST_TMPDIR/src"; mkdir -p "$S/tools" "$S/bin"
+    echo 'print(1)' > "$S/tools/corpus_explain.py"; echo 'echo hi' > "$S/bin/fw"
+    local d
+    for d in sidecar scans audits project working; do
+        mkdir -p "$S/.context/$d" "$C/.agentic-framework/.context/$d"
+        echo x > "$S/.context/$d/f"; echo x > "$C/.agentic-framework/.context/$d/f"
+    done
+    run fw_vendor_check_visibility "$C/.agentic-framework" "$C" "$S"
+    [ "$status" -eq 0 ] || { echo "$output"; false; }
+    for d in sidecar scans audits project; do
+        echo "$output" | grep -q ".context/$d/f"
+    done
+    if echo "$output" | grep -q '!.agentic-framework/.context'; then echo "$output"; false; fi
+}
+
+@test "T-3851: a manifest entry under runtime .context is not judged" {
+    printf '%s\n' '.agentic-framework/.context/' > "$C/.gitignore"
+    mkdir -p "$C/.agentic-framework/.context/sidecar"
+    echo x > "$C/.agentic-framework/.context/sidecar/hub-id"
+    M="$BATS_TEST_TMPDIR/manifest"
+    printf '%s\n' bin/fw .context/sidecar/hub-id > "$M"
+    run fw_vendor_check_visibility "$C/.agentic-framework" "$C" "" "$M"
+    [ "$status" -eq 0 ] || { echo "$output"; false; }
+}
+
+@test "T-3851: hidden designer maps get a hazard warning, never a re-include of .context" {
+    printf '%s\n' '.agentic-framework/*' '!.agentic-framework/bin' '!.agentic-framework/tools' > "$C/.gitignore"
+    mkdir -p "$C/.agentic-framework/.context/designer/projects" "$C/.agentic-framework/.context/working"
+    echo '{}' > "$C/.agentic-framework/.context/designer/projects/aef-x.json"
+    echo secret > "$C/.agentic-framework/.context/working/.fw-secret-key"
+    M="$BATS_TEST_TMPDIR/manifest"
+    printf '%s\n' bin/fw tools/corpus_explain.py .context/designer/projects/aef-x.json > "$M"
+    run fw_vendor_check_visibility "$C/.agentic-framework" "$C" "" "$M"
+    [ "$status" -eq 1 ]
+    echo "$output" | grep -q 'Do NOT re-include .agentic-framework/.context as a whole'
+    if echo "$output" | grep -qE '^\s*!\.agentic-framework/\.context'; then echo "$output"; false; fi
+    # Applying every `!` line the advice prints leaves the secret ignored.
+    echo "$output" | grep -E '^\s*!\.agentic-framework/' | sed 's/^[[:space:]]*//' >> "$C/.gitignore"
+    git -C "$C" check-ignore -q .agentic-framework/.context/working/.fw-secret-key
+}

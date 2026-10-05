@@ -26,6 +26,26 @@
 # T-2674 — and a stale allowlist re-drops each of them the moment it ships.
 # That is the loop this check exists to break.
 
+# T-3851: paths under the vendored root that are NEVER the vendor's to judge.
+# Only two subtrees of .context/ and .tasks/ are in do_vendor's copy list
+# (.context/designer/projects, .tasks/templates); everything else there is
+# runtime state a pre-T-3671 framework wrote under FRAMEWORK_ROOT, or state a
+# full framework clone carries in its own checkout. ring20 T-2226 finding 2:
+# run from a full clone, `.context/sidecar/`, `scans/`, `audits/` and
+# `project/` all exist in the SOURCE, so "exists in the source" counted them
+# as vendored and the advice became `!.agentic-framework/.context` — which
+# re-includes `.context/working/.fw-secret-key` (the T-3677 hazard).
+# $1 is a path relative to the vendored root. Returns 0 = runtime, not judged.
+_fw_vendor_runtime_path() {
+    case "$1" in
+        .context/designer/projects/*|.tasks/templates/*) return 1 ;;
+        .context/working/*|.context/secrets/*|.context/sidecar/*|.context/scans/*|\
+        .context/audits/*|.context/project/*) return 0 ;;
+        .context/*|.tasks/*|.fabric/*|.git/*|.pytest_cache/*|*/.fw-secret-key|.fw-secret-key) return 0 ;;
+    esac
+    return 1
+}
+
 # Returns 0 = all visible (or target is not a git repo), 1 = some invisible,
 # 2 = refused (enumerated nothing — see below).
 #
@@ -67,7 +87,9 @@ fw_vendor_check_visibility() {
     if [ -n "$manifest" ] && [ -f "$manifest" ]; then
         # Judged set = the manifest (deduped, only files really on disk).
         while IFS= read -r f; do
-            [ -n "$f" ] && [ -f "$dest/$f" ] && files+=("$rel/$f")
+            [ -n "$f" ] && [ -f "$dest/$f" ] || continue
+            _fw_vendor_runtime_path "$f" && continue
+            files+=("$rel/$f")
         done < <(sort -u "$manifest")
         # Leftovers = on disk but not written by this run. Counted, not judged.
         while IFS= read -r f; do
@@ -79,10 +101,9 @@ fw_vendor_check_visibility() {
     else
     while IFS= read -r f; do
         [ -n "$f" ] || continue
-        case "$f" in
-            "$rel"/.pytest_cache/*|"$rel"/.context/working/*|"$rel"/.context/secrets/*|*/.fw-secret-key)
-                foreign+=("$f"); continue ;;
-        esac
+        if _fw_vendor_runtime_path "${f#"$rel"/}"; then
+            foreign+=("$f"); continue
+        fi
         if [ -n "$source" ] && [ ! -e "$source/${f#"$rel"/}" ]; then
             foreign+=("$f"); continue
         fi
@@ -95,8 +116,9 @@ fw_vendor_check_visibility() {
 
     if [ "${#foreign[@]}" -gt 0 ]; then
         echo "" >&2
-        echo "NOTE: ${#foreign[@]} file(s) under $rel were NOT written by the vendor (runtime leftovers);" >&2
-        echo "  not judged for git visibility and never advised for un-ignoring. Move them out:" >&2
+        echo "NOTE: ${#foreign[@]} file(s) under $rel were NOT written by the vendor (runtime leftovers," >&2
+        echo "  or consumer-local files kept by .fwvendor-preserve.yaml — T-3850); not judged for git" >&2
+        echo "  visibility and never advised for un-ignoring. Runtime leftovers should move out:" >&2
         printf '    %s\n' "${foreign[@]:0:10}" >&2
         if [ "${#foreign[@]}" -gt 10 ]; then
             echo "    ... and $(( ${#foreign[@]} - 10 )) more" >&2
@@ -199,11 +221,23 @@ fw_vendor_check_visibility() {
 
     echo "" >&2
     echo "  Fix in the TARGET's .gitignore — re-include each path above:" >&2
+    # T-3851: never advise re-including .context — it is the parent of
+    # .context/working/ (.fw-secret-key, T-3677). Its vendored subtree gets a
+    # warning that names the hazard instead of a one-line `!` that hides it.
     printf '%s\n' "$ignored" | awk -F'\t' -v rel="$rel" '
         { path = $2; sub("^" rel "/", "", path)
           n = index(path, "/"); top = (n > 0) ? substr(path, 1, n - 1) : path
+          if (top == ".context") next
           if (!(top in seen)) { seen[top] = 1; printf "    !%s/%s\n", rel, top } }
     ' | sort >&2
+    if printf '%s\n' "$ignored_paths" | grep -q "^$rel/\.context/"; then
+        echo "" >&2
+        echo "  $rel/.context/designer/projects/ (the corpus maps tools/ reads) is hidden too." >&2
+        echo "  Do NOT re-include $rel/.context as a whole: it is the parent of" >&2
+        echo "  .context/working/, which holds .fw-secret-key (T-3677). Re-include only the" >&2
+        echo "  designer/projects subtree, and confirm afterwards that" >&2
+        echo "  'git check-ignore $rel/.context/working/x' still reports it ignored." >&2
+    fi
     echo "" >&2
     echo "  Override (logged Tier-2): FW_ALLOW_INVISIBLE_VENDOR=1" >&2
     echo "" >&2

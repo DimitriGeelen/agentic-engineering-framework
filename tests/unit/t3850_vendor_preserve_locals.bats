@@ -173,3 +173,14 @@ sys.exit(0 if v._mini_yaml(t) == yaml.safe_load(t) else 1)
 PY
     [ "$status" -eq 0 ]
 }
+
+@test "T-3851: a preserved local file is not judged by the visibility check" {
+    _manifest
+    # The consumer keeps its local blueprint out of git; that is its business,
+    # not a vendored file going missing from clones.
+    printf '%s\n' '.agentic-framework/web/blueprints/approvals.py' > "$PROJ/.gitignore"
+    run _vendor
+    [ "$status" -eq 0 ] || { echo "$output"; false; }
+    [ -f "$AF/web/blueprints/approvals.py" ]
+    ! echo "$output" | grep -q "invisible to git"
+}
