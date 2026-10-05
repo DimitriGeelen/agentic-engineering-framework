@@ -270,7 +270,7 @@ It names each one, and prints `NOT CHECKED: <reason>` instead of nothing when it
 python3 -m pytest tests/unit/test_sidecar_alerts_t3856.py tests/unit/test_sidecar_withheld_t3872.py tests/unit/test_sidecar_seen_ledger_t3840.py tests/unit/test_sidecar_inbox.py tests/unit/test_sidecar_unread_summary.py tests/unit/test_sidecar_peek_filter_t3792.py -q > /tmp/.t3856 2>&1 && grep -q passed /tmp/.t3856
 timeout 120 bats tests/unit/t3425_sidecar_read_allowlist.bats > /tmp/.t3856b 2>&1 && ! grep -q "^not ok" /tmp/.t3856b
 test "$(grep -c '# skip' /tmp/.t3856b)" -eq 0
-bin/fw sidecar alerts --help > /tmp/.t3856c 2>&1 && grep -q "NOT CHECKED" /tmp/.t3856c
+bash -c 'PATH=/usr/bin:/bin bin/fw sidecar alerts > /tmp/.t3856c 2>&1; rc=$?; [ "$rc" -eq 3 ] && grep -q "^NOT CHECKED: termlink binary not found" /tmp/.t3856c'
 bin/fw vendor self --check
 
 ## RCA
