@@ -1,0 +1,17 @@
+{# T-3897: where this decision came from. Peer requests, pickups and external
+   proposals are LOUD (amber) — T-3659 was an unratified external proposal that
+   read exactly like the operator's own request. "From you" and agent-initiated
+   stay quiet; "origin unknown" is dashed, never silently "you". An inferred
+   origin (no recorded `origin:` field) is dotted and says so. #}
+{% set _o = t.origin %}
+{% if _o %}
+{% set _loud = _o.kind in ('peer', 'pickup', 'proposal') %}
+<span class="origin-badge" data-origin="{{ _o.kind }}" data-inferred="{{ 'true' if _o.inferred else 'false' }}" data-testid="origin-badge"
+      style="display:inline-block; padding:0.15rem 0.5rem; border-radius:3px; font-size:0.65rem; font-weight:600; white-space:nowrap;
+      {% if _loud %}background:var(--wt-warn); color:#1a1a1a;
+      {% elif _o.kind == 'unknown' %}border:1px dashed var(--wt-muted); color:var(--wt-muted);
+      {% else %}border:1px solid var(--wt-muted); color:var(--wt-muted);
+      {% endif %}
+      {% if _o.inferred %}border-style:dotted; border-width:1px; border-color:currentColor;{% endif %}"
+      title="Origin: {{ _o.label }}{% if _o.ref %} — {{ _o.ref }}{% endif %}{% if _o.inferred %} — inferred from the task text; no origin: field recorded{% endif %}">{{ _o.label }}</span>
+{% endif %}

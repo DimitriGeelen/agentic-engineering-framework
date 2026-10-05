@@ -1,22 +1,25 @@
 ---
-id: T-3897
-name: "Tag every approval with its origin: an 'origin:' frontmatter field (operator
-  | agent | pickup:<project> | peer:<project> | proposal:<source>) set at filing (fw
-  work-on/inception start/task create, pickup and sidecar paths), shown as a badge
-  on /approvals and the review/inception pages, so the operator sees at a glance which
-  decisions come from a peer request or an external proposal"
+id: T-3899
+name: "sidecar send: bare --to with a remote --hub is posted to <hubid>/<name> without
+  checking that inbox exists — creates a topic nobody reads and reports delivered
+  (T-3855 regression, ring20-dashboard t2459 s6)"
 description: >
-  Operator 2026-10-05: 'I suggest that we clearly flag them or tag these approvals
-  as something that comes as a pickup request.' Today origin lives only in prose (T-3659:
-  pasted external proposal P-01; T-3752: 010/832; T-3501: cross-agent proposals).
+  addressing.resolve branch 2 (remote hub named, recipient not in peer directory)
+  returns f'{hub_id}/{name}' on no evidence; the send's --ensure-topic then CREATES
+  inbox:<hubid>/<name>. Measured by ring20-dashboard 2026-10-05 17:36Z: --to ring20-manager
+  --hub ring20-manager -> HUB_ACCEPTED to inbox:22c19fedafd73da2/ring20-manager, which
+  did not exist (project is proxmox-ring20-management). Fix: require topic_present
+  on that hub (True) before returning; False -> refuse naming the inbox:<hubid>/*
+  topics that do exist; None -> refuse (cannot verify).
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
-tags: [approvals, provenance, peer]
+tags: []
 components: []
 related_tasks: []
+origin: {kind: "peer", source: "ring20-dashboard", ref: "msg 711087b1 (t2459-s6-joint-test)"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -43,8 +46,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-05T19:01:43Z
-last_update: 2026-10-05T21:25:32Z
+created: 2026-10-05T21:06:56Z
+last_update: '2026-10-05T21:15:47Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -57,7 +60,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-05T19:15:21Z'
+  - ts: '2026-10-05T21:15:22Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -67,7 +70,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-05T19:15:46Z'
+  - ts: '2026-10-05T21:15:47Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -86,47 +89,20 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3897: Tag every approval with its origin: an 'origin:' frontmatter field (operator | agent | pickup:<project> | peer:<project> | proposal:<source>) set at filing (fw work-on/inception start/task create, pickup and sidecar paths), shown as a badge on /approvals and the review/inception pages, so the operator sees at a glance which decisions come from a peer request or an external proposal
+# T-3899: sidecar send: bare --to with a remote --hub is posted to <hubid>/<name> without checking that inbox exists — creates a topic nobody reads and reports delivered (T-3855 regression, ring20-dashboard t2459 s6)
 
 ## Context
 
-Prior art: Tier 0 cards already carry `origin: {kind}` (T-3078). A card without one is shown as "unknown", never as "agent". Tasks have no origin field, so a decision born from a peer request or an external proposal looks identical to the operator's own. T-3659 (the P-01 proposal) was the case.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] `fw task create`, `fw work-on` and `fw inception start` accept `--origin <kind>[:<source>[:<ref>]]`, with kind one of operator, agent, peer, pickup or proposal. The value is written to frontmatter as `origin: {kind, source, ref}`. An unknown kind is refused (exit 2).
-- [x] `lib/task_origin.py` returns a task's origin:
-  - the recorded one, when present;
-  - otherwise a CONSERVATIVE inference from name and description (a known peer project named together with a message id, "pickup", or "proposal"), marked `inferred: true`;
-  - otherwise `unknown`. Never a silent "agent".
-- [x] The /approvals inception cards and human-review cards show an origin badge; peer, pickup and proposal are visually distinct and inferred ones say "(inferred)".
-- [x] Tests:
-  - the flag writes the field;
-  - a bad kind is refused;
-  - recorded beats inferred, and inferred is labelled;
-  - no evidence gives unknown;
-  - the badge renders on a card.
-  Watchtower restarted; vendored copy in sync.
-- [x] The queued inceptions the operator is deciding now carry a RECORDED origin, not an inference:
-  - T-3659: proposal;
-  - T-3752: peer;
-  - T-3501: proposal;
-  - T-3670, T-3731 and T-3818: operator;
-  - T-2899: agent;
-  - T-3899, T-3900 and T-3901, filed today from peer mail: peer.
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
-- [ ] [REVIEW] The origin badge answers "is this mine?" at a glance on /approvals
-  **Steps:**
-  1. Open http://192.168.10.107:3000/approvals
-  2. In "Inception decisions", find T-3659 and T-3752. Each card starts with an amber badge: "external proposal: P-01 …" and "peer request: 010-termlink + 832-Workflow-designer".
-  3. Find T-3670. Its badge is quiet and grey, reading "from you".
-  4. Scroll to the human-review cards. Each one shows a badge too. Ones without a recorded origin read "origin unknown" (dashed). Inferred ones have a dotted border and end in "(inferred)".
-  **Expected:**
-  - A peer request or external proposal stands out from your own requests without reading the text.
-  - Nothing that is not yours says "from you".
-  **If not:** Name the card and what it says. A wrong recorded origin is a one-line fix on that task. A wrong inferred one means tightening the inference in `lib/task_origin.py`.
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -158,13 +134,6 @@ Prior art: Tier 0 cards already carry `origin: {kind}` (T-3078). A card without 
 -->
 
 ## Verification
-
-timeout 300 python3 -m pytest tests/web/test_t3897_task_origin.py -q > /tmp/.t3897py 2>&1 && grep -q passed /tmp/.t3897py
-timeout 300 bats tests/unit/t3897_create_task_origin.bats > /tmp/.t3897bats 2>&1 && ! grep -q "^not ok" /tmp/.t3897bats
-test "$(grep -c '# skip' /tmp/.t3897bats)" -eq 0
-bash -n agents/task-create/create-task.sh
-bin/fw vendor self --check
-bin/fw watchtower current
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -384,10 +353,7 @@ bin/fw watchtower current
 
 ## Updates
 
-### 2026-10-05T19:01:43Z — task-created [task-create-agent]
+### 2026-10-05T21:06:56Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3897-tag-every-approval-with-its-origin-an-or.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3899-sidecar-send-bare---to-with-a-remote---h.md
 - **Context:** Initial task creation
-
-### 2026-10-05T20:47:39Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work

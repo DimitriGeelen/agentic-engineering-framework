@@ -82,12 +82,14 @@ do_inception_start() {
     local recommendation=""
     local rationale=""
     local i_am_human=false
+    local origin=""   # T-3897
     while [[ $# -gt 0 ]]; do
         case $1 in
             --owner) owner="$2"; shift 2 ;;
             --recommendation) recommendation="$2"; shift 2 ;;
             --rationale) rationale="$2"; shift 2 ;;
             --i-am-human) i_am_human=true; shift ;;
+            --origin) origin="$2"; shift 2 ;;
             *) shift ;;
         esac
     done
@@ -158,7 +160,7 @@ do_inception_start() {
         --name "$name" \
         --description "Inception: $name" \
         --type inception \
-        --owner "$owner" 2>&1)
+        --owner "$owner" ${origin:+--origin "$origin"} 2>&1)
 
     echo "$output"
 

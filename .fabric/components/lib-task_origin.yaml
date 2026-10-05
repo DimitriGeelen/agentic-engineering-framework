@@ -1,0 +1,21 @@
+id: lib/task_origin.py
+name: task_origin
+type: script
+subsystem: framework-core
+location: lib/task_origin.py
+tags: []
+
+purpose: "T-3897: where did this task come from — for the approvals queue."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-05
+created_by: unknown

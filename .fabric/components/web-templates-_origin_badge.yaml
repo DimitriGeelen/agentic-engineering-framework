@@ -1,0 +1,21 @@
+id: web/templates/_origin_badge.html
+name: _origin_badge
+type: fragment
+subsystem: watchtower
+location: web/templates/_origin_badge.html
+tags: []
+
+purpose: "T-3897: where this decision came from. Peer requests, pickups and external proposals are LOUD (amber) — T-3659 was an unratified external proposal that read exactly like the operator's own request."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-05
+created_by: unknown

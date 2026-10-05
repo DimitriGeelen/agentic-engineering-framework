@@ -1,24 +1,23 @@
 ---
-id: T-3731
-name: "Revise the configuration engine: auto-discover new config keys (framework +
-  external modules TermLink, Workflow Designer, LiteLLM) onto the Watchtower config
-  surface, with version monitoring and currency per external module"
+id: T-3901
+name: "Should fw runme bind the operator's go to the exact bytes that run? (832 offer:
+  tested launcher with definitions-only jobs, rehearsal sha256, per-step y/N, done-once
+  — their T-1055)"
 description: >
-  Inception: Revise the configuration engine: auto-discover new config keys (framework
-  + external modules TermLink, Workflow Designer, LiteLLM) onto the Watchtower config
-  surface, with version monitoring and currency per external module
+  Inception: Should fw runme bind the operator's go to the exact bytes that run? (832
+  offer: tested launcher with definitions-only jobs, rehearsal sha256, per-step y/N,
+  done-once — their T-1055)
 
 status: captured
 workflow_type: inception
 owner: human
-horizon: next
-tags: [config, high-value, arc-candidate, termlink, designer, litellm, 
-      version-monitoring]
+horizon: now
+tags: []
 components: []
 related_tasks: []
-origin: {kind: "operator", source: "", ref: "operator request 2026-10-02"}
-created: 2026-10-02T14:55:03Z
-last_update: '2026-10-02T15:00:41Z'
+origin: {kind: "peer", source: "832-Workflow-designer", ref: "msg 8d8b2ecc (runme-wake-link)"}
+created: 2026-10-05T21:08:25Z
+last_update: '2026-10-05T21:15:47Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -29,35 +28,35 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
 cost_estimate_proposed:
-  - ts: '2026-10-02T15:00:23Z'
+  - ts: '2026-10-05T21:15:22Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 3
       tier: 4
       effort: 6
     rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
-      (workflow:inception); effort=6 (lines=129,acs=4)
+      (workflow:inception); effort=6 (lines=120,acs=4)
     rubric_sha: e4a00f38e801
-bvp_scores_proposed: []
-bvp_scores:
-  D1: 3
-  D2: 4
-  D3: 5
-  D4: 4
-  F-RECALL: 2
-  F-AUTONOMY: 2
-  F3: 2
-  F1: 2
-  F2: 2
-confirmed_by: root
-confirmed_at: '2026-10-02T15:08:35Z'
-confirmed_via: agent
-bvp_scores_stamp:
-  digest: ab8904a467f74ae7
-  by: agent
+bvp_scores_proposed:
+  - ts: '2026-10-05T21:15:47Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-3731: Revise the configuration engine: auto-discover new config keys (framework + external modules TermLink, Workflow Designer, LiteLLM) onto the Watchtower config surface, with version monitoring and currency per external module
+# T-3901: Should fw runme bind the operator's go to the exact bytes that run? (832 offer: tested launcher with definitions-only jobs, rehearsal sha256, per-step y/N, done-once — their T-1055)
 
 ## Problem Statement
 
@@ -68,15 +67,6 @@ bvp_scores_stamp:
 <!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
 
 ## Open Questions
-
-- **IW-1: Inventory: where does configuration live today (FW_CONFIG_REGISTRY, .framework.yaml, policy/*.yaml pins, env-only FW_* keys, hard-coded floors like termlink_transport VERSION_FLOOR, LiteLLM base URL/model routes, Workflow Designer pin), and which keys exist in code but not in the registry?**
-  confidence: 1
-- **IW-2: Discovery: how are new config keys found automatically (static scan of fw_config/FW_* reads, a module manifest each external module publishes, or both) and surfaced on the Watchtower config page with owner, default, source and validation?**
-  confidence: 0
-- **IW-3: External modules (TermLink, Workflow Designer, LiteLLM, plus future ones): one module registry with installed version, required floor, latest available, currency status and upgrade advice, consumed by fw doctor, audit and the config page?**
-  confidence: 0
-- **IW-4: Scope: one inception plus build slices, or a separate arc (operator: "maybe even a separate arc later"); and what is the headline mechanic an operator would observe?**
-  confidence: 1
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
@@ -154,11 +144,11 @@ bvp_scores_stamp:
 
 ## Recommendation
 
-**Recommendation:** GO
+**Recommendation:** DEFER
 
 **Rationale:**
 
-Operator request 2026-10-02, high value. Today: a hand-maintained registry (lib/config.sh FW_CONFIG_REGISTRY, ~47 keys, Watchtower /config); external-module settings and versions are scattered and ad hoc: designer pin + fw designer check-currency (whose advice is wrong, T-3729), a hard-coded TermLink VERSION_FLOOR in lib/sidecar/termlink_transport.py, LiteLLM referenced only as an ANTHROPIC_BASE_URL override with no config entry or version check. New settings appear without being registered (config-registry parity lint only checks one direction). GO on exploration: inventory every config and version surface, design discovery + a module registry, decide whether it becomes its own arc.
+Evidence gap, not a confidence gap: 832 offered the files (tools/runme-launcher.sh, 12-leg test) but we have not seen them. Their panel's point — the operator's yes must be bound to the bytes that run — names a real gap in fw runme (a script edited after handoff runs as edited). Next: receive the files, diff against lib runme, decide adopt/adapt/decline.
 
 **Evidence:**
 

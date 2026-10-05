@@ -41,6 +41,7 @@ START_WORK=false
 RECOMMENDATION=""
 RATIONALE=""
 I_AM_HUMAN=false
+ORIGIN=""
 
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -55,6 +56,9 @@ while [[ $# -gt 0 ]]; do
         --recommendation) RECOMMENDATION="$2"; shift 2 ;;
         --rationale) RATIONALE="$2"; shift 2 ;;
         --i-am-human) I_AM_HUMAN=true; shift ;;
+        # T-3897: where this task came from (operator | agent | peer | pickup |
+        # proposal)[:source[:ref]] — shown as a badge on the approvals queue.
+        --origin) ORIGIN="$2"; shift 2 ;;
         # T-1890: focus-drift hook sentinel; consumed silently. Sibling of the
         # identical branch in update-task.sh:1290. T-2830 found this leg missing:
         # `fw work-on <name> --switch-focus` shells to THIS script on the create
@@ -77,6 +81,8 @@ while [[ $# -gt 0 ]]; do
             echo "  --recommendation   GO|NO-GO|DEFER — required for inception under \$CLAUDECODE=1 (T-1716, T-2207)"
             echo "  --rationale        Evidence-cited reason — required for inception under \$CLAUDECODE=1"
             echo "  --i-am-human       Bypass agent gate (scripts/tests/Watchtower) — logged Tier-2"
+            echo "  --origin           Where the task came from: operator|agent|peer|pickup|proposal[:source[:ref]]"
+            echo "                     (T-3897; e.g. peer:ring20-dashboard:7881482d — shown on /approvals)"
             echo "  -h, --help         Show this help"
             exit 0
             ;;
@@ -177,6 +183,15 @@ fi
 # Validate required fields
 if [ -z "$NAME" ] || [ -z "$DESCRIPTION" ] || [ -z "$WORKFLOW_TYPE" ] || [ -z "$OWNER" ]; then
     die "Missing required fields"
+fi
+
+# T-3897: refuse an unknown origin kind before anything is written.
+if [ -n "$ORIGIN" ]; then
+    case "${ORIGIN%%:*}" in
+        operator|agent|peer|pickup|proposal) ;;
+        *) echo -e "${RED}ERROR: --origin kind '${ORIGIN%%:*}' unknown (operator|agent|peer|pickup|proposal)${NC}" >&2
+           exit 2 ;;
+    esac
 fi
 
 # Validate workflow type
@@ -564,6 +579,35 @@ fi
 if ! grep -q "^id: $TASK_ID" "$FILEPATH"; then
     echo -e "${RED}ERROR: Task file validation failed${NC}"
     exit 1
+fi
+
+# T-3897: record the origin in frontmatter, after whichever write path ran
+# (two templates + the inline fallback above), so there is one place to keep.
+if [ -n "$ORIGIN" ]; then
+    if ! TC_ORIGIN="$ORIGIN" TC_FILEPATH="$FILEPATH" python3 - << 'ORIGINEOF'
+import json, os, re
+path, raw = os.environ["TC_FILEPATH"], os.environ["TC_ORIGIN"]
+kind, _, rest = raw.partition(":")
+source, _, ref = rest.partition(":")
+fields = {"kind": kind}
+if source:
+    fields["source"] = source
+if ref:
+    fields["ref"] = ref
+line = "origin: {" + ", ".join(f"{k}: {json.dumps(v)}" for k, v in fields.items()) + "}"
+text = open(path, encoding="utf-8").read()
+text, n = re.subn(r"(?m)^(related_tasks:.*)$", lambda m: m.group(1) + "\n" + line, text, count=1)
+if not n:  # no related_tasks: line — close of the frontmatter instead, never dropped
+    text, n = re.subn(r"\A(---\n.*?\n)(---\n)", lambda m: m.group(1) + line + "\n" + m.group(2),
+                      text, count=1, flags=re.S)
+if not n:
+    raise SystemExit(f"--origin not recorded: no frontmatter found in {path}")
+open(path, "w", encoding="utf-8").write(text)
+ORIGINEOF
+    then
+        echo -e "${RED}ERROR: --origin could not be recorded in $FILEPATH${NC}" >&2
+        exit 1
+    fi
 fi
 
 # T-1263: Inception tasks must have ## Recommendation and ## Decision sections

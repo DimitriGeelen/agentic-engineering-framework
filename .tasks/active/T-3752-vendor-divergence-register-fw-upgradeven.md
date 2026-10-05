@@ -13,8 +13,9 @@ horizon: now
 tags: []
 components: []
 related_tasks: []
+origin: {kind: "peer", source: "010-termlink + 832-Workflow-designer", ref: "vendor-divergence proposals"}
 created: 2026-10-02T23:00:16Z
-last_update: '2026-10-02T23:15:20Z'
+last_update: '2026-10-05T20:15:20Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -50,6 +51,15 @@ cost_estimate_proposed:
       effort: 6
     rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
       (workflow:inception); effort=6 (lines=136,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-05T20:15:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=7 (lines=159,acs=4)
     rubric_sha: e4a00f38e801
 ---
 

@@ -33,6 +33,15 @@ except Exception:  # pragma: no cover - fallback for consumer projects without l
     def _trunc_q(s, w):
         return s
 
+# T-3897: where a queued decision came from (operator / agent / peer / pickup /
+# external proposal), so a peer's request never reads as the operator's own.
+try:
+    from task_origin import task_origin
+except Exception:  # pragma: no cover - degrade to an honest "unknown", never "you"
+    def task_origin(_fm, _body=""):
+        return {"kind": "unknown", "source": "", "ref": "", "inferred": False,
+                "label": "origin unknown"}
+
 bp = Blueprint("approvals", __name__)
 
 APPROVALS_DIR = PROJECT_ROOT / ".context" / "approvals"
@@ -374,6 +383,7 @@ def _load_pending_go_decisions():
             # GO is offered. Non-empty = not decision-ready: the template shows
             # what the agent still owes and no decision controls.
             "blockers": inception_handoff_blockers(path),
+            "origin": task_origin(fm, body),
         })
 
     return results
@@ -468,6 +478,7 @@ def _load_pending_human_acs():
             "verdict": verdict,
             "state": state,
             "reviewer": reviewer,
+            "origin": task_origin(fm, body),
         })
 
     # Sort: priority ascending, then age descending (oldest first within group)

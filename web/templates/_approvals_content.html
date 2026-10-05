@@ -161,6 +161,7 @@
                 Evidence: {{ _cv.passed }}/{{ _cv.total }}{% if _cv.overall == 'CONTRADICTED' %} ⚠{% endif %}
             </span>
             {% endif %}
+            {% include "_origin_badge.html" %}
             <a href="/inception/{{ t.task_id }}"><strong>{{ t.task_id }}</strong></a>:
             {{ t.name }}
         </div>
@@ -716,6 +717,7 @@ function filterACs(filter) {
             {{ t.name }}
         </div>
         <div style="display:flex; align-items:center; gap:0.5rem;">
+            {% include "_origin_badge.html" %}
             {# T-1531: agent recommendation verdict badge — green=GO, amber=DEFER, red=NO-GO, grey=?
                T-1576: prefer state so NO-REC ('agent owes a recommendation') reads distinctly from ? ('verdict unparseable'). #}
             {% set _v = t.state if (t.state is defined and t.state == 'NO-REC') else (t.verdict if t.verdict is defined else '?') %}

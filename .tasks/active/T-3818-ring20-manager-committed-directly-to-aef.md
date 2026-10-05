@@ -22,6 +22,7 @@ horizon: now
 tags: [security, release-train, ring20]
 components: []
 related_tasks: [T-3785, T-3185]
+origin: {kind: "operator", source: "", ref: "operator 2026-10-04"}
 bvp_scores: {D1: 4, D2: 5, D3: 3, D4: 3}
 confirmed_by: operator
 confirmed_at: 2026-10-04T13:34:11Z

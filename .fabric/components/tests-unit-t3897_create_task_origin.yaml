@@ -1,0 +1,21 @@
+id: tests/unit/t3897_create_task_origin.bats
+name: t3897_create_task_origin
+type: script
+subsystem: tests
+location: tests/unit/t3897_create_task_origin.bats
+tags: []
+
+purpose: "T-3897 — `--origin` on task creation: the recorded answer to \"where did this approval come from\", shown as a badge on /approvals. Origin: T-3659, an unratified external proposal that the queue showed exactly like the operator's own request."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-05
+created_by: unknown
