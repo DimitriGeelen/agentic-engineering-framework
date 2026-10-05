@@ -294,3 +294,144 @@ def test_cli_inbox_print_labels_raw_posts(env, monkeypatch, capsys):
     args = type("A", (), {"peek": False, "json": False})()
     cli._print_inbox(args, [{"offset": 3, "conversation_id": "c", "body": "x"}])
     assert "from unattributed (raw post)" in capsys.readouterr().out
+
+
+# ── leg 4: wake without claude-fw ───────────────────────────────────────────
+
+MY_TOPIC = f"inbox:{OWN}/{PROJECT}"
+
+
+def test_queued_frame_parsing_push_line_and_bare_json(env):
+    from lib.sidecar import watcher
+    importlib.reload(watcher)
+    push = ('[push] inbox.queued seq=7: {"addressee_session_id": "x", '
+            f'"channel": "{MY_TOPIC}", "message_offset": 3}}')
+    assert watcher.queued_channel(push) == MY_TOPIC
+    assert watcher.queued_channel(json.dumps({"addressee_session_id": f"{OWN}/{PROJECT}"})) == MY_TOPIC
+    assert watcher.queued_channel('[push] dm.queued seq=1: {"channel": "dm:a:b"}') is None
+    assert watcher.queued_channel("garbage") is None
+
+
+class _FakeProc:
+    """One subscribe stream; `stop` is set once it is exhausted (the follower
+    would otherwise re-subscribe)."""
+    def __init__(self, lines, stop=None):
+        def gen():
+            yield from lines
+            if stop is not None:
+                stop.set()
+        self.stdout = gen()
+        self.pid = 4242
+
+    def terminate(self):
+        pass
+
+
+def test_follower_wakes_only_for_our_inbox(env, monkeypatch):
+    import threading
+    from lib.sidecar import watcher
+    importlib.reload(watcher)
+    monkeypatch.setattr(watcher, "follow_argv",
+                        lambda runner=None: (["termlink", "channel", "subscribe", "inbox.queued",
+                                              "--push", "--hub", "h:1"], "profile p (h:1)"))
+    wake, stop = threading.Event(), threading.Event()
+    seen = []
+
+    def popen(argv, **kw):
+        seen.append(argv)
+        return _FakeProc([
+            '[push] inbox.queued seq=1: {"channel": "inbox:someone-else"}\n',
+            f'[push] inbox.queued seq=2: {{"channel": "{MY_TOPIC}", "message_offset": 0}}\n'], stop)
+    watcher.follow(wake, stop, topics=[MY_TOPIC], popen=popen)
+    assert wake.is_set()
+    assert seen[0][3:5] == ["inbox.queued", "--push"]
+    fol = watcher.read_follower()
+    assert fol["frames"] == 1 and fol["last_channel"] == MY_TOPIC
+
+
+def test_follower_ignores_other_inboxes(env, monkeypatch):
+    import threading
+    from lib.sidecar import watcher
+    importlib.reload(watcher)
+    monkeypatch.setattr(watcher, "follow_argv", lambda runner=None: (["termlink"], "p"))
+    wake, stop = threading.Event(), threading.Event()
+
+    def popen(argv, **kw):
+        return _FakeProc(['[push] inbox.queued seq=1: {"channel": "inbox:other/x"}\n'], stop)
+    watcher.follow(wake, stop, topics=[MY_TOPIC], popen=popen)
+    assert not wake.is_set()
+
+
+def test_follow_argv_uses_the_profile_of_our_own_hub(env, monkeypatch):
+    from lib.sidecar import watcher
+    importlib.reload(watcher)
+    monkeypatch.setattr(watcher.shutil, "which", lambda b: "/usr/bin/termlink")
+    own_fp = "sha256:" + OWN + "206a6ce20278a319e8dda6b6b4d6d5872105acccdc546d66"
+    argv, why = watcher.follow_argv(runner=_runner(fp=own_fp, pin=own_fp))
+    assert argv == ["termlink", "channel", "subscribe", "inbox.queued", "--push", "--hub", ADDR]
+    # a profile that is NOT our hub cannot carry our wake frames
+    env.load_peers()  # cache was written for OWN; clear it to test the refusal
+    (env.peers_path()).unlink()
+    argv, why = watcher.follow_argv(runner=_runner())
+    assert argv is None and "own hub" in why
+
+
+def test_watcher_tick_wait_is_cut_short_by_a_wake(env, monkeypatch):
+    import threading
+    import time
+    from lib.sidecar import watcher
+    importlib.reload(watcher)
+    ticks, handlers = [], {}
+    monkeypatch.setattr(watcher, "run_tick", lambda seq, tick: ticks.append(time.monotonic()))
+    monkeypatch.setattr(watcher, "_single_instance", lambda which: object())
+    monkeypatch.setattr(watcher.signal, "signal", lambda sig, h: handlers.setdefault("term", h))
+
+    def fake_start(wake, stop):
+        threading.Timer(0.3, wake.set).start()      # an inbox.queued frame arrives
+    monkeypatch.setattr(watcher, "_start_follower", fake_start)
+
+    t = threading.Thread(target=watcher.run_forever, kwargs={"tick_s": 60}, daemon=True)
+    t.start()
+    deadline = time.monotonic() + 5
+    while len(ticks) < 2 and time.monotonic() < deadline:
+        time.sleep(0.05)
+    handlers["term"]()                              # SIGTERM: stop the loop
+    t.join(5)
+    assert len(ticks) >= 2, "a wake must trigger a tick long before the 60 s tick"
+    assert ticks[1] - ticks[0] < 5
+    assert not t.is_alive()
+
+
+def test_inbox_with_no_live_watcher_means_nothing_wakes(env):
+    from lib.sidecar import watcher
+    importlib.reload(watcher)
+    v = watcher.wake_verdict({"state": "absent", "liveness": None})
+    assert v["has_inbox"] is False and v["nothing_wakes"] is False
+    from lib.sidecar import inbox
+    inbox.save_state({"topics": {}})
+    v = watcher.wake_verdict({"state": "absent", "liveness": None})
+    assert v["has_inbox"] and v["nothing_wakes"]
+    live = watcher.wake_verdict({"state": "live", "liveness": {"tick_s": 30}})
+    assert not live["nothing_wakes"] and live["wakes"]
+
+
+def test_audit_facts_report_wake_none_for_an_inbox_with_no_watcher(env, tmp_path):
+    """The one fact function doctor and audit read: WAKE column = none."""
+    import subprocess
+    proj = tmp_path / PROJECT
+    (proj / ".context" / "sidecar" / "inbox-state.json").write_text('{"topics": {}}')
+    out = subprocess.run(
+        ["bash", "-c", f'source "{ROOT}/lib/sidecar-audit.sh"; fw_sidecar_watcher_facts "{proj}"'],
+        capture_output=True, text=True, timeout=120, env=dict(os.environ, PROJECT_ROOT=str(proj)))
+    assert out.returncode == 0, out.stderr
+    cols = out.stdout.rstrip("\n").split("\t")
+    assert cols[0] == "absent" and cols[6] == "none", cols
+
+
+def test_doctor_and_audit_fail_on_wake_none(env):
+    """Both consumers turn WAKE=none into a FAIL (static: the branch exists)."""
+    for rel in ("bin/fw", "agents/audit/audit.sh"):
+        text = open(os.path.join(ROOT, rel), encoding="utf-8").read()
+        assert '"$_sw_wake" = "none"' in text, rel
+    audit = open(os.path.join(ROOT, "agents/audit/audit.sh"), encoding="utf-8").read()
+    assert 'fail "Sidecar inbox with nothing to wake it"' in audit

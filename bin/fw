@@ -3511,13 +3511,13 @@ sys.exit(0 if '$_tl_topic' in names else 1)
     if [ -f "$FRAMEWORK_ROOT/lib/sidecar-audit.sh" ]; then
         # shellcheck source=/dev/null
         source "$FRAMEWORK_ROOT/lib/sidecar-audit.sh"
-        local _sw _sw_rc _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why
+        local _sw _sw_rc _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why _sw_wake
         _sw=$(fw_sidecar_watcher_facts "$PROJECT_ROOT") && _sw_rc=0 || _sw_rc=$?  # T-3837: set -e
         if [ "$_sw_rc" -ne 0 ]; then
             echo -e "  ${RED}FAIL${NC}  Sidecar watcher liveness could not be read (fw sidecar liveness --json)"
             issues=$((issues + 1))
         else
-            IFS=$'\t' read -r _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why <<< "$_sw"
+            IFS=$'\t' read -r _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why _sw_wake <<< "$_sw"
             case "$_sw_state" in
                 live)
                     if [ "$_sw_tl" = "absent" ]; then
@@ -3531,8 +3531,15 @@ sys.exit(0 if '$_tl_topic' in names else 1)
                     echo "         Run: fw sidecar liveness; fw sidecar ensure (restarts the supervisor); logs in .context/sidecar/watcher/"
                     issues=$((issues + 1)) ;;
                 *)
-                    echo -e "  ${YELLOW}WARN${NC}  No sidecar watcher in this project (R14: every agent runs one) — start: fw sidecar start"
-                    warnings=$((warnings + 1)) ;;
+                    # T-3855: an inbox that nothing would wake is a deaf agent — FAIL.
+                    if [ "$_sw_wake" = "none" ]; then
+                        echo -e "  ${RED}FAIL${NC}  Sidecar inbox with NOTHING to wake it: no watcher running ($_sw_why)"
+                        echo "         Run: fw sidecar start (plain sessions start it at SessionStart; claude-fw too)"
+                        issues=$((issues + 1))
+                    else
+                        echo -e "  ${YELLOW}WARN${NC}  No sidecar watcher in this project (R14: every agent runs one) — start: fw sidecar start"
+                        warnings=$((warnings + 1))
+                    fi ;;
             esac
         fi
     fi

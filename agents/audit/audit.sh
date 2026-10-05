@@ -4075,7 +4075,7 @@ check_sidecar_watcher() {
     [ -f "$FRAMEWORK_ROOT/lib/sidecar-audit.sh" ] || return 0
     # shellcheck source=/dev/null
     source "$FRAMEWORK_ROOT/lib/sidecar-audit.sh"
-    local _sw _sw_rc _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why
+    local _sw _sw_rc _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why _sw_wake
     _sw=$(fw_sidecar_watcher_facts "$PROJECT_ROOT"); _sw_rc=$?
     if [ "$_sw_rc" -ne 0 ]; then
         fail "Sidecar watcher liveness unreadable" \
@@ -4083,7 +4083,7 @@ check_sidecar_watcher() {
              "Run: bin/fw sidecar liveness — an unreadable liveness check is a deaf agent that cannot tell (T-3685)"
         return 0
     fi
-    IFS=$'\t' read -r _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why <<< "$_sw"
+    IFS=$'\t' read -r _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why _sw_wake <<< "$_sw"
     case "$_sw_state" in
         live)
             if [ "$_sw_tl" = "absent" ]; then
@@ -4098,9 +4098,16 @@ check_sidecar_watcher() {
                  "$_sw_why" \
                  "Run: bin/fw sidecar liveness; bin/fw sidecar ensure — cron sidecar-ensure-1m should have restarted it (T-3685)" ;;
         *)
-            warn "No sidecar watcher in this project" \
-                 "$_sw_why" \
-                 "R14: every agent runs a sidecar. Start: bin/fw sidecar start (claude-fw --termlink starts it)" ;;
+            if [ "$_sw_wake" = "none" ]; then
+                # T-3855 (ring20 §5.6): an inbox nothing would wake is a deaf agent.
+                fail "Sidecar inbox with nothing to wake it" \
+                     "$_sw_why" \
+                     "Start: bin/fw sidecar start — every session's SessionStart hook (sidecar-autostart) and claude-fw start it; stopped or dead means no message is noticed"
+            else
+                warn "No sidecar watcher in this project" \
+                     "$_sw_why" \
+                     "R14: every agent runs a sidecar. Start: bin/fw sidecar start (claude-fw --termlink starts it)"
+            fi ;;
     esac
 }
 check_sidecar_watcher

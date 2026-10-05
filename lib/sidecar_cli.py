@@ -743,6 +743,7 @@ def cmd_liveness(args) -> int:
     v = watcher.liveness_verdict()
     v["supervisor_alive"] = watcher.supervisor_alive()
     v["injection_transport"] = "present" if __import__("shutil").which("termlink") else "absent"
+    v["wake"] = watcher.wake_verdict(v)   # T-3855: what would wake this agent
     if args.json:
         print(json.dumps(v, default=str))
     else:
@@ -752,6 +753,13 @@ def cmd_liveness(args) -> int:
               f"termlink={v['injection_transport']}")
         for r in v["reasons"]:
             print(f"  - {r}")
+        w = v["wake"]
+        print("wake: " + ("; ".join(w["wakes"]) if w["wakes"] else
+                          ("NOTHING would wake this agent — it has an inbox (fw sidecar start)"
+                           if w["nothing_wakes"] else "no inbox here yet")))
+        fol = w.get("follower") or {}
+        if fol and fol.get("state") != "following":
+            print(f"  inbox.queued follower: {fol.get('state')} — {fol.get('reason') or ''}")
     return {"live": 0, "not-live": 1}.get(v["state"], 2)
 
 
