@@ -149,6 +149,31 @@ YAML
     [ -f "$AF/web/blueprints/approvals.py" ]
 }
 
+@test "T-3907: --dry-run predicts the real run's refusal" {
+    run _vendor --dry-run
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q "REAL RUN WOULD REFUSE (exit 3) without --allow-delete-locals"
+}
+
+@test "T-3907: --dry-run --allow-delete-locals predicts PROCEED, writes nothing" {
+    run _vendor --dry-run --allow-delete-locals
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q "REAL RUN WOULD PROCEED with --allow-delete-locals"
+    [[ "$output" != *"WOULD REFUSE"* ]]
+    [ -f "$AF/web/blueprints/approvals.py" ]
+}
+
+@test "T-3907: --dry-run with everything covered predicts neither" {
+    _manifest
+    run _vendor --dry-run
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"REAL RUN WOULD"* ]]
+}
+
+@test "T-3907: fw upgrade --dry-run forwards the vendor flags" {
+    grep -q -- '--dry-run ${_vendor_extra\[@\]+"${_vendor_extra\[@\]}"}' "$FRAMEWORK_ROOT/lib/upgrade.sh"
+}
+
 @test "fallback parser (no PyYAML) reads the manifest shape the same as PyYAML" {
     python3 -c "import yaml" 2>/dev/null || skip "PyYAML absent: parity needs a reference"
     run python3 - "$FRAMEWORK_ROOT/lib" <<'PY'

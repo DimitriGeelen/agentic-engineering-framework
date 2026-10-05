@@ -6,17 +6,17 @@ description: >
   Inception: Vendor-divergence register: fw upgrade/vendor sees and refuses to silently
   erase a consumer's local fixes to vendored framework code (010 + 832 proposals)
 
-status: work-completed
+status: started-work
 workflow_type: inception
 owner: human
-horizon: null
+horizon: now
 tags: []
 components: []
 related_tasks: []
 origin: {kind: "peer", source: "010-termlink + 832-Workflow-designer", ref: "vendor-divergence proposals"}
 created: 2026-10-02T23:00:16Z
-last_update: 2026-10-05T22:35:59Z
-date_finished: 2026-10-05T22:35:59Z
+last_update: '2026-10-05T20:15:20Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -139,15 +139,15 @@ Consumers patch vendored framework code (`.agentic-framework/`) to fix bugs befo
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [x] Problem statement validated
+- [ ] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [x] Assumptions tested
+- [ ] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [x] Recommendation written with rationale
+- [ ] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [x] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -212,29 +212,7 @@ Evidence from two consumers: 832's first protocol run (1.7.740) found 51 local f
 
 ## Decision
 
-**Decision**: GO
-
-**Rationale**: Recommendation: GO
-
-Rationale:
-
-Evidence from two consumers: 832's first protocol run (1.7.740) found 51 local fixes erased by re-vendor, an undeclared one (T-943 on lib/verification-port.sh) lost with nothing listing it, and 5 consumer-added files deleted by the vendor copy, 4 undeclared. 010-termlink runs a working register plus check (framework:pickup @304/@305). Both schemas exist and differ. Today fw upgrade overwrites silently, which violates the Reliability directive (no silent failures). Open: one schema reconciling 010 and 832, whether fw upgrade refuses or only reports, consumer-side commit gate (832 G4), and upstream intake of filed-upstream entries.
-
-Update 2026-10-05 (T-3896): most of this has since been BUILT.
-- v1.8.2 shipped T-3850 and T-3851: the preserve manifest, the refusal to delete undeclared local files, and the vendor stamp. That answers IW-1 to IW-3 (see the dispositions).
-- T-3850 never referenced this inception. The build went ahead without a decision here, which is a traceability gap of its own.
-- What a GO now adopts: only the remainder, IW-4 upstream intake. Add `owning_task` and `upstream_status` to `.fwvendor-preserve.yaml`, and have the vendor report entries whose upstream fix has shipped (superseded), so the next re-vendor can drop them.
-- What a NO-GO means: the shipped T-3850 behaviour is enough, intake stays manual via pickups, and this inception closes as superseded.
-
-Evidence:
-- Research artifact: `docs/reports/T-3752-vendor-divergence.md`.
-- `lib/vendor_preserve.py` (T-3850): manifest shape, the stamp, and refuse-on-uncovered-local (exit 3). Shipped in v1.8.2, 2026-10-05.
-- Field results on v1.8.2: ring20-manager (33 local files kept, 0 refusals); 832 (50 local files kept); ring20-dashboard (7 local-only files listed exactly by the pre-check).
-- Still open:
-  - T-3885, automatic merge for edited in-file files (ring20-manager: 33 MARKER MISSING, 17/17 merged by hand without conflict);
-  - T-3888, CLAUDE.md in-section edits (1409).
-
-**Date**: 2026-10-05T22:35:58Z
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
@@ -243,57 +221,3 @@ Evidence:
 
 ### 2026-10-02T23:01:59Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-
-### 2026-10-05T22:35:58Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** Recommendation: GO
-
-Rationale:
-
-Evidence from two consumers: 832's first protocol run (1.7.740) found 51 local fixes erased by re-vendor, an undeclared one (T-943 on lib/verification-port.sh) lost with nothing listing it, and 5 consumer-added files deleted by the vendor copy, 4 undeclared. 010-termlink runs a working register plus check (framework:pickup @304/@305). Both schemas exist and differ. Today fw upgrade overwrites silently, which violates the Reliability directive (no silent failures). Open: one schema reconciling 010 and 832, whether fw upgrade refuses or only reports, consumer-side commit gate (832 G4), and upstream intake of filed-upstream entries.
-
-Update 2026-10-05 (T-3896): most of this has since been BUILT.
-- v1.8.2 shipped T-3850 and T-3851: the preserve manifest, the refusal to delete undeclared local files, and the vendor stamp. That answers IW-1 to IW-3 (see the dispositions).
-- T-3850 never referenced this inception. The build went ahead without a decision here, which is a traceability gap of its own.
-- What a GO now adopts: only the remainder, IW-4 upstream intake. Add `owning_task` and `upstream_status` to `.fwvendor-preserve.yaml`, and have the vendor report entries whose upstream fix has shipped (superseded), so the next re-vendor can drop them.
-- What a NO-GO means: the shipped T-3850 behaviour is enough, intake stays manual via pickups, and this inception closes as superseded.
-
-Evidence:
-- Research artifact: `docs/reports/T-3752-vendor-divergence.md`.
-- `lib/vendor_preserve.py` (T-3850): manifest shape, the stamp, and refuse-on-uncovered-local (exit 3). Shipped in v1.8.2, 2026-10-05.
-- Field results on v1.8.2: ring20-manager (33 local files kept, 0 refusals); 832 (50 local files kept); ring20-dashboard (7 local-only files listed exactly by the pre-check).
-- Still open:
-  - T-3885, automatic merge for edited in-file files (ring20-manager: 33 MARKER MISSING, 17/17 merged by hand without conflict);
-  - T-3888, CLAUDE.md in-section edits (1409).
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-adf84422
-- **Timestamp:** 2026-10-05T22:36:01Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-## Recommendation Verdict (v1.0)
-
-- **Scan ID:** RC-1d394f54
-- **Timestamp:** 2026-10-05T22:36:01Z
-- **Overall:** CONFIRMED
-- **Claims:** 8
-
-| Claim | Type | Status |
-|-------|------|--------|
-| `docs/reports/T-3752-vendor-divergence.md` | file | ✓ pass |
-| `lib/vendor_preserve.py` | file | ✓ pass |
-| `T-943` | task | ✓ pass |
-| `T-3896` | task | ✓ pass |
-| `T-3850` | task | ✓ pass |
-| `T-3851` | task | ✓ pass |
-| `T-3885` | task | ✓ pass |
-| `T-3888` | task | ✓ pass |
-
-### 2026-10-05T22:35:59Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-- **Reason:** Inception decision: GO

@@ -1911,7 +1911,8 @@ CRONREGEOF
         # source missing a file produced a silent "Upgrade Complete".
         local _vendor_rc=0
         if [ "$dry_run" = true ]; then
-            do_vendor --target "$target_dir" --source "$FRAMEWORK_ROOT" --dry-run 2>&1 | sed 's/^/  /'
+            # T-3907: forward the flags so the preview predicts THIS run's verdict.
+            do_vendor --target "$target_dir" --source "$FRAMEWORK_ROOT" --dry-run ${_vendor_extra[@]+"${_vendor_extra[@]}"} 2>&1 | sed 's/^/  /'
             _vendor_rc=${PIPESTATUS[0]}
         else
             do_vendor --target "$target_dir" --source "$FRAMEWORK_ROOT" ${_vendor_extra[@]+"${_vendor_extra[@]}"} 2>&1 | sed 's/^/  /'

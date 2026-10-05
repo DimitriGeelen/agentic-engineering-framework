@@ -8,16 +8,16 @@ description: >
   baseline advance, re-apply worklist for declared local fixes, project-owned hook/audit
   extension points (832 T-995/T-1000 proposal)
 
-status: work-completed
+status: captured
 workflow_type: inception
 owner: human
-horizon: null
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-02T17:02:50Z
-last_update: 2026-10-05T22:35:01Z
-date_finished: 2026-10-05T22:35:01Z
+last_update: '2026-10-02T17:15:39Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -103,15 +103,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [x] Problem statement validated
+- [ ] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [x] Assumptions tested
+- [ ] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [x] Recommendation written with rationale
+- [ ] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [x] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -168,59 +168,9 @@ bvp_scores_proposed:
 
 ## Decision
 
-**Decision**: GO
-
-**Rationale**: Recommendation: GO
-
-Rationale:
-
-832 measured 2026-10-02: bridge suite 7 -> 38 failures in 10 days, ~24 of them local fixes to the vendored framework silently reverted by re-vendors (1.7.68 upgrade changed 1407 files, 545 with local commits, >=4 fixes and the audit rail that would report it removed). Same class as 055's finding today (T-3730: fw upgrade silently deletes project CLAUDE.md sections) and the T-3704 rsync --delete finding. Their asks: pristine commit + baseline advance + worklist in fw upgrade; project extension points in hooks and audit.sh (.context/hooks.d/); the rule 'declare a local fix when made; an upgrade must surface every declared fix it overwrote before it lands'. GO on exploration with 832's tooling as input.
-
-Evidence:
-
-**Date**: 2026-10-05T22:34:58Z
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
-
-### 2026-10-05T22:34:58Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** Recommendation: GO
-
-Rationale:
-
-832 measured 2026-10-02: bridge suite 7 -> 38 failures in 10 days, ~24 of them local fixes to the vendored framework silently reverted by re-vendors (1.7.68 upgrade changed 1407 files, 545 with local commits, >=4 fixes and the audit rail that would report it removed). Same class as 055's finding today (T-3730: fw upgrade silently deletes project CLAUDE.md sections) and the T-3704 rsync --delete finding. Their asks: pristine commit + baseline advance + worklist in fw upgrade; project extension points in hooks and audit.sh (.context/hooks.d/); the rule 'declare a local fix when made; an upgrade must surface every declared fix it overwrote before it lands'. GO on exploration with 832's tooling as input.
-
-Evidence:
-
-### 2026-10-05T22:34:59Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Reason:** Inception decision in progress
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-ff250016
-- **Timestamp:** 2026-10-05T22:35:03Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-## Recommendation Verdict (v1.0)
-
-- **Scan ID:** RC-6189e21b
-- **Timestamp:** 2026-10-05T22:35:03Z
-- **Overall:** CONFIRMED
-- **Claims:** 2
-
-| Claim | Type | Status |
-|-------|------|--------|
-| `T-3730` | task | ✓ pass |
-| `T-3704` | task | ✓ pass |
-
-### 2026-10-05T22:35:01Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-- **Reason:** Inception decision: GO

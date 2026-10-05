@@ -8,17 +8,17 @@ description: >
   + deps), onboarding skipped, desktop icon starting Watchtower and a governed claude-fw
   session; Windows via WSL
 
-status: work-completed
+status: started-work
 workflow_type: inception
 owner: human
-horizon: null
+horizon: now
 tags: []
-components: [agents/task-create/create-task.sh, lib/inception.sh, lib/task_origin.py, tests/unit/t3897_create_task_origin.bats, tests/web/test_t3897_task_origin.py, web/blueprints/approvals.py, web/templates/_approvals_content.html, web/templates/_origin_badge.html]
+components: []
 related_tasks: []
 origin: {kind: "proposal", source: "P-01 (external, unratified, 2026-09-29)", ref: "pasted by the operator 2026-10-01"}
 created: 2026-10-01T15:01:12Z
-last_update: 2026-10-05T22:30:48Z
-date_finished: 2026-10-05T22:30:48Z
+last_update: '2026-10-05T19:45:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -133,15 +133,15 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [x] Problem statement validated
+- [ ] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [x] Assumptions tested
+- [ ] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [x] Recommendation written with rationale
+- [ ] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [x] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -213,36 +213,7 @@ Each is recorded as an answered disposition above. A NO-GO rejects the installer
 
 ## Decision
 
-**Decision**: GO
-
-**Rationale**: Recommendation: GO
-
-Rationale:
-
-Instrumented evidence on one Windows 10 machine (framework 1.7.0 @29f3b02): documented native Git Bash route 15m51s and blocked (Watchtower cannot start, doctor exit 1); WSL by hand 1m49s with ~10 manual fixes; P-01 Install-AEF.ps1 127s with 0 manual fixes, two projects side by side on :3000/:3001. 57 findings, each mapped to a P-01 workaround. GO on the landing shape (installer quickstart mode + install.ps1 + framework fixes that retire workarounds); the four open questions are design choices with recommendations in the artifact, not evidence gaps.
-
-What your GO adopts:
-- IW-1: the installer offers guided and quickstart, with quickstart as the default, and only together with IW-3.
-- IW-2: install.ps1 creates a normal (non-root) user.
-- IW-3: the installer asks for the project goal and creates the first task with acceptance criteria.
-- IW-4: the kit lives in the framework repo under `install/`, released with the framework.
-
-Each is recorded as an answered disposition above. A NO-GO rejects the installer route, and the seven defect tasks below stand on their own either way.
-
-Evidence:
-- Research artifact: `docs/reports/T-3659-p01-zero-to-running.md`. The source is the external proposal "P-01 — Zero-to-running AEF" (2026-09-29, unratified), pasted by the operator on 2026-10-01.
-- Measured on Windows 10, framework 1.7.0:
-  - native Git Bash: 15m51s, blocked;
-  - WSL by hand: 1m49s with ~10 fixes;
-  - P-01 Install-AEF.ps1: 127s with 0 fixes.
-- 57 findings. The defects are filed independently of this decision: T-3660, T-3661, T-3662, T-3663, T-3664, T-3665 (CRLF silently disables the secret scan) and T-3666.
-- State on 2026-10-05:
-  - shipped: T-3660 (watchtower detach), T-3661 (status exit codes) and T-3665 (CRLF secret scan);
-  - T-3662 (per-project port) is done and awaiting review;
-  - T-3663, T-3664 and T-3666 are still open.
-- Today's T-3876/T-3877 (one port rule, Watchtower ensured at session start) also narrow the gap P-01 works around.
-
-**Date**: 2026-10-05T22:30:47Z
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
@@ -251,73 +222,3 @@ Evidence:
 
 ### 2026-10-01T15:08:13Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-
-### 2026-10-05T22:30:47Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** Recommendation: GO
-
-Rationale:
-
-Instrumented evidence on one Windows 10 machine (framework 1.7.0 @29f3b02): documented native Git Bash route 15m51s and blocked (Watchtower cannot start, doctor exit 1); WSL by hand 1m49s with ~10 manual fixes; P-01 Install-AEF.ps1 127s with 0 manual fixes, two projects side by side on :3000/:3001. 57 findings, each mapped to a P-01 workaround. GO on the landing shape (installer quickstart mode + install.ps1 + framework fixes that retire workarounds); the four open questions are design choices with recommendations in the artifact, not evidence gaps.
-
-What your GO adopts:
-- IW-1: the installer offers guided and quickstart, with quickstart as the default, and only together with IW-3.
-- IW-2: install.ps1 creates a normal (non-root) user.
-- IW-3: the installer asks for the project goal and creates the first task with acceptance criteria.
-- IW-4: the kit lives in the framework repo under `install/`, released with the framework.
-
-Each is recorded as an answered disposition above. A NO-GO rejects the installer route, and the seven defect tasks below stand on their own either way.
-
-Evidence:
-- Research artifact: `docs/reports/T-3659-p01-zero-to-running.md`. The source is the external proposal "P-01 — Zero-to-running AEF" (2026-09-29, unratified), pasted by the operator on 2026-10-01.
-- Measured on Windows 10, framework 1.7.0:
-  - native Git Bash: 15m51s, blocked;
-  - WSL by hand: 1m49s with ~10 fixes;
-  - P-01 Install-AEF.ps1: 127s with 0 fixes.
-- 57 findings. The defects are filed independently of this decision: T-3660, T-3661, T-3662, T-3663, T-3664, T-3665 (CRLF silently disables the secret scan) and T-3666.
-- State on 2026-10-05:
-  - shipped: T-3660 (watchtower detach), T-3661 (status exit codes) and T-3665 (CRLF secret scan);
-  - T-3662 (per-project port) is done and awaiting review;
-  - T-3663, T-3664 and T-3666 are still open.
-- Today's T-3876/T-3877 (one port rule, Watchtower ensured at session start) also narrow the gap P-01 works around.
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-1843e056
-- **Timestamp:** 2026-10-05T22:30:50Z
-- **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
-- **Needs Human:** no
-- **Findings:** 2
-
-**Verification-level findings:**
-
-  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
-     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
-     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-
-## Recommendation Verdict (v1.0)
-
-- **Scan ID:** RC-e8913f2b
-- **Timestamp:** 2026-10-05T22:30:51Z
-- **Overall:** CONFIRMED
-- **Claims:** 10
-
-| Claim | Type | Status |
-|-------|------|--------|
-| `docs/reports/T-3659-p01-zero-to-running.md` | file | ✓ pass |
-| `T-3660` | task | ✓ pass |
-| `T-3661` | task | ✓ pass |
-| `T-3662` | task | ✓ pass |
-| `T-3663` | task | ✓ pass |
-| `T-3664` | task | ✓ pass |
-| `T-3665` | task | ✓ pass |
-| `T-3666` | task | ✓ pass |
-| `T-3876` | task | ✓ pass |
-| `T-3877` | task | ✓ pass |
-
-### 2026-10-05T22:30:48Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-- **Reason:** Inception decision: GO

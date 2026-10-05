@@ -716,6 +716,8 @@ do_vendor() {
             --includes "$_vp_dir/includes" --excludes "$_vp_dir/excludes" --plan "$_vp_dir/plan.json")
         local _vp_rc=0
         if [ "$dry_run" = true ]; then
+            # T-3907: preview the run as it would be invoked, flags included.
+            [ "$allow_delete_locals" = true ] && _vp_args+=(--allow)
             python3 "$_vp_py" pre "${_vp_args[@]}" --dry-run || _vp_rc=$?
             rm -rf "$_vp_dir"; _vp_dir=""
         else

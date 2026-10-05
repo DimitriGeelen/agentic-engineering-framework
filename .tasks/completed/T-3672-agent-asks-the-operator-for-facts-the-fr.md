@@ -8,16 +8,16 @@ description: >
   key path T-375, review ladder T-3557, prior GOs T-586/T-2428, IW-2 routing) — why
   is recall skipped before operator questions?
 
-status: work-completed
+status: captured
 workflow_type: inception
 owner: human
-horizon: null
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-01T19:00:08Z
-last_update: 2026-10-05T22:34:21Z
-date_finished: 2026-10-05T22:34:21Z
+last_update: '2026-10-01T19:15:30Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -103,15 +103,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [x] Problem statement validated
+- [ ] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [x] Assumptions tested
+- [ ] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [x] Recommendation written with rationale
+- [ ] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [x] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -168,55 +168,9 @@ Four same-class incidents in one session on 2026-10-01, operator flagged it as c
 
 ## Decision
 
-**Decision**: GO
-
-**Rationale**: Recommendation: GO
-
-Rationale:
-
-Four same-class incidents in one session on 2026-10-01, operator flagged it as cause for concern and investigation. Evidence is in hand (L-recorded learning; session transcript); open is the mechanism: whether a pre-question recall step exists, why it was skipped, and which structural check (hook on question-shaped turns, CLAUDE.md rule, fw ask default) would catch it. Also covers the check-paid-backend hook over-matching text that merely names the OpenRouter key variable.
-
-Evidence:
-
-**Date**: 2026-10-05T22:34:18Z
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
-
-### 2026-10-05T22:34:18Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** Recommendation: GO
-
-Rationale:
-
-Four same-class incidents in one session on 2026-10-01, operator flagged it as cause for concern and investigation. Evidence is in hand (L-recorded learning; session transcript); open is the mechanism: whether a pre-question recall step exists, why it was skipped, and which structural check (hook on question-shaped turns, CLAUDE.md rule, fw ask default) would catch it. Also covers the check-paid-backend hook over-matching text that merely names the OpenRouter key variable.
-
-Evidence:
-
-### 2026-10-05T22:34:19Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Reason:** Inception decision in progress
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-f23cd0e8
-- **Timestamp:** 2026-10-05T22:34:23Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-## Recommendation Verdict (v1.0)
-
-- **Scan ID:** RC-21d87170
-- **Timestamp:** 2026-10-05T22:34:23Z
-- **Overall:** UNVERIFIED
-- **Claims:** 0
-- No verifiable claims found in ## Recommendation
-
-### 2026-10-05T22:34:21Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-- **Reason:** Inception decision: GO

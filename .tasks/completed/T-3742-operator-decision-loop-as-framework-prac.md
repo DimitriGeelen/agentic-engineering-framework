@@ -10,16 +10,16 @@ description: >
   shape, and one approved-decisions runner the operator runs (TermLink T-3305) — unify
   with T-3726 F3 and 832's in-terminal approval
 
-status: work-completed
+status: captured
 workflow_type: inception
 owner: human
-horizon: null
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-02T18:45:36Z
-last_update: 2026-10-05T22:35:27Z
-date_finished: 2026-10-05T22:35:27Z
+last_update: '2026-10-02T19:00:42Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -105,15 +105,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [x] Problem statement validated
+- [ ] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [x] Assumptions tested
+- [ ] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [x] Recommendation written with rationale
+- [ ] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [x] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -170,61 +170,9 @@ Three peers converged independently on the same loop today: TermLink (T-3305, ~1
 
 ## Decision
 
-**Decision**: GO
-
-**Rationale**: Recommendation: GO
-
-Rationale:
-
-Three peers converged independently on the same loop today: TermLink (T-3305, ~12 operator rulings in two days via brief + record + one execution script; earlier pickup 294/295 unacknowledged on AEF's side), 832 (runme with g/n/d read from /dev/tty, reason required to depart, editable rationale, T-1003 signal), and our own RCA T-3726 (three external reviewers: the handoff must be one readiness API and the agent removed from URL construction). Our runme directive T-3675 is the execution half. GO on exploration: design one framework-level loop (brief skill, record shape, approved-decisions runner) instead of each project reinventing part 3.
-
-Evidence:
-
-**Date**: 2026-10-05T22:35:24Z
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
-
-### 2026-10-05T22:35:24Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** Recommendation: GO
-
-Rationale:
-
-Three peers converged independently on the same loop today: TermLink (T-3305, ~12 operator rulings in two days via brief + record + one execution script; earlier pickup 294/295 unacknowledged on AEF's side), 832 (runme with g/n/d read from /dev/tty, reason required to depart, editable rationale, T-1003 signal), and our own RCA T-3726 (three external reviewers: the handoff must be one readiness API and the agent removed from URL construction). Our runme directive T-3675 is the execution half. GO on exploration: design one framework-level loop (brief skill, record shape, approved-decisions runner) instead of each project reinventing part 3.
-
-Evidence:
-
-### 2026-10-05T22:35:25Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Reason:** Inception decision in progress
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-b060e685
-- **Timestamp:** 2026-10-05T22:35:29Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-## Recommendation Verdict (v1.0)
-
-- **Scan ID:** RC-076d377d
-- **Timestamp:** 2026-10-05T22:35:29Z
-- **Overall:** CONFIRMED
-- **Claims:** 4
-
-| Claim | Type | Status |
-|-------|------|--------|
-| `T-3305` | task | ✓ pass |
-| `T-1003` | task | ✓ pass |
-| `T-3726` | task | ✓ pass |
-| `T-3675` | task | ✓ pass |
-
-### 2026-10-05T22:35:27Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-- **Reason:** Inception decision: GO

@@ -1,10 +1,16 @@
 ---
 id: T-3907
-name: "fw upgrade --dry-run does not say the real run would REFUSE (exit 3) when vendored files are edited locally — it lists 'would be OVERWRITTEN' and the real run then refuses without --allow-delete-locals (832 on 1.8.3)"
+name: "fw upgrade --dry-run does not say the real run would REFUSE (exit 3) when vendored
+  files are edited locally — it lists 'would be OVERWRITTEN' and the real run then
+  refuses without --allow-delete-locals (832 on 1.8.3)"
 description: >
-  832: with the 1.8.2 vendor stamp, 1.8.3 saw re-applied local fixes as edited locally; dry-run listed them as would-be-overwritten but did not say the real run refuses (exit 3) without --allow-delete-locals. Dry-run must predict the real run's verdict: add 'REAL RUN WOULD REFUSE (exit 3) without --allow-delete-locals' when the refusal condition holds. Same class as G-108: two predicates (dry-run vs real) for one fact.
+  832: with the 1.8.2 vendor stamp, 1.8.3 saw re-applied local fixes as edited locally;
+  dry-run listed them as would-be-overwritten but did not say the real run refuses
+  (exit 3) without --allow-delete-locals. Dry-run must predict the real run's verdict:
+  add 'REAL RUN WOULD REFUSE (exit 3) without --allow-delete-locals' when the refusal
+  condition holds. Same class as G-108: two predicates (dry-run vs real) for one fact.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +45,8 @@ origin: {kind: "peer", source: "832-Workflow-designer", ref: "msg ef929333"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T21:59:38Z
-last_update: 2026-10-05T21:59:38Z
-date_finished: null
+last_update: 2026-10-05T22:39:27Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +57,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-05T22:15:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-05T22:15:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3907: fw upgrade --dry-run does not say the real run would REFUSE (exit 3) when vendored files are edited locally — it lists 'would be OVERWRITTEN' and the real run then refuses without --allow-delete-locals (832 on 1.8.3)
@@ -63,8 +97,16 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `vendor_preserve.py pre --dry-run` states the real run's verdict, from the same `at_risk and not allow` condition the real run uses:
+  - `REAL RUN WOULD REFUSE (exit 3) without --allow-delete-locals` when local files are at risk and the flag is absent;
+  - `REAL RUN WOULD PROCEED with --allow-delete-locals: N local file(s) lost (copies kept)` when the flag is given.
+  Nothing is printed when nothing is at risk.
+- [x] `bin/fw vendor --dry-run` passes `--allow` to the dry-run check when `--allow-delete-locals` was given, so the prediction matches the flags of the run being previewed. `fw upgrade --dry-run` forwards the flag through its existing `_vendor_extra`.
+- [x] Tests in `t3850_vendor_preserve_locals.bats`:
+  - dry-run without the flag says WOULD REFUSE;
+  - dry-run with the flag says WOULD PROCEED;
+  - dry-run with a manifest covering everything says neither;
+  - the existing legs stay green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -98,6 +140,11 @@ date_finished: null
 -->
 
 ## Verification
+
+bash -n bin/fw
+timeout 600 bats tests/unit/t3850_vendor_preserve_locals.bats > /tmp/.t3907 2>&1 && ! grep -q "^not ok" /tmp/.t3907
+test "$(grep -c '# skip' /tmp/.t3907)" -eq 0
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -241,6 +288,21 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** 832's `fw upgrade --dry-run` on 1.8.3 listed local files as "edited locally — would be OVERWRITTEN" and exited 0. The real run then refused (exit 3) without `--allow-delete-locals`, which surprised them.
+
+**Root cause:**
+- `vendor_preserve.py pre` returned before the refusal check whenever `--dry-run` was set, so the preview printed the inputs to the verdict but never the verdict itself.
+- `bin/fw vendor` also never passed `--allow` to the dry-run.
+- `fw upgrade --dry-run` dropped the vendor flags altogether.
+- So even a corrected preview would have described a different run than the one being planned.
+
+**Why structurally allowed:** this is the G-108 class, two predicates for one fact. The dry-run and the real run each decided "will this refuse" in their own branch, and only the real one asked the question. The T-3850 dry-run test checked only "no write, no refusal", so a silent preview passed it.
+
+**Prevention:**
+- The dry-run evaluates the same condition (`at_risk and not allow`) and states the verdict both ways.
+- The flags are forwarded on both preview paths.
+- Tests cover refuse, proceed and neither.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -321,3 +383,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3907-fw-upgrade---dry-run-does-not-say-the-re.md
 - **Context:** Initial task creation
+
+### 2026-10-05T22:32:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

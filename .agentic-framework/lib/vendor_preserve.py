@@ -326,6 +326,15 @@ def cmd_pre(a):
             print(f"    LOCAL  {rel}  — {why}")
 
     if a.dry_run:
+        # T-3907: predict the real run's verdict from the SAME condition it
+        # uses below. 832 (1.8.3): the dry-run listed "would be OVERWRITTEN"
+        # and said nothing about the refusal the real run then hit.
+        if at_risk and not a.allow:
+            print(f"  REAL RUN WOULD REFUSE (exit {REFUSE}) without --allow-delete-locals — "
+                  f"keep them via {MANIFEST}, or pass the flag to lose them (copies kept)")
+        elif at_risk:
+            print(f"  REAL RUN WOULD PROCEED with --allow-delete-locals: {len(at_risk)} local "
+                  "file(s) lost (logged Tier-2; copies kept in .context/working/vendor-backup/)")
         return 0
 
     if at_risk and not a.allow:
