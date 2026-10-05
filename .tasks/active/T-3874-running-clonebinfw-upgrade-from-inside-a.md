@@ -1,16 +1,13 @@
 ---
-id: T-3714
-name: "Upgrading a consumer from a bleeding-edge clone: shallow clone refused as foreign-source
-  with no unshallow hint; running <clone>/bin/fw upgrade from INSIDE the consumer
-  resolves the vendored copy and silently auto-clones master"
+id: T-3874
+name: "Running <clone>/bin/fw upgrade from INSIDE a consumer resolves the consumer's vendored framework instead of the clone it was invoked from, and silently auto-clones master — split from T-3714 (one bug = one task)"
 description: >
-  Reported by 055-agentic-fleet-cockpit 2026-10-02 (inbox @64, from upgrading 055
-  to 1.7.740, their T-413). Peer data: reproduce before fixing. 
+  055-agentic-fleet-cockpit report 2026-10-02 (inbox @64, their T-413), second half of T-3714. Peer data: reproduce before fixing. The invoked bin/fw's own location should win over the cwd consumer's .agentic-framework when the operator names a clone path explicitly; and an auto-clone of master must never happen silently.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: next
 tags: [bug, upgrade, consumer, 055-report]
 components: []
 related_tasks: []
@@ -40,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-02T11:21:50Z
-last_update: 2026-10-05T13:04:09Z
-date_finished:
+created: 2026-10-05T13:05:22Z
+last_update: 2026-10-05T13:05:22Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -53,51 +50,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-02T11:30:22Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-02T11:30:38Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3714: Upgrading a consumer from a bleeding-edge clone: shallow clone refused as foreign-source with no unshallow hint; running <clone>/bin/fw upgrade from INSIDE the consumer resolves the vendored copy and silently auto-clones master
+# T-3874: Running <clone>/bin/fw upgrade from INSIDE a consumer resolves the consumer's vendored framework instead of the clone it was invoked from, and silently auto-clones master — split from T-3714 (one bug = one task)
 
 ## Context
 
-Re-confirmed by 832 on 2026-10-05: upgrading 1.7.740 → 1.8.2 from a `--depth 1` clone of the tag trips the foreign-source guard. The cause: `version_sha` is not in shallow history. Scoped to the SHALLOW half. The second half (running `<clone>/bin/fw upgrade` from inside the consumer resolves the vendored copy and auto-clones master) is a separate bug and is split into its own task, per one bug = one task.
-
-`fw_version_relation` (lib/version-relation.sh) convicts any source that cannot resolve the consumer's recorded sha. A shallow clone cannot resolve it by construction, so it is reported as "foreign". The block message then sends the reader to the wrong remedy: "Likely cause: a stale global shim".
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] A shallow source that cannot resolve the consumer's recorded sha still REFUSES, since the commit is unverifiable. The reason names the shallow clone and the remedy (`git -C <source> fetch --unshallow`) instead of implying a foreign or stale source.
-- [ ] The `fw upgrade` refusal and `fw doctor` print the unshallow remedy for a shallow source, and keep the stale-shim remedy for a genuinely foreign (full-history) source
-- [ ] Regression test with real git fixtures (a file:// `--depth 1` clone): shallow and missing sha → shallow reason. After `fetch --unshallow`, the same pair resolves to `behind`. A full-history foreign source keeps the foreign reason (control).
-- [ ] tests/unit/version_relation.bats and t2762_upgrade_foreign_source_sha.bats stay green; vendored copy in sync
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -350,11 +316,7 @@ Re-confirmed by 832 on 2026-10-05: upgrading 1.7.740 → 1.8.2 from a `--depth 1
 
 ## Updates
 
-### 2026-10-02T11:21:50Z — task-created [task-create-agent]
+### 2026-10-05T13:05:22Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3714-upgrading-a-consumer-from-a-bleeding-edg.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3874-running-clonebinfw-upgrade-from-inside-a.md
 - **Context:** Initial task creation
-
-### 2026-10-05T13:04:09Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)

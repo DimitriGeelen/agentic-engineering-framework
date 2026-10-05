@@ -1,0 +1,21 @@
+id: tests/unit/t3714_shallow_source.bats
+name: t3714_shallow_source
+type: script
+subsystem: tests
+location: tests/unit/t3714_shallow_source.bats
+tags: []
+
+purpose: "T-3714: a SHALLOW framework clone cannot see a consumer's recorded version_sha by construction."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-05
+created_by: unknown

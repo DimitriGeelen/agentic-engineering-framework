@@ -3919,9 +3919,11 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
                         # the one source that must not perform it. The remedy is to
                         # change WHICH fw runs, not to run this one harder.
                         echo -e "         DO NOT run \`fw upgrade $consumer_dir\` from here — ${FW_VERSION_RELATION_REASON}."
-                        echo -e "         Check which fw is running: readlink -f \"\$(command -v fw)\""
-                        echo -e "         Upgrade from the consumer's own .agentic-framework/bin/fw, or from an"
-                        echo -e "         upstream checkout containing the consumer's commit."
+                        if ! fw_source_is_shallow "$FRAMEWORK_ROOT"; then   # T-3714: shallow → the reason carries the remedy
+                            echo -e "         Check which fw is running: readlink -f \"\$(command -v fw)\""
+                            echo -e "         Upgrade from the consumer's own .agentic-framework/bin/fw, or from an"
+                            echo -e "         upstream checkout containing the consumer's commit."
+                        fi
                         ;;
                     *)
                         echo -e "         Run: fw upgrade $consumer_dir"

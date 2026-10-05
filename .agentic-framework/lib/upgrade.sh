@@ -1407,12 +1407,17 @@ do_upgrade() {
                 # put in front of the reader. Naming the targeted bypass is L-399
                 # discipline — a block message that offers only a mechanism aimed at
                 # another failure is how agents end up routing around the gate.
-                echo -e "          Upgrading from it would overwrite the consumer's files with a" >&2
-                echo -e "          history that never held them." >&2
-                echo -e "          Likely cause: a stale global shim. Check which fw is running:" >&2
-                echo -e "            readlink -f \"\$(command -v fw)\"" >&2
-                echo -e "          Then re-run from the consumer's own vendored framework, or from an" >&2
-                echo -e "          upstream checkout that contains the consumer's commit." >&2
+                if fw_source_is_shallow "$FRAMEWORK_ROOT"; then
+                    # T-3714: truncated history, not a foreign one — one command fixes it.
+                    echo -e "          Remedy: ${BOLD}git -C $FRAMEWORK_ROOT fetch --unshallow${NC}, then re-run fw upgrade." >&2
+                else
+                    echo -e "          Upgrading from it would overwrite the consumer's files with a" >&2
+                    echo -e "          history that never held them." >&2
+                    echo -e "          Likely cause: a stale global shim. Check which fw is running:" >&2
+                    echo -e "            readlink -f \"\$(command -v fw)\"" >&2
+                    echo -e "          Then re-run from the consumer's own vendored framework, or from an" >&2
+                    echo -e "          upstream checkout that contains the consumer's commit." >&2
+                fi
                 echo -e "          To proceed anyway: ${BOLD}FW_ALLOW_FOREIGN_SOURCE=1${NC} (logged Tier-2)." >&2
             else
                 echo -e "          Running fw upgrade here would downgrade the runtime (.agentic-framework/)" >&2

@@ -56,6 +56,11 @@
 # Rationale in T-2713 §Decisions; this is the operator-reviewable knob.
 : "${FW_UNDECIDABLE_VERSION_PROCEED:=1}"
 
+# T-3714: is the framework source a shallow clone? (exit 0 = yes)
+fw_source_is_shallow() {
+    [ "$(git -C "${1:-.}" rev-parse --is-shallow-repository 2>/dev/null)" = "true" ]
+}
+
 fw_version_relation() {
     local cversion="$1"
     local fversion="$2"
@@ -113,6 +118,14 @@ fw_version_relation() {
         # the repo under suspicion — so a foreign source is precisely the one that
         # cannot see far enough to convict itself.
         if [ -n "$csha" ]; then
+            # T-3714: a SHALLOW source cannot see the commit by construction, so
+            # its absence proves nothing about origin. Still refuse (the commit
+            # is unverifiable either way), but name the real cause and remedy —
+            # "foreign"/"stale shim" sent 055 and 832 after the wrong fault.
+            if fw_source_is_shallow "$froot"; then
+                _vr_set foreign-source "consumer recorded version_sha ${csha:0:12}, which this SHALLOW clone (${froot}) cannot see — its history is truncated, so origin is unverified, not disproved. Run: git -C ${froot} fetch --unshallow   (or clone without --depth), then retry"
+                return 0
+            fi
             _vr_set foreign-source "consumer recorded version_sha ${csha:0:12} but this source repo does not contain that commit — it cannot be the origin of the consumer's code"
             return 0
         fi
