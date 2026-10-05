@@ -11,16 +11,16 @@ description: >
   longer has to choose between talking to the agent and the agent being wakeable by
   peers
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-05T17:42:46Z
-last_update: '2026-10-05T17:45:24Z'
-date_finished:
+last_update: 2026-10-05T22:39:27Z
+date_finished: 2026-10-05T22:39:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -38,6 +38,23 @@ cost_estimate_proposed:
       effort: 6
     rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
       (workflow:inception); effort=6 (lines=120,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-05T17:45:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -89,15 +106,15 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -154,9 +171,59 @@ Field evidence 2026-10-05: ring20-manager's operator ran 'claude-fw --termlink -
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+Field evidence 2026-10-05: ring20-manager's operator ran 'claude-fw --termlink -c', saw only the banner (claude runs in a hidden TermLink PTY, attach hint printed once at the top) and rebooted the container believing it hung. Without --termlink, peer mail cannot be typed into the session (T-3693 injection needs a registered PTY), so the T-2459 goal (talk to the agent AND be woken) is unreachable today; the s6 joint test records steps 2/3 as BLOCKED by this. The mechanism exists (termlink attach is a bidirectional TUI mirror); what is undecided is the shape: foreground attach vs claude in the foreground under a wrapper-owned PTY, detach semantics, and the no-TTY fallback. 055 (fleet launcher owner) asked to co-design. GO = explore those options with 055/ring20 and decide one; not a build authorisation.
+
+Evidence:
+
+**Date**: 2026-10-05T22:39:25Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-10-05T22:39:25Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+Field evidence 2026-10-05: ring20-manager's operator ran 'claude-fw --termlink -c', saw only the banner (claude runs in a hidden TermLink PTY, attach hint printed once at the top) and rebooted the container believing it hung. Without --termlink, peer mail cannot be typed into the session (T-3693 injection needs a registered PTY), so the T-2459 goal (talk to the agent AND be woken) is unreachable today; the s6 joint test records steps 2/3 as BLOCKED by this. The mechanism exists (termlink attach is a bidirectional TUI mirror); what is undecided is the shape: foreground attach vs claude in the foreground under a wrapper-owned PTY, detach semantics, and the no-TTY fallback. 055 (fleet launcher owner) asked to co-design. GO = explore those options with 055/ring20 and decide one; not a build authorisation.
+
+Evidence:
+
+### 2026-10-05T22:39:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1808d9bb
+- **Timestamp:** 2026-10-05T22:39:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-09b025a1
+- **Timestamp:** 2026-10-05T22:39:29Z
+- **Overall:** CONFIRMED
+- **Claims:** 2
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-3693` | task | ✓ pass |
+| `T-2459` | task | ✓ pass |
+
+### 2026-10-05T22:39:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
