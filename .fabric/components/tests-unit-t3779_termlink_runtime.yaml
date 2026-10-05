@@ -1,0 +1,21 @@
+id: tests/unit/t3779_termlink_runtime.bats
+name: t3779_termlink_runtime
+type: script
+subsystem: tests
+location: tests/unit/t3779_termlink_runtime.bats
+tags: []
+
+purpose: "T-3779: TERMLINK_RUNTIME_DIR split-brain. A launcher running an agent under `env -i` drops the variable; `termlink register` then lands in /tmp/termlink-$UID where no hub listens (2026-10-05: 27 fleet sessions, AEF's included)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-05
+created_by: unknown

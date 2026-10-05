@@ -12,7 +12,7 @@ description: >
   doctor should detect a sidecar runtime dir with no inbox topics. Gap-homing: likely
   shared with TermLink.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-03T19:32:54Z
-last_update: 2026-10-05T13:29:40Z
+last_update: 2026-10-05T13:51:05Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -106,9 +106,14 @@ Consequence: after EVERY reboot, every fleet agent is invisible to peers' `terml
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `lib/termlink-runtime.sh: fw_termlink_runtime_resolve` decides where this process's TermLink sessions must register:
+  - `TERMLINK_RUNTIME_DIR` set → unchanged;
+  - unset and the default dir (`/tmp/termlink-$UID`) has a live hub → unchanged;
+  - unset, no hub in the default dir, and exactly one known hub dir (`/var/lib/termlink`, or the `TERMLINK_RUNTIME_DIR_FALLBACK` config) has a live hub (`hub.sock` socket plus a live `hub.pid`) → export it and say so;
+  - otherwise unchanged, and say why.
+- [ ] `claude-fw` calls it before `termlink spawn`, so a launcher that starts it under `env -i` still registers on the canonical hub. The one stderr line names the directory it supplied.
+- [ ] `fw doctor` WARNs `TermLink split-brain` when this process would register on a dir with no live hub while a canonical hub exists elsewhere, and names the fix (`export TERMLINK_RUNTIME_DIR=<dir>`, restart the session). Silent when the env is consistent or TermLink is absent.
+- [ ] bats tests with temp dirs and fake live/dead hubs (a real socket, plus a pidfile naming a live or a dead pid) cover each branch. claude-fw and bin/fw pass `bash -n`; vendored copy in sync.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -368,3 +373,6 @@ Consequence: after EVERY reboot, every fleet agent is invisible to peers' `terml
 
 ### 2026-10-05T13:29:40Z — status-update [task-update-agent]
 - **Change:** horizon: now → now
+
+### 2026-10-05T13:51:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

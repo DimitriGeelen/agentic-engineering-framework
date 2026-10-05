@@ -91,6 +91,24 @@ termlink_start() {
         return
     fi
 
+    # T-3779: a launcher that runs us under `env -i` drops TERMLINK_RUNTIME_DIR,
+    # and the session would register where no hub listens (invisible to peers).
+    local _tlrt _tlrt_lib
+    _tlrt_lib="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../lib/termlink-runtime.sh"
+    if [ -f "$_tlrt_lib" ]; then
+        # shellcheck source=/dev/null
+        . "$_tlrt_lib"
+        _tlrt=$(fw_termlink_runtime_resolve)
+        case "$_tlrt" in
+            supplied\ *)
+                _tlrt=${_tlrt#supplied }
+                export TERMLINK_RUNTIME_DIR="${_tlrt%% *}"
+                echo "claude-fw: WARNING: TERMLINK_RUNTIME_DIR was unset (no hub in the default dir); registering on the canonical hub at $TERMLINK_RUNTIME_DIR (T-3779)" >&2 ;;
+            ambiguous\ *|none\ *)
+                echo "claude-fw: WARNING: TermLink runtime: ${_tlrt#* } (T-3779)" >&2 ;;
+        esac
+    fi
+
     TERMLINK_SESSION="claude-master-$$"
     echo "claude-fw: Registering TermLink session: $TERMLINK_SESSION"
 

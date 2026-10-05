@@ -3487,6 +3487,19 @@ for e in d.get('errors',[])[:3]:
         tl_version=$(termlink --version 2>/dev/null | head -1) || tl_version=""  # T-3837: pipefail
         echo -e "  ${GREEN}OK${NC}  TermLink ($tl_version)"
 
+        # T-3779: registered where no hub listens (an `env -i` launcher dropped
+        # TERMLINK_RUNTIME_DIR) — invisible to peers, mail never typed in.
+        if [ -f "$FRAMEWORK_ROOT/lib/termlink-runtime.sh" ]; then
+            local _tlrt_line=""
+            # shellcheck source=/dev/null
+            . "$FRAMEWORK_ROOT/lib/termlink-runtime.sh"
+            _tlrt_line=$(fw_termlink_doctor_line) || _tlrt_line=""
+            if [ -n "$_tlrt_line" ]; then
+                echo -e "  ${YELLOW}WARN${NC}  ${_tlrt_line#WARN }"
+                warnings=$((warnings + 1))
+            fi
+        fi
+
         # T-3040: a topic that does not exist on the LOCAL hub REJECTS posts
         # to it rather than queuing them — there is no client-side retry, so a
         # missing topic silently discards every peer message sent to it. The
