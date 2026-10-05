@@ -113,13 +113,30 @@ def safe_meta(value, default: str) -> str:
     return raw
 
 
+def _sender(msg: dict) -> str:
+    """T-3855 (ring20 §3.6): the sender's name — from_agent, else the name its
+    from_circuit carries; a post with neither is `unattributed (raw post)`,
+    never "unknown". Peer-controlled, so token-reduced like every header field."""
+    from .inbox import UNATTRIBUTED, sender_of
+    name = msg.get("from") or sender_of({"from_circuit": msg.get("from_circuit")})
+    return safe_meta(name, UNATTRIBUTED)
+
+
+def _reply_to(msg: dict) -> str | None:
+    """`--to` for the reply line: the sender's circuit when it is on another
+    hub (lands in ITS namespace), else its name; None for a raw post."""
+    from .inbox import reply_address
+    to = reply_address(msg)
+    return safe_meta(to, "") or None if to else None
+
+
 def _header(msg: dict, surfacing: str) -> str:
     """The block header for one message in one surfacing attempt. `surfacing`
     is a fresh random token per prompt-hook run: the finalizer accepts only
     this exact line (followed by the PEER-DATA opener) as evidence, so neither
     an id quoted inside some other message's untrusted body nor an attachment
     left by an EARLIER attempt can certify this one."""
-    sender = safe_meta(msg.get("from"), "unknown")
+    sender = _sender(msg)
     conv = safe_meta(msg.get("conversation_id"), "-")
     mid = safe_meta(msg.get("client_msg_id") or msg.get("msg_id"), "?")
     return f"## from {sender}  [conversation {conv}]  [msg {mid}]  [surfacing {surfacing}]"
@@ -130,16 +147,18 @@ def _block(msg: dict, surfacing: str, fw: str, body_cap: int = BODY_CAP) -> list
     if len(body) > body_cap:
         body = body[:body_cap] + f" [truncated, {len(body) - body_cap} more chars]"
     body = body.replace(OPEN, "<<<peer-data").replace(CLOSE, "peer-data>>>")
-    sender = safe_meta(msg.get("from"), "unknown")
     conv = safe_meta(msg.get("conversation_id"), "-")
     mid = safe_meta(msg.get("client_msg_id") or msg.get("msg_id"), "?")
+    to = _reply_to(msg)
+    reply = (f"reply: {fw} sidecar send --to {to} --conversation {conv} "
+             f"--in-reply-to {mid} --body '<your answer>'") if to else \
+        "reply: none possible — a raw post carries no sender address (T-3855)"
     return [
         _header(msg, surfacing),
         OPEN,
         body,
         CLOSE,
-        f"reply: {fw} sidecar send --to {sender} --conversation {conv} "
-        f"--in-reply-to {mid} --body '<your answer>'",
+        reply,
         "",
     ]
 

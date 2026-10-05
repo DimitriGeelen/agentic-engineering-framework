@@ -460,6 +460,35 @@ def read_liveness() -> dict | None:
     return out
 
 
+def has_inbox() -> bool:
+    """Does this agent have a sidecar inbox — has it ever read, sent, been
+    started, or resolved its own address here? (T-3855)"""
+    d = receiver._root() / ".context" / "sidecar"
+    return any(p.exists() for p in (d / "inbox-state.json", d / "outbox",
+                                    d / "watcher" / "enabled.json", d / "hub-id"))
+
+
+def wake_verdict(verdict: dict | None = None) -> dict:
+    """What would wake this agent when a message arrives (T-3855, ring20 §5.6).
+
+    `nothing_wakes` is the FAIL condition doctor and audit share: an inbox
+    exists and no live watcher would notice a message on it. The watcher is
+    started by claude-fw AND by every plain session's SessionStart hook
+    (agents/context/sidecar-autostart.sh), so a FAIL here means it was stopped
+    or died and nothing restarted it."""
+    v = verdict if verdict is not None else liveness_verdict()
+    wakes = []
+    if v.get("state") == "live":
+        live = v.get("liveness") or {}
+        wakes.append(f"watcher tick every {live.get('tick_s') or DEFAULT_TICK_S}s")
+        fol = read_follower() or {}
+        if fol.get("state") == "following":
+            wakes.append(f"inbox.queued follower via {fol.get('via')}")
+    inbox_here = has_inbox()
+    return {"has_inbox": inbox_here, "wakes": wakes,
+            "follower": read_follower(), "nothing_wakes": inbox_here and not wakes}
+
+
 def liveness_verdict(now: datetime | None = None) -> dict:
     """{state: live | not-live | absent, reasons[], …} — the one predicate
     fw doctor, fw audit, fw sidecar status and the supervisor all read.
@@ -569,23 +598,164 @@ def _single_instance(which: str):
     return fh
 
 
+# ── wake follower (T-3855) ──────────────────────────────────────────────────
+#
+# ring20 T-2459 §5 item 6: an idle agent must be woken without claude-fw. The
+# tick alone polls every SIDECAR_TICK seconds; the follower makes arrival the
+# trigger. The hub emits an `inbox.queued` frame for every post to an
+# `inbox:*` topic ({addressee_session_id, channel, message_offset, …}, hub
+# channel.rs). It is a PUSH-ONLY aggregator — measured 2026-10-05:
+# `channel subscribe inbox.queued` without --push answers "unknown topic" —
+# so the follower needs a TCP `--hub` with a secret: the hubs.toml profile
+# whose hub id is OUR hub's id. A matching frame (payload.channel is one of
+# our read topics) cuts the tick's sleep short. No such profile → the follower
+# says so in follower.json and the tick remains the floor.
+
+QUEUED_TOPIC = "inbox.queued"
+_PUSH_LINE = re.compile(r"^\[push\]\s+(\S+)\s+seq=\d+:\s*")
+FOLLOW_RETRY_S = 5.0
+FOLLOW_UNAVAILABLE_RETRY_S = 300.0
+
+
+def follower_path() -> Path:
+    return _dir() / "follower.json"
+
+
+def _write_follower(state: dict) -> None:
+    try:
+        tmp = follower_path().with_suffix(f".json.{os.getpid()}.tmp")
+        tmp.write_text(json.dumps(dict(state, updated_at=_now().isoformat())), encoding="utf-8")
+        os.replace(tmp, follower_path())
+    except OSError:
+        pass
+
+
+def read_follower() -> dict | None:
+    try:
+        return json.loads(follower_path().read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return None
+
+
+def queued_channel(line: str) -> str | None:
+    """The inbox topic an `inbox.queued` frame announces, or None.
+
+    Accepts the push render line (`[push] inbox.queued seq=N: {json}`) and a
+    bare JSON frame; `channel` is preferred, `addressee_session_id` is the
+    fallback (older hubs). A frame for another push topic is None."""
+    line = (line or "").strip()
+    m = _PUSH_LINE.match(line)
+    if m:
+        if m.group(1) != QUEUED_TOPIC:
+            return None
+        line = line[m.end():]
+    try:
+        obj = json.loads(line)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(obj, dict):
+        return None
+    payload = obj.get("payload") if isinstance(obj.get("payload"), dict) else obj
+    ch = payload.get("channel")
+    if not ch and payload.get("addressee_session_id"):
+        ch = f"inbox:{payload['addressee_session_id']}"
+    return str(ch) if ch else None
+
+
+def follow_argv(runner=subprocess.run) -> tuple[list[str] | None, str]:
+    """(argv, why) for the follower subscribe; argv None = cannot follow."""
+    if shutil.which("termlink") is None:
+        return None, "termlink absent"
+    from . import addressing
+    try:
+        own = circuit.hub_id()
+    except circuit.CircuitError as e:
+        return None, f"own hub id unreadable: {e}"
+    prof = addressing.profile_for_hub_id(own, runner=runner)
+    row = addressing.load_peers()["hubs"].get(prof or "") or {}
+    if not prof or not row.get("address"):
+        return None, (f"no hubs.toml profile reaches this agent's own hub {own} over TCP — "
+                      "inbox.queued is push-only and needs one (`termlink remote profile add "
+                      "<name> <host:port> --secret-file <path>`); the tick remains the floor")
+    return (["termlink", "channel", "subscribe", QUEUED_TOPIC, "--push",
+             "--hub", row["address"]], f"profile {prof} ({row['address']})")
+
+
+def follow(wake, stop, *, topics=None, popen=subprocess.Popen, runner=subprocess.run,
+           retry_s: float = FOLLOW_RETRY_S,
+           unavailable_retry_s: float = FOLLOW_UNAVAILABLE_RETRY_S) -> None:
+    """Follower body: set `wake` for every `inbox.queued` frame naming one of
+    our inbox topics, until `stop` is set. Runs in a daemon thread."""
+    topics = set(topics if topics is not None else inbox.read_topics())
+    while not stop.is_set():
+        argv, why = follow_argv(runner)
+        if argv is None:
+            _write_follower({"state": "unavailable", "reason": why})
+            stop.wait(unavailable_retry_s)
+            continue
+        try:
+            proc = popen(argv, stdout=subprocess.PIPE, stderr=subprocess.DEVNULL,
+                         stdin=subprocess.DEVNULL, text=True)
+        except OSError as e:
+            _write_follower({"state": "failed", "reason": f"subscribe failed to start: {e}"})
+            stop.wait(retry_s)
+            continue
+        _write_follower({"state": "following", "via": why, "pid": proc.pid, "frames": 0})
+        frames = 0
+        try:
+            for line in proc.stdout:
+                if stop.is_set():
+                    break
+                ch = queued_channel(line)
+                if ch and ch in topics:
+                    frames += 1
+                    wake.set()
+                    _write_follower({"state": "following", "via": why, "pid": proc.pid,
+                                     "frames": frames, "last_frame_at": _now().isoformat(),
+                                     "last_channel": ch})
+        finally:
+            try:
+                proc.terminate()
+            except OSError:
+                pass
+        if not stop.is_set():
+            _write_follower({"state": "reconnecting", "via": why, "frames": frames,
+                             "reason": "subscribe stream ended"})
+            stop.wait(retry_s)
+
+
+def _start_follower(wake, stop):
+    import threading
+    if os.environ.get("FW_SIDECAR_WAKE_FOLLOW", "1") == "0":
+        _write_follower({"state": "disabled", "reason": "FW_SIDECAR_WAKE_FOLLOW=0"})
+        return None
+    t = threading.Thread(target=follow, args=(wake, stop), name="sidecar-wake-follower",
+                         daemon=True)
+    t.start()
+    return t
+
+
 def run_forever(tick_s: float | None = None) -> int:
     """The watcher process body: tick until SIGTERM."""
+    import threading
     tick = tick_seconds(tick_s)
     lock = _single_instance("watcher")
     if lock is None:
         record_event("WATCHER_REFUSED", pid=os.getpid(), reason="another watcher holds the lock")
         return 3
     stop = {"flag": False}
+    wake, stop_follow = threading.Event(), threading.Event()
 
     def _term(*_):
         stop["flag"] = True
+        stop_follow.set()
     signal.signal(signal.SIGTERM, _term)
     signal.signal(signal.SIGINT, _term)
     _write_pid("watcher", os.getpid())
     prev = read_liveness() or {}
     seq = int(prev.get("seq") or 0)
     record_event("WATCHER_STARTED", pid=os.getpid(), tick_s=tick, resumed_seq=seq)
+    _start_follower(wake, stop_follow)
     while not stop["flag"]:
         started = time.monotonic()
         seq += 1
@@ -594,7 +764,11 @@ def run_forever(tick_s: float | None = None) -> int:
         except Exception as e:  # a tick that throws must not end the watcher
             record_event("TICK_ERROR", seq=seq, error=f"{type(e).__name__}: {e}"[:300])
         while not stop["flag"] and time.monotonic() - started < tick:
-            time.sleep(min(0.5, tick))
+            # T-3855: an inbox.queued frame for us ends the wait — tick now.
+            if wake.wait(min(0.5, tick)):
+                wake.clear()
+                break
+    stop_follow.set()
     record_event("WATCHER_STOPPED", pid=os.getpid(), seq=seq)
     return 0
 

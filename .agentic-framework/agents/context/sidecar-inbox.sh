@@ -146,7 +146,7 @@ total, shown = sum(len(l) + 1 for l in lines), 0
 surfacing = secrets.token_hex(16)
 shown_msgs = []
 for m in msgs:
-    who = m.get("from") or "unknown"
+    who = m.get("from") or "unattributed (raw post)"   # T-3855: never "unknown"
     conv = m.get("conversation_id") or "-"
     body = str(m.get("body") or "").strip()
     if len(body) > BODY_CAP:

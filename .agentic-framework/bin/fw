@@ -528,12 +528,14 @@ do_vendor() {
     local dry_run=false
     local target="${PROJECT_ROOT:-.}"
     local source_override=""
+    local allow_delete_locals=false
 
     while [[ $# -gt 0 ]]; do
         case $1 in
             --dry-run) dry_run=true; shift ;;
             --target) target="$2"; shift 2 ;;
             --source) source_override="$2"; shift 2 ;;
+            --allow-delete-locals) allow_delete_locals=true; shift ;;
             -h|--help)
                 echo -e "${BOLD}fw vendor${NC} — Copy framework into project for full isolation"
                 echo ""
@@ -543,7 +545,14 @@ do_vendor() {
                 echo "  --dry-run   Show what would be copied without copying"
                 echo "  --target    Target project directory (default: current project)"
                 echo "  --source    Framework source directory (default: auto-resolved)"
+                echo "  --allow-delete-locals"
+                echo "              Proceed even though local files under .agentic-framework/"
+                echo "              would be deleted or overwritten (logged Tier-2, backed up)"
                 echo "  -h, --help  Show this help"
+                echo ""
+                echo "Local files (T-3850): list them in .fwvendor-preserve.yaml at the project"
+                echo "root — files: (kept as-is) and in_file: + marker (checked after the copy)."
+                echo "Anything else that would be lost is named and the vendor refuses."
                 echo ""
                 echo "Copies the complete framework (~7MB) into PROJECT/.agentic-framework/"
                 echo "After vendoring, the project is self-contained — no global install needed."
@@ -679,6 +688,53 @@ do_vendor() {
         # `draft-*` rather than adding a line back.
         ".context/designer/projects/draft-*"
     )
+
+    # T-3850: consumer-local protection. The copy below mirrors each include
+    # with rsync --delete (or rm -rf + cp), which deleted every file a consumer
+    # added under .agentic-framework/ and overwrote every in-place patch,
+    # silently — ring20-manager lost 7 blueprints, 6 templates, a lib module and
+    # ~40 patches on v1.8.0. lib/vendor_preserve.py runs BEFORE anything is
+    # written: it honours .fwvendor-preserve.yaml, names every uncovered local
+    # file that would be lost, and refuses (exit 3) unless --allow-delete-locals.
+    # Located beside this bin/fw first, then FRAMEWORK_ROOT, then the source:
+    # an upgrade hands off between copies, and a helper missing from one of
+    # them must not disable the check (the fail-safe branch below refuses).
+    local _vp_py="" _vp_cand
+    for _vp_cand in "${FW_BIN_DIR:-$FRAMEWORK_ROOT/bin}/../lib/vendor_preserve.py" \
+            "$FRAMEWORK_ROOT/lib/vendor_preserve.py" "$vendor_source/lib/vendor_preserve.py"; do
+        if [ -f "$_vp_cand" ]; then _vp_py="$_vp_cand"; break; fi
+    done
+    local _vp_dir=""
+    if [ -n "$_vp_py" ] && command -v python3 >/dev/null 2>&1; then
+        _vp_dir=$(mktemp -d "${TMPDIR:-/tmp}/fw-vendor-preserve-XXXXXX")
+        # Run from a private copy: the copy below may replace (or delete) the
+        # very lib/ the helper was found in when bin/fw runs from the target.
+        cp "$_vp_py" "$_vp_dir/vendor_preserve.py" && _vp_py="$_vp_dir/vendor_preserve.py"
+        printf '%s\n' "${includes[@]}" > "$_vp_dir/includes"
+        printf '%s\n' "${excludes[@]}" > "$_vp_dir/excludes"
+        local -a _vp_args=(--source "$vendor_source" --target "$target"
+            --includes "$_vp_dir/includes" --excludes "$_vp_dir/excludes" --plan "$_vp_dir/plan.json")
+        local _vp_rc=0
+        if [ "$dry_run" = true ]; then
+            python3 "$_vp_py" pre "${_vp_args[@]}" --dry-run || _vp_rc=$?
+            rm -rf "$_vp_dir"; _vp_dir=""
+        else
+            [ "$allow_delete_locals" = true ] && _vp_args+=(--allow)
+            python3 "$_vp_py" pre "${_vp_args[@]}" || _vp_rc=$?
+            if [ "$_vp_rc" -ne 0 ]; then
+                rm -rf "$_vp_dir"
+                echo -e "${RED}fw vendor refused — local files would be lost (T-3850).${NC}" >&2
+                return 1
+            fi
+        fi
+    elif [ -d "$dest" ] && [ -n "$(ls -A "$dest" 2>/dev/null)" ] && [ "$dry_run" != true ] \
+            && [ "$allow_delete_locals" != true ]; then
+        # Fail safe, not open: without the checker we cannot tell a consumer's
+        # files from ours, and the copy below would delete them unseen.
+        echo -e "${RED}ERROR${NC}  cannot check $dest for local files (python3 or lib/vendor_preserve.py missing)." >&2
+        echo -e "         Re-run with --allow-delete-locals to vendor anyway (local files there will be lost)." >&2
+        return 1
+    fi
 
     if [ "$dry_run" = true ]; then
         echo -e "${BOLD}fw vendor --dry-run${NC}"
@@ -947,6 +1003,24 @@ UPSTREAM
         return 1
     fi
 
+    # T-3850: restore preserved files, check in-file markers, write the stamp
+    # the next vendor compares local edits against. After FRAMEWORK.md so the
+    # stamp describes a complete vendor.
+    if [ -n "$_vp_dir" ]; then
+        {
+            printf '%s\n' VERSION .fw-not-a-project .gitignore FRAMEWORK.md
+            if [ -n "${_vendor_origin:-}" ]; then printf '%s\n' .upstream; fi
+            if [ -n "${_vd_rel:-}" ]; then printf '%s\n' "$_vd_rel"; fi
+        } > "$_vp_dir/written"
+        local _vp_post_rc=0
+        python3 "$_vp_py" post "${_vp_args[@]}" --written "$_vp_dir/written" || _vp_post_rc=$?
+        rm -rf "$_vp_dir"
+        if [ "$_vp_post_rc" -ne 0 ] && [ "$_vp_post_rc" -ne 4 ]; then
+            echo -e "${RED}ERROR${NC}  post-vendor preserve step failed (exit $_vp_post_rc)" >&2
+            return 1
+        fi
+    fi
+
     # T-3144: the target's git must be able to SEE what we just wrote. Runs
     # after FRAMEWORK.md — the sentinel — so the tree being checked is the tree
     # a consumer will actually have. See lib/vendor-visibility.sh for why a
@@ -974,6 +1048,7 @@ UPSTREAM
             if [ -n "${_vd_rel:-}" ] && [ -f "$dest/$_vd_rel" ]; then printf '%s\n' "$_vd_rel"; fi
             printf '%s\n' VERSION .fw-not-a-project .gitignore FRAMEWORK.md
             if [ -n "${_vendor_origin:-}" ] && [ -f "$dest/.upstream" ]; then printf '%s\n' .upstream; fi
+            if [ -f "$dest/.fw-vendor-stamp.json" ]; then printf '%s\n' .fw-vendor-stamp.json; fi
         } > "$_vis_manifest"
         local _vis_rc=0
         fw_vendor_check_visibility "$dest" "$target" "$vendor_source" "$_vis_manifest" || _vis_rc=$?
@@ -3511,13 +3586,13 @@ sys.exit(0 if '$_tl_topic' in names else 1)
     if [ -f "$FRAMEWORK_ROOT/lib/sidecar-audit.sh" ]; then
         # shellcheck source=/dev/null
         source "$FRAMEWORK_ROOT/lib/sidecar-audit.sh"
-        local _sw _sw_rc _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why
+        local _sw _sw_rc _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why _sw_wake
         _sw=$(fw_sidecar_watcher_facts "$PROJECT_ROOT") && _sw_rc=0 || _sw_rc=$?  # T-3837: set -e
         if [ "$_sw_rc" -ne 0 ]; then
             echo -e "  ${RED}FAIL${NC}  Sidecar watcher liveness could not be read (fw sidecar liveness --json)"
             issues=$((issues + 1))
         else
-            IFS=$'\t' read -r _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why <<< "$_sw"
+            IFS=$'\t' read -r _sw_state _sw_seq _sw_age _sw_ms _sw_tl _sw_why _sw_wake <<< "$_sw"
             case "$_sw_state" in
                 live)
                     if [ "$_sw_tl" = "absent" ]; then
@@ -3531,8 +3606,15 @@ sys.exit(0 if '$_tl_topic' in names else 1)
                     echo "         Run: fw sidecar liveness; fw sidecar ensure (restarts the supervisor); logs in .context/sidecar/watcher/"
                     issues=$((issues + 1)) ;;
                 *)
-                    echo -e "  ${YELLOW}WARN${NC}  No sidecar watcher in this project (R14: every agent runs one) — start: fw sidecar start"
-                    warnings=$((warnings + 1)) ;;
+                    # T-3855: an inbox that nothing would wake is a deaf agent — FAIL.
+                    if [ "$_sw_wake" = "none" ]; then
+                        echo -e "  ${RED}FAIL${NC}  Sidecar inbox with NOTHING to wake it: no watcher running ($_sw_why)"
+                        echo "         Run: fw sidecar start (plain sessions start it at SessionStart; claude-fw too)"
+                        issues=$((issues + 1))
+                    else
+                        echo -e "  ${YELLOW}WARN${NC}  No sidecar watcher in this project (R14: every agent runs one) — start: fw sidecar start"
+                        warnings=$((warnings + 1))
+                    fi ;;
             esac
         fi
     fi

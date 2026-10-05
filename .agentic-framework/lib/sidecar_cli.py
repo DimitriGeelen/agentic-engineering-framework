@@ -29,7 +29,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lib.sidecar import circuit, delivery, dm, e2e, inbox, outbox, retry, status as status_mod  # noqa: E402
+from lib.sidecar import addressing, circuit, delivery, dm, e2e, inbox, outbox, retry, status as status_mod  # noqa: E402
 from lib.sidecar import termlink_transport as transport, receiver, lifecycle, adapter, direct, inject  # noqa: E402
 from lib.sidecar import latency as latency_mod, receipts, watcher  # noqa: E402
 from lib.sidecar import waiting as waiting_mod  # noqa: E402
@@ -137,16 +137,22 @@ def _cmd_send(args) -> int:
     # Resolve the address HERE rather than carrying a level flag through the
     # outbox: a resolved circuit is used verbatim by transport.topic_for, so
     # the ledger records the exact address the post went to (T-3433).
+    # T-3855: on the RECIPIENT's hub — a recipient that is not evidenced as our
+    # sub-agent is never addressed in our namespace; unresolvable is refused
+    # before anything is written or posted.
     try:
-        target = circuit.resolve_address(args.to, level=args.level)
+        where = addressing.resolve(args.to, hub=args.hub, level=args.level)
     except circuit.CircuitError as exc:
-        print(f"send: {exc}", file=sys.stderr)
+        if args.json:
+            print(json.dumps({"delivered": False, "state": "REFUSED", "reason": str(exc)}))
+        print(f"send: REFUSED, nothing posted — {exc}", file=sys.stderr)
         return 2
+    target, hub = where["circuit"], where["hub"]
 
     client_msg_id = outbox.write_message(
         from_id=inbox.agent_id(), to=target, body=args.body,
         conversation_id=args.conversation or f"consult-{args.to}",
-        urgent=args.urgent, hub=args.hub,
+        urgent=args.urgent, hub=hub,
         in_reply_to=receipts.base_id(args.in_reply_to) if args.in_reply_to else None)
 
     result = delivery.deliver(client_msg_id, transport.termlink_transport,
@@ -158,12 +164,15 @@ def _cmd_send(args) -> int:
         "delivered": result.delivered,
         "reason": result.reason,
         "topic": circuit.topic_for_circuit(target),
+        "hub": hub or "local",
+        "addressed_by": where["how"],
     }
     if args.json:
         print(json.dumps(payload))
     else:
         verdict = "delivered" if result.delivered else "NOT delivered"
-        print(f"{verdict}: {result.state}  ->  {payload['topic']}")
+        print(f"{verdict}: {result.state}  ->  {payload['topic']}  on hub {payload['hub']}")
+        print(f"addressed by: {where['how']}")
         print(f"client_msg_id: {result.client_msg_id}")
         if result.reason:
             print(f"reason: {result.reason}")
@@ -222,7 +231,7 @@ def _print_inbox(args, messages) -> int:
         print(f"no pending consults on {inbox.inbox_topic()}")
         return 0
     for msg in messages:
-        sender = msg.get("from") or "unknown"
+        sender = inbox.sender_label(msg)   # T-3855: never "unknown"
         print(f"--- consult @{msg.get('offset')} from {sender} "
               f"[{msg.get('conversation_id')}] ---")
         print(msg.get("body", ""))
@@ -233,7 +242,7 @@ def _print_inbox(args, messages) -> int:
                   f"cursor={row['cursor']} unread={row['unread']}")
     else:
         for msg in dm_posts:
-            sender = msg.get("from") or "unknown"
+            sender = msg.get("from") or inbox.UNATTRIBUTED
             print(f"--- dm @{msg.get('offset')} on {msg.get('topic')} "
                   f"from {sender} ---")
             print(msg.get("body", ""))
@@ -334,7 +343,7 @@ def cmd_status(args) -> int:
     for row in inbound["topics"]:
         age = "unknown" if row["age_hours"] is None else f"{row['age_hours']}h"
         print(f"  {row['topic']}: {row['unread']} unread, oldest {age}"
-              f" from {row['oldest_from'] or 'unknown'}")
+              f" from {row['oldest_from'] or inbox.UNATTRIBUTED}")
     if dm_rows:
         print("dm rails:")
         for row in dm_rows:
@@ -513,7 +522,7 @@ def cmd_inbox_stale(args) -> int:
         return 0
     for row in rows:
         age = "unknown" if row["age_hours"] is None else row["age_hours"]
-        print(f"{row['topic']}\t{row['unread']}\t{age}\t{row['oldest_from'] or 'unknown'}")
+        print(f"{row['topic']}\t{row['unread']}\t{age}\t{row['oldest_from'] or inbox.UNATTRIBUTED}")
     return 0
 
 
@@ -734,6 +743,7 @@ def cmd_liveness(args) -> int:
     v = watcher.liveness_verdict()
     v["supervisor_alive"] = watcher.supervisor_alive()
     v["injection_transport"] = "present" if __import__("shutil").which("termlink") else "absent"
+    v["wake"] = watcher.wake_verdict(v)   # T-3855: what would wake this agent
     if args.json:
         print(json.dumps(v, default=str))
     else:
@@ -743,6 +753,13 @@ def cmd_liveness(args) -> int:
               f"termlink={v['injection_transport']}")
         for r in v["reasons"]:
             print(f"  - {r}")
+        w = v["wake"]
+        print("wake: " + ("; ".join(w["wakes"]) if w["wakes"] else
+                          ("NOTHING would wake this agent — it has an inbox (fw sidecar start)"
+                           if w["nothing_wakes"] else "no inbox here yet")))
+        fol = w.get("follower") or {}
+        if fol and fol.get("state") != "following":
+            print(f"  inbox.queued follower: {fol.get('state')} — {fol.get('reason') or ''}")
     return {"live": 0, "not-live": 1}.get(v["state"], 2)
 
 

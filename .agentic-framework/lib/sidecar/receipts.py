@@ -201,6 +201,19 @@ def _hub_post(client_msg_id: str, state: str, sender: str, sender_circuit: str |
         topic = circuit.topic_for_name(sender_circuit or sender)
     except circuit.CircuitError as e:
         return False, f"no topic for {sender!r}: {e}"
+    # T-3855: the receipt goes to the SENDER's hub. A from_circuit names it;
+    # a hub that is not ours needs the hubs.toml profile that reaches it, and
+    # with none the receipt is reported failed — never posted to our own hub,
+    # where the sender would never read it.
+    hub_arg = None
+    if sender_circuit:
+        from . import addressing
+        sender_hub = circuit.parse_circuit(addressing.strip_host(sender_circuit)).get("hub")
+        if sender_hub:
+            try:
+                hub_arg = addressing.hub_arg_for(sender_hub, runner=runner)
+            except circuit.CircuitError as e:
+                return False, f"sender hub {sender_hub} unreachable for a receipt: {e}"[:300]
     me = _me()
     body = (f"[sidecar receipt] {state} for message {client_msg_id} from {me}. "
             + (f"{note}" + (f" (since {since}). " if since else ". ") if note else "")
@@ -213,18 +226,24 @@ def _hub_post(client_msg_id: str, state: str, sender: str, sender_circuit: str |
             "--metadata", f"receipt_state={state}",
             "--metadata", f"from_agent={me}",
             "--metadata", f"conversation_id={conversation_id or '-'}"]
+    try:
+        argv += ["--metadata", f"from_circuit={circuit.circuit_id('full')}"]
+    except circuit.CircuitError:
+        pass
     if note:
         argv += ["--metadata", f"receipt_note={str(note)[:200]}"]
     if since:
         argv += ["--metadata", f"receipt_since={since}"]
     argv += ["--payload", body]
+    if hub_arg:
+        argv += ["--hub", hub_arg]
     try:
         proc = runner(argv, capture_output=True, text=True, timeout=15)
     except (OSError, subprocess.SubprocessError) as e:
         return False, f"hub post failed: {e}"[:200]
     if proc.returncode != 0:
         return False, f"hub post exit {proc.returncode}: {(proc.stderr or '').strip()[:160]}"
-    return True, topic
+    return True, (f"{topic}@{hub_arg}" if hub_arg else topic)
 
 
 def send(env: dict, state: str, *, by: str, runner=subprocess.run,

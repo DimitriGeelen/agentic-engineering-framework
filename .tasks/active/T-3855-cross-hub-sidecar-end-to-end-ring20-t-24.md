@@ -99,19 +99,19 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Report, including the TermLink-side needs: `docs/reports/T-3855-cross-hub-sidecar.md`. The §6 joint acceptance test (.121 <-> .122) belongs to the parent session with ring20. This task posted nothing into a peer inbox. Its live checks were read-only: hub probe, TOFU list and fleet doctor.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Addressing (§5.3): `fw sidecar send` never builds a recipient topic in the SENDER's namespace for a recipient that is not evidenced as the sender's sub-agent. A bare `--to` with `--hub` resolves on the recipient's hub id (authenticated read via the hubs.toml profile's TOFU-pinned fingerprint, or the peer directory learned from received envelopes' `from_circuit`); `--to <hubid>/<name>` is used verbatim. Unresolvable → refused by name, exit non-zero, nothing posted, never "delivered".
-- [ ] "delivered" output names the actual topic AND the hub (`local` or the profile/address) the post went to.
-- [ ] Receipts (§5.5): RECEIVED / HANDED_OVER / REPLIED go back to the sender's hub — target topic from the envelope's `from_circuit`, `--hub` from the hubs.toml profile whose hub id matches; no matching profile is reported, not silently posted locally.
-- [ ] Attribution (§3.6): the receiver never prints "from unknown" when `from_agent`/`from_circuit` metadata is present; a raw post without either is labelled `unattributed (raw post)`.
-- [ ] Wake without claude-fw (§5.6): the watcher follows `termlink channel subscribe inbox.queued --follow` on its own hub (payload.channel filtered to our inbox) so an idle plain session is woken; `fw doctor` / `fw audit` FAIL when this agent has a sidecar inbox but nothing would wake it.
-- [ ] Unit tests with fake runners cover every leg: addressing refusal, cross-hub receipts, attribution, wake path — all green.
-- [ ] TermLink-side needs (if any) written precisely into docs/reports/T-3855-cross-hub-sidecar.md.
+- [x] Addressing (§5.3): `fw sidecar send` never builds a recipient topic in the SENDER's namespace for a recipient that is not evidenced as the sender's sub-agent. A bare `--to` with `--hub` resolves on the recipient's hub id (authenticated read via the hubs.toml profile's TOFU-pinned fingerprint, or the peer directory learned from received envelopes' `from_circuit`); `--to <hubid>/<name>` is used verbatim. Unresolvable → refused by name, exit non-zero, nothing posted, never "delivered".
+- [x] "delivered" output names the actual topic AND the hub (`local` or the profile/address) the post went to.
+- [x] Receipts (§5.5): RECEIVED / HANDED_OVER / REPLIED go back to the sender's hub — target topic from the envelope's `from_circuit`, `--hub` from the hubs.toml profile whose hub id matches; no matching profile is reported, not silently posted locally.
+- [x] Attribution (§3.6): the receiver never prints "from unknown" when `from_agent`/`from_circuit` metadata is present; a raw post without either is labelled `unattributed (raw post)`.
+- [x] Wake without claude-fw (§5.6): the watcher follows `termlink channel subscribe inbox.queued --push` on its own hub (the hubs.toml profile whose hub id is ours; payload.channel filtered to our inbox topics) and ticks at once on arrival — ingest, RECEIVED to the sender, inject where a TermLink PTY exists; plain `claude` sessions start the watcher at SessionStart (sidecar-autostart); `fw doctor` / `fw audit` FAIL when this agent has a sidecar inbox but no live watcher would notice a message. Injecting into an idle session with NO TermLink PTY is a TermLink-side need, written in the report, not claimed here.
+- [x] Unit tests with fake runners cover every leg: addressing refusal, cross-hub receipts, attribution, wake path — all green.
+- [x] TermLink-side needs (if any) written precisely into docs/reports/T-3855-cross-hub-sidecar.md.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -272,7 +272,22 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 300 python3 -m pytest tests/unit/test_sidecar_cross_hub_t3855.py -q -p no:cacheprovider > /tmp/.t3855-v1 2>&1 && grep -q passed /tmp/.t3855-v1 && ! grep -q failed /tmp/.t3855-v1
+timeout 900 python3 -m pytest tests/unit/test_sidecar_receipts_t3684.py tests/unit/test_sidecar_receiver_t3693.py tests/unit/test_sidecar_watcher_t3684.py tests/unit/test_sidecar_waiting_t3782.py tests/unit/test_sidecar_inbox.py tests/unit/test_sidecar_circuit.py -q -p no:cacheprovider > /tmp/.t3855-v2 2>&1 && grep -q passed /tmp/.t3855-v2 && ! grep -q failed /tmp/.t3855-v2
+timeout 300 bats tests/unit/sidecar_audit_rail.bats tests/unit/sidecar_inbox_hook.bats > /tmp/.t3855-v3 2>&1 && ! grep -q "^not ok" /tmp/.t3855-v3
+test "$(grep -c '# skip' /tmp/.t3855-v3)" -eq 0
+bash -n bin/fw && bash -n agents/audit/audit.sh && bash -n lib/sidecar-audit.sh
+bin/fw vendor self --check
+
 ## RCA
+
+**Symptom:** `fw sidecar send --to ring20-dashboard --hub ring20-dashboard` reported `delivered: HUB_ACCEPTED`, but the post went to `inbox:cacc73ea32b121dd/999-Agentic-Engineering-Framework/ring20-dashboard` (our namespace, created on their hub by `--ensure-topic`) while the recipient reads `inbox:1389a831016c4bf1/ring20-dashboard`. The same happened for every bare `--to` naming a project this hub did not know (dimitri-mint-dev, claude-shared-toolkit, smk-b): 87 outbound messages sat unread, each recorded as delivered. Receipts for remote senders were posted to OUR hub; inbound raw posts showed "from unknown".
+
+**Root cause:** `circuit.resolve_address` had two outcomes for a bare name — `NNN-`/sibling/self → project on OUR hub, anything else → agent under OUR project — and `--hub` never took part in the derivation: it chose which hub to post to, not whose namespace the topic is in. Nothing asked the target hub for its id. "Delivered" was `HUB_ACCEPTED`: the hub accepted a post, and `--ensure-topic` guaranteed there was always a topic to accept it, so a wrong address could not fail.
+
+**Why structurally allowed:** the transport's success criterion (hub accepted the post) is independent of addressing correctness, and `--ensure-topic` removes the one signal a wrong address would otherwise give (unknown topic). Every sidecar test ran single-hub, where "our hub" and "their hub" coincide, so the namespace error was invisible. The CLI printed the topic, but not the hub, so even a careful reader could not see that a remote post was in the local namespace.
+
+**Prevention:** `lib/sidecar/addressing.py` is now the only way a send address is derived. It refuses (exit 2, nothing posted) whenever the recipient's hub cannot be established, and it builds a topic in the sender's namespace only with sub-agent evidence. The "delivered" line names the topic and the hub. `tests/unit/test_sidecar_cross_hub_t3855.py` pins the measured bug shape (`test_the_measured_bug_shape_is_never_produced`) and the refusal path, with two distinct hub ids, so a single-hub test suite can no longer hide the class. Learning L-694 already records the class.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).

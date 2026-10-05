@@ -176,7 +176,10 @@ except Exception:
 # `fw sidecar liveness --json` — our own file, no hub call.
 #
 #   fw_sidecar_watcher_facts <project_root>
-#     stdout : STATE<TAB>SEQ<TAB>AGE_S<TAB>PROBE_LATENCY_MS<TAB>TERMLINK<TAB>REASONS ("; "-joined)
+#     stdout : STATE<TAB>SEQ<TAB>AGE_S<TAB>PROBE_LATENCY_MS<TAB>TERMLINK<TAB>REASONS ("; "-joined)<TAB>WAKE
+#              WAKE (T-3855) is `none` when this agent has a sidecar inbox and nothing
+#              would wake it on arrival (watcher not live), else `ok` / `no-inbox`.
+#              Appended last so a caller reading six fields keeps working.
 #              STATE is live | not-live | absent (see lib/sidecar/watcher.py:liveness_verdict)
 #     rc 0   : facts printed
 #     rc 2   : the verdict could not be read — the caller says so
@@ -193,9 +196,11 @@ import json, sys
 try:
     v = json.load(sys.stdin)
     live = v.get("liveness") or {}
+    w = v.get("wake") or {}
+    wake = "none" if w.get("nothing_wakes") else ("ok" if w.get("has_inbox") else "no-inbox")
     print("\t".join((v["state"], str(live.get("seq")), str(v.get("age_s")),
                      str(live.get("last_probe_latency_ms")), str(v.get("injection_transport")),
-                     "; ".join(v.get("reasons") or []))))
+                     "; ".join(v.get("reasons") or []) or "-", wake)))
 except Exception:
     sys.exit(2)
 ' || return 2
