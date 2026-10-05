@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3906: fw upgrade step 5 reports 'PARTIAL — gap remains: missing 0 hook(s): .' and ends 'Upgrade PARTIAL' when every template hook was written: an empty missing-list is counted as a gap (832 on 1.8.3)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T22:16:23Z
+# ============================================================================
+
+task_id: T-3906
+task_name: "fw upgrade step 5 reports 'PARTIAL — gap remains: missing 0 hook(s): .' and ends 'Upgrade PARTIAL' when every template hook was written: an empty missing-list is counted as a gap (832 on 1.8.3)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T21:58:55Z
+completed: 2026-10-05T22:15:00Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-06T00:11:22+02:00
+last_commit: 2026-10-06T00:11:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  a consumer's own hooks are information, not a hook gap — fw upgrade no longer regenerates every run and ends PARTIAL 'missing 0 hook(s): .' (832 on 1.8.3); the PARTIAL line names missing, stale and non-portable
+
+# Key outcomes
+outcomes:
+  - 'Root cause, measured: `_t2912_hook_gap` adds non-framework (project) hooks into "stale". The regeneration CARRIES those hooks, so every consumer with its own hooks:'
+  - 'Project hooks are counted separately. They never trigger regeneration and never make step 5 PARTIAL or FAILED. Step 5 reports them as information ("N project hook(s) kept as-is").'
+  - 'Only bare-relative or legacy stale paths, missing hooks and non-portable paths count as a gap. The PARTIAL and FAILED lines name every remaining component: missing (names), stale count, non-portable count.'
+  - 'Regression bats test. A real `fw upgrade` under `env -i` on a consumer whose settings.json is the framework''s own plus one project hook must:'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.fabric/components/tests-unit-t3906_upgrade_project_hooks_not_a_gap.yaml'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-3906-fw-upgrade-step-5-reports-partial--gap-r.md'
+  - 'tests/unit/t3906_upgrade_project_hooks_not_a_gap.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T00:11:22'
+    action: 'T-3906: a consumer''s own hooks are information, not a hook gap — fw upgrade no longer regenerates every run and ends PARTIAL ''missing 0 hook(s): .'' (832 on 1.8.3); the PARTIAL line names missing, stale and non-portable'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 16
+  commits: 1
+  files_changed: 5
+  lines_added: 187
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3906-fw-upgrade-step-5-reports-partial--gap-r.md
+generated_by: context-agent-hybrid

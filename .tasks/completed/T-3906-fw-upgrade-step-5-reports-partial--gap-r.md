@@ -10,12 +10,12 @@ description: >
   gap predicate in lib/upgrade.sh and make an empty list pass; regression test with
   a consumer whose hooks are all present.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/upgrade.sh, tests/unit/t3906_upgrade_project_hooks_not_a_gap.bats]
 related_tasks: []
 origin: {kind: "peer", source: "832-Workflow-designer", ref: "msg ef929333"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -45,8 +45,8 @@ origin: {kind: "peer", source: "832-Workflow-designer", ref: "msg ef929333"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T21:58:55Z
-last_update: 2026-10-05T22:11:22Z
-date_finished:
+last_update: 2026-10-05T22:15:00Z
+date_finished: 2026-10-05T22:15:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -388,3 +388,15 @@ bin/fw vendor self --check
 
 ### 2026-10-05T22:02:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6176b72f
+- **Timestamp:** 2026-10-05T22:16:09Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-05T22:15:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
