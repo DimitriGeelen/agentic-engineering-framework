@@ -102,12 +102,12 @@ It names each one, and prints `NOT CHECKED: <reason>` instead of nothing when it
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw sidecar alerts [--limit N] [--json]` lists unseen peer mail from both routes (sender, conversation, id, first line), each message once, and prints `nothing` when there is none
-- [ ] It never prints nothing: any failure to read prints `NOT CHECKED: <reason>` and exits 3
-- [ ] It is read-only: inbox-state cursors and the seen ledger are byte-identical across a call (control: `--mark-seen` changes the ledger)
-- [ ] `--mark-seen` records the listed messages as shown (`by: alerts`) so neither the prompt hook nor a later `alerts` call repeats them
-- [ ] The task gate admits `fw sidecar alerts` (with or without `--mark-seen`) with no focus; `fw sidecar send` stays blocked
-- [ ] Unit tests for the above; the existing sidecar suites stay green; vendored copy in sync
+- [x] `fw sidecar alerts [--limit N] [--json]` lists unseen peer mail from both routes (sender, conversation, id, first line), each message once, and prints `nothing` when there is none
+- [x] It never prints nothing: any failure to read prints `NOT CHECKED: <reason>` and exits 3
+- [x] It is read-only: inbox-state cursors and the seen ledger are byte-identical across a call (control: `--mark-seen` changes the ledger)
+- [x] `--mark-seen` records the listed messages as shown (`by: alerts`) so neither the prompt hook nor a later `alerts` call repeats them
+- [x] The task gate admits `fw sidecar alerts` (with or without `--mark-seen`) with no focus; `fw sidecar send` stays blocked
+- [x] Unit tests for the above; the existing sidecar suites stay green; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -267,8 +267,26 @@ It names each one, and prints `NOT CHECKED: <reason>` instead of nothing when it
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_sidecar_alerts_t3856.py tests/unit/test_sidecar_withheld_t3872.py tests/unit/test_sidecar_seen_ledger_t3840.py tests/unit/test_sidecar_inbox.py tests/unit/test_sidecar_unread_summary.py tests/unit/test_sidecar_peek_filter_t3792.py -q > /tmp/.t3856 2>&1 && grep -q passed /tmp/.t3856
+timeout 120 bats tests/unit/t3425_sidecar_read_allowlist.bats > /tmp/.t3856b 2>&1 && ! grep -q "^not ok" /tmp/.t3856b
+test "$(grep -c '# skip' /tmp/.t3856b)" -eq 0
+bin/fw sidecar alerts --help > /tmp/.t3856c 2>&1 && grep -q "NOT CHECKED" /tmp/.t3856c
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** `/resume` step 7 printed nothing about peer mail in 832, in other consumers, and in AEF itself on 2026-10-05. It never said the check had not run.
+
+**Root cause:** the step-7 check was a project-local script (`scripts/session-start-alerts.sh`, 010-termlink's T-3327). The skill invoked it as `[ -x … ] && …`, which turns "absent" into "nothing to report". No framework verb shipped the mail half to consumers.
+
+**Why structurally allowed:**
+- The skill is user-level config that every project loads, but it depended on a file only one project had, and nothing compared the two.
+- The hub reader underneath (`inbox.default_reader`) also maps every failure to `[]`. So even a working check could turn "hub unreachable" into "no mail".
+
+**Prevention:**
+- `fw sidecar alerts` ships with the framework and reads through a strict reader that raises.
+- The CLI prints `NOT CHECKED: <reason>` (exit 3) and never an empty answer. `test_unreadable_hub_raises_never_empty` and `test_cli_prints_not_checked_and_exits_3` pin this.
+- The skill now says NEVER skip silently, and falls back to the verb.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
