@@ -8,12 +8,12 @@ description: >
   ring20-manager msg 92720ad9 (2026-10-05, v1.8.0 -> v1.8.2; their review docs/reports/T-2241-v182-post-upgrade-review.md).
   Finding 2. lib/settings_merge.py carry-over (T-2710).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, upgrade, hooks, ring20-report]
-components: []
+components: [lib/settings_merge.py, tests/unit/settings_regenerate_preserves_hooks.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T14:47:35Z
-last_update: '2026-10-05T15:00:29Z'
-date_finished:
+last_update: 2026-10-05T15:04:27Z
+date_finished: 2026-10-05T15:04:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -377,3 +377,15 @@ bin/fw vendor self --check
 
 ### 2026-10-05T14:54:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-719d201b
+- **Timestamp:** 2026-10-05T15:04:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-05T15:04:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

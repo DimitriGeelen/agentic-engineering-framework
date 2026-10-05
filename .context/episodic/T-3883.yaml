@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3883: fw upgrade settings regeneration drops project hooks registered under more than one matcher (ring20's 3 SessionStart hooks lost their 'resume' entries) while step 5 prints KEPT for each — the carry-over de-duplicates on (event, command) and ignores the matcher; silent hook loss behind a success line
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T15:04:49Z
+# ============================================================================
+
+task_id: T-3883
+task_name: "fw upgrade settings regeneration drops project hooks registered under more than one matcher (ring20's 3 SessionStart hooks lost their 'resume' entries) while step 5 prints KEPT for each — the carry-over de-duplicates on (event, command) and ignores the matcher; silent hook loss behind a success line"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T14:47:35Z
+completed: 2026-10-05T15:04:27Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-05T17:04:06+02:00
+last_commit: 2026-10-05T17:04:26+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  upgrade settings merge keys project hooks on (event, matcher, hook) — a hook under two matchers no longer loses its second entry behind a KEPT line. ACs, verification, RCA
+
+# Key outcomes
+outcomes:
+  - 'The dedupe key includes the matcher, `(event, matcher, hook)`. A project hook is carried once per matcher it was registered under, and an exact duplicate (same event, matcher and hook) is still not duplicated.'
+  - 'Nothing is dropped silently: every carried entry is reported KEPT with its matcher.'
+  - 'Regression test in settings_regenerate_preserves_hooks.bats:'
+  - 'Existing settings-merge tests stay green; vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/settings_merge.py'
+  - 'lib/settings_merge.py'
+  - '.tasks/active/T-3883-fw-upgrade-settings-regeneration-drops-p.md'
+  - 'tests/unit/settings_regenerate_preserves_hooks.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T17:04:06'
+    action: 'T-3883: upgrade settings merge keys project hooks on (event, matcher, hook) — a hook under two matchers no longer loses its second entry behind a KEPT line'
+  - time: '2026-10-05T17:04:26'
+    action: 'T-3883: ACs, verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, upgrade, hooks, ring20-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 16
+  commits: 2
+  files_changed: 4
+  lines_added: 116
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3883-fw-upgrade-settings-regeneration-drops-p.md
+generated_by: context-agent-hybrid
