@@ -90,11 +90,11 @@ It shows nothing about why.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Next to the button, a live line names exactly what is missing, and disappears once the button is enabled:
+- [x] Next to the button, a live line names exactly what is missing, and disappears once the button is enabled:
   - empty path or URL → "Close is disabled: add demo evidence — a report path or URL showing the arc's headline mechanic firing — or choose None and justify it";
   - None with a short justification → "Close is disabled: the justification needs at least 30 characters (N so far)".
-- [ ] The gate itself is unchanged (same conditions, server-side checks untouched), and the demo pre-fill is unchanged.
-- [ ] `curl` of `/arcs/continuous-run/close` contains the reason element; `bin/fw watchtower restart` done and `bin/fw watchtower current` passes.
+- [x] The gate itself is unchanged (same conditions, server-side checks untouched), and the demo pre-fill is unchanged.
+- [x] `curl` of `/arcs/continuous-run/close` contains the reason element; `bin/fw watchtower restart` done and `bin/fw watchtower current` passes.
 
 ### Human
 - [ ] [REVIEW] The reason line next to a greyed-out "Close arc" button reads clearly and tells you what to do
@@ -332,6 +332,17 @@ It shows nothing about why.
      DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
+-->
+
+**Recommendation:** GO
+
+**Rationale:** The operator hit a silently disabled "Close arc" button. The page now names what is missing, live, in both gate states. The gate (§ACD/G-062 demo evidence) and the demo pre-fill are unchanged, deliberately: widening the pre-fill would weaken the gate. What remains is the operator's read of the wording.
+
+**Evidence:**
+- `tests/web/test_t3841_arc_close_decision_prefill.py::test_t3893_greyed_out_close_button_says_why`. The arc-close web tests pass, 14/14.
+- The live `/arcs/continuous-run/close` carries `data-testid="submit-why"`; `bin/fw watchtower current` passes after the restart.
+
+<!--
 -->
 
 ## Decisions
