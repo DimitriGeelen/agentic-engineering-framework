@@ -92,8 +92,8 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw sidecar send` with an empty or whitespace-only `--body` is REFUSED before either path (direct or hub): exit 2, a one-line reason on stderr, and with `--json` `{"delivered": false, "state": "REFUSED"}`. No outbox row, no post, no REPLIED receipt.
-- [ ] A unit test asserts the refusal for "", "   " and "\n\t", and that nothing was written to the outbox and the transport was never called. A normal body still sends; the existing sidecar suites stay green; vendored copy in sync.
+- [x] `fw sidecar send` with an empty or whitespace-only `--body` is REFUSED before either path (direct or hub): exit 2, a one-line reason on stderr, and with `--json` `{"delivered": false, "state": "REFUSED"}`. No outbox row, no post, no REPLIED receipt.
+- [x] A unit test asserts the refusal for "", "   " and "\n\t", and that nothing was written to the outbox and the transport was never called. A normal body still sends; the existing sidecar suites stay green; vendored copy in sync.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -253,8 +253,25 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_sidecar_cross_hub_t3855.py -q > /tmp/.t3889 2>&1 && grep -q passed /tmp/.t3889
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** on 2026-10-05 the agent sent two EMPTY messages, one to ring20-dashboard and one to ring20-manager (f954887a, 8957c699). The real body followed separately, with a note asking them to ignore the empty one.
+
+**Root cause:**
+- The agent built `--body "$(cat <file>)"`. The file write had been refused by a hook, so `cat` failed and produced the empty string, and the send ran anyway.
+- `fw sidecar send` declares `--body` required, but argparse accepts `""`. Nothing downstream checked content.
+
+**Why structurally allowed:**
+- "Required" was taken to mean "non-empty".
+- Every send test used a real body, so the empty case had never been exercised.
+
+**Prevention:**
+- `cmd_send` refuses an empty or whitespace-only body before either path, with exit 2 and nothing written or posted.
+- 3 test cases, which fail on the pre-fix CLI.
+- The agent-side lesson: guard composed bodies (`[ -s file ] || exit`). Applied in the same session for the resend.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
