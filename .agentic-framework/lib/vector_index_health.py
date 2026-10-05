@@ -25,6 +25,9 @@ Checks (any FAIL makes the verdict FAIL):
   cron      .context/cron-registry.yaml has an active index-reindex-hourly job
 WARN-only:
   usage     recall queries that could not run, as a share of the window
+  disk      orphan build/reindex scratch beside the index (dead owner pid), and
+            free space below what the next reindex needs: a full copy of the
+            index plus max(20%, 500 MB) (T-3860 — the copy filled a disk)
 
 Stdlib only — so it runs, and FAILs, exactly where web/ cannot be imported.
 Never raises: a health check that crashes reports nothing.
@@ -438,6 +441,81 @@ def check_usage(path: Path, fail_pct: float, now: float):
     return _check("usage", "OK", f"recall: {bad} of {rows} queries in {USAGE_WINDOW_DAYS:g}d could not run")
 
 
+# T-3860: mirrors web/embeddings.py (_SCRATCH_RE, required_free_bytes). Kept
+# here rather than imported because this module must run where web/ cannot.
+DISK_MARGIN_FRACTION = 0.20
+DISK_MARGIN_MIN_BYTES = 500 * 1024 * 1024
+_SCRATCH_RE = re.compile(
+    r"^\.(?:reindex\.(?P<rpid>\d+)\.tmp|(?:(?P<bpid>\d+)\.)?building)(?:[.-].*)?$")
+
+
+def _disk_free(path: Path) -> int:
+    import shutil
+    return shutil.disk_usage(str(path)).free
+
+
+def _pid_alive(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    except OSError:
+        return False
+    return True
+
+
+def _human(n: int) -> str:
+    for unit in ("B", "KB", "MB", "GB", "TB"):
+        if n < 1024 or unit == "TB":
+            return f"{n:.0f} {unit}" if unit == "B" else f"{n:.1f} {unit}"
+        n /= 1024
+    return f"{n} B"
+
+
+def check_disk(path: Path):
+    """Orphan scratch + headroom for the next reindex. WARN-only, never raises."""
+    problems, hints = [], []
+    try:
+        orphans = []
+        if path.parent.is_dir():
+            for p in path.parent.iterdir():
+                if not p.name.startswith(path.name):
+                    continue
+                m = _SCRATCH_RE.match(p.name[len(path.name):])
+                if not m:
+                    continue
+                pid = m.group("rpid") or m.group("bpid")
+                if pid and _pid_alive(int(pid)):
+                    continue  # a live build/reindex owns it
+                try:
+                    orphans.append((p.name, p.stat().st_size))
+                except OSError:
+                    continue
+        if orphans:
+            total = sum(b for _, b in orphans)
+            listing = ", ".join(f"{n} ({_human(b)})" for n, b in orphans[:5])
+            problems.append(f"{len(orphans)} orphan index scratch file(s), {_human(total)}: {listing}")
+            hints.append(f"The next {REMEDY_REINDEX} sweeps them; or delete them from {path.parent}")
+        if path.exists():
+            size = path.stat().st_size
+            resume = Path(str(path) + ".reindex.resume")
+            copying = not resume.exists()
+            margin = max(int(size * DISK_MARGIN_FRACTION), DISK_MARGIN_MIN_BYTES)
+            need = (size if copying else 0) + margin
+            free = _disk_free(path.parent)
+            if free < need:
+                problems.append(f"free space {_human(free)} < {_human(need)} the next reindex needs "
+                                f"(index {_human(size)}{' copy' if copying else ''} + margin {_human(margin)})")
+                hints.append(f"Free space on {path.parent}; the reindex refuses rather than fill the disk")
+    except Exception as exc:  # noqa: BLE001
+        return _check("disk", "WARN", f"disk check failed ({type(exc).__name__}: {str(exc)[:80]})")
+    if problems:
+        return _check("disk", "WARN", "; ".join(problems), "; ".join(hints))
+    return _check("disk", "OK", "no orphan index scratch; free space covers the next reindex")
+
+
 def evaluate(project_root: Path, framework_root: Path, canary: bool = True,
              now: float | None = None) -> dict:
     now = time.time() if now is None else now
@@ -498,6 +576,7 @@ def evaluate(project_root: Path, framework_root: Path, canary: bool = True,
                               f"Build it: {REMEDY_REINDEX}"))
     checks.append(check_cron(project_root))
     checks.append(check_usage(path, fail_pct, now))
+    checks.append(check_disk(path))
 
     verdicts = [c["verdict"] for c in checks]
     status = "FAIL" if "FAIL" in verdicts else ("WARN" if "WARN" in verdicts else "OK")

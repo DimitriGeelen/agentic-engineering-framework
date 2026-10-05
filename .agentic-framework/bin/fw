@@ -6863,7 +6863,10 @@ print(f'  Run \"fw cron generate\" to update the crontab file')
                 # "unimportable" is a failure, not a quiet success: it exited 0 for months
                 # while the hourly cron indexed nothing.
                 _rx_rc=0
-                (cd "$PROJECT_ROOT" && PYTHONPATH="$FRAMEWORK_ROOT${PYTHONPATH:+:$PYTHONPATH}" python3 -c '
+                # T-3860: run the child in the background and forward TERM/INT to it, so
+                # a cron kill or Ctrl-C reaches python's cleanup (scratch removed/parked)
+                # instead of orphaning a full-size index copy behind a dead shell.
+                (cd "$PROJECT_ROOT" && PYTHONPATH="$FRAMEWORK_ROOT${PYTHONPATH:+:$PYTHONPATH}" exec python3 -c '
 import json, sys
 try:
     from web.embeddings import reindex_incremental
@@ -6877,8 +6880,15 @@ try:
     print(json.dumps(stats))
 except Exception as exc:
     print(json.dumps({"status": "error", "detail": str(exc)[:300]}))
+    print(f"fw index reindex: {exc}", file=sys.stderr)
     sys.exit(1)
-') || _rx_rc=$?
+') &
+                _rx_pid=$!
+                trap 'kill -TERM "$_rx_pid" 2>/dev/null' TERM INT
+                wait "$_rx_pid" || _rx_rc=$?
+                # A trapped signal interrupts wait; wait again until the child has cleaned up.
+                while kill -0 "$_rx_pid" 2>/dev/null; do wait "$_rx_pid" || _rx_rc=$?; done
+                trap - TERM INT
                 # T-3783: the hourly cron is the one periodic caller every consumer has,
                 # so it runs the health check too (stderr; stdout stays the JSON stats):
                 # the verdict is recorded and the operator is pushed once when it turns

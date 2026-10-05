@@ -10,14 +10,18 @@ T-263: Upgraded from all-MiniLM-L6-v2 (384-dim) to nomic-embed-text-v2-moe (768-
 from __future__ import annotations
 
 
+import contextlib
+import errno
 import fcntl
 import hashlib
 import logging
 import os
 import re
 import shutil
+import signal
 import sqlite3
 import struct
+import threading
 import time
 from functools import lru_cache
 from pathlib import Path
@@ -509,42 +513,207 @@ def _get_db() -> sqlite3.Connection:
 
 
 # ---------------------------------------------------------------------------
+# Scratch-file hygiene and the disk-space guard (T-3860)
+#
+# Both build paths write a second, full-size copy of the index beside the live
+# one (a 1.5 GB scratch for a 1.5 GB index). That copy filled a production root
+# disk to 100% (ring20-dashboard, 2026-10-04) and left a 464 MB orphan behind,
+# because nothing checked free space first and a failed copy was never removed.
+# So: refuse before writing when the filesystem cannot hold the copy plus a
+# margin, never leave scratch behind on any exit path Python can see, and sweep
+# the corpses of the exit paths it cannot (SIGKILL, OOM, power loss).
+# ---------------------------------------------------------------------------
+
+DISK_MARGIN_FRACTION = 0.20
+DISK_MARGIN_MIN_BYTES = 500 * 1024 * 1024
+
+# `<db>.reindex.<pid>.tmp[-journal…]`, `<db>.<pid>.building[.manifest.json…]`,
+# and the pid-less `<db>.building` that builds before T-3860 left behind.
+# Mirrored in lib/vector_index_health.py, which must stay stdlib-only.
+_SCRATCH_RE = re.compile(
+    r"^\.(?:reindex\.(?P<rpid>\d+)\.tmp|(?:(?P<bpid>\d+)\.)?building)(?:[.-].*)?$")
+
+
+class InsufficientDiskSpace(RuntimeError):
+    """Raised before any scratch is written; the live index is untouched."""
+
+
+class IndexBusy(RuntimeError):
+    """Another build/reindex of this index holds the reindex lock."""
+
+
+class ReindexInterrupted(RuntimeError):
+    """SIGTERM/SIGINT arrived mid-build — raised so `finally` can clean up."""
+
+
+def _disk_free(path: Path) -> int:
+    """Free bytes on the filesystem holding `path`. A function so tests can fake it."""
+    return shutil.disk_usage(str(path)).free
+
+
+def required_free_bytes(index_bytes: int, copying: bool = True) -> int:
+    """What a run needs free: the copy (if it makes one) plus max(20%, 500 MB)."""
+    margin = max(int(index_bytes * DISK_MARGIN_FRACTION), DISK_MARGIN_MIN_BYTES)
+    return (index_bytes if copying else 0) + margin
+
+
+def _ensure_disk_space(index_bytes: int, copying: bool, what: str) -> None:
+    free = _disk_free(DB_PATH.parent)
+    need = required_free_bytes(index_bytes, copying)
+    if free < need:
+        raise InsufficientDiskSpace(
+            f"refusing {what}: need {need} bytes free on {DB_PATH.parent} "
+            f"(index {index_bytes} + margin), only {free} free; live index untouched")
+
+
+def _pid_alive(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+    except ProcessLookupError:
+        return False
+    except PermissionError:
+        return True
+    return True
+
+
+def _scratch_files(db_path: Path) -> list[tuple[Path, int | None]]:
+    """(path, owning pid or None) for every build/reindex scratch beside db_path."""
+    out = []
+    try:
+        entries = list(db_path.parent.iterdir())
+    except OSError:
+        return out
+    for p in entries:
+        if not p.name.startswith(db_path.name):
+            continue
+        m = _SCRATCH_RE.match(p.name[len(db_path.name):])
+        if m:
+            pid = m.group("rpid") or m.group("bpid")
+            out.append((p, int(pid) if pid else None))
+    return out
+
+
+def sweep_stale_scratch(db_path: Path | None = None) -> list[dict]:
+    """Remove scratch whose owning pid is dead; report what went. Call it only
+    while holding the reindex lock — that is what makes a pid-less legacy
+    `.building` provably unowned (no build runs without the lock since T-3860)."""
+    db_path = DB_PATH if db_path is None else db_path
+    removed = []
+    for p, pid in _scratch_files(db_path):
+        if pid is not None and (pid == os.getpid() or _pid_alive(pid)):
+            continue
+        try:
+            size = p.stat().st_size
+            p.unlink()
+        except OSError:
+            continue
+        removed.append({"path": p.name, "bytes": size, "pid": pid})
+        log.warning("removed stale index scratch %s (%d bytes, pid %s dead)",
+                    p.name, size, pid)
+    return removed
+
+
+def _is_disk_full(exc: BaseException | None) -> bool:
+    if isinstance(exc, OSError) and exc.errno in (errno.ENOSPC, errno.EDQUOT):
+        return True
+    return isinstance(exc, sqlite3.Error) and "disk is full" in str(exc).lower()
+
+
+@contextlib.contextmanager
+def _signals_raise():
+    """Turn SIGTERM/SIGINT into ReindexInterrupted so try/finally runs.
+
+    Python's default SIGTERM kills the process without running any `finally`,
+    which is how a 1.5 GB scratch is orphaned. The first signal raises; later
+    ones are ignored so they cannot interrupt the cleanup the first one started.
+    Main thread only — signal handlers cannot be installed elsewhere, and the
+    Watchtower background build runs in a thread (its process owns signals)."""
+    if threading.current_thread() is not threading.main_thread():
+        yield
+        return
+    sigs = (signal.SIGTERM, signal.SIGINT)
+
+    def _handler(signum, _frame):
+        for s in sigs:
+            signal.signal(s, signal.SIG_IGN)
+        raise ReindexInterrupted(f"interrupted by signal {signum}; scratch cleaned up")
+
+    prev = {s: signal.signal(s, _handler) for s in sigs}
+    try:
+        yield
+    finally:
+        for s, h in prev.items():
+            signal.signal(s, h)
+
+
+def _lock_path() -> Path:
+    return DB_PATH.with_suffix(DB_PATH.suffix + ".reindex.lock")
+
+
+# ---------------------------------------------------------------------------
 # Index building
 # ---------------------------------------------------------------------------
 
 def build_index() -> dict:
     """Build a fresh vector index from all framework files, ATOMICALLY (T-3786).
 
-    Builds into `<db>.building` and only then swaps it — and its manifest — over
-    the live index with os.replace. A build that is killed or fails leaves the
+    Builds into `<db>.<pid>.building` and only then swaps it — and its manifest —
+    over the live index with os.replace. A build that is killed or fails leaves the
     previous index and manifest exactly as they were. (It used to unlink the live
     index first and build in place, so a killed build left an empty index.)
 
-    Returns stats dict with num_docs, num_chunks, build_time_ms.
+    T-3860: holds the reindex lock (raises IndexBusy when another build or
+    reindex owns it), sweeps dead-pid scratch first, refuses with
+    InsufficientDiskSpace before writing anything, and removes its `.building`
+    on every exit path including SIGTERM/SIGINT.
+
+    Returns stats dict with num_docs, num_chunks, build_time_ms, swept.
     """
     global DB_PATH, _db, _db_opened_at
     from web.corpus_manifest import manifest_path_for
 
     real = DB_PATH
-    tmp = real.with_name(real.name + ".building")
-    for leftover in (tmp, manifest_path_for(tmp)):
-        if leftover.exists():
-            leftover.unlink()
-    _db = None
-    DB_PATH = tmp
+    lock_fd = os.open(str(_lock_path()), os.O_CREAT | os.O_RDWR, 0o644)
     try:
-        stats = _build_index_in_place()
-    finally:
-        DB_PATH = real
-    if _db is not None:
         try:
-            _db.close()
-        except Exception:
-            pass
-        _db = None
-    os.replace(tmp, real)
-    if manifest_path_for(tmp).exists():
-        os.replace(manifest_path_for(tmp), manifest_path_for(real))
+            fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+        except OSError:
+            raise IndexBusy(f"another build/reindex holds {_lock_path().name}") from None
+        swept = sweep_stale_scratch(real)
+        current = real.stat().st_size if real.exists() else 0
+        _ensure_disk_space(current, True, "full index build")
+
+        tmp = real.with_name(f"{real.name}.{os.getpid()}.building")
+        swapped = False
+        with _signals_raise():
+            try:
+                for leftover in (tmp, manifest_path_for(tmp)):
+                    leftover.unlink(missing_ok=True)
+                _db = None
+                DB_PATH = tmp
+                try:
+                    stats = _build_index_in_place()
+                finally:
+                    DB_PATH = real
+                    if _db is not None:
+                        try:
+                            _db.close()
+                        except Exception:
+                            pass
+                        _db = None
+                os.replace(tmp, real)
+                swapped = True
+                if manifest_path_for(tmp).exists():
+                    os.replace(manifest_path_for(tmp), manifest_path_for(real))
+            finally:
+                if not swapped:
+                    for leftover in _scratch_files(real):
+                        if leftover[1] == os.getpid():
+                            leftover[0].unlink(missing_ok=True)
+    finally:
+        fcntl.flock(lock_fd, fcntl.LOCK_UN)
+        os.close(lock_fd)
+    stats["swept"] = swept
     return stats
 
 
@@ -871,12 +1040,19 @@ def reindex_incremental() -> dict:
 
     start = time.time()
 
+    lock_path = _lock_path()
     if not is_index_ready():
-        stats = build_index()
+        try:
+            stats = build_index()
+        except IndexBusy:
+            return {
+                "mode": "skipped-locked",
+                "detail": f"another build/reindex holds {lock_path.name}",
+                "build_time_ms": int((time.time() - start) * 1000),
+            }
         stats["mode"] = "bootstrap-full"
         return stats
 
-    lock_path = DB_PATH.with_suffix(DB_PATH.suffix + ".reindex.lock")
     lock_fd = os.open(str(lock_path), os.O_CREAT | os.O_RDWR, 0o644)
     try:
         fcntl.flock(lock_fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
@@ -893,12 +1069,8 @@ def reindex_incremental() -> dict:
 
     # Per-process scratch name: two runs cannot collide on it, and a run that
     # died without unlinking leaves a corpse attributable to a dead pid rather
-    # than a live run's working file. Sweep those before starting.
-    for stale in DB_PATH.parent.glob(DB_PATH.name + ".reindex.*.tmp*"):
-        try:
-            stale.unlink()
-        except OSError:
-            pass
+    # than a live run's working file. Sweep those (dead pids only) first.
+    swept = sweep_stale_scratch()
 
     tmp_path = DB_PATH.with_suffix(DB_PATH.suffix + f".reindex.{os.getpid()}.tmp")
 
@@ -908,7 +1080,7 @@ def reindex_incremental() -> dict:
     # and skipped. That is what lets an hourly cron finish a ~29-58h bootstrap
     # across many firings rather than restarting it forever (OBS-258).
     resume_path = DB_PATH.with_suffix(DB_PATH.suffix + ".reindex.resume")
-    resumed = False
+    resumable = False
     if resume_path.exists():
         try:
             probe = sqlite3.connect(str(resume_path))
@@ -916,21 +1088,33 @@ def reindex_incremental() -> dict:
                 "SELECT COUNT(*) FROM sqlite_master WHERE type='table' "
                 "AND name='file_state'").fetchone()[0]
             probe.close()
-            if has_state:
-                shutil.move(str(resume_path), str(tmp_path))
-                resumed = True
+            resumable = bool(has_state)
         except sqlite3.Error:
             pass
-        if not resumed:
+        if not resumable:
             # Unreadable or schema-less: not worth trusting as a baseline.
             resume_path.unlink(missing_ok=True)
-    if not resumed:
-        shutil.copy2(DB_PATH, tmp_path)
-    tmp_ino = tmp_path.stat().st_ino
 
     db = None
     swapped = False
+    # True once tmp_path is a complete, consistent database. Only then may a
+    # failure park it for resume — a half-written copy (ENOSPC, a signal
+    # mid-copy) is garbage and is deleted, never resumed from (T-3860).
+    scratch_ok = False
+    failure: BaseException | None = None
+    sig_guard = _signals_raise()
+    sig_guard.__enter__()
     try:
+        # T-3860: refuse BEFORE writing a byte. A resume is a rename (no copy),
+        # so it needs only the growth margin; a fresh run needs a full copy.
+        _ensure_disk_space(DB_PATH.stat().st_size, not resumable, "incremental reindex")
+        if resumable:
+            shutil.move(str(resume_path), str(tmp_path))
+        else:
+            shutil.copy2(DB_PATH, tmp_path)
+        scratch_ok = True
+        tmp_ino = tmp_path.stat().st_ino
+
         db = sqlite3.connect(str(tmp_path), check_same_thread=False)
         db.enable_load_extension(True)
         sqlite_vec.load(db)
@@ -1128,23 +1312,38 @@ def reindex_incremental() -> dict:
         # `finally` and the previous index keeps serving.
         os.replace(tmp_path, DB_PATH)
         swapped = True
+    except BaseException as exc:
+        failure = exc
+        raise
     finally:
-        if db is not None:
-            db.close()
-        if not swapped and tmp_path.exists():
-            # Park the partial work rather than discarding it. Everything in
-            # here is committed and consistent — the run simply did not reach
-            # the end of the file list. The next run resumes from it.
-            try:
-                shutil.move(str(tmp_path), str(resume_path))
-            except OSError:
-                tmp_path.unlink(missing_ok=True)
-        for leftover in DB_PATH.parent.glob(DB_PATH.name + f".reindex.{os.getpid()}.tmp*"):
-            leftover.unlink(missing_ok=True)
-        if swapped:
-            resume_path.unlink(missing_ok=True)
-        fcntl.flock(lock_fd, fcntl.LOCK_UN)
-        os.close(lock_fd)
+        try:
+            if db is not None:
+                try:
+                    db.close()
+                except sqlite3.Error:
+                    pass
+            if not swapped and tmp_path.exists():
+                if scratch_ok and not _is_disk_full(failure):
+                    # Park the partial work rather than discarding it. Everything
+                    # in here is committed and consistent — the run simply did not
+                    # reach the end of the file list. The next run resumes from
+                    # it. A rename: it costs no extra space.
+                    try:
+                        shutil.move(str(tmp_path), str(resume_path))
+                    except OSError:
+                        tmp_path.unlink(missing_ok=True)
+                else:
+                    # Half-written copy, or the disk filled: parking would keep
+                    # the disk full until the next run. Free the space now.
+                    tmp_path.unlink(missing_ok=True)
+            for leftover in DB_PATH.parent.glob(DB_PATH.name + f".reindex.{os.getpid()}.tmp*"):
+                leftover.unlink(missing_ok=True)
+            if swapped:
+                resume_path.unlink(missing_ok=True)
+        finally:
+            fcntl.flock(lock_fd, fcntl.LOCK_UN)
+            os.close(lock_fd)
+            sig_guard.__exit__(None, None, None)
 
     # Manifest is written LAST, and only after the swap — so a reader who
     # sees a fresh manifest is guaranteed to also see the matching database
@@ -1185,6 +1384,8 @@ def reindex_incremental() -> dict:
         # Named, not assumed: a run that quietly embedded against the slow host
         # is 37x more expensive and otherwise indistinguishable from a fast one.
         "embed_host": bulk_host,
+        # T-3860: dead-pid scratch removed at the start of this run.
+        "swept": swept,
     }
 
 
