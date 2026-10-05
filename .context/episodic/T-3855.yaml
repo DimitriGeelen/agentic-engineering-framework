@@ -1,0 +1,116 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3855: Cross-hub sidecar end to end (ring20 T-2459 spec, operator-relayed): recipient addressing on the recipient's hub (authenticated hub_id read or peer directory from from_circuit), RECEIVED/HANDED_OVER/REPLIED receipts travel back to the sender's hub, attribution never 'unknown', idle-session wake without claude-fw (watcher follows inbox.queued) with doctor/audit FAIL when an inbox has nothing to wake it; joint acceptance test .121 <-> .122
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T08:25:51Z
+# ============================================================================
+
+task_id: T-3855
+task_name: "Cross-hub sidecar end to end (ring20 T-2459 spec, operator-relayed): recipient addressing on the recipient's hub (authenticated hub_id read or peer directory from from_circuit), RECEIVED/HANDED_OVER/REPLIED receipts travel back to the sender's hub, attribution never 'unknown', idle-session wake without claude-fw (watcher follows inbox.queued) with doctor/audit FAIL when an inbox has nothing to wake it; joint acceptance test .121 <-> .122"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T07:14:57Z
+completed: 2026-10-05T08:23:13Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-05T09:53:06+02:00
+last_commit: 2026-10-05T10:10:01+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  sidecar send addresses the recipient on ITS hub; unresolvable is refused, never 'delivered'. RECEIVED/HANDED_OVER/REPLIED receipts go back to the sender's hub (from_circuit + matching hubs.toml profile). attribution — sender named from from_agent or from_circuit, raw posts 'unattributed (raw post)', never 'unknown'; peer directory learned from received envelopes; replies to remote senders go to their circuit. wake without claude-fw — watcher follows inbox.queued (push, own-hub profile) and ticks on arrival; doctor/audit FAIL when an inbox has nothing to wake it. restore T-3850's bin/fw vendor --allow-delete-locals hunk. report (TermLink-side asks), ACs/Verification/RCA, vendor sync of the sidecar files
+
+# Key outcomes
+outcomes:
+  - 'Addressing (§5.3): `fw sidecar send` never builds a recipient topic in the SENDER''s namespace for a recipient that is not evidenced as the sender''s sub-agent. A bare `--to` with `--hub` resolves on the recipient''s hub id (authenticated read via the hubs.toml profile''s TOFU-pinned fingerprint, or the peer directory learned from received envelopes'' `from_circuit`); `--to <hubid>/<name>` is used verbatim. Unresolvable → refused by name, exit non-zero, nothing posted, never "delivered".'
+  - '"delivered" output names the actual topic AND the hub (`local` or the profile/address) the post went to.'
+  - 'Receipts (§5.5): RECEIVED / HANDED_OVER / REPLIED go back to the sender''s hub — target topic from the envelope''s `from_circuit`, `--hub` from the hubs.toml profile whose hub id matches; no matching profile is reported, not silently posted locally.'
+  - 'Attribution (§3.6): the receiver never prints "from unknown" when `from_agent`/`from_circuit` metadata is present; a raw post without either is labelled `unattributed (raw post)`.'
+  - 'Wake without claude-fw (§5.6): the watcher follows `termlink channel subscribe inbox.queued --push` on its own hub (the hubs.toml profile whose hub id is ours; payload.channel filtered to our inbox topics) and ticks at once on arrival — ingest, RECEIVED to the sender, inject where a TermLink PTY exists; plain `claude` sessions start the watcher at SessionStart (sidecar-autostart); `fw doctor` / `fw audit` FAIL when this agent has a sidecar inbox but no live watcher would notice a message. Injecting into an idle session with NO TermLink PTY is a TermLink-side need, written in the report, not claimed here.'
+  - 'Unit tests with fake runners cover every leg: addressing refusal, cross-hub receipts, attribution, wake path — all green.'
+  - 'TermLink-side needs (if any) written precisely into docs/reports/T-3855-cross-hub-sidecar.md.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/context/sidecar-inbox.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/sidecar/addressing.py'
+  - '.agentic-framework/lib/sidecar-audit.sh'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/hooks.py'
+  - '.agentic-framework/lib/sidecar/inbox.py'
+  - '.agentic-framework/lib/sidecar/receipts.py'
+  - '.agentic-framework/lib/sidecar/waiting.py'
+  - '.agentic-framework/lib/sidecar/watcher.py'
+  - 'agents/audit/audit.sh'
+  - 'agents/context/sidecar-inbox.sh'
+  - 'bin/fw'
+  - 'docs/reports/T-3855-cross-hub-sidecar.md'
+  - '.fabric/components/lib-sidecar-addressing.yaml'
+  - 'lib/sidecar/addressing.py'
+  - 'lib/sidecar-audit.sh'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/hooks.py'
+  - 'lib/sidecar/inbox.py'
+  - 'lib/sidecar/receipts.py'
+  - 'lib/sidecar/waiting.py'
+  - 'lib/sidecar/watcher.py'
+  - '.tasks/active/T-3855-cross-hub-sidecar-end-to-end-ring20-t-24.md'
+  - 'tests/unit/test_sidecar_cross_hub_t3855.py'
+  - 'tests/unit/test_sidecar_receiver_t3693.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T09:53:06'
+    action: 'T-3855: sidecar send addresses the recipient on ITS hub; unresolvable is refused, never ''delivered'''
+  - time: '2026-10-05T09:54:22'
+    action: 'T-3855: RECEIVED/HANDED_OVER/REPLIED receipts go back to the sender''s hub (from_circuit + matching hubs.toml profile)'
+  - time: '2026-10-05T09:58:24'
+    action: 'T-3855: attribution — sender named from from_agent or from_circuit, raw posts ''unattributed (raw post)'', never ''unknown''; peer directory learned from received envelopes; replies to remote senders go to their circuit'
+  - time: '2026-10-05T10:03:20'
+    action: 'T-3855: wake without claude-fw — watcher follows inbox.queued (push, own-hub profile) and ticks on arrival; doctor/audit FAIL when an inbox has nothing to wake it'
+  - time: '2026-10-05T10:03:49'
+    action: 'T-3855: restore T-3850''s bin/fw vendor --allow-delete-locals hunk'
+  - time: '2026-10-05T10:10:01'
+    action: 'T-3855: report (TermLink-side asks), ACs/Verification/RCA, vendor sync of the sidecar files'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 68 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 68
+  commits: 6
+  files_changed: 27
+  lines_added: 2435
+  lines_removed: 71
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3855-cross-hub-sidecar-end-to-end-ring20-t-24.md
+generated_by: context-agent-hybrid
