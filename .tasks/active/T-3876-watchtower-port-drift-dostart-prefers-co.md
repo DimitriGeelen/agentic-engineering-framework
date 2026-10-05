@@ -12,7 +12,7 @@ description: >
   configured, came back on 3000 after a start, links to :3002 (e.g. T-3818 review)
   broke; 055 then lost 3050 → 3002.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T13:25:08Z
-last_update: '2026-10-05T13:30:24Z'
+last_update: 2026-10-05T15:11:36Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -68,20 +68,53 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-05T13:30:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3876: Watchtower port drift: do_start prefers configured PORT then allocates from 3000, do_restart prefers the previous running port (T-2598) — two rules; a stale triple's last port is never a candidate; and persist_port writes the newly allocated port into .framework.yaml silently, making the drift permanent. One rule for both: last port (free or ours) → configured PORT → allocate, announced loudly; never overwrite PORT silently
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`bin/watchtower.sh` has two port rules:
+- `do_start`: `--port`, then configured PORT, else allocate from PORT_SCAN_BASE.
+- `do_restart` (T-2598): the previous running port, read from the triple, wins over configured PORT.
+
+The last port in `.context/working/watchtower.port` survives a reboot, but `do_start` never reads it. Seen 2026-10-05: AEF ran on 3002 with PORT=3000, came back on 3000 after the reboot, and 055 lost 3050.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] ONE function chooses the port for both start and restart, in this order:
+  - explicit `--port`;
+  - else configured PORT, if free or ours;
+  - else the last port this project ran on (`watchtower.port`, still on disk after a crash or reboot), if free or ours;
+  - else allocate.
+
+  Configured comes before last, which differs from 055's suggested order on purpose. Their own point 4 ("after `fw config set PORT 3050` a bare restart still came back on 3002") is exactly what last-before-configured does. With this order both of their observed failures are fixed:
+  - an unconfigured project returns to its last port;
+  - a newly set PORT takes effect.
+- [ ] Any choice other than the configured PORT, when one is configured, prints ONE loud WARN naming both ports and why. A configured PORT held by a FOREIGN service no longer aborts a bare start; it moves on and says so. An explicit `--port` held by a foreign service still refuses.
+- [ ] A configured PORT is never overwritten. Only an unconfigured project's allocation is recorded, as before, and logged.
+- [ ] `do_restart` no longer carries its own rule; it calls start.
+- [ ] bats tests with stubbed `port_in_use` / `_watchtower_port_holder_is_ours` cover each branch of the order, including the 055 case (last 3050 free, PORT unset → 3050) and the AEF case (last 3002 ours/free, PORT 3000 → 3002, with a WARN).
+- [ ] `bash -n`; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -338,3 +371,6 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3876-watchtower-port-drift-dostart-prefers-co.md
 - **Context:** Initial task creation
+
+### 2026-10-05T15:11:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

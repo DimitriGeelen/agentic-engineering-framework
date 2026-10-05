@@ -88,6 +88,39 @@ allocate_port() {
     return 1
 }
 
+# choose_port [EXPLICIT] — T-3876: the ONE port rule for start AND restart.
+#   1. an explicit --port
+#   2. the configured PORT (the operator's statement), when free or ours
+#   3. the last port this project ran on ($PORT_FILE, kept across a crash or
+#      reboot), when free or ours — this is what brings an UNCONFIGURED project
+#      back where its links point, instead of the first free port from 3000
+#   4. allocate from PORT_SCAN_BASE
+# Configured before last, deliberately: after `fw config set PORT N` a bare
+# restart must move to N (055 hit the opposite with the old restart rule).
+# Prints "<port> <source>" (source: explicit|configured|last|allocated);
+# rc 1 when nothing is available. Any choice other than a configured PORT is
+# announced by the caller — a moved port breaks every link handed out.
+choose_port() {
+    local explicit="${1:-}" last="" p
+    if [ -n "$explicit" ]; then
+        echo "$explicit explicit"; return 0
+    fi
+    if port_configured; then
+        p="$DEFAULT_PORT"
+        if ! port_in_use "$p" || _watchtower_port_holder_is_ours "$p"; then
+            echo "$p configured"; return 0
+        fi
+    fi
+    [ -f "$PORT_FILE" ] && last=$(tr -d '[:space:]' < "$PORT_FILE" 2>/dev/null || true)
+    if [[ "$last" =~ ^[0-9]+$ ]] && { ! port_in_use "$last" || _watchtower_port_holder_is_ours "$last"; }; then
+        echo "$last last"; return 0
+    fi
+    if p=$(allocate_port); then
+        echo "$p allocated"; return 0
+    fi
+    return 1
+}
+
 # persist_port PORT — record an allocated port as PORT in .framework.yaml with
 # the `fw config set` writer, so restarts and `fw watchtower port` agree.
 persist_port() {
@@ -210,19 +243,29 @@ do_start() {
         return 1
     fi
 
-    # T-3662 (P-01 F-28): an explicit --port or a configured PORT wins. With
-    # neither, allocate per project instead of every project resolving 3000.
-    if [ -z "$port" ]; then
-        if port_configured; then
-            port="$DEFAULT_PORT"
-        elif port=$(allocate_port); then
-            allocated=1
-            log_info "No PORT configured for this project; allocated port $port."
-        else
-            log_error "No free port in the 100 from PORT_SCAN_BASE ($(fw_config PORT_SCAN_BASE 3000)). Start with --port N."
-            exit 1
-        fi
+    # T-3876: one port rule for start and restart (choose_port). T-3662's
+    # per-project allocation is its last step.
+    local _chosen _source
+    if ! _chosen=$(choose_port "$port"); then
+        log_error "No free port in the 100 from PORT_SCAN_BASE ($(fw_config PORT_SCAN_BASE 3000)). Start with --port N."
+        exit 1
     fi
+    port=${_chosen%% *}; _source=${_chosen#* }
+    case "$_source" in
+        last)
+            if port_configured; then
+                log_warn "PORT ${DEFAULT_PORT} (configured) is held by another service; back on the port this project last ran on ($port). Links to :${DEFAULT_PORT} will not reach this Watchtower."
+            else
+                log_info "No PORT configured; back on the port this project last ran on ($port)."
+            fi ;;
+        allocated)
+            if port_configured; then
+                log_warn "PORT ${DEFAULT_PORT} (configured) is held by another service; starting on ALLOCATED port $port instead. Links to :${DEFAULT_PORT} will not reach this Watchtower."
+            else
+                allocated=1
+                log_info "No PORT configured for this project; allocated port $port."
+            fi ;;
+    esac
 
     # Check Flask is installed
     if ! python3 -c "import flask" 2>/dev/null; then
@@ -383,20 +426,17 @@ do_restart() {
     # triple file — a bare `restart` must come back on the SAME port, not fall
     # back to FW_PORT/3000 (which may belong to a foreign service; that failure
     # mode left no instance running at all). Explicit --port still wins.
+    # T-3876: no rule of its own any more — do_start's choose_port reads the
+    # last port first. Keep the value across do_stop, which deletes the triple.
     local prev_port=""
     [ -f "$PORT_FILE" ] && prev_port=$(cat "$PORT_FILE" 2>/dev/null)
     do_stop
     sleep 1
-    case " $* " in
-        *" --port"*) do_start "$@" ;;
-        *)
-            if [ -n "$prev_port" ]; then
-                do_start --port "$prev_port" "$@"
-            else
-                do_start "$@"
-            fi
-            ;;
-    esac
+    if [ -n "$prev_port" ] && [ ! -f "$PORT_FILE" ]; then
+        mkdir -p "$(dirname "$PORT_FILE")"
+        printf '%s\n' "$prev_port" > "$PORT_FILE"
+    fi
+    do_start "$@"
 }
 
 # ---------------------------------------------------------------------------

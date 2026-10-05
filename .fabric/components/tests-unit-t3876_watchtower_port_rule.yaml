@@ -1,0 +1,21 @@
+id: tests/unit/t3876_watchtower_port_rule.bats
+name: t3876_watchtower_port_rule
+type: script
+subsystem: tests
+location: tests/unit/t3876_watchtower_port_rule.bats
+tags: []
+
+purpose: "T-3876: ONE port rule for Watchtower start and restart (bin/watchtower.sh choose_port): explicit --port > configured PORT (free or ours) > the last port this project ran on (free or ours) > allocate."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-05
+created_by: unknown

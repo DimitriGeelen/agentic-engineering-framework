@@ -103,14 +103,20 @@ _foreign_on() {
     kill -0 "$foreign_pid"
 }
 
-@test "a configured PORT held by a foreign service still refuses, and the holder survives" {
+@test "a configured PORT held by a foreign service: start moves on LOUDLY, the holder survives, PORT is not rewritten" {
+    # T-3876 changed 'refuse' to 'start elsewhere and say so' (operator ask via
+    # 055: "if that fails, find a new port" — a refusal leaves Watchtower down
+    # after every reboot a neighbour won the race for). What T-3662/T-1803
+    # protect is unchanged: the foreign holder is never signalled.
     printf 'PORT: %s\n' "$BASE" >> "$TEST_TEMP_DIR/a/.framework.yaml"
     _foreign_on "$BASE"
     foreign_pid=${EXTRA_PIDS##* }
     _wt a start
-    [ "$status" -ne 0 ]
-    [[ "$output" == *"FOREIGN"* ]]
+    [ "$status" -eq 0 ]
+    [ "$(_port_of a)" != "$BASE" ]
+    [[ "$output" == *"PORT ${BASE} (configured) is held by another service"* ]]
     kill -0 "$foreign_pid"
+    grep -q "^PORT: ${BASE}\$" "$TEST_TEMP_DIR/a/.framework.yaml"
 }
 
 @test "start on an already-running, identity-verified server reuses it (exit 0)" {
