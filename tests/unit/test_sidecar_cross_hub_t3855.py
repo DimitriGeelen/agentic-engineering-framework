@@ -107,6 +107,24 @@ def test_cli_refusal_posts_nothing_and_never_says_delivered(env, capsys, monkeyp
     assert not list((_outbox()).glob("*.json"))
 
 
+@pytest.mark.parametrize("body", ["", "   ", "\n\t"])
+def test_t3889_empty_body_is_refused_and_nothing_is_written(env, capsys, monkeypatch, body):
+    """2026-10-05: --body "$(cat <missing>)" sent two EMPTY messages to the
+    ring20 pair before the real one."""
+    from lib import sidecar_cli as cli
+    importlib.reload(cli)
+    posted, direct = [], []
+    monkeypatch.setattr(cli.delivery, "deliver", lambda *a, **k: posted.append(a))
+    monkeypatch.setattr(cli, "_send_direct", lambda *a, **k: direct.append(a) or 0)
+    rc = cli.main(["send", "--to", "ring20-dashboard", "--hub", "ring20-dashboard",
+                   "--body", body, "--json"])
+    out = capsys.readouterr()
+    assert rc == 2 and posted == [] and direct == []
+    assert json.loads(out.out.strip().splitlines()[-1])["state"] == "REFUSED"
+    assert "empty --body" in out.err
+    assert not list(_outbox().glob("*.json"))
+
+
 def test_sub_agent_with_its_own_inbox_is_addressed_under_us(env):
     topic = f"inbox:{OWN}/{PROJECT}/w-t9999"
     w = env.resolve("w-t9999", runner=_runner(topics=(topic,)))

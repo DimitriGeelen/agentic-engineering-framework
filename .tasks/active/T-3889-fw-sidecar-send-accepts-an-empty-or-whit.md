@@ -1,13 +1,16 @@
 ---
 id: T-3889
-name: "fw sidecar send accepts an empty or whitespace-only --body and delivers it — refuse it (exit 2, nothing stored or posted), like other malformed sends"
+name: "fw sidecar send accepts an empty or whitespace-only --body and delivers it
+  — refuse it (exit 2, nothing stored or posted), like other malformed sends"
 description: >
-  Observed 2026-10-05: --body "$(cat <missing file>)" sent two empty messages to ring20-dashboard and ring20-manager (f954887a, 8957c699) before the real body; recipients had to be told to ignore them.
+  Observed 2026-10-05: --body "$(cat <missing file>)" sent two empty messages to ring20-dashboard
+  and ring20-manager (f954887a, 8957c699) before the real body; recipients had to
+  be told to ignore them.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, sidecar]
 components: []
 related_tasks: []
@@ -38,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T14:53:29Z
-last_update: 2026-10-05T14:53:29Z
-date_finished: null
+last_update: 2026-10-05T16:30:12Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +53,47 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-05T15:00:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-05T15:01:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3889: fw sidecar send accepts an empty or whitespace-only --body and delivers it — refuse it (exit 2, nothing stored or posted), like other malformed sends
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`--body` is `required=True`, but argparse accepts an empty string. `cmd_send` then writes it to the outbox and posts or delivers it.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw sidecar send` with an empty or whitespace-only `--body` is REFUSED before either path (direct or hub): exit 2, a one-line reason on stderr, and with `--json` `{"delivered": false, "state": "REFUSED"}`. No outbox row, no post, no REPLIED receipt.
+- [ ] A unit test asserts the refusal for "", "   " and "\n\t", and that nothing was written to the outbox and the transport was never called. A normal body still sends; the existing sidecar suites stay green; vendored copy in sync.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -320,3 +350,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3889-fw-sidecar-send-accepts-an-empty-or-whit.md
 - **Context:** Initial task creation
+
+### 2026-10-05T16:30:12Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

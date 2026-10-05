@@ -116,6 +116,14 @@ def _replied_receipt(args) -> None:
 
 
 def cmd_send(args) -> int:
+    # T-3889: an empty body is a caller fault (e.g. --body "$(cat <missing>)"),
+    # never a message — refused before either path writes or posts anything.
+    if not (args.body or "").strip():
+        reason = "empty --body (nothing to send)"
+        if args.json:
+            print(json.dumps({"delivered": False, "state": "REFUSED", "reason": reason}))
+        print(f"send: REFUSED, nothing posted — {reason}", file=sys.stderr)
+        return 2
     rc = _cmd_send(args)
     if rc == 0:
         # REPLIED only for an answer that was actually delivered (RECEIVED by
