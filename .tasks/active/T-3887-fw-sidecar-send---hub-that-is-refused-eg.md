@@ -97,10 +97,12 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Measured: how many rows in this repo's outbox are legacy (remote `hub` with a bare `to`), and how many are still pending
-- [ ] `delivery.deliver` never posts a row whose `hub` is remote while its `to` has no circuit (`/`). It records it UNDELIVERABLE (terminal, flag consumed) with the reason "pre-T-3855 address in the sender's namespace — resend with fw sidecar send --to <name> --hub <hub>". No transport call.
-- [ ] Rows with a full circuit, and local rows with a bare `to`, are unaffected
-- [ ] Unit tests: a legacy row is not posted and is recorded UNDELIVERABLE; a circuit row is posted; a local bare row is posted. Existing delivery/sweep suites stay green; vendored copy in sync.
+- [x] Measured: how many rows in this repo's outbox are legacy (remote `hub` with a bare `to`), and how many are still pending. Measured 6, of which 1 is still pending: d0f041e6, `to: "b"`, `hub: 10.0.0.5:9100`, 2026-10-01. That is a test-fixture shape that leaked into the live outbox.
+- [x] `delivery.deliver` never posts a row whose `hub` is remote while its `to` has no circuit (`/`). It records it UNDELIVERABLE (terminal, flag consumed) with the reason "pre-T-3855 address in the sender's namespace — resend with fw sidecar send --to <name> --hub <hub>". No transport call.
+  - Implemented with the ledger's existing dead-letter convention rather than a new state: state UNKNOWN, error `ladder-unretryable: pre-T-3855 address …`, so the audit rail's dead-letter count surfaces it to the operator.
+  - The hub is not probed.
+- [x] Rows with a full circuit, and local rows with a bare `to`, are unaffected
+- [x] Unit tests: a legacy row is not posted and is recorded UNDELIVERABLE; a circuit row is posted; a local bare row is posted. The legacy test is red on the old code. Delivery, sweep, outbox, status and cross-hub suites: 83 passed. Two delivery fixtures were updated to the post-T-3855 circuit shape. Vendored copy in sync.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,8 +262,28 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_sidecar_delivery.py tests/unit/test_sidecar_sweep.py tests/unit/test_sidecar_outbox.py -q > /tmp/.t3887 2>&1 && grep -q passed /tmp/.t3887
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** on 1.8.0, ring20-manager's `fw sidecar send --hub` was refused ("version floor unestablished"). The message then appeared in ring20's OWN hub inbox under the recipient's name, where nobody reads it.
+
+**Root cause:**
+- The refusal stored the row (STORED, by design, for the retry ladder).
+- The row had been written before T-3855, with a bare `to` and a remote `hub`. The retry sweep posts through `termlink_transport.topic_for`, which resolves a bare name in the SENDER's namespace.
+- So every retry landed in the sender's own hub.
+- T-3855 fixed addressing for NEW sends only. The T-3855 report named the legacy rows, but the sweep kept working them.
+
+**Why structurally allowed:**
+- The fix changed the address WRITER (`addressing.resolve`) without adding a matching guard at the address READER (`deliver`/`topic_for`). The persisted rows outlived the code that wrote them.
+- The delivery test fixtures themselves used the legacy shape (bare name + remote hub), so the suite encoded the defect as normal.
+
+**Prevention:**
+- `deliver` refuses the legacy shape outright: dead-letter, resend command, no post. That covers rows on every consumer that upgrades with such rows pending.
+- The fixtures now use the post-T-3855 shape, with an explicit legacy test.
+
+**Side finding:** a test-shaped row (`to: "b"`, hub 10.0.0.5) sat in the live outbox from 2026-10-01, so some test wrote into the live project outbox. It is now dead-lettered rather than re-posted. Not chased here.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
