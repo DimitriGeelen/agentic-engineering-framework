@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-02T23:00:16Z
-last_update: 2026-10-02T23:01:59Z
+last_update: '2026-10-02T23:15:20Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -41,6 +41,16 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-02T23:15:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=136,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3752: Vendor-divergence register: fw upgrade/vendor sees and refuses to silently erase a consumer's local fixes to vendored framework code (010 + 832 proposals)
@@ -58,15 +68,30 @@ Consumers patch vendored framework code (`.agentic-framework/`) to fix bugs befo
 
 - **IW-1: One schema.** Which fields reconcile 010's `.vendor-divergence.yaml` and 832's? Candidates: path, content hash at patch time, reason, owning task, upstream status (filed-upstream / local-only / superseded).
   confidence: 1
+  disposition: answered
+  rationale: The base schema shipped in v1.8.2 (T-3850, lib/vendor_preserve.py): `.fwvendor-preserve.yaml` with `files:` (path or glob, optional reason) and `in_file:` (file plus marker or markers), and `.fw-vendor-stamp.json` holding sha256 per vendored file as the content baseline. Owning task and upstream status are NOT in it; they belong to IW-4.
 
 - **IW-2: What does `fw upgrade` do with a declared divergence?** Refuse until resolved, keep the consumer's version, or overwrite and report each one by name?
   confidence: 1
+  disposition: answered
+  rationale: Shipped in v1.8.2 (T-3850):
+    - a declared `files:` entry keeps the consumer's version and reports upstream changes to it;
+    - an `in_file:` marker is checked, and MARKER MISSING is reported;
+    - an undeclared local file makes the vendor REFUSE (exit 3, nothing written) unless --allow-delete-locals is given.
+    Field-tested: ring20-manager kept 33 files and 832 kept 50 through their 1.8.2 upgrades.
 
 - **IW-3: Undeclared changes.** Do we detect undeclared edits (hash against the vendored baseline) and locally added files at upgrade time, or adopt 832's G4 commit gate on the consumer side, or both?
   confidence: 1
+  disposition: answered
+  rationale: Detection at vendor time, shipped in T-3850:
+    - locally ADDED files are found against the source's git history and refused;
+    - local EDITS are found against `.fw-vendor-stamp.json` from the second vendor on.
+    832's consumer-side commit gate (G4) is not adopted upstream. Automatic merging of edited in-file files is T-3885.
 
 - **IW-4: Upstream intake.** How does a `filed-upstream` entry reach us as a task, and how does the consumer learn it is superseded, so the next re-vendor drops the entry cleanly?
   confidence: 1
+  disposition: deferred
+  rationale: Not built, and it is what remains of this inception. Today intake is manual: peer patches arrive as sidecar pickups and are triaged into tasks (e.g. T-3597, T-3879). A GO here scopes the build: add `owning_task` and `upstream_status` to the preserve manifest, and have the vendor report entries whose upstream fix has shipped (superseded), so the next re-vendor can drop them.
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
@@ -150,11 +175,19 @@ Consumers patch vendored framework code (`.agentic-framework/`) to fix bugs befo
 
 Evidence from two consumers: 832's first protocol run (1.7.740) found 51 local fixes erased by re-vendor, an undeclared one (T-943 on lib/verification-port.sh) lost with nothing listing it, and 5 consumer-added files deleted by the vendor copy, 4 undeclared. 010-termlink runs a working register plus check (framework:pickup @304/@305). Both schemas exist and differ. Today fw upgrade overwrites silently, which violates the Reliability directive (no silent failures). Open: one schema reconciling 010 and 832, whether fw upgrade refuses or only reports, consumer-side commit gate (832 G4), and upstream intake of filed-upstream entries.
 
-**Evidence:**
+**Update 2026-10-05 (T-3896): most of this has since been BUILT.**
+- v1.8.2 shipped T-3850 and T-3851: the preserve manifest, the refusal to delete undeclared local files, and the vendor stamp. That answers IW-1 to IW-3 (see the dispositions).
+- T-3850 never referenced this inception. The build went ahead without a decision here, which is a traceability gap of its own.
+- **What a GO now adopts:** only the remainder, IW-4 upstream intake. Add `owning_task` and `upstream_status` to `.fwvendor-preserve.yaml`, and have the vendor report entries whose upstream fix has shipped (superseded), so the next re-vendor can drop them.
+- **What a NO-GO means:** the shipped T-3850 behaviour is enough, intake stays manual via pickups, and this inception closes as superseded.
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+**Evidence:**
+- Research artifact: `docs/reports/T-3752-vendor-divergence.md`.
+- `lib/vendor_preserve.py` (T-3850): manifest shape, the stamp, and refuse-on-uncovered-local (exit 3). Shipped in v1.8.2, 2026-10-05.
+- Field results on v1.8.2: ring20-manager (33 local files kept, 0 refusals); 832 (50 local files kept); ring20-dashboard (7 local-only files listed exactly by the pre-check).
+- Still open:
+  - T-3885, automatic merge for edited in-file files (ring20-manager: 33 MARKER MISSING, 17/17 merged by hand without conflict);
+  - T-3888, CLAUDE.md in-section edits (1409).
 
 ## Decisions
 
