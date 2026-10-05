@@ -1,0 +1,4 @@
+# T-3854: 412 commits from 2026-09-26T23:57Z to 2026-10-05 were authored as 't <t@t.t>'
+# because a T-3511 test fixture wrote user.name/user.email into this repo's .git/config.
+# They are the operator's commits. History is not rewritten (operator decision pending).
+Dimitri Geelen <dimitirgeelen@hotmail.com> t <t@t.t>
