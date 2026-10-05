@@ -5313,3 +5313,30 @@ concerns:
   what_remains: Fix is T-3577. A corpus check that every arc_id resolves to an arc is not built.
   related_tasks:
   - T-3577
+- id: G-108
+  type: gap
+  title: A surface that invites an action checks a weaker predicate than the gate that enforces it — the
+    operator is offered a GO that is certain to be refused
+  description: '/approvals lists a pending inception when its Recommendation section is >=20 chars (template
+    lines pass); the decide gate (update-task.sh check_disposition_gate) additionally requires every IW
+    disposed and a rationale. The operator clicked GO on T-3659 and was refused after the click; 6 queued
+    inceptions (24 undisposed IWs) were in that state. Same class appeared 3 more times on 2026-10-05:
+    T-3872 (sidecar injector vs prompt hook), T-3881 (upgrade expected-hooks vs init template), T-3876
+    (watchtower start vs restart) — two consumers of one fact, each with its own predicate.'
+  spec_reference: docs/reports/T-3896-approvals-readiness-rca.md
+  severity: high
+  status: open
+  detected_in: T-3896
+  observed: '2026-10-05'
+  reported_by: operator (T-3659 GO refused in Watchtower)
+  blast_radius: every operator decision surface (/approvals, /inception, /review, fw task review), every
+    queued inception; operator trust in the queue
+  detection_gap: Nothing asserts that an item a surface OFFERS for decision would pass the gate that
+    RECORDS the decision. The gate fires only at click time, after the operator has spent attention.
+  what_remains: Fix is T-3896 (one readiness predicate shared by listing, handoff and decide). The general
+    class (two predicates for one fact) has no corpus check.
+  related_tasks:
+  - T-3896
+  - T-3872
+  - T-3881
+  - T-3876
