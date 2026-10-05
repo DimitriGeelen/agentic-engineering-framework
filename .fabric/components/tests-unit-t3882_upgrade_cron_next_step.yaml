@@ -1,0 +1,21 @@
+id: tests/unit/t3882_upgrade_cron_next_step.bats
+name: t3882_upgrade_cron_next_step
+type: script
+subsystem: tests
+location: tests/unit/t3882_upgrade_cron_next_step.bats
+tags: []
+
+purpose: "T-3882: fw upgrade adds framework cron jobs to the registry (step 3b) but the \"run 'fw cron install' to deploy\" hint was one mid-run line; 832 counted a dry run as the install."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-05
+created_by: unknown

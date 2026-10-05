@@ -1001,6 +1001,16 @@ print(hashlib.sha256(json.dumps(data.get("hooks", {}), sort_keys=True).encode())
 ' "$1" 2>/dev/null
 }
 
+# T-3882: step 3b's "run 'fw cron install' to deploy" is one mid-run line; 832
+# counted a dry run as the install. The closing next steps say it again, with
+# the job ids. Prints nothing when no job was added.
+_t3882_cron_next_step() {   # _t3882_cron_next_step <target> "<id id ...>"
+    local ids="$2" n
+    [ -n "$ids" ] || return 0
+    n=$(wc -w <<< "$ids" | tr -d ' ')
+    echo "  4. ${n} new cron job(s) (${ids}) are NOT running yet — deploy: cd $1 && fw cron install"
+}
+
 # _ef_baseline_state <project> → missing | nosettings | match | changed
 _ef_baseline_state() {
     local b="$1/.context/project/enforcement-baseline.sha256" s="$1/.claude/settings.json" h
@@ -1496,6 +1506,8 @@ do_upgrade() {
     # settings.json? Step 10 refreshes it only then — never launders a drift.
     local _ef_pre_state
     _ef_pre_state=$(_ef_baseline_state "$target_dir")
+    # T-3882: cron jobs step 3b ADDED in this (real) run, for the closing next steps.
+    local _cron_added_ids=""
 
     echo -e "${YELLOW}[1/10] CLAUDE.md governance sections${NC}"
 
@@ -1792,6 +1804,7 @@ CRONREGEOF
                         echo -e "  ${CYAN}WOULD ADD${NC}  cron job ${_cs_line#ADDED }"
                     else
                         echo -e "  ${GREEN}ADDED${NC}  cron job ${_cs_line#ADDED }"
+                        _cron_added_ids="${_cron_added_ids:+$_cron_added_ids }${_cs_line#ADDED }"   # T-3882
                     fi ;;
                 PRESENT\ *) echo -e "  ${GREEN}OK${NC}  cron job ${_cs_line#PRESENT } already present" ;;
             esac
@@ -2792,6 +2805,7 @@ EOF
             echo "  1. Review changes: cd $target_dir && git diff"
             echo "  2. Commit: fw git commit -m 'T-012: fw upgrade — sync framework improvements'"
             echo "  3. Run: fw doctor  # Verify health"
+            _t3882_cron_next_step "$target_dir" "$_cron_added_ids"
 
             # T-2094 F10 (T-2078 V1-C): post-upgrade fw doctor advisory.
             _t2094_emit_doctor_advisory "$target_dir"
