@@ -74,24 +74,24 @@ cost_estimate_proposed:
   - Strict Python (mypy --strict): the lowest migration cost, but slow hook startup, and only bashlex as a parser.
   Lean: Go.
   confidence: 1
-  disposition:
-  rationale:
+  disposition: deferred
+  rationale: Deferred to the pilot's parity experiment. Round 1 split (docs/reports/T-3670-r1-synthesis.md D2): 2 of 3 seats chose Go/mvdan.cc/sh for the Tier 0 classifier, 1 chose TypeScript, and all three keep bash as CLI glue and call the language secondary to the architecture. Settle it by running the 98-case §5 corpus against a Go and a TypeScript classifier.
 - **IW-2: What counts as "established core"?** Proposed set: the Tier 0 classifier and pre-push guard, check-active-task (task/focus/G-020 gates), budget-gate, verdict ledger, and the update-task close gates. The criteria: security-critical, stable spec, a large existing test suite, fires on every tool call.
   confidence: 1
-  disposition:
-  rationale:
+  disposition: answered
+  rationale: The GO scope is the round-1 consensus core: the Tier 0 classifier plus the pre-push guard, the broker/approval store, and ledger signing/verification custody (3 of 3 seats). The task/focus gate engine (2 of 3) and the budget/task-close gates (split) wait for the pilot's result (r1 synthesis D3).
 - **IW-3: Does the pilot (the Tier 0 classifier on a real bash AST) close the self-approval and normalisation class as claimed?** Measure it against the existing ~170 Tier 0 tests plus every review probe from rounds 3-7, and compare latency.
   confidence: 1
-  disposition:
-  rationale:
+  disposition: deferred
+  rationale: This is what the pilot measures, so it cannot be known before running it. Its STOP conditions are fixed in advance (r1 synthesis, Consensus 3): any unapproved effect, replay or self-approval executes; the agent uid can write any enforcement path; any benign case T0-101..122 newly blocks; or an approval costs the operator more than one action compared with today.
 - **IW-4: Distribution and consumers.** How does a compiled binary ship? Built per OS/arch at release, vendored into `.agentic-framework/`, or built on `fw upgrade`? What happens on hosts where it is missing (fail closed to the current bash path)? What does it mean for the P-01 installer and Windows/WSL?
   confidence: 1
-  disposition:
-  rationale:
+  disposition: answered
+  rationale: Signed, version-pinned artefacts (static per-OS/arch binaries), and a missing or mismatched component means DENY with no fallback to the legacy bash path (3 of 3 seats, r1 synthesis D4). This corrects the question's own "fail closed to the current bash path": the reviewers rejected a fallback because it reopens the class.
 - **IW-5: Migration discipline.** One module at a time, the old and new paths run side by side with a parity check, the existing bats suites as the contract, and no big-bang rewrite.
   confidence: 2
-  disposition:
-  rationale:
+  disposition: answered
+  rationale: As stated: one module at a time, old and new paths side by side with a parity check, the existing bats suites as the contract, and no big-bang rewrite. Consistent with all three seats' pilot-first plan.
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
@@ -175,11 +175,25 @@ cost_estimate_proposed:
 
 Operator question 2026-10-01 after 7 Tier 0 review rounds. Evidence: every Tier 0 round found another shell expansion the hand-written matcher did not model (braces, line continuation, ANSI-C, quoting, normalisation) — a parsing problem a real AST closes as a class; and the bash-core failure catalogue in learnings (heredoc-in-$(…), backticks in python -c, set -e semantics, pipefail/SIGPIPE false reds, dead negations) is silent-failure-shaped (D2). Go gives a mature bash parser (shfmt's), a single static binary (D4, P-01 installer), strong typing and fast hook cold-start. Pilot scope is bounded by an existing executable spec (~170 Tier 0 tests). Open: language choice (Go vs Rust vs strict Python), module scope, migration and vendoring/distribution, consumer impact.
 
-**Evidence:**
+**What your GO adopts** (updated 2026-10-05 from the round-1 review, T-3896): a **pilot**, not a language migration. All three review seats put the boundary in configuration, not in a rewrite:
+- a non-root agent uid;
+- enforcement files the agent cannot write;
+- the aef-govd broker holding approval state;
+- server-side ref protection.
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+The pilot routes the Tier 0 approval path through the broker, with fixed STOP conditions (IW-3). The rest of the plan:
+- Scope is the consensus core (IW-2).
+- Delivery is signed and pinned, and a missing component means deny (IW-4).
+- Migration is one module at a time (IW-5).
+- The implementation language is decided by the pilot's parity experiment (IW-1, deferred), not by this GO.
+
+**Evidence:**
+- `docs/reports/T-3670-core-language.md` is the research artifact. `docs/reports/T-3670-context-pack.md` is the frozen pack given to the reviewers.
+- `docs/reports/T-3670-r1-synthesis.md` covers round 1, three blind internal seats (OpenAI codex, Z.ai GLM via opencode, Anthropic claude -p):
+  - consensus on architecture (D1), elevation (D5), the pilot and delivery (D4);
+  - a split on language (D2).
+- `docs/reports/T-3670-r1-{openai,zai,anthropic}.md` hold the individual answers. The question was reviewed before it was asked: `T-3670-qreview-*.md`.
+- Seven Tier 0 review rounds, each finding another shell expansion the hand-written matcher did not model. That is a parsing class a real AST closes (motivation; see Rationale).
 
 ## Decisions
 
