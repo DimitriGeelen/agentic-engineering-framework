@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3880: SECURITY: sidecar peer directory can be hijacked — addressing.learn() keys the address under the sender-asserted from_agent and overwrites an existing entry with a different circuit (last writer wins), so one posted envelope (from_agent=ring20-manager, from_circuit=<attacker hub>) redirects our next 'fw sidecar send --to ring20-manager
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T14:09:15Z
+# ============================================================================
+
+task_id: T-3880
+task_name: "SECURITY: sidecar peer directory can be hijacked — addressing.learn() keys the address under the sender-asserted from_agent and overwrites an existing entry with a different circuit (last writer wins), so one posted envelope (from_agent=ring20-manager, from_circuit=<attacker hub>) redirects our next 'fw sidecar send --to ring20-manager"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T14:06:25Z
+completed: 2026-10-05T14:08:52Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-05T16:08:22+02:00
+last_commit: 2026-10-05T16:08:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  SECURITY — sidecar peer directory no longer takes a sender-asserted name or overwrites a known address. ACs, verification, RCA
+
+# Key outcomes
+outcomes:
+  - '`learn()` records an address ONLY under the circuit''s own name (`circuit_name(cid)`), and only when `from_agent` is absent or equals that name. A `from_agent` naming anyone else learns nothing.'
+  - '`learn()` never replaces an existing entry with a different circuit. It records the conflict (name, known circuit, claimed circuit, time) in the peers file and returns False. Same circuit re-learned → no change.'
+  - 'Regression tests:'
+  - 'Residual stated in the RCA: a FIRST sighting is still trust-on-first-use. The full fix is the authenticated hub_id from TermLink T-3345 (now live; our T-3873).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/addressing.py'
+  - 'lib/sidecar/addressing.py'
+  - '.tasks/active/T-3880-security-sidecar-peer-directory-can-be-h.md'
+  - 'tests/unit/test_sidecar_cross_hub_t3855.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T16:08:22'
+    action: 'T-3880: SECURITY — sidecar peer directory no longer takes a sender-asserted name or overwrites a known address'
+  - time: '2026-10-05T16:08:51'
+    action: 'T-3880: ACs, verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, security, sidecar, ring20-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 4
+  lines_added: 468
+  lines_removed: 30
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3880-security-sidecar-peer-directory-can-be-h.md
+generated_by: context-agent-hybrid
