@@ -77,14 +77,16 @@ def _outbox():
 # ── leg 1: addressing ───────────────────────────────────────────────────────
 
 def test_bare_name_with_remote_hub_lands_in_the_recipients_namespace(env):
-    w = env.resolve("ring20-dashboard", hub="ring20-dashboard", runner=_runner())
+    w = env.resolve("ring20-dashboard", hub="ring20-dashboard",
+                    runner=_runner(topics=(f"inbox:{THEIRS}/ring20-dashboard",)))
     assert w["topic"] == f"inbox:{THEIRS}/ring20-dashboard"
     assert w["hub"] == "ring20-dashboard"
     assert OWN not in w["topic"] and PROJECT not in w["topic"]
 
 
 def test_the_measured_bug_shape_is_never_produced(env):
-    w = env.resolve("ring20-dashboard", hub=ADDR, runner=_runner())
+    w = env.resolve("ring20-dashboard", hub=ADDR,
+                    runner=_runner(topics=(f"inbox:{THEIRS}/ring20-dashboard",)))
     assert w["topic"] != f"inbox:{OWN}/{PROJECT}/ring20-dashboard"
 
 
@@ -228,11 +230,14 @@ def test_t3880_relearning_the_same_circuit_is_a_no_op(env):
 
 
 def test_hub_id_read_is_cached(env):
+    # T-3899: the inbox-existence check runs on every send (a topic can appear
+    # or vanish); only the hub-identity reads are cached.
     calls = []
-    env.resolve("a-peer", hub="ring20-dashboard", runner=_runner(calls))
-    n = len(calls)
-    env.resolve("a-peer", hub="ring20-dashboard", runner=_runner(calls))
-    assert len(calls) == n
+    topics = (f"inbox:{THEIRS}/a-peer",)
+    env.resolve("a-peer", hub="ring20-dashboard", runner=_runner(calls, topics=topics))
+    ident = [c for c in calls if c[:2] != ["channel", "list"]]
+    env.resolve("a-peer", hub="ring20-dashboard", runner=_runner(calls, topics=topics))
+    assert [c for c in calls if c[:2] != ["channel", "list"]] == ident
 
 
 def test_cli_delivered_line_names_topic_and_hub(env, capsys, monkeypatch):
@@ -240,6 +245,7 @@ def test_cli_delivered_line_names_topic_and_hub(env, capsys, monkeypatch):
     importlib.reload(cli)
     monkeypatch.setattr(cli.addressing, "remote_hub_id",
                         lambda hub, **k: (THEIRS, ADDR))
+    monkeypatch.setattr(cli.addressing, "_require_remote_inbox", lambda *a, **k: None)
 
     class R:
         state, delivered, reason = "HUB_ACCEPTED", True, None
@@ -514,3 +520,42 @@ def test_doctor_and_audit_fail_on_wake_none(env):
         assert '"$_sw_wake" = "none"' in text, rel
     audit = open(os.path.join(ROOT, "agents/audit/audit.sh"), encoding="utf-8").read()
     assert 'fail "Sidecar inbox with nothing to wake it"' in audit
+
+
+# ── T-3899: a bare name on a remote hub must name an inbox that exists ───────
+
+def test_t3899_measured_ring20_shape_is_refused_naming_the_real_project(env):
+    """ring20-dashboard 2026-10-05 17:36Z: `--to ring20-manager --hub
+    ring20-manager` created inbox:<hub>/ring20-manager and said delivered.
+    The project there is proxmox-ring20-management."""
+    calls = []
+    real = f"inbox:{THEIRS}/proxmox-ring20-management"
+    sub = f"inbox:{THEIRS}/proxmox-ring20-management/some-agent"
+    with pytest.raises(env.AddressError) as e:
+        env.resolve("ring20-manager", hub="ring20-dashboard",
+                    runner=_runner(calls, topics=(real, sub)))
+    msg = str(e.value)
+    assert f"no inbox inbox:{THEIRS}/ring20-manager" in msg
+    assert "proxmox-ring20-management" in msg and "some-agent" not in msg
+    assert "nothing posted" in msg
+    assert not any(c[:2] == ["channel", "post"] for c in calls)
+
+
+def test_t3899_hub_that_cannot_be_listed_is_refused_not_guessed(env):
+    base = _runner(topics=())
+
+    def run(argv, **kw):
+        if argv[1:3] == ["channel", "list"]:
+            return _Proc(1, "", "connection refused")
+        return base(argv, **kw)
+    with pytest.raises(env.AddressError) as e:
+        env.resolve("ring20-dashboard", hub="ring20-dashboard", runner=run)
+    assert "cannot verify" in str(e.value)
+
+
+def test_t3899_inbox_check_asks_the_recipients_hub(env):
+    calls = []
+    env.resolve("ring20-dashboard", hub="ring20-dashboard",
+                runner=_runner(calls, topics=(f"inbox:{THEIRS}/ring20-dashboard",)))
+    lists = [c for c in calls if c[:2] == ["channel", "list"]]
+    assert lists and all("--hub" in c and "ring20-dashboard" in c for c in lists)

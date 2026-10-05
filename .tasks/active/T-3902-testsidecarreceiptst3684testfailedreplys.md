@@ -1,25 +1,17 @@
 ---
-id: T-3899
-name: "sidecar send: bare --to with a remote --hub is posted to <hubid>/<name> without
-  checking that inbox exists — creates a topic nobody reads and reports delivered
-  (T-3855 regression, ring20-dashboard t2459 s6)"
+id: T-3902
+name: "test_sidecar_receipts_t3684::test_failed_reply_sends_no_replied red: fake args object has no .body — T-3889's empty-body refusal reads args.body; fixture predates it"
 description: >
-  addressing.resolve branch 2 (remote hub named, recipient not in peer directory)
-  returns f'{hub_id}/{name}' on no evidence; the send's --ensure-topic then CREATES
-  inbox:<hubid>/<name>. Measured by ring20-dashboard 2026-10-05 17:36Z: --to ring20-manager
-  --hub ring20-manager -> HUB_ACCEPTED to inbox:22c19fedafd73da2/ring20-manager, which
-  did not exist (project is proxmox-ring20-management). Fix: require topic_present
-  on that hub (True) before returning; False -> refuse naming the inbox:<hubid>/*
-  topics that do exist; None -> refuse (cannot verify).
+  Found while regression-testing T-3899 (2026-10-05): AttributeError 'A' object has no attribute 'body'. Red without T-3899's change too. Not in unit-suite baseline/LATEST, so new since the last nightly. Likely fix: give the fixture a body (or make the reply path not read args.body).
 
-status: started-work
-workflow_type: build
+status: captured
+workflow_type: test
 owner: agent
 horizon: now
 tags: []
 components: []
 related_tasks: []
-origin: {kind: "peer", source: "ring20-dashboard", ref: "msg 711087b1 (t2459-s6-joint-test)"}
+origin: {kind: "agent"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -46,9 +38,9 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "msg 711087b1 (t2459-s6-
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-05T21:06:56Z
-last_update: 2026-10-05T21:37:06Z
-date_finished:
+created: 2026-10-05T21:35:03Z
+last_update: 2026-10-05T21:35:03Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -59,37 +51,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-05T21:15:22Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-05T21:15:47Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3899: sidecar send: bare --to with a remote --hub is posted to <hubid>/<name> without checking that inbox exists — creates a topic nobody reads and reports delivered (T-3855 regression, ring20-dashboard t2459 s6)
+# T-3902: test_sidecar_receipts_t3684::test_failed_reply_sends_no_replied red: fake args object has no .body — T-3889's empty-body refusal reads args.body; fixture predates it
 
 ## Context
 
@@ -99,13 +63,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `addressing.resolve` with a remote `--hub` and a bare name that is not in the peer directory returns the project address ONLY when `inbox:<hubid>/<name>` exists on that hub (`termlink channel list --hub <hub> --prefix …`).
-- [x] Inbox absent → `AddressError`, and nothing is posted. The message names the inbox it looked for and lists the `inbox:<hubid>/<project>` topics that DO exist there, e.g. `proxmox-ring20-management` for ring20-manager.
-- [x] Hub cannot be asked (list fails) → `AddressError` ("cannot verify"). Never a guessed topic.
-- [x] Peer-directory and explicit-circuit paths are unchanged. The existing T-3855 suite passes, with fixtures updated so the recipient's inbox exists.
-- [x] New tests:
-  - the measured ring20 shape (`--to ring20-manager --hub <their hub>`, inbox absent) is refused, the refusal names `proxmox-ring20-management`, and no `channel post` is issued;
-  - list failure → refused.
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -139,9 +98,6 @@ bvp_scores_proposed:
 -->
 
 ## Verification
-
-timeout 300 python3 -m pytest tests/unit/test_sidecar_cross_hub_t3855.py -q -p no:cacheprovider > /tmp/.t3899 2>&1 && grep -q passed /tmp/.t3899
-bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -285,20 +241,6 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** ring20-dashboard (2026-10-05 17:36Z) sent `fw sidecar send --to ring20-manager --hub ring20-manager`.
-- The send reported `HUB_ACCEPTED`, delivered to `inbox:22c19fedafd73da2/ring20-manager`.
-- That topic did not exist until the send created it.
-- The real project there is `proxmox-ring20-management`, so nobody reads that inbox.
-
-**Root cause:** in `addressing.resolve`, the remote-hub branch builds `<hubid>/<name>` from any bare name it is given, with no evidence that `<name>` is a project on that hub. `channel post --ensure-topic` then creates the inbox. On a remote hub, a hub profile name and a project name look alike, which makes this mistake easy.
-
-**Why structurally allowed:** T-3855 fixed the WHICH-namespace half (sender's hub vs recipient's hub) and promised "an unknown recipient is refused, never reported delivered". Its tests put the recipient's name and hub profile on the same string (`ring20-dashboard`), so they never had a name that differs from its project. The own-hub branch has an existence check (`_subagent_evidence`); the remote branch was written without one, and nothing compared the two branches.
-
-**Prevention:**
-- The remote branch now checks that the inbox exists on the recipient's hub before returning an address. When the inbox is absent it refuses and names the project inboxes that do exist; when the hub cannot be listed it refuses as well.
-- `test_t3899_measured_ring20_shape_is_refused_naming_the_real_project` pins the measured shape: a profile name that is not the project name.
-- Residual: `--ensure-topic` on post can still create a topic in other paths, such as an explicit circuit typed wrong. Explicit circuits are kept verbatim by design (T-3855). Not addressed here.
-
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -375,10 +317,7 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-05T21:06:56Z — task-created [task-create-agent]
+### 2026-10-05T21:35:03Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3899-sidecar-send-bare---to-with-a-remote---h.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3902-testsidecarreceiptst3684testfailedreplys.md
 - **Context:** Initial task creation
-
-### 2026-10-05T21:31:15Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work

@@ -329,6 +329,47 @@ def _subagent_evidence(name: str, runner) -> str | None:
     return None
 
 
+def _project_inboxes_on(hub: str, hub_id: str, runner) -> list[str] | None:
+    """Project names with an inbox on a remote hub (`inbox:<hub_id>/<project>`,
+    no deeper segment), or None when the hub could not be asked (T-3899)."""
+    from . import inbox
+    prefix = f"inbox:{hub_id}/"
+    argv = [inbox._binary(), "channel", "list", "--prefix", prefix, "--json", "--hub", hub]
+    try:
+        proc = runner(argv, capture_output=True, text=True, timeout=15)
+        if proc.returncode != 0:
+            return None
+        names = [t.get("name") or "" for t in json.loads(proc.stdout or "{}").get("topics", [])]
+    except (OSError, subprocess.SubprocessError, json.JSONDecodeError, AttributeError):
+        return None
+    return sorted({n[len(prefix):] for n in names
+                   if n.startswith(prefix) and n[len(prefix):] and "/" not in n[len(prefix):]})
+
+
+def _require_remote_inbox(name: str, hub: str, hub_id: str, runner) -> None:
+    """T-3899: a bare name sent to a remote hub is a PROJECT there only if its
+    inbox exists. Without this check the send's `--ensure-topic` created
+    `inbox:<hub_id>/<name>` for a project that does not exist and reported it
+    delivered (ring20-dashboard 2026-10-05: `--to ring20-manager` — a hub
+    profile name — landed in a topic nobody reads; the project is
+    proxmox-ring20-management). Refuse instead, naming what does exist."""
+    from . import inbox
+    topic = circuit.topic_for_circuit(f"{hub_id}/{name}")
+    present, why = inbox.topic_present(topic, runner=runner, hub=hub)
+    if present is True:
+        return
+    if present is None:
+        raise AddressError(
+            f"cannot verify that {topic} exists on hub {hub} ({why}); nothing posted. "
+            f"Address it by explicit circuit, --to {hub_id}/<project>, once you know its inbox")
+    known = _project_inboxes_on(hub, hub_id, runner)
+    listed = ", ".join(known) if known else "none could be listed"
+    raise AddressError(
+        f"no inbox {topic} on hub {hub} ({hub_id}): {name!r} is not a project there "
+        f"(a hub profile name is not a project name). Project inboxes on that hub: "
+        f"{listed}. Use --to {hub_id}/<project>; nothing posted")
+
+
 def resolve(to: str, *, hub: str | None = None, level: str = "auto",
             runner=subprocess.run, hubs_file: Path | None = None) -> dict:
     """Where a `--to` goes: {circuit, topic, hub (None = local), how}.
@@ -374,7 +415,8 @@ def resolve(to: str, *, hub: str | None = None, level: str = "auto",
             raise AddressError(
                 f"{name} as an AGENT on hub {hub} needs its project: --to "
                 f"{hub_id}/<project>/{name}")
-        return out(f"{hub_id}/{name}", hub, f"project address on hub {hub} ({hub_id})")
+        _require_remote_inbox(name, hub, hub_id, runner)
+        return out(f"{hub_id}/{name}", hub, f"project address on hub {hub} ({hub_id}), inbox present")
 
     # 3. our own hub (no --hub, or --hub resolving to ourselves)
     hub_arg = hub if hub else None

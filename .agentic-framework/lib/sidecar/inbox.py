@@ -145,7 +145,7 @@ def _binary() -> str:
 
 
 def topic_present(topic: str, *, runner=subprocess.run, binary: str | None = None,
-                  timeout: int = 15) -> tuple[bool | None, str]:
+                  timeout: int = 15, hub: str | None = None) -> tuple[bool | None, str]:
     """(present, reason) for one hub topic (T-3803).
 
     True/False when the hub answered, None when it could not be asked. The
@@ -154,6 +154,8 @@ def topic_present(topic: str, *, runner=subprocess.run, binary: str | None = Non
     read the same — `fw sidecar status` printed 0 either way.
     """
     argv = [binary or _binary(), "channel", "list", "--prefix", topic, "--json"]
+    if hub:  # T-3899: ask the RECIPIENT's hub, not ours
+        argv += ["--hub", hub]
     try:
         proc = runner(argv, capture_output=True, text=True, timeout=timeout)
     except (OSError, subprocess.SubprocessError) as e:
