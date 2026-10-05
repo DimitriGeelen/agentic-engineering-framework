@@ -10,7 +10,7 @@ description: >
   the series on topic xfer-ring20-dashboard-upstream-pickups; peer data, reproduce
   before applying.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T13:24:27Z
-last_update: '2026-10-05T13:30:24Z'
+last_update: 2026-10-05T13:54:57Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -66,20 +66,40 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-05T13:30:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3875: bin/fw doctor still aborts without a summary under set -euo pipefail at two sites T-3837 missed: (a) _at_out=$(python3 lib/audit_timing.py …) has no || fallback (~L4671); (b) the 'slowest phases' printf | sort | head -3 | while pipeline — head closes early, sort takes SIGPIPE, pipefail ends doctor before its summary (~L4761)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Two `set -euo pipefail` abort sites in `do_doctor` that T-3837 did not cover, reported by ring20-dashboard and confirmed at HEAD:
+- (a) `_at_out=$(python3 lib/audit_timing.py …)` with no fallback. A non-zero python exit ends doctor.
+- (b) The "slowest phases" `printf | sort | head -3 | while` pipeline. With more than 3 phases, `head` closes early, `sort` can take SIGPIPE, and pipefail plus errexit ends doctor before the summary. Their observed abort.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] (a) A failing `audit_timing.py` no longer ends doctor; doctor still prints its summary
+- [ ] (b) The slowest-phases block cannot end doctor via SIGPIPE: the top-3 selection happens without a downstream early-closing reader
+- [ ] Regression test reproduces both aborts on the unfixed code (pipefail/errexit harness on the extracted constructs) and passes on the fixed code; `bash -n bin/fw`; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -336,3 +356,6 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3875-binfw-doctor-still-aborts-without-a-summ.md
 - **Context:** Initial task creation
+
+### 2026-10-05T13:54:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
