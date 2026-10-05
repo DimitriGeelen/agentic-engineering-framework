@@ -1,10 +1,14 @@
 ---
 id: T-3883
-name: "fw upgrade settings regeneration drops project hooks registered under more than one matcher (ring20's 3 SessionStart hooks lost their 'resume' entries) while step 5 prints KEPT for each — the carry-over de-duplicates on (event, command) and ignores the matcher; silent hook loss behind a success line"
+name: "fw upgrade settings regeneration drops project hooks registered under more
+  than one matcher (ring20's 3 SessionStart hooks lost their 'resume' entries) while
+  step 5 prints KEPT for each — the carry-over de-duplicates on (event, command) and
+  ignores the matcher; silent hook loss behind a success line"
 description: >
-  ring20-manager msg 92720ad9 (2026-10-05, v1.8.0 -> v1.8.2; their review docs/reports/T-2241-v182-post-upgrade-review.md). Finding 2. lib/settings_merge.py carry-over (T-2710).
+  ring20-manager msg 92720ad9 (2026-10-05, v1.8.0 -> v1.8.2; their review docs/reports/T-2241-v182-post-upgrade-review.md).
+  Finding 2. lib/settings_merge.py carry-over (T-2710).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T14:47:35Z
-last_update: 2026-10-05T14:47:35Z
-date_finished: null
+last_update: '2026-10-05T15:00:29Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +54,54 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-05T14:54:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-05T15:00:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=278,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3883: fw upgrade settings regeneration drops project hooks registered under more than one matcher (ring20's 3 SessionStart hooks lost their 'resume' entries) while step 5 prints KEPT for each — the carry-over de-duplicates on (event, command) and ignores the matcher; silent hook loss behind a success line
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Confirmed in code. `lib/settings_merge.py merge()` dedupes project hooks with `present = {(event, json(hook))}`, with no matcher.
+- The same command registered under two matchers (ring20: SessionStart `startup` and `resume`) hits `present` on its second entry and is skipped by `continue`, with no report.
+- The same applies when the TEMPLATE already has that command under a different matcher.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The dedupe key includes the matcher, `(event, matcher, hook)`. A project hook is carried once per matcher it was registered under, and an exact duplicate (same event, matcher and hook) is still not duplicated.
+- [ ] Nothing is dropped silently: every carried entry is reported KEPT with its matcher.
+- [ ] Regression test in settings_regenerate_preserves_hooks.bats:
+  - a project hook under SessionStart `startup` and `resume` survives regeneration under both;
+  - the KEPT lines name both;
+  - it fails on the pre-fix merge.
+- [ ] Existing settings-merge tests stay green; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -320,3 +358,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3883-fw-upgrade-settings-regeneration-drops-p.md
 - **Context:** Initial task creation
+
+### 2026-10-05T14:54:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -79,8 +79,12 @@ def merge(new_doc: dict, prev_doc: dict):
     carried, kept, removed = [], [], []
     template_names = collect_names(new_doc)
     hooks = new_doc.setdefault("hooks", {})
+    # T-3883: the matcher is part of a hook's identity. Keyed on (event, hook)
+    # alone, a project hook registered under two matchers (ring20: SessionStart
+    # `startup` AND `resume`) matched itself on its second entry and was skipped
+    # with no report — while the first entry printed KEPT.
     present = {
-        (event, _key(h))
+        (event, entry.get("matcher", ""), _key(h))
         for event, entries in hooks.items()
         for entry in entries or []
         for h in entry.get("hooks") or []
@@ -88,6 +92,7 @@ def merge(new_doc: dict, prev_doc: dict):
 
     for event, entries in (prev_doc.get("hooks") or {}).items():
         for entry in entries or []:
+            matcher = entry.get("matcher", "")
             keep = []
             for h in entry.get("hooks") or []:
                 cmd = h.get("command", "")
@@ -99,12 +104,12 @@ def merge(new_doc: dict, prev_doc: dict):
                     # else: template wins (T-2709) — replaced, not removed
                 elif ".agentic-framework/" in cmd:
                     removed.append((event, cmd))
-                elif (event, _key(h)) in present:
+                elif (event, matcher, _key(h)) in present:
                     continue  # already in the new file — not removed, not duplicated
                 else:
                     keep.append(h)
-                    kept.append((event, cmd or _key(h)))
-                    present.add((event, _key(h)))
+                    kept.append((event, f"{cmd or _key(h)}  (matcher: {matcher or '*'})"))
+                    present.add((event, matcher, _key(h)))
             if not keep:
                 continue
             # Append as its own entry rather than folding into an existing

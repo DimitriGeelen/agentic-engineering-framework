@@ -121,6 +121,34 @@ for ev, entries in (d.get('hooks') or {}).items():
     [ "$output" = "1" ]
 }
 
+@test "T-3883: a project hook registered under two matchers survives under BOTH" {
+    # ring20-manager (1.8.0 -> 1.8.2): three SessionStart hooks registered for
+    # 'startup' and 'resume' lost their 'resume' entries while step 5 printed KEPT.
+    python3 - "$TMP/prev.json" <<'PY'
+import json, sys
+p = sys.argv[1]; d = json.load(open(p))
+h = {"type": "command", "command": "/opt/ring20/bin/session-banner"}
+d["hooks"]["SessionStart"] = [{"matcher": "startup", "hooks": [h]},
+                              {"matcher": "resume", "hooks": [dict(h)]}]
+json.dump(d, open(p, "w"))
+PY
+    run python3 "$MERGE" "$TMP/new.json" "$TMP/prev.json"
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q 'KEPT  SessionStart  /opt/ring20/bin/session-banner  (matcher: startup)'
+    echo "$output" | grep -q 'KEPT  SessionStart  /opt/ring20/bin/session-banner  (matcher: resume)'
+    run python3 -c "
+import json, sys
+d = json.load(open(sys.argv[1]))
+print(sorted(e['matcher'] for e in d['hooks']['SessionStart']
+             for h in e['hooks'] if h['command'] == '/opt/ring20/bin/session-banner'))" "$TMP/new.json"
+    [ "$output" = "['resume', 'startup']" ]
+    # idempotent per matcher: a second regenerate adds no third copy
+    cp "$TMP/new.json" "$TMP/prev2.json"
+    run python3 "$MERGE" "$TMP/new.json" "$TMP/prev2.json"
+    run grep -c 'session-banner' "$TMP/new.json"
+    [ "$output" = "2" ]
+}
+
 @test "T-3833: an entry that does not survive the regenerate is named, never silent" {
     # A legacy .agentic-framework script hook is superseded by the template and
     # not carried — that removal must appear in the output.
