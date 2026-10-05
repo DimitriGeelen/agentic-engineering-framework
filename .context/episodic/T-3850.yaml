@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3850: HIGH: fw vendor deletes consumer-local files and overwrites in-file patches under .agentic-framework/ (ring20 lost 7 Watchtower blueprints, 6 templates, lib/approval_channel.py and ~40 in-file patches upgrading to v1.8.0, rolled back) — honour a project-declared preserve manifest (.fwvendor-preserve.yaml: files + in_file markers, ring20 T-2019 shape) or give blueprints/templates a project extension point
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T08:16:56Z
+# ============================================================================
+
+task_id: T-3850
+task_name: "HIGH: fw vendor deletes consumer-local files and overwrites in-file patches under .agentic-framework/ (ring20 lost 7 Watchtower blueprints, 6 templates, lib/approval_channel.py and ~40 in-file patches upgrading to v1.8.0, rolled back) — honour a project-declared preserve manifest (.fwvendor-preserve.yaml: files + in_file markers, ring20 T-2019 shape) or give blueprints/templates a project extension point"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T07:10:03Z
+completed: 2026-10-05T08:16:29Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-05T10:03:06+02:00
+last_commit: 2026-10-05T10:16:12+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw vendor honours .fwvendor-preserve.yaml and refuses to lose uncovered local files. vendor-sync, fresh-machine fixture records its stale bin/fw in the stamp, Verification + RCA
+
+# Key outcomes
+outcomes:
+  - '`do_vendor` reads `.fwvendor-preserve.yaml` at the project root: a local-only file listed under `files:` survives the vendor; an upstream file listed under `files:` keeps its local content and the output names it as changed upstream; every `in_file:` marker is checked after the vendor and each missing one is reported by file and marker (the pre-vendor copy is kept in a backup dir).'
+  - 'Before writing anything, `do_vendor` names every local-only file it would delete and every locally modified file (vs. the previous vendor''s stamp) it would overwrite that the manifest does not cover, and refuses (exit 1, nothing written) unless `--allow-delete-locals` is given; the override is logged to the target''s `.context/working/.gate-bypass-log.yaml` and the lost files are backed up.'
+  - 'Every successful vendor writes `.agentic-framework/.fw-vendor-stamp.json` (sha256 of every file it wrote) so the next vendor can detect local modifications; a first vendor with no stamp writes one.'
+  - 'Without a stamp, a dest file absent from the source counts as local-only only if the path never existed in the source''s git history (upstream-deleted files do not trip the refusal).'
+  - '`fw upgrade` and `fw update` pass `--allow-delete-locals` through to `do_vendor`.'
+  - 'New synthetic-consumer bats test (local-only blueprint, local in-file patch, manifest): nothing lost, every change reported; refusal and override legs covered. `upgrade_fresh_machine_simulation.bats`, `fw_vendor_completeness.bats` and `lib_update.bats` stay green.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'vendor-sync, fresh-machine fixture records its stale bin/fw in the stamp, Verification + RCA'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/update.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/lib/vendor_preserve.py'
+  - 'lib/update.sh'
+  - 'lib/upgrade.sh'
+  - 'lib/vendor_preserve.py'
+  - '.tasks/active/T-3850-high-fw-vendor-deletes-consumer-local-fi.md'
+  - 'tests/unit/t3850_vendor_preserve_locals.bats'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T10:03:06'
+    action: 'T-3850: fw vendor honours .fwvendor-preserve.yaml and refuses to lose uncovered local files'
+  - time: '2026-10-05T10:16:12'
+    action: 'T-3850: vendor-sync, fresh-machine fixture records its stale bin/fw in the stamp, Verification + RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 66 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 66
+  commits: 2
+  files_changed: 9
+  lines_added: 1509
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3850-high-fw-vendor-deletes-consumer-local-fi.md
+generated_by: context-agent-hybrid

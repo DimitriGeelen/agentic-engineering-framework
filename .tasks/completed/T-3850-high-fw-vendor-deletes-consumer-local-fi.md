@@ -9,12 +9,12 @@ description: >
   ring20-manager pickup on conversation T-2220 (2026-10-04). Second incident of the
   class (first: T-2019). ring20 is back on v1.7.424.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/update.sh, lib/upgrade.sh, tests/unit/upgrade_fresh_machine_simulation.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T07:10:03Z
-last_update: 2026-10-05T07:43:34Z
-date_finished:
+last_update: 2026-10-05T08:16:29Z
+date_finished: 2026-10-05T08:16:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -98,12 +98,12 @@ and ~40 in-file patches on v1.8.0 and rolled back. Sibling backlog task: T-3704.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `do_vendor` reads `.fwvendor-preserve.yaml` at the project root: a local-only file listed under `files:` survives the vendor; an upstream file listed under `files:` keeps its local content and the output names it as changed upstream; every `in_file:` marker is checked after the vendor and each missing one is reported by file and marker (the pre-vendor copy is kept in a backup dir).
-- [ ] Before writing anything, `do_vendor` names every local-only file it would delete and every locally modified file (vs. the previous vendor's stamp) it would overwrite that the manifest does not cover, and refuses (exit 1, nothing written) unless `--allow-delete-locals` is given; the override is logged to the target's `.context/working/.gate-bypass-log.yaml` and the lost files are backed up.
-- [ ] Every successful vendor writes `.agentic-framework/.fw-vendor-stamp.json` (sha256 of every file it wrote) so the next vendor can detect local modifications; a first vendor with no stamp writes one.
-- [ ] Without a stamp, a dest file absent from the source counts as local-only only if the path never existed in the source's git history (upstream-deleted files do not trip the refusal).
-- [ ] `fw upgrade` and `fw update` pass `--allow-delete-locals` through to `do_vendor`.
-- [ ] New synthetic-consumer bats test (local-only blueprint, local in-file patch, manifest): nothing lost, every change reported; refusal and override legs covered. `upgrade_fresh_machine_simulation.bats`, `fw_vendor_completeness.bats` and `lib_update.bats` stay green.
+- [x] `do_vendor` reads `.fwvendor-preserve.yaml` at the project root: a local-only file listed under `files:` survives the vendor; an upstream file listed under `files:` keeps its local content and the output names it as changed upstream; every `in_file:` marker is checked after the vendor and each missing one is reported by file and marker (the pre-vendor copy is kept in a backup dir).
+- [x] Before writing anything, `do_vendor` names every local-only file it would delete and every locally modified file (vs. the previous vendor's stamp) it would overwrite that the manifest does not cover, and refuses (exit 1, nothing written) unless `--allow-delete-locals` is given; the override is logged to the target's `.context/working/.gate-bypass-log.yaml` and the lost files are backed up.
+- [x] Every successful vendor writes `.agentic-framework/.fw-vendor-stamp.json` (sha256 of every file it wrote) so the next vendor can detect local modifications; a first vendor with no stamp writes one.
+- [x] Without a stamp, a dest file absent from the source counts as local-only only if the path never existed in the source's git history (upstream-deleted files do not trip the refusal).
+- [x] `fw upgrade` and `fw update` pass `--allow-delete-locals` through to `do_vendor`.
+- [x] New synthetic-consumer bats test (local-only blueprint, local in-file patch, manifest): nothing lost, every change reported; refusal and override legs covered. `upgrade_fresh_machine_simulation.bats`, `fw_vendor_completeness.bats` and `lib_update.bats` stay green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -394,3 +394,15 @@ every file it would lose; (3) `tests/unit/t3850_vendor_preserve_locals.bats` pin
 
 ### 2026-10-05T07:43:34Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-7009610e
+- **Timestamp:** 2026-10-05T08:16:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-05T08:16:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
