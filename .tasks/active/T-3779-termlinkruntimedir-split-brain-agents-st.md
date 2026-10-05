@@ -106,14 +106,14 @@ Consequence: after EVERY reboot, every fleet agent is invisible to peers' `terml
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `lib/termlink-runtime.sh: fw_termlink_runtime_resolve` decides where this process's TermLink sessions must register:
+- [x] `lib/termlink-runtime.sh: fw_termlink_runtime_resolve` decides where this process's TermLink sessions must register:
   - `TERMLINK_RUNTIME_DIR` set → unchanged;
   - unset and the default dir (`/tmp/termlink-$UID`) has a live hub → unchanged;
   - unset, no hub in the default dir, and exactly one known hub dir (`/var/lib/termlink`, or the `TERMLINK_RUNTIME_DIR_FALLBACK` config) has a live hub (`hub.sock` socket plus a live `hub.pid`) → export it and say so;
   - otherwise unchanged, and say why.
-- [ ] `claude-fw` calls it before `termlink spawn`, so a launcher that starts it under `env -i` still registers on the canonical hub. The one stderr line names the directory it supplied.
-- [ ] `fw doctor` WARNs `TermLink split-brain` when this process would register on a dir with no live hub while a canonical hub exists elsewhere, and names the fix (`export TERMLINK_RUNTIME_DIR=<dir>`, restart the session). Silent when the env is consistent or TermLink is absent.
-- [ ] bats tests with temp dirs and fake live/dead hubs (a real socket, plus a pidfile naming a live or a dead pid) cover each branch. claude-fw and bin/fw pass `bash -n`; vendored copy in sync.
+- [x] `claude-fw` calls it before `termlink spawn`, so a launcher that starts it under `env -i` still registers on the canonical hub. The one stderr line names the directory it supplied.
+- [x] `fw doctor` WARNs `TermLink split-brain` when this process would register on a dir with no live hub while a canonical hub exists elsewhere, and names the fix (`export TERMLINK_RUNTIME_DIR=<dir>`, restart the session). Silent when the env is consistent or TermLink is absent.
+- [x] bats tests with temp dirs and fake live/dead hubs (a real socket, plus a pidfile naming a live or a dead pid) cover each branch. claude-fw and bin/fw pass `bash -n`; vendored copy in sync.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -273,8 +273,30 @@ Consequence: after EVERY reboot, every fleet agent is invisible to peers' `terml
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 120 bats tests/unit/t3779_termlink_runtime.bats > /tmp/.t3779 2>&1 && ! grep -q "^not ok" /tmp/.t3779
+test "$(grep -c '# skip' /tmp/.t3779)" -eq 0
+bash -n bin/claude-fw && bash -n bin/fw && bash -n lib/termlink-runtime.sh
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** after the 2026-10-05 13:38 reboot, every fleet agent (AEF included) was invisible to peers' `termlink discover`. 055 reported AEF as WAITING_NO_RECIPIENT, and peer mail was never typed into the sessions.
+
+**Root cause:**
+- TermLink keys its hub and session registry on `TERMLINK_RUNTIME_DIR`, falling back to `/tmp/termlink-$UID`. The host's only hub lives in `/var/lib/termlink`.
+- 055's boot launcher (`claude-fleet-start.sh:364`) starts claude panes under `env -i`, which drops the variable.
+- `claude-fw` then ran `termlink spawn` with whatever environment it inherited. It never checked whether a hub listens where it is about to register.
+
+**Why structurally allowed:**
+- Nothing checked the pairing "the session's registry dir has a live hub". The failure is silent on both sides: register succeeds against an empty dir, and discover simply does not list the session.
+- The agent's own environment can still carry the variable while its register process did not. So an environment-only check in the session would also have passed.
+
+**Prevention:**
+- `claude-fw` resolves the runtime dir from live hubs before spawning, and warns when it had to supply one.
+- `fw doctor` checks both the environment and where THIS session is actually registered.
+- 10 bats tests with real sockets and live or dead pids, including the field case and a consistent-registration control.
+- Live-verified on the host: `env -i` gives `supplied /var/lib/termlink`, and doctor names `tl-c25loi2z` in `/tmp/termlink-0`.
+- Existing sessions need one restart to re-register.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
