@@ -136,10 +136,11 @@ setup() {
     [ "$result" = "300000" ]
 }
 
-@test "DISPATCH_LIMIT default is 2" {
+@test "DISPATCH_LIMIT default is 0 (T-3910: harness sub-agents off; TermLink workers instead)" {
     unset FW_DISPATCH_LIMIT
-    result=$(fw_config_int "DISPATCH_LIMIT" 2)
-    [ "$result" = "2" ]
+    result=$(fw_config_int "DISPATCH_LIMIT" 0)
+    [ "$result" = "0" ]
+    grep -q '"DISPATCH_LIMIT|0|' "$FRAMEWORK_ROOT/lib/config.sh"
 }
 
 @test "FW_CONTEXT_WINDOW override works" {

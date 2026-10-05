@@ -401,6 +401,44 @@ cmd_exec() {
         || die "Failed to execute command in session '$session'"
 }
 
+# T-3910: names of this project's dispatch workers that are still running — a
+# worker dir with no exit_code whose TermLink session is still listed (a dead
+# worker that never wrote exit_code must not hold a slot forever), and whose
+# meta.json names this project (DISPATCH_DIR is shared by every project here).
+_running_workers() {
+    local project_dir="$1" listed wdir n proj real
+    [ -d "$DISPATCH_DIR" ] || return 0
+    listed=$(termlink list 2>/dev/null || true)
+    real=$(readlink -f "$project_dir" 2>/dev/null || echo "$project_dir")
+    for wdir in "$DISPATCH_DIR"/*/; do
+        [ -d "$wdir" ] || continue
+        [ -f "$wdir/exit_code" ] && continue
+        n=$(basename "$wdir")
+        printf '%s\n' "$listed" | grep -qw -- "$n" || continue
+        proj=$(sed -n 's/^  "project": "\(.*\)",$/\1/p' "$wdir/meta.json" 2>/dev/null | head -1)
+        [ -n "$proj" ] || continue
+        [ "$(readlink -f "$proj" 2>/dev/null || echo "$proj")" = "$real" ] || continue
+        printf '%s\n' "$n"
+    done
+}
+
+# T-3910 (operator ruling 2026-10-06): at most TERMLINK_MAX_WORKERS (default 5)
+# concurrent workers per project. Raising it is situational and the operator's
+# call — the refusal says how, and tells the agent to ask rather than raise it.
+_enforce_worker_cap() {
+    local project_dir="$1" name="$2" max running count
+    max=$(fw_config_int "TERMLINK_MAX_WORKERS" 5)
+    running=$(_running_workers "$project_dir")
+    count=$(printf '%s' "$running" | grep -c . || true)
+    [ "${count:-0}" -lt "$max" ] && return 0
+    echo -e "${RED}REFUSED${NC}  dispatch '$name': $count of $max concurrent TermLink workers already running for this project:" >&2
+    printf '%s\n' "$running" | sed 's/^/    /' >&2
+    echo "  Wait for one to finish (fw termlink status / fw termlink wait), or — if more parallel" >&2
+    echo "  work is genuinely needed — ASK THE OPERATOR for a higher cap (10, 15, 20 …). Do not raise it yourself." >&2
+    echo "  With their yes: FW_TERMLINK_MAX_WORKERS=N for this run, or fw config set TERMLINK_MAX_WORKERS N." >&2
+    exit 1
+}
+
 cmd_status() {
     ensure_termlink
 
@@ -900,6 +938,7 @@ cmd_dispatch() {
     esac
 
     project_dir="${project_dir:-$(pwd)}"
+    _enforce_worker_cap "$project_dir" "$name"
     local wdir="$DISPATCH_DIR/$name"
     mkdir -p "$wdir"
 

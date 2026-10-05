@@ -28,7 +28,9 @@ fw_hook_crash_trap "check-agent-dispatch"
 
 COUNTER_FILE="$PROJECT_ROOT/.context/working/.agent-dispatch-counter"
 APPROVAL_FILE="$PROJECT_ROOT/.context/working/.dispatch-approval"
-DISPATCH_LIMIT=$(fw_config_int "DISPATCH_LIMIT" 2)
+# T-3910 (operator ruling 2026-10-06): default 0 — sub-agents run as TermLink
+# workers, never through the vendor harness's own dispatcher.
+DISPATCH_LIMIT=$(fw_config_int "DISPATCH_LIMIT" 0)
 
 # Read stdin (JSON from Claude Code)
 INPUT=$(cat)
@@ -92,13 +94,15 @@ fi
 echo "" >&2
 echo "BLOCKED: Agent dispatch #${NEW_COUNT} exceeds limit (${DISPATCH_LIMIT})." >&2
 echo "" >&2
-echo "TermLink is installed — use it for heavy parallel work:" >&2
-echo "  $(_fw_cmd) termlink dispatch --name worker-1 --prompt 'your prompt here'" >&2
+echo "Sub-agents run as TermLink workers, not through the harness's own dispatcher" >&2
+echo "(operator ruling 2026-10-06, T-3910; FW_DISPATCH_LIMIT defaults to 0):" >&2
+echo "  $(_fw_cmd) termlink dispatch --task T-XXX --name worker-1 --prompt 'your prompt here'" >&2
+echo "Up to $(fw_config_int "TERMLINK_MAX_WORKERS" 5) concurrent workers (TERMLINK_MAX_WORKERS); for more, ask the operator." >&2
 echo "" >&2
 echo "TermLink dispatch costs ZERO parent context tokens." >&2
 echo "Agent dispatches share the parent context window." >&2
 echo "" >&2
-echo "To approve Agent dispatch (5-min window):" >&2
+echo "Operator exception only — approve Agent dispatch (5-min window):" >&2
 echo "  $(_fw_cmd) dispatch approve" >&2
 echo "" >&2
 echo "To reset counter (e.g., after compaction):" >&2

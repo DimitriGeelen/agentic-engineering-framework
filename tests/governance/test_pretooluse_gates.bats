@@ -195,7 +195,7 @@ _assert_pending_filed_in_sandbox() {
         BACKUP=$(mktemp); cp "$COUNTER" "$BACKUP"
     fi
     # Force counter just below limit so the increment exceeds
-    # Default DISPATCH_LIMIT is 2 — bump counter to 5 to ensure exceed.
+    # Default DISPATCH_LIMIT is 0 (T-3910) — counter 5 exceeds any small override too.
     echo "5" > "$COUNTER"
     INPUT='{"tool_name":"Agent","tool_input":{"description":"test","prompt":"x"}}'
     run bash -c "echo '$INPUT' | '$HOOK_BIN' hook check-agent-dispatch"

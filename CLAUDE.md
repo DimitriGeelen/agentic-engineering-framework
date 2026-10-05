@@ -130,7 +130,15 @@ session.
 
 ### Parallelism limits
 
-- **Cap 5** concurrent workers (same limit as sub-agent dispatch).
+- **Sub-agents are TermLink workers, never harness dispatchers** (operator ruling
+  2026-10-06, T-3910). Claude Code's built-in Agent tool — or any other vendor
+  harness's own dispatcher — is off by default (`FW_DISPATCH_LIMIT` = 0; the gate
+  blocks dispatch #1 and points to `fw termlink dispatch`).
+- **Cap 5** concurrent TermLink workers per project, enforced by `fw termlink
+  dispatch` (`TERMLINK_MAX_WORKERS`). Raising it is **situational and the
+  operator's call**: when more parallelism would genuinely help, ask the operator
+  which cap (10, 15, 20 …) — then `FW_TERMLINK_MAX_WORKERS=N` for that run, or
+  `fw config set TERMLINK_MAX_WORKERS N` if they want it kept. Never raise it yourself.
 - **40K tokens headroom** before dispatching, for result ingestion.
 - **Do not spawn when context > 60%.**
 - **Worktrees are OPT-IN ONLY — never the default.** See §Worktree Policy below.
@@ -714,7 +722,8 @@ Agent-relevant settings:
   or use the gate-specific mechanism the block message names. Contrast `FW_SWITCH_FOCUS=1`,
   which the focus-drift gate *does* parse out of the command string (T-1890) — the two
   look alike and behave oppositely.
-- `FW_DISPATCH_LIMIT` (2) — Agent tool cap before TermLink gate
+- `FW_DISPATCH_LIMIT` (0) — built-in harness sub-agent (Agent tool) dispatches allowed before the TermLink gate blocks; 0 = never through the harness (T-3910)
+- `FW_TERMLINK_MAX_WORKERS` (5) — concurrent `fw termlink dispatch` workers per project; raise only on the operator's say-so (T-3910)
 - `FW_NTFY_URL` / config `NTFY_URL` (empty) — T-2439: ntfy server base URL for push notifications. Empty = let the skills-manager dispatcher use its own (possibly host-local) default. **Set it per-install (`fw config set NTFY_URL <url>`) so the framework publishes to the chosen ntfy instance and can never silently fall back to a host's local server** — the dispatcher runs locally on whichever host calls `fw_notify`, and inferring the target from another host's config shipped pushes to a decommissioned server (origin). `fw notify status` / `fw notify test` print the resolved server up front. Surfaces in Watchtower `/config`.
 - `FW_BRANCH_BEHIND_WARN` (50) — T-100143: branch-hygiene behind-threshold. `fw doctor` WARNs on live branches more than N commits behind origin/master (shared with the T-100144 handover nudge).
 - `FW_STALE_ARC_DAYS` (30) — T-1855: stale-arc audit WARN threshold. In-progress arcs whose constituent tasks (matched by `arc_id:`) have no commit in the last N days surface a WARN. Silent on draft/closed/abandoned arcs and on zero-population arcs.

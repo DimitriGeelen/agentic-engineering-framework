@@ -6,7 +6,7 @@
 # Usage:
 #   source "$FRAMEWORK_ROOT/lib/config.sh"
 #   CONTEXT_WINDOW=$(fw_config "CONTEXT_WINDOW" 300000)
-#   DISPATCH_LIMIT=$(fw_config_int "DISPATCH_LIMIT" 2)
+#   DISPATCH_LIMIT=$(fw_config_int "DISPATCH_LIMIT" 0)
 #
 # Origin: T-817 inception (traceAI pattern adoption), T-819 build
 
@@ -216,7 +216,7 @@ FW_CONFIG_REGISTRY=(
     "PORT_SCAN_BASE|3000|First port tried when a project has no PORT set: fw serve scans 100 ports up from here, skips any held by another service, and records the chosen port as PORT in .framework.yaml (T-3662)"
     "RAIL_IDENTITY_FILE||Project-owned termlink signing identity for outbound rail posts (T-2904). Empty = sign as host key, which is indistinguishable from co-resident agents. Created on first use."
     "RAIL_PROJECT_LABEL||Canonical from_project label attached to outbound rail posts (T-2905). Empty = derived from the project directory name, normalised. Emitted, never typed at a call site."
-    "DISPATCH_LIMIT|2|Agent tool dispatches before TermLink gate triggers"
+    "DISPATCH_LIMIT|0|Built-in harness sub-agent (Agent tool) dispatches allowed before the TermLink gate blocks. Default 0 (operator ruling 2026-10-06, T-3910): sub-agents run as TermLink workers, never through a vendor harness's dispatcher"
     "BUDGET_RECHECK_INTERVAL|5|Re-read transcript every N tool calls"
     "BUDGET_STATUS_MAX_AGE|90|Max seconds before cached budget status is stale"
     "TOKEN_CHECK_INTERVAL|5|Check token usage every N tool calls"
@@ -231,6 +231,7 @@ FW_CONFIG_REGISTRY=(
     "BASH_TIMEOUT|300000|Default Bash tool timeout in milliseconds"
     "KEYLOCK_TIMEOUT|300|Per-key lock stale cleanup timeout in seconds"
     "TERMLINK_WORKER_TIMEOUT|600|TermLink worker execution timeout in seconds"
+    "TERMLINK_MAX_WORKERS|5|Concurrent fw termlink dispatch workers per project (T-3910). Raise situationally, on the operator's say-so: FW_TERMLINK_MAX_WORKERS=N for one run, fw config set TERMLINK_MAX_WORKERS N to keep it"
     "HANDOVER_DEDUP_COOLDOWN|300|Seconds between duplicate handover detection"
     "INCEPTION_COMMIT_LIMIT|2|Max exploration commits before inception decision gate"
     "CONSUMER_SCAN_DIRS|/opt|Colon-separated directories to scan for consumer projects"

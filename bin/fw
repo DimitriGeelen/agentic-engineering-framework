@@ -4100,7 +4100,7 @@ print(sum(1 for e in entries if (e.get('status') or 'pending') == 'pending'))
             warnings=$((warnings + 1))
         fi
         local dl
-        dl=$(fw_config_int "DISPATCH_LIMIT" 2)
+        dl=$(fw_config_int "DISPATCH_LIMIT" 0)
         if [ "$dl" -gt 10 ]; then
             echo -e "  ${YELLOW}WARN${NC}  FW_DISPATCH_LIMIT=$dl — very high, risk of context explosion"
             warnings=$((warnings + 1))
