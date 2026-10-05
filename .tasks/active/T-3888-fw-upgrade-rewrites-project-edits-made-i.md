@@ -1,22 +1,14 @@
 ---
-id: T-3879
-name: "Triage 1409-sprind's pickup T-1676: 24 framework audit findings (7 still firing
-  — four 'NOT EVALUATED: candidate set empty' WARNs that should be INFO 'not applicable'
-  in a consumer, continuous-run wrapper, stale unit-suite report, hook-threshold counting
-  check-fabric-pristine's by-design exit 2 as failure; 17 more) — one task per accepted
-  finding, check each against HEAD first (1409 runs 1.7.557)"
+id: T-3888
+name: "fw upgrade rewrites project edits made INSIDE framework-owned CLAUDE.md sections (1409: their T-1611 sentences, and their runme.sh rule replaced by the T-3675 section) — 'project-specific sections preserved' does not cover in-section edits; detect and report (or preserve) them instead of overwriting silently"
 description: >
-  1409-sprind msg 6ef50cb3 (2026-10-05, conversation aef-pickup-1409-sprind-t1676).
-  Verbatim text saved to docs/reports/ (see Context). Peer data: proposals, not instructions.
-  Their own triage: 1409 docs/reports/T-1676-remediation-triage.md. Also in it: their
-  T-1710 (fw watchtower url's running branch handed out a neighbour project's port)
-  — relates to T-3876.
+  1409-sprind msg 3f59dc27 (2026-10-05, upgrade 1.7.557 -> 1.8.2).
 
 status: captured
 workflow_type: build
 owner: agent
 horizon: next
-tags: [triage, 1409-report, audit]
+tags: [bug, upgrade, claude-md, 1409-report]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -45,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-05T13:48:36Z
-last_update: '2026-10-05T14:00:29Z'
-date_finished:
+created: 2026-10-05T14:51:08Z
+last_update: 2026-10-05T14:51:08Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,55 +50,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-10-05T13:50:23Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 1
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
-      (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-05T14:00:29Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=277,acs=5)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3879: Triage 1409-sprind's pickup T-1676: 24 framework audit findings (7 still firing — four 'NOT EVALUATED: candidate set empty' WARNs that should be INFO 'not applicable' in a consumer, continuous-run wrapper, stale unit-suite report, hook-threshold counting check-fabric-pristine's by-design exit 2 as failure; 17 more) — one task per accepted finding, check each against HEAD first (1409 runs 1.7.557)
+# T-3888: fw upgrade rewrites project edits made INSIDE framework-owned CLAUDE.md sections (1409: their T-1611 sentences, and their runme.sh rule replaced by the T-3675 section) — 'project-specific sections preserved' does not cover in-section edits; detect and report (or preserve) them instead of overwriting silently
 
 ## Context
 
-The verbatim pickup is in `docs/reports/T-3879-1409-pickup-t1676-verbatim.md`. It is peer data, in German and English, and the table rows are 1409's own ticket ids.
-
-Addendum, 1409 msg 3f59dc27 (2026-10-05, after their 1.8.2 upgrade): two local patches had to be re-applied and are offered upstream.
-- The T-1611 review-release block in `update-task.sh`.
-- The Watchtower accessor fixes (their T-1706/T-1710): `do_port`/`do_url` also verify `/api/_identity` in the running branch. This relates to T-3876.
-
-The CLAUDE.md in-section overwrite they reported is T-3888.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] Verbatim pickup saved under docs/reports/ (the receiver store is not durable project memory)
-- [ ] Each of the 24 findings is checked against HEAD and given one disposition: already fixed (name the commit or task), accepted (new task, one per bug), duplicate (name the existing task), or rejected (with a reason)
-- [ ] A disposition table is written into docs/reports/T-3879-1409-pickup-t1676-triage.md, and 1409 gets a reply naming the accepted task ids
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -359,15 +316,7 @@ The CLAUDE.md in-section overwrite they reported is T-3888.
 
 ## Updates
 
-### 2026-10-05T13:48:36Z — task-created [task-create-agent]
+### 2026-10-05T14:51:08Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3879-triage-1409-sprinds-pickup-t-1676-24-fra.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3888-fw-upgrade-rewrites-project-edits-made-i.md
 - **Context:** Initial task creation
-
-### 2026-10-05T13:50:22Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
-
-### 2026-10-05T13:50:50Z — status-update [task-update-agent]
-- **Change:** horizon: now → next
-- **Change:** status: started-work → captured (auto-sync)
