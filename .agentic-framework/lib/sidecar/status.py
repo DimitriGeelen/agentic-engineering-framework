@@ -100,7 +100,7 @@ def snapshot(now: datetime | None = None) -> dict:
         if state == outbox.UNKNOWN and error.startswith("ladder-"):
             dead_letters += 1
             continue
-        if error.startswith("answered") or state == outbox.UNKNOWN:
+        if error.startswith(("answered", "read")) or state == outbox.UNKNOWN:  # T-3908: read
             continue  # the ladder is finished with this row
         # T-3434: the ladder, not the 30-second transport deadline, is what a
         # sweep is late against. Before the ladder the deadline WAS the retry

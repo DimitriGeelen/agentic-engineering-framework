@@ -400,3 +400,59 @@ def test_a_released_row_is_closed_and_is_not_a_dead_letter(sc):
     assert report["considered"] == 0
     # It stays out of the audit's dead-letter count — nothing failed here.
     assert status.snapshot()["dead_letters"] == 0
+
+
+# ── T-3908: a message the addressee was SHOWN is not nudged ─────────────────
+# ring20 s6 (2026-10-05): informational messages that needed no reply were
+# nudged until the ladder ran out ("v1.8.3 note x3", "B ready x4"), because
+# only REPLIED settled the ladder — HANDED_OVER did not.
+
+def _receipt(cmid, state):
+    from lib.sidecar import receipts
+    assert receipts.record_from_peer(cmid, state, "agentB", via="test")
+
+
+def _at_nudge_rung(outbox, cmid):
+    outbox.record_ack(cmid, "agentB", None, outbox.INJECTED_NOW, attempts=4,
+                      rung=2, next_retry_at=(T0 + timedelta(minutes=15)).isoformat())
+
+
+def test_t3908_handed_over_settles_a_posted_message(sc):
+    _cli, outbox, status, retry, delivery = sc
+    cmid = _store_and_deliver(outbox, delivery)
+    _at_nudge_rung(outbox, cmid)
+    _receipt(cmid, "HANDED_OVER")
+    posted, transport = _recorder()
+
+    report = retry.sweep(now=T0 + timedelta(minutes=15), transport=transport,
+                         probe=_ok_probe, reader=_empty_reader)
+    assert report["read"] == 1 and report["nudged"] == 0 and posted == []
+    assert outbox.latest_ack_state(cmid)["error"].startswith(f"{retry.READ}: HANDED_OVER")
+
+    # Never again — not at the one-day (operator) rung either.
+    report = retry.sweep(now=T0 + timedelta(days=2), transport=transport,
+                         probe=_ok_probe, reader=_empty_reader)
+    assert report["considered"] == 0 and posted == []
+    assert status.snapshot()["dead_letters"] == 0
+
+
+def test_t3908_control_without_a_receipt_it_is_still_nudged(sc):
+    _cli, outbox, _status, retry, delivery = sc
+    cmid = _store_and_deliver(outbox, delivery)
+    _at_nudge_rung(outbox, cmid)
+    posted, transport = _recorder()
+    report = retry.sweep(now=T0 + timedelta(minutes=15), transport=transport,
+                         probe=_ok_probe, reader=_empty_reader)
+    assert report["nudged"] == 1 and report["read"] == 0
+
+
+def test_t3908_received_only_does_not_settle(sc):
+    """Taking a message off the topic is not anyone reading it."""
+    _cli, outbox, _status, retry, delivery = sc
+    cmid = _store_and_deliver(outbox, delivery)
+    _at_nudge_rung(outbox, cmid)
+    _receipt(cmid, "RECEIVED")
+    posted, transport = _recorder()
+    report = retry.sweep(now=T0 + timedelta(minutes=15), transport=transport,
+                         probe=_ok_probe, reader=_empty_reader)
+    assert report["nudged"] == 1 and report["read"] == 0

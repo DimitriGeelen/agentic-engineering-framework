@@ -124,6 +124,16 @@ def replied_ids() -> set[str]:
             if r.get("state") == REPLIED and r.get("client_msg_id")}
 
 
+def handed_over_ids() -> set[str]:
+    """Base ids of consults WE sent that the addressee reports HANDED_OVER —
+    shown to its agent (T-3908). Same provenance as replied_ids: every row in
+    our ledger came through record_from_peer, which checks it is from the
+    addressee of a message we really sent. RECEIVED is not here on purpose:
+    taking a message off a topic is not anyone reading it."""
+    return {base_id(r.get("client_msg_id")) for r in read_ledger()
+            if r.get("state") == HANDED_OVER and r.get("client_msg_id")}
+
+
 def read_sent() -> list[dict]:
     return _read(sent_path())
 

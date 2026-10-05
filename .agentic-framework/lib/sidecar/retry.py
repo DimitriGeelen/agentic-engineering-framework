@@ -68,6 +68,12 @@ ANSWERED = "answered"
 #: from `answered` (the peer replied) and from `ladder-*` (the ladder tried and
 #: failed), because it must not be counted as a dead-letter in the audit rail.
 RELEASED = "released"
+#: T-3908: error prefix for a posted message the addressee has been SHOWN
+#: (HANDED_OVER receipt). The nudge class is "a message the hub holds that
+#: nobody read" (retry_ladder.verb_for) — a read message is outside it.
+#: Without this, informational messages that need no reply (acks, release
+#: notes) were nudged until the ladder ran out (ring20 s6: "v1.8.3 note x3").
+READ = "read"
 EXHAUSTED = "ladder-exhausted"
 UNRETRYABLE = "ladder-unretryable"
 
@@ -97,7 +103,7 @@ def is_open(row: dict) -> bool:
     if state == outbox.UNKNOWN:
         return False
     error = row.get("error") or ""
-    if error.startswith(ANSWERED) or error.startswith(RELEASED):
+    if error.startswith(ANSWERED) or error.startswith(RELEASED) or error.startswith(READ):
         return False
     if row.get("attempts") is None and state in (outbox.INJECTED_NOW,
                                                  outbox.INJECTED_LATER):
@@ -289,7 +295,7 @@ def sweep(*, now: str | datetime | None = None,
 
     report: dict = {"considered": len(rows), "due": 0, "reposted": 0,
                     "nudged": 0, "operator": 0, "deadlettered": 0,
-                    "answered": 0, "actions": []}
+                    "answered": 0, "read": 0, "actions": []}
     if not rows:
         return report
 
@@ -298,6 +304,7 @@ def sweep(*, now: str | datetime | None = None,
     # it arrives by hub or by our receiver's /ack and lands in one ledger.
     from . import receipts
     replied = replied_on_topic | receipts.replied_ids()
+    handed_over = receipts.handed_over_ids()  # T-3908
 
     for cmid, row in sorted(rows.items()):
         attempts, next_rung, due_at = ladder_position(row)
@@ -310,6 +317,14 @@ def sweep(*, now: str | datetime | None = None,
             report["answered"] += 1
             report["actions"].append({"client_msg_id": cmid, "verb": ANSWERED,
                                       "via": "replied"})
+            continue
+
+        if posted and cmid in handed_over:
+            # T-3908: the addressee was shown it. Nothing left to nudge about.
+            _close(cmid, row, attempts, row.get("state"), f"{READ}: HANDED_OVER {cmid}")
+            report["read"] += 1
+            report["actions"].append({"client_msg_id": cmid, "verb": READ,
+                                      "via": "handed_over"})
             continue
 
         if attempts >= retry_ladder.MAX_ATTEMPTS or next_rung is None:

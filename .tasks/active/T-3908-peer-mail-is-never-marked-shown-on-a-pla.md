@@ -9,10 +9,10 @@ description: >
   the nudger reads (receipts? shown?) and whether the prompt-hook path on a plain
   session writes it. Related: T-3891 (plain claude-fw cannot be woken by injection).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "msg b84d82e2"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T22:00:28Z
-last_update: '2026-10-05T22:15:50Z'
+last_update: 2026-10-05T23:36:33Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,8 +96,21 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause, measured. The receiver side is correct: the prompt hook sends HANDED_OVER on transcript proof, plain sessions included, and a `fw sidecar inbox` drain sends RECEIVED. The defect is the sender's retry sweep:
+  - only REPLIED, or a reply in the conversation, settles a posted message;
+  - a HANDED_OVER receipt does not, even though `retry_ladder.verb_for` defines the nudge class as "a message the hub holds that nobody read".
+  So informational messages that were read (acks, release notes) were nudged until the ladder ran out.
+- [x] `receipts.handed_over_ids()` returns the base ids WE sent that the addressee reported HANDED_OVER.
+- [x] In `retry.sweep`, a POSTED message in that set is closed with `read: HANDED_OVER …`: never nudged or escalated again, and counted in `report["read"]`.
+  - `is_open` treats `read` as closed.
+  - `status.py` stops counting such a row as in flight.
+  - `fw sidecar sweep` prints the read count.
+  - A STORED (un-posted) row is unaffected.
+- [x] Tests:
+  - a posted message with a HANDED_OVER receipt is not nudged at the 15-min and 1-day rungs and is reported read;
+  - control: without the receipt, the same row IS nudged;
+  - a RECEIVED-only receipt does not settle it (taking a message off the topic is not reading it);
+  - the existing sweep suite stays green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -131,6 +144,9 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 300 python3 -m pytest tests/unit/test_sidecar_sweep.py -q -p no:cacheprovider > /tmp/.t3908 2>&1 && grep -q passed /tmp/.t3908 && ! grep -q failed /tmp/.t3908
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -274,6 +290,21 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** in the ring20 s6 joint test, senders kept re-posting messages the recipient had already seen: B's "B ready" four times, and AEF's v1.8.3 note three times.
+
+**Root cause:** the cause is on the sender's side, not in how "shown" is recorded. `retry.sweep` settles a posted message only on REPLIED, or a reply in the conversation. A HANDED_OVER receipt, which proves the addressee's agent was shown the message, was never consulted. So a message that needs no answer stayed in the nudge class: nudged from the 15-minute rung, surfaced to the operator from the 1-day rung, until the ladder ran out. This contradicts the ladder's own definition of the class, "a message the hub holds that nobody read" (`retry_ladder.verb_for`). The receiver side works as designed:
+- the prompt hook sends HANDED_OVER on transcript proof;
+- a `fw sidecar inbox` drain sends RECEIVED, not HANDED_OVER, on purpose.
+
+**Why structurally allowed:**
+- T-3804 wired REPLIED into the sweep (`replied_ids`) and stopped there; HANDED_OVER receipts were recorded in the same ledger but read by nothing on the sweep path.
+- The sweep tests modelled consults that expect a reply, and none sent an informational message that is read and never answered.
+
+**Prevention:**
+- HANDED_OVER now settles the ladder as `read`.
+- Tests cover read (settled at both later rungs), unread (still nudged) and RECEIVED-only (still nudged).
+- `fw sidecar sweep` reports the read count, so the class is visible.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -354,3 +385,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3908-peer-mail-is-never-marked-shown-on-a-pla.md
 - **Context:** Initial task creation
+
+### 2026-10-05T23:31:11Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
