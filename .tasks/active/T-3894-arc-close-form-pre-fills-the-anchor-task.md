@@ -85,9 +85,9 @@ An arc's ANCHOR task is usually its first design or inception task. Its recommen
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The decision text and the demo field are pre-filled ONLY when the recommendation comes from the arc's close-out task (`source == close_task`). From the anchor, both stay empty.
-- [ ] When the card shows an anchor recommendation, it says plainly that this is the anchor's recommendation about starting the arc, not a close-out assessment, and points to setting `close_task:`.
-- [ ] Tests: a close-task recommendation pre-fills the decision and the demo; an anchor-only recommendation pre-fills neither and shows the notice. The existing arc-close web tests stay green (adjusted only where they encoded anchor pre-fill). Watchtower restarted; `bin/fw watchtower current` passes.
+- [x] The decision text and the demo field are pre-filled ONLY when the recommendation comes from the arc's close-out task (`source == close_task`). From the anchor, both stay empty.
+- [x] When the card shows an anchor recommendation, it says plainly that this is the anchor's recommendation about starting the arc, not a close-out assessment, and points to setting `close_task:`.
+- [x] Tests: a close-task recommendation pre-fills the decision and the demo; an anchor-only recommendation pre-fills neither and shows the notice. The existing arc-close web tests stay green (adjusted only where they encoded anchor pre-fill). Watchtower restarted; `bin/fw watchtower current` passes.
 
 ### Human
 - [ ] [REVIEW] On an arc whose only recommendation is the anchor's, the close page no longer proposes a closing verdict and makes clear why
@@ -325,6 +325,19 @@ An arc's ANCHOR task is usually its first design or inception task. Its recommen
      DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
+-->
+
+**Recommendation:** GO
+
+**Rationale:** The close form no longer proposes an anchor's "start the arc" recommendation as the verdict that the arc is done. That is what the operator caught on continuous-run. A close-out task still pre-fills both decision and demo, as before.
+- continuous-run now has `close_task: T-3895` (the honest assessment, currently DEFER).
+- Its close page reads "DEFER — evidence gap", no longer "GO — spike walk completed".
+
+**Evidence:**
+- `tests/web/test_t3841_arc_close_decision_prefill.py`: an anchor-only arc gets neither pre-fill and shows the notice; a close-task arc gets both. The anchor-only test is red on the old blueprint. The arc-close web tests pass, 16/16.
+- The live `/arcs/continuous-run/close` shows the DEFER badge "from close-out task"; `bin/fw watchtower current` passes.
+
+<!--
 -->
 
 ## Decisions
