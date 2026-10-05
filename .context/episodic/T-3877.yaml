@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3877: claude-fw: ensure Watchtower at session start — if not running, start it on its last port, else configured PORT, else allocate (announced); after a reboot nothing starts it today, so it stays down until a human notices (055: ~80 min)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T15:51:08Z
+# ============================================================================
+
+task_id: T-3877
+task_name: "claude-fw: ensure Watchtower at session start — if not running, start it on its last port, else configured PORT, else allocate (announced); after a reboot nothing starts it today, so it stays down until a human notices (055: ~80 min)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T13:25:47Z
+completed: 2026-10-05T15:50:46Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-05T17:50:20+02:00
+last_commit: 2026-10-05T17:50:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Watchtower is ensured at session start (detached from post-compact-resume, cold starts included); doctor WARNs when a project that runs one has none. ACs, verification, RCA
+
+# Key outcomes
+outcomes:
+  - '`lib/watchtower-ensure.sh: fw_watchtower_ensure` behaves as follows:'
+  - '`post-compact-resume.sh` calls it DETACHED (`setsid`, stdin from /dev/null) before any early exit, so it runs on startup, resume and compact, and never delays or fails the hook. No `.claude/settings.json` change (B-005, template parity). Live, the hook took 183 ms; Watchtower came back on 3000 within seconds (HTTP 200).'
+  - '`fw doctor`: "Watchtower not running" becomes a WARN (counted), not a SKIP, and names `fw serve`. This applies only where a Watchtower is expected (`watchtower.log` exists or a PORT is configured); throwaway and test projects keep SKIP.'
+  - 'bats tests with a stub `watchtower.sh` cover: already running → no start; not running → one start; disabled → no start; start failure → still rc 0 and logged; two concurrent calls → one start. Vendored copy in sync.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/post-compact-resume.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/watchtower-ensure.sh'
+  - 'agents/context/post-compact-resume.sh'
+  - 'bin/fw'
+  - '.fabric/components/lib-watchtower-ensure.yaml'
+  - '.fabric/components/tests-unit-t3877_watchtower_ensure.yaml'
+  - 'lib/watchtower-ensure.sh'
+  - '.tasks/active/T-3877-claude-fw-ensure-watchtower-at-session-s.md'
+  - 'tests/unit/t3877_watchtower_ensure.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T17:50:20'
+    action: 'T-3877: Watchtower is ensured at session start (detached from post-compact-resume, cold starts included); doctor WARNs when a project that runs one has none'
+  - time: '2026-10-05T17:50:45'
+    action: 'T-3877: ACs, verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 144 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [watchtower, claude-fw, 055-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 144
+  commits: 2
+  files_changed: 10
+  lines_added: 297
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3877-claude-fw-ensure-watchtower-at-session-s.md
+generated_by: context-agent-hybrid

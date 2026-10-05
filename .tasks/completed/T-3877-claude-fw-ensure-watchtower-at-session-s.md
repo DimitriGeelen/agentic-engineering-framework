@@ -8,12 +8,12 @@ description: >
   check whether Watchtower is running; if not, try to start it on the old port; if
   that fails, find a new port'). Depends on the one-port-rule task.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [watchtower, claude-fw, 055-report]
-components: []
+components: [agents/context/post-compact-resume.sh, bin/fw, lib/watchtower-ensure.sh, tests/unit/t3877_watchtower_ensure.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T13:25:47Z
-last_update: 2026-10-05T15:47:52Z
-date_finished:
+last_update: 2026-10-05T15:50:46Z
+date_finished: 2026-10-05T15:50:46Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -382,3 +382,20 @@ bin/fw vendor self --check
 ### 2026-10-05T15:47:52Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b72a5ecf
+- **Timestamp:** 2026-10-05T15:50:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `post-compact-resume.sh` calls it DETACHED (`setsid`, stdin from /dev/null) before any early exit, so it runs on startup, resume and compact, and never delays or fails the hook. No `.claude/settings.j
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/settings.json in: `post-compact-resume.sh` calls it DETACHED (`setsid`, stdin from /dev/null) before any early exit, so it runs on startup, resume and compact, and neve`
+
+### 2026-10-05T15:50:46Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
