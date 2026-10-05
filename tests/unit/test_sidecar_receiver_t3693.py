@@ -787,3 +787,65 @@ def test_finalize_cli_takes_the_attempt_token(env, tmp_path):
     subprocess.run([sys.executable, hook_py, "finalize", str(tr), "--surfacing", token, "m-c"],
                    env=e, cwd=b, timeout=200, check=True, stdin=subprocess.DEVNULL)
     assert receiver.is_message_handed_over("m-c")
+
+
+# ── T-3900: several sessions share one project tag — say so, by name ───────
+
+def test_t3900_two_ready_sessions_reason_names_both_and_the_pick(env, monkeypatch):
+    b = env.project("t3693-b")
+    env.use(b)
+    _ready_session(monkeypatch, "sess-old", "tl-old")
+    _ready_session(monkeypatch, "sess-new", "tl-new")
+    tag = inject.project_tag()
+    target, why = inject.choose_target(False, runner=FakeTermlink(
+        [_sess("tl-old", [tag]), _sess("tl-new", [tag])]))
+    assert target["termlink_session"] == "tl-new"          # T-3745 rule unchanged
+    assert "2 TermLink sessions registered" in why
+    assert "tl-new (ready, CHOSEN)" in why and "tl-old (ready)" in why
+
+
+def test_t3900_new_seat_without_record_is_named_next_to_the_stale_ready_one(env, monkeypatch):
+    """ring20-manager's shape: the new seat has no Stop record yet, the stale
+    mute session is the only READY one — the reason must name both."""
+    b = env.project("t3693-b")
+    env.use(b)
+    _ready_session(monkeypatch, "sess-stale", "tl-vf6vo2eu")
+    tag = inject.project_tag()
+    target, why = inject.choose_target(False, runner=FakeTermlink(
+        [_sess("tl-vf6vo2eu", [tag]), _sess("tl-nxomfxql", [tag])]))
+    assert target["termlink_session"] == "tl-vf6vo2eu"
+    assert "tl-nxomfxql (no session record yet)" in why
+    assert "tl-vf6vo2eu (ready, CHOSEN)" in why
+
+
+def test_t3900_ready_plus_busy_names_the_busy_one(env, monkeypatch):
+    b = env.project("t3693-b")
+    env.use(b)
+    _ready_session(monkeypatch, "sess-busy", "tl-busy", ready=False)
+    _ready_session(monkeypatch, "sess-idle", "tl-idle")
+    tag = inject.project_tag()
+    target, why = inject.choose_target(False, runner=FakeTermlink(
+        [_sess("tl-busy", [tag]), _sess("tl-idle", [tag])]))
+    assert target["termlink_session"] == "tl-idle"         # never the busy sibling
+    assert "tl-busy (busy)" in why and "tl-idle (ready, CHOSEN)" in why
+
+
+def test_t3900_single_session_reason_is_unchanged(env, monkeypatch):
+    b = env.project("t3693-b")
+    env.use(b)
+    _ready_session(monkeypatch, "sess-1", "tl-1")
+    _, why = inject.choose_target(False, runner=FakeTermlink([_sess("tl-1", [inject.project_tag()])]))
+    assert "TermLink sessions registered" not in why
+
+
+def test_t3900_status_warns_on_several_sessions_only(env, monkeypatch):
+    b = env.project("t3693-b")
+    env.use(b)
+    _ready_session(monkeypatch, "sess-1", "tl-1")
+    tag = inject.project_tag()
+    inject.choose_target(False, runner=FakeTermlink([_sess("tl-1", [tag])]))
+    assert inject.several_sessions_warning() is None
+    inject.choose_target(False, runner=FakeTermlink([_sess("tl-1", [tag]), _sess("tl-2", [tag])]))
+    w = inject.several_sessions_warning()
+    assert w and w.startswith("WARN sessions:") and "tl-1 (ready)" in w
+    assert "tl-2 (no session record yet)" in w

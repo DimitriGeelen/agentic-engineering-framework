@@ -149,18 +149,62 @@ def _injectable_path() -> Path:
     return receiver._receiver_dir() / "injectable.json"
 
 
-def _publish_injectable(tagged_ids: list[str]) -> None:
+def _publish_injectable(tagged_ids: list[str], candidates: list[dict] | None = None) -> None:
     """Record what the last target decision saw: the TermLink sessions
     registered for this project. The prompt hook reads it (cheaply — it must
     not run `termlink discover`) to decide whether a plain, non-TermLink
-    session may take unclaimed mail."""
+    session may take unclaimed mail. T-3900: the candidates (sessions with a
+    record) go alongside, so `fw sidecar status` can say there are several."""
+    cands = [{"termlink_session": r.get("termlink_session"), "session_id": r.get("session_id"),
+              "ready": r.get("ready") is True, "updated_at": r.get("updated_at")}
+             for r in (candidates or [])]
     try:
         tmp = _injectable_path().with_suffix(f".json.{os.getpid()}.tmp")
         tmp.write_text(json.dumps({"at": datetime.now(timezone.utc).isoformat(),
-                                   "tagged": tagged_ids}), encoding="utf-8")
+                                   "tagged": tagged_ids, "candidates": cands}), encoding="utf-8")
         os.replace(tmp, _injectable_path())
     except OSError:
         pass
+
+
+def several_sessions_warning() -> str | None:
+    """T-3900: one status line when the last target decision saw more than one
+    TermLink session for this project, else None. Reads injectable.json only
+    (status must not run `termlink discover`)."""
+    try:
+        data = json.loads(_injectable_path().read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return None
+    tagged = data.get("tagged") or []
+    if len(tagged) <= 1:
+        return None
+    state = {c.get("termlink_session"): ("ready" if c.get("ready") else "busy")
+             for c in data.get("candidates") or []}
+    listed = ", ".join(f"{t} ({state.get(t, 'no session record yet')})" for t in tagged)
+    return (f"WARN sessions:    {len(tagged)} TermLink sessions registered for this project "
+            f"(as of {data.get('at', '?')}): {listed} — a wake goes to the newest READY one; "
+            "end a stale one (termlink signal <id> SIGTERM && termlink clean)")
+
+
+def _several(tagged_ids, candidates: list[dict], chosen: str, rule: str) -> str:
+    """T-3900: when more than one TermLink session is registered for this
+    project, say so in the decision's reason — every session, its state, and
+    which one was picked by which rule. ring20-manager 2026-10-05: a new seat
+    (no record yet) and a stale, budget-mute `claude -c` were both tagged; the
+    stale one was the only READY one and nothing named the other. Picking stays
+    T-3745's newest-ready rule; refusing on several is the operator's call."""
+    if len(tagged_ids) <= 1:
+        return ""
+    by_tl = {r.get("termlink_session"): r for r in candidates}
+    parts = []
+    for tl in sorted(tagged_ids):
+        r = by_tl.get(tl)
+        state = ("no session record yet" if r is None
+                 else "ready" if r.get("ready") is True else "busy")
+        parts.append(f"{tl} ({state}{', CHOSEN' if tl == chosen else ''})")
+    return (f" — {len(tagged_ids)} TermLink sessions registered for this project: "
+            f"{'; '.join(parts)}; picked the {rule}. End a stale one so wakes cannot "
+            "land where no one can act")
 
 
 def injector_found_no_session() -> bool:
@@ -205,16 +249,17 @@ def choose_target(urgent: bool, runner=subprocess.run) -> tuple[dict | None, str
     headless_tl = {r.get("termlink_session") for r in records if r.get("headless")}
     tagged = [s for s in tagged if str(s.get("id")) not in headless_tl]
     tagged_ids = {str(s.get("id")) for s in tagged}
-    _publish_injectable(sorted(tagged_ids))
     candidates = [r for r in records
                   if r.get("termlink_session") in tagged_ids and r.get("alive") is not False
                   and not r.get("headless")]
+    _publish_injectable(sorted(tagged_ids), candidates)
     ready = [r for r in candidates if r.get("ready") is True]
     if ready:
         r = ready[0]
         return ({"session_id": r.get("session_id"), "termlink_session": r["termlink_session"],
                  "ready": True},
-                f"session {r.get('session_id')} ready in {r['termlink_session']} (matched by {how})")
+                f"session {r.get('session_id')} ready in {r['termlink_session']} (matched by {how})"
+                + _several(tagged_ids, candidates, r["termlink_session"], "newest ready"))
     if not urgent:
         if candidates:
             return None, (f"agent not ready: {len(candidates)} registered session(s), "
@@ -228,7 +273,8 @@ def choose_target(urgent: bool, runner=subprocess.run) -> tuple[dict | None, str
         r = candidates[0]
         return ({"session_id": r.get("session_id"), "termlink_session": r["termlink_session"],
                  "ready": False},
-                f"URGENT bypass: session {r.get('session_id')} busy in {r['termlink_session']}")
+                f"URGENT bypass: session {r.get('session_id')} busy in {r['termlink_session']}"
+                + _several(tagged_ids, candidates, r["termlink_session"], "most recently active"))
     if len(tagged) == 1:
         # No record yet, so nothing says whether this PTY holds an agent. Type
         # into it only when an INTERACTIVE claude is seen running in it — never

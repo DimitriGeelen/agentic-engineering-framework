@@ -395,6 +395,9 @@ def cmd_status(args) -> int:
           f"termlink={live.get('termlink', 'unknown')}")
     for r in wv["reasons"]:
         print(f"  - {r}")
+    several = inject.several_sessions_warning()  # T-3900
+    if several:
+        print(several)
     return 0
 
 

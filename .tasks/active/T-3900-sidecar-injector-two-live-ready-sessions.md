@@ -1,16 +1,19 @@
 ---
 id: T-3900
-name: "sidecar injector: two live ready sessions carrying the same fw-project tag
-  — inject.py takes ready[0] silently; must refuse and name both (ring20-dashboard
-  t2459 s6)"
+name: "sidecar injector: several live sessions share one fw-project tag and the pick
+  is silent — name every candidate and the chosen one in the ledger, WARN in fw sidecar
+  status (ring20-dashboard t2459 s6)"
 description: >
-  inject.target picks ready[0] (and candidates[0] on URGENT) when several registered
-  sessions share fw-project=<tag>. ring20-manager had tl-nxomfxql (new seat) and tl-vf6vo2eu
-  (stale mute claude -c at 807K) both tagged; a wake could land in the mute one. Fix:
-  >1 candidate -> no target, reason names every session; ledger records it; fw sidecar
-  status surfaces it.
+  choose_target takes the newest READY session when several registered sessions
+  share fw-project=<tag> (T-3745 design: several sessions per project are legitimate).
+  ring20-manager had tl-nxomfxql (new seat, no Stop record yet) and tl-vf6vo2eu (stale
+  mute claude -c at 807K) both tagged; the stale one was the only READY one, so a
+  wake would land where no one can act, and nothing said there were two. Rescoped
+  2026-10-05 from "refuse on >1" (would reverse T-3745's two-session design — the
+  operator's call) to FLAG: the ledger reason names every candidate and which was
+  picked, and fw sidecar status WARNs when more than one session is registered.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -45,7 +48,7 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "msg 60bda462 (t2459-s6-
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T21:07:37Z
-last_update: '2026-10-05T21:15:47Z'
+last_update: 2026-10-05T21:48:30Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,8 +100,14 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] When more than one registered session for the project is a candidate, the `choose_target` reason (written to the receiver ledger) names every candidate and says which was picked and why. The single-session reason is unchanged.
+- [x] `injectable.json` records the candidates alongside the tagged ids.
+- [x] `fw sidecar status` prints a WARN line when more than one TermLink session is registered for the project. The line names them and says how to end a stale one.
+- [x] The T-3745 behaviour is unchanged: the newest ready session wins, and a busy sibling never receives an injection. Existing inject tests stay green.
+- [x] New tests:
+  - two ready sessions: the reason names both and the pick;
+  - one ready plus one busy: the reason names both and says the busy one was skipped;
+  - status WARN on two tagged sessions, none on one.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -132,6 +141,9 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 300 python3 -m pytest tests/unit/test_sidecar_receiver_t3693.py -q -p no:cacheprovider > /tmp/.t3900 2>&1 && grep -q passed /tmp/.t3900
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -275,6 +287,25 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** ring20-manager (2026-10-05) had two TermLink sessions carrying its fw-project tag:
+- `tl-nxomfxql`, a new seat with no Stop record yet;
+- `tl-vf6vo2eu`, a stale `claude -c` session that is mute because it hit its budget limit.
+
+The stale one was the only READY candidate, so a wake would be typed where no one can act. No output anywhere said there were two sessions.
+
+**Root cause:** `choose_target` applies T-3745's rule (newest ready session wins), which is correct for two live sessions. Its reason line named only the winner, so a project with several registered sessions looked identical to a project with one.
+
+**Why structurally allowed:** T-3745 tested the busy and idle cases with two sessions, but nothing made "several sessions exist" visible. The `injectable.json` snapshot kept the tagged ids yet no reader reported their number.
+
+**Prevention:**
+- Every multi-session decision now names every session, its state and the pick, in the receiver ledger reason.
+- `fw sidecar status` WARNs while several sessions are registered.
+- Tests pin ring20's exact shape.
+
+**Not decided here, for the operator:**
+- whether a project should refuse to inject at all when several sessions are registered (ring20's ask, which would reverse T-3745);
+- whether a budget-critical session should stop counting as ready (needs a per-session budget signal, G-087).
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -355,3 +386,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3900-sidecar-injector-two-live-ready-sessions.md
 - **Context:** Initial task creation
+
+### 2026-10-05T21:43:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
