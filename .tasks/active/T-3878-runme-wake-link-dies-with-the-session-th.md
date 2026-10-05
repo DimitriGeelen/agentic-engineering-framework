@@ -107,14 +107,14 @@ For AEF this belongs in `fw runme watch`, plus a section in `fw sidecar alerts` 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw runme watch <name>` writes `.context/runme/<name>/watch.json` = {watch_pid, arming_claude_pid (nearest ancestor whose cmdline is claude, else null), armed_at}. It is removed when the watch reports EXIT and kept on timeout or kill.
-- [ ] `fw runme pending [--json]` classifies each runme dir (newer than 7 days) and prints one line per finding, naming the re-arm command:
+- [x] `fw runme watch <name>` writes `.context/runme/<name>/watch.json` = {watch_pid, arming_claude_pid (nearest ancestor whose cmdline is claude, else null), armed_at}. It is removed when the watch reports EXIT and kept on timeout or kill.
+- [x] `fw runme pending` classifies (`--json` was not built: plain lines are what the hook and the skill consume) each runme dir (newer than 7 days) and prints one line per finding, naming the re-arm command:
   - WATCH LOST: a watch record exists, the run has no EXIT, and the arming claude is gone, or the watcher itself is gone.
   - RUN IN FLIGHT: START without EXIT, and a process is running that runme.sh.
   - RUN ENDED WITHOUT RECORD: START without EXIT, and nothing is running it.
   - Prints `runme: nothing pending` when clean.
-- [ ] `post-compact-resume.sh` adds its findings to the session-start context (only when there are findings), so a restarted agent is told without asking.
-- [ ] bats tests with temp runme dirs and live/dead fake processes cover each class, the record lifecycle (removed on EXIT, kept on timeout), and the clean case. Existing runme tests stay green; vendored copy in sync.
+- [x] `post-compact-resume.sh` adds its findings to the session-start context (only when there are findings), so a restarted agent is told without asking. That hook is silent on a genuinely cold start (T-2376), so the `/resume` skill's step 7 also runs `fw runme pending` and puts findings first in Needs Attention.
+- [x] bats tests with temp runme dirs and live/dead fake processes cover each class, the record lifecycle (removed on EXIT, kept on timeout), and the clean case. Existing runme tests stay green; vendored copy in sync.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -274,8 +274,32 @@ For AEF this belongs in `fw runme watch`, plus a section in `fw sidecar alerts` 
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 200 bats tests/unit/t3878_runme_pending.bats tests/unit/t3675_runme.bats > /tmp/.t3878 2>&1 && ! grep -q "^not ok" /tmp/.t3878
+test "$(grep -c '# skip' /tmp/.t3878)" -eq 0
+bash -n lib/runme.sh && bash -n agents/context/post-compact-resume.sh
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** an operator ran a handed-over runme after the agent's session had ended or restarted, and nothing was listening.
+- 832's 1.8.2 upgrade started at 13:05:22; the agent noticed only when the operator typed "running".
+- Here, the background waits armed before the 2026-10-05 reboot ended "stopped" with no record.
+
+**Root cause:**
+- `fw runme watch` runs as a background job of the agent session that arms it, so it dies with that session.
+- The durable state (run.log with START/EXIT) survives, but nothing at session start read it.
+- Nothing recorded that a watch had been armed, or by whom.
+
+**Why structurally allowed:**
+- T-3675 designed the watch as "arm it in the background, you will be woken". That holds only for the lifetime of the arming session, and the exit-and-come-back pattern is the norm for operator handoffs.
+- The wake link lived only in process memory.
+
+**Prevention:**
+- The watch writes a durable arming record.
+- `fw runme pending` derives WATCH LOST / RUN IN FLIGHT / RUN ENDED WITHOUT RECORD from durable state.
+- The session-start hook and the `/resume` skill surface it.
+- 7 tests, with live and dead fake processes.
+- Design credit: 832's T-1050.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
