@@ -551,7 +551,9 @@ def test_send_cli_direct_when_registered_hub_when_not(env, monkeypatch):
         r.client_msg_id = cid
         return r
     monkeypatch.setattr(cli.delivery, "deliver", fake_deliver)
-    monkeypatch.setattr(cli.circuit, "resolve_address", lambda to, level: f"hub/{to}")
+    # T-3855: the send resolves through addressing.resolve (recipient's hub).
+    monkeypatch.setattr(cli.addressing, "resolve", lambda to, hub=None, level="auto": {
+        "circuit": f"hub/{to}", "topic": f"inbox:hub/{to}", "hub": None, "how": "test"})
     monkeypatch.setattr(cli.circuit, "topic_for_circuit", lambda c: f"inbox:{c}")
     rc = cli.main(["send", "--to", "nobody-registered", "--body", "x", "--json"])
     assert rc == 0 and "hub" in called

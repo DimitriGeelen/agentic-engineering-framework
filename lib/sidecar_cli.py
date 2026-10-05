@@ -29,7 +29,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from lib.sidecar import circuit, delivery, dm, e2e, inbox, outbox, retry, status as status_mod  # noqa: E402
+from lib.sidecar import addressing, circuit, delivery, dm, e2e, inbox, outbox, retry, status as status_mod  # noqa: E402
 from lib.sidecar import termlink_transport as transport, receiver, lifecycle, adapter, direct, inject  # noqa: E402
 from lib.sidecar import latency as latency_mod, receipts, watcher  # noqa: E402
 from lib.sidecar import waiting as waiting_mod  # noqa: E402
@@ -137,16 +137,22 @@ def _cmd_send(args) -> int:
     # Resolve the address HERE rather than carrying a level flag through the
     # outbox: a resolved circuit is used verbatim by transport.topic_for, so
     # the ledger records the exact address the post went to (T-3433).
+    # T-3855: on the RECIPIENT's hub — a recipient that is not evidenced as our
+    # sub-agent is never addressed in our namespace; unresolvable is refused
+    # before anything is written or posted.
     try:
-        target = circuit.resolve_address(args.to, level=args.level)
+        where = addressing.resolve(args.to, hub=args.hub, level=args.level)
     except circuit.CircuitError as exc:
-        print(f"send: {exc}", file=sys.stderr)
+        if args.json:
+            print(json.dumps({"delivered": False, "state": "REFUSED", "reason": str(exc)}))
+        print(f"send: REFUSED, nothing posted — {exc}", file=sys.stderr)
         return 2
+    target, hub = where["circuit"], where["hub"]
 
     client_msg_id = outbox.write_message(
         from_id=inbox.agent_id(), to=target, body=args.body,
         conversation_id=args.conversation or f"consult-{args.to}",
-        urgent=args.urgent, hub=args.hub,
+        urgent=args.urgent, hub=hub,
         in_reply_to=receipts.base_id(args.in_reply_to) if args.in_reply_to else None)
 
     result = delivery.deliver(client_msg_id, transport.termlink_transport,
@@ -158,12 +164,15 @@ def _cmd_send(args) -> int:
         "delivered": result.delivered,
         "reason": result.reason,
         "topic": circuit.topic_for_circuit(target),
+        "hub": hub or "local",
+        "addressed_by": where["how"],
     }
     if args.json:
         print(json.dumps(payload))
     else:
         verdict = "delivered" if result.delivered else "NOT delivered"
-        print(f"{verdict}: {result.state}  ->  {payload['topic']}")
+        print(f"{verdict}: {result.state}  ->  {payload['topic']}  on hub {payload['hub']}")
+        print(f"addressed by: {where['how']}")
         print(f"client_msg_id: {result.client_msg_id}")
         if result.reason:
             print(f"reason: {result.reason}")
