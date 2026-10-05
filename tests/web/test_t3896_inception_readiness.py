@@ -115,6 +115,16 @@ def test_approvals_card_template_hides_decision_controls_when_blocked():
     assert 'data-testid="inception-not-ready"' in src
 
 
+def test_audit_d14b_uses_the_shared_predicate_and_fails_loud():
+    """The class detector: the audit names pending inceptions the gate would
+    refuse, through the SAME predicate, and never reads a missing one as ready."""
+    src = (ROOT / "agents/audit/audit.sh").read_text(encoding="utf-8")
+    i = src.index("# D14b (T-3896, G-108)")
+    block = src[i:src.index("# D15:", i)]
+    assert "inception_handoff_blockers" in block
+    assert "decision-readiness could NOT be checked" in block
+
+
 def test_approvals_loader_attaches_the_gate_answer():
     src = (ROOT / "web/blueprints/approvals.py").read_text(encoding="utf-8")
     assert '"blockers": inception_handoff_blockers(path)' in src

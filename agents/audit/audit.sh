@@ -7650,6 +7650,41 @@ case "$d14_level" in
         ;;
 esac
 
+# D14b (T-3896, G-108): pending inceptions the decide gate would refuse. Asks the
+# SAME shared predicate the gate, /approvals and /inception use
+# (lib/inception-readiness.sh inception_handoff_blockers), so "what the queue
+# offers" and "what the gate records" cannot drift apart unseen again. These
+# are the agent's to finish; the pages show them as "not ready", without a GO.
+d14b_list=""
+d14b_n=0
+if source "$FRAMEWORK_ROOT/lib/inception-readiness.sh" 2>/dev/null \
+   && command -v inception_handoff_blockers >/dev/null 2>&1; then
+    source "$FRAMEWORK_ROOT/lib/task-audit.sh" 2>/dev/null || true
+    for _f in "$PROJECT_ROOT"/.tasks/active/T-*.md; do
+        [ -f "$_f" ] || continue
+        grep -qE '^workflow_type:[[:space:]]*inception' "$_f" || continue
+        # decided already (a **Decision**: line with a value) → not pending
+        grep -qE '^\*\*Decision(\*\*:|:\*\*)[[:space:]]*[A-Za-z]' "$_f" && continue
+        _b=$(inception_handoff_blockers "$_f")
+        if [ -n "$_b" ]; then
+            d14b_n=$((d14b_n + 1))
+            _id=$(basename "$_f" | cut -d- -f1-2)
+            d14b_list="$d14b_list $_id($(printf '%s\n' "$_b" | grep -c .))"
+        fi
+    done
+    if [ "$d14b_n" -gt 0 ]; then
+        warn "D14b: $d14b_n pending inception(s) not decision-ready:$d14b_list" \
+             "Each has blockers the decide gate would refuse (undisposed IW questions or an empty recommendation); /approvals shows them as 'not ready', without a GO" \
+             "Agent work: give every IW a disposition (answered|deferred|dissolved) plus rationale, or do the research the inception exists for — never hand an unready inception to the operator (G-108)"
+    else
+        pass "D14b: every pending inception is decision-ready"
+    fi
+else
+    warn "D14b: decision-readiness could NOT be checked — lib/inception-readiness.sh did not load" \
+         "A missing predicate must not read as 'all ready'" \
+         "Investigate $FRAMEWORK_ROOT/lib/inception-readiness.sh"
+fi
+
 # D15: Inception limbo state (T-1511, OBS-025)
 # Inceptions with status=started-work, owner=human, all Human ACs ticked,
 # but no **Decision**: line in the body. Operator checked the AC boxes
