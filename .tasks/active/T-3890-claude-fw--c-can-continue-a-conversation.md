@@ -85,11 +85,13 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Reproduced, or the mechanism confirmed from evidence. Record how a "live holder" of a conversation can be detected reliably (session records, /proc, the transcript), with what was measured.
-- [ ] Before launching `claude` with `-c` / `--continue` (or `--resume <id>`), claude-fw resolves the target conversation id. If a live process other than this wrapper's own child holds it, claude-fw REFUSES, naming the holder pid and how to attach or stop it. It never silently starts a second copy.
-- [ ] An explicit override exists for the operator (`FW_ALLOW_DUPLICATE_CONVERSATION=1`) and is logged.
-- [ ] bats tests with a fake holder process cover: refuse, no holder → proceed, the override, and auto-restart's own `-c` after its previous process exited → proceed.
-- [ ] `bash -n bin/claude-fw`; vendored copy in sync
+- [x] Reproduced, or the mechanism confirmed from evidence. Record how a "live holder" of a conversation can be detected reliably (session records, /proc, the transcript), with what was measured.
+  - Confirmed on this host, 2026-10-05: in `/opt/999-Agentic-Engineering-Framework`, `claude -c` targets the newest transcript `087d333f…`, the conversation of this very session, live as claude pid 1227835. A `claude-fw -c` in a second terminal would therefore have been 832's duplicate.
+  - The holder signal is the sidecar session record (`.context/sidecar/sessions/<id>.json` → `claude_pid`). It counts only when that pid is alive AND its cmdline is claude, which guards against a recycled pid.
+- [x] Before launching `claude` with `-c` / `--continue` (or `--resume <id>`), claude-fw resolves the target conversation id. If a live process other than this wrapper's own child holds it, claude-fw REFUSES, naming the holder pid and how to attach or stop it. It never silently starts a second copy.
+- [x] An explicit override exists for the operator (`FW_ALLOW_DUPLICATE_CONVERSATION=1`); it is announced with a stderr WARNING naming the holder.
+- [x] bats tests with a fake holder process cover: refuse, no holder → proceed, the override, and auto-restart's own `-c` after its previous process exited → proceed. Also a recycled non-claude pid → not a holder, and the guard is placed before both launch paths. The 9 existing claude-fw suites stay green (64/64).
+- [x] `bash -n bin/claude-fw`; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,8 +251,28 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 120 bats tests/unit/t3890_conversation_holder.bats > /tmp/.t3890 2>&1 && ! grep -q "^not ok" /tmp/.t3890
+test "$(grep -c '# skip' /tmp/.t3890)" -eq 0
+bash -n bin/claude-fw && bash -n lib/conversation-holder.sh
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** at 832 on 2026-10-05, after a reboot, two live claude processes ran the SAME conversation for about 2h45:
+- the fleet resumed it by id;
+- a separate `claude-fw -c` continued the newest conversation in that directory, which was the same one.
+
+Both reacted to one runme "done" event and executed the upgrade's re-apply step twice.
+
+**Root cause:** `claude-fw` forwards `-c` / `--resume` to `claude` without asking whether that conversation is already live. Claude Code itself does not refuse a second process on one conversation.
+
+**Why structurally allowed:**
+- claude-fw was written for one wrapper per project, where `-c` after its own claude exited is always safe.
+- Fleet launchers (055) and resume-by-id added a second route into the same conversation, and nothing joined them. The session records that identify the holder already existed (sidecar, T-3745) but were only used for mail injection.
+
+**Prevention:**
+- A guard before both launch paths resolves the target conversation and refuses when a live claude holds it, naming the pid. The override is warned.
+- Tests cover target resolution, live, dead and recycled holders, and the guard's placement.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
