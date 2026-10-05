@@ -267,7 +267,9 @@ test "$(grep -c '# skip' /tmp/.t3860-bats.out)" -eq 0
 bash -n bin/fw
 grep -q 'trap .kill -TERM "\$_rx_pid"' bin/fw
 git check-ignore -q .context/working/fw-vec-index.db.12345.building
-bin/fw vendor self --check
+# Vendor parity scoped to this task's files: a repo-wide `fw vendor self --check` reports
+# drift from other workers' uncommitted edits (bin/fw vendor hunks, lib/sidecar, lib/upgrade.sh).
+bash -c 'set -e; for f in web/embeddings.py lib/vector_index_health.py; do cmp "$f" ".agentic-framework/$f"; done; git show HEAD:bin/fw | cmp - .agentic-framework/bin/fw'
 bin/fw watchtower current
 
 ## RCA
