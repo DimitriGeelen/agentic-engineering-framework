@@ -851,8 +851,11 @@ _fw_single_command_is_safe() {
                     # deliberately absent. Without this arm a session whose focus
                     # is captured or partial-complete could not even see whether a
                     # consult was waiting for it.
+                    # T-3856: `alerts` is the /resume step-7 mail check; it runs at
+                    # session START, before focus. It reads; `--mark-seen` writes
+                    # only the sidecar shown ledger (framework state, like `fw context`).
                     case "$fw_sub3" in
-                        whoami) return 0 ;;
+                        whoami|alerts) return 0 ;;
                         inbox)  case " $cmd " in *" --peek "*) return 0 ;; esac ;;
                         status) case " $cmd " in *" --probe "*) ;; *) return 0 ;; esac ;;
                     esac

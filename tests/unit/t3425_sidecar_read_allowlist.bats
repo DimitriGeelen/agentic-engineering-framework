@@ -33,6 +33,15 @@ setup() {
     run is_bash_safe_command "bin/fw sidecar inbox --json --peek"; [ "$status" -eq 0 ]
 }
 
+@test "t3856: fw sidecar alerts runs with no focus (the /resume step-7 mail check)" {
+    run is_bash_safe_command "bin/fw sidecar alerts"; [ "$status" -eq 0 ]
+    run is_bash_safe_command "bin/fw sidecar alerts --limit 10"; [ "$status" -eq 0 ]
+    run is_bash_safe_command ".agentic-framework/bin/fw sidecar alerts --mark-seen"; [ "$status" -eq 0 ]
+    # a redirect on the line is judged a write by the hook's separate pass
+    run has_bash_write_pattern "bin/fw sidecar alerts > /tmp/x"; [ "$status" -eq 0 ]
+    run has_bash_write_pattern "bin/fw sidecar alerts"; [ "$status" -ne 0 ]
+}
+
 @test "t3425: fw sidecar status is a read (reads our own files, never the hub)" {
     run is_bash_safe_command "bin/fw sidecar status"; [ "$status" -eq 0 ]
     run is_bash_safe_command "bin/fw sidecar status --json"; [ "$status" -eq 0 ]

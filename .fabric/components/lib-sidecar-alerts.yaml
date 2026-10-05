@@ -1,0 +1,21 @@
+id: lib/sidecar/alerts.py
+name: alerts
+type: script
+subsystem: framework-core
+location: lib/sidecar/alerts.py
+tags: []
+
+purpose: "arc-011 sidecar — session-start mail alerts (T-3856)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-05
+created_by: unknown

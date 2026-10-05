@@ -1,0 +1,21 @@
+id: tests/unit/test_sidecar_alerts_t3856.py
+name: test_sidecar_alerts_t3856
+type: script
+subsystem: tests
+location: tests/unit/test_sidecar_alerts_t3856.py
+tags: []
+
+purpose: "T-3856 — `fw sidecar alerts`, the shipped /resume step-7 mail check."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-05
+created_by: unknown
