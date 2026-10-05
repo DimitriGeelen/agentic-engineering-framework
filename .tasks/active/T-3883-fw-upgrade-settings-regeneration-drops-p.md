@@ -95,13 +95,13 @@ Confirmed in code. `lib/settings_merge.py merge()` dedupes project hooks with `p
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The dedupe key includes the matcher, `(event, matcher, hook)`. A project hook is carried once per matcher it was registered under, and an exact duplicate (same event, matcher and hook) is still not duplicated.
-- [ ] Nothing is dropped silently: every carried entry is reported KEPT with its matcher.
-- [ ] Regression test in settings_regenerate_preserves_hooks.bats:
+- [x] The dedupe key includes the matcher, `(event, matcher, hook)`. A project hook is carried once per matcher it was registered under, and an exact duplicate (same event, matcher and hook) is still not duplicated.
+- [x] Nothing is dropped silently: every carried entry is reported KEPT with its matcher.
+- [x] Regression test in settings_regenerate_preserves_hooks.bats:
   - a project hook under SessionStart `startup` and `resume` survives regeneration under both;
   - the KEPT lines name both;
   - it fails on the pre-fix merge.
-- [ ] Existing settings-merge tests stay green; vendored copy in sync
+- [x] Existing settings-merge tests stay green; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -261,8 +261,24 @@ Confirmed in code. `lib/settings_merge.py merge()` dedupes project hooks with `p
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 120 bats tests/unit/settings_regenerate_preserves_hooks.bats > /tmp/.t3883 2>&1 && ! grep -q "^not ok" /tmp/.t3883
+test "$(grep -c '# skip' /tmp/.t3883)" -eq 0
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** ring20-manager's 1.8.0 → 1.8.2 upgrade dropped the `resume` entries of three SessionStart project hooks registered for both `startup` and `resume`. Step 5 printed KEPT for each, so the loss was found only by diffing the file.
+
+**Root cause:** `settings_merge.merge()` (T-2710/T-3833) dedupes on `(event, json(hook))`. Claude Code identifies a registration by event, matcher AND hook. The second matcher's entry therefore collided with the first and hit the `continue` meant for "already present", which reports nothing.
+
+**Why structurally allowed:**
+- The T-3833 fixture registered every project hook under exactly one matcher, so the collision could not occur in tests.
+- The silent `continue` branch has no output by design. It was meant for true duplicates only, so a wrong key there turns into silent loss.
+
+**Prevention:**
+- The key includes the matcher.
+- KEPT lines name the matcher, so the report shows every entry carried.
+- A two-matcher regression test checks both the survivors and per-matcher idempotence. It fails on the pre-fix merge.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
