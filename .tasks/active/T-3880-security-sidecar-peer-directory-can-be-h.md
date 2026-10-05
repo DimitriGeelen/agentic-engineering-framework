@@ -85,13 +85,13 @@ Attack: a single envelope posted into our inbox carrying `from_agent=ring20-mana
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `learn()` records an address ONLY under the circuit's own name (`circuit_name(cid)`), and only when `from_agent` is absent or equals that name. A `from_agent` naming anyone else learns nothing.
-- [ ] `learn()` never replaces an existing entry with a different circuit. It records the conflict (name, known circuit, claimed circuit, time) in the peers file and returns False. Same circuit re-learned → no change.
-- [ ] Regression tests:
+- [x] `learn()` records an address ONLY under the circuit's own name (`circuit_name(cid)`), and only when `from_agent` is absent or equals that name. A `from_agent` naming anyone else learns nothing.
+- [x] `learn()` never replaces an existing entry with a different circuit. It records the conflict (name, known circuit, claimed circuit, time) in the peers file and returns False. Same circuit re-learned → no change.
+- [x] Regression tests:
   - the spoof (from_agent=ring20-manager, attacker circuit) does not change where `--to ring20-manager` resolves;
   - a mismatched from_agent learns nothing;
   - the existing T-3855 learning test still passes.
-- [ ] Residual stated in the RCA: a FIRST sighting is still trust-on-first-use. The full fix is the authenticated hub_id from TermLink T-3345 (now live; our T-3873).
+- [x] Residual stated in the RCA: a FIRST sighting is still trust-on-first-use. The full fix is the authenticated hub_id from TermLink T-3345 (now live; our T-3873).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -251,8 +251,29 @@ Attack: a single envelope posted into our inbox carrying `from_agent=ring20-mana
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_sidecar_cross_hub_t3855.py tests/unit/test_sidecar_circuit.py tests/unit/test_sidecar_inbox.py -q > /tmp/.t3880 2>&1 && grep -q passed /tmp/.t3880
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom (reported by ring20-dashboard, not observed exploited):** anyone able to post into our inbox could redirect our future sends to any peer name. Our live `peers.json` was audited on 2026-10-05: all 3 entries match their own circuits, and ring20-dashboard's hub id matches the id 010's authenticated `hub.version` reports.
+
+**Root cause:** `addressing.learn()` (T-3855) treated two sender-asserted envelope fields as facts about identity:
+- it keyed the entry by `from_agent`;
+- it replaced any existing entry whose circuit differed, last writer wins.
+
+Both fields are written by whoever posts the envelope.
+
+**Why structurally allowed:**
+- T-3855's tests covered the happy path: learn, then resolve. No test posed an adversarial envelope.
+- The peer directory had no notion of an existing binding, so "update" and "hijack" were the same operation.
+
+**Prevention:**
+- An address is learned only under the circuit's own name, and only when `from_agent` agrees with it.
+- A known name is never re-bound to a different circuit. The attempt is recorded under `conflicts` and refused.
+- Three adversarial tests. Two of them fail on the pre-fix code.
+
+**Residual:** a FIRST sighting is still trust-on-first-use. An attacker who posts before the real peer ever writes to us can claim an unknown name. The full fix is checking the circuit's hub against the authenticated hub id (TermLink T-3345, live since 2026-10-05; our T-3873).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
