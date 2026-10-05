@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3876: Watchtower port drift: do_start prefers configured PORT then allocates from 3000, do_restart prefers the previous running port (T-2598) — two rules; a stale triple's last port is never a candidate; and persist_port writes the newly allocated port into .framework.yaml silently, making the drift permanent. One rule for both: last port (free or ours) → configured PORT → allocate, announced loudly; never overwrite PORT silently
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T15:16:31Z
+# ============================================================================
+
+task_id: T-3876
+task_name: "Watchtower port drift: do_start prefers configured PORT then allocates from 3000, do_restart prefers the previous running port (T-2598) — two rules; a stale triple's last port is never a candidate; and persist_port writes the newly allocated port into .framework.yaml silently, making the drift permanent. One rule for both: last port (free or ours) → configured PORT → allocate, announced loudly; never overwrite PORT silently"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-05T13:25:08Z
+completed: 2026-10-05T15:15:59Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-05T17:15:27+02:00
+last_commit: 2026-10-05T17:15:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  one Watchtower port rule for start and restart: --port > configured PORT > last port > allocate, moves announced loudly. ACs, verification, RCA, decisions
+
+# Key outcomes
+outcomes:
+  - 'ONE function chooses the port for both start and restart, in this order:'
+  - 'Any choice other than the configured PORT, when one is configured, prints ONE loud WARN naming both ports and why. A configured PORT held by a FOREIGN service no longer aborts a bare start; it moves on and says so. An explicit `--port` held by a foreign service still refuses.'
+  - 'A configured PORT is never overwritten. Only an unconfigured project''s allocation is recorded, as before, and logged.'
+  - '`do_restart` no longer carries its own rule; it calls start.'
+  - 'bats tests with stubbed `port_in_use` / `_watchtower_port_holder_is_ours` cover each branch of the order, including the 055 case (last 3050 free, PORT unset → 3050).'
+  - '`bash -n`; vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-05 — port precedence'
+    chose: 'explicit, then configured PORT, then last port, then allocate.'
+    rationale: 'a configured PORT is the operator''s statement and must take effect at once. 055''s point 4 is exactly the failure of last-before-configured. The last port still rescues an UNCONFIGURED project after a reboot, which was 055''s actual loss.'
+    alternatives_rejected: ['last before configured (055''s suggestion), because it repeats their own point-4 bug.']
+  - decision: '2026-10-05 — configured PORT held by a foreign service'
+    chose: 'start on the last or an allocated port, with a WARN naming both ports. The holder is never signalled, and PORT is never rewritten.'
+    rationale: 'a refusal leaves Watchtower down after any reboot in which a neighbour won the race. The operator asked, via 055, "if that fails, find a new port".'
+    alternatives_rejected: ['keep T-3662''s refusal. Its real guarantee, never signal a foreign holder, is kept, and the T-3662 test was updated to assert it plus the non-rewrite.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/watchtower.sh'
+  - 'bin/watchtower.sh'
+  - '.fabric/components/tests-unit-t3876_watchtower_port_rule.yaml'
+  - '.tasks/active/T-3876-watchtower-port-drift-dostart-prefers-co.md'
+  - 'tests/unit/t3662_watchtower_port_allocation.bats'
+  - 'tests/unit/t3876_watchtower_port_rule.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T17:15:27'
+    action: 'T-3876: one Watchtower port rule for start and restart: --port > configured PORT > last port > allocate, moves announced loudly'
+  - time: '2026-10-05T17:15:58'
+    action: 'T-3876: ACs, verification, RCA, decisions'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 110 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, watchtower, port, 055-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 110
+  commits: 2
+  files_changed: 6
+  lines_added: 311
+  lines_removed: 67
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3876-watchtower-port-drift-dostart-prefers-co.md
+generated_by: context-agent-hybrid

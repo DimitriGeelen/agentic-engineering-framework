@@ -12,12 +12,12 @@ description: >
   configured, came back on 3000 after a start, links to :3002 (e.g. T-3818 review)
   broke; 055 then lost 3050 → 3002.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, watchtower, port, 055-report]
-components: []
+components: [bin/watchtower.sh, tests/unit/t3876_watchtower_port_rule.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T13:25:08Z
-last_update: 2026-10-05T15:11:36Z
-date_finished:
+last_update: 2026-10-05T15:15:59Z
+date_finished: 2026-10-05T15:15:59Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -398,3 +398,15 @@ Separately, a bare restart ignored a newly configured PORT.
 
 ### 2026-10-05T15:11:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-706cb1ea
+- **Timestamp:** 2026-10-05T15:16:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-05T15:15:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
