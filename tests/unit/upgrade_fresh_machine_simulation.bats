@@ -201,6 +201,16 @@ YAML
     # proves a real overwrite happened, not a same-content no-op copy.
     sed -i '2a # T2793-SELFREPLACE-MARKER-STALE' "$fw_bin"
     grep -q "T2793-SELFREPLACE-MARKER-STALE" "$fw_bin"
+    # T-3850: an in-place edit is a LOCAL edit, which the vendor now refuses to
+    # overwrite. This fixture means "an older vendor wrote these bytes", so
+    # record them in the vendor stamp as such.
+    python3 - "$proj/.agentic-framework/.fw-vendor-stamp.json" "$fw_bin" <<'PY'
+import hashlib, json, sys
+stamp, fw = sys.argv[1], sys.argv[2]
+d = json.load(open(stamp))
+d["files"]["bin/fw"] = hashlib.sha256(open(fw, "rb").read()).hexdigest()
+json.dump(d, open(stamp, "w"))
+PY
 
     run env -i PATH="/usr/local/bin:/usr/bin:/bin" HOME="$TEST_TEMP_DIR/home" "$fw_bin" upgrade "$proj"
     [ "$status" -eq 0 ]

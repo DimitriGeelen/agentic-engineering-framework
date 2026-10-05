@@ -1016,10 +1016,14 @@ do_upgrade() {
     # hasn't yet wired `fw vendor self` into pre-push. Operators who have wired
     # pre-push (no inline redundancy needed) opt out via --no-self-vendor.
     local no_self_vendor=false
+    # T-3850: passed through to do_vendor, which otherwise refuses when local
+    # files under .agentic-framework/ would be deleted or overwritten.
+    local -a _vendor_extra=()
 
     while [[ $# -gt 0 ]]; do
         case $1 in
             --dry-run) dry_run=true; shift ;;
+            --allow-delete-locals) _vendor_extra+=(--allow-delete-locals); shift ;;
             --force) force=true; shift ;;
             --force-downgrade) force_downgrade=true; shift ;;
             --strict) strict=true; shift ;;
@@ -1044,6 +1048,9 @@ do_upgrade() {
                 echo "                          diagnostic (T-2093 V1-B, F4). Without this flag the"
                 echo "                          upgrade continues on step failure (current behaviour)"
                 echo "                          but a PARTIAL footer surfaces the count."
+                echo "  --allow-delete-locals   Let the vendor step delete/overwrite local files under"
+                echo "                          .agentic-framework/ not listed in .fwvendor-preserve.yaml"
+                echo "                          (T-3850; logged Tier-2, copies kept). Default: refuse."
                 echo "  --no-self-vendor        Skip the inline framework self-vendor refresh"
                 echo "                          (T-2095 V1-D, F2). Default: keep inline (T-1217"
                 echo "                          invariant). Opt-out for operators who fire"
@@ -1851,7 +1858,7 @@ CRONREGEOF
             do_vendor --target "$target_dir" --source "$FRAMEWORK_ROOT" --dry-run 2>&1 | sed 's/^/  /'
             _vendor_rc=${PIPESTATUS[0]}
         else
-            do_vendor --target "$target_dir" --source "$FRAMEWORK_ROOT" 2>&1 | sed 's/^/  /'
+            do_vendor --target "$target_dir" --source "$FRAMEWORK_ROOT" ${_vendor_extra[@]+"${_vendor_extra[@]}"} 2>&1 | sed 's/^/  /'
             _vendor_rc=${PIPESTATUS[0]}
         fi
         if [ "$_vendor_rc" -ne 0 ]; then

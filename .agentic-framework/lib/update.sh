@@ -13,10 +13,12 @@
 do_update() {
     local check_only=false
     local target_branch="${BRANCH:-master}"
+    local -a _vendor_extra=()  # T-3850
 
     while [[ $# -gt 0 ]]; do
         case $1 in
             --check) check_only=true; shift ;;
+            --allow-delete-locals) _vendor_extra+=(--allow-delete-locals); shift ;;
             --branch) target_branch="$2"; shift 2 ;;
             --rollback)
                 _do_rollback
@@ -31,6 +33,8 @@ do_update() {
                 echo "  --check         Check for updates without applying"
                 echo "  --branch NAME   Branch to update from (default: master)"
                 echo "  --rollback      Restore previous version"
+                echo "  --allow-delete-locals  Let the re-vendor lose local files not listed in"
+                echo "                  .fwvendor-preserve.yaml (T-3850; logged, copies kept)"
                 echo "  -h, --help      Show this help"
                 echo ""
                 echo "Vendored projects (.agentic-framework/):"
@@ -215,7 +219,16 @@ SENTINEL
     # Eliminates enumeration-divergence — same fix as T-1157 applied to do_upgrade.
     echo ""
     echo -e "${YELLOW}Applying update...${NC}"
-    do_vendor --source "$tmpdir/upstream" --target "$project_root" 2>&1 | sed 's/^/  /'
+    # T-3850: do_vendor refuses when local files would be lost; stop here
+    # rather than stamping a new VERSION over a vendor that did not happen.
+    do_vendor --source "$tmpdir/upstream" --target "$project_root" ${_vendor_extra[@]+"${_vendor_extra[@]}"} 2>&1 | sed 's/^/  /'
+    if [ "${PIPESTATUS[0]}" -ne 0 ]; then
+        echo -e "${RED}Update aborted — vendor step refused or failed (see above).${NC}" >&2
+        echo -e "  Previous copy kept at .agentic-framework.rollback/ (fw update --rollback)." >&2
+        rm -rf "$tmpdir"
+        trap - EXIT
+        return 1
+    fi
 
     # Update VERSION file
     echo "$new_version" > "$vendored_dir/VERSION"

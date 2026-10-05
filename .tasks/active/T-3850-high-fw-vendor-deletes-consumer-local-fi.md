@@ -263,8 +263,39 @@ and ~40 in-file patches on v1.8.0 and rolled back. Sibling backlog task: T-3704.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n bin/fw && bash -n lib/upgrade.sh && bash -n lib/update.sh
+python3 -m py_compile lib/vendor_preserve.py
+timeout 300 bats tests/unit/t3850_vendor_preserve_locals.bats > /tmp/.t3850-v1.out 2>&1 && ! grep -q "^not ok" /tmp/.t3850-v1.out
+test "$(grep -c '# skip' /tmp/.t3850-v1.out)" -eq 0
+timeout 300 bats tests/unit/fw_vendor_completeness.bats > /tmp/.t3850-v2.out 2>&1 && ! grep -q "^not ok" /tmp/.t3850-v2.out
+timeout 300 bats tests/unit/lib_update.bats > /tmp/.t3850-v3.out 2>&1 && ! grep -q "^not ok" /tmp/.t3850-v3.out
+grep -q "_vp_py\" pre" bin/fw && grep -q -- "--allow-delete-locals" lib/upgrade.sh && grep -q -- "--allow-delete-locals" lib/update.sh
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** ring20-manager upgrading to v1.8.0 lost 7 Watchtower blueprints, 6 templates,
+lib/approval_channel.py and ~40 in-file patches under `.agentic-framework/`, with no warning,
+and rolled back to v1.7.424. Second incident of the class (first: ring20 T-2019).
+
+**Root cause:** `do_vendor` mirrors each include dir with `rsync -a --delete --delete-excluded`
+(fallback `rm -rf` + `cp -r`). By construction anything under an include dir that the source
+lacks is deleted and anything it carries is overwritten. There was no notion of "a file the
+consumer owns" — no record of what the previous vendor wrote, so a local file and a stale
+framework file were indistinguishable, and no project-declared extension point.
+
+**Why structurally allowed:** every vendor test asserts what the vendor WRITES (completeness,
+visibility, sentinels); none asserted what it must NOT destroy. The consumer side had no
+signal either: the copy printed `✓ web` whether or not it deleted local files. The first
+incident (T-2019) was handled in the consumer, so the framework never acquired the guard.
+
+**Prevention:** (1) `.fw-vendor-stamp.json` records what each vendor wrote, so the next one
+can tell local edits apart from upstream ones; (2) the vendor refuses by default and names
+every file it would lose; (3) `tests/unit/t3850_vendor_preserve_locals.bats` pins
+"nothing lost, every change reported" on a synthetic consumer, including the no-stamp leg.
+
+**Commit note:** the bin/fw `do_vendor` hunks for this task were committed inside 882011ece
+(a concurrent T-3855 commit staged all of bin/fw); the rest is 3698a44c1.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
