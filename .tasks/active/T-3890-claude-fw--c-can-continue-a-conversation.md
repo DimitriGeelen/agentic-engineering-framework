@@ -1,10 +1,16 @@
 ---
 id: T-3890
-name: "claude-fw -c can continue a conversation that another live process already holds: after a reboot the fleet resumed 832's conversation by id while a separate 'claude-fw -c' (most recent in this directory) continued the SAME one — two live copies for ~2h45, both executed the upgrade's re-apply step on the runme done event; claude-fw should resolve the conversation id first and refuse (naming the holder pid) when a live process holds it"
+name: "claude-fw -c can continue a conversation that another live process already
+  holds: after a reboot the fleet resumed 832's conversation by id while a separate
+  'claude-fw -c' (most recent in this directory) continued the SAME one — two live
+  copies for ~2h45, both executed the upgrade's re-apply step on the runme done event;
+  claude-fw should resolve the conversation id first and refuse (naming the holder
+  pid) when a live process holds it"
 description: >
-  832 msg e82bc3c0 (2026-10-05), their RCA /opt/832-Workflow-designer/docs/reports/T-1052-duplicate-conversation-rca.md (also sent to 055). Peer data: reproduce before fixing.
+  832 msg e82bc3c0 (2026-10-05), their RCA /opt/832-Workflow-designer/docs/reports/T-1052-duplicate-conversation-rca.md
+  (also sent to 055). Peer data: reproduce before fixing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T16:02:42Z
-last_update: 2026-10-05T16:02:42Z
-date_finished: null
+last_update: 2026-10-05T16:03:56Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +56,40 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-05T16:03:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3890: claude-fw -c can continue a conversation that another live process already holds: after a reboot the fleet resumed 832's conversation by id while a separate 'claude-fw -c' (most recent in this directory) continued the SAME one — two live copies for ~2h45, both executed the upgrade's re-apply step on the runme done event; claude-fw should resolve the conversation id first and refuse (naming the holder pid) when a live process holds it
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`claude-fw` forwards `-c` (user-given, and its own auto-restart at bin/claude-fw:932/1032) to `claude`, which continues the newest conversation in this directory. Nothing checks whether a live process already holds that conversation.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Reproduced, or the mechanism confirmed from evidence. Record how a "live holder" of a conversation can be detected reliably (session records, /proc, the transcript), with what was measured.
+- [ ] Before launching `claude` with `-c` / `--continue` (or `--resume <id>`), claude-fw resolves the target conversation id. If a live process other than this wrapper's own child holds it, claude-fw REFUSES, naming the holder pid and how to attach or stop it. It never silently starts a second copy.
+- [ ] An explicit override exists for the operator (`FW_ALLOW_DUPLICATE_CONVERSATION=1`) and is logged.
+- [ ] bats tests with a fake holder process cover: refuse, no holder → proceed, the override, and auto-restart's own `-c` after its previous process exited → proceed.
+- [ ] `bash -n bin/claude-fw`; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -320,3 +346,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3890-claude-fw--c-can-continue-a-conversation.md
 - **Context:** Initial task creation
+
+### 2026-10-05T16:03:56Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

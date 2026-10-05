@@ -1,0 +1,21 @@
+id: tests/unit/t3890_conversation_holder.bats
+name: t3890_conversation_holder
+type: script
+subsystem: tests
+location: tests/unit/t3890_conversation_holder.bats
+tags: []
+
+purpose: "T-3890: claude-fw must not open a conversation another live process holds. 832 (2026-10-05): a fleet resume-by-id plus a separate `claude-fw -c` ran the same conversation twice for ~2h45; both executed one runme step."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-05
+created_by: unknown

@@ -690,11 +690,35 @@ _name_fresh_relaunch() {
     CLAUDE_ARGS=("-n" "fw-${base}-r${restart_count}")
 }
 
+# T-3890: refuse to open a conversation that another live process already holds
+# (832: a fleet resume-by-id plus a separate `claude-fw -c` ran the same
+# conversation twice for ~2h45, and both executed one runme step).
+_conversation_guard() {
+    local lib _id _holder
+    lib="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../lib/conversation-holder.sh"
+    [ -f "$lib" ] || return 0
+    # shellcheck source=/dev/null
+    . "$lib"
+    _id=$(fw_conversation_target "$PWD" "${CLAUDE_ARGS[@]}")
+    [ -n "$_id" ] || return 0
+    _holder=$(fw_conversation_holder "${PROJECT_ROOT:-$PWD}" "$_id")
+    [ -n "$_holder" ] || return 0
+    if [ "${FW_ALLOW_DUPLICATE_CONVERSATION:-0}" = "1" ]; then
+        echo "claude-fw: WARNING: conversation $_id is already live in pid $_holder; continuing anyway (FW_ALLOW_DUPLICATE_CONVERSATION=1)" >&2
+        return 0
+    fi
+    echo "claude-fw: REFUSED — conversation $_id is already live in pid $_holder." >&2
+    echo "  A second copy would act on the same events twice. Use that session instead" >&2
+    echo "  (termlink list / termlink attach), or stop it first. Override: FW_ALLOW_DUPLICATE_CONVERSATION=1" >&2
+    return 1
+}
+
 while true; do
     # T-2373: record when this run started so the terminator only acts on a
     # signal written DURING the run (edge case a — not a leftover/stale signal).
     run_start_epoch=$(date +%s)
     _name_fresh_relaunch # T-3629
+    _conversation_guard || exit 3   # T-3890
     # Run claude with user's arguments
     set +e
     if [ "$TERMLINK_ENABLED" = "1" ] && [ -n "$TERMLINK_SESSION" ]; then
