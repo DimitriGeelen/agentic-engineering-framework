@@ -95,21 +95,21 @@ bvp_scores_proposed:
 -->
 
 - **IW-1: Which identity and credential did ring20-manager push to AEF master with, and what other write access to the AEF repo does ring20 rely on?**
-  confidence: 0
-  disposition:
-  rationale: asked ring20-manager on sidecar conversation aef-master-protection (msg e45cd15c, 2026-10-04)
+  confidence: 3
+  disposition: answered
+  rationale: ring20-manager 2026-10-05 (raw post, conversation aef-master-protection): pushed from .122 CT 200 via its git credential helper with OneDev access token 7 'ring20-git-codewrite' (non-owner, role Code Writer, authorised on ALL 41 OneDev projects, expires 2026-11-14); author = the operator's configured identity; no other write access to AEF is relied on — filings go over TermLink, never git
 - **IW-2: Does ring20 object to OneDev branch protection on master (release fast-forwards only, no direct pushes)?**
-  confidence: 0
-  disposition:
-  rationale: same message
+  confidence: 3
+  disposition: answered
+  rationale: ring20-manager 2026-10-05: no objection, supports it; suggests removing the AEF project from token 7 (or read-only), which only a OneDev admin can change — ring20 has no admin token
 - **IW-3: Which path should ring20 use for future AEF changes — sidecar request to 999, patch bundle (832 style), or a branch/PR into bleeding-edge?**
-  confidence: 1
-  disposition:
-  rationale: release-train model (CLAUDE.md §Release-Train) makes bleeding-edge the only authored branch; ring20's preference asked
+  confidence: 3
+  disposition: answered
+  rationale: ring20-manager 2026-10-05: default a sidecar request to 999; if ring20 already wrote the patch, a branch ring20/<task> off bleeding-edge for 999 to review and merge; never master
 - **IW-4: Does any ring20 automation (CI, mirror, timers) write AEF master or tags that protection would break?**
-  confidence: 0
-  disposition:
-  rationale: eb49ff9 edited .onedev-buildspec.yml (the GitHub mirror job lives there); asked ring20-manager
+  confidence: 3
+  disposition: answered
+  rationale: ring20-manager 2026-10-05: none — checked cron jobs, systemd timers and scripts; nothing pushes AEF master or creates tags. (Our own release pushes master + tags from .107 as the release identity; protection must allow that path.)
 
 ## Exploration Plan
 
@@ -173,7 +173,14 @@ bvp_scores_proposed:
 
 **Recommendation:** GO
 
-**Rationale:** A peer agent wrote the consumer install surface directly, bypassing the release train and every client-side gate; server-side protection plus an agreed request path is the only control that holds, and ring20 must be party to it because it currently relies on that access.
+**Rationale:** A peer agent wrote the consumer install surface directly, bypassing the release train and every client-side gate; server-side protection plus an agreed request path is the only control that holds, and ring20 must be party to it because it currently relies on that access. ring20-manager answered all four questions (2026-10-05) and agrees: it relies on no git write access to AEF, has no automation touching master or tags, and supports protection.
+
+**Proposed decision (three parts, all operator/OneDev-admin actions):**
+1. OneDev branch protection on `master` of agentic-engineering-framework: no direct pushes and no force-pushes; only the release identity (the account `fw release tag-and-release` pushes with from .107) may update it, by fast-forward. Also protect `v*` tags from deletion and moving.
+2. Token 7 'ring20-git-codewrite' (Code Writer on all 41 projects, expires 2026-11-14): remove the AEF project from its authorised projects, or make it read-only there. ring20 suggested this itself.
+3. The ring20 → AEF change path is agreed: by default a sidecar request to 999; if ring20 has already written the patch, a branch `ring20/<task>` off `bleeding-edge` for 999 to review and land; never `master`.
+
+**Evidence:** IW-1..IW-4 above (dispositions answered from ring20-manager's reply); eb49ff9 on master 2026-10-04 07:25Z; the v1.8.0 release was blocked until it was merged into bleeding-edge (docs/reports/T-3785-v1.8.0-release-rca.md).
 
 ## Decisions
 
