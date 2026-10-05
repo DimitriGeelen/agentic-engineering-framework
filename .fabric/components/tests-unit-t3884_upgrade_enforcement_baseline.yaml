@@ -1,0 +1,21 @@
+id: tests/unit/t3884_upgrade_enforcement_baseline.bats
+name: t3884_upgrade_enforcement_baseline
+type: script
+subsystem: tests
+location: tests/unit/t3884_upgrade_enforcement_baseline.bats
+tags: []
+
+purpose: "T-3884: fw upgrade step [10/10] said \"Enforcement baseline exists\" after step 5 had rewritten .claude/settings.json, and the next `fw doctor` FAILed \"Enforcement baseline CHANGED\" (ring20-manager, 1.8.0 -> 1.8.2)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-05
+created_by: unknown
