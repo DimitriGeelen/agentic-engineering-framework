@@ -1032,14 +1032,17 @@ UPSTREAM
         # consumer's .agentic-framework/ can carry thousands of ignored files
         # from older layouts (ring20-dashboard: 11,370) that also exist in the
         # source; `find` counted them as vendored and failed the update. Each
-        # include dir was just mirrored by rsync --delete (or rm -rf + cp), so
-        # its on-disk contents ARE the write; single files are listed by name.
+        # T-3851: enumerated from the SOURCE side of each include — the vendor's
+        # own copy list — not from $dest. Since T-3850 an include dir on disk
+        # can also hold consumer-local files the preserve manifest kept, and
+        # those are not ours to judge. The checker drops entries absent from
+        # $dest (excluded at copy time); single files are listed by name.
         local _vis_manifest _vis_item
         _vis_manifest=$(mktemp "${TMPDIR:-/tmp}/fw-vendor-manifest-XXXXXX")
         {
             for _vis_item in "${includes[@]}"; do
                 if [ -d "$vendor_source/$_vis_item" ] && [ -d "$dest/$_vis_item" ]; then
-                    (cd "$dest" && find "$_vis_item" -type f \
+                    (cd "$vendor_source" && find "$_vis_item" -type f \
                         -not -path '*/__pycache__/*' -not -name '*.pyc' -not -name '.DS_Store')
                 elif [ -f "$vendor_source/$_vis_item" ]; then
                     printf '%s\n' "$_vis_item"
