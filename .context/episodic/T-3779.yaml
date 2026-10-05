@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3779: TERMLINK_RUNTIME_DIR split-brain: agents started with env -i default to /tmp/termlink-0 while every sidecar inbox lives on /var/lib/termlink — the inbox hook peeks an empty inbox and posts land where nobody reads (055 G-012)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T13:54:50Z
+# ============================================================================
+
+task_id: T-3779
+task_name: "TERMLINK_RUNTIME_DIR split-brain: agents started with env -i default to /tmp/termlink-0 while every sidecar inbox lives on /var/lib/termlink — the inbox hook peeks an empty inbox and posts land where nobody reads (055 G-012)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-03T19:32:54Z
+completed: 2026-10-05T13:54:29Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-10-05T15:30:38+02:00
+last_commit: 2026-10-05T15:54:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  live evidence from the reboot (env -i fleet sessions register on /tmp/termlink-0), horizon now; file T-3875..T-3878 from peer reports. claude-fw registers on the canonical TermLink hub when an env -i launcher dropped TERMLINK_RUNTIME_DIR; fw doctor WARNs on split-brain. ACs, verification, RCA
+
+# Key outcomes
+outcomes:
+  - '`lib/termlink-runtime.sh: fw_termlink_runtime_resolve` decides where this process''s TermLink sessions must register:'
+  - '`claude-fw` calls it before `termlink spawn`, so a launcher that starts it under `env -i` still registers on the canonical hub. The one stderr line names the directory it supplied.'
+  - '`fw doctor` WARNs `TermLink split-brain` when this process would register on a dir with no live hub while a canonical hub exists elsewhere, and names the fix (`export TERMLINK_RUNTIME_DIR=<dir>`, restart the session). Silent when the env is consistent or TermLink is absent.'
+  - 'bats tests with temp dirs and fake live/dead hubs (a real socket, plus a pidfile naming a live or a dead pid) cover each branch. claude-fw and bin/fw pass `bash -n`; vendored copy in sync.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/termlink-runtime.sh'
+  - 'bin/claude-fw'
+  - 'bin/fw'
+  - '.fabric/components/lib-termlink-runtime.yaml'
+  - '.fabric/components/tests-unit-t3779_termlink_runtime.yaml'
+  - 'lib/termlink-runtime.sh'
+  - '.tasks/active/T-3779-termlinkruntimedir-split-brain-agents-st.md'
+  - '.tasks/active/T-3875-binfw-doctor-still-aborts-without-a-summ.md'
+  - '.tasks/active/T-3876-watchtower-port-drift-dostart-prefers-co.md'
+  - '.tasks/active/T-3877-claude-fw-ensure-watchtower-at-session-s.md'
+  - '.tasks/active/T-3878-runme-wake-link-dies-with-the-session-th.md'
+  - 'tests/unit/t3779_termlink_runtime.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T15:30:38'
+    action: 'T-3779: live evidence from the reboot (env -i fleet sessions register on /tmp/termlink-0), horizon now; file T-3875..T-3878 from peer reports'
+  - time: '2026-10-05T15:54:00'
+    action: 'T-3779: claude-fw registers on the canonical TermLink hub when an env -i launcher dropped TERMLINK_RUNTIME_DIR; fw doctor WARNs on split-brain'
+  - time: '2026-10-05T15:54:28'
+    action: 'T-3779: ACs, verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2541 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2541
+  commits: 3
+  files_changed: 14
+  lines_added: 1764
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3779-termlinkruntimedir-split-brain-agents-st.md
+generated_by: context-agent-hybrid
