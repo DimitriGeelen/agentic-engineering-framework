@@ -104,6 +104,12 @@ ring20-dashboard T-2462 finding 8. Code: `web/embeddings.py` (`reindex_increment
 - [x] Copy-vs-in-place decision recorded in ## Decisions
 
 ### Human
+- [ ] [REVIEW] Watchtower semantic search still renders results after the embeddings.py change
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` and open `<url>/search?q=vector+index+reindex` in a browser
+  2. Run the query with semantic or hybrid mode, if the page offers a toggle
+  **Expected:** a populated result list with snippets, laid out as before (this task changed only the build/reindex path, not query or render code)
+  **If not:** screenshot the page, check `.context/working/watchtower.log` for an `embeddings` traceback, and reopen T-3860
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -348,6 +354,13 @@ bin/fw watchtower current
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+**Rationale:** The disk-filling path is closed. The reindex refuses before writing when free space is below index size + max(20%, 500 MB). Scratch is removed or parked on exception, ENOSPC, "disk is full" and SIGTERM/SIGINT (forwarded by the `fw index reindex` shell trap). Dead-pid orphans are swept at the start of every run, and health WARNs on orphans and on low headroom. No query or render code changed. The [REVIEW] criterion exists only because `web/embeddings.py` is on the P-013 render-surface list.
+**Evidence:**
+- `tests/unit/test_t3860_reindex_disk_guard.py`: 17 passed (refusal with live index intact, ENOSPC mid-copy, disk-full mid-embed, SIGTERM mid-run/mid-copy/mid-build, dead-pid sweep, health WARNs)
+- Existing `test_incremental_reindex.py` + `test_t3786_*`: 28 passed; `t3783_vector_index_health.bats` 33/33, `t3058` 7/7, `t3783_reach` 4/4
+- Verification 8/8 passed at the close attempt; Watchtower restarted and current
 
 ## Decisions
 
