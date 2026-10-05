@@ -103,29 +103,47 @@ def circuit_name(cid: str) -> str | None:
 def learn(from_agent: str | None, from_circuit: str | None) -> bool:
     """Record a peer's exact address from an envelope we received.
 
-    Keyed by the sender's `from_agent` (what our agent will type as `--to`)
-    and by the circuit's own name. Returns True when something changed.
+    T-3880: both envelope fields are sender-asserted, so neither may pick WHOSE
+    address is being written. The address is learned only under the circuit's
+    own name, only when `from_agent` (if given) agrees with it, and an existing
+    entry is NEVER replaced by a different circuit — that is recorded as a
+    conflict for the operator and refused. (Previously the entry was keyed by
+    `from_agent` and last writer won: one posted envelope claiming to be
+    ring20-manager redirected every later `--to ring20-manager`.)
+    A first sighting is still trust-on-first-use; the authenticated hub id
+    (TermLink T-3345, our T-3873) is what closes that.
+
+    Returns True when something changed.
     """
     cid = strip_host(from_circuit or "")
     parts = circuit.parse_circuit(cid)
     if not cid or not parts.get("hub") or not parts.get("project"):
         return False
-    names = {n for n in (from_agent, circuit_name(cid)) if n and "/" not in str(n)}
-    if not names:
+    name = circuit_name(cid)
+    if not name or "/" in str(name):
         return False
+    if from_agent and from_agent != name:
+        return False   # the sender claims to be someone its own circuit is not
     data = load_peers()
-    changed = False
-    for name in names:
-        prev = data["peers"].get(name) or {}
-        if prev.get("circuit") != cid:
-            data["peers"][name] = {"circuit": cid, "hub_id": parts["hub"], "learned_at": _now()}
-            changed = True
-    if changed:
+    prev = data["peers"].get(name) or {}
+    if prev.get("circuit") == cid:
+        return False
+    if prev.get("circuit"):
+        conflicts = list(data.get("conflicts") or [])
+        conflicts.append({"name": name, "known": prev["circuit"], "claimed": cid,
+                          "at": _now(), "action": "refused"})
+        data["conflicts"] = conflicts[-200:]
         try:
             _save_peers(data)
         except OSError:
-            return False
-    return changed
+            pass
+        return False
+    data["peers"][name] = {"circuit": cid, "hub_id": parts["hub"], "learned_at": _now()}
+    try:
+        _save_peers(data)
+    except OSError:
+        return False
+    return True
 
 
 def peer(name: str) -> dict | None:

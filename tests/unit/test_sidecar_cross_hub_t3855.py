@@ -148,6 +148,34 @@ def test_peer_directory_learned_from_from_circuit_routes_a_bare_reply(env):
     assert w["hub"] == "ring20-dashboard"
 
 
+ATTACKER = "deadbeefdeadbeef"
+
+
+def test_t3880_spoofed_from_agent_cannot_redirect_a_known_peer(env):
+    """The ring20-dashboard report: one envelope claiming to be ring20-manager,
+    carrying the attacker's circuit, must not move where --to goes."""
+    real = f"{THEIRS}/ring20-manager"
+    assert env.learn("ring20-manager", real)
+    assert not env.learn("ring20-manager", f"//evil/{ATTACKER}/ring20-manager")
+    assert env.peer("ring20-manager")["circuit"] == real
+    c = env.load_peers()["conflicts"][-1]
+    assert (c["name"], c["known"], c["claimed"], c["action"]) == (
+        "ring20-manager", real, f"{ATTACKER}/ring20-manager", "refused")
+
+
+def test_t3880_from_agent_naming_someone_else_learns_nothing(env):
+    """from_agent=ring20-manager on a circuit whose own name is 'x' writes no
+    entry for ring20-manager (nor for 'x': the envelope contradicts itself)."""
+    assert not env.learn("ring20-manager", f"{ATTACKER}/x")
+    assert env.peer("ring20-manager") is None and env.peer("x") is None
+
+
+def test_t3880_relearning_the_same_circuit_is_a_no_op(env):
+    assert env.learn("ring20-dashboard", f"{THEIRS}/ring20-dashboard")
+    assert not env.learn("ring20-dashboard", f"//h/{THEIRS}/ring20-dashboard")
+    assert "conflicts" not in env.load_peers()
+
+
 def test_hub_id_read_is_cached(env):
     calls = []
     env.resolve("a-peer", hub="ring20-dashboard", runner=_runner(calls))
