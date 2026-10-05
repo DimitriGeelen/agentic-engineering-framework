@@ -858,3 +858,10 @@ entries:
   added: '2026-10-05'
   expires: '2026-10-19'
   added_by: human
+- leg: bats
+  name: 't3511_parked_merge_guard.bats: the bypass warning does NOT fire on a merge that was never blocked'
+  file: t3511_parked_merge_guard.bats
+  owner: T-3845
+  added: '2026-10-05'
+  expires: '2026-10-19'
+  added_by: human
