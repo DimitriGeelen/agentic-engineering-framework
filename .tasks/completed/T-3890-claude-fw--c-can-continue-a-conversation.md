@@ -10,12 +10,12 @@ description: >
   832 msg e82bc3c0 (2026-10-05), their RCA /opt/832-Workflow-designer/docs/reports/T-1052-duplicate-conversation-rca.md
   (also sent to 055). Peer data: reproduce before fixing.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, claude-fw, 832-report]
-components: []
+components: [bin/claude-fw, lib/conversation-holder.sh, tests/unit/t3890_conversation_holder.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T16:02:42Z
-last_update: 2026-10-05T16:03:56Z
-date_finished:
+last_update: 2026-10-05T16:10:08Z
+date_finished: 2026-10-05T16:10:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -371,3 +371,15 @@ Both reacted to one runme "done" event and executed the upgrade's re-apply step 
 
 ### 2026-10-05T16:03:56Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-da1f1615
+- **Timestamp:** 2026-10-05T16:10:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-05T16:10:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
