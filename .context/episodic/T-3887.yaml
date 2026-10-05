@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3887: fw sidecar send --hub that is REFUSED (e.g. 'version floor unestablished', T-2415 path) must store/post nothing: ring20 saw the refused message stored in its OWN hub's inbox for that name, where nobody reads it — verify on 1.8.2 (T-3855 changed send) and fix if it persists
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T16:48:04Z
+# ============================================================================
+
+task_id: T-3887
+task_name: "fw sidecar send --hub that is REFUSED (e.g. 'version floor unestablished', T-2415 path) must store/post nothing: ring20 saw the refused message stored in its OWN hub's inbox for that name, where nobody reads it — verify on 1.8.2 (T-3855 changed send) and fix if it persists"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T14:50:26Z
+completed: 2026-10-05T16:47:41Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-05T18:47:16+02:00
+last_commit: 2026-10-05T18:47:40+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the retry sweep no longer re-posts pre-1.8.2 rows (bare name + remote hub) into the sender's own hub — dead-letters them with the resend command. ACs, verification, RCA
+
+# Key outcomes
+outcomes:
+  - 'Measured: how many rows in this repo''s outbox are legacy (remote `hub` with a bare `to`), and how many are still pending. Measured 6, of which 1 is still pending: d0f041e6, `to: "b"`, `hub: 10.0.0.5:9100`, 2026-10-01. That is a test-fixture shape that leaked into the live outbox.'
+  - '`delivery.deliver` never posts a row whose `hub` is remote while its `to` has no circuit (`/`). It records it UNDELIVERABLE (terminal, flag consumed) with the reason "pre-T-3855 address in the sender''s namespace — resend with fw sidecar send --to <name> --hub <hub>". No transport call.'
+  - 'Rows with a full circuit, and local rows with a bare `to`, are unaffected'
+  - 'Unit tests: a legacy row is not posted and is recorded UNDELIVERABLE; a circuit row is posted; a local bare row is posted. The legacy test is red on the old code. Delivery, sweep, outbox, status and cross-hub suites: 83 passed. Two delivery fixtures were updated to the post-T-3855 circuit shape. Vendored copy in sync.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/delivery.py'
+  - 'lib/sidecar/delivery.py'
+  - '.tasks/active/T-3887-fw-sidecar-send---hub-that-is-refused-eg.md'
+  - 'tests/unit/test_sidecar_delivery.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T18:47:16'
+    action: 'T-3887: the retry sweep no longer re-posts pre-1.8.2 rows (bare name + remote hub) into the sender''s own hub — dead-letters them with the resend command'
+  - time: '2026-10-05T18:47:40'
+    action: 'T-3887: ACs, verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 117 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, sidecar, ring20-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 117
+  commits: 2
+  files_changed: 4
+  lines_added: 142
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3887-fw-sidecar-send---hub-that-is-refused-eg.md
+generated_by: context-agent-hybrid
