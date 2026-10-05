@@ -4,12 +4,12 @@ name: "render-surface gate attributes a commit to every task its SUBJECT mention
 description: >
   render-surface gate attributes a commit to every task its SUBJECT mentions anywhere — a T-3897 commit naming 'T-3899 filed' put T-3897's web/ edits on T-3899 and blocked its close; prefer subjects that OPEN with the id (P-002), keep the mention form as fallback
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/render_surface.sh]
 related_tasks: []
 origin: {kind: "agent"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -39,8 +39,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T21:37:58Z
-last_update: 2026-10-05T21:41:00Z
-date_finished: null
+last_update: 2026-10-05T21:42:10Z
+date_finished: 2026-10-05T21:42:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -73,7 +73,7 @@ date_finished: null
   - **control:** T-9006 still owns it.
   - **fallback:** a task referenced only mid-subject still resolves.
   All T-3198 legs stay green.
-- [ ] T-3899 closes without any `--skip-render-review` (its true footprint is lib/sidecar plus tests).
+- [x] T-3899 closes without any `--skip-render-review` (its true footprint is lib/sidecar plus tests).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -346,3 +346,15 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3904-render-surface-gate-attributes-a-commit-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d8ce46f8
+- **Timestamp:** 2026-10-05T21:42:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-05T21:42:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

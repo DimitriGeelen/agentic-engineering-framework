@@ -12,12 +12,12 @@ description: >
   on that hub (True) before returning; False -> refuse naming the inbox:<hubid>/*
   topics that do exist; None -> refuse (cannot verify).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/task-create/create-task.sh, lib/inception.sh, lib/render_surface.sh, lib/sidecar/addressing.py, lib/sidecar/inbox.py, lib/task_origin.py, tests/unit/t3897_create_task_origin.bats, tests/unit/test_sidecar_cross_hub_t3855.py, tests/web/test_t3897_task_origin.py, web/blueprints/approvals.py, web/templates/_approvals_content.html, web/templates/_origin_badge.html]
 related_tasks: []
 origin: {kind: "peer", source: "ring20-dashboard", ref: "msg 711087b1 (t2459-s6-joint-test)"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -47,8 +47,8 @@ origin: {kind: "peer", source: "ring20-dashboard", ref: "msg 711087b1 (t2459-s6-
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T21:06:56Z
-last_update: 2026-10-05T21:37:06Z
-date_finished:
+last_update: 2026-10-05T21:41:23Z
+date_finished: 2026-10-05T21:41:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -382,3 +382,15 @@ bin/fw vendor self --check
 
 ### 2026-10-05T21:31:15Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0ca3171c
+- **Timestamp:** 2026-10-05T21:41:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-05T21:41:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

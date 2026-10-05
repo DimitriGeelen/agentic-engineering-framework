@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3904: render-surface gate attributes a commit to every task its SUBJECT mentions anywhere — a T-3897 commit naming 'T-3899 filed' put T-3897's web/ edits on T-3899 and blocked its close; prefer subjects that OPEN with the id (P-002), keep the mention form as fallback
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T21:42:32Z
+# ============================================================================
+
+task_id: T-3904
+task_name: "render-surface gate attributes a commit to every task its SUBJECT mentions anywhere — a T-3897 commit naming 'T-3899 filed' put T-3897's web/ edits on T-3899 and blocked its close; prefer subjects that OPEN with the id (P-002), keep the mention form as fallback"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T21:37:58Z
+completed: 2026-10-05T21:42:10Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-05T23:41:00+02:00
+last_commit: 2026-10-05T23:41:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  render-surface gate credits a commit to the task its subject OPENS with; a mid-subject mention counts only when no subject claims the task (fixes T-3899's false render block)
+
+# Key outcomes
+outcomes:
+  - '`_render_surface_subject_shas` returns the commits whose subject OPENS with the id (`T-XXXX` followed by a non-digit) whenever at least one exists. A subject that only mentions the id later in the line no longer donates its footprint to that task.'
+  - 'Fallbacks are kept, in order:'
+  - 'New bats legs in `tests/unit/t3198_render_surface_attribution.bats`:'
+  - 'T-3899 closes without any `--skip-render-review` (its true footprint is lib/sidecar plus tests).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'render-surface gate credits a commit to the task its subject OPENS with; a mid-subject mention counts only when no subject claims the task (fixes T-3899''s false render block)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/render_surface.sh'
+  - 'lib/render_surface.sh'
+  - '.tasks/active/T-3904-render-surface-gate-attributes-a-commit-.md'
+  - 'tests/unit/t3198_render_surface_attribution.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T23:41:00'
+    action: 'T-3904: render-surface gate credits a commit to the task its subject OPENS with; a mid-subject mention counts only when no subject claims the task (fixes T-3899''s false render block)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4
+  commits: 1
+  files_changed: 4
+  lines_added: 408
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3904-render-surface-gate-attributes-a-commit-.md
+generated_by: context-agent-hybrid
