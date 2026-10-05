@@ -560,6 +560,19 @@
         preserving audit trail.
     </p>
     {% endif %}
+    {% if handoff_blockers %}
+    {# T-3896 (G-108): the decide gate would refuse — say so before the click,
+       and say whose work it is. No decision controls on a not-ready inception. #}
+    <div data-testid="inception-not-ready"
+         style="border:1px dashed var(--wt-warn, #b45309); border-radius:6px; padding:0.6rem 0.8rem;">
+        <strong>Not ready for your decision — the agent still owes:</strong>
+        <ul style="margin:0.3rem 0 0 1.1rem; font-size:0.9rem;">
+            {% for b in handoff_blockers %}<li>{{ b.detail }}</li>{% endfor %}
+        </ul>
+        <small class="muted">This is agent work, not yours: each open question needs a recorded answer
+            (answered / deferred / dissolved) with a reason before a GO or NO-GO can be recorded.</small>
+    </div>
+    {% else %}
     <form action="/inception/{{ task_id }}/decide" method="post" class="decision-form">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
         <div class="decision-buttons">
@@ -571,6 +584,7 @@
                   style="font-size: 0.85rem; min-height: 60px; margin-bottom: 0.5rem;">{{ rationale_hint or '' }}</textarea>
         <button type="submit" class="text-sm">{% if dec == 'pending' %}Record Decision{% else %}Record Superseding Decision{% endif %}</button>
     </form>
+    {% endif %}
 </article>
 {% endif %}
 

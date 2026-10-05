@@ -1394,6 +1394,53 @@ def count_unchecked_human_acs(body: str) -> int:
     return total
 
 
+_HANDOFF_BLOCKERS_CACHE: dict = {}
+
+
+def inception_handoff_blockers(path) -> list[dict]:
+    """T-3896 (G-108): what still blocks this inception from a decision, as the
+    decide gate sees it — [] when decision-ready.
+
+    Calls the ONE shared predicate (`lib/inception-readiness.sh`
+    `inception_handoff_blockers`, T-3279 / G-102) instead of re-implementing
+    it: a page that invites a GO must ask the gate's own question. Cached by
+    the task file's mtime. Each item: {kind, detail, fix}.
+
+    Fails CLOSED: if the predicate cannot run, returns one blocker saying so,
+    so a broken check never reads as "ready".
+    """
+    import subprocess as _sp
+
+    p = Path(path)
+
+    def _run(fp: Path) -> list[dict]:
+        script = (
+            '. "$1/lib/inception-readiness.sh" || exit 3; '
+            '. "$1/lib/task-audit.sh" 2>/dev/null || true; '
+            'command -v inception_handoff_blockers >/dev/null || exit 3; '
+            'inception_handoff_blockers "$2"'
+        )
+        try:
+            r = _sp.run(["bash", "-c", script, "_", str(FRAMEWORK_ROOT), str(fp)],
+                        capture_output=True, text=True, timeout=20)
+        except (OSError, _sp.SubprocessError) as e:
+            return [{"kind": "check-failed", "detail": f"readiness check could not run: {e}",
+                     "fix": "the agent must investigate lib/inception-readiness.sh"}]
+        if r.returncode != 0:
+            return [{"kind": "check-failed",
+                     "detail": f"readiness check failed (rc={r.returncode})",
+                     "fix": "the agent must investigate lib/inception-readiness.sh"}]
+        out = []
+        for line in r.stdout.splitlines():
+            parts = line.split("\t")
+            if len(parts) >= 2 and parts[0]:
+                out.append({"kind": parts[0], "detail": parts[1],
+                            "fix": parts[2] if len(parts) > 2 else ""})
+        return out
+
+    return mtime_cached_get(p, _run, _HANDOFF_BLOCKERS_CACHE, [])
+
+
 def needs_human_review(body: str) -> bool:
     """Boolean wrapper over `count_unchecked_human_acs`.
 

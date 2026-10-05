@@ -221,6 +221,19 @@
         </div>
     </div>
     {% endif %}
+    {% if t.blockers %}
+    {# T-3896 (G-108): the decide gate would refuse this — say so BEFORE the click,
+       and say whose work it is. No decision controls on a not-ready inception. #}
+    <div class="not-ready" data-testid="inception-not-ready"
+         style="margin-top:0.5rem; border:1px dashed var(--wt-warn, #b45309); border-radius:6px; padding:0.5rem 0.7rem;">
+        <strong>Not ready for your decision — the agent still owes:</strong>
+        <ul style="margin:0.3rem 0 0 1.1rem; font-size:0.85rem;">
+            {% for b in t.blockers %}<li>{{ b.detail }}</li>{% endfor %}
+        </ul>
+        <small class="muted">This is agent work, not yours: each open question needs a recorded answer
+            (answered / deferred / dissolved) with a reason before a GO or NO-GO can be recorded.</small>
+    </div>
+    {% else %}
     <form hx-post="/inception/{{ t.task_id }}/decide" hx-target="closest .go-decision" hx-swap="outerHTML"
           style="margin-top:0.5rem;">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
@@ -240,6 +253,7 @@
             </button>
         </div>
     </form>
+    {% endif %}
 </div>
 {% endfor %}
 {% endif %}

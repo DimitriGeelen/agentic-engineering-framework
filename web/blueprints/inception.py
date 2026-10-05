@@ -13,6 +13,7 @@ from web.shared import (
     PROJECT_ROOT,
     _auto_link_files,
     get_all_task_metadata,
+    inception_handoff_blockers,
     parse_frontmatter,
     render_page,
     task_id_sort_key,
@@ -349,11 +350,13 @@ def inception_detail(task_id):
 
     task_data = None
     task_body = ""
+    task_path = None  # T-3896: for the shared readiness predicate
     for location in ["active", "completed"]:
         task_dir = PROJECT_ROOT / ".tasks" / location
         if not task_dir.exists():
             continue
         for f in task_dir.glob(f"{task_id}-*.md"):
+            task_path = f
             task_data, task_body = parse_frontmatter(f.read_text())
             if task_data:
                 task_data["_location"] = location
@@ -504,6 +507,11 @@ def inception_detail(task_id):
         # T-3749: the latest Watchtower decide run, when it ended badly in a way
         # nothing else would show (follow-up commit failed, runner gone).
         decide_followup_warning=_dr.surface(PROJECT_ROOT, task_id),
+        # T-3896 (G-108): the decide gate's own question, asked before the form
+        # is rendered. Only a pending decision on an active task is gated here.
+        handoff_blockers=(inception_handoff_blockers(task_path)
+                          if task_path and decision_state == "pending"
+                          and task_data.get("_location") == "active" else []),
     )
 
 
@@ -764,7 +772,9 @@ def record_decision(task_id):
             f'<span style="color:#ef4444; font-weight:700;">Decision not recorded</span>'
             f'<div style="color:#ef4444; font-size:0.85rem; margin-top:4px; white-space:pre-wrap;">{reason}</div>'
             f'<div style="color:var(--pico-muted-color); font-size:0.8rem; margin-top:4px;">'
-            f'Resolve the issue above, then reload to retry.</div>'
+            f'Nothing was recorded. If the reason above is unanswered questions or a missing '
+            f'recommendation, that is the agent\'s work to finish, not yours — the page will '
+            f'offer the decision again once it is ready (T-3896).</div>'
             f'</div>'
         )
 

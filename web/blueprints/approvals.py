@@ -17,7 +17,7 @@ from pathlib import Path
 import yaml
 from flask import Blueprint, request
 
-from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, render_markdown_safe, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict, count_unchecked_human_acs, needs_human_review, mtime_cached_get, has_unchecked_review_ac, request_task_metadata, is_ready_for_batch_completion
+from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, render_markdown_safe, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict, count_unchecked_human_acs, needs_human_review, mtime_cached_get, has_unchecked_review_ac, request_task_metadata, is_ready_for_batch_completion, inception_handoff_blockers
 
 # T-1808: paused-dispatch surface — needs lib/ on the path so the helper imports cleanly.
 # T-2645 (832 G-004 sibling): lib/ is FRAMEWORK-owned — PROJECT_ROOT resolution broke
@@ -370,6 +370,10 @@ def _load_pending_go_decisions():
             "go_nogo_criteria": go_nogo_raw,
             "reviewer": reviewer,
             "claims": claims,
+            # T-3896 (G-108): the decide gate's own question, asked BEFORE the
+            # GO is offered. Non-empty = not decision-ready: the template shows
+            # what the agent still owes and no decision controls.
+            "blockers": inception_handoff_blockers(path),
         })
 
     return results
