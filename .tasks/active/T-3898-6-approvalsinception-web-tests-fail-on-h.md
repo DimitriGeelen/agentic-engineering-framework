@@ -1,21 +1,14 @@
 ---
-id: T-3896
-name: "Approvals queue offers a GO on inceptions the decide gate will refuse: /approvals
-  lists any pending inception whose Recommendation section is >=20 chars (the template
-  lines alone pass) and never applies the decide-time checks (every IW disposed +
-  rationale); operator clicked GO on T-3659 and got 'Cannot record GO — 4 Open Question(s)
-  not yet disposed'. 6 of the queued inceptions (24 undisposed IWs) are in this state.
-  One readiness predicate for listing, handoff and decide; not-ready items show what
-  the AGENT still owes, with no GO button"
+id: T-3898
+name: "6 approvals/inception web tests fail on HEAD independent of any change: _approvals_content.html line 5 uses decided_unclosed_count, which the tests' render context does not provide (UndefinedError) — test_inception_verdict_render.py x5, test_approvals_blocked_arcs.py::test_threshold_still_bounds_the_queue"
 description: >
-  Operator 2026-10-05: 'This is a systemic issue … it serves as an approval and it
-  errors when I click go.' Measured: T-2899, T-3501, T-3659, T-3670, T-3731, T-3752.
+  Found and confirmed pre-existing during T-3896 (2026-10-05): same 6 fail with T-3896's changes stashed.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, approvals, inception, governance, rca]
+horizon: next
+tags: [bug, tests, watchtower]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -44,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-05T19:00:57Z
-last_update: '2026-10-05T19:15:21Z'
-date_finished:
+created: 2026-10-05T20:25:49Z
+last_update: 2026-10-05T20:25:49Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -57,71 +50,22 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-bvp_scores_proposed:
-  - ts: '2026-10-05T19:02:31Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-05T19:15:21Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=279,acs=7)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3896: Approvals queue offers a GO on inceptions the decide gate will refuse: /approvals lists any pending inception whose Recommendation section is >=20 chars (the template lines alone pass) and never applies the decide-time checks (every IW disposed + rationale); operator clicked GO on T-3659 and got 'Cannot record GO — 4 Open Question(s) not yet disposed'. 6 of the queued inceptions (24 undisposed IWs) are in this state. One readiness predicate for listing, handoff and decide; not-ready items show what the AGENT still owes, with no GO button
+# T-3898: 6 approvals/inception web tests fail on HEAD independent of any change: _approvals_content.html line 5 uses decided_unclosed_count, which the tests' render context does not provide (UndefinedError) — test_inception_verdict_render.py x5, test_approvals_blocked_arcs.py::test_threshold_still_bounds_the_queue
 
 ## Context
 
-RCA: `docs/reports/T-3896-approvals-readiness-rca.md`. Concern: G-108.
-- T-3279 (G-102) already established the rule: "a completion-gate predicate lives in ONE shared implementation (`lib/inception-readiness.sh`), and every surface that invites the completion calls it".
-- `/approvals` and the GET of the `/inception/<id>` decide form are invitation surfaces that never call it.
-- The refusal path was polished three times (T-2051, T-3539, T-3540) while the invitation stayed unchecked.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] RCA report written (5-whys, the recurring class, scoring against the directives) and G-108 registered
-- [x] `/approvals` calls the shared predicate (`inception_handoff_blockers` / `inception_underdisposed_questions`) per pending inception, mtime-cached.
-  - A not-ready inception is NOT shown with a GO.
-  - It appears under "Not ready for your decision — the agent still owes" with the concrete blockers (e.g. "IW-1..4 have no disposition").
-- [x] `/inception/<id>` GET renders no GO form when blocked. It shows the same "agent still owes" block, and the post-click refusal no longer tells the operator to "resolve the issue above" (that is the agent's work).
-- [x] The 6 queued inceptions with undisposed questions (T-2899, T-3501, T-3659, T-3670, T-3731, T-3752) get dispositions written, so they are genuinely decision-ready.
-  - Four are now decision-ready, each grounded in evidence and stating what a GO adopts: T-3659, T-2899 (whose missing research artifact was written), T-3670 (answered from the round-1 review) and T-3752 (answered from shipped T-3850).
-  - Two are deliberately NOT papered over: T-3501 (the cross-agent proposals were never gathered) and T-3731 ("GO on exploration" with the exploration not done). Their questions have no answer yet. Marking them deferred would only hide the badge, so the pages and audit D14b show them as the agent's open research.
-- [x] Class detector added: audit D14b names pending inceptions the gate would refuse, through the same predicate. Live: T-3501(4) and T-3731(4).
-- [x] Tests: a not-ready inception is listed as not-ready with no GO on both pages, and a ready one keeps its GO. Watchtower restarted; `bin/fw watchtower current` passes.
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
-- [ ] [REVIEW] The approvals queue only offers decisions that can be recorded, and an unready one clearly says it is the agent's work
-  **Steps:**
-  1. Open http://192.168.10.107:3000/approvals#section-decisions
-  2. Find T-3501 and T-3731: each shows "Not ready for your decision — the agent still owes" with its open questions, and has no GO/NO-GO buttons.
-  3. Find T-3659: it shows the GO form. Open http://192.168.10.107:3000/inception/T-3659 and read "What your GO adopts".
-  **Expected:**
-  - the unready items read as agent work, with no button that would fail;
-  - the ready ones say plainly what a GO commits you to.
-  **If not:** note which card misleads, and how.
-
-### Human (template guidance)
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -349,21 +293,6 @@ RCA: `docs/reports/T-3896-approvals-readiness-rca.md`. Concern: G-108.
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-**Recommendation:** GO
-
-**Rationale:**
-- The operator was offered a GO the decide gate was certain to refuse. That was systemic: 6 queued inceptions had 24 undisposed questions, and it was the fourth "one fact, two predicates" instance of the day.
-- Both invitation surfaces now ask the gate's own question through the ONE shared predicate (T-3279's rule, finally applied everywhere). A not-ready inception shows what the agent owes and no button that would fail.
-- Four inceptions were repaired from evidence. Two are honestly left as open agent research rather than papered over.
-- Audit D14b detects the next unready filing before the operator meets it.
-
-**Evidence:**
-- RCA: `docs/reports/T-3896-approvals-readiness-rca.md`. Concern: G-108.
-- `tests/web/test_t3896_inception_readiness.py`: 7/7, including the fail-closed predicate.
-- Live: `/approvals` shows "not ready" for T-3501 and T-3731 only. `/inception/T-3659` offers the form with "What your GO adopts". `bin/fw watchtower current` passes.
-- Audit D14b live: `[WARN] D14b: 2 pending inception(s) not decision-ready: T-3501(4) T-3731(4)`.
-- 6 pre-existing approvals/inception web-test failures (`decided_unclosed_count` undefined) were confirmed on the pre-change code. They are separate (T-3898).
-
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -387,10 +316,7 @@ RCA: `docs/reports/T-3896-approvals-readiness-rca.md`. Concern: G-108.
 
 ## Updates
 
-### 2026-10-05T19:00:57Z — task-created [task-create-agent]
+### 2026-10-05T20:25:49Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3896-approvals-queue-offers-a-go-on-inception.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3898-6-approvalsinception-web-tests-fail-on-h.md
 - **Context:** Initial task creation
-
-### 2026-10-05T19:02:30Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
