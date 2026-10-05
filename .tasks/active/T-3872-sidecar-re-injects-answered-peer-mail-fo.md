@@ -61,11 +61,11 @@ Seen live 2026-10-05 13:51-13:58 CEST: "[sidecar] 22 peer messages waiting" type
 ## Acceptance Criteria
 
 ### Agent
-- [ ] One predicate (`seen.withheld`) decides "the hook will not surface this", and both `hooks.prompt` and `inject._deliver_locked` use it
-- [ ] The injector does not type a line for withheld messages, and records INJECT_BLOCKED "withheld: <reason>" once per message
-- [ ] Regression test: a `<id>-nudge-N` copy of an answered message, claimed and pending → `deliver_pending` injects nothing; an unanswered message is still injected
-- [ ] Existing sidecar unit tests (seen ledger T-3840, session-ready T-3745, waiting T-3782, receiver T-3693) stay green
-- [ ] Live: after the fix, the next watcher tick reports the 22 copies as withheld and types nothing
+- [x] One predicate (`seen.withheld`) decides "the hook will not surface this", and both `hooks.prompt` and `inject._deliver_locked` use it
+- [x] The injector does not type a line for withheld messages, and records INJECT_BLOCKED "withheld: <reason>" once per message
+- [x] Regression test: a `<id>-nudge-N` copy of an answered message, claimed and pending → `deliver_pending` injects nothing; an unanswered message is still injected
+- [x] Existing sidecar unit tests (seen ledger T-3840, session-ready T-3745, waiting T-3782, receiver T-3693) stay green
+- [x] Live: after the fix, the next watcher tick reports the 22 copies as withheld and types nothing
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -243,6 +243,16 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** "[sidecar] 22 peer messages waiting (ids …)" was typed into the operator session at every re-inject interval. The prompt hook then showed nothing, because every one of the 22 was a nudge copy of mail already answered.
+
+**Root cause:** two definitions of "still to be delivered". The injector (`inject._deliver_locked`) used `receiver.awaiting_handover()`, which means status is not HANDED_OVER. T-3840 added a second filter to the prompt hook only: answered, or shown as often as allowed. HANDED_OVER is recorded only when the hook shows a message (via the finalizer). So a message the hook filters out can never reach HANDED_OVER, and the injector announces it forever. 832 sends each escalation as a new `<id>-nudge-N` message, which multiplied the copies (22 pending).
+
+**Why structurally allowed:** the T-3840 tests drove the hook alone, and the T-3745 tests drove the injector alone. No test asserted that the two agree on the same inbox, so the divergence was invisible to each side's suite.
+
+**Prevention:** one predicate, `seen.withheld`, used by both sides. `test_hook_and_injector_agree` pins the invariant that the injector announces exactly what the hook surfaces. The regression test fails 3/4 on the old injector.
+
+**Fix:** commit 0e634c5a1.
 
 ## Evolution
 

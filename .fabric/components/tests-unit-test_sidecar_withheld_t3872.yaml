@@ -1,0 +1,21 @@
+id: tests/unit/test_sidecar_withheld_t3872.py
+name: test_sidecar_withheld_t3872
+type: script
+subsystem: tests
+location: tests/unit/test_sidecar_withheld_t3872.py
+tags: []
+
+purpose: "T-3872 — the injector re-announced answered peer mail forever."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-05
+created_by: unknown
