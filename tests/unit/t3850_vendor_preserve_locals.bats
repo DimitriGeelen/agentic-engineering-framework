@@ -75,7 +75,7 @@ YAML
     echo "$output" | grep -q "LOCAL  lib/a.sh  — edited locally"
     echo "$output" | grep -q -- "--allow-delete-locals"
     # The upstream deletion is the framework's, not a local file.
-    ! echo "$output" | grep -q "LOCAL  web/blueprints/core.py"
+    [[ "$output" != *'LOCAL  web/blueprints/core.py'* ]]
     # Nothing written.
     [ -f "$AF/web/blueprints/approvals.py" ]
     grep -q "ring20-local: approvals" "$AF/web/app.py"
@@ -100,7 +100,7 @@ YAML
     grep -q "ring20-local: approvals" "$backup/web/app.py"
     # upstream deletion still happens, and is not reported as local
     [ ! -e "$AF/web/blueprints/core.py" ]
-    ! echo "$output" | grep -q "LOCAL  web/blueprints/core.py"
+    [[ "$output" != *'LOCAL  web/blueprints/core.py'* ]]
 }
 
 @test "manifest: in_file marker carried upstream is reported present" {
@@ -110,7 +110,7 @@ YAML
     run _vendor
     [ "$status" -eq 0 ]
     echo "$output" | grep -q "IN-FILE   1/1 marker(s) present after vendor"
-    ! echo "$output" | grep -q "MARKER MISSING"
+    [[ "$output" != *'MARKER MISSING'* ]]
 }
 
 @test "--allow-delete-locals: proceeds, logs Tier-2, keeps a copy" {
@@ -132,9 +132,9 @@ YAML
     echo "$output" | grep -q "no vendor stamp yet"
     echo "$output" | grep -q "LOCAL  web/blueprints/approvals.py"
     # core.py was in the source's history -> upstream-deleted, not local
-    ! echo "$output" | grep -q "LOCAL  web/blueprints/core.py"
+    [[ "$output" != *'LOCAL  web/blueprints/core.py'* ]]
     # edits are undetectable without a stamp: not claimed
-    ! echo "$output" | grep -q "LOCAL  web/app.py"
+    [[ "$output" != *'LOCAL  web/app.py'* ]]
     _manifest
     run _vendor
     [ "$status" -eq 0 ]
@@ -182,5 +182,5 @@ PY
     run _vendor
     [ "$status" -eq 0 ] || { echo "$output"; false; }
     [ -f "$AF/web/blueprints/approvals.py" ]
-    ! echo "$output" | grep -q "invisible to git"
+    [[ "$output" != *'invisible to git'* ]]
 }
