@@ -63,6 +63,13 @@ def extract_hooks(path, strict=False):
                         name = cmd.split('fw hook ')[-1].strip()
                     else:
                         name = cmd.strip().split('/')[-1]
+                        # T-3881: `.../agents/context/X.sh` is exactly what
+                        # `fw hook X` runs — one hook, one name. Without this the
+                        # framework's direct `stop-driver.sh` never matched the
+                        # template's `fw hook stop-driver`, and every consumer
+                        # upgrade reported a missing hook it could not supply.
+                        if '/agents/context/' in cmd and name.endswith('.sh'):
+                            name = name[:-3]
                     hooks.add((event, name))
     except (json.JSONDecodeError, FileNotFoundError, AttributeError, TypeError):
         if strict:

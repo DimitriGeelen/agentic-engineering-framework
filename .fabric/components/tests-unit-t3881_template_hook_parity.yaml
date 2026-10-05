@@ -1,0 +1,21 @@
+id: tests/unit/t3881_template_hook_parity.bats
+name: t3881_template_hook_parity
+type: script
+subsystem: tests
+location: tests/unit/t3881_template_hook_parity.bats
+tags: []
+
+purpose: "T-3881: `fw upgrade` step [5/10] computes \"expected hooks\" from the framework repo's own .claude/settings.json and compares them with what lib/init.sh generate_claude_code_config writes for a consumer."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-05
+created_by: unknown

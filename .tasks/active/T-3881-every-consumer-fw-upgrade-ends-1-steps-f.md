@@ -1,10 +1,15 @@
 ---
 id: T-3881
-name: "Every consumer fw upgrade ends '1 step(s) failed': step [5/10] expects hooks PreToolUse:check-paid-backend, PreToolUse:check-worktree-governance-write and Stop:stop-driver.sh, but lib/init.sh generate_claude_code_config's template never writes them (the framework repo's own .claude/settings.json has them) — add them to the template (or drop from the expected list, with reason)"
+name: "Every consumer fw upgrade ends '1 step(s) failed': step [5/10] expects hooks
+  PreToolUse:check-paid-backend, PreToolUse:check-worktree-governance-write and Stop:stop-driver.sh,
+  but lib/init.sh generate_claude_code_config's template never writes them (the framework
+  repo's own .claude/settings.json has them) — add them to the template (or drop from
+  the expected list, with reason)"
 description: >
-  ring20-dashboard msg 7881482d (2026-10-05), upgrade v1.8.0 -> v1.8.2; error text from lib/upgrade.sh:2130. Confirmed: grep finds none of the three in lib/init.sh.
+  ring20-dashboard msg 7881482d (2026-10-05), upgrade v1.8.0 -> v1.8.2; error text
+  from lib/upgrade.sh:2130. Confirmed: grep finds none of the three in lib/init.sh.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T14:09:51Z
-last_update: 2026-10-05T14:09:51Z
-date_finished: null
+last_update: '2026-10-05T14:15:23Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +55,53 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-05T14:10:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-05T14:15:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=275,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3881: Every consumer fw upgrade ends '1 step(s) failed': step [5/10] expects hooks PreToolUse:check-paid-backend, PreToolUse:check-worktree-governance-write and Stop:stop-driver.sh, but lib/init.sh generate_claude_code_config's template never writes them (the framework repo's own .claude/settings.json has them) — add them to the template (or drop from the expected list, with reason)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`fw upgrade` step [5/10] computes "expected hooks" from THIS repo's own `.claude/settings.json` (lib/upgrade.sh `_t2912_hook_gap`, names via `lib/hook_parity.extract_hooks`). It compares them with what `lib/init.sh generate_claude_code_config` writes. Any hook added here but not to the template therefore fails every consumer upgrade.
+
+A naming subtlety: our Stop entry calls `agents/context/stop-driver.sh` directly, which reads as `stop-driver.sh`. A template entry `fw hook stop-driver` reads as `stop-driver`. Adding the template entry alone would not close the gap.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Measured gap: the full set of (event, hook) pairs in our settings.json that the template lacks is listed in this task, not just the 3 reported. Measured: framework 32, template 29. The missing pairs are exactly PreToolUse:check-paid-backend, PreToolUse:check-worktree-governance-write and Stop:stop-driver.sh; the template has nothing extra.
+- [x] The template writes every missing hook, in the `$fw_prefix hook <name>` form, with the same matcher and timeout. Names compare equal.
+  - CHANGED APPROACH: rewiring our own Stop entry is refused by B-005, since rewiring an existing hook is an operator decision.
+  - Instead `lib/hook_parity.extract_hooks` names a direct `.../agents/context/X.sh` command `X`, the same as `fw hook X`. It is the same script, so it is one hook. Our settings.json is untouched, and no baseline refresh is needed.
+- [x] Parity test: the template generated into a temp consumer contains every (event, hook) pair of our settings.json. No allowlist was needed. It fails on the pre-fix template (3/4 red).
+- [x] Existing init/upgrade hook tests stay green (lib_init, t2912, settings_regenerate_preserves_hooks); vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -320,3 +358,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3881-every-consumer-fw-upgrade-ends-1-steps-f.md
 - **Context:** Initial task creation
+
+### 2026-10-05T14:10:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

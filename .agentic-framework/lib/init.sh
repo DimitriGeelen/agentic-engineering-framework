@@ -1113,6 +1113,10 @@ generate_claude_code_config() {
           {
             "type": "command",
             "command": "$fw_prefix hook check-onboarding-gate"
+          },
+          {
+            "type": "command",
+            "command": "$fw_prefix hook check-worktree-governance-write"
           }
         ]
       },
@@ -1122,6 +1126,10 @@ generate_claude_code_config() {
           {
             "type": "command",
             "command": "$fw_prefix hook check-tier0"
+          },
+          {
+            "type": "command",
+            "command": "$fw_prefix hook check-paid-backend"
           },
           {
             "type": "command",
@@ -1263,6 +1271,11 @@ generate_claude_code_config() {
       {
         "matcher": "",
         "hooks": [
+          {
+            "type": "command",
+            "command": "$fw_prefix hook stop-driver",
+            "timeout": 10
+          },
           {
             "type": "command",
             "command": "$fw_prefix hook sidecar-receiver-ready"
