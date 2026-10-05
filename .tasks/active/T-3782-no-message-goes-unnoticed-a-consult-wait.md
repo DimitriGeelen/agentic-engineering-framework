@@ -24,7 +24,13 @@ workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: [agents/handover/handover.sh, bin/claude-fw, lib/sidecar_cli.py, lib/sidecar/direct.py, lib/sidecar/hooks.py, lib/sidecar/http_server.py, lib/sidecar/inbox.py, lib/sidecar/inject.py, lib/sidecar/outbox.py, lib/sidecar/receipts.py, lib/sidecar/receiver.py, lib/sidecar/waiting.py, lib/sidecar/watcher.py, lib/vector-index-health.sh, tests/unit/test_sidecar_inbox.py, tests/unit/test_sidecar_waiting_t3782.py, web/blueprints/approvals.py, web/templates/_approvals_content.html]
+components: [agents/handover/handover.sh, bin/claude-fw, lib/sidecar_cli.py, 
+      lib/sidecar/direct.py, lib/sidecar/hooks.py, lib/sidecar/http_server.py, 
+      lib/sidecar/inbox.py, lib/sidecar/inject.py, lib/sidecar/outbox.py, 
+      lib/sidecar/receipts.py, lib/sidecar/receiver.py, lib/sidecar/waiting.py, 
+      lib/sidecar/watcher.py, lib/vector-index-health.sh, 
+      tests/unit/test_sidecar_inbox.py, tests/unit/test_sidecar_waiting_t3782.py,
+  web/blueprints/approvals.py, web/templates/_approvals_content.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -53,7 +59,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-03T20:29:20Z
-last_update: 2026-10-04T00:20:35Z
+last_update: '2026-10-04T20:30:34Z'
 date_finished: 2026-10-04T00:20:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -74,6 +80,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-04T20:30:34Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 9
+      tier: 2
+      effort: 8
+    rationale: blast_radius=9 (18-components-cross-cutting); tier=2 
+      (workflow:build); effort=8 (lines=315,acs=9)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-10-03T20:30:50Z'

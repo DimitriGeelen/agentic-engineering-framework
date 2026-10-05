@@ -14,12 +14,12 @@ description: >
   and _exists_anywhere on the same budget; regression test that a page with N unmatched
   bare names triggers at most one walk.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bug, watchtower, performance, T-3587]
-components: []
+components: [web/shared.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -48,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T16:58:43Z
-last_update: 2026-10-02T17:35:22Z
-date_finished:
+last_update: '2026-10-03T17:15:20Z'
+date_finished: 2026-10-02T17:39:59Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -69,6 +69,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-03T17:15:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 1
+      tier: 2
+      effort: 8
+    rationale: blast_radius=1 (single-component); tier=2 (workflow:build); 
+      effort=8 (lines=310,acs=7)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-10-02T17:01:03Z'
@@ -387,3 +396,15 @@ bin/fw vendor self --check
 
 ### 2026-10-02T17:35:22Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-794eb4fe
+- **Timestamp:** 2026-10-02T17:40:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-02T17:39:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

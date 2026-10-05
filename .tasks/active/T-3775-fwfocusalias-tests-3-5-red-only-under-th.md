@@ -2,7 +2,15 @@
 id: T-3775
 name: "fw_focus_alias tests 3-5 red only under the full unit suite"
 description: >
-  Unit-suite run 2026-10-03T14:51Z (LATEST.yaml) recorded fw_focus_alias.bats tests 3 ('rejects a nonexistent task'), 4 ('no argument reports current focus') and 5 ('no prior focus reports unset') as red while test 1 passed. Not reproducible: passes alone (3x), 6 concurrent copies, env -i clean env, CLAUDECODE=1. FW_SESSION_SCOPED_FOCUS=1 gives a DIFFERENT pattern (1 and 4 red) and is now scrubbed by T-3747 (920e1f9d8), so the suite-only 3-5 pattern is undiagnosed: suspect load (12 jobs, load avg 8) or a concurrent test mutating shared state that fw focus reads. No per-test output is retained by the suite report — next step: rerun under suite load with --print-output-on-failure captured.
+  Unit-suite run 2026-10-03T14:51Z (LATEST.yaml) recorded fw_focus_alias.bats tests
+  3 ('rejects a nonexistent task'), 4 ('no argument reports current focus') and 5
+  ('no prior focus reports unset') as red while test 1 passed. Not reproducible: passes
+  alone (3x), 6 concurrent copies, env -i clean env, CLAUDECODE=1. FW_SESSION_SCOPED_FOCUS=1
+  gives a DIFFERENT pattern (1 and 4 red) and is now scrubbed by T-3747 (920e1f9d8),
+  so the suite-only 3-5 pattern is undiagnosed: suspect load (12 jobs, load avg 8)
+  or a concurrent test mutating shared state that fw focus reads. No per-test output
+  is retained by the suite report — next step: rerun under suite load with --print-output-on-failure
+  captured.
 
 status: captured
 workflow_type: build
@@ -38,8 +46,8 @@ related_tasks: [T-3747]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-03T17:02:27Z
-last_update: 2026-10-03T17:02:27Z
-date_finished: null
+last_update: '2026-10-03T17:15:39Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-03T17:15:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-03T17:15:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3775: fw_focus_alias tests 3-5 red only under the full unit suite

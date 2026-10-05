@@ -1,8 +1,12 @@
 ---
 id: T-3756
-name: "T-3726 F4: GO creates a binding delivery obligation — mandatory requirement manifest with existing owner tasks; scope stays open until built or operator-descoped"
+name: "T-3726 F4: GO creates a binding delivery obligation — mandatory requirement
+  manifest with existing owner tasks; scope stays open until built or operator-descoped"
 description: >
-  Folds optional T-1984 ships_in, the T-3562 report and the T-3691/T-3694 register into one mechanism; approved-pending-build state; no grandfather for new GOs. Target: 0 new GOs without build links, 0 unowned deferrals. Authorised by operator GO on T-3726 (docs/reports/T-3726-synthesis.md).
+  Folds optional T-1984 ships_in, the T-3562 report and the T-3691/T-3694 register
+  into one mechanism; approved-pending-build state; no grandfather for new GOs. Target:
+  0 new GOs without build links, 0 unowned deferrals. Authorised by operator GO on
+  T-3726 (docs/reports/T-3726-synthesis.md).
 
 status: captured
 workflow_type: build
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T23:08:10Z
-last_update: 2026-10-02T23:08:10Z
-date_finished: null
+last_update: '2026-10-02T23:15:39Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-02T23:15:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-02T23:15:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3756: T-3726 F4: GO creates a binding delivery obligation — mandatory requirement manifest with existing owner tasks; scope stays open until built or operator-descoped

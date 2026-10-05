@@ -1,8 +1,11 @@
 ---
 id: T-3847
-name: "t3302 'starved pytest leg actually MEASURES its tests' red under unit-suite load"
+name: "t3302 'starved pytest leg actually MEASURES its tests' red under unit-suite
+  load"
 description: >
-  Runs the runner with a 15s window and 8s pytest reserve; under 12-job load pytest startup can consume the reserve and measure 0 tests. Passes alone (20/20, 25s, 2026-10-04); red only in the 2026-10-04 full run. Timing-budget test. Found by T-3747 round 4.
+  Runs the runner with a 15s window and 8s pytest reserve; under 12-job load pytest
+  startup can consume the reserve and measure 0 tests. Passes alone (20/20, 25s, 2026-10-04);
+  red only in the 2026-10-04 full run. Timing-budget test. Found by T-3747 round 4.
 
 status: captured
 workflow_type: test
@@ -38,8 +41,8 @@ related_tasks: [T-3747]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T21:23:22Z
-last_update: 2026-10-04T21:23:22Z
-date_finished: null
+last_update: '2026-10-04T21:30:49Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +53,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-04T21:30:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 1
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=1 
+      (workflow:test); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-04T21:30:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3847: t3302 'starved pytest leg actually MEASURES its tests' red under unit-suite load

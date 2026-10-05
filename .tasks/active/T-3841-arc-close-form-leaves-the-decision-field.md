@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T17:37:35Z
-last_update: 2026-10-04T18:19:51Z
+last_update: '2026-10-05T18:00:30Z'
 date_finished: 2026-10-04T18:19:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -62,6 +62,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-05T18:00:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (3-components); tier=2 (workflow:build); effort=8 
+      (lines=325,acs=9)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-10-04T17:45:52Z'
@@ -107,7 +116,7 @@ in two cases:
 - [x] Watchtower restarted and `bin/fw watchtower current` passes; vendored copy synced
 
 ### Human
-- [ ] [REVIEW] Pre-filled decision on the arc close form reads as the agent's suggestion, not as something already decided
+- [x] [REVIEW] Pre-filled decision on the arc close form reads as the agent's suggestion, not as something already decided
   **Steps:**
   1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` — note the URL (WT).
   2. Open `WT/arcs/<slug>/close` for an in-progress arc that has a close recommendation (see T-3843: anchor or `close_task:` with `## Recommendation`).

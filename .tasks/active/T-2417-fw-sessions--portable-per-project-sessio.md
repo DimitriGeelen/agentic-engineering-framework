@@ -287,15 +287,19 @@ out=$(bin/fw reviewer T-2417 2>&1); echo "$out" | grep -q "Overall:.*PASS"
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-f07dd669
-- **Timestamp:** 2026-06-16T10:23:09Z
+- **Scan ID:** R-260bec27
+- **Timestamp:** 2026-10-05T05:18:55Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
-- **Suppressed:** 1 (by override)
-  - mock-only-integration @ AC vs Verification cross-check
+**Verification-level findings:**
 
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/unit/sessions_claude_code_adapter.bats`
+
+- **Expired overrides:** 1
+  - OV-7d6af210 pattern=mock-only-integration expired_at=2026-09-14T10:07:29Z
 ### 2026-06-16T10:23:06Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

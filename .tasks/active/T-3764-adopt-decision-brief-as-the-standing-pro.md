@@ -1,8 +1,20 @@
 ---
 id: T-3764
-name: "Adopt /decision-brief as the standing process for inceptions and every operator decision conversation (operator ruling 2026-10-03; 010-termlink T-3305, framework:pickup @294)"
+name: "Adopt /decision-brief as the standing process for inceptions and every operator
+  decision conversation (operator ruling 2026-10-03; 010-termlink T-3305, framework:pickup
+  @294)"
 description: >
-  Operator ruling 2026-10-03: ratify as a standing process for inception and other types of conversations. Ship .claude/commands/decision-brief.md (010 text @294 as base: one decision per message, wait for next; facts verified this session; Background/Problem/Options A-D; scoring -2..+2 x value-driver weight read from policy/value-drivers.yaml at brief time; steelman+strawman for every option; always recommend incl. what a ruling authorises/leaves open; bias check; restate, record Chose/Why/Rejected + IW disposition + dialogue log, commit). Plus the push-through step: rulings recorded as they come, then ONE runme.sh pushes the pre-recorded answers through fw inception decide (g/n/d read from /dev/tty, preflight first, dry-run default). Reference it from CLAUDE.md Choice Presentation and Inception Discipline, fw task review and fw inception decide output; deliver to consumers via fw init/upgrade.
+  Operator ruling 2026-10-03: ratify as a standing process for inception and other
+  types of conversations. Ship .claude/commands/decision-brief.md (010 text @294 as
+  base: one decision per message, wait for next; facts verified this session; Background/Problem/Options
+  A-D; scoring -2..+2 x value-driver weight read from policy/value-drivers.yaml at
+  brief time; steelman+strawman for every option; always recommend incl. what a ruling
+  authorises/leaves open; bias check; restate, record Chose/Why/Rejected + IW disposition
+  + dialogue log, commit). Plus the push-through step: rulings recorded as they come,
+  then ONE runme.sh pushes the pre-recorded answers through fw inception decide (g/n/d
+  read from /dev/tty, preflight first, dry-run default). Reference it from CLAUDE.md
+  Choice Presentation and Inception Discipline, fw task review and fw inception decide
+  output; deliver to consumers via fw init/upgrade.
 
 status: captured
 workflow_type: build
@@ -38,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T23:24:28Z
-last_update: 2026-10-02T23:24:28Z
-date_finished: null
+last_update: '2026-10-02T23:30:49Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +62,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-02T23:30:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-02T23:30:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3764: Adopt /decision-brief as the standing process for inceptions and every operator decision conversation (operator ruling 2026-10-03; 010-termlink T-3305, framework:pickup @294)

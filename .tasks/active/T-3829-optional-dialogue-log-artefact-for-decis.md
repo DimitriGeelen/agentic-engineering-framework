@@ -1,8 +1,16 @@
 ---
 id: T-3829
-name: "Optional dialogue-log artefact for decision walkthroughs, frontmatter-gated at P-011 (1409 proposal)"
+name: "Optional dialogue-log artefact for decision walkthroughs, frontmatter-gated
+  at P-011 (1409 proposal)"
 description: >
-  1409-sprind, 2026-10-01 18:31Z, operator-directed (rescued 2026-10-04). Built in 1409 (T-1664): docs/dialoge/<T-ID>-<slug>.md per decision walkthrough, with the operator quoted verbatim and agent self-corrections marked. Task frontmatter dialogprotokoll: <path>. A checker (172 lines, 11 tests) is run from ## Verification so P-011 refuses close until the dialogue is committed. Proposal: a framework option (policy key or FW_DIALOG_LOG) with a default, for example on for inception or decision-tagged tasks. The template gains the key, update-task.sh runs the check, and handover lists open logs. Assessment: no such option at HEAD. Overlaps C-001 Dialogue Log.
+  1409-sprind, 2026-10-01 18:31Z, operator-directed (rescued 2026-10-04). Built in
+  1409 (T-1664): docs/dialoge/<T-ID>-<slug>.md per decision walkthrough, with the
+  operator quoted verbatim and agent self-corrections marked. Task frontmatter dialogprotokoll:
+  <path>. A checker (172 lines, 11 tests) is run from ## Verification so P-011 refuses
+  close until the dialogue is committed. Proposal: a framework option (policy key
+  or FW_DIALOG_LOG) with a default, for example on for inception or decision-tagged
+  tasks. The template gains the key, update-task.sh runs the check, and handover lists
+  open logs. Assessment: no such option at HEAD. Overlaps C-001 Dialogue Log.
 
 status: captured
 workflow_type: inception
@@ -12,8 +20,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-04T14:37:42Z
-last_update: 2026-10-04T14:37:42Z
-date_finished: null
+last_update: '2026-10-04T14:45:44Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +30,33 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-10-04T14:45:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=112,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-04T14:45:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3829: Optional dialogue-log artefact for decision walkthroughs, frontmatter-gated at P-011 (1409 proposal)

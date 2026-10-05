@@ -14,7 +14,7 @@ description: >
   lacks markers be honoured rather than discarded as stale (bin/fw:185), which is
   what routes the test harness into this branch in the first place.
 
-status: started-work
+status: captured
 workflow_type: inception
 owner: agent
 horizon: later
@@ -22,7 +22,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-08-03T16:51:01Z
-last_update: '2026-09-25T19:15:06Z'
+last_update: 2026-10-02T22:16:16Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -323,3 +323,8 @@ vacuously, not as a dependency. It would be re-pointed at a write verb, a test e
 - **Change:** horizon: now → later
 - **Change:** status: preserved at started-work (T-1589 shipping evidence)
 - **Reason:** Inception decision: DEFER — parking task
+
+### 2026-10-02T22:16:16Z — status-update [task-update-agent]
+- **Change:** status: started-work → captured
+- **Change:** horizon: later → later
+- **Reason:** T-1865 sweep: DEFER limbo recovery

@@ -1,8 +1,12 @@
 ---
 id: T-3885
-name: "fw upgrade in_file (locally edited) files: take upstream and only report MARKER MISSING (33 at ring20) — when the vendor base is known (.fw-vendor-stamp.json), run git merge-file backup/base/new automatically and report conflicts only (ring20 merged 17/17 by hand with no conflict)"
+name: "fw upgrade in_file (locally edited) files: take upstream and only report MARKER
+  MISSING (33 at ring20) — when the vendor base is known (.fw-vendor-stamp.json),
+  run git merge-file backup/base/new automatically and report conflicts only (ring20
+  merged 17/17 by hand with no conflict)"
 description: >
-  ring20-manager msg 92720ad9 (2026-10-05, v1.8.0 -> v1.8.2; their review docs/reports/T-2241-v182-post-upgrade-review.md). Finding 1. Proposal, needs scoping.
+  ring20-manager msg 92720ad9 (2026-10-05, v1.8.0 -> v1.8.2; their review docs/reports/T-2241-v182-post-upgrade-review.md).
+  Finding 1. Proposal, needs scoping.
 
 status: captured
 workflow_type: build
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T14:49:00Z
-last_update: 2026-10-05T14:49:00Z
-date_finished: null
+last_update: '2026-10-05T15:01:04Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-05T15:00:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-05T15:01:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3885: fw upgrade in_file (locally edited) files: take upstream and only report MARKER MISSING (33 at ring20) — when the vendor base is known (.fw-vendor-stamp.json), run git merge-file backup/base/new automatically and report conflicts only (ring20 merged 17/17 by hand with no conflict)

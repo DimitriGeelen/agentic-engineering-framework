@@ -360,16 +360,25 @@ runaway; this is neither destructive nor blocking).
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-63ba6d9f
-- **Timestamp:** 2026-06-13T14:12:53Z
+- **Scan ID:** R-2593fddf
+- **Timestamp:** 2026-10-03T05:21:52Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 2
 
-- **Suppressed:** 2 (by override)
-  - mock-only-integration @ AC vs Verification cross-check
-  - human-ac-mechanical-signal @ AC#1 (Human)
+**Per-AC findings:**
 
+- **AC#1 (Human)** — [REVIEW] Wire both hooks into `.claude/settings.json` via the sanctioned CLI (B-005 — agent `Edit` is gated; hook-enable auto-resolves the correct `bin/fw` path).
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='exit 0' in Expected: both exit 0; `.claude/settings.json` gains a `Stop` group (chat-bare-path-scan) + a `UserPromptSubmit` group (chat-bare-path-warn). Re-runni`
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/unit/chat_bare_path_regex.bats`
+
+- **Expired overrides:** 2
+  - OV-f9a6291e pattern=human-ac-mechanical-signal expired_at=2026-09-11T14:12:25Z
+  - OV-414b96c2 pattern=mock-only-integration expired_at=2026-09-11T14:12:25Z
 ### 2026-06-13T14:12:37Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

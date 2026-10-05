@@ -317,15 +317,19 @@ file in the system (T-954 irreversible-action class).
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-0a444fcd
-- **Timestamp:** 2026-06-13T14:55:11Z
+- **Scan ID:** R-484164b3
+- **Timestamp:** 2026-10-04T05:20:42Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
-- **Suppressed:** 1 (by override)
-  - human-ac-mechanical-signal @ AC#3 (Human)
+**Per-AC findings:**
 
+- **AC#3 (Human)** — [REVIEW] Real-claude E2E: budget-critical auto-restart fires without manual `/compact`
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='shows\n      `current_iteration`' in Expected: session auto-restarts within ~10s of critical; resumed session shows       `current_iteration` advanced and the next-directive injected.`
+
+- **Expired overrides:** 1
+  - OV-0cbc85a8 pattern=human-ac-mechanical-signal expired_at=2026-09-11T14:51:14Z
 ### 2026-06-13T14:54:01Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

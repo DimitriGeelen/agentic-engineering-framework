@@ -10,12 +10,12 @@ description: >
   add 'REAL RUN WOULD REFUSE (exit 3) without --allow-delete-locals' when the refusal
   condition holds. Same class as G-108: two predicates (dry-run vs real) for one fact.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/upgrade.sh]
 related_tasks: []
 origin: {kind: "peer", source: "832-Workflow-designer", ref: "msg ef929333"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -45,8 +45,8 @@ origin: {kind: "peer", source: "832-Workflow-designer", ref: "msg ef929333"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T21:59:38Z
-last_update: 2026-10-05T22:39:27Z
-date_finished:
+last_update: 2026-10-05T22:39:29Z
+date_finished: 2026-10-05T22:39:29Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -386,3 +386,15 @@ bin/fw vendor self --check
 
 ### 2026-10-05T22:32:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2ea5add1
+- **Timestamp:** 2026-10-05T22:39:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-05T22:39:29Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -9,12 +9,12 @@ description: >
   so new since the last nightly. Likely fix: give the fixture a body (or make the
   reply path not read args.body).
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/sidecar/addressing.py, lib/sidecar/inbox.py, tests/unit/test_sidecar_cross_hub_t3855.py]
 related_tasks: []
 origin: {kind: "agent"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -44,8 +44,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T21:35:03Z
-last_update: 2026-10-05T22:42:24Z
-date_finished:
+last_update: 2026-10-05T22:42:25Z
+date_finished: 2026-10-05T22:42:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -359,3 +359,15 @@ timeout 300 python3 -m pytest tests/unit/test_sidecar_receipts_t3684.py -q -p no
 
 ### 2026-10-05T22:41:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a905fd17
+- **Timestamp:** 2026-10-05T22:42:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-05T22:42:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

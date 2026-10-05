@@ -280,12 +280,11 @@ produces the `--demo` artefact that `fw arc close continuous-run` requires
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-49e71215
-- **Timestamp:** 2026-06-13T12:58:51Z
+- **Scan ID:** R-0e4a5389
+- **Timestamp:** 2026-10-04T05:19:18Z
 - **Catalogue:** v1.3-seed
 - **Overall:** PASS
 - **Needs Human:** no
 - **Findings:** none
-
 ### 2026-06-13T12:58:49Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -1,8 +1,20 @@
 ---
 id: T-3801
-name: "Doctor-calling bats files exceed the 900 s per-file cap under the unit-suite pool (audit, doctor_designer_pin_drift, fw_doctor_vendored_drift, t2243, t2290, t3119, test_doctor_scope_tags)"
+name: "Doctor-calling bats files exceed the 900 s per-file cap under the unit-suite
+  pool (audit, doctor_designer_pin_drift, fw_doctor_vendored_drift, t2243, t2290,
+  t3119, test_doctor_scope_tags)"
 description: >
-  Pre-existing: the same files are in files_timed_out in .context/audits/unit-suite/2026-10-01.yaml (6 of them) and 2026-10-02.yaml (all 7), both before 914326e07. T-3747 round 3 measurements alone on this host (load ~10/24): one full fw doctor 160 s (web smoke test 57 s — 6 endpoints time out at 5 s, /cron 13-15 s, see T-3799; design_register violations 22 s, fixed 4d1b4a80e → 3.2 s; port3000_hygiene doctor-line 18.5 s; T-3783 index canary 7.4 s, now skipped under --quick). Per file alone: test_doctor_scope_tags 553 s (14 tests, 24 doctor mentions), t2243 689 s, t2290 416 s (3 tests), fw_mode_detection 179 s, audit --section structure alone 5m47s. Under the 12-job pool each crosses 900 s. Options: tests that only need one check call it directly (or share one doctor run per file via setup_file); doctor's smoke test runs endpoints concurrently or with a total budget; port3000_hygiene doctor-line profiled.
+  Pre-existing: the same files are in files_timed_out in .context/audits/unit-suite/2026-10-01.yaml
+  (6 of them) and 2026-10-02.yaml (all 7), both before 914326e07. T-3747 round 3 measurements
+  alone on this host (load ~10/24): one full fw doctor 160 s (web smoke test 57 s
+  — 6 endpoints time out at 5 s, /cron 13-15 s, see T-3799; design_register violations
+  22 s, fixed 4d1b4a80e → 3.2 s; port3000_hygiene doctor-line 18.5 s; T-3783 index
+  canary 7.4 s, now skipped under --quick). Per file alone: test_doctor_scope_tags
+  553 s (14 tests, 24 doctor mentions), t2243 689 s, t2290 416 s (3 tests), fw_mode_detection
+  179 s, audit --section structure alone 5m47s. Under the 12-job pool each crosses
+  900 s. Options: tests that only need one check call it directly (or share one doctor
+  run per file via setup_file); doctor's smoke test runs endpoints concurrently or
+  with a total budget; port3000_hygiene doctor-line profiled.
 
 status: captured
 workflow_type: build
@@ -38,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T09:52:43Z
-last_update: 2026-10-04T09:52:43Z
-date_finished: null
+last_update: '2026-10-04T10:01:12Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +62,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-04T10:00:34Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-04T10:01:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3801: Doctor-calling bats files exceed the 900 s per-file cap under the unit-suite pool (audit, doctor_designer_pin_drift, fw_doctor_vendored_drift, t2243, t2290, t3119, test_doctor_scope_tags)

@@ -1,8 +1,20 @@
 ---
 id: T-3778
-name: "Doctor-calling unit suites exceed the 900s per-file cap: Watchtower smoke endpoints still >5s"
+name: "Doctor-calling unit suites exceed the 900s per-file cap: Watchtower smoke endpoints
+  still >5s"
 description: >
-  13 bats files timed out in the 2026-10-03 suite (6 on 10-01, 7 on 10-02): test_doctor_scope_tags, t2290_doctor_mcp_content_check, doctor_designer_pin_drift, fw_doctor_vendored_drift, t2243_doctor_self_vendor_templates, t3119_designer_currency, fabric_coverage_single_source, handover_digest, upgrade_fresh_machine_simulation (+4 claude-fw suites fixed in T-3747). Alone, test_doctor_scope_tags takes 821s and t2290 813s: each runs real fw doctor on this repo, and doctor spent ~180s in the Watchtower smoke probe (28/53 endpoints past the 5s urlopen timeout, cascading on a busy server). T-3747 (a8bee0f01) cut /approvals' stale_keystones from 21s to 5s (smoke 179s -> 85s) but 10 endpoints still time out: /cron 13s, /approvals 8s, /approvals/content, /bvp, /docs/generated, /fabric, /fabric/graph, /metrics, /search, /tasks, /timeline. Options: profile those pages, or have test doctors skip the HTTP smoke (doctor quick-skip) since the suites do not assert on it.
+  13 bats files timed out in the 2026-10-03 suite (6 on 10-01, 7 on 10-02): test_doctor_scope_tags,
+  t2290_doctor_mcp_content_check, doctor_designer_pin_drift, fw_doctor_vendored_drift,
+  t2243_doctor_self_vendor_templates, t3119_designer_currency, fabric_coverage_single_source,
+  handover_digest, upgrade_fresh_machine_simulation (+4 claude-fw suites fixed in
+  T-3747). Alone, test_doctor_scope_tags takes 821s and t2290 813s: each runs real
+  fw doctor on this repo, and doctor spent ~180s in the Watchtower smoke probe (28/53
+  endpoints past the 5s urlopen timeout, cascading on a busy server). T-3747 (a8bee0f01)
+  cut /approvals' stale_keystones from 21s to 5s (smoke 179s -> 85s) but 10 endpoints
+  still time out: /cron 13s, /approvals 8s, /approvals/content, /bvp, /docs/generated,
+  /fabric, /fabric/graph, /metrics, /search, /tasks, /timeline. Options: profile those
+  pages, or have test doctors skip the HTTP smoke (doctor quick-skip) since the suites
+  do not assert on it.
 
 status: captured
 workflow_type: build
@@ -38,8 +50,8 @@ related_tasks: [T-3747]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-03T17:04:34Z
-last_update: 2026-10-03T17:04:34Z
-date_finished: null
+last_update: '2026-10-03T17:15:40Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +62,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-03T17:15:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-03T17:15:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3778: Doctor-calling unit suites exceed the 900s per-file cap: Watchtower smoke endpoints still >5s

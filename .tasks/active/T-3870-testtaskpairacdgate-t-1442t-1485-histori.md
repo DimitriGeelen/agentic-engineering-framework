@@ -1,8 +1,13 @@
 ---
 id: T-3870
-name: "test_task_pair_acd_gate 'T-1442/T-1485 historic regression' red only under full unit suite"
+name: "test_task_pair_acd_gate 'T-1442/T-1485 historic regression' red only under
+  full unit suite"
 description: >
-  First red on the 2026-10-05 full run; passes alone (3/3 repeats, 8/8 file). The test reads a real completed task fixture from the live repo (PROJECT_ROOT=FRAMEWORK_ROOT) and runs the §ACD gate. Under load something either times out or a concurrent test mutates live-repo state the gate reads. Find which; isolate the fixture into the test's temp dir.
+  First red on the 2026-10-05 full run; passes alone (3/3 repeats, 8/8 file). The
+  test reads a real completed task fixture from the live repo (PROJECT_ROOT=FRAMEWORK_ROOT)
+  and runs the §ACD gate. Under load something either times out or a concurrent test
+  mutates live-repo state the gate reads. Find which; isolate the fixture into the
+  test's temp dir.
 
 status: captured
 workflow_type: test
@@ -38,8 +43,8 @@ related_tasks: [T-3747]
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T09:39:07Z
-last_update: 2026-10-05T09:39:07Z
-date_finished: null
+last_update: '2026-10-05T09:45:58Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-05T09:45:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 1
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=1 
+      (workflow:test); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-05T09:45:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3870: test_task_pair_acd_gate 'T-1442/T-1485 historic regression' red only under full unit suite

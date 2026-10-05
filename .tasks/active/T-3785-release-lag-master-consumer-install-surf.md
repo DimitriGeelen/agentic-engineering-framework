@@ -1,10 +1,19 @@
 ---
 id: T-3785
-name: "Release lag: master (consumer install surface) still at v1.7.0 (2026-09-24) while consumers vendor 1.7.740+ — the documented fw upgrade path delivers an older framework and reads as a downgrade (832 finding)"
+name: "Release lag: master (consumer install surface) still at v1.7.0 (2026-09-24)
+  while consumers vendor 1.7.740+ — the documented fw upgrade path delivers an older
+  framework and reads as a downgrade (832 finding)"
 description: >
-  832 (4d986644, 2026-10-04): fw upgrade from the configured upstream clones v1.7.0 (master HEAD), older than their vendored 1.7.740, so no consumer following the documented path can receive T-3783/T-3684/T-3766 fixes. Mirror is current (GitHub bleeding-edge = OneDev 914326e07); cause is no release cut for 10 days. Needs: (1) a release cadence/trigger so master does not lag bleeding-edge by weeks; (2) fw doctor / audit WARN when master lags bleeding-edge by > N days or N commits; (3) fw upgrade refusing or explaining when the upstream is OLDER than the consumer's pin, naming the fix (wait for release or --from-upstream). Releasing itself stays the operator's decision.
+  832 (4d986644, 2026-10-04): fw upgrade from the configured upstream clones v1.7.0
+  (master HEAD), older than their vendored 1.7.740, so no consumer following the documented
+  path can receive T-3783/T-3684/T-3766 fixes. Mirror is current (GitHub bleeding-edge
+  = OneDev 914326e07); cause is no release cut for 10 days. Needs: (1) a release cadence/trigger
+  so master does not lag bleeding-edge by weeks; (2) fw doctor / audit WARN when master
+  lags bleeding-edge by > N days or N commits; (3) fw upgrade refusing or explaining
+  when the upstream is OLDER than the consumer's pin, naming the fix (wait for release
+  or --from-upstream). Releasing itself stays the operator's decision.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-03T22:31:18Z
-last_update: 2026-10-03T22:31:18Z
-date_finished: null
+last_update: '2026-10-04T10:06:44Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,66 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-03T22:45:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-03T22:45:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-04T10:06:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=? 
+      (unscored (no scorer for F3; not counted)); F1=? (unscored (no scorer for 
+      F1; not counted)); F2=? (unscored (no scorer for F2; not counted))
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-04T10:06:44Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3785: Release lag: master (consumer install surface) still at v1.7.0 (2026-09-24) while consumers vendor 1.7.740+ — the documented fw upgrade path delivers an older framework and reads as a downgrade (832 finding)
@@ -62,8 +131,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Operator ruling recorded: cut a bleeding-edge release (2026-10-04, "cut the Bleeding Edge release", "Follow your plan") — only after the pre-push unit-suite gate is green on a COMPLETE run
+- [ ] `bin/fw release tag-and-release --bump minor` produces v1.8.0, master fast-forwarded to it, both pushed without any hook bypass
+- [ ] One announcement per project (main agent only, never per container) to every project on .107 plus ring20-dashboard and ring20-manager, naming the version and the upgrade steps
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -320,3 +390,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3785-release-lag-master-consumer-install-surf.md
 - **Context:** Initial task creation
+
+### 2026-10-04T09:07:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

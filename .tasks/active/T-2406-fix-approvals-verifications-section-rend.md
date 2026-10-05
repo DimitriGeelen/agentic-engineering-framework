@@ -324,15 +324,19 @@ because P-013 render-surface gate correctly insists eyes must see UI changes.
 
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-9cb82a2c
-- **Timestamp:** 2026-06-15T16:55:51Z
+- **Scan ID:** R-1a026ba2
+- **Timestamp:** 2026-10-05T05:18:51Z
 - **Catalogue:** v1.3-seed
-- **Overall:** PASS
+- **Overall:** CONCERN
 - **Needs Human:** no
-- **Findings:** none
+- **Findings:** 1
 
-- **Suppressed:** 1 (by override)
-  - mock-only-integration @ AC vs Verification cross-check
+**Verification-level findings:**
 
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `python3 -m pytest tests/unit/test_approvals_expand_overflow.py -q`
+
+- **Expired overrides:** 1
+  - OV-ce6ae3c5 pattern=mock-only-integration expired_at=2026-09-13T16:49:52Z
 ### 2026-06-15T16:55:40Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

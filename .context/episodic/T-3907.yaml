@@ -1,0 +1,115 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3907: fw upgrade --dry-run does not say the real run would REFUSE (exit 3) when vendored files are edited locally — it lists 'would be OVERWRITTEN' and the real run then refuses without --allow-delete-locals (832 on 1.8.3)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T22:40:04Z
+# ============================================================================
+
+task_id: T-3907
+task_name: "fw upgrade --dry-run does not say the real run would REFUSE (exit 3) when vendored files are edited locally — it lists 'would be OVERWRITTEN' and the real run then refuses without --allow-delete-locals (832 on 1.8.3)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T21:59:38Z
+completed: 2026-10-05T22:39:29Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-06T00:39:27+02:00
+last_commit: 2026-10-06T00:39:27+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw vendor/upgrade --dry-run states the real run's verdict (REAL RUN WOULD REFUSE exit 3 / WOULD PROCEED with --allow-delete-locals) from the same condition, with the run's own flags forwarded (832 on 1.8.3)
+
+# Key outcomes
+outcomes:
+  - '`vendor_preserve.py pre --dry-run` states the real run''s verdict, from the same `at_risk and not allow` condition the real run uses:'
+  - '`bin/fw vendor --dry-run` passes `--allow` to the dry-run check when `--allow-delete-locals` was given, so the prediction matches the flags of the run being previewed. `fw upgrade --dry-run` forwards the flag through its existing `_vendor_extra`.'
+  - 'Tests in `t3850_vendor_preserve_locals.bats`:'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/lib/vendor_preserve.py'
+  - 'bin/fw'
+  - '.context/episodic/T-3596.yaml'
+  - '.context/episodic/T-3659.yaml'
+  - '.context/episodic/T-3667.yaml'
+  - '.context/episodic/T-3672.yaml'
+  - '.context/episodic/T-3737.yaml'
+  - '.context/episodic/T-3742.yaml'
+  - '.context/episodic/T-3752.yaml'
+  - '.context/episodic/T-3770.yaml'
+  - '.context/episodic/T-3772.yaml'
+  - '.context/episodic/T-3774.yaml'
+  - '.context/episodic/T-3780.yaml'
+  - '.context/episodic/T-3795.yaml'
+  - '.context/episodic/T-3825.yaml'
+  - '.context/episodic/T-3828.yaml'
+  - '.context/episodic/T-3830.yaml'
+  - 'lib/upgrade.sh'
+  - 'lib/vendor_preserve.py'
+  - '.tasks/active/T-3907-fw-upgrade---dry-run-does-not-say-the-re.md'
+  - '.tasks/completed/T-3596-session-re-rooting-a-session-whose-cwd-e.md'
+  - '.tasks/completed/T-3659-p-01-zero-to-running-aef-one-command-ins.md'
+  - '.tasks/completed/T-3667-standing-arcs-fw-nnn-never-closing-arcs-.md'
+  - '.tasks/completed/T-3672-agent-asks-the-operator-for-facts-the-fr.md'
+  - '.tasks/completed/T-3737-re-vendoring-as-a-protocol-with-a-moving.md'
+  - '.tasks/completed/T-3742-operator-decision-loop-as-framework-prac.md'
+  - '.tasks/completed/T-3752-vendor-divergence-register-fw-upgradeven.md'
+  - '.tasks/completed/T-3770-one-default-polling-fallback-ladder-for-.md'
+  - '.tasks/completed/T-3772-opencode-harness-parity-every-aef-termli.md'
+  - '.tasks/completed/T-3774-aef-as-standing-design-partner-of-the-wo.md'
+  - '.tasks/completed/T-3780-conversation-continuity-across-instances.md'
+  - '.tasks/completed/T-3795-secrets-by-reference-watchtower-secrets-.md'
+  - '.tasks/completed/T-3825-should-the-task-gate-govern-writeedit-to.md'
+  - '.tasks/completed/T-3828-project-start-extension-point-claude-fw-.md'
+  - '.tasks/completed/T-3830-four-value-review-verdict-with-mandatory.md'
+  - '.tasks/completed/T-3857-triage-010s-message-state-proposal-frame.md'
+  - '.tasks/completed/T-3897-tag-every-approval-with-its-origin-an-or.md'
+  - 'tests/unit/t3850_vendor_preserve_locals.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T00:39:27'
+    action: 'T-3907: fw vendor/upgrade --dry-run states the real run''s verdict (REAL RUN WOULD REFUSE exit 3 / WOULD PROCEED with --allow-delete-locals) from the same condition, with the run''s own flags forwarded (832 on 1.8.3)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 39 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 39
+  commits: 1
+  files_changed: 40
+  lines_added: 264
+  lines_removed: 2630
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3907-fw-upgrade---dry-run-does-not-say-the-re.md
+generated_by: context-agent-hybrid
