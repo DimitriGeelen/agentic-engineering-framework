@@ -94,10 +94,10 @@ Re-confirmed by 832 on 2026-10-05: upgrading 1.7.740 → 1.8.2 from a `--depth 1
 ## Acceptance Criteria
 
 ### Agent
-- [ ] A shallow source that cannot resolve the consumer's recorded sha still REFUSES, since the commit is unverifiable. The reason names the shallow clone and the remedy (`git -C <source> fetch --unshallow`) instead of implying a foreign or stale source.
-- [ ] The `fw upgrade` refusal and `fw doctor` print the unshallow remedy for a shallow source, and keep the stale-shim remedy for a genuinely foreign (full-history) source
-- [ ] Regression test with real git fixtures (a file:// `--depth 1` clone): shallow and missing sha → shallow reason. After `fetch --unshallow`, the same pair resolves to `behind`. A full-history foreign source keeps the foreign reason (control).
-- [ ] tests/unit/version_relation.bats and t2762_upgrade_foreign_source_sha.bats stay green; vendored copy in sync
+- [x] A shallow source that cannot resolve the consumer's recorded sha still REFUSES, since the commit is unverifiable. The reason names the shallow clone and the remedy (`git -C <source> fetch --unshallow`) instead of implying a foreign or stale source.
+- [x] The `fw upgrade` refusal and `fw doctor` print the unshallow remedy for a shallow source, and keep the stale-shim remedy for a genuinely foreign (full-history) source
+- [x] Regression test with real git fixtures (a file:// `--depth 1` clone): shallow and missing sha → shallow reason. After `fetch --unshallow`, the same pair resolves to `behind`. A full-history foreign source keeps the foreign reason (control).
+- [x] tests/unit/version_relation.bats and t2762_upgrade_foreign_source_sha.bats stay green; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,6 +257,10 @@ Re-confirmed by 832 on 2026-10-05: upgrading 1.7.740 → 1.8.2 from a `--depth 1
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t3714_shallow_source.bats tests/unit/version_relation.bats tests/unit/t2762_upgrade_foreign_source_sha.bats > /tmp/.t3714 2>&1 && ! grep -q "^not ok" /tmp/.t3714
+test "$(grep -c '# skip' /tmp/.t3714)" -eq 0
+bash -n bin/fw && bash -n lib/upgrade.sh && bash -n lib/version-relation.sh
+bin/fw vendor self --check
 
 ## RCA
 
@@ -273,6 +277,20 @@ Re-confirmed by 832 on 2026-10-05: upgrading 1.7.740 → 1.8.2 from a `--depth 1
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** upgrading a consumer from a `--depth 1` clone was REFUSED as `foreign-source`, with "it cannot be the origin of the consumer's code" and "Likely cause: a stale global shim". Seen by 055 on 2026-10-02 (1.7.740) and by 832 on 2026-10-05 (v1.8.2 tag).
+
+**Root cause:** T-2762 split "no sha recorded" (undecidable) from "sha recorded but not resolvable" (foreign source). It treated "not resolvable" as proof of foreign origin. A shallow clone is a third state: the commit may well be in its history, just not fetched. Absence in truncated history is not evidence about origin.
+
+**Why structurally allowed:** every T-2762 fixture was a full-history repo, either this repo or a foreign init. No test built a shallow source, so the conflation could not show. The block message's single remedy (stale shim) was written for the only cause the tests modelled.
+
+**Prevention:**
+- `t3714_shallow_source.bats` builds a real file:// `--depth 1` clone and pins three cases:
+  - a shallow clone gets the shallow reason, and still refuses;
+  - after unshallowing, the same pair resolves to `behind`;
+  - a full-history foreign repo keeps the foreign reason (control).
+- It fails against the pre-fix relation (verified).
+- Live end to end, `fw upgrade` from a real shallow clone of this repo printed the shallow reason and the `fetch --unshallow` remedy, exited 1, and left the consumer's pin unchanged.
 
 ## Evolution
 
