@@ -177,3 +177,66 @@ def test_cli_delivered_line_names_topic_and_hub(env, capsys, monkeypatch):
     msgs = [json.loads(p.read_text()) for p in _outbox().glob("*.json")]
     assert msgs and msgs[0]["hub"] == "ring20-dashboard"
     assert msgs[0]["to"] == f"{THEIRS}/ring20-dashboard"
+
+
+# ── leg 2: receipts travel back to the sender's hub ─────────────────────────
+
+def _receipt_runner(posts, **kw):
+    base = _runner(**kw)
+
+    def run(argv, **k):
+        if argv[1:3] == ["channel", "post"]:
+            posts.append(argv)
+            return _Proc(0, json.dumps({"delivered": {"offset": 1}}))
+        return base(argv, **k)
+    return run
+
+
+def test_receipt_for_a_remote_sender_posts_to_the_senders_hub(env):
+    from lib.sidecar import receipts
+    importlib.reload(receipts)
+    posts = []
+    row = receipts.send({"client_msg_id": "m-1", "from": "ring20-dashboard",
+                         "from_circuit": f"//dash.host/{THEIRS}/ring20-dashboard",
+                         "conversation_id": "c1"},
+                        receipts.RECEIVED, by="t", runner=_receipt_runner(posts))
+    assert row["ok"], row
+    argv = posts[0]
+    assert argv[3] == f"inbox:{THEIRS}/ring20-dashboard"
+    assert argv[argv.index("--hub") + 1] == "ring20-dashboard"
+    assert row["via"] == f"hub:inbox:{THEIRS}/ring20-dashboard@ring20-dashboard"
+    assert any(a.startswith("from_circuit=//") for a in argv)
+
+
+def test_all_three_states_reach_the_remote_sender(env):
+    from lib.sidecar import receipts
+    importlib.reload(receipts)
+    posts = []
+    envl = {"client_msg_id": "m-2", "from": "ring20-dashboard",
+            "from_circuit": f"{THEIRS}/ring20-dashboard", "conversation_id": "c"}
+    for st in (receipts.RECEIVED, receipts.HANDED_OVER, receipts.REPLIED):
+        assert receipts.send(envl, st, by="t", runner=_receipt_runner(posts))["ok"]
+    assert [p[p.index("--hub") + 1] for p in posts] == ["ring20-dashboard"] * 3
+    assert [a for p in posts for a in p if a.startswith("receipt_state=")] == [
+        "receipt_state=RECEIVED", "receipt_state=HANDED_OVER", "receipt_state=REPLIED"]
+
+
+def test_receipt_to_an_unreachable_sender_hub_fails_loudly_not_locally(env):
+    from lib.sidecar import receipts
+    importlib.reload(receipts)
+    posts = []
+    row = receipts.send({"client_msg_id": "m-3", "from": "far",
+                         "from_circuit": "ffffffffffffffff/far", "conversation_id": "c"},
+                        receipts.RECEIVED, by="t", runner=_receipt_runner(posts))
+    assert not row["ok"] and posts == []
+    assert "ffffffffffffffff" in row["error"]
+
+
+def test_receipt_for_a_local_sender_has_no_hub_flag(env):
+    from lib.sidecar import receipts
+    importlib.reload(receipts)
+    posts = []
+    row = receipts.send({"client_msg_id": "m-4", "from": "peer",
+                         "from_circuit": f"{OWN}/010-termlink", "conversation_id": "c"},
+                        receipts.RECEIVED, by="t", runner=_receipt_runner(posts))
+    assert row["ok"] and "--hub" not in posts[0]
