@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3882: fw upgrade adds cron jobs to the registry (and regenerates) but the 'run fw cron install to deploy' hint is one mid-run OK line; the final summary/next steps never says the new job (e.g. index-reindex-hourly) is NOT running yet — carry it into the end-of-upgrade next-steps (or offer to install)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T17:05:11Z
+# ============================================================================
+
+task_id: T-3882
+task_name: "fw upgrade adds cron jobs to the registry (and regenerates) but the 'run fw cron install to deploy' hint is one mid-run OK line; the final summary/next steps never says the new job (e.g. index-reindex-hourly) is NOT running yet — carry it into the end-of-upgrade next-steps (or offer to install)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T14:32:18Z
+completed: 2026-10-05T17:04:50Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-05T16:33:08+02:00
+last_commit: 2026-10-05T19:04:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file upgrade cron-install hint gap (832). the upgrade's closing next steps name new cron jobs that are NOT running yet, with the install command. ACs, verification, RCA
+
+# Key outcomes
+outcomes:
+  - 'When step 3b ADDED cron jobs in a real run, the closing "Next steps" includes `N new cron job(s) (<ids>) are NOT running yet — deploy: cd <target> && fw cron install`. It is absent when nothing was added and in dry runs.'
+  - 'A test asserts both the presence (jobs added) and the absence (none added). Existing upgrade suites stay green (fresh-machine simulation, t2912, t3884: 27/27); vendored copy in sync.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.fabric/components/tests-unit-t3882_upgrade_cron_next_step.yaml'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-3882-fw-upgrade-adds-cron-jobs-to-the-registr.md'
+  - 'tests/unit/t3882_upgrade_cron_next_step.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T16:33:08'
+    action: 'T-3882: file upgrade cron-install hint gap (832)'
+  - time: '2026-10-05T19:04:31'
+    action: 'T-3882: the upgrade''s closing next steps name new cron jobs that are NOT running yet, with the install command'
+  - time: '2026-10-05T19:04:49'
+    action: 'T-3882: ACs, verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 152 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [upgrade, cron, ux, 832-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 152
+  commits: 3
+  files_changed: 5
+  lines_added: 465
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3882-fw-upgrade-adds-cron-jobs-to-the-registr.md
+generated_by: context-agent-hybrid
