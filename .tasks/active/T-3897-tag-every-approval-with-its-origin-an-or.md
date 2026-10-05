@@ -361,6 +361,29 @@ bin/fw watchtower current
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** You asked for approvals that come from a peer or an external proposal to be flagged. Every /approvals card now carries an origin badge:
+- Peer requests, pickups and external proposals are amber.
+- Your own requests are a quiet grey "from you".
+- A task with no recorded origin says "origin unknown", never "you".
+
+The recorded `origin:` field is the source of truth, and it is set when a task is filed, via `--origin`. Inference is only a fallback and is labelled "(inferred)". The probe caught the inference making exactly the T-3659 mistake: an operator date outranked "external proposal … unratified". It now infers "operator" last, because a proposal shown as yours is the harmful error.
+
+**Evidence:**
+- Tests pass:
+  - `tests/web/test_t3897_task_origin.py`: 9 tests, including the T-3659 regression case;
+  - `tests/unit/t3897_create_task_origin.bats`: 5 tests (flag writes the field, bad kind exits 2, no flag writes nothing).
+- Live /approvals after the restart: 399 cards carry a badge.
+  - Recorded: 6 operator, 4 peer, 4 proposal, 2 agent.
+  - Inferred: 15 operator, 15 peer, 15 pickup.
+  - Unknown: 338.
+- A spot-check of inferred peer labels (T-3596, T-3737, T-3825, T-3857) matched the task text.
+- The queued inceptions carry recorded origins: T-3659 proposal, T-3752 peer, T-3501 proposal, T-3670/T-3731/T-3818 operator, T-2899 agent.
+- Not done:
+  - The pickup and sidecar paths do not yet set `--origin` automatically, so T-3899/T-3900/T-3901 were tagged by hand.
+  - The /inception/<id> and /review/<id> detail pages carry no badge yet; only the /approvals cards do.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
