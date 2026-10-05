@@ -9,6 +9,10 @@ load ../test_helper
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
+    # Nothing here runs a cron install (the text only names the command), but
+    # tests/lint/bats-cron-env-lint.bats keys on that text — and a real install
+    # without this would write into /etc/cron.d.
+    export FW_CRON_INSTALL_DIR="$TEST_TEMP_DIR/cron.d"
     U="${BATS_TEST_DIRNAME}/../../lib/upgrade.sh"
     eval "$(awk '/^_t3882_cron_next_step\(\) \{/{p=1} p{print} p&&/^\}/{exit}' "$U")"
 }
