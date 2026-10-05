@@ -11,12 +11,12 @@ description: >
   record (b304i7hcr). Generalisation (832): any wake-on-event link an agent arms should
   be re-derivable from durable state at session start.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [runme, wake, 832-report]
-components: []
+components: [agents/context/post-compact-resume.sh, lib/runme.sh, tests/unit/t3878_runme_pending.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T13:29:40Z
-last_update: 2026-10-05T17:07:17Z
-date_finished:
+last_update: 2026-10-05T17:40:56Z
+date_finished: 2026-10-05T17:40:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -399,3 +399,15 @@ bin/fw vendor self --check
 ### 2026-10-05T17:07:17Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a1dd11de
+- **Timestamp:** 2026-10-05T17:41:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-05T17:40:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

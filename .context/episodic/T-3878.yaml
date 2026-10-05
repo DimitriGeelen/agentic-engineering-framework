@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3878: runme wake-link dies with the session that armed it: 'fw runme watch' runs as a background task of the agent session, so an exit/restart between handing over runme.sh and the operator running it leaves nothing listening — at session start, find handed-over runmes with no RUNME EXIT in run.log, re-arm the watch and announce it in the session-start check
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T17:41:26Z
+# ============================================================================
+
+task_id: T-3878
+task_name: "runme wake-link dies with the session that armed it: 'fw runme watch' runs as a background task of the agent session, so an exit/restart between handing over runme.sh and the operator running it leaves nothing listening — at session start, find handed-over runmes with no RUNME EXIT in run.log, re-arm the watch and announce it in the session-start check"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T13:29:40Z
+completed: 2026-10-05T17:40:56Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-05T18:33:39+02:00
+last_commit: 2026-10-05T19:40:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  record 832's T-1050 reference design (arming-session identity, WATCH LOST / RUN IN FLIGHT at session start). a runme watch records the session that armed it; 'fw runme pending' and the session-start context name WATCH LOST / RUN IN FLIGHT / RUN ENDED WITHOUT RECORD. ACs, verification, RCA
+
+# Key outcomes
+outcomes:
+  - '`fw runme watch <name>` writes `.context/runme/<name>/watch.json` = {watch_pid, arming_claude_pid (nearest ancestor whose cmdline is claude, else null), armed_at}. It is removed when the watch reports EXIT and kept on timeout or kill.'
+  - '`fw runme pending` classifies (`--json` was not built: plain lines are what the hook and the skill consume) each runme dir (newer than 7 days) and prints one line per finding, naming the re-arm command:'
+  - '`post-compact-resume.sh` adds its findings to the session-start context (only when there are findings), so a restarted agent is told without asking. That hook is silent on a genuinely cold start (T-2376), so the `/resume` skill''s step 7 also runs `fw runme pending` and puts findings first in Needs Attention.'
+  - 'bats tests with temp runme dirs and live/dead fake processes cover each class, the record lifecycle (removed on EXIT, kept on timeout), and the clean case. Existing runme tests stay green; vendored copy in sync.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/post-compact-resume.sh'
+  - '.agentic-framework/lib/runme.sh'
+  - 'agents/context/post-compact-resume.sh'
+  - '.fabric/components/tests-unit-t3878_runme_pending.yaml'
+  - 'lib/runme.sh'
+  - '.tasks/active/T-3878-runme-wake-link-dies-with-the-session-th.md'
+  - 'tests/unit/t3878_runme_pending.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T18:33:39'
+    action: 'T-3878: record 832''s T-1050 reference design (arming-session identity, WATCH LOST / RUN IN FLIGHT at session start)'
+  - time: '2026-10-05T19:40:31'
+    action: 'T-3878: a runme watch records the session that armed it; ''fw runme pending'' and the session-start context name WATCH LOST / RUN IN FLIGHT / RUN ENDED WITHOUT RECORD'
+  - time: '2026-10-05T19:40:55'
+    action: 'T-3878: ACs, verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 251 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [runme, wake, 832-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 251
+  commits: 3
+  files_changed: 7
+  lines_added: 361
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3878-runme-wake-link-dies-with-the-session-th.md
+generated_by: context-agent-hybrid
