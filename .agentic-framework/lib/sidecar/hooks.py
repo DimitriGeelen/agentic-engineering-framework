@@ -280,19 +280,13 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
     # T-3840: the one shown/answered ledger, shared with `fw sidecar inbox`
     # (lib/sidecar/seen.py). Answered → never again. Shown → not again, unless
     # the finalizer recorded that showing as unconfirmed (once).
+    # T-3872: the same predicate gates the injector (seen.withheld).
     from . import seen as seen_mod
-    table = seen_mod.shown()
-    answered = seen_mod.answered_ids()
-    unconfirmed = _unconfirmed_ids() if table else set()
+    held = seen_mod.withheld(ids)
     by_id: dict[str, dict] = {}
     for i in ids:
         m = receiver.read_message(i)
-        if not m:
-            continue
-        keys = seen_mod.keys_for(i, m)
-        if keys & answered:
-            continue
-        if not seen_mod.may_show(keys, table, unconfirmed=i in unconfirmed):
+        if not m or i in held:
             continue
         by_id[i] = m
     # Urgent first, then oldest first; the rest of the order is stable.
@@ -331,11 +325,8 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
 def _unconfirmed_ids() -> set[str]:
     """Message ids whose LAST hand-over outcome is HANDOVER_UNCONFIRMED: the
     harness shows the model never got them (hook killed, output discarded)."""
-    last: dict[str, str] = {}
-    for row in receiver.read_events():
-        if row.get("event") in ("HANDOVER_UNCONFIRMED", receiver.HANDED_OVER):
-            last[str(row.get("msg_id"))] = row["event"]
-    return {m for m, ev in last.items() if ev == "HANDOVER_UNCONFIRMED"}
+    from . import seen as seen_mod
+    return seen_mod.unconfirmed_ids()
 
 
 def _in_transcript(transcript: str, msg_id: str, surfacing: str | None) -> bool:

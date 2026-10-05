@@ -300,8 +300,16 @@ def _deliver_locked(trigger: str, runner) -> dict:
     # started for it; typing it into another session would deliver it twice.
     waiting = [m for m in receiver.awaiting_handover() if not _recently_injected(m, now)
                and not waiting_mod.recovering(m)]
+    # T-3872: never announce what the prompt hook will not show (answered, or
+    # shown out) — it would be typed again every REINJECT_AFTER_S, forever.
+    from . import seen as seen_mod
+    held = seen_mod.withheld(waiting)
+    for m, why in held.items():
+        _blocked(m, trigger, f"withheld: {why}")
+    waiting = [m for m in waiting if m not in held]
     report = {"trigger": trigger, "waiting": len(waiting), "injected": [],
-              "session": None, "target_session_id": None, "reason": ""}
+              "session": None, "target_session_id": None, "reason": "",
+              "withheld": sorted(held)}
     if not waiting:
         report["reason"] = "nothing waiting"
         return report

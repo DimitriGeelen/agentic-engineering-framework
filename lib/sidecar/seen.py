@@ -158,6 +158,41 @@ def may_show(keys: set[str], table: dict | None = None,
     return unconfirmed or "peek" in last_by
 
 
+def unconfirmed_ids() -> set[str]:
+    """Message ids whose LAST hand-over outcome is HANDOVER_UNCONFIRMED: the
+    harness shows the model never got them (hook killed, output discarded)."""
+    from . import receiver
+    last: dict[str, str] = {}
+    for row in receiver.read_events():
+        if row.get("event") in ("HANDOVER_UNCONFIRMED", receiver.HANDED_OVER):
+            last[str(row.get("msg_id"))] = row["event"]
+    return {m for m, ev in last.items() if ev == "HANDOVER_UNCONFIRMED"}
+
+
+def withheld(ids: list[str]) -> dict[str, str]:
+    """{id: reason} for the receiver messages the prompt hook will NOT surface:
+    answered (by any id it is known by, so a peer's `<id>-nudge-N` copy of mail
+    we replied to counts), or shown as often as may_show allows.
+
+    T-3872: the ONE predicate shared by the hook and the injector. With two,
+    the injector kept typing "N peer messages waiting" for nudge copies the
+    hook would never show, every REINJECT_AFTER_S, indefinitely."""
+    from . import receiver
+    if not ids:
+        return {}
+    table = shown()
+    answered = answered_ids()
+    unconfirmed = unconfirmed_ids() if table else set()
+    out: dict[str, str] = {}
+    for i in ids:
+        keys = keys_for(i, receiver.read_message(i))
+        if keys & answered:
+            out[i] = "answered"
+        elif not may_show(keys, table, unconfirmed=i in unconfirmed):
+            out[i] = "already shown"
+    return out
+
+
 def mark_shown(entries: list[tuple[str, dict | None]], by: str) -> None:
     """Record that `by` showed these messages to the agent, under every id
     each is known by, so the other surface skips them too."""
