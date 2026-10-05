@@ -1,19 +1,27 @@
 ---
 id: T-3828
-name: "Project-start extension point: claude-fw runs .agentic-framework/start.d/* (1409 proposal)"
+name: "Project-start extension point: claude-fw runs .agentic-framework/start.d/*
+  (1409 proposal)"
 description: >
-  1409-sprind, 2026-09-25 10:11Z (rescued 2026-10-04). Proposal: on start, claude-fw runs executables in <project>/.agentic-framework/start.d/ in lexical order, with a per-step timeout (~10s), non-blocking but loud failure, FW_PROJECT_ROOT set, cwd at the project root, and fw doctor listing each step and its last outcome. No-op when absent. Framework owns the hook, project owns the scripts, so fw upgrade can no longer erase project behaviour. Their design doc: docs/reports/T-1478-entwurf-projektstart-erweiterung.md in 1409-sprind. Assessment: no such mechanism at HEAD. Check whether start.d belongs inside the vendored dir, which upgrade rewrites, or at project root.
+  1409-sprind, 2026-09-25 10:11Z (rescued 2026-10-04). Proposal: on start, claude-fw
+  runs executables in <project>/.agentic-framework/start.d/ in lexical order, with
+  a per-step timeout (~10s), non-blocking but loud failure, FW_PROJECT_ROOT set, cwd
+  at the project root, and fw doctor listing each step and its last outcome. No-op
+  when absent. Framework owns the hook, project owns the scripts, so fw upgrade can
+  no longer erase project behaviour. Their design doc: docs/reports/T-1478-entwurf-projektstart-erweiterung.md
+  in 1409-sprind. Assessment: no such mechanism at HEAD. Check whether start.d belongs
+  inside the vendored dir, which upgrade rewrites, or at project root.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-04T14:36:59Z
-last_update: 2026-10-04T14:36:59Z
-date_finished: null
+last_update: 2026-10-05T22:38:36Z
+date_finished: 2026-10-05T22:38:36Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +30,33 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-10-04T14:45:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=112,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-04T14:45:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3828: Project-start extension point: claude-fw runs .agentic-framework/start.d/* (1409 proposal)
@@ -72,15 +107,15 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -129,9 +164,48 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Every consumer that needs a project-local helper at session start today edits the vendored claude-fw, which fw upgrade overwrites silently. A framework-owned hook running project-owned scripts is a no-op when the directory is absent, so the risk is low. 1409 already specified order, timeout, failure and visibility. GO to scope it, and decide default timeout and doctor surfacing.
+
+**Date**: 2026-10-05T22:38:33Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-10-05T22:38:33Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Every consumer that needs a project-local helper at session start today edits the vendored claude-fw, which fw upgrade overwrites silently. A framework-owned hook running project-owned scripts is a no-op when the directory is absent, so the risk is low. 1409 already specified order, timeout, failure and visibility. GO to scope it, and decide default timeout and doctor surfacing.
+
+### 2026-10-05T22:38:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d77143e6
+- **Timestamp:** 2026-10-05T22:38:39Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-13e852f8
+- **Timestamp:** 2026-10-05T22:38:39Z
+- **Overall:** UNVERIFIED
+- **Claims:** 0
+- No verifiable claims found in ## Recommendation
+
+### 2026-10-05T22:38:36Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
