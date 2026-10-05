@@ -261,8 +261,29 @@ A naming subtlety: our Stop entry calls `agents/context/stop-driver.sh` directly
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t3881_template_hook_parity.bats tests/unit/lib_init.bats tests/unit/settings_regenerate_preserves_hooks.bats > /tmp/.t3881 2>&1 && ! grep -q "^not ok" /tmp/.t3881
+test "$(grep -c '# skip' /tmp/.t3881)" -eq 0
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** every consumer `fw upgrade` ended with step [5/10] FAILED, "Regeneration made no change; still missing 3 hook(s)", and "1 step(s) failed". Reported by ring20-dashboard on v1.8.0 → v1.8.2.
+
+**Root cause:** the expected-hook set is derived from the framework repo's own `.claude/settings.json`, while consumers get `lib/init.sh generate_claude_code_config`'s fixed heredoc. Three hooks were registered here and never added to the heredoc:
+- check-paid-backend (T-3583);
+- check-worktree-governance-write;
+- stop-driver (continuous-run).
+
+stop-driver additionally used a direct script path. `extract_hooks` named it `stop-driver.sh`, so even a correct template entry `fw hook stop-driver` would have stayed "missing".
+
+**Why structurally allowed:**
+- No test compared the two sources. T-2912 made the upgrade REPORT non-convergence honestly, but nothing stopped the drift at authoring time.
+- The framework repo never runs its own consumer template, so the gap was visible only on a real consumer upgrade.
+
+**Prevention:**
+- `t3881_template_hook_parity.bats` generates the template into a temp consumer and diffs its hook set against our settings.json. It is 3/4 red on the pre-fix code.
+- A hook added to our settings without the template now fails the unit suite, not the next consumer upgrade.
+- The direct-path and `fw hook` forms of one script now compare as one name.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
