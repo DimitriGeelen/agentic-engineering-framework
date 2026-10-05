@@ -1,22 +1,23 @@
 ---
-id: T-3903
-name: "test_sidecar_termlink_transport::test_refused_hub_blocks_delivery_end_to_end
-  red: expects 'version floor is unestablished' but T-3855's ladder now refuses earlier
-  as a pre-T-3855 address shape"
+id: T-3906
+name: "fw upgrade step 5 reports 'PARTIAL — gap remains: missing 0 hook(s): .' and
+  ends 'Upgrade PARTIAL' when every template hook was written: an empty missing-list
+  is counted as a gap (832 on 1.8.3)"
 description: >
-  Found while regression-testing T-3899 (2026-10-05): the refusal reason is now 'ladder-unretryable:
-  pre-T-3855 address b would land in the sender namespace'. Red without T-3899's change.
-  Fix: give the test a T-3855-shaped address (hubid/project) so it reaches the version-floor
-  check it means to test.
+  832 upgraded to 1.8.3 (2026-10-05): step 5 printed PARTIAL with 'missing 0 hook(s):
+  .' although all 3 template hooks were written; the run ended 'Upgrade PARTIAL, 1
+  step(s) failed'. A false PARTIAL teaches operators to ignore PARTIAL. Find the step-5
+  gap predicate in lib/upgrade.sh and make an empty list pass; regression test with
+  a consumer whose hooks are all present.
 
 status: captured
-workflow_type: test
+workflow_type: build
 owner: agent
 horizon: now
 tags: []
 components: []
 related_tasks: []
-origin: {kind: "agent"}
+origin: {kind: "peer", source: "832-Workflow-designer", ref: "msg ef929333"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -43,8 +44,8 @@ origin: {kind: "agent"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-05T21:35:45Z
-last_update: '2026-10-05T21:45:48Z'
+created: 2026-10-05T21:58:55Z
+last_update: 2026-10-05T22:01:49Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -57,17 +58,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-05T21:45:22Z'
+  - ts: '2026-10-05T22:00:28Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
-      tier: 1
+      tier: 2
       effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=1 
-      (workflow:test); effort=8 (lines=269,acs=4)
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-05T21:45:48Z'
+  - ts: '2026-10-05T22:01:02Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -86,7 +87,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3903: test_sidecar_termlink_transport::test_refused_hub_blocks_delivery_end_to_end red: expects 'version floor is unestablished' but T-3855's ladder now refuses earlier as a pre-T-3855 address shape
+# T-3906: fw upgrade step 5 reports 'PARTIAL — gap remains: missing 0 hook(s): .' and ends 'Upgrade PARTIAL' when every template hook was written: an empty missing-list is counted as a gap (832 on 1.8.3)
 
 ## Context
 
@@ -350,7 +351,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-10-05T21:35:45Z — task-created [task-create-agent]
+### 2026-10-05T21:58:55Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3903-testsidecartermlinktransporttestrefusedh.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3906-fw-upgrade-step-5-reports-partial--gap-r.md
 - **Context:** Initial task creation

@@ -1,8 +1,13 @@
 ---
 id: T-3902
-name: "test_sidecar_receipts_t3684::test_failed_reply_sends_no_replied red: fake args object has no .body — T-3889's empty-body refusal reads args.body; fixture predates it"
+name: "test_sidecar_receipts_t3684::test_failed_reply_sends_no_replied red: fake args
+  object has no .body — T-3889's empty-body refusal reads args.body; fixture predates
+  it"
 description: >
-  Found while regression-testing T-3899 (2026-10-05): AttributeError 'A' object has no attribute 'body'. Red without T-3899's change too. Not in unit-suite baseline/LATEST, so new since the last nightly. Likely fix: give the fixture a body (or make the reply path not read args.body).
+  Found while regression-testing T-3899 (2026-10-05): AttributeError 'A' object has
+  no attribute 'body'. Red without T-3899's change too. Not in unit-suite baseline/LATEST,
+  so new since the last nightly. Likely fix: give the fixture a body (or make the
+  reply path not read args.body).
 
 status: captured
 workflow_type: test
@@ -39,8 +44,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T21:35:03Z
-last_update: 2026-10-05T21:35:03Z
-date_finished: null
+last_update: '2026-10-05T21:45:48Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-05T21:45:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 1
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=1 
+      (workflow:test); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-05T21:45:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3902: test_sidecar_receipts_t3684::test_failed_reply_sends_no_replied red: fake args object has no .body — T-3889's empty-body refusal reads args.body; fixture predates it
