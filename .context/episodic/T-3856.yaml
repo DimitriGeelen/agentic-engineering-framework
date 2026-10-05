@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3856: /resume step 7 runs scripts/session-start-alerts.sh, which is project-local and never vendored: in every consumer /resume silently skips the unseen-mail check it was built for (832 T-1046) — ship it as a framework verb that vendors, and make the skill print 'NOT CHECKED: <reason>' instead of skipping
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T13:03:25Z
+# ============================================================================
+
+task_id: T-3856
+task_name: "/resume step 7 runs scripts/session-start-alerts.sh, which is project-local and never vendored: in every consumer /resume silently skips the unseen-mail check it was built for (832 T-1046) — ship it as a framework verb that vendors, and make the skill print 'NOT CHECKED: <reason>' instead of skipping"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T07:15:53Z
+completed: 2026-10-05T13:02:59Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-05T14:55:57+02:00
+last_commit: 2026-10-05T15:02:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw sidecar alerts — shipped /resume step-7 mail check (both routes, read-only, NOT CHECKED instead of silence). ACs, verification, RCA. verification asserts NOT CHECKED live (termlink off PATH → exit 3)
+
+# Key outcomes
+outcomes:
+  - '`fw sidecar alerts [--limit N] [--json]` lists unseen peer mail from both routes (sender, conversation, id, first line), each message once, and prints `nothing` when there is none'
+  - 'It never prints nothing: any failure to read prints `NOT CHECKED: <reason>` and exits 3'
+  - 'It is read-only: inbox-state cursors and the seen ledger are byte-identical across a call (control: `--mark-seen` changes the ledger)'
+  - '`--mark-seen` records the listed messages as shown (`by: alerts`) so neither the prompt hook nor a later `alerts` call repeats them'
+  - 'The task gate admits `fw sidecar alerts` (with or without `--mark-seen`) with no focus; `fw sidecar send` stays blocked'
+  - 'Unit tests for the above; the existing sidecar suites stay green; vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.agentic-framework/lib/sidecar/alerts.py'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.fabric/components/lib-sidecar-alerts.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_alerts_t3856.yaml'
+  - 'lib/sidecar/alerts.py'
+  - 'lib/sidecar_cli.py'
+  - '.tasks/active/T-3856-resume-step-7-runs-scriptssession-start-.md'
+  - 'tests/unit/t3425_sidecar_read_allowlist.bats'
+  - 'tests/unit/test_sidecar_alerts_t3856.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T14:55:57'
+    action: 'T-3856: fw sidecar alerts — shipped /resume step-7 mail check (both routes, read-only, NOT CHECKED instead of silence)'
+  - time: '2026-10-05T15:02:37'
+    action: 'T-3856: ACs, verification, RCA'
+  - time: '2026-10-05T15:02:58'
+    action: 'T-3856: verification asserts NOT CHECKED live (termlink off PATH → exit 3)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 347 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 347
+  commits: 3
+  files_changed: 11
+  lines_added: 895
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3856-resume-step-7-runs-scriptssession-start-.md
+generated_by: context-agent-hybrid
