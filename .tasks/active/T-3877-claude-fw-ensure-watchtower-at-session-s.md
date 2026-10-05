@@ -8,10 +8,10 @@ description: >
   check whether Watchtower is running; if not, try to start it on the old port; if
   that fails, find a new port'). Depends on the one-port-rule task.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [watchtower, claude-fw, 055-report]
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T13:25:47Z
-last_update: '2026-10-05T13:30:24Z'
+last_update: 2026-10-05T15:47:52Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -64,20 +64,44 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-05T13:30:51Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3877: claude-fw: ensure Watchtower at session start — if not running, start it on its last port, else configured PORT, else allocate (announced); after a reboot nothing starts it today, so it stays down until a human notices (055: ~80 min)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reference: 055's vendored T-467 patch (`lib/watchtower-ensure.sh`, called from `post-compact-resume.sh`), adapted to AEF's T-3876 `choose_port`. Nothing starts Watchtower today. After the 2026-10-05 reboot it stayed down here until started by hand, and 055's for about 80 minutes.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `lib/watchtower-ensure.sh: fw_watchtower_ensure` behaves as follows:
+  - running for this project → no-op;
+  - otherwise it starts it through `bin/watchtower.sh start`, so the port comes from T-3876's `choose_port`;
+  - a flock makes concurrent sessions after a reboot start it once;
+  - it always returns 0 and logs to `.context/working/watchtower-ensure.log`;
+  - `FW_WATCHTOWER_ENSURE=0` disables it.
+- [ ] `post-compact-resume.sh` calls it DETACHED (`setsid`, stdin from /dev/null) before any early exit, so it runs on startup, resume and compact, and never delays or fails the hook. No `.claude/settings.json` change (B-005, template parity).
+- [ ] `fw doctor`: "Watchtower not running" becomes a WARN (counted), not a SKIP, and names `fw serve`.
+- [ ] bats tests with a stub `watchtower.sh` cover: already running → no start; not running → one start; disabled → no start; start failure → still rc 0 and logged; two concurrent calls → one start. Vendored copy in sync.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -334,3 +358,7 @@ cost_estimate_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3877-claude-fw-ensure-watchtower-at-session-s.md
 - **Context:** Initial task creation
+
+### 2026-10-05T15:47:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -1,0 +1,21 @@
+id: lib/watchtower-ensure.sh
+name: watchtower-ensure
+type: script
+subsystem: framework-core
+location: lib/watchtower-ensure.sh
+tags: []
+
+purpose: "T-3877: make sure this project's Watchtower runs once a session starts."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-05
+created_by: unknown

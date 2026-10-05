@@ -30,6 +30,15 @@ except Exception:
     print('resume')
 " <<< "$SAVED_STDIN" 2>/dev/null || echo "resume")
 
+# T-3877: ensure Watchtower runs — on EVERY source, cold startup included (a
+# reboot is a cold start), so this sits before the startup early exits below.
+# Detached: the hook never waits on it and never fails because of it.
+if [ -f "$FRAMEWORK_ROOT/lib/watchtower-ensure.sh" ] && command -v setsid >/dev/null 2>&1; then
+    ( PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" setsid bash -c \
+        '. "$FRAMEWORK_ROOT/lib/watchtower-ensure.sh" && fw_watchtower_ensure' \
+        </dev/null >/dev/null 2>&1 & ) >/dev/null 2>&1
+fi
+
 # T-2376: this hook now also fires on SessionStart source "startup" (added so the
 # budget-critical auto-restart path — claude-fw → `claude -c`, which emits
 # "startup" — advances the continuous loop the way manual /compact does). But a

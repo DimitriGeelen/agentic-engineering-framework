@@ -2929,6 +2929,12 @@ PY
             echo -e "         Run: bin/watchtower.sh stop && bin/watchtower.sh start"
             warnings=$((warnings + 1))
         fi
+    elif [ -f "$PROJECT_ROOT/.context/working/watchtower.log" ] || [ -n "$(_fw_config_file_val PORT 2>/dev/null)" ]; then
+        # T-3877: this project has run a Watchtower (or configured its port), so
+        # "not running" is a finding — after a reboot every link handed out is
+        # dead — not a skip. The session-start ensure step normally prevents it.
+        echo -e "  ${YELLOW}WARN${NC}  Watchtower not running (no triple) — start with: fw serve"
+        warnings=$((warnings + 1))
     else
         echo -e "  ${CYAN}SKIP${NC}  Watchtower not running (no triple) — start with: fw serve"
     fi

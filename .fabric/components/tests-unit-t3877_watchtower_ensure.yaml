@@ -1,0 +1,21 @@
+id: tests/unit/t3877_watchtower_ensure.bats
+name: t3877_watchtower_ensure
+type: script
+subsystem: tests
+location: tests/unit/t3877_watchtower_ensure.bats
+tags: []
+
+purpose: "T-3877: Watchtower is ensured at session start (lib/watchtower-ensure.sh, called detached from post-compact-resume.sh). After the 2026-10-05 reboot nothing started it — AEF's stayed down until started by hand, 055's ~80 min."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-05
+created_by: unknown
