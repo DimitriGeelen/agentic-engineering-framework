@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3667: Standing arcs (FW-NNN): never-closing arcs where tasks flow in continuously, get scored, park when low-value, and are bundled or mined for patterns — FW-001 audit findings, FW-002 inception review loop
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T22:33:34Z
+# ============================================================================
+
+task_id: T-3667
+task_name: "Standing arcs (FW-NNN): never-closing arcs where tasks flow in continuously, get scored, park when low-value, and are bundled or mined for patterns — FW-001 audit findings, FW-002 inception review loop"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T15:59:37Z
+completed: 2026-10-05T22:33:16Z
+duration_days: 4
+updates_count: 2
+first_commit: 2026-10-01T18:01:23+02:00
+last_commit: 2026-10-06T00:33:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  standing arcs inception (operator proposal: FW-001 audit findings, FW-002 inception review loop) with IW-1..5 and research artifact. proposed answers IW-1..5 + objective mapping in artifact; 3-model review brief (operator request). 3-model review (Anthropic, OpenAI, Z.ai: all GO-WITH-CHANGES) + synthesis: 10 consensus changes, 1 split (forced-action clock), missing list. operator rulings (option c: measure first; full arc mechanics incl. scoped drivers per FW arc); IW-1..5 disposed. inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-3667-review-anthropic.md'
+  - 'docs/reports/T-3667-review-brief.md'
+  - 'docs/reports/T-3667-review-openai.md'
+  - 'docs/reports/T-3667-review-zai.md'
+  - 'docs/reports/T-3667-standing-arcs.md'
+  - '.tasks/active/T-3667-standing-arcs-fw-nnn-never-closing-arcs-.md'
+  - '.tasks/completed/T-3667-standing-arcs-fw-nnn-never-closing-arcs-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T18:01:23'
+    action: 'T-3667: standing arcs inception (operator proposal: FW-001 audit findings, FW-002 inception review loop) with IW-1..5 and research artifact'
+  - time: '2026-10-01T18:29:24'
+    action: 'T-3667: proposed answers IW-1..5 + objective mapping in artifact; 3-model review brief (operator request)'
+  - time: '2026-10-01T18:32:03'
+    action: 'T-3667: 3-model review (Anthropic, OpenAI, Z.ai: all GO-WITH-CHANGES) + synthesis: 10 consensus changes, 1 split (forced-action clock), missing list'
+  - time: '2026-10-01T18:46:48'
+    action: 'T-3667: operator rulings (option c: measure first; full arc mechanics incl. scoped drivers per FW arc); IW-1..5 disposed'
+  - time: '2026-10-06T00:33:21'
+    action: 'T-3667: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 6153 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 6153
+  commits: 5
+  files_changed: 7
+  lines_added: 491
+  lines_removed: 25
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3667-standing-arcs-fw-nnn-never-closing-arcs-.md
+generated_by: context-agent-hybrid
