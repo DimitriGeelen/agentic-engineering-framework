@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3875: bin/fw doctor still aborts without a summary under set -euo pipefail at two sites T-3837 missed: (a) _at_out=$(python3 lib/audit_timing.py …) has no || fallback (~L4671); (b) the 'slowest phases' printf | sort | head -3 | while pipeline — head closes early, sort takes SIGPIPE, pipefail ends doctor before its summary (~L4761)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T13:58:37Z
+# ============================================================================
+
+task_id: T-3875
+task_name: "bin/fw doctor still aborts without a summary under set -euo pipefail at two sites T-3837 missed: (a) _at_out=$(python3 lib/audit_timing.py …) has no || fallback (~L4671); (b) the 'slowest phases' printf | sort | head -3 | while pipeline — head closes early, sort takes SIGPIPE, pipefail ends doctor before its summary (~L4761)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T13:24:27Z
+completed: 2026-10-05T13:58:16Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-05T15:55:37+02:00
+last_commit: 2026-10-05T15:58:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  ACs. fw doctor set -e aborts → fallback on the audit_timing capture; awk instead of head in both phase-log pipelines. ACs, verification, RCA
+
+# Key outcomes
+outcomes:
+  - '(a) A failing `audit_timing.py` no longer ends doctor; doctor still prints its summary'
+  - '(b) The slowest-phases block cannot end doctor via SIGPIPE: the top-3 selection happens without a downstream early-closing reader. A third site of the same shape was found and fixed too: `_doctor_killed_report`''s `head -5`.'
+  - 'Regression test reproduces both aborts on the unfixed code (pipefail/errexit harness on the extracted constructs) and passes on the fixed code; `bash -n bin/fw`; vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.fabric/components/tests-unit-t3875_doctor_set_e_sites.yaml'
+  - '.tasks/active/T-3875-binfw-doctor-still-aborts-without-a-summ.md'
+  - '.tasks/completed/T-3779-termlinkruntimedir-split-brain-agents-st.md'
+  - 'tests/unit/t3875_doctor_set_e_sites.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T15:55:37'
+    action: 'T-3875: ACs'
+  - time: '2026-10-05T15:57:52'
+    action: 'T-3875: fw doctor set -e aborts → fallback on the audit_timing capture; awk instead of head in both phase-log pipelines'
+  - time: '2026-10-05T15:58:15'
+    action: 'T-3875: ACs, verification, RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 33 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, doctor, ring20-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 33
+  commits: 3
+  files_changed: 6
+  lines_added: 156
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3875-binfw-doctor-still-aborts-without-a-summ.md
+generated_by: context-agent-hybrid
