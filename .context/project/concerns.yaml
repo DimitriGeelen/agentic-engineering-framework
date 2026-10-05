@@ -5340,3 +5340,27 @@ concerns:
   - T-3872
   - T-3881
   - T-3876
+- id: G-109
+  type: gap
+  title: A sidecar send the hub refused on CREDENTIALS is kept retryable, and a later retry under another
+    credential delivers it — a refusal of the sender's authority is turned into a delay
+  description: 'ring20 s6 joint test step 6 (2026-10-05): a send with a deliberately wrong secret was refused
+    by the hub (-32010 invalid signature), reported "NOT delivered: STORED", and kept in the PROJECT outbox
+    as a retryable row. The project watcher, which holds the correct secret, retried it and the message
+    marked "must NOT arrive" was RECEIVED and HANDED_OVER at B ~5 min later. delivery.deliver records every
+    probe refusal as STORED (retryable) whatever the reason; the outbox is per project while the credential
+    is per HOME/profile, so the retry is not the same principal as the send.'
+  severity: high
+  status: open
+  detected_in: T-3905
+  observed: '2026-10-05'
+  reported_by: ring20-dashboard (msg b84d82e2) and ring20-manager (msg bf0c29de), s6 joint test
+  blast_radius: every cross-hub sidecar send; any principal whose credential is refused can still get a
+    message delivered by whoever next runs the project's watcher
+  detection_gap: No test sent with a refused credential and then ran the sweep; the negative test the spec
+    named ("wrong secret must not arrive") existed only in the peer's joint-test plan.
+  what_remains: Fix is T-3905 (credential refusal is terminal, never retried). Exit code on 1.8.2 reported 0;
+    current CLI returns 1 — confirm with the peer on upgrade.
+  related_tasks:
+  - T-3905
+  - T-3855

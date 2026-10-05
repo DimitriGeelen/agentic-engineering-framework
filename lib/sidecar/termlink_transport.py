@@ -43,7 +43,7 @@ import subprocess
 from pathlib import Path
 
 from . import circuit
-from .delivery import ProbeResult, TransportError
+from .delivery import ProbeResult, TransportError, is_auth_failure
 
 #: Minimum TermLink version this sidecar will send through. The cross-hub
 #: post semantics slice 2 relies on (a post either succeeds or fails loudly,
@@ -257,7 +257,8 @@ def _authenticated_floor(hub: str, *, runner, binary: str, floor, hubs_file) -> 
     profiles, err = hub_profiles(hub, path)
     gap = _credential_gap(hub, profiles, err, path)
     if gap:
-        return ProbeResult(False, gap)
+        # T-3905 (G-109): no usable credential is about the SENDER — final.
+        return ProbeResult(False, gap, credential_refused=True)
 
     # The one authenticated, per-profile version read the termlink CLI offers:
     # `fleet doctor` calls `hub.version` on every hubs.toml profile with that
@@ -280,17 +281,22 @@ def _authenticated_floor(hub: str, *, runner, binary: str, floor, hubs_file) -> 
         return ProbeResult(False, f"hub {hub}: termlink fleet doctor did not report "
                                   f"profile {', '.join(names)}")
     failures = []
+    auth_failures = 0
     for row in mine:
         version = parse_version(f"termlink {row.get('hub_version') or ''}")
         if row.get("status") != "ok" or version is None:
+            detail = row.get('error') or row.get('diagnostic') or 'no hub_version reported'
+            auth_failures += is_auth_failure(str(detail))
             failures.append(
                 f"profile {row.get('hub')} (secret {row.get('secret_source') or 'unknown'}): "
-                f"{row.get('error') or row.get('diagnostic') or 'no hub_version reported'}")
+                f"{detail}")
             continue
         vs, fs = ".".join(map(str, version)), ".".join(map(str, floor))
         if version < floor:
             return ProbeResult(False, f"hub {hub} runs termlink {vs}, below the version floor {fs}")
         return ProbeResult(True, f"hub {hub} (profile {row['hub']}), authenticated, "
                                  f"termlink {vs} meets floor")
+    # T-3905 (G-109): every profile was REJECTED on its credential — final.
     return ProbeResult(False, f"hub {hub} is reachable but the authenticated version read "
-                              "failed: " + "; ".join(failures))
+                              "failed: " + "; ".join(failures),
+                       credential_refused=bool(failures) and auth_failures == len(failures))

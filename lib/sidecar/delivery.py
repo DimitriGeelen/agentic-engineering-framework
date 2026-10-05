@@ -26,6 +26,7 @@ from __future__ import annotations
 
 import json
 import os
+import re
 from dataclasses import dataclass
 from datetime import datetime, timedelta, timezone
 
@@ -45,6 +46,21 @@ class ProbeResult:
 
     ok: bool
     reason: str = ""
+    # T-3905 (G-109): the refusal is about the SENDER's credential — no
+    # usable secret, or the hub rejected it. Final: a retry runs as whoever
+    # next runs the project's watcher, which is not the principal who sent.
+    credential_refused: bool = False
+
+
+_AUTH_FAILURE = re.compile(
+    r"Authentication failed|-32010|Token validation failed|invalid signature", re.I)
+
+
+def is_auth_failure(text: str) -> bool:
+    """T-3905: does a hub/transport error say the CREDENTIAL was rejected?
+    (TermLink: `Authentication failed: -32010 Token validation failed:
+    invalid signature`.) Reachability and version errors do not match."""
+    return bool(_AUTH_FAILURE.search(text or ""))
 
 
 @dataclass(frozen=True)
@@ -138,8 +154,22 @@ def deliver(client_msg_id: str, transport, probe=always_ok_probe, *,
         _consume_flag(client_msg_id)
         return DeliveryResult(client_msg_id, outbox.UNKNOWN, False, reason)
 
+    def _credential_final(detail: str) -> DeliveryResult:
+        # T-3905 (G-109): ring20 s6 step 6 — a wrong-secret send was STORED as
+        # retryable and the watcher, holding the right secret, delivered the
+        # message that "must NOT arrive". A refusal of the sender's authority
+        # is an answer, not a delay: terminal, flag consumed, never re-posted.
+        reason = (f"credential-refused (final, not retried): {detail} — fix the "
+                  f"credential, then resend: fw sidecar send --to {target}"
+                  + (f" --hub {hub}" if hub else ""))
+        _record(outbox.UNKNOWN, reason)
+        _consume_flag(client_msg_id)
+        return DeliveryResult(client_msg_id, outbox.UNKNOWN, False, reason)
+
     verdict = probe(hub)
     if not verdict.ok:
+        if getattr(verdict, "credential_refused", False):
+            return _credential_final(verdict.reason)
         reason = f"hub-refused: {verdict.reason}"
         _record(outbox.STORED, reason)
         return DeliveryResult(client_msg_id, outbox.STORED, False, reason)
@@ -147,6 +177,8 @@ def deliver(client_msg_id: str, transport, probe=always_ok_probe, *,
     try:
         transport(msg)
     except TransportError as exc:
+        if is_auth_failure(str(exc)):
+            return _credential_final(f"post refused: {exc}")
         reason = f"transport-failed: {exc}"
         _record(outbox.STORED, reason)
         return DeliveryResult(client_msg_id, outbox.STORED, False, reason)
