@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3872: Sidecar re-injects answered peer mail forever: nudge copies (<id>-nudge-N) of a message we already answered stay pending, because the prompt hook suppresses them (answered/seen ledger) without marking them HANDED_OVER, while the injector selects by HANDED_OVER only — 22 copies re-announced every REINJECT_AFTER_S
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-05T11:59:40Z
+# ============================================================================
+
+task_id: T-3872
+task_name: "Sidecar re-injects answered peer mail forever: nudge copies (<id>-nudge-N) of a message we already answered stay pending, because the prompt hook suppresses them (answered/seen ledger) without marking them HANDED_OVER, while the injector selects by HANDED_OVER only — 22 copies re-announced every REINJECT_AFTER_S"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T11:53:40Z
+completed: 2026-10-05T11:58:52Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-05T13:58:26+02:00
+last_commit: 2026-10-05T13:58:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  sidecar injector re-announced answered peer mail forever → one shared predicate (seen.withheld) for hook and injector. RCA, ACs ticked, fabric card for regression test
+
+# Key outcomes
+outcomes:
+  - 'One predicate (`seen.withheld`) decides "the hook will not surface this", and both `hooks.prompt` and `inject._deliver_locked` use it'
+  - 'The injector does not type a line for withheld messages, and records INJECT_BLOCKED "withheld: <reason>" once per message'
+  - 'Regression test: a `<id>-nudge-N` copy of an answered message, claimed and pending → `deliver_pending` injects nothing; an unanswered message is still injected'
+  - 'Existing sidecar unit tests (seen ledger T-3840, session-ready T-3745, waiting T-3782, receiver T-3693) stay green'
+  - 'Live: after the fix, the next watcher tick reports the 22 copies as withheld and types nothing'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/hooks.py'
+  - '.agentic-framework/lib/sidecar/inject.py'
+  - '.agentic-framework/lib/sidecar/seen.py'
+  - '.fabric/components/tests-unit-t3675_runme.yaml'
+  - '.fabric/components/tests-unit-test_sidecar_withheld_t3872.yaml'
+  - 'lib/sidecar/hooks.py'
+  - 'lib/sidecar/inject.py'
+  - 'lib/sidecar/seen.py'
+  - '.tasks/active/T-3872-sidecar-re-injects-answered-peer-mail-fo.md'
+  - 'tests/unit/test_sidecar_withheld_t3872.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-05T13:58:26'
+    action: 'T-3872: sidecar injector re-announced answered peer mail forever → one shared predicate (seen.withheld) for hook and injector'
+  - time: '2026-10-05T13:58:51'
+    action: 'T-3872: RCA, ACs ticked, fabric card for regression test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 2
+  files_changed: 10
+  lines_added: 602
+  lines_removed: 35
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3872-sidecar-re-injects-answered-peer-mail-fo.md
+generated_by: context-agent-hybrid

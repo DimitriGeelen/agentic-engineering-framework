@@ -1,13 +1,20 @@
 ---
-id: T-3872
-name: "Sidecar re-injects answered peer mail forever: nudge copies (<id>-nudge-N) of a message we already answered stay pending, because the prompt hook suppresses them (answered/seen ledger) without marking them HANDED_OVER, while the injector selects by HANDED_OVER only — 22 copies re-announced every REINJECT_AFTER_S"
+id: T-3873
+name: "Sidecar: read the recipient hub id from the authenticated 'termlink remote
+  ping --json' (hub_id, from TermLink T-3345, commit 09c108eac) instead of deriving
+  it from the hub-probe fingerprint prefix; keep the fingerprint as a fallback that
+  WARNs only when hub_id is null (old hub) or hub_version_error is set"
 description: >
-  Sidecar re-injects answered peer mail forever: nudge copies (<id>-nudge-N) of a message we already answered stay pending, because the prompt hook suppresses them (answered/seen ledger) without marking them HANDED_OVER, while the injector selects by HANDED_OVER only — 22 copies re-announced every REINJECT_AFTER_S
+  010 msg hub-115700debd0173f5 (2026-10-05, conversation t3344-address-rulings). Promised
+  in T-3855 / OD-12 reply. Field contract: hub_id (canonical; today == 16-hex fingerprint
+  prefix), hub_instance_id (sha256 fingerprint), hub_version, protocol_version. Not
+  live on .107 canonical hub until 010's operator runs their install+restart runme;
+  010 will confirm on the same conversation — start after that.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
@@ -37,9 +44,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-05T11:53:40Z
-last_update: 2026-10-05T11:53:40Z
-date_finished: null
+created: 2026-10-05T12:43:58Z
+last_update: '2026-10-05T12:45:46Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,22 +57,48 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-05T12:45:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-05T12:45:46Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-3872: Sidecar re-injects answered peer mail forever: nudge copies (<id>-nudge-N) of a message we already answered stay pending, because the prompt hook suppresses them (answered/seen ledger) without marking them HANDED_OVER, while the injector selects by HANDED_OVER only — 22 copies re-announced every REINJECT_AFTER_S
+# T-3873: Sidecar: read the recipient hub id from the authenticated 'termlink remote ping --json' (hub_id, from TermLink T-3345, commit 09c108eac) instead of deriving it from the hub-probe fingerprint prefix; keep the fingerprint as a fallback that WARNs only when hub_id is null (old hub) or hub_version_error is set
 
 ## Context
 
-Seen live 2026-10-05 13:51-13:58 CEST: "[sidecar] 22 peer messages waiting" typed into the operator session twice in a row, after the reboot. All 22 were `<id>-nudge-N` copies of 832/010 messages already answered (our outbox in_reply_to, T-3840 ledger). `.context/sidecar/receiver/messages` held 22 such copies in status pending. The injector (`inject._deliver_locked`) selects by `receiver.awaiting_handover()` (status != HANDED_OVER). The prompt hook (`hooks.prompt`) additionally drops answered / shown-out messages, so it shows nothing and never records HANDED_OVER. So the copies stay pending and are re-typed every REINJECT_AFTER_S.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [x] One predicate (`seen.withheld`) decides "the hook will not surface this", and both `hooks.prompt` and `inject._deliver_locked` use it
-- [x] The injector does not type a line for withheld messages, and records INJECT_BLOCKED "withheld: <reason>" once per message
-- [x] Regression test: a `<id>-nudge-N` copy of an answered message, claimed and pending → `deliver_pending` injects nothing; an unanswered message is still injected
-- [x] Existing sidecar unit tests (seen ledger T-3840, session-ready T-3745, waiting T-3782, receiver T-3693) stay green
-- [x] Live: after the fix, the next watcher tick reports the 22 copies as withheld and types nothing
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -219,8 +252,6 @@ Seen live 2026-10-05 13:51-13:58 CEST: "[sidecar] 22 peer messages waiting" type
 #
 # The rule of thumb: put the assertion LAST, and make sure it is an assertion.
 #
-python3 -m pytest tests/unit/test_sidecar_withheld_t3872.py tests/unit/test_sidecar_seen_ledger_t3840.py tests/unit/test_sidecar_session_ready_t3745.py tests/unit/test_sidecar_waiting_t3782.py tests/unit/test_sidecar_receiver_t3693.py -q > /tmp/.t3872 2>&1 && grep -q passed /tmp/.t3872
-bin/fw vendor self --check
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
 # Verification block. Otherwise the canonical hash diverges and `fw doctor`
@@ -243,16 +274,6 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** "[sidecar] 22 peer messages waiting (ids …)" was typed into the operator session at every re-inject interval. The prompt hook then showed nothing, because every one of the 22 was a nudge copy of mail already answered.
-
-**Root cause:** two definitions of "still to be delivered". The injector (`inject._deliver_locked`) used `receiver.awaiting_handover()`, which means status is not HANDED_OVER. T-3840 added a second filter to the prompt hook only: answered, or shown as often as allowed. HANDED_OVER is recorded only when the hook shows a message (via the finalizer). So a message the hook filters out can never reach HANDED_OVER, and the injector announces it forever. 832 sends each escalation as a new `<id>-nudge-N` message, which multiplied the copies (22 pending).
-
-**Why structurally allowed:** the T-3840 tests drove the hook alone, and the T-3745 tests drove the injector alone. No test asserted that the two agree on the same inbox, so the divergence was invisible to each side's suite.
-
-**Prevention:** one predicate, `seen.withheld`, used by both sides. `test_hook_and_injector_agree` pins the invariant that the injector announces exactly what the hook surfaces. The regression test fails 3/4 on the old injector.
-
-**Fix:** commit 0e634c5a1.
 
 ## Evolution
 
@@ -330,7 +351,7 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-05T11:53:40Z — task-created [task-create-agent]
+### 2026-10-05T12:43:58Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3872-sidecar-re-injects-answered-peer-mail-fo.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3873-sidecar-read-the-recipient-hub-id-from-t.md
 - **Context:** Initial task creation
