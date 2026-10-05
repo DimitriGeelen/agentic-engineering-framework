@@ -101,7 +101,7 @@ The last port in `.context/working/watchtower.port` survives a reboot, but `do_s
 ## Acceptance Criteria
 
 ### Agent
-- [ ] ONE function chooses the port for both start and restart, in this order:
+- [x] ONE function chooses the port for both start and restart, in this order:
   - explicit `--port`;
   - else configured PORT, if free or ours;
   - else the last port this project ran on (`watchtower.port`, still on disk after a crash or reboot), if free or ours;
@@ -110,11 +110,14 @@ The last port in `.context/working/watchtower.port` survives a reboot, but `do_s
   Configured comes before last, which differs from 055's suggested order on purpose. Their own point 4 ("after `fw config set PORT 3050` a bare restart still came back on 3002") is exactly what last-before-configured does. With this order both of their observed failures are fixed:
   - an unconfigured project returns to its last port;
   - a newly set PORT takes effect.
-- [ ] Any choice other than the configured PORT, when one is configured, prints ONE loud WARN naming both ports and why. A configured PORT held by a FOREIGN service no longer aborts a bare start; it moves on and says so. An explicit `--port` held by a foreign service still refuses.
-- [ ] A configured PORT is never overwritten. Only an unconfigured project's allocation is recorded, as before, and logged.
-- [ ] `do_restart` no longer carries its own rule; it calls start.
-- [ ] bats tests with stubbed `port_in_use` / `_watchtower_port_holder_is_ours` cover each branch of the order, including the 055 case (last 3050 free, PORT unset → 3050) and the AEF case (last 3002 ours/free, PORT 3000 → 3002, with a WARN).
-- [ ] `bash -n`; vendored copy in sync
+- [x] Any choice other than the configured PORT, when one is configured, prints ONE loud WARN naming both ports and why. A configured PORT held by a FOREIGN service no longer aborts a bare start; it moves on and says so. An explicit `--port` held by a foreign service still refuses.
+- [x] A configured PORT is never overwritten. Only an unconfigured project's allocation is recorded, as before, and logged.
+- [x] `do_restart` no longer carries its own rule; it calls start.
+- [x] bats tests with stubbed `port_in_use` / `_watchtower_port_holder_is_ours` cover each branch of the order, including the 055 case (last 3050 free, PORT unset → 3050).
+  - The AEF case reads differently under the corrected order: PORT 3000 configured and free → 3000.
+  - The 3002 drift came from the old restart rule, which no longer exists.
+  - Live restart came back on 3000 (HTTP 200).
+- [x] `bash -n`; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -274,8 +277,28 @@ The last port in `.context/working/watchtower.port` survives a reboot, but `do_s
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/t3876_watchtower_port_rule.bats tests/unit/t3662_watchtower_port_allocation.bats > /tmp/.t3876 2>&1 && ! grep -q "^not ok" /tmp/.t3876
+test "$(grep -c '# skip' /tmp/.t3876)" -eq 0
+bash -n bin/watchtower.sh
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** after the 2026-10-05 reboot, Watchtowers came back on different ports, and every link handed out broke:
+- AEF went from 3002 to 3000;
+- 055 went from 3050 to 3002.
+
+Separately, a bare restart ignored a newly configured PORT.
+
+**Root cause:** two port rules in `bin/watchtower.sh`.
+- `do_start` used configured PORT, else allocated from 3000. It never read the last port, although `watchtower.port` survives a reboot.
+- `do_restart` (T-2598) read the previous port and passed it as `--port`, putting it above the configured PORT. That is how AEF drifted to 3002 with PORT=3000 configured.
+
+**Why structurally allowed:** each rule was added to fix one incident (T-3662 allocation, T-2598 restart), with its own test. No test asserted that start and restart choose the same port from the same state.
+
+**Prevention:**
+- One `choose_port` shared by both paths, with a fixed precedence.
+- `t3876_watchtower_port_rule.bats` extracts it from the script and covers every branch. `do_restart` is pinned to carry no rule of its own.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -346,14 +369,15 @@ The last port in `.context/working/watchtower.port` survives a reboot, but `do_s
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-10-05 — port precedence
+- **Chose:** explicit, then configured PORT, then last port, then allocate.
+- **Why:** a configured PORT is the operator's statement and must take effect at once. 055's point 4 is exactly the failure of last-before-configured. The last port still rescues an UNCONFIGURED project after a reboot, which was 055's actual loss.
+- **Rejected:** last before configured (055's suggestion), because it repeats their own point-4 bug.
+
+### 2026-10-05 — configured PORT held by a foreign service
+- **Chose:** start on the last or an allocated port, with a WARN naming both ports. The holder is never signalled, and PORT is never rewritten.
+- **Why:** a refusal leaves Watchtower down after any reboot in which a neighbour won the race. The operator asked, via 055, "if that fails, find a new port".
+- **Rejected:** keep T-3662's refusal. Its real guarantee, never signal a foreign holder, is kept, and the T-3662 test was updated to assert it plus the non-rewrite.
 
 ## Decision
 
