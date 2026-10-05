@@ -9,7 +9,7 @@ description: >
   Fix: give the test a T-3855-shaped address (hubid/project) so it reaches the version-floor
   check it means to test.
 
-status: captured
+status: started-work
 workflow_type: test
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T21:35:45Z
-last_update: '2026-10-05T21:45:48Z'
+last_update: 2026-10-05T22:40:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,8 +96,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `test_refused_hub_blocks_delivery_end_to_end` writes a T-3855-shaped address (`<hubid>/<project>`), so it reaches the probe it is meant to test instead of T-3887's pre-T-3855 dead-letter path. It still asserts that nothing is posted and that the error names the unestablished version floor.
+- [x] The whole file `tests/unit/test_sidecar_termlink_transport.py` passes. The production code is unchanged; this is a fixture that predated T-3855 and T-3887.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -131,6 +131,8 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 300 python3 -m pytest tests/unit/test_sidecar_termlink_transport.py -q -p no:cacheprovider > /tmp/.t3903 2>&1 && grep -q passed /tmp/.t3903
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -354,3 +356,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3903-testsidecartermlinktransporttestrefusedh.md
 - **Context:** Initial task creation
+
+### 2026-10-05T22:40:13Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

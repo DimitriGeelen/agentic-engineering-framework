@@ -15,12 +15,12 @@ description: >
   AEF repo, and the sanctioned path for a change ring20 needs in AEF (sidecar request/pickup
   to 999, or a PR into bleeding-edge).
 
-status: work-completed
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: null
+horizon: now
 tags: [security, release-train, ring20]
-components: [tests/web/test_t3896_inception_readiness.py, web/blueprints/approvals.py, web/blueprints/inception.py, web/shared.py, web/templates/_approvals_content.html, web/templates/inception_detail.html]
+components: []
 related_tasks: [T-3785, T-3185]
 origin: {kind: "operator", source: "", ref: "operator 2026-10-04"}
 bvp_scores: {D1: 4, D2: 5, D3: 3, D4: 3}
@@ -28,8 +28,8 @@ confirmed_by: operator
 confirmed_at: 2026-10-04T13:34:11Z
 confirmed_via: human   # operator ruling 2026-10-04: "give the very high value", "on horizon now, picked up soon after this"
 created: 2026-10-04T13:34:11Z
-last_update: 2026-10-05T22:39:42Z
-date_finished: 2026-10-05T22:39:42Z
+last_update: 2026-10-04T22:34:33Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -132,15 +132,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [x] Problem statement validated
+- [ ] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [x] Assumptions tested
+- [ ] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [x] Recommendation written with rationale
+- [ ] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [x] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -196,20 +196,7 @@ bvp_scores_proposed:
 
 ## Decision
 
-**Decision**: GO
-
-**Rationale**: Recommendation: GO
-
-Rationale: A peer agent wrote the consumer install surface directly, bypassing the release train and every client-side gate; server-side protection plus an agreed request path is the only control that holds, and ring20 must be party to it because it currently relies on that access. ring20-manager answered all four questions (2026-10-05) and agrees: it relies on no git write access to AEF, has no automation touching master or tags, and supports protection.
-
-Proposed decision (three parts, all operator/OneDev-admin actions):
-1. OneDev branch protection on `master` of agentic-engineering-framework: no direct pushes and no force-pushes; only the release identity (the account `fw release tag-and-release` pushes with from .107) may update it, by fast-forward. Also protect `v` tags from deletion and moving.
-2. Token 7 'ring20-git-codewrite' (Code Writer on all 41 projects, expires 2026-11-14): remove the AEF project from its authorised projects, or make it read-only there. ring20 suggested this itself.
-3. The ring20 → AEF change path is agreed: by default a sidecar request to 999; if ring20 has already written the patch, a branch `ring20/<task>` off `bleeding-edge` for 999 to review and land; never `master`.
-
-Evidence: IW-1..IW-4 above (dispositions answered from ring20-manager's reply); eb49ff9 on master 2026-10-04 07:25Z; the v1.8.0 release was blocked until it was merged into bleeding-edge (docs/reports/T-3785-v1.8.0-release-rca.md).
-
-**Date**: 2026-10-05T22:39:41Z
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
@@ -218,52 +205,3 @@ Evidence: IW-1..IW-4 above (dispositions answered from ring20-manager's reply); 
 
 ### 2026-10-04T22:34:33Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-
-### 2026-10-05T22:39:41Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** Recommendation: GO
-
-Rationale: A peer agent wrote the consumer install surface directly, bypassing the release train and every client-side gate; server-side protection plus an agreed request path is the only control that holds, and ring20 must be party to it because it currently relies on that access. ring20-manager answered all four questions (2026-10-05) and agrees: it relies on no git write access to AEF, has no automation touching master or tags, and supports protection.
-
-Proposed decision (three parts, all operator/OneDev-admin actions):
-1. OneDev branch protection on `master` of agentic-engineering-framework: no direct pushes and no force-pushes; only the release identity (the account `fw release tag-and-release` pushes with from .107) may update it, by fast-forward. Also protect `v` tags from deletion and moving.
-2. Token 7 'ring20-git-codewrite' (Code Writer on all 41 projects, expires 2026-11-14): remove the AEF project from its authorised projects, or make it read-only there. ring20 suggested this itself.
-3. The ring20 → AEF change path is agreed: by default a sidecar request to 999; if ring20 has already written the patch, a branch `ring20/<task>` off `bleeding-edge` for 999 to review and land; never `master`.
-
-Evidence: IW-1..IW-4 above (dispositions answered from ring20-manager's reply); eb49ff9 on master 2026-10-04 07:25Z; the v1.8.0 release was blocked until it was merged into bleeding-edge (docs/reports/T-3785-v1.8.0-release-rca.md).
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-f06792c6
-- **Timestamp:** 2026-10-05T22:39:44Z
-- **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
-- **Needs Human:** no
-- **Findings:** 4
-
-**Verification-level findings:**
-
-  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
-     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
-     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
-     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-  4. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
-     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-
-## Recommendation Verdict (v1.0)
-
-- **Scan ID:** RC-5ae6148e
-- **Timestamp:** 2026-10-05T22:39:44Z
-- **Overall:** CONFIRMED
-- **Claims:** 1
-
-| Claim | Type | Status |
-|-------|------|--------|
-| `T-3785` | task | ✓ pass |
-
-### 2026-10-05T22:39:42Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-- **Reason:** Inception decision: GO

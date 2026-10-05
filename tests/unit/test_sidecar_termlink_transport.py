@@ -158,7 +158,10 @@ def test_unreachable_remote_says_unreachable(mod):
 def test_refused_hub_blocks_delivery_end_to_end(mod):
     """The probe is an acceptance gate: a refused hub never reaches the post."""
     tt, delivery, outbox = mod
-    cmid = outbox.write_message(from_id="a", to="b", body="x",
+    # T-3903: a T-3855-shaped address. A bare `to` with a remote hub is a
+    # pre-T-3855 row that T-3887 dead-letters before the probe — this test is
+    # about the probe, so it must not take that path.
+    cmid = outbox.write_message(from_id="a", to="1389a831016c4bf1/b", body="x",
                                 conversation_id="c1", hub="10.0.0.5:9100")
     posted = []
 
