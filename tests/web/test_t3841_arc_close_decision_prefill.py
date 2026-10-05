@@ -72,6 +72,17 @@ def test_get_prefills_the_decision(client):
     assert 'data-testid="decision-prefilled"' in page
 
 
+def test_t3893_greyed_out_close_button_says_why(client):
+    """Operator 2026-10-05: 'the button is still greyed out' with no reason.
+    The page carries a live reason line and both messages the gate can need."""
+    page = client.get("/arcs/norec/close").get_data(as_text=True)
+    assert 'data-testid="submit-why"' in page and 'aria-live="polite"' in page
+    assert "Close is disabled: add demo evidence" in page
+    assert "the justification needs at least 30 characters" in page
+    # the gate conditions themselves are unchanged
+    assert "jLen < 30" in page and "!((demoVal.value || '').trim())" in page
+
+
 def test_no_recommendation_leaves_the_decision_empty(client):
     page = client.get("/arcs/norec/close").get_data(as_text=True)
     assert _textarea(page) == ""

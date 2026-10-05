@@ -183,6 +183,9 @@
             Submit invokes <code>fw arc close {{ arc_slug }} --from-watchtower</code> on your behalf.
         </span>
     </div>
+    {# T-3893: a greyed-out button must say why — filled in live by the script below. #}
+    <p id="submit-why" data-testid="submit-why" role="status" aria-live="polite"
+       style="color: var(--pico-del-color, #c62828); margin-top: 0.4rem;" hidden></p>
 </form>
 
 <script>
@@ -207,10 +210,20 @@
             demoVal.style.opacity = '1';
         }
         // Submit gate: demo=none requires 30+ chars justification.
-        var disable = false;
-        if (mode === 'none' && (jText.value || '').trim().length < 30) disable = true;
-        if (mode !== 'none' && !((demoVal.value || '').trim())) disable = true;
+        var disable = false, why = '';
+        var jLen = (jText.value || '').trim().length;
+        if (mode === 'none' && jLen < 30) {
+            disable = true;
+            why = 'Close is disabled: the justification needs at least 30 characters (' + jLen + ' so far).';
+        }
+        if (mode !== 'none' && !((demoVal.value || '').trim())) {
+            disable = true;
+            why = 'Close is disabled: add demo evidence — a report path or URL showing the arc\'s headline mechanic firing — or choose None and justify it.';
+        }
         submitBtn.disabled = disable;
+        // T-3893: say why, instead of a silently greyed-out button.
+        var whyEl = document.getElementById('submit-why');
+        if (whyEl) { whyEl.textContent = why; whyEl.hidden = !disable; }
     }
     for (var i = 0; i < modes.length; i++) modes[i].addEventListener('change', sync);
     demoVal.addEventListener('input', sync);
