@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-08-09T15:04:54Z
-last_update: '2026-08-09T15:15:07Z'
+last_update: 2026-10-05T20:07:14Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -108,7 +108,7 @@ producer, written after I named the class.
 
 - **IW-1: Should stored designer maps carry the producer stamp at all?**
   confidence: 2
-  disposition:
+  disposition: answered
   rationale: Current answer NO, on the rail-501 asymmetry. 832's identity gate
     reads "names a different producer → preserve". A *laundered* AEF document
     carries `aef-corpus-spec` — it is our text that was mis-adopted — so
@@ -120,8 +120,8 @@ producer, written after I named the class.
 
 - **IW-2: Is the emitter stamp dead code, or correctly scoped to exports?**
   confidence: 1
-  disposition:
-  rationale: Unresolved and the actual residual. `generate --save` POSTs through
+  disposition: deferred
+  rationale: (Deferred 2026-10-05, T-3896: it does not change the NO-GO — the stamp stays out of the store either way; resolve with the one-spike consumer enumeration before anyone retires or extends the emitter stamp.) Unresolved and the actual residual. `generate --save` POSTs through
     `/api/save`, which persists verbatim — so the stamp is *reachable* into the
     store and has simply never been used that way. Either (a) exports are a real
     consumer we have not enumerated and the scoping is right, or (b) nothing
@@ -131,8 +131,8 @@ producer, written after I named the class.
 - **IW-3: Does anything else in this project report a mechanism as shipped
   without measuring it at the seam?**
   confidence: 0
-  disposition:
-  rationale: Open. The class is L-560 with the producer inside it. T-2897's
+  disposition: deferred
+  rationale: (Deferred 2026-10-05, T-3896: a project-wide sweep is broader than this inception's question and does not bear on the NO-GO; it belongs to the L-560 class work.) Open. The class is L-560 with the producer inside it. T-2897's
     `[PASS] Secret scan` line was the peer's instance; rail 494 is mine. Two
     instances is the threshold in §Bug-Fix Learning Checkpoint for asking
     whether this is systemic, but no sweep has been run.
@@ -204,10 +204,11 @@ producer, written after I named the class.
 Measured: tools/corpus_spec.py:407 emits exporter=aef-corpus-spec on generate() output, but 0 of 37 stored designer maps and 0 .bpmn files on disk anywhere carry it. designer_api.py:139 writes payloads verbatim, so this is not a save-path strip — nothing has ever round-tripped a stored map through 'generate --save'. NO-GO on propagating the stamp into the store to feed 832's T-406 identity gate: per rail 501, producer identity is the wrong axis at this seam, because a laundered AEF document carries OUR stamp, so their gate would preserve exactly the corruption it exists to suppress. Stamping would upgrade a default-branch outcome into a confidently-wrong one. The residual question is narrower and worth one spike: is the emitter stamp dead code, or correctly scoped to exports? Reported to 832 at rail 506 sections 2-3.
 
 **Evidence:**
-
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- `tools/corpus_spec.py:407` emits `exporter="aef-corpus-spec"` on `generate()` output. Re-checked 2026-10-05.
+- `web/blueprints/designer_api.py:140` writes the saved BPMN verbatim, so nothing strips the stamp. It is absent from the store because no stored map was ever produced through `generate --save`.
+- Measured at filing: 0 of 37 stored designer maps, and 0 `.bpmn` files on disk, carry the stamp.
+- The rail-501 asymmetry (IW-1): a laundered AEF document carries OUR stamp, so stamping stored maps would make 832's identity gate preserve the corruption it exists to suppress.
+- IW-2 and IW-3 are deferred with reasons. Neither changes the NO-GO.
 
 ## Decisions
 
