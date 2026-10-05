@@ -90,18 +90,18 @@ cost_estimate_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+ring20-dashboard T-2462 finding 8. Code: `web/embeddings.py` (`reindex_incremental`, `build_index`, new scratch/disk helpers), `bin/fw` index route (signal forwarding), `lib/vector_index_health.py` (`check_disk`). Fixture tests: `tests/unit/test_t3860_reindex_disk_guard.py`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Free-space pre-check: before `reindex_incremental()` copies the index (and before `build_index()` builds), free bytes on the index filesystem are compared with the current index size plus max(20%, 500 MB) (margin only when resuming from a parked file, which needs no copy); short of that the run raises `InsufficientDiskSpace` naming needed and free bytes in one line, `fw index reindex` exits non-zero, and the live index is byte-identical
-- [ ] No orphan on any exit path: the copy is inside the try/finally; SIGTERM/SIGINT are turned into an exception so `finally` runs (scratch parked or removed); a disk-full error (ENOSPC / sqlite "database or disk is full") deletes the scratch instead of parking it; `build_index()` removes `.building` on failure; `fw index reindex` forwards TERM/INT to the python child via a shell trap
-- [ ] Start-of-run sweep: every reindex/build removes `*.reindex.<pid>.tmp*` and `*.<pid>.building` scratch whose pid is dead (plus legacy pid-less `.building` under the lock) and reports what it removed in the stats (`swept`)
-- [ ] `lib/vector_index_health.py` WARNs (`disk` check) on orphan scratch files with their sizes, and when free space is below what the next reindex needs
-- [ ] Unit tests (temp dir, monkeypatched disk-usage function): refusal on low space with live index intact, cleanup on exception, cleanup on signal, dead-pid orphan sweep, health WARNs; existing reindex/T-3786 tests stay green
-- [ ] Copy-vs-in-place decision recorded in ## Decisions
+- [x] Free-space pre-check: before `reindex_incremental()` copies the index (and before `build_index()` builds), free bytes on the index filesystem are compared with the current index size plus max(20%, 500 MB) (margin only when resuming from a parked file, which needs no copy); short of that the run raises `InsufficientDiskSpace` naming needed and free bytes in one line, `fw index reindex` exits non-zero, and the live index is byte-identical
+- [x] No orphan on any exit path: the copy is inside the try/finally; SIGTERM/SIGINT are turned into an exception so `finally` runs (scratch parked or removed); a disk-full error (ENOSPC / sqlite "database or disk is full") deletes the scratch instead of parking it; `build_index()` removes `.building` on failure; `fw index reindex` forwards TERM/INT to the python child via a shell trap
+- [x] Start-of-run sweep: every reindex/build removes `*.reindex.<pid>.tmp*` and `*.<pid>.building` scratch whose pid is dead (plus legacy pid-less `.building` under the lock) and reports what it removed in the stats (`swept`)
+- [x] `lib/vector_index_health.py` WARNs (`disk` check) on orphan scratch files with their sizes, and when free space is below what the next reindex needs
+- [x] Unit tests (temp dir, monkeypatched disk-usage function): refusal on low space with live index intact, cleanup on exception, cleanup on signal, dead-pid orphan sweep, health WARNs; existing reindex/T-3786 tests stay green
+- [x] Copy-vs-in-place decision recorded in ## Decisions
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -261,8 +261,24 @@ cost_estimate_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_t3860_reindex_disk_guard.py tests/unit/test_incremental_reindex.py tests/unit/test_t3786_index_never_built_by_readers.py -q > /tmp/.t3860-py.out 2>&1 && grep -q passed /tmp/.t3860-py.out && ! grep -q failed /tmp/.t3860-py.out
+timeout 600 bats tests/unit/t3783_vector_index_health.bats > /tmp/.t3860-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t3860-bats.out
+test "$(grep -c '# skip' /tmp/.t3860-bats.out)" -eq 0
+bash -n bin/fw
+grep -q 'trap .kill -TERM "\$_rx_pid"' bin/fw
+git check-ignore -q .context/working/fw-vec-index.db.12345.building
+bin/fw vendor self --check
+bin/fw watchtower current
 
 ## RCA
+
+**Symptom:** ring20-dashboard's production root disk hit 100% at ~22:20 on 2026-10-04 during the hourly `fw index reindex`; a 464 MB `fw-vec-index.db.reindex.<pid>.tmp` was left behind.
+
+**Root cause:** `reindex_incremental()` makes a full `shutil.copy2` of the index (≈1.5 GB there) before every run, with (1) no free-space check, (2) the copy *outside* the try/finally, so an ENOSPC mid-copy left the partial file, (3) Python's default SIGTERM handler, which exits without running `finally`, and (4) a failure path that *parked* the scratch as `.reindex.resume` whatever the cause, so a disk-full failure would have kept the disk full, and a half-written copy could be resumed from. `build_index()` had the same shape with `.building`.
+
+**Why structurally allowed:** T-3014 designed the copy-then-swap for atomicity on AEF's own host, which has hundreds of GB free. Every test ran in a tmp dir on that same host, so "is there room for a second copy?" was never a question any test could ask. T-3783 then seeded the job to every consumer, so the copy started running hourly on small production disks without anyone re-asking it. The health module (T-3783) checked whether the index could answer a query. It never checked whether the next run could fit, so the first signal was a full disk.
+
+**Prevention:** `_ensure_disk_space` refuses before writing; the `disk` check in `lib/vector_index_health.py` WARNs (doctor, audit, handover, and the cron itself) on low headroom and on orphans before the next run tries; the start-of-run sweep removes the corpses left by exits Python cannot see (SIGKILL/OOM). `tests/unit/test_t3860_reindex_disk_guard.py` uses a monkeypatched disk-usage function, so the "small disk" case now runs on any host.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -341,6 +357,16 @@ cost_estimate_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-05 — copy-then-swap vs in-place incremental update
+- **Chose:** keep the full copy + `os.replace`, and guard it (free-space pre-check, cleanup on every exit, dead-pid sweep, health WARN).
+- **Why:** an in-place transaction would be crash-safe for sqlite-vec (vec0 is backed by ordinary shadow tables in the same journal). But the run deliberately commits every ~512 chunks so a 29-58h bootstrap survives kills (OBS-258). In place, readers would see a half-updated corpus between those commits, with canaries replanted before or after the corpus they vouch for. That breaks the T-3014 AC4 contract ("old file or new file, never a mixture") and the manifest-after-swap guarantee. The single-transaction alternative loses the resumability that lets an hourly cron converge. `index_one()` also writes to the live DB between runs, and the copy isolates those writes. Space cost: one index-sized copy, which the guard now proves fits before writing.
+- **Rejected:** in-place with per-group commits (readers see a mixture, canary semantics break); in-place with one transaction (not resumable, and its rollback journal can approach index size on a bootstrap-baseline run anyway).
+
+### 2026-10-05 — `.building` named per pid, build_index takes the reindex lock
+- **Chose:** `<db>.<pid>.building`, and `build_index()` holds `.reindex.lock` (raises `IndexBusy`; the bootstrap path maps that to `skipped-locked`).
+- **Why:** a pid-less name cannot be classed as live or dead, so there would be nothing to sweep by. Holding the lock is what makes a legacy pid-less `.building` provably unowned.
+- **Rejected:** a separate pid sidecar file (one more artefact to orphan).
 
 ## Decision
 

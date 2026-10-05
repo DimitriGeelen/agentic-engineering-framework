@@ -118,6 +118,13 @@ datetime
 # about ignore rules that blind git-status, so these name only what they cover.
 .context/working/*.db.reindex.*.tmp
 .context/working/*.db.reindex.*.tmp-journal
+# T-3860: build_index()'s full-size scratch, `<db>.<pid>.building` (+ manifest/journal),
+# and the pid-less `<db>.building` builds left before T-3860. Same size class as above.
+.context/working/*.db.building
+.context/working/*.db.building.*
+.context/working/*.db.*.building
+.context/working/*.db.*.building.*
+.context/working/*.db.*.building-journal
 .context/working/.agent-dispatch-counter
 
 # Child-2 write-out staging proposals (T-2539) — generated, not tasks; regenerable via `fw bpmn compile --write`
