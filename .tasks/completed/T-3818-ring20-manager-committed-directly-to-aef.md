@@ -20,7 +20,7 @@ workflow_type: inception
 owner: agent
 horizon: null
 tags: [security, release-train, ring20]
-components: []
+components: [tests/web/test_t3896_inception_readiness.py, web/blueprints/approvals.py, web/blueprints/inception.py, web/shared.py, web/templates/_approvals_content.html, web/templates/inception_detail.html]
 related_tasks: [T-3785, T-3185]
 origin: {kind: "operator", source: "", ref: "operator 2026-10-04"}
 bvp_scores: {D1: 4, D2: 5, D3: 3, D4: 3}
