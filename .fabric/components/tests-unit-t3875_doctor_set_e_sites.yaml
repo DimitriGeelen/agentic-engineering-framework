@@ -1,0 +1,21 @@
+id: tests/unit/t3875_doctor_set_e_sites.bats
+name: t3875_doctor_set_e_sites
+type: script
+subsystem: tests
+location: tests/unit/t3875_doctor_set_e_sites.bats
+tags: []
+
+purpose: "T-3875: two `set -euo pipefail` abort sites in do_doctor that T-3837 missed (reported by ring20-dashboard, 2026-10-05)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-05
+created_by: unknown

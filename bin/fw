@@ -1633,8 +1633,9 @@ _doctor_killed_report() {
     echo "  Every check after this point did NOT run. They are UNMEASURED, not passing."
     if [ -n "${_DOCTOR_PHASE_LOG:-}" ]; then
         echo "  Phases completed (slowest first):"
-        printf '%s' "$_DOCTOR_PHASE_LOG" | sort -t'|' -k1,1nr | head -5 \
-            | while IFS='|' read -r _p_s _p_n; do echo "    ${_p_s}s  ${_p_n}"; done
+        # T-3875: awk reads all of sort's output — head -5 could SIGPIPE sort.
+        printf '%s' "$_DOCTOR_PHASE_LOG" | sort -t'|' -k1,1nr \
+            | awk -F'|' 'NR<=5 { printf "    %ss  %s\n", $1, $2 }'
     fi
     exit 143
 }
@@ -4681,7 +4682,7 @@ except Exception as e:
     local _at_fraction _at_out _at_pct _at_thr_pct
     _at_fraction=$(fw_config "AUDIT_TIMEOUT_WARN_FRACTION" 0.70)
     if [ -f "$_at_timing_file" ]; then
-        _at_out=$(python3 "$FRAMEWORK_ROOT/lib/audit_timing.py" "$_at_timing_file" "$_at_fraction" 2>/dev/null)
+        _at_out=$(python3 "$FRAMEWORK_ROOT/lib/audit_timing.py" "$_at_timing_file" "$_at_fraction" 2>/dev/null) || _at_out=""  # T-3875: set -e
     else
         _at_out=""
     fi
@@ -4771,8 +4772,10 @@ except Exception as e:
     _doctor_phase ""
     echo ""
     echo -e "  ${CYAN}INFO${NC}  fw doctor completed in $(( SECONDS - _DOCTOR_T0 ))s — slowest phases:"
-    printf '%s' "$_DOCTOR_PHASE_LOG" | sort -t'|' -k1,1nr | head -3 \
-        | while IFS='|' read -r _p_s _p_n; do echo "           ${_p_s}s  ${_p_n}"; done
+    # T-3875: awk reads ALL of sort's output (head -3 closed the pipe early, sort
+    # took SIGPIPE, and pipefail+errexit ended doctor before its summary).
+    printf '%s' "$_DOCTOR_PHASE_LOG" | sort -t'|' -k1,1nr \
+        | awk -F'|' 'NR<=3 { printf "           %ss  %s\n", $1, $2 }'
 
     # Summary (T-1707: break out host_warnings count when > 0)
     local _scope_breakdown=""
