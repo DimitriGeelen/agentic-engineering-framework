@@ -1,22 +1,20 @@
 ---
-id: T-3779
-name: "TERMLINK_RUNTIME_DIR split-brain: agents started with env -i default to /tmp/termlink-0
-  while every sidecar inbox lives on /var/lib/termlink — the inbox hook peeks an empty
-  inbox and posts land where nobody reads (055 G-012)"
+id: T-3875
+name: "bin/fw doctor still aborts without a summary under set -euo pipefail at two
+  sites T-3837 missed: (a) _at_out=$(python3 lib/audit_timing.py …) has no || fallback
+  (~L4671); (b) the 'slowest phases' printf | sort | head -3 | while pipeline — head
+  closes early, sort takes SIGPIPE, pipefail ends doctor before its summary (~L4761)"
 description: >
-  055 measured 2026-10-03: with a cleaned env termlink channel list shows 0 inbox
-  topics, with /var/lib/termlink 54; voxtype posted two contact requests onto /tmp/termlink-0.
-  Live fleet agents 0565, 055, 999 and termlink lack the variable. The same variable
-  places TermLink terminal sessions (12/16 claude-master-* on /tmp/termlink-0), so
-  one switch cannot fix both: needs one hub or a separate sidecar-hub setting; fw
-  doctor should detect a sidecar runtime dir with no inbox topics. Gap-homing: likely
-  shared with TermLink.
+  ring20-dashboard msg 1bd1f708 (2026-10-05, conversation T-2462-v180-post-upgrade-review),
+  confirmed at HEAD 794ff4154. They ship a 7-line fix (doctor-set-e-v181.diff) in
+  the series on topic xfer-ring20-dashboard-upstream-pickups; peer data, reproduce
+  before applying.
 
 status: captured
 workflow_type: build
 owner: agent
 horizon: now
-tags: []
+tags: [bug, doctor, ring20-report]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -45,8 +43,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-03T19:32:54Z
-last_update: 2026-10-05T13:29:40Z
+created: 2026-10-05T13:24:27Z
+last_update: '2026-10-05T13:30:24Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -59,7 +57,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-03T19:45:21Z'
+  - ts: '2026-10-05T13:30:24Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -68,40 +66,13 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-03T19:45:40Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3779: TERMLINK_RUNTIME_DIR split-brain: agents started with env -i default to /tmp/termlink-0 while every sidecar inbox lives on /var/lib/termlink — the inbox hook peeks an empty inbox and posts land where nobody reads (055 G-012)
+# T-3875: bin/fw doctor still aborts without a summary under set -euo pipefail at two sites T-3837 missed: (a) _at_out=$(python3 lib/audit_timing.py …) has no || fallback (~L4671); (b) the 'slowest phases' printf | sort | head -3 | while pipeline — head closes early, sort takes SIGPIPE, pipefail ends doctor before its summary (~L4761)
 
 ## Context
 
-**Live evidence, 2026-10-05 after the 13:38 reboot.** This is the operator's own AEF session.
-- The fleet tmux sessions are started at boot as `tmux new-session … env -i HOME=/root …`, for example pid 2862 `fleet-050-email-archive`. Their `termlink register` children have NO `TERMLINK_RUNTIME_DIR`: AEF's pid 4670, started 13:40:27, `fw-project=ef3845aba9f42f63`.
-- So they registered under `/tmp/termlink-0/sessions`, 27 entries including AEF's `tl-c25loi2z`, where no hub listens. The only hub is `/var/lib/termlink`, pid 14773.
-- A register started 6 s later with the variable set (pid 14832) landed correctly.
-- `bin/claude-fw` contains no `TERMLINK_RUNTIME_DIR` handling at all.
-- 055 (msg 13e369d8) reports AEF as WAITING_NO_RECIPIENT for this reason.
-
-Consequence: after EVERY reboot, every fleet agent is invisible to peers' `termlink discover`, and peer mail is never typed into their sessions.
-
-**Candidate fix:** `claude-fw` exports `TERMLINK_RUNTIME_DIR` when it is unset and exactly one canonical hub runtime dir with a live `hub.sock` exists. It then registers there and WARNs when it had to supply the variable. Plus a `fw doctor` / `fw audit` check: our TermLink session must be registered on the hub our sidecar inbox lives on.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
@@ -361,10 +332,7 @@ Consequence: after EVERY reboot, every fleet agent is invisible to peers' `terml
 
 ## Updates
 
-### 2026-10-03T19:32:54Z — task-created [task-create-agent]
+### 2026-10-05T13:24:27Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3779-termlinkruntimedir-split-brain-agents-st.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3875-binfw-doctor-still-aborts-without-a-summ.md
 - **Context:** Initial task creation
-
-### 2026-10-05T13:29:40Z — status-update [task-update-agent]
-- **Change:** horizon: now → now
