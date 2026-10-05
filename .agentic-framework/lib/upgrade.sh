@@ -2077,16 +2077,23 @@ def check_stale_paths(path):
                         non_framework += 1
     except (json.JSONDecodeError, FileNotFoundError):
         pass
-    return stale + non_framework
+    # T-3906: project hooks are the consumer's own and the regenerator CARRIES
+    # them — counting them as stale made every consumer with its own hooks
+    # regenerate on each upgrade ('N hardcoded paths') and then end PARTIAL
+    # naming nothing (832 on 1.8.3). Reported separately, never a gap.
+    return stale, non_framework
 
 fw_hooks = extract_hooks(os.environ['FW_FILE'])
 consumer_hooks = extract_hooks(os.environ['CONSUMER_FILE'])
-stale = check_stale_paths(os.environ['CONSUMER_FILE'])
+stale, project_hooks = check_stale_paths(os.environ['CONSUMER_FILE'])
 
 missing = fw_hooks - consumer_hooks
 missing_names = '; '.join(f'{e}:{n}' for e, n in sorted(missing)) if missing else ''
-print(f'{len(fw_hooks)}|{len(consumer_hooks)}|{len(missing)}|{stale}|{missing_names}')
-" 2>/dev/null || echo "0|0|0|0|parse-error")
+print(f'{len(fw_hooks)}|{len(consumer_hooks)}|{len(missing)}|{stale}|{missing_names}|{project_hooks}')
+" 2>/dev/null || echo "0|0|0|0|parse-error|0")
+        # Field order out: 1 fw 2 consumer 3 missing 4 stale 5 names 6 nonportable 7 project hooks
+        local project_hooks="${analysis##*|}"
+        analysis="${analysis%|*}"
 
         # T-2709 (T-2704 §5.1 — "this is the trap"): the two predicates above are
         # blind to a hook command carrying the GENERATING host's absolute checkout
@@ -2099,7 +2106,7 @@ print(f'{len(fw_hooks)}|{len(consumer_hooks)}|{len(missing)}|{stale}|{missing_na
         local nonportable
         nonportable=$(python3 "$FRAMEWORK_ROOT/lib/hook_portability.py" "$sfile" 2>/dev/null | cut -d'|' -f2)
         [ -z "$nonportable" ] && nonportable=0
-        echo "${analysis}|${nonportable}"
+        echo "${analysis}|${nonportable}|${project_hooks:-0}"
     }
 
     if [ -f "$settings_file" ]; then
@@ -2193,7 +2200,9 @@ print(f'{len(fw_hooks)}|{len(consumer_hooks)}|{len(missing)}|{stale}|{missing_na
                     rm -f "$_t2912_pre"
                     changes=$((changes + 1))
                     if [ "$gap_remains" = true ]; then
-                        echo -e "  ${YELLOW}PARTIAL${NC}  Hooks regenerated but gap remains: missing $missing_count_after hook(s): $missing_names_after. Backup: settings.json.bak"
+                        # T-3906: name EVERY remaining component — the old line named only
+                        # "missing", so a stale/non-portable remainder read "missing 0 hook(s): .".
+                        echo -e "  ${YELLOW}PARTIAL${NC}  Hooks regenerated but gap remains: missing ${missing_count_after:-0}${missing_names_after:+ ($missing_names_after)}, stale paths ${stale_after:-0}, non-portable paths ${nonportable_after:-0}. Backup: settings.json.bak"
                         failed_steps=$((failed_steps + 1))
                         if [ "$strict" = true ]; then
                             echo -e "  ${RED}STRICT ABORT${NC}  step 5 (hooks) partial convergence"
@@ -2207,6 +2216,12 @@ print(f'{len(fw_hooks)}|{len(consumer_hooks)}|{len(missing)}|{stale}|{missing_na
             fi
         else
             echo -e "  ${GREEN}OK${NC}  $consumer_total/$fw_total hooks present (all types matched)"
+        fi
+        # T-3906: the consumer's own hooks are information, not a gap.
+        local project_hook_count
+        project_hook_count=$(echo "$hook_analysis" | cut -d'|' -f7)
+        if [ "${project_hook_count:-0}" -gt 0 ]; then
+            echo -e "    ${CYAN}↳${NC}  ${project_hook_count} project hook(s) of your own kept as-is (not framework hooks; never a gap)"
         fi
 
         # T-1479: Duplicate framework hook detection.

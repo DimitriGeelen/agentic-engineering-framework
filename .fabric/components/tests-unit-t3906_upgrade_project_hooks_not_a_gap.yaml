@@ -1,0 +1,21 @@
+id: tests/unit/t3906_upgrade_project_hooks_not_a_gap.bats
+name: t3906_upgrade_project_hooks_not_a_gap
+type: script
+subsystem: tests
+location: tests/unit/t3906_upgrade_project_hooks_not_a_gap.bats
+tags: []
+
+purpose: "T-3906 — a consumer's OWN hooks are not a hook gap."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-05
+created_by: unknown

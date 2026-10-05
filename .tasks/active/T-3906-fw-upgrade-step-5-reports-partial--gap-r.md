@@ -10,7 +10,7 @@ description: >
   gap predicate in lib/upgrade.sh and make an empty list pass; regression test with
   a consumer whose hooks are all present.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -45,7 +45,7 @@ origin: {kind: "peer", source: "832-Workflow-designer", ref: "msg ef929333"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T21:58:55Z
-last_update: 2026-10-05T22:01:49Z
+last_update: 2026-10-05T22:11:22Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,8 +97,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Root cause, measured: `_t2912_hook_gap` adds non-framework (project) hooks into "stale". The regeneration CARRIES those hooks, so every consumer with its own hooks:
+  - triggers a regeneration labelled "N hardcoded paths";
+  - and then ends PARTIAL, with a message that names only the missing count (0).
+- [x] Project hooks are counted separately. They never trigger regeneration and never make step 5 PARTIAL or FAILED. Step 5 reports them as information ("N project hook(s) kept as-is").
+- [x] Only bare-relative or legacy stale paths, missing hooks and non-portable paths count as a gap. The PARTIAL and FAILED lines name every remaining component: missing (names), stale count, non-portable count.
+- [x] Regression bats test. A real `fw upgrade` under `env -i` on a consumer whose settings.json is the framework's own plus one project hook must:
+  - print no PARTIAL and no "hardcoded paths";
+  - keep the project hook.
+  The T-2912 suite stays green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -132,6 +139,11 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bash -n lib/upgrade.sh
+timeout 900 bats tests/unit/t3906_upgrade_project_hooks_not_a_gap.bats > /tmp/.t3906 2>&1 && ! grep -q "^not ok" /tmp/.t3906
+test "$(grep -c '# skip' /tmp/.t3906)" -eq 0
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -275,6 +287,24 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** 832 upgraded to 1.8.3. Step 5 printed "PARTIAL  Hooks regenerated but gap remains: missing 0 hook(s): ." and the run ended "Upgrade PARTIAL, 1 step(s) failed", although every framework hook was present.
+
+**Root cause:** `_t2912_hook_gap.check_stale_paths` returned `stale + non_framework`, so the consumer's own project hooks counted as "stale".
+- Step 5 therefore regenerated on every upgrade, with the reason "N hardcoded paths".
+- The regenerator carries project hooks forward by design, so the after-state still counted them and the step reported PARTIAL.
+- The PARTIAL line named only the missing count, which is why it read "missing 0 … .".
+
+**Why structurally allowed:**
+- T-679 added non-framework detection to the same counter as genuinely stale paths, a sum of two different facts.
+- T-2912's convergence check then compared the after-state against a counter that could never reach zero for such a consumer.
+- No test had a consumer with its own hooks. The T-2912 harness used the framework's own settings only. The AEF repo has no project hooks, so it never saw the problem; 832, with local fixes, did.
+
+**Prevention:**
+- Project hooks are returned as their own field and reported as information.
+- The gap counts only stale paths, missing hooks and non-portable paths.
+- The PARTIAL and FAILED line names all three.
+- A real-subprocess bats test with one project hook reproduces 832's symptom on the old code (verified) and passes on the new.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -355,3 +385,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3906-fw-upgrade-step-5-reports-partial--gap-r.md
 - **Context:** Initial task creation
+
+### 2026-10-05T22:02:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
