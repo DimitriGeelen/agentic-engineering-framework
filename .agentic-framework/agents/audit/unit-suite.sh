@@ -142,6 +142,8 @@ export RESULTS FRAMEWORK_ROOT FILE_TIMEOUT
 # T-3915: no test may start a real Watchtower for its fixture project — 13 leaked
 # servers were found (up to 5 h old), and a detached one held bats' fd 3 open.
 export FW_WATCHTOWER_ENSURE=0
+# T-3933: doctor tests must not sweep the live Watchtower with the smoke probe.
+export FW_DOCTOR_SMOKE=0
 
 # _run_leg <leg> <deadline-epoch> <files...> — the pool. Files are fed
 # longest-first when the previous report measured them (LPT scheduling: a

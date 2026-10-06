@@ -398,7 +398,7 @@ class TestWorkerWritesItsOwnRow:
         _judge(repo, dispatcher=w)
         b = w.calls[0]["brief"]
         for needle in ("reviewer verdict digest", "reviewer verdict record", "--dispatch-id",
-                       "FW_SIDECAR_AGENT_ID", "git add .context/reviews", "--evidence", "--digest"):
+                       "FW_SIDECAR_AGENT_ID", "--commit", "--evidence", "--digest"):
             assert needle in b
 
     def test_dispatch_name_and_registration(self, repo):

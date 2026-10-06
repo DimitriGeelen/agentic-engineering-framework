@@ -1,10 +1,19 @@
 ---
 id: T-3940
-name: "URGENT: concurrent reviewer workers commit each other's verdict rows (shared verdicts.jsonl swept by 'git commit -- .context/reviews') — rows then fail provenance forever; ring20 needs --no-verify on every push since 2026-10-01"
+name: "URGENT: concurrent reviewer workers commit each other's verdict rows (shared
+  verdicts.jsonl swept by 'git commit -- .context/reviews') — rows then fail provenance
+  forever; ring20 needs --no-verify on every push since 2026-10-01"
 description: >
-  ring20-manager 8584a199 + e5e4e237 (their P-2026-1001-023 / P-2026-1003-005, ring20 T-2114/T-2205): rows V-20261001-24a58c75, -984b8c92 ('introduced by other'), -9bb12043 ('reviewer is producer') fail pre-push permanently. Cause in AEF: lib/reviewer/judge_cli.py:413 commit_command — the pathspec cannot separate rows in ONE shared file. Fix: verdict record appends AND commits its own row under one flock (lib/keylock), so no worker's commit can contain another's row; then give consumers a sanctioned acknowledge path for already-swept rows (--fixed-by this task). Never reached AEF until 2026-10-06 (misrouted to a duplicate session, G-111).
+  ring20-manager 8584a199 + e5e4e237 (their P-2026-1001-023 / P-2026-1003-005, ring20
+  T-2114/T-2205): rows V-20261001-24a58c75, -984b8c92 ('introduced by other'), -9bb12043
+  ('reviewer is producer') fail pre-push permanently. Cause in AEF: lib/reviewer/judge_cli.py:413
+  commit_command — the pathspec cannot separate rows in ONE shared file. Fix: verdict
+  record appends AND commits its own row under one flock (lib/keylock), so no worker's
+  commit can contain another's row; then give consumers a sanctioned acknowledge path
+  for already-swept rows (--fixed-by this task). Never reached AEF until 2026-10-06
+  (misrouted to a duplicate session, G-111).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T10:46:13Z
-last_update: 2026-10-06T10:46:13Z
-date_finished: null
+last_update: 2026-10-06T11:08:11Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-06T10:54:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-06T11:00:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=275,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3940: URGENT: concurrent reviewer workers commit each other's verdict rows (shared verdicts.jsonl swept by 'git commit -- .context/reviews') — rows then fail provenance forever; ring20 needs --no-verify on every push since 2026-10-01
@@ -62,8 +99,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] One ledger lock (lib/keylock) is held from append to commit by every writer that commits verdict rows: `verdict record --commit` (CLI) and `record_for_worker` (runtime for harness kinds)
+- [x] Inside a review worker (FW_SIDECAR_AGENT_ID set) `verdict record` commits by default; the brief tells Claude workers to record with `--commit` and no longer prints a separate `git add .context/reviews … git commit` step
+- [x] Regression test: two workers record concurrently (two threads, each opening its own lock fd — flock is per open file description, so they contend exactly as two processes do) — each commit contains only its own verdict row, authored by its own identity; control leg: the old append-then-commit sequence does sweep the other row
+- [x] Existing T-3580 judge/round-3 tests updated to the new contract and green; verdict-ledger tests green (667 passed across 18 reviewer/ledger test files; t3579/t3580 bats green)
+- [ ] ring20 told the sanctioned path for their 3 swept rows: `fw reviewer verdict acknowledge <row> --fixed-by <THEIR completed task that upgrades to the release carrying AEF T-3940> --reason …` (acknowledge resolves --fixed-by in the consumer's own .tasks/completed)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +137,10 @@ date_finished: null
 -->
 
 ## Verification
+
+python3 -m pytest -q tests/unit/t3580_round3_test.py -k "commit or identity or parallel or control_append or brief_records"
+python3 -m pytest -q tests/unit/t3580_judge_cli_test.py -k brief
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -240,6 +284,27 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** ring20 (since 2026-10-01) has three verdict rows that fail the pre-push audit
+permanently ("introduced by other", "reviewer is producer"), so every push needs a Tier-0
+`--no-verify` approved by the operator; it recurred on 2026-10-06 with two review seats.
+
+**Root cause:** `verdicts.jsonl` is ONE append-only file shared by every reviewer, and recording
+was two separate steps: `verdict record` appended, then the worker ran
+`git add .context/reviews && git commit -- .context/reviews` later. A pathspec selects files,
+not lines, so the worker that committed first took every row other workers had appended in
+between — under its own identity. Provenance then correctly refuses those rows forever. The
+runtime path for harness kinds (`record_for_worker`) had the same append-then-commit gap.
+
+**Why structurally allowed:** T-3654 (pathspec) and T-3655 (per-dispatch email) each fixed a
+sweep of OTHER files/identities, and their tests ran one worker at a time; no test ran two
+reviewers in parallel, so the shared-file case was never exercised. The ring20 report also
+never reached this session until 2026-10-06 (misrouted to a duplicate session, G-111).
+
+**Prevention:** append+commit is now one step under one lock (`_ledger_lock`), shared by both
+writers; inside a worker `record` commits by default; the brief no longer contains a separate
+commit step (a test asserts `commit_command` is gone). Pinned by a parallel-recording
+regression test plus a control leg that reproduces the old sweep.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -320,3 +385,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3940-urgent-concurrent-reviewer-workers-commi.md
 - **Context:** Initial task creation
+
+### 2026-10-06T10:54:31Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

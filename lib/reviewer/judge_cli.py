@@ -407,20 +407,13 @@ def record_command(task_id: str, seat: str, rung: int, run_id: str) -> str:
     return (f'bin/fw reviewer verdict record {task_id} --ac <N> --outcome <OUTCOME> '
             f'--reviewer "reviewer-$FW_SIDECAR_AGENT_ID:{seat or "reviewer"}" '
             f'--rung {_rung_label(rung, seat)} --dispatch-id "$FW_SIDECAR_AGENT_ID"{run} '
-            f'--digest <DIGEST> --evidence <REPORT>')
-
-
-def commit_command(task_id: str) -> str:
-    # T-3654: explicit pathspec. Workers share ONE git index; a bare commit sweeps in whatever
-    # another worker has staged, which makes the reviewer a producer and voids the row.
-    return ('git add .context/reviews && GIT_AUTHOR_NAME="reviewer-$FW_SIDECAR_AGENT_ID" '
-            # T-3655: a per-dispatch email. One shared reviewer email let one contaminated
-            # verdict commit make every later reviewer of the task a producer.
-            'GIT_COMMITTER_NAME="reviewer-$FW_SIDECAR_AGENT_ID" '
-            'GIT_AUTHOR_EMAIL="reviewer+$FW_SIDECAR_AGENT_ID@aef.local" '
-            'GIT_COMMITTER_EMAIL="reviewer+$FW_SIDECAR_AGENT_ID@aef.local" '
-            f'git commit -m "{task_id}: reviewer verdict" '
-            '-- .context/reviews')
+            f'--digest <DIGEST> --evidence <REPORT> --commit')
+    # T-3940: `--commit` appends AND commits this row under the ledger lock, as
+    # reviewer-$FW_SIDECAR_AGENT_ID. The old separate `git add .context/reviews && git commit
+    # -- .context/reviews` step could not separate rows inside the ONE shared verdicts.jsonl:
+    # a worker that committed first took the rows of workers still running (ring20's
+    # permanent 'introduced by other' FAILs). T-3654's pathspec and T-3655's per-dispatch
+    # email still hold — they now live in verdict_ledger._commit_rows.
 
 
 def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reason: str = "",
@@ -540,9 +533,9 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
         "completion (your session, exit state, result stream and the exact rows you left). A row "
         "you did not leave by then never counts, and neither does a green if you exit non-zero.",
         "",
-        "4. Commit your own rows, staging by name, under your own identity:",
-        "",
-        "   " + commit_command(task_id),
+        "4. Do NOT run `git add` or `git commit` yourself: `record --commit` already committed "
+        "exactly your row and its evidence, under your own identity, while holding the ledger "
+        "lock. A separate commit would take other reviewers' rows and void them.",
         "",
         "Do not edit the task file, do not tick anything, do not touch any file outside "
         f"`{REPORT_DIR}/{task_id}/` and the ledger. Never use a bypass flag.",

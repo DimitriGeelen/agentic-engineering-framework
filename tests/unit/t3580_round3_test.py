@@ -172,7 +172,7 @@ did = os.environ["FW_SIDECAR_AGENT_ID"]
 open(os.environ["WDIR_EXPECTED"].rstrip("/") + ".seen_author", "w").write(os.environ.get("GIT_AUTHOR_NAME", ""))
 task = re.search(r"^Task: (T-\d+)$", prompt, re.M).group(1)
 rec = next(l.strip() for l in prompt.splitlines() if l.strip().startswith("bin/fw reviewer verdict record"))
-com = next(l.strip() for l in prompt.splitlines() if l.strip().startswith("git add .context/reviews"))
+assert "--commit" in rec   # T-3940: record commits its own row; no separate commit step
 dg = subprocess.run(["bin/fw", "reviewer", "verdict", "digest", task, "--ac", "1"],
                     capture_output=True, text=True, check=True).stdout.strip()
 rep = f".context/reviews/evidence/{task}/AC1-{did}.md"
@@ -201,7 +201,6 @@ if mode == "peek":   # round 4: can the worker see the completion secret? (round
 line = (rec.replace("<N>", "1").replace("<OUTCOME>", "green").replace("<DIGEST>", dg)
            .replace("<REPORT>", rep))
 subprocess.run(["bash", "-c", line], check=True, stdout=sys.stderr)   # keep the stream JSON-only
-subprocess.run(["bash", "-c", com], check=True, stdout=sys.stderr)
 print('{"type":"result","result":"1. [AC] x\\nVERDICT: green"}')
 sys.exit(3 if mode == "fail" else 0)
 '''
@@ -330,15 +329,38 @@ class TestBriefQuoting:
             '"reviewer-$FW_SIDECAR_AGENT_ID:codex"', "'reviewer-$FW_SIDECAR_AGENT_ID:codex'")
         assert self._exec(tmp_path, line, "rv-9")[0] == "reviewer-$FW_SIDECAR_AGENT_ID:codex"
 
-    def test_generated_commit_command_commits_as_the_worker(self, prod):
+    def _record_commit(self, prod, did, ac=1):
+        """T-3940: what `verdict record --commit` does inside a worker — append+commit, locked."""
+        rep = prod / f".context/reviews/evidence/{TID}/AC{ac}-{did}.md"
+        rep.parent.mkdir(parents=True, exist_ok=True)
+        rep.write_text(f"checked {did}\n")
+        return vl.record_and_commit(
+            TID, ac, "green", identity=f"reviewer-{did}", email=f"reviewer+{did}@aef.local",
+            reviewer=f"reviewer-{did}:claude", rung="rung-1-same-vendor-independent",
+            dispatch_id=did, digest=vl.criterion_digest(_crit(prod, ac)),
+            evidence=[str(rep.relative_to(prod))], root=prod)
+
+    @staticmethod
+    def _rows_added(prod, sha):
+        diff = subprocess.run(["git", "show", "--format=", "-U0", sha, "--",
+                               ".context/reviews/verdicts.jsonl"], cwd=prod, capture_output=True,
+                              text=True).stdout
+        return [json.loads(l[1:]) for l in diff.splitlines()
+                if l.startswith("+") and not l.startswith("+++") and l[1:].strip()]
+
+    def test_brief_records_with_commit_and_has_no_separate_commit_step(self):
+        # T-3940: the separate `git add .context/reviews && git commit` step is gone.
+        line = judge_cli.record_command(TID, "claude", 1, "run-x")
+        assert line.endswith("--commit")
+        assert not hasattr(judge_cli, "commit_command")
+
+    def test_record_commit_commits_as_the_worker(self, prod):
         _dispatch(prod, "rv-1")
-        _record(prod, "rv-1")
-        r = subprocess.run(["bash", "-c", judge_cli.commit_command(TID)], cwd=prod, text=True,
-                           capture_output=True, env={**os.environ, "FW_SIDECAR_AGENT_ID": "rv-1"})
-        assert r.returncode == 0, r.stderr
-        log = subprocess.run(["git", "log", "-1", "--format=%an|%cn"], cwd=prod, capture_output=True,
-                             text=True).stdout.strip()
-        assert log == "reviewer-rv-1|reviewer-rv-1"
+        rec = self._record_commit(prod, "rv-1")
+        log = subprocess.run(["git", "log", "-1", "--format=%an|%cn|%ae"], cwd=prod,
+                             capture_output=True, text=True).stdout.strip()
+        assert log == "reviewer-rv-1|reviewer-rv-1|reviewer+rv-1@aef.local"
+        assert rec["commit"] and [r["id"] for r in self._rows_added(prod, rec["commit"])] == [rec["id"]]
 
     def test_reviewer_identity_is_per_dispatch_not_shared(self, prod):
         # T-3655: a shared reviewer@aef.local made one contaminated verdict commit (which also
@@ -346,36 +368,69 @@ class TestBriefQuoting:
         _dispatch(prod, "rv-1")
         _record(prod, "rv-1")
         (prod / "stray.txt").write_text("contaminating change\n")
-        subprocess.run(["git", "add", "stray.txt"], cwd=prod, check=True)
-        env1 = {**os.environ, "FW_SIDECAR_AGENT_ID": "rv-1"}
+        env1 = {**os.environ, "GIT_AUTHOR_NAME": "reviewer-rv-1", "GIT_COMMITTER_NAME": "reviewer-rv-1",
+                "GIT_AUTHOR_EMAIL": "reviewer+rv-1@aef.local",
+                "GIT_COMMITTER_EMAIL": "reviewer+rv-1@aef.local"}
         # simulate the pre-T-3654 contaminated commit: reviewer rv-1 commits review + stray file
-        cmd = judge_cli.commit_command(TID).replace(" -- .context/reviews", "")
-        r = subprocess.run(["bash", "-c", cmd], cwd=prod, text=True, capture_output=True, env=env1)
-        assert r.returncode == 0, r.stderr
-        email = subprocess.run(["git", "log", "-1", "--format=%ae|%ce"], cwd=prod,
-                               capture_output=True, text=True).stdout.strip()
-        assert email == "reviewer+rv-1@aef.local|reviewer+rv-1@aef.local"
+        subprocess.run(["git", "add", "stray.txt", ".context/reviews"], cwd=prod, check=True)
+        subprocess.run(["git", "commit", "-qm", f"{TID}: reviewer verdict"], cwd=prod, check=True,
+                       env=env1)
         producers, _ = vl.producers_checked(prod, TID)
         assert "reviewer+rv-1@aef.local" in producers          # rv-1 is now a producer of TID
         assert "reviewer@aef.local" not in producers           # no shared identity to poison
         assert not any("rv-2" in p for p in producers)         # a later reviewer stays clean
 
-    def test_generated_commit_command_never_sweeps_other_staged_files(self, prod):
-        # T-3654: workers share ONE git index. A verdict commit without a pathspec took another
-        # worker's staged change, which made the reviewer a producer and voided the row.
+    def test_record_commit_never_sweeps_other_staged_files(self, prod):
+        # T-3654: workers share ONE git index; the commit takes the ledger paths only.
         _dispatch(prod, "rv-1")
-        _record(prod, "rv-1")
         (prod / "unrelated.txt").write_text("another worker's staged change\n")
         subprocess.run(["git", "add", "unrelated.txt"], cwd=prod, check=True)
-        r = subprocess.run(["bash", "-c", judge_cli.commit_command(TID)], cwd=prod, text=True,
-                           capture_output=True, env={**os.environ, "FW_SIDECAR_AGENT_ID": "rv-1"})
-        assert r.returncode == 0, r.stderr
+        self._record_commit(prod, "rv-1")
         files = subprocess.run(["git", "show", "--name-only", "--format=", "HEAD"], cwd=prod,
                                capture_output=True, text=True).stdout.split()
         assert files and all(f.startswith(".context/reviews/") for f in files), files
         staged = subprocess.run(["git", "diff", "--cached", "--name-only"], cwd=prod,
                                 capture_output=True, text=True).stdout.split()
         assert staged == ["unrelated.txt"]
+
+    def test_parallel_workers_each_commit_only_their_own_row(self, prod):
+        # T-3940 (ring20 P-2026-1001-023): two workers recording at once. Each commit must hold
+        # exactly its own verdict row, never the other's.
+        import threading
+        _dispatch(prod, "rv-1")
+        _dispatch(prod, "rv-2")
+        out, errs = {}, []
+
+        def go(did):
+            try:
+                out[did] = self._record_commit(prod, did)
+            except Exception as e:      # surfaced below, not swallowed
+                errs.append(f"{did}: {e}")
+        ts = [threading.Thread(target=go, args=(d,)) for d in ("rv-1", "rv-2")]
+        for t in ts:
+            t.start()
+        for t in ts:
+            t.join(60)
+        assert not errs, errs
+        for did in ("rv-1", "rv-2"):
+            rows = self._rows_added(prod, out[did]["commit"])
+            assert [r["dispatch_id"] for r in rows] == [did], (did, rows)
+
+    def test_control_append_then_commit_sweeps_the_other_row(self, prod):
+        # The pre-T-3940 sequence: both append, then one commits '-- .context/reviews'. Its
+        # commit carries the other worker's row — the defect the lock removes.
+        _dispatch(prod, "rv-1")
+        _dispatch(prod, "rv-2")
+        _record(prod, "rv-1")
+        _record(prod, "rv-2")
+        env1 = {**os.environ, "GIT_AUTHOR_NAME": "reviewer-rv-1", "GIT_COMMITTER_NAME": "reviewer-rv-1",
+                "GIT_AUTHOR_EMAIL": "reviewer+rv-1@aef.local",
+                "GIT_COMMITTER_EMAIL": "reviewer+rv-1@aef.local"}
+        subprocess.run(["git", "add", ".context/reviews"], cwd=prod, check=True)
+        subprocess.run(["git", "commit", "-qm", f"{TID}: reviewer verdict", "--", ".context/reviews"],
+                       cwd=prod, check=True, env=env1)
+        rows = self._rows_added(prod, "HEAD")
+        assert sorted(r["dispatch_id"] for r in rows) == ["rv-1", "rv-2"]
 
 
 # ── 2. HIGH: the reviewed revision is captured before the review, not at record time ─────────
