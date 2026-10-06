@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T15:57:40Z
-last_update: 2026-10-06T16:37:04Z
+last_update: 2026-10-06T16:42:15Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,10 +94,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] One helper `lib/upgrade_template_sync.py` decides each template-owned project file for upgrade steps 7 (resume.md) and 7b (doorbell+mail skills/scripts): in sync → OK; missing → CREATED; equal to the hash the framework last wrote (stamp `.context/upgrade-template-stamp.json`) → stock, UPDATED; anything else — including no stamp yet — → KEPT, with the template written beside it as `<file>.upstream` and a WARN. Never overwrites a customised file
-- [ ] A consumer can declare project files it owns in `.fwvendor-preserve.yaml` under `project_files:` (globs, relative to the project root) → PRESERVED, same .upstream copy
-- [ ] Steps 7 and 7b both call the helper (T-3956, the /resume overwrite, is the same root cause and closes with this)
-- [ ] Regression tests: stock copy updated; customised copy kept + .upstream; no stamp + differing → kept; manifest-preserved; missing → created; dry-run writes nothing; second run converges (stamp written when in sync)
+- [x] One helper `lib/upgrade_template_sync.py` decides each template-owned project file for upgrade steps 7 (resume.md) and 7b (doorbell+mail skills/scripts): in sync → OK; missing → CREATED; equal to the hash the framework last wrote (stamp `.context/upgrade-template-stamp.json`) → stock, UPDATED; anything else — including no stamp yet — → KEPT, with the template written beside it as `<file>.upstream` and a WARN. Never overwrites a customised file
+- [x] A consumer can declare project files it owns in `.fwvendor-preserve.yaml` under `project_files:` (globs, relative to the project root) → PRESERVED, same .upstream copy
+- [x] Steps 7 and 7b both call the helper (T-3956, the /resume overwrite, is the same root cause and closes with this). A failing helper is a WARN, never an aborted upgrade (the fresh-machine sim caught a set -e abort)
+- [x] Regression tests: stock copy updated; customised copy kept + .upstream; no stamp + differing → kept; manifest-preserved; missing → created; dry-run writes nothing; second run converges (stamp written when in sync) — 7 helper tests, lib_upgrade resume tests 4/4, fresh-machine sim 16/16
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
