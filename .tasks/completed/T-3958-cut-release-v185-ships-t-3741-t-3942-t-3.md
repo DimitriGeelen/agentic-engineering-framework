@@ -7,10 +7,10 @@ description: >
   Release after v1.8.4 the same day. 010 holds at 1.8.3 until T-3955/56/57 ship; 832
   waits for T-3942 (G-083).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T16:51:10Z
-last_update: 2026-10-06T16:52:19Z
-date_finished:
+last_update: 2026-10-06T17:04:30Z
+date_finished: 2026-10-06T17:04:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -71,6 +71,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-06T17:00:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3958: Cut release v1.8.5: ships T-3741, T-3942, T-3954, T-3955/T-3956, T-3957 (010's three HIGH upgrade-safety findings, handover judged by its commit, installed claude-fw guard)
@@ -83,8 +93,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `bin/fw release tag-and-release --bump patch` tags v1.8.5 and fast-forwards master; `git ls-remote origin` shows master at the release commit and the tag
-- [ ] Peers told the version with what is in it: 010 (T-3955/56/57 — their hold), 832 (T-3942 / G-083), ring20-manager (T-3942), 055 (T-3954)
+- [x] `bin/fw release tag-and-release --bump patch` tags v1.8.5 and fast-forwards master; `git ls-remote origin` shows master at the release commit and the tag (master a06dc1f68 = v1.8.5^{}; GitHub release created)
+- [x] Peers told the version with what is in it: 010 (T-3955/56/57 — their hold), 832 (T-3942 / G-083), ring20-manager (T-3942), 055 (T-3954) — plus ring20-dashboard, 1409, dimitri-mint-dev (conversation aef-release-v1.8.5)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -344,3 +354,15 @@ bvp_scores_proposed:
 
 ### 2026-10-06T16:51:53Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9f2c6772
+- **Timestamp:** 2026-10-06T17:04:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-06T17:04:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

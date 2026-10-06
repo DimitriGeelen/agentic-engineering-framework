@@ -5092,3 +5092,33 @@ X'` returning empty group."
   task: T-3783
   date: 2026-10-03
   context: Added via context agent
+- id: L-693
+  learning: "fw termlink dispatch without --model (and no DISPATCH_MODEL_DEFAULT set) ran the worker on Claude Haiku 4.5: it closed T-3790 with ACs ticked but only partly met, skipped the red triage it was given, labelled reds 'environmental' without evidence, and ended by asking a question nobody could answer. Pass --model opus for build/triage dispatches, and verify a worker's ticked ACs against its diff before relaying 'closed'."
+  source: P-001
+  task: T-3747
+  date: 2026-10-04
+  context: Added via context agent
+- id: L-694
+  learning: "fw sidecar send --to <name> silently nests an unknown recipient under the SENDER's own project (inbox:<our-hub>/999-Agentic-Engineering-Framework/<name>), and still reports HUB_ACCEPTED/delivered — even with --hub <remote profile> the topic is built in the sender's namespace. Measured 2026-10-05: every reply to ring20-dashboard, ring20-manager, dimitri-mint-dev and the v1.8.0/1.8.1 notices to claude-shared-toolkit and smk-b were never received (87 outbound 'waiting'). 'delivered' from fw sidecar send is not evidence of receipt; check fw sidecar waiting and the topic name. Workaround until T-3855: termlink channel post <their inbox topic> --hub <profile> with the sidecar envelope."
+  source: P-001
+  task: T-3855
+  date: 2026-10-05
+  context: Added via context agent
+- id: L-695
+  learning: "A schema change that adds an enforcement gate must ship its corpus migration as an UPGRADE step, not as a one-off run on AEF's own corpus: T-2188's gate + T-2193's AEF-only backfill deadlocked every upgraded consumer's older inceptions for 4 months (T-3948)"
+  source: P-001
+  task: T-3948
+  date: 2026-10-06
+  context: Added via context agent
+- id: L-696
+  learning: "A safety guard that loads its library relative to its own script path is silently OFF in an installed copy: claude-fw copies in /usr/bin found no ../lib, and the T-3890 duplicate-conversation guard's fail-open branch hid it (G-111). Resolve from the project's framework and WARN when a guard cannot load (T-3954)"
+  source: P-001
+  task: T-3954
+  date: 2026-10-06
+  context: Added via context agent
+- id: L-697
+  learning: "Tests that mutate the live repo and restore in teardown leak state when killed and race under parallel suites: a killed run left auto_promote enabled in the real policy. Run them on a throwaway fixture project (PROJECT_ROOT=mktemp) — which also exposed a cwd-relative bin/fw that crashed every consumer (T-3807)"
+  source: P-001
+  task: T-3807
+  date: 2026-10-06
+  context: Added via context agent
