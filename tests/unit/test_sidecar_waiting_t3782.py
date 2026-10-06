@@ -285,6 +285,26 @@ def test_listed_until_handed_over_replied_or_dropped_never_by_age(ab, monkeypatc
     del hub
 
 
+def test_t3909_nudge_copy_of_an_answered_message_is_closed_and_never_escalated(ab):
+    """ring20-dashboard on 1.8.3: `<id>-nudge-5/6` copies of a message they had
+    REPLIED to were escalated to the operator, while the inject gate withheld the
+    same ids as answered. One fact, one predicate (seen.keys_for/answered_ids)."""
+    a, b, use, start = ab
+    use(b)
+    _store("base-1")
+    _store("base-1-nudge-5", body="[nudge] base-1")
+    _store("other-1-nudge-5", body="[nudge] other-1")       # control: never answered
+    inject.deliver_pending(trigger="test", runner=_no_sessions)
+    # We replied to the BASE id only — as the reply path records it.
+    receipts._append(receipts.sent_path(), {"client_msg_id": "base-1", "state": "REPLIED", "ok": True})
+    far = datetime.now(timezone.utc) + timedelta(days=2)
+    ids = {i["id"] for i in waiting.inbound_items(far)}
+    assert "base-1" not in ids and "base-1-nudge-5" not in ids
+    assert "other-1-nudge-5" in ids
+    assert waiting.is_closed_inbound("base-1-nudge-5")
+    assert not waiting.is_closed_inbound("other-1-nudge-5")
+
+
 def test_young_message_for_a_busy_agent_is_not_listed_until_the_threshold(ab):
     a, b, use, start = ab
     use(b)

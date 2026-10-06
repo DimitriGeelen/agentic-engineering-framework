@@ -266,8 +266,16 @@ def replied_ids() -> set[str]:
 
 
 def is_closed_inbound(mid: str, replied: set[str] | None = None) -> bool:
-    return (receiver.is_message_handed_over(mid) or is_dropped(mid)
-            or mid in (replied_ids() if replied is None else replied))
+    if receiver.is_message_handed_over(mid) or is_dropped(mid):
+        return True
+    # T-3909: "answered" under EVERY id the message is known by — a peer's
+    # `<id>-nudge-N` copy of mail we replied to is answered too. The inject gate
+    # (seen.withheld, T-3872) already asked it this way; this path tested the raw
+    # id, so ring20 got operator escalations for nudge copies of answered threads.
+    from . import seen
+    answered = {seen.base(i) for i in (replied_ids() if replied is None else replied)}
+    answered |= seen.answered_ids()
+    return bool(seen.keys_for(mid, receiver.read_message(mid)) & answered)
 
 
 def recovering(mid: str) -> dict | None:
