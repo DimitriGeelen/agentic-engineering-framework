@@ -11,7 +11,7 @@ setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export NO_COLOR=1
     UTS="$FRAMEWORK_ROOT/lib/upgrade_template_sync.py"
-    KNOWN="$FRAMEWORK_ROOT/lib/templates/task-template-shipped-hashes.json"
+    KNOWN="$FRAMEWORK_ROOT/lib/upgrade_template_shipped.py"
     TPL="$FRAMEWORK_ROOT/.tasks/templates"
 }
 
@@ -30,9 +30,10 @@ _old_default() {   # an earlier shipped default.md, different from the current o
 
 @test "T-3965: the shipped-hash list holds the current hash of every task template" {
     run python3 - "$KNOWN" "$TPL" <<'PY'
-import hashlib, json, sys
+import ast, hashlib, sys
 from pathlib import Path
-known = json.load(open(sys.argv[1]))
+src = open(sys.argv[1]).read()
+known = ast.literal_eval(src[src.index("{"):])
 for f in sorted(Path(sys.argv[2]).glob("*.md")):
     rel = f".tasks/templates/{f.name}"
     assert hashlib.sha256(f.read_bytes()).hexdigest() in known.get(rel, []), rel

@@ -1698,7 +1698,7 @@ $project_owned"
     # an update rather than a KEPT, so schema fields still arrive through the templates.
     echo -e "${YELLOW}[2/10] Task templates${NC}"
 
-    local _tmpl_known="$FRAMEWORK_ROOT/lib/templates/task-template-shipped-hashes.json"
+    local _tmpl_known="$FRAMEWORK_ROOT/lib/upgrade_template_shipped.py"
     _t1867_changes=0
     for tmpl in "$FRAMEWORK_ROOT/.tasks/templates/"*.md; do
         [ -f "$tmpl" ] || continue
