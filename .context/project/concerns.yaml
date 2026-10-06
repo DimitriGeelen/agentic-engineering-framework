@@ -5397,3 +5397,22 @@ concerns:
   - T-2403
   - T-3166
   - T-136
+- id: G-111
+  type: gap
+  title: Peer mail silently stops reaching an agent session that is not TermLink-wrapped — peers wait, the
+    operator nudges by hand
+  description: 'Operator 2026-10-06: ring20-manager and 832 complained they keep waiting for AEF. This
+    session runs under `claude-fw -c` without --termlink (sidecar session record termlink_session: null).
+    lib/sidecar/inject.py finds no candidate, so inbound mail stays flagged and is never claimed; the
+    UserPromptSubmit hook surfaces only mail claimed for its own session, so even the operator''s prompts do
+    not surface it. Mail was seen only when the agent ran `fw sidecar alerts` by hand.'
+  severity: high
+  status: watching
+  detected_in: T-3936
+  observed: '2026-10-06'
+  reported_by: operator (peer complaints relayed)
+  blast_radius: every peer conversation with a project whose agent session is not TermLink-wrapped
+  detection_gap: INJECT_BLOCKED is recorded as an event but nothing surfaces it to the agent or operator;
+    no check asserts the live agent session is an inject target.
+  what_remains: T-3936 (surface unclaimed mail without a TermLink target; warn when the live session has
+    no registration).
