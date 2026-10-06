@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3957: Sidecar project_id ignores RAIL_PROJECT_LABEL (010; their local fix 93297d781)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-06T16:16:43Z
+# ============================================================================
+
+task_id: T-3957
+task_name: "Sidecar project_id ignores RAIL_PROJECT_LABEL (010; their local fix 93297d781)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-06T15:59:04Z
+completed: 2026-10-06T16:16:23Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-06T18:16:15+02:00
+last_commit: 2026-10-06T18:16:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the sidecar's project id honours RAIL_PROJECT_LABEL the way the rail does (same sources, same normalisation); unset → the basename, unchanged. 010's HIGH finding (pickup 321), parity-tested against rail_project_label. vendor-sync lib/sidecar/circuit.py
+
+# Key outcomes
+outcomes:
+  - '`lib/sidecar/circuit.py project_id()` honours RAIL_PROJECT_LABEL (env FW_RAIL_PROJECT_LABEL, then .framework.yaml `RAIL_PROJECT_LABEL:` — also the lowercase key T-3924 writes), normalised exactly as `rail_project_label` (lowercase, '' _'' → ''-'', [a-z0-9.-]), so the rail and the sidecar name a project the same way'
+  - 'With no label set, project_id is unchanged (directory basename, case kept) — no existing address moves'
+  - 'Regression tests: label via env, via file (upper and lower key), normalisation parity with lib/rail-identity.sh on the same input; control: no label → basename; the .agentic-framework refusal still holds (6 new; all 435 sidecar tests green)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/circuit.py'
+  - 'lib/sidecar/circuit.py'
+  - '.tasks/active/T-3957-sidecar-projectid-ignores-railprojectlab.md'
+  - 'tests/unit/test_sidecar_project_label_t3957.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T18:16:15'
+    action: 'T-3957: the sidecar''s project id honours RAIL_PROJECT_LABEL the way the rail does (same sources, same normalisation); unset → the basename, unchanged. 010''s HIGH finding (pickup 321), parity-tested against rail_project_label'
+  - time: '2026-10-06T18:16:21'
+    action: 'T-3957: vendor-sync lib/sidecar/circuit.py'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 17 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 17
+  commits: 2
+  files_changed: 4
+  lines_added: 185
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3957-sidecar-projectid-ignores-railprojectlab.md
+generated_by: context-agent-hybrid

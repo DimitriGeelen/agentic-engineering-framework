@@ -6,12 +6,12 @@ description: >
   without honouring RAIL_PROJECT_LABEL, so 010's identity on the hub is wrong after
   upgrade. Their fix 93297d781 is the reference. 010 holds at 1.8.3 until fixed.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/sidecar/circuit.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T15:59:04Z
-last_update: 2026-10-06T16:16:20Z
-date_finished:
+last_update: 2026-10-06T16:16:23Z
+date_finished: 2026-10-06T16:16:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -373,3 +373,22 @@ normalisation), pinned by a parity test that runs the shell function on the same
 
 ### 2026-10-06T16:12:46Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c1ec50d1
+- **Timestamp:** 2026-10-06T16:16:29Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `lib/sidecar/circuit.py project_id()` honours RAIL_PROJECT_LABEL (env FW_RAIL_PROJECT_LABEL, then .framework.yaml `RAIL_PROJECT_LABEL:` — also the lowercase key T-3924 writes), normalised exactly as `
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/sidecar/circuit.py in: `lib/sidecar/circuit.py project_id()` honours RAIL_PROJECT_LABEL (env FW_RAIL_PROJECT_LABEL, then .framework.yaml `RAIL_PROJECT_LABEL:` — also the low`
+- **AC#3 (Agent)** — Regression tests: label via env, via file (upper and lower key), normalisation parity with lib/rail-identity.sh on the same input; control: no label → basename; the .agentic-framework refusal still ho
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/rail-identity.sh in: Regression tests: label via env, via file (upper and lower key), normalisation parity with lib/rail-identity.sh on the same input; control: no label →`
+
+### 2026-10-06T16:16:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
