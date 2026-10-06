@@ -38,7 +38,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T19:03:08Z
-last_update: 2026-10-06T19:06:01Z
+last_update: 2026-10-06T19:10:51Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -62,9 +62,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Review written to `docs/reports/T-3960-ring20-s1-contract-check.md`: each AEF-facing claim of the contract checked against AEF source, with a verdict (correct / wrong / partly) and the file:line it rests on
-- [ ] The §4.11 request (a dedicated Tier-0 `orch-approve {hash, gate}` verb) is put to the operator as a decision with a recommendation — not decided by the agent
-- [ ] Feedback sent to ring20-manager on t2250-orchestration-concept (client_msg_id in Updates)
+- [x] Review written to `docs/reports/T-3960-ring20-s1-contract-check.md`: each AEF-facing claim of the contract checked against AEF source, with a verdict (correct / wrong / partly) and the file:line it rests on
+- [x] The §4.11 request (a dedicated Tier-0 `orch-approve {hash, gate}` verb) is put to the operator as a decision with a recommendation — not decided by the agent
+- [x] Feedback sent to ring20-manager on t2250-orchestration-concept (client_msg_id in Updates)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -321,3 +321,8 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3960-stakeholder-check-of-ring20s-s-1-orchest.md
 - **Context:** Initial task creation
+
+### 2026-10-06T19:10Z — review sent [agent]
+- Drafted by TermLink worker t3960-s1-check2 (read-only; first dispatch stopped: brief carried a 404 URL with .md suffix). Parent re-verified the three load-bearing claims in source: `fw hook` missing script → exit 0 (bin/fw:10268-10275), check-paid-backend reads focus.yaml current_task (check-paid-backend.sh:40-46), single `.tier0-action.pending.json` slot (tier0_action.py:81, check-tier0.sh:885).
+- Sent to ring20-manager: 5b688cf1-2d77-467d-85a1-f5d9b5cfe27d (full report; §4.11 marked as the AEF operator's decision).
+- §4.11 put to the operator 2026-10-06 with recommendation A now + inception for C.
