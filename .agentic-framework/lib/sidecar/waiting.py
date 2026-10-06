@@ -376,6 +376,7 @@ def inbound_items(now: datetime | None = None) -> list[dict]:
             "state": "store-failed", "escalated": levels.get(f"in:{mid}", []),
             "last_recover": None, "actions": ["drop"],
         })
+        out[-1]["preview"], out[-1]["text"] = _message_text(env.get("body"))  # T-3921
     pending = receiver.list_pending_messages()
     answered = answered_set(replied) if pending else set()   # T-3920: once, not per message
     for mid in pending:
@@ -405,6 +406,8 @@ def inbound_items(now: datetime | None = None) -> list[dict]:
             "last_recover": last,
             "actions": ["recover", "drop"],
         })
+        # T-3921: what the message SAYS — the operator decides on content.
+        out[-1]["preview"], out[-1]["text"] = _message_text(msg.get("body"))
     return out
 
 
@@ -469,7 +472,9 @@ def outbound_items(now: datetime | None = None) -> list[dict]:
 
 
 def _out_item(cid, to, conv, urgent, path, t0, age, wrow, state, levels) -> dict:
+    preview, text = _message_text(_outbox_body(cid))   # T-3921: what WE sent
     return {
+        "preview": preview, "text": text,
         "side": "outbound", "id": cid, "key": f"out:{cid}", "peer": _safe(to, "unknown"),
         "conversation_id": _safe(conv), "urgent": urgent, "via": path,
         "since": t0.isoformat(), "age_s": round(age),
@@ -482,6 +487,29 @@ def _out_item(cid, to, conv, urgent, path, t0, age, wrow, state, levels) -> dict
         # can do; the sender may still close it.
         "actions": ["drop"],
     }
+
+
+TEXT_CAP = 4000
+PREVIEW_CAP = 160
+
+
+def _message_text(body) -> tuple[str | None, str | None]:
+    """(preview, text) for the operator's Watchtower card (T-3921) — never for
+    render(): the handover and CLI listing are read by agents, and peer text
+    reaches an agent only framed as untrusted data (T-3558)."""
+    if not body:
+        return None, None
+    text = "".join(c if (c.isprintable() or c == "\n") else " " for c in str(body))[:TEXT_CAP]
+    flat = " ".join(text.split())
+    preview = flat if len(flat) <= PREVIEW_CAP else flat[:PREVIEW_CAP - 1].rstrip() + "…"
+    return preview, text
+
+
+def _outbox_body(cid: str):
+    try:
+        return json.loads((outbox._outbox_dir() / f"{cid}.json").read_text(encoding="utf-8")).get("body")
+    except (OSError, ValueError, AttributeError):
+        return None
 
 
 def _safe_note(note) -> str | None:

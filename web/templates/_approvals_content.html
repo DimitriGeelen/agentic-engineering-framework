@@ -522,7 +522,23 @@
         {% if wm.escalated %} · pushed: {{ wm.escalated|join(', ') }}{% endif %}
         {% if wm.last_recover %} · last recover: {{ wm.last_recover.event }} {{ (wm.last_recover.ts or '')[:16] }}{% endif %}
     </div>
+    {# T-3921: the decision is about CONTENT — show what the message says. Peer text
+       is autoescaped and labelled unverified; it never reaches render()/handover. #}
+    {% if wm.preview %}
+    <div data-testid="waiting-preview" style="margin:0.4rem 0 0.2rem; font-size:0.95rem;">
+        {% if wm.side == 'inbound' %}“{{ wm.preview }}”{% else %}You sent: “{{ wm.preview }}”{% endif %}
+    </div>
+    <details data-testid="waiting-text" style="margin:0 0 0.3rem;">
+        <summary style="cursor:pointer; font-size:0.85rem;">Show the message{% if wm.side == 'inbound' %} <small style="color:var(--pico-muted-color);">— peer text, unverified</small>{% endif %}</summary>
+        <pre style="white-space:pre-wrap; word-break:break-word; font-size:0.82rem; max-height:22rem; overflow:auto; margin:0.3rem 0;">{{ wm.text }}</pre>
+    </details>
+    {% else %}
+    <div style="margin:0.4rem 0; font-size:0.85rem; color:var(--pico-muted-color);">The message text is not kept on this side.</div>
+    {% endif %}
     {% if wm.reason %}<div style="font-size:0.8rem; color:var(--pico-muted-color);">Reason: {{ wm.reason }}</div>{% endif %}
+    <div style="font-size:0.8rem; color:var(--pico-muted-color); margin-top:0.3rem;">
+        {% if 'recover' in wm.actions %}<strong>Recover</strong> starts this project's agent with this message as its first prompt. {% endif %}<strong>Drop</strong> closes it unhandled; {% if wm.side == 'inbound' %}the sender is told it was dropped, with your reason{% else %}it stops being chased{% endif %}.
+    </div>
     <div style="display:flex; gap:0.5rem; align-items:center; flex-wrap:wrap; margin-top:0.5rem;">
         {% if 'recover' in wm.actions %}
         <form hx-post="/api/sidecar/recover" hx-target="#waiting-result-{{ loop.index }}" hx-swap="innerHTML" style="margin:0;"

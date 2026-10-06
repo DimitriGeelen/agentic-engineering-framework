@@ -285,6 +285,37 @@ def test_listed_until_handed_over_replied_or_dropped_never_by_age(ab, monkeypatc
     del hub
 
 
+def test_t3921_items_carry_what_the_message_says(ab):
+    """Operator 2026-10-06: 'I have no idea what the message is about' — the
+    Drop/Recover decision needs the content."""
+    a, b, use, start = ab
+    use(b)
+    _store("m-content", body="ring20-manager bug report:\x1b[31m session killed\nat budget-critical")
+    inject.deliver_pending(trigger="test", runner=_no_sessions)
+    far = datetime.now(timezone.utc) + timedelta(days=1)
+    item = [i for i in waiting.inbound_items(far) if i["id"] == "m-content"][0]
+    assert item["preview"].startswith("ring20-manager bug report:")
+    assert "\x1b" not in item["text"] and "\nat budget-critical" in item["text"]
+    # render() is what the handover and CLI give an AGENT: no peer text there (T-3558).
+    assert "session killed" not in waiting.render([item])
+
+
+def test_t3921_text_is_capped_and_preview_is_one_line():
+    preview, text = waiting._message_text("x" * 9000)
+    assert len(text) == waiting.TEXT_CAP and len(preview) == waiting.PREVIEW_CAP
+    preview, _ = waiting._message_text("line one\n\n   line two")
+    assert preview == "line one line two"
+    assert waiting._message_text(None) == (None, None)
+
+
+def test_t3921_card_shows_preview_text_and_what_each_button_does():
+    src = (FW_ROOT / "web/templates/_approvals_content.html").read_text(encoding="utf-8")
+    assert 'data-testid="waiting-preview"' in src and 'data-testid="waiting-text"' in src
+    assert "peer text, unverified" in src
+    assert "starts this project's agent with this message as its first prompt" in src
+    assert "closes it unhandled" in src
+
+
 def test_t3909_nudge_copy_of_an_answered_message_is_closed_and_never_escalated(ab):
     """ring20-dashboard on 1.8.3: `<id>-nudge-5/6` copies of a message they had
     REPLIED to were escalated to the operator, while the inject gate withheld the
