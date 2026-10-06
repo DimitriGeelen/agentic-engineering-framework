@@ -15,28 +15,28 @@ setup() {
     [ -f "$FRAMEWORK_ROOT/bin/fw" ] || skip "bin/fw not found"
     cd "$FRAMEWORK_ROOT"
 
-    # Snapshot policy + log so each test can mutate freely and revert.
-    POLICY="policy/value-drivers.yaml"
-    LOG=".context/bvp-auto-promote-log.yaml"
-    POLICY_BAK="$(mktemp)"
-    LOG_BAK="$(mktemp)"
-    cp "$POLICY" "$POLICY_BAK"
-    cp "$LOG" "$LOG_BAK" 2>/dev/null || echo "entries: []" > "$LOG_BAK"
-    # The live log is mutable corpus (T-1932 enable/disable events land in it,
-    # c3165673a committed 8), so "no writes" is asserted against this baseline
-    # count rather than an absolute zero.
-    LOG_BASE_COUNT=$(python3 -c "import yaml; print(len((yaml.safe_load(open('$LOG_BAK')) or {}).get('entries') or []))")
+    # T-3807: every test runs against a THROWAWAY project, never the live repo. This file
+    # used to mutate the live policy/value-drivers.yaml and restore it in teardown; parallel
+    # suite legs raced on the one live file (the PL-037 red), and a run killed mid-test
+    # (2026-10-06) left auto_promote enabled with max_concurrent 999 in the real repo.
+    FIX="$(mktemp -d)"
+    mkdir -p "$FIX/policy" "$FIX/.tasks/active" "$FIX/.tasks/completed" "$FIX/.context/working"
+    cp "$FRAMEWORK_ROOT/policy/value-drivers.yaml" "$FIX/policy/"
+    cp "$FRAMEWORK_ROOT/.framework.yaml" "$FIX/.framework.yaml"
+    echo "entries: []" > "$FIX/.context/bvp-auto-promote-log.yaml"
+    export PROJECT_ROOT="$FIX"
+
+    POLICY="$FIX/policy/value-drivers.yaml"
+    LOG="$FIX/.context/bvp-auto-promote-log.yaml"
+    LOG_BASE_COUNT=0
 
     PROBE_ID="T-99970"
-    PROBE_FILE=".tasks/active/${PROBE_ID}-bvp-autopromote-probe.md"
+    PROBE_FILE="$FIX/.tasks/active/${PROBE_ID}-bvp-autopromote-probe.md"
 }
 
 teardown() {
-    cp "$POLICY_BAK" "$POLICY"
-    cp "$LOG_BAK" "$LOG"
-    rm -f "$POLICY_BAK" "$LOG_BAK"
-    rm -f "$PROBE_FILE"
-    rm -f ".tasks/completed/${PROBE_ID}-bvp-autopromote-probe.md"
+    [ -n "${FIX:-}" ] && [ -d "$FIX" ] && rm -rf "$FIX"
+    unset PROJECT_ROOT
 }
 
 @test "OFF default: enabled=false produces no-op + clear message" {
@@ -196,7 +196,11 @@ cost_estimate: {blast_radius: 0, tier: 0, effort: 1}
 true
 EOF
 
-    # Enable with default max_concurrent=1 (current state has many started-work tasks).
+    # T-3807: the fixture holds no other work, so put one task in flight to fill the single
+    # slot (this test used to rely on the live repo having many started-work tasks).
+    printf -- '---\nid: T-99972\nname: "occupant"\nstatus: started-work\nworkflow_type: build\nowner: agent\nhorizon: now\n---\n# occupant\n' \
+        > "$FIX/.tasks/active/T-99972-occupant.md"
+    # Enable with max_concurrent=1: one started-work task leaves no headroom.
     python3 - <<PY
 from ruamel.yaml import YAML
 y = YAML(); y.preserve_quotes = True; y.indent(mapping=2, sequence=4, offset=2)
@@ -264,7 +268,7 @@ PY
 @test "PL-037 (T-2544): owner:human task is excluded from candidates even with qualifying scores" {
     # Two probes identical except owner: agent-owned should be listed, human-owned excluded.
     HUMAN_ID="T-99971"
-    HUMAN_FILE=".tasks/active/${HUMAN_ID}-bvp-autopromote-human-probe.md"
+    HUMAN_FILE="$FIX/.tasks/active/${HUMAN_ID}-bvp-autopromote-human-probe.md"
 
     # Agent-owned probe (reuses PROBE_FILE / T-99970 — cleaned by teardown).
     cat > "$PROBE_FILE" <<'EOF'

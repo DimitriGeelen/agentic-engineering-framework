@@ -1823,8 +1823,10 @@ def _auto_promote_file_review_reminder():
             f"after 30 days of operation. Check the auto-promote log for false "
             f"positives, surprise promotions, and whether the thresholds need "
             f"calibration. Filed automatically by `fw bvp auto-promote --enable`.")
+    # T-3807: fw resolved from FRAMEWORK_ROOT, never the cwd-relative 'bin/fw' — a consumer
+    # project has no bin/fw at its root (it is .agentic-framework/bin/fw), so this crashed.
     proc = subprocess.run(
-        ['bin/fw', 'task', 'create',
+        [str(FRAMEWORK_ROOT / 'bin' / 'fw'), 'task', 'create',
          '--name', name,
          '--description', desc,
          '--type', 'specification',
@@ -1993,7 +1995,8 @@ def cmd_auto_promote(args):
     log_entries = []
     for c in to_promote:
         proc = subprocess.run(
-            ['bin/fw', 'task', 'update', c['task_id'], '--status', 'started-work'],
+            [str(FRAMEWORK_ROOT / 'bin' / 'fw'), 'task', 'update', c['task_id'], '--status',
+             'started-work'],   # T-3807: see the task-create call above
             cwd=str(PROJECT_ROOT),
             capture_output=True,
             text=True,

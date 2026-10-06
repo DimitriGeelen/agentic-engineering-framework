@@ -1,26 +1,13 @@
 ---
-id: T-3807
-name: "bvp_auto_promote*.bats race on the LIVE policy/value-drivers.yaml: parallel
-  snapshot/restore left enabled:true, max_concurrent:999 in the working tree"
+id: T-3952
+name: "Relative 'bin/fw' subprocess calls break on consumer projects: web/blueprints/arcs.py:1186 (Watchtower approve-driver) and agents/ux-review/ux-review.py:824"
 description: >
-  T-3747 round 3 full suite (10:04Z): NEW reds bvp_auto_promote 'OFF default: enabled=false
-  produces no-op' (output 'No HV/LC candidates eligible' instead of 'Auto-promote
-  disabled'), 'max_concurrent ceiling refuses promotion', bvp_auto_promote_enable
-  '--enable … flips policy true'. Both files cd to the real repo and cp policy/value-drivers.yaml
-  to a backup in setup, mutate it, and restore in teardown. Run in parallel by the
-  12-job pool, one file backs up the other's mutated copy and restores it: after the
-  suite the working tree held auto_promote.enabled: true, max_concurrent: 999 (uncommitted).
-  That also turned self_vendor_version.bats red (vendor --check saw policy/ drift)
-  and would ship auto-promote ON if committed. Restored by hand (Edit, to HEAD content);
-  both files then green alone (bvp_auto_promote 7/7, bvp_auto_promote_enable 356 s
-  green). Test files unchanged in 914326e07..HEAD: pre-existing race. Fix: point the
-  verb at a fixture policy (env override for the policy path), or serialise with a
-  shared flock; never write the live policy from a test.
+  Found during T-3807: lib/bvp.sh launched cwd-relative 'bin/fw', which does not exist at a consumer's root (.agentic-framework/bin/fw). Fixed there (FRAMEWORK_ROOT/bin/fw). Same class remains in web/blueprints/arcs.py:1186 (the Watchtower arc approve-driver button on consumers) and agents/ux-review/ux-review.py:824. Fix + a lint that refuses a bare ['bin/fw', ...] argv in lib/ web/ agents/. Web change: restart Watchtower + render review.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
@@ -50,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-04T11:11:29Z
-last_update: 2026-10-06T14:05:50Z
-date_finished:
+created: 2026-10-06T14:04:48Z
+last_update: 2026-10-06T14:04:48Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -63,38 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-04T11:15:22Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-04T11:15:43Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 4
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=4 
-      (body:auto-promote-class-eligibility); F3=0 (no-signal); F1=0 (no-signal);
-      F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3807: bvp_auto_promote*.bats race on the LIVE policy/value-drivers.yaml: parallel snapshot/restore left enabled:true, max_concurrent:999 in the working tree
+# T-3952: Relative 'bin/fw' subprocess calls break on consumer projects: web/blueprints/arcs.py:1186 (Watchtower approve-driver) and agents/ux-review/ux-review.py:824
 
 ## Context
 
@@ -104,10 +62,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `bvp_auto_promote.bats` and `bvp_auto_promote_enable.bats` run against a throwaway fixture project (PROJECT_ROOT = mktemp dir with its own policy/, .tasks/, .context/, .framework.yaml); neither reads nor writes the live policy/value-drivers.yaml, the live auto-promote log, or live .tasks/ (the enable file's cron-registry doctor check stays on the real repo, read-only)
-- [x] Both files green (7 + 7); a run leaves policy/value-drivers.yaml and .context/bvp-auto-promote-log.yaml unchanged and files no review task in the live .tasks/active (checked before/after)
-- [x] Duplicate T-3946 (filed 2026-10-06 after a killed run left auto_promote enabled in the live repo) closed as folded into this task
-- [x] Found by the fixture: lib/bvp.sh ran cwd-relative `bin/fw` (task create / task update), which does not exist at a consumer's root — fixed to FRAMEWORK_ROOT/bin/fw; the same class elsewhere is T-3952
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -141,10 +97,6 @@ bvp_scores_proposed:
 -->
 
 ## Verification
-
-bats tests/unit/bvp_auto_promote.bats
-bats tests/unit/bvp_auto_promote_enable.bats
-bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -288,24 +240,6 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** the PL-037 auto-promote test went red under parallel suite load; on 2026-10-06 a
-killed suite run left the LIVE policy/value-drivers.yaml with auto_promote enabled and
-max_concurrent 999 (found uncommitted by a vendor sync; restored from HEAD, no promotions).
-
-**Root cause:** both auto-promote test files mutated the live repo — the policy file, the
-auto-promote log, and (enable file) real review tasks in .tasks/active — and relied on
-teardown to undo it. Teardown does not run when bats is killed, and two parallel legs
-mutating one live file race (each backs up the other's change).
-
-**Why structurally allowed:** the tests were written to exercise `fw bvp` against "the real
-project" because the command resolves PROJECT_ROOT, and a fixture was never tried — which
-also hid a real defect: lib/bvp.sh launched cwd-relative `bin/fw`, so auto-promotion and the
-30-day review task fail on every consumer (no bin/fw at a consumer's root).
-
-**Prevention:** throwaway fixture per test (PROJECT_ROOT=mktemp), so no test state can leak
-into the repo; bvp.sh resolves fw from FRAMEWORK_ROOT; T-3952 carries the same relative-path
-class in arcs.py / ux-review and a lint for it.
-
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -382,10 +316,7 @@ class in arcs.py / ux-review and a lint for it.
 
 ## Updates
 
-### 2026-10-04T11:11:29Z — task-created [task-create-agent]
+### 2026-10-06T14:04:48Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3807-bvpautopromotebats-race-on-the-live-poli.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3952-relative-binfw-subprocess-calls-break-on.md
 - **Context:** Initial task creation
-
-### 2026-10-06T13:57:49Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work

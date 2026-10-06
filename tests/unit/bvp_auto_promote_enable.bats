@@ -15,21 +15,25 @@ setup() {
     [ -f "$FRAMEWORK_ROOT/bin/fw" ] || skip "bin/fw not found"
     cd "$FRAMEWORK_ROOT"
 
-    POLICY="policy/value-drivers.yaml"
-    LOG=".context/bvp-auto-promote-log.yaml"
-    POLICY_BAK="$(mktemp)"
-    LOG_BAK="$(mktemp)"
-    cp "$POLICY" "$POLICY_BAK"
-    cp "$LOG" "$LOG_BAK"
+    # T-3807: a throwaway project, never the live repo. These tests used to flip the live
+    # policy, append to the live log and FILE REAL review tasks in the live .tasks/active
+    # (consuming real task ids), restoring and deleting in teardown.
+    FIX="$(mktemp -d)"
+    mkdir -p "$FIX/policy" "$FIX/.tasks/active" "$FIX/.tasks/completed" "$FIX/.tasks/templates" \
+             "$FIX/.context/working"
+    cp "$FRAMEWORK_ROOT/policy/value-drivers.yaml" "$FIX/policy/"
+    cp "$FRAMEWORK_ROOT/.framework.yaml" "$FIX/.framework.yaml"
+    cp "$FRAMEWORK_ROOT/.tasks/templates/"*.md "$FIX/.tasks/templates/"
+    echo "entries: []" > "$FIX/.context/bvp-auto-promote-log.yaml"
+    export PROJECT_ROOT="$FIX"
+
+    POLICY="$FIX/policy/value-drivers.yaml"
+    LOG="$FIX/.context/bvp-auto-promote-log.yaml"
 }
 
 teardown() {
-    cp "$POLICY_BAK" "$POLICY"
-    cp "$LOG_BAK" "$LOG"
-    rm -f "$POLICY_BAK" "$LOG_BAK"
-    # Clean any review-reminder task we may have filed.
-    rm -f .tasks/active/T-*-bvp-auto-promote-30-day-review-*.md
-    rm -f .tasks/active/T-*-bvp-auto-promote-30*.md
+    [ -n "${FIX:-}" ] && [ -d "$FIX" ] && rm -rf "$FIX"
+    unset PROJECT_ROOT
 }
 
 @test "--enable refuses under \$CLAUDECODE=1 without sovereignty override" {
@@ -96,6 +100,8 @@ PY
 }
 
 @test "cron registry in sync (fw doctor)" {
-    run bash -c "bin/fw doctor 2>&1 | grep -E 'Cron registry in sync'"
+    # The REAL repo's registry is the subject here, not the fixture (T-3807). Read-only.
+    unset PROJECT_ROOT
+    run bash -c "FW_DOCTOR_SMOKE=0 bin/fw doctor 2>&1 | grep -E 'Cron registry in sync'"
     [ "$status" -eq 0 ]
 }
