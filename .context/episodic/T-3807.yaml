@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3807: bvp_auto_promote*.bats race on the LIVE policy/value-drivers.yaml: parallel snapshot/restore left enabled:true, max_concurrent:999 in the working tree
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-06T14:07:52Z
+# ============================================================================
+
+task_id: T-3807
+task_name: "bvp_auto_promote*.bats race on the LIVE policy/value-drivers.yaml: parallel snapshot/restore left enabled:true, max_concurrent:999 in the working tree"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T11:11:29Z
+completed: 2026-10-06T14:06:03Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-10-06T16:05:50+02:00
+last_commit: 2026-10-06T16:05:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  auto-promote tests run on a throwaway fixture project, never the live repo (a killed run had left auto_promote enabled, max_concurrent 999, in the real policy) — and the fixture exposed lib/bvp.sh launching cwd-relative bin/fw, which crashes auto-promotion on every consumer; now FRAMEWORK_ROOT/bin/fw. Same class elsewhere: T-3952. vendor-sync lib/bvp.sh
+
+# Key outcomes
+outcomes:
+  - '`bvp_auto_promote.bats` and `bvp_auto_promote_enable.bats` run against a throwaway fixture project (PROJECT_ROOT = mktemp dir with its own policy/, .tasks/, .context/, .framework.yaml); neither reads nor writes the live policy/value-drivers.yaml, the live auto-promote log, or live .tasks/ (the enable file''s cron-registry doctor check stays on the real repo, read-only)'
+  - 'Both files green (7 + 7); a run leaves policy/value-drivers.yaml and .context/bvp-auto-promote-log.yaml unchanged and files no review task in the live .tasks/active (checked before/after)'
+  - 'Duplicate T-3946 (filed 2026-10-06 after a killed run left auto_promote enabled in the live repo) closed as folded into this task'
+  - 'Found by the fixture: lib/bvp.sh ran cwd-relative `bin/fw` (task create / task update), which does not exist at a consumer''s root — fixed to FRAMEWORK_ROOT/bin/fw; the same class elsewhere is T-3952'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'auto-promote tests run on a throwaway fixture project, never the live repo (a killed run had left auto_promote enabled, max_concurrent 999, in the real policy) — and the fixture exposed lib/bvp.sh launching cwd-relative bin/fw, which crashes auto-promotion on every consumer; now FRAMEWORK_ROOT/bin/fw. Same class elsewhere: T-3952'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/bvp.sh'
+  - 'lib/bvp.sh'
+  - '.tasks/active/T-3807-bvpautopromotebats-race-on-the-live-poli.md'
+  - '.tasks/active/T-3952-relative-binfw-subprocess-calls-break-on.md'
+  - 'tests/unit/bvp_auto_promote.bats'
+  - 'tests/unit/bvp_auto_promote_enable.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T16:05:50'
+    action: 'T-3807: auto-promote tests run on a throwaway fixture project, never the live repo (a killed run had left auto_promote enabled, max_concurrent 999, in the real policy) — and the fixture exposed lib/bvp.sh launching cwd-relative bin/fw, which crashes auto-promotion on every consumer; now FRAMEWORK_ROOT/bin/fw. Same class elsewhere: T-3952'
+  - time: '2026-10-06T16:05:56'
+    action: 'T-3807: vendor-sync lib/bvp.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3054 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3054
+  commits: 2
+  files_changed: 6
+  lines_added: 406
+  lines_removed: 41
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3807-bvpautopromotebats-race-on-the-live-poli.md
+generated_by: context-agent-hybrid

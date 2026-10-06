@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3946: bvp_auto_promote.bats mutates the LIVE policy/value-drivers.yaml and restores it only in teardown — a killed run leaves auto_promote enabled with max_concurrent 999
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-06T14:08:39Z
+# ============================================================================
+
+task_id: T-3946
+task_name: "bvp_auto_promote.bats mutates the LIVE policy/value-drivers.yaml and restores it only in teardown — a killed run leaves auto_promote enabled with max_concurrent 999"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-06T11:09:05Z
+completed: 2026-10-06T14:08:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-06T13:09:54+02:00
+last_commit: 2026-10-06T13:09:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed — bvp_auto_promote.bats mutates the live value-drivers.yaml; a killed run left auto-promote enabled (restored from HEAD, no promotions happened)
+
+# Key outcomes
+outcomes:
+  - 'Duplicate of T-3807 (filed 2026-10-04, same defect, both auto-promote test files): folded into it and fixed there (fixture project per test; lib/bvp.sh relative bin/fw fixed). The live policy was restored from HEAD on 2026-10-06; the auto-promote log shows no promotion while it was enabled.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3946-bvpautopromotebats-mutates-the-live-poli.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T13:09:54'
+    action: 'T-3946: filed — bvp_auto_promote.bats mutates the live value-drivers.yaml; a killed run left auto-promote enabled (restored from HEAD, no promotions happened)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 179 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 179
+  commits: 1
+  files_changed: 1
+  lines_added: 322
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3946-bvpautopromotebats-mutates-the-live-poli.md
+generated_by: context-agent-hybrid

@@ -12,10 +12,10 @@ description: >
   from a test. Also the likely cause of the PL-037 red under parallel suite load (two
   files mutating one live file).
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -46,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T11:09:05Z
-last_update: '2026-10-06T11:15:51Z'
-date_finished:
+last_update: 2026-10-06T14:08:22Z
+date_finished: 2026-10-06T14:08:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -99,8 +99,7 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Duplicate of T-3807 (filed 2026-10-04, same defect, both auto-promote test files): folded into it and fixed there (fixture project per test; lib/bvp.sh relative bin/fw fixed). The live policy was restored from HEAD on 2026-10-06; the auto-promote log shows no promotion while it was enabled.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -357,3 +356,23 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3946-bvpautopromotebats-mutates-the-live-poli.md
 - **Context:** Initial task creation
+
+### 2026-10-06T13:57:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fbd52e4a
+- **Timestamp:** 2026-10-06T14:08:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Duplicate of T-3807 (filed 2026-10-04, same defect, both auto-promote test files): folded into it and fixed there (fixture project per test; lib/bvp.sh relative bin/fw fixed). The live policy was rest
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/bvp.sh in: Duplicate of T-3807 (filed 2026-10-04, same defect, both auto-promote test files): folded into it and fixed there (fixture project per test; lib/bvp.s`
+
+### 2026-10-06T14:08:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

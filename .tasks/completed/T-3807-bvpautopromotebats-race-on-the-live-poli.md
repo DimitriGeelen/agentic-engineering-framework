@@ -17,12 +17,12 @@ description: >
   verb at a fixture policy (env override for the policy path), or serialise with a
   shared flock; never write the live policy from a test.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/bvp.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -51,8 +51,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T11:11:29Z
-last_update: 2026-10-06T14:05:56Z
-date_finished:
+last_update: 2026-10-06T14:06:03Z
+date_finished: 2026-10-06T14:06:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -389,3 +389,22 @@ class in arcs.py / ux-review and a lint for it.
 
 ### 2026-10-06T13:57:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0eae2bce
+- **Timestamp:** 2026-10-06T14:07:38Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `bvp_auto_promote.bats` and `bvp_auto_promote_enable.bats` run against a throwaway fixture project (PROJECT_ROOT = mktemp dir with its own policy/, .tasks/, .context/, .framework.yaml); neither reads 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/value-drivers.yaml in: `bvp_auto_promote.bats` and `bvp_auto_promote_enable.bats` run against a throwaway fixture project (PROJECT_ROOT = mktemp dir with its own policy/, .t`
+- **AC#2 (Agent)** — Both files green (7 + 7); a run leaves policy/value-drivers.yaml and .context/bvp-auto-promote-log.yaml unchanged and files no review task in the live .tasks/active (checked before/after)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/value-drivers.yaml in: Both files green (7 + 7); a run leaves policy/value-drivers.yaml and .context/bvp-auto-promote-log.yaml unchanged and files no review task in the live`
+
+### 2026-10-06T14:06:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
