@@ -18,6 +18,7 @@
 load ../test_helper
 
 setup() {
+    export FW_DOCTOR_SMOKE=0  # T-3933: never sweep the live Watchtower from a test
     # Save originals — these tests mutate live tool-set.yaml/manifest in place.
     BACKUP_TS=$(mktemp -t fw-t2290-ts-XXXXXX.yaml)
     BACKUP_MF=$(mktemp -t fw-t2290-mf-XXXXXX.json)

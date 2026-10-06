@@ -14,6 +14,7 @@
 load ../test_helper
 
 setup() {
+    export FW_DOCTOR_SMOKE=0  # T-3933: never sweep the live Watchtower from a test
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
     TPL_SENTINEL="$FRAMEWORK_ROOT/.agentic-framework/.tasks/templates/default.md"

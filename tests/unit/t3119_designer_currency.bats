@@ -30,6 +30,7 @@
 load ../test_helper
 
 setup() {
+    export FW_DOCTOR_SMOKE=0  # T-3933: never sweep the live Watchtower from a test
     [ -f "$FRAMEWORK_ROOT/bin/fw" ] || skip "bin/fw not found"
 
     ORIGIN="$BATS_TEST_TMPDIR/designer-origin.git"

@@ -8,6 +8,7 @@
 load ../test_helper
 
 setup() {
+    export FW_DOCTOR_SMOKE=0  # T-3933: never sweep the live Watchtower from a test
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
     # We don't override PROJECT_ROOT/FRAMEWORK_ROOT here — we want doctor

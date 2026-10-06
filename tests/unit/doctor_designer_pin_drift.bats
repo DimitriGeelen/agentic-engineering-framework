@@ -22,6 +22,7 @@
 load ../test_helper
 
 setup() {
+    export FW_DOCTOR_SMOKE=0  # T-3933: never sweep the live Watchtower from a test
     PIN_TMP=$(mktemp -t fw-t2524-pin-XXXXXX.yaml)
     cp "$FRAMEWORK_ROOT/policy/designer-pin.yaml" "$PIN_TMP"
     export FW_DESIGNER_PIN_FILE="$PIN_TMP"

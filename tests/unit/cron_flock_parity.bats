@@ -8,6 +8,7 @@
 load ../test_helper
 
 setup() {
+    export FW_DOCTOR_SMOKE=0  # T-3933: never sweep the live Watchtower from a test
     TEST_TEMP_DIR="$(mktemp -d)"
     TEST_PROJECT="$TEST_TEMP_DIR/proj-flock-parity"
     TEST_CRON_DIR="$TEST_TEMP_DIR/etc-cron-d"

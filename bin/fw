@@ -3428,7 +3428,11 @@ else:
     _doctor_phase "Watchtower smoke test"  # T-3452
     # Check: Watchtower smoke test (T-486) — run if server is reachable
     # Use _watchtower_url for port detection (T-1154: no hardcoded 3000)
-    if _doctor_quick_skip "Watchtower smoke test (HTTP probes)"; then :; else
+    # T-3933: tests run full doctor in the real repo; each smoke run swept the LIVE
+    # Watchtower (~225 s under suite load) and timed the doctor test files out.
+    if [ "${FW_DOCTOR_SMOKE:-1}" = "0" ]; then
+        echo -e "  ${CYAN}SKIP${NC}  Watchtower smoke test (HTTP probes) (FW_DOCTOR_SMOKE=0)"
+    elif _doctor_quick_skip "Watchtower smoke test (HTTP probes)"; then :; else
     source "$FRAMEWORK_ROOT/lib/watchtower.sh" 2>/dev/null || true
     local _doctor_wt_url _doctor_wt_port
     # F9 (T-2445): gate the smoke verdict on the identity-verified resolver. A bare
