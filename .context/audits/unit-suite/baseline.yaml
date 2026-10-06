@@ -865,3 +865,10 @@ entries:
   added: '2026-10-05'
   expires: '2026-10-19'
   added_by: human
+- leg: bats
+  name: 'fw_doctor_vendored_drift.bats: fw doctor: reports ''No vendored-source drift'' when in sync'
+  file: fw_doctor_vendored_drift.bats
+  owner: T-3950
+  added: '2026-10-06'
+  expires: '2026-10-13'
+  added_by: human
