@@ -33,6 +33,8 @@ teardown() { rm -rf "$ROOT"; }
 }
 
 @test "T-3919: the banner no longer prints the unconditional line" {
-    ! grep -q '^        echo "  Handover committed. Continuing in 3 seconds..."' "$FRAMEWORK_ROOT/bin/claude-fw"
+    # The phrase survives only as the helper's conditional branch, never at the call site.
+    [ "$(grep -c 'echo "  Handover committed. Continuing in 3 seconds..."' "$FRAMEWORK_ROOT/bin/claude-fw")" -eq 1 ]
+    awk '/^_restart_handover_line\(\)/,/^}/' "$FRAMEWORK_ROOT/bin/claude-fw" | grep -q 'Handover committed. Continuing'
     grep -q '_restart_handover_line "$(cd' "$FRAMEWORK_ROOT/bin/claude-fw"
 }

@@ -137,8 +137,10 @@ _arc_status_valid() {  # file -> 0 when status is an ARC_STATE (and a closed arc
     printf 'id: arc-x\nstatus: migrated\n' > "$d/bad.yaml"
     printf 'id: arc-y\nstatus: closed\nclosed_at: null\n' > "$d/closed-no-date.yaml"
     printf 'id: arc-z\nstatus: closed\nclosed_at: 2026-10-05T18:34:40Z\n' > "$d/ok.yaml"
-    ! _arc_status_valid "$d/bad.yaml"
-    ! _arc_status_valid "$d/closed-no-date.yaml"
+    run _arc_status_valid "$d/bad.yaml"
+    [ "$status" -ne 0 ]
+    run _arc_status_valid "$d/closed-no-date.yaml"
+    [ "$status" -ne 0 ]
     _arc_status_valid "$d/ok.yaml"
     rm -rf "$d"
 }

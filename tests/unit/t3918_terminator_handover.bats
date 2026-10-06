@@ -84,6 +84,7 @@ teardown() {
 }
 
 @test "T-3918: budget-gate no longer claims claude -c preserves the conversation" {
-    ! grep -q "Handover stays best-effort (claude -c" "$FRAMEWORK_ROOT/agents/context/budget-gate.sh"
+    run grep -q "Handover stays best-effort (claude -c" "$FRAMEWORK_ROOT/agents/context/budget-gate.sh"
+    [ "$status" -eq 1 ]
     grep -q "T-3918 (G-110)" "$FRAMEWORK_ROOT/agents/context/budget-gate.sh"
 }
