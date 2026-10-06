@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3960: Stakeholder check of ring20's S-1 orchestration contract v0.3 FINAL (their T-2252): verify the AEF-facing claims (§1 resolver reuse, §1.1.3 parent_dispatch_id, §1.2.4 evaluator, §4.7 hooks, §4.11 orch-approve request, §6.4 landing ref, prompt.txt rewrite)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-06T19:11:08Z
+# ============================================================================
+
+task_id: T-3960
+task_name: "Stakeholder check of ring20's S-1 orchestration contract v0.3 FINAL (their T-2252): verify the AEF-facing claims (§1 resolver reuse, §1.1.3 parent_dispatch_id, §1.2.4 evaluator, §4.7 hooks, §4.11 orch-approve request, §6.4 landing ref, prompt.txt rewrite)"
+workflow_type: design
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-06T19:03:08Z
+completed: 2026-10-06T19:10:52Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-06T21:05:05+02:00
+last_commit: 2026-10-06T21:10:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  S-1 contract stakeholder check — task + worker brief. brief — correct contract URL (no .md suffix). S-1 contract stakeholder check sent to ring20-manager — their AEF claims hold (1b partly); 5 bites incl. fail-open hook layer and check-paid-backend judging the session focus; §4.11 orch-approve put to the operator
+
+# Key outcomes
+outcomes:
+  - 'Review written to `docs/reports/T-3960-ring20-s1-contract-check.md`: each AEF-facing claim of the contract checked against AEF source, with a verdict (correct / wrong / partly) and the file:line it rests on'
+  - 'The §4.11 request (a dedicated Tier-0 `orch-approve {hash, gate}` verb) is put to the operator as a decision with a recommendation — not decided by the agent'
+  - 'Feedback sent to ring20-manager on t2250-orchestration-concept (client_msg_id in Updates)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'brief — correct contract URL (no .md suffix)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-3960-ring20-s1-contract-check.md'
+  - 'docs/reports/T-3960-worker-brief.md'
+  - '.tasks/active/T-3960-stakeholder-check-of-ring20s-s-1-orchest.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T21:05:05'
+    action: 'T-3960: S-1 contract stakeholder check — task + worker brief'
+  - time: '2026-10-06T21:06:02'
+    action: 'T-3960: brief — correct contract URL (no .md suffix)'
+  - time: '2026-10-06T21:10:51'
+    action: 'T-3960: S-1 contract stakeholder check sent to ring20-manager — their AEF claims hold (1b partly); 5 bites incl. fail-open hook layer and check-paid-backend judging the session focus; §4.11 orch-approve put to the operator'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 7 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 7
+  commits: 3
+  files_changed: 3
+  lines_added: 427
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3960-stakeholder-check-of-ring20s-s-1-orchest.md
+generated_by: context-agent-hybrid
