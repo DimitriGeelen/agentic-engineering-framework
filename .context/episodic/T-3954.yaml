@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3954: Installed claude-fw copies silently disable the T-3890 duplicate-conversation guard (and two more lib lookups): libs are resolved beside the script (/usr/bin/../lib), which a copy does not have
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-06T15:56:31Z
+# ============================================================================
+
+task_id: T-3954
+task_name: "Installed claude-fw copies silently disable the T-3890 duplicate-conversation guard (and two more lib lookups): libs are resolved beside the script (/usr/bin/../lib), which a copy does not have"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-06T15:35:15Z
+completed: 2026-10-06T15:56:11Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-06T17:56:01+02:00
+last_commit: 2026-10-06T17:56:08+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  installed claude-fw copies find their framework — libs resolved from beside the script, the project's .agentic-framework, the framework repo or FRAMEWORK_ROOT, not only beside the script (a copy in /usr/bin had none, so the T-3890 duplicate-conversation guard silently never ran: G-111). A guard that cannot load now WARNS. vendor-sync bin/claude-fw
+
+# Key outcomes
+outcomes:
+  - 'claude-fw resolves its framework (lib/ + bin/fw) by searching beside the script, then `$PWD/.agentic-framework`, then `$PWD` (framework repo), then FRAMEWORK_ROOT; the conversation guard, the termlink-runtime lookup and the sidecar fw lookup all use it'
+  - 'A guard whose library cannot be found prints a WARNING naming what is off, instead of passing silently'
+  - 'Regression test: a COPY of claude-fw placed outside the repo, run in a project that has the conversation-holder lib, finds it (control: the old beside-the-script lookup would not); and with no framework anywhere, the WARNING is printed (t3954, 4 tests; all 25 claude-fw test files green after updating the t3779/t3890 text pins to the new lookup)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - 'bin/claude-fw'
+  - '.tasks/active/T-3954-installed-claude-fw-copies-silently-disa.md'
+  - 'tests/unit/t3779_termlink_runtime.bats'
+  - 'tests/unit/t3890_conversation_holder.bats'
+  - 'tests/unit/t3954_claude_fw_installed_copy.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T17:56:01'
+    action: 'T-3954: installed claude-fw copies find their framework — libs resolved from beside the script, the project''s .agentic-framework, the framework repo or FRAMEWORK_ROOT, not only beside the script (a copy in /usr/bin had none, so the T-3890 duplicate-conversation guard silently never ran: G-111). A guard that cannot load now WARNS'
+  - time: '2026-10-06T17:56:08'
+    action: 'T-3954: vendor-sync bin/claude-fw'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 20 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 20
+  commits: 2
+  files_changed: 6
+  lines_added: 198
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3954-installed-claude-fw-copies-silently-disa.md
+generated_by: context-agent-hybrid
