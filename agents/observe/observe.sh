@@ -171,19 +171,46 @@ do_capture() {
     text_yaml=${text//\\/\\\\}        # \  -> \\
     text_yaml=${text_yaml//\"/\\\"}   # "  -> \"
 
+    # T-3969: append at the indentation the existing entries use. A hand-edited or
+    # re-serialised inbox nests the list under `observations:` ("  - id: ..."); a
+    # column-0 append into that list is a YAML parse error, and the pre-push audit
+    # then blocks every push (ring20, twice). The first existing entry decides.
+    local ind=""
+    ind=$(grep -m1 -oE '^[[:space:]]*- id:' "$INBOX_FILE" 2>/dev/null | sed 's/- id://' || true)
+    [ -n "$urgent_field" ] && urgent_field="${ind}${urgent_field}"
+
+    local backup
+    backup=$(mktemp)
+    cp "$INBOX_FILE" "$backup"
+    # A file without a trailing newline would glue the new entry onto its last line.
+    if [ -s "$INBOX_FILE" ] && [ -n "$(tail -c1 "$INBOX_FILE")" ]; then
+        echo >> "$INBOX_FILE"
+    fi
+
     cat >> "$INBOX_FILE" << EOF
-- id: $id
-  text: "$text_yaml"
-  captured: $ts
-  context_task: ${task:-null}
-  tags: [${tags}]
-  status: pending
-  promoted_to: null
+${ind}- id: $id
+${ind}  text: "$text_yaml"
+${ind}  captured: $ts
+${ind}  context_task: ${task:-null}
+${ind}  tags: [${tags}]
+${ind}  status: pending
+${ind}  promoted_to: null
 EOF
 
     if [ -n "$urgent_field" ]; then
         echo "$urgent_field" >> "$INBOX_FILE"
     fi
+
+    # Never leave the inbox unparseable: if the append broke it, whatever shape it
+    # had, put the old bytes back and say so.
+    if ! python3 -c 'import sys, yaml; yaml.safe_load(open(sys.argv[1]))' "$INBOX_FILE" 2>/dev/null; then
+        cp "$backup" "$INBOX_FILE"
+        rm -f "$backup"
+        echo -e "${RED}ERROR: $id NOT captured: appending it would leave $INBOX_FILE unparseable.${NC}" >&2
+        echo "  The inbox is unchanged. Check that it parses as YAML before retrying." >&2
+        exit 1
+    fi
+    rm -f "$backup"
 
     if [ "$urgent" = true ]; then
         echo -e "${GREEN}$id${NC} ${RED}[URGENT]${NC} captured: \"$text\""
@@ -427,12 +454,20 @@ import json, os, sys, datetime
 obs_id, reason, path = os.environ["OBS_ID"], os.environ["OBS_REASON"], os.environ["INBOX"]
 lines = open(path).read().split("\n")
 
-start = next((i for i, l in enumerate(lines) if l.startswith("- id: %s" % obs_id)), None)
+# T-3969: the list may be indented under `observations:`; match at any indent.
+head = "- id: %s" % obs_id
+start = next((i for i, l in enumerate(lines) if l.strip() == head), None)
 if start is None:
     print("observation %s not found in %s" % (obs_id, path), file=sys.stderr)
     sys.exit(1)
+ind = lines[start][:len(lines[start]) - len(lines[start].lstrip())]
 
-end = next((i for i in range(start + 1, len(lines)) if lines[i].startswith("- ")), len(lines))
+def _ends(l):
+    if not l.strip():
+        return False
+    return l.startswith(ind + "- ") or len(l) - len(l.lstrip()) < len(ind)
+
+end = next((i for i in range(start + 1, len(lines)) if _ends(lines[i])), len(lines))
 
 status_idx = next((i for i in range(start, end) if lines[i].strip() == "status: pending"), None)
 if status_idx is None:
@@ -440,11 +475,12 @@ if status_idx is None:
     print("%s is not pending (%s) — not dismissing" % (obs_id, cur), file=sys.stderr)
     sys.exit(2)
 
-lines[status_idx] = "  status: dismissed"
+fld = lines[status_idx][:len(lines[status_idx]) - len(lines[status_idx].lstrip())]
+lines[status_idx] = fld + "status: dismissed"
 ts = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 lines[status_idx + 1:status_idx + 1] = [
-    "  dismissed_reason: " + json.dumps(reason),
-    "  dismissed_at: " + ts,
+    fld + "dismissed_reason: " + json.dumps(reason),
+    fld + "dismissed_at: " + ts,
 ]
 open(path, "w").write("\n".join(lines))
 '; then
