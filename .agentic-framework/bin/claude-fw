@@ -307,6 +307,22 @@ _ensure_handover_before_kill() {
     return 1
 }
 
+# T-3919 (G-110, RC-3 of ring20-manager's T-2248): the restart banner said
+# "Handover committed" whether or not one was — the loss looked like success.
+# Args: $1=project root, $2=signal mtime (epoch). Prints the banner line.
+_restart_handover_line() {
+    local root="$1" sig_mt="$2" latest lm
+    latest="$root/.context/handovers/LATEST.md"
+    lm=$(stat -c %Y "$latest" 2>/dev/null || echo 0)
+    if [ "$lm" -gt 0 ] && [ "$lm" -ge "$sig_mt" ]; then
+        echo "  Handover committed. Continuing in 3 seconds..."
+    elif [ "$lm" -gt 0 ]; then
+        echo "  WARNING: NO handover since the restart signal — the new session starts from a LATEST.md $(( ($(date +%s) - lm) / 60 )) min old. Run 'fw handover' first thing. Continuing in 3 seconds..."
+    else
+        echo "  WARNING: NO handover exists (.context/handovers/LATEST.md missing). Run 'fw handover' first thing. Continuing in 3 seconds..."
+    fi
+}
+
 # T-2373: budget-critical terminator (plain mode).
 # The restart chain (checkpoint.sh writes .restart-requested at critical) only
 # restarts AFTER claude exits — but in plain mode `command claude` runs in the
@@ -939,7 +955,9 @@ while true; do
         else
             echo "  Restart mode: fresh (new session, seeded from the handover)"
         fi
-        echo "  Handover committed. Continuing in 3 seconds..."
+        # T-3919: say "committed" only when it is true (signal mtime read before rm below).
+        _restart_handover_line "$(cd "$(dirname "$signal_file")/../.." && pwd)" \
+            "$(stat -c %Y "$signal_file" 2>/dev/null || echo 0)"
         echo "  Press Ctrl+C to cancel."
         echo ""
 

@@ -1,0 +1,21 @@
+id: tests/unit/t3919_restart_banner.bats
+name: t3919_restart_banner
+type: script
+subsystem: tests
+location: tests/unit/t3919_restart_banner.bats
+tags: []
+
+purpose: "T-3919 (G-110, RC-3 of ring20-manager's T-2248) — the restart banner says \"Handover committed\" only when a handover at least as new as the restart signal exists. It used to print it unconditionally."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-06
+created_by: unknown
