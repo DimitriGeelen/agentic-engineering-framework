@@ -1,10 +1,14 @@
 ---
 id: T-3955
-name: "fw upgrade step 7b overwrites a consumer's own doorbell+mail toolkit with older framework copies (010: 15 TermLink files replaced — TermLink is that toolkit's origin)"
+name: "fw upgrade step 7b overwrites a consumer's own doorbell+mail toolkit with older
+  framework copies (010: 15 TermLink files replaced — TermLink is that toolkit's origin)"
 description: >
-  010-termlink HIGH finding (framework:pickup 010-termlink/T-3370-upgrade-1.6.29-to-1.8.3-findings, sidecar c000e612). Upgrade-safety class with T-3850/T-3929: a consumer that is the ORIGIN of files the framework also ships must not have them replaced by older copies. 010 holds at 1.8.3 until fixed.
+  010-termlink HIGH finding (framework:pickup 010-termlink/T-3370-upgrade-1.6.29-to-1.8.3-findings,
+  sidecar c000e612). Upgrade-safety class with T-3850/T-3929: a consumer that is the
+  ORIGIN of files the framework also ships must not have them replaced by older copies.
+  010 holds at 1.8.3 until fixed.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T15:57:40Z
-last_update: 2026-10-06T15:57:40Z
-date_finished: null
+last_update: 2026-10-06T16:37:04Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-06T16:00:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-06T16:01:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3955: fw upgrade step 7b overwrites a consumer's own doorbell+mail toolkit with older framework copies (010: 15 TermLink files replaced — TermLink is that toolkit's origin)
@@ -62,8 +94,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] One helper `lib/upgrade_template_sync.py` decides each template-owned project file for upgrade steps 7 (resume.md) and 7b (doorbell+mail skills/scripts): in sync → OK; missing → CREATED; equal to the hash the framework last wrote (stamp `.context/upgrade-template-stamp.json`) → stock, UPDATED; anything else — including no stamp yet — → KEPT, with the template written beside it as `<file>.upstream` and a WARN. Never overwrites a customised file
+- [ ] A consumer can declare project files it owns in `.fwvendor-preserve.yaml` under `project_files:` (globs, relative to the project root) → PRESERVED, same .upstream copy
+- [ ] Steps 7 and 7b both call the helper (T-3956, the /resume overwrite, is the same root cause and closes with this)
+- [ ] Regression tests: stock copy updated; customised copy kept + .upstream; no stamp + differing → kept; manifest-preserved; missing → created; dry-run writes nothing; second run converges (stamp written when in sync)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +131,10 @@ date_finished: null
 -->
 
 ## Verification
+
+python3 -m pytest -q tests/unit/test_upgrade_template_sync_t3955.py
+bats tests/unit/lib_upgrade.bats
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -240,6 +278,27 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** 010-termlink upgraded 1.6.29 → 1.8.3: step 7b replaced 15 files of the
+doorbell+mail toolkit (TermLink is its origin, so its copies were NEWER) with older framework
+copies, and step 7 replaced its customised /resume. 010 now holds at 1.8.3 rather than lose
+them again.
+
+**Root cause:** steps 7 (T-1383) and 7b (T-1867) treated any difference from the template as
+"drift → refresh (.bak)". Without a record of what the framework itself had written, the step
+cannot distinguish a stale stock copy from a customised or newer one, and chose overwrite.
+
+**Why structurally allowed:** the drift-refresh was designed for consumers who never edit
+these files (G-056: upstream fixes did not propagate), and tested only that case. The same
+class was fixed for `fw vendor` in T-3850 (stamp + preserve manifest) but not carried over to
+the project-root files upgrade owns.
+
+**Prevention:** one decision helper with T-3850's model — stamp of what the framework wrote,
+update only stock copies, keep everything else with `<file>.upstream`, `project_files:` in
+.fwvendor-preserve.yaml for explicit claims. Trade-off accepted: on the first upgrade after
+this ships, an unrecorded stock copy that drifted is KEPT (with .upstream and a warning)
+rather than refreshed; it converges once accepted. Overwriting someone's work silently is the
+worse failure.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -320,3 +379,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3955-fw-upgrade-step-7b-overwrites-a-consumer.md
 - **Context:** Initial task creation
+
+### 2026-10-06T16:17:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

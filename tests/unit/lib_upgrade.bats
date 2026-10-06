@@ -111,23 +111,33 @@ teardown() {
 # G-056 / T-1383: resume.md drift-refresh invariants
 # ─────────────────────────────────────────────────────────────────────────────
 
-@test "upgrade: detects resume.md drift vs lib/templates/resume-md.md and refreshes with .bak" {
+@test "upgrade: a STOCK resume.md (the framework wrote it, unchanged since) is refreshed (T-3955)" {
     local proj="$TEST_TEMP_DIR/drift-proj"
-    mkdir -p "$proj/.claude/commands"
+    mkdir -p "$proj/.claude/commands" "$proj/.context"
     echo "framework_root: $FRAMEWORK_ROOT" > "$proj/.framework.yaml"
-    # Synthesize pre-T-1378 stale content
+    # Synthesize pre-T-1378 stale content, recorded as what the framework last wrote
     cat > "$proj/.claude/commands/resume.md" <<'STALE'
 # /resume - OLD STALE VERSION
 5. Check web server: curl -sf http://localhost:3000/
 STALE
+    sha=$(sha256sum "$proj/.claude/commands/resume.md" | cut -d' ' -f1)
+    printf '{".claude/commands/resume.md": "%s"}\n' "$sha" > "$proj/.context/upgrade-template-stamp.json"
     run do_upgrade "$proj"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"resume.md refreshed from template"* ]]
-    # Refreshed file contains canonical triple-file read
+    [[ "$output" == *"UPDATED"*"resume.md"*"stock copy"* ]]
     grep -q 'watchtower.url' "$proj/.claude/commands/resume.md"
-    # Backup preserved
-    [ -f "$proj/.claude/commands/resume.md.bak" ]
-    grep -q 'OLD STALE VERSION' "$proj/.claude/commands/resume.md.bak"
+}
+
+@test "upgrade: a customised or unrecorded resume.md is KEPT, template beside it as .upstream (T-3956)" {
+    local proj="$TEST_TEMP_DIR/custom-proj"
+    mkdir -p "$proj/.claude/commands"
+    echo "framework_root: $FRAMEWORK_ROOT" > "$proj/.framework.yaml"
+    echo "# /resume - MY CUSTOMISED VERSION" > "$proj/.claude/commands/resume.md"
+    run do_upgrade "$proj"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"KEPT"*"resume.md"* ]]
+    grep -q 'MY CUSTOMISED VERSION' "$proj/.claude/commands/resume.md"
+    grep -q 'watchtower.url' "$proj/.claude/commands/resume.md.upstream"
 }
 
 @test "upgrade: resume.md matches template — reports OK, no .bak written" {
@@ -147,7 +157,7 @@ STALE
     echo "framework_root: $FRAMEWORK_ROOT" > "$proj/.framework.yaml"
     run do_upgrade "$proj"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"resume.md from template"* ]]
+    [[ "$output" == *"CREATED"*"resume.md"*"from template"* ]]
     [ -f "$proj/.claude/commands/resume.md" ]
     grep -q 'watchtower.url' "$proj/.claude/commands/resume.md"
 }

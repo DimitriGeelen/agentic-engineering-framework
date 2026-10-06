@@ -2480,113 +2480,59 @@ MCPJSON
     # template changes, so upstream fixes never propagated.
     echo -e "${YELLOW}[7/10] Claude Code commands${NC}"
 
-    local resume_file="$target_dir/.claude/commands/resume.md"
-    local resume_tmpl="$FRAMEWORK_ROOT/lib/templates/resume-md.md"
+    # T-3955/T-3956: one decision per template-owned project file. Any difference from the
+    # template used to mean "drift → replace (.bak)", which overwrote a consumer's customised
+    # /resume and, in 010-termlink (the toolkit's origin), 15 NEWER files with older copies.
+    # lib/upgrade_template_sync.py updates only a stock copy (hash = what the framework last
+    # wrote); a customised, newer or unrecorded file is KEPT and the template is written
+    # beside it as <file>.upstream. Consumers can claim files in .fwvendor-preserve.yaml
+    # (project_files:).
+    local _uts="$FRAMEWORK_ROOT/lib/upgrade_template_sync.py" _uts_dry="" _uts_line
+    [ "$dry_run" = true ] && _uts_dry="--dry-run"
+    _uts_report() {   # one helper line -> colour + change count
+        local line="$1" st="${1%% *}"
+        case "$st" in
+            OK) return 0 ;;
+            KEPT|WOULD-KEPT|PRESERVED|WOULD-PRESERVED) echo -e "  ${YELLOW}${st}${NC}  ${line#* }" ;;
+            ERROR) echo -e "  ${YELLOW}WARN${NC}  template sync skipped — ${line#* } (file left untouched)"; return 0 ;;
+            WOULD-*) echo -e "  ${CYAN}${st}${NC}  ${line#* }" ;;
+            *) echo -e "  ${GREEN}${st}${NC}  ${line#* }" ;;
+        esac
+        changes=$((changes + 1)); _t1867_changes=$((_t1867_changes + 1))
+    }
 
+    local resume_tmpl="$FRAMEWORK_ROOT/lib/templates/resume-md.md"
+    local _t1867_changes=0
     if [ ! -f "$resume_tmpl" ]; then
-        echo -e "  ${YELLOW}WARN${NC}  template missing at lib/templates/resume-md.md — skipping drift check"
-    elif [ -f "$resume_file" ]; then
-        if diff -q "$resume_tmpl" "$resume_file" >/dev/null 2>&1; then
+        echo -e "  ${YELLOW}WARN${NC}  template missing at lib/templates/resume-md.md — skipping"
+    else
+        _uts_line=$(python3 "$_uts" "$target_dir" "$resume_tmpl" ".claude/commands/resume.md" $_uts_dry 2>&1) || _uts_line="ERROR helper failed: ${_uts_line:-no output}"
+        if [ "${_uts_line%% *}" = OK ]; then
             echo -e "  ${GREEN}OK${NC}  resume.md matches template"
         else
-            changes=$((changes + 1))
-            if [ "$dry_run" = true ]; then
-                echo -e "  ${CYAN}WOULD UPDATE${NC}  resume.md (drift from template detected)"
-            else
-                cp "$resume_file" "$resume_file.bak"
-                cp "$resume_tmpl" "$resume_file"
-                echo -e "  ${GREEN}UPDATED${NC}  resume.md refreshed from template. Backup: resume.md.bak"
-            fi
-        fi
-    else
-        changes=$((changes + 1))
-        if [ "$dry_run" = true ]; then
-            echo -e "  ${CYAN}WOULD CREATE${NC}  .claude/commands/resume.md"
-        else
-            mkdir -p "$target_dir/.claude/commands"
-            cp "$resume_tmpl" "$resume_file"
-            echo -e "  ${GREEN}CREATED${NC}  .claude/commands/resume.md from template"
+            _uts_report "$_uts_line"
         fi
     fi
 
     # ── 7b. Doorbell+mail toolkit propagation (T-1867) ──
-    # Propagates skills + supporting scripts from upstream lib/templates/
-    # to project-root .claude/commands/ and scripts/. Mirrors the resume.md
-    # drift-detection pattern: per-file compare, .bak backup on drift, update.
-    # PL-124-safe by construction: only touches files explicitly enumerated
-    # under lib/templates/{skills,scripts}/. Consumer-local files in the same
-    # directories survive untouched.
+    # Skills + supporting scripts from upstream lib/templates/{skills,scripts}/ to the
+    # project's .claude/commands/ and scripts/. Only enumerated files are touched; every
+    # decision goes through the same helper as step 7 (T-3955).
     echo -e "${YELLOW}[7b/10] Doorbell+mail toolkit (T-1867)${NC}"
-
-    local _t1867_skills_src="$FRAMEWORK_ROOT/lib/templates/skills"
-    local _t1867_scripts_src="$FRAMEWORK_ROOT/lib/templates/scripts"
-    local _t1867_changes=0
-
-    if [ -d "$_t1867_skills_src" ]; then
-        mkdir -p "$target_dir/.claude/commands"
-        local _t1867_src _t1867_base _t1867_dst
-        for _t1867_src in "$_t1867_skills_src"/*.md; do
-            [ -f "$_t1867_src" ] || continue
-            _t1867_base=$(basename "$_t1867_src")
-            _t1867_dst="$target_dir/.claude/commands/$_t1867_base"
-            if [ -f "$_t1867_dst" ] && diff -q "$_t1867_src" "$_t1867_dst" >/dev/null 2>&1; then
-                :  # in sync
-            elif [ -f "$_t1867_dst" ]; then
-                _t1867_changes=$((_t1867_changes + 1))
-                if [ "$dry_run" = true ]; then
-                    echo -e "  ${CYAN}WOULD UPDATE${NC}  .claude/commands/$_t1867_base (drift)"
-                else
-                    cp "$_t1867_dst" "$_t1867_dst.bak"
-                    cp "$_t1867_src" "$_t1867_dst"
-                    echo -e "  ${GREEN}UPDATED${NC}  .claude/commands/$_t1867_base (backup: .bak)"
-                fi
-            else
-                _t1867_changes=$((_t1867_changes + 1))
-                if [ "$dry_run" = true ]; then
-                    echo -e "  ${CYAN}WOULD CREATE${NC}  .claude/commands/$_t1867_base"
-                else
-                    cp "$_t1867_src" "$_t1867_dst"
-                    echo -e "  ${GREEN}CREATED${NC}  .claude/commands/$_t1867_base"
-                fi
-            fi
-        done
-    fi
-
-    if [ -d "$_t1867_scripts_src" ]; then
-        mkdir -p "$target_dir/scripts"
-        for _t1867_src in "$_t1867_scripts_src"/*.sh; do
-            [ -f "$_t1867_src" ] || continue
-            _t1867_base=$(basename "$_t1867_src")
-            _t1867_dst="$target_dir/scripts/$_t1867_base"
-            if [ -f "$_t1867_dst" ] && diff -q "$_t1867_src" "$_t1867_dst" >/dev/null 2>&1; then
-                :  # in sync
-            elif [ -f "$_t1867_dst" ]; then
-                _t1867_changes=$((_t1867_changes + 1))
-                if [ "$dry_run" = true ]; then
-                    echo -e "  ${CYAN}WOULD UPDATE${NC}  scripts/$_t1867_base (drift)"
-                else
-                    cp "$_t1867_dst" "$_t1867_dst.bak"
-                    cp "$_t1867_src" "$_t1867_dst"
-                    chmod +x "$_t1867_dst"
-                    echo -e "  ${GREEN}UPDATED${NC}  scripts/$_t1867_base (backup: .bak)"
-                fi
-            else
-                _t1867_changes=$((_t1867_changes + 1))
-                if [ "$dry_run" = true ]; then
-                    echo -e "  ${CYAN}WOULD CREATE${NC}  scripts/$_t1867_base"
-                else
-                    cp "$_t1867_src" "$_t1867_dst"
-                    chmod +x "$_t1867_dst"
-                    echo -e "  ${GREEN}CREATED${NC}  scripts/$_t1867_base"
-                fi
-            fi
-        done
-    fi
-
+    _t1867_changes=0
+    local _t1867_src
+    for _t1867_src in "$FRAMEWORK_ROOT/lib/templates/skills"/*.md; do
+        [ -f "$_t1867_src" ] || continue
+        _uts_line=$(python3 "$_uts" "$target_dir" "$_t1867_src" ".claude/commands/$(basename "$_t1867_src")" $_uts_dry 2>&1) || _uts_line="ERROR helper failed: ${_uts_line:-no output}"
+        _uts_report "$_uts_line"
+    done
+    for _t1867_src in "$FRAMEWORK_ROOT/lib/templates/scripts"/*.sh; do
+        [ -f "$_t1867_src" ] || continue
+        _uts_line=$(python3 "$_uts" "$target_dir" "$_t1867_src" "scripts/$(basename "$_t1867_src")" $_uts_dry --exec 2>&1) || _uts_line="ERROR helper failed: ${_uts_line:-no output}"
+        _uts_report "$_uts_line"
+    done
     if [ "$_t1867_changes" -eq 0 ]; then
         echo -e "  ${GREEN}OK${NC}  doorbell+mail toolkit in sync (0 changes)"
-    else
-        changes=$((changes + _t1867_changes))
     fi
 
     # ── 8. Context subdirectories (create missing) ──
