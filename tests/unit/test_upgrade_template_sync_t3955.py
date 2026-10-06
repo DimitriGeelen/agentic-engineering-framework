@@ -92,6 +92,13 @@ def test_known_shipped_version_without_stamp_is_updated_t3965(tmp_path):
     assert uts.decide(target2, src2, REL, False, True, known)[0] == "KEPT"
 
 
+def test_shipped_hash_module_is_current_t3965():
+    """The committed list equals what --gen-known derives now. Red after a template edit
+    means: run `python3 lib/upgrade_template_sync.py --gen-known` and commit the result."""
+    import upgrade_template_shipped as shipped
+    assert uts.generate_known(ROOT) == shipped.SHIPPED
+
+
 def test_dry_run_writes_nothing(tmp_path):
     target, src = _setup(tmp_path, dst_text="MY EDIT\n")
     assert uts.decide(target, src, REL, True, True)[0] == "WOULD-KEPT"
