@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3909: sidecar receiver escalates to the operator the stored '<id>-nudge-N' copies of a message we already answered — waiting.is_closed_inbound tests the raw id while the inject gate (seen.withheld) matches every id the message is known by (ring20-dashboard on 1.8.3)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-06T00:07:47Z
+# ============================================================================
+
+task_id: T-3909
+task_name: "sidecar receiver escalates to the operator the stored '<id>-nudge-N' copies of a message we already answered — waiting.is_closed_inbound tests the raw id while the inject gate (seen.withheld) matches every id the message is known by (ring20-dashboard on 1.8.3)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T23:49:12Z
+completed: 2026-10-06T00:07:21Z
+duration_days: 1
+updates_count: 1
+first_commit: 2026-10-06T02:07:20+02:00
+last_commit: 2026-10-06T02:07:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the waiting list and its operator escalation test 'answered' with the inject gate's predicate — every id a message is known by — so nudge copies of an answered thread are no longer escalated (ring20-dashboard on 1.8.3)
+
+# Key outcomes
+outcomes:
+  - 'Root cause, measured. `waiting.is_closed_inbound` tests `mid in replied_ids()` on the receiver''s raw message id. A peer''s nudge is stored as `<id>-nudge-N`, so an answered thread''s nudge copies stayed "open": they were listed as waiting and ESCALATED_TO_OPERATOR at the warn age. The inject gate (`seen.withheld`, T-3872''s shared predicate) already matched every id a message is known by, including the base, and logged "withheld: answered" for the same copies.'
+  - '`is_closed_inbound` answers "answered" with that same predicate: `seen.keys_for(mid, msg)` intersected with (`seen.answered_ids()` plus `waiting.replied_ids()`, both normalised to base ids). One fact, one predicate. A nudge copy of an answered message is closed, so it is neither listed nor escalated.'
+  - 'Our own sender side was checked against ring20''s two examples and is correct. For 674fc1ff, our nudges went at 18:53 and 19:08, before their reply at 19:16, and our ladder closed as "answered" at 19:18. ring20''s 22:53 and 23:08 events are their receiver escalating stored copies at the warn age. So nothing to change on the sender side.'
+  - 'Tests:'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/waiting.py'
+  - 'lib/sidecar/waiting.py'
+  - '.tasks/active/T-3909-sidecar-receiver-escalates-to-the-operat.md'
+  - 'tests/unit/test_sidecar_waiting_t3782.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T02:07:20'
+    action: 'T-3909: the waiting list and its operator escalation test ''answered'' with the inject gate''s predicate — every id a message is known by — so nudge copies of an answered thread are no longer escalated (ring20-dashboard on 1.8.3)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 18 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 18
+  commits: 1
+  files_changed: 4
+  lines_added: 416
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3909-sidecar-receiver-escalates-to-the-operat.md
+generated_by: context-agent-hybrid
