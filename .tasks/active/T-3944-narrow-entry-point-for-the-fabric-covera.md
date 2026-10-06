@@ -1,23 +1,13 @@
 ---
-id: T-3936
-name: "Peer mail never reaches a session that is not TermLink-wrapped: no inject target
-  -> message never claimed -> prompt hook surfaces nothing; and nothing warns that
-  the running session has no TermLink registration"
+id: T-3944
+name: "Narrow entry point for the fabric-coverage check — 'fw audit --sections structure' grew to 22-33 s on 1.8.3 from unrelated checks (832 T-1051)"
 description: >
-  Operator 2026-10-06: peers (ring20-manager, 832) complained they keep waiting; operator
-  had to nudge by hand. Found: this session runs under 'claude-fw -c' WITHOUT --termlink
-  (session record termlink_session: null), so lib/sidecar/inject.py has no candidate;
-  mail stays flagged and unclaimed, and the UserPromptSubmit hook surfaces only messages
-  claimed for its own session, so even operator prompts do not surface it. Fix: (1)
-  prompt/Stop hook surfaces flagged unclaimed mail for this project when no inject
-  target exists (claim for itself); (2) session-start + doctor WARN when the live
-  agent session has no TermLink registration while peer mail is flowing; (3) INJECT_BLOCKED
-  reason visible in fw sidecar status. Register: G-111.
+  832 5b418a3c: their fabric-coverage tests call the whole structure section once per leg; 8 s on 1.7.x, 22 s on a 20-file fixture now. Request: a section or verb that runs only the fabric coverage check.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: []
@@ -47,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-06T10:24:21Z
-last_update: 2026-10-06T10:32:41Z
-date_finished:
+created: 2026-10-06T10:50:18Z
+last_update: 2026-10-06T10:50:18Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -60,37 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-06T10:30:27Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-06T10:31:07Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 1
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
-      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3936: Peer mail never reaches a session that is not TermLink-wrapped: no inject target -> message never claimed -> prompt hook surfaces nothing; and nothing warns that the running session has no TermLink registration
+# T-3944: Narrow entry point for the fabric-coverage check — 'fw audit --sections structure' grew to 22-33 s on 1.8.3 from unrelated checks (832 T-1051)
 
 ## Context
 
@@ -100,10 +62,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Root cause located: why the prompt-hook fallback (inject.injector_found_no_session) stayed off for this plain `claude-fw -c` session, with evidence in Updates
-- [ ] A session that is not TermLink-wrapped receives unclaimed peer mail at its next prompt even when a stale/foreign TermLink session carries this project's tag (regression test, with a control leg showing a live injectable sibling still keeps the 055 rule)
-- [ ] Mail that arrives during a long turn is surfaced between tool calls (PostToolUse) to a non-TermLink interactive session, framed as untrusted data, same shown/answered ledger
-- [ ] Operator ruling recorded: sessions run as plain `claude-fw -c` (no --termlink) while it is unstable with the fleet cockpit — delivery must not depend on TermLink injection
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -356,10 +316,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-10-06T10:24:21Z — task-created [task-create-agent]
+### 2026-10-06T10:50:18Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3936-peer-mail-never-reaches-a-session-that-i.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3944-narrow-entry-point-for-the-fabric-covera.md
 - **Context:** Initial task creation
-
-### 2026-10-06T10:32:41Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
