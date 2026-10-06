@@ -11,12 +11,12 @@ description: >
   - lp_no) case-insensitively; WARN not DEBUG on reranker error; fw doctor check;
   regression test asserting distinct scores for relevant vs irrelevant.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/embeddings.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T14:52:05Z
-last_update: 2026-10-06T19:53:01Z
-date_finished:
+last_update: 2026-10-06T19:54:04Z
+date_finished: 2026-10-06T19:54:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -133,6 +133,13 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] Watchtower search answers now put the most relevant result first
+  **Steps:**
+  1. Open http://192.168.10.107:3000/search
+  2. Search: `how do I change the Watchtower port`
+  3. Search: `what is an inception task`
+  **Expected:** for each, the top results are about that topic (port/triple-file; inception go/no-go), not loosely related tasks — the order now comes from the reranker, which before this fix changed nothing
+  **If not:** note the query and the first two results; the reranker may be unavailable on this host (Watchtower log shows "Reranker error")
 
 ## Verification
 
@@ -351,6 +358,19 @@ scores is a follow-up.
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The reranker never ranked anything: Ollama rejected the request (raw + system),
+the error was logged at DEBUG, and every candidate scored 0.5. Reproduced live here before the
+fix, and the fix is measured live after it. The one Human criterion is a two-query look at
+Watchtower search, because the ordering you see there is what changed.
+
+**Evidence:**
+- Before: relevant 0.5, irrelevant 0.5; raw+system → HTTP 400 (Ollama 0.33.1).
+- After: relevant 0.9991, irrelevant 0.0, Dutch query vs English doc 0.9974; ~44 ms/pair.
+- tests/unit/test_reranker_t3953.py 5/5 (request shape, graded score, ordering, warning on error); recall telemetry 32/32.
+- Watchtower restarted; `fw watchtower current` OK.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -388,3 +408,15 @@ scores is a follow-up.
 - After: relevant 0.9991, irrelevant 0.0, Dutch query vs English doc 0.9974; ~44 ms/pair warm.
 - Watchtower restarted (pid 3335861), `fw watchtower current` OK.
 - Not done here (dimitri-mint-dev's suggestion): a `fw doctor` check that the reranker returns distinct scores — candidate follow-up.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ca1254b1
+- **Timestamp:** 2026-10-06T19:54:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-06T19:54:04Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
