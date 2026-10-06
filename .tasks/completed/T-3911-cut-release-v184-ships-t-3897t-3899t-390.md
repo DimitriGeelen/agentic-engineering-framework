@@ -6,12 +6,12 @@ description: >
   Cut release v1.8.4: ships T-3897/T-3899/T-3900/T-3904/T-3905/T-3906/T-3907/T-3908/T-3909/T-3910
   to consumers (ring20 G-109 re-test, 832, 1409)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/arc_lifecycle_state_machine.bats, tests/unit/t3918_terminator_handover.bats, tests/unit/t3919_restart_banner.bats]
 related_tasks: []
 origin: {kind: "operator", ref: "2026-10-06 proceed as suggested (cut the next release)"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -41,8 +41,8 @@ origin: {kind: "operator", ref: "2026-10-06 proceed as suggested (cut the next r
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T05:33:31Z
-last_update: 2026-10-06T09:39:23Z
-date_finished:
+last_update: 2026-10-06T14:50:55Z
+date_finished: 2026-10-06T14:50:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -95,8 +95,8 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] VERSION is restored to the committed value before the release, not the T-3849 re-stamped 1.8.74.
 - [x] `bin/fw release tag-and-release --bump patch --dry-run` reports the fast-forward of master and the tag v1.8.4, and mutates nothing.
-- [ ] The real run fast-forwards master to bleeding-edge and tags v1.8.4. The push is confirmed by git's own exit code, and `git ls-remote origin` shows refs/tags/v1.8.4 and master at the release commit.
-- [ ] Peers told the version: ring20-dashboard, ring20-manager (step-6 re-run, G-109), 832 and 1409.
+- [x] The real run fast-forwards master to bleeding-edge and tags v1.8.4. The push is confirmed by git's own exit code, and `git ls-remote origin` shows refs/tags/v1.8.4 and master at the release commit. (2026-10-06: master b648b7709 = v1.8.4^{commit}; GitHub release created. The first attempt that morning rolled back cleanly on new unit reds; this run followed T-3933 (doctor smoke sweep), a clean suite run, an operator baseline of one load flake (T-3950) and an operator ack of a Watchtower tick (T-3910 / T-3722 gap).)
+- [x] Peers told the version: ring20-dashboard, ring20-manager (step-6 re-run, G-109), 832 and 1409 — plus 010 and dimitri-mint-dev; one notice listing what is in v1.8.4 and what is not yet (conversation aef-release-v1.8.4).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -353,3 +353,15 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3911-cut-release-v184-ships-t-3897t-3899t-390.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-635221db
+- **Timestamp:** 2026-10-06T14:50:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-06T14:50:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3911: Cut release v1.8.4: ships T-3897/T-3899/T-3900/T-3904/T-3905/T-3906/T-3907/T-3908/T-3909/T-3910 to consumers (ring20 G-109 re-test, 832, 1409)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-06T14:51:13Z
+# ============================================================================
+
+task_id: T-3911
+task_name: "Cut release v1.8.4: ships T-3897/T-3899/T-3900/T-3904/T-3905/T-3906/T-3907/T-3908/T-3909/T-3910 to consumers (ring20 G-109 re-test, 832, 1409)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-06T05:33:31Z
+completed: 2026-10-06T14:50:55Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-06T11:39:23+02:00
+last_commit: 2026-10-06T11:39:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  4 dead '! cmd' assertions made live (run + status). The T-3919 one then went red: its regex matched the helper's own conditional 'committed' branch — the test now asserts one occurrence, inside _restart_handover_line
+
+# Key outcomes
+outcomes:
+  - 'VERSION is restored to the committed value before the release, not the T-3849 re-stamped 1.8.74.'
+  - '`bin/fw release tag-and-release --bump patch --dry-run` reports the fast-forward of master and the tag v1.8.4, and mutates nothing.'
+  - 'The real run fast-forwards master to bleeding-edge and tags v1.8.4. The push is confirmed by git''s own exit code, and `git ls-remote origin` shows refs/tags/v1.8.4 and master at the release commit. (2026-10-06: master b648b7709 = v1.8.4^{commit}; GitHub release created. The first attempt that morning rolled back cleanly on new unit reds; this run followed T-3933 (doctor smoke sweep), a clean suite run, an operator baseline of one load flake (T-3950) and an operator ack of a Watchtower tick (T-3910 / T-3722 gap).)'
+  - 'Peers told the version: ring20-dashboard, ring20-manager (step-6 re-run, G-109), 832 and 1409 — plus 010 and dimitri-mint-dev; one notice listing what is in v1.8.4 and what is not yet (conversation aef-release-v1.8.4).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3911-cut-release-v184-ships-t-3897t-3899t-390.md'
+  - 'tests/unit/arc_lifecycle_state_machine.bats'
+  - 'tests/unit/t3918_terminator_handover.bats'
+  - 'tests/unit/t3919_restart_banner.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T11:39:23'
+    action: 'T-3911: 4 dead ''! cmd'' assertions made live (run + status). The T-3919 one then went red: its regex matched the helper''s own conditional ''committed'' branch — the test now asserts one occurrence, inside _restart_handover_line'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 557 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 557
+  commits: 1
+  files_changed: 4
+  lines_added: 364
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3911-cut-release-v184-ships-t-3897t-3899t-390.md
+generated_by: context-agent-hybrid
