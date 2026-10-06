@@ -1,14 +1,10 @@
 ---
-id: T-3942
-name: "Terminator handover (T-3918) logs FAILED when the handover commit landed but
-  the push outran FW_TERMINATOR_HANDOVER_TIMEOUT (slow OneDev/NFS push)"
+id: T-3954
+name: "Installed claude-fw copies silently disable the T-3890 duplicate-conversation guard (and two more lib lookups): libs are resolved beside the script (/usr/bin/../lib), which a copy does not have"
 description: >
-  ring20-manager 01a8c11d: fw handover --checkpoint wrote its file in ~2 min then
-  sat in 'timeout 461 git push' past 180 s; killed during push = commit landed but
-  logged FAILED. Fix: judge success on the handover commit, push separately/best-effort;
-  or budget the push out of the terminator window.
+  Found 2026-10-06 (T-3942): bin/claude-fw loads lib/conversation-holder.sh (line ~758, T-3890 guard), lib/termlink-runtime.sh (~97) and fw (~700) via $(dirname $(readlink -f BASH_SOURCE))/../lib. The operator's launchers are COPIES in /usr/bin and ~/.local/bin, so the lookup resolves to /usr/lib/... and ~/.local/lib/... — missing — and the guard returns 0 ('no holder'). The guard that would have refused the 23:11 duplicate conversation (G-111) has never been active for an installed copy, refreshed or not. Fix: resolve libs from the project's framework (PWD/.agentic-framework, or PWD when it is the framework repo, or FRAMEWORK_ROOT), and make a missing lib a visible WARNING instead of a silent pass. Test from an installed copy outside the repo. Severity high: it removes a safety guard silently.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -41,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-06T10:48:05Z
-last_update: 2026-10-06T15:36:20Z
-date_finished:
+created: 2026-10-06T15:35:15Z
+last_update: 2026-10-06T15:35:15Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -54,37 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-06T11:00:41Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-06T11:01:29Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3942: Terminator handover (T-3918) logs FAILED when the handover commit landed but the push outran FW_TERMINATOR_HANDOVER_TIMEOUT (slow OneDev/NFS push)
+# T-3954: Installed claude-fw copies silently disable the T-3890 duplicate-conversation guard (and two more lib lookups): libs are resolved beside the script (/usr/bin/../lib), which a copy does not have
 
 ## Context
 
@@ -94,10 +62,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] One predicate `fw_handover_landed <root> <since_epoch>` (lib/handover-lock.sh): a commit touching .context/handovers/LATEST.md at or after the run's start
-- [x] checkpoint.sh budget-critical auto-handover: when the timed run fails but a handover commit landed, it is logged "Handover generated … (push did not finish)" and the .restart-requested signal IS written (832 G-083); a run with no landed commit is still FAILED with no signal
-- [x] claude-fw terminator (T-3918): same predicate — a landed commit with an unfinished push is logged as generated, not FAILED (ring20-manager 01a8c11d). The predicate is loaded from the PROJECT's framework (beside the resolved fw), because an installed claude-fw copy has no lib/ next to it — that finding is T-3954
-- [x] Regression tests: predicate (landed after start / landed before start / none), and both call sites use it; existing t3917/t3918 tests green (19/19; handover_push_timeout.bats' 3 reds are pre-existing and baselined)
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -131,10 +97,6 @@ bvp_scores_proposed:
 -->
 
 ## Verification
-
-bats tests/unit/t3942_handover_landed.bats
-bats tests/unit/t3918_terminator_handover.bats
-bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -278,25 +240,6 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** ring20-manager (01a8c11d) and 832 (G-083, 4ad5f0e8), 2026-10-06: a handover
-was logged FAILED although its commit had landed; on the budget-critical path no
-.restart-requested was written, so a 95 % session ended without auto-restart and the
-operator read it as a crash.
-
-**Root cause:** both callers judged the handover by the exit code of a TIMED run of
-handover.sh, which commits and then pushes under its own, longer push timeout (derived from
-full-audit-timing, 180 s+ with the pre-push audit). The outer bound (60 s in checkpoint.sh,
-180 s in the terminator) killed the run mid-push; the exit code said 124 although the part
-that matters — the committed LATEST.md — was done.
-
-**Why structurally allowed:** the two timeouts are set in different files from different
-sources and nothing relates them; the tests checked "a failing handover is FAILED" and "a
-hanging one is bounded", never "a committed-then-hanging one", so success and push were
-conflated by construction.
-
-**Prevention:** one predicate judges by the commit (fw_handover_landed), used by both call
-sites; pinned by a test where the fake fw commits and then hangs past the bound.
-
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -373,11 +316,7 @@ sites; pinned by a test where the fake fw commits and then hangs past the bound.
 
 ## Updates
 
-### 2026-10-06T10:48:05Z — task-created [task-create-agent]
+### 2026-10-06T15:35:15Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3942-terminator-handover-t-3918-logs-failed-w.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3954-installed-claude-fw-copies-silently-disa.md
 - **Context:** Initial task creation
-
-### 2026-10-06T15:31:39Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)

@@ -62,3 +62,17 @@ fw_handover_lock_stale() {
     fi
     return 1
 }
+
+# fw_handover_landed <project_root> <since_epoch>
+# T-3942 (832 G-083, ring20-manager 01a8c11d): did a handover COMMIT land at or after
+# <since_epoch>? A handover run that is cut off by its outer timeout while pushing has
+# already done the part that matters — LATEST.md is committed — yet it was logged FAILED,
+# and the budget-critical path then skipped the auto-restart signal. Success is the
+# commit, not the push. Exit 0 = landed (prints the commit), 1 = not.
+fw_handover_landed() {
+    local root="$1" since="$2" ct="" sha=""
+    [ -n "$root" ] && [ -n "$since" ] || return 1
+    read -r ct sha < <(git -C "$root" log -1 --format='%ct %h' -- .context/handovers/LATEST.md 2>/dev/null) || true
+    [ -n "$ct" ] && [ "$ct" -ge "$since" ] 2>/dev/null || return 1
+    echo "$sha"
+}
