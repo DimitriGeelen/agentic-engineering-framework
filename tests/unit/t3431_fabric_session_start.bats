@@ -78,8 +78,9 @@ print(d['hookSpecificOutput']['additionalContext'])
     [ "$HOOK_RC" -eq 0 ]
     cached_before=$(cat "$PROJECT_ROOT/.context/working/.fabric-describe.last")
 
-    # Force the live describe call to fail: a 0s timeout kills it immediately.
-    export FW_FABRIC_DESCRIBE_TIMEOUT=0
+    # Force the live describe call to fail: a 1 ms timeout kills it at once.
+    # (T-3915: NOT 0 — GNU `timeout 0` means no limit; the test then waited 15 min.)
+    export FW_FABRIC_DESCRIBE_TIMEOUT=0.001
     _run_hook
     [ "$HOOK_RC" -eq 0 ]
     context=$(_hook_context)
@@ -110,4 +111,20 @@ print(d['hookSpecificOutput']['additionalContext'])
 @test "T-3431: fw resume status is silent on fabric when no cache exists yet" {
     run "$RESUME" status
     [[ "$output" != *"Fabric Quality:"* ]]
+}
+
+@test "T-3915: a 0, empty or non-numeric describe timeout falls back to the bounded default" {
+    hook="$FRAMEWORK_ROOT/agents/context/post-compact-resume.sh"
+    # The guard sits right after the default assignment and maps every
+    # unbounded spelling to 10 s (GNU `timeout 0` means no limit).
+    grep -q "''|\*\[!0-9.\]\*|.|0|0.0|00) FABRIC_DESCRIBE_TIMEOUT=10 ;;" "$hook"
+    for v in 0 "" abc 00; do
+        out=$(FW_FABRIC_DESCRIBE_TIMEOUT="$v" bash -c '
+            FABRIC_DESCRIBE_TIMEOUT="${FW_FABRIC_DESCRIBE_TIMEOUT:-10}"
+            case "$FABRIC_DESCRIBE_TIMEOUT" in
+                '"''"'|*[!0-9.]*|.|0|0.0|00) FABRIC_DESCRIBE_TIMEOUT=10 ;;
+            esac
+            echo "$FABRIC_DESCRIBE_TIMEOUT"')
+        [ "$out" = "10" ]
+    done
 }

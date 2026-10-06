@@ -275,6 +275,11 @@ fi
 # cron's/explicit-call's job). Never blocks the session: on timeout or a
 # non-zero exit, the last-known line is read back from the cache file instead.
 FABRIC_DESCRIBE_TIMEOUT="${FW_FABRIC_DESCRIBE_TIMEOUT:-10}"
+# T-3915: GNU `timeout 0` means NO limit — a 0, empty or non-numeric value
+# would let session start wait unbounded (measured: 15 min). Bound it.
+case "$FABRIC_DESCRIBE_TIMEOUT" in
+    ''|*[!0-9.]*|.|0|0.0|00) FABRIC_DESCRIBE_TIMEOUT=10 ;;
+esac
 FABRIC_CACHE="$PROJECT_ROOT/.context/working/.fabric-describe.last"
 if [ -d "$PROJECT_ROOT/.fabric/components" ]; then
     FABRIC_OUT=$(cd "$PROJECT_ROOT" && PROJECT_ROOT="$PROJECT_ROOT" timeout "$FABRIC_DESCRIBE_TIMEOUT" \
