@@ -86,6 +86,31 @@ def _body(text: str) -> str:
     return text[end + 4:] if end >= 0 else text
 
 
+# T-3920: per-file parse memo keyed on (mtime_ns, size). /approvals rebuilt this
+# index on every render — ~700 YAML parses, 2.4 s of a 4 s page. Every call still
+# lists and stats the files, so an edited, added or removed task is seen at once;
+# only unchanged files skip the re-parse. Callers get copies, never the memo.
+_PARSE_MEMO: dict = {}
+
+
+def _parsed(p: Path):
+    try:
+        st = p.stat()
+    except OSError:
+        return None
+    key = (st.st_mtime_ns, st.st_size)
+    hit = _PARSE_MEMO.get(p)
+    if hit and hit[0] == key:
+        return hit[1], hit[2]
+    try:
+        text = p.read_text(errors="replace")
+    except OSError:
+        return None
+    fm = _frontmatter(text)
+    _PARSE_MEMO[p] = (key, fm, text)
+    return fm, text
+
+
 def task_index(root: Path, locations: tuple = ("active", "completed")) -> dict:
     """{task_id: {location, status, name, path, fm}} over active/ and completed/."""
     out: dict = {}
@@ -98,17 +123,16 @@ def task_index(root: Path, locations: tuple = ("active", "completed")) -> dict:
             if not m:
                 continue
             tid = m.group(1)
-            try:
-                text = p.read_text(errors="replace")
-            except OSError:
+            got = _parsed(p)
+            if got is None:
                 continue
-            fm = _frontmatter(text)
+            fm, text = got
             out[tid] = {
                 "location": loc,
                 "status": str(fm.get("status") or ""),
                 "name": str(fm.get("name") or ""),
                 "path": p,
-                "fm": fm,
+                "fm": dict(fm),
                 "text": text,
             }
     return out

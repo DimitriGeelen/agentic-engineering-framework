@@ -207,9 +207,10 @@ def note_no_recipient(msg_ids: list[str], reason: str) -> list[dict]:
     (receipts.send dedupes on ok rows)."""
     rows = []
     replied = replied_ids()
+    answered = answered_set(replied) if msg_ids else set()   # T-3920: once, not per message
     for mid in msg_ids:
         env = receiver.read_message(mid)
-        if not env or is_closed_inbound(mid, replied):
+        if not env or is_closed_inbound(mid, replied, answered):
             continue
         first = waiting_event(mid)
         if first is None:
@@ -265,7 +266,18 @@ def replied_ids() -> set[str]:
     return out
 
 
-def is_closed_inbound(mid: str, replied: set[str] | None = None) -> bool:
+def answered_set(replied: set[str] | None = None) -> set[str]:
+    """Base ids of every inbound message our agent answered — the inject gate's
+    predicate (seen.answered_ids) plus this module's direct-path replies.
+    T-3920: build it ONCE per listing; it reads the whole sent ledger and every
+    outbox file (~0.5 s), and calling it per message made /approvals take 27 s."""
+    from . import seen
+    out = {seen.base(i) for i in (replied_ids() if replied is None else replied)}
+    return out | seen.answered_ids()
+
+
+def is_closed_inbound(mid: str, replied: set[str] | None = None,
+                      answered: set[str] | None = None) -> bool:
     if receiver.is_message_handed_over(mid) or is_dropped(mid):
         return True
     # T-3909: "answered" under EVERY id the message is known by — a peer's
@@ -273,8 +285,8 @@ def is_closed_inbound(mid: str, replied: set[str] | None = None) -> bool:
     # (seen.withheld, T-3872) already asked it this way; this path tested the raw
     # id, so ring20 got operator escalations for nudge copies of answered threads.
     from . import seen
-    answered = {seen.base(i) for i in (replied_ids() if replied is None else replied)}
-    answered |= seen.answered_ids()
+    if answered is None:
+        answered = answered_set(replied)
     return bool(seen.keys_for(mid, receiver.read_message(mid)) & answered)
 
 
@@ -364,8 +376,10 @@ def inbound_items(now: datetime | None = None) -> list[dict]:
             "state": "store-failed", "escalated": levels.get(f"in:{mid}", []),
             "last_recover": None, "actions": ["drop"],
         })
-    for mid in receiver.list_pending_messages():
-        if is_closed_inbound(mid, replied):
+    pending = receiver.list_pending_messages()
+    answered = answered_set(replied) if pending else set()   # T-3920: once, not per message
+    for mid in pending:
+        if is_closed_inbound(mid, replied, answered):
             continue
         msg = receiver.read_message(mid) or {}
         stored = _ts(msg.get("_stored_at")) or now
