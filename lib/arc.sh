@@ -854,7 +854,7 @@ arc_close() {
             wt_url="$(fw_config WATCHTOWER_URL "" 2>/dev/null || true)"
         fi
         if [ -z "$wt_url" ]; then
-            wt_url="$(bin/fw watchtower url 2>/dev/null || true)"
+            wt_url="$("${FRAMEWORK_ROOT:-$PROJECT_ROOT}/bin/fw" watchtower url 2>/dev/null || true)"
         fi
         [ -z "$wt_url" ] && wt_url="http://localhost:3000"
         echo "Error: agents must not invoke 'fw arc close' directly (§ACD/G-062, T-1671)." >&2
@@ -1003,7 +1003,7 @@ arc_abandon() {
             wt_url="$(fw_config WATCHTOWER_URL "" 2>/dev/null || true)"
         fi
         if [ -z "$wt_url" ]; then
-            wt_url="$(bin/fw watchtower url 2>/dev/null || true)"
+            wt_url="$("${FRAMEWORK_ROOT:-$PROJECT_ROOT}/bin/fw" watchtower url 2>/dev/null || true)"
         fi
         [ -z "$wt_url" ] && wt_url="http://localhost:3000"
         echo "Error: agents must not invoke 'fw arc abandon' directly (§ACD/G-062, T-1671)." >&2
@@ -2305,16 +2305,20 @@ arc_rescore() {
         return 0
     fi
 
-    local count=0 failed=0
+    local count=0 failed=0 est_err
+    # T-3964: fw comes from the framework root. A consumer has no PROJECT_ROOT/bin/fw
+    # (it is .agentic-framework/bin/fw), so the old fallback failed every estimate.
+    local fw_bin="${FW_BIN:-${FRAMEWORK_ROOT:-$PROJECT_ROOT}/bin/fw}"
     echo "  Rescoring member tasks of arc '$input'..."
     while IFS= read -r tid; do
         [ -n "$tid" ] || continue
-        # fw bvp estimate writes to stderr on errors; we want a tidy summary.
-        if "${FW_BIN:-${PROJECT_ROOT}/bin/fw}" bvp estimate "$tid" >/dev/null 2>&1; then
+        # Tidy summary, but keep the estimator's last error line: a bare "failed"
+        # is what hid the missing binary from 010.
+        if est_err=$("$fw_bin" bvp estimate "$tid" 2>&1 >/dev/null); then
             count=$((count + 1))
         else
             failed=$((failed + 1))
-            echo "    WARN: estimator failed on $tid" >&2
+            echo "    WARN: estimator failed on $tid: $(printf '%s\n' "$est_err" | grep -v '^[[:space:]]*$' | tail -1)" >&2
         fi
     done <<< "$active_members"
 

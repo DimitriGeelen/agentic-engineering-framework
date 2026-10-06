@@ -181,3 +181,33 @@ EOF
     # Driver was actually written to the YAML — approval stands
     grep -q "name: reliability" "$TEST_ROOT/.context/arcs/myarc.yaml"
 }
+
+# --- T-3964: the default fw (no FW_BIN) comes from FRAMEWORK_ROOT, not PROJECT_ROOT ---
+# A consumer has no PROJECT_ROOT/bin/fw. Every test above stubs FW_BIN, so the
+# default path was never exercised and 010 found every member estimate failing.
+
+_consumer_fw() {
+    FAKE_FW_ROOT="$TEST_ROOT/fake-framework"
+    mkdir -p "$FAKE_FW_ROOT/bin"
+    cp "$STUB_BIN" "$FAKE_FW_ROOT/bin/fw"
+    [ ! -e "$TEST_ROOT/bin/fw" ]   # consumer shape: nothing at PROJECT_ROOT/bin/fw
+}
+
+@test "T-3964: without FW_BIN, rescore runs fw from FRAMEWORK_ROOT on a consumer-shaped project" {
+    _consumer_fw
+    mk_arc consumerarc
+    mk_task T-7101 consumerarc
+    run bash -c "unset FW_BIN; export FRAMEWORK_ROOT='$FAKE_FW_ROOT'; cd '$TEST_ROOT' && source '$FRAMEWORK_ROOT/lib/arc.sh' && arc_rescore consumerarc"
+    [ "$status" -eq 0 ]
+    echo "$output" | grep -q "rescored 1 active member"
+    grep -q "estimate T-7101" "$STUB_LOG"
+}
+
+@test "T-3964: a failed estimate prints the estimator's own error line" {
+    _consumer_fw
+    printf '#!/usr/bin/env bash\necho "ERROR: policy/value-drivers.yaml missing" >&2\nexit 1\n' > "$FAKE_FW_ROOT/bin/fw"
+    mk_arc failarc
+    mk_task T-7102 failarc
+    run bash -c "unset FW_BIN; export FRAMEWORK_ROOT='$FAKE_FW_ROOT'; cd '$TEST_ROOT' && source '$FRAMEWORK_ROOT/lib/arc.sh' && arc_rescore failarc"
+    echo "$output" | grep -q "estimator failed on T-7102: ERROR: policy/value-drivers.yaml missing"
+}
