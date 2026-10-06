@@ -289,7 +289,7 @@ do_sync_from_tag() {
 
 do_url() {
     local base
-    base="$("$PROJECT_ROOT/bin/fw" watchtower url 2>/dev/null || true)"
+    base="$("${FRAMEWORK_ROOT:-$PROJECT_ROOT}/bin/fw" watchtower url 2>/dev/null || true)"
     [ -n "$base" ] || base="http://localhost:3000"
     printf '%s/designer\n' "$base"
 }
@@ -379,7 +379,7 @@ do_draft_new() {
     name="draft-$(printf '%s' "${name#draft-}" | tr 'A-Z _' 'a-z--')"
     local store="$PROJECT_ROOT/.context/designer/projects/$name"
     local base
-    base="$("$PROJECT_ROOT/bin/fw" watchtower url 2>/dev/null || true)"
+    base="$("${FRAMEWORK_ROOT:-$PROJECT_ROOT}/bin/fw" watchtower url 2>/dev/null || true)"
     [ -n "$base" ] || base="http://localhost:3000"
     local link="$base/designer/app?load=%2Fapi%2Fversion%3Fid%3D$name%26v%3D1"
     if [ -d "$store" ]; then
