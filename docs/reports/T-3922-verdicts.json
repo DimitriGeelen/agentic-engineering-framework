@@ -1,0 +1,1034 @@
+[
+ {
+  "id": "a2298132-0945-4ff2-b5ed-2dd952c773a3",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/832-Workflow-designer",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "done \u2014 evidence: releases v1.8.0\u2013v1.8.3 cut since; fixes taken as T-3817 (active)."
+ },
+ {
+  "id": "a0029c4b-a929-40ec-ab84-2a839ddd95ba",
+  "side": "outbound",
+  "peer": "055-agentic-fleet-cockpit",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "unconfirmable, stale, no body to resend; if 055 still matters, send a fresh message."
+ },
+ {
+  "id": "e7d622b1-509f-4842-9a05-ba370a61bb77",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/010-termlink",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "done \u2014 evidence: later rulings sent on t3344-address-rulings (73f817f6, 02910920); T-3873 implemented hub-id use."
+ },
+ {
+  "id": "ca19103d-769d-48ec-b34d-928f8618babc",
+  "side": "outbound",
+  "peer": "055-agentic-fleet-cockpit",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "unconfirmable, stale, no body to resend; if 055 still matters, send a fresh message."
+ },
+ {
+  "id": "294fd783-3863-48ee-8a0e-ea915e57f700",
+  "side": "outbound",
+  "peer": "055-agentic-fleet-cockpit",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "unconfirmable, stale, no body to resend; if 055 still matters, send a fresh message."
+ },
+ {
+  "id": "3684360e-861c-4c71-9ab1-da6f281d12f1",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/832-Workflow-designer",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "done \u2014 evidence: fix shipped in v1.8.0 and later; 832 reached 1.8.3 (inbound 3fdccbb3, 23:20Z)."
+ },
+ {
+  "id": "c4a7b9e8-7f9f-4bb6-9f6d-e5af4a5d90c6",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/010-termlink",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "done \u2014 evidence: fixed in v1.8.x; same notice repeated in release notes v1.8.1/v1.8.3."
+ },
+ {
+  "id": "194bc78c-8816-413b-9b1c-d635cf450579",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/010-termlink",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "answered \u2014 evidence: later outbound 5c2d824c carries the answer (docs/reports/T-3335-aef-consult-answer.md)."
+ },
+ {
+  "id": "9e3caac4-9e71-48eb-aa23-e916746ac308",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/832-Workflow-designer",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "done \u2014 evidence: T-3788 commit 057e45399; follow-ups are operator-side Tier 0, not this message."
+ },
+ {
+  "id": "c5b378be-67c7-4823-9187-692cf970d1b2",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/832-Workflow-designer",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "done \u2014 evidence: same as 9e3caac4 (duplicate ack)."
+ },
+ {
+  "id": "1bfea891-c8dd-4a13-b059-87f92dda3abb",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/832-Workflow-designer",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "answered \u2014 evidence: 5f7cef02 followed (\"Taken: T-3795\"); T-3795 completed."
+ },
+ {
+  "id": "a0cf5ba0-61ff-4ca6-a826-532d82523b8a",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/010-termlink",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "answered \u2014 evidence: 5c2d824c answers rounds 1\u20133."
+ },
+ {
+  "id": "5f7cef02-4d49-43dc-8047-754651a055e0",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/832-Workflow-designer",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "answered \u2014 evidence: 5f7cef02 followed (\"Taken: T-3795\"); T-3795 completed."
+ },
+ {
+  "id": "7bac1fb9-c7df-439b-9223-6b41d3d0b0a2",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/010-termlink",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "answered \u2014 evidence: 5c2d824c (\"answer to rounds 1-3\")."
+ },
+ {
+  "id": "5c2d824c-8148-4171-afbf-bf1757a1cfa6",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/010-termlink",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "answered \u2014 evidence: later outbound 5c2d824c carries the answer (docs/reports/T-3335-aef-consult-answer.md)."
+ },
+ {
+  "id": "cd25d2ac-b17a-4c0f-ac83-dfb8e55027a8",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/832-Workflow-designer",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "done \u2014 evidence: T-3804 completed; v1.8.1 fixed endless nudges (6367ed0 note in 6c367ed0)."
+ },
+ {
+  "id": "cc369772-e94f-440a-bbc8-606aa0592636",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/832-Workflow-designer",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "done \u2014 evidence: duplicate; T-3804 completed."
+ },
+ {
+  "id": "d2ca474f-06bb-47f5-a076-67201b50ae29",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/010-termlink",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "done \u2014 evidence: later releases v1.8.1\u2013v1.8.3 shipped the fixes; T-3814 still active but tracked on our side, not by this message."
+ },
+ {
+  "id": "d758400c-b234-49a2-9da8-bc12d725c17d",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/832-Workflow-designer",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "open work, but on our side \u2014 evidence: T-3817 active. The message itself is only an ack."
+ },
+ {
+  "id": "c0c57fa5-07cd-4ced-86d0-e7779be9fbcd",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/832-Workflow-designer",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "as above \u2014 T-3817 active."
+ },
+ {
+  "id": "bc3ec71b-23f6-45a8-8851-94f731482adb",
+  "side": "outbound",
+  "peer": "0506-Voxtype-extention",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "peer unreachable by design (no session); information superseded by newer releases; they will see current state on their next `fw upgrade`."
+ },
+ {
+  "id": "867641b9-41f0-4a73-8aed-675086e13781",
+  "side": "outbound",
+  "peer": "invalid-38f67c4147",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "pure announcements whose moment has passed; v1.8.3 supersedes all earlier ones."
+ },
+ {
+  "id": "b971509c-a8f3-43cd-8e18-4f6511777f50",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/050-email-archive",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "pure announcements whose moment has passed; v1.8.3 supersedes all earlier ones."
+ },
+ {
+  "id": "70d4a77c-9f65-4e2e-a984-494182b2a54d",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/832-Workflow-designer",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "done \u2014 evidence: 832 is on 1.8.3 (inbound ef929333/3fdccbb3)."
+ },
+ {
+  "id": "d9acb7fd-1b23-4205-93e2-a9ac11e607eb",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/1409-sprind",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "pure announcements whose moment has passed; v1.8.3 supersedes all earlier ones."
+ },
+ {
+  "id": "c223225a-cf9f-425a-a18a-5ed97cbe1792",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/010-termlink",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "done \u2014 evidence: superseded by v1.8.1/1.8.2/1.8.3 notes to 010."
+ },
+ {
+  "id": "6c367ed0-e3f5-40c0-94d6-b018d5c42789",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/832-Workflow-designer",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "done \u2014 evidence: T-3804 completed; v1.8.1 fixed endless nudges (6367ed0 note in 6c367ed0)."
+ },
+ {
+  "id": "0bfd60bb-f013-4bac-9c59-f737cee36fdf",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/010-termlink",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "no evidence 010 re-posted offset 3 \u2014 evidence searched: receiver/messages from 010 (10 files) show none for it."
+ },
+ {
+  "id": "fe40f3a1-97ec-41a3-9a33-ec820fbad86b",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/1409-sprind",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "### Bug acknowledgements / done-report \u2014 outbound, state `sent`"
+ },
+ {
+  "id": "0b0c276f-b873-4b5e-8b15-1892ca29e2db",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/832-Workflow-designer",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "done \u2014 evidence: T-3774 completed; v1.8.1+ released."
+ },
+ {
+  "id": "8869a1f3-c055-480c-9233-6710bea211e1",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/832-Workflow-designer",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "answered \u2014 evidence: 832 sent bundle F (we acked in 8869a1f3); T-3833 filed."
+ },
+ {
+  "id": "93046dcd-af0f-45df-b90e-0a2e553f12b7",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/050-email-archive",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "fixed upstream; later release notes carry the fix."
+ },
+ {
+  "id": "5a18834f-1783-4b59-b75b-615532c2dad7",
+  "side": "outbound",
+  "peer": "invalid-38f67c4147",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "fixed upstream; later release notes carry the fix."
+ },
+ {
+  "id": "8d8eb958-f794-4839-80c6-21a72d72d88d",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/010-termlink",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "done \u2014 evidence: T-3835 completed; v1.8.1 fix."
+ },
+ {
+  "id": "70353d33-adbd-49ba-a1e2-38a0dfd1cdc0",
+  "side": "outbound",
+  "peer": "0506-Voxtype-extention",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "peer unreachable by design (no session); information superseded by newer releases; they will see current state on their next `fw upgrade`."
+ },
+ {
+  "id": "9d7fd29b-bcbc-43d4-9727-a88e10b88e33",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/050-email-archive",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "fixed upstream; later release notes carry the fix."
+ },
+ {
+  "id": "019e2eb6-41f7-4d07-b74f-360161b66632",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/832-Workflow-designer",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "done \u2014 T-3835 completed."
+ },
+ {
+  "id": "f5ca6fba-6263-44c4-876d-b4fbbac8f499",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/1409-sprind",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "fixed upstream; later release notes carry the fix."
+ },
+ {
+  "id": "b7fbb27e-6e0c-48c2-be98-742eb3a520ef",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/999-Agentic-Engineering-Framework/dimitri-mint-dev",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "### Bug acknowledgements / done-report \u2014 outbound, state `sent`"
+ },
+ {
+  "id": "2b2810fb-ce57-4101-9d42-c665c2b6f754",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/050-email-archive",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "pure announcements whose moment has passed; v1.8.3 supersedes all earlier ones."
+ },
+ {
+  "id": "53625314-ea58-435b-b271-034a6a1ce368",
+  "side": "outbound",
+  "peer": "invalid-38f67c4147",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "pure announcements whose moment has passed; v1.8.3 supersedes all earlier ones."
+ },
+ {
+  "id": "6437347e-ebf3-4962-9764-cae827f6a470",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/010-termlink",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "superseded by v1.8.2 and v1.8.3 notes."
+ },
+ {
+  "id": "9d0e9776-2c48-4e47-aa68-0fd9442002d2",
+  "side": "outbound",
+  "peer": "0506-Voxtype-extention",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "peer unreachable by design (no session); information superseded by newer releases; they will see current state on their next `fw upgrade`."
+ },
+ {
+  "id": "3af4aed1-b9ec-421d-87d0-922dd429ebdc",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/1409-sprind",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "pure announcements whose moment has passed; v1.8.3 supersedes all earlier ones."
+ },
+ {
+  "id": "0ac39054-ef0b-49c5-b47d-16e41c03a867",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/999-Agentic-Engineering-Framework/dimitri-mint-dev",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "pure announcements whose moment has passed; v1.8.3 supersedes all earlier ones."
+ },
+ {
+  "id": "52f8e33c-d3c5-4b0c-9607-6954b146c4fe",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/999-Agentic-Engineering-Framework/claude-shared-toolkit",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "pure announcements whose moment has passed; v1.8.3 supersedes all earlier ones."
+ },
+ {
+  "id": "003412a8-adee-4508-a0e0-3d8b60f8dd87",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/999-Agentic-Engineering-Framework/ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "release note superseded; peer is on 1.8.3."
+ },
+ {
+  "id": "e0d0fd33-5efd-447f-bc0d-5e6dd9df8e6c",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/999-Agentic-Engineering-Framework/smk-b",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "pure announcements whose moment has passed; v1.8.3 supersedes all earlier ones."
+ },
+ {
+  "id": "e35e462f-a309-4fbf-933e-e572daff1ff5",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/999-Agentic-Engineering-Framework/proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "superseded by upgrade to 1.8.3."
+ },
+ {
+  "id": "4d8a62a2-5277-43ca-bd91-7d8202034a95",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/999-Agentic-Engineering-Framework/ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "A acted on it; T-3855 done, results processed."
+ },
+ {
+  "id": "9b0589ed-8ca8-45f0-89f9-c8fa93e9519d",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/999-Agentic-Engineering-Framework/proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "copy delivered in effect; B has been in contact since."
+ },
+ {
+  "id": "d058fa74-a4ba-461a-a0f3-2f232e530bb1",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/999-Agentic-Engineering-Framework/ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "receipt proven by A's later messages."
+ },
+ {
+  "id": "80370f43-e1a1-4a8c-90b6-f809274924c0",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/010-termlink",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "done \u2014 evidence: report file on disk; follow-on traffic on t3344-address-rulings shows 010 engaged (our 80370f43/73f817f6 respond to their later messages)."
+ },
+ {
+  "id": "8660c70b-ecfe-44b3-b325-51f312958bcf",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/050-email-archive",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "### Bug acknowledgements / done-report \u2014 outbound, state `sent`"
+ },
+ {
+  "id": "111591d7-d6e3-4f60-aa8f-d2593fb4347e",
+  "side": "outbound",
+  "peer": "invalid-38f67c4147",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "fixed upstream; later release notes carry the fix."
+ },
+ {
+  "id": "b1ac9bd9-49da-41d7-9c88-9e6d448af7a6",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/010-termlink",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "fix in progress T-3860 (active, agent ACs done, awaiting render [REVIEW]); v1.8.3 notes include the fix."
+ },
+ {
+  "id": "0f775aac-7fcd-43b2-9625-8d703911784c",
+  "side": "outbound",
+  "peer": "0506-Voxtype-extention",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "peer unreachable by design (no session); information superseded by newer releases; they will see current state on their next `fw upgrade`."
+ },
+ {
+  "id": "4fdb6215-7854-425c-92b8-2da72beb901a",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/050-email-archive",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "fixed upstream; later release notes carry the fix."
+ },
+ {
+  "id": "56678dae-d4b4-4a30-b5f2-cebc4923e2e9",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/1409-sprind",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "fixed upstream; later release notes carry the fix."
+ },
+ {
+  "id": "8d86c002-7273-4f5b-9714-ab02faf0a90c",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/050-email-archive",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "### Bug acknowledgements / done-report \u2014 outbound, state `sent`"
+ },
+ {
+  "id": "e6929700-82ca-486e-b7b0-4a6de89d5169",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/010-termlink",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "ask (1) delivered \u2014 evidence: 73f817f6 says T-3345 is now in use. Asks (2)/(3) not evidenced as answered; no 010 reply found in receiver/messages."
+ },
+ {
+  "id": "02910920-4f4c-4716-ae12-339c0f7aabbf",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/010-termlink",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "done \u2014 evidence: later rulings sent on t3344-address-rulings (73f817f6, 02910920); T-3873 implemented hub-id use."
+ },
+ {
+  "id": "5fbf20fa-c836-436b-8227-7956bffa9d9f",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/010-termlink",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "### 5fbf20fa \u00b7 outbound \u00b7 010 \u00b7 aef-release-v1.8.2"
+ },
+ {
+  "id": "a28fc33c-2f49-466a-b17e-b2406d423890",
+  "side": "outbound",
+  "peer": "invalid-38f67c4147",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "peer unreachable by design (no session); information superseded by newer releases; they will see current state on their next `fw upgrade`."
+ },
+ {
+  "id": "777addaf-bed6-4f91-bf11-30a01eb01ff0",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/1409-sprind",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "pure announcements whose moment has passed; v1.8.3 supersedes all earlier ones."
+ },
+ {
+  "id": "b1c9fc9d-3037-4ad4-8271-4cf28d12e269",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/050-email-archive",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "pure announcements whose moment has passed; v1.8.3 supersedes all earlier ones."
+ },
+ {
+  "id": "6990b4e1-a6fc-4f0b-a22e-86325b5cde8f",
+  "side": "outbound",
+  "peer": "0506-Voxtype-extention",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "peer unreachable by design (no session); information superseded by newer releases; they will see current state on their next `fw upgrade`."
+ },
+ {
+  "id": "87836866-c973-4109-ac8a-b92db004970b",
+  "side": "outbound",
+  "peer": "1389a831016c4bf1/ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "everything it promised has happened."
+ },
+ {
+  "id": "9e71ac98-eb66-431a-8cff-779087dc3a7a",
+  "side": "outbound",
+  "peer": "1389a831016c4bf1/ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "both fixes shipped in 1.8.3."
+ },
+ {
+  "id": "c3538471-efbe-4799-bf11-02b3371f689e",
+  "side": "outbound",
+  "peer": "1389a831016c4bf1/ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "shipped and confirmed by A."
+ },
+ {
+  "id": "73f817f6-47a4-460e-8314-02e605937b9d",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/010-termlink",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "done \u2014 evidence: later rulings sent on t3344-address-rulings (73f817f6, 02910920); T-3873 implemented hub-id use."
+ },
+ {
+  "id": "f954887a-5d19-4154-9223-a2455c1a34d5",
+  "side": "outbound",
+  "peer": "1389a831016c4bf1/ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "empty message, superseded seconds later."
+ },
+ {
+  "id": "c0092733-bb51-4223-88ad-7a288662ceff",
+  "side": "outbound",
+  "peer": "1389a831016c4bf1/ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "empty message, superseded seconds later."
+ },
+ {
+  "id": "e8f8fb8d-2d02-497a-b1d0-836eaf72414e",
+  "side": "outbound",
+  "peer": "1389a831016c4bf1/ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "informational; T-3891 tracks the decision."
+ },
+ {
+  "id": "4328ef51-e872-469f-b6eb-3a76e85021cc",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/010-termlink",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "done \u2014 evidence: T-3873 on bleeding-edge, noted in v1.8.3 release (4328ef51)."
+ },
+ {
+  "id": "8c273053-c563-47d7-9e19-401ad8270543",
+  "side": "outbound",
+  "peer": "invalid-38f67c4147",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "pure announcements whose moment has passed; v1.8.3 supersedes all earlier ones."
+ },
+ {
+  "id": "68115aca-084d-41de-b450-e2a03b623aec",
+  "side": "outbound",
+  "peer": "1409-sprind",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "pure announcements whose moment has passed; v1.8.3 supersedes all earlier ones."
+ },
+ {
+  "id": "9a0dd6af-5a88-4176-8a7a-99dae49e77b6",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/050-email-archive",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "pure announcements whose moment has passed; v1.8.3 supersedes all earlier ones."
+ },
+ {
+  "id": "542be574-0117-446a-b494-b710007eeed0",
+  "side": "outbound",
+  "peer": "0506-Voxtype-extention",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "peer unreachable by design (no session); information superseded by newer releases; they will see current state on their next `fw upgrade`."
+ },
+ {
+  "id": "c9f924fd-4538-4541-b58c-e80d493ccb26",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/dimitri-mint-dev",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "pure announcements whose moment has passed; v1.8.3 supersedes all earlier ones."
+ },
+ {
+  "id": "400293bf-d10d-4680-a7ce-df9a666a7c8a",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/claude-shared-toolkit",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "pure announcements whose moment has passed; v1.8.3 supersedes all earlier ones."
+ },
+ {
+  "id": "52b455cf-e8fd-4ef8-945c-c4e3f90c167c",
+  "side": "outbound",
+  "peer": "cacc73ea32b121dd/smk-b",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "pure announcements whose moment has passed; v1.8.3 supersedes all earlier ones."
+ },
+ {
+  "id": "74e46d9a-2720-44e3-82fd-07ae4055cf8f",
+  "side": "inbound",
+  "peer": "1409-sprind",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "answered \u2014 9399401d (same conversation, later): \"answers received and applied\": (a) domain lessons stay in their register, (b) they add \"read lessons first, post what you learn\" to their own dispatch template (T-1726), (c) upgraded to v1.8."
+ },
+ {
+  "id": "711087b1-fd4c-4b0f-82ce-9d9b4975b880",
+  "side": "inbound",
+  "peer": "ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "fixed by T-3899, already answered."
+ },
+ {
+  "id": "348a2c71-3ef8-47c9-83bb-a1770f4c845d",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "superseded."
+ },
+ {
+  "id": "c09ff289-c992-47a6-9be8-4eeaaff640dd",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "superseded."
+ },
+ {
+  "id": "66123dd4-72ce-4739-b0c1-45e706b764a2",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "pure ack, fix shipped."
+ },
+ {
+  "id": "c2b8f6f5-6b18-4261-8578-f33295f3d7a6",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "pure ack."
+ },
+ {
+  "id": "60bda462-842d-4066-8b96-32dcdf733490",
+  "side": "inbound",
+  "peer": "ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "resolved; T-3900 shipped."
+ },
+ {
+  "id": "71e1f3f8-303b-4e08-8586-1b57b88e4e72",
+  "side": "inbound",
+  "peer": "ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "ack; the duplicate-delivery cause is T-3908, done."
+ },
+ {
+  "id": "8d8b2ecc-f596-4bc8-bf1c-218327af342b",
+  "side": "inbound",
+  "peer": "832-Workflow-designer",
+  "group": "832-010",
+  "verdict": "operator",
+  "reason": "open \u2014 evidence: 832 followed up with the files (5da1cbb2); our T-3901 \"Should fw runme bind the operator's GO to the exact bytes\" is active, captured, owner human. Our 3f211891 (21:04) was presumably the reply; nothing else done."
+ },
+ {
+  "id": "348a2c71-3ef8-47c9-83bb-a1770f4c845d-nudge-5",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "superseded."
+ },
+ {
+  "id": "66123dd4-72ce-4739-b0c1-45e706b764a2-nudge-5",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "pure ack, fix shipped."
+ },
+ {
+  "id": "c09ff289-c992-47a6-9be8-4eeaaff640dd-nudge-5",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "superseded."
+ },
+ {
+  "id": "c2b8f6f5-6b18-4261-8578-f33295f3d7a6-nudge-5",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "pure ack."
+ },
+ {
+  "id": "9eb0b3f8-b458-4db6-a67e-c7a14f229526",
+  "side": "inbound",
+  "peer": "1409-sprind",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "answered \u2014 9399401d (same conversation, later): \"answers received and applied\": (a) domain lessons stay in their register, (b) they add \"read lessons first, post what you learn\" to their own dispatch template (T-1726), (c) upgraded to v1.8."
+ },
+ {
+  "id": "8f9784f1-e603-4bd9-82c3-573d28b5364d",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "pure ack."
+ },
+ {
+  "id": "7f97528a-9419-4ce7-b813-e9ba6120b074",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "pure ack."
+ },
+ {
+  "id": "9c60eae7-b61d-44c6-a0f0-3372acd90e3d",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "pure ack."
+ },
+ {
+  "id": "a1006b93-3e51-40a6-9298-f8b7bb694d72",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "pure ack."
+ },
+ {
+  "id": "b84d82e2-1b6e-4c54-9c09-a9fdec5baf25",
+  "side": "inbound",
+  "peer": "ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "test run and answered."
+ },
+ {
+  "id": "bf0c29de-c4f1-42f2-a0de-951db99f7159",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "fixed and answered."
+ },
+ {
+  "id": "7b75304b-38a9-40fd-b9cb-62b2f8820418",
+  "side": "inbound",
+  "peer": "1409-sprind",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "answered \u2014 9399401d (same conversation, later): \"answers received and applied\": (a) domain lessons stay in their register, (b) they add \"read lessons first, post what you learn\" to their own dispatch template (T-1726), (c) upgraded to v1.8."
+ },
+ {
+  "id": "cb89bf1b-1d24-4c2c-b44a-12a642410693",
+  "side": "outbound",
+  "peer": "1389a831016c4bf1/ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "superseded by the real answers."
+ },
+ {
+  "id": "3f211891-6f3a-4402-b79a-618c57c6847a",
+  "side": "outbound",
+  "peer": "832-Workflow-designer",
+  "group": "832-010",
+  "verdict": "operator",
+  "reason": "open \u2014 evidence: 832 followed up with the files (5da1cbb2); our T-3901 \"Should fw runme bind the operator's GO to the exact bytes\" is active, captured, owner human. Our 3f211891 (21:04) was presumably the reply; nothing else done."
+ },
+ {
+  "id": "789520e8-8f34-422a-b439-90fa1393720e",
+  "side": "inbound",
+  "peer": "1409-sprind",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "pure announcements whose moment has passed; v1.8.3 supersedes all earlier ones."
+ },
+ {
+  "id": "4538e8c6-5262-4b51-bccc-3d4e048191f2",
+  "side": "outbound",
+  "peer": "1389a831016c4bf1/ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "fixed by T-3899, already answered."
+ },
+ {
+  "id": "5754dc81-62b4-4436-9dbe-ec1193bb31a6",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "delivered in effect, tasks done."
+ },
+ {
+  "id": "ef929333-9bed-4dbf-b074-fd497e68a64f",
+  "side": "inbound",
+  "peer": "832-Workflow-designer",
+  "group": "832-010",
+  "verdict": "close",
+  "reason": "done \u2014 evidence: 832 is on 1.8.3 (inbound ef929333/3fdccbb3)."
+ },
+ {
+  "id": "bfd61518-88b6-4c8a-b52f-055a4efd9947",
+  "side": "outbound",
+  "peer": "1389a831016c4bf1/ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "fixed by T-3899, already answered."
+ },
+ {
+  "id": "13e79592-39f9-4511-a119-3d1b658dbadf",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "received."
+ },
+ {
+  "id": "9399401d-f345-4ddc-b810-2d5a5904a86a",
+  "side": "inbound",
+  "peer": "1409-sprind",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "### Bug acknowledgements / done-report \u2014 outbound, state `sent`"
+ },
+ {
+  "id": "7508e907-e236-4e46-8cc0-d2df6e5bb4fb",
+  "side": "inbound",
+  "peer": "ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "exactly what T-3905 did."
+ },
+ {
+  "id": "1b93010f-ef42-48d1-ba9d-2eca94bc5d37",
+  "side": "outbound",
+  "peer": "1389a831016c4bf1/ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "every defect it names has a completed task and a reply."
+ },
+ {
+  "id": "a5588dc4-e8b4-46cc-b1ab-409a475a49a6",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "received."
+ },
+ {
+  "id": "d2188368-76a2-443f-8b2a-a04dfd0d7a42",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "B upgraded without waiting; the question is moot."
+ },
+ {
+  "id": "8fee3469-a7b4-4eaf-a303-1738f2270a2e",
+  "side": "inbound",
+  "peer": "ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "fixed on bleeding-edge and answered (next release)."
+ },
+ {
+  "id": "8a2e40db-4812-4992-9bd5-5b7a681ecd1b",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "operator",
+  "reason": "open \u2014 evidence: T-3714 (shallow/bleeding-edge upgrade) completed; T-3859 (doctor hook path false positive) still active; no task for \"PATCH-LOST footer\" or the telemetry step."
+ },
+ {
+  "id": "3fdccbb3-90b3-4581-96da-f46ec7ceed76",
+  "side": "inbound",
+  "peer": "832-Workflow-designer",
+  "group": "832-010",
+  "verdict": "operator",
+  "reason": "findings 1\u20132 fixed (T-3906/T-3907). Finding 3 (git hooks reinstall drops consumer lines) \u2014 no covering task found; Watchtower-restart step is covered by T-3877 per their text. Proposal not yet decided."
+ },
+ {
+  "id": "53155c47-5254-4c83-b0c9-c48c588ec909",
+  "side": "inbound",
+  "peer": "ring20-dashboard",
+  "group": "ring20",
+  "verdict": "operator",
+  "reason": "open \u2014 evidence: no task for the preserve mode or the doctor wording found."
+ },
+ {
+  "id": "5da1cbb2-c3b1-453e-ab8b-63a8fe842dbc",
+  "side": "inbound",
+  "peer": "832-Workflow-designer",
+  "group": "832-010",
+  "verdict": "operator",
+  "reason": "open \u2014 evidence: 832 followed up with the files (5da1cbb2); our T-3901 \"Should fw runme bind the operator's GO to the exact bytes\" is active, captured, owner human. Our 3f211891 (21:04) was presumably the reply; nothing else done."
+ },
+ {
+  "id": "bacd4aaf-0fa3-44e6-9c34-53b9316bc11b",
+  "side": "outbound",
+  "peer": "1409-sprind",
+  "group": "rest",
+  "verdict": "close",
+  "reason": "### 1409-sprind \u00b7 t1722-lernregister \u00b7 outbound"
+ },
+ {
+  "id": "53155c47-5254-4c83-b0c9-c48c588ec909-nudge-5",
+  "side": "inbound",
+  "peer": "ring20-dashboard",
+  "group": "ring20",
+  "verdict": "operator",
+  "reason": "open \u2014 evidence: no task for the preserve mode or the doctor wording found."
+ },
+ {
+  "id": "8fee3469-a7b4-4eaf-a303-1738f2270a2e-nudge-5",
+  "side": "inbound",
+  "peer": "ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "fixed on bleeding-edge and answered (next release)."
+ },
+ {
+  "id": "8315bd37-8ac5-48db-a75f-5cea30ce7434",
+  "side": "outbound",
+  "peer": "1389a831016c4bf1/ring20-dashboard",
+  "group": "ring20",
+  "verdict": "close",
+  "reason": "fixed on bleeding-edge and answered (next release)."
+ },
+ {
+  "id": "c939d218-539d-490b-88bc-ae05d4c42509",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "take-on",
+  "reason": "open \u2014 evidence: T-3917 (lock) completed and our reply says RC-2 fixed; I did not verify arithmetic-input sanitising or the racy lock in T-3917. The idle-restart gap relates to T-2376 and T-3895 (active)."
+ },
+ {
+  "id": "89fdfeb4-d81f-4e74-8828-fc412355412e",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "operator",
+  "reason": "open \u2014 evidence: no task for a multi-adapter supervisor found; T-3239 / T-3895 are arc-012 work in a different shape."
+ },
+ {
+  "id": "ff113a4b-2c85-4b6a-8cee-0a8592851a74",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "operator",
+  "reason": "open \u2014 evidence: our T-1624 is an unrelated task (hubsecret refresh); I found no task for `fw orchestrate`. Not in 1.8.3."
+ },
+ {
+  "id": "0edfc78d-562c-4e00-b0fc-9325ff642bc6",
+  "side": "inbound",
+  "peer": "proxmox-ring20-management",
+  "group": "ring20",
+  "verdict": "take-on",
+  "reason": "open \u2014 evidence: T-3735 (config set wraps long YAML values) active covers the re-wrap half; T-3573 (inception commit limit) is active; no task for the key-case mismatch."
+ }
+]
