@@ -35,12 +35,40 @@ PROJECT_ROOT = Path(os.environ.get("PROJECT_ROOT", "/opt/999-Agentic-Engineering
 TASK_FILE_RE = re.compile(r"\.tasks/(active|completed)/T-\d+-[^/]+\.md$")
 
 
-def _read_frontmatter(path: Path) -> dict | None:
-    """Parse YAML frontmatter (between leading ---/--- pair). Returns dict or None."""
+def _read_text(path: Path) -> str | None:
     try:
-        text = path.read_text(encoding="utf-8")
+        return path.read_text(encoding="utf-8")
     except (OSError, UnicodeDecodeError):
         return None
+
+
+def _post_edit_text(tool_input: dict, before: str) -> str | None:
+    """T-3948: the file as it will be AFTER this Write/Edit, or None when it cannot be computed.
+    The gate used to judge the file BEFORE the edit, so the edit that adds the missing fields
+    was refused too — a deadlock only a human editor outside the agent could break."""
+    if "content" in tool_input:                                   # Write
+        return str(tool_input.get("content") or "")
+    edits = tool_input.get("edits")                               # MultiEdit
+    if not isinstance(edits, list):
+        edits = [tool_input] if "old_string" in tool_input else []
+    if not edits:
+        return None
+    text = before
+    for e in edits:
+        old, new = str(e.get("old_string", "")), str(e.get("new_string", ""))
+        if not old or old not in text:
+            return None
+        text = text.replace(old, new) if e.get("replace_all") else text.replace(old, new, 1)
+    return text
+
+
+def _read_frontmatter(path: Path) -> dict | None:
+    """Parse YAML frontmatter (between leading ---/--- pair). Returns dict or None."""
+    text = _read_text(path)
+    return None if text is None else _parse_frontmatter(text)
+
+
+def _parse_frontmatter(text: str) -> dict | None:
     if not text.startswith("---\n"):
         return None
     end = text.find("\n---\n", 4)
@@ -144,6 +172,17 @@ def main() -> int:
     errors = _validate(fm)
     if not errors:
         return 0
+
+    # T-3948: judge the result of the edit, not the file it starts from. A repairing edit
+    # (one that adds the missing fields, as an upgraded consumer's old inception needs)
+    # passes; an edit that leaves them missing is still refused below.
+    before = _read_text(fp) or ""
+    after = _post_edit_text(tool_input, before)
+    if after is not None:
+        post = _parse_frontmatter(after)
+        if post is not None and (post.get("workflow_type", "").strip() != "inception"
+                                 or not _validate(post)):
+            return 0
 
     # Bypass check
     if os.environ.get("FW_ALLOW_INCEPTION_SCHEMA_DRIFT") == "1":
