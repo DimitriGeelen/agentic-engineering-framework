@@ -1,13 +1,20 @@
 ---
 id: T-3953
-name: "Reranker is a silent no-op: web/embeddings.py _rerank_score sends system= with raw=True (Ollama HTTP 400), logs at DEBUG and returns 0.5 for every candidate — fw ask/recall/Watchtower search are never reranked"
+name: "Reranker is a silent no-op: web/embeddings.py _rerank_score sends system= with
+  raw=True (Ollama HTTP 400), logs at DEBUG and returns 0.5 for every candidate —
+  fw ask/recall/Watchtower search are never reranked"
 description: >
-  Reported by dimitri-mint-dev (c96a182e, their G-009, 2026-10-06), confirmed in AEF source. Also scoring is binary ('yes' in answer), not the Qwen reference sigmoid(lp_yes - lp_no). Fix shape (verified by them on Ollama 0.33.1): inline the Qwen chat template into the raw prompt, no system field, logprobs=true top_logprobs=20, score sigmoid(lp_yes - lp_no) case-insensitively; WARN not DEBUG on reranker error; fw doctor check; regression test asserting distinct scores for relevant vs irrelevant.
+  Reported by dimitri-mint-dev (c96a182e, their G-009, 2026-10-06), confirmed in AEF
+  source. Also scoring is binary ('yes' in answer), not the Qwen reference sigmoid(lp_yes
+  - lp_no). Fix shape (verified by them on Ollama 0.33.1): inline the Qwen chat template
+  into the raw prompt, no system field, logprobs=true top_logprobs=20, score sigmoid(lp_yes
+  - lp_no) case-insensitively; WARN not DEBUG on reranker error; fw doctor check;
+  regression test asserting distinct scores for relevant vs irrelevant.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T14:52:05Z
-last_update: 2026-10-06T14:52:05Z
-date_finished: null
+last_update: 2026-10-06T19:52:55Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,35 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-06T15:00:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-06T15:01:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 3
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=3 (body:fw-recall-or-memory-link); F-AUTONOMY=0 (no-signal); F3=0
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3953: Reranker is a silent no-op: web/embeddings.py _rerank_score sends system= with raw=True (Ollama HTTP 400), logs at DEBUG and returns 0.5 for every candidate — fw ask/recall/Watchtower search are never reranked
@@ -62,8 +98,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced live on this host (Ollama 0.33.1, dengcao/Qwen3-Reranker-0.6B): before the fix every pair scores 0.5 and raw+system is rejected (evidence in Updates)
+- [x] `_rerank_score` inlines the Qwen chat template into the raw prompt (no system field), asks for logprobs (top 20) and returns sigmoid(logp_yes − logp_no) matched case-insensitively — a graded score, not 1.0/0.0
+- [x] A reranker error logs at WARNING (not DEBUG) and the fallback stays 0.5, so the failure is visible
+- [x] Regression tests (no live model needed): the request carries no system field and requests logprobs; scoring maps logprobs to the sigmoid; an error path warns; plus a live check here that a relevant pair outscores an irrelevant one (5 tests; live 0.9991 vs 0.0)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +135,10 @@ date_finished: null
 -->
 
 ## Verification
+
+python3 -m pytest -q tests/unit/test_reranker_t3953.py
+bin/fw watchtower current
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -240,6 +282,22 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** dimitri-mint-dev (G-009): every reranked candidate scored 0.5, so fw ask, fw
+recall and Watchtower search returned candidates in plain retrieval order; nothing reported it.
+
+**Root cause:** `_rerank_score` passed `system=` together with `raw=True`; Ollama rejects that
+combination (HTTP 400). The except branch logged at DEBUG and returned the neutral 0.5, so a
+total failure looked like "all equally relevant". The scoring itself was binary ("yes" in a
+1-token answer), not the model's graded yes/no log-odds.
+
+**Why structurally allowed:** the failure path was silent by design (DEBUG + neutral value),
+no test asserted that two different documents get different scores, and the semantic-recall
+health check (T-3783) probes retrieval, not reranking.
+
+**Prevention:** inlined template without system, graded sigmoid score, WARNING on error;
+tests pin the request shape, the scoring and the error path. A doctor check for distinct
+scores is a follow-up.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -320,3 +378,13 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3953-reranker-is-a-silent-no-op-webembeddings.md
 - **Context:** Initial task creation
+
+### 2026-10-06T19:49:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-06T20:05Z — reproduced and fixed [agent]
+- Before (live, Ollama 0.33.1, dengcao/Qwen3-Reranker-0.6B): relevant 0.5, irrelevant 0.5; a raw generate with system= → "raw mode does not support template, system, or context (status code: 400)".
+- After: relevant 0.9991, irrelevant 0.0, Dutch query vs English doc 0.9974; ~44 ms/pair warm.
+- Watchtower restarted (pid 3335861), `fw watchtower current` OK.
+- Not done here (dimitri-mint-dev's suggestion): a `fw doctor` check that the reranker returns distinct scores — candidate follow-up.
