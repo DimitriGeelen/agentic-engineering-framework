@@ -1699,6 +1699,30 @@ $project_owned"
         echo -e "  ${GREEN}OK${NC}  All templates current"
     fi
 
+    # T-3948: the T-2188 inception schema gate (installed with the hooks) refuses every edit to
+    # an inception without target_blast_radius/voi_score. AEF backfilled its own corpus
+    # (T-2193) but no consumer's: an upgraded project's older inceptions were left without the
+    # fields, and the first agent edit to one was refused. Backfill them here.
+    if [ -d "$target_dir/.tasks" ]; then
+        local _isb_out _isb_n
+        if [ "$dry_run" = true ]; then
+            _isb_out=$(python3 "$FRAMEWORK_ROOT/lib/inception_schema_backfill.py" --dry-run "$target_dir/.tasks" 2>&1 || true)
+        else
+            _isb_out=$(python3 "$FRAMEWORK_ROOT/lib/inception_schema_backfill.py" "$target_dir/.tasks" 2>&1 || true)
+        fi
+        _isb_n=$(printf '%s\n' "$_isb_out" | grep -cE '^(WOULD BACKFILL|BACKFILLED) ' || true)
+        if [ "${_isb_n:-0}" -gt 0 ]; then
+            changes=$((changes + 1))
+            if [ "$dry_run" = true ]; then
+                echo -e "  ${CYAN}WOULD BACKFILL${NC}  inception schema fields on $_isb_n inception(s) (T-3948)"
+            else
+                echo -e "  ${GREEN}BACKFILLED${NC}  inception schema fields (target_blast_radius: 3, voi_score: 0.5) on $_isb_n inception(s) (T-3948)"
+            fi
+        else
+            echo -e "  ${GREEN}OK${NC}  Every inception carries the schema fields"
+        fi
+    fi
+
     # ── 3. Seed files (universal governance items) ──
     echo -e "${YELLOW}[3/10] Seed files (universal governance)${NC}"
 

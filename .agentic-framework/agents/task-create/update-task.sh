@@ -2310,6 +2310,12 @@ if [ -n "$NEW_TYPE" ]; then
     _sed_i "s/^workflow_type:.*/workflow_type: $NEW_TYPE/" "$TASK_FILE"
     echo "Type:    ${OLD_TYPE:-unset} → $NEW_TYPE"
     CHANGES+=("workflow_type: ${OLD_TYPE:-unset} → $NEW_TYPE")
+    # T-3948: a task converted to an inception gets the T-2188 schema fields, or the
+    # inception schema gate refuses every later edit to it.
+    if [ "$NEW_TYPE" = "inception" ]; then
+        python3 "$FRAMEWORK_ROOT/lib/inception_schema_backfill.py" "$TASK_FILE" >/dev/null 2>&1 || \
+            echo -e "${YELLOW}WARNING: could not add target_blast_radius/voi_score — add them by hand${NC}" >&2
+    fi
 fi
 
 # Update horizon
