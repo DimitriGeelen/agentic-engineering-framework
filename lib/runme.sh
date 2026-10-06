@@ -9,7 +9,7 @@
 #
 #   fw runme new <name> [--desc "..."] -- <command> [<command> ...]
 #       each <command> is one shell line; a single '-' reads lines from stdin
-#   fw runme watch <name> [--timeout SECS]   (default 1800; waits for START, then EXIT)
+#   fw runme watch <name> [--timeout SECS]   (default 86400 / FW_RUNME_WATCH_TIMEOUT; waits for START, then EXIT or STOPPED)
 #   fw runme path <name>
 #   fw runme pending   (session start: WATCH LOST / RUN IN FLIGHT / RUN ENDED WITHOUT RECORD, T-3878)
 #
@@ -46,19 +46,38 @@ runme_new() {
 
     local dir; dir="$(_runme_root)/$name"
     mkdir -p "$dir"
-    local script="$dir/runme.sh" log="$dir/run.log"
+    local script="$dir/runme.sh" log="$dir/run.log" events
+    events="$(_runme_root)/events.jsonl"
+    local n="${#cmds[@]}"
     {
         echo '#!/bin/bash'
-        echo "# runme: $name — generated $(date -u +%FT%TZ) by fw runme (T-3675)"
+        echo "# runme: $name — generated $(date -u +%FT%TZ) by fw runme (T-3675, events T-3741)"
         [ -n "$desc" ] && echo "# $desc"
         echo "LOG='$log'"
+        echo "EVENTS='$events'"
         echo ': > "$LOG"'
+        # T-3741: the script announces itself — every event goes to run.log AND, as one JSON
+        # line, to the project's events.jsonl, so a watcher wakes on the event, not on a guess.
+        echo '_ev() { printf '"'"'{"name":"%s","event":"%s","step":"%s","rc":"%s","signal":"%s","ts":"%s"}\n'"'"' \'
+        echo '        "'"$name"'" "$1" "${2:-}" "${3:-}" "${4:-}" "$(date -u +%FT%TZ)" >> "$EVENTS" 2>/dev/null || true; }'
         echo 'exec > >(while IFS= read -r l; do printf "%s %s\n" "$(date +%T)" "$l"; done | tee -a "$LOG") 2>&1'
-        echo 'echo "RUNME START '"$name"' $(date -u +%FT%TZ) user=$(id -un) host=$(hostname)"'
-        echo 'trap '"'"'rc=$?; echo "RUNME EXIT $rc"; sleep 0.3'"'"' EXIT'
+        echo 'echo "RUNME START '"$name"' $(date -u +%FT%TZ) user=$(id -un) host=$(hostname)"; _ev start'
+        echo '_stopped=""'
+        echo 'trap '"'"'rc=$?; [ -n "$_stopped" ] || { echo "RUNME EXIT $rc"; _ev exit "" "$rc"; }; sleep 0.3'"'"' EXIT'
+        # T-3741: a Ctrl-C, kill or closed terminal is STOPPED, not "ended without record".
+        # The signal reaches the whole foreground group, so the tee that writes run.log is
+        # already dead: echoing into it raises SIGPIPE and the script would die unrecorded.
+        # So: ignore PIPE, record the event first, append the markers to run.log directly.
+        local sig code
+        for sig in INT:130 TERM:143 HUP:129; do
+            code="${sig#*:}"; sig="${sig%%:*}"
+            echo "trap '_stopped=1; trap \"\" PIPE; _ev stopped \"\" $code $sig; printf \"%s RUNME STOPPED $sig\\n%s RUNME EXIT $code\\n\" \"\$(date +%T)\" \"\$(date +%T)\" >> \"\$LOG\" 2>/dev/null; exit $code' $sig"
+        done
         echo 'set -euo pipefail'
-        local c
+        local c i=0
         for c in "${cmds[@]}"; do
+            i=$((i + 1))
+            printf 'echo "RUNME STEP %s/%s"; _ev step %s/%s\n' "$i" "$n" "$i" "$n"
             printf 'echo "+ %s"\n' "$(printf '%s' "$c" | sed 's/[\\"$`]/\\&/g')"
             printf '%s\n' "$c"
         done
@@ -88,7 +107,9 @@ _runme_alive() { [ -n "${1:-}" ] && [ "$1" != null ] && kill -0 "$1" 2>/dev/null
 
 runme_watch() {
     local name="${1:-}"; shift || true
-    local timeout=1800
+    # T-3741: 1800 s lost two watches on 2026-10-06 — the operator ran the line later than
+    # that, and the run then reached nobody. A watch now outlives a normal working day.
+    local timeout="${FW_RUNME_WATCH_TIMEOUT:-86400}"
     while [ $# -gt 0 ]; do
         case "$1" in --timeout) timeout="$2"; shift 2 ;; *) echo "runme watch: unexpected '$1'" >&2; return 2 ;; esac
     done
@@ -113,7 +134,13 @@ runme_watch() {
     done
     cat "$log"
     rm -f "$rec"   # T-3878: reported — nothing left to re-arm
-    local rc; rc=$(grep -o "RUNME EXIT [0-9]*" "$log" | tail -1 | awk '{print $3}')
+    local rc sig; rc=$(grep -o "RUNME EXIT [0-9]*" "$log" | tail -1 | awk '{print $3}')
+    sig=$(grep -o "RUNME STOPPED [A-Z]*" "$log" | tail -1 | awk '{print $3}')
+    if [ -n "$sig" ]; then
+        echo "runme watch: $name was STOPPED by SIG$sig before it finished (exit ${rc:-?})"
+    else
+        echo "runme watch: $name finished (exit ${rc:-?})"
+    fi
     return "${rc:-1}"
 }
 
@@ -131,7 +158,14 @@ runme_pending() {
     while IFS= read -r d; do
         name=$(basename "$d"); log="$d/run.log"; rec="$d/watch.json"
         [ -f "$d/runme.sh" ] || continue
-        grep -q "RUNME EXIT" "$log" 2>/dev/null && { rm -f "$rec"; continue; }
+        if grep -q "RUNME EXIT" "$log" 2>/dev/null; then
+            # T-3741: an interrupted run nobody saw (its watch never reported) is news.
+            if grep -q "RUNME STOPPED" "$log" 2>/dev/null && [ -f "$rec" ]; then
+                echo "RUN STOPPED  $name — the operator's run was interrupted ($(grep -o 'RUNME STOPPED [A-Z]*' "$log" | tail -1 | awk '{print "SIG"$3}')); read $log"
+                found=1
+            fi
+            rm -f "$rec"; continue
+        fi
         running=""
         pgrep -f "$d/runme.sh" >/dev/null 2>&1 && running=1
         if grep -q "RUNME START" "$log" 2>/dev/null; then

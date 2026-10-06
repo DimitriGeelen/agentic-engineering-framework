@@ -9,10 +9,10 @@ description: >
   a long step consumes typeahead, drain with read -t 0.05 first. Extends T-3675 (fw
   runme new/watch) and T-3726 F3 (in-terminal approval).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [runme, T-3675, 832-report]
 components: []
 related_tasks: []
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T17:43:27Z
-last_update: '2026-10-02T17:45:43Z'
+last_update: 2026-10-06T15:30:21Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A generated runme.sh emits its own events: `RUNME START`, `RUNME STEP k/n`, `RUNME EXIT <rc>`, and `RUNME STOPPED <SIG>` on INT/TERM/HUP — in run.log and as JSON lines in `.context/runme/events.jsonl` ({name, event, step, rc, signal, ts}). The signal trap ignores SIGPIPE and writes run.log directly: a group signal (Ctrl-C) also kills the tee, and echoing into it killed the script unrecorded — caught by the test
+- [x] `fw runme watch` default timeout is long (FW_RUNME_WATCH_TIMEOUT, default 86400 s) so a watch outlives an operator who runs the line later; it returns on EXIT (the script's rc) or STOPPED (130/143/129), printing which; `fw runme pending` reports a STOPPED run as STOPPED, not "ended without record"
+- [x] No TermLink leg: the operator ruling (2026-10-06) runs sessions without --termlink, and `termlink emit` needs a target session; the event file is the vendor-neutral channel (010: a chase is code, never an LLM turn). Recorded in Decisions
+- [x] Regression tests: a generated script's events for a 2-step success, a failing step (EXIT 1, steps 1/2 only), and SIGTERM (STOPPED TERM, watch returns 143); watch default timeout ≥ 1 day; existing runme tests green (22/22; the pending test uses HUP — a bats background job starts with SIGINT ignored, so INT cannot be exercised there)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -130,6 +132,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bats tests/unit/t3741_runme_events.bats
+bats tests/unit/t3675_runme.bats
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -337,6 +343,15 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-06 — event channel
+- **Chose:** a project-local `.context/runme/events.jsonl` (plus markers in run.log), written by the generated script itself; the watch is a long-lived background wait that the harness reports when it ends.
+- **Why:** operator ruling 2026-10-06 — sessions run as plain `claude-fw -c` (no --termlink), so there is no TermLink session to `termlink emit` to; 010's point for the same class: a chase must be plain code, vendor-neutral, never an LLM turn. A file costs nothing when the hub is down.
+- **Rejected:** a TermLink event topic (832's original runme-signal.sh) — no target session under the current ruling; can be added beside the file later without changing the script contract.
+
+### 2026-10-06 — typeahead drain (832's /dev/tty lesson)
+- **Chose:** not built. Generated runme scripts never prompt (they run `set -euo pipefail` lines unattended), so there is no y/N to drain typeahead for.
+- **Rejected:** adding a drain now — dead code until a prompting runme exists.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -353,3 +368,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3741-runme-signal-operator-run-runmesh-script.md
 - **Context:** Initial task creation
+
+### 2026-10-06T15:22:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
