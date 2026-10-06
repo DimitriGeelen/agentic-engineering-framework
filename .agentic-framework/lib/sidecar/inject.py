@@ -208,15 +208,30 @@ def _several(tagged_ids, candidates: list[dict], chosen: str, rule: str) -> str:
 
 
 def injector_found_no_session() -> bool:
-    """True only when an injector has DECIDED that no TermLink session is
-    registered for this project. No decision on record (no watcher has run
-    here, or an injector predating T-3684) is NOT that: then nothing may be
-    taken by whichever session happens to prompt (T-3745)."""
+    """True only when an injector has DECIDED that nothing in this project can
+    receive an injection: no TermLink session is registered, OR (T-3936, G-111)
+    sessions are registered but none has a live Claude session record behind it
+    (no candidate). No decision on record (no watcher has run here, or an
+    injector predating T-3684) is NOT that: then nothing may be taken by
+    whichever session happens to prompt (T-3745).
+
+    T-3936: on 2026-10-06 a registered TermLink pane whose claude shared the
+    operator's session id left `tagged` non-empty and `candidates` empty for
+    13 h; the injector typed nothing it could credit, and this predicate kept
+    the operator's own prompt hook from taking the mail. 25 messages waited.
+    The 055 rule still holds: a fleet agent with a live record IS a candidate,
+    so an operator terminal beside it takes nothing."""
     try:
         data = json.loads(_injectable_path().read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
         return False
-    return isinstance(data.get("tagged"), list) and not data["tagged"]
+    tagged = data.get("tagged")
+    if not isinstance(tagged, list):
+        return False
+    if not tagged:
+        return True
+    cands = data.get("candidates")
+    return isinstance(cands, list) and not cands
 
 
 def claim_for(msg_id: str, session: dict) -> None:
