@@ -18,7 +18,14 @@ Decision per file (one line printed: STATUS <rel> — reason):
   PRESERVED   listed under `project_files:` in .fwvendor-preserve.yaml → left alone; .upstream
   WOULD-*     --dry-run: what would happen; nothing is written
 
-Usage: upgrade_template_sync.py <target_dir> <template_src> <rel_dst> [--dry-run] [--exec]
+T-3965: `--known=<json>` names every version the framework ever SHIPPED of a file
+({rel: [sha256, ...]}). An unstamped file equal to one of them is a stock copy of an older
+release and is UPDATED, not KEPT. Without it, the first upgrade after the stamp was introduced
+would freeze every consumer's stale stock copy (no stamp yet → KEPT). `--gen-known` rebuilds
+lib/templates/task-template-shipped-hashes.json from this repo's git history.
+
+Usage: upgrade_template_sync.py <target_dir> <template_src> <rel_dst> [--dry-run] [--exec] [--known=<json>]
+       upgrade_template_sync.py --gen-known [<repo>]
 """
 from __future__ import annotations
 
@@ -66,12 +73,49 @@ def _preserved(target: Path, rel: str) -> bool:
         return False
     for it in (data.get("project_files") or []) if isinstance(data, dict) else []:
         pat = it.get("path") if isinstance(it, dict) else it
-        if pat and fnmatch.fnmatch(rel, str(pat).lstrip("./")):
+        # T-3965: drop a leading "./" only. lstrip("./") strips CHARACTERS, so
+        # ".claude/x" became "claude/x" and no dot-path entry ever matched.
+        pat = str(pat or "")
+        while pat.startswith("./"):
+            pat = pat[2:]
+        if pat and fnmatch.fnmatch(rel, pat):
             return True
     return False
 
 
-def decide(target: Path, src: Path, rel: str, dry: bool, executable: bool) -> tuple[str, str]:
+#: The task templates step 2 of fw upgrade writes, and where their shipped-hash list lives.
+TASK_TEMPLATE_DIR = ".tasks/templates"
+KNOWN_TASK_TEMPLATES = "lib/templates/task-template-shipped-hashes.json"
+
+
+def _known(path: str | None, rel: str) -> set[str]:
+    if not path:
+        return set()
+    try:
+        return set(json.loads(Path(path).read_text(encoding="utf-8")).get(rel) or [])
+    except (OSError, ValueError, AttributeError):
+        return set()
+
+
+def generate_known(repo: Path, rel_dir: str = TASK_TEMPLATE_DIR) -> dict:
+    """Every committed version of each *.md in rel_dir, as {rel: [sha256, ...]}."""
+    import subprocess
+    out: dict[str, list[str]] = {}
+    for f in sorted((repo / rel_dir).glob("*.md")):
+        rel = f"{rel_dir}/{f.name}"
+        revs = subprocess.run(["git", "-C", str(repo), "log", "--format=%H", "--", rel],
+                              capture_output=True, text=True, check=True).stdout.split()
+        shas = {_sha(f)}
+        for rev in revs:
+            blob = subprocess.run(["git", "-C", str(repo), "show", f"{rev}:{rel}"], capture_output=True)
+            if blob.returncode == 0:
+                shas.add(hashlib.sha256(blob.stdout).hexdigest())
+        out[rel] = sorted(shas)
+    return out
+
+
+def decide(target: Path, src: Path, rel: str, dry: bool, executable: bool,
+           known: set[str] | None = None) -> tuple[str, str]:
     dst = target / rel
     tsha = _sha(src)
     pre = "WOULD-" if dry else ""
@@ -104,19 +148,33 @@ def decide(target: Path, src: Path, rel: str, dry: bool, executable: bool) -> tu
         if not dry:
             _write_stamp(target, rel, tsha)
         return pre + "UPDATED", "stock copy (unchanged since the framework wrote it)"
+    if not last and known and dsha in known:
+        write(dst)
+        if not dry:
+            _write_stamp(target, rel, tsha)
+        return pre + "UPDATED", "stock copy of an earlier framework release"
     write(upstream)
     why = "differs from what the framework last wrote" if last else "no record of what the framework wrote"
     return pre + "KEPT", f"customised or newer ({why}); template at {upstream.name} — compare, then copy it over to accept"
 
 
 def main(argv: list[str]) -> int:
+    if argv[:1] == ["--gen-known"]:
+        repo = Path(argv[1]) if len(argv) > 1 else Path(__file__).resolve().parents[1]
+        data = generate_known(repo)
+        (repo / KNOWN_TASK_TEMPLATES).write_text(json.dumps(data, indent=1, sort_keys=True) + "\n",
+                                                 encoding="utf-8")
+        print(f"wrote {KNOWN_TASK_TEMPLATES}: " + ", ".join(f"{k} {len(v)}" for k, v in data.items()))
+        return 0
     flags = {a for a in argv if a.startswith("--")}
     args = [a for a in argv if not a.startswith("--")]
     if len(args) != 3:
-        print(__doc__.strip().splitlines()[-1], file=sys.stderr)
+        print(__doc__.strip().splitlines()[-2], file=sys.stderr)
         return 2
+    known_path = next((a.split("=", 1)[1] for a in flags if a.startswith("--known=")), None)
     target, src, rel = Path(args[0]), Path(args[1]), args[2]
-    status, why = decide(target, src, rel, "--dry-run" in flags, "--exec" in flags)
+    status, why = decide(target, src, rel, "--dry-run" in flags, "--exec" in flags,
+                         _known(known_path, rel))
     print(f"{status} {rel} — {why}")
     return 0
 

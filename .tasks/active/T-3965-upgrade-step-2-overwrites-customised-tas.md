@@ -1,13 +1,16 @@
 ---
 id: T-3965
-name: "upgrade step 2 overwrites customised task templates with bare cp (010 finding 17)"
+name: "upgrade step 2 overwrites customised task templates with bare cp (010 finding
+  17)"
 description: >
-  lib/upgrade.sh step 2 copies .tasks/templates/*.md with cp: no stamp check, no project_files: honour, no .upstream copy, so a consumer's edited default.md is lost on every upgrade. Route it through lib/upgrade_template_sync.py like steps 7/7b (T-3955/T-3956).
+  lib/upgrade.sh step 2 copies .tasks/templates/*.md with cp: no stamp check, no project_files:
+  honour, no .upstream copy, so a consumer's edited default.md is lost on every upgrade.
+  Route it through lib/upgrade_template_sync.py like steps 7/7b (T-3955/T-3956).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T21:07:54Z
-last_update: 2026-10-06T21:07:54Z
-date_finished: null
+last_update: 2026-10-06T22:24:18Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,51 +53,58 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-06T21:15:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-06T21:15:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3965: upgrade step 2 overwrites customised task templates with bare cp (010 finding 17)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+010 finding 17: `fw upgrade` step 2 copies `.tasks/templates/*.md` with a bare `cp` whenever they differ — no stamp, no `project_files:` honour, no `.upstream` — so a consumer's customised `default.md` is lost on every upgrade. Route it through `lib/upgrade_template_sync.py` like steps 7/7b (T-3955/T-3956).
+
+**Transition hazard:** the helper treats an unstamped file that differs as KEPT. Every existing consumer has unstamped templates, most of them stale *stock* copies that must still update (schema fields arrive through them). So the helper must recognise any version the framework ever shipped as stock.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Step 2 decides each template via `upgrade_template_sync.py` (CREATED / UPDATED / KEPT + `.upstream` / PRESERVED), dry-run included
+- [ ] An unstamped template byte-equal to ANY previously shipped version is UPDATED (known-hash list `lib/templates/task-template-shipped-hashes.json`, generated from git history); a customised one is KEPT with `.upstream`
+- [ ] A test pins that the list contains the current template hashes and that a generator re-creates it
+- [ ] Tests: customised default.md survives upgrade; stale stock default.md is updated; `project_files:` entry is PRESERVED
+- [ ] `upgrade_fresh_machine_simulation.bats` and `lib_upgrade.bats` stay green
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+## Verification
+python3 -m pytest tests/unit/test_upgrade_template_sync_t3955.py -q > /tmp/.t3965a 2>&1 && grep -q passed /tmp/.t3965a && ! grep -q failed /tmp/.t3965a
+timeout 600 bats tests/unit/t3965_upgrade_task_templates.bats > /tmp/.t3965 2>&1 && ! grep -q "^not ok" /tmp/.t3965
+test "$(grep -c '# skip' /tmp/.t3965)" -eq 0
+bin/fw vendor self --check
 
 ## Verification
 
@@ -320,3 +330,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3965-upgrade-step-2-overwrites-customised-tas.md
 - **Context:** Initial task creation
+
+### 2026-10-06T22:24:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

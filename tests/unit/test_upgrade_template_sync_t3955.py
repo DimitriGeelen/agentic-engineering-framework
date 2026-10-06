@@ -71,6 +71,27 @@ def test_manifest_claimed_file_is_preserved(tmp_path):
     assert (target / REL).read_text() == "old stock\n"     # even a stock copy, when claimed
 
 
+def test_manifest_dot_path_is_preserved_t3965(tmp_path):
+    """T-3965: `lstrip("./")` stripped the dot of `.claude/...`, so no dot-path entry ever matched."""
+    rel = ".claude/commands/resume.md"
+    target, src = _setup(tmp_path, manifest="project_files:\n  - .claude/commands/resume.md\n")
+    (target / ".claude/commands").mkdir(parents=True)
+    (target / rel).write_text("MY RESUME\n")
+    assert uts.decide(target, src, rel, False, False)[0] == "PRESERVED"
+    (target / uts.MANIFEST).write_text("project_files:\n  - ./.claude/commands/*.md\n")
+    assert uts.decide(target, src, rel, False, False)[0] == "PRESERVED"
+
+
+def test_known_shipped_version_without_stamp_is_updated_t3965(tmp_path):
+    target, src = _setup(tmp_path, dst_text="v1 stock\n")
+    known = {hashlib.sha256(b"v1 stock\n").hexdigest()}
+    assert uts.decide(target, src, REL, False, True, known)[0] == "UPDATED"
+    assert "NEW-TEMPLATE" in (target / REL).read_text()
+    # a customised file is not in the shipped set and stays KEPT
+    target2, src2 = _setup(tmp_path / "b", dst_text="MY EDIT\n")
+    assert uts.decide(target2, src2, REL, False, True, known)[0] == "KEPT"
+
+
 def test_dry_run_writes_nothing(tmp_path):
     target, src = _setup(tmp_path, dst_text="MY EDIT\n")
     assert uts.decide(target, src, REL, True, True)[0] == "WOULD-KEPT"
