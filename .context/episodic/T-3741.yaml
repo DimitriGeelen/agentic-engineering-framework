@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3741: runme signal: operator-run runme.sh scripts emit started/step/done/STOPPED events (log + TermLink topic) and the agent arms a watcher that wakes on the first event; confirmation prompts drain typeahead first
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-06T15:31:07Z
+# ============================================================================
+
+task_id: T-3741
+task_name: "runme signal: operator-run runme.sh scripts emit started/step/done/STOPPED events (log + TermLink topic) and the agent arms a watcher that wakes on the first event; confirmation prompts drain typeahead first"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-02T17:43:27Z
+completed: 2026-10-06T15:30:31Z
+duration_days: 4
+updates_count: 2
+first_commit: 2026-10-06T17:30:22+02:00
+last_commit: 2026-10-06T17:30:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  runme scripts announce themselves — START / STEP k/n / EXIT rc / STOPPED SIG in run.log and .context/runme/events.jsonl; a Ctrl-C/kill/hangup is recorded as STOPPED (SIGPIPE-safe, written past the dead tee); fw runme watch waits a day by default (two watches died at 1800 s today) and says finished vs stopped; pending reports unseen stopped runs. No TermLink leg under the operator's no---termlink ruling. vendor-sync lib/runme.sh
+
+# Key outcomes
+outcomes:
+  - 'A generated runme.sh emits its own events: `RUNME START`, `RUNME STEP k/n`, `RUNME EXIT <rc>`, and `RUNME STOPPED <SIG>` on INT/TERM/HUP — in run.log and as JSON lines in `.context/runme/events.jsonl` ({name, event, step, rc, signal, ts}). The signal trap ignores SIGPIPE and writes run.log directly: a group signal (Ctrl-C) also kills the tee, and echoing into it killed the script unrecorded — caught by the test'
+  - '`fw runme watch` default timeout is long (FW_RUNME_WATCH_TIMEOUT, default 86400 s) so a watch outlives an operator who runs the line later; it returns on EXIT (the script''s rc) or STOPPED (130/143/129), printing which; `fw runme pending` reports a STOPPED run as STOPPED, not "ended without record"'
+  - 'No TermLink leg: the operator ruling (2026-10-06) runs sessions without --termlink, and `termlink emit` needs a target session; the event file is the vendor-neutral channel (010: a chase is code, never an LLM turn). Recorded in Decisions'
+  - 'Regression tests: a generated script''s events for a 2-step success, a failing step (EXIT 1, steps 1/2 only), and SIGTERM (STOPPED TERM, watch returns 143); watch default timeout ≥ 1 day; existing runme tests green (22/22; the pending test uses HUP — a bats background job starts with SIGINT ignored, so INT cannot be exercised there)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-06 — event channel'
+    chose: 'a project-local `.context/runme/events.jsonl` (plus markers in run.log), written by the generated script itself; the watch is a long-lived background wait that the harness reports when it ends.'
+    rationale: 'operator ruling 2026-10-06 — sessions run as plain `claude-fw -c` (no --termlink), so there is no TermLink session to `termlink emit` to; 010''s point for the same class: a chase must be plain code, vendor-neutral, never an LLM turn. A file costs nothing when the hub is down.'
+    alternatives_rejected: ['a TermLink event topic (832''s original runme-signal.sh) — no target session under the current ruling; can be added beside the file later without changing the script contract.']
+  - decision: '2026-10-06 — typeahead drain (832''s /dev/tty lesson)'
+    chose: 'not built. Generated runme scripts never prompt (they run `set -euo pipefail` lines unattended), so there is no y/N to drain typeahead for.'
+    alternatives_rejected: ['adding a drain now — dead code until a prompting runme exists.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/runme.sh'
+  - 'lib/runme.sh'
+  - '.tasks/active/T-3741-runme-signal-operator-run-runmesh-script.md'
+  - 'tests/unit/t3741_runme_events.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T17:30:22'
+    action: 'T-3741: runme scripts announce themselves — START / STEP k/n / EXIT rc / STOPPED SIG in run.log and .context/runme/events.jsonl; a Ctrl-C/kill/hangup is recorded as STOPPED (SIGPIPE-safe, written past the dead tee); fw runme watch waits a day by default (two watches died at 1800 s today) and says finished vs stopped; pending reports unseen stopped runs. No TermLink leg under the operator''s no---termlink ruling'
+  - time: '2026-10-06T17:30:28'
+    action: 'T-3741: vendor-sync lib/runme.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5627 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [runme, T-3675, 832-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5627
+  commits: 2
+  files_changed: 4
+  lines_added: 193
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3741-runme-signal-operator-run-runmesh-script.md
+generated_by: context-agent-hybrid
