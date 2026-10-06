@@ -476,9 +476,62 @@ def cmd_surface(args) -> int:
     return 0
 
 
+def cmd_classify(args) -> int:
+    """T-3963: classify criteria given as TEXT, with no task file.
+
+    Consumers (832) re-implemented the predicate to route checks before a task
+    existed. This is the same `classify()` the delegate verb and the close gate
+    use, so there is one ruleset, not a copy per project. Bare criteria (no
+    `## Acceptance Criteria` heading) are read as Human criteria — the question
+    is always "who closes this one?".
+    """
+    from lib.delegation import classify as _classify, parse_criteria as _parse
+
+    if args.text is not None:
+        text = args.text
+    elif args.file and args.file != "-":
+        try:
+            with open(args.file, encoding="utf-8") as fh:
+                text = fh.read()
+        except OSError as e:
+            print(f"{RED}ERROR: cannot read {args.file}: {e}{NC}", file=sys.stderr)
+            return 2
+    else:
+        text = sys.stdin.read()
+    if not re.search(r"^##\s+Acceptance Criteria", text, re.M):
+        text = "## Acceptance Criteria\n\n### Human\n" + text.strip("\n") + "\n"
+    crits = _parse(text)
+    if not crits:
+        print(f"{RED}ERROR: no '- [ ]' criterion found in the input{NC}", file=sys.stderr)
+        return 2
+    rows = []
+    for c in crits:
+        k = _classify(c, workflow_type=args.workflow_type, render_surface=args.render_surface)
+        rows.append({"index": c.index, "subhead": c.subhead, "title": c.title.strip(),
+                     "class": k.cls, "delegation_class": k.delegation_class,
+                     "reason": k.reason})
+    if args.json:
+        print(json.dumps(rows, indent=2))
+        return 0
+    for r in rows:
+        print(f"{r['subhead'] or '-'} #{r['index']}: {r['delegation_class']} ({r['class']}) — {r['reason']}")
+        print(f"    {r['title'][:100]}")
+    return 0
+
+
 def main(argv=None) -> int:
     p = argparse.ArgumentParser(prog="fw delegation", description=__doc__)
     sub = p.add_subparsers(dest="cmd", required=True)
+
+    c = sub.add_parser("classify", help="classify criteria given as text (no task file)")
+    src = c.add_mutually_exclusive_group()
+    src.add_argument("--text", help="criterion markdown; bare '- [ ] ...' lines are read as Human")
+    src.add_argument("--file", help="file with criteria ('-' = stdin, also the default)")
+    c.add_argument("--workflow-type", default="", help="e.g. build, inception")
+    c.add_argument("--render-surface", action="store_true",
+                   help="the task touches a rendering surface (web/templates, static, blueprints)")
+    c.add_argument("--json", action="store_true")
+    c.set_defaults(fn=cmd_classify)
 
     d = sub.add_parser("delegate", help="delegate a task's deterministic Human criteria")
     d.add_argument("task_id")
