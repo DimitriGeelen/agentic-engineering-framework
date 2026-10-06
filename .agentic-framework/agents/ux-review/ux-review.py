@@ -821,7 +821,7 @@ def check_axes(base: str, page_path: str):
 def _default_base():
     try:
         root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-        out = subprocess.run(["bin/fw", "watchtower", "url"], cwd=root,
+        out = subprocess.run([os.path.join(root, "bin", "fw"), "watchtower", "url"], cwd=root,  # T-3952
                              capture_output=True, text=True, timeout=10)
         url = out.stdout.strip().splitlines()[-1] if out.stdout.strip() else ""
         return url or "http://localhost:3000"

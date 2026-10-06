@@ -141,7 +141,9 @@ def spawn_responder(workflow: str, name: str, event: dict[str, Any],
         f"Task context: respond per workflow; emit terminal_event when complete.\n"
     )
     cmd = [
-        "bin/fw", "termlink", "dispatch",
+        # T-3952: absolute — this runs in whatever cwd the caller has
+        os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "bin", "fw"),
+        "termlink", "dispatch",
         "--name", f"peer-{name}",
         "--prompt", preamble,
         "--task", "T-1818",

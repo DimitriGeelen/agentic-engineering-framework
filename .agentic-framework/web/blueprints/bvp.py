@@ -30,7 +30,11 @@ from flask import Blueprint, render_template, request
 
 from web.shared import mtime_cached_get
 
-from web.shared import PROJECT_ROOT
+from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT
+# T-3952: fw from the FRAMEWORK root, never cwd-relative "bin/fw" — these calls run with
+# cwd=PROJECT_ROOT, and a consumer project has no bin/fw at its root (.agentic-framework/bin/fw).
+_FW = str(FRAMEWORK_ROOT / "bin" / "fw")
+
 
 bp = Blueprint("bvp", __name__)
 
@@ -712,7 +716,7 @@ def bvp_commit_weights():
         if not 0 <= weight <= 9:
             return f"Driver {driver}: weight {weight} out of range (0-9)", 400
         cmd = [
-            "bin/fw", "bvp", "weight",
+            _FW, "bvp", "weight",
             "--set", f"{driver}={weight}",
             "--rationale", rationale,
             "--from-watchtower",
@@ -774,7 +778,7 @@ def bvp_driver_add():
         return f"Cannot drop protected driver {drop_id} (D1-D4 are immutable in identity).", 400
 
     cmd = [
-        "bin/fw", "bvp", "driver",
+        _FW, "bvp", "driver",
         "--add", name,
         "--weight", str(weight),
         "--rationale", rationale,
@@ -848,7 +852,7 @@ def bvp_driver_remove():
         return "Rationale must be ≥30 characters (R6).", 400
 
     cmd = [
-        "bin/fw", "bvp", "driver",
+        _FW, "bvp", "driver",
         "--remove", driver_id,
         "--rationale", rationale,
         "--from-watchtower",
@@ -904,7 +908,7 @@ def bvp_driver_propose():
         return "Rationale must be ≥30 characters (R6).", 400
 
     cmd = [
-        "bin/fw", "bvp", "driver",
+        _FW, "bvp", "driver",
         "--propose", name,
         "--weight", str(weight),
         "--rationale", rationale,
@@ -953,7 +957,7 @@ def bvp_driver_approve():
         return f"Proposal {proposal_id} not in pending state (already decided or missing).", 404
 
     cmd = [
-        "bin/fw", "bvp", "driver",
+        _FW, "bvp", "driver",
         "--add", proposal["name"],
         "--weight", str(proposal["weight"]),
         "--rationale", proposal["rationale"],
