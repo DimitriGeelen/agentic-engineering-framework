@@ -34,9 +34,12 @@ except Exception:
 # reboot is a cold start), so this sits before the startup early exits below.
 # Detached: the hook never waits on it and never fails because of it.
 if [ -f "$FRAMEWORK_ROOT/lib/watchtower-ensure.sh" ] && command -v setsid >/dev/null 2>&1; then
+    # T-3915: close fds 3-9 too — a detached server inheriting a caller's extra
+    # descriptor (bats uses fd 3) kept the caller waiting forever after its own
+    # work was done, and each such run leaked a Watchtower (13 found, up to 5 h old).
     ( PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" setsid bash -c \
         '. "$FRAMEWORK_ROOT/lib/watchtower-ensure.sh" && fw_watchtower_ensure' \
-        </dev/null >/dev/null 2>&1 & ) >/dev/null 2>&1
+        </dev/null >/dev/null 2>&1 3>&- 4>&- 5>&- 6>&- 7>&- 8>&- 9>&- & ) >/dev/null 2>&1
 fi
 
 # T-2376: this hook now also fires on SessionStart source "startup" (added so the

@@ -43,7 +43,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T06:46:25Z
-last_update: 2026-10-06T07:13:19Z
+last_update: 2026-10-06T07:17:14Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,6 +99,10 @@ bvp_scores_proposed:
 - [x] The test forces a real kill with a sub-second timeout (`0.001`) and keeps its assertions: hook exits 0, falls back to the cached line, cache untouched. The file finishes in seconds.
 - [x] The hook (`agents/context/post-compact-resume.sh`) refuses a 0, empty or non-numeric `FW_FABRIC_DESCRIBE_TIMEOUT` and uses the 10s default, so a misconfiguration can never make session start wait unbounded. A test leg pins it.
 - [x] (measured: 6/6 in ~3.5 s total; the previously hanging test 1.3 s) `tests/unit/t3431_fabric_session_start.bats` passes in under 120 s.
+- [x] Second, deeper root cause, found when the file still hung AFTER its last test. The hook's detached Watchtower auto-start (T-3877) inherited bats' fd 3, so bats waited for the server to exit, which it never did.
+  - Every run of a hook-calling test left a live fixture Watchtower behind; 13 were found, up to 5 h old, all serving deleted or bare `/tmp/tmp.*` fixtures. They were stopped.
+  - Fixed three ways: the hook closes fds 3–9 for the detached child; t3431 sets `FW_WATCHTOWER_ENSURE=0`; `agents/audit/unit-suite.sh` sets it for the whole run.
+  - Verified: the file exits in 3.7 s, with the Watchtower count unchanged (9 before, 9 after).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

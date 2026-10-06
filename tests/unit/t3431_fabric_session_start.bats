@@ -15,6 +15,9 @@ setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
     export PROJECT_ROOT="$TEST_TEMP_DIR"
+    # T-3915: the hook auto-starts a Watchtower for PROJECT_ROOT; a fixture must
+    # not leave a live server behind (it also held bats' fd 3 open — 15 min hang).
+    export FW_WATCHTOWER_ENSURE=0
     guard_project_root
     mkdir -p "$PROJECT_ROOT/.fabric/components" \
              "$PROJECT_ROOT/.context/working" \
