@@ -47,13 +47,38 @@ bvp_scores_proposed:
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+At ~3,900 task files every Watchtower page and many CLI verbs re-derive the task corpus from
+files on each request: 62 Python glob sites, a full parse 24.9 s under load. Should AEF add an
+opt-in derived index (files stay authoritative)? Research artifact: `docs/reports/T-3934-task-index.md`.
 
 ## Assumptions
 
-<!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
+- A1: The per-request re-derivation, not the file format, dominates page cost at this scale.
+- A2: (path, mtime, size) is a sufficient freshness key for task files.
+- A3: SQLite in WAL mode tolerates this project's concurrent readers/writers.
 
 ## Open Questions
+
+- **IW-1: How does the index stay fresh when a task file is edited directly (Edit tool, no fw verb)?**
+  confidence: 1
+  disposition:
+  rationale:
+- **IW-2: Which consumers move first — /approvals and /tasks only, or the CLI listings too?**
+  confidence: 1
+  disposition:
+  rationale:
+- **IW-3: One shared query module that the 62 sites converge on, or only the hot paths?**
+  confidence: 1
+  disposition:
+  rationale:
+- **IW-4: Is WAL mode plus rebuild-on-corruption enough for multiple writers (sessions, cron, Watchtower)?**
+  confidence: 1
+  disposition:
+  rationale:
+- **IW-5: Do episodics, handovers and fabric follow later under the same module, or stay out of scope?**
+  confidence: 1
+  disposition:
+  rationale:
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
@@ -73,7 +98,11 @@ bvp_scores_proposed:
 
 ## Exploration Plan
 
-<!-- How will we validate assumptions? Spikes, prototypes, research? Time-box each. -->
+1. Spike (done): count derivation sites and time a full parse — 62 sites, 24.9 s.
+2. Spike (1 h): prototype a throwaway index over tasks; time build, an incremental refresh after one
+   edit, and a stat-sweep freshness check over 3,918 files (answers IW-1, A2).
+3. Spike (1 h): 4 concurrent writers + Watchtower readers on one WAL SQLite file (IW-4, A3).
+4. Dialogue with the operator on IW-2/IW-3/IW-5, then a scoped build plan.
 
 ## Technical Constraints
 
@@ -85,7 +114,10 @@ bvp_scores_proposed:
 
 ## Scope Fence
 
-<!-- What's IN scope for this exploration? What's explicitly OUT? -->
+IN: a derived, gitignored, rebuildable task index; its freshness rule; fallback to file scans;
+opt-in switch; which consumers move first.
+OUT: replacing files as the source of truth; a server database engine; multi-host sharing;
+episodics/handovers/fabric (IW-5 decides whether they come later).
 
 ## Acceptance Criteria
 
@@ -111,12 +143,13 @@ bvp_scores_proposed:
 
 <!-- Fill these BEFORE writing the recommendation. The placeholder detector will block review/decide if left empty. -->
 **GO if:**
-- Root cause identified with bounded fix path
-- Fix is scoped, testable, and reversible
+- An index query answers /approvals' and /tasks' task data in well under 1 s, with an incremental refresh after one edit
+- Freshness on direct edits is solvable by a cheap stat sweep (IW-1) and concurrency by WAL (IW-4)
+- Every consumer keeps a working file-scan fallback (small projects unchanged)
 
 **NO-GO if:**
-- Problem requires fundamental redesign or unbounded scope
-- Fix cost exceeds benefit given current evidence
+- Freshness needs a long-running watcher daemon (breaks the no-daemon portability property)
+- The index cannot be kept consistent without making it authoritative
 
 ## Verification
 
@@ -139,9 +172,11 @@ Measured 2026-10-06: every Watchtower request re-derives state from files (glob 
 
 **Evidence:**
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- 62 Python sites glob the task files independently (web 21, lib 28, agents 13)
+- Full frontmatter parse of 3,918 task files: 24.9 s at host load ~18 (2026-10-06)
+- Stalled-Watchtower stack dump: 38 threads in glob, 13 in dir signatures, 10 queued on the link-index lock
+- Operator agreed the direction 2026-10-06 (gitignored, tasks first) — dialogue in docs/reports/T-3934-task-index.md
+- Spikes 2-3 (prototype timing, WAL concurrency) still to run before decide
 
 ## Decisions
 
