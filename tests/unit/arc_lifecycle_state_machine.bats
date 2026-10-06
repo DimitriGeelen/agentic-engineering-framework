@@ -110,14 +110,37 @@ arc_status() {
 
 # --- D3: existing pre-T-1852 in-progress arcs untouched ---
 
-@test "T-1852: pre-existing in-tree arcs remain status: in-progress (no migration)" {
-    # All 5 in-tree arcs were created before T-1852.
+# T-3913: the invariant T-1852 promised is "no migration" — every pre-existing
+# arc still carries a VALID lifecycle state. The old form demanded `in-progress`
+# forever, a mutable-corpus anchor (T-3326): the operator closing arc-grooming
+# on 2026-10-05 turned it red and blocked a release push.
+_arc_status_valid() {  # file -> 0 when status is an ARC_STATE (and a closed arc has closed_at)
+    local f="$1" status_val
+    status_val=$(awk -F': ' '/^status:/ {sub(/^status:[[:space:]]*/, ""); print; exit}' "$f" | tr -d ' "')
+    case "$status_val" in
+        draft|in-progress|abandoned) return 0 ;;
+        closed) grep -Eq '^closed_at:[[:space:]]*[0-9]' "$f" ;;
+        *) return 1 ;;
+    esac
+}
+
+@test "T-1852: pre-existing in-tree arcs keep a valid lifecycle status (no migration)" {
     for arc in dispatch-safety embeddings-strategy orchestrator-rethink project-shape-resilience arc-grooming; do
         f="$FRAMEWORK_ROOT/.context/arcs/${arc}.yaml"
         [ -f "$f" ] || continue
-        status_val=$(awk -F': ' '/^status:/ {sub(/^status:[[:space:]]*/, ""); print; exit}' "$f" | tr -d ' "')
-        [ "$status_val" = "in-progress" ]
+        _arc_status_valid "$f"
     done
+}
+
+@test "T-3913/control: an arc with an invalid or migrated status fails the same check" {
+    d="$(mktemp -d)"
+    printf 'id: arc-x\nstatus: migrated\n' > "$d/bad.yaml"
+    printf 'id: arc-y\nstatus: closed\nclosed_at: null\n' > "$d/closed-no-date.yaml"
+    printf 'id: arc-z\nstatus: closed\nclosed_at: 2026-10-05T18:34:40Z\n' > "$d/ok.yaml"
+    ! _arc_status_valid "$d/bad.yaml"
+    ! _arc_status_valid "$d/closed-no-date.yaml"
+    _arc_status_valid "$d/ok.yaml"
+    rm -rf "$d"
 }
 
 # --- list registry sanity ---
