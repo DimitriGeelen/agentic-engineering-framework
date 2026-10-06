@@ -4,12 +4,12 @@ name: "Audit's reviewer-verdict-ledger FAIL shows only the first 3 failing rows 
 description: >
   Audit's reviewer-verdict-ledger FAIL shows only the first 3 failing rows and no total — ring20 read '3' when 10 failed
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/audit.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T19:39:08Z
-last_update: 2026-10-06T19:41:16Z
-date_finished: null
+last_update: 2026-10-06T19:41:19Z
+date_finished: 2026-10-06T19:41:19Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -337,3 +337,15 @@ The same `head -3`-without-total pattern likely exists elsewhere in audit.sh (no
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3962-audits-reviewer-verdict-ledger-fail-show.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-027ff25c
+- **Timestamp:** 2026-10-06T19:41:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-06T19:41:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

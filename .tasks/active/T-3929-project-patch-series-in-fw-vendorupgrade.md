@@ -178,3 +178,7 @@ Operator 2026-10-06 (decision 4, T-3922) overruled my 'not now': consumers alrea
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-10-06T19:40Z — field evidence [agent]
+- ring20-manager (5f6ec23f, their T-2262, upgrade 1.8.3 → 1.8.5): a three-way merge per colliding file — base = previous tag, ours = the patched vendored file, theirs = the new tag — kept their in-file patches. 18 of 38 patches collided; 7 of 8 files merged clean; approvals.py had 2 additive conflicts next to T-3897's origin code. This is a concrete candidate mechanism for the patch series (it needs the previous tag's bytes, i.e. a stamp or the upstream tag).
+- Related shipped today: T-3955 (fw upgrade steps 7/7b keep customised project files + .upstream), T-3850's vendor stamp/manifest.

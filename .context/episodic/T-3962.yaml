@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3962: Audit's reviewer-verdict-ledger FAIL shows only the first 3 failing rows and no total — ring20 read '3' when 10 failed
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-06T19:41:39Z
+# ============================================================================
+
+task_id: T-3962
+task_name: "Audit's reviewer-verdict-ledger FAIL shows only the first 3 failing rows and no total — ring20 read '3' when 10 failed"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-06T19:39:08Z
+completed: 2026-10-06T19:41:19Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-06T21:41:10+02:00
+last_commit: 2026-10-06T21:41:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the reviewer-verdict-ledger FAIL names how many rows fail and marks a truncated sample ('first 3 of N') — ring20 read 3 from a head -3 sample when 10 failed. vendor-sync audit.sh
+
+# Key outcomes
+outcomes:
+  - 'The ledger FAIL line states the total number of failing rows, and the evidence says "first 3 of N" when it truncates (ring20 2026-10-06: saw 3, the audit had 10)'
+  - 'Regression test: a ledger audit output with 5 FAIL lines yields a FAIL line naming 5 and evidence marked "first 3 of 5" (t3962, with a 2-row control)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-3962-audits-reviewer-verdict-ledger-fail-show.md'
+  - 'tests/unit/t3962_ledger_fail_count.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T21:41:10'
+    action: 'T-3962: the reviewer-verdict-ledger FAIL names how many rows fail and marks a truncated sample (''first 3 of N'') — ring20 read 3 from a head -3 sample when 10 failed'
+  - time: '2026-10-06T21:41:16'
+    action: 'T-3962: vendor-sync audit.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 4
+  lines_added: 387
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3962-audits-reviewer-verdict-ledger-fail-show.md
+generated_by: context-agent-hybrid
