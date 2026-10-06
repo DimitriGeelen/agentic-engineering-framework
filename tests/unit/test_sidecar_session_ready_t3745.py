@@ -233,6 +233,18 @@ def test_injectable_session_present_plain_session_takes_nothing(proj, monkeypatc
     assert ids == []
 
 
+def test_t3936_tagged_session_without_a_record_does_not_block_the_fallback(proj, monkeypatch):
+    """T-3936 (G-111): a TermLink session IS registered for the project, but no live Claude
+    session record points at it (2026-10-06: a pane whose claude shared the operator's
+    session id; 25 messages waited 13 h). Nothing can be injected, so the operator's own
+    prompt takes the mail. The control above (fleet WITH a record) still takes nothing."""
+    _store("m1")
+    inject.deliver_pending("tick", runner=Termlink(_sessions("tl-ghost")))
+    assert inject.injector_found_no_session()
+    ids, _ = _hook(monkeypatch, "prompt", "operator", "tl-none")
+    assert ids == ["m1"] and inject.read_claim("m1")["session_id"] == "operator"
+
+
 def test_no_injector_decision_on_record_plain_session_takes_nothing(proj, monkeypatch):
     """Seen live (T-3684): a project with a receiver but no injector decision
     on record. A prompting session must not take the mail."""

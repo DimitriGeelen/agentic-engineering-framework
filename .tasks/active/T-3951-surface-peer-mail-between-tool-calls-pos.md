@@ -1,23 +1,13 @@
 ---
-id: T-3936
-name: "Peer mail never reaches a session that is not TermLink-wrapped: no inject target
-  -> message never claimed -> prompt hook surfaces nothing; and nothing warns that
-  the running session has no TermLink registration"
+id: T-3951
+name: "Surface peer mail between tool calls (PostToolUse) to a non-TermLink interactive session — needs a new hook in .claude/settings.json (operator decision, B-005)"
 description: >
-  Operator 2026-10-06: peers (ring20-manager, 832) complained they keep waiting; operator
-  had to nudge by hand. Found: this session runs under 'claude-fw -c' WITHOUT --termlink
-  (session record termlink_session: null), so lib/sidecar/inject.py has no candidate;
-  mail stays flagged and unclaimed, and the UserPromptSubmit hook surfaces only messages
-  claimed for its own session, so even operator prompts do not surface it. Fix: (1)
-  prompt/Stop hook surfaces flagged unclaimed mail for this project when no inject
-  target exists (claim for itself); (2) session-start + doctor WARN when the live
-  agent session has no TermLink registration while peer mail is flowing; (3) INJECT_BLOCKED
-  reason visible in fw sidecar status. Register: G-111.
+  Split from T-3936 (G-111). With the operator's ruling (plain claude-fw -c, no --termlink), mail now reaches the session at its next prompt (T-3936), but not during a long autonomous turn. A PostToolUse hook would surface flagged mail between tool calls, framed as untrusted data, same shown/answered ledger as the prompt hook. Adding hook wiring is the operator's decision; scope and cost (hook latency on every tool call) to be put to them.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
@@ -47,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-06T10:24:21Z
-last_update: 2026-10-06T13:54:35Z
-date_finished:
+created: 2026-10-06T13:53:28Z
+last_update: 2026-10-06T13:53:28Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -60,37 +50,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-06T10:30:27Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-06T10:31:07Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 1
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
-      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3936: Peer mail never reaches a session that is not TermLink-wrapped: no inject target -> message never claimed -> prompt hook surfaces nothing; and nothing warns that the running session has no TermLink registration
+# T-3951: Surface peer mail between tool calls (PostToolUse) to a non-TermLink interactive session — needs a new hook in .claude/settings.json (operator decision, B-005)
 
 ## Context
 
@@ -100,10 +62,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Root cause located: why the prompt-hook fallback (inject.injector_found_no_session) stayed off for this plain `claude-fw -c` session, with evidence in Updates
-- [x] A session that is not TermLink-wrapped receives unclaimed peer mail at its next prompt even when a stale/foreign TermLink session carries this project's tag (regression test, with a control leg showing a live injectable sibling still keeps the 055 rule)
-- [x] Mid-turn surfacing (PostToolUse) split to T-3951: it needs new hook wiring in .claude/settings.json, which is the operator's decision (B-005)
-- [x] Operator ruling recorded: sessions run as plain `claude-fw -c` (no --termlink) while it is unstable with the fleet cockpit — delivery must not depend on TermLink injection
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -137,9 +97,6 @@ bvp_scores_proposed:
 -->
 
 ## Verification
-
-python3 -m pytest -q tests/unit/test_sidecar_session_ready_t3745.py tests/unit/test_sidecar_receiver_t3693.py
-bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -283,26 +240,6 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** 2026-10-06, peers (ring20-manager, 832, 010, 1409) waited hours for AEF; the
-operator nudged by hand. 25 messages were typed into a different process than the agent.
-
-**Root cause:** two claude processes ran one conversation (fleet pane resumed at 23:09,
-operator `claude-fw -c` at 23:11). The pane was TermLink-tagged, so the injector's decision
-recorded `tagged` non-empty — and `injector_found_no_session()` read ANY tag as "an injection
-target exists", keeping the operator session's prompt-hook fallback off, although no live
-Claude record (no candidate) stood behind the tag. The duplicate itself got through because
-the operator's launcher (/root/.local/bin/claude-fw, /usr/bin/claude-fw) is a hand-placed copy
-that predated the T-3890 duplicate-conversation guard.
-
-**Why structurally allowed:** the predicate equated "a session is registered" with "a session
-can receive"; its tests built the injectable case from a tag alone. The stale-copy drift was
-only a `fw doctor` WARN — advisory, never acted on, while it silently disabled new guards.
-
-**Prevention:** fallback now opens when no candidate exists, pinned by a ghost-tag regression
-test plus the existing fleet-with-record control (055 rule); tests that meant "injectable"
-now say so with a record. Remaining: refresh the launcher copies (runme refresh-claude-fw,
-operator), and mid-turn surfacing T-3951 (operator decision on hook wiring).
-
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -379,29 +316,7 @@ operator), and mid-turn surfacing T-3951 (operator decision on hook wiring).
 
 ## Updates
 
-### 2026-10-06T10:24:21Z — task-created [task-create-agent]
+### 2026-10-06T13:53:28Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3936-peer-mail-never-reaches-a-session-that-i.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3951-surface-peer-mail-between-tool-calls-pos.md
 - **Context:** Initial task creation
-
-### 2026-10-06T10:32:41Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-
-### 2026-10-06T13:55Z — root cause [agent]
-- Two claude processes ran conversation 087d333f from 23:09/23:11 to 10:49: a fleet pane
-  (`claude --resume`, TermLink tl-bnwuhfix, pid 1722597) and the operator's `claude-fw -c`
-  (pid 1807417, no TermLink). The injector typed every wake-up into the pane; the operator's
-  session record had termlink_session null, so the prompt-hook fallback stayed off
-  (injector_found_no_session() is false while ANY tagged session exists). 25 messages
-  misrouted (list in the T-3936 commit message); all answered 2026-10-06.
-- 055 (fd2d8c3e): the re-home verified one agent per conversation at 23:09; the duplicate came
-  from the operator's `claude-fw -c` at 23:11 on a conversation already live in the pane.
-- WHY the existing guard did not stop it: T-3890 `_conversation_guard` (refuses a second copy
-  of a live conversation) was committed 2026-10-05 18:03, but the operator launches
-  `/root/.local/bin/claude-fw` and `/usr/bin/claude-fw` — hand-placed COPIES, not links. They
-  predated the guard; `fw doctor` WARNed "Installed claude-fw drifted" (advisory) and nobody
-  acted. Even now (copies refreshed 09:08) they lack T-3918/T-3919.
-- Operator ruling 2026-10-06: sessions run as plain `claude-fw -c` (no --termlink) while
-  --termlink is unstable with the fleet cockpit; delivery must not depend on TermLink injection.
-- Remediation offered: runme refresh-claude-fw (rm+cp both copies). A duplicate-session helper
-  drafted here was dropped — lib/conversation-holder.sh already is that predicate (G-108).
