@@ -1,24 +1,17 @@
 ---
-id: T-3922
-name: "Triage the 127 waiting sidecar messages: classify each (request / proposal
-  / issue / FYI-ack), check whether already done or answered, take on what is ours,
-  and hand the operator only the judgment calls — each as a decision with a recommendation
-  (operator 2026-10-06)"
+id: T-3928
+name: "Structured post-upgrade report: every consumer upgrade ends with a short report back to AEF — how it went, what was discovered, what went well, what did not, which new features were used since the last report, recommendations, suggestions, complaints (operator GO 2026-10-06, decision 1 of T-3922)"
 description: >
-  Triage the 127 waiting sidecar messages: classify each (request / proposal / issue
-  / FYI-ack), check whether already done or answered, take on what is ours, and hand
-  the operator only the judgment calls — each as a decision with a recommendation
-  (operator 2026-10-06)
+  Operator: 'Yes, that's good and we should structure what is in that report.' Sections fixed by the operator: how did it go · what did you discover · what went well · what did not go well · new features used (since the last report) · recommendations · suggestions · complaints. Optional for the consumer; arrives as a sidecar message of a recognisable kind so AEF can triage it.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
-origin: {kind: "operator", ref: "2026-10-06 'work them, check them, close the done
-    ones, a number remains for me to judge'"}
+origin: {kind: "operator", ref: "2026-10-06 decision 1 on T-3922 (proposed by ring20-manager, ring20-dashboard, 832)"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -45,9 +38,9 @@ origin: {kind: "operator", ref: "2026-10-06 'work them, check them, close the do
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-06T08:39:15Z
-last_update: 2026-10-06T09:12:46Z
-date_finished:
+created: 2026-10-06T09:10:25Z
+last_update: 2026-10-06T09:10:25Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,37 +51,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-06T08:45:21Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=276,acs=7)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-06T08:45:47Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3922: Triage the 127 waiting sidecar messages: classify each (request / proposal / issue / FYI-ack), check whether already done or answered, take on what is ours, and hand the operator only the judgment calls — each as a decision with a recommendation (operator 2026-10-06)
+# T-3928: Structured post-upgrade report: every consumer upgrade ends with a short report back to AEF — how it went, what was discovered, what went well, what did not, which new features were used since the last report, recommendations, suggestions, complaints (operator GO 2026-10-06, decision 1 of T-3922)
 
 ## Context
 
@@ -98,15 +63,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Every waiting item (snapshot `docs/reports/T-3922-waiting-items.json`) is assessed. Per-item detail is in `T-3922-triage-{ring20,832-010,rest}.md` and the verdict map in `T-3922-verdicts.json` (129/129 mapped); the integration is `docs/reports/T-3922-waiting-triage.md`. Each entry gives:
-  - **kind:** request, proposal, issue report, question, or FYI/ack;
-  - **one plain sentence of what it asks or tells**, without "Sent to …" boilerplate;
-  - **whether it is already done or answered**, with evidence: a later reply in the conversation, a receipt, a task closed, a commit;
-  - **a verdict:** `close` (done, answered or moot, with the reason), `take-on` (ours to do; names the task filed or existing), or `operator` (a real judgment call, stated as "Proposal to X — take it or not?" with my recommendation).
-- [x] The assessment is done by TermLink workers, read-only. They never drop, send or edit anything outside their report files. Their reports are integrated here.
-- [x] (runme `drop-settled-waiting`, 118 drops) `close` items: one operator runme line drops them all, each with its evidence as the reason (`fw sidecar drop` is operator-only).
-- [x] (T-3923…T-3927) `take-on` items: tasks filed or linked.
-- [x] (4 decisions from 9 items, in the triage report) `operator` items: presented to the operator as decisions, few and each with a recommendation.
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -359,7 +317,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-10-06T08:39:15Z — task-created [task-create-agent]
+### 2026-10-06T09:10:25Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3922-triage-the-127-waiting-sidecar-messages-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3928-structured-post-upgrade-report-every-con.md
 - **Context:** Initial task creation

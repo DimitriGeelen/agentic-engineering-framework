@@ -34,6 +34,18 @@ verdict map: `T-3922-verdicts.json`). Integrated here.
 4. **A "patch-series-aware" preserve mode for `fw vendor`?** ring20-dashboard 53155c47.
    **Recommend: not now — decide after T-3850's outcome; it widens vendor semantics.**
 
+## Operator rulings (2026-10-06)
+
+1. **Yes**, and structure it: how did it go · what was discovered · what went well · what
+   did not · new features used since the last report · recommendations · suggestions ·
+   complaints → **T-3928**.
+2. **Wait** for ring20-manager's review request — ring20-manager is actively building the
+   supervisor; AEF is to be an active review partner together with TermLink (010) and the
+   Workflow Designer (832).
+3. Operator asked for the launcher to be explained again before deciding (T-3901).
+4. **Yes — my "not now" was overruled**: a project patch series so each consumer keeps its
+   unique features across upgrades, and AEF learns from the patches → inception **T-3929**.
+
 ## Taken on (tasks filed, horizon next)
 
 - T-3923 hook arithmetic sanitising + atomic handover lock (gap left by T-3917; ring20 c939d218)
