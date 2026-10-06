@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3964: arc rescore uses PROJECT_ROOT/bin/fw, fails on every vendored consumer (010 finding 16)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-06T22:24:14Z
+# ============================================================================
+
+task_id: T-3964
+task_name: "arc rescore uses PROJECT_ROOT/bin/fw, fails on every vendored consumer (010 finding 16)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-06T21:07:11Z
+completed: 2026-10-06T22:23:54Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-07T00:23:26+02:00
+last_commit: 2026-10-07T00:23:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc rescore and watchtower-url fallbacks resolve fw from FRAMEWORK_ROOT; estimator error line surfaced; shell lint for project-relative fw. vendor-sync arc.sh, designer.sh
+
+# Key outcomes
+outcomes:
+  - '`lib/arc.sh` rescore resolves fw from FRAMEWORK_ROOT (FW_BIN still overrides) and prints the estimator''s last error line on failure instead of discarding it'
+  - 'The other unguarded project-relative fw calls in shell (`lib/arc.sh` watchtower-url fallbacks, `agents/designer/designer.sh` watchtower url) resolve fw from FRAMEWORK_ROOT'
+  - 'Lint `tests/unit/test_no_project_relative_fw_shell_t3964.py` refuses `$(bin/fw `, `${PROJECT_ROOT}/bin/fw}` fallbacks and unguarded `"$PROJECT_ROOT/bin/fw"` calls in lib/ agents/ bin/ shell, with a control'
+  - 'Rescore test on a consumer-shaped fixture (no PROJECT_ROOT/bin/fw) succeeds'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'arc rescore and watchtower-url fallbacks resolve fw from FRAMEWORK_ROOT; estimator error line surfaced; shell lint for project-relative fw'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/designer/designer.sh'
+  - '.agentic-framework/lib/arc.sh'
+  - 'agents/designer/designer.sh'
+  - 'lib/arc.sh'
+  - '.tasks/active/T-3964-arc-rescore-uses-projectrootbinfw-fails-.md'
+  - 'tests/unit/arc_rescore.bats'
+  - 'tests/unit/test_no_project_relative_fw_shell_t3964.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-07T00:23:26'
+    action: 'T-3964: arc rescore and watchtower-url fallbacks resolve fw from FRAMEWORK_ROOT; estimator error line surfaced; shell lint for project-relative fw'
+  - time: '2026-10-07T00:23:32'
+    action: 'T-3964: vendor-sync arc.sh, designer.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 76 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 76
+  commits: 2
+  files_changed: 7
+  lines_added: 173
+  lines_removed: 57
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3964-arc-rescore-uses-projectrootbinfw-fails-.md
+generated_by: context-agent-hybrid

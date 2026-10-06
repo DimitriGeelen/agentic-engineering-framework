@@ -7,12 +7,12 @@ description: >
   so rescore reports 'Rescored 0, N failed' with stderr discarded. Same class as T-3807/T-3952:
   resolve fw from the framework root, and extend the T-3952 lint to shell.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/designer/designer.sh, lib/arc.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T21:07:11Z
-last_update: 2026-10-06T22:21:14Z
-date_finished:
+last_update: 2026-10-06T22:23:54Z
+date_finished: 2026-10-06T22:23:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -92,10 +92,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `lib/arc.sh` rescore resolves fw from FRAMEWORK_ROOT (FW_BIN still overrides) and prints the estimator's last error line on failure instead of discarding it
-- [ ] The other unguarded project-relative fw calls in shell (`lib/arc.sh` watchtower-url fallbacks, `agents/designer/designer.sh` watchtower url) resolve fw from FRAMEWORK_ROOT
-- [ ] Lint `tests/unit/test_no_project_relative_fw_shell_t3964.py` refuses `$(bin/fw `, `${PROJECT_ROOT}/bin/fw}` fallbacks and unguarded `"$PROJECT_ROOT/bin/fw"` calls in lib/ agents/ bin/ shell, with a control
-- [ ] Rescore test on a consumer-shaped fixture (no PROJECT_ROOT/bin/fw) succeeds
+- [x] `lib/arc.sh` rescore resolves fw from FRAMEWORK_ROOT (FW_BIN still overrides) and prints the estimator's last error line on failure instead of discarding it
+- [x] The other unguarded project-relative fw calls in shell (`lib/arc.sh` watchtower-url fallbacks, `agents/designer/designer.sh` watchtower url) resolve fw from FRAMEWORK_ROOT
+- [x] Lint `tests/unit/test_no_project_relative_fw_shell_t3964.py` refuses `$(bin/fw `, `${PROJECT_ROOT}/bin/fw}` fallbacks and unguarded `"$PROJECT_ROOT/bin/fw"` calls in lib/ agents/ bin/ shell, with a control
+- [x] Rescore test on a consumer-shaped fixture (no PROJECT_ROOT/bin/fw) succeeds
 
 ## Verification
 python3 -m pytest tests/unit/test_no_project_relative_fw_shell_t3964.py -q > /tmp/.t3964 2>&1 && grep -q passed /tmp/.t3964 && ! grep -q failed /tmp/.t3964
@@ -242,6 +242,13 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** on 010 (vendored consumer) `fw arc rescore` and approve-driver's auto-rescore printed "Rescored 0, 21 failed" with no reason.
+
+**Root cause:** `arc_rescore` defaulted to `${PROJECT_ROOT}/bin/fw`, which exists only in the framework repo; in a consumer fw lives at `.agentic-framework/bin/fw` (FRAMEWORK_ROOT). Stderr was sent to /dev/null, so the "No such file" never reached anyone.
+
+**Why structurally allowed:** every rescore test set `FW_BIN` to a stub, so the default branch never ran in a test; T-3952's lint covered Python argv only, not shell.
+
+**Prevention:** shell lint `test_no_project_relative_fw_shell_t3964.py` (with control) refuses the pattern across lib/ agents/ bin/; two new `arc_rescore.bats` cases run the default (no FW_BIN) on a consumer-shaped fixture; failures now print the estimator's last error line.
 
 ## Evolution
 
@@ -327,3 +334,20 @@ bin/fw vendor self --check
 ### 2026-10-06T22:21:14Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cc623761
+- **Timestamp:** 2026-10-06T22:24:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — The other unguarded project-relative fw calls in shell (`lib/arc.sh` watchtower-url fallbacks, `agents/designer/designer.sh` watchtower url) resolve fw from FRAMEWORK_ROOT
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/designer/designer.sh in: The other unguarded project-relative fw calls in shell (`lib/arc.sh` watchtower-url fallbacks, `agents/designer/designer.sh` watchtower url) resolve f`
+
+### 2026-10-06T22:23:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
