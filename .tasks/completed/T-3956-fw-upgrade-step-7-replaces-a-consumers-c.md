@@ -1,19 +1,17 @@
 ---
-id: T-3955
-name: "fw upgrade step 7b overwrites a consumer's own doorbell+mail toolkit with older
-  framework copies (010: 15 TermLink files replaced — TermLink is that toolkit's origin)"
+id: T-3956
+name: "fw upgrade step 7 replaces a consumer's customised /resume skill (010)"
 description: >
-  010-termlink HIGH finding (framework:pickup 010-termlink/T-3370-upgrade-1.6.29-to-1.8.3-findings,
-  sidecar c000e612). Upgrade-safety class with T-3850/T-3929: a consumer that is the
-  ORIGIN of files the framework also ships must not have them replaced by older copies.
-  010 holds at 1.8.3 until fixed.
+  010-termlink HIGH finding (pickup 321 / c000e612): step 7 overwrote 010's customised
+  /resume. Same upgrade-safety class: customised consumer files must be preserved
+  or reported, never silently replaced. 010 holds at 1.8.3 until fixed.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/upgrade.sh, lib/upgrade_template_sync.py, tests/unit/lib_upgrade.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,9 +39,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-06T15:57:40Z
-last_update: 2026-10-06T16:42:15Z
-date_finished:
+created: 2026-10-06T15:58:22Z
+last_update: 2026-10-06T16:44:18Z
+date_finished: 2026-10-06T16:44:18Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -84,7 +82,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3955: fw upgrade step 7b overwrites a consumer's own doorbell+mail toolkit with older framework copies (010: 15 TermLink files replaced — TermLink is that toolkit's origin)
+# T-3956: fw upgrade step 7 replaces a consumer's customised /resume skill (010)
 
 ## Context
 
@@ -94,10 +92,7 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] One helper `lib/upgrade_template_sync.py` decides each template-owned project file for upgrade steps 7 (resume.md) and 7b (doorbell+mail skills/scripts): in sync → OK; missing → CREATED; equal to the hash the framework last wrote (stamp `.context/upgrade-template-stamp.json`) → stock, UPDATED; anything else — including no stamp yet — → KEPT, with the template written beside it as `<file>.upstream` and a WARN. Never overwrites a customised file
-- [x] A consumer can declare project files it owns in `.fwvendor-preserve.yaml` under `project_files:` (globs, relative to the project root) → PRESERVED, same .upstream copy
-- [x] Steps 7 and 7b both call the helper (T-3956, the /resume overwrite, is the same root cause and closes with this). A failing helper is a WARN, never an aborted upgrade (the fresh-machine sim caught a set -e abort)
-- [x] Regression tests: stock copy updated; customised copy kept + .upstream; no stamp + differing → kept; manifest-preserved; missing → created; dry-run writes nothing; second run converges (stamp written when in sync) — 7 helper tests, lib_upgrade resume tests 4/4, fresh-machine sim 16/16
+- [x] Fixed by T-3955 (same root cause: upgrade step 7 replaced any resume.md that differed from the template). Step 7 now goes through lib/upgrade_template_sync.py: a customised /resume is KEPT with resume.md.upstream beside it; only a stock copy is refreshed. Pinned by lib_upgrade.bats "a customised or unrecorded resume.md is KEPT".
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -131,10 +126,6 @@ bvp_scores_proposed:
 -->
 
 ## Verification
-
-python3 -m pytest -q tests/unit/test_upgrade_template_sync_t3955.py
-bats tests/unit/lib_upgrade.bats
-bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -278,27 +269,6 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** 010-termlink upgraded 1.6.29 → 1.8.3: step 7b replaced 15 files of the
-doorbell+mail toolkit (TermLink is its origin, so its copies were NEWER) with older framework
-copies, and step 7 replaced its customised /resume. 010 now holds at 1.8.3 rather than lose
-them again.
-
-**Root cause:** steps 7 (T-1383) and 7b (T-1867) treated any difference from the template as
-"drift → refresh (.bak)". Without a record of what the framework itself had written, the step
-cannot distinguish a stale stock copy from a customised or newer one, and chose overwrite.
-
-**Why structurally allowed:** the drift-refresh was designed for consumers who never edit
-these files (G-056: upstream fixes did not propagate), and tested only that case. The same
-class was fixed for `fw vendor` in T-3850 (stamp + preserve manifest) but not carried over to
-the project-root files upgrade owns.
-
-**Prevention:** one decision helper with T-3850's model — stamp of what the framework wrote,
-update only stock copies, keep everything else with `<file>.upstream`, `project_files:` in
-.fwvendor-preserve.yaml for explicit claims. Trade-off accepted: on the first upgrade after
-this ships, an unrecorded stock copy that drifted is KEPT (with .upstream and a warning)
-rather than refreshed; it converges once accepted. Overwriting someone's work silently is the
-worse failure.
-
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -375,10 +345,27 @@ worse failure.
 
 ## Updates
 
-### 2026-10-06T15:57:40Z — task-created [task-create-agent]
+### 2026-10-06T15:58:22Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3955-fw-upgrade-step-7b-overwrites-a-consumer.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3956-fw-upgrade-step-7-replaces-a-consumers-c.md
 - **Context:** Initial task creation
 
-### 2026-10-06T16:17:49Z — status-update [task-update-agent]
+### 2026-10-06T16:44:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e4d8f9d5
+- **Timestamp:** 2026-10-06T16:44:21Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Fixed by T-3955 (same root cause: upgrade step 7 replaced any resume.md that differed from the template). Step 7 now goes through lib/upgrade_template_sync.py: a customised /resume is KEPT with resume
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/upgrade_template_sync.py in: Fixed by T-3955 (same root cause: upgrade step 7 replaced any resume.md that differed from the template). Step 7 now goes through lib/upgrade_template`
+
+### 2026-10-06T16:44:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
