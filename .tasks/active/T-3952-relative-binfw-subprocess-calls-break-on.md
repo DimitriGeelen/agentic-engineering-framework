@@ -10,12 +10,12 @@ description: >
   a bare ['bin/fw', ...] argv in lib/ web/ agents/. Web change: restart Watchtower
   + render review.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/ux-review/ux-review.py, lib/bvp.sh, lib/peer.py, tests/unit/test_peer_subscribe.py, web/blueprints/arcs.py, web/blueprints/bvp.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T14:04:48Z
-last_update: 2026-10-06T20:16:06Z
-date_finished:
+last_update: 2026-10-06T20:16:09Z
+date_finished: 2026-10-06T20:16:09Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -398,3 +398,22 @@ behaviour that changed.
 ### 2026-10-06T20:10:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-53398b5a
+- **Timestamp:** 2026-10-06T20:16:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Every subprocess call in web/, lib/ and agents/ that launches fw resolves it from the framework root (absolute path), never as a cwd-relative "bin/fw" — web/blueprints/arcs.py (6 calls: approve/remove
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/arcs.py in: Every subprocess call in web/, lib/ and agents/ that launches fw resolves it from the framework root (absolute path), never as a cwd-relative "bin/fw"`
+- **AC#2 (Agent)** — A lint test refuses a bare `["bin/fw", ...]` / `['bin/fw', ...]` argv in web/, lib/, agents/ Python, so the class cannot return (T-3807 fixed lib/bvp.sh the same way) — tests/unit/test_no_relative_fw_
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/bvp.sh in: A lint test refuses a bare `["bin/fw", ...]` / `['bin/fw', ...]` argv in web/, lib/, agents/ Python, so the class cannot return (T-3807 fixed lib/bvp.`
+
+### 2026-10-06T20:16:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
