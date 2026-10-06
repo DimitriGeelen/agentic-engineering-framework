@@ -517,6 +517,14 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
         "your verdict is bound to it, not to whatever HEAD is when you record). Your dispatch id "
         "is `$FW_SIDECAR_AGENT_ID`. For EACH criterion above, in this order:",
         "",
+        # T-3949 (832 7616ce48): <N> is the task's REAL Human AC number. With --criterion 3 the
+        # only criterion is listed as "Criterion 1 (Human AC#3)"; a worker that used the local
+        # position recorded its verdict on AC#1 — a green would have ticked the wrong criterion.
+        "In every command below, `<N>` is the **Human AC number** (`Human AC#N` in the criterion "
+        "heading), NOT the criterion's position in this brief:",
+        "",
+        *[f"- Criterion {c['index']} → `--ac {c['ac_index']}`" for c in criteria],
+        "",
         f"1. Write your evidence report to `{REPORT_DIR}/{task_id}/AC<N>-$FW_SIDECAR_AGENT_ID.md` "
         "(what you checked and found). Copy any screenshot you cite into the same directory and "
         "cite that copy.",

@@ -242,6 +242,19 @@ def _commit_rows(root: Path, paths: list[str], identity: str, message: str,
     return "", err
 
 
+def _brief_criteria(drec: dict) -> set[int]:
+    """The real Human AC numbers a review dispatch's brief.md names (T-3949); empty when the
+    brief cannot be read."""
+    wd = str(drec.get("wdir") or "")
+    if not wd:
+        return set()
+    try:
+        brief = (Path(wd) / "brief.md").read_text(errors="replace")
+    except OSError:
+        return set()
+    return {int(ac) for _, ac in _BRIEF_CRIT_RE.findall(brief)}
+
+
 def _read(rel: Path, root: Path) -> list[dict]:
     p = root / rel
     if not p.is_file():
@@ -2615,6 +2628,15 @@ def record(task_id: str, ac_index: int, outcome: str, *, reviewer: str, rung: st
     if drec.get("task") != task_id:
         refuse("dispatch-task-mismatch",
                f"dispatch {dispatch_id!r} was issued for {drec.get('task')!r}, not {task_id}")
+    # T-3949 (832 7616ce48): a reviewer may record only a criterion its brief named. Enforced
+    # whenever the dispatch's brief.md is readable (every review dispatch writes one; its
+    # absence is a fault the runtime checks report on their own).
+    named = _brief_criteria(drec)
+    if named and ac_index not in named:
+        refuse("criterion-not-in-dispatch",
+               f"dispatch {dispatch_id!r} was briefed on Human AC#{', AC#'.join(map(str, sorted(named)))}"
+               f", not AC#{ac_index} — record the Human AC number from the criterion heading, "
+               f"not the criterion's position in the brief")
 
     path, sub = _find_task(root, task_id)
     if path is None:
