@@ -2,9 +2,11 @@
 id: T-3957
 name: "Sidecar project_id ignores RAIL_PROJECT_LABEL (010; their local fix 93297d781)"
 description: >
-  010-termlink HIGH finding (pickup 321 / c000e612): the sidecar derives project_id without honouring RAIL_PROJECT_LABEL, so 010's identity on the hub is wrong after upgrade. Their fix 93297d781 is the reference. 010 holds at 1.8.3 until fixed.
+  010-termlink HIGH finding (pickup 321 / c000e612): the sidecar derives project_id
+  without honouring RAIL_PROJECT_LABEL, so 010's identity on the hub is wrong after
+  upgrade. Their fix 93297d781 is the reference. 010 holds at 1.8.3 until fixed.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T15:59:04Z
-last_update: 2026-10-06T15:59:04Z
-date_finished: null
+last_update: 2026-10-06T16:16:15Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +52,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-06T16:00:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-06T16:01:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3957: Sidecar project_id ignores RAIL_PROJECT_LABEL (010; their local fix 93297d781)
@@ -62,8 +92,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/sidecar/circuit.py project_id()` honours RAIL_PROJECT_LABEL (env FW_RAIL_PROJECT_LABEL, then .framework.yaml `RAIL_PROJECT_LABEL:` — also the lowercase key T-3924 writes), normalised exactly as `rail_project_label` (lowercase, ' _' → '-', [a-z0-9.-]), so the rail and the sidecar name a project the same way
+- [x] With no label set, project_id is unchanged (directory basename, case kept) — no existing address moves
+- [x] Regression tests: label via env, via file (upper and lower key), normalisation parity with lib/rail-identity.sh on the same input; control: no label → basename; the .agentic-framework refusal still holds (6 new; all 435 sidecar tests green)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +128,9 @@ date_finished: null
 -->
 
 ## Verification
+
+python3 -m pytest -q tests/unit/test_sidecar_project_label_t3957.py
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -240,6 +274,22 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** 010 (pickup 321, HIGH): after upgrading to 1.8.3 their sidecar addressed the
+project by its directory name although they set RAIL_PROJECT_LABEL; they re-applied a local
+fix (93297d781) on every vendor.
+
+**Root cause:** two derivations of one fact. `lib/rail-identity.sh rail_project_label`
+(T-2905) resolves the project's name from RAIL_PROJECT_LABEL with a basename fallback;
+`lib/sidecar/circuit.py project_id()` (T-3671) took only the basename and never read the
+label — its docstring cites the basename convention, written before the label existed.
+
+**Why structurally allowed:** nothing ties the two derivations together, and every AEF host
+runs without a label, so basename == label and the split is invisible here (G-108: one fact,
+one predicate).
+
+**Prevention:** the sidecar resolves the label the rail's way (same sources, same
+normalisation), pinned by a parity test that runs the shell function on the same input.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -320,3 +370,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3957-sidecar-projectid-ignores-railprojectlab.md
 - **Context:** Initial task creation
+
+### 2026-10-06T16:12:46Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

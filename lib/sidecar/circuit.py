@@ -133,6 +133,28 @@ def hub_id(*, runner=subprocess.run, refresh: bool = False) -> str:
     return _hub_cache
 
 
+def _rail_project_label() -> str:
+    """RAIL_PROJECT_LABEL as `lib/rail-identity.sh rail_project_label` resolves and
+    normalises it (env FW_RAIL_PROJECT_LABEL, then .framework.yaml), or '' when
+    unset. Both the upper-case key and the lower-case one `fw config set` writes
+    today (T-3924) are read."""
+    raw = os.environ.get("FW_RAIL_PROJECT_LABEL", "").strip()
+    if not raw:
+        cfg = outbox._root() / ".framework.yaml"
+        try:
+            for line in cfg.read_text(encoding="utf-8").splitlines():
+                m = re.match(r"^(RAIL_PROJECT_LABEL|rail_project_label):\s*(.*?)\s*$", line)
+                if m:
+                    raw = m.group(2).strip().strip("'\"")
+                    break
+        except OSError:
+            raw = ""
+    if not raw:
+        return ""
+    s = raw.lower().replace(" ", "-").replace("_", "-")
+    return re.sub(r"[^a-z0-9.-]", "", s)
+
+
 def project_id() -> str:
     """This project's fleet id.
 
@@ -144,7 +166,15 @@ def project_id() -> str:
 
     Refuses `.agentic-framework` or empty (T-3671): that is the vendored
     framework dir, never a project, and signing as it mis-routes every consult.
+
+    T-3957 (010, finding in pickup 321): RAIL_PROJECT_LABEL, when set, names the
+    project — the same label `lib/rail-identity.sh rail_project_label` emits on
+    the rail, normalised the same way, so the rail and the sidecar cannot name
+    one project two ways. Unset → the basename above, unchanged.
     """
+    label = _rail_project_label()
+    if label:
+        return label
     name = outbox._root().name
     if not name or name == ".agentic-framework":
         raise CircuitError(
