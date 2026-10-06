@@ -295,11 +295,22 @@ _ensure_handover_before_kill() {
         return 1
     fi
     echo "claude-fw: budget-critical — writing a handover before ending the session (T-3918)..." >&2
+    local started sha hl
+    started=$(date +%s)
     (cd "$root" && timeout "${FW_TERMINATOR_HANDOVER_TIMEOUT:-180}" bash "$fwbin" handover --commit \
         > "$root/.context/working/.terminator.handover.out" 2>&1)
     rc=$?
     if [ "$rc" -eq 0 ]; then
         echo "[terminator] Handover generated at $ts" >> "$log" 2>/dev/null || true
+        return 0
+    fi
+    # T-3942 (ring20-manager 01a8c11d): the handover commit can land and the run still be
+    # cut off in its push (OneDev on slow NFS outlived 180 s). Success is the commit. The
+    # predicate is read from the PROJECT's framework, never from beside this script — an
+    # installed copy of claude-fw has no lib/ next to it.
+    hl="$(dirname "$fwbin")/../lib/handover-lock.sh"
+    if [ -f "$hl" ] && sha=$( . "$hl" && fw_handover_landed "$root" "$started" ); then
+        echo "[terminator] Handover generated at $ts (commit $sha landed; push did not finish within ${FW_TERMINATOR_HANDOVER_TIMEOUT:-180}s — run 'fw push')" >> "$log" 2>/dev/null || true
         return 0
     fi
     echo "[terminator] Handover FAILED (rc=$rc) at $ts — see .context/working/.terminator.handover.out" >> "$log" 2>/dev/null || true
