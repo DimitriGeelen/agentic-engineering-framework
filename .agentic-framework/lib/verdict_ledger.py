@@ -202,6 +202,46 @@ def _append(rel: Path, row: dict, root: Path) -> None:
         fh.write(json.dumps(row, separators=(",", ":"), sort_keys=True) + "\n")
 
 
+def _ledger_lock(root: Path):
+    """T-3940: ONE lock held from a verdict row's append to its commit. verdicts.jsonl is a
+    single shared file, so a pathspec cannot separate rows: a worker that appended and then
+    committed later took every row other workers had appended meanwhile, and those rows failed
+    provenance forever ('introduced by other'). Every writer that commits rows holds this."""
+    from lib import keylock
+    return keylock.exclusive(root / ".context" / "locks" / "verdict-ledger.lock",
+                             label="verdict ledger (append+commit)")
+
+
+def _ledger_paths(root: Path, extra: list[str] | None = None) -> list[str]:
+    """What a verdict commit stages: the ledger files that exist, plus the row's evidence."""
+    paths = [str(p) for p in (extra or []) if (root / p).exists()]
+    return paths + [str(r) for r in (VERDICTS, RECORDED, REFUSALS, APPLIED) if (root / r).exists()]
+
+
+def _commit_rows(root: Path, paths: list[str], identity: str, message: str,
+                 email: str = "") -> tuple[str, str]:
+    """Stage and commit exactly `paths` as `identity`. Returns (head_sha, error). Call only under
+    _ledger_lock, after the append, so the commit holds no other writer's row."""
+    # T-3655: per-reviewer email, never a shared one.
+    email = email or ("reviewer+" + re.sub(r"[^A-Za-z0-9._-]", "-", identity) + "@aef.local")
+    env = {**os.environ, "GIT_AUTHOR_NAME": identity, "GIT_COMMITTER_NAME": identity,
+           "GIT_AUTHOR_EMAIL": email, "GIT_COMMITTER_EMAIL": email}
+    env.pop(_WORKER_ENV, None)
+    err = ""
+    for attempt in range(5):        # another git process may hold .git/index.lock briefly
+        add = subprocess.run(["git", "add", "--", *paths], cwd=str(root), env=env,
+                             capture_output=True, text=True)
+        com = subprocess.run(["git", "commit", "-q", "-m", message, "--", *paths],
+                             cwd=str(root), env=env, capture_output=True, text=True)
+        if not (add.returncode or com.returncode):
+            return _head_sha(root), ""
+        err = (add.stderr + com.stderr).strip()[-500:]
+        if "index.lock" not in err:
+            break
+        time.sleep(0.5 * (attempt + 1))
+    return "", err
+
+
 def _read(rel: Path, root: Path) -> list[dict]:
     p = root / rel
     if not p.is_file():
@@ -1246,6 +1286,16 @@ def record_for_worker(dispatch_id: str, *, wdir: str, secret: str = "",
     shas = {n: _file_sha(Path(here) / n) for n in ("result.md", "result.jsonl")
             if (Path(here) / n).is_file()}
     printed = parse_harness_verdicts(output)
+    # T-3940: the lock spans every append below AND the commit, so no other writer's row can
+    # land between them and be committed under this worker's identity.
+    with _ledger_lock(root):
+        return _record_for_worker_locked(root, did, drec, kind, here, brief, crits, rung, output,
+                                         shas, printed)
+
+
+def _record_for_worker_locked(root: Path, did: str, drec: dict, kind: str, here: str, brief: str,
+                              crits: list, rung: str, output: str, shas: dict,
+                              printed: dict) -> dict:
     task = str(drec["task"])
     ctx = _task_ctx(root, task)
     identity = worker_identity(did)
@@ -1283,22 +1333,29 @@ def record_for_worker(dispatch_id: str, *, wdir: str, secret: str = "",
             res["refused"].append({"ac": ac, "why": str(e)})
     if not touched:
         return res
-    paths = touched + [str(r) for r in (VERDICTS, RECORDED, REFUSALS, APPLIED) if (root / r).exists()]
-    # T-3655: per-reviewer email, never a shared one (see judge_cli.commit_command).
-    email = "reviewer+" + re.sub(r"[^A-Za-z0-9._-]", "-", identity) + "@aef.local"
-    env = {**os.environ, "GIT_AUTHOR_NAME": identity, "GIT_COMMITTER_NAME": identity,
-           "GIT_AUTHOR_EMAIL": email, "GIT_COMMITTER_EMAIL": email}
-    env.pop(_WORKER_ENV, None)
-    add = subprocess.run(["git", "add", "--", *paths], cwd=str(root), env=env,
-                         capture_output=True, text=True)
-    com = subprocess.run(["git", "commit", "-q", "-m",
-                          f"{task}: reviewer verdict ({kind} seat {seat}, recorded by the runtime)",
-                          "--", *paths], cwd=str(root), env=env, capture_output=True, text=True)
-    if add.returncode or com.returncode:
-        res["commit_error"] = (add.stderr + com.stderr).strip()[-500:]
+    sha, err = _commit_rows(root, _ledger_paths(root, touched), identity,
+                            f"{task}: reviewer verdict ({kind} seat {seat}, recorded by the runtime)")
+    if err:
+        res["commit_error"] = err
     else:
-        res["commit"] = _head_sha(root)
+        res["commit"] = sha
     return res
+
+
+def record_and_commit(task_id: str, ac_index: int, outcome: str, *, identity: str,
+                      email: str = "", root: Path | None = None, **kw) -> dict:
+    """T-3940: `record` + commit of exactly that row, as `identity`, under the ledger lock. The
+    only safe way for a worker to leave a committed row while other workers record in parallel.
+    Raises VerdictRefused as `record` does; a failed commit leaves the row appended and
+    raises VerdictRefused naming the git error (the row then never counts — uncommitted)."""
+    root = root or _root()
+    with _ledger_lock(root):
+        rec = record(task_id, ac_index, outcome, root=root, **kw)
+        sha, err = _commit_rows(root, _ledger_paths(root, kw.get("evidence")), identity,
+                                f"{task_id}: reviewer verdict", email=email)
+    if err:
+        raise VerdictRefused(f"verdict {rec['id']} appended but NOT committed: {err}")
+    return {**rec, "commit": sha}
 
 
 def _consult_reader(topic: str, cursor: int, limit: int) -> list[dict]:
@@ -3096,6 +3153,9 @@ def _cli(argv: list[str] | None = None) -> int:
                    help="digest of the criterion the reviewer read (`verdict digest`)")
     r.add_argument("--dispatch-id", default="", help="id of the review dispatch that produced this "
                    "verdict — must be in the dispatch registry with task-type review")
+    r.add_argument("--commit", action="store_true",
+                   help="T-3940: commit exactly this row (and its evidence) under the ledger lock, "
+                        "as the reviewer named by $FW_SIDECAR_AGENT_ID; default inside a review worker")
     r.add_argument("--run-id", default="", help="id of the review run this verdict belongs to "
                    "(named in the brief); the dispatcher binds the dispatch to it")
 
@@ -3194,11 +3254,20 @@ def _cli(argv: list[str] | None = None) -> int:
 
     args = ap.parse_args(argv)
     if args.cmd == "record":
+        kw = dict(reviewer=args.reviewer, rung=args.rung, guidance=args.guidance,
+                  evidence=args.evidence, digest=args.digest, dispatch_id=args.dispatch_id,
+                  run_id=args.run_id)
+        worker = os.environ.get(_WORKER_ENV, "").strip()
         try:
-            rec = record(args.task_id, args.ac, args.outcome, reviewer=args.reviewer,
-                         rung=args.rung, guidance=args.guidance, evidence=args.evidence,
-                         digest=args.digest, dispatch_id=args.dispatch_id,
-                         run_id=args.run_id)
+            if args.commit or worker:
+                # T-3940: inside a review worker, append+commit is one locked step, always.
+                # Same name/email a worker always committed under (T-3655 per-dispatch email).
+                who = worker or "manual"
+                rec = record_and_commit(args.task_id, args.ac, args.outcome,
+                                        identity=f"reviewer-{who}",
+                                        email=f"reviewer+{who}@aef.local", **kw)
+            else:
+                rec = record(args.task_id, args.ac, args.outcome, **kw)
         except VerdictRefused as e:
             print(f"REFUSED: {e}", file=sys.stderr)
             return 1
