@@ -1404,26 +1404,53 @@ _RERANKER_INSTRUCT = (
 )
 
 
+def _rerank_prompt(query: str, document: str) -> str:
+    """The Qwen3-Reranker chat template, inlined (T-3953). Raw mode carries no
+    template of its own, and Ollama rejects `system` together with `raw`."""
+    return ("<|im_start|>system\n" + _RERANKER_SYSTEM + "<|im_end|>\n<|im_start|>user\n"
+            f"<Instruct>: {_RERANKER_INSTRUCT}\n<Query>: {query}\n<Document>: {document}"
+            "<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n")
+
+
+def _yes_no_score(top_logprobs) -> float:
+    """p(yes) / (p(yes) + p(no)) = sigmoid(logp_yes − logp_no) over the first token's
+    candidates, matched case-insensitively ('yes'/'Yes', 'no'/'No'). 0.5 when neither
+    appears."""
+    import math
+
+    p = {"yes": 0.0, "no": 0.0}
+    for t in top_logprobs or []:
+        tok = str(getattr(t, "token", "") or "").strip().lower()
+        if tok in p:
+            p[tok] += math.exp(float(getattr(t, "logprob", -100.0)))
+    total = p["yes"] + p["no"]
+    return p["yes"] / total if total > 0 else 0.5
+
+
 def _rerank_score(query: str, document: str) -> float:
     """Score a single (query, document) pair using the cross-encoder reranker.
 
     Returns a relevance score between 0 and 1.
-    """
-    import math
 
-    prompt = f"<Instruct>: {_RERANKER_INSTRUCT}\n<Query>: {query}\n<Document>: {document}"
+    T-3953 (dimitri-mint-dev G-009): this used to pass `system=` with `raw=True`,
+    which Ollama rejects (HTTP 400), log the error at DEBUG and return 0.5 — so
+    every candidate scored 0.5 and rerank() silently changed nothing for fw ask,
+    fw recall and Watchtower search. Even when it ran, the score was 1.0/0.0. Now:
+    template inlined, no system field, graded score from the yes/no log-odds.
+    """
     try:
         resp = _get_ollama_client().generate(
             model=RERANKER_MODEL,
-            system=_RERANKER_SYSTEM,
-            prompt=prompt,
+            prompt=_rerank_prompt(query, document),
             options={"temperature": 0.0, "num_predict": 1},
             raw=True,
+            logprobs=True,
+            top_logprobs=20,
         )
-        answer = (resp.response or "").strip().lower()
-        return 1.0 if "yes" in answer else 0.0
+        first = (resp.logprobs or [None])[0]
+        return _yes_no_score(getattr(first, "top_logprobs", None))
     except Exception as e:
-        log.debug("Reranker error: %s", e)
+        log.warning("Reranker error (results keep their retrieval order): %s", e)
         return 0.5  # neutral fallback
 
 
