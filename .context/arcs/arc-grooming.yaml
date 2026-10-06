@@ -4,7 +4,7 @@ name: "Arc grooming \u2014 canonicalisation, lifecycle, audit, doc"
 description: "Implements HANDOFF-arc-grooming-2026-05-15 via 10 build slices (T-NEW-1.5..9). Anchor:\
   \ T-1846 inception decide-go GO. Encodes D-Immutability (arc records never deleted;\
   \ IDs never renumber)."
-status: in-progress
+status: closed
 anchor_task: T-1846
 constituent_tasks: []
 headline_mechanic: "agent runs fw arc create test \u2192 arc-005 sequential ID auto-allocated; agent\
@@ -14,10 +14,10 @@ headline_mechanic: "agent runs fw arc create test \u2192 arc-005 sequential ID a
   \ canonical arc_id resolving to an immutable arc, lifecycle has draft/in-progress/closed/abandoned\
   \ tabs in Watchtower, 012-ArcSystem.md exists at repo root and FRAMEWORK.md indexes\
   \ it"
-demo_evidence: null
+demo_evidence: "docs/reports/T-1846-arc-grooming-inception.md"
 created: 2026-05-15T14:49:04Z
-closed_at: null
-decision: "GO (inception T-1846 decide-go recorded by human via Watchtower 2026-05-15; rationale: HANDOFF-arc-grooming-2026-05-15 §5 GO with §11.5 pre-action checks all PASS, plus D-Immutability axiom captured during inception dialogue, plus T-NEW-1.5 sequential arc-NNN ID scheme added)"
+closed_at: 2026-10-05T18:34:40Z
+decision: "GO — Per HANDOFF-arc-grooming-2026-05-15 §5 GO with §11.5 pre-action checks all PASS: 12 paths exist, T-1653/1661/1662 work-completed, 4 arcs in-progress, A1-A4 hold (citations at lib/arc.sh:215-227, 473-492; audit.sh:550-555 match briefing verbatim), only 3 multi-arc-tagged tasks (Q3 trivially resolvable). §12 triggers fire (>3 new files, fw arc abandon verb, tags->arc_id schema migration) so this MUST be inception. Scope: resolve Q1/Q2/Q3 with human, then file T-NEW-2..9 as build slices. No build artefacts before decide-go. (agent recommendation, T-1846)"
 
 # Slice dependency chain (encoded as comment for reader; real deps live in
 # each task's related_tasks + body text). T-NEW-* labels map to actual T-XXXX
@@ -47,3 +47,4 @@ decision: "GO (inception T-1846 decide-go recorded by human via Watchtower 2026-
 # because it documents the post-refactor state.
 # T-3635: objectives this arc serves (T-3535 v2 §2/§4, GO 2026-10-01).
 supports: [O-3]
+closed_via: watchtower
