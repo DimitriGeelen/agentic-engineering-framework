@@ -1,13 +1,19 @@
 ---
 id: T-3952
-name: "Relative 'bin/fw' subprocess calls break on consumer projects: web/blueprints/arcs.py:1186 (Watchtower approve-driver) and agents/ux-review/ux-review.py:824"
+name: "Relative 'bin/fw' subprocess calls break on consumer projects: web/blueprints/arcs.py:1186
+  (Watchtower approve-driver) and agents/ux-review/ux-review.py:824"
 description: >
-  Found during T-3807: lib/bvp.sh launched cwd-relative 'bin/fw', which does not exist at a consumer's root (.agentic-framework/bin/fw). Fixed there (FRAMEWORK_ROOT/bin/fw). Same class remains in web/blueprints/arcs.py:1186 (the Watchtower arc approve-driver button on consumers) and agents/ux-review/ux-review.py:824. Fix + a lint that refuses a bare ['bin/fw', ...] argv in lib/ web/ agents/. Web change: restart Watchtower + render review.
+  Found during T-3807: lib/bvp.sh launched cwd-relative 'bin/fw', which does not exist
+  at a consumer's root (.agentic-framework/bin/fw). Fixed there (FRAMEWORK_ROOT/bin/fw).
+  Same class remains in web/blueprints/arcs.py:1186 (the Watchtower arc approve-driver
+  button on consumers) and agents/ux-review/ux-review.py:824. Fix + a lint that refuses
+  a bare ['bin/fw', ...] argv in lib/ web/ agents/. Web change: restart Watchtower
+  + render review.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T14:04:48Z
-last_update: 2026-10-06T14:04:48Z
-date_finished: null
+last_update: 2026-10-06T20:15:52Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-06T14:15:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-06T14:15:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3952: Relative 'bin/fw' subprocess calls break on consumer projects: web/blueprints/arcs.py:1186 (Watchtower approve-driver) and agents/ux-review/ux-review.py:824
@@ -62,8 +96,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Every subprocess call in web/, lib/ and agents/ that launches fw resolves it from the framework root (absolute path), never as a cwd-relative "bin/fw" — web/blueprints/arcs.py (6 calls: approve/remove driver, scoped weight, arc close), web/blueprints/bvp.py (5 calls: weight, driver forms), lib/peer.py (peer responder dispatch), agents/ux-review/ux-review.py
+- [x] A lint test refuses a bare `["bin/fw", ...]` / `['bin/fw', ...]` argv in web/, lib/, agents/ Python, so the class cannot return (T-3807 fixed lib/bvp.sh the same way) — tests/unit/test_no_relative_fw_argv_t3952.py, with a control
+- [x] Watchtower restarted; `fw watchtower current` OK (pid 373421; /arcs and /bvp 200)
+- [x] [REVIEW]-type check owed for the render surface is recorded as a Human AC (the approve-driver button on /arcs/<slug>)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -95,8 +131,19 @@ date_finished: null
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] Watchtower arc and BVP driver buttons still work after fw became an absolute path
+  **Steps:**
+  1. Open http://192.168.10.107:3000/arcs and pick an in-progress arc with a proposed driver (e.g. http://192.168.10.107:3000/arcs/arc-grooming)
+  2. On the arc page, use one driver action you are happy to perform (Approve a proposed driver, or adjust a scoped weight and set it back)
+  3. Open http://192.168.10.107:3000/bvp and confirm the page renders with its driver controls
+  **Expected:** the action completes with its normal confirmation card (or the reviewer's FAIL reasons for a weak driver), never "Failed to invoke fw"
+  **If not:** copy the error card text; check .context/working/watchtower.log for the traceback
 
 ## Verification
+
+python3 -m pytest -q tests/unit/test_no_relative_fw_argv_t3952.py tests/unit/test_peer_subscribe.py
+bin/fw watchtower current
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -240,6 +287,20 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** found while fixing T-3807 — `subprocess.run(["bin/fw", ...], cwd=PROJECT_ROOT)` in
+Watchtower's arc and BVP blueprints, lib/peer.py and ux-review. On any consumer project these
+fail with FileNotFoundError: the consumer's fw is .agentic-framework/bin/fw.
+
+**Root cause:** fw was named relative to the working directory, which happens to be right only
+inside the framework repo (where PROJECT_ROOT == FRAMEWORK_ROOT).
+
+**Why structurally allowed:** every test and every manual click happened in the framework
+repo; no lint looked at argv shape. The class is the T-1257 one ("bin/fw" in the framework vs
+.agentic-framework/bin/fw in consumers), in code instead of in instructions.
+
+**Prevention:** fw is resolved from FRAMEWORK_ROOT at every site; a lint over web/, lib/ and
+agents/ refuses a cwd-relative "bin/fw" argv (with a control proving it catches both forms).
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -293,6 +354,19 @@ date_finished: null
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** Twelve subprocess calls named fw relative to the project directory, so on every
+consumer the Watchtower arc buttons, the BVP driver forms and the peer responder failed with
+"Failed to invoke fw". All now use the framework's absolute fw, and a lint stops the pattern
+coming back. The Human check is one real click on an arc or BVP control, because that is the
+behaviour that changed.
+
+**Evidence:**
+- web/blueprints/arcs.py 6 sites, web/blueprints/bvp.py 5, lib/peer.py 1, ux-review 1 → absolute fw.
+- tests/unit/test_no_relative_fw_argv_t3952.py 2/2 (with a control); test_peer_subscribe.py 12/12 (assertions updated to the absolute path); arc/bvp test files 612 green (the one red, test_arcs_pages_tokens hexes in arc_detail.html, is pre-existing and baselined).
+- Watchtower restarted, `fw watchtower current` OK, /arcs and /bvp 200.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -320,3 +394,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3952-relative-binfw-subprocess-calls-break-on.md
 - **Context:** Initial task creation
+
+### 2026-10-06T20:10:38Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -35,7 +35,11 @@ from lib.arc_membership import (
     scan_tasks_by_arc_id as _scan_tasks_by_arc_id_shared,
     scan_tasks_by_arc_membership as _scan_tasks_by_arc_membership_shared,
 )
-from web.shared import PROJECT_ROOT, render_page
+from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page
+# T-3952: fw from the FRAMEWORK root, never cwd-relative "bin/fw" — these calls run with
+# cwd=PROJECT_ROOT, and a consumer project has no bin/fw at its root (.agentic-framework/bin/fw).
+_FW = str(FRAMEWORK_ROOT / "bin" / "fw")
+
 
 bp = Blueprint("arcs", __name__)
 
@@ -1183,7 +1187,7 @@ def arc_approve_driver(arc_id):
     # reviewer:<id>. The override flag is deliberately not passed: clicking
     # Approve should mean "run the check", not "skip it because a human clicked".
     # A FAIL comes back on stderr and is surfaced below.
-    cmd = ["bin/fw", "arc", "approve-driver", slug, name]
+    cmd = [_FW, "arc", "approve-driver", slug, name]
     if weight_raw:
         try:
             w = int(weight_raw)
@@ -1245,7 +1249,7 @@ def arc_add_driver(arc_id):
     if len(rationale) < 30:
         return '<p style="color: var(--pico-del-color);">Rationale must be ≥30 characters (R6).</p>', 400
     cmd = [
-        "bin/fw", "arc", "approve-driver", slug, name,
+        _FW, "arc", "approve-driver", slug, name,
         "--weight", str(weight),
         "--rationale", rationale,
         "--from-watchtower",
@@ -1283,7 +1287,7 @@ def arc_remove_driver(arc_id):
     if len(rationale) < 30:
         return '<p style="color: var(--pico-del-color);">Rationale must be ≥30 characters (R6).</p>', 400
     cmd = [
-        "bin/fw", "arc", "remove-driver", slug, name,
+        _FW, "arc", "remove-driver", slug, name,
         "--rationale", rationale,
         "--from-watchtower",
     ]
@@ -1345,7 +1349,7 @@ def arc_set_scoped_weight(arc_id):
         if not 1 <= weight <= 6:
             return f"Driver {name}: weight {weight} out of range (1-6, M2)", 400
         cmd = [
-            "bin/fw", "arc", "set-scoped-weight", slug, name,
+            _FW, "arc", "set-scoped-weight", slug, name,
             "--weight", str(weight),
             "--rationale", rationale,
             "--from-watchtower",
@@ -1378,7 +1382,7 @@ def arc_approve_none(arc_id):
     if len(justification) < 30:
         return '<p style="color: var(--pico-del-color);">Justification must be ≥30 characters (R6).</p>', 400
     cmd = [
-        "bin/fw", "arc", "approve-driver", slug,
+        _FW, "arc", "approve-driver", slug,
         "--none", "--justification", justification, "--from-watchtower",
     ]
     try:
@@ -1534,7 +1538,7 @@ def arc_close_surface(arc_id):
         else:
             demo_arg = "none" if demo_mode == "none" else demo_value
             cmd = [
-                "bin/fw", "arc", "close", arc_slug,
+                _FW, "arc", "close", arc_slug,
                 "--from-watchtower",
                 "--demo", demo_arg,
             ]

@@ -49,9 +49,10 @@ def _make_runner(plan):
 
     def runner(cmd, capture_output=False, text=False, timeout=None):
         calls.append(list(cmd))
-        head = cmd[0]
+        # T-3952: fw is launched by an absolute path now; normalise it to "bin/fw".
+        head = "bin/fw" if str(cmd[0]).endswith("/bin/fw") else cmd[0]
         # Match argv head — for "bin/fw" inspect cmd[1] (e.g. termlink).
-        key = head if head != "bin/fw" else f"{cmd[0]} {cmd[1]}"
+        key = head if head != "bin/fw" else f"bin/fw {cmd[1]}"
         slot = plan.get(key)
         if slot is None:
             return subprocess.CompletedProcess(cmd, 0, "", "")
@@ -138,7 +139,9 @@ def test_spawn_responder_invokes_fw_termlink_dispatch(tmp_path):
     assert result is not None
     assert result.returncode == 0
     # Verify exactly one dispatch call with the right shape
-    dispatch_calls = [c for c in calls if c[:3] == ["bin/fw", "termlink", "dispatch"]]
+    dispatch_calls = [c for c in calls
+                      if str(c[0]).endswith("/bin/fw") and c[1:3] == ["termlink", "dispatch"]]
+    assert dispatch_calls and dispatch_calls[0][0].startswith("/")   # T-3952: absolute
     assert len(dispatch_calls) == 1
     args = dispatch_calls[0]
     assert "--name" in args
@@ -207,7 +210,8 @@ def test_subscribe_loop_continuation_past_miss(tmp_path):
     iters = peer.subscribe(once=True, runner=runner, sleep=lambda *_: None)
     assert iters == 1
     # Exactly one spawn (the resolving event)
-    dispatches = [c for c in calls if c[:3] == ["bin/fw", "termlink", "dispatch"]]
+    dispatches = [c for c in calls
+                  if str(c[0]).endswith("/bin/fw") and c[1:3] == ["termlink", "dispatch"]]  # T-3952
     assert len(dispatches) == 1
     # The miss logged
     misses = peer.MISS_LOG.read_text().splitlines()
