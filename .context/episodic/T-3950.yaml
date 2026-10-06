@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3950: fw_doctor_vendored_drift.bats 'No vendored-source drift when in sync' fails under suite load (275 s) but passes alone — load-sensitive flake blocking pre-push
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-06T20:03:47Z
+# ============================================================================
+
+task_id: T-3950
+task_name: "fw_doctor_vendored_drift.bats 'No vendored-source drift when in sync' fails under suite load (275 s) but passes alone — load-sensitive flake blocking pre-push"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-06T12:53:32Z
+completed: 2026-10-06T20:03:28Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-06T16:15:50+02:00
+last_commit: 2026-10-06T22:03:27+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  baseline the load-flaky fw_doctor_vendored_drift red for 7 days (operator). fw_doctor_vendored_drift.bats runs doctor's Check 2b on a throwaway fixture — no full doctor in the live repo (275 s under load, red whenever the working tree had transient drift), no mutation of the live vendored colors.sh; 0.5 s
+
+# Key outcomes
+outcomes:
+  - 'fw_doctor_vendored_drift.bats runs doctor''s Check 2b (vendored-source drift) against a throwaway fixture framework root — never the live repo: no full `fw doctor` run, no mutation of the live .agentic-framework/'
+  - 'Its three behaviours still pinned: in-sync → "No vendored-source drift"; a diverged vendored file → "Vendored-source drift", "file(s) out of sync", the file named; the remedy "Run: fw vendor"'
+  - 'The file runs in seconds and passes under parallel load (the 2026-10-06 suite failure took 275 s and failed on the LIVE repo''s transient drift) — 0.5 s now'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fw_doctor_vendored_drift.bats runs doctor''s Check 2b on a throwaway fixture — no full doctor in the live repo (275 s under load, red whenever the working tree had transient drift), no mutation of the live vendored colors.sh; 0.5 s'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/audits/unit-suite/baseline.yaml'
+  - '.tasks/active/T-3950-fwdoctorvendoreddriftbats-no-vendored-so.md'
+  - 'tests/unit/fw_doctor_vendored_drift.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T16:15:50'
+    action: 'T-3950: baseline the load-flaky fw_doctor_vendored_drift red for 7 days (operator)'
+  - time: '2026-10-06T22:03:27'
+    action: 'T-3950: fw_doctor_vendored_drift.bats runs doctor''s Check 2b on a throwaway fixture — no full doctor in the live repo (275 s under load, red whenever the working tree had transient drift), no mutation of the live vendored colors.sh; 0.5 s'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 429 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 429
+  commits: 2
+  files_changed: 3
+  lines_added: 411
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3950-fwdoctorvendoreddriftbats-no-vendored-so.md
+generated_by: context-agent-hybrid
