@@ -98,10 +98,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw task classify-ac` classifies criteria given as text (`--text`, `--file`, or stdin), without a task file, using `lib/delegation.classify` (no second predicate); `--workflow-type`, `--render-surface`, `--json` supported; output names class, delegation class and reason per criterion
-- [ ] Bare criterion text (no `## Acceptance Criteria` heading) is accepted and treated as a Human criterion
-- [ ] `lib/templates/claude-project.md` gains an "AC Classification Guidance" section that points at the canonical source (lib/delegation.py), the two verbs, the three operator-only classes, and says project carve-outs are pending T-3968
-- [ ] Tests `tests/unit/test_classify_ac_t3963.py`: CLI output equals `classify()` for a tier-0, a deterministic and a taste criterion; bare text accepted; template section present
+- [x] `fw task classify-ac` classifies criteria given as text (`--text`, `--file`, or stdin), without a task file, using `lib/delegation.classify` (no second predicate); `--workflow-type`, `--render-surface`, `--json` supported; output names class, delegation class and reason per criterion
+- [x] Bare criterion text (no `## Acceptance Criteria` heading) is accepted and treated as a Human criterion
+- [x] `lib/templates/claude-project.md` gains an "AC Classification Guidance" section that points at the canonical source (lib/delegation.py), the two verbs, the three operator-only classes, and says project carve-outs are pending T-3968
+- [x] Tests `tests/unit/test_classify_ac_t3963.py`: CLI output equals `classify()` for a tier-0, a deterministic and a taste criterion; bare text accepted; template section present
 
 ## Verification
 python3 -m pytest tests/unit/test_classify_ac_t3963.py -q > /tmp/.t3963 2>&1 && grep -q passed /tmp/.t3963 && ! grep -q failed /tmp/.t3963

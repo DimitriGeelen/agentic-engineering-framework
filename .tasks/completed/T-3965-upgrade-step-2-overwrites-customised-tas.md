@@ -7,12 +7,12 @@ description: >
   honour, no .upstream copy, so a consumer's edited default.md is lost on every upgrade.
   Route it through lib/upgrade_template_sync.py like steps 7/7b (T-3955/T-3956).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/upgrade.sh, lib/upgrade_template_shipped.py, lib/upgrade_template_sync.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T21:07:54Z
-last_update: 2026-10-06T22:24:18Z
-date_finished:
+last_update: 2026-10-06T22:59:23Z
+date_finished: 2026-10-06T22:59:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -94,11 +94,12 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Step 2 decides each template via `upgrade_template_sync.py` (CREATED / UPDATED / KEPT + `.upstream` / PRESERVED), dry-run included
-- [ ] An unstamped template byte-equal to ANY previously shipped version is UPDATED (known-hash list `lib/templates/task-template-shipped-hashes.json`, generated from git history); a customised one is KEPT with `.upstream`
-- [ ] A test pins that the list contains the current template hashes and that a generator re-creates it
-- [ ] Tests: customised default.md survives upgrade; stale stock default.md is updated; `project_files:` entry is PRESERVED
-- [ ] `upgrade_fresh_machine_simulation.bats` and `lib_upgrade.bats` stay green
+- [x] Step 2 decides each template via `upgrade_template_sync.py` (CREATED / UPDATED / KEPT + `.upstream` / PRESERVED), dry-run included
+- [x] An unstamped template byte-equal to ANY previously shipped version is UPDATED (known-hash list `lib/upgrade_template_shipped.py`, generated from git history; a `.py` module because self-vendoring copies only sh/py/md); a customised one is KEPT with `.upstream`
+- [x] A test pins that the list contains the current template hashes and that a generator re-creates it
+- [x] Tests: customised default.md survives upgrade; stale stock default.md is updated; `project_files:` entry is PRESERVED
+- [x] `upgrade_fresh_machine_simulation.bats` and `lib_upgrade.bats` stay green (29/29, no skips)
+- [x] Found on the way: `project_files:` entries starting with a dot never matched (`lstrip("./")` strips characters) — fixed, with a test
 
 ## Verification
 python3 -m pytest tests/unit/test_upgrade_template_sync_t3955.py -q > /tmp/.t3965a 2>&1 && grep -q passed /tmp/.t3965a && ! grep -q failed /tmp/.t3965a
@@ -249,6 +250,13 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** 010 (1.8.5 rehearsal): a consumer's customised `.tasks/templates/default.md` was overwritten by every `fw upgrade`, with no `.upstream` copy and `project_files:` ignored.
+
+**Root cause:** step 2 still used the pre-T-3955 shape (`diff -q` then `cp`). T-3955/T-3956 fixed the same class for steps 7/7b only. A second defect in the shared helper: `project_files:` patterns were normalised with `lstrip("./")`, which strips characters, so any dot-path entry (`.tasks/…`, `.claude/…`) never matched.
+
+**Why structurally allowed:** T-3955 fixed the class at the two call sites in its report instead of every template-writing step in `fw upgrade`; its manifest test used `scripts/*.sh`, a path without a leading dot.
+
+**Prevention:** every template-writing step now goes through one helper; `t3965_upgrade_task_templates.bats` runs a real init + upgrade over all three outcomes (UPDATED / KEPT / PRESERVED); the helper tests pin dot-path manifest entries and the shipped-hash list's freshness.
 
 ## Evolution
 
@@ -314,6 +322,11 @@ bin/fw vendor self --check
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-07 — how an unstamped stale template is recognised as stock
+- **Chose:** a committed list of every shipped version's sha256 (from git history), as a `.py` data module, consulted only when no stamp exists.
+- **Why:** without it, the first upgrade after this change would KEEP every existing consumer's stale stock template (no stamp → KEPT), and schema fields that arrive through the templates would stop arriving. A `.py` module travels with self-vendoring; `.json` does not.
+- **Rejected:** treating "no stamp" as stock (would overwrite 010's customised default.md, the bug itself); computing history at upgrade time (consumers' FRAMEWORK_ROOT is a vendored copy with no git history); widening the vendor filter to `*.json` (touches the vendor/audit parity scanner for one file).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -334,3 +347,15 @@ bin/fw vendor self --check
 ### 2026-10-06T22:24:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-756d83ff
+- **Timestamp:** 2026-10-06T23:02:30Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-06T22:59:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

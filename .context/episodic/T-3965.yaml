@@ -1,0 +1,102 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3965: upgrade step 2 overwrites customised task templates with bare cp (010 finding 17)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-06T23:02:46Z
+# ============================================================================
+
+task_id: T-3965
+task_name: "upgrade step 2 overwrites customised task templates with bare cp (010 finding 17)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-06T21:07:54Z
+completed: 2026-10-06T22:59:23Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-07T00:38:39+02:00
+last_commit: 2026-10-07T00:59:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  upgrade step 2 decides task templates via upgrade_template_sync (KEPT/.upstream, project_files); shipped-hash list updates stale stock copies; fix project_files dot-path match (lstrip bug). shipped-hash list as a .py module (self-vendor copies only sh/py/md, so a .json list never reached consumers). vendor-sync upgrade.sh, upgrade_template_sync.py, upgrade_template_shipped.py. freshness test for the shipped-hash module; fabric card
+
+# Key outcomes
+outcomes:
+  - 'Step 2 decides each template via `upgrade_template_sync.py` (CREATED / UPDATED / KEPT + `.upstream` / PRESERVED), dry-run included'
+  - 'An unstamped template byte-equal to ANY previously shipped version is UPDATED (known-hash list `lib/upgrade_template_shipped.py`, generated from git history; a `.py` module because self-vendoring copies only sh/py/md); a customised one is KEPT with `.upstream`'
+  - 'A test pins that the list contains the current template hashes and that a generator re-creates it'
+  - 'Tests: customised default.md survives upgrade; stale stock default.md is updated; `project_files:` entry is PRESERVED'
+  - '`upgrade_fresh_machine_simulation.bats` and `lib_upgrade.bats` stay green (29/29, no skips)'
+  - 'Found on the way: `project_files:` entries starting with a dot never matched (`lstrip("./")` strips characters) — fixed, with a test'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'upgrade step 2 decides task templates via upgrade_template_sync (KEPT/.upstream, project_files); shipped-hash list updates stale stock copies; fix project_files dot-path match (lstrip bug)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-07 — how an unstamped stale template is recognised as stock'
+    chose: 'a committed list of every shipped version''s sha256 (from git history), as a `.py` data module, consulted only when no stamp exists.'
+    rationale: 'without it, the first upgrade after this change would KEEP every existing consumer''s stale stock template (no stamp → KEPT), and schema fields that arrive through the templates would stop arriving. A `.py` module travels with self-vendoring; `.json` does not.'
+    alternatives_rejected: ['treating "no stamp" as stock (would overwrite 010''s customised default.md, the bug itself); computing history at upgrade time (consumers'' FRAMEWORK_ROOT is a vendored copy with no git history); widening the vendor filter to `*.json` (touches the vendor/audit parity scanner for one file).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/delegation_cli.py'
+  - '.agentic-framework/lib/templates/claude-project.md'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/lib/upgrade_template_shipped.py'
+  - '.agentic-framework/lib/upgrade_template_sync.py'
+  - '.fabric/components/lib-upgrade_template_shipped.yaml'
+  - 'lib/templates/task-template-shipped-hashes.json'
+  - 'lib/upgrade.sh'
+  - 'lib/upgrade_template_shipped.py'
+  - 'lib/upgrade_template_sync.py'
+  - '.tasks/active/T-3965-upgrade-step-2-overwrites-customised-tas.md'
+  - 'tests/unit/t3965_upgrade_task_templates.bats'
+  - 'tests/unit/test_upgrade_template_sync_t3955.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-07T00:38:39'
+    action: 'T-3965: upgrade step 2 decides task templates via upgrade_template_sync (KEPT/.upstream, project_files); shipped-hash list updates stale stock copies; fix project_files dot-path match (lstrip bug)'
+  - time: '2026-10-07T00:58:27'
+    action: 'T-3965: shipped-hash list as a .py module (self-vendor copies only sh/py/md, so a .json list never reached consumers)'
+  - time: '2026-10-07T00:58:34'
+    action: 'T-3965: vendor-sync upgrade.sh, upgrade_template_sync.py, upgrade_template_shipped.py'
+  - time: '2026-10-07T00:59:21'
+    action: 'T-3965: freshness test for the shipped-hash module; fabric card'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 111 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 111
+  commits: 4
+  files_changed: 14
+  lines_added: 607
+  lines_removed: 146
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3965-upgrade-step-2-overwrites-customised-tas.md
+generated_by: context-agent-hybrid
