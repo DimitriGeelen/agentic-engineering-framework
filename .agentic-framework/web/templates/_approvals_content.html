@@ -226,7 +226,7 @@
     {# T-3896 (G-108): the decide gate would refuse this — say so BEFORE the click,
        and say whose work it is. No decision controls on a not-ready inception. #}
     <div class="not-ready" data-testid="inception-not-ready"
-         style="margin-top:0.5rem; border:1px dashed var(--wt-warn, #b45309); border-radius:6px; padding:0.5rem 0.7rem;">
+         style="margin-top:0.5rem; border:1px dashed var(--wt-warn); border-radius:6px; padding:0.5rem 0.7rem;">
         <strong>Not ready for your decision — the agent still owes:</strong>
         <ul style="margin:0.3rem 0 0 1.1rem; font-size:0.85rem;">
             {% for b in t.blockers %}<li>{{ b.detail }}</li>{% endfor %}

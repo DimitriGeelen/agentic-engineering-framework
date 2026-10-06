@@ -564,7 +564,7 @@
     {# T-3896 (G-108): the decide gate would refuse — say so before the click,
        and say whose work it is. No decision controls on a not-ready inception. #}
     <div data-testid="inception-not-ready"
-         style="border:1px dashed var(--wt-warn, #b45309); border-radius:6px; padding:0.6rem 0.8rem;">
+         style="border:1px dashed var(--wt-warn); border-radius:6px; padding:0.6rem 0.8rem;">
         <strong>Not ready for your decision — the agent still owes:</strong>
         <ul style="margin:0.3rem 0 0 1.1rem; font-size:0.9rem;">
             {% for b in handoff_blockers %}<li>{{ b.detail }}</li>{% endfor %}
