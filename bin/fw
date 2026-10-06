@@ -5473,6 +5473,14 @@ PYTASK_VERIFY
                 PYTHONPATH="$FRAMEWORK_ROOT" \
                 python3 -m lib.delegation_cli delegate "$@"
             ;;
+        classify-ac)
+            # T-3963: who closes a criterion — the same lib/delegation.classify the
+            # delegate verb and the close gate use, on text, with no task file. Consumers
+            # call this instead of re-implementing the ruleset.
+            exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+                PYTHONPATH="$FRAMEWORK_ROOT" \
+                python3 -m lib.delegation_cli classify "$@"
+            ;;
         review-batch)
             # T-2182 / T-2181 Slice 1: emit a markdown table of full Watchtower URLs
             # for multi-task handoff in chat. Composes from emit_review_batch in

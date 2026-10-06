@@ -677,6 +677,27 @@ Tasks may have `### Agent` and `### Human` sections under `## Acceptance Criteri
 - When agent ACs pass but human ACs remain unchecked, the task enters **partial-complete**: stays in `active/` with `owner: human`.
 - The human finalizes by checking their ACs and running `fw task update T-XXX --status work-completed`.
 
+### AC Classification Guidance (T-954, T-3557, T-3963)
+Who closes a criterion is decided by ONE ruleset, `lib/delegation.py` in the framework
+(`classify()`, `CLASS_TO_DELEGATION`, `CARVE_OUTS`). Do not re-implement it; ask it:
+
+- `fw task classify-ac --text '- [ ] [REVIEW] ...'` (or `--file F`, or stdin; `--json`,
+  `--workflow-type`, `--render-surface`) — classifies criteria before a task exists.
+- `fw task delegate T-XXX --dry-run [--json]` — classifies a task's open Human criteria.
+
+The three classes that stay **operator-only**: tier-0 or bypass approval, acts in the world
+(outside the repo / the operator's machine), and sovereignty fields. Render-surface, taste,
+inception-decision and unclassified criteria are **reviewer-judged** (an independent reviewer
+may escalate to the operator); deterministic ones are **reviewer-closeable**. A criterion
+whose audience is agents (stderr wording, gate messages) belongs under `### Agent`.
+
+When writing a criterion: if its Expected clause is a shell check, make it an Agent
+criterion with the command in `## Verification`; keep `[REVIEW]` for genuine judgement.
+
+Project-specific operator-only classes are not configurable yet; a project-declared
+extension point is proposed in framework inception T-3968. Until it is ruled on, such
+criteria are reviewer-judged and the reviewer may escalate.
+
 ### Human AC Format Requirements (T-325)
 When writing `### Human` acceptance criteria, each criterion MUST include:
 - **Steps:** block with numbered, copy-pasteable instructions (no placeholders the human must figure out)

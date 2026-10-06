@@ -1,13 +1,22 @@
 ---
 id: T-3963
-name: "Consumers cannot reach the current AEF review-routing ruleset: their CLAUDE.md template cites 'AC Classification Guidance' that only AEF's own CLAUDE.md has, and there is no verb that classifies one AC (832 duplicates the predicate)"
+name: "Consumers cannot reach the current AEF review-routing ruleset: their CLAUDE.md
+  template cites 'AC Classification Guidance' that only AEF's own CLAUDE.md has, and
+  there is no verb that classifies one AC (832 duplicates the predicate)"
 description: >
-  832 T-1077 (msg d8a168c7): 832 must route every check by the CURRENT AEF ruleset. Canonical source is lib/delegation.py (CLASS_TO_DELEGATION, CARVE_OUTS) + lib/review_policy.py (rungs); fw task delegate T-XXX --dry-run --json classifies a task's open Human ACs. Gaps: (1) lib/templates/claude-project.md lacks the AC Classification Guidance section default.md and consumer docs cite; (2) no stable per-AC entry point (e.g. fw delegation classify --text/--file) so consumers stop re-implementing the predicate; (3) project carve-outs: no extension point (CARVE_OUTS fixed by operator ruling T-3557) — document that, or propose one as an operator decision.
+  832 T-1077 (msg d8a168c7): 832 must route every check by the CURRENT AEF ruleset.
+  Canonical source is lib/delegation.py (CLASS_TO_DELEGATION, CARVE_OUTS) + lib/review_policy.py
+  (rungs); fw task delegate T-XXX --dry-run --json classifies a task's open Human
+  ACs. Gaps: (1) lib/templates/claude-project.md lacks the AC Classification Guidance
+  section default.md and consumer docs cite; (2) no stable per-AC entry point (e.g.
+  fw delegation classify --text/--file) so consumers stop re-implementing the predicate;
+  (3) project carve-outs: no extension point (CARVE_OUTS fixed by operator ruling
+  T-3557) — document that, or propose one as an operator decision.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T19:42:08Z
-last_update: 2026-10-06T19:42:08Z
-date_finished: null
+last_update: 2026-10-06T22:41:01Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,51 +59,54 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-06T19:45:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-06T19:45:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3963: Consumers cannot reach the current AEF review-routing ruleset: their CLAUDE.md template cites 'AC Classification Guidance' that only AEF's own CLAUDE.md has, and there is no verb that classifies one AC (832 duplicates the predicate)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+832 must route each check by the current AEF ruleset and today re-implements the predicate. Three gaps: no AC Classification Guidance in the consumer CLAUDE.md template, no per-criterion entry point, no documented carve-out extension point (now inception T-3968).
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw task classify-ac` classifies criteria given as text (`--text`, `--file`, or stdin), without a task file, using `lib/delegation.classify` (no second predicate); `--workflow-type`, `--render-surface`, `--json` supported; output names class, delegation class and reason per criterion
+- [ ] Bare criterion text (no `## Acceptance Criteria` heading) is accepted and treated as a Human criterion
+- [ ] `lib/templates/claude-project.md` gains an "AC Classification Guidance" section that points at the canonical source (lib/delegation.py), the two verbs, the three operator-only classes, and says project carve-outs are pending T-3968
+- [ ] Tests `tests/unit/test_classify_ac_t3963.py`: CLI output equals `classify()` for a tier-0, a deterministic and a taste criterion; bare text accepted; template section present
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+## Verification
+python3 -m pytest tests/unit/test_classify_ac_t3963.py -q > /tmp/.t3963 2>&1 && grep -q passed /tmp/.t3963 && ! grep -q failed /tmp/.t3963
+grep -q "^### AC Classification Guidance" lib/templates/claude-project.md
+bin/fw vendor self --check
 
 ## Verification
 
@@ -320,3 +332,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3963-consumers-cannot-reach-the-current-aef-r.md
 - **Context:** Initial task creation
+
+### 2026-10-06T22:41:01Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
