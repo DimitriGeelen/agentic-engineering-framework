@@ -1,13 +1,17 @@
 ---
 id: T-3930
-name: "Review ring20-manager's T-2250 orchestration concept v0.2 + round-1 synthesis (5B) as AEF stakeholder-panel member: feedback on section 4 and arc-012/T-1624 fit, plus an AEF reuse list"
+name: "Review ring20-manager's T-2250 orchestration concept v0.2 + round-1 synthesis
+  (5B) as AEF stakeholder-panel member: feedback on section 4 and arc-012/T-1624 fit,
+  plus an AEF reuse list"
 description: >
-  Review ring20-manager's T-2250 orchestration concept v0.2 + round-1 synthesis (5B) as AEF stakeholder-panel member: feedback on section 4 and arc-012/T-1624 fit, plus an AEF reuse list
+  Review ring20-manager's T-2250 orchestration concept v0.2 + round-1 synthesis (5B)
+  as AEF stakeholder-panel member: feedback on section 4 and arc-012/T-1624 fit, plus
+  an AEF reuse list
 
-status: started-work
+status: work-completed
 workflow_type: design
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T09:40:28Z
-last_update: 2026-10-06T09:40:28Z
-date_finished: null
+last_update: 2026-10-06T09:49:13Z
+date_finished: 2026-10-06T09:49:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-06T09:45:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 3
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
+      (workflow:design); effort=8 (lines=276,acs=6)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-06T09:46:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3930: Review ring20-manager's T-2250 orchestration concept v0.2 + round-1 synthesis (5B) as AEF stakeholder-panel member: feedback on section 4 and arc-012/T-1624 fit, plus an AEF reuse list
@@ -65,10 +97,10 @@ Concept: http://192.168.10.122:3000/project/docs--reports--T-2250-orchestration-
 ## Acceptance Criteria
 
 ### Agent
-- [ ] Review written to `docs/reports/T-3930-ring20-orchestration-review.md`: feedback on section 4 (supervisor vs orchestrator split, standing-worker contract) and on 5B, with each point tied to a section number
-- [ ] Fit with AEF arc-012 continuous-run (T-3239, T-3895) and ring20's T-1624 `fw orchestrate` pickup stated, citing the AEF files it rests on
-- [ ] Reuse list: what AEF already ships that the concept should reuse instead of building, each item with a file path that exists in this repo
-- [ ] Feedback sent to ring20-manager on conversation t2250-orchestration-concept (client_msg_id recorded in Updates)
+- [x] Review written to `docs/reports/T-3930-ring20-orchestration-review.md`: feedback on section 4 (supervisor vs orchestrator split, standing-worker contract) and on 5B, with each point tied to a section number
+- [x] Fit with AEF arc-012 continuous-run (T-3239, T-3895) and ring20's T-1624 `fw orchestrate` pickup stated, citing the AEF files it rests on
+- [x] Reuse list: what AEF already ships that the concept should reuse instead of building, each item with a file path that exists in this repo
+- [x] Feedback sent to ring20-manager on conversation t2250-orchestration-concept (client_msg_id recorded in Updates)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -327,3 +359,20 @@ grep -q "arc-012" docs/reports/T-3930-ring20-orchestration-review.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3930-review-ring20-managers-t-2250-orchestrat.md
 - **Context:** Initial task creation
+
+### 2026-10-06T10:05Z — review sent [agent]
+- Ack sent: 35ade76d-7836-4078-8016-05745338ab27. Review sent: 211385c6-0d7a-41cd-b213-07a2d325bea3 (full report text).
+- Drafted by TermLink worker t3930-review (read-only); every reuse path, the T-1624 collision and the termlink.sh cap lines re-verified by the parent before sending.
+- Follow-ups filed: T-3931 (worker-cap race, F5 — against my T-3910), T-3932 (review-round cap inception, F11).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1a45a22a
+- **Timestamp:** 2026-10-06T09:49:16Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-06T09:49:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
