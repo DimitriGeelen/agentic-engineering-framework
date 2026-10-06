@@ -8,12 +8,12 @@ description: >
   logged FAILED. Fix: judge success on the handover commit, push separately/best-effort;
   or budget the push out of the terminator window.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/checkpoint.sh, bin/claude-fw, lib/handover-lock.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T10:48:05Z
-last_update: 2026-10-06T15:36:32Z
-date_finished:
+last_update: 2026-10-06T15:36:35Z
+date_finished: 2026-10-06T15:36:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -381,3 +381,15 @@ sites; pinned by a test where the fake fw commits and then hangs past the bound.
 ### 2026-10-06T15:31:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-249c317f
+- **Timestamp:** 2026-10-06T15:36:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-06T15:36:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

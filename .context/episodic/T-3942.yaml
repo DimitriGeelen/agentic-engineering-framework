@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3942: Terminator handover (T-3918) logs FAILED when the handover commit landed but the push outran FW_TERMINATOR_HANDOVER_TIMEOUT (slow OneDev/NFS push)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-06T15:37:02Z
+# ============================================================================
+
+task_id: T-3942
+task_name: "Terminator handover (T-3918) logs FAILED when the handover commit landed but the push outran FW_TERMINATOR_HANDOVER_TIMEOUT (slow OneDev/NFS push)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-06T10:48:05Z
+completed: 2026-10-06T15:36:35Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-06T17:36:21+02:00
+last_commit: 2026-10-06T17:36:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  a handover is judged by whether its COMMIT landed, not by the exit of a timed run that was cut off mid-push — checkpoint.sh now writes the auto-restart signal in that case (832 G-083) and the claude-fw terminator logs it as generated (ring20 01a8c11d). One predicate, fw_handover_landed. Found: installed claude-fw copies cannot load lib/ (T-3954, the T-3890 guard was never active there). vendor-sync checkpoint.sh, claude-fw, handover-lock.sh
+
+# Key outcomes
+outcomes:
+  - 'One predicate `fw_handover_landed <root> <since_epoch>` (lib/handover-lock.sh): a commit touching .context/handovers/LATEST.md at or after the run''s start'
+  - 'checkpoint.sh budget-critical auto-handover: when the timed run fails but a handover commit landed, it is logged "Handover generated … (push did not finish)" and the .restart-requested signal IS written (832 G-083); a run with no landed commit is still FAILED with no signal'
+  - 'claude-fw terminator (T-3918): same predicate — a landed commit with an unfinished push is logged as generated, not FAILED (ring20-manager 01a8c11d). The predicate is loaded from the PROJECT''s framework (beside the resolved fw), because an installed claude-fw copy has no lib/ next to it — that finding is T-3954'
+  - 'Regression tests: predicate (landed after start / landed before start / none), and both call sites use it; existing t3917/t3918 tests green (19/19; handover_push_timeout.bats'' 3 reds are pre-existing and baselined)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/checkpoint.sh'
+  - '.agentic-framework/bin/claude-fw'
+  - '.agentic-framework/lib/handover-lock.sh'
+  - 'agents/context/checkpoint.sh'
+  - 'bin/claude-fw'
+  - 'lib/handover-lock.sh'
+  - '.tasks/active/T-3942-terminator-handover-t-3918-logs-failed-w.md'
+  - '.tasks/active/T-3954-installed-claude-fw-copies-silently-disa.md'
+  - 'tests/unit/t3942_handover_landed.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T17:36:21'
+    action: 'T-3942: a handover is judged by whether its COMMIT landed, not by the exit of a timed run that was cut off mid-push — checkpoint.sh now writes the auto-restart signal in that case (832 G-083) and the claude-fw terminator logs it as generated (ring20 01a8c11d). One predicate, fw_handover_landed. Found: installed claude-fw copies cannot load lib/ (T-3954, the T-3890 guard was never active there)'
+  - time: '2026-10-06T17:36:32'
+    action: 'T-3942: vendor-sync checkpoint.sh, claude-fw, handover-lock.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 288 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 288
+  commits: 2
+  files_changed: 9
+  lines_added: 497
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3942-terminator-handover-t-3918-logs-failed-w.md
+generated_by: context-agent-hybrid
