@@ -1,10 +1,21 @@
 ---
 id: T-3954
-name: "Installed claude-fw copies silently disable the T-3890 duplicate-conversation guard (and two more lib lookups): libs are resolved beside the script (/usr/bin/../lib), which a copy does not have"
+name: "Installed claude-fw copies silently disable the T-3890 duplicate-conversation
+  guard (and two more lib lookups): libs are resolved beside the script (/usr/bin/../lib),
+  which a copy does not have"
 description: >
-  Found 2026-10-06 (T-3942): bin/claude-fw loads lib/conversation-holder.sh (line ~758, T-3890 guard), lib/termlink-runtime.sh (~97) and fw (~700) via $(dirname $(readlink -f BASH_SOURCE))/../lib. The operator's launchers are COPIES in /usr/bin and ~/.local/bin, so the lookup resolves to /usr/lib/... and ~/.local/lib/... — missing — and the guard returns 0 ('no holder'). The guard that would have refused the 23:11 duplicate conversation (G-111) has never been active for an installed copy, refreshed or not. Fix: resolve libs from the project's framework (PWD/.agentic-framework, or PWD when it is the framework repo, or FRAMEWORK_ROOT), and make a missing lib a visible WARNING instead of a silent pass. Test from an installed copy outside the repo. Severity high: it removes a safety guard silently.
+  Found 2026-10-06 (T-3942): bin/claude-fw loads lib/conversation-holder.sh (line
+  ~758, T-3890 guard), lib/termlink-runtime.sh (~97) and fw (~700) via $(dirname $(readlink
+  -f BASH_SOURCE))/../lib. The operator's launchers are COPIES in /usr/bin and ~/.local/bin,
+  so the lookup resolves to /usr/lib/... and ~/.local/lib/... — missing — and the
+  guard returns 0 ('no holder'). The guard that would have refused the 23:11 duplicate
+  conversation (G-111) has never been active for an installed copy, refreshed or not.
+  Fix: resolve libs from the project's framework (PWD/.agentic-framework, or PWD when
+  it is the framework repo, or FRAMEWORK_ROOT), and make a missing lib a visible WARNING
+  instead of a silent pass. Test from an installed copy outside the repo. Severity
+  high: it removes a safety guard silently.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T15:35:15Z
-last_update: 2026-10-06T15:35:15Z
-date_finished: null
+last_update: 2026-10-06T15:56:01Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-06T15:37:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-06T15:45:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=273,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3954: Installed claude-fw copies silently disable the T-3890 duplicate-conversation guard (and two more lib lookups): libs are resolved beside the script (/usr/bin/../lib), which a copy does not have
@@ -62,8 +101,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] claude-fw resolves its framework (lib/ + bin/fw) by searching beside the script, then `$PWD/.agentic-framework`, then `$PWD` (framework repo), then FRAMEWORK_ROOT; the conversation guard, the termlink-runtime lookup and the sidecar fw lookup all use it
+- [x] A guard whose library cannot be found prints a WARNING naming what is off, instead of passing silently
+- [x] Regression test: a COPY of claude-fw placed outside the repo, run in a project that has the conversation-holder lib, finds it (control: the old beside-the-script lookup would not); and with no framework anywhere, the WARNING is printed (t3954, 4 tests; all 25 claude-fw test files green after updating the t3779/t3890 text pins to the new lookup)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +137,9 @@ date_finished: null
 -->
 
 ## Verification
+
+bats tests/unit/t3954_claude_fw_installed_copy.bats
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -240,6 +283,26 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** 2026-10-05 23:11 the operator's `claude-fw -c` started a second process on a
+conversation already live in a fleet pane; the T-3890 guard, committed five hours earlier and
+present in the refreshed launcher copies, did not refuse it. 13 h of duplicate session, 25
+peer messages misrouted (G-111).
+
+**Root cause:** claude-fw located lib/ relative to its OWN path
+(`$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../lib/...`). The launchers in use are
+copies in /usr/bin and ~/.local/bin, so the lookup resolved to /usr/lib/… and ~/.local/lib/…,
+which do not exist, and the guard's `[ -f "$lib" ] || return 0` turned "cannot load" into
+"no duplicate". Two more lookups (termlink-runtime, the sidecar's fw) shared the flaw.
+
+**Why structurally allowed:** every test of claude-fw ran the repo's bin/claude-fw, where
+"beside the script" IS the framework; no test ran an installed copy. The missing-lib branch
+was written as fail-open and silent, so the failure produced no signal at all.
+
+**Prevention:** one resolver (`_cfw_framework_dir`) searches the script's directory, the
+project's .agentic-framework, the framework repo and FRAMEWORK_ROOT; a guard that cannot load
+WARNS; t3954 runs the functions from outside the repo and pins that no other beside-the-script
+lookup remains.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -320,3 +383,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3954-installed-claude-fw-copies-silently-disa.md
 - **Context:** Initial task creation
+
+### 2026-10-06T15:37:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

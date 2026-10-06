@@ -72,6 +72,8 @@ _live_claude() { bash -c 'exec -a claude sleep 60' & HOLDER=$!; sleep 0.2; }
     [ -n "$g" ] && [ "$g" -lt "$l" ] && [ "$g" -lt "$t" ]
     # the guard function itself: refuse, then override
     eval "$(awk '/^_conversation_guard\(\) \{/{p=1} p{print} p&&/^\}/{exit}' "$f")"
+    # T-3954: the guard finds its lib through _cfw_lib / _cfw_framework_dir
+    eval "$(awk '/^_cfw_framework_dir\(\) \{/,/^}/; /^_cfw_lib\(\) \{/,/^}/' "$f")"
     _conv c1; _live_claude; _record c1 "$HOLDER"
     cd "$PROJ"; export PROJECT_ROOT="$PROJ"
     CLAUDE_ARGS=(-c)

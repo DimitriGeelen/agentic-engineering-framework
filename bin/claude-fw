@@ -83,6 +83,30 @@ _fw_project_tag() {
     printf 'fw-project=%s' "$(printf '%s' "$d" | sha256sum | cut -c1-16)"
 }
 
+# T-3954: where this wrapper's framework lives. claude-fw is usually run as an installed
+# COPY (/usr/bin, ~/.local/bin), and a copy has no lib/ beside it: every
+# "$(dirname "$(readlink -f "$0")")/../lib/x" lookup resolved to /usr/lib/x, found nothing,
+# and the feature behind it quietly switched off — including the T-3890 guard that refuses
+# a second copy of a live conversation (G-111: 13 h of duplicate session, 25 messages
+# misrouted). Search beside the script first (repo bin/claude-fw), then the project being
+# launched in, then FRAMEWORK_ROOT. Prints the directory holding lib/ and bin/fw, or nothing.
+_cfw_framework_dir() {
+    local here d
+    here="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.."
+    for d in "$here" "$PWD/.agentic-framework" "$PWD" "${FRAMEWORK_ROOT:-}"; do
+        [ -n "$d" ] && [ -f "$d/lib/conversation-holder.sh" ] && [ -x "$d/bin/fw" ] \
+            && { (cd "$d" && pwd); return 0; }
+    done
+    return 0
+}
+
+# _cfw_lib <file> — path of lib/<file> in that framework, or nothing.
+_cfw_lib() {
+    local d; d="$(_cfw_framework_dir)"
+    [ -n "$d" ] && [ -f "$d/lib/$1" ] && echo "$d/lib/$1"
+    return 0
+}
+
 termlink_start() {
     if [ "$TERMLINK_ENABLED" != "1" ]; then return; fi
     if ! command -v termlink >/dev/null 2>&1; then
@@ -94,7 +118,7 @@ termlink_start() {
     # T-3779: a launcher that runs us under `env -i` drops TERMLINK_RUNTIME_DIR,
     # and the session would register where no hub listens (invisible to peers).
     local _tlrt _tlrt_lib
-    _tlrt_lib="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../lib/termlink-runtime.sh"
+    _tlrt_lib="$(_cfw_lib termlink-runtime.sh)"   # T-3954: not beside an installed copy
     if [ -f "$_tlrt_lib" ]; then
         # shellcheck source=/dev/null
         . "$_tlrt_lib"
@@ -708,7 +732,7 @@ termlink_start
 sidecar_start() {
     [ "${CLAUDE_FW_NO_SIDECAR:-0}" = "1" ] && return 0
     local _fw
-    _fw="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)/fw"
+    _fw="$(_cfw_framework_dir)/bin/fw"   # T-3954: not beside an installed copy
     [ -x "$_fw" ] || return 0
     local _out _tick
     if _out=$("$_fw" sidecar start --quiet --json 2>&1); then
@@ -766,8 +790,12 @@ _name_fresh_relaunch() {
 # conversation twice for ~2h45, and both executed one runme step).
 _conversation_guard() {
     local lib _id _holder
-    lib="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/../lib/conversation-holder.sh"
-    [ -f "$lib" ] || return 0
+    lib="$(_cfw_lib conversation-holder.sh)"
+    # T-3954: never pass silently — a guard that cannot load is a guard that is off.
+    if [ -z "$lib" ]; then
+        echo "claude-fw: WARNING: duplicate-conversation guard unavailable (no framework lib found for $PWD) — a second copy of a live conversation is NOT refused (T-3890)" >&2
+        return 0
+    fi
     # shellcheck source=/dev/null
     . "$lib"
     _id=$(fw_conversation_target "$PWD" "${CLAUDE_ARGS[@]}")

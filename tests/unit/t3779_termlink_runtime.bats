@@ -91,7 +91,7 @@ _hub() {   # _hub <dir> live|dead
 
 @test "t3779: claude-fw resolves before spawning and exports only on 'supplied'" {
     local f="$FWROOT/bin/claude-fw"
-    grep -q 'lib/termlink-runtime.sh' "$f"
+    grep -q 'termlink-runtime.sh' "$f"   # T-3954: via _cfw_lib, not beside the script
     # the resolve happens before the spawn in termlink_start
     local r s
     r=$(grep -n '_tlrt=$(fw_termlink_runtime_resolve)' "$f" | cut -d: -f1)
