@@ -5379,7 +5379,7 @@ concerns:
     own lock was stale since 2026-06-09 (~4 months); ring20''s ~163 days. (RC-3) claude-fw prints "Handover
     committed" on restart unconditionally.'
   severity: high
-  status: open
+  status: mitigated
   detected_in: T-3917
   observed: '2026-10-06'
   reported_by: ring20-manager (msg b60df5e6, conversation ring20-t2248-restart-no-handover)
@@ -5387,7 +5387,11 @@ concerns:
     the last manual handover
   detection_gap: The lock is gitignored and no doctor/audit check reads its age; the restart path reports
     success whether or not a handover was written. Silent for months on two hosts.
-  what_remains: RC-2 T-3917; RC-1 and RC-3 filed as their own tasks.
+  what_remains: 'All three causes fixed on bleeding-edge 2026-10-06 — RC-2 T-3917 (epoch+pid lock, shared
+    staleness predicate, trapped subshell, doctor WARN; AEF''s own 118-day stale lock cleared), RC-1 T-3918
+    (claude-fw terminator writes a bounded handover before ending a budget-critical session, logged and
+    surfaced by doctor 5d), RC-3 T-3919 (restart banner reads the evidence). Mitigated, not resolved: not yet
+    released, and no live budget-critical restart has run on the fix.'
   related_tasks:
   - T-3917
   - T-2403

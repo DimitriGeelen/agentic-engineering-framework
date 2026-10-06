@@ -4,12 +4,12 @@ name: "Budget-critical restart kills the session before any handover exists: bud
 description: >
   Budget-critical restart kills the session before any handover exists: budget-gate writes .restart-requested on the first critical block (T-2403, justified by 'claude -c preserves the conversation', untrue since T-3166 fresh restarts) and the terminator SIGTERMs within ~5 s — the terminator must ensure a handover newer than the signal (bounded run of fw handover --commit) before killing (RC-1 of ring20-manager's T-2248, G-110)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-007, bin/claude-fw, bin/fw, tests/unit/t3918_terminator_handover.bats]
 related_tasks: []
 origin: {kind: "peer", source: "proxmox-ring20-management", ref: "msg b60df5e6"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -39,8 +39,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "msg b60df5e6"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T07:05:37Z
-last_update: 2026-10-06T07:08:33Z
-date_finished: null
+last_update: 2026-10-06T07:08:35Z
+date_finished: 2026-10-06T07:08:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -353,3 +353,15 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3918-budget-critical-restart-kills-the-sessio.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fd4f64f9
+- **Timestamp:** 2026-10-06T07:08:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-06T07:08:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

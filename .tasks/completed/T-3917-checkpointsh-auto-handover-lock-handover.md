@@ -10,12 +10,12 @@ description: >
   is silently skipped (ours stale since 2026-06-09, ring20-manager's ~163 days) —
   RC-2 of ring20 T-2248
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/checkpoint.sh, bin/fw, lib/handover-lock.sh, tests/unit/t3917_handover_lock.bats]
 related_tasks: []
 origin: {kind: "peer", source: "proxmox-ring20-management", ref: "msg b60df5e6"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -45,8 +45,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "msg b60df5e6"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T06:54:30Z
-last_update: 2026-10-06T07:02:21Z
-date_finished:
+last_update: 2026-10-06T07:03:58Z
+date_finished: 2026-10-06T07:03:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -399,3 +399,15 @@ The other two causes of ring20's loss are RC-1 (the restart signal written befor
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3917-checkpointsh-auto-handover-lock-handover.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-aa2bf115
+- **Timestamp:** 2026-10-06T07:04:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-06T07:03:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

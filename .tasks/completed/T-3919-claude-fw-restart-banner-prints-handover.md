@@ -4,12 +4,12 @@ name: "claude-fw restart banner prints 'Handover committed' unconditionally — 
 description: >
   claude-fw restart banner prints 'Handover committed' unconditionally — say so only when LATEST.md is at least as new as the restart signal, otherwise WARN with the handover's age (RC-3 of ring20-manager's T-2248, G-110)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/claude-fw, tests/unit/t3919_restart_banner.bats]
 related_tasks: []
 origin: {kind: "peer", source: "proxmox-ring20-management", ref: "msg b60df5e6"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -39,8 +39,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "msg b60df5e6"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T07:09:06Z
-last_update: 2026-10-06T07:11:15Z
-date_finished: null
+last_update: 2026-10-06T07:11:16Z
+date_finished: 2026-10-06T07:11:16Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -339,3 +339,15 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3919-claude-fw-restart-banner-prints-handover.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-45e3aec9
+- **Timestamp:** 2026-10-06T07:11:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-06T07:11:16Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

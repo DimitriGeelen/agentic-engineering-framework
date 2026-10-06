@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3918: Budget-critical restart kills the session before any handover exists: budget-gate writes .restart-requested on the first critical block (T-2403, justified by 'claude -c preserves the conversation', untrue since T-3166 fresh restarts) and the terminator SIGTERMs within ~5 s — the terminator must ensure a handover newer than the signal (bounded run of fw handover --commit) before killing (RC-1 of ring20-manager's T-2248, G-110)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-06T07:08:57Z
+# ============================================================================
+
+task_id: T-3918
+task_name: "Budget-critical restart kills the session before any handover exists: budget-gate writes .restart-requested on the first critical block (T-2403, justified by 'claude -c preserves the conversation', untrue since T-3166 fresh restarts) and the terminator SIGTERMs within ~5 s — the terminator must ensure a handover newer than the signal (bounded run of fw handover --commit) before killing (RC-1 of ring20-manager's T-2248, G-110)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-06T07:05:37Z
+completed: 2026-10-06T07:08:35Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-06T09:08:33+02:00
+last_commit: 2026-10-06T09:08:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the claude-fw terminator writes a handover before it ends a budget-critical session (bounded, logged to .compact-log, surfaced by doctor 5d) — the restart no longer resumes from a stale LATEST.md (RC-1 of ring20-manager's T-2248; G-110)
+
+# Key outcomes
+outcomes:
+  - 'Before it SIGTERMs claude on a fresh restart signal, `bin/claude-fw` `_terminator_watch` calls `_ensure_handover_before_kill <project_root> <signal_mtime>`.'
+  - 'The `budget-gate.sh` comment on `_write_restart_signal` no longer claims `claude -c` preserves the conversation. It names the terminator handover (T-3918) as what keeps the restart from losing state.'
+  - 'Tests (bats) on the extracted functions, with a fake `fw` and a fake claude child:'
+  - '`claude_fw_restart_mode.bats` and the other claude-fw suites stay green (19/19). `fw doctor` check 5d now also reads `[terminator]` lines, so a failed pre-restart handover is surfaced, not just logged.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/budget-gate.sh'
+  - '.agentic-framework/bin/claude-fw'
+  - '.agentic-framework/bin/fw'
+  - 'agents/context/budget-gate.sh'
+  - 'bin/claude-fw'
+  - 'bin/fw'
+  - '.fabric/components/tests-unit-t3918_terminator_handover.yaml'
+  - '.tasks/active/T-3918-budget-critical-restart-kills-the-sessio.md'
+  - '.tasks/completed/T-3917-checkpointsh-auto-handover-lock-handover.md'
+  - 'tests/unit/t3918_terminator_handover.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T09:08:33'
+    action: 'T-3918: the claude-fw terminator writes a handover before it ends a budget-critical session (bounded, logged to .compact-log, surfaced by doctor 5d) — the restart no longer resumes from a stale LATEST.md (RC-1 of ring20-manager''s T-2248; G-110)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 10
+  lines_added: 573
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3918-budget-critical-restart-kills-the-sessio.md
+generated_by: context-agent-hybrid

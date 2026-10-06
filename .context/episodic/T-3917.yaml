@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3917: checkpoint.sh auto-handover lock .handover-in-progress has no TTL and no EXIT trap — any kill mid-handover strands it and every later budget-critical auto-handover is silently skipped (ours stale since 2026-06-09, ring20-manager's ~163 days) — RC-2 of ring20 T-2248
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-06T07:04:50Z
+# ============================================================================
+
+task_id: T-3917
+task_name: "checkpoint.sh auto-handover lock .handover-in-progress has no TTL and no EXIT trap — any kill mid-handover strands it and every later budget-critical auto-handover is silently skipped (ours stale since 2026-06-09, ring20-manager's ~163 days) — RC-2 of ring20 T-2248"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-06T06:54:30Z
+completed: 2026-10-06T07:03:58Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-06T09:02:21+02:00
+last_commit: 2026-10-06T09:02:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the auto-handover lock can no longer disable the budget-critical handover forever — epoch+pid lock, one staleness predicate (lib/handover-lock.sh) shared by checkpoint.sh and fw doctor, trapped handover subshell; our own lock was stale 118 days (RC-2 of ring20-manager's T-2248; G-110)
+
+# Key outcomes
+outcomes:
+  - 'The lock carries its creation time (epoch seconds) and the writer''s PID.'
+  - 'The lock is removed by an EXIT trap set in the subshell that runs the handover, so a SIGTERM or timeout kill no longer strands it. The normal-path `rm` stays.'
+  - '`fw doctor` WARNs on a stale `.handover-in-progress`, giving its age and the fix. The check uses the same staleness predicate as checkpoint.sh, one shared function (`lib/handover-lock.sh`).'
+  - 'Tests (bats, `tests/unit/t3917_handover_lock.bats`, 9/9):'
+  - 'Our own stale lock (2026-06-09):'
+  - 'G-110 registered in concerns.yaml.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/checkpoint.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/handover-lock.sh'
+  - 'agents/context/checkpoint.sh'
+  - 'bin/fw'
+  - '.context/project/concerns.yaml'
+  - '.fabric/components/lib-handover-lock.yaml'
+  - '.fabric/components/tests-unit-t3917_handover_lock.yaml'
+  - 'lib/handover-lock.sh'
+  - '.tasks/active/T-3917-checkpointsh-auto-handover-lock-handover.md'
+  - 'tests/unit/t3917_handover_lock.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T09:02:21'
+    action: 'T-3917: the auto-handover lock can no longer disable the budget-critical handover forever — epoch+pid lock, one staleness predicate (lib/handover-lock.sh) shared by checkpoint.sh and fw doctor, trapped handover subshell; our own lock was stale 118 days (RC-2 of ring20-manager''s T-2248; G-110)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 11
+  lines_added: 740
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3917-checkpointsh-auto-handover-lock-handover.md
+generated_by: context-agent-hybrid

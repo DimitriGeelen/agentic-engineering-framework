@@ -8,12 +8,12 @@ description: >
   T-3326 anti-pattern (mutable-corpus anchor). Found in T-3911 release attempt: pre-push
   ratchet FAILed on 8 new reds, this one caused by a legitimate operator arc close.
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/arc_lifecycle_state_machine.bats]
 related_tasks: []
 origin: {kind: "agent"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -43,8 +43,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T06:29:45Z
-last_update: 2026-10-06T06:42:37Z
-date_finished:
+last_update: 2026-10-06T06:42:38Z
+date_finished: 2026-10-06T06:42:38Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -353,3 +353,15 @@ test "$(grep -c '# skip' /tmp/.t3913)" -eq 0
 
 ### 2026-10-06T06:41:44Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a44ebbfa
+- **Timestamp:** 2026-10-06T06:42:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-06T06:42:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
