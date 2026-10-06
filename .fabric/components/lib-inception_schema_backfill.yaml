@@ -1,0 +1,21 @@
+id: lib/inception_schema_backfill.py
+name: inception_schema_backfill
+type: script
+subsystem: framework-core
+location: lib/inception_schema_backfill.py
+tags: []
+
+purpose: "T-3948: add the T-2188 inception schema fields to inceptions that lack them."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-06
+created_by: unknown

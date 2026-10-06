@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3948: Inception schema gate deadlocks consumers after upgrade: fw upgrade installs the T-2188 hook but never backfills target_blast_radius/voi_score on existing inceptions (AEF did that only for its own corpus, T-2193) — and the gate also blocks the repairing edit
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-06T13:18:58Z
+# ============================================================================
+
+task_id: T-3948
+task_name: "Inception schema gate deadlocks consumers after upgrade: fw upgrade installs the T-2188 hook but never backfills target_blast_radius/voi_score on existing inceptions (AEF did that only for its own corpus, T-2193) — and the gate also blocks the repairing edit"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-06T12:52:08Z
+completed: 2026-10-06T13:15:53Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-06T15:15:32+02:00
+last_commit: 2026-10-06T15:15:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  upgraded consumers no longer deadlock on the inception schema gate — fw upgrade backfills target_blast_radius/voi_score on existing inceptions (AEF did this only for its own corpus in T-2193), --type inception adds them, and the gate judges the post-edit file so a repairing edit passes. Real fw init + fw upgrade regression test. vendor-sync gate, backfill, upgrade step, update-task
+
+# Key outcomes
+outcomes:
+  - 'The gate validates the frontmatter as it will be AFTER the edit (Write content; Edit with old/new_string applied): an edit that adds the missing fields passes; an edit that leaves them missing is still blocked'
+  - '`lib/inception_schema_backfill.py` adds `target_blast_radius: 3` / `voi_score: 0.5` (template defaults) after `workflow_type: inception` on every inception missing them; `--dry-run` lists, a run reports each file; idempotent'
+  - '`fw upgrade` runs the backfill on the consumer''s .tasks (dry-run reports WOULD BACKFILL N), and `fw task update --type inception` backfills the converted task'
+  - 'Regression tests: gate allows the repairing edit, blocks a non-repairing edit (control); backfill adds fields once and is a no-op the second time; an upgraded fixture consumer with an old inception ends with both fields (t3948, 9 tests, incl. a real fw init + fw upgrade; existing check_inception_schema.bats and upgrade_fresh_machine_simulation.bats (16) green)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-inception-schema.py'
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/lib/inception_schema_backfill.py'
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'agents/context/check-inception-schema.py'
+  - 'agents/task-create/update-task.sh'
+  - 'lib/inception_schema_backfill.py'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-3948-inception-schema-gate-deadlocks-consumer.md'
+  - 'tests/unit/t3948_inception_schema_upgrade.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T15:15:32'
+    action: 'T-3948: upgraded consumers no longer deadlock on the inception schema gate — fw upgrade backfills target_blast_radius/voi_score on existing inceptions (AEF did this only for its own corpus in T-2193), --type inception adds them, and the gate judges the post-edit file so a repairing edit passes. Real fw init + fw upgrade regression test'
+  - time: '2026-10-06T15:15:51'
+    action: 'T-3948: vendor-sync gate, backfill, upgrade step, update-task'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 23 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 23
+  commits: 2
+  files_changed: 10
+  lines_added: 806
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3948-inception-schema-gate-deadlocks-consumer.md
+generated_by: context-agent-hybrid

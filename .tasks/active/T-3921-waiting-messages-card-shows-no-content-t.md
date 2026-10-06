@@ -1,15 +1,20 @@
 ---
 id: T-3921
-name: "Waiting-messages card shows no content: the operator is asked to Drop or Recover a peer message without seeing what it says — show sender, a one-line summary and the full text (as untrusted peer data), and say plainly what each button does"
+name: "Waiting-messages card shows no content: the operator is asked to Drop or Recover
+  a peer message without seeing what it says — show sender, a one-line summary and
+  the full text (as untrusted peer data), and say plainly what each button does"
 description: >
-  Waiting-messages card shows no content: the operator is asked to Drop or Recover a peer message without seeing what it says — show sender, a one-line summary and the full text (as untrusted peer data), and say plainly what each button does
+  Waiting-messages card shows no content: the operator is asked to Drop or Recover
+  a peer message without seeing what it says — show sender, a one-line summary and
+  the full text (as untrusted peer data), and say plainly what each button does
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [lib/sidecar/waiting.py, tests/unit/test_sidecar_waiting_t3782.py, 
+      web/templates/_approvals_content.html]
 related_tasks: []
 origin: {kind: "operator", ref: "2026-10-06 'I have no idea what the message is about'"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -39,8 +44,8 @@ origin: {kind: "operator", ref: "2026-10-06 'I have no idea what the message is 
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T08:03:58Z
-last_update: 2026-10-06T08:09:59Z
-date_finished: null
+last_update: '2026-10-06T08:15:21Z'
+date_finished: 2026-10-06T08:10:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +56,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-06T08:15:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (3-components); tier=2 (workflow:build); effort=8 
+      (lines=326,acs=8)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3921: Waiting-messages card shows no content: the operator is asked to Drop or Recover a peer message without seeing what it says — show sender, a one-line summary and the full text (as untrusted peer data), and say plainly what each button does
@@ -366,3 +381,15 @@ The peer text goes only to your Watchtower page, not into the handover an agent 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3921-waiting-messages-card-shows-no-content-t.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-34a6b413
+- **Timestamp:** 2026-10-06T08:10:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-06T08:10:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

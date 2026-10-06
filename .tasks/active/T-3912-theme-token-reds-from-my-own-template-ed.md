@@ -9,12 +9,12 @@ description: >
   in _approvals_content.html / inception_detail.html) and T-3893/T-3894's arc_close.html
   (#c62828) hard-code hexes the token tests forbid — blocks the v1.8.4 release push
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/templates/_approvals_content.html, web/templates/arc_close.html, web/templates/inception_detail.html]
 related_tasks: []
 origin: {kind: "agent"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -44,8 +44,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T06:26:57Z
-last_update: 2026-10-06T06:45:20Z
-date_finished:
+last_update: 2026-10-06T06:45:37Z
+date_finished: 2026-10-06T06:45:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -347,6 +347,15 @@ bin/fw watchtower current
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** Three colour fallbacks I hard-coded tonight broke the theme-token rule and turned three unit tests red, which blocked the v1.8.4 release push. The fix removes only the hex fallback and keeps the theme token (`--wt-warn`, `--pico-del-color`), which both pages already define. The visual result should be identical; your review is the check that the token is defined everywhere these elements render.
+
+**Evidence:**
+- The three named token tests and the T-3896 readiness tests pass.
+- Watchtower was restarted and is current.
+- The only remaining hex failure in those files (`arc_detail.html`, T-3429) predates tonight and is already baselined.
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -374,3 +383,15 @@ bin/fw watchtower current
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3912-theme-token-reds-from-my-own-template-ed.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f3ea0bc0
+- **Timestamp:** 2026-10-06T06:45:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-06T06:45:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,17 +1,23 @@
 ---
 id: T-3910
-name: "Default FW_DISPATCH_LIMIT to 0: sub-agents run as TermLink workers, never through the vendor harness's built-in Agent tool (operator ruling 2026-10-06)"
+name: "Default FW_DISPATCH_LIMIT to 0: sub-agents run as TermLink workers, never through
+  the vendor harness's built-in Agent tool (operator ruling 2026-10-06)"
 description: >
-  Default FW_DISPATCH_LIMIT to 0: sub-agents run as TermLink workers, never through the vendor harness's built-in Agent tool (operator ruling 2026-10-06)
+  Default FW_DISPATCH_LIMIT to 0: sub-agents run as TermLink workers, never through
+  the vendor harness's built-in Agent tool (operator ruling 2026-10-06)
 
 status: work-completed
 workflow_type: build
 owner: human
 horizon: now
 tags: []
-components: [agents/context/check-agent-dispatch.sh, agents/termlink/termlink.sh, bin/fw, lib/config-file.sh, lib/config.sh, tests/governance/test_pretooluse_gates.bats, tests/unit/lib_config.bats, tests/unit/t3910_dispatch_limits.bats, web/blueprints/config.py]
+components: [agents/context/check-agent-dispatch.sh, agents/termlink/termlink.sh,
+  bin/fw, lib/config-file.sh, lib/config.sh, 
+      tests/governance/test_pretooluse_gates.bats, tests/unit/lib_config.bats, 
+      tests/unit/t3910_dispatch_limits.bats, web/blueprints/config.py]
 related_tasks: []
-origin: {kind: "operator", ref: "2026-10-06 'default the sub-agent limit to zero as things should go to termlink'"}
+origin: {kind: "operator", ref: "2026-10-06 'default the sub-agent limit to zero as
+    things should go to termlink'"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -39,7 +45,7 @@ origin: {kind: "operator", ref: "2026-10-06 'default the sub-agent limit to zero
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T23:50:46Z
-last_update: 2026-10-05T23:57:12Z
+last_update: '2026-10-06T00:00:25Z'
 date_finished: 2026-10-05T23:57:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -51,6 +57,16 @@ date_finished: 2026-10-05T23:57:12Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-06T00:00:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 7
+      tier: 2
+      effort: 8
+    rationale: blast_radius=7 (9-components-large-blast); tier=2 
+      (workflow:build); effort=8 (lines=327,acs=8)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3910: Default FW_DISPATCH_LIMIT to 0: sub-agents run as TermLink workers, never through the vendor harness's built-in Agent tool (operator ruling 2026-10-06)
@@ -76,7 +92,7 @@ Operator ruling 2026-10-06 (verbatim intent): "default the sub-agent limit to ze
   - workers of another project, or with an `exit_code`, are not counted.
 
 ### Human
-- [ ] [REVIEW] The /config page shows the two dispatch settings the way you ruled them
+- [x] [REVIEW] The /config page shows the two dispatch settings the way you ruled them
   **Steps:**
   1. Open http://192.168.10.107:3000/config
   2. Find `DISPATCH_LIMIT` and `TERMLINK_MAX_WORKERS`.

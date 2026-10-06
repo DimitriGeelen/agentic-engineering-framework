@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3949: fw reviewer judge --criterion N: self-recording seats record against the brief's LOCAL criterion number, not the real Human AC (832 7616ce48, data integrity)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-06T13:19:50Z
+# ============================================================================
+
+task_id: T-3949
+task_name: "fw reviewer judge --criterion N: self-recording seats record against the brief's LOCAL criterion number, not the real Human AC (832 7616ce48, data integrity)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-06T12:52:50Z
+completed: 2026-10-06T13:19:28Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-06T15:13:49+02:00
+last_commit: 2026-10-06T15:14:31+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  reviewer judge — the brief maps each criterion to its REAL Human AC number, and verdict record refuses an AC the dispatch's brief did not name (832: --criterion 3 filed its verdict on AC#1; a green would have ticked the wrong criterion). vendor-sync verdict_ledger.py + judge_cli.py
+
+# Key outcomes
+outcomes:
+  - 'The judge brief names each criterion''s REAL Human AC number in the record instructions (per-criterion `--ac <real>` mapping; `<N>` defined as the Human AC number, never the local position)'
+  - '`verdict record` refuses an `--ac` that is not among the criteria named in the dispatch''s registered brief.md (refusal class `criterion-not-in-dispatch`, written to the refusal ledger)'
+  - 'Regression tests: a `--criterion 3` brief maps Criterion 1 to `--ac 3`; recording `--ac 1` against that dispatch is refused; control: `--ac 3` is accepted'
+  - 'Reviewer/ledger test files green (670 passed); vendored copy synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/verdict_ledger.py'
+  - '.tasks/active/T-3949-fw-reviewer-judge---criterion-n-self-rec.md'
+  - 'tests/unit/t3949_judge_real_ac_number_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T15:13:49'
+    action: 'T-3949: reviewer judge — the brief maps each criterion to its REAL Human AC number, and verdict record refuses an AC the dispatch''s brief did not name (832: --criterion 3 filed its verdict on AC#1; a green would have ticked the wrong criterion)'
+  - time: '2026-10-06T15:14:31'
+    action: 'T-3949: vendor-sync verdict_ledger.py + judge_cli.py'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 26
+  commits: 2
+  files_changed: 6
+  lines_added: 502
+  lines_removed: 1
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3949-fw-reviewer-judge---criterion-n-self-rec.md
+generated_by: context-agent-hybrid
