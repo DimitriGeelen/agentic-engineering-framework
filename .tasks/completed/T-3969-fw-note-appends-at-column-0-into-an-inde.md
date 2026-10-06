@@ -4,12 +4,12 @@ name: "fw note appends at column 0 into an indented inbox.yaml list, breaking th
 description: >
   fw note appends at column 0 into an indented inbox.yaml list, breaking the file and every push (ring20)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/observe/observe.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T22:17:17Z
-last_update: 2026-10-06T22:17:17Z
-date_finished: null
+last_update: 2026-10-06T22:20:43Z
+date_finished: 2026-10-06T22:20:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -61,11 +61,11 @@ ring20 (twice, 1.8.3 and 1.8.5): `fw note` appends `- id:` at column 0 while the
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw note` on an inbox whose list is indented under `observations:` appends at the same indentation and the file still parses
-- [ ] `fw note` on a column-0 inbox (the shape AEF itself writes) is unchanged
-- [ ] If the file would not parse after the append, `fw note` restores the previous file and exits non-zero (never leaves a broken inbox)
-- [ ] `fw note dismiss` finds an observation in an indented inbox
-- [ ] Regression test `tests/unit/t3969_note_indented_inbox.bats` covers all four
+- [x] `fw note` on an inbox whose list is indented under `observations:` appends at the same indentation and the file still parses
+- [x] `fw note` on a column-0 inbox (the shape AEF itself writes) is unchanged
+- [x] If the file would not parse after the append, `fw note` restores the previous file and exits non-zero (never leaves a broken inbox)
+- [x] `fw note dismiss` finds an observation in an indented inbox
+- [x] Regression test `tests/unit/t3969_note_indented_inbox.bats` covers all four
 
 ## Verification
 timeout 120 bats tests/unit/t3969_note_indented_inbox.bats > /tmp/.t3969 2>&1 && ! grep -q "^not ok" /tmp/.t3969
@@ -213,6 +213,13 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** after `fw note "x"` ring20's inbox.yaml failed to parse ("expected <block end>, but found -"); the pre-push audit FAILed and blocked every push until hand re-indent. Seen twice (1.8.3, 1.8.5).
+
+**Root cause:** `do_capture` appended a fixed text block beginning `- id:` at column 0. That is only valid when the list itself is at column 0, which is the shape `ensure_inbox` creates. Any inbox re-serialised by a YAML library or hand-edited (`observations:` followed by `  - id:`) gets a sibling at the wrong level. `do_dismiss` had the same column-0 assumption (`startswith("- id:")`).
+
+**Why structurally allowed:** the writer is text-append for speed and never re-parsed what it wrote; every test fixture used the column-0 shape the framework itself writes, so the other valid YAML layout was never exercised. The breakage surfaced only later, at a different command (pre-push audit), far from the cause.
+
+**Prevention:** the append now validates the file with yaml.safe_load and rolls back with a non-zero exit on failure, so no future layout can be silently broken by `fw note`; the regression test pins both layouts, the rollback, and dismiss on an indented list.
 
 ## Evolution
 
@@ -294,3 +301,15 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3969-fw-note-appends-at-column-0-into-an-inde.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cb4a1d12
+- **Timestamp:** 2026-10-06T22:20:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-06T22:20:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
