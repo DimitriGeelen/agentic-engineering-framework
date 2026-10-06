@@ -268,6 +268,45 @@ is_signal_fresh() {
     fi
 }
 
+# T-3918 (G-110, RC-1 of ring20-manager's T-2248): never end a session at
+# budget-critical before a handover exists. budget-gate writes the restart signal
+# on the FIRST critical block (T-2403) and the terminator below used to SIGTERM
+# within ~5 s — with fresh restarts the default (T-3166), the new session then
+# started from whatever LATEST.md happened to be (13 h stale, measured). This runs
+# OUTSIDE the session, so no hook timeout bounds it: if no handover is at least as
+# new as the signal, run one (bounded) first, and record the outcome where fw
+# doctor check 5d reads it. A failed or timed-out handover still lets the kill
+# proceed (the loop must not dead-lock, T-2403) — but it is now logged, not silent.
+# Args: $1=project root, $2=signal mtime (epoch).
+_ensure_handover_before_kill() {
+    local root="$1" sig_mt="$2" latest log fwbin ts lm rc
+    latest="$root/.context/handovers/LATEST.md"
+    log="$root/.context/working/.compact-log"
+    ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+    lm=$(stat -c %Y "$latest" 2>/dev/null || echo 0)
+    if [ "$lm" -ge "$sig_mt" ]; then
+        echo "[terminator] Handover skipped (fresh: LATEST.md is newer than the restart signal) at $ts" >> "$log" 2>/dev/null || true
+        return 0
+    fi
+    if [ -x "$root/.agentic-framework/bin/fw" ]; then fwbin="$root/.agentic-framework/bin/fw"
+    elif [ -x "$root/bin/fw" ]; then fwbin="$root/bin/fw"
+    else
+        echo "[terminator] Handover FAILED at $ts — no fw found under $root" >> "$log" 2>/dev/null || true
+        return 1
+    fi
+    echo "claude-fw: budget-critical — writing a handover before ending the session (T-3918)..." >&2
+    (cd "$root" && timeout "${FW_TERMINATOR_HANDOVER_TIMEOUT:-180}" bash "$fwbin" handover --commit \
+        > "$root/.context/working/.terminator.handover.out" 2>&1)
+    rc=$?
+    if [ "$rc" -eq 0 ]; then
+        echo "[terminator] Handover generated at $ts" >> "$log" 2>/dev/null || true
+        return 0
+    fi
+    echo "[terminator] Handover FAILED (rc=$rc) at $ts — see .context/working/.terminator.handover.out" >> "$log" 2>/dev/null || true
+    echo "claude-fw: handover FAILED (rc=$rc) — ending the session anyway; run 'fw handover' in the new one." >&2
+    return 1
+}
+
 # T-2373: budget-critical terminator (plain mode).
 # The restart chain (checkpoint.sh writes .restart-requested at critical) only
 # restarts AFTER claude exits — but in plain mode `command claude` runs in the
@@ -302,6 +341,11 @@ _terminator_watch() {
         pids=$(pgrep -P "$wrapper_pid" 2>/dev/null | grep -v "^${self}$" || true)
         [ -n "$pids" ] || continue
         echo "" >&2
+        # T-3918: capture the session before it ends.
+        _ensure_handover_before_kill "$(cd "$(dirname "$sigfile")/../.." && pwd)" "$mt" || true
+        # The handover may have taken a while — re-read the children.
+        pids=$(pgrep -P "$wrapper_pid" 2>/dev/null | grep -v "^${self}$" || true)
+        [ -n "$pids" ] || return 0
         echo "claude-fw: budget-critical signal detected — ending claude to trigger auto-restart." >&2
         for p in $pids; do kill -TERM "$p" 2>/dev/null || true; done
         sleep "$grace"

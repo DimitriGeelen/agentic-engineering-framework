@@ -36,9 +36,13 @@ GATE_COUNTER_FILE="$CONTEXT_DIR/working/.budget-gate-counter"
 # waits forever → the loop dead-locks at link 1 and the iteration never advances.
 # budget-gate is the PreToolUse hook that RELIABLY fires at critical (it is the
 # thing detecting + blocking), so emitting the signal here decouples it from the
-# blocked PostToolUse/handover path. Handover stays best-effort (claude -c
-# preserves the conversation; post-compact-resume re-injects the directive), so a
-# missing handover degrades context quality but does NOT break the loop.
+# blocked PostToolUse/handover path. The handover is NOT this hook's job — but it
+# is no longer optional either. T-3918 (G-110): the earlier note here said a
+# missing handover only "degrades context quality" because `claude -c` preserves
+# the conversation; T-3166 made fresh restarts the default, so a restart with no
+# handover resumed from a stale LATEST.md (ring20-manager, 13 h). The claude-fw
+# terminator now ensures a handover at least as new as this signal (bounded) before
+# it ends the session, and logs the outcome to .compact-log.
 #
 # JSON shape matches checkpoint.sh:210-212 (timestamp, session_id, reason,
 # tokens, optional directive fold from .next-directive.yaml) so claude-fw and

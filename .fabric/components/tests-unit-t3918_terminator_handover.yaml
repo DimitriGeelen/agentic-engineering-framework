@@ -1,0 +1,21 @@
+id: tests/unit/t3918_terminator_handover.bats
+name: t3918_terminator_handover
+type: script
+subsystem: tests
+location: tests/unit/t3918_terminator_handover.bats
+tags: []
+
+purpose: "T-3918 (G-110, RC-1 of ring20-manager's T-2248) — the budget-critical terminator writes a handover before it ends the session. Measured: block 06:46:40Z, restart 06:46:41Z, no handover; the fresh session resumed from a 13 h-stale LATEST.md."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-06
+created_by: unknown
