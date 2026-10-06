@@ -43,7 +43,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T06:46:25Z
-last_update: 2026-10-06T07:03:57Z
+last_update: 2026-10-06T07:13:19Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,10 +95,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Root cause, measured. The test forced failure with `FW_FABRIC_DESCRIBE_TIMEOUT=0`, but GNU `timeout 0` means NO limit. So the describe pass ran unbounded: 15m00s wall time and 1.9s CPU, waiting. That exceeds the suite's 900s per-file cap, giving a nightly red and a release-blocking ratchet FAIL.
-- [ ] The test forces a real kill with a sub-second timeout (`0.001`) and keeps its assertions: hook exits 0, falls back to the cached line, cache untouched. The file finishes in seconds.
-- [ ] The hook (`agents/context/post-compact-resume.sh`) refuses a 0, empty or non-numeric `FW_FABRIC_DESCRIBE_TIMEOUT` and uses the 10s default, so a misconfiguration can never make session start wait unbounded. A test leg pins it.
-- [ ] `tests/unit/t3431_fabric_session_start.bats` passes in under 120 s.
+- [x] Root cause, measured. The test forced failure with `FW_FABRIC_DESCRIBE_TIMEOUT=0`, but GNU `timeout 0` means NO limit. So the describe pass ran unbounded: 15m00s wall time and 1.9s CPU, waiting. That exceeds the suite's 900s per-file cap, giving a nightly red and a release-blocking ratchet FAIL.
+- [x] The test forces a real kill with a sub-second timeout (`0.001`) and keeps its assertions: hook exits 0, falls back to the cached line, cache untouched. The file finishes in seconds.
+- [x] The hook (`agents/context/post-compact-resume.sh`) refuses a 0, empty or non-numeric `FW_FABRIC_DESCRIBE_TIMEOUT` and uses the 10s default, so a misconfiguration can never make session start wait unbounded. A test leg pins it.
+- [x] (measured: 6/6 in ~3.5 s total; the previously hanging test 1.3 s) `tests/unit/t3431_fabric_session_start.bats` passes in under 120 s.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -132,6 +132,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+timeout 120 bats tests/unit/t3431_fabric_session_start.bats > /tmp/.t3915 2>&1 && ! grep -q "^not ok" /tmp/.t3915
+test "$(grep -c '# skip' /tmp/.t3915)" -eq 0
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -274,6 +278,18 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** the nightly suite timed out `t3431_fabric_session_start.bats` (900 s per-file cap). Run alone, its fallback test took 15m00s wall time with 1.9 s of CPU.
+
+**Root cause:** the test forced a describe failure with `FW_FABRIC_DESCRIBE_TIMEOUT=0`, reading 0 as "kill at once". GNU `timeout 0` disables the limit, so the describe pass ran unbounded.
+
+**Why structurally allowed:** the hook passed the setting straight to `timeout` with no validation. The test's comment asserted the opposite semantics, and nothing measured the test's duration. It ran long but green, until the suite's per-file cap made it red.
+
+**Prevention:**
+- The hook maps 0, empty and non-numeric values to the 10 s default, so session start can never wait unbounded on a misconfiguration.
+- The test uses 0.001 s.
+- A new leg pins the guard.
+- The file now runs in about 3.5 s.
 
 ## Evolution
 
