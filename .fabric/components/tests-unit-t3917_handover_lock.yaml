@@ -1,0 +1,21 @@
+id: tests/unit/t3917_handover_lock.bats
+name: t3917_handover_lock
+type: script
+subsystem: tests
+location: tests/unit/t3917_handover_lock.bats
+tags: []
+
+purpose: "T-3917 (G-110, RC-2 of ring20-manager's T-2248) — the budget-critical auto-handover lock can no longer disable the auto-handover forever."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-06
+created_by: unknown

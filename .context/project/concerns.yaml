@@ -5366,3 +5366,30 @@ concerns:
   related_tasks:
   - T-3905
   - T-3855
+- id: G-110
+  type: gap
+  title: A budget-critical session can be killed with NO handover — the auto-handover is silently disabled
+    by a stale lock, and the restart signal no longer waits for a handover at all
+  description: 'ring20-manager (2026-10-06, their T-2248) lost a session at budget-critical and resumed from a
+    13 h-stale LATEST.md. Three causes, all confirmed in AEF code: (RC-1) budget-gate.sh writes
+    .restart-requested on the FIRST critical block (T-2403) and claude-fw''s terminator SIGTERMs within ~5 s;
+    the comment justifying no handover relies on `claude -c` keeping the conversation, which T-3166 made
+    untrue (fresh restart is the default). (RC-2) checkpoint.sh''s .handover-in-progress lock has no TTL and no
+    EXIT trap — any kill mid-handover strands it, and every later auto-handover is skipped silently. AEF''s
+    own lock was stale since 2026-06-09 (~4 months); ring20''s ~163 days. (RC-3) claude-fw prints "Handover
+    committed" on restart unconditionally.'
+  severity: high
+  status: open
+  detected_in: T-3917
+  observed: '2026-10-06'
+  reported_by: ring20-manager (msg b60df5e6, conversation ring20-t2248-restart-no-handover)
+  blast_radius: every session that reaches budget-critical on any project; the memory of everything since
+    the last manual handover
+  detection_gap: The lock is gitignored and no doctor/audit check reads its age; the restart path reports
+    success whether or not a handover was written. Silent for months on two hosts.
+  what_remains: RC-2 T-3917; RC-1 and RC-3 filed as their own tasks.
+  related_tasks:
+  - T-3917
+  - T-2403
+  - T-3166
+  - T-136

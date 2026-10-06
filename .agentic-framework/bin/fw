@@ -2045,6 +2045,19 @@ do_doctor() {
         fi
     fi
 
+    # Check 5e (T-3917, G-110): a stranded auto-handover lock silently disables the
+    # budget-critical auto-handover — AEF's sat stale ~4 months, ring20-manager's
+    # ~163 days, and nothing looked. Same predicate checkpoint.sh uses to clear it.
+    local ho_lock="$PROJECT_ROOT/.context/working/.handover-in-progress"
+    if [ -f "$ho_lock" ] && [ -f "$FRAMEWORK_ROOT/lib/handover-lock.sh" ]; then
+        local ho_lock_why
+        # shellcheck source=/dev/null
+        if ho_lock_why=$(source "$FRAMEWORK_ROOT/lib/handover-lock.sh" && fw_handover_lock_stale "$ho_lock"); then
+            _doctor_warn_host "Stale .handover-in-progress ($ho_lock_why) — the budget-critical auto-handover is skipped while it exists"
+            echo -e "         Fix: the next critical checkpoint clears it automatically (T-3917); now: rm $ho_lock"
+        fi
+    fi
+
     # Check 6: Claude Code hooks — validate paths resolve (G-021 path isolation)
     local settings_file="$PROJECT_ROOT/.claude/settings.json"
     if [ -f "$settings_file" ]; then

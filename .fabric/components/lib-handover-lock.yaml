@@ -1,0 +1,21 @@
+id: lib/handover-lock.sh
+name: handover-lock
+type: script
+subsystem: framework-core
+location: lib/handover-lock.sh
+tags: []
+
+purpose: "handover-lock.sh — the budget-critical auto-handover's re-entry lock (T-3917, G-110)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-06
+created_by: unknown
