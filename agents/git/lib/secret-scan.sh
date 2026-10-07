@@ -235,10 +235,21 @@ scan_tree() {
     local allow_re
     allow_re="$(_secret_scan_build_allowlist "$allowlist")"
 
+    # T-3971 (ring20): with no catalogue this used to warn and `return 0` — a planted
+    # AWS key passed, the filename axis below never ran, and `fw audit` printed
+    # "[PASS] Secret scan: tracked tree clean". Audit mode is not a commit gate, so
+    # there is no reason to fail open: run the name axis anyway, then say
+    # NOT CHECKED with its own exit code (3) instead of claiming a clean tree.
+    if [ ! -f "$patterns" ]; then
+        if ! scan_names; then
+            return 1
+        fi
+        echo "secret-scan: NOT CHECKED: no patterns catalogue ($patterns) — content was not scanned" >&2
+        return 3
+    fi
+
     # Use git grep per pattern — handles binary skip + path filtering natively,
     # and runs entirely in-process (no per-file fork to `file`).
-    [ ! -f "$patterns" ] && { echo "secret-scan: no patterns file ($patterns)" >&2; return 0; }
-
     local _hits=0
     local _name _re _matches
     while IFS=$'\t' read -r _name _re; do
@@ -445,6 +456,11 @@ scan_file() {
     cfg="$(_secret_scan_config_dir "$root")"
     patterns="$cfg/.secret-scan-patterns"
     allowlist="$cfg/.secret-scan-allowlist"
+    # T-3971: not a commit gate, so no fail-open — missing catalogue is NOT CHECKED (3).
+    if [ ! -f "$patterns" ]; then
+        echo "secret-scan: NOT CHECKED: no patterns catalogue ($patterns)" >&2
+        return 3
+    fi
     local allow_re
     allow_re="$(_secret_scan_build_allowlist "$allowlist")"
     awk -v file="$file" '{ printf "%s:%d:%s\n", file, NR, $0 }' "$file" \
@@ -469,6 +485,10 @@ Subcommands:
   scan-tree         Scan entire working tree, both axes (audit mode)
   scan-names        Scan tracked FILENAMES only (T-2897 name axis)
   scan-file <path>  Scan a specific file
+
+Exit codes: 0 clean, 1 finding(s), 2 usage, 3 NOT CHECKED (scan-tree / scan-file with
+no patterns catalogue — T-3971). scan-staged stays fail-open with a warning unless
+FW_SECRET_SCAN_STRICT=1.
 
 Configuration:
   .secret-scan-patterns   TSV pattern catalogue

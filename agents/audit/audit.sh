@@ -4511,7 +4511,13 @@ SECRET_SCANNER="$FRAMEWORK_ROOT/agents/git/lib/secret-scan.sh"
 if [ -x "$SECRET_SCANNER" ]; then
     _ss_out=$(PROJECT_ROOT="$PROJECT_ROOT" "$SECRET_SCANNER" scan-tree 2>&1)
     _ss_rc=$?
-    if [ "$_ss_rc" -ne 0 ]; then
+    if [ "$_ss_rc" -eq 3 ]; then
+        # T-3971: no catalogue = content not scanned. Never a PASS (ring20 measured a
+        # planted AWS key reported as "tracked tree clean").
+        fail "Secret scan NOT CHECKED: no .secret-scan-patterns catalogue — tracked content was not scanned (T-3971)" \
+             "$(echo "$_ss_out" | tail -3)" \
+             "Restore the catalogue: .agentic-framework/bin/fw upgrade (consumer) or bin/fw vendor self (framework repo)"
+    elif [ "$_ss_rc" -ne 0 ]; then
         _ss_count=$(echo "$_ss_out" | grep -c "^  \[" || true)
         fail "Secret scan: $_ss_count finding(s) in tracked tree (T-1844)" \
              "$(echo "$_ss_out" | head -5)" \
