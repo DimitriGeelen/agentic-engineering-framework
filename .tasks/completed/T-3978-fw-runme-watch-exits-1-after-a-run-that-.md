@@ -7,12 +7,12 @@ description: >
   1. The agent then has to read run.log to know the outcome; a watcher whose exit
   code disagrees with the run is a false red. T-3741 owns the watch code.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/runme.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-07T09:30:13Z
-last_update: 2026-10-07T09:38:32Z
-date_finished:
+last_update: 2026-10-07T09:40:37Z
+date_finished: 2026-10-07T09:40:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -82,9 +82,9 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw runme watch` on a run that ended `RUNME EXIT 0` prints "<name> finished (exit 0)" and exits 0, when invoked through `bin/fw` (the path the operator handoff uses)
-- [ ] A run ending `RUNME EXIT 3` makes the watch exit 3; a STOPPED run still reports the signal
-- [ ] The T-3741 control test exercises the real `bin/fw` path that failed, and fails on the pre-fix code
+- [x] `fw runme watch` on a run that ended `RUNME EXIT 0` prints "<name> finished (exit 0)" and exits 0, when invoked through `bin/fw` (the path the operator handoff uses)
+- [x] A run ending `RUNME EXIT 3` makes the watch exit 3; a STOPPED run still reports the signal
+- [x] The T-3741 control test exercises the real `bin/fw` path that failed, and fails on the pre-fix code (verified: `not ok` against HEAD~ runme.sh)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -118,6 +118,9 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+timeout 300 bats tests/unit/t3741_runme_events.bats > /tmp/.t3978 2>&1 && ! grep -q "^not ok" /tmp/.t3978
+grep -q "^set -euo pipefail" bin/fw && grep -q 'set -euo pipefail' tests/unit/t3741_runme_events.bats
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -260,6 +263,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** both operator runmes on 2026-10-07 ended `RUNME EXIT 0`, and the agent's `fw runme watch` exited 1 without its "finished" line.
+
+**Root cause:** T-3741 (mine) added `sig=$(grep -o "RUNME STOPPED …" | tail | awk)`. On a normal run there is no STOPPED line; grep returns 1, pipefail fails the pipeline, and bin/fw's `set -e` ends the watcher with 1.
+
+**Why structurally allowed:** the T-3741 tests ran `runme_main` through a stub wrapper that sourced the library WITHOUT bin/fw's `set -euo pipefail`, so the same code passed under the test and failed under fw. A test harness that does not reproduce the caller's shell options cannot see this whole class (T-2874 and T-3974 are the same trap).
+
+**Prevention:** the stub now sets `set -euo pipefail` like bin/fw; the control test was shown to fail on the pre-fix library; an exit-3 case pins that the run's own code is returned.
 
 ## Evolution
 
@@ -345,3 +355,15 @@ bvp_scores_proposed:
 ### 2026-10-07T09:38:32Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ae172143
+- **Timestamp:** 2026-10-07T09:40:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-07T09:40:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
