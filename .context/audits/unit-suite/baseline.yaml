@@ -872,3 +872,10 @@ entries:
   added: '2026-10-06'
   expires: '2026-10-13'
   added_by: human
+- leg: bats
+  name: 't3511_parked_merge_guard.bats: horizon later alone is enough to refuse'
+  file: t3511_parked_merge_guard.bats
+  owner: T-3976
+  added: '2026-10-07'
+  expires: '2026-10-21'
+  added_by: human
