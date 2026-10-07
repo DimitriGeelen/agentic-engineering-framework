@@ -5122,3 +5122,15 @@ X'` returning empty group."
   task: T-3807
   date: 2026-10-06
   context: Added via context agent
+- id: L-698
+  learning: "An audit-mode scanner needs a third outcome, NOT CHECKED, distinct from clean: secret-scan scan-tree inherited the commit hook's fail-open (warn, rc 0) and audit printed PASS over a planted AWS key (T-3971, ring20). Fail-open is a commit-gate trade-off, never an audit one."
+  source: P-001
+  task: T-3971
+  date: 2026-10-07
+  context: Added via context agent
+- id: L-699
+  learning: "A test that sources a library through a stub wrapper must use the caller's shell options (bin/fw: set -euo pipefail). The T-3741 stub did not, so a pipeline whose grep matched nothing passed in the test and killed fw runme watch in real use (T-3978). Same trap: T-2874, T-3974."
+  source: P-001
+  task: T-3978
+  date: 2026-10-07
+  context: Added via context agent
