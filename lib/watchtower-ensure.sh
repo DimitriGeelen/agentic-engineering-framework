@@ -18,6 +18,9 @@
 fw_watchtower_ensure() {
     [ "${FW_WATCHTOWER_ENSURE:-1}" = "0" ] && return 0
     [ -n "${FW_REVIEW_WORKER:-}" ] && return 0
+    # T-3959: no dispatched worker needs a Watchtower; each one started its own
+    # (bound 0.0.0.0, per worktree) and it outlived the worktree (1409).
+    [ -n "${FW_DISPATCHED_WORKER:-}" ] && return 0
     local root="${PROJECT_ROOT:-}" fwr="${FRAMEWORK_ROOT:-}"
     [ -n "$root" ] && [ -d "$root/.context" ] || return 0
     local wt="${FW_WATCHTOWER_SH:-$fwr/bin/watchtower.sh}"

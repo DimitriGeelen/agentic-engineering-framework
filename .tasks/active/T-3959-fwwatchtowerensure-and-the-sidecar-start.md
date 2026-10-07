@@ -11,10 +11,10 @@ description: >
   task type; cleanup reaps cwd-in-worktree processes. Related: T-3915 (FW_WATCHTOWER_ENSURE=0
   in the unit suite), T-3933.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T18:41:20Z
-last_update: '2026-10-06T18:45:49Z'
+last_update: 2026-10-07T05:24:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,47 +91,21 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+1409: every dispatched worker that is not a review worker starts a Watchtower (bound 0.0.0.0) and a sidecar for its worktree, and both outlive the worktree. The exemption was keyed to `task_type == review` (FW_REVIEW_WORKER). R14 (arc-011) wants every agent, workers included, to run a sidecar, so the sidecar is kept and made to die with its tree; the Watchtower is never needed in a worker.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
-
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+- [ ] `fw termlink dispatch` exports `FW_DISPATCHED_WORKER=1` to every worker (all task types); `fw_watchtower_ensure` is a no-op when it is set
+- [ ] The sidecar receiver exits by itself when its project's `.context` directory is gone (periodic check), so a worktree deleted by any means does not leave it running
+- [ ] `fw worktree remove` and `fw worktree gc` stop the worktree's sidecar and Watchtower (when their pid files exist there) before removing the tree
+- [ ] Tests `tests/unit/t3959_worker_leaks.bats` + `tests/unit/test_receiver_orphan_t3959.py` cover all three, each with a control
 
 ## Verification
+timeout 300 bats tests/unit/t3959_worker_leaks.bats > /tmp/.t3959 2>&1 && ! grep -q "^not ok" /tmp/.t3959
+test "$(grep -c '# skip' /tmp/.t3959)" -eq 0
+python3 -m pytest tests/unit/test_receiver_orphan_t3959.py -q > /tmp/.t3959p 2>&1 && grep -q passed /tmp/.t3959p && ! grep -q failed /tmp/.t3959p
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -355,3 +329,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3959-fwwatchtowerensure-and-the-sidecar-start.md
 - **Context:** Initial task creation
+
+### 2026-10-07T05:24:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -1023,6 +1023,11 @@ $prompt"
     # second naming scheme. Written before caller --env pairs so an explicit
     # --env FW_SIDECAR_AGENT_ID=... still wins (later export overrides).
     printf 'export FW_SIDECAR_AGENT_ID=%q\n' "$name" >> "$wdir/env.sh"
+    # T-3959 (1409): marks EVERY dispatched worker, whatever its task type, so
+    # session-start side effects meant for an operator's session (a Watchtower)
+    # are not repeated per worker. FW_REVIEW_WORKER below stays the narrower,
+    # review-only marker.
+    printf 'export FW_DISPATCHED_WORKER=%q\n' "1" >> "$wdir/env.sh"
     # T-3580 round 3: a review worker is told which revision it reviews (the one registered).
     if [ "$task_type" = "review" ]; then
         [ -n "$review_revision" ] || review_revision=$(git -C "$project_dir" rev-parse -q --verify HEAD 2>/dev/null || true)

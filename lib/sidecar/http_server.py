@@ -145,6 +145,32 @@ def make_server(port: int, token: str, host: str = "127.0.0.1",
     return http.server.ThreadingHTTPServer((host, port), handler)
 
 
+def _watch_project(root, shutdown, interval: float | None = None) -> threading.Thread:
+    """T-3959 (1409): exit when the project this receiver serves is gone.
+
+    A dispatched worker in a git worktree starts a receiver for that tree (R14:
+    every agent runs a sidecar). When the worktree is removed, by fw or by hand,
+    nothing told the receiver, and it ran on with no project. Checks
+    `<root>/.context` every FW_SIDECAR_ORPHAN_CHECK_S seconds (default 30)."""
+    from pathlib import Path
+    every = interval if interval is not None else float(
+        os.environ.get("FW_SIDECAR_ORPHAN_CHECK_S", "30") or 30)
+    ctx = Path(root) / ".context"
+
+    def _loop():
+        import time
+        while True:
+            time.sleep(every)
+            if not ctx.is_dir():
+                print(f"receiver: project gone ({ctx}) — exiting", file=sys.stderr)
+                shutdown()
+                return
+
+    t = threading.Thread(target=_loop, name="project-watch", daemon=True)
+    t.start()
+    return t
+
+
 def serve(port: int, agent: str) -> int:
     """Foreground entry point used by `fw sidecar receiver start`."""
     token = lifecycle.read_token()
@@ -164,6 +190,7 @@ def serve(port: int, agent: str) -> int:
         threading.Thread(target=server.shutdown, daemon=True).start()
     signal.signal(signal.SIGTERM, _stop)
     signal.signal(signal.SIGINT, _stop)
+    _watch_project(receiver._root(), server.shutdown)
     try:
         server.serve_forever()
     finally:
