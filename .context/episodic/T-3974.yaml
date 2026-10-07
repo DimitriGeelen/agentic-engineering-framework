@@ -1,0 +1,96 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3974: WM-001..003 focus unreachable on consumers: .tasks/workflow never seeded, and fw_find_wm_task's not-found return kills focus.sh silently under set -e (ring20)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-07T07:27:10Z
+# ============================================================================
+
+task_id: T-3974
+task_name: "WM-001..003 focus unreachable on consumers: .tasks/workflow never seeded, and fw_find_wm_task's not-found return kills focus.sh silently under set -e (ring20)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-07T06:11:08Z
+completed: 2026-10-07T07:16:05Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-07T08:12:37+02:00
+last_commit: 2026-10-07T09:15:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed — WM focus unreachable on consumers (ring20). WM-001..003 seeded by init/upgrade/vendor (template-sync, local edits kept); fw_find_wm_task returns 0 on not-found so focus reports a missing file. vendor-sync (incl. .agentic-framework/.tasks/workflow/)
+
+# Key outcomes
+outcomes:
+  - '`fw_find_wm_task` returns 0 when the file is missing, so focus.sh prints "Workflow task WM-00N has no file in .tasks/workflow/" instead of dying silently'
+  - '`fw init` creates `.tasks/workflow/WM-001..003` in a new project'
+  - '`fw upgrade` creates missing WM files in an existing consumer through `upgrade_template_sync.py` (a locally edited WM file is KEPT with `.upstream`)'
+  - 'Self-vendoring copies `.tasks/workflow/*.md` into `.agentic-framework/.tasks/workflow/`, so a vendored FRAMEWORK_ROOT can seed them (also `fw vendor` includes + vendor-visibility + doctor drift scan)'
+  - 'Test `tests/unit/t3974_wm_focus_consumer.bats`: on a freshly initialised consumer `fw context focus WM-002` exits 0; with the files removed it prints the diagnostic (control for the silent exit); upgrade recreates them'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/init.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/lib/vendor-visibility.sh'
+  - '.agentic-framework/lib/wm_tasks.sh'
+  - '.agentic-framework/.tasks/workflow/WM-001-selection-and-discovery.md'
+  - '.agentic-framework/.tasks/workflow/WM-002-close-out-and-trailing-work.md'
+  - '.agentic-framework/.tasks/workflow/WM-003-session-lifecycle.md'
+  - 'bin/fw'
+  - 'lib/init.sh'
+  - 'lib/upgrade.sh'
+  - 'lib/vendor-visibility.sh'
+  - 'lib/wm_tasks.sh'
+  - '.tasks/active/T-3974-wm-001003-focus-unreachable-on-consumers.md'
+  - 'tests/unit/t3974_wm_focus_consumer.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-07T08:12:37'
+    action: 'T-3974: filed — WM focus unreachable on consumers (ring20)'
+  - time: '2026-10-07T09:15:27'
+    action: 'T-3974: WM-001..003 seeded by init/upgrade/vendor (template-sync, local edits kept); fw_find_wm_task returns 0 on not-found so focus reports a missing file'
+  - time: '2026-10-07T09:15:41'
+    action: 'T-3974: vendor-sync (incl. .agentic-framework/.tasks/workflow/)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 64 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 64
+  commits: 3
+  files_changed: 15
+  lines_added: 662
+  lines_removed: 45
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3974-wm-001003-focus-unreachable-on-consumers.md
+generated_by: context-agent-hybrid

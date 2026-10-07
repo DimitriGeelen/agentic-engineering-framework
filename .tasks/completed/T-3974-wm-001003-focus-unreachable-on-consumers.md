@@ -12,12 +12,12 @@ description: >
   (through upgrade_template_sync) and self-vendor them; test fw context focus WM-001
   on a fresh consumer.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/init.sh, lib/upgrade.sh, lib/vendor-visibility.sh, lib/wm_tasks.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-07T06:11:08Z
-last_update: 2026-10-07T06:39:49Z
-date_finished:
+last_update: 2026-10-07T07:16:05Z
+date_finished: 2026-10-07T07:16:05Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -97,11 +97,11 @@ ring20 (v1.8.5 consumer): the gate's advertised recovery `fw context focus WM-00
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw_find_wm_task` returns 0 when the file is missing, so focus.sh prints "Workflow task WM-00N has no file in .tasks/workflow/" instead of dying silently
-- [ ] `fw init` creates `.tasks/workflow/WM-001..003` in a new project
-- [ ] `fw upgrade` creates missing WM files in an existing consumer through `upgrade_template_sync.py` (a locally edited WM file is KEPT with `.upstream`)
-- [ ] Self-vendoring copies `.tasks/workflow/*.md` into `.agentic-framework/.tasks/workflow/`, so a vendored FRAMEWORK_ROOT can seed them
-- [ ] Test `tests/unit/t3974_wm_focus_consumer.bats`: on a freshly initialised consumer `fw context focus WM-002` exits 0; with the files removed it prints the diagnostic (control for the silent exit); upgrade recreates them
+- [x] `fw_find_wm_task` returns 0 when the file is missing, so focus.sh prints "Workflow task WM-00N has no file in .tasks/workflow/" instead of dying silently
+- [x] `fw init` creates `.tasks/workflow/WM-001..003` in a new project
+- [x] `fw upgrade` creates missing WM files in an existing consumer through `upgrade_template_sync.py` (a locally edited WM file is KEPT with `.upstream`)
+- [x] Self-vendoring copies `.tasks/workflow/*.md` into `.agentic-framework/.tasks/workflow/`, so a vendored FRAMEWORK_ROOT can seed them (also `fw vendor` includes + vendor-visibility + doctor drift scan)
+- [x] Test `tests/unit/t3974_wm_focus_consumer.bats`: on a freshly initialised consumer `fw context focus WM-002` exits 0; with the files removed it prints the diagnostic (control for the silent exit); upgrade recreates them
 
 ## Verification
 timeout 900 bats tests/unit/t3974_wm_focus_consumer.bats > /tmp/.t3974 2>&1 && ! grep -q "^not ok" /tmp/.t3974
@@ -251,6 +251,13 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** on a v1.8.5 consumer, `fw context focus WM-002`, the recovery the active-task gate prints, exited 1 with no output.
+
+**Root cause:** (1) T-3537 introduced the WM task class with its files under the framework repo's `.tasks/workflow/`; no init, upgrade or vendor path ever created them in a consumer, while the gate advertised them everywhere. (2) `fw_find_wm_task` ended with `[ -n "$f" ] && echo "$f"`, returning 1 on not-found; under focus.sh's `set -euo pipefail` that killed the script one line before its diagnostic (the T-2874 masking class).
+
+**Why structurally allowed:** the WM feature was tested only in the framework repo, where the files exist; no test ran the advertised recovery on a consumer. A `&&`-terminated function used in `$(…)` under `set -e` is a known trap that recurred.
+
+**Prevention:** `t3974_wm_focus_consumer.bats` runs `fw init` and `fw context focus WM-002` on a fresh consumer, removes the files to pin the diagnostic, and checks upgrade recreates them; the function returns 0 explicitly with a comment naming the trap.
 
 ## Evolution
 
@@ -335,3 +342,15 @@ bin/fw vendor self --check
 
 ### 2026-10-07T06:26:37Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1023bc44
+- **Timestamp:** 2026-10-07T07:26:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-07T07:16:05Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
