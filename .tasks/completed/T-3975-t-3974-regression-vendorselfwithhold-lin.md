@@ -4,10 +4,10 @@ name: "T-3974 regression: vendor_self_withhold lint fails on the new .tasks/work
 description: >
   T-3974 regression: vendor_self_withhold lint fails on the new .tasks/workflow self-vendor loop
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-07T08:16:26Z
-last_update: 2026-10-07T08:16:26Z
-date_finished: null
+last_update: 2026-10-07T08:18:35Z
+date_finished: 2026-10-07T08:18:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -61,8 +61,8 @@ T-3974 added a seventh self-vendor file loop (`.tasks/workflow/WM-*.md`) to `_se
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The parity test expects 7 guarded call sites and 7 dry-run-exempt ones, and says which loop the seventh is
-- [ ] `vendor_self_withhold.bats` passes in full
+- [x] The parity test expects 7 guarded call sites and 7 dry-run-exempt ones, and says which loop the seventh is
+- [x] `vendor_self_withhold.bats` passes in full
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -239,6 +239,13 @@ timeout 300 bats tests/unit/vendor_self_withhold.bats > /tmp/.t3975 2>&1 && ! gr
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** full suite red on `vendor_self_withhold.bats` after T-3974; pre-push ratchet blocked the push.
+
+**Root cause:** T-3974 added a correctly guarded seventh self-vendor loop; the parity test pins the call-site count at an exact number (by design, so a new loop is noticed).
+
+**Why structurally allowed:** I ran the init/upgrade/vendor regression set for T-3974 but not this file, which pins `lib/upgrade.sh`'s self-vendor helpers. The test did its job; my test selection missed it.
+
+**Prevention:** `fw fabric deps lib/upgrade.sh` lists the tests that pin a file; for edits to self-vendor helpers, include `vendor_self_withhold.bats` (named here so the next search for "self-vendor loop" finds it).
 
 ## Evolution
 
@@ -320,3 +327,15 @@ timeout 300 bats tests/unit/vendor_self_withhold.bats > /tmp/.t3975 2>&1 && ! gr
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3975-t-3974-regression-vendorselfwithhold-lin.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-bef4e8f4
+- **Timestamp:** 2026-10-07T08:18:40Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-07T08:18:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
