@@ -1,10 +1,16 @@
 ---
 id: T-3986
-name: "Reviewer seat that could not check (codex read-only sandbox can't run browser harness) votes AMBER and blocks rung-5 unanimity (832)"
+name: "Reviewer seat that could not check (codex read-only sandbox can't run browser
+  harness) votes AMBER and blocks rung-5 unanimity (832)"
 description: >
-  832 T-1082: codex reviewer runs read-only, cannot write temp files a browser harness needs, votes AMBER without finding a defect; rung-5 panels need unanimity, so 832 T-310 AC#1 and T-893 AC#1 fall back to the operator. Options: a distinct NOT-EVALUATED seat outcome that neither ticks nor blocks (with a quorum rule), or a writable per-run temp dir for the codex seat. Changes review policy (T-3580), so the outcome rule is an operator decision; the temp-dir part is mechanics.
+  832 T-1082: codex reviewer runs read-only, cannot write temp files a browser harness
+  needs, votes AMBER without finding a defect; rung-5 panels need unanimity, so 832
+  T-310 AC#1 and T-893 AC#1 fall back to the operator. Options: a distinct NOT-EVALUATED
+  seat outcome that neither ticks nor blocks (with a quorum rule), or a writable per-run
+  temp dir for the codex seat. Changes review policy (T-3580), so the outcome rule
+  is an operator decision; the temp-dir part is mechanics.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-07T13:14:24Z
-last_update: 2026-10-07T13:14:24Z
-date_finished: null
+last_update: 2026-10-07T17:30:20Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +56,55 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-07T13:15:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-07T13:15:51Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3986: Reviewer seat that could not check (codex read-only sandbox can't run browser harness) votes AMBER and blocks rung-5 unanimity (832)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+**Operator ruling 2026-10-07 (verbatim, walkthrough decision 2):**
+
+> First of all, the issues should be fixed. Directly if possible, if not, then via an upstream request. If that doesn't work, it should be assigned to another type of agent. And if that doesn't work, you can always still service it to the operator to give the choice and make a decision. What should not happen in any circumstances is to give a skewed judgment, a wrong judgment. Reporting ember for something that has not been revealed gives a really skewed image. Yeah, because it could be perfectly good, valuable material. But if I could not see it and then say it's bad, that's not good. [...] We want a quality review. We want the input that the reviewer provides is collateral for our decision, the quality of our decision. And if there is a false judgment that undermines the quality of our decision making.
+
+**Rule that follows:** a seat that could not evaluate reports NOT-EVALUATED (with the reason), never amber/green. The panel then works the ladder: (1) fix the seat's capability directly (e.g. a writable per-run temp dir); (2) upstream request when the cause is another project's/vendor's; (3) reassign the criterion to another seat kind that can evaluate; (4) only then surface to the operator with the options. A criterion closes only on verdicts from seats that actually evaluated it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Review seats get a writable per-run temp dir (TMPDIR inside the run's own directory), so a read-only seat can run a harness that writes temp files; the reviewed tree stays read-only
+- [ ] The verdict vocabulary gains NOT-EVALUATED (with a required reason); `fw reviewer verdict record` accepts it; it never ticks and never counts as amber/red
+- [ ] The panel rule closes a criterion only on verdicts from seats that evaluated it, and requires at least two such seats at rung 5; otherwise the criterion is reassigned to another seat kind before it falls to the operator
+- [ ] The review brief tells every seat: if you could not evaluate, say NOT-EVALUATED and why; do not vote on what you did not see
+- [ ] Tests: a not-evaluated seat neither ticks nor blocks; two evaluating greens tick; one evaluating green plus one not-evaluated escalates (reassign, then operator)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -320,3 +361,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3986-reviewer-seat-that-could-not-check-codex.md
 - **Context:** Initial task creation
+
+### 2026-10-07T17:30:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
