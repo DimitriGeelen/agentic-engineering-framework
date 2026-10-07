@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3952: Relative 'bin/fw' subprocess calls break on consumer projects: web/blueprints/arcs.py:1186 (Watchtower approve-driver) and agents/ux-review/ux-review.py:824
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-07T06:24:54Z
+# ============================================================================
+
+task_id: T-3952
+task_name: "Relative 'bin/fw' subprocess calls break on consumer projects: web/blueprints/arcs.py:1186 (Watchtower approve-driver) and agents/ux-review/ux-review.py:824"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-06T14:04:48Z
+completed: 2026-10-06T20:16:09Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-06T22:15:53+02:00
+last_commit: 2026-10-06T22:17:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw is launched by its absolute framework path in the Watchtower arc + BVP blueprints, lib/peer.py and ux-review — cwd-relative 'bin/fw' with cwd=PROJECT_ROOT failed on every consumer ('Failed to invoke fw'); lint refuses the pattern. vendor-sync arcs.py, bvp.py, peer.py, ux-review.py. partial-complete for the operator (Recommendation GO, [REVIEW] arc/BVP buttons)
+
+# Key outcomes
+outcomes:
+  - 'Every subprocess call in web/, lib/ and agents/ that launches fw resolves it from the framework root (absolute path), never as a cwd-relative "bin/fw" — web/blueprints/arcs.py (6 calls: approve/remove driver, scoped weight, arc close), web/blueprints/bvp.py (5 calls: weight, driver forms), lib/peer.py (peer responder dispatch), agents/ux-review/ux-review.py'
+  - 'A lint test refuses a bare `["bin/fw", ...]` / `[''bin/fw'', ...]` argv in web/, lib/, agents/ Python, so the class cannot return (T-3807 fixed lib/bvp.sh the same way) — tests/unit/test_no_relative_fw_argv_t3952.py, with a control'
+  - 'Watchtower restarted; `fw watchtower current` OK (pid 373421; /arcs and /bvp 200)'
+  - '[REVIEW]-type check owed for the render surface is recorded as a Human AC (the approve-driver button on /arcs/<slug>)'
+  - '[REVIEW] Watchtower arc and BVP driver buttons still work after fw became an absolute path'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/ux-review/ux-review.py'
+  - '.agentic-framework/lib/peer.py'
+  - '.agentic-framework/web/blueprints/arcs.py'
+  - '.agentic-framework/web/blueprints/bvp.py'
+  - 'agents/ux-review/ux-review.py'
+  - 'lib/peer.py'
+  - '.tasks/active/T-3952-relative-binfw-subprocess-calls-break-on.md'
+  - 'tests/unit/test_no_relative_fw_argv_t3952.py'
+  - 'tests/unit/test_peer_subscribe.py'
+  - 'web/blueprints/arcs.py'
+  - 'web/blueprints/bvp.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T22:15:53'
+    action: 'T-3952: fw is launched by its absolute framework path in the Watchtower arc + BVP blueprints, lib/peer.py and ux-review — cwd-relative ''bin/fw'' with cwd=PROJECT_ROOT failed on every consumer (''Failed to invoke fw''); lint refuses the pattern'
+  - time: '2026-10-06T22:16:06'
+    action: 'T-3952: vendor-sync arcs.py, bvp.py, peer.py, ux-review.py'
+  - time: '2026-10-06T22:17:00'
+    action: 'T-3952: partial-complete for the operator (Recommendation GO, [REVIEW] arc/BVP buttons)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 371 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 371
+  commits: 3
+  files_changed: 11
+  lines_added: 202
+  lines_removed: 49
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3952-relative-binfw-subprocess-calls-break-on.md
+generated_by: context-agent-hybrid

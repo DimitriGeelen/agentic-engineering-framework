@@ -1,21 +1,22 @@
 ---
-id: T-3952
-name: "Relative 'bin/fw' subprocess calls break on consumer projects: web/blueprints/arcs.py:1186
-  (Watchtower approve-driver) and agents/ux-review/ux-review.py:824"
+id: T-3953
+name: "Reranker is a silent no-op: web/embeddings.py _rerank_score sends system= with
+  raw=True (Ollama HTTP 400), logs at DEBUG and returns 0.5 for every candidate —
+  fw ask/recall/Watchtower search are never reranked"
 description: >
-  Found during T-3807: lib/bvp.sh launched cwd-relative 'bin/fw', which does not exist
-  at a consumer's root (.agentic-framework/bin/fw). Fixed there (FRAMEWORK_ROOT/bin/fw).
-  Same class remains in web/blueprints/arcs.py:1186 (the Watchtower arc approve-driver
-  button on consumers) and agents/ux-review/ux-review.py:824. Fix + a lint that refuses
-  a bare ['bin/fw', ...] argv in lib/ web/ agents/. Web change: restart Watchtower
-  + render review.
+  Reported by dimitri-mint-dev (c96a182e, their G-009, 2026-10-06), confirmed in AEF
+  source. Also scoring is binary ('yes' in answer), not the Qwen reference sigmoid(lp_yes
+  - lp_no). Fix shape (verified by them on Ollama 0.33.1): inline the Qwen chat template
+  into the raw prompt, no system field, logprobs=true top_logprobs=20, score sigmoid(lp_yes
+  - lp_no) case-insensitively; WARN not DEBUG on reranker error; fw doctor check;
+  regression test asserting distinct scores for relevant vs irrelevant.
 
 status: work-completed
 workflow_type: build
 owner: human
-horizon: now
+horizon: null
 tags: []
-components: [agents/ux-review/ux-review.py, lib/bvp.sh, lib/peer.py, tests/unit/test_peer_subscribe.py, web/blueprints/arcs.py, web/blueprints/bvp.py]
+components: [web/embeddings.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,9 +44,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-06T14:04:48Z
-last_update: 2026-10-06T20:16:09Z
-date_finished: 2026-10-06T20:16:09Z
+created: 2026-10-06T14:52:05Z
+last_update: 2026-10-07T06:24:46Z
+date_finished: 2026-10-06T19:54:04Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -57,7 +58,7 @@ date_finished: 2026-10-06T20:16:09Z
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-06T14:15:23Z'
+  - ts: '2026-10-06T15:00:30Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -67,26 +68,27 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-06T14:15:50Z'
+  - ts: '2026-10-06T15:01:07Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
       D2: 4
       D3: 3
       D4: 2
-      F-RECALL: 2
+      F-RECALL: 3
       F-AUTONOMY: 0
       F3: 0
-      F1: 0
+      F1: 1
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+      F-RECALL=3 (body:fw-recall-or-memory-link); F-AUTONOMY=0 (no-signal); F3=0
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-3952: Relative 'bin/fw' subprocess calls break on consumer projects: web/blueprints/arcs.py:1186 (Watchtower approve-driver) and agents/ux-review/ux-review.py:824
+# T-3953: Reranker is a silent no-op: web/embeddings.py _rerank_score sends system= with raw=True (Ollama HTTP 400), logs at DEBUG and returns 0.5 for every candidate — fw ask/recall/Watchtower search are never reranked
 
 ## Context
 
@@ -96,10 +98,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Every subprocess call in web/, lib/ and agents/ that launches fw resolves it from the framework root (absolute path), never as a cwd-relative "bin/fw" — web/blueprints/arcs.py (6 calls: approve/remove driver, scoped weight, arc close), web/blueprints/bvp.py (5 calls: weight, driver forms), lib/peer.py (peer responder dispatch), agents/ux-review/ux-review.py
-- [x] A lint test refuses a bare `["bin/fw", ...]` / `['bin/fw', ...]` argv in web/, lib/, agents/ Python, so the class cannot return (T-3807 fixed lib/bvp.sh the same way) — tests/unit/test_no_relative_fw_argv_t3952.py, with a control
-- [x] Watchtower restarted; `fw watchtower current` OK (pid 373421; /arcs and /bvp 200)
-- [x] [REVIEW]-type check owed for the render surface is recorded as a Human AC (the approve-driver button on /arcs/<slug>)
+- [x] Reproduced live on this host (Ollama 0.33.1, dengcao/Qwen3-Reranker-0.6B): before the fix every pair scores 0.5 and raw+system is rejected (evidence in Updates)
+- [x] `_rerank_score` inlines the Qwen chat template into the raw prompt (no system field), asks for logprobs (top 20) and returns sigmoid(logp_yes − logp_no) matched case-insensitively — a graded score, not 1.0/0.0
+- [x] A reranker error logs at WARNING (not DEBUG) and the fallback stays 0.5, so the failure is visible
+- [x] Regression tests (no live model needed): the request carries no system field and requests logprobs; scoring maps logprobs to the sigmoid; an error path warns; plus a live check here that a relevant pair outscores an irrelevant one (5 tests; live 0.9991 vs 0.0)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -131,17 +133,17 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
-- [ ] [REVIEW] Watchtower arc and BVP driver buttons still work after fw became an absolute path
+- [x] [REVIEW] Watchtower search answers now put the most relevant result first
   **Steps:**
-  1. Open http://192.168.10.107:3000/arcs and pick an in-progress arc with a proposed driver (e.g. http://192.168.10.107:3000/arcs/arc-grooming)
-  2. On the arc page, use one driver action you are happy to perform (Approve a proposed driver, or adjust a scoped weight and set it back)
-  3. Open http://192.168.10.107:3000/bvp and confirm the page renders with its driver controls
-  **Expected:** the action completes with its normal confirmation card (or the reviewer's FAIL reasons for a weak driver), never "Failed to invoke fw"
-  **If not:** copy the error card text; check .context/working/watchtower.log for the traceback
+  1. Open http://192.168.10.107:3000/search
+  2. Search: `how do I change the Watchtower port`
+  3. Search: `what is an inception task`
+  **Expected:** for each, the top results are about that topic (port/triple-file; inception go/no-go), not loosely related tasks — the order now comes from the reranker, which before this fix changed nothing
+  **If not:** note the query and the first two results; the reranker may be unavailable on this host (Watchtower log shows "Reranker error")
 
 ## Verification
 
-python3 -m pytest -q tests/unit/test_no_relative_fw_argv_t3952.py tests/unit/test_peer_subscribe.py
+python3 -m pytest -q tests/unit/test_reranker_t3953.py
 bin/fw watchtower current
 bin/fw vendor self --check
 
@@ -287,19 +289,21 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** found while fixing T-3807 — `subprocess.run(["bin/fw", ...], cwd=PROJECT_ROOT)` in
-Watchtower's arc and BVP blueprints, lib/peer.py and ux-review. On any consumer project these
-fail with FileNotFoundError: the consumer's fw is .agentic-framework/bin/fw.
+**Symptom:** dimitri-mint-dev (G-009): every reranked candidate scored 0.5, so fw ask, fw
+recall and Watchtower search returned candidates in plain retrieval order; nothing reported it.
 
-**Root cause:** fw was named relative to the working directory, which happens to be right only
-inside the framework repo (where PROJECT_ROOT == FRAMEWORK_ROOT).
+**Root cause:** `_rerank_score` passed `system=` together with `raw=True`; Ollama rejects that
+combination (HTTP 400). The except branch logged at DEBUG and returned the neutral 0.5, so a
+total failure looked like "all equally relevant". The scoring itself was binary ("yes" in a
+1-token answer), not the model's graded yes/no log-odds.
 
-**Why structurally allowed:** every test and every manual click happened in the framework
-repo; no lint looked at argv shape. The class is the T-1257 one ("bin/fw" in the framework vs
-.agentic-framework/bin/fw in consumers), in code instead of in instructions.
+**Why structurally allowed:** the failure path was silent by design (DEBUG + neutral value),
+no test asserted that two different documents get different scores, and the semantic-recall
+health check (T-3783) probes retrieval, not reranking.
 
-**Prevention:** fw is resolved from FRAMEWORK_ROOT at every site; a lint over web/, lib/ and
-agents/ refuses a cwd-relative "bin/fw" argv (with a control proving it catches both forms).
+**Prevention:** inlined template without system, graded sigmoid score, WARNING on error;
+tests pin the request shape, the scoring and the error path. A doctor check for distinct
+scores is a follow-up.
 
 ## Evolution
 
@@ -356,16 +360,16 @@ agents/ refuses a cwd-relative "bin/fw" argv (with a control proving it catches 
 
 **Recommendation:** GO
 
-**Rationale:** Twelve subprocess calls named fw relative to the project directory, so on every
-consumer the Watchtower arc buttons, the BVP driver forms and the peer responder failed with
-"Failed to invoke fw". All now use the framework's absolute fw, and a lint stops the pattern
-coming back. The Human check is one real click on an arc or BVP control, because that is the
-behaviour that changed.
+**Rationale:** The reranker never ranked anything: Ollama rejected the request (raw + system),
+the error was logged at DEBUG, and every candidate scored 0.5. Reproduced live here before the
+fix, and the fix is measured live after it. The one Human criterion is a two-query look at
+Watchtower search, because the ordering you see there is what changed.
 
 **Evidence:**
-- web/blueprints/arcs.py 6 sites, web/blueprints/bvp.py 5, lib/peer.py 1, ux-review 1 → absolute fw.
-- tests/unit/test_no_relative_fw_argv_t3952.py 2/2 (with a control); test_peer_subscribe.py 12/12 (assertions updated to the absolute path); arc/bvp test files 612 green (the one red, test_arcs_pages_tokens hexes in arc_detail.html, is pre-existing and baselined).
-- Watchtower restarted, `fw watchtower current` OK, /arcs and /bvp 200.
+- Before: relevant 0.5, irrelevant 0.5; raw+system → HTTP 400 (Ollama 0.33.1).
+- After: relevant 0.9991, irrelevant 0.0, Dutch query vs English doc 0.9974; ~44 ms/pair.
+- tests/unit/test_reranker_t3953.py 5/5 (request shape, graded score, ordering, warning on error); recall telemetry 32/32.
+- Watchtower restarted; `fw watchtower current` OK.
 
 ## Decisions
 
@@ -390,30 +394,29 @@ behaviour that changed.
 
 ## Updates
 
-### 2026-10-06T14:04:48Z — task-created [task-create-agent]
+### 2026-10-06T14:52:05Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3952-relative-binfw-subprocess-calls-break-on.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3953-reranker-is-a-silent-no-op-webembeddings.md
 - **Context:** Initial task creation
 
-### 2026-10-06T20:10:38Z — status-update [task-update-agent]
+### 2026-10-06T19:49:55Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
 
+### 2026-10-06T20:05Z — reproduced and fixed [agent]
+- Before (live, Ollama 0.33.1, dengcao/Qwen3-Reranker-0.6B): relevant 0.5, irrelevant 0.5; a raw generate with system= → "raw mode does not support template, system, or context (status code: 400)".
+- After: relevant 0.9991, irrelevant 0.0, Dutch query vs English doc 0.9974; ~44 ms/pair warm.
+- Watchtower restarted (pid 3335861), `fw watchtower current` OK.
+- Not done here (dimitri-mint-dev's suggestion): a `fw doctor` check that the reranker returns distinct scores — candidate follow-up.
+
 ## Reviewer Verdict (v1.5)
 
-- **Scan ID:** R-53398b5a
-- **Timestamp:** 2026-10-06T20:16:18Z
+- **Scan ID:** R-ca1254b1
+- **Timestamp:** 2026-10-06T19:54:14Z
 - **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
+- **Overall:** PASS
 - **Needs Human:** no
-- **Findings:** 2
+- **Findings:** none
 
-**Per-AC findings:**
-
-- **AC#1 (Agent)** — Every subprocess call in web/, lib/ and agents/ that launches fw resolves it from the framework root (absolute path), never as a cwd-relative "bin/fw" — web/blueprints/arcs.py (6 calls: approve/remove
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/arcs.py in: Every subprocess call in web/, lib/ and agents/ that launches fw resolves it from the framework root (absolute path), never as a cwd-relative "bin/fw"`
-- **AC#2 (Agent)** — A lint test refuses a bare `["bin/fw", ...]` / `['bin/fw', ...]` argv in web/, lib/, agents/ Python, so the class cannot return (T-3807 fixed lib/bvp.sh the same way) — tests/unit/test_no_relative_fw_
-  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/bvp.sh in: A lint test refuses a bare `["bin/fw", ...]` / `['bin/fw', ...]` argv in web/, lib/, agents/ Python, so the class cannot return (T-3807 fixed lib/bvp.`
-
-### 2026-10-06T20:16:09Z — status-update [task-update-agent]
+### 2026-10-06T19:54:04Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed

@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3953: Reranker is a silent no-op: web/embeddings.py _rerank_score sends system= with raw=True (Ollama HTTP 400), logs at DEBUG and returns 0.5 for every candidate — fw ask/recall/Watchtower search are never reranked
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-07T06:24:48Z
+# ============================================================================
+
+task_id: T-3953
+task_name: "Reranker is a silent no-op: web/embeddings.py _rerank_score sends system= with raw=True (Ollama HTTP 400), logs at DEBUG and returns 0.5 for every candidate — fw ask/recall/Watchtower search are never reranked"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-06T14:52:05Z
+completed: 2026-10-06T19:54:04Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-06T16:52:53+02:00
+last_commit: 2026-10-06T21:54:30+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed — reranker silent no-op (dimitri-mint-dev G-009). the reranker ranks again — Qwen chat template inlined into the raw prompt (no system field: Ollama 400'd raw+system, logged at DEBUG, every candidate scored 0.5), graded score from the yes/no log-odds, WARNING on error. Live: relevant 0.9991 vs irrelevant 0.0 (dimitri-mint-dev G-009). vendor-sync web/embeddings.py. [REVIEW] Human AC (Watchtower search ordering) + Recommendation GO — partial-complete for the operator
+
+# Key outcomes
+outcomes:
+  - 'Reproduced live on this host (Ollama 0.33.1, dengcao/Qwen3-Reranker-0.6B): before the fix every pair scores 0.5 and raw+system is rejected (evidence in Updates)'
+  - '`_rerank_score` inlines the Qwen chat template into the raw prompt (no system field), asks for logprobs (top 20) and returns sigmoid(logp_yes − logp_no) matched case-insensitively — a graded score, not 1.0/0.0'
+  - 'A reranker error logs at WARNING (not DEBUG) and the fallback stays 0.5, so the failure is visible'
+  - 'Regression tests (no live model needed): the request carries no system field and requests logprobs; scoring maps logprobs to the sigmoid; an error path warns; plus a live check here that a relevant pair outscores an irrelevant one (5 tests; live 0.9991 vs 0.0)'
+  - '[REVIEW] Watchtower search answers now put the most relevant result first'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'the reranker ranks again — Qwen chat template inlined into the raw prompt (no system field: Ollama 400''d raw+system, logged at DEBUG, every candidate scored 0.5), graded score from the yes/no log-odds, WARNING on error. Live: relevant 0.9991 vs irrelevant 0.0 (dimitri-mint-dev G-009)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/embeddings.py'
+  - '.tasks/active/T-3953-reranker-is-a-silent-no-op-webembeddings.md'
+  - 'tests/unit/test_reranker_t3953.py'
+  - 'web/embeddings.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T16:52:53'
+    action: 'T-3953: filed — reranker silent no-op (dimitri-mint-dev G-009)'
+  - time: '2026-10-06T21:52:55'
+    action: 'T-3953: the reranker ranks again — Qwen chat template inlined into the raw prompt (no system field: Ollama 400''d raw+system, logged at DEBUG, every candidate scored 0.5), graded score from the yes/no log-odds, WARNING on error. Live: relevant 0.9991 vs irrelevant 0.0 (dimitri-mint-dev G-009)'
+  - time: '2026-10-06T21:53:01'
+    action: 'T-3953: vendor-sync web/embeddings.py'
+  - time: '2026-10-06T21:54:30'
+    action: 'T-3953: [REVIEW] Human AC (Watchtower search ordering) + Recommendation GO — partial-complete for the operator'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 301 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 301
+  commits: 4
+  files_changed: 4
+  lines_added: 582
+  lines_removed: 31
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3953-reranker-is-a-silent-no-op-webembeddings.md
+generated_by: context-agent-hybrid
