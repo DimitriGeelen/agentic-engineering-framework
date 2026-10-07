@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3971: secret-scan scan-tree exits 0 with no patterns catalogue and skips the name axis — audit reports PASS (ring20 finding)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-07T05:22:30Z
+# ============================================================================
+
+task_id: T-3971
+task_name: "secret-scan scan-tree exits 0 with no patterns catalogue and skips the name axis — audit reports PASS (ring20 finding)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-07T05:16:20Z
+completed: 2026-10-07T05:22:08Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-07T07:21:40+02:00
+last_commit: 2026-10-07T07:21:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  secret-scan scan-tree/scan-file with no catalogue exit 3 NOT CHECKED (name axis still runs); audit FAILs instead of PASS. vendor-sync secret-scan.sh, audit.sh
+
+# Key outcomes
+outcomes:
+  - '`scan-tree` with no catalogue still runs the filename axis; exits 1 on any hit, otherwise exits 3 with "NOT CHECKED: no patterns catalogue" on stderr — never 0'
+  - '`scan-file` with no catalogue exits 3 (it is not a commit gate, so no fail-open)'
+  - '`fw audit` maps scan-tree rc 3 to FAIL "Secret scan NOT CHECKED" with the remedy, never to PASS'
+  - '`scan-staged` behaviour unchanged (warning, rc 0; rc 1 under FW_SECRET_SCAN_STRICT=1)'
+  - 'Test `tests/unit/t3971_secret_scan_no_catalogue.bats` covers all four, with a control that a catalogue present still gives 0 on a clean tree'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/git/lib/secret-scan.sh'
+  - 'agents/audit/audit.sh'
+  - 'agents/git/lib/secret-scan.sh'
+  - '.tasks/active/T-3971-secret-scan-scan-tree-exits-0-with-no-pa.md'
+  - 'tests/unit/t3971_secret_scan_no_catalogue.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-07T07:21:40'
+    action: 'T-3971: secret-scan scan-tree/scan-file with no catalogue exit 3 NOT CHECKED (name axis still runs); audit FAILs instead of PASS'
+  - time: '2026-10-07T07:21:50'
+    action: 'T-3971: vendor-sync secret-scan.sh, audit.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 2
+  files_changed: 6
+  lines_added: 459
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3971-secret-scan-scan-tree-exits-0-with-no-pa.md
+generated_by: context-agent-hybrid

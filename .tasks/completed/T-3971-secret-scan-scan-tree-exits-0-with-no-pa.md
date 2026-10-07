@@ -4,12 +4,12 @@ name: "secret-scan scan-tree exits 0 with no patterns catalogue and skips the na
 description: >
   secret-scan scan-tree exits 0 with no patterns catalogue and skips the name axis — audit reports PASS (ring20 finding)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/audit.sh, agents/git/lib/secret-scan.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-07T05:16:20Z
-last_update: 2026-10-07T05:16:20Z
-date_finished: null
+last_update: 2026-10-07T05:22:08Z
+date_finished: 2026-10-07T05:22:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -61,11 +61,11 @@ ring20 (measured): `secret-scan.sh scan-tree` in a repo with no `.secret-scan-pa
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `scan-tree` with no catalogue still runs the filename axis; exits 1 on any hit, otherwise exits 3 with "NOT CHECKED: no patterns catalogue" on stderr — never 0
-- [ ] `scan-file` with no catalogue exits 3 (it is not a commit gate, so no fail-open)
-- [ ] `fw audit` maps scan-tree rc 3 to FAIL "Secret scan NOT CHECKED" with the remedy, never to PASS
-- [ ] `scan-staged` behaviour unchanged (warning, rc 0; rc 1 under FW_SECRET_SCAN_STRICT=1)
-- [ ] Test `tests/unit/t3971_secret_scan_no_catalogue.bats` covers all four, with a control that a catalogue present still gives 0 on a clean tree
+- [x] `scan-tree` with no catalogue still runs the filename axis; exits 1 on any hit, otherwise exits 3 with "NOT CHECKED: no patterns catalogue" on stderr — never 0
+- [x] `scan-file` with no catalogue exits 3 (it is not a commit gate, so no fail-open)
+- [x] `fw audit` maps scan-tree rc 3 to FAIL "Secret scan NOT CHECKED" with the remedy, never to PASS
+- [x] `scan-staged` behaviour unchanged (warning, rc 0; rc 1 under FW_SECRET_SCAN_STRICT=1)
+- [x] Test `tests/unit/t3971_secret_scan_no_catalogue.bats` covers all four, with a control that a catalogue present still gives 0 on a clean tree
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -244,6 +244,13 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** ring20 measured `scan-tree` exiting 0 with a planted AWS key in a repo with no `.secret-scan-patterns`; `fw audit` reported "[PASS] Secret scan: tracked tree clean".
+
+**Root cause:** `scan_tree` copied the commit hook's fail-open (`warn; return 0`) for a missing catalogue. That trade-off fits a commit gate (do not block every commit of a consumer whose payload is stale; warn loudly; strict mode opt-in) but not an audit, whose only job is to report. The early return also skipped `scan_names`, the second axis T-2897 added to this same pass. The audit treated every non-zero as "findings" and zero as PASS, with no third state.
+
+**Why structurally allowed:** the scanner had two outcomes (clean / findings) and no way to say "did not run"; every scan-tree test ran with the framework's catalogue present.
+
+**Prevention:** exit code 3 = NOT CHECKED for the audit-mode verbs, the audit maps it to FAIL, and `t3971_secret_scan_no_catalogue.bats` pins the no-catalogue paths, the name axis still running, the unchanged commit-hook contract, and a control with the catalogue present.
 
 ## Evolution
 
@@ -325,3 +332,15 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3971-secret-scan-scan-tree-exits-0-with-no-pa.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5bca09db
+- **Timestamp:** 2026-10-07T05:22:16Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-07T05:22:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
