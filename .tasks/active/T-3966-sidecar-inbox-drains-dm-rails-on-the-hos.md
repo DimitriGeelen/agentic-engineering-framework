@@ -8,10 +8,10 @@ description: >
   Read-only (local cursor, no hub ack), but not project-addressed. Decide: stop draining
   dm rails when the key is the host default, or label them as host-wide.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T21:08:37Z
-last_update: '2026-10-06T21:15:49Z'
+last_update: 2026-10-07T05:32:19Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,45 +88,19 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+010 asked whether our receiver ack'd or cross-delivered DMs on the host-default identity. Answer: read-only, local cursor, never injected; but `fw sidecar inbox` shows every DM addressed to `termlink whoami`, which is host-wide (T-3405), so one project's agent can read a DM meant for another. Not draining them would re-open T-3442 (832's answer sat unread for weeks on exactly such a rail). Decision: keep reading, and say plainly that the rail is host-wide, so an agent does not act on another project's message as if it were its own.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw sidecar inbox` prints, before any DM post, one line stating that DM rails are keyed by the host-wide TermLink identity and a post may be meant for another project on this host; `--peek` rail summaries carry the same note
+- [ ] `--json` output carries `dm_scope: "host-identity"` with the same explanation, for both forms
+- [ ] No note is printed when there are no DM posts or rails (consult-only output unchanged)
+- [ ] Test `tests/unit/test_sidecar_dm_scope_t3966.py` covers the three, with dm calls faked (no hub)
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+## Verification
+python3 -m pytest tests/unit/test_sidecar_dm_scope_t3966.py -q > /tmp/.t3966 2>&1 && grep -q passed /tmp/.t3966 && ! grep -q failed /tmp/.t3966
+bin/fw vendor self --check
 
 ## Verification
 
@@ -352,3 +326,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3966-sidecar-inbox-drains-dm-rails-on-the-hos.md
 - **Context:** Initial task creation
+
+### 2026-10-07T05:32:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -246,6 +246,15 @@ def cmd_alerts(args) -> int:
     return 0
 
 
+#: T-3966 (010's question): DM rails are keyed by `termlink whoami`, which is the
+#: host's identity, shared by every project on the machine (T-3405). Reading them is
+#: right (T-3442 — an answer once sat unread on one for weeks); acting on one as if it
+#: were addressed to this project is not.
+DM_SCOPE_NOTE = ("dm rails are keyed by this host's TermLink identity, which every project "
+                 "on this host shares — a dm below may be meant for another project. Check the "
+                 "sender and the conversation before acting on it.")
+
+
 def _print_inbox(args, messages) -> int:
     # T-3442: `--peek` shows DM rail SUMMARIES (count/cursor/unread, no hub
     # drain of content) — the same shape `fw sidecar status` prints. A
@@ -260,6 +269,9 @@ def _print_inbox(args, messages) -> int:
             payload["dm_rails"] = dm_rows
         else:
             payload["dm_posts"] = dm_posts
+        if dm_rows or dm_posts:
+            payload["dm_scope"] = "host-identity"
+            payload["dm_scope_note"] = DM_SCOPE_NOTE
         print(json.dumps(payload, indent=2))
         return 0
 
@@ -271,6 +283,9 @@ def _print_inbox(args, messages) -> int:
         print(f"--- consult @{msg.get('offset')} from {sender} "
               f"[{msg.get('conversation_id')}] ---")
         print(msg.get("body", ""))
+        print()
+    if dm_rows or dm_posts:
+        print(f"NOTE: {DM_SCOPE_NOTE}")
         print()
     if args.peek:
         for row in dm_rows:
