@@ -7,6 +7,7 @@ remains confirmed-only by default; --include-proposed is explicit opt-in.
 
 from __future__ import annotations
 
+import tempfile
 import importlib.util
 import os
 import subprocess
@@ -27,7 +28,9 @@ def _load_bvp_module():
     i = src.index(start_marker) + len(start_marker)
     j = src.index(end_marker, i)
     body = src[i:j].replace("sys.exit(main(sys.argv))", "# (stripped for import)")
-    tmp = PROJECT_ROOT / "tests" / "unit" / "_bvp_cli_imported_1938.py"
+    # T-3981: a private temp dir per load — never a path inside the repo (one of these
+    # was tracked and dirtied the tree) and never a path shared by parallel runs.
+    tmp = Path(tempfile.mkdtemp(prefix="bvp-import-")) / "_bvp_cli_imported_1938.py"
     tmp.write_text(body)
     spec = importlib.util.spec_from_file_location("bvp_cli_imported_1938", tmp)
     mod = importlib.util.module_from_spec(spec)

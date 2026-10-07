@@ -12,6 +12,7 @@ member degrades the whole aggregate.
 
 from __future__ import annotations
 
+import tempfile
 import importlib.util
 import os
 import sys
@@ -39,7 +40,9 @@ def _load_bvp_module():
     # Strip the trailing `sys.exit(main(sys.argv))` so import doesn't run main.
     body = body.replace("sys.exit(main(sys.argv))", "# (stripped for import)")
     # Write to a tmp .py and import it.
-    tmp = PROJECT_ROOT / "tests" / "unit" / "_bvp_cli_imported.py"
+    # T-3981: a private temp dir per load — never a path inside the repo (one of these
+    # was tracked and dirtied the tree) and never a path shared by parallel runs.
+    tmp = Path(tempfile.mkdtemp(prefix="bvp-import-")) / "_bvp_cli_imported.py"
     tmp.write_text(body)
     spec = importlib.util.spec_from_file_location("bvp_cli_imported", tmp)
     mod = importlib.util.module_from_spec(spec)

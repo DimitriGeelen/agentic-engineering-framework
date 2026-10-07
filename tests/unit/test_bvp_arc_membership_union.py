@@ -21,6 +21,7 @@ Fixtures only (T-3326) — no live corpus counts.
 
 from __future__ import annotations
 
+import tempfile
 import importlib.util
 import os
 import sys
@@ -43,7 +44,9 @@ def _load_bvp_module():
     i = src.index(start_marker) + len(start_marker)
     j = src.index(end_marker, i)
     body = src[i:j].replace("sys.exit(main(sys.argv))", "# (stripped for import)")
-    tmp = PROJECT_ROOT / "tests" / "unit" / "_bvp_union_imported.py"
+    # T-3981: a private temp dir per load — never a path inside the repo (one of these
+    # was tracked and dirtied the tree) and never a path shared by parallel runs.
+    tmp = Path(tempfile.mkdtemp(prefix="bvp-import-")) / "_bvp_union_imported.py"
     tmp.write_text(body)
     spec = importlib.util.spec_from_file_location("bvp_union_imported", tmp)
     mod = importlib.util.module_from_spec(spec)
