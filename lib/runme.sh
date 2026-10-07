@@ -134,8 +134,11 @@ runme_watch() {
     done
     cat "$log"
     rm -f "$rec"   # T-3878: reported — nothing left to re-arm
-    local rc sig; rc=$(grep -o "RUNME EXIT [0-9]*" "$log" | tail -1 | awk '{print $3}')
-    sig=$(grep -o "RUNME STOPPED [A-Z]*" "$log" | tail -1 | awk '{print $3}')
+    # T-3978: `|| true` is load-bearing. bin/fw runs under `set -euo pipefail`, and on a
+    # normal run there is no STOPPED line, so grep exits 1, the pipeline fails and set -e
+    # killed the watcher with 1 before it reported a clean run's exit 0.
+    local rc sig; rc=$(grep -o "RUNME EXIT [0-9]*" "$log" | tail -1 | awk '{print $3}' || true)
+    sig=$(grep -o "RUNME STOPPED [A-Z]*" "$log" | tail -1 | awk '{print $3}' || true)
     if [ -n "$sig" ]; then
         echo "runme watch: $name was STOPPED by SIG$sig before it finished (exit ${rc:-?})"
     else

@@ -2,12 +2,15 @@
 id: T-3978
 name: "fw runme watch exits 1 after a run that ended RUNME EXIT 0 (seen twice 2026-10-07)"
 description: >
-  Two operator runmes today (ack-close-t3953-t3952, baseline-t3511-horizon) logged RUNME EXIT 0, yet bin/fw runme watch, run in the background by the agent, exited 1. The agent then has to read run.log to know the outcome; a watcher whose exit code disagrees with the run is a false red. T-3741 owns the watch code.
+  Two operator runmes today (ack-close-t3953-t3952, baseline-t3511-horizon) logged
+  RUNME EXIT 0, yet bin/fw runme watch, run in the background by the agent, exited
+  1. The agent then has to read run.log to know the outcome; a watcher whose exit
+  code disagrees with the run is a false red. T-3741 owns the watch code.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-07T09:30:13Z
-last_update: 2026-10-07T09:30:13Z
-date_finished: null
+last_update: 2026-10-07T09:38:32Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +53,38 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-07T09:38:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3978: fw runme watch exits 1 after a run that ended RUNME EXIT 0 (seen twice 2026-10-07)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+`runme_watch` prints the log, then `sig=$(grep -o "RUNME STOPPED …" | tail | awk)` finds no match on a normal run; grep's 1 under fw's `set -e` + pipefail kills the watcher with exit 1 before it prints "finished (exit N)" or returns the run's code.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw runme watch` on a run that ended `RUNME EXIT 0` prints "<name> finished (exit 0)" and exits 0, when invoked through `bin/fw` (the path the operator handoff uses)
+- [ ] A run ending `RUNME EXIT 3` makes the watch exit 3; a STOPPED run still reports the signal
+- [ ] The T-3741 control test exercises the real `bin/fw` path that failed, and fails on the pre-fix code
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -320,3 +341,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3978-fw-runme-watch-exits-1-after-a-run-that-.md
 - **Context:** Initial task creation
+
+### 2026-10-07T09:38:32Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

@@ -10,7 +10,9 @@ setup() {
     LIB="$BATS_TEST_DIRNAME/../../lib/runme.sh"
     TMPP="$(mktemp -d)"
     FW="$BATS_TEST_TMPDIR/fw-runme"
-    printf '#!/bin/bash\nexport PROJECT_ROOT=%q\n[ "$1" = runme ] && shift\nsource %q\nrunme_main "$@"\n' "$TMPP" "$LIB" > "$FW"
+    # T-3978: same shell options as bin/fw (set -euo pipefail). Without them this stub hid a
+    # watch that died with 1 after every clean run.
+    printf '#!/bin/bash\nset -euo pipefail\nexport PROJECT_ROOT=%q\n[ "$1" = runme ] && shift\nsource %q\nrunme_main "$@"\n' "$TMPP" "$LIB" > "$FW"
     chmod +x "$FW"
     EV="$TMPP/.context/runme/events.jsonl"
 }
@@ -61,6 +63,15 @@ for l in open(sys.argv[1]):
     run "$FW" runme watch fine --timeout 5
     [ "$status" -eq 0 ]
     [[ "$output" == *"fine finished (exit 0)"* ]]
+}
+
+@test "T-3978: a run that exits 3 makes the watch exit 3 and say so" {
+    "$FW" runme new three -- 'exit 3' >/dev/null
+    bash "$TMPP/.context/runme/three/runme.sh" >/dev/null 2>&1 || true
+    sleep 0.5
+    run "$FW" runme watch three --timeout 5
+    [ "$status" -eq 3 ]
+    [[ "$output" == *"three finished (exit 3)"* ]]
 }
 
 @test "T-3741: pending reports an interrupted run whose watch never reported it" {
