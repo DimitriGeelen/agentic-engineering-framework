@@ -26,11 +26,28 @@ _load() {   # the helper + the guard, as an installed copy would see them
         "$FRAMEWORK_ROOT_REPO/bin/claude-fw")
 }
 
-@test "T-3954: a copy run inside a consumer project finds .agentic-framework/lib" {
+@test "T-3984 (SECURITY): a copy run inside a directory NEVER sources that directory's lib/" {
+    # Replaces T-3954's "finds .agentic-framework in PWD": that lookup sourced code from
+    # whatever directory the operator happened to start in (ring20-dashboard).
+    for d in "$P/.agentic-framework" "$P"; do
+        mkdir -p "$d/lib" "$d/bin"
+        printf 'touch %q\n' "$T/PWNED" > "$d/lib/conversation-holder.sh"
+        printf '#!/bin/bash\nexit 0\n' > "$d/bin/fw"; chmod +x "$d/bin/fw"
+    done
     _load
     cd "$P"
-    [ "$(_cfw_lib conversation-holder.sh)" = "$P/.agentic-framework/lib/conversation-holder.sh" ]
-    [ "$(_cfw_framework_dir)" = "$P/.agentic-framework" ]
+    [ -z "$(_cfw_framework_dir)" ]
+    CLAUDE_ARGS=(-c)
+    run _conversation_guard
+    [ ! -e "$T/PWNED" ]
+    [[ "$output" == *"WARNING: duplicate-conversation guard unavailable"* ]]
+}
+
+@test "T-3984/control: an explicit FRAMEWORK_ROOT still resolves" {
+    _load
+    cd "$T/empty"
+    FRAMEWORK_ROOT="$P/.agentic-framework" run _cfw_framework_dir
+    [ "$output" = "$P/.agentic-framework" ]
 }
 
 @test "T-3954/control: the old beside-the-script lookup finds nothing for a copy" {
