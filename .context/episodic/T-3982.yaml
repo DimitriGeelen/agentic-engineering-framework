@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3982: Greenfield install findings (2026-10-07): comm locale warning in vendor-visibility; seeded FD-009 says Bash is not gated
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-07T11:19:58Z
+# ============================================================================
+
+task_id: T-3982
+task_name: "Greenfield install findings (2026-10-07): comm locale warning in vendor-visibility; seeded FD-009 says Bash is not gated"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-07T11:17:30Z
+completed: 2026-10-07T11:19:37Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-07T13:19:06+02:00
+last_commit: 2026-10-07T13:19:12+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  comm runs under LC_ALL=C in vendor-visibility (no 'not in sorted order'); seeded FD-009 states the current Bash gate (greenfield install findings). vendor-sync vendor-visibility.sh
+
+# Key outcomes
+outcomes:
+  - '`comm` in `lib/vendor-visibility.sh` runs under `LC_ALL=C`, matching its inputs'' sort order; a test pins every comm call to LC_ALL=C (the warning reproduced under en_US.UTF-8 and not under C)'
+  - 'FD-009 in `lib/seeds/decisions.yaml` states the current rule (Bash is gated too; task-creation and read-only commands are allowlisted) and parses as YAML'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/vendor-visibility.sh'
+  - 'lib/seeds/decisions.yaml'
+  - 'lib/vendor-visibility.sh'
+  - '.tasks/active/T-3982-greenfield-install-findings-2026-10-07-c.md'
+  - 'tests/unit/vendor_visibility.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-07T13:19:06'
+    action: 'T-3982: comm runs under LC_ALL=C in vendor-visibility (no ''not in sorted order''); seeded FD-009 states the current Bash gate (greenfield install findings)'
+  - time: '2026-10-07T13:19:12'
+    action: 'T-3982: vendor-sync vendor-visibility.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 5
+  lines_added: 339
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3982-greenfield-install-findings-2026-10-07-c.md
+generated_by: context-agent-hybrid
