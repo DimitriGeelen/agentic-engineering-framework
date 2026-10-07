@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3966: sidecar inbox drains dm rails on the host-wide TermLink identity, so each project on a host sees the others' DMs (010 question)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-07T05:34:01Z
+# ============================================================================
+
+task_id: T-3966
+task_name: "sidecar inbox drains dm rails on the host-wide TermLink identity, so each project on a host sees the others' DMs (010 question)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-06T21:08:37Z
+completed: 2026-10-07T05:33:41Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-07T07:33:26+02:00
+last_commit: 2026-10-07T07:33:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw sidecar inbox says dm rails are host-wide (text note + dm_scope in JSON). vendor-sync sidecar_cli.py
+
+# Key outcomes
+outcomes:
+  - '`fw sidecar inbox` prints, before any DM post, one line stating that DM rails are keyed by the host-wide TermLink identity and a post may be meant for another project on this host; `--peek` rail summaries carry the same note'
+  - '`--json` output carries `dm_scope: "host-identity"` with the same explanation, for both forms'
+  - 'No note is printed when there are no DM posts or rails (consult-only output unchanged)'
+  - 'Test `tests/unit/test_sidecar_dm_scope_t3966.py` covers the three, with dm calls faked (no hub)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - 'lib/sidecar_cli.py'
+  - '.tasks/active/T-3966-sidecar-inbox-drains-dm-rails-on-the-hos.md'
+  - 'tests/unit/test_sidecar_dm_scope_t3966.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-07T07:33:26'
+    action: 'T-3966: fw sidecar inbox says dm rails are host-wide (text note + dm_scope in JSON)'
+  - time: '2026-10-07T07:33:32'
+    action: 'T-3966: vendor-sync sidecar_cli.py'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 505 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 505
+  commits: 2
+  files_changed: 4
+  lines_added: 97
+  lines_removed: 38
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3966-sidecar-inbox-drains-dm-rails-on-the-hos.md
+generated_by: context-agent-hybrid

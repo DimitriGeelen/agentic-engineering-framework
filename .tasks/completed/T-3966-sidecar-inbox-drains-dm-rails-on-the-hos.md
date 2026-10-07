@@ -8,12 +8,12 @@ description: >
   Read-only (local cursor, no hub ack), but not project-addressed. Decide: stop draining
   dm rails when the key is the host default, or label them as host-wide.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/sidecar_cli.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T21:08:37Z
-last_update: 2026-10-07T05:32:19Z
-date_finished:
+last_update: 2026-10-07T05:33:41Z
+date_finished: 2026-10-07T05:33:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -93,10 +93,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw sidecar inbox` prints, before any DM post, one line stating that DM rails are keyed by the host-wide TermLink identity and a post may be meant for another project on this host; `--peek` rail summaries carry the same note
-- [ ] `--json` output carries `dm_scope: "host-identity"` with the same explanation, for both forms
-- [ ] No note is printed when there are no DM posts or rails (consult-only output unchanged)
-- [ ] Test `tests/unit/test_sidecar_dm_scope_t3966.py` covers the three, with dm calls faked (no hub)
+- [x] `fw sidecar inbox` prints, before any DM post, one line stating that DM rails are keyed by the host-wide TermLink identity and a post may be meant for another project on this host; `--peek` rail summaries carry the same note
+- [x] `--json` output carries `dm_scope: "host-identity"` with the same explanation, for both forms
+- [x] No note is printed when there are no DM posts or rails (consult-only output unchanged)
+- [x] Test `tests/unit/test_sidecar_dm_scope_t3966.py` covers the three, with dm calls faked (no hub)
 
 ## Verification
 python3 -m pytest tests/unit/test_sidecar_dm_scope_t3966.py -q > /tmp/.t3966 2>&1 && grep -q passed /tmp/.t3966 && ! grep -q failed /tmp/.t3966
@@ -330,3 +330,15 @@ bin/fw vendor self --check
 ### 2026-10-07T05:32:19Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-68a39e76
+- **Timestamp:** 2026-10-07T05:33:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-07T05:33:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
