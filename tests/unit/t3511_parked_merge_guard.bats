@@ -88,9 +88,13 @@ _commit_all() {
     # Do NOT swallow the failure. A fixture step that fails silently reports as a
     # broken assertion three lines later and sends you looking in the wrong place —
     # which is exactly what it did on the first run of this suite.
-    local out
-    if ! out=$(git -C "$REPO" commit -m "$1" 2>&1); then
-        echo "FIXTURE: commit '$1' failed:" >&2
+    # T-3976: under the parallel suite this commit fails at random with EMPTY output (a
+    # hook exiting non-zero silently). GIT_TRACE stays on so the next failure names the
+    # hook and its exit code; the trace is printed only when the commit fails.
+    local out rc=0
+    out=$(GIT_TRACE=1 git -C "$REPO" commit -m "$1" 2>&1) || rc=$?
+    if [ "$rc" -ne 0 ]; then
+        echo "FIXTURE: commit '$1' failed (rc=$rc):" >&2
         printf '%s\n' "$out" >&2
         return 1
     fi
