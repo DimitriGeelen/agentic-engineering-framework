@@ -225,11 +225,12 @@ run_check() {
     # Real fixtures: T-1485 is a build under T-1442 (Decomposition GO).
     # G-066 verified state: B2 (evidence persistence) + B4 (Layer 2
     # frontmatter) silently dropped. Gate must surface both.
-    local saved="$PROJECT_ROOT"
-    export PROJECT_ROOT="$FRAMEWORK_ROOT"
-    BUILD="$FRAMEWORK_ROOT/.tasks/completed/T-1485-reviewer-v15c--fw-reviewer-audit---pass-.md"
+    # T-3973: frozen copies of the five task files, in the temp project. This test
+    # used to point PROJECT_ROOT at the live repo, so the verdict moved with the
+    # live corpus and went red under the parallel suite while green alone.
+    cp "$BATS_TEST_DIRNAME/fixtures/t3973/"T-*.md "$TEST_TEMP_DIR/.tasks/completed/"
+    BUILD="$TEST_TEMP_DIR/.tasks/completed/T-1485-reviewer-v15c--fw-reviewer-audit---pass-.md"
     run run_check "$BUILD"
-    export PROJECT_ROOT="$saved"
     [ "$status" -eq 1 ]
     [[ "$output" == *"Task-pair §ACD"* ]]
     [[ "$output" == *"Evidence persistence"* ]] || [[ "$output" == *"Layer 2"* ]]
