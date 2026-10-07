@@ -40,6 +40,24 @@ _edit_json() {   # file old new
     [[ "$output" == *"target_blast_radius missing"* ]]
 }
 
+_valid() {   # a complete inception on disk
+    VALID="$TEST_TEMP_DIR/.tasks/active/T-9101-valid-inception.md"
+    printf -- '---\nid: T-9101\nname: "valid"\nworkflow_type: inception\ntarget_blast_radius: 3\nvoi_score: 0.5\nstatus: captured\n---\n\nbody text\n' > "$VALID"
+}
+
+@test "T-3979: an edit that BREAKS a valid inception (drops voi_score) is refused" {
+    _valid
+    run bash -c "$(printf '%q ' printf '%s' "$(_edit_json "$VALID" $'voi_score: 0.5\n' '')") | python3 \"$HOOK\""
+    [ "$status" -eq 2 ]
+    [[ "$output" == *"voi_score"* ]]
+}
+
+@test "T-3979/control: a harmless edit to a valid inception still passes" {
+    _valid
+    run bash -c "$(printf '%q ' printf '%s' "$(_edit_json "$VALID" 'body text' 'new body')") | python3 \"$HOOK\""
+    [ "$status" -eq 0 ]
+}
+
 @test "T-3948: a Write whose content carries the fields passes the gate" {
     json=$(python3 -c 'import json,sys; print(json.dumps({"tool_input":{"file_path":sys.argv[1],"content":"---\nid: T-9100\nworkflow_type: inception\ntarget_blast_radius: 2\nvoi_score: 0.4\n---\nx\n"}}))' "$OLD")
     run bash -c "printf '%s' '$json' | python3 \"$HOOK\""
