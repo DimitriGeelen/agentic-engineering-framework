@@ -169,20 +169,22 @@ def main() -> int:
     if fm.get("workflow_type", "").strip() != "inception":
         return 0  # Not an inception, schema doesn't apply
 
-    errors = _validate(fm)
-    if not errors:
-        return 0
-
-    # T-3948: judge the result of the edit, not the file it starts from. A repairing edit
-    # (one that adds the missing fields, as an upgraded consumer's old inception needs)
-    # passes; an edit that leaves them missing is still refused below.
+    # T-3948 / T-3979: judge the RESULT of the edit, in both directions. T-3948 let a
+    # repairing edit through but still returned early whenever the file on disk was
+    # valid, so an edit that DELETED voi_score from a valid inception passed
+    # (ring20-dashboard). Now the post-edit frontmatter decides whenever it can be
+    # computed; the on-disk file decides only when it cannot.
     before = _read_text(fp) or ""
     after = _post_edit_text(tool_input, before)
-    if after is not None:
-        post = _parse_frontmatter(after)
-        if post is not None and (post.get("workflow_type", "").strip() != "inception"
-                                 or not _validate(post)):
-            return 0
+    post = _parse_frontmatter(after) if after is not None else None
+    if post is not None:
+        if post.get("workflow_type", "").strip() != "inception":
+            return 0  # the edit makes it something else; the schema no longer applies
+        errors = _validate(post)
+    else:
+        errors = _validate(fm)
+    if not errors:
+        return 0
 
     # Bypass check
     if os.environ.get("FW_ALLOW_INCEPTION_SCHEMA_DRIFT") == "1":
