@@ -1,13 +1,13 @@
 ---
-id: T-3979
-name: "Inception schema gate: an edit that BREAKS a valid inception (drops voi_score / target_blast_radius) passes, because main() returns before the post-edit check (ring20-dashboard, T-3948 follow-up)"
+id: T-3978
+name: "fw runme watch exits 1 after a run that ended RUNME EXIT 0 (seen twice 2026-10-07)"
 description: >
-  Inception schema gate: an edit that BREAKS a valid inception (drops voi_score / target_blast_radius) passes, because main() returns before the post-edit check (ring20-dashboard, T-3948 follow-up)
+  Two operator runmes today (ack-close-t3953-t3952, baseline-t3511-horizon) logged RUNME EXIT 0, yet bin/fw runme watch, run in the background by the agent, exited 1. The agent then has to read run.log to know the outcome; a watcher whose exit code disagrees with the run is a false red. T-3741 owns the watch code.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
-horizon: now
+horizon: next
 tags: []
 components: []
 related_tasks: []
@@ -37,8 +37,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-07T09:30:30Z
-last_update: 2026-10-07T09:30:30Z
+created: 2026-10-07T09:30:13Z
+last_update: 2026-10-07T09:30:13Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -52,19 +52,18 @@ date_finished: null
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-3979: Inception schema gate: an edit that BREAKS a valid inception (drops voi_score / target_blast_radius) passes, because main() returns before the post-edit check (ring20-dashboard, T-3948 follow-up)
+# T-3978: fw runme watch exits 1 after a run that ended RUNME EXIT 0 (seen twice 2026-10-07)
 
 ## Context
 
-ring20-dashboard (measured on v1.8.5): `check-inception-schema.py` returns 0 as soon as the file ON DISK is valid, so for a valid inception the post-edit check from T-3948 never runs. An Edit that deletes `voi_score` or `target_blast_radius` from a valid inception passes the gate. T-3948 fixed the repairing direction only.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The gate judges the post-edit file in both directions: an edit that leaves a valid inception valid passes; an edit that makes a valid inception invalid is refused (exit 2) with the same message and bypass as today
-- [ ] The T-3948 behaviour is unchanged: repairing a broken inception passes, leaving it broken is refused
-- [ ] An edit that changes `workflow_type` away from inception is not judged by this gate (unchanged)
-- [ ] `tests/unit/t3948_inception_schema_upgrade.bats` gains the break-valid case (refused) with a harmless-edit control (allowed), and the whole file passes
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -317,7 +316,7 @@ ring20-dashboard (measured on v1.8.5): `check-inception-schema.py` returns 0 as 
 
 ## Updates
 
-### 2026-10-07T09:30:30Z — task-created [task-create-agent]
+### 2026-10-07T09:30:13Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3979-inception-schema-gate-an-edit-that-break.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3978-fw-runme-watch-exits-1-after-a-run-that-.md
 - **Context:** Initial task creation

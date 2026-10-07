@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3979: Inception schema gate: an edit that BREAKS a valid inception (drops voi_score / target_blast_radius) passes, because main() returns before the post-edit check (ring20-dashboard, T-3948 follow-up)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-07T09:38:14Z
+# ============================================================================
+
+task_id: T-3979
+task_name: "Inception schema gate: an edit that BREAKS a valid inception (drops voi_score / target_blast_radius) passes, because main() returns before the post-edit check (ring20-dashboard, T-3948 follow-up)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-07T09:30:30Z
+completed: 2026-10-07T09:35:21Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-07T11:34:54+02:00
+last_commit: 2026-10-07T11:35:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception schema gate judges the post-edit file in both directions — breaking a valid inception is refused (ring20-dashboard). vendor-sync check-inception-schema.py
+
+# Key outcomes
+outcomes:
+  - 'The gate judges the post-edit file in both directions: an edit that leaves a valid inception valid passes; an edit that makes a valid inception invalid is refused (exit 2) with the same message and bypass as today'
+  - 'The T-3948 behaviour is unchanged: repairing a broken inception passes, leaving it broken is refused'
+  - 'An edit that changes `workflow_type` away from inception is not judged by this gate (unchanged)'
+  - '`tests/unit/t3948_inception_schema_upgrade.bats` gains the break-valid case (refused) with a harmless-edit control (allowed), and the whole file passes'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-inception-schema.py'
+  - 'agents/context/check-inception-schema.py'
+  - '.tasks/active/T-3979-inception-schema-gate-an-edit-that-break.md'
+  - 'tests/unit/t3948_inception_schema_upgrade.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-07T11:34:54'
+    action: 'T-3979: inception schema gate judges the post-edit file in both directions — breaking a valid inception is refused (ring20-dashboard)'
+  - time: '2026-10-07T11:35:00'
+    action: 'T-3979: vendor-sync check-inception-schema.py'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 4
+  lines_added: 369
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3979-inception-schema-gate-an-edit-that-break.md
+generated_by: context-agent-hybrid

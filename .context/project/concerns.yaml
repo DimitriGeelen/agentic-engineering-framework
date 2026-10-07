@@ -5416,3 +5416,24 @@ concerns:
     no check asserts the live agent session is an inject target.
   what_remains: T-3936 (surface unclaimed mail without a TermLink target; warn when the live session has
     no registration).
+- id: G-112
+  type: gap
+  title: AEF runs git inside worker-written trees with the tree's own config live — safe only while workers
+    share the operator's uid
+  description: 'ring20 G-232 / §9 Q5 (2026-10-07). fw integrate (lib/integrate.py), fw worktree
+    remove/gc/status (lib/worktree.sh), fw termlink dispatch (git -C on the project for the review revision)
+    and the reviewer scans (lib/reviewer/reverify.py, drift.py) run git in trees a worker wrote. None neutralises
+    the tree''s config (core.fsmonitor, core.hooksPath, diff/filter drivers can execute commands). Today every
+    worker runs as the operator''s uid, so nothing is gained by the worker. lib/govd_sandbox.py already
+    sketches an agent_uid; the moment workers get a lower uid, each of these paths runs worker-controlled
+    commands with the operator''s authority.'
+  severity: medium
+  status: watching
+  detected_in: ring20 T-2281 §9 Q5
+  observed: '2026-10-07'
+  reported_by: proxmox-ring20-management (peer)
+  blast_radius: any AEF install that separates worker and operator uids
+  detection_gap: no check refuses a uid split while these git paths still read the tree's config
+  what_remains: before any uid split ships, run these git calls with config neutralised (-c core.fsmonitor=
+    -c core.hooksPath=/dev/null, no diff/filter drivers) or under the worker's uid; keep safe.directory
+    un-whitelisted. Tracked with the arc-009 inception.
