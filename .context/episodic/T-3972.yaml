@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3972: t2436 t3 compares the LIVE .agentic-framework status before/after --check; a concurrent vendor sync makes it red (nightly 2026-10-07)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-07T10:47:38Z
+# ============================================================================
+
+task_id: T-3972
+task_name: "t2436 t3 compares the LIVE .agentic-framework status before/after --check; a concurrent vendor sync makes it red (nightly 2026-10-07)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-07T05:53:21Z
+completed: 2026-10-07T10:47:03Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-07T12:46:44+02:00
+last_commit: 2026-10-07T12:46:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t2436 t3/t4 run on a throwaway clone with committed planted drift, not the live repo; t3 now has teeth (a syncing --check fails it)
+
+# Key outcomes
+outcomes:
+  - 't3 and t4 run on a throwaway clone of HEAD with deliberate drift planted (a source file changed, its vendored copy not), never on the live repo'
+  - 't3 asserts `--check` exits 1 on that drift AND leaves the vendored copy byte-identical (so a mutating `--check` would now fail it)'
+  - 't4 asserts `--check` agrees with `--dry-run` both on the drifted clone (1) and after the drift is reverted (0)'
+  - 'The file passes; a teeth check shows t3 fails if `--check` is replaced by a real sync (the drift must be COMMITTED for that: a real sync withholds uncommitted source, T-3165)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3972-t2436-t3-compares-the-live-agentic-frame.md'
+  - 'tests/unit/t2436_vendor_self_check.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-07T12:46:44'
+    action: 'T-3972: t2436 t3/t4 run on a throwaway clone with committed planted drift, not the live repo; t3 now has teeth (a syncing --check fails it)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 293 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 293
+  commits: 1
+  files_changed: 2
+  lines_added: 81
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3972-t2436-t3-compares-the-live-agentic-frame.md
+generated_by: context-agent-hybrid

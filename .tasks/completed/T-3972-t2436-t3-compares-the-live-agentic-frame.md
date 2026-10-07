@@ -8,10 +8,10 @@ description: >
   tree (an agent's fw vendor self during the nightly run) turns it red with no defect.
   Same class as T-3950: run it on a fixture framework root.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-07T05:53:21Z
-last_update: 2026-10-07T10:43:45Z
-date_finished:
+last_update: 2026-10-07T10:47:03Z
+date_finished: 2026-10-07T10:47:03Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -93,10 +93,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] t3 and t4 run on a throwaway clone of HEAD with deliberate drift planted (a source file changed, its vendored copy not), never on the live repo
-- [ ] t3 asserts `--check` exits 1 on that drift AND leaves the vendored copy byte-identical (so a mutating `--check` would now fail it)
-- [ ] t4 asserts `--check` agrees with `--dry-run` both on the drifted clone (1) and after the drift is reverted (0)
-- [ ] The file passes; a teeth check shows t3 fails if `--check` is replaced by a real sync
+- [x] t3 and t4 run on a throwaway clone of HEAD with deliberate drift planted (a source file changed, its vendored copy not), never on the live repo
+- [x] t3 asserts `--check` exits 1 on that drift AND leaves the vendored copy byte-identical (so a mutating `--check` would now fail it)
+- [x] t4 asserts `--check` agrees with `--dry-run` both on the drifted clone (1) and after the drift is reverted (0)
+- [x] The file passes; a teeth check shows t3 fails if `--check` is replaced by a real sync (the drift must be COMMITTED for that: a real sync withholds uncommitted source, T-3165)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -130,6 +130,8 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+timeout 600 bats tests/unit/t2436_vendor_self_check.bats > /tmp/.t3972 2>&1 && ! grep -q "^not ok" /tmp/.t3972
+test "$(grep -c '# skip' /tmp/.t3972)" -eq 0
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -272,6 +274,13 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** t2436 t3 red in the 2026-10-07 nightly; green on re-run.
+
+**Root cause:** t3 compared the live repo's `.agentic-framework/` status before and after `--check`; my own `fw vendor self` ran in that window and changed the tree.
+
+**Why structurally allowed:** a test of "does not mutate X" was written against a shared, live X. Worse, on a clean live tree it had nothing to detect: `--check` with no drift has nothing it could sync, so a mutating `--check` would have passed too.
+
+**Prevention:** the test owns its subject (a clone) and plants the condition it needs (committed drift), and a teeth check showed a syncing `--check` now fails it. Same class as T-3950/T-3973; T-3771 tracks the suite-wide version.
 
 ## Evolution
 
@@ -357,3 +366,15 @@ bvp_scores_proposed:
 ### 2026-10-07T09:00:11Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c8a9563f
+- **Timestamp:** 2026-10-07T10:47:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-07T10:47:03Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
