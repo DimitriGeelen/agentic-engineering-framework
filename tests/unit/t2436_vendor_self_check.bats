@@ -50,30 +50,42 @@ FW="$FRAMEWORK_ROOT/bin/fw"
 # Behavioral — read-only contract holds against the live tree
 # ─────────────────────────────────────────────────────────────────────────
 
-@test "t2436 t3: --check never mutates the vendored .agentic-framework/ tree" {
-    [ -x "$FW" ] || skip "bin/fw not executable"
-    git -C "$FRAMEWORK_ROOT" rev-parse --git-dir >/dev/null 2>&1 || skip "not a git repo"
-    local before after
-    before=$(git -C "$FRAMEWORK_ROOT" status --porcelain -- .agentic-framework | sort)
-    run "$FW" vendor self --check
-    # read-only verifier: clean → 0, drift → 1; never a crash/other code.
-    [ "$status" -eq 0 ] || [ "$status" -eq 1 ]
-    after=$(git -C "$FRAMEWORK_ROOT" status --porcelain -- .agentic-framework | sort)
-    [ "$before" = "$after" ] || { echo "MUTATION: --check changed the vendored tree"; echo "before:[$before]"; echo "after:[$after]"; return 1; }
+# T-3972: t3/t4 used to run on the LIVE repo and compare its git status. A concurrent
+# `fw vendor self` (an agent at work during the nightly) turned t3 red with no defect, and
+# on a clean live tree t3 could not see a mutation at all — nothing was there to sync.
+# They now run on a throwaway clone of HEAD with drift planted on purpose.
+_clone_with_drift() {
+    CL="$BATS_TEST_TMPDIR/fw"
+    git clone -q --shared "$FRAMEWORK_ROOT" "$CL"
+    printf '# t2436 planted drift\n' >> "$CL/lib/colors.sh"   # source changed, vendored copy not
+    # Committed: a REAL sync withholds uncommitted source (T-3165), so with the drift left
+    # uncommitted a --check that wrongly synced would copy nothing and t3 could not see it.
+    git -C "$CL" -c user.email=t@t -c user.name=t commit -qam "T-3972: planted drift"
+    VENDORED="$CL/.agentic-framework/lib/colors.sh"
+    VSUM=$(sha256sum "$VENDORED" | cut -d' ' -f1)
 }
 
-@test "t2436 t4: --check exit code agrees with --dry-run drift state" {
-    [ -x "$FW" ] || skip "bin/fw not executable"
-    run "$FW" vendor self --check
-    local check_status=$status
-    run "$FW" vendor self --dry-run
-    if echo "$output" | grep -q "would sync"; then
-        # drift present → --check must have failed
-        [ "$check_status" -ne 0 ]
-    else
-        # in sync → --check must have passed
-        [ "$check_status" -eq 0 ]
-    fi
+_cfw() {   # the clone's fw, rooted in the clone (no inherited live PROJECT_ROOT)
+    ( cd "$CL" && env -u PROJECT_ROOT -u FRAMEWORK_ROOT -u CLAUDE_PROJECT_DIR "$CL/bin/fw" "$@" )
+}
+
+@test "t2436 t3: --check reports planted drift (1) and never mutates the vendored copy" {
+    _clone_with_drift
+    run _cfw vendor self --check
+    [ "$status" -eq 1 ]
+    [ "$(sha256sum "$VENDORED" | cut -d' ' -f1)" = "$VSUM" ] \
+        || { echo "MUTATION: --check synced the vendored copy"; return 1; }
+    ! grep -q 't2436 planted drift' "$VENDORED"
+}
+
+@test "t2436 t4: --check exit code agrees with --dry-run, with and without drift" {
+    _clone_with_drift
+    run _cfw vendor self --check;   [ "$status" -eq 1 ]
+    run _cfw vendor self --dry-run; [[ "$output" == *"would sync"* ]]
+    git -C "$CL" show HEAD~1:lib/colors.sh > "$CL/lib/colors.sh"
+    git -C "$CL" -c user.email=t@t -c user.name=t commit -qam "T-3972: drift removed"
+    run _cfw vendor self --dry-run; [[ "$output" != *"would sync"* ]]
+    run _cfw vendor self --check;   [ "$status" -eq 0 ]
 }
 
 # ─────────────────────────────────────────────────────────────────────────
