@@ -9,12 +9,12 @@ description: >
   2026-10-07 nightly while the repo was being written to, green on re-run. Pin it
   to a committed fixture copy of the T-1485 file and a temp project root.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/test_task_pair_acd_gate.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-07T05:54:03Z
-last_update: 2026-10-07T06:37:54Z
-date_finished:
+last_update: 2026-10-07T06:39:21Z
+date_finished: 2026-10-07T06:39:21Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -94,9 +94,9 @@ Red in the 2026-10-07 nightly AND in a clean full re-run, green when run alone: 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] The T-1442/T-1485 regression runs on a temp project holding committed copies of T-1442, T-1485 and its related builds (T-1443, T-1483, T-1484), not `PROJECT_ROOT=$FRAMEWORK_ROOT`
-- [ ] It still asserts the gate trips on the historic B2/B4 gap
-- [ ] The file passes alone and under 12-way parallel load (run 3 times alongside the bats suite's heaviest files)
+- [x] The T-1442/T-1485 regression runs on a temp project holding committed copies of T-1442, T-1485 and its related builds (T-1443, T-1483, T-1484), not `PROJECT_ROOT=$FRAMEWORK_ROOT`
+- [x] It still asserts the gate trips on the historic B2/B4 gap
+- [x] The file passes alone and under parallel load (3 concurrent runs alongside lib_upgrade.bats and t3965: 8/8 each)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -274,6 +274,13 @@ timeout 300 bats tests/unit/test_task_pair_acd_gate.bats > /tmp/.t3973 2>&1 && !
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** the historic T-1442/T-1485 case went red in the nightly and in a full re-run, green alone; it blocked the push.
+
+**Root cause:** the test set `PROJECT_ROOT=$FRAMEWORK_ROOT` and ran the gate on the live T-1485 file, so the gate's sibling search read the live, 3,900-task corpus that parallel tests and sessions write to.
+
+**Why structurally allowed:** "real fixtures" was taken to mean "the real files in place"; nothing flags a unit test that points PROJECT_ROOT at the framework repo. Same class as T-3950 / T-3972 / T-3771.
+
+**Prevention:** the five task files are frozen under `tests/unit/fixtures/t3973/` and the test runs in its temp project; a Verification line refuses `PROJECT_ROOT="$FRAMEWORK_ROOT"` in this file. A suite-wide lint for that pattern belongs with T-3771 (unit tests mutating/reading the live repo).
 
 ## Evolution
 
@@ -359,3 +366,15 @@ timeout 300 bats tests/unit/test_task_pair_acd_gate.bats > /tmp/.t3973 2>&1 && !
 ### 2026-10-07T06:37:54Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c3e7e4cb
+- **Timestamp:** 2026-10-07T06:39:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-07T06:39:21Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
