@@ -93,7 +93,11 @@ _fw_project_tag() {
 _cfw_framework_dir() {
     local here d
     here="$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")/.."
-    for d in "$here" "$PWD/.agentic-framework" "$PWD" "${FRAMEWORK_ROOT:-}"; do
+    # T-3984 (SECURITY, ring20-dashboard): never $PWD. What this returns is SOURCED, and
+    # T-3954 also tried $PWD/.agentic-framework and $PWD — so a plain copy started inside
+    # an untrusted clone ran that clone's lib/*.sh as the operator. A copy with no
+    # framework beside it now finds none and the guard WARNs instead (T-3954 path).
+    for d in "$here" "${FRAMEWORK_ROOT:-}"; do
         [ -n "$d" ] && [ -f "$d/lib/conversation-holder.sh" ] && [ -x "$d/bin/fw" ] \
             && { (cd "$d" && pwd); return 0; }
     done
