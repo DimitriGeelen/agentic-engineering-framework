@@ -1,10 +1,10 @@
 ---
-id: T-3984
-name: "SECURITY: bin/claude-fw sources lib/*.sh from $PWD (T-3954 lookup) — starting it in an untrusted clone runs that clone's code (ring20-dashboard)"
+id: T-3986
+name: "Reviewer seat that could not check (codex read-only sandbox can't run browser harness) votes AMBER and blocks rung-5 unanimity (832)"
 description: >
-  SECURITY: bin/claude-fw sources lib/*.sh from $PWD (T-3954 lookup) — starting it in an untrusted clone runs that clone's code (ring20-dashboard)
+  832 T-1082: codex reviewer runs read-only, cannot write temp files a browser harness needs, votes AMBER without finding a defect; rung-5 panels need unanimity, so 832 T-310 AC#1 and T-893 AC#1 fall back to the operator. Options: a distinct NOT-EVALUATED seat outcome that neither ticks nor blocks (with a quorum rule), or a writable per-run temp dir for the codex seat. Changes review policy (T-3580), so the outcome rule is an operator decision; the temp-dir part is mechanics.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -37,8 +37,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-07T13:08:32Z
-last_update: 2026-10-07T13:08:32Z
+created: 2026-10-07T13:14:24Z
+last_update: 2026-10-07T13:14:24Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -52,21 +52,18 @@ date_finished: null
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-3984: SECURITY: bin/claude-fw sources lib/*.sh from $PWD (T-3954 lookup) — starting it in an untrusted clone runs that clone's code (ring20-dashboard)
+# T-3986: Reviewer seat that could not check (codex read-only sandbox can't run browser harness) votes AMBER and blocks rung-5 unanimity (832)
 
 ## Context
 
-ring20-dashboard (automated security review of v1.8.6): `_cfw_framework_dir()` (T-3954) tries `$here`, then `$PWD/.agentic-framework`, then `$PWD`, then `FRAMEWORK_ROOT`, and the result is SOURCED (`_conversation_guard`, `termlink_start`). A plain COPY of claude-fw (no lib/ beside it) started in a directory holding attacker-supplied `lib/conversation-holder.sh` + `bin/fw` runs that code as the operator, before Claude Code's folder-trust prompt.
-
-Wider class, not fixed here: the PATH routers (`claude-fw-router`, `fw-router`) exec the CURRENT project's own vendored launcher by design (per-project vendoring), so an untrusted directory with `.agentic-framework/bin/claude-fw` is executed too. That needs a trust model (operator decision) — filed separately.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `_cfw_framework_dir` never considers `$PWD` or `$PWD/.agentic-framework`; candidates are the symlink-resolved directory beside the script and an explicit `FRAMEWORK_ROOT` only
-- [ ] A plain copy run in a consumer directory finds no framework and the guard WARNs (T-3954's warning path) instead of sourcing anything from the directory
-- [ ] Test: a directory with a planted `lib/conversation-holder.sh` (that would write a marker file) and `bin/fw` is NOT sourced when a copy runs there; the old T-3954 "finds .agentic-framework in PWD" test is replaced by this
-- [ ] The beside-the-script and FRAMEWORK_ROOT paths still resolve (control)
+<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -319,7 +316,7 @@ Wider class, not fixed here: the PATH routers (`claude-fw-router`, `fw-router`) 
 
 ## Updates
 
-### 2026-10-07T13:08:32Z — task-created [task-create-agent]
+### 2026-10-07T13:14:24Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3984-security-binclaude-fw-sources-libsh-from.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3986-reviewer-seat-that-could-not-check-codex.md
 - **Context:** Initial task creation

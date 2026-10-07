@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3984: SECURITY: bin/claude-fw sources lib/*.sh from $PWD (T-3954 lookup) — starting it in an untrusted clone runs that clone's code (ring20-dashboard)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-07T13:13:52Z
+# ============================================================================
+
+task_id: T-3984
+task_name: "SECURITY: bin/claude-fw sources lib/*.sh from $PWD (T-3954 lookup) — starting it in an untrusted clone runs that clone's code (ring20-dashboard)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-07T13:08:32Z
+completed: 2026-10-07T13:13:32Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-07T15:12:59+02:00
+last_commit: 2026-10-07T15:13:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  SECURITY — claude-fw never sources lib/ from $PWD (T-3954 lookup); a plain copy warns instead (ring20-dashboard). vendor-sync claude-fw
+
+# Key outcomes
+outcomes:
+  - '`_cfw_framework_dir` never considers `$PWD` or `$PWD/.agentic-framework`; candidates are the symlink-resolved directory beside the script and an explicit `FRAMEWORK_ROOT` only'
+  - 'A plain copy run in a consumer directory finds no framework and the guard WARNs (T-3954''s warning path) instead of sourcing anything from the directory'
+  - 'Test: a directory with a planted `lib/conversation-holder.sh` (that would write a marker file) and `bin/fw` is NOT sourced when a copy runs there; the old T-3954 "finds .agentic-framework in PWD" test is replaced by this'
+  - 'The beside-the-script and FRAMEWORK_ROOT paths still resolve (control); 50 other launcher tests green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - 'bin/claude-fw'
+  - '.tasks/active/T-3984-security-binclaude-fw-sources-libsh-from.md'
+  - 'tests/unit/t3954_claude_fw_installed_copy.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-07T15:12:59'
+    action: 'T-3984: SECURITY — claude-fw never sources lib/ from $PWD (T-3954 lookup); a plain copy warns instead (ring20-dashboard)'
+  - time: '2026-10-07T15:13:10'
+    action: 'T-3984: vendor-sync claude-fw'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 2
+  files_changed: 4
+  lines_added: 355
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3984-security-binclaude-fw-sources-libsh-from.md
+generated_by: context-agent-hybrid
