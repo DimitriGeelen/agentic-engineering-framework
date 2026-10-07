@@ -384,6 +384,24 @@ do_worktree_create() {
 # lib/review.sh). A repo with zero remotes configured cannot prove anything is
 # pushed, so it is treated as unpushed too (fail closed).
 
+# _wt_stop_services <worktree-path> (T-3959, 1409): a dispatched worker in a worktree
+# starts a sidecar (R14) and, before T-3959, a Watchtower, both rooted in the tree.
+# Removing the tree left them running with no project. Stop each one whose pid file
+# exists in the tree, before the tree goes. Never fails the removal.
+_wt_stop_services() {
+    local p="$1" fwr="${FRAMEWORK_ROOT:-}"
+    [ -n "$p" ] && [ -d "$p/.context" ] || return 0
+    if [ -d "$p/.context/sidecar" ]; then
+        (cd "$p" && PROJECT_ROOT="$p" timeout 30 python3 "${FW_WT_SIDECAR_CLI:-$fwr/lib/sidecar_cli.py}" stop --quiet) \
+            >/dev/null 2>&1 && echo "      stopped the worktree's sidecar"
+    fi
+    if [ -f "$p/.context/working/watchtower.pid" ]; then
+        PROJECT_ROOT="$p" timeout 30 "${FW_WATCHTOWER_SH:-$fwr/bin/watchtower.sh}" stop >/dev/null 2>&1 \
+            && echo "      stopped the worktree's Watchtower"
+    fi
+    return 0
+}
+
 # _wt_remove_resolve <name-or-path> -> sets _WT_REMOVE_PATH / _WT_REMOVE_BRANCH
 # Returns 1 (nothing printed) when no linked worktree matches.
 _wt_remove_resolve() {
@@ -791,6 +809,7 @@ do_worktree_remove() {
         echo "$dirty_summary"
     fi
 
+    _wt_stop_services "$_WT_REMOVE_PATH"
     if [ "$discard_ok" != "1" ] && git worktree remove "$_WT_REMOVE_PATH" 2>/dev/null; then
         echo "Removed worktree: $_WT_REMOVE_PATH (branch '$_WT_REMOVE_BRANCH' kept)"
     elif [ "$discard_ok" = "1" ] && git worktree remove --force "$_WT_REMOVE_PATH" 2>/dev/null; then
@@ -1001,6 +1020,7 @@ print(json.dumps({"master_ref":sys.argv[1] if len(sys.argv)>1 else None,"items":
                 echo "  ✓ RECLAIM worktree  $rbr  ($rreason)"
                 echo "      $rpath"
                 if [ "$apply" = "1" ]; then
+                    _wt_stop_services "$rpath"
                     if git worktree remove "$rpath" 2>/dev/null; then
                         echo "      → removed worktree (branch kept)"
                     elif git worktree remove --force "$rpath" 2>/dev/null; then

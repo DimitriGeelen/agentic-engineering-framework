@@ -396,6 +396,7 @@ def _sign(key: bytes, row: dict) -> str:
 REVIEW_ENV_ALLOW: tuple[str, ...] = ()
 #: Keys the dispatcher itself writes into a review worker's env.json.
 _RUNTIME_ENV_KEYS = ("FW_SIDECAR_AGENT_ID", "FW_REVIEW_REVISION", "FW_REVIEW_WORKER",
+                     "FW_DISPATCHED_WORKER",   # T-3959: written by the dispatcher for every worker
                      "FW_SESSION_SCOPED_FOCUS", "FW_FOCUS_SESSION_KEY",
                      "GIT_AUTHOR_NAME", "GIT_AUTHOR_EMAIL", "GIT_COMMITTER_NAME", "GIT_COMMITTER_EMAIL")
 
