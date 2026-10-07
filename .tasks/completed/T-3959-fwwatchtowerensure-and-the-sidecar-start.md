@@ -11,12 +11,12 @@ description: >
   task type; cleanup reaps cwd-in-worktree processes. Related: T-3915 (FW_WATCHTOWER_ENSURE=0
   in the unit suite), T-3933.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/termlink/termlink.sh, lib/sidecar/http_server.py, lib/verdict_ledger.py, lib/watchtower-ensure.sh, lib/worktree.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T18:41:20Z
-last_update: 2026-10-07T05:24:45Z
-date_finished:
+last_update: 2026-10-07T05:31:10Z
+date_finished: 2026-10-07T05:31:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -96,10 +96,10 @@ bvp_scores_proposed:
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw termlink dispatch` exports `FW_DISPATCHED_WORKER=1` to every worker (all task types); `fw_watchtower_ensure` is a no-op when it is set
-- [ ] The sidecar receiver exits by itself when its project's `.context` directory is gone (periodic check), so a worktree deleted by any means does not leave it running
-- [ ] `fw worktree remove` and `fw worktree gc` stop the worktree's sidecar and Watchtower (when their pid files exist there) before removing the tree
-- [ ] Tests `tests/unit/t3959_worker_leaks.bats` + `tests/unit/test_receiver_orphan_t3959.py` cover all three, each with a control
+- [x] `fw termlink dispatch` exports `FW_DISPATCHED_WORKER=1` to every worker (all task types); `fw_watchtower_ensure` is a no-op when it is set
+- [x] The sidecar receiver exits by itself when its project's `.context` directory is gone (periodic check), so a worktree deleted by any means does not leave it running
+- [x] `fw worktree remove` and `fw worktree gc` stop the worktree's sidecar and Watchtower (when their pid files exist there) before removing the tree
+- [x] Tests `tests/unit/t3959_worker_leaks.bats` + `tests/unit/test_receiver_orphan_t3959.py` cover all three, each with a control
 
 ## Verification
 timeout 300 bats tests/unit/t3959_worker_leaks.bats > /tmp/.t3959 2>&1 && ! grep -q "^not ok" /tmp/.t3959
@@ -248,6 +248,13 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** on 1409, every non-review dispatched worker in a worktree left a Watchtower (0.0.0.0) and a sidecar running after the worktree was gone.
+
+**Root cause:** the only "this is a worker" marker was FW_REVIEW_WORKER, written for task_type review alone (T-3580 round 8 needed it to keep the review prompt pure). Session-start side effects (Watchtower ensure) therefore ran in every other worker. The sidecar is intended per agent (R14), but nothing tied its lifetime to the tree it was rooted in: worktree removal did not stop it, and the receiver never checked that its project still existed.
+
+**Why structurally allowed:** a marker with a narrow purpose (review purity) was reused as the general worker test; services started from a session had a start path and no end path tied to the directory they serve.
+
+**Prevention:** FW_DISPATCHED_WORKER is the general marker (allowlisted for review env); worktree remove/gc stop services rooted in the tree; the receiver self-exits when `.context` is gone. Pinned by `t3959_worker_leaks.bats` and `test_receiver_orphan_t3959.py`, with controls.
 
 ## Evolution
 
@@ -333,3 +340,15 @@ bin/fw vendor self --check
 ### 2026-10-07T05:24:45Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-01e1931a
+- **Timestamp:** 2026-10-07T05:31:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-07T05:31:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

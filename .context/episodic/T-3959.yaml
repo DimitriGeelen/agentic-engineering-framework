@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3959: fw_watchtower_ensure and the sidecar start for every dispatched worker whose PROJECT_ROOT is a worktree — exemption keyed to task_type review only; 1409 measured 21 Watchtowers + 20 sidecars outliving their removed worktrees
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-07T05:31:33Z
+# ============================================================================
+
+task_id: T-3959
+task_name: "fw_watchtower_ensure and the sidecar start for every dispatched worker whose PROJECT_ROOT is a worktree — exemption keyed to task_type review only; 1409 measured 21 Watchtowers + 20 sidecars outliving their removed worktrees"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-06T18:41:20Z
+completed: 2026-10-07T05:31:10Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-07T07:30:41+02:00
+last_commit: 2026-10-07T07:30:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  FW_DISPATCHED_WORKER marks every worker (no Watchtower); receiver exits when its project is gone; worktree remove/gc stop the tree's sidecar and Watchtower. vendor-sync
+
+# Key outcomes
+outcomes:
+  - '`fw termlink dispatch` exports `FW_DISPATCHED_WORKER=1` to every worker (all task types); `fw_watchtower_ensure` is a no-op when it is set'
+  - 'The sidecar receiver exits by itself when its project''s `.context` directory is gone (periodic check), so a worktree deleted by any means does not leave it running'
+  - '`fw worktree remove` and `fw worktree gc` stop the worktree''s sidecar and Watchtower (when their pid files exist there) before removing the tree'
+  - 'Tests `tests/unit/t3959_worker_leaks.bats` + `tests/unit/test_receiver_orphan_t3959.py` cover all three, each with a control'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/lib/sidecar/http_server.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.agentic-framework/lib/watchtower-ensure.sh'
+  - '.agentic-framework/lib/worktree.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/termlink/termlink.sh'
+  - 'lib/sidecar/http_server.py'
+  - 'lib/verdict_ledger.py'
+  - 'lib/watchtower-ensure.sh'
+  - 'lib/worktree.sh'
+  - '.tasks/active/T-3959-fwwatchtowerensure-and-the-sidecar-start.md'
+  - 'tests/unit/t3959_worker_leaks.bats'
+  - 'tests/unit/test_receiver_orphan_t3959.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-07T07:30:41'
+    action: 'T-3959: FW_DISPATCHED_WORKER marks every worker (no Watchtower); receiver exits when its project is gone; worktree remove/gc stop the tree''s sidecar and Watchtower'
+  - time: '2026-10-07T07:30:48'
+    action: 'T-3959: vendor-sync'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 649 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 649
+  commits: 2
+  files_changed: 14
+  lines_added: 257
+  lines_removed: 39
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3959-fwwatchtowerensure-and-the-sidecar-start.md
+generated_by: context-agent-hybrid
