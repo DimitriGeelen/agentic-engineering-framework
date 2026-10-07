@@ -23,7 +23,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-07T09:29:48Z
-last_update: 2026-10-07T11:06:29Z
+last_update: 2026-10-07T11:31:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,21 +91,21 @@ bvp_scores_proposed:
 -->
 
 - **IW-1: Which parts of arc-009 are portable framework core and which are ring20-estate specific (addresses, uid ranges, systemd)?**
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: answered
+  rationale: map review IW-1 — registry, route side-file, data classes, ledger/fold, view, candidates are portable; supervisor is MIXED (systemd-run default launcher, /var/lib/orch, ring20 path layout); isolation adapter is linux-systemd specific.
 - **IW-2: Does arc-009 duplicate or contradict AEF primitives it builds on (resolver, spawn, outcome, keylock, worker_identity, verdict ledger, review-backends)?**
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: answered
+  rationale: map review IW-2 — uses resolver/keylock/outcome/spawn/review_cost as-is; duplicates worker launch, review verdict, approvals, P-011 extraction, OS sandbox; contradicts T-3910 (cap) and T-3583 (cost rows).
 - **IW-3: Can it land in PR-sized pieces that each stand alone, and in what order?**
-  confidence: 0
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: answered
+  rationale: map review IW-3 — yes: 0a-0c AEF-side first, then 1 route schema, 2 registry, 3 ledger, 4 fw facade, 5 engine (after D-a/D-b/D-c), 6 view, 7 Watchtower, 8 isolation adapter.
 - **IW-4: Do its security lessons (their §6, incl. G-232) expose gaps AEF already has today?**
-  confidence: 1
-  disposition:
-  rationale: G-112 is one; T-3980 covers it.
+  confidence: 2
+  disposition: answered
+  rationale: yes — T-2271 was live in AEF (fixed: T-3983); G-232 → G-112/T-3980; T-2272/T-2274 latent in govd_sandbox (map review IW-4); G-228/G-231 already avoided.
 
 ## Exploration Plan
 
@@ -168,9 +168,17 @@ bvp_scores_proposed:
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO — piece by piece, not as one merge
 
-**Rationale:** Evidence gap, not a confidence gap: AEF has not yet read the 5,900 lines or the S-3 isolation contract, and the shape (what is portable core vs estate-specific) is exactly what the review must establish. ring20 itself suggests reviewing the map first. Next step is a dispatched review of the map (a static scan of finished work dispatches well), then GO/NO-GO per PR-sized piece. G-112 is AEF's own gap and is fixed independently.
+**Rationale:** The evidence gap behind the earlier DEFER is closed by the dispatched map review (`docs/reports/T-3977-arc009-map-review.md`). The map is accurate where checkable, the portable core is genuinely portable, and the work is built on AEF primitives. What blocks a wholesale merge is five duplicated AEF mechanisms (worker launch, review verdict, approvals, P-011 extraction, OS sandbox) and two contradictions of standing rulings (workers launched outside `fw termlink dispatch` escape the T-3910 cap; no cost rows per T-3583). So: take the AEF-side pieces first (0a done as T-3983; 0b P-011 extractor as a library; 0c a `safe_git` helper feeding T-3980), then the schemas (route side-file, registry, ledger), and land the supervisor engine only after three operator decisions:
+- **D-a** may `systemd-run` launch workers next to TermLink, and does the worker cap apply to it?
+- **D-b** does orchestration review write `verdict_ledger` rows at a policy rung, or is it a separately named class that never ticks ACs?
+- **D-c** one sandbox in AEF (`govd_sandbox`) or two?
+
+**Evidence:**
+- Map review, IW-1..IW-4 with ring20 file:line references at the pinned commit.
+- Piece 0a already found and fixed a live AEF fail-open (T-3983: scan-tree clean on an empty index).
+- IW-4: T-2272 and T-2274 are latent in `lib/govd_sandbox.py` (nested InaccessiblePaths not validated; `/run/systemd/transient` readable). Worth their own tasks before any sandbox use.
 
 ## Decisions
 

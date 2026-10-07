@@ -6,12 +6,12 @@ description: >
   secret-scan scan-tree passes (rc 0) on a tree with no index or zero tracked files
   — content never scanned (ring20 T-2271, via T-3977 review piece 0a)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/audit.sh, agents/git/lib/secret-scan.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-07T11:26:16Z
-last_update: '2026-10-07T11:30:23Z'
-date_finished:
+last_update: 2026-10-07T11:31:19Z
+date_finished: 2026-10-07T11:31:19Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -62,6 +62,24 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=270,acs=6)
     rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-07T11:30:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3983: secret-scan scan-tree passes (rc 0) on a tree with no index or zero tracked files — content never scanned (ring20 T-2271, via T-3977 review piece 0a)
@@ -73,10 +91,10 @@ Found by the T-3977 review of ring20's arc-009 map (their T-2271, piece 0a). `sc
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `scan-tree` in a directory that is not a git work tree, or whose index has zero tracked files, exits 3 with "NOT CHECKED: no tracked files" on stderr (never 0)
-- [ ] A repo with tracked files and only an UNTRACKED key still passes (untracked content is not committed; unchanged behaviour)
-- [ ] `fw audit` already maps rc 3 to FAIL NOT CHECKED (T-3971); its message no longer claims the cause is always a missing catalogue
-- [ ] Tests in `tests/unit/t3971_secret_scan_no_catalogue.bats`: zero tracked files → 3; not a git repo → 3; tracked clean tree with untracked key → 0 (control)
+- [x] `scan-tree` in a directory that is not a git work tree, or whose index has zero tracked files, exits 3 with "NOT CHECKED: no tracked files" on stderr (never 0)
+- [x] A repo with tracked files and only an UNTRACKED key still passes (untracked content is not committed; unchanged behaviour)
+- [x] `fw audit` already maps rc 3 to FAIL NOT CHECKED (T-3971); its message no longer claims the cause is always a missing catalogue
+- [x] Tests in `tests/unit/t3971_secret_scan_no_catalogue.bats`: zero tracked files → 3; not a git repo → 3; tracked clean tree with untracked key → 0 (control). The T-3971 control's "clean tree" had zero tracked files after its `git rm`; it now tracks a clean file.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -110,6 +128,9 @@ Found by the T-3977 review of ring20's arc-009 map (their T-2271, piece 0a). `sc
 -->
 
 ## Verification
+timeout 600 bats tests/unit/t3971_secret_scan_no_catalogue.bats > /tmp/.t3983 2>&1 && ! grep -q "^not ok" /tmp/.t3983
+test "$(grep -c '# skip' /tmp/.t3983)" -eq 0
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -252,6 +273,13 @@ Found by the T-3977 review of ring20's arc-009 map (their T-2271, piece 0a). `sc
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** with zero tracked files (or outside a git work tree) `secret-scan.sh scan-tree` returned 0 with a key in the tree (reproduced 2026-10-07).
+
+**Root cause:** both axes read the git index (`git grep` over tracked files, `git ls-files`); an empty index yields no matches, and "no matches" was the only definition of clean.
+
+**Why structurally allowed:** the scanner had no notion of "did I examine anything"; T-3971 added NOT CHECKED for one cause (no catalogue) but not the other (no subject). ring20 found it building their supervisor (T-2271); our own T-3971 control test was itself passing on an empty index.
+
+**Prevention:** NOT CHECKED now covers "nothing to examine" as well as "no catalogue"; tests pin both no-subject shapes and a control; the audit message names both causes.
 
 ## Evolution
 
@@ -333,3 +361,15 @@ Found by the T-3977 review of ring20's arc-009 map (their T-2271, piece 0a). `sc
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3983-secret-scan-scan-tree-passes-rc-0-on-a-t.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c0516c45
+- **Timestamp:** 2026-10-07T11:31:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-07T11:31:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
