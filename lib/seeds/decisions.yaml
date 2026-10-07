@@ -72,11 +72,11 @@ decisions:
     directives_served: [D2, D3]
 
   - id: FD-009
-    decision: "PreToolUse hook blocks Write/Edit only, not Bash"
+    decision: "The task gate (PreToolUse) covers Write/Edit AND Bash; task creation and read-only commands stay allowed without a task"
     scope: universal
     inherited_from: framework
     origin_task: T-063
-    rationale: "Bash is needed for task creation itself; blocking it creates chicken-and-egg problem"
+    rationale: "Originally Write/Edit only, because Bash is needed to create the task itself. Superseded: Bash writes bypassed the gate, so Bash is gated too, with an allowlist for fw work-on / fw task create / fw context focus and read-only commands, which removes the chicken-and-egg problem (updated T-3982 after a greenfield install found the seed contradicting the gate)."
     directives_served: [D1, D2]
 
   - id: FD-010

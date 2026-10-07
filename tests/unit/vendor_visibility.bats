@@ -246,3 +246,11 @@ _stale_allowlist() {
     echo "$output" | grep -E '^\s*!\.agentic-framework/' | sed 's/^[[:space:]]*//' >> "$C/.gitignore"
     git -C "$C" check-ignore -q .agentic-framework/.context/working/.fw-secret-key
 }
+
+@test "T-3982: comm in vendor-visibility runs in the C collation its inputs are sorted in" {
+    # Inputs are sorted with LC_ALL=C; comm under a user locale warned "not in sorted order"
+    # (greenfield install, 2026-10-07). Every comm call in the file must carry LC_ALL=C.
+    run bash -c "grep -nE '(^|[^=_A-Za-z])comm ' '$FRAMEWORK_ROOT/lib/vendor-visibility.sh' | grep -vE '^[0-9]+:[[:space:]]*#'"
+    [ "$status" -eq 0 ]
+    ! echo "$output" | grep -v 'LC_ALL=C comm'
+}

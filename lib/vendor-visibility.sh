@@ -94,7 +94,9 @@ fw_vendor_check_visibility() {
         # Leftovers = on disk but not written by this run. Counted, not judged.
         while IFS= read -r f; do
             [ -n "$f" ] && foreign+=("$f")
-        done < <(comm -23 \
+        # T-3982: comm must compare in the same collation its inputs were sorted in
+        # (LC_ALL=C below); under a user locale it warned "not in sorted order".
+        done < <(LC_ALL=C comm -23 \
             <(cd "$target" && find "$rel" -type f -not -path '*/__pycache__/*' \
                 -not -name '*.pyc' -not -name '.DS_Store' 2>/dev/null | LC_ALL=C sort -u) \
             <(sed "s|^|$rel/|" "$manifest" | LC_ALL=C sort -u))
