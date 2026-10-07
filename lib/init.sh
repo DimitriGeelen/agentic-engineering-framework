@@ -375,6 +375,19 @@ WGIT
         echo -e "  ${YELLOW}⚠${NC}   No task templates found"
     fi
 
+    # --- Workflow-management tasks WM-001..003 (T-3974) ---
+    # The active-task gate tells an agent with no focus to run `fw context focus
+    # WM-00N`; those tasks live in .tasks/workflow/. Without them that advice failed
+    # on every consumer (ring20). Seeded once; fw upgrade keeps them current.
+    if [ -d "$FRAMEWORK_ROOT/.tasks/workflow" ]; then
+        mkdir -p "$target_dir/.tasks/workflow"
+        local wm
+        for wm in "$FRAMEWORK_ROOT/.tasks/workflow/"WM-*.md; do
+            [ -f "$wm" ] || continue
+            [ -f "$target_dir/.tasks/workflow/$(basename "$wm")" ] || cp "$wm" "$target_dir/.tasks/workflow/"
+        done
+    fi
+
     #@init: yaml-8kj .framework.yaml project_name,version,provider
     # Project configuration
     local project_name

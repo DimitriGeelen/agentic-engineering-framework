@@ -331,6 +331,20 @@ _self_vendor_templates() {
             _svt_updated=$((_svt_updated + 1))
         fi
     done
+    # T-3974: the WM-001..003 workflow tasks ride along, so a vendored FRAMEWORK_ROOT
+    # can seed them into a consumer (init and upgrade read them from here).
+    for _svt_src in "$FRAMEWORK_ROOT/.tasks/workflow/"WM-*.md; do
+        [ -f "$_svt_src" ] || continue
+        [ "$dry_run" = true ] || ! _sv_is_withheld "$_svt_src" || continue
+        _svt_dst="$_self_vendor/.tasks/workflow/$(basename "$_svt_src")"
+        if [ ! -f "$_svt_dst" ] || ! diff -q "$_svt_src" "$_svt_dst" > /dev/null 2>&1; then
+            if [ "$dry_run" != true ]; then
+                mkdir -p "$_self_vendor/.tasks/workflow"
+                cp "$_svt_src" "$_svt_dst"
+            fi
+            _svt_updated=$((_svt_updated + 1))
+        fi
+    done
     if [ "$_svt_updated" -gt 0 ]; then
         if [ "$dry_run" = true ]; then
             echo -e "  ${GREEN}Self-vendor:${NC} would sync $_svt_updated template(s) to .agentic-framework/.tasks/templates/"
@@ -1703,6 +1717,14 @@ $project_owned"
     for tmpl in "$FRAMEWORK_ROOT/.tasks/templates/"*.md; do
         [ -f "$tmpl" ] || continue
         _uts_line=$(python3 "$_uts" "$target_dir" "$tmpl" ".tasks/templates/$(basename "$tmpl")" $_uts_dry "--known=$_tmpl_known" 2>&1) || _uts_line="ERROR helper failed: ${_uts_line:-no output}"
+        _uts_report "$_uts_line"
+    done
+    # T-3974 (ring20): the workflow-management tasks WM-001..003 that the active-task
+    # gate tells agents to focus. Never seeded before, so the advice failed on every
+    # consumer. Missing → CREATED; stock → UPDATED; edited → KEPT + .upstream.
+    for tmpl in "$FRAMEWORK_ROOT/.tasks/workflow/"WM-*.md; do
+        [ -f "$tmpl" ] || continue
+        _uts_line=$(python3 "$_uts" "$target_dir" "$tmpl" ".tasks/workflow/$(basename "$tmpl")" $_uts_dry 2>&1) || _uts_line="ERROR helper failed: ${_uts_line:-no output}"
         _uts_report "$_uts_line"
     done
     if [ "$_t1867_changes" -eq 0 ]; then

@@ -1,10 +1,18 @@
 ---
 id: T-3974
-name: "WM-001..003 focus unreachable on consumers: .tasks/workflow never seeded, and fw_find_wm_task's not-found return kills focus.sh silently under set -e (ring20)"
+name: "WM-001..003 focus unreachable on consumers: .tasks/workflow never seeded, and
+  fw_find_wm_task's not-found return kills focus.sh silently under set -e (ring20)"
 description: >
-  ring20 T-2267/G-229 (v1.8.5): the active-task gate advertises 'fw context focus WM-002' but on a consumer it exits 1 with no output. (1) init/upgrade/vendor never create .tasks/workflow/WM-*.md (only readers reference the dir). (2) lib/wm_tasks.sh fw_find_wm_task ends '[ -n "$f" ] && echo "$f"' and returns 1 on not-found; agents/context/lib/focus.sh runs under set -euo pipefail, so the script dies before its 'has no file' message (T-2874 masking class). Fix: return 0 on not-found; seed WM files at init and upgrade (through upgrade_template_sync) and self-vendor them; test fw context focus WM-001 on a fresh consumer.
+  ring20 T-2267/G-229 (v1.8.5): the active-task gate advertises 'fw context focus
+  WM-002' but on a consumer it exits 1 with no output. (1) init/upgrade/vendor never
+  create .tasks/workflow/WM-*.md (only readers reference the dir). (2) lib/wm_tasks.sh
+  fw_find_wm_task ends '[ -n "$f" ] && echo "$f"' and returns 1 on not-found; agents/context/lib/focus.sh
+  runs under set -euo pipefail, so the script dies before its 'has no file' message
+  (T-2874 masking class). Fix: return 0 on not-found; seed WM files at init and upgrade
+  (through upgrade_template_sync) and self-vendor them; test fw context focus WM-001
+  on a fresh consumer.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-07T06:11:08Z
-last_update: 2026-10-07T06:11:08Z
-date_finished: null
+last_update: 2026-10-07T06:39:49Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,51 +58,55 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-07T06:15:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-07T06:16:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3974: WM-001..003 focus unreachable on consumers: .tasks/workflow never seeded, and fw_find_wm_task's not-found return kills focus.sh silently under set -e (ring20)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+ring20 (v1.8.5 consumer): the gate's advertised recovery `fw context focus WM-002` exits 1 with no output on every consumer. Two causes: the WM task files are never seeded outside the framework repo, and `fw_find_wm_task` returns 1 on not-found, which `set -e` turns into a silent death before the diagnostic.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw_find_wm_task` returns 0 when the file is missing, so focus.sh prints "Workflow task WM-00N has no file in .tasks/workflow/" instead of dying silently
+- [ ] `fw init` creates `.tasks/workflow/WM-001..003` in a new project
+- [ ] `fw upgrade` creates missing WM files in an existing consumer through `upgrade_template_sync.py` (a locally edited WM file is KEPT with `.upstream`)
+- [ ] Self-vendoring copies `.tasks/workflow/*.md` into `.agentic-framework/.tasks/workflow/`, so a vendored FRAMEWORK_ROOT can seed them
+- [ ] Test `tests/unit/t3974_wm_focus_consumer.bats`: on a freshly initialised consumer `fw context focus WM-002` exits 0; with the files removed it prints the diagnostic (control for the silent exit); upgrade recreates them
 
-### Human
-<!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
-     Remove this section if all criteria are agent-verifiable.
-     Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
-
-     ── Prefix routing (T-1811, T-1878): default to [REVIEWER] if Expected is grep-able ──
-     If your Expected clause is grep-able / file-exists / structural (a deterministic
-     shell check), prefer [REVIEWER] — that AC should be an Agent AC with the reviewer
-     command in `## Verification` instead of a Human AC here. Only keep [REVIEW] if
-     verification genuinely needs human taste (tone, feel, layout rhythm).
-     See CLAUDE.md §AC Classification Guidance for the conversion rule.
-
-     [REVIEW] example (genuine human judgment):
-       - [ ] [REVIEW] Dashboard renders correctly
-         **Steps:**
-         1. Open https://example.com/dashboard in browser
-         2. Verify all panels load within 2 seconds
-         3. Check browser console for errors
-         **Expected:** All panels visible, no console errors
-         **If not:** Screenshot the broken panel and note the console error
-
-     [REVIEWER] example (static-scan-verifiable — convert to Agent AC + Verification):
-       - [ ] [REVIEWER] Block message names both bypass mechanisms
-         **Steps:**
-         1. Run `bin/fw reviewer T-XXX`
-         **Expected:** Verdict: PASS; no findings on `block-message-completeness`
-         **If not:** Inspect hook block-message string and add missing mechanism
-       Conversion: this AC should be moved to ### Agent and
-       `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
--->
+## Verification
+timeout 900 bats tests/unit/t3974_wm_focus_consumer.bats > /tmp/.t3974 2>&1 && ! grep -q "^not ok" /tmp/.t3974
+test "$(grep -c '# skip' /tmp/.t3974)" -eq 0
+bin/fw vendor self --check
 
 ## Verification
 
@@ -320,3 +332,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3974-wm-001003-focus-unreachable-on-consumers.md
 - **Context:** Initial task creation
+
+### 2026-10-07T06:26:37Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
