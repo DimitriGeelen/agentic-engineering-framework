@@ -54,7 +54,9 @@ teardown() {
     cp "$FRAMEWORK_ROOT/.secret-scan-patterns" "$R/.secret-scan-patterns"
     run "$SCAN" scan-tree
     [ "$status" -eq 1 ]
-    git -C "$R" rm -q config.ini && git -C "$R" commit -qm clean
+    # T-3983: a "clean tree" needs tracked clean content; zero tracked files is NOT CHECKED.
+    git -C "$R" rm -q config.ini && printf 'clean\n' > "$R/ok.txt"
+    git -C "$R" add ok.txt && git -C "$R" commit -qm clean
     run "$SCAN" scan-tree
     [ "$status" -eq 0 ]
 }
@@ -71,4 +73,31 @@ teardown() {
         $block"
     [[ "$output" == *"FAIL: Secret scan NOT CHECKED"* ]]
     [[ "$output" != *"PASS"* ]]
+}
+
+# T-3983 (ring20 T-2271): both axes read the git index, so with nothing tracked the scan
+# found nothing and said "clean" — even with a key sitting in the tree.
+@test "T-3983: a repo with ZERO tracked files is NOT CHECKED (3), not clean" {
+    E="$TEST_TEMP_DIR/empty"; mkdir -p "$E" && git -C "$E" init -q
+    cp "$FRAMEWORK_ROOT/.secret-scan-patterns" "$E/"
+    printf 'k = "%s"\n' "$KEY" > "$E/c.ini"
+    PROJECT_ROOT="$E" run "$SCAN" scan-tree
+    [ "$status" -eq 3 ]
+    [[ "$output" == *"no tracked files"* ]]
+}
+
+@test "T-3983: a directory that is not a git work tree is NOT CHECKED (3)" {
+    N="$TEST_TEMP_DIR/nogit"; mkdir -p "$N"
+    cp "$FRAMEWORK_ROOT/.secret-scan-patterns" "$N/"
+    PROJECT_ROOT="$N" run "$SCAN" scan-tree
+    [ "$status" -eq 3 ]
+}
+
+@test "T-3983/control: tracked clean files plus an UNTRACKED key still pass (0)" {
+    cp "$FRAMEWORK_ROOT/.secret-scan-patterns" "$R/.secret-scan-patterns"
+    git -C "$R" rm -q config.ini && printf 'clean\n' > "$R/ok.txt"
+    git -C "$R" add ok.txt .secret-scan-patterns && git -C "$R" commit -qm clean
+    printf 'k = "%s"\n' "$KEY" > "$R/untracked.ini"
+    run "$SCAN" scan-tree
+    [ "$status" -eq 0 ]
 }

@@ -235,6 +235,17 @@ scan_tree() {
     local allow_re
     allow_re="$(_secret_scan_build_allowlist "$allowlist")"
 
+    # T-3983 (ring20 T-2271, via the T-3977 review): both axes read the git INDEX
+    # (git grep over tracked files, git ls-files). Outside a work tree, or with zero
+    # tracked files, they find nothing and the scan used to say "clean". Say NOT
+    # CHECKED instead. A repo WITH tracked files and an untracked key still passes:
+    # untracked content is not committed, which is what this mode audits.
+    if ! git -C "$root" rev-parse --is-inside-work-tree >/dev/null 2>&1 \
+            || [ -z "$(git -C "$root" ls-files 2>/dev/null | head -1)" ]; then
+        echo "secret-scan: NOT CHECKED: no tracked files in $root (not a git work tree, or empty index) — nothing was scanned" >&2
+        return 3
+    fi
+
     # T-3971 (ring20): with no catalogue this used to warn and `return 0` — a planted
     # AWS key passed, the filename axis below never ran, and `fw audit` printed
     # "[PASS] Secret scan: tracked tree clean". Audit mode is not a commit gate, so
