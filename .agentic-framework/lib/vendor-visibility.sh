@@ -38,7 +38,7 @@
 # $1 is a path relative to the vendored root. Returns 0 = runtime, not judged.
 _fw_vendor_runtime_path() {
     case "$1" in
-        .context/designer/projects/*|.tasks/templates/*) return 1 ;;
+        .context/designer/projects/*|.tasks/templates/*|.tasks/workflow/*) return 1 ;;
         .context/working/*|.context/secrets/*|.context/sidecar/*|.context/scans/*|\
         .context/audits/*|.context/project/*) return 0 ;;
         .context/*|.tasks/*|.fabric/*|.git/*|.pytest_cache/*|*/.fw-secret-key|.fw-secret-key) return 0 ;;

@@ -604,6 +604,7 @@ do_vendor() {
         docs
         policy
         .tasks/templates
+        .tasks/workflow     # T-3974: WM-001..003, seeded into consumers by init/upgrade
         # T-2805: FRAMEWORK.md is NOT in this list any more — it is copied last,
         # after every other write below, because it is the completeness sentinel
         # the router and this CLI both test for. Eighth of twelve here meant a
@@ -1869,7 +1870,8 @@ do_doctor() {
                         _vdrift_tpl_list="$_vdrift_tpl_list\n           - $_rel"
                     fi
                 fi
-            done < <(find "$FRAMEWORK_ROOT/.agentic-framework/.tasks/templates" -type f -name "*.md" 2>/dev/null)
+            done < <(find "$FRAMEWORK_ROOT/.agentic-framework/.tasks/templates" \
+                          "$FRAMEWORK_ROOT/.agentic-framework/.tasks/workflow" -type f -name "*.md" 2>/dev/null)
         fi
         local _vdrift=$((_vdrift_libs + _vdrift_tpl))
         if [ "$_vdrift" -eq 0 ]; then

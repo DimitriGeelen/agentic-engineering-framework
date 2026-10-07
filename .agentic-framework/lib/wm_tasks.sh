@@ -107,7 +107,11 @@ fw_find_wm_task() {
     fw_is_wm_task "$id" || return 0
     local f
     f=$(find "$root/.tasks/workflow" -name "${id}-*.md" -type f 2>/dev/null | head -1)
+    # T-3974 (ring20): return 0 on not-found. `[ -n "$f" ] && echo` returned 1, and
+    # focus.sh runs under `set -e`, so a consumer without .tasks/workflow/ died
+    # silently before its own "has no file" diagnostic. Callers test the output.
     [ -n "$f" ] && echo "$f"
+    return 0
 }
 
 # The fence, as a single word. One fence today, by design (see header). The
