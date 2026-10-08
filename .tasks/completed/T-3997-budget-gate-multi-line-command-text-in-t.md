@@ -4,12 +4,12 @@ name: "budget-gate: multi-line command text in the refusal reason splits RESULT 
 description: >
   budget-gate: multi-line command text in the refusal reason splits RESULT into several lines, so STATUS_AGE becomes '42\nimport…' (1409 T-3989 finding 5, root cause)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-007]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-08T10:20:14Z
-last_update: 2026-10-08T10:20:14Z
-date_finished: null
+last_update: 2026-10-08T10:25:55Z
+date_finished: 2026-10-08T10:25:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -62,8 +62,8 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The python block's result is reduced to its first line before field parsing, and newlines in the free-text reason are flattened, so a multi-line command can never split RESULT
-- [ ] Test: a Bash call whose command contains newlines (python -c with a multi-line body) yields a single numeric STATUS_AGE and no "integer expression expected"
+- [x] The python block's result is reduced to its first line before field parsing, and newlines in the free-text reason are flattened, so a multi-line command can never split RESULT
+- [x] Test: a Bash call whose command contains newlines (python -c with a multi-line body) yields a single numeric STATUS_AGE and no "integer expression expected"
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -239,6 +239,13 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** 1409 (v1.8.3) logged `[: 42\nimport: integer expression expected` and `[: 7 | sys.path.insert(0,'too...)` 74x in one session; the fast path was silently broken.
+
+**Root cause:** the python block prints one space-separated line whose LAST field is the classifier's free-text reason, which quotes the refused command. A command with newlines (python -c bodies) made RESULT several lines; `awk '{print $3}'` printed field 3 of each, so STATUS_AGE held "42" plus a fragment of the command.
+
+**Why structurally allowed:** a positional, whitespace-split protocol carried untrusted free text in its last field without normalising it; tests used single-line commands.
+
+**Prevention:** RESULT is cut to its first line before parsing and the reason is flattened in python; T-3989's integer validation stays as the second line of defence; a test drives a multi-line command.
 
 ## Evolution
 
@@ -320,3 +327,15 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3997-budget-gate-multi-line-command-text-in-t.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-60bf50fe
+- **Timestamp:** 2026-10-08T10:25:57Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-08T10:25:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

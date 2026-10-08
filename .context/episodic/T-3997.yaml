@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3997: budget-gate: multi-line command text in the refusal reason splits RESULT into several lines, so STATUS_AGE becomes '42\nimport…' (1409 T-3989 finding 5, root cause)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-08T10:26:04Z
+# ============================================================================
+
+task_id: T-3997
+task_name: "budget-gate: multi-line command text in the refusal reason splits RESULT into several lines, so STATUS_AGE becomes '42\nimport…' (1409 T-3989 finding 5, root cause)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-08T10:20:14Z
+completed: 2026-10-08T10:25:55Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-08T12:25:40+02:00
+last_commit: 2026-10-08T12:25:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  budget-gate parses the first result line only and flattens the reason — a multi-line command no longer splits STATUS_AGE (1409 root cause). vendor-sync budget-gate.sh
+
+# Key outcomes
+outcomes:
+  - 'The python block''s result is reduced to its first line before field parsing, and newlines in the free-text reason are flattened, so a multi-line command can never split RESULT'
+  - 'Test: a Bash call whose command contains newlines (python -c with a multi-line body) yields a single numeric STATUS_AGE and no "integer expression expected"'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/budget-gate.sh'
+  - 'agents/context/budget-gate.sh'
+  - '.tasks/active/T-3997-budget-gate-multi-line-command-text-in-t.md'
+  - 'tests/unit/t3989_budget_critical_handover.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-08T12:25:40'
+    action: 'T-3997: budget-gate parses the first result line only and flattens the reason — a multi-line command no longer splits STATUS_AGE (1409 root cause)'
+  - time: '2026-10-08T12:25:43'
+    action: 'T-3997: vendor-sync budget-gate.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 2
+  files_changed: 4
+  lines_added: 340
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3997-budget-gate-multi-line-command-text-in-t.md
+generated_by: context-agent-hybrid
