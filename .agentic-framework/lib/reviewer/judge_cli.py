@@ -80,6 +80,11 @@ PANEL_SIZE = review_policy.PANEL_SIZE
 MAX_CAPTURE_PAGES = 6
 DEGRADED_SINGLE_VENDOR = "degraded: single-vendor panel"
 UNKNOWN = "unknown"
+#: Seat outcomes that let a sequential panel go on to its next seat (T-3986).
+_CLEARS = (vl.GREEN, vl.NOT_EVALUATED)
+#: How many times the judge reassigns a not-evaluated criterion to other seat kinds before it
+#: hands it to the operator (operator ruling 2026-10-07: fix → upstream → reassign → operator).
+MAX_REASSIGN = 2
 COST_PURPOSE = review_policy.SPEND_PURPOSE
 
 
@@ -439,6 +444,13 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
         "- **amber:** mostly met. Say exactly what is needed.",
         "- **red:** not met. Say what is needed.",
         "- **escalate:** needs the human. Say why.",
+        "- **not-evaluated:** you could NOT evaluate it (your sandbox could not run what it needs, "
+        "you did not see the page, a tool failed). Say exactly why. This is not a verdict: it "
+        "neither passes nor fails the criterion, which goes to a reviewer that can evaluate it.",
+        "",
+        "Never vote on what you did not see. A seat that could not evaluate and returns amber or "
+        "red gives the operator a false judgement of work that may be perfectly good; return "
+        "`not-evaluated` with the reason instead (operator ruling, T-3986).",
         "",
         f"## Independence: {_rung_label(rung, seat)}",
         "",
@@ -465,15 +477,16 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
                 lines.append("**Capture was PARTIAL. You did NOT see: " +
                              ", ".join(f"`{p}`" for p in ev["partial"]) +
                              ".** You MUST NOT return green for a criterion that depends on a "
-                             "page you did not see; the ledger refuses such a green.")
+                             "page you did not see; the ledger refuses such a green. Return "
+                             "`not-evaluated` for it, naming the pages you did not see.")
             lines.append("Cite EVERY screenshot above as `--evidence` (the copy in your report "
                          "directory); the ledger checks each required page's screenshot hash.")
         else:
             lines += [
                 f"**SCREENSHOT CAPTURE FAILED: {ev['error'] or 'no screenshot captured'}.**",
                 "You have NOT seen the rendered page. You MUST NOT return green on a page you "
-                "did not see. Return `escalate` (or `amber` with what is missing) for every "
-                "criterion that asks about rendering.",
+                "did not see. Return `not-evaluated` (naming the capture failure) for every "
+                "criterion that asks about rendering — not amber, not red.",
             ]
         if ev["pages"]:
             lines.append("Pages: " + ", ".join(f"`{p}`" for p in ev["pages"]))
@@ -486,8 +499,13 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
             "## How your verdict is recorded",
             "",
             f"You review revision `{revision or 'the registered revision'}`. Your working directory is "
-            "a read-only export of exactly that revision (without `.context/`). Do NOT modify any "
-            "file and do not try to run `fw` or `git commit`: you cannot, and you need not.",
+            "an export of exactly that revision (without `.context/`). Do NOT modify any file in "
+            "it: it is fingerprinted, and a seat that changed it has none of its greens counted. "
+            "Do not try to run `fw` or `git commit`: you need not.",
+            "",
+            "Scratch space: `$TMPDIR` is a writable directory of your own for this run (a test "
+            "harness's temp files, a build cache). If what a criterion needs still cannot run, "
+            "return `not-evaluated` with the reason — never a verdict on what you could not check.",
             "",
             "When you finish, the dispatch runtime records the verdicts you PRINT, under your own "
             "reviewer identity, with your full output as the evidence report, and signs your "
@@ -499,12 +517,13 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
             "For each criterion print, starting at the beginning of a line:",
             "```",
             "N. [AC] <criterion short>",
-            "VERDICT: green | amber | red | escalate",
-            "WHY: <what you checked, with evidence; or why a human is needed>",
+            "VERDICT: green | amber | red | escalate | not-evaluated",
+            "WHY: <what you checked, with evidence; why a human is needed; or why you could not evaluate>",
             "GUIDANCE: <what is needed next, mandatory for non-green>",
             "```",
             "N is the criterion number above (`### Criterion N`). End with: 'Summary: N green, M "
-            "amber, K red, J escalate'. A green from a run that fails or times out does not count.",
+            "amber, K red, J escalate, I not-evaluated'. A green from a run that fails or times out "
+            "does not count.",
         ]
         if operator_only:
             lines += ["", "Not yours (operator-only, never judge): " +
@@ -535,7 +554,7 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
         "   " + record_command(task_id, seat, rung, run_id),
         "",
         "   Add `--evidence <png>` once per screenshot you cite, and `--guidance \"...\"` "
-        "(mandatory unless green).",
+        "(mandatory unless green; for `not-evaluated` it is the reason you could not evaluate).",
         "",
         "   `record` does NOT sign anything. When you exit, the dispatch runtime signs your "
         "completion (your session, exit state, result stream and the exact rows you left). A row "
@@ -553,11 +572,12 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
         "After recording, print for each criterion:",
         "```",
         "N. [AC] <criterion short>",
-        "VERDICT: green | amber | red | escalate",
-        "WHY: <what you checked, with evidence; or why a human is needed>",
+        "VERDICT: green | amber | red | escalate | not-evaluated",
+        "WHY: <what you checked, with evidence; why a human is needed; or why you could not evaluate>",
         "GUIDANCE: <what is needed next, mandatory for non-green>",
         "```",
-        "End with: 'Summary: N green, M amber, K red, J escalate'. The printed text is for the "
+        "End with: 'Summary: N green, M amber, K red, J escalate, I not-evaluated'. The printed "
+        "text is for the "
         "operator's reading only; the ledger row is the record.",
     ]
     if operator_only:
@@ -630,12 +650,12 @@ def _dispatch_reviewer(task_id: str, brief: str, rung: int, dry_run: bool, root:
 
 # ── reading the result: the ledger is authoritative ──────────────────────────
 
-_VERDICT_LINE = re.compile(r"^\s*(\d+)\.\s*\[[^\]]*\].*?\n\s*VERDICT:\s*(\w+)", re.M)
+_VERDICT_LINE = re.compile(r"^\s*(\d+)\.\s*\[[^\]]*\].*?\n\s*VERDICT:\s*([\w-]+)", re.M)
 
 
 def _parse_printed(output: str, criteria: list[dict]) -> dict[int, str]:
     """Printed verdict per criterion `index`, for REPORTING only. Anything not exactly one
-    of the four outcomes is `unknown`."""
+    of the outcomes (vl.OUTCOMES) is `unknown`."""
     found = {int(n): v.lower() for n, v in _VERDICT_LINE.findall(output or "")}
     return {c["index"]: (found.get(c["index"]) if found.get(c["index"]) in vl.OUTCOMES else UNKNOWN)
             for c in criteria}
@@ -691,11 +711,14 @@ def _final(root: Path, task_id: str, judged: list[dict], dispatches: list[dict])
     for c in judged:
         seat_res = [r for d in dispatches if d.get("dispatch_id") for r in d["results"]
                     if r["ac"] == c["ac_index"]]
-        last = seat_res[-1] if seat_res else {"outcome": UNKNOWN, "why": "no seat was dispatched"}
-        if last["outcome"] == vl.GREEN:
+        # T-3986: the last seat that EVALUATED decides; not-evaluated seats only report.
+        evaluated = [r for r in seat_res if r["outcome"] != vl.NOT_EVALUATED]
+        last = (evaluated or seat_res or [{"outcome": UNKNOWN, "why": "no seat was dispatched"}])[-1]
+        if last["outcome"] in _CLEARS:
             good, why = (vl.satisfying_verdict(ctx, crits[c["ac_index"]])
                          if ctx and c["ac_index"] in crits else (None, "criterion gone"))
-            outcomes[c["ac_index"]] = vl.GREEN if good else UNKNOWN
+            outcomes[c["ac_index"]] = (vl.GREEN if good else
+                                       vl.NOT_EVALUATED if why.startswith("not-evaluated") else UNKNOWN)
             if not good:
                 whys[c["ac_index"]] = why
         else:
@@ -707,10 +730,14 @@ def _final(root: Path, task_id: str, judged: list[dict], dispatches: list[dict])
 
 # ── orchestration ────────────────────────────────────────────────────────────
 
-def _plan_seats(root: Path, rung: int, kinds: set[str], kind_vendors: dict | None = None) -> dict:
+def _plan_seats(root: Path, rung: int, kinds: set[str], kind_vendors: dict | None = None,
+                exclude_kinds: set[str] | frozenset = frozenset()) -> dict:
     """Which registry backends sit this run. {'seats': [...], 'required': N, 'dispatch': [...],
-    'unfilled': [...], 'paid': [...]} — seats are {'seat', 'vendor', 'backend', 'kind'}."""
+    'unfilled': [...], 'paid': [...]} — seats are {'seat', 'vendor', 'backend', 'kind'}.
+    `exclude_kinds` (T-3986): worker kinds that could not evaluate this criterion in an earlier
+    run; the reassigned run seats other kinds."""
     seat_backends, paid = _backends(root)
+    seat_backends = [b for b in seat_backends if b["kind"] not in exclude_kinds]
     want = PANEL_SIZE if rung >= 5 else 1
     runnable = [b for b in seat_backends if b["kind"] in kinds]
     if rung >= 5:
@@ -735,7 +762,8 @@ def _plan_seats(root: Path, rung: int, kinds: set[str], kind_vendors: dict | Non
 def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: bool = False,
           dispatcher: Dispatcher | None = None, capture: Capturer | None = None,
           now: datetime | None = None, worker_kinds: set[str] | None = None,
-          kind_vendors: dict | None = None) -> dict:
+          kind_vendors: dict | None = None,
+          exclude_kinds: set[str] | frozenset = frozenset()) -> dict:
     """Run one judgement. Returns a result dict; never writes a verdict."""
     task_data = _load_task(task_id, root)
     if not task_data:
@@ -771,7 +799,8 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
     try:
         plan = _plan_seats(root, rung,
                            _dispatchable_kinds(root) if worker_kinds is None else set(worker_kinds),
-                           _kind_vendors(root) if kind_vendors is None else dict(kind_vendors))
+                           _kind_vendors(root) if kind_vendors is None else dict(kind_vendors),
+                           exclude_kinds=set(exclude_kinds))
     except Exception as e:  # noqa: BLE001 - an unreadable registry is a refusal, not a default
         res.update(error=f"review backend registry unavailable: {e}", code=1)
         return res
@@ -843,14 +872,15 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
         if err:
             res["cost_log_errors"].append({"seat": seat, "error": err})
         results = _collect(root, task_id, did, judged)
-        res["dispatches"].append({"seat": seat, "backend": s["backend"], "dispatch_id": did,
-                                  "results": results})
+        res["dispatches"].append({"seat": seat, "backend": s["backend"], "kind": s["kind"],
+                                  "dispatch_id": did, "results": results})
         # A panel is sequential and stops at the first seat that does not clear every criterion.
-        if any(r["outcome"] != vl.GREEN for r in results):
+        # T-3986: a seat that could not evaluate does not stop it — the next seat may evaluate.
+        if any(r["outcome"] not in _CLEARS for r in results):
             break
 
     # Seats no internal backend can fill: offer them to a paid backend, and WAIT. Never dispatched.
-    stopped = any(d.get("error") or any(r["outcome"] != vl.GREEN for r in d["results"])
+    stopped = any(d.get("error") or any(r["outcome"] not in _CLEARS for r in d["results"])
                   for d in res["dispatches"])
     for s in plan["unfilled"]:
         if stopped:
@@ -879,6 +909,58 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
         res["dispatches"].append(entry)
     res["outcomes"], res["why"] = _final(root, task_id, judged, res["dispatches"])
     res["code"] = 0
+    return res
+
+
+def _not_evaluated_kinds(res: dict, ac: int) -> set[str]:
+    """Worker kinds whose seat in `res` returned not-evaluated for Human AC#`ac`."""
+    return {d.get("kind", "") for d in res.get("dispatches") or [] for r in d.get("results") or []
+            if r["ac"] == ac and r["outcome"] == vl.NOT_EVALUATED and d.get("kind")}
+
+
+def judge_with_reassign(task_id: str, root: Path, **kw) -> dict:
+    """`judge`, then the operator's ladder for a criterion no seat could evaluate (T-3986):
+    reassign it — a new run, per criterion, that seats no worker kind which could not evaluate
+    it — up to MAX_REASSIGN times; whatever is still not-evaluated after that is the operator's,
+    with the reasons. A not-evaluated seat never becomes amber or red on the way."""
+    res = judge(task_id, root, **kw)
+    if kw.get("dry_run") or res.get("error") or not res.get("outcomes"):
+        return res
+    res["reassigned"] = []
+    for ac, outcome in list(res["outcomes"].items()):
+        if outcome != vl.NOT_EVALUATED:
+            continue
+        excluded = _not_evaluated_kinds(res, ac)
+        # No kind of THIS run said not-evaluated (the ledger's not-evaluated came from an older
+        # run): an identical re-run would learn nothing, so it is not reassigned blind.
+        for _ in range(MAX_REASSIGN if excluded else 0):
+            sub = judge(task_id, root, **{**kw, "criterion_n": ac, "exclude_kinds": set(excluded)})
+            step = {"ac": ac, "excluded": sorted(excluded), "run_id": sub.get("run_id", ""),
+                    "outcome": (sub.get("outcomes") or {}).get(ac, UNKNOWN),
+                    "why": sub.get("error") or (sub.get("why") or {}).get(ac, "")}
+            res["reassigned"].append(step)
+            res.setdefault("dispatches", []).extend(sub.get("dispatches") or [])
+            if sub.get("error"):
+                break
+            res["outcomes"][ac] = step["outcome"]
+            if step["why"]:
+                res.setdefault("why", {})[ac] = step["why"]
+            else:
+                (res.get("why") or {}).pop(ac, None)
+            if step["outcome"] != vl.NOT_EVALUATED:
+                break
+            new = _not_evaluated_kinds(sub, ac) - excluded
+            if not new:
+                break
+            excluded |= new
+        # Still not evaluated, or the reassigned run could not seat a panel at all: the last rung
+        # of the ladder. An evaluating amber/red from a reassigned seat is a real verdict and
+        # takes the normal path instead.
+        if res["outcomes"][ac] in (vl.NOT_EVALUATED, UNKNOWN):
+            res.setdefault("why", {})[ac] = (
+                f"OPERATOR: no seat kind could evaluate this criterion (reassigned excluding "
+                f"{', '.join(sorted(excluded)) or 'nothing'}) — "
+                f"{res.get('why', {}).get(ac, '') or 'no evaluating verdict'}")
     return res
 
 
@@ -912,6 +994,9 @@ def _print_result(res: dict) -> None:
               + (f" [{d['status']}]" if d.get("status") else ""))
         for r in d["results"]:
             print(f"  AC#{r['ac']}: {r['outcome']} ({r['source']}){' ' + r['flag'] if r.get('flag') else ''}")
+    for st in res.get("reassigned") or []:
+        print(f"  reassigned AC#{st['ac']} (excluding {', '.join(st['excluded']) or 'none'}): "
+              f"{st['outcome']}{' - ' + st['why'] if st['why'] else ''}")
     for ac, why in sorted((res.get("why") or {}).items()):
         print(f"  final AC#{ac}: {res['outcomes'][ac]} - {why}")
 
@@ -926,8 +1011,8 @@ def main(argv: list[str] | None = None, *, dispatcher: Dispatcher | None = None,
     parser.add_argument("--json", action="store_true", help="Output as JSON")
     args = parser.parse_args(sys.argv[1:] if argv is None else argv)
 
-    res = judge(args.task_id, _root(), criterion_n=args.criterion, dry_run=args.dry_run,
-                dispatcher=dispatcher, capture=capture)
+    res = judge_with_reassign(args.task_id, _root(), criterion_n=args.criterion,
+                              dry_run=args.dry_run, dispatcher=dispatcher, capture=capture)
     if res.get("error") and "criteria" not in res:
         print(f"Error: {res['error']}", file=sys.stderr)
         return res["code"]

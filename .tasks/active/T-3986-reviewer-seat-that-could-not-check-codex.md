@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-07T13:14:24Z
-last_update: 2026-10-08T14:10:18Z
+last_update: 2026-10-08T14:18:11Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,11 +100,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Review seats get a writable per-run temp dir (TMPDIR inside the run's own directory), so a read-only seat can run a harness that writes temp files; the reviewed tree stays read-only
-- [ ] The verdict vocabulary gains NOT-EVALUATED (with a required reason); `fw reviewer verdict record` accepts it; it never ticks and never counts as amber/red
-- [ ] The panel rule closes a criterion only on verdicts from seats that evaluated it, and requires at least two such seats at rung 5; otherwise the criterion is reassigned to another seat kind before it falls to the operator
-- [ ] The review brief tells every seat: if you could not evaluate, say NOT-EVALUATED and why; do not vote on what you did not see
-- [ ] Tests: a not-evaluated seat neither ticks nor blocks; two evaluating greens tick; one evaluating green plus one not-evaluated escalates (reassign, then operator)
+- [x] Review seats get a writable per-run temp dir (TMPDIR inside the run's own directory), so a seat can run a harness that writes temp files; the reviewed export is fingerprinted and a seat that changed it has its greens voided (codex has no read-only-root-plus-writable-tmp mode — see Decisions)
+- [x] The verdict vocabulary gains NOT-EVALUATED (with a required reason); `fw reviewer verdict record` accepts it; it never ticks and never counts as amber/red
+- [x] The panel rule closes a criterion only on verdicts from seats that evaluated it, and requires at least two such seats at rung 5; otherwise the criterion is reassigned to another seat kind before it falls to the operator
+- [x] The review brief tells every seat: if you could not evaluate, say NOT-EVALUATED and why; do not vote on what you did not see
+- [x] Tests: a not-evaluated seat neither ticks nor blocks; two evaluating greens tick; one evaluating green plus one not-evaluated escalates (reassign, then operator)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -138,6 +138,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/t3986_not_evaluated_test.py tests/unit/t3582_harness_kinds_test.py -q -p no:cacheprovider > /tmp/.t3986 2>&1 && grep -q passed /tmp/.t3986
+bash -n agents/termlink/termlink.sh
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -344,6 +348,21 @@ bvp_scores_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-08 — how a codex seat gets a writable temp dir
+- **Chose:** `codex exec -s workspace-write` in the disposable `git archive` export, `--add-dir $WDIR/tmp` + `TMPDIR=$WDIR/tmp`, `exclude_slash_tmp=true`, network off; the export is fingerprinted before and after, and a changed export exits the seat non-zero (no green of it counts).
+- **Why:** codex 0.153 has no mode that keeps the working root read-only while one extra dir is writable — `workspace-write` always makes the cwd writable. The export is a throwaway copy (never the project tree), so the only risk of writing it is a seat altering what it reviews, which the fingerprint catches.
+- **Rejected:** cwd = scratch dir with the export elsewhere (the seat reviews by relative paths, would mis-locate files); `danger-full-access` (no sandbox at all).
+
+### 2026-10-08 — panel quorum when a seat could not evaluate
+- **Chose:** not-evaluated seats are excluded; the panel needs ≥2 evaluating seats of distinct vendors (`MIN_EVALUATING_SEATS`). A single-seat run with a not-evaluated seat never closes. With no not-evaluated seat the original rule (every seat green, `required_vendors` distinct) is unchanged.
+- **Why:** the operator's ruling — a criterion closes only on seats that evaluated it — and this task's own AC (≥2 at rung 5).
+- **Rejected:** keeping 3-of-3 (one sandbox limit would still block every rung-5 render criterion — the 832 symptom); 1 evaluating seat (no independence left at rung 5).
+
+### 2026-10-08 — what "reassign" means
+- **Chose:** `fw reviewer judge` (now `judge_with_reassign`) re-judges a not-evaluated criterion in a NEW run that seats no worker kind which could not evaluate it, up to `MAX_REASSIGN`=2 times; if it is still not evaluated, or the new run cannot seat a panel, the result says `OPERATOR: …` with the reasons.
+- **Why:** a registered run pins its seats (T-3580 round 6), so adding a seat mid-run would weaken the binding; a new run keeps every existing guarantee.
+- **Rejected:** spare seats registered with every run (changes the run contract for every review).
 
 ## Decision
 

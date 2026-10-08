@@ -953,10 +953,14 @@ def judge_with_reassign(task_id: str, root: Path, **kw) -> dict:
             if not new:
                 break
             excluded |= new
-        if res["outcomes"][ac] == vl.NOT_EVALUATED:
+        # Still not evaluated, or the reassigned run could not seat a panel at all: the last rung
+        # of the ladder. An evaluating amber/red from a reassigned seat is a real verdict and
+        # takes the normal path instead.
+        if res["outcomes"][ac] in (vl.NOT_EVALUATED, UNKNOWN):
             res.setdefault("why", {})[ac] = (
-                f"OPERATOR: no seat kind could evaluate this criterion (tried excluding "
-                f"{', '.join(sorted(excluded)) or 'nothing'}) — {res['why'].get(ac, '')}")
+                f"OPERATOR: no seat kind could evaluate this criterion (reassigned excluding "
+                f"{', '.join(sorted(excluded)) or 'nothing'}) — "
+                f"{res.get('why', {}).get(ac, '') or 'no evaluating verdict'}")
     return res
 
 

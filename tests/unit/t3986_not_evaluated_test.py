@@ -119,8 +119,11 @@ class TestSingleSeat:
         ctx, crit = _crit(hrepo)
         good, why = vl.satisfying_verdict(ctx, crit)
         assert good is None and why.startswith("not-evaluated"), why
-        assert "owner: human" not in ctx.text.split("---")[1]          # not routed to the operator
-        assert not vl.apply(TID, hrepo).get("ticked")
+        assert "Reviewer escalation" not in ctx.text                    # not routed to the operator
+        applied = [a for a in vl._read(vl.APPLIED, hrepo) if a.get("verdict_id") == rows[0]["id"]]
+        assert applied == []
+        vl.apply(TID, hrepo)
+        assert not _crit(hrepo)[1].ticked
 
     def test_a_later_not_evaluated_does_not_withdraw_an_earlier_green(self, hrepo):
         rev = r3._head(hrepo)
@@ -160,10 +163,13 @@ class TestPanel:
         res, seen = _panel(hrepo_hi, {"codex": "not-evaluated", "opencode": "not-evaluated"},
                            monkeypatch, reassign=True)
         assert res["outcomes"][1] != "green", res
-        assert res["reassigned"] and res["reassigned"][0]["excluded"] == ["codex", "opencode"]
+        assert res["reassigned"] and res["reassigned"][0]["excluded"] == ["codex", "opencode"], res
         ctx, crit = _crit(hrepo_hi)
         good, why = vl.satisfying_verdict(ctx, crit)
-        assert good is None and why.startswith("not-evaluated"), why
+        assert good is None, why
+        # The reassigned run (claude only) cannot seat a three-vendor panel: the operator's.
+        assert res["outcomes"][1] in (vl.NOT_EVALUATED, judge_cli.UNKNOWN)
+        assert res["why"][1].startswith("OPERATOR: no seat kind could evaluate"), res["why"]
 
     def test_control_an_evaluating_amber_still_blocks(self, hrepo_hi, monkeypatch):
         res, seen = _panel(hrepo_hi, {"codex": "amber"}, monkeypatch)
