@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4000: Arc page per-driver BVP breakdown shows the driver's name next to its code (D1, F3)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-08T22:20:21Z
+# ============================================================================
+
+task_id: T-4000
+task_name: "Arc page per-driver BVP breakdown shows the driver's name next to its code (D1, F3)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-08T15:44:37Z
+completed: 2026-10-08T22:19:24Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-08T17:47:26+02:00
+last_commit: 2026-10-09T00:11:49+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  arc page shows each BVP driver's name beside its code (D1 Antifragility, F-RECALL Recall Leverage). humanise handler-key driver names for display (V_PROMPT_QUALITY -> Prompt Quality); ACs, recommendation. reviewer verdict
+
+# Key outcomes
+outcomes:
+  - '`/arcs/<slug>` shows each driver''s name (from policy/value-drivers.yaml, same `_driver_names` as /bvp) beside its code in the inline "Drivers:" list, the per-driver breakdown table, and the coherence warnings; handler-key names (`V_PROMPT_QUALITY`) are humanised for display only ("Prompt Quality") — the policy name stays, because bvp-estimator looks it up'
+  - 'A driver with no name in the policy still renders its code alone (no blank, no error)'
+  - 'Test pins name-beside-code and the no-name fallback; existing arc page tests that passed before still pass'
+  - 'Watchtower restarted; `bin/fw watchtower current` passes'
+  - '[REVIEW] Driver names read clearly on an arc page'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-08 — rename the V_* drivers in the policy, or only on screen'
+    chose: 'humanise on screen only.'
+    rationale: '`agents/termlink/bvp-estimator/estimator.py:2587` maps `V_PROMPT_QUALITY` etc. to its scoring handlers; renaming the policy name would silently stop those drivers being scored.'
+    alternatives_rejected: ['editing `name:` in policy/value-drivers.yaml (breaks scoring); a separate `label:` field (a policy schema change for a display concern).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/arcs.py'
+  - '.agentic-framework/web/templates/arc_detail.html'
+  - '.context/reviews/evidence/T-4000/01-arcs.png'
+  - '.context/reviews/evidence/T-4000/02-arc-020-drivers.png'
+  - '.context/reviews/evidence/T-4000/AC1-judge-t-4000-r3-9352645e83ca.md'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-4000-arc-page-per-driver-bvp-breakdown-shows-.md'
+  - 'tests/unit/test_t4000_arc_driver_names.py'
+  - 'web/blueprints/arcs.py'
+  - 'web/templates/arc_detail.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-08T17:47:26'
+    action: 'T-4000: arc page shows each BVP driver''s name beside its code (D1 Antifragility, F-RECALL Recall Leverage)'
+  - time: '2026-10-08T22:44:20'
+    action: 'T-4000: humanise handler-key driver names for display (V_PROMPT_QUALITY -> Prompt Quality); ACs, recommendation'
+  - time: '2026-10-09T00:11:49'
+    action: 'T-4000: reviewer verdict'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 394 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 394
+  commits: 3
+  files_changed: 11
+  lines_added: 479
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4000-arc-page-per-driver-bvp-breakdown-shows-.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3999: Arcs page embeds an arcs-only value/cost matrix (same numbers as /bvp)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-08T22:20:17Z
+# ============================================================================
+
+task_id: T-3999
+task_name: "Arcs page embeds an arcs-only value/cost matrix (same numbers as /bvp)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-08T15:08:01Z
+completed: 2026-10-08T22:19:23Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-08T17:13:00+02:00
+last_commit: 2026-10-09T00:09:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  /arcs embeds an arcs-only value/cost matrix (same points as /bvp, server-side SVG, cached 120s). agent ACs ticked, recommendation for the dark-mode review. reviewer verdict
+
+# Key outcomes
+outcomes:
+  - '`/arcs` renders a server-side SVG value/cost matrix of every scored arc, using `web.blueprints.bvp._collect_arc_points` (the same numbers as /bvp), with median quadrant guides, quadrant labels, and each dot linking to `/arcs/<slug>` with a tooltip (id, name, BVP_norm, cost)'
+  - 'No JavaScript dependency; colours from theme tokens only (no hex literals); a link to the full /bvp matrix'
+  - 'A failure to compute the points never breaks /arcs: the matrix section is replaced by a one-line note'
+  - 'Test: /arcs returns 200 and contains the matrix with one dot per arc point; existing arcs tests that passed before stay green (two pre-existing reds — arc_detail.html hexes, dispatch-safety live-threshold — are not from this change and are filed separately)'
+  - 'Watchtower restarted; `bin/fw watchtower current` passes'
+  - '[REVIEW] The arcs matrix reads clearly in light and dark mode'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/arcs.py'
+  - '.agentic-framework/web/templates/arcs_index.html'
+  - '.context/reviews/evidence/T-3999/01-arcs-judge-t-3999-r3-d7c4a5281cbb.png'
+  - '.context/reviews/evidence/T-3999/AC1-click-dest-judge-t-3999-r3-d7c4a5281cbb.png'
+  - '.context/reviews/evidence/T-3999/AC1-dark-judge-t-3999-r3-d7c4a5281cbb.png'
+  - '.context/reviews/evidence/T-3999/AC1-hover-dark-judge-t-3999-r3-d7c4a5281cbb.png'
+  - '.context/reviews/evidence/T-3999/AC1-hover-light-judge-t-3999-r3-d7c4a5281cbb.png'
+  - '.context/reviews/evidence/T-3999/AC1-judge-t-3999-r3-413ba9b7d884.md'
+  - '.context/reviews/evidence/T-3999/AC1-judge-t-3999-r3-d7c4a5281cbb.md'
+  - '.context/reviews/evidence/T-3999/AC1-light-judge-t-3999-r3-d7c4a5281cbb.png'
+  - '.context/reviews/recorded.jsonl'
+  - '.context/reviews/refusals-interim.jsonl'
+  - '.context/reviews/verdicts.jsonl'
+  - '.tasks/active/T-3999-arcs-page-embeds-an-arcs-only-valuecost-.md'
+  - 'tests/unit/test_t3999_arcs_value_matrix.py'
+  - 'web/blueprints/arcs.py'
+  - 'web/templates/arcs_index.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-08T17:13:00'
+    action: 'T-3999: /arcs embeds an arcs-only value/cost matrix (same points as /bvp, server-side SVG, cached 120s)'
+  - time: '2026-10-08T22:44:21'
+    action: 'T-3999: agent ACs ticked, recommendation for the dark-mode review'
+  - time: '2026-10-08T23:47:00'
+    action: 'T-3999: reviewer verdict'
+  - time: '2026-10-09T00:09:41'
+    action: 'T-3999: reviewer verdict'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 431 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 431
+  commits: 5
+  files_changed: 19
+  lines_added: 863
+  lines_removed: 7
+  footprint_refreshed_at: '2026-10-08T22:20:34Z'
+  footprint_refreshed_by_commit: bf8018fae
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3999-arcs-page-embeds-an-arcs-only-valuecost-.md
+generated_by: context-agent-hybrid

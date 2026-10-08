@@ -8,8 +8,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
 components: [web/blueprints/arcs.py, web/templates/arc_detail.html]
 related_tasks: []
@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-08T15:44:37Z
-last_update: 2026-10-08T20:44:48Z
+last_update: 2026-10-08T22:20:19Z
 date_finished: 2026-10-08T20:44:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,7 +98,7 @@ Operator 2026-10-08: "in the drivers overview of the arc drivers we also see the
 - [x] Watchtower restarted; `bin/fw watchtower current` passes
 
 ### Human
-- [ ] [REVIEW] Driver names read clearly on an arc page
+- [x] [REVIEW] Driver names read clearly on an arc page
   **Steps:**
   1. Open http://192.168.10.107:3000/arcs/arc-020
   2. Look at "Drivers:" under BVP signals and the "Per-driver breakdown" table
@@ -133,6 +133,7 @@ Operator 2026-10-08: "in the drivers overview of the arc drivers we also see the
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+  **Reviewer verdict:** green V-20261008-314bf996 — reviewer-judge-t-4000-r3-9352645e83ca:reviewer (rung rung-3-termlink-single-reviewer), digest eb6b97bf3943; dispatch judge-t-4000-r3-9352645e83ca; evidence: .context/reviews/evidence/T-4000/AC1-judge-t-4000-r3-9352645e83ca.md, .context/reviews/evidence/T-4000/01-arcs.png, .context/reviews/evidence/T-4000/02-arc-020-drivers.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 

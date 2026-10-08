@@ -6,8 +6,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
 components: [web/blueprints/arcs.py, web/templates/arcs_index.html]
 related_tasks: []
@@ -38,7 +38,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-08T15:08:01Z
-last_update: 2026-10-08T20:44:27Z
+last_update: 2026-10-08T22:20:16Z
 date_finished: 2026-10-08T20:44:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,7 +97,7 @@ Operator 2026-10-08 (before a presentation): "why don't I see [the BVP matrix] i
 - [x] Watchtower restarted; `bin/fw watchtower current` passes
 
 ### Human
-- [ ] [REVIEW] The arcs matrix reads clearly in light and dark mode
+- [x] [REVIEW] The arcs matrix reads clearly in light and dark mode
   **Steps:**
   1. Open http://192.168.10.107:3000/arcs in a wide window
   2. Look at the "Value / cost matrix" section above the board; hover a dot; click one
@@ -133,6 +133,7 @@ Operator 2026-10-08 (before a presentation): "why don't I see [the BVP matrix] i
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+  **Reviewer verdict:** green V-20261008-57a90874 — reviewer-judge-t-3999-r3-d7c4a5281cbb:reviewer (rung rung-3-termlink-single-reviewer), digest a2c42eddc552; dispatch judge-t-3999-r3-d7c4a5281cbb; evidence: .context/reviews/evidence/T-3999/AC1-judge-t-3999-r3-d7c4a5281cbb.md, .context/reviews/evidence/T-3999/01-arcs-judge-t-3999-r3-d7c4a5281cbb.png, .context/reviews/evidence/T-3999/AC1-light-judge-t-3999-r3-d7c4a5281cbb.png, .context/reviews/evidence/T-3999/AC1-dark-judge-t-3999-r3-d7c4a5281cbb.png, .context/reviews/evidence/T-3999/AC1-hover-light-judge-t-3999-r3-d7c4a5281cbb.png, .context/reviews/evidence/T-3999/AC1-hover-dark-judge-t-3999-r3-d7c4a5281cbb.png, .context/reviews/evidence/T-3999/AC1-click-dest-judge-t-3999-r3-d7c4a5281cbb.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 
