@@ -5134,3 +5134,9 @@ X'` returning empty group."
   task: T-3978
   date: 2026-10-07
   context: Added via context agent
+- id: L-700
+  learning: "A gate placed AFTER a stricter gate must be checked for who it can still reach: T-973's review-marker check ran after the agent sovereignty refusal, so it could only ever block the human deciding (refused 3 routes: P-010, P-014, an 8/8 runme). Instance fixes per route hid it for months (T-3991)."
+  source: P-001
+  task: T-3991
+  date: 2026-10-08
+  context: Added via context agent
