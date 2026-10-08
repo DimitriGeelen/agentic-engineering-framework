@@ -50,7 +50,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-08T20:56:19Z
-last_update: '2026-10-08T21:01:08Z'
+last_update: 2026-10-08T22:15:15Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,7 +96,12 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Design from 055 (msg 6e6f72e2): resolve the target from the agent pid → tty → (c1) TermLink session owning it → `termlink pty inject`; (c2) tmux pane owning it → send-keys to that pane id; (c3) neither → wait for the prompt hook, ledger WAITING_NO_RECIPIENT "terminal not injectable". Never send-keys to `fleet-<dir>` (that is the claude-fw wrapper).
+
+**055 typing signal — LIVE 2026-10-09 (055 T-479, msg 1a3544e8), final contract:**
+`GET http://127.0.0.1:8090/api/claude/input-state?project=<abs path as in the cockpit's fleet.json: no trailing slash, not symlinked>` (loopback).
+200 → `{project, session, unlocked: bool, writable_bridges: int, last_key_at: UTC|null, external_view: bool, cockpit_started_at: UTC}`; 400 no project; 404 not a fleet project.
+Read it as: do NOT type if `unlocked` or `external_view` is true; `cockpit_started_at` < ~2 min ago → unknown; 404/error/timeout → unknown, never free; operator terminals outside the cockpit are invisible (case c3); `last_key_at` also moves on scroll and terminal replies — lean on `unlocked`, use `last_key_at` only as a refinement. 055 T-478: cockpit buttons now type into the TermLink PTY, not the wrapper.
 
 ## Acceptance Criteria
 
