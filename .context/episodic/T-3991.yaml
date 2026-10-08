@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3991: Review-marker gate (T-973) refuses the HUMAN's own inception decide whenever the handoff route did not touch a marker file — third recurrence (P-010, P-014, runme 2026-10-08)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-08T09:38:16Z
+# ============================================================================
+
+task_id: T-3991
+task_name: "Review-marker gate (T-973) refuses the HUMAN's own inception decide whenever the handoff route did not touch a marker file — third recurrence (P-010, P-014, runme 2026-10-08)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-08T09:35:16Z
+completed: 2026-10-08T09:37:49Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-08T11:37:22+02:00
+last_commit: 2026-10-08T11:37:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  missing review marker is a NOTE, not a refusal — the gate could only ever block the human deciding (P-010, P-014, runme 2026-10-08). vendor-sync inception.sh
+
+# Key outcomes
+outcomes:
+  - '`fw inception decide` no longer refuses when `.reviewed-T-XXX` is missing; it prints a one-line NOTE naming the route ("decided without a prior fw task review — the decider is the reviewer") and proceeds'
+  - 'The agent sovereignty gate (CLAUDECODE without --i-am-human/--from-watchtower) is unchanged and still refuses before anything else'
+  - 'The placeholder audit (T-1111) still runs and still blocks (integration test green outside an agent shell)'
+  - 'Tests: a human decide without a marker succeeds with the NOTE; an agent decide (CLAUDECODE=1) is still refused; existing marker-based tests stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/inception.sh'
+  - 'lib/inception.sh'
+  - '.tasks/active/T-3991-review-marker-gate-t-973-refuses-the-hum.md'
+  - 'tests/unit/inception_decide_atomicity.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-08T11:37:22'
+    action: 'T-3991: missing review marker is a NOTE, not a refusal — the gate could only ever block the human deciding (P-010, P-014, runme 2026-10-08)'
+  - time: '2026-10-08T11:37:28'
+    action: 'T-3991: vendor-sync inception.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 2
+  files_changed: 4
+  lines_added: 360
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3991-review-marker-gate-t-973-refuses-the-hum.md
+generated_by: context-agent-hybrid

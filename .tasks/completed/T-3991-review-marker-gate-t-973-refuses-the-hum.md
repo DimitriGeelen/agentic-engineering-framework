@@ -4,12 +4,12 @@ name: "Review-marker gate (T-973) refuses the HUMAN's own inception decide whene
 description: >
   Review-marker gate (T-973) refuses the HUMAN's own inception decide whenever the handoff route did not touch a marker file — third recurrence (P-010, P-014, runme 2026-10-08)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/inception.sh, tests/unit/inception_decide_atomicity.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-08T09:35:16Z
-last_update: 2026-10-08T09:35:16Z
-date_finished: null
+last_update: 2026-10-08T09:37:49Z
+date_finished: 2026-10-08T09:37:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -61,10 +61,10 @@ Operator, 2026-10-08: "that seems to be systemic, so would RCA that we fix that.
 ## Acceptance Criteria
 
 ### Agent
-- [ ] `fw inception decide` no longer refuses when `.reviewed-T-XXX` is missing; it prints a one-line NOTE naming the route ("decided without a prior fw task review — the decider is the reviewer") and proceeds
-- [ ] The agent sovereignty gate (CLAUDECODE without --i-am-human/--from-watchtower) is unchanged and still refuses before anything else
-- [ ] The placeholder audit (T-1111) still runs and still blocks
-- [ ] Tests: a human decide without a marker succeeds with the NOTE; an agent decide (CLAUDECODE=1) is still refused; existing marker-based tests stay green
+- [x] `fw inception decide` no longer refuses when `.reviewed-T-XXX` is missing; it prints a one-line NOTE naming the route ("decided without a prior fw task review — the decider is the reviewer") and proceeds
+- [x] The agent sovereignty gate (CLAUDECODE without --i-am-human/--from-watchtower) is unchanged and still refuses before anything else
+- [x] The placeholder audit (T-1111) still runs and still blocks (integration test green outside an agent shell)
+- [x] Tests: a human decide without a marker succeeds with the NOTE; an agent decide (CLAUDECODE=1) is still refused; existing marker-based tests stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -98,6 +98,9 @@ Operator, 2026-10-08: "that seems to be systemic, so would RCA that we fix that.
 -->
 
 ## Verification
+timeout 300 bats tests/unit/inception_decide_atomicity.bats > /tmp/.t3991 2>&1 && ! grep -q "^not ok" /tmp/.t3991
+! grep -q "Task review required before decision" lib/inception.sh
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -240,6 +243,13 @@ Operator, 2026-10-08: "that seems to be systemic, so would RCA that we fix that.
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** the operator's runme of 8 inception decisions was refused 8/8 with "Task review required before decision"; the operator reports every agent's handed-over decide command hits the same refusal.
+
+**Root cause:** T-973 required a marker file `.reviewed-T-XXX`, written only by `fw task review`. In `do_inception_decide` the agent sovereignty gate (T-1259) runs FIRST and refuses every agent, so by the marker check the caller is always a human. The marker gate could therefore only ever refuse a human — the person deciding, who is by definition reviewing.
+
+**Why structurally allowed:** the gate measured a proxy ("a file was touched") for a fact ("the human saw the task"), and each new handoff route had to remember to write the proxy. It recurred three times and was patched per route each time — P-010 (Watchtower writes the marker), P-014/T-1492 (emitter aborted before the touch) — never at the cause. Both pickups were processed as instance fixes; neither asked "can this gate ever block an agent?"
+
+**Prevention:** the check is a NOTE; the gate that actually protects sovereignty is untouched and pinned by a control test; a Verification line refuses the old refusal text returning. Learning recorded: a gate placed after a stricter gate must be checked for whom it can still reach.
 
 ## Evolution
 
@@ -321,3 +331,20 @@ Operator, 2026-10-08: "that seems to be systemic, so would RCA that we fix that.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3991-review-marker-gate-t-973-refuses-the-hum.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c5d69849
+- **Timestamp:** 2026-10-08T09:38:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `timeout 300 bats tests/unit/inception_decide_atomicity.bats > /tmp/.t3991 2>&1 && ! grep -q "^not ok" /tmp/.t3991`
+
+### 2026-10-08T09:37:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
