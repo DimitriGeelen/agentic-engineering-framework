@@ -527,16 +527,16 @@ do_inception_decide() {
         fi
     fi
 
-    # Gate: require fw task review before accepting decision (T-973)
+    # T-973 review marker — a NOTE now, never a refusal (T-3991). The sovereignty gate
+    # above already refuses every agent, so by this line the caller is a human (terminal,
+    # Watchtower, --i-am-human). The marker was a proxy for "the task was presented",
+    # and every new handoff route had to remember to write it: the Watchtower button
+    # did not (P-010), the review emitter silently aborted before it (P-014, T-1492),
+    # and an operator runme of 8 decisions was refused 8/8 (2026-10-08). The person
+    # deciding is the review; refusing them only ever blocked a human.
     local review_marker="$PROJECT_ROOT/.context/working/.reviewed-$task_id"
     if [ ! -f "$review_marker" ]; then
-        echo -e "${RED}ERROR: Task review required before decision${NC}" >&2
-        echo "" >&2
-        echo -e "Run this first:" >&2
-        echo -e "  $(_emit_user_command "task review $task_id")" >&2
-        echo "" >&2
-        echo -e "Then re-run the decide command." >&2
-        exit 1
+        echo -e "${YELLOW}NOTE:${NC} $task_id decided without a prior 'fw task review' — the decider is the reviewer (T-3991)." >&2
     fi
 
     # Gate: require ## Recommendation with actual content (T-974, hardened by T-1497).
