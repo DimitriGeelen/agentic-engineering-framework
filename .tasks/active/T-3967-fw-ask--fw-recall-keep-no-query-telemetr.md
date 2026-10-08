@@ -89,7 +89,9 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Correction (dimitri-mint-dev, 2026-10-07): telemetry already exists — `.context/working/recall-telemetry.jsonl` (ts, surface, query_hash, n_hits, top_score, latency_ms, outcome). Extend that writer; do not add a second channel.
+
+**Their operator's rule (2026-10-08, arc-001 A6.3/A6.4):** rows MUST NOT contain query text — keep query_hash; add locally detected language, caller (project/agent), store, reranker on/off, score spread (would have caught G-009). Query text only in an operator-approved frozen benchmark sample, nowhere else, no rolling retention. Email content never in telemetry or external prompts.
 
 ## Acceptance Criteria
 
