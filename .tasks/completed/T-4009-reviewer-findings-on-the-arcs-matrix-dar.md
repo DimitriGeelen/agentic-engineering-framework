@@ -6,12 +6,12 @@ description: >
   Reviewer findings on the arcs matrix (dark-mode contrast, coincident dots, label
   leaders) and the reviewer badges (white-on-success contrast in slate/console)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [web/blueprints/arcs.py, web/templates/arc_detail.html, web/templates/arcs_index.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-08T22:03:29Z
-last_update: 2026-10-08T22:23:23Z
-date_finished:
+last_update: 2026-10-08T22:23:52Z
+date_finished: 2026-10-08T22:23:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -357,3 +357,16 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4009-reviewer-findings-on-the-arcs-matrix-dar.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b310a172
+- **Timestamp:** 2026-10-08T22:24:05Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-08T22:23:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** render changes judged by independent reviewer via T-3999 AC#1 (green V-20261008-57a90874) and T-4001 AC#1 (green V-20261008-40fceb4b), both at revisions containing T-4009; a third run would duplicate them

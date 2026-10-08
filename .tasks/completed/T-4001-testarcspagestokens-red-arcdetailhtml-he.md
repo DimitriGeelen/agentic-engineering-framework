@@ -8,8 +8,8 @@ description: >
 
 status: work-completed
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: null
 tags: []
 components: [web/templates/arc_detail.html]
 related_tasks: []
@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-08T20:45:26Z
-last_update: 2026-10-08T22:19:08Z
+last_update: 2026-10-08T22:23:02Z
 date_finished: 2026-10-08T20:48:19Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,7 +96,7 @@ cost_estimate_proposed:
 - [x] Watchtower restarted; `bin/fw watchtower current` passes
 
 ### Human
-- [ ] [REVIEW] Reviewer PASS/FAIL badges on proposed drivers still read green/red
+- [x] [REVIEW] Reviewer PASS/FAIL badges on proposed drivers still read green/red
   **Steps:**
   1. Open `/arcs/value-prioritisation` (one PASS and one FAIL badge) and `/arcs/parallel-execution-aef` (PASS badges), in the "Proposed scoped drivers" section
   2. Look at the "Reviewer: PASS" / "Reviewer: FAIL" badges in light and dark mode
@@ -131,6 +131,7 @@ cost_estimate_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+  **Reviewer verdict:** green V-20261008-40fceb4b — reviewer-judge-t-4001-r3-f9d6a1c298c7:reviewer (rung rung-3-termlink-single-reviewer), digest 575edabc2096; dispatch judge-t-4001-r3-f9d6a1c298c7; evidence: .context/reviews/evidence/T-4001/AC1-judge-t-4001-r3-f9d6a1c298c7.md, .context/reviews/evidence/T-4001/01-arcs-value-prioritisation-judge-t-4001-r3-f9d6a1c298c7.png, .context/reviews/evidence/T-4001/02-arcs-parallel-execution-aef-judge-t-4001-r3-f9d6a1c298c7.png, .context/reviews/evidence/T-4001/03-arcs-judge-t-4001-r3-f9d6a1c298c7.png, .context/reviews/evidence/T-4001/dark-value-prioritisation-pass-judge-t-4001-r3-f9d6a1c298c7.png, .context/reviews/evidence/T-4001/dark-value-prioritisation-fail-judge-t-4001-r3-f9d6a1c298c7.png, .context/reviews/evidence/T-4001/dark-parallel-execution-pass-judge-t-4001-r3-f9d6a1c298c7.png; ledger .context/reviews/verdicts.jsonl
 
 ## Verification
 

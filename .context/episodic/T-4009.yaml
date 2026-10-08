@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4009: Reviewer findings on the arcs matrix (dark-mode contrast, coincident dots, label leaders) and the reviewer badges (white-on-success contrast in slate/console)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-08T22:24:20Z
+# ============================================================================
+
+task_id: T-4009
+task_name: "Reviewer findings on the arcs matrix (dark-mode contrast, coincident dots, label leaders) and the reviewer badges (white-on-success contrast in slate/console)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-08T22:03:29Z
+completed: 2026-10-08T22:23:52Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-09T00:07:28+02:00
+last_commit: 2026-10-09T00:23:23+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  reviewer findings — matrix ink set on the section (Pico remaps --pico-color inside links), coincident dots offset, labels clear neighbours with leaders; reviewer badges tinted with --wt-text text. ACs met — all three re-reviews green
+
+# Key outcomes
+outcomes:
+  - 'Matrix labels and dot outlines take their colour from a custom property set on the section (`--wt-text`), so the link''s remapped `--pico-color` cannot reach them'
+  - 'No two matrix dots share a click target: a dot within 6 px of an earlier one is offset; a label moved off its dot gets a leader line'
+  - 'Reviewer PASS/FAIL badges use a tinted background (`color-mix` of the token), a token border and `--wt-text` text — readable in every palette, no white-on-token'
+  - 'Tests: offset + leader geometry; badge markup uses the tinted style; T-3999/T-4000/T-4001 tests stay green'
+  - 'Watchtower restarted, `bin/fw watchtower current` passes, and `fw reviewer judge` re-run on T-3999, T-4000 and T-4001 — all three green (V-20261008-57a90874, -314bf996, -40fceb4b), all three closed'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/web/blueprints/arcs.py'
+  - '.agentic-framework/web/templates/arc_detail.html'
+  - '.agentic-framework/web/templates/arcs_index.html'
+  - '.tasks/active/T-4009-reviewer-findings-on-the-arcs-matrix-dar.md'
+  - '.tasks/completed/T-4001-testarcspagestokens-red-arcdetailhtml-he.md'
+  - '.tasks/completed/T-4008-reviewer-verdict-commit-fails-when-the-r.md'
+  - 'tests/unit/test_t3999_arcs_value_matrix.py'
+  - 'web/blueprints/arcs.py'
+  - 'web/templates/arc_detail.html'
+  - 'web/templates/arcs_index.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-09T00:07:28'
+    action: 'T-4009: reviewer findings — matrix ink set on the section (Pico remaps --pico-color inside links), coincident dots offset, labels clear neighbours with leaders; reviewer badges tinted with --wt-text text'
+  - time: '2026-10-09T00:23:23'
+    action: 'T-4009: ACs met — all three re-reviews green'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 20 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 20
+  commits: 2
+  files_changed: 9
+  lines_added: 454
+  lines_removed: 29
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4009-reviewer-findings-on-the-arcs-matrix-dar.md
+generated_by: context-agent-hybrid
