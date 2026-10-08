@@ -6,6 +6,7 @@
 # push. Content now decides; the marker is only reported.
 
 FRAMEWORK_ROOT="$(cd "$(dirname "$BATS_TEST_FILENAME")/../.." && pwd)"
+load ../git_fence   # T-3610: hook installs must not walk up into a repo above the temp dir
 
 setup() {
     TEST_TMP="$(mktemp -d)"
