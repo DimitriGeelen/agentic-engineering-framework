@@ -291,7 +291,18 @@ _auto_handover_at_critical() {
             _ah_ok=1
         elif _ah_sha=$(fw_handover_landed "${PROJECT_ROOT:-$(dirname "$CONTEXT_DIR")}" "$_ah_start"); then
             _ah_ok=1
-            _ah_note=" (commit $_ah_sha landed; push did not finish within ${_ah_total_timeout}s — run 'fw push')"
+            # T-4004 (1409 Ask 7b): the push the timeout cut off is usually just waiting on
+            # the audit lock (pre-push). Finish it detached instead of leaving the handover
+            # commit unpushed until someone notices: it outlives this hook and the restart.
+            local _ah_push_log="$CONTEXT_DIR/working/.handover-push-retry.log"
+            if command -v setsid >/dev/null 2>&1; then
+                ( cd "${PROJECT_ROOT:-$(dirname "$CONTEXT_DIR")}" && \
+                  setsid nohup bash -c 'echo "[$(date -u +%FT%TZ)] retrying handover push"; timeout 1800 "$1" push; echo "[$(date -u +%FT%TZ)] exit $?"' \
+                      _ "${FW_BIN:-$FRAMEWORK_ROOT/bin/fw}" >> "$_ah_push_log" 2>&1 < /dev/null & ) 2>/dev/null || true
+                _ah_note=" (commit $_ah_sha landed; push did not finish within ${_ah_total_timeout}s — retrying detached, log .handover-push-retry.log)"
+            else
+                _ah_note=" (commit $_ah_sha landed; push did not finish within ${_ah_total_timeout}s — run 'fw push')"
+            fi
         fi
         if [ "$_ah_ok" = 1 ]; then
             tail -5 "$_ah_capture" >&2 2>/dev/null || true

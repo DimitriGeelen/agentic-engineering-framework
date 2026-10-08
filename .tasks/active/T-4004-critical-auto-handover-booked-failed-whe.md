@@ -1,10 +1,21 @@
 ---
 id: T-4004
-name: "Critical auto-handover booked FAILED when only its push waits on the audit lock: committed handover = success, push timeout reported separately, restart signal after commit (1409 Ask 7)"
+name: "Critical auto-handover booked FAILED when only its push waits on the audit
+  lock: committed handover = success, push timeout reported separately, restart signal
+  after commit (1409 Ask 7)"
 description: >
-  1409 correction to T-3989 (msg 9c8e5632, conversation consult-999-Agentic-Engineering-Framework): session b3b22404 — checkpoint.sh auto-handover fired at 903,795 tokens and committed S-2026-1008-1002, then the pre-push audit waited 90 s on the audit lock (cron audit running); FW_HANDOVER_TOTAL_TIMEOUT=60 (checkpoint.sh:260,275) cut it off, .compact-log booked 'Handover FAILED', .restart-requested (written only on success, :275-307) never appeared; the agent worked on 6.5 min until the gate blocked. Ask 7: (a) a committed handover is success even if the push fails, push failure reported separately; (b) total timeout >= push lock wait, or the auto-handover does not push; (c) write the restart signal after the commit, not after the push. Also: line-277 error count was 18, not 74 (correct T-3989/T-3997 records).
+  1409 correction to T-3989 (msg 9c8e5632, conversation consult-999-Agentic-Engineering-Framework):
+  session b3b22404 — checkpoint.sh auto-handover fired at 903,795 tokens and committed
+  S-2026-1008-1002, then the pre-push audit waited 90 s on the audit lock (cron audit
+  running); FW_HANDOVER_TOTAL_TIMEOUT=60 (checkpoint.sh:260,275) cut it off, .compact-log
+  booked 'Handover FAILED', .restart-requested (written only on success, :275-307)
+  never appeared; the agent worked on 6.5 min until the gate blocked. Ask 7: (a) a
+  committed handover is success even if the push fails, push failure reported separately;
+  (b) total timeout >= push lock wait, or the auto-handover does not push; (c) write
+  the restart signal after the commit, not after the push. Also: line-277 error count
+  was 18, not 74 (correct T-3989/T-3997 records).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-08T21:02:33Z
-last_update: 2026-10-08T21:02:52Z
-date_finished: null
+last_update: 2026-10-08T21:18:47Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +61,50 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-08T21:15:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-08T21:15:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4004: Critical auto-handover booked FAILED when only its push waits on the audit lock: committed handover = success, push timeout reported separately, restart signal after commit (1409 Ask 7)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Ask 7 (a) and (c) are already shipped: T-3942 (v1.8.5) judges the auto-handover by whether the LATEST.md commit landed and then writes the restart signal, even when the outer timeout killed the push. 1409 runs 1.8.3, which predates it — upgrading to ≥1.8.5 cures their exact case. What remains is (b): a push the outer timeout cut off leaves the handover commit unpushed ("run 'fw push'").
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] When the auto-handover's commit landed but its push did not finish within the outer timeout, checkpoint.sh starts a detached `fw push` (setsid, bounded 1800 s, logged to `.context/working/.handover-push-retry.log`) and still books the handover as generated and writes the restart signal
+- [x] Without setsid the old "run 'fw push'" note stays (no hang, no failure)
+- [x] Test: commit landed + push killed by the timeout → the retry runs `fw push` detached and the log says so; the T-3942 tests stay green
+- [x] 1409 told that (a)/(c) are in v1.8.5+ (T-3942) and what (b) adds; the 74→18 count corrected where it lives in code (budget-gate.sh, t3989 test comment) — the closed T-3997 record keeps its original text, corrected here
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +138,10 @@ date_finished: null
 -->
 
 ## Verification
+
+bats tests/unit/t4004_handover_push_retry.bats tests/unit/t3942_handover_landed.bats tests/unit/t3989_budget_critical_handover.bats > /tmp/.t4004 2>&1 && ! grep -q '^not ok' /tmp/.t4004
+bash -n agents/context/checkpoint.sh
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -320,3 +365,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4004-critical-auto-handover-booked-failed-whe.md
 - **Context:** Initial task creation
+
+### 2026-10-08T21:16:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

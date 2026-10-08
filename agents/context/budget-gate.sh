@@ -279,7 +279,7 @@ STATUS_AGE=${STATUS_AGE:-999}
 CMD_CLASS=${CMD_CLASS:-blocked}
 CMD_CLASSIFIER=${CMD_CLASSIFIER:-unknown}
 # T-3989 (1409, finding 5): the numeric fields go straight into [ -lt ] tests. 1409
-# logged "[: 7 | sys.path.insert(0,...): integer expression expected" 74x in one session:
+# logged "[: 7 | sys.path.insert(0,...): integer expression expected" 18x in one session (first reported as 74x; corrected by 1409, T-4004):
 # a non-integer here broke the fast path silently. Validate; a bad value takes the slow
 # path (age 999) and says so once on stderr instead of failing every test.
 case "$STATUS_AGE" in ''|*[!0-9]*)

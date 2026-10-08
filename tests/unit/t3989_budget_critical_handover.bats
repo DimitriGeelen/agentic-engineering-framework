@@ -3,7 +3,7 @@
 # over. (2) The critical auto-handover lived only in PostToolUse checkpoint.sh, and
 # PostToolUse never runs on a call PreToolUse budget-gate BLOCKED — so it never ran.
 # (5) A non-integer cache age broke every [ -lt ] in the fast path ("integer expression
-# expected", 74x in one 1409 session).
+# expected", 18x in one 1409 session — first reported as 74x, corrected by 1409, T-4004).
 
 load ../test_helper
 
