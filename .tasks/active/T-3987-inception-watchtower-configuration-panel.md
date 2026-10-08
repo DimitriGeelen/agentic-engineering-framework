@@ -1,23 +1,19 @@
 ---
-id: T-3968
-name: "Project-declared operator-only carve-outs for delegation (832 proposal: direction,
-  large-ux)"
+id: T-3987
+name: "Inception: Watchtower configuration panel that CHANGES settings (not only shows them) and picks up new configurable options automatically"
 description: >
-  832 T-1077 proposes two operator-only classes in lib/delegation.py CARVE_OUTS: direction
-  (what the project is for) and large-ux (whole-workflow feel). Options: (a) add both
-  as AEF classes, (b) a project policy file read by delegation.py so each operator
-  owns the list. Changes who closes criteria, so it is an operator decision.
+  Operator request (2026-10-08 walkthrough, raised with T-3968): 'a configuration panel where we can not only report but actually change settings, with a mechanism to automatically include new configurable options'. Today /config (web/blueprints/config.py) is read-only and /settings edits only the LLM engine/keys/appearance. The registry already exists: lib/config.sh FW_CONFIG_REGISTRY (every key with description), fw config set/get/list writes .framework.yaml. Scope to explore: (1) render every registry key with its current value, source (default/.framework.yaml/env) and description, editable where safe; (2) new registry keys appear without template changes (generated from the registry); (3) project policy files (first: T-3968 project operator-only delegation classes) as a second kind of configurable item; (4) which settings must stay operator-only or read-only (security gates, Tier-0 knobs) and how edits are logged; (5) env-overridden keys shown as overridden, not silently editable.
 
 status: captured
 workflow_type: inception
 owner: human
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
-created: 2026-10-06T21:10:12Z
-last_update: '2026-10-06T21:15:49Z'
-date_finished:
+created: 2026-10-08T08:18:05Z
+last_update: 2026-10-08T08:18:05Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -26,36 +22,9 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
-cost_estimate_proposed:
-  - ts: '2026-10-06T21:15:21Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius: 3
-      tier: 4
-      effort: 6
-    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
-      (workflow:inception); effort=6 (lines=112,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-06T21:15:49Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 2
-      D2: 2
-      D3: 2
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 2
-      F3: 2
-      F1: 2
-      F2: 2
-    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
-      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
-      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3968: Project-declared operator-only carve-outs for delegation (832 proposal: direction, large-ux)
+# T-3987: Inception: Watchtower configuration panel that CHANGES settings (not only shows them) and picks up new configurable options automatically
 
 ## Problem Statement
 
@@ -145,7 +114,7 @@ bvp_scores_proposed:
 
 **Recommendation:** GO
 
-**Rationale:** Option (b): a project-declared extension point. Carve-outs encode one operator's standing instruction; AEF already ships the three risk classes, and making a fourth and fifth universal would move criteria back to every operator on every project, undoing D-626 elsewhere. A per-project file keeps 832's rule exactly as their operator wrote it, costs AEF one loader plus a classifier hook, and is auditable (fw task delegate --dry-run shows the class).
+**Rationale:** GO: the registry that would drive the panel already exists and is complete by test (tests/lint/config-registry-parity.bats), so a generated, editable panel costs a blueprint and a template rather than per-setting work, and every future key appears automatically. The open design questions (which keys stay read-only, how edits are logged, env overrides) are bounded and answerable from the existing Tier-2 logging pattern. Without it, every new project policy (T-3968 first) is an invisible YAML edit, which the operator has said is not acceptable.
 
 ## Decisions
 
@@ -157,11 +126,6 @@ bvp_scores_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
-
-### 2026-10-08 — operator walkthrough (chat): GO on A, managed from the configuration panel
-- **Chose:** A — a project-declared list of extra operator-only criterion classes, read by `lib/delegation.py`. Condition, operator verbatim: "it needs to come into our configuration panel, needs to be clear and we need to be able to change it."
-- **Dependency:** the editable, self-extending configuration panel is its own inception, T-3987. T-3968's build lands the policy file + classifier hook; its UI is T-3987's first project-policy item. No hidden YAML-only setting.
-- **Rejected:** B (AEF-wide classes would undo the reviewer delegation for every operator); C (832's operator has a standing instruction for it).
 
 ## Decision
 
