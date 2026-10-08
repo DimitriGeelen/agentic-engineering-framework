@@ -1,8 +1,20 @@
 ---
 id: T-4003
-name: "Peer mail injection works for both claude-fw -c and --termlink: resolve the target PTY from the agent's pid (termlink inject / tmux pane / wait for prompt hook)"
+name: "Peer mail injection works for both claude-fw -c and --termlink: resolve the
+  target PTY from the agent's pid (termlink inject / tmux pane / wait for prompt hook)"
 description: >
-  Operator 2026-10-08: do option 1 (tmux adapter) AND option 2 (fix --termlink with the fleet cockpit); -c and --termlink must work on the same sidecar mechanism; consult 010 and 055. 055 answered (b)+(c) on aef-mail-delivery-both-modes (msg 6e6f72e2): resolve the target from the agent pid -> Claude's tty (ps -o tty=), then (c1) a TermLink session owns that tty -> termlink pty inject; (c2) a tmux pane has that tty (tmux list-panes -a -F '#{pane_id} #{pane_tty}') -> send-keys to that pane id; (c3) neither -> mail waits for the prompt hook, ledger WAITING_NO_RECIPIENT 'terminal not injectable'. Same readiness check (prompt free, nobody typing) and ledger for all three. Never send-keys to fleet-<dir> (that is the claude-fw wrapper, not Claude). 055 offers a 'someone is typing here' flag; cockpit must NOT carry mail. 055 T-474 fixed --termlink garbling under the cockpit (retry and report symptoms). Waiting on 010 for (a) after their operator decision.
+  Operator 2026-10-08: do option 1 (tmux adapter) AND option 2 (fix --termlink with
+  the fleet cockpit); -c and --termlink must work on the same sidecar mechanism; consult
+  010 and 055. 055 answered (b)+(c) on aef-mail-delivery-both-modes (msg 6e6f72e2):
+  resolve the target from the agent pid -> Claude's tty (ps -o tty=), then (c1) a
+  TermLink session owns that tty -> termlink pty inject; (c2) a tmux pane has that
+  tty (tmux list-panes -a -F '#{pane_id} #{pane_tty}') -> send-keys to that pane id;
+  (c3) neither -> mail waits for the prompt hook, ledger WAITING_NO_RECIPIENT 'terminal
+  not injectable'. Same readiness check (prompt free, nobody typing) and ledger for
+  all three. Never send-keys to fleet-<dir> (that is the claude-fw wrapper, not Claude).
+  055 offers a 'someone is typing here' flag; cockpit must NOT carry mail. 055 T-474
+  fixed --termlink garbling under the cockpit (retry and report symptoms). Waiting
+  on 010 for (a) after their operator decision.
 
 status: captured
 workflow_type: build
@@ -38,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-08T20:56:19Z
-last_update: 2026-10-08T20:57:00Z
-date_finished: null
+last_update: '2026-10-08T21:01:08Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +62,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-08T21:00:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-08T21:01:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4003: Peer mail injection works for both claude-fw -c and --termlink: resolve the target PTY from the agent's pid (termlink inject / tmux pane / wait for prompt hook)

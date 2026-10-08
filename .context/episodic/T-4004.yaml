@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4004: Critical auto-handover booked FAILED when only its push waits on the audit lock: committed handover = success, push timeout reported separately, restart signal after commit (1409 Ask 7)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-08T21:19:24Z
+# ============================================================================
+
+task_id: T-4004
+task_name: "Critical auto-handover booked FAILED when only its push waits on the audit lock: committed handover = success, push timeout reported separately, restart signal after commit (1409 Ask 7)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-08T21:02:33Z
+completed: 2026-10-08T21:18:53Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-08T23:02:52+02:00
+last_commit: 2026-10-08T23:18:47+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture 1409 Ask 7 — auto-handover push timeout must not void a committed handover. a handover push cut off by the outer timeout is retried detached (1409 Ask 7b); 74->18 count corrected
+
+# Key outcomes
+outcomes:
+  - 'When the auto-handover''s commit landed but its push did not finish within the outer timeout, checkpoint.sh starts a detached `fw push` (setsid, bounded 1800 s, logged to `.context/working/.handover-push-retry.log`) and still books the handover as generated and writes the restart signal'
+  - 'Without setsid the old "run ''fw push''" note stays (no hang, no failure)'
+  - 'Test: commit landed + push killed by the timeout → the retry runs `fw push` detached and the log says so; the T-3942 tests stay green'
+  - '1409 told that (a)/(c) are in v1.8.5+ (T-3942) and what (b) adds; the 74→18 count corrected where it lives in code (budget-gate.sh, t3989 test comment) — the closed T-3997 record keeps its original text, corrected here'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/budget-gate.sh'
+  - '.agentic-framework/agents/context/checkpoint.sh'
+  - 'agents/context/budget-gate.sh'
+  - 'agents/context/checkpoint.sh'
+  - '.tasks/active/T-4004-critical-auto-handover-booked-failed-whe.md'
+  - 'tests/unit/t3989_budget_critical_handover.bats'
+  - 'tests/unit/t4004_handover_push_retry.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-08T23:02:52'
+    action: 'T-4004: capture 1409 Ask 7 — auto-handover push timeout must not void a committed handover'
+  - time: '2026-10-08T23:18:47'
+    action: 'T-4004: a handover push cut off by the outer timeout is retried detached (1409 Ask 7b); 74->18 count corrected'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 16
+  commits: 2
+  files_changed: 7
+  lines_added: 469
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4004-critical-auto-handover-booked-failed-whe.md
+generated_by: context-agent-hybrid
