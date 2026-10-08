@@ -71,24 +71,24 @@ opt-in derived index (files stay authoritative)? Research artifact: `docs/report
 
 - **IW-1: How does the index stay fresh when a task file is edited directly (Edit tool, no fw verb)?**
   confidence: 1
-  disposition:
-  rationale:
+  disposition: deferred
+  rationale: to the first build slice — freshness by per-file mtime/size check on read (files stay the source of truth), designed and tested there.
 - **IW-2: Which consumers move first — /approvals and /tasks only, or the CLI listings too?**
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: answered
+  rationale: operator GO 2026-10-08 "tasks first": the slowest Watchtower pages first; CLI listings later.
 - **IW-3: One shared query module that the 62 sites converge on, or only the hot paths?**
   confidence: 1
-  disposition:
-  rationale:
+  disposition: deferred
+  rationale: to the build — one module from the start, sites migrate as they are touched; measured per page.
 - **IW-4: Is WAL mode plus rebuild-on-corruption enough for multiple writers (sessions, cron, Watchtower)?**
   confidence: 1
-  disposition:
-  rationale:
+  disposition: deferred
+  rationale: to the first build slice — a concurrency test with parallel writers is a build AC; the index is derived, so the fallback is rebuild from files.
 - **IW-5: Do episodics, handovers and fabric follow later under the same module, or stay out of scope?**
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: answered
+  rationale: operator GO 2026-10-08: tasks only now; learnings/episodics only if measured worth it.
 
 <!-- T-2190 (T-2186 Slice 4): every IW-N question must be disposed before
      --status work-completed. Disposition gate (agents/task-create/update-task.sh
