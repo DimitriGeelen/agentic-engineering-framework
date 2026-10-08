@@ -1145,12 +1145,14 @@ def _bvp_signals(arc: dict, arc_slug: str, arc_numeric: str) -> dict:
     still renders so the human sees proposed-driver approve buttons.
     """
     from web.blueprints.bvp import (
-        _compute_bvp, _driver_weights, _load_policy,
+        _compute_bvp, _driver_weights, _driver_names, _load_policy,
         _latest_proposed_scores, _arc_member_tasks, _arc_rolled_up_scores,
     )
 
     policy = _load_policy()
     weights = _driver_weights(policy)
+    # T-4000: the driver's name beside its code (D1, F3) — same source as /bvp.
+    names = _driver_names(policy)
     arc_scores: dict = arc.get("bvp_scores") or {}
     bvp_mode = ""
     # T-1939: parity with /bvp scatter (T-1934 + T-1936). Resolution ladder
@@ -1184,6 +1186,7 @@ def _bvp_signals(arc: dict, arc_slug: str, arc_numeric: str) -> dict:
             s_int = None
         per_driver.append({
             "id": d_id,
+            "name": names.get(d_id, ""),
             "weight": w,
             "score": s_int,
             "contrib": (s_int * w) if s_int is not None else None,
@@ -1233,6 +1236,7 @@ def _bvp_signals(arc: dict, arc_slug: str, arc_numeric: str) -> dict:
         "norm": norm,
         "per_driver": per_driver,
         "weights": weights,
+        "driver_names": names,
         "coherence_findings": coherence,
         "proposed_drivers": proposed_sorted,
         "scoped_drivers": scoped,

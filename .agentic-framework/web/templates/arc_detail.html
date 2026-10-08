@@ -253,7 +253,7 @@
     <p class="muted" style="margin: 0.25rem 0 0.5rem 0;">
         <strong>Drivers:</strong>
         {% for d in bvp_info.per_driver -%}
-        <code>{{ d.id }}={{ d.weight }}</code>{% if not loop.last %} · {% endif %}
+        <code>{{ d.id }}</code>{% if d.name %} {{ d.name }}{% endif %} = {{ d.weight }}{% if not loop.last %} · {% endif %}
         {%- endfor %}
     </p>
     {% endif %}
@@ -267,7 +267,7 @@
             <tbody>
                 {% for d in bvp_info.per_driver %}
                 <tr>
-                    <td><code>{{ d.id }}</code></td>
+                    <td><code>{{ d.id }}</code>{% if d.name %} {{ d.name }}{% endif %}</td>
                     <td>{{ d.weight }}</td>
                     <td>{% if d.score is not none %}{{ d.score }}{% else %}<span class="missing">—</span>{% endif %}</td>
                     <td>{% if d.contrib is not none %}{{ d.contrib }}{% else %}<span class="missing">—</span>{% endif %}</td>
@@ -284,7 +284,7 @@
     <ul>
         {% for f in bvp_info.coherence_findings %}
         <li>
-            <span class="badge badge-warn">{{ f.driver }} = {{ f.claim }}</span>
+            <span class="badge badge-warn">{{ f.driver }}{% if bvp_info.driver_names and bvp_info.driver_names.get(f.driver) %} {{ bvp_info.driver_names[f.driver] }}{% endif %} = {{ f.claim }}</span>
             but {{ f.n_low }} of {{ f.n_total }} constituents score ≤ {{ f.task_max }}
             ({{ "%.0f%%"|format(f.frac * 100) }}, threshold {{ "%.0f%%"|format(f.fraction_threshold * 100) }})
         </li>
