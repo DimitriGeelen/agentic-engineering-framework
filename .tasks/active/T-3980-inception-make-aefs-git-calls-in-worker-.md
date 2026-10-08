@@ -157,6 +157,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-08 — operator walkthrough (chat): GO on A, with a LOUD refusal and an explicit bypass
+- **Chose:** A — gate the worker/operator uid split + neutralise read-only git calls. Operator, verbatim: "I don't want this to go away on notice, so this should be a loud refusal, right? Say hey we're not switching on, it was planned, but you have to fix this and this until we do so. Or ask for an explicit bypass, give that option."
+- **Shape agreed:** enabling `agent_uid` refuses with the list of git call sites still unsafe (each with its task), shrinking as each is fixed; `fw doctor` / `fw audit` show the same list as a WARN beforehand; an operator-only bypass (`--accept-unsafe-git "reason"`, logged Tier-2, refused under CLAUDECODE unless `--i-am-human`) is named in the refusal.
+- **Rejected:** gate only (B) — leaves cheap exploit paths open; DEFER (C) — the window would open silently with T-3977 D-c.
+
 ## Decision
 
 <!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
