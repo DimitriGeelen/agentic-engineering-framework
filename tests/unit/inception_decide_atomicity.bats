@@ -145,3 +145,24 @@ EOF
     count=$(grep -c "inception-decision" "$f" || true)
     [ "$count" -eq 0 ]
 }
+
+# T-3991: the T-973 review marker is a NOTE, never a refusal. The agent sovereignty
+# gate already refuses every agent, so the marker check could only ever block a human
+# (P-010 Watchtower, P-014 silent abort, an 8/8-refused operator runme on 2026-10-08).
+@test "T-3991: a human decide WITHOUT a review marker proceeds, with a NOTE" {
+    local task_id="T-9601"
+    local f
+    f=$(_make_task "$task_id" "[x]")
+    rm -f "$TEST_TEMP_DIR/.context/working/.reviewed-$task_id"
+    run do_inception_decide "$task_id" go --rationale "test" --i-am-human
+    [[ "$output" != *"Task review required"* ]]
+    [[ "$output" == *"decided without a prior 'fw task review'"* ]]
+}
+
+@test "T-3991/control: an agent decide (CLAUDECODE=1) is still refused before the marker matters" {
+    local task_id="T-9602"
+    _make_task "$task_id" "[x]" >/dev/null
+    CLAUDECODE=1 run do_inception_decide "$task_id" go --rationale "test"
+    [ "$status" -ne 0 ]
+    [[ "$output" != *"decided without a prior"* ]]
+}
