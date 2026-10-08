@@ -1,15 +1,15 @@
 ---
-id: T-3999
-name: "Arcs page embeds an arcs-only value/cost matrix (same numbers as /bvp)"
+id: T-4002
+name: "test_threshold_still_bounds_the_queue asserts on live corpus state (dispatch-safety 0.58 < 0.8)"
 description: >
-  Arcs page embeds an arcs-only value/cost matrix (same numbers as /bvp)
+  tests/web/test_approvals_blocked_arcs.py::test_threshold_still_bounds_the_queue reads the live dispatch-safety arc completion; the corpus moved (0.58) and the test went red for reasons unrelated to code. Pin a committed fixture (T-3326 mutable-corpus anchor). Found while running arcs tests for T-3999.
 
-status: work-completed
+status: captured
 workflow_type: build
-owner: human
-horizon: now
+owner: agent
+horizon: next
 tags: []
-components: [web/blueprints/arcs.py, web/templates/arcs_index.html]
+components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -37,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-08T15:08:01Z
-last_update: 2026-10-08T20:44:27Z
-date_finished: 2026-10-08T20:44:27Z
+created: 2026-10-08T20:45:42Z
+last_update: 2026-10-08T20:45:42Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,60 +50,22 @@ date_finished: 2026-10-08T20:44:27Z
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-08T15:15:23Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=279,acs=8)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-08T15:15:51Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3999: Arcs page embeds an arcs-only value/cost matrix (same numbers as /bvp)
+# T-4002: test_threshold_still_bounds_the_queue asserts on live corpus state (dispatch-safety 0.58 < 0.8)
 
 ## Context
 
-Operator 2026-10-08 (before a presentation): "why don't I see [the BVP matrix] in the arcs?" — the matrix only ever lived on /bvp (tasks + arcs). Option b chosen: embed an arcs-only value/cost matrix on /arcs.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `/arcs` renders a server-side SVG value/cost matrix of every scored arc, using `web.blueprints.bvp._collect_arc_points` (the same numbers as /bvp), with median quadrant guides, quadrant labels, and each dot linking to `/arcs/<slug>` with a tooltip (id, name, BVP_norm, cost)
-- [x] No JavaScript dependency; colours from theme tokens only (no hex literals); a link to the full /bvp matrix
-- [x] A failure to compute the points never breaks /arcs: the matrix section is replaced by a one-line note
-- [x] Test: /arcs returns 200 and contains the matrix with one dot per arc point; existing arcs tests that passed before stay green (two pre-existing reds — arc_detail.html hexes, dispatch-safety live-threshold — are not from this change and are filed separately)
-- [x] Watchtower restarted; `bin/fw watchtower current` passes
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
-- [ ] [REVIEW] The arcs matrix reads clearly in light and dark mode
-  **Steps:**
-  1. Open http://192.168.10.107:3000/arcs in a wide window
-  2. Look at the "Value / cost matrix" section above the board; hover a dot; click one
-  3. Toggle dark mode (moon icon) and look again
-  **Expected:** dots are visible and labelled, quadrant lines and labels readable in both themes, clicking a dot opens that arc
-  **If not:** note which theme / which element is unreadable
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -331,13 +293,6 @@ Operator 2026-10-08 (before a presentation): "why don't I see [the BVP matrix] i
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-**Recommendation:** GO
-**Rationale:** The matrix is live on /arcs with the same numbers as /bvp, renders without script, survives a failing computation, and was checked in a real browser (light theme). Only the dark-theme look is unverified, which is what the [REVIEW] criterion asks you to glance at.
-**Evidence:**
-- tests/unit/test_t3999_arcs_value_matrix.py — 6 passed (one dot per arc, same numbers as /bvp, quadrant placement, list view, failure note, no hex literals)
-- Live: 20 arc dots on http://192.168.10.107:3000/arcs; screenshot .context/working/arcs-matrix2.png; `bin/fw watchtower current` passes
-- First load after a restart takes ~4 s (points cached 120 s afterwards)
-
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -361,19 +316,7 @@ Operator 2026-10-08 (before a presentation): "why don't I see [the BVP matrix] i
 
 ## Updates
 
-### 2026-10-08T15:08:01Z — task-created [task-create-agent]
+### 2026-10-08T20:45:42Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3999-arcs-page-embeds-an-arcs-only-valuecost-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4002-testthresholdstillboundsthequeue-asserts.md
 - **Context:** Initial task creation
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-5efe5bba
-- **Timestamp:** 2026-10-08T20:44:33Z
-- **Catalogue:** v1.3-seed
-- **Overall:** PASS
-- **Needs Human:** no
-- **Findings:** none
-
-### 2026-10-08T20:44:27Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
