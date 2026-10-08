@@ -444,12 +444,12 @@
                readable without pressing it. #}
             {% if p.get('reviewer_state') == 'pass' %}
             <span style="margin-left: 0.5rem; padding: 0.1rem 0.5rem; border-radius: 0.3rem;
-                         background: var(--wt-success); color: #fff; font-size: 0.8em;"
+                         background: color-mix(in srgb, var(--wt-success) 22%, transparent); border: 1px solid var(--wt-success); color: var(--wt-text, var(--pico-color)); font-size: 0.8em;"
                   title="Reviewed {{ p.get('reviewer_ts', '—') }} — checks (a) scorable, (b) distinct, (c) distinguishes">
               Reviewer: PASS</span>
             {% elif p.get('reviewer_state') == 'fail' %}
             <span style="margin-left: 0.5rem; padding: 0.1rem 0.5rem; border-radius: 0.3rem;
-                         background: var(--wt-danger); color: #fff; font-size: 0.8em;"
+                         background: color-mix(in srgb, var(--wt-danger) 22%, transparent); border: 1px solid var(--wt-danger); color: var(--wt-text, var(--pico-color)); font-size: 0.8em;"
                   title="Reviewed {{ p.get('reviewer_ts', '—') }}">
               Reviewer: FAIL — {{ p.get('reviewer_failed', [])|join(', ') }}</span>
             {% else %}

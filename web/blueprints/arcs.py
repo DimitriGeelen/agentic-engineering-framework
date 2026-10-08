@@ -780,12 +780,25 @@ def _arc_matrix() -> dict[str, Any]:
         "status": str(p.get("status", "")), "proposed": bool(p.get("proposed")),
         "hv": float(p["bvp_norm"]) >= vmed, "lc": float(p["cost"]) <= cmed,
     } for p in pts]
-    # Arcs at (nearly) the same point would print their labels on top of each other: stack
-    # each label below the ones already placed near it.
+    # T-4009 (reviewer, T-3999): arcs at (nearly) the same value/cost hid each other — the
+    # top dot took every click. Offset a dot that would land within 6 px of one already
+    # placed (rightwards, 9 px per step), so each arc keeps its own click target.
+    dot_xy: list[tuple[float, float]] = []
+    for d in sorted(dots, key=lambda d: (d["y"], d["x"])):
+        while any(abs(px - d["x"]) < 6 and abs(py - d["y"]) < 6 for px, py in dot_xy):
+            d["x"] = round(d["x"] + 9, 1)
+        dot_xy.append((d["x"], d["y"]))
+    # ...and labels near each other stack downwards; a label moved off its dot gets a leader.
     placed: list[dict] = []
     for d in sorted(dots, key=lambda d: (d["y"], d["x"])):
         near = [p for p in placed if abs(p["x"] - d["x"]) < 40 and abs(p["ly"] - (d["y"] + 4)) < 12]
         d["ly"] = round(d["y"] + 4 + 12 * len(near), 1)
+        # A label starts right of its own dot, and past any neighbour dot it would run into.
+        lx = d["x"] + 10
+        while any(px > d["x"] and abs(px - lx) < 8 and abs(py - (d["ly"] - 4)) < 8 for px, py in dot_xy):
+            lx += 9
+        d["lx"] = round(lx, 1)
+        d["leader"] = bool(near) or lx > d["x"] + 10
         placed.append(d)
     xticks = [{"x": sx(t), "label": f"{t:g}"} for t in range(0, int(cmax) + 1, 2)]
     yticks = [{"y": vy(t), "label": f"{t:.2f}"} for t in

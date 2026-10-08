@@ -107,3 +107,35 @@ def test_the_matrix_styles_use_theme_tokens_only():
     tpl = (REPO_ROOT / "web" / "templates" / "arcs_index.html").read_text()
     block = tpl[tpl.index("T-3999"):tpl.index("{% if kanban_mode %}")]
     assert not re.search(r"#[0-9a-fA-F]{3,8}\b", block), "hex colour literal in the matrix block"
+
+
+# ── T-4009: reviewer findings (coincident dots, leaders, colour source) ──────────────────────
+
+def test_t4009_coincident_arcs_get_their_own_click_target(app_mod, tmp_path):
+    app, arcs = app_mod
+    import os
+    root = Path(os.environ["PROJECT_ROOT"])
+    # a third arc at exactly alpha's value and cost
+    (root / ".context" / "arcs" / "gamma.yaml").write_text(
+        ARC.format(id="arc-903", slug="gamma", name="Gamma", status="in-progress", d1=5, br=2))
+    arcs._matrix_cache.update(at=0.0, val=None)
+    d = {x["slug"]: x for x in arcs._arc_matrix()["dots"]}
+    assert (d["alpha"]["x"], d["alpha"]["y"]) != (d["gamma"]["x"], d["gamma"]["y"])
+    assert abs(d["alpha"]["x"] - d["gamma"]["x"]) >= 6
+    assert d["alpha"]["leader"] or d["gamma"]["leader"]       # the second label moved: leader
+
+
+def test_t4009_matrix_colours_are_fixed_on_the_section_not_inside_the_link():
+    tpl = (REPO_ROOT / "web" / "templates" / "arcs_index.html").read_text()
+    block = tpl[tpl.index("T-3999"):tpl.index("{% if kanban_mode %}")]
+    assert "--am-ink: var(--wt-text" in block
+    for cls in (".am-dot {", ".am-name {", ".am-label {"):
+        rule = block[block.index(cls):block.index("}", block.index(cls))]
+        assert "var(--am-ink)" in rule and "--pico-color" not in rule and "--pico-primary" not in rule
+
+
+def test_t4009_reviewer_badges_are_tinted_not_white_on_token():
+    tpl = (REPO_ROOT / "web" / "templates" / "arc_detail.html").read_text()
+    seg = tpl[tpl.index("Reviewer: PASS") - 600:tpl.index("Reviewer: FAIL") + 50]
+    assert seg.count("color-mix(in srgb, var(--wt-") == 2
+    assert "color: #fff" not in seg

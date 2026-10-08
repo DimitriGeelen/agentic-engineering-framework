@@ -247,7 +247,8 @@
             <circle cx="{{ d.x }}" cy="{{ d.y }}" r="7"
                     class="am-dot {% if d.proposed %}am-proposed{% endif %} am-{{ d.status|replace(' ', '-') }}"
                     data-arc="{{ d.slug }}"/>
-            <text x="{{ d.x + 10 }}" y="{{ d.ly }}" class="am-name">{{ d.id }}</text>
+            {% if d.leader %}<line x1="{{ d.x + 6 }}" y1="{{ d.y + 3 }}" x2="{{ d.lx }}" y2="{{ d.ly - 4 }}" class="am-leader"/>{% endif %}
+            <text x="{{ d.lx }}" y="{{ d.ly }}" class="am-name">{{ d.id }}</text>
         </a>
         {% endfor %}
     </svg>
@@ -255,20 +256,23 @@
     {% endif %}
 </section>
 <style>
-    .arc-matrix { margin: 0.5rem 0 1.5rem 0; }
+    /* T-4009: colours are fixed HERE, on the section. Inside <a>, Pico remaps --pico-color to
+       the link accent (2.9:1 on dark), so the dots and labels must not read it there. */
+    .arc-matrix { margin: 0.5rem 0 1.5rem 0; --am-ink: var(--wt-text, var(--pico-color)); }
     .arc-matrix-frame { max-width: 900px; }
     .arc-matrix-svg { display: block; height: auto; }
     .arc-matrix-svg .am-plot { fill: var(--pico-card-background-color); stroke: var(--pico-muted-border-color); }
     .arc-matrix-svg .am-axis { stroke: var(--pico-muted-color); }
     .arc-matrix-svg .am-guide { stroke: var(--pico-muted-color); stroke-dasharray: 4 4; }
     .arc-matrix-svg .am-tick { fill: var(--pico-muted-color); font-size: 11px; }
-    .arc-matrix-svg .am-label { fill: var(--pico-color); font-size: 12px; }
+    .arc-matrix-svg .am-label { fill: var(--am-ink); font-size: 12px; }
     .arc-matrix-svg .am-quad { fill: var(--pico-muted-color); font-size: 10px; letter-spacing: 0.04em; }
-    .arc-matrix-svg .am-dot { fill: var(--pico-primary); stroke: var(--pico-primary); stroke-width: 2; }
+    .arc-matrix-svg .am-dot { fill: var(--am-ink); stroke: var(--am-ink); stroke-width: 2; }
     .arc-matrix-svg .am-dot.am-proposed { fill: var(--pico-card-background-color); }
-    .arc-matrix-svg .am-dot.am-closed { fill: var(--wt-success); stroke: var(--wt-success); }
+    .arc-matrix-svg .am-dot.am-closed { fill: var(--wt-success); stroke: var(--am-ink); }
     .arc-matrix-svg .am-dot.am-closed.am-proposed { fill: var(--pico-card-background-color); }
-    .arc-matrix-svg .am-name { fill: var(--pico-color); font-size: 11px; text-decoration: none; }
+    .arc-matrix-svg .am-name { fill: var(--am-ink); font-size: 11px; text-decoration: none; }
+    .arc-matrix-svg .am-leader { stroke: var(--am-ink); stroke-width: 1; opacity: 0.6; }
     .arc-matrix-svg a { text-decoration: none; }
     .arc-matrix-svg .am-dot-link:hover .am-dot { stroke-width: 4; }
     .arc-matrix-svg .am-dot-link:hover .am-name { font-weight: 600; }
