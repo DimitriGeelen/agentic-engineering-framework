@@ -164,6 +164,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-08 — operator walkthrough (chat): GO on B — v1.2 and migrate everything now
+- **Chose:** B. Element-level authority (`aef:meta/@authority`, sovereignty|initiative|authority|external) as a §2 semantic key; `aef:laneMeta/@authoringDefault` as a §1 presentational key the compiler ignores; §3 IW-9 ("owner MUST be its lane") replaced; missing element authority is an error. All existing diagrams migrate now — no v1.1 lane-derived compatibility path.
+- **Consequence:** 832 proceeds with T-895 (moving the 67 lane values onto elements in the rendered corpus); AEF re-pins the byte-pinned corpus after their migration and updates the forward compiler to read element authority only.
+- **Rejected:** A (dual v1.1/v1.2 semantics kept indefinitely); C (keeps the filler workaround and the 12 ownerless nodes).
+
 ## Decision
 
 <!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
