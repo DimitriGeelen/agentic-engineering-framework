@@ -1151,8 +1151,11 @@ def _bvp_signals(arc: dict, arc_slug: str, arc_numeric: str) -> dict:
 
     policy = _load_policy()
     weights = _driver_weights(policy)
-    # T-4000: the driver's name beside its code (D1, F3) — same source as /bvp.
-    names = _driver_names(policy)
+    # T-4000: the driver's name beside its code (D1, F3) — same source as /bvp. Some free
+    # drivers are named by their estimator handler key (V_PROMPT_QUALITY); that name is a
+    # lookup key in agents/termlink/bvp-estimator, so it is humanised for display only.
+    names = {k: (v[2:].replace("_", " ").title() if re.fullmatch(r"V_[A-Z0-9_]+", v or "") else v)
+             for k, v in _driver_names(policy).items()}
     arc_scores: dict = arc.get("bvp_scores") or {}
     bvp_mode = ""
     # T-1939: parity with /bvp scatter (T-1934 + T-1936). Resolution ladder

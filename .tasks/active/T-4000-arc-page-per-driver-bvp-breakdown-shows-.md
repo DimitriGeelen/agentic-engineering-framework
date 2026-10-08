@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-08T15:44:37Z
-last_update: 2026-10-08T15:47:26Z
+last_update: 2026-10-08T20:44:20Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,10 +92,10 @@ Operator 2026-10-08: "in the drivers overview of the arc drivers we also see the
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `/arcs/<slug>` shows each driver's name (from policy/value-drivers.yaml, same `_driver_names` as /bvp) beside its code in the inline "Drivers:" list, the per-driver breakdown table, and the coherence warnings
-- [ ] A driver with no name in the policy still renders its code alone (no blank, no error)
-- [ ] Test pins name-beside-code and the no-name fallback; existing arc page tests that passed before still pass
-- [ ] Watchtower restarted; `bin/fw watchtower current` passes
+- [x] `/arcs/<slug>` shows each driver's name (from policy/value-drivers.yaml, same `_driver_names` as /bvp) beside its code in the inline "Drivers:" list, the per-driver breakdown table, and the coherence warnings; handler-key names (`V_PROMPT_QUALITY`) are humanised for display only ("Prompt Quality") — the policy name stays, because bvp-estimator looks it up
+- [x] A driver with no name in the policy still renders its code alone (no blank, no error)
+- [x] Test pins name-beside-code and the no-name fallback; existing arc page tests that passed before still pass
+- [x] Watchtower restarted; `bin/fw watchtower current` passes
 
 ### Human
 - [ ] [REVIEW] Driver names read clearly on an arc page
@@ -331,7 +331,19 @@ Operator 2026-10-08: "in the drivers overview of the arc drivers we also see the
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** Every arc page now shows driver names beside codes in the inline list, the breakdown table and coherence warnings, verified live and by test. The three `V_*` names are shown humanised (Prompt Quality, Context Fabric, Component Fabric) without touching the policy, because the bvp-estimator uses those names as handler keys.
+**Evidence:**
+- tests/unit/test_t4000_arc_driver_names.py — 3 passed (name beside code, code-only fallback, humanised handler-key names)
+- Live: http://192.168.10.107:3000/arcs/arc-020 shows `D1 Antifragility = 9 … F3 Prompt Quality = 7`; screenshot .context/working/arc-drivers.png
+- `bin/fw watchtower current` passes
+
 ## Decisions
+
+### 2026-10-08 — rename the V_* drivers in the policy, or only on screen
+- **Chose:** humanise on screen only.
+- **Why:** `agents/termlink/bvp-estimator/estimator.py:2587` maps `V_PROMPT_QUALITY` etc. to its scoring handlers; renaming the policy name would silently stop those drivers being scored.
+- **Rejected:** editing `name:` in policy/value-drivers.yaml (breaks scoring); a separate `label:` field (a policy schema change for a display concern).
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.

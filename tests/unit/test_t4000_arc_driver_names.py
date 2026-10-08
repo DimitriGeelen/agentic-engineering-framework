@@ -18,7 +18,9 @@ def client(tmp_path, monkeypatch):
     (tmp_path / "policy" / "value-drivers.yaml").write_text(
         "protected_drivers:\n"
         "  - {id: D1, name: Antifragility, weight: 5}\n"
-        "  - {id: D2, weight: 3}\n")
+        "  - {id: D2, weight: 3}\n"
+        "free_drivers:\n"
+        "  - {id: F3, name: V_PROMPT_QUALITY, weight: 2}\n")
     (tmp_path / ".context" / "arcs" / "alpha.yaml").write_text(
         "id: arc-901\nslug: alpha\nname: Alpha\nstatus: in-progress\nheadline_mechanic: x\n"
         "bvp_scores: {D1: 4, D2: 2}\ncost_estimate: {blast_radius: 2, tier: 2, effort: 4}\n")
@@ -50,3 +52,8 @@ def test_unnamed_driver_falls_back_to_its_code(client):
     html = client.get("/arcs/alpha").get_data(as_text=True)
     assert "<code>D2</code> = 3" in html
     assert re.search(r"<td><code>D2</code></td>", html)
+
+
+def test_handler_key_names_are_humanised_for_display(client):
+    html = client.get("/arcs/alpha").get_data(as_text=True)
+    assert "<code>F3</code> Prompt Quality = 2" in html and "V_PROMPT_QUALITY" not in html
