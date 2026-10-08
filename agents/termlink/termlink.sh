@@ -1402,18 +1402,29 @@ elif [ -n "$HARNESS" ]; then
         echo "FATAL: cannot export revision ${FW_REVIEW_REVISION:-HEAD} for the $WORKER_KIND worker" >> "$WDIR/stderr.log"
     else
         chmod -R a+rX "$WDIR" 2>/dev/null
+        # T-3986 (832 T-1082): a seat whose sandbox could not write a temp file could not run a
+        # browser harness, and voted on what it never saw. Every harness seat gets a writable
+        # per-run temp dir inside its own run dir (sticky + world-writable for the antigravity
+        # user), and the export it reviews is fingerprinted before and checked after the run.
+        SEAT_TMP="$WDIR/tmp"
+        mkdir -p "$SEAT_TMP" && chmod 1777 "$SEAT_TMP"
+        _tree_fp() { ( cd "$TREE" && find . -type f -print0 | LC_ALL=C sort -z | xargs -0 sha256sum 2>/dev/null | sha256sum | cut -d' ' -f1 ); }
+        TREE_FP_BEFORE="$(_tree_fp)"
         PROMPT_TEXT="$(cat "$WDIR/prompt.md")"
         case "$WORKER_KIND" in
             codex)
-                # -s read-only: no writes (the CLI itself writes -o); --ignore-user-config and
-                # --ignore-rules: no ~/.codex/config.toml or execpolicy rules (auth still loads);
-                # project_doc_max_bytes=0: AGENTS.md is not injected; --ephemeral: no session files.
-                ( cd "$TREE" && exec "$WORKER_BIN" exec -s read-only --skip-git-repo-check --ignore-user-config --ignore-rules --ephemeral --color never -c project_doc_max_bytes=0 ${MODEL:+-m "$MODEL"} --json -o "$WDIR/result.md" "$PROMPT_TEXT" < /dev/null > "$WDIR/result.jsonl" 2>> "$WDIR/stderr.log" ) &
+                # -s workspace-write (T-3986, was read-only): writes reach only the workspace (the
+                # disposable export, verified unchanged below) and SEAT_TMP (--add-dir, TMPDIR);
+                # exclude_slash_tmp keeps /tmp out, and network stays off (the sandbox default).
+                # --ignore-user-config and --ignore-rules: no ~/.codex/config.toml or execpolicy
+                # rules (auth still loads); project_doc_max_bytes=0: AGENTS.md is not injected;
+                # --ephemeral: no session files.
+                ( cd "$TREE" && TMPDIR="$SEAT_TMP" exec "$WORKER_BIN" exec -s workspace-write --add-dir "$SEAT_TMP" -c sandbox_workspace_write.exclude_slash_tmp=true -c sandbox_workspace_write.network_access=false --skip-git-repo-check --ignore-user-config --ignore-rules --ephemeral --color never -c project_doc_max_bytes=0 ${MODEL:+-m "$MODEL"} --json -o "$WDIR/result.md" "$PROMPT_TEXT" < /dev/null > "$WDIR/result.jsonl" 2>> "$WDIR/stderr.log" ) &
                 ;;
             opencode)
                 # --agent plan: opencode's built-in no-edit agent; --pure: no external plugins;
                 # --format json: raw events (no ANSI), normalised to result.md below.
-                ( cd "$TREE" && exec "$WORKER_BIN" run ${MODEL:+-m "$MODEL"} --agent plan --pure --format json "$PROMPT_TEXT" < /dev/null > "$WDIR/result.jsonl" 2>> "$WDIR/stderr.log" ) &
+                ( cd "$TREE" && TMPDIR="$SEAT_TMP" exec "$WORKER_BIN" run ${MODEL:+-m "$MODEL"} --agent plan --pure --format json "$PROMPT_TEXT" < /dev/null > "$WDIR/result.jsonl" 2>> "$WDIR/stderr.log" ) &
                 ;;
             antigravity)
                 # The operator-approved form (2026-09-30), with the registered absolute binary:
@@ -1427,6 +1438,12 @@ elif [ -n "$HARNESS" ]; then
         wait "$HARNESS_PID" 2>/dev/null
         EXIT_CODE=$?
         kill "$WATCHDOG_PID" 2>/dev/null || true
+        # T-3986: the reviewed export must be byte-identical after the run. A seat that changed
+        # what it reviewed exits non-zero, so none of its greens can count.
+        if [ "$(_tree_fp)" != "$TREE_FP_BEFORE" ]; then
+            echo "FATAL: the $WORKER_KIND reviewer modified the export it reviewed (T-3986) — its greens do not count" >> "$WDIR/stderr.log"
+            EXIT_CODE=1
+        fi
         # Normalise every harness to one result.md: the worker's final text, no ANSI.
         python3 - "$WDIR" "$WORKER_KIND" <<'PYEOF' 2>> "$WDIR/stderr.log" || true
 import json, re, sys

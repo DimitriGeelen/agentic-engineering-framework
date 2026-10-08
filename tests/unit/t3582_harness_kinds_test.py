@@ -36,10 +36,16 @@ _CODEX = r'''#!/usr/bin/env python3
 import json, os, re, sys
 a = sys.argv[1:]
 w = os.environ["WDIR_EXPECTED"].rstrip("/")
-open(w + ".seen", "w").write(json.dumps({"argv": a, "cwd": os.getcwd()}))
+open(w + ".seen", "w").write(json.dumps({"argv": a, "cwd": os.getcwd(),
+                                         "tmpdir": os.environ.get("TMPDIR", "")}))
 prompt = a[-1]
 out = a[a.index("-o") + 1]
 mode = os.environ.get("STUB_MODE", "green")
+if "+" in mode:                      # T-3986: "<verdict>+touch" also writes into the export
+    mode, _extra = mode.split("+", 1)
+    open("INJECTED", "w").write("x")
+if os.environ.get("TMPDIR"):         # T-3986: the seat's own temp dir is writable
+    open(os.path.join(os.environ["TMPDIR"], "harness.tmp"), "w").write("x")
 blocks = "".join(f"**{n}. [AC] criterion**\nVERDICT: {mode}\nWHY: read the export\n"
                  f"GUIDANCE: {'none' if mode == 'green' else 'fix it'}\n\n"
                  for n, _ac in re.findall(r"^### Criterion (\d+) \(Human AC#(\d+)\)$", prompt, re.M))
@@ -303,7 +309,10 @@ class TestRealRuntimeHarness:
         assert seen["cwd"] == str(w / "tree") and not (w / "tree").exists()
         if kind == "codex":
             a = seen["argv"]
-            assert a[:3] == ["exec", "-s", "read-only"] and "--ignore-user-config" in a
+            # T-3986: workspace-write on the disposable export, plus the seat's own temp dir
+            assert a[:3] == ["exec", "-s", "workspace-write"] and "--ignore-user-config" in a
+            assert a[a.index("--add-dir") + 1] == str(w / "tmp") and seen["tmpdir"] == str(w / "tmp")
+            assert "sandbox_workspace_write.exclude_slash_tmp=true" in a
             assert "project_doc_max_bytes=0" in a and "--ephemeral" in a
         else:
             assert seen["argv"][:1] == ["run"] and "--agent" in seen["argv"] and "--pure" in seen["argv"]
