@@ -6,12 +6,12 @@ description: >
   arc_detail.html carries #2a7 and #c33 (introduced 16b61daeb, 2026-09-22). Convert
   to theme tokens. Found while running arcs tests for T-3999.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/templates/arc_detail.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-08T20:45:26Z
-last_update: 2026-10-08T20:48:14Z
-date_finished:
+last_update: 2026-10-08T20:49:11Z
+date_finished: 2026-10-08T20:48:19Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -356,3 +356,15 @@ bvp_scores_proposed:
 ### 2026-10-08T20:46:35Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-bb11e368
+- **Timestamp:** 2026-10-08T20:48:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-08T20:48:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
