@@ -5437,3 +5437,22 @@ concerns:
   what_remains: before any uid split ships, run these git calls with config neutralised (-c core.fsmonitor=
     -c core.hooksPath=/dev/null, no diff/filter drivers) or under the worker's uid; keep safe.directory
     un-whitelisted. Tracked with the arc-009 inception.
+- id: G-113
+  type: gap
+  title: Installed git hooks are redeployed only when someone remembers to bump a hand-maintained marker
+  description: 'fw git install-hooks (and fw upgrade, which calls it) skipped reinstall whenever the installed
+    commit-msg `# VERSION=` marker equalled the template constant. T-3821 changed pre-push (stop stamping a
+    tracked VERSION) without bumping it, so the fix never deployed: the framework repo''s own pre-push kept
+    rewriting VERSION to <major.minor>.<commits> on every push (1.8.1, 1.8.2 against release 1.8.7), and a
+    stale 1.8.2 was vendored into .agentic-framework/VERSION and committed. Every consumer is exposed the same
+    way to any hook fix shipped without the bump. PL-078 and a parity test guarded the marker; nothing
+    guarded "content changed, marker did not".'
+  severity: medium
+  status: watching
+  detected_in: T-3998
+  observed: '2026-10-08'
+  reported_by: agent (VERSION drift noticed during T-3986 vendor sync)
+  blast_radius: every install that ran install-hooks before a marker-less hook change (all consumers)
+  detection_gap: no check compared installed hook content with the template; fw doctor reads the marker
+  what_remains: T-3998 makes install-hooks compare content byte for byte. Consumers pick it up on their next
+    fw upgrade. Close once a consumer upgrade is observed redeploying a changed hook.

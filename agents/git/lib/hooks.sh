@@ -66,29 +66,24 @@ do_install_hooks() {
         exit 1
     }
     mkdir -p "$hooks_dir"
-    local commit_msg_hook="$hooks_dir/commit-msg"
-    local pre_commit_hook="$hooks_dir/pre-commit"
-    local post_commit_hook="$hooks_dir/post-commit"
-    local pre_push_hook="$hooks_dir/pre-push"
-    local pre_merge_commit_hook="$hooks_dir/pre-merge-commit"   # T-3511
-
-    # Check if hooks exist
-    if [ -f "$commit_msg_hook" ] && [ "$force" = false ]; then
-        local existing_version
-        existing_version=$(grep "^# VERSION=" "$commit_msg_hook" 2>/dev/null | cut -d= -f2)
-        if [ "$existing_version" = "$COMMIT_MSG_HOOK_VERSION" ]; then
-            echo -e "${GREEN}Hooks already installed (version $COMMIT_MSG_HOOK_VERSION)${NC}"
-            echo "Use --force to reinstall"
-            exit 0
-        else
-            # State the difference, not a direction. Nothing here compares
-            # ordering, so "updating X to Y" was claiming knowledge the code
-            # does not have — and when the installed marker happened to sort
-            # above the template's, it read as a downgrade and was reported as
-            # a version-comparison bug (T-2852).
-            echo -e "${YELLOW}Hook version differs (installed: ${existing_version:-none}, template: $COMMIT_MSG_HOOK_VERSION) — reinstalling${NC}"
-        fi
-    fi
+    # T-3998: every hook is first written to a STAGING dir, then compared byte for
+    # byte with what is installed. The short-circuit used to trust the commit-msg
+    # `# VERSION=` marker alone, so a hook whose content changed without a marker
+    # bump never deployed: T-3821's pre-push fix (do not stamp a tracked VERSION)
+    # sat undeployed here and the old hook rewrote VERSION on every push. The
+    # marker is still written (and still reported), but content decides.
+    local stage_dir
+    stage_dir=$(mktemp -d "${TMPDIR:-/tmp}/fw-hooks.XXXXXX") || {
+        echo -e "${RED}ERROR: Could not create a staging directory for the hooks${NC}"
+        exit 1
+    }
+    # shellcheck disable=SC2064
+    trap "rm -rf '$stage_dir'" EXIT
+    local commit_msg_hook="$stage_dir/commit-msg"
+    local pre_commit_hook="$stage_dir/pre-commit"
+    local post_commit_hook="$stage_dir/post-commit"
+    local pre_push_hook="$stage_dir/pre-push"
+    local pre_merge_commit_hook="$stage_dir/pre-merge-commit"   # T-3511
 
     # Create commit-msg hook
     # PL-078: install-hooks short-circuits on the commit-msg `# VERSION=`
@@ -1530,6 +1525,37 @@ HOOK_EOF
 
     chmod +x "$pre_push_hook"
     _verify_hook_written "$pre_push_hook" || { install_failed=true; failed_hooks+=("$pre_push_hook"); }
+
+    # T-3998: compare the staged hooks with the installed ones; deploy what differs.
+    local _names="commit-msg pre-commit pre-merge-commit post-commit pre-push" _n _differ=""
+    if [ "$install_failed" = false ]; then
+        for _n in $_names; do
+            if [ "$force" = true ] || [ ! -x "$hooks_dir/$_n" ] || ! cmp -s "$stage_dir/$_n" "$hooks_dir/$_n"; then
+                _differ="$_differ $_n"
+            fi
+        done
+        if [ -z "$_differ" ]; then
+            echo -e "${GREEN}Hooks already installed (version $COMMIT_MSG_HOOK_VERSION, content identical)${NC}"
+            echo "Use --force to reinstall"
+            exit 0
+        fi
+        local existing_version
+        existing_version=$(grep "^# VERSION=" "$hooks_dir/commit-msg" 2>/dev/null | cut -d= -f2)
+        # State the difference, not a direction (T-2852): nothing here compares ordering.
+        [ "$force" = true ] || echo -e "${YELLOW}Hook content differs:${_differ} (marker installed: ${existing_version:-none}, template: $COMMIT_MSG_HOOK_VERSION) — reinstalling${NC}"
+        failed_hooks=()
+        for _n in $_differ; do
+            if cp "$stage_dir/$_n" "$hooks_dir/$_n" 2>/dev/null && chmod +x "$hooks_dir/$_n" \
+                && cmp -s "$stage_dir/$_n" "$hooks_dir/$_n"; then
+                :
+            else
+                install_failed=true; failed_hooks+=("$hooks_dir/$_n")
+            fi
+        done
+    fi
+    commit_msg_hook="$hooks_dir/commit-msg"; pre_commit_hook="$hooks_dir/pre-commit"
+    post_commit_hook="$hooks_dir/post-commit"; pre_push_hook="$hooks_dir/pre-push"
+    pre_merge_commit_hook="$hooks_dir/pre-merge-commit"
 
     # T-2813: report actual disk state, not the write that was attempted.
     # A hook is only listed as installed once _verify_hook_written confirmed
