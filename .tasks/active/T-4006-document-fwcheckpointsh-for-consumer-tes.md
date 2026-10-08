@@ -1,13 +1,18 @@
 ---
 id: T-4006
-name: "Document FW_CHECKPOINT_SH for consumer test suites (since T-3989 each blocked critical gate call starts a real detached handover)"
+name: "Document FW_CHECKPOINT_SH for consumer test suites (since T-3989 each blocked
+  critical gate call starts a real detached handover)"
 description: >
-  ring20-dashboard (msg f73f1c27 (g)): a consumer suite that exercises the critical path now spawns one real auto-handover per case; under load their gate tests passed a 60 s timeout. Fix on their side: FW_CHECKPOINT_SH=/bin/true in the test env (40/40 in 6.7 s instead of 110 s). Document the knob (CLAUDE.md config subset / release notes / budget-gate header) and consider registering it in lib/config.sh FW_CONFIG_REGISTRY.
+  ring20-dashboard (msg f73f1c27 (g)): a consumer suite that exercises the critical
+  path now spawns one real auto-handover per case; under load their gate tests passed
+  a 60 s timeout. Fix on their side: FW_CHECKPOINT_SH=/bin/true in the test env (40/40
+  in 6.7 s instead of 110 s). Document the knob (CLAUDE.md config subset / release
+  notes / budget-gate header) and consider registering it in lib/config.sh FW_CONFIG_REGISTRY.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-08T21:27:05Z
-last_update: 2026-10-08T21:27:05Z
-date_finished: null
+last_update: 2026-10-08T21:29:02Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-08T21:28:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4006: Document FW_CHECKPOINT_SH for consumer test suites (since T-3989 each blocked critical gate call starts a real detached handover)
@@ -62,8 +85,8 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] docs/context-compaction.md says that a blocked call at critical starts a real detached auto-handover (T-3989), and that test suites exercising the critical path set `FW_CHECKPOINT_SH=/bin/true` (ring20-dashboard: 110 s → 6.7 s for 40 cases)
+- [x] The `_start_auto_handover` comment in budget-gate.sh names the same knob and why it exists
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +120,11 @@ date_finished: null
 -->
 
 ## Verification
+
+grep -q "FW_CHECKPOINT_SH=/bin/true" docs/context-compaction.md
+grep -q "FW_CHECKPOINT_SH=/bin/true" agents/context/budget-gate.sh
+bash -n agents/context/budget-gate.sh
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -320,3 +348,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4006-document-fwcheckpointsh-for-consumer-tes.md
 - **Context:** Initial task creation
+
+### 2026-10-08T21:28:11Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

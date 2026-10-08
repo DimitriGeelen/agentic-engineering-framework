@@ -91,6 +91,9 @@ SIGNAL_EOF
 # at critical no handover was ever written and the session was cut off instead (1409:
 # 4 of 5 large sessions, work recovered by hand). Detached, so a 60 s handover cannot
 # hang the hook; checkpoint.sh's own lock + cooldown make repeat calls a no-op.
+# FW_CHECKPOINT_SH overrides the script started: test suites that exercise the critical
+# path set FW_CHECKPOINT_SH=/bin/true, or every blocked case starts a real handover
+# (ring20-dashboard: 40 cases 110 s -> 6.7 s, T-4006; docs/context-compaction.md).
 _start_auto_handover() {
     local tokens="${1:-0}"
     {

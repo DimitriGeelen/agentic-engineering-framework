@@ -112,6 +112,17 @@ and additionally auto-triggers a handover + writes a restart signal at
 critical, so an unattended session running under `claude-fw` can recover
 without a human present.
 
+Since T-3989 the gate does this too: a call it **blocks** at critical starts the
+same auto-handover itself, detached (`checkpoint.sh auto-handover`), because
+PostToolUse never runs on a blocked call. `checkpoint.sh`'s lock and cooldown
+make repeat starts a no-op.
+
+**Testing the critical path?** Every blocked call in your test suite now starts a
+real background handover. Set `FW_CHECKPOINT_SH=/bin/true` in the test
+environment so the gate's decision is tested without one handover per case —
+ring20-dashboard measured 40 critical-path cases at 110 s (with timeouts under
+load) against 6.7 s with the knob set (T-4006).
+
 Both the gate and the checkpoint use the *same* `TOKEN_WARN` /
 `TOKEN_URGENT` / `TOKEN_CRITICAL` formulas (75% / 85% / 95% of
 `FW_CONTEXT_WINDOW`) — they're two independent readers of the same policy,
