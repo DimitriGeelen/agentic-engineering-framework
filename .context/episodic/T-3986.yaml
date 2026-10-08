@@ -1,0 +1,104 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3986: Reviewer seat that could not check (codex read-only sandbox can't run browser harness) votes AMBER and blocks rung-5 unanimity (832)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-08T14:33:18Z
+# ============================================================================
+
+task_id: T-3986
+task_name: "Reviewer seat that could not check (codex read-only sandbox can't run browser harness) votes AMBER and blocks rung-5 unanimity (832)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-07T13:14:24Z
+completed: 2026-10-08T14:32:09Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-07T19:31:01+02:00
+last_commit: 2026-10-08T16:18:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  operator ruling recorded — a reviewer that could not evaluate reports NOT-EVALUATED, never a verdict; fix → upstream → reassign → operator. NOT-EVALUATED seat outcome, evaluating-seats panel rule, reassign ladder, writable per-run temp dir for harness seats. unresolved reassignment goes to the operator by name; ACs, decisions, verification; vendor sync
+
+# Key outcomes
+outcomes:
+  - 'Review seats get a writable per-run temp dir (TMPDIR inside the run''s own directory), so a seat can run a harness that writes temp files; the reviewed export is fingerprinted and a seat that changed it has its greens voided (codex has no read-only-root-plus-writable-tmp mode — see Decisions)'
+  - 'The verdict vocabulary gains NOT-EVALUATED (with a required reason); `fw reviewer verdict record` accepts it; it never ticks and never counts as amber/red'
+  - 'The panel rule closes a criterion only on verdicts from seats that evaluated it, and requires at least two such seats at rung 5; otherwise the criterion is reassigned to another seat kind before it falls to the operator'
+  - 'The review brief tells every seat: if you could not evaluate, say NOT-EVALUATED and why; do not vote on what you did not see'
+  - 'Tests: a not-evaluated seat neither ticks nor blocks; two evaluating greens tick; one evaluating green plus one not-evaluated escalates (reassign, then operator)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'operator ruling recorded — a reviewer that could not evaluate reports NOT-EVALUATED, never a verdict; fix → upstream → reassign → operator'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-08 — how a codex seat gets a writable temp dir'
+    chose: '`codex exec -s workspace-write` in the disposable `git archive` export, `--add-dir $WDIR/tmp` + `TMPDIR=$WDIR/tmp`, `exclude_slash_tmp=true`, network off; the export is fingerprinted before and after, and a changed export exits the seat non-zero (no green of it counts).'
+    rationale: 'codex 0.153 has no mode that keeps the working root read-only while one extra dir is writable — `workspace-write` always makes the cwd writable. The export is a throwaway copy (never the project tree), so the only risk of writing it is a seat altering what it reviews, which the fingerprint catches.'
+    alternatives_rejected: ['cwd = scratch dir with the export elsewhere (the seat reviews by relative paths, would mis-locate files); `danger-full-access` (no sandbox at all).']
+  - decision: '2026-10-08 — panel quorum when a seat could not evaluate'
+    chose: 'not-evaluated seats are excluded; the panel needs ≥2 evaluating seats of distinct vendors (`MIN_EVALUATING_SEATS`). A single-seat run with a not-evaluated seat never closes. With no not-evaluated seat the original rule (every seat green, `required_vendors` distinct) is unchanged.'
+    rationale: 'the operator''s ruling — a criterion closes only on seats that evaluated it — and this task''s own AC (≥2 at rung 5).'
+    alternatives_rejected: ['keeping 3-of-3 (one sandbox limit would still block every rung-5 render criterion — the 832 symptom); 1 evaluating seat (no independence left at rung 5).']
+  - decision: '2026-10-08 — what "reassign" means'
+    chose: '`fw reviewer judge` (now `judge_with_reassign`) re-judges a not-evaluated criterion in a NEW run that seats no worker kind which could not evaluate it, up to `MAX_REASSIGN`=2 times; if it is still not evaluated, or the new run cannot seat a panel, the result says `OPERATOR: …` with the reasons.'
+    rationale: 'a registered run pins its seats (T-3580 round 6), so adding a seat mid-run would weaken the binding; a new run keeps every existing guarantee.'
+    alternatives_rejected: ['spare seats registered with every run (changes the run contract for every review).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.agentic-framework/VERSION'
+  - 'agents/termlink/termlink.sh'
+  - '.context/costs/reviews.jsonl'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/verdict_ledger.py'
+  - '.tasks/active/T-3986-reviewer-seat-that-could-not-check-codex.md'
+  - 'tests/unit/t3582_harness_kinds_test.py'
+  - 'tests/unit/t3986_not_evaluated_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-07T19:31:01'
+    action: 'T-3986: operator ruling recorded — a reviewer that could not evaluate reports NOT-EVALUATED, never a verdict; fix → upstream → reassign → operator'
+  - time: '2026-10-08T16:10:19'
+    action: 'T-3986: NOT-EVALUATED seat outcome, evaluating-seats panel rule, reassign ladder, writable per-run temp dir for harness seats'
+  - time: '2026-10-08T16:18:11'
+    action: 'T-3986: unresolved reassignment goes to the operator by name; ACs, decisions, verification; vendor sync'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1517 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1517
+  commits: 3
+  files_changed: 11
+  lines_added: 636
+  lines_removed: 96
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3986-reviewer-seat-that-could-not-check-codex.md
+generated_by: context-agent-hybrid

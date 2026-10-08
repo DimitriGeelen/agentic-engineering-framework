@@ -1,18 +1,21 @@
 ---
-id: T-3998
-name: "install-hooks skips reinstall when hook content changed but the hand-bumped
-  VERSION marker did not (T-3821 pre-push never deployed; VERSION restamped on every
-  push)"
+id: T-3986
+name: "Reviewer seat that could not check (codex read-only sandbox can't run browser
+  harness) votes AMBER and blocks rung-5 unanimity (832)"
 description: >
-  install-hooks skips reinstall when hook content changed but the hand-bumped VERSION
-  marker did not (T-3821 pre-push never deployed; VERSION restamped on every push)
+  832 T-1082: codex reviewer runs read-only, cannot write temp files a browser harness
+  needs, votes AMBER without finding a defect; rung-5 panels need unanimity, so 832
+  T-310 AC#1 and T-893 AC#1 fall back to the operator. Options: a distinct NOT-EVALUATED
+  seat outcome that neither ticks nor blocks (with a quorum rule), or a writable per-run
+  temp dir for the codex seat. Changes review policy (T-3580), so the outcome rule
+  is an operator decision; the temp-dir part is mechanics.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/git/lib/hooks.sh, agents/termlink/termlink.sh, lib/verdict_ledger.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,9 +43,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-08T14:18:50Z
-last_update: 2026-10-08T14:31:51Z
-date_finished:
+created: 2026-10-07T13:14:24Z
+last_update: 2026-10-08T14:32:09Z
+date_finished: 2026-10-08T14:32:09Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -54,17 +57,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-08T14:30:26Z'
+  - ts: '2026-10-07T13:15:23Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=271,acs=6)
+      (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-08T14:30:59Z'
+  - ts: '2026-10-07T13:15:51Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -83,20 +86,25 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3998: install-hooks skips reinstall when hook content changed but the hand-bumped VERSION marker did not (T-3821 pre-push never deployed; VERSION restamped on every push)
+# T-3986: Reviewer seat that could not check (codex read-only sandbox can't run browser harness) votes AMBER and blocks rung-5 unanimity (832)
 
 ## Context
 
-Found during T-3986's vendor sync: VERSION read 1.8.2 against release 1.8.7 (1.8.1 earlier the same day). The installed `.git/hooks/pre-push` still stamped VERSION from git describe; T-3821 removed that from the template but the hook was never redeployed. See G-113.
+**Operator ruling 2026-10-07 (verbatim, walkthrough decision 2):**
+
+> First of all, the issues should be fixed. Directly if possible, if not, then via an upstream request. If that doesn't work, it should be assigned to another type of agent. And if that doesn't work, you can always still service it to the operator to give the choice and make a decision. What should not happen in any circumstances is to give a skewed judgment, a wrong judgment. Reporting ember for something that has not been revealed gives a really skewed image. Yeah, because it could be perfectly good, valuable material. But if I could not see it and then say it's bad, that's not good. [...] We want a quality review. We want the input that the reviewer provides is collateral for our decision, the quality of our decision. And if there is a false judgment that undermines the quality of our decision making.
+
+**Rule that follows:** a seat that could not evaluate reports NOT-EVALUATED (with the reason), never amber/green. The panel then works the ladder: (1) fix the seat's capability directly (e.g. a writable per-run temp dir); (2) upstream request when the cause is another project's/vendor's; (3) reassign the criterion to another seat kind that can evaluate; (4) only then surface to the operator with the options. A criterion closes only on verdicts from seats that actually evaluated it.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `fw git install-hooks` (no --force) reinstalls when any installed hook's CONTENT differs from what the current templates would write, even if the `# VERSION=` marker is unchanged; it short-circuits only when every hook is byte-identical
-- [x] This repo's installed pre-push carries the T-3821 "VERSION is tracked — not stamped" guard, and VERSION / .agentic-framework/VERSION are back to 1.8.7 (the mis-stamped 1.8.2 commit is corrected by a new commit, no amend)
-- [x] Regression test: install hooks, mutate one hook's body (marker untouched), re-run install-hooks without --force → the hook is restored
-- [x] Gap registered in concerns.yaml (consumers receive hook fixes only when someone remembers the marker bump)
+- [x] Review seats get a writable per-run temp dir (TMPDIR inside the run's own directory), so a seat can run a harness that writes temp files; the reviewed export is fingerprinted and a seat that changed it has its greens voided (codex has no read-only-root-plus-writable-tmp mode — see Decisions)
+- [x] The verdict vocabulary gains NOT-EVALUATED (with a required reason); `fw reviewer verdict record` accepts it; it never ticks and never counts as amber/red
+- [x] The panel rule closes a criterion only on verdicts from seats that evaluated it, and requires at least two such seats at rung 5; otherwise the criterion is reassigned to another seat kind before it falls to the operator
+- [x] The review brief tells every seat: if you could not evaluate, say NOT-EVALUATED and why; do not vote on what you did not see
+- [x] Tests: a not-evaluated seat neither ticks nor blocks; two evaluating greens tick; one evaluating green plus one not-evaluated escalates (reassign, then operator)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -131,9 +139,8 @@ Found during T-3986's vendor sync: VERSION read 1.8.2 against release 1.8.7 (1.8
 
 ## Verification
 
-bats tests/unit/t3998_install_hooks_content_compare.bats tests/unit/git_install_hooks_git_path.bats > /tmp/.t3998 2>&1 && ! grep -q '^not ok' /tmp/.t3998
-grep -q 'T-3821' .git/hooks/pre-push
-test "$(cat VERSION)" = "$(cat .agentic-framework/VERSION)"
+python3 -m pytest tests/unit/t3986_not_evaluated_test.py tests/unit/t3582_harness_kinds_test.py -q -p no:cacheprovider > /tmp/.t3986 2>&1 && grep -q passed /tmp/.t3986
+bash -n agents/termlink/termlink.sh
 bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -264,14 +271,6 @@ bin/fw vendor self --check
 
 ## RCA
 
-**Symptom:** VERSION in the framework working tree drifted to 1.8.1 / 1.8.2 after pushes, against release 1.8.7; a 1.8.2 was vendored into `.agentic-framework/VERSION` and committed (T-3986 commit).
-
-**Root cause:** `do_install_hooks` short-circuited on the commit-msg `# VERSION=` marker alone. T-3821 changed the pre-push template without bumping that marker, so the installed pre-push kept the old git-describe stamping of a tracked VERSION.
-
-**Why structurally allowed:** the only guard (PL-078 prose + `hook_version_marker_parity.bats`) checks that the marker literal and the constant agree, not that a content change comes with a bump; nothing compared installed hook bodies with the template.
-
-**Prevention:** install-hooks now stages every hook and compares bytes, so a body change redeploys with or without a marker bump; `t3998_install_hooks_content_compare.bats` pins it. G-113 registered.
-
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -350,6 +349,21 @@ bin/fw vendor self --check
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-08 — how a codex seat gets a writable temp dir
+- **Chose:** `codex exec -s workspace-write` in the disposable `git archive` export, `--add-dir $WDIR/tmp` + `TMPDIR=$WDIR/tmp`, `exclude_slash_tmp=true`, network off; the export is fingerprinted before and after, and a changed export exits the seat non-zero (no green of it counts).
+- **Why:** codex 0.153 has no mode that keeps the working root read-only while one extra dir is writable — `workspace-write` always makes the cwd writable. The export is a throwaway copy (never the project tree), so the only risk of writing it is a seat altering what it reviews, which the fingerprint catches.
+- **Rejected:** cwd = scratch dir with the export elsewhere (the seat reviews by relative paths, would mis-locate files); `danger-full-access` (no sandbox at all).
+
+### 2026-10-08 — panel quorum when a seat could not evaluate
+- **Chose:** not-evaluated seats are excluded; the panel needs ≥2 evaluating seats of distinct vendors (`MIN_EVALUATING_SEATS`). A single-seat run with a not-evaluated seat never closes. With no not-evaluated seat the original rule (every seat green, `required_vendors` distinct) is unchanged.
+- **Why:** the operator's ruling — a criterion closes only on seats that evaluated it — and this task's own AC (≥2 at rung 5).
+- **Rejected:** keeping 3-of-3 (one sandbox limit would still block every rung-5 render criterion — the 832 symptom); 1 evaluating seat (no independence left at rung 5).
+
+### 2026-10-08 — what "reassign" means
+- **Chose:** `fw reviewer judge` (now `judge_with_reassign`) re-judges a not-evaluated criterion in a NEW run that seats no worker kind which could not evaluate it, up to `MAX_REASSIGN`=2 times; if it is still not evaluated, or the new run cannot seat a panel, the result says `OPERATOR: …` with the reasons.
+- **Why:** a registered run pins its seats (T-3580 round 6), so adding a seat mid-run would weaken the binding; a new run keeps every existing guarantee.
+- **Rejected:** spare seats registered with every run (changes the run contract for every review).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -362,7 +376,22 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-08T14:18:50Z — task-created [task-create-agent]
+### 2026-10-07T13:14:24Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3998-install-hooks-skips-reinstall-when-hook-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3986-reviewer-seat-that-could-not-check-codex.md
 - **Context:** Initial task creation
+
+### 2026-10-07T17:30:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-67df6215
+- **Timestamp:** 2026-10-08T14:33:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-08T14:32:09Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

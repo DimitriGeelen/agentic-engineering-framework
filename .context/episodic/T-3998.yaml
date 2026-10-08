@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3998: install-hooks skips reinstall when hook content changed but the hand-bumped VERSION marker did not (T-3821 pre-push never deployed; VERSION restamped on every push)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-08T14:43:51Z
+# ============================================================================
+
+task_id: T-3998
+task_name: "install-hooks skips reinstall when hook content changed but the hand-bumped VERSION marker did not (T-3821 pre-push never deployed; VERSION restamped on every push)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-08T14:18:50Z
+completed: 2026-10-08T14:43:30Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-08T16:31:51+02:00
+last_commit: 2026-10-08T16:31:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  install-hooks compares hook content, not the hand-bumped marker; restore VERSION 1.8.7 (G-113)
+
+# Key outcomes
+outcomes:
+  - '`fw git install-hooks` (no --force) reinstalls when any installed hook''s CONTENT differs from what the current templates would write, even if the `# VERSION=` marker is unchanged; it short-circuits only when every hook is byte-identical'
+  - 'This repo''s installed pre-push carries the T-3821 "VERSION is tracked — not stamped" guard, and VERSION / .agentic-framework/VERSION are back to 1.8.7 (the mis-stamped 1.8.2 commit is corrected by a new commit, no amend)'
+  - 'Regression test: install hooks, mutate one hook''s body (marker untouched), re-run install-hooks without --force → the hook is restored'
+  - 'Gap registered in concerns.yaml (consumers receive hook fixes only when someone remembers the marker bump)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.agentic-framework/VERSION'
+  - 'agents/git/lib/hooks.sh'
+  - '.context/project/concerns.yaml'
+  - '.tasks/active/T-3998-install-hooks-skips-reinstall-when-hook-.md'
+  - 'tests/unit/t3998_install_hooks_content_compare.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-08T16:31:51'
+    action: 'T-3998: install-hooks compares hook content, not the hand-bumped marker; restore VERSION 1.8.7 (G-113)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 24 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 24
+  commits: 1
+  files_changed: 6
+  lines_added: 552
+  lines_removed: 47
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3998-install-hooks-skips-reinstall-when-hook-.md
+generated_by: context-agent-hybrid
