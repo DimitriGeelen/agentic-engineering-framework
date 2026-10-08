@@ -879,3 +879,19 @@ entries:
   added: '2026-10-07'
   expires: '2026-10-21'
   added_by: human
+- leg: bats
+  name: 't3511_parked_merge_guard.bats: conflicted merge of a PARKED branch is refused at the resolving
+    commit'
+  file: t3511_parked_merge_guard.bats
+  owner: T-3976
+  added: '2026-10-08'
+  expires: '2026-10-22'
+  added_by: human
+- leg: bats
+  name: 't2452_doctor_quick.bats: F6: --quick skips host/network probes and still renders the project
+    verdict'
+  file: t2452_doctor_quick.bats
+  owner: T-3992
+  added: '2026-10-08'
+  expires: '2026-10-22'
+  added_by: human
