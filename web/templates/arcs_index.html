@@ -201,6 +201,80 @@
        hx-target="#content" hx-push-url="true">List</a>
 </div>
 
+{# T-3999: arcs-only value/cost matrix — the arc points of /bvp, server-side SVG, no script. #}
+{% if arc_matrix is defined and arc_matrix %}
+<section id="arc-value-matrix" class="arc-matrix" aria-label="Arc value / cost matrix">
+    <h2 style="margin-bottom:0.25rem;">Value / cost matrix</h2>
+    {% if arc_matrix.error %}
+    <p class="muted"><small>{{ arc_matrix.error }} — see <a href="/bvp">/bvp</a>.</small></p>
+    {% elif not arc_matrix.dots %}
+    <p class="muted"><small>No scored arcs yet — see <a href="/bvp">/bvp</a>.</small></p>
+    {% else %}
+    <p class="muted" style="margin:0 0 0.5rem 0;"><small>
+        {{ arc_matrix.dots|length }} arc(s) by business value (BVP_norm) against cost (F8 composite) — the same numbers as
+        <a href="/bvp">the full matrix on /bvp</a>. Dashed lines are the arcs' medians (value {{ arc_matrix.vmed }}, cost {{ arc_matrix.cmed }}).
+        High value / low cost: {{ arc_matrix.q.hvlc }} · high value / high cost: {{ arc_matrix.q.hvhc }} ·
+        low value / low cost: {{ arc_matrix.q.lvlc }} · low value / high cost: {{ arc_matrix.q.lvhc }}.
+        Hollow dot = estimator-proposed (not yet confirmed).
+    </small></p>
+    <div class="arc-matrix-frame">
+    <svg viewBox="0 0 {{ arc_matrix.w }} {{ arc_matrix.h }}" width="100%" role="img"
+         aria-label="Arc value / cost matrix" class="arc-matrix-svg">
+        <rect x="{{ arc_matrix.left }}" y="{{ arc_matrix.top }}"
+              width="{{ arc_matrix.right - arc_matrix.left }}" height="{{ arc_matrix.bottom - arc_matrix.top }}"
+              class="am-plot"/>
+        {% for t in arc_matrix.xticks %}
+        <line x1="{{ t.x }}" x2="{{ t.x }}" y1="{{ arc_matrix.bottom }}" y2="{{ arc_matrix.bottom + 4 }}" class="am-axis"/>
+        <text x="{{ t.x }}" y="{{ arc_matrix.bottom + 16 }}" text-anchor="middle" class="am-tick">{{ t.label }}</text>
+        {% endfor %}
+        {% for t in arc_matrix.yticks %}
+        <line x1="{{ arc_matrix.left - 4 }}" x2="{{ arc_matrix.left }}" y1="{{ t.y }}" y2="{{ t.y }}" class="am-axis"/>
+        <text x="{{ arc_matrix.left - 7 }}" y="{{ t.y + 4 }}" text-anchor="end" class="am-tick">{{ t.label }}</text>
+        {% endfor %}
+        <line x1="{{ arc_matrix.left }}" x2="{{ arc_matrix.right }}" y1="{{ arc_matrix.bottom }}" y2="{{ arc_matrix.bottom }}" class="am-axis"/>
+        <line x1="{{ arc_matrix.left }}" x2="{{ arc_matrix.left }}" y1="{{ arc_matrix.top }}" y2="{{ arc_matrix.bottom }}" class="am-axis"/>
+        <line x1="{{ arc_matrix.cx }}" x2="{{ arc_matrix.cx }}" y1="{{ arc_matrix.top }}" y2="{{ arc_matrix.bottom }}" class="am-guide"/>
+        <line x1="{{ arc_matrix.left }}" x2="{{ arc_matrix.right }}" y1="{{ arc_matrix.vy }}" y2="{{ arc_matrix.vy }}" class="am-guide"/>
+        <text x="{{ arc_matrix.left + 6 }}" y="{{ arc_matrix.top + 14 }}" class="am-quad">HIGH VALUE · LOW COST</text>
+        <text x="{{ arc_matrix.right - 6 }}" y="{{ arc_matrix.top + 14 }}" text-anchor="end" class="am-quad">HIGH VALUE · HIGH COST</text>
+        <text x="{{ arc_matrix.left + 6 }}" y="{{ arc_matrix.bottom - 6 }}" class="am-quad">LOW VALUE · LOW COST</text>
+        <text x="{{ arc_matrix.right - 6 }}" y="{{ arc_matrix.bottom - 6 }}" text-anchor="end" class="am-quad">LOW VALUE · HIGH COST</text>
+        <text x="{{ (arc_matrix.left + arc_matrix.right) / 2 }}" y="{{ arc_matrix.h - 6 }}" text-anchor="middle" class="am-label">Cost →</text>
+        <text transform="rotate(-90)" x="{{ -(arc_matrix.top + arc_matrix.bottom) / 2 }}" y="14" text-anchor="middle" class="am-label">Value (BVP_norm) →</text>
+        {% for d in arc_matrix.dots %}
+        <a href="/arcs/{{ d.slug }}" class="am-dot-link">
+            <title>{{ d.id }} — {{ d.name }} | value {{ d.norm }} · cost {{ d.cost }} · {{ d.status }}{% if d.proposed %} · proposed{% endif %}</title>
+            <circle cx="{{ d.x }}" cy="{{ d.y }}" r="7"
+                    class="am-dot {% if d.proposed %}am-proposed{% endif %} am-{{ d.status|replace(' ', '-') }}"
+                    data-arc="{{ d.slug }}"/>
+            <text x="{{ d.x + 10 }}" y="{{ d.ly }}" class="am-name">{{ d.id }}</text>
+        </a>
+        {% endfor %}
+    </svg>
+    </div>
+    {% endif %}
+</section>
+<style>
+    .arc-matrix { margin: 0.5rem 0 1.5rem 0; }
+    .arc-matrix-frame { max-width: 900px; }
+    .arc-matrix-svg { display: block; height: auto; }
+    .arc-matrix-svg .am-plot { fill: var(--pico-card-background-color); stroke: var(--pico-muted-border-color); }
+    .arc-matrix-svg .am-axis { stroke: var(--pico-muted-color); }
+    .arc-matrix-svg .am-guide { stroke: var(--pico-muted-color); stroke-dasharray: 4 4; }
+    .arc-matrix-svg .am-tick { fill: var(--pico-muted-color); font-size: 11px; }
+    .arc-matrix-svg .am-label { fill: var(--pico-color); font-size: 12px; }
+    .arc-matrix-svg .am-quad { fill: var(--pico-muted-color); font-size: 10px; letter-spacing: 0.04em; }
+    .arc-matrix-svg .am-dot { fill: var(--pico-primary); stroke: var(--pico-primary); stroke-width: 2; }
+    .arc-matrix-svg .am-dot.am-proposed { fill: var(--pico-card-background-color); }
+    .arc-matrix-svg .am-dot.am-closed { fill: var(--wt-success); stroke: var(--wt-success); }
+    .arc-matrix-svg .am-dot.am-closed.am-proposed { fill: var(--pico-card-background-color); }
+    .arc-matrix-svg .am-name { fill: var(--pico-color); font-size: 11px; text-decoration: none; }
+    .arc-matrix-svg a { text-decoration: none; }
+    .arc-matrix-svg .am-dot-link:hover .am-dot { stroke-width: 4; }
+    .arc-matrix-svg .am-dot-link:hover .am-name { font-weight: 600; }
+</style>
+{% endif %}
+
 {% if kanban_mode %}
 {# T-1904: 4-column kanban — one column per lifecycle state. Replaces T-1853 tabs. #}
 <p class="muted">

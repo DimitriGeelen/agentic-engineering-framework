@@ -725,6 +725,82 @@ def _arc_reports(arc_id: str) -> list[dict[str, str]]:
     return out
 
 
+_MATRIX_TTL = 120.0
+_matrix_cache: dict[str, Any] = {"at": 0.0, "val": None}
+
+
+def _arc_matrix() -> dict[str, Any]:
+    """T-3999: the arcs-only value/cost matrix shown on /arcs.
+
+    The points are exactly the arc points of the /bvp scatter (`_collect_arc_points`,
+    same weights, same rollup), laid out here as server-side SVG geometry so the page
+    needs no script. Quadrant guides sit at the arcs' own medians. Computing the points
+    reads every member task (~2 s), so the result is cached for _MATRIX_TTL seconds.
+    Any failure returns {"error": ...}: the matrix must never take /arcs down with it."""
+    now = time.monotonic()
+    if _matrix_cache["val"] is not None and now - _matrix_cache["at"] < _MATRIX_TTL:
+        return _matrix_cache["val"]
+    try:
+        from web.blueprints.bvp import _collect_arc_points, _driver_weights, _load_policy
+        pts = [p for p in _collect_arc_points(_driver_weights(_load_policy()))
+               if p.get("cost") is not None]
+    except Exception as e:  # noqa: BLE001 - the board renders without the matrix
+        return {"error": f"value matrix unavailable: {e}"}
+    W, H, ml, mr, mt, mb = 760, 380, 56, 16, 14, 44
+    iw, ih = W - ml - mr, H - mt - mb
+    cmax = max([8.0] + [float(p["cost"]) for p in pts]) * 1.05
+
+    def sx(c: float) -> float:
+        return round(ml + c / cmax * iw, 1)
+
+    def sy(v: float) -> float:
+        return round(mt + (1 - max(0.0, min(1.0, v))) * ih, 1)
+
+    def median(xs: list[float], dflt: float) -> float:
+        xs = sorted(xs)
+        if not xs:
+            return dflt
+        m = len(xs) // 2
+        return xs[m] if len(xs) % 2 else (xs[m - 1] + xs[m]) / 2
+
+    # The value axis tops out at the highest arc (with headroom) rather than 1.0: arc values
+    # cluster low (rolled up from many tasks), and a fixed [0,1] axis would stack every dot
+    # in the bottom third.
+    vmax = min(1.0, max([0.1] + [float(p["bvp_norm"]) for p in pts]) * 1.25)
+
+    def vy(v: float) -> float:
+        return sy(v / vmax)
+
+    vmed = median([float(p["bvp_norm"]) for p in pts], vmax / 2)
+    cmed = median([float(p["cost"]) for p in pts], cmax / 2)
+    dots = [{
+        "x": sx(float(p["cost"])), "y": vy(float(p["bvp_norm"])),
+        "id": str(p.get("id", "")), "slug": str(p.get("slug", "")),
+        "name": str(p.get("name", "")), "norm": p["bvp_norm"], "cost": p["cost"],
+        "status": str(p.get("status", "")), "proposed": bool(p.get("proposed")),
+        "hv": float(p["bvp_norm"]) >= vmed, "lc": float(p["cost"]) <= cmed,
+    } for p in pts]
+    # Arcs at (nearly) the same point would print their labels on top of each other: stack
+    # each label below the ones already placed near it.
+    placed: list[dict] = []
+    for d in sorted(dots, key=lambda d: (d["y"], d["x"])):
+        near = [p for p in placed if abs(p["x"] - d["x"]) < 40 and abs(p["ly"] - (d["y"] + 4)) < 12]
+        d["ly"] = round(d["y"] + 4 + 12 * len(near), 1)
+        placed.append(d)
+    xticks = [{"x": sx(t), "label": f"{t:g}"} for t in range(0, int(cmax) + 1, 2)]
+    yticks = [{"y": vy(t), "label": f"{t:.2f}"} for t in
+              [round(vmax * k / 4, 3) for k in range(5)]]
+    val = {"error": "", "w": W, "h": H, "left": ml, "right": W - mr, "top": mt,
+           "bottom": H - mb, "cx": sx(cmed), "vy": vy(vmed), "dots": dots,
+           "xticks": xticks, "yticks": yticks, "vmed": round(vmed, 3), "cmed": round(cmed, 2),
+           "q": {"hvlc": sum(d["hv"] and d["lc"] for d in dots),
+                 "hvhc": sum(d["hv"] and not d["lc"] for d in dots),
+                 "lvlc": sum(not d["hv"] and d["lc"] for d in dots),
+                 "lvhc": sum(not d["hv"] and not d["lc"] for d in dots)}}
+    _matrix_cache.update(at=now, val=val)
+    return val
+
+
 @bp.route("/arcs")
 def arcs_index():
     """T-1904: List arcs as a 4-column kanban (draft / in-progress / closed /
@@ -767,6 +843,7 @@ def arcs_index():
             kanban_mode=False,
             focused_only=focused_only,
             stale_only=stale_only,
+            arc_matrix=_arc_matrix(),
             view="list",
         )
 
@@ -788,6 +865,7 @@ def arcs_index():
         kanban_mode=True,
         focused_only=focused_only,
         stale_only=stale_only,
+        arc_matrix=_arc_matrix(),
         view="board",
     )
 
