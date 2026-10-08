@@ -66,3 +66,11 @@ _wait_calls() { local i; for i in 1 2 3 4 5 6 7 8 9 10; do [ -s "$CALLS" ] && re
     _gate "git status"
     [[ "$output" != *"integer expression expected"* ]]
 }
+
+@test "T-3997 (1409 root cause): a multi-line refused command cannot split the result into a bad STATUS_AGE" {
+    # 1409 logged "[: 42\nimport: integer expression expected": the reason field carried the
+    # command's own newlines and awk printed field 3 of every line.
+    _gate 'python3 -c \"\nimport sys\nsys.path.insert(0,1)\"'
+    [[ "$output" != *"integer expression expected"* ]]
+    [[ "$output" != *"ignoring non-numeric cache age"* ]]
+}
