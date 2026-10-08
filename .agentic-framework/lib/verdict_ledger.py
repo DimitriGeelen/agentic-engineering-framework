@@ -240,7 +240,10 @@ def _commit_rows(root: Path, paths: list[str], identity: str, message: str,
     env.pop(_WORKER_ENV, None)
     err = ""
     for attempt in range(5):        # another git process may hold .git/index.lock briefly
-        add = subprocess.run(["git", "add", "--", *paths], cwd=str(root), env=env,
+        # T-4008: -f — every path here is named explicitly by the ledger. Without it a cited
+        # screenshot (`*.png` is ignored repo-wide) made `git add` refuse the WHOLE call, the
+        # commit never ran, and a reviewer's green stayed uncommitted, never to count.
+        add = subprocess.run(["git", "add", "-f", "--", *paths], cwd=str(root), env=env,
                              capture_output=True, text=True)
         com = subprocess.run(["git", "commit", "-q", "-m", message, "--", *paths],
                              cwd=str(root), env=env, capture_output=True, text=True)
