@@ -40,7 +40,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-08T20:45:26Z
-last_update: 2026-10-08T20:49:11Z
+last_update: 2026-10-08T22:19:08Z
 date_finished: 2026-10-08T20:48:19Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -70,6 +70,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-08T21:00:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 1
+      tier: 2
+      effort: 8
+    rationale: blast_radius=1 (single-component); tier=2 (workflow:build); 
+      effort=8 (lines=297,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4001: test_arcs_pages_tokens red: arc_detail.html hex colours #2a7 / #c33
@@ -88,9 +98,9 @@ bvp_scores_proposed:
 ### Human
 - [ ] [REVIEW] Reviewer PASS/FAIL badges on proposed drivers still read green/red
   **Steps:**
-  1. Open an arc with proposed scoped drivers in Watchtower (http://192.168.10.107:3000/arcs, pick one showing "Proposed scoped drivers")
+  1. Open `/arcs/value-prioritisation` (one PASS and one FAIL badge) and `/arcs/parallel-execution-aef` (PASS badges), in the "Proposed scoped drivers" section
   2. Look at the "Reviewer: PASS" / "Reviewer: FAIL" badges in light and dark mode
-  **Expected:** PASS is green, FAIL is red, white text readable
+  **Expected:** PASS reads green, FAIL reads red (tinted background + coloured border since T-4009), badge text readable in both themes
   **If not:** note the theme and badge that reads badly
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
