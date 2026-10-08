@@ -86,6 +86,20 @@ SIGNAL_EOF
     } 2>/dev/null || true
 }
 
+# T-3989 (1409): start the critical auto-handover from HERE. It lived only in the
+# PostToolUse checkpoint.sh, and PostToolUse never runs on a call this hook blocked, so
+# at critical no handover was ever written and the session was cut off instead (1409:
+# 4 of 5 large sessions, work recovered by hand). Detached, so a 60 s handover cannot
+# hang the hook; checkpoint.sh's own lock + cooldown make repeat calls a no-op.
+_start_auto_handover() {
+    local tokens="${1:-0}"
+    {
+        ( cd "${PROJECT_ROOT:-.}" && setsid nohup bash "${FW_CHECKPOINT_SH:-$SCRIPT_DIR/checkpoint.sh}" auto-handover "$tokens" \
+            >>"$CONTEXT_DIR/working/.checkpoint.handover.stderr" 2>&1 </dev/null & ) >/dev/null 2>&1
+    } 2>/dev/null || true
+    echo "  AUTO-HANDOVER: started in the background (log: .context/working/.compact-log). Do not start another." >&2
+}
+
 # T-2499: the budget-critical auto-restart loop only fires when the session is
 # supervised by claude-fw (it consumes the .restart-requested signal this gate
 # writes). A plain `claude` launch leaves FW_CLAUDE_FW_SUPERVISED unset → the
@@ -259,6 +273,15 @@ STATUS_TOKENS=${STATUS_TOKENS:-0}
 STATUS_AGE=${STATUS_AGE:-999}
 CMD_CLASS=${CMD_CLASS:-blocked}
 CMD_CLASSIFIER=${CMD_CLASSIFIER:-unknown}
+# T-3989 (1409, finding 5): the numeric fields go straight into [ -lt ] tests. 1409
+# logged "[: 7 | sys.path.insert(0,...): integer expression expected" 74x in one session:
+# a non-integer here broke the fast path silently. Validate; a bad value takes the slow
+# path (age 999) and says so once on stderr instead of failing every test.
+case "$STATUS_AGE" in ''|*[!0-9]*)
+    echo "budget-gate: ignoring non-numeric cache age '${STATUS_AGE:0:40}' — re-reading the transcript (T-3989)" >&2
+    STATUS_AGE=999 ;;
+esac
+case "$STATUS_TOKENS" in ''|*[!0-9]*) STATUS_TOKENS=0; STATUS_AGE=999 ;; esac
 
 # T-2919: surface the basis of the verdict at critical, on BOTH the allow and
 # the block path. A degraded classifier reaches the same two words as a working
@@ -321,6 +344,7 @@ if [ "$CACHE_OWNER" != "foreign" ] && [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ];
             _supervision_notice
             echo "══════════════════════════════════════════════════════════" >&2
             echo "" >&2
+            _start_auto_handover "$STATUS_TOKENS"    # T-3989: PostToolUse never runs on a blocked call
             _write_restart_signal "$STATUS_TOKENS"   # T-2403: arm autonomous restart
             exit 2
             ;;
@@ -526,6 +550,7 @@ case "$LEVEL" in
         _supervision_notice
         echo "══════════════════════════════════════════════════════════" >&2
         echo "" >&2
+        _start_auto_handover "$TOKENS"    # T-3989: PostToolUse never runs on a blocked call
         _write_restart_signal "$TOKENS"   # T-2403: arm autonomous restart
         exit 2
         ;;
