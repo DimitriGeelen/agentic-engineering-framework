@@ -199,6 +199,10 @@ Measured 2026-10-06: every Watchtower request re-derives state from files (glob 
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-08 — operator walkthrough (chat): GO on A, tasks first
+- **Chose:** A — build the derived, gitignored, rebuildable SQLite index for tasks only, with file fallback; switch the slowest Watchtower pages first; learnings/episodics only if measured worth it.
+- **Rejected:** B (more spikes — the cost is already measured); C (page-local caches treat instances, not the class).
+
 ## Decision
 
 <!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
