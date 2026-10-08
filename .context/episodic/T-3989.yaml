@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3989: URGENT (1409): sessions die at the hard budget block instead of handing over — warnings reach only the agent, auto-handover never runs on a blocked call, fixed-% ladder too late at large caps, critical blocks read-only Bash, budget-gate STATUS_AGE integer bug
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-08T10:16:40Z
+# ============================================================================
+
+task_id: T-3989
+task_name: "URGENT (1409): sessions die at the hard budget block instead of handing over — warnings reach only the agent, auto-handover never runs on a blocked call, fixed-% ladder too late at large caps, critical blocks read-only Bash, budget-gate STATUS_AGE integer bug"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-08T08:23:37Z
+completed: 2026-10-08T10:16:05Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-08T12:15:18+02:00
+last_commit: 2026-10-08T12:15:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  budget-gate starts the critical auto-handover itself (PostToolUse never runs on a blocked call); checkpoint.sh auto-handover subcommand; numeric fields validated before [ -lt ] (1409, urgent). vendor-sync checkpoint.sh, budget-gate.sh
+
+# Key outcomes
+outcomes:
+  - '(2) When budget-gate.sh blocks at critical, it triggers the auto-handover itself (same command checkpoint.sh uses, once per cooldown window, writing `.handover-cooldown`), because PostToolUse never runs on a call PreToolUse blocked — `checkpoint.sh auto-handover <tokens>`, one shared function, detached so the hook never waits'
+  - '(2) The block message says a handover was started and names the log (.context/working/.compact-log); the outcome (success/FAILED) is logged there by the shared function'
+  - '(5) The STATUS_AGE / numeric fields parsed from the python result are validated as integers before any `[ -lt ]`; a non-integer falls through to the slow path with one stderr line naming the bad value, never a bash `integer expression expected`'
+  - '(5) Not reproducible on current code (line 277 of v1.8.5/v1.8.6 is a comment); 1409 asked for VERSION, lines 270-290 of their vendored budget-gate.sh and a full stderr line (2026-10-08). The validation guards the class either way.'
+  - 'Tests: a critical block starts the handover (stubbed checkpoint, asserted call); an allowed wrap-up call does not; cooldown is the shared function''s (unchanged, pinned by t3917); a non-numeric cache age produces no bash test error. 84 existing budget/checkpoint/handover tests green.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/budget-gate.sh'
+  - '.agentic-framework/agents/context/checkpoint.sh'
+  - 'agents/context/budget-gate.sh'
+  - 'agents/context/checkpoint.sh'
+  - '.tasks/active/T-3989-urgent-1409-sessions-die-at-the-hard-bud.md'
+  - 'tests/unit/t3989_budget_critical_handover.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-08T12:15:18'
+    action: 'T-3989: budget-gate starts the critical auto-handover itself (PostToolUse never runs on a blocked call); checkpoint.sh auto-handover subcommand; numeric fields validated before [ -lt ] (1409, urgent)'
+  - time: '2026-10-08T12:15:36'
+    action: 'T-3989: vendor-sync checkpoint.sh, budget-gate.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 112 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 112
+  commits: 2
+  files_changed: 6
+  lines_added: 434
+  lines_removed: 242
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3989-urgent-1409-sessions-die-at-the-hard-bud.md
+generated_by: context-agent-hybrid
