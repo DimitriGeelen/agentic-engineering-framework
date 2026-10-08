@@ -38,8 +38,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-08T15:08:01Z
-last_update: 2026-10-08T15:13:00Z
-date_finished: null
+last_update: 2026-10-08T20:44:21Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +50,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-08T15:15:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=279,acs=8)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-08T15:15:51Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3999: Arcs page embeds an arcs-only value/cost matrix (same numbers as /bvp)
@@ -62,11 +90,11 @@ Operator 2026-10-08 (before a presentation): "why don't I see [the BVP matrix] i
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `/arcs` renders a server-side SVG value/cost matrix of every scored arc, using `web.blueprints.bvp._collect_arc_points` (the same numbers as /bvp), with median quadrant guides, quadrant labels, and each dot linking to `/arcs/<slug>` with a tooltip (id, name, BVP_norm, cost)
-- [ ] No JavaScript dependency; colours from theme tokens only (no hex literals); a link to the full /bvp matrix
-- [ ] A failure to compute the points never breaks /arcs: the matrix section is replaced by a one-line note
-- [ ] Test: /arcs returns 200 and contains the matrix with one dot per arc point; existing arcs tests stay green
-- [ ] Watchtower restarted; `bin/fw watchtower current` passes
+- [x] `/arcs` renders a server-side SVG value/cost matrix of every scored arc, using `web.blueprints.bvp._collect_arc_points` (the same numbers as /bvp), with median quadrant guides, quadrant labels, and each dot linking to `/arcs/<slug>` with a tooltip (id, name, BVP_norm, cost)
+- [x] No JavaScript dependency; colours from theme tokens only (no hex literals); a link to the full /bvp matrix
+- [x] A failure to compute the points never breaks /arcs: the matrix section is replaced by a one-line note
+- [x] Test: /arcs returns 200 and contains the matrix with one dot per arc point; existing arcs tests that passed before stay green (two pre-existing reds — arc_detail.html hexes, dispatch-safety live-threshold — are not from this change and are filed separately)
+- [x] Watchtower restarted; `bin/fw watchtower current` passes
 
 ### Human
 - [ ] [REVIEW] The arcs matrix reads clearly in light and dark mode
@@ -302,6 +330,13 @@ Operator 2026-10-08 (before a presentation): "why don't I see [the BVP matrix] i
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+**Rationale:** The matrix is live on /arcs with the same numbers as /bvp, renders without script, survives a failing computation, and was checked in a real browser (light theme). Only the dark-theme look is unverified, which is what the [REVIEW] criterion asks you to glance at.
+**Evidence:**
+- tests/unit/test_t3999_arcs_value_matrix.py — 6 passed (one dot per arc, same numbers as /bvp, quadrant placement, list view, failure note, no hex literals)
+- Live: 20 arc dots on http://192.168.10.107:3000/arcs; screenshot .context/working/arcs-matrix2.png; `bin/fw watchtower current` passes
+- First load after a restart takes ~4 s (points cached 120 s afterwards)
 
 ## Decisions
 
