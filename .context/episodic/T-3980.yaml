@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3980: Inception: make AEF's git calls in worker-written trees safe before any worker/operator uid split (G-112)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-08T10:02:54Z
+# ============================================================================
+
+task_id: T-3980
+task_name: "Inception: make AEF's git calls in worker-written trees safe before any worker/operator uid split (G-112)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-07T10:54:41Z
+completed: 2026-10-08T10:02:35Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-07T12:55:02+02:00
+last_commit: 2026-10-08T10:10:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception filed with research artifact — git in worker-written trees (G-112); rec GO on D (gate the uid split) + A (neutralised inspection calls). operator walkthrough — GO A with a loud refusal listing open items and an operator-only logged bypass. the operator ruling itself (previous commit 139aa2827 carried only framework metadata despite its message)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-08 — operator walkthrough (chat): GO on A, with a LOUD refusal and an explicit bypass'
+    chose: 'A — gate the worker/operator uid split + neutralise read-only git calls. Operator, verbatim: "I don''t want this to go away on notice, so this should be a loud refusal, right? Say hey we''re not switching on, it was planned, but you have to fix this and this until we do so. Or ask for an explicit bypass, give that option." - **Shape agreed:** enabling `agent_uid` refuses with the list of git call sites still unsafe (each with its task), shrinking as each is fixed; `fw doctor` / `fw audit` show the same list as a WARN beforehand; an operator-only bypass (`--accept-unsafe-git "reason"`, logged Tier-2, refused under CLAUDECODE unless `--i-am-human`) is named in the refusal.'
+    alternatives_rejected: ['gate only (B) — leaves cheap exploit paths open; DEFER (C) — the window would open silently with T-3977 D-c.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-3980-git-in-worker-trees.md'
+  - '.tasks/active/T-3980-inception-make-aefs-git-calls-in-worker-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-07T12:55:02'
+    action: 'T-3980: inception filed with research artifact — git in worker-written trees (G-112); rec GO on D (gate the uid split) + A (neutralised inspection calls)'
+  - time: '2026-10-08T10:09:50'
+    action: 'T-3980: operator walkthrough — GO A with a loud refusal listing open items and an operator-only logged bypass'
+  - time: '2026-10-08T10:10:11'
+    action: 'T-3980: the operator ruling itself (previous commit 139aa2827 carried only framework metadata despite its message)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1387 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1387
+  commits: 3
+  files_changed: 2
+  lines_added: 247
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3980-inception-make-aefs-git-calls-in-worker-.md
+generated_by: context-agent-hybrid

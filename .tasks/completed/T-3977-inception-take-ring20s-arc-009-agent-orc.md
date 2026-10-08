@@ -15,16 +15,16 @@ description: >
   (git in worker trees) must be settled before any uid split. Related: T-3930, T-3960,
   T-3961.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/audit.sh, agents/git/lib/secret-scan.sh]
 related_tasks: []
 created: 2026-10-07T09:29:48Z
-last_update: 2026-10-07T11:31:48Z
-date_finished:
+last_update: 2026-10-08T10:01:55Z
+date_finished: 2026-10-08T10:01:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -128,15 +128,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -198,7 +198,11 @@ bvp_scores_proposed:
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Walkthrough 2026-10-08: GO piece by piece. D-a yes (systemd-run alongside TermLink, worker cap applies to both); D-b yes (review via verdict_ledger at a policy rung, NOT-EVALUATED rule from T-3986); D-c yes (one sandbox: govd_sandbox).
+
+**Date**: 2026-10-08T10:01:54Z
 
 ## Updates
 
@@ -208,3 +212,46 @@ bvp_scores_proposed:
 ### 2026-10-07T11:06:29Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-08T10:01:54Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Walkthrough 2026-10-08: GO piece by piece. D-a yes (systemd-run alongside TermLink, worker cap applies to both); D-b yes (review via verdict_ledger at a policy rung, NOT-EVALUATED rule from T-3986); D-c yes (one sandbox: govd_sandbox).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b67af215
+- **Timestamp:** 2026-10-08T10:01:58Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-fecf5ae3
+- **Timestamp:** 2026-10-08T10:01:58Z
+- **Overall:** CONFIRMED
+- **Claims:** 8
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-3977-arc009-map-review.md` | file | ✓ pass |
+| `lib/govd_sandbox.py` | file | ✓ pass |
+| `T-3910` | task | ✓ pass |
+| `T-3583` | task | ✓ pass |
+| `T-3983` | task | ✓ pass |
+| `T-3980` | task | ✓ pass |
+| `T-2272` | task | ✓ pass |
+| `T-2274` | task | ✓ pass |
+
+### 2026-10-08T10:01:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

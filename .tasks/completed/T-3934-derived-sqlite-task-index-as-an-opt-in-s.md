@@ -6,16 +6,16 @@ description: >
   Inception: Derived SQLite task index as an opt-in second state layer for large projects
   (files stay authoritative; tasks first)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-06T10:14:32Z
-last_update: '2026-10-06T10:30:27Z'
-date_finished:
+last_update: 2026-10-08T10:04:17Z
+date_finished: 2026-10-08T10:04:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -133,15 +133,15 @@ episodics/handovers/fabric (IW-5 decides whether they come later).
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -205,7 +205,11 @@ Measured 2026-10-06: every Watchtower request re-derives state from files (glob 
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Walkthrough 2026-10-08, option A: derived gitignored SQLite index, tasks first, file fallback, slowest Watchtower pages first.
+
+**Date**: 2026-10-08T10:04:16Z
 
 ## Updates
 
@@ -214,3 +218,40 @@ Measured 2026-10-06: every Watchtower request re-derives state from files (glob 
 
 ### 2026-10-06T10:16:00Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-08T10:04:16Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Walkthrough 2026-10-08, option A: derived gitignored SQLite index, tasks first, file fallback, slowest Watchtower pages first.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-eb437d7b
+- **Timestamp:** 2026-10-08T10:04:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-5
+     - evidence: `IW-5 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-b4b22bd1
+- **Timestamp:** 2026-10-08T10:04:20Z
+- **Overall:** CONFIRMED
+- **Claims:** 2
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-3920` | task | ✓ pass |
+| `T-3736` | task | ✓ pass |
+
+### 2026-10-08T10:04:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3968: Project-declared operator-only carve-outs for delegation (832 proposal: direction, large-ux)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-08T10:03:33Z
+# ============================================================================
+
+task_id: T-3968
+task_name: "Project-declared operator-only carve-outs for delegation (832 proposal: direction, large-ux)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-06T21:10:12Z
+completed: 2026-10-08T10:03:05Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-10-08T10:18:33+02:00
+last_commit: 2026-10-08T10:18:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  operator walkthrough — GO A, managed from the config panel; T-3987 config-panel inception filed
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-08 — operator walkthrough (chat): GO on A, managed from the configuration panel'
+    chose: 'A — a project-declared list of extra operator-only criterion classes, read by `lib/delegation.py`. Condition, operator verbatim: "it needs to come into our configuration panel, needs to be clear and we need to be able to change it."'
+    alternatives_rejected: ['B (AEF-wide classes would undo the reviewer delegation for every operator); C (832''s operator has a standing instruction for it).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3968-project-declared-operator-only-carve-out.md'
+  - '.tasks/active/T-3987-inception-watchtower-configuration-panel.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-08T10:18:33'
+    action: 'T-3968: operator walkthrough — GO A, managed from the config panel; T-3987 config-panel inception filed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2212 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2212
+  commits: 1
+  files_changed: 2
+  lines_added: 142
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3968-project-declared-operator-only-carve-out.md
+generated_by: context-agent-hybrid

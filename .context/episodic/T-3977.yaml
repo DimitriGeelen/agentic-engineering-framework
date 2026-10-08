@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3977: Inception: take ring20's arc-009 agent orchestration into AEF (portable core + optional systemd isolation adapter)?
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-08T10:02:26Z
+# ============================================================================
+
+task_id: T-3977
+task_name: "Inception: take ring20's arc-009 agent orchestration into AEF (portable core + optional systemd isolation adapter)?"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-07T09:29:48Z
+completed: 2026-10-08T10:01:55Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-07T13:07:30+02:00
+last_commit: 2026-10-08T08:33:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  open questions IW-1..4, exploration plan, worker brief for the arc-009 map review. arc-009 map review (dispatched). operator walkthrough — GO piece by piece; D-a/D-b/D-c yes (recorded; formal decide in the batch runme)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-08 — operator walkthrough (chat): GO piece by piece, and the three engine rulings'
+    chose: 'GO, piece by piece (A). D-a YES: systemd-run may launch workers alongside TermLink, with the T-3910 worker cap applying to both. D-b YES: orchestration review records through `verdict_ledger` at a policy rung, under the T-3986 ruling (a seat that could not evaluate says NOT-EVALUATED, never a verdict). D-c YES: one sandbox in AEF — ring20''s isolation adapter is rebuilt on `lib/govd_sandbox.py`.'
+    rationale: 'the map review (`docs/reports/T-3977-arc009-map-review.md`) found solid, tested work whose blockers are duplicated AEF mechanisms and two bypassed rulings; ring20 has agreed to build toward this shape.'
+    alternatives_rejected: ['NO-GO (loses tested work AEF needs) and DEFER (the evidence gap is closed).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-3977-arc009-map-review.md'
+  - 'docs/reports/T-3977-worker-brief.md'
+  - '.tasks/active/T-3977-inception-take-ring20s-arc-009-agent-orc.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-07T13:07:30'
+    action: 'T-3977: open questions IW-1..4, exploration plan, worker brief for the arc-009 map review'
+  - time: '2026-10-07T13:11:50'
+    action: 'T-3977: arc-009 map review (dispatched)'
+  - time: '2026-10-08T08:33:00'
+    action: 'T-3977: operator walkthrough — GO piece by piece; D-a/D-b/D-c yes (recorded; formal decide in the batch runme)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 1472 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1472
+  commits: 4
+  files_changed: 5
+  lines_added: 417
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3977-inception-take-ring20s-arc-009-agent-orc.md
+generated_by: context-agent-hybrid

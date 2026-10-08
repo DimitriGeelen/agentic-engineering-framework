@@ -1,0 +1,74 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3985: Inception: should fw / claude-fw only run a project's own vendored launcher from directories the operator has marked trusted? (untrusted-clone execution)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-08T10:01:45Z
+# ============================================================================
+
+task_id: T-3985
+task_name: "Inception: should fw / claude-fw only run a project's own vendored launcher from directories the operator has marked trusted? (untrusted-clone execution)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-07T13:14:09Z
+completed: 2026-10-08T10:01:23Z
+duration_days: 1
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Follows T-3984 (ring20-dashboard). The PATH routers (claude-fw-router, bin/fw-router) walk up from $PWD and exec the project's own .agentic-framework/bin/{fw,claude-fw} by design (per-project vendoring, T-2854). Starting fw or claude-fw inside an untrusted clone that ships .agentic-framework/ therefore runs its code as the operator, before Claude Code's folder-trust prompt. Same class as direnv/.envrc. Options: (A) a trust allowlist (fw trust <dir>, direnv-style, keyed by realpath + launcher hash), routers refuse untrusted dirs with an actionable message; (B) routers only exec project launchers whose content hash matches a known AEF release; (C) accept and document (the operator only runs fw in their own projects).
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 1247 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1247
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3985-inception-should-fw--claude-fw-only-run-.md
+generated_by: context-agent-hybrid

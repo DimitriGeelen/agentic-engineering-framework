@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3934: Derived SQLite task index as an opt-in second state layer for large projects (files stay authoritative; tasks first)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-08T10:04:45Z
+# ============================================================================
+
+task_id: T-3934
+task_name: "Derived SQLite task index as an opt-in second state layer for large projects (files stay authoritative; tasks first)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-06T10:14:32Z
+completed: 2026-10-08T10:04:17Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-10-06T12:20:17+02:00
+last_commit: 2026-10-08T11:30:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  index inception filled — research artifact with evidence (62 task-glob sites, 24.9 s full parse), 5 open questions, go/no-go criteria, dialogue log. operator walkthrough — GO A, tasks first. IW-1..5 dispositioned from the operator's GO (tasks first) so the decide preflight passes
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-08 — operator walkthrough (chat): GO on A, tasks first'
+    chose: 'A — build the derived, gitignored, rebuildable SQLite index for tasks only, with file fallback; switch the slowest Watchtower pages first; learnings/episodics only if measured worth it.'
+    alternatives_rejected: ['B (more spikes — the cost is already measured); C (page-local caches treat instances, not the class).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-3934-task-index.md'
+  - '.tasks/active/T-3934-derived-sqlite-task-index-as-an-opt-in-s.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-06T12:20:17'
+    action: 'T-3934: index inception filled — research artifact with evidence (62 task-glob sites, 24.9 s full parse), 5 open questions, go/no-go criteria, dialogue log'
+  - time: '2026-10-08T11:14:41'
+    action: 'T-3934: operator walkthrough — GO A, tasks first'
+  - time: '2026-10-08T11:30:39'
+    action: 'T-3934: IW-1..5 dispositioned from the operator''s GO (tasks first) so the decide preflight passes'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2869 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2869
+  commits: 3
+  files_changed: 2
+  lines_added: 115
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3934-derived-sqlite-task-index-as-an-opt-in-s.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3970: BPMN mapping standard: move who-performs authority from lane to element (832 T-896 proposal, amend IW-9)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-08T10:04:08Z
+# ============================================================================
+
+task_id: T-3970
+task_name: "BPMN mapping standard: move who-performs authority from lane to element (832 T-896 proposal, amend IW-9)"
+workflow_type: inception
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-06T22:39:01Z
+completed: 2026-10-08T10:03:47Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-10-07T00:40:20+02:00
+last_commit: 2026-10-08T10:24:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  filed — 832 BPMN element-authority proposal (inception for the operator, rec. GO as v1.2). operator walkthrough — GO B (v1.2, migrate all now); T-3989 filed (urgent budget-gate findings from 1409)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-08 — operator walkthrough (chat): GO on B — v1.2 and migrate everything now'
+    chose: 'B. Element-level authority (`aef:meta/@authority`, sovereignty|initiative|authority|external) as a §2 semantic key; `aef:laneMeta/@authoringDefault` as a §1 presentational key the compiler ignores; §3 IW-9 ("owner MUST be its lane") replaced; missing element authority is an error. All existing diagrams migrate now — no v1.1 lane-derived compatibility path.'
+    alternatives_rejected: ['A (dual v1.1/v1.2 semantics kept indefinitely); C (keeps the filler workaround and the 12 ownerless nodes).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3970-bpmn-mapping-standard-move-who-performs-.md'
+  - '.tasks/active/T-3989-urgent-1409-sessions-die-at-the-hard-bud.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-07T00:40:20'
+    action: 'T-3970: filed — 832 BPMN element-authority proposal (inception for the operator, rec. GO as v1.2)'
+  - time: '2026-10-08T10:24:13'
+    action: 'T-3970: operator walkthrough — GO B (v1.2, migrate all now); T-3989 filed (urgent budget-gate findings from 1409)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2124 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2124
+  commits: 2
+  files_changed: 2
+  lines_added: 464
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3970-bpmn-mapping-standard-move-who-performs-.md
+generated_by: context-agent-hybrid

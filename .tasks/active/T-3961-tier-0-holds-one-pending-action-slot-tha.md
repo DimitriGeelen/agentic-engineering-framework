@@ -11,12 +11,12 @@ description: >
 status: captured
 workflow_type: inception
 owner: human
-horizon: now
+horizon: later
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-06T19:24:07Z
-last_update: '2026-10-06T19:30:50Z'
+last_update: 2026-10-08T10:04:57Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -103,15 +103,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -168,9 +168,22 @@ Facts are established (T-3960: single .tier0-action.pending.json, overwritten by
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: DEFER
+
+**Rationale**: Walkthrough 2026-10-08: defer, REVISIT 2026-10-10 (time-bound defer is T-3990). Next: measure lost Tier 0 approvals from the bypass log.
+
+**Date**: 2026-10-08T10:04:56Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-10-08T10:04:56Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** DEFER
+- **Rationale:** Walkthrough 2026-10-08: defer, REVISIT 2026-10-10 (time-bound defer is T-3990). Next: measure lost Tier 0 approvals from the bypass log.
+
+### 2026-10-08T10:04:57Z — status-update [task-update-agent]
+- **Change:** horizon: now → later
+- **Reason:** Inception decision: DEFER — parking task
