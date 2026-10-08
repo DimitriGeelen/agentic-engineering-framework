@@ -244,6 +244,7 @@ file_path = data.get('tool_input', {}).get('file_path', '')
 is_wrapup_write = tool_name in ('Write', 'Edit') and any(p in file_path for p in ['.context/', '.tasks/', '.claude/']) if file_path else False
 
 _cls = 'allowed' if (is_allowed_cmd or is_read_tool or is_wrapup_write) else 'blocked'
+_reason = ' '.join(str(_reason).split())  # T-3997: one line, whatever the command held
 # Fields 6 and 7+ are T-2919: classifier mode, then the free-text reason the
 # call was refused. The reason is last because it contains spaces.
 # Field 8 (T-3598): caller Claude session id ('-' when unknown); field 9: cache
@@ -252,6 +253,10 @@ print(f'{level} {tokens} {age} {tool_name} {_cls} {_classifier} {caller_sid or \
 " 2>/dev/null)
 
 # Parse result
+# T-3997 (1409, root cause of T-3989 finding 5): the free-text reason is the last field and
+# can carry the refused command's own newlines; awk then printed field 3 of EVERY line and
+# STATUS_AGE became "42\nimport ...". Parse the first line only.
+RESULT="${RESULT%%$'\n'*}"
 STATUS_LEVEL=$(echo "$RESULT" | awk '{print $1}')
 STATUS_TOKENS=$(echo "$RESULT" | awk '{print $2}')
 STATUS_AGE=$(echo "$RESULT" | awk '{print $3}')
