@@ -191,6 +191,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-08 — operator walkthrough (chat): GO piece by piece, and the three engine rulings
+- **Chose:** GO, piece by piece (A). D-a YES: systemd-run may launch workers alongside TermLink, with the T-3910 worker cap applying to both. D-b YES: orchestration review records through `verdict_ledger` at a policy rung, under the T-3986 ruling (a seat that could not evaluate says NOT-EVALUATED, never a verdict). D-c YES: one sandbox in AEF — ring20's isolation adapter is rebuilt on `lib/govd_sandbox.py`.
+- **Why:** the map review (`docs/reports/T-3977-arc009-map-review.md`) found solid, tested work whose blockers are duplicated AEF mechanisms and two bypassed rulings; ring20 has agreed to build toward this shape.
+- **Rejected:** NO-GO (loses tested work AEF needs) and DEFER (the evidence gap is closed).
+
 ## Decision
 
 <!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
