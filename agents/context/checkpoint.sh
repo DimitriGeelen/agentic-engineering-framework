@@ -211,6 +211,131 @@ print(baseline)
 PYEOF
 }
 
+# T-3989 (1409): the critical auto-handover, callable on its own. checkpoint.sh runs it
+# from PostToolUse, but PostToolUse never fires on a call PreToolUse budget-gate BLOCKED,
+# so at critical the handover never ran and the session was cut off instead. budget-gate
+# now calls `checkpoint.sh auto-handover <tokens>` on its block path. One implementation:
+# same lock, same cooldown, same log.
+_auto_handover_at_critical() {
+    local tokens="${1:-0}"
+    # --- Auto-trigger handover at critical (T-136) ---
+    # Agent cannot be trusted to act on warnings at critical level.
+    # Two guards:
+    #   1. Re-entry lock: prevents recursive triggering within one checkpoint run
+    #   2. Cooldown file: prevents re-firing for 10 minutes after last handover
+    #      (Bug fix: without cooldown, every subsequent tool call re-triggers
+    #       because tokens stay above critical — caused 23 handover commits in sprechloop)
+    local handover_lock="$CONTEXT_DIR/working/.handover-in-progress"
+    local handover_cooldown="$CONTEXT_DIR/working/.handover-cooldown"
+    local COOLDOWN_SECONDS
+    COOLDOWN_SECONDS=$(fw_config_int "HANDOVER_COOLDOWN" 600)
+
+    local should_fire=true
+    # T-3917 (G-110): a lock stranded by a kill no longer disables the
+    # auto-handover forever — one predicate, shared with fw doctor.
+    source "$FRAMEWORK_ROOT/lib/handover-lock.sh"
+    local _stale_why
+    if [ -f "$handover_lock" ] && _stale_why=$(fw_handover_lock_stale "$handover_lock"); then
+        rm -f "$handover_lock"
+        echo "[checkpoint] [auto] Cleared stale .handover-in-progress ($_stale_why) at $(date -u +%Y-%m-%dT%H:%M:%SZ)" \
+            >> "$CONTEXT_DIR/working/.compact-log" 2>/dev/null || true
+        echo "AUTO-HANDOVER: cleared a stale handover lock ($_stale_why)." >&2
+    fi
+    if [ -f "$handover_lock" ]; then
+        should_fire=false
+    elif [ -f "$handover_cooldown" ]; then
+        local last_fired
+        last_fired=$(tr -d '[:space:]' < "$handover_cooldown" 2>/dev/null)
+        local now
+        now=$(date +%s)
+        if [ -n "$last_fired" ] && [ $((now - last_fired)) -lt "$COOLDOWN_SECONDS" ]; then
+            should_fire=false
+        fi
+    fi
+
+    if [ "$should_fire" = true ]; then
+        echo "AUTO-HANDOVER: Triggering handover..." >&2
+        fw_handover_lock_write "$handover_lock"   # T-3917: "<epoch> <pid>", not "1"
+        date +%s > "$handover_cooldown"
+        # T-1277: belt-and-braces — even with handover.sh's per-push timeout,
+        # bound the total auto-handover wall time so the PostToolUse hook
+        # cannot stall the Claude Code session for hours on slow networks.
+        # Default 60s (push×N + commit + audit + handover write).
+        _ah_total_timeout="${FW_HANDOVER_TOTAL_TIMEOUT:-60}"
+        # T-2506: `bash <script>`, not bare exec — the budget-critical auto-handover
+        # is the OTHER silent memory-capture path (T-179). A missing exec bit on the
+        # vendored handover.sh would drop it exactly like pre-compact did. Interpreter
+        # invocation makes it exec-bit-immune. Same class as pre-compact.sh fix.
+        # T-2507: capture output to a durable file and branch on the handover's
+        # TRUE exit code, then RECORD success/FAILED to the same .compact-log fw
+        # doctor Check 5d reads. The budget-critical auto-handover failure was
+        # echo-to-stderr ONLY (not-even-recorded) — the most catastrophic
+        # memory-loss path, since the session is about to auto-restart. Now a
+        # failed budget-critical handover surfaces exactly like a failed
+        # pre-compact one. Sibling to T-2506 (pre-compact) / T-2374 (honest log).
+        _ah_capture="$CONTEXT_DIR/working/.checkpoint.handover.stderr"
+        _ah_log="$CONTEXT_DIR/working/.compact-log"
+        _ah_ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+        # T-3917: the handover runs in a subshell whose trap removes the lock on
+        # ANY exit — a SIGTERM from the claude-fw terminator or a hook timeout
+        # used to strand it (the normal-path rm below never ran). SIGKILL cannot
+        # be trapped; the dead-pid test in fw_handover_lock_stale covers it.
+        # T-3942 (832 G-083): judge the run by whether a handover COMMIT landed, not by the
+        # exit of the timed run. handover.sh pushes after committing, under its own longer
+        # push timeout; the 60 s outer timeout used to kill it mid-push, log FAILED and skip
+        # the restart signal below although LATEST.md was already committed.
+        local _ah_start _ah_ok=0 _ah_note=""
+        _ah_start=$(date +%s)
+        if ( trap 'rm -f "$handover_lock"' EXIT INT TERM HUP
+             timeout "$_ah_total_timeout" bash "$FRAMEWORK_ROOT/agents/handover/handover.sh" --commit >"$_ah_capture" 2>&1 ); then
+            _ah_ok=1
+        elif _ah_sha=$(fw_handover_landed "${PROJECT_ROOT:-$(dirname "$CONTEXT_DIR")}" "$_ah_start"); then
+            _ah_ok=1
+            _ah_note=" (commit $_ah_sha landed; push did not finish within ${_ah_total_timeout}s — run 'fw push')"
+        fi
+        if [ "$_ah_ok" = 1 ]; then
+            tail -5 "$_ah_capture" >&2 2>/dev/null || true
+            echo "[checkpoint] [auto] Handover generated at $_ah_ts$_ah_note" >> "$_ah_log" 2>/dev/null || true
+            echo "AUTO-HANDOVER: Handover committed. Fill [TODO] sections, then re-commit." >&2
+            # T-186: Write restart signal for wrapper script (T-179 auto-restart)
+            local restart_signal="$CONTEXT_DIR/working/.restart-requested"
+            local session_id=""
+            if [ -f "$CONTEXT_DIR/working/session.yaml" ]; then
+                session_id=$(grep "^session_id:" "$CONTEXT_DIR/working/session.yaml" 2>/dev/null | cut -d: -f2 | tr -d ' ') || true
+            fi
+            # T-2363 (T-2158 S1): if .next-directive.yaml exists, fold its
+            # `directive:` value into the restart signal so the resumed
+            # session can pick it up. Absent file → JSON shape unchanged
+            # (backward-compat with all pre-T-2363 sessions and old
+            # claude-fw wrapper versions, which ignore unknown JSON keys).
+            local _directive_file="$CONTEXT_DIR/working/.next-directive.yaml"
+            local _directive_json=""
+            if [ -f "$_directive_file" ]; then
+                _directive_json=$(python3 -c "
+import yaml, json, sys
+try:
+with open('$_directive_file') as f:
+    d = yaml.safe_load(f) or {}
+v = d.get('directive')
+if isinstance(v, str) and v.strip():
+    print(',\"directive\":' + json.dumps(v.strip()))
+except Exception:
+pass
+" 2>/dev/null) || _directive_json=""
+            fi
+            cat > "$restart_signal" << SIGNAL_EOF
+{"timestamp":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","session_id":"${session_id:-unknown}","reason":"critical_budget_auto_handover","tokens":${tokens:-0}${_directive_json}}
+SIGNAL_EOF
+            echo "AUTO-RESTART: Signal written — wrapper will auto-restart on exit." >&2
+        else
+            tail -5 "$_ah_capture" >&2 2>/dev/null || true
+            echo "[checkpoint] [auto] Handover FAILED at $_ah_ts — see $_ah_capture" >> "$_ah_log" 2>/dev/null || true
+            echo "AUTO-HANDOVER: Failed — run '$(_fw_cmd) handover' manually." >&2
+        fi
+        rm -f "$handover_lock"
+    fi
+}
+
 warn_by_tokens() {
     local tokens="$1"
     local pct=$((tokens * 100 / CONTEXT_WINDOW))
@@ -224,122 +349,7 @@ warn_by_tokens() {
         echo "===========================================" >&2
         echo "" >&2
 
-        # --- Auto-trigger handover at critical (T-136) ---
-        # Agent cannot be trusted to act on warnings at critical level.
-        # Two guards:
-        #   1. Re-entry lock: prevents recursive triggering within one checkpoint run
-        #   2. Cooldown file: prevents re-firing for 10 minutes after last handover
-        #      (Bug fix: without cooldown, every subsequent tool call re-triggers
-        #       because tokens stay above critical — caused 23 handover commits in sprechloop)
-        local handover_lock="$CONTEXT_DIR/working/.handover-in-progress"
-        local handover_cooldown="$CONTEXT_DIR/working/.handover-cooldown"
-        local COOLDOWN_SECONDS
-        COOLDOWN_SECONDS=$(fw_config_int "HANDOVER_COOLDOWN" 600)
-
-        local should_fire=true
-        # T-3917 (G-110): a lock stranded by a kill no longer disables the
-        # auto-handover forever — one predicate, shared with fw doctor.
-        source "$FRAMEWORK_ROOT/lib/handover-lock.sh"
-        local _stale_why
-        if [ -f "$handover_lock" ] && _stale_why=$(fw_handover_lock_stale "$handover_lock"); then
-            rm -f "$handover_lock"
-            echo "[checkpoint] [auto] Cleared stale .handover-in-progress ($_stale_why) at $(date -u +%Y-%m-%dT%H:%M:%SZ)" \
-                >> "$CONTEXT_DIR/working/.compact-log" 2>/dev/null || true
-            echo "AUTO-HANDOVER: cleared a stale handover lock ($_stale_why)." >&2
-        fi
-        if [ -f "$handover_lock" ]; then
-            should_fire=false
-        elif [ -f "$handover_cooldown" ]; then
-            local last_fired
-            last_fired=$(tr -d '[:space:]' < "$handover_cooldown" 2>/dev/null)
-            local now
-            now=$(date +%s)
-            if [ -n "$last_fired" ] && [ $((now - last_fired)) -lt "$COOLDOWN_SECONDS" ]; then
-                should_fire=false
-            fi
-        fi
-
-        if [ "$should_fire" = true ]; then
-            echo "AUTO-HANDOVER: Triggering handover..." >&2
-            fw_handover_lock_write "$handover_lock"   # T-3917: "<epoch> <pid>", not "1"
-            date +%s > "$handover_cooldown"
-            # T-1277: belt-and-braces — even with handover.sh's per-push timeout,
-            # bound the total auto-handover wall time so the PostToolUse hook
-            # cannot stall the Claude Code session for hours on slow networks.
-            # Default 60s (push×N + commit + audit + handover write).
-            _ah_total_timeout="${FW_HANDOVER_TOTAL_TIMEOUT:-60}"
-            # T-2506: `bash <script>`, not bare exec — the budget-critical auto-handover
-            # is the OTHER silent memory-capture path (T-179). A missing exec bit on the
-            # vendored handover.sh would drop it exactly like pre-compact did. Interpreter
-            # invocation makes it exec-bit-immune. Same class as pre-compact.sh fix.
-            # T-2507: capture output to a durable file and branch on the handover's
-            # TRUE exit code, then RECORD success/FAILED to the same .compact-log fw
-            # doctor Check 5d reads. The budget-critical auto-handover failure was
-            # echo-to-stderr ONLY (not-even-recorded) — the most catastrophic
-            # memory-loss path, since the session is about to auto-restart. Now a
-            # failed budget-critical handover surfaces exactly like a failed
-            # pre-compact one. Sibling to T-2506 (pre-compact) / T-2374 (honest log).
-            _ah_capture="$CONTEXT_DIR/working/.checkpoint.handover.stderr"
-            _ah_log="$CONTEXT_DIR/working/.compact-log"
-            _ah_ts="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
-            # T-3917: the handover runs in a subshell whose trap removes the lock on
-            # ANY exit — a SIGTERM from the claude-fw terminator or a hook timeout
-            # used to strand it (the normal-path rm below never ran). SIGKILL cannot
-            # be trapped; the dead-pid test in fw_handover_lock_stale covers it.
-            # T-3942 (832 G-083): judge the run by whether a handover COMMIT landed, not by the
-            # exit of the timed run. handover.sh pushes after committing, under its own longer
-            # push timeout; the 60 s outer timeout used to kill it mid-push, log FAILED and skip
-            # the restart signal below although LATEST.md was already committed.
-            local _ah_start _ah_ok=0 _ah_note=""
-            _ah_start=$(date +%s)
-            if ( trap 'rm -f "$handover_lock"' EXIT INT TERM HUP
-                 timeout "$_ah_total_timeout" bash "$FRAMEWORK_ROOT/agents/handover/handover.sh" --commit >"$_ah_capture" 2>&1 ); then
-                _ah_ok=1
-            elif _ah_sha=$(fw_handover_landed "${PROJECT_ROOT:-$(dirname "$CONTEXT_DIR")}" "$_ah_start"); then
-                _ah_ok=1
-                _ah_note=" (commit $_ah_sha landed; push did not finish within ${_ah_total_timeout}s — run 'fw push')"
-            fi
-            if [ "$_ah_ok" = 1 ]; then
-                tail -5 "$_ah_capture" >&2 2>/dev/null || true
-                echo "[checkpoint] [auto] Handover generated at $_ah_ts$_ah_note" >> "$_ah_log" 2>/dev/null || true
-                echo "AUTO-HANDOVER: Handover committed. Fill [TODO] sections, then re-commit." >&2
-                # T-186: Write restart signal for wrapper script (T-179 auto-restart)
-                local restart_signal="$CONTEXT_DIR/working/.restart-requested"
-                local session_id=""
-                if [ -f "$CONTEXT_DIR/working/session.yaml" ]; then
-                    session_id=$(grep "^session_id:" "$CONTEXT_DIR/working/session.yaml" 2>/dev/null | cut -d: -f2 | tr -d ' ') || true
-                fi
-                # T-2363 (T-2158 S1): if .next-directive.yaml exists, fold its
-                # `directive:` value into the restart signal so the resumed
-                # session can pick it up. Absent file → JSON shape unchanged
-                # (backward-compat with all pre-T-2363 sessions and old
-                # claude-fw wrapper versions, which ignore unknown JSON keys).
-                local _directive_file="$CONTEXT_DIR/working/.next-directive.yaml"
-                local _directive_json=""
-                if [ -f "$_directive_file" ]; then
-                    _directive_json=$(python3 -c "
-import yaml, json, sys
-try:
-    with open('$_directive_file') as f:
-        d = yaml.safe_load(f) or {}
-    v = d.get('directive')
-    if isinstance(v, str) and v.strip():
-        print(',\"directive\":' + json.dumps(v.strip()))
-except Exception:
-    pass
-" 2>/dev/null) || _directive_json=""
-                fi
-                cat > "$restart_signal" << SIGNAL_EOF
-{"timestamp":"$(date -u +%Y-%m-%dT%H:%M:%SZ)","session_id":"${session_id:-unknown}","reason":"critical_budget_auto_handover","tokens":${tokens:-0}${_directive_json}}
-SIGNAL_EOF
-                echo "AUTO-RESTART: Signal written — wrapper will auto-restart on exit." >&2
-            else
-                tail -5 "$_ah_capture" >&2 2>/dev/null || true
-                echo "[checkpoint] [auto] Handover FAILED at $_ah_ts — see $_ah_capture" >> "$_ah_log" 2>/dev/null || true
-                echo "AUTO-HANDOVER: Failed — run '$(_fw_cmd) handover' manually." >&2
-            fi
-            rm -f "$handover_lock"
-        fi
+        _auto_handover_at_critical "$tokens"
     elif [ "$tokens" -ge "$TOKEN_URGENT" ]; then
         echo "" >&2
         echo "WARNING: Context at ${tokens} tokens (~${pct}% of the ${CONTEXT_WINDOW}-token budget cap)." >&2
@@ -408,6 +418,11 @@ warn_by_calls() {
 }
 
 case "${1:-}" in
+    auto-handover)
+        # T-3989: budget-gate.sh calls this on its critical BLOCK path.
+        _auto_handover_at_critical "${2:-0}"
+        exit 0
+        ;;
     post-tool)
         # T-2377: capture the hook stdin JSON so we can use the authoritative
         # transcript_path. Correct in worktrees / bg jobs where PROJECT_ROOT-based

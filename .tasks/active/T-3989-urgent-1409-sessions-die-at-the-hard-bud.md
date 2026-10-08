@@ -1,10 +1,21 @@
 ---
 id: T-3989
-name: "URGENT (1409): sessions die at the hard budget block instead of handing over — warnings reach only the agent, auto-handover never runs on a blocked call, fixed-% ladder too late at large caps, critical blocks read-only Bash, budget-gate STATUS_AGE integer bug"
+name: "URGENT (1409): sessions die at the hard budget block instead of handing over
+  — warnings reach only the agent, auto-handover never runs on a blocked call, fixed-%
+  ladder too late at large caps, critical blocks read-only Bash, budget-gate STATUS_AGE
+  integer bug"
 description: >
-  1409-sprind T-1799 (operator: absolute urgent), report /opt/1409-sprind/docs/reports/T-1799-sitzungsabbruch-routenkosten.md (read via TermLink, boundary). Five findings: (1) warn/urgent are agent-only stderr, no forcing step, operator never sees them; (2) critical auto-handover is in PostToolUse checkpoint.sh, which never runs on a call PreToolUse budget-gate blocked; (3) % ladder x 950K cap puts the first warning at 712K where calls cost ~9x — wants an absolute reserve; (4) critical blocks read-only Bash needed for the handover; (5) budget-gate.sh '[: 7 | sys.path.insert(0,...): integer expression expected' x74 in one session — fast path silently broken. Cost: 2,182 USD over 7 sessions, ~86% cache-read. Affects AEF's own sessions (cap 975K).
+  1409-sprind T-1799 (operator: absolute urgent), report /opt/1409-sprind/docs/reports/T-1799-sitzungsabbruch-routenkosten.md
+  (read via TermLink, boundary). Five findings: (1) warn/urgent are agent-only stderr,
+  no forcing step, operator never sees them; (2) critical auto-handover is in PostToolUse
+  checkpoint.sh, which never runs on a call PreToolUse budget-gate blocked; (3) %
+  ladder x 950K cap puts the first warning at 712K where calls cost ~9x — wants an
+  absolute reserve; (4) critical blocks read-only Bash needed for the handover; (5)
+  budget-gate.sh '[: 7 | sys.path.insert(0,...): integer expression expected' x74
+  in one session — fast path silently broken. Cost: 2,182 USD over 7 sessions, ~86%
+  cache-read. Affects AEF's own sessions (cap 975K).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-08T08:23:37Z
-last_update: 2026-10-08T08:23:37Z
-date_finished: null
+last_update: 2026-10-08T10:06:14Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +61,50 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-08T08:30:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-08T08:30:56Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3989: URGENT (1409): sessions die at the hard budget block instead of handing over — warnings reach only the agent, auto-handover never runs on a blocked call, fixed-% ladder too late at large caps, critical blocks read-only Bash, budget-gate STATUS_AGE integer bug
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Scope of THIS task (one bug, one task): findings (2) and (5) — the two that turn a planned handover into a hard kill. (1) operator-visible forcing warning, (3) the reserve ladder R = clamp(20K + 0.05*(W-300K), 20K, 50K) with W-3R/W-2R/W-R (operator-confirmed by 1409), (4) read-only Bash at critical, and (6) securing untracked work on a kill are filed as separate tasks.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] (2) When budget-gate.sh blocks at critical, it triggers the auto-handover itself (same command checkpoint.sh uses, once per cooldown window, writing `.handover-cooldown`), because PostToolUse never runs on a call PreToolUse blocked
+- [ ] (2) The block message says a handover was written (or why not) and names the file
+- [ ] (5) The STATUS_AGE / numeric fields parsed from the python result are validated as integers before any `[ -lt ]`; a non-integer falls through to the slow path with one stderr line naming the bad value, never a bash `integer expression expected`
+- [ ] (5) Reproduced on 1409's vendored version, or recorded as not reproducible with what was asked for
+- [ ] Tests: a critical block writes the handover once (second block within cooldown does not); a garbage RESULT does not produce a bash test error
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -320,3 +361,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3989-urgent-1409-sessions-die-at-the-hard-bud.md
 - **Context:** Initial task creation
+
+### 2026-10-08T10:06:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
