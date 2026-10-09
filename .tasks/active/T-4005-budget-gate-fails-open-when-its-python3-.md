@@ -1,10 +1,16 @@
 ---
 id: T-4005
-name: "budget-gate fails OPEN when its python3 dies at critical (ring20-dashboard local patch 0001, offered upstream)"
+name: "budget-gate fails OPEN when its python3 dies at critical (ring20-dashboard
+  local patch 0001, offered upstream)"
 description: >
-  ring20-dashboard upgrade report v1.8.7 (msg f73f1c27): measured on full trees, broken python3 + .budget-status critical: plain v1.8.7 new work -> exit 0 (fails OPEN); with their patch 0001 -> exit 2, git commit still exit 0. Local since T-1904, re-anchored after T-3989/T-3997. Take the patch upstream (ask them for it) or fix equivalently: a crashed parser at a cached critical level must block non-wrap-up calls, wrap-up stays allowed. Reliability directive: no silent failures.
+  ring20-dashboard upgrade report v1.8.7 (msg f73f1c27): measured on full trees, broken
+  python3 + .budget-status critical: plain v1.8.7 new work -> exit 0 (fails OPEN);
+  with their patch 0001 -> exit 2, git commit still exit 0. Local since T-1904, re-anchored
+  after T-3989/T-3997. Take the patch upstream (ask them for it) or fix equivalently:
+  a crashed parser at a cached critical level must block non-wrap-up calls, wrap-up
+  stays allowed. Reliability directive: no silent failures.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-08T21:26:50Z
-last_update: 2026-10-08T21:27:33Z
-date_finished: null
+last_update: '2026-10-08T21:30:26Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-08T21:27:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-08T21:30:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4005: budget-gate fails OPEN when its python3 dies at critical (ring20-dashboard local patch 0001, offered upstream)
@@ -62,8 +96,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] With python3 failing (a stub python3 on PATH that exits non-zero) and `.budget-status` level `critical`, a non-wrap-up Bash call (e.g. `npm run build`) and a Write to a source file exit 2 with a message naming the parser failure (agents/context/budget-gate.sh)
+- [ ] Same setup: `git commit -m x`, `git push`, `fw handover`, a Read, and an Edit under `.tasks/` still exit 0 (wrap-up stays allowed)
+- [ ] Same setup with cached level `ok`/`warn`/`urgent`, or no `.budget-status` at all: exit 0 (no new block when the cache does not say critical)
+- [ ] Working python3: the existing budget-gate suites stay green (t2919, t3204, t3241, t3598, t3989)
+- [ ] New regression test `tests/unit/t4005_budget_gate_python_dead.bats` covers the three cases above and fails on the pre-fix gate
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -320,3 +357,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4005-budget-gate-fails-open-when-its-python3-.md
 - **Context:** Initial task creation
+
+### 2026-10-08T21:27:39Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
