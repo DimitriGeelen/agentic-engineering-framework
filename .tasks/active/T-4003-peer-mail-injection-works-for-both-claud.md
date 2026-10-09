@@ -373,3 +373,8 @@ Read it as: do NOT type if `unlocked` or `external_view` is true; `cockpit_start
 ### 2026-10-09T07:58:43Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-09T19:10Z — real-tmux smoke of c2 (no mocks below choose_target)
+- Started a pane on the real private server (`tmux -L fw-agents -f /dev/null`, prefix None) running `cat`, used its pane_pid as claude_pid.
+- `_tty_of` → /dev/pts/107; `choose_target` → route tmux, pane %0, socket fw-agents; `send-keys -l` + Enter → the line arrived verbatim in the pane's reader.
+- Still pending: the live check with a real Claude session. This session (claude-fw pid 2176991) was launched before the wrapper existed, so it runs bare on /dev/pts/29 (c3); it needs one restart via `claude-fw -c`.
