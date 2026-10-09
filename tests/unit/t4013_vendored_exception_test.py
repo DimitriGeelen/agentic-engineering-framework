@@ -159,11 +159,14 @@ def _write_yaml(root, body):
 
 
 def test_a_non_canonical_path_is_malformed_not_a_second_entry(consumer):
-    old = hashlib.sha256(b"old bytes").hexdigest()
+    # The stale alias entry pins the CURRENT bytes; the canonical (newer) one pins other bytes.
+    # Before the fix the alias normalised to the same path, was found first, and was trusted.
+    newer = hashlib.sha256(b"replacement bytes").hexdigest()
     _write_yaml(consumer, "vendored_exceptions:\n"
-                f"  - {{path: ./{REL}, sha256: {old}, approved_by: x}}\n"
-                f"  - {{path: {REL}, sha256: {GOOD}, approved_by: x}}\n")
+                f"  - {{path: ./{REL}, sha256: {GOOD}, approved_by: x}}\n"
+                f"  - {{path: {REL}, sha256: {newer}, approved_by: x}}\n")
     assert vl.launchable_kinds(consumer) == set()
+    assert "malformed" in vl._committed_blob(consumer, "", REL)[1]
 
 
 def test_yaml_null_approver_is_malformed(consumer):
@@ -221,8 +224,55 @@ def test_no_fallback_outside_the_consumer_layout(consumer, monkeypatch, tmp_path
     assert "not a consumer layout" in vl._committed_blob(consumer, "", REL)[1]
 
 
-def test_status_reports_the_hash_the_decision_used(consumer, monkeypatch):
+def test_status_judges_each_file_from_one_read(consumer, monkeypatch):
+    """The file is swapped right after its first read. State, digest and explanation must all
+    describe that one read — never 'approved' next to the swapped file's digest."""
     _approve(consumer)
     _commit(consumer)
+    target = (consumer / ".agentic-framework" / REL).resolve()
+    real = Path.read_bytes
+    reads = []
+
+    def read_then_swap(self):
+        data = real(self)
+        if self == target:
+            reads.append(data)
+            target.write_text('DISPATCH_WORKER_KINDS="claude mine"\n')
+        return data
+
+    monkeypatch.setattr(Path, "read_bytes", read_then_swap)
     row = next(r for r in vl.exception_status(consumer) if r["path"] == str(REL))
+    assert len(reads) == 1
     assert row["state"] == "approved-exception" and row["vendored_sha256"] == GOOD
+    assert "approved exception" in row["where"]
+
+
+# ── the normal committed paths still win (real git) ─────────────────────────
+
+
+def test_a_consumer_that_tracks_the_vendored_tree_reads_the_committed_copy(consumer):
+    (consumer / ".gitignore").write_text("")
+    _git(consumer, "add", "-A")
+    _commit(consumer, "track vendored tree")
+    (consumer / ".agentic-framework" / REL).write_text('DISPATCH_WORKER_KINDS="claude mine"\n')
+    text, where = vl._committed_blob(consumer, "", REL)
+    assert text == KINDS and "approved exception" not in where
+    row = next(r for r in vl.exception_status(consumer) if r["path"] == str(REL))
+    assert row["state"] == "committed"
+
+
+def test_an_external_framework_reads_its_own_head(consumer, monkeypatch, tmp_path):
+    ext = tmp_path / "framework"
+    (ext / "lib").mkdir(parents=True)
+    (ext / REL).parent.mkdir(parents=True)
+    (ext / REL).write_text('DISPATCH_WORKER_KINDS="claude"\n')
+    _git(ext, "init", "-q")
+    _git(ext, "-c", "user.name=t", "-c", "user.email=t@t", "add", "-A")
+    _git(ext, "-c", "user.name=t", "-c", "user.email=t@t", "commit", "-qm", "fw")
+    monkeypatch.setattr(vl, "_HERE", ext / "lib")
+    assert vl.launchable_kinds(consumer) == {"claude"}
+
+
+def test_the_framework_repo_itself_reads_its_committed_files():
+    rows = vl.exception_status(FW_ROOT)
+    assert {r["state"] for r in rows if r["path"] != "policy/review-worker-settings.json"} == {"committed"}

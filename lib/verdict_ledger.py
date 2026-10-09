@@ -784,18 +784,10 @@ def _committed_blob(root: Path, revision: str, rel: Path) -> tuple[str, str]:
     this framework's committed copy at its HEAD, pinned to that commit's sha in `where`. ('', why)
     when none is committed."""
     rev = (revision or "").strip() or "HEAD"
-    cands = [(root, rev, str(rel))]
     fw = _HERE.parent.resolve()
-    try:
-        cands.append((root, rev, str((fw / rel).relative_to(Path(root).resolve()))))
-    except ValueError:
-        rc, sha = _git_out(fw, "rev-parse", "-q", "--verify", "HEAD")
-        cands.append((fw, sha.strip() if rc == 0 else "HEAD", str(rel)))
-    for repo, r, rel_s in cands:
-        rc, blob = _git_out(repo, "show", f"{r}:{rel_s}")
-        if rc == 0 and blob.strip():
-            rc2, sha = _git_out(repo, "rev-parse", "-q", "--verify", f"{r}^{{commit}}")
-            return blob, f"{repo}@{sha.strip() if rc2 == 0 else r}:{rel_s}"
+    blob, where = _committed_only(root, rev, rel, fw)
+    if blob:
+        return blob, where
     # T-4013 (T-4010 decision): a consumer that does not track .agentic-framework/ has no
     # committed copy. Its vendored working copy counts only when its bytes match an exception the
     # operator approved, recorded in .framework.yaml AS COMMITTED at the same revision — so the
@@ -808,6 +800,22 @@ def _committed_blob(root: Path, revision: str, rel: Path) -> tuple[str, str]:
     if data is not None:
         return data.decode("utf-8", errors="replace"), why
     return "", f"no committed {rel} at {rev}; {why}"
+
+
+def _committed_only(root: Path, rev: str, rel: Path, fw: Path) -> tuple[str, str]:
+    """The three committed candidates of `_committed_blob`, without the T-4013 fallback."""
+    cands = [(root, rev, str(rel))]
+    try:
+        cands.append((root, rev, str((fw / rel).relative_to(Path(root).resolve()))))
+    except ValueError:
+        rc, sha = _git_out(fw, "rev-parse", "-q", "--verify", "HEAD")
+        cands.append((fw, sha.strip() if rc == 0 else "HEAD", str(rel)))
+    for repo, r, rel_s in cands:
+        rc, blob = _git_out(repo, "show", f"{r}:{rel_s}")
+        if rc == 0 and blob.strip():
+            rc2, sha = _git_out(repo, "rev-parse", "-q", "--verify", f"{r}^{{commit}}")
+            return blob, f"{repo}@{sha.strip() if rc2 == 0 else r}:{rel_s}"
+    return "", ""
 
 
 def _fallback_ineligible(root: Path, rev: str, rel: Path, fw: Path) -> str:
@@ -949,13 +957,19 @@ def exception_status(root: Path | None = None, revision: str = "") -> list[dict]
     fw = _HERE.parent.resolve()
     out = []
     for rel in JUDGE_RELEVANT:
-        text, where = _committed_blob(root, revision, rel)
+        # One evaluation per file: state, explanation and digest all come from the same read
+        # (codex follow-up review of ab35a4cb9).
+        text, where = _committed_only(root, rev, rel, fw)
         sha = ""
-        state = "committed" if text else "untrusted"
-        if not _fallback_ineligible(Path(root), rev, rel, fw):
-            data, where2, sha = _approved_vendored_copy(Path(root), rev, rel)
-            if data is not None:
-                state, where = "approved-exception", where2
+        if text:
+            state = "committed"
+        else:
+            why = _fallback_ineligible(Path(root), rev, rel, fw)
+            if why:
+                state, where = "untrusted", f"no committed {rel} at {rev}; {why}"
+            else:
+                data, where, sha = _approved_vendored_copy(Path(root), rev, rel)
+                state = "approved-exception" if data is not None else "untrusted"
         out.append({"path": str(rel), "state": state, "vendored_sha256": sha, "where": where})
     return out
 

@@ -137,7 +137,7 @@ policy/review-worker-settings.json. Exception record lives in the consumer's `.f
 
 ## Verification
 
-python3 -m pytest tests/unit/t4013_vendored_exception_test.py -q > /tmp/.t4013 2>&1 && grep -q "19 passed" /tmp/.t4013
+python3 -m pytest tests/unit/t4013_vendored_exception_test.py -q > /tmp/.t4013 2>&1 && grep -q "22 passed" /tmp/.t4013
 python3 -m pytest tests/unit/t4010_judge_no_seat_test.py tests/unit/t3580_round7_test.py tests/unit/t3582_harness_kinds_test.py -q > /tmp/.t4013b 2>&1 && grep -q passed /tmp/.t4013b
 bin/fw vendor self --check
 # Shell commands that MUST pass before work-completed. One per line.
@@ -354,6 +354,7 @@ bin/fw vendor self --check
   - (5, medium) duplicate YAML keys silently overrode → strict loader refuses any repeated key and multiple documents; `approved_by: null` is malformed.
   - (6, low) status re-read the file → status reports the hash the trust decision used.
 - **Why not fix (1, high):** `approved_by` is text an agent can write and commit; no same-user mechanism can prove a human approved it (T-4010 decision states this; the ledger's other "as committed" inputs have the same boundary). Documented in `_approved_vendored_copy`'s docstring. A signature outside the agent's write boundary would be the fix and is a separate operator decision.
+- **Follow-up review of ab35a4cb9 (docs/reports/T-4013-codex-review-2.md):** no new trust bypass; findings 2-5 fixed; finding 1's documentation accurate. Two lows fixed: status now judges each file from one read (`_committed_only` + a single `_approved_vendored_copy` call); the alias-path and status tests were rewritten so each fails on the pre-fix code (checked against 674ce1f63 and ab35a4cb9). Added real-git tests that the three normal committed paths (tracked vendored tree, external framework HEAD, the framework repo itself) still win.
 - **Rejected:** a YAML round-trip library (not installed on consumers; the prove-then-write check gives the same safety without a dependency).
 
 ## Decision
