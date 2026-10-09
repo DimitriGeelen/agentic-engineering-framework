@@ -61,6 +61,45 @@ for arg in "$@"; do
     esac
 done
 
+# T-4003 (operator 2026-10-09: "we wanted reliable to work for every project"): peer mail can
+# only reach an agent through a terminal something can type into — a TermLink session or a
+# tmux pane (lib/sidecar/inject.py c1/c2). A bare terminal window cannot be typed into from
+# outside, so its mail waited until someone happened to type there (34 messages, up to 80 h).
+# When this session would land on a bare terminal, re-launch it inside a private tmux session
+# that behaves like the terminal it replaces: no status bar, and closing the window ends the
+# session (destroy-unattached) instead of leaving Claude running hidden. Nothing changes for
+# the operator; `claude-fw -c` stays the command. Skipped for --termlink, inside tmux already
+# (fleet panes), headless or non-terminal runs, dispatched workers, and when tmux is missing.
+# Opt out: FW_CLAUDE_FW_NO_TMUX=1.
+_cfw_should_wrap_tmux() {
+    [ "${FW_CLAUDE_FW_NO_TMUX:-0}" = 1 ] && return 1
+    [ "${FW_CLAUDE_FW_IN_TMUX:-0}" = 1 ] && return 1
+    [ "$TERMLINK_ENABLED" = 1 ] && return 1
+    [ "$HEADLESS" = 1 ] && return 1
+    [ -n "${TMUX:-}" ] && return 1
+    [ -n "${FW_DISPATCHED_WORKER:-}" ] && return 1
+    [ -t 0 ] && [ -t 1 ] || return 1
+    command -v tmux >/dev/null 2>&1 || return 1
+    return 0
+}
+if _cfw_should_wrap_tmux; then
+    _cfw_self="$(readlink -f "$0")"   # this script itself (not a lib/ lookup, T-3954)
+    _cfw_name="fw-$(printf '%s' "$(basename "$PWD")" | tr -c 'A-Za-z0-9_-' '_' | cut -c1-40)-$$"
+    # tmux does not hand the caller's environment to a new session: pass what matters.
+    _cfw_env=(-e FW_CLAUDE_FW_IN_TMUX=1)
+    while IFS='=' read -r _k _; do
+        case "$_k" in
+            FW_*|TL_*|CLAUDE*|ANTHROPIC*|PROJECT_ROOT|FRAMEWORK_ROOT|PATH|HOME|LANG|LC_*|NVM_*|PYTHONPATH|EDITOR|VISUAL)
+                _cfw_env+=(-e "$_k=${!_k}") ;;
+        esac
+    done < <(env | grep -E '^[A-Za-z_][A-Za-z0-9_]*=' | cut -d= -f1 | sort -u | sed 's/$/=/')
+    exec tmux new-session -s "$_cfw_name" -c "$PWD" "${_cfw_env[@]}" -- "$_cfw_self" "$@" \; \
+        set-option -t "$_cfw_name" status off \; \
+        set-option -t "$_cfw_name" destroy-unattached on \; \
+        set-option -t "$_cfw_name" history-limit 50000 \; \
+        set-option -t "$_cfw_name" mouse on
+fi
+
 # TermLink session management
 TERMLINK_SESSION=""
 
@@ -746,7 +785,11 @@ sidecar_start() {
         elif [ "${_TERMLINK_REQUESTED:-0}" = "1" ]; then
             echo "claude-fw: sidecar watcher running but INERT for injection — TermLink absent, peer messages reach the agent only at its next prompt. Install termlink."
         else
-            echo "claude-fw: sidecar watcher running (tick ${_tick:-?}s), no --termlink: peer messages reach the agent at its next prompt (inject needs --termlink)"
+            if [ -n "${TMUX:-}" ]; then
+                echo "claude-fw: sidecar watcher running (tick ${_tick:-?}s); this session runs in tmux, so peer messages are typed in when it is idle (T-4003)"
+            else
+                echo "claude-fw: sidecar watcher running (tick ${_tick:-?}s), no tmux/--termlink: peer messages reach the agent at its next prompt (T-4003)"
+            fi
         fi
     else
         echo "claude-fw: WARNING sidecar start failed — peer messages will not be received here: ${_out: -300}" >&2
