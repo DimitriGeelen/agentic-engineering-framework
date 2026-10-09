@@ -353,3 +353,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3874-running-clonebinfw-upgrade-from-inside-a.md
 - **Context:** Initial task creation
+
+### 2026-10-10 — reported again by two peers on the 1.8.8 upgrade
+- proxmox-ring20-management (msg a5c751b1): `fw upgrade <consumer> --dry-run` from inside the consumer ignores a pinned tag clone and re-clones master; only `./bin/fw upgrade` from inside the clone works. Asks at least for a line in the upgrade help.
+- 055 (their T-487, msg 175746ec): run from inside the consumer, fw upgrade auto-clones upstream master, not a tag; they had to run it from a v1.8.8 clone.
