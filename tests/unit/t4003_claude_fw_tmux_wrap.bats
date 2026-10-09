@@ -32,7 +32,10 @@ _predicate() {
 @test "T-4003: on a bare terminal claude-fw re-launches itself in a private tmux session" {
     _run_tty
     [ -s "$T/tmux.argv" ]
-    head -1 "$T/tmux.argv" | grep -qx "new-session"
+    [ "$(sed -n 1,2p "$T/tmux.argv" | tr '\n' ' ')" = "-L fw-agents " ]   # its own server
+    grep -qx "new-session" "$T/tmux.argv"
+    grep -qx "escape-time" "$T/tmux.argv"            # Esc reaches Claude at once
+    [ "$(grep -A1 -x prefix "$T/tmux.argv" | tail -1)" = "None" ]   # Ctrl-B reaches Claude
     grep -qx "FW_CLAUDE_FW_IN_TMUX=1" "$T/tmux.argv"
     grep -qx "$(readlink -f "$CFW")" "$T/tmux.argv"
     grep -qx -- "-c" "$T/tmux.argv"                   # the operator's own argument is passed on
