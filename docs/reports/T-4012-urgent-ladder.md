@@ -44,7 +44,35 @@ conversation" (`lib/retry_ladder.py` raises NotImplementedError for `urgent=True
 
 ## Dialogue Log
 
-(to be filled during the conversation)
+### 2026-10-09 — operator states both ladders (verbatim intent)
+
+Operator: "normal is two times two [1 min]. Two times five. Two times fifteen. Two times one hour.
+Two times four hours. Two times one day. Two times one week. Two times one month. Two times one
+quarter … two times one year. And urgent is one, two, three, four, five, ten, fifteen, thirty,
+forty-five, one hour. Two hours, three hours, four hours. Eight hours, twelve hours, sixteen hours.
+Twenty hours, one day. Two days, three days, four days, five days, six days, seven days. Two weeks,
+three weeks, four weeks. Two months, three months. Two quarters, three quarters, four quarters.
+Second year. This is documented."
+
+As schedules:
+
+- **Normal:** 2×1 min, 2×5 min, 2×15 min, 2×1 h, 2×4 h, 2×1 d, 2×1 w, 2×1 mo, **2×1 quarter, 2×1 year**.
+  Differs from the implemented T-3434 ladder, which stops after 2×1 mo (~76 days): the quarter and
+  year rungs are missing.
+- **Urgent** (attempt times from the first send): 1, 2, 3, 4, 5, 10, 15, 30, 45 min; 1, 2, 3, 4, 8,
+  12, 16, 20 h; 1, 2, 3, 4, 5, 6, 7 d; 2, 3, 4 w; 2, 3 mo; 2, 3, 4 quarters; 2nd year.
+  (Open in the transcription: whether "one" in the minute row is a 1-minute rung after the
+  first send, and whether "second year" means 2 years after the first send.)
+
+Operator: "You should have gotten this information from TermLink … via a pick up request on the
+sidecar." — Searched: D-600 (decisions.yaml) records only the normal ladder up to 2×1 mo and says
+URGENT is "designed in a separate conversation"; no copy of the urgent schedule in .context/inbox.yaml,
+pickups, sidecar logs or the T-3433/T-3434 records. Asked 010-termlink to re-send the original
+(conversation aef-retry-ladder-resend, 2026-10-09).
+
+Implication: both the quarter/year extension of the normal ladder and the whole urgent ladder are
+specified by the operator; what is still open is behaviour per rung (IW-2..IW-7: direct inject,
+operator-first, who may mark urgent, recipient behaviour, dead-letter, inbound).
 
 ## Recommendation
 
