@@ -334,6 +334,14 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO — option A (committed manifest pin), as the three consults conditioned it
+**Rationale:** All three independent consults (codex, dimitri-mint-dev, ring20-management) chose A and rejected C. A keeps the T-3580 round-7 property: an edit to a judge-relevant file only counts once it is committed and therefore visible in history, which is the same guarantee B gives, without making every consumer track `.agentic-framework/`. None of the options defends against an agent that commits; all three consults said so plainly.
+**Evidence:**
+- docs/reports/T-4010-consult-brief.md (question), docs/reports/T-4010-consult-codex.md (codex answer)
+- dimitri-mint-dev and ring20 answers received via sidecar on 2026-10-09 (in .context/sidecar/receiver/messages/)
+- Converging conditions: (1) read the pin from `.framework.yaml` AS COMMITTED at the reviewed revision, never the working copy; (2) one manifest digest over only the judge-relevant files (termlink.sh, review-backends.yaml), so consumer patches to other vendored files keep working; (3) `fw upgrade` writes the pin last; (4) fail closed with a named cause ("commit .framework.yaml", "termlink.sh differs from pin"); (5) symlinked vendored tree: hash resolved content, refuse targets outside the project (overlaps T-4011); (6) hash bytes as read, normalise CRLF
+- Later step D (ring20, dimitri-mint-dev): a release-signed manifest so the consumer's tree is not trusted at all; file separately
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
