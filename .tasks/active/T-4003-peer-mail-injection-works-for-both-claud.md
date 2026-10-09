@@ -50,7 +50,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-08T20:56:19Z
-last_update: 2026-10-09T08:02:28Z
+last_update: 2026-10-09T08:03:11Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -107,11 +107,11 @@ Read it as: do NOT type if `unlocked` or `external_view` is true; `cockpit_start
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The injector finds the terminal Claude actually runs on from the session record's `claude_pid` (already written by the Stop/prompt hook): `/proc/<pid>/fd/0` → `/dev/pts/N`, read at decision time — never a session chosen by name
-- [ ] Target resolution, in order: (c1) a TermLink session that is registered for this project (today's path, unchanged); (c2) else a tmux pane whose `pane_tty` equals the agent's tty → `tmux send-keys -t <pane_id> -l <line>` + Enter, never a session name such as `fleet-<dir>`; (c3) else no injection, with the reason "terminal not injectable (<tty>): mail waits for the next prompt" recorded as WAITING_NO_RECIPIENT
-- [ ] Readiness is the same for c1 and c2: the session record says ready (Stop since last prompt) — urgent may bypass as today; and for a fleet project 055's input-state is read (`unlocked` or `external_view` true, cockpit started < 2 min ago, 404/error/timeout → do not type)
-- [ ] One ledger: c2 records INJECT_TYPING / INJECT_ATTEMPT exactly like c1 (with `route: tmux`), and HANDED_OVER still comes only from the prompt hook
-- [ ] Tests with stub `tmux` / `termlink` / input-state: c1 unchanged; c2 types into the pane with the matching tty and never into another; c3 records the reason; a busy/unlocked/unknown input-state blocks c2; the injected line is the same fixed line (no peer content)
+- [x] The injector finds the terminal Claude actually runs on from the session record's `claude_pid` (already written by the Stop/prompt hook): `/proc/<pid>/fd/0` → `/dev/pts/N`, read at decision time — never a session chosen by name
+- [x] Target resolution, in order: (c1) a TermLink session that is registered for this project (today's path, unchanged); (c2) else a tmux pane whose `pane_tty` equals the agent's tty → `tmux send-keys -t <pane_id> -l <line>` + Enter, never a session name such as `fleet-<dir>`; (c3) else no injection, with the reason "terminal not injectable (<tty>): mail waits for the next prompt" recorded as WAITING_NO_RECIPIENT
+- [x] Readiness is the same for c1 and c2: the session record says ready (Stop since last prompt) — urgent may bypass as today; and for a fleet project 055's input-state is read (`unlocked` or `external_view` true, cockpit started < 2 min ago, 404/error/timeout → do not type)
+- [x] One ledger: c2 records INJECT_TYPING / INJECT_ATTEMPT exactly like c1 (with `route: tmux`), and HANDED_OVER still comes only from the prompt hook
+- [x] Tests with stub `tmux` / `termlink` / input-state: c1 unchanged; c2 types into the pane with the matching tty and never into another; c3 records the reason; a busy/unlocked/unknown input-state blocks c2; the injected line is the same fixed line (no peer content)
 - [ ] Live check on this host: a peer message to AEF while this session runs in a tmux pane is typed in and surfaces; while it runs on a bare terminal the sender gets WAITING_NO_RECIPIENT with the "terminal not injectable" reason
 
 ### Human
