@@ -39,16 +39,18 @@ class Runner:
     """`termlink discover` answers `sessions`; `tmux list-panes` answers `panes`; every other
     call is recorded as typing."""
 
-    def __init__(self, sessions=(), panes=(), tmux=True):
+    def __init__(self, sessions=(), panes=(), tmux=True, private=()):
         self.sessions, self.panes, self.tmux, self.typed = list(sessions), list(panes), tmux, []
+        self.private = list(private)
 
     def __call__(self, argv, **_):
         if argv[:2] == ["termlink", "discover"]:
             return subprocess.CompletedProcess(argv, 0, json.dumps({"sessions": self.sessions}), "")
-        if argv[:2] == ["tmux", "list-panes"]:
+        if argv[0] == "tmux" and "list-panes" in argv:
             if not self.tmux:
                 raise FileNotFoundError("tmux")
-            out = "\n".join(f"{t} {p} {s}" for t, p, s in self.panes)
+            panes = self.private if argv[1:3] == ["-L", "fw-agents"] else self.panes
+            out = "\n".join(f"{t} {p} {s}" for t, p, s in panes)
             return subprocess.CompletedProcess(argv, 0, out, "")
         self.typed.append(argv)
         return subprocess.CompletedProcess(argv, 0, "", "")
@@ -140,3 +142,18 @@ def test_input_state_404_or_error_is_unknown_never_free():
         "unlocked": False, "external_view": False, "cockpit_started_at": fresh})[0] is False
     assert inject._cockpit_input_state(Path("/p"), fetch=lambda u: {
         "unlocked": False, "external_view": True, "cockpit_started_at": old})[0] is False
+
+
+def test_c2_finds_and_types_into_the_private_fw_agents_server(proj, monkeypatch):
+    """bin/claude-fw puts a bare-terminal session on its own tmux server (-L fw-agents)."""
+    _record(monkeypatch)
+    r = Runner(panes=[("/dev/pts/3", "%1", "fleet-x")], private=[(TTY, "%2", "fw-proj-123")])
+    target, why = inject.choose_target(False, r, input_state=_free)
+    assert target["pane"] == "%2" and target["socket"] == "fw-agents", why
+    monkeypatch.setattr(receiver, "awaiting_handover", lambda: ["m-2"])
+    monkeypatch.setattr(receiver, "read_message", lambda m: {"urgent": False})
+    monkeypatch.setattr(inject, "_inject_marker", lambda m: proj / f"{m}.injected")
+    monkeypatch.setattr(receiver, "record_event", lambda *a, **k: None)
+    rep = inject._deliver_locked("test", r)
+    assert rep["injected"] == ["m-2"], rep
+    assert r.typed[0][:6] == ["tmux", "-L", "fw-agents", "send-keys", "-t", "%2"]

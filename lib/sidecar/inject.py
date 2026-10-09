@@ -274,20 +274,32 @@ def _tty_of(pid) -> str | None:
     return t if t.startswith(("/dev/pts/", "/dev/tty")) else None
 
 
-def _tmux_panes(runner) -> dict[str, tuple[str, str]]:
-    """{pane_tty: (pane_id, session_name)} for every tmux pane; {} when tmux is absent."""
-    try:
-        proc = runner(["tmux", "list-panes", "-a", "-F", "#{pane_tty} #{pane_id} #{session_name}"],
-                      capture_output=True, text=True, timeout=10)
-    except (OSError, subprocess.SubprocessError):
-        return {}
-    if proc.returncode != 0:
-        return {}
-    out = {}
-    for line in (proc.stdout or "").splitlines():
-        parts = line.split(" ", 2)
-        if len(parts) >= 2 and parts[0].startswith("/dev/"):
-            out[parts[0]] = (parts[1], parts[2] if len(parts) > 2 else "")
+#: tmux servers searched for the agent's pane: the default one (fleet panes, an operator's own
+#: tmux) and the private one bin/claude-fw starts a bare-terminal session on (T-4003).
+TMUX_SOCKETS = (None, "fw-agents")
+
+
+def _tmux(socket: str | None) -> list[str]:
+    return ["tmux"] + (["-L", socket] if socket else [])
+
+
+def _tmux_panes(runner) -> dict[str, tuple[str, str, str | None]]:
+    """{pane_tty: (pane_id, session_name, socket)} over every searched tmux server; {} when
+    tmux is absent or no server runs."""
+    out: dict[str, tuple[str, str, str | None]] = {}
+    for sock in TMUX_SOCKETS:
+        try:
+            proc = runner(_tmux(sock) + ["list-panes", "-a", "-F",
+                                         "#{pane_tty} #{pane_id} #{session_name}"],
+                          capture_output=True, text=True, timeout=10)
+        except (OSError, subprocess.SubprocessError):
+            continue
+        if proc.returncode != 0:
+            continue
+        for line in (proc.stdout or "").splitlines():
+            parts = line.split(" ", 2)
+            if len(parts) >= 2 and parts[0].startswith("/dev/"):
+                out.setdefault(parts[0], (parts[1], parts[2] if len(parts) > 2 else "", sock))
     return out
 
 
@@ -348,7 +360,8 @@ def _choose_tmux(urgent: bool, runner, input_state=None) -> tuple[dict | None, s
                 held.append(f"{pane[0]}: {why}")
                 continue
         return ({"session_id": r.get("session_id"), "termlink_session": None,
-                 "ready": r.get("ready") is True, "route": "tmux", "pane": pane[0], "tty": tty},
+                 "ready": r.get("ready") is True, "route": "tmux", "pane": pane[0], "tty": tty,
+                 "socket": pane[2]},
                 f"session {r.get('session_id')} in tmux pane {pane[0]} ({tty}, session "
                 f"{pane[1] or '?'})" + ("" if r.get("ready") is True else " — URGENT bypass"))
     if busy:
@@ -536,9 +549,10 @@ def _deliver_locked(trigger: str, runner) -> dict:
     try:
         if target.get("route") == "tmux":
             # T-4003 (c2): by pane id, literal text, then Enter as its own key.
-            p1 = runner(["tmux", "send-keys", "-t", target["pane"], "-l", line],
+            tm = _tmux(target.get("socket"))
+            p1 = runner(tm + ["send-keys", "-t", target["pane"], "-l", line],
                         capture_output=True, text=True, timeout=15)
-            p2 = (runner(["tmux", "send-keys", "-t", target["pane"], "Enter"],
+            p2 = (runner(tm + ["send-keys", "-t", target["pane"], "Enter"],
                          capture_output=True, text=True, timeout=15) if p1.returncode == 0 else p1)
             ok = p1.returncode == 0 and p2.returncode == 0
             err = ((p1.stderr or "") + (p2.stderr or "")).strip()[:200]

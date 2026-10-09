@@ -93,11 +93,24 @@ if _cfw_should_wrap_tmux; then
                 _cfw_env+=(-e "$_k=${!_k}") ;;
         esac
     done < <(env | grep -E '^[A-Za-z_][A-Za-z0-9_]*=' | cut -d= -f1 | sort -u | sed 's/$/=/')
-    exec tmux new-session -s "$_cfw_name" -c "$PWD" "${_cfw_env[@]}" -- "$_cfw_self" "$@" \; \
-        set-option -t "$_cfw_name" status off \; \
-        set-option -t "$_cfw_name" destroy-unattached on \; \
-        set-option -t "$_cfw_name" history-limit 50000 \; \
-        set-option -t "$_cfw_name" mouse on
+    # Its OWN tmux server (-L fw-agents) with no user config (-f /dev/null): never the fleet's
+    # server, never the operator's tmux habits. On it tmux must be invisible to Claude Code:
+    #   prefix None   — Ctrl-B (Claude Code: background a running command) reaches Claude;
+    #   escape-time 0 — Esc interrupts at once (tmux default waits 500 ms for a sequence);
+    #   RGB override  — true colour passes through;  status off — no bar.
+    # The 055 cockpit's display faults came from its browser bridge (polled relay, competing
+    # viewer sizes, 055 T-474); none of that is here: one client, the operator's own terminal.
+    # lib/sidecar/inject.py looks for panes on this server as well as the default one.
+    exec tmux -L fw-agents -f /dev/null new-session -s "$_cfw_name" -c "$PWD" "${_cfw_env[@]}" -- "$_cfw_self" "$@" \; \
+        set-option -s escape-time 0 \; \
+        set-option -g prefix None \; \
+        set-option -g prefix2 None \; \
+        set-option -g default-terminal tmux-256color \; \
+        set-option -as terminal-overrides ',*:RGB' \; \
+        set-option -g status off \; \
+        set-option -g destroy-unattached on \; \
+        set-option -g history-limit 50000 \; \
+        set-option -g mouse on
 fi
 
 # TermLink session management
