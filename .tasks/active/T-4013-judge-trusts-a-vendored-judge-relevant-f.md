@@ -1,10 +1,15 @@
 ---
 id: T-4013
-name: "Judge trusts a vendored judge-relevant file when it matches an operator-approved exception pinned in the committed .framework.yaml"
+name: "Judge trusts a vendored judge-relevant file when it matches an operator-approved
+  exception pinned in the committed .framework.yaml"
 description: >
-  T-4010 decision leg 1. Record approved local exceptions (file, sha256, approved_by, reason, date) in the consumer's committed .framework.yaml via an operator-only route; the judge's launchable_kinds/registry lookup accepts the vendored working copy only when its sha256 matches such an exception read at the reviewed revision; otherwise refuse naming the file. Unblocks dimitri-mint-dev G-010.
+  T-4010 decision leg 1. Record approved local exceptions (file, sha256, approved_by,
+  reason, date) in the consumer's committed .framework.yaml via an operator-only route;
+  the judge's launchable_kinds/registry lookup accepts the vendored working copy only
+  when its sha256 matches such an exception read at the reviewed revision; otherwise
+  refuse naming the file. Unblocks dimitri-mint-dev G-010.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +44,8 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-09T19:42:26Z
-last_update: 2026-10-09T19:42:26Z
-date_finished: null
+last_update: '2026-10-09T19:45:23Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,20 +56,53 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-09T19:43:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-09T19:45:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=277,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4013: Judge trusts a vendored judge-relevant file when it matches an operator-approved exception pinned in the committed .framework.yaml
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Leg 1 of the T-4010 decision (2026-10-09, see T-4010 ## Decisions). Judge-relevant files are the three
+`lib/verdict_ledger.py:_committed_blob` reads: agents/termlink/termlink.sh, policy/review-backends.yaml,
+policy/review-worker-settings.json. Exception record lives in the consumer's `.framework.yaml` under
+`vendored_exceptions:` as `{path, sha256, approved_by, approved_at, reason}`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `_committed_blob` falls back, only after every committed candidate fails, to the vendored working copy `<root>/.agentic-framework/<rel>` when its sha256 equals a `vendored_exceptions` entry for `<rel>` in `.framework.yaml` AS COMMITTED at the reviewed revision; `where` says "approved exception"
+- [x] An uncommitted exception entry, a mismatching sha256, an entry for another path, a symlink resolving outside the project, or a malformed entry → nothing is trusted, and the "no committed …" reason names the file and the fix (approve + commit .framework.yaml)
+- [x] `exception-approve <rel> --reason "…"` writes/replaces the entry with the current sha256; refused under CLAUDECODE=1 without --i-am-human; refuses a path outside the judge-relevant set. `exception-check` lists each judge-relevant file as committed / approved exception / UNTRUSTED (with sha256)
+- [x] Tests for all of the above; existing verdict-ledger and judge suites stay green; vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -99,6 +137,9 @@ date_finished: null
 
 ## Verification
 
+python3 -m pytest tests/unit/t4013_vendored_exception_test.py -q > /tmp/.t4013 2>&1 && grep -q "11 passed" /tmp/.t4013
+python3 -m pytest tests/unit/t4010_judge_no_seat_test.py tests/unit/t3580_round7_test.py tests/unit/t3582_harness_kinds_test.py -q > /tmp/.t4013b 2>&1 && grep -q passed /tmp/.t4013b
+bin/fw vendor self --check
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -321,3 +362,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4013-judge-trusts-a-vendored-judge-relevant-f.md
 - **Context:** Initial task creation
+
+### 2026-10-09T19:43:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
