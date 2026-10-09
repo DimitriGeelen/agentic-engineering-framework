@@ -137,7 +137,7 @@ policy/review-worker-settings.json. Exception record lives in the consumer's `.f
 
 ## Verification
 
-python3 -m pytest tests/unit/t4013_vendored_exception_test.py -q > /tmp/.t4013 2>&1 && grep -q "11 passed" /tmp/.t4013
+python3 -m pytest tests/unit/t4013_vendored_exception_test.py -q > /tmp/.t4013 2>&1 && grep -q "19 passed" /tmp/.t4013
 python3 -m pytest tests/unit/t4010_judge_no_seat_test.py tests/unit/t3580_round7_test.py tests/unit/t3582_harness_kinds_test.py -q > /tmp/.t4013b 2>&1 && grep -q passed /tmp/.t4013b
 bin/fw vendor self --check
 # Shell commands that MUST pass before work-completed. One per line.
@@ -345,6 +345,16 @@ bin/fw vendor self --check
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-09 — independent codex review of 674ce1f63 (.context/working/t4013-codex.txt)
+- **Chose:** fix findings 2-6 in code; record finding 1 as the stated limit, not a fix.
+  - (2, medium) non-canonical `./path` entry survived re-approval → exception paths must equal the canonical string exactly; anything else is malformed.
+  - (3, medium) approval corrupted an indentless list / wrote after `...` → strict parse before, rewrite, re-parse and prove only `vendored_exceptions` changed, else refuse with nothing written; atomic replace.
+  - (4, medium) fallback too broad → only in the consumer layout (framework is `<root>/.agentic-framework`), only when the revision resolves and git tracks neither path (an emptied tracked file does not fall back).
+  - (5, medium) duplicate YAML keys silently overrode → strict loader refuses any repeated key and multiple documents; `approved_by: null` is malformed.
+  - (6, low) status re-read the file → status reports the hash the trust decision used.
+- **Why not fix (1, high):** `approved_by` is text an agent can write and commit; no same-user mechanism can prove a human approved it (T-4010 decision states this; the ledger's other "as committed" inputs have the same boundary). Documented in `_approved_vendored_copy`'s docstring. A signature outside the agent's write boundary would be the fix and is a separate operator decision.
+- **Rejected:** a YAML round-trip library (not installed on consumers; the prove-then-write check gives the same safety without a dependency).
 
 ## Decision
 

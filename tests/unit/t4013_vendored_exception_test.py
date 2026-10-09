@@ -146,3 +146,83 @@ def test_cli_check_reports_untrusted_then_approved(consumer, monkeypatch, capsys
     vl._cli(["exception-check"])
     out = capsys.readouterr().out
     assert "approved-exception  agents/termlink/termlink.sh" in out
+
+
+# ── codex review of 674ce1f63 ────────────────────────────────────────────────
+
+GOOD = hashlib.sha256(KINDS.encode()).hexdigest()
+
+
+def _write_yaml(root, body):
+    (root / ".framework.yaml").write_text("project_name: consumer\n" + body)
+    _commit(root, "yaml")
+
+
+def test_a_non_canonical_path_is_malformed_not_a_second_entry(consumer):
+    old = hashlib.sha256(b"old bytes").hexdigest()
+    _write_yaml(consumer, "vendored_exceptions:\n"
+                f"  - {{path: ./{REL}, sha256: {old}, approved_by: x}}\n"
+                f"  - {{path: {REL}, sha256: {GOOD}, approved_by: x}}\n")
+    assert vl.launchable_kinds(consumer) == set()
+
+
+def test_yaml_null_approver_is_malformed(consumer):
+    _write_yaml(consumer, f"vendored_exceptions:\n  - {{path: {REL}, sha256: {GOOD}, approved_by: null}}\n")
+    assert vl.launchable_kinds(consumer) == set()
+
+
+def test_duplicate_keys_anywhere_refuse(consumer):
+    bad = hashlib.sha256(b"x").hexdigest()
+    _write_yaml(consumer, "vendored_exceptions:\n"
+                f"  - {{path: {REL}, sha256: {bad}, sha256: {GOOD}, approved_by: x}}\n")
+    assert vl.launchable_kinds(consumer) == set()
+    _write_yaml(consumer, f"vendored_exceptions: []\nvendored_exceptions:\n"
+                f"  - {{path: {REL}, sha256: {GOOD}, approved_by: x}}\n")
+    assert vl.launchable_kinds(consumer) == set()
+
+
+def test_approval_rewrites_an_indentless_block_cleanly(consumer):
+    (consumer / ".framework.yaml").write_text(
+        "project_name: consumer\nvendored_exceptions:\n"
+        f"- path: {REL}\n  sha256: {hashlib.sha256(b'old').hexdigest()}\n  approved_by: x\n"
+        "version: 1.8.8\n")
+    _approve(consumer)
+    import yaml
+    doc = yaml.safe_load((consumer / ".framework.yaml").read_text())
+    assert doc["version"] == "1.8.8" and len(doc["vendored_exceptions"]) == 1
+    assert doc["vendored_exceptions"][0]["sha256"] == GOOD
+
+
+def test_approval_refuses_and_writes_nothing_when_the_rewrite_would_break_the_file(consumer):
+    before = "project_name: consumer\n...\n"
+    (consumer / ".framework.yaml").write_text(before)
+    with pytest.raises(vl.VerdictRefused):
+        _approve(consumer)
+    assert (consumer / ".framework.yaml").read_text() == before
+
+
+def test_an_emptied_tracked_file_does_not_fall_back(consumer):
+    _approve(consumer)
+    _commit(consumer)
+    (consumer / REL).parent.mkdir(parents=True)
+    (consumer / REL).write_text("\n")
+    _git(consumer, "add", str(REL))
+    _commit(consumer, "empty tracked copy")
+    text, why = vl._committed_blob(consumer, "", REL)
+    assert text == "" and "tracked" in why
+
+
+def test_no_fallback_outside_the_consumer_layout(consumer, monkeypatch, tmp_path):
+    _approve(consumer)
+    _commit(consumer)
+    (tmp_path / "elsewhere" / "lib").mkdir(parents=True)
+    _git(tmp_path / "elsewhere", "init", "-q")      # an external framework repo with no commits
+    monkeypatch.setattr(vl, "_HERE", tmp_path / "elsewhere" / "lib")
+    assert "not a consumer layout" in vl._committed_blob(consumer, "", REL)[1]
+
+
+def test_status_reports_the_hash_the_decision_used(consumer, monkeypatch):
+    _approve(consumer)
+    _commit(consumer)
+    row = next(r for r in vl.exception_status(consumer) if r["path"] == str(REL))
+    assert row["state"] == "approved-exception" and row["vendored_sha256"] == GOOD
