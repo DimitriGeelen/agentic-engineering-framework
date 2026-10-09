@@ -1,10 +1,22 @@
 ---
 id: T-4010
-name: "fw reviewer judge cannot register any seat in a consumer whose .agentic-framework/ is untracked; judge exits 0 with 'unknown (no-ledger-row)' (dimitri-mint-dev G-010)"
+name: "fw reviewer judge cannot register any seat in a consumer whose .agentic-framework/
+  is untracked; judge exits 0 with 'unknown (no-ledger-row)' (dimitri-mint-dev G-010)"
 description: >
-  dimitri-mint-dev (msg 965b504b, 1.8.3; still true at bleeding-edge): lib/verdict_ledger.py _committed_blob looks up agents/termlink/termlink.sh as committed in (1) the project at rev, (2) the vendored path <root>/.agentic-framework/... at rev; the framework's own git HEAD fallback is only used when the framework is OUTSIDE the project root. In a consumer whose vendored tree is not tracked in git, (1) and (2) fail -> launchable_kinds()=set(), verified_kind_vendors()={} -> no review-dispatches row -> run.sh start refused -> judge prints 'AC#1: unknown (no-ledger-row)' and exits 0. Same applies to policy/review-backends.yaml? (check). Design question: 'as committed' exists so an uncommitted edit cannot add launchable kinds; an untracked vendored tree has no committed version — candidates: pin to the vendored manifest/VERSION hash written by fw upgrade, or refuse loudly with a clear remedy (commit the vendored tree). Ask 2 (easy, do regardless): judge exits non-zero and says why when no seat registered.
+  dimitri-mint-dev (msg 965b504b, 1.8.3; still true at bleeding-edge): lib/verdict_ledger.py
+  _committed_blob looks up agents/termlink/termlink.sh as committed in (1) the project
+  at rev, (2) the vendored path <root>/.agentic-framework/... at rev; the framework's
+  own git HEAD fallback is only used when the framework is OUTSIDE the project root.
+  In a consumer whose vendored tree is not tracked in git, (1) and (2) fail -> launchable_kinds()=set(),
+  verified_kind_vendors()={} -> no review-dispatches row -> run.sh start refused ->
+  judge prints 'AC#1: unknown (no-ledger-row)' and exits 0. Same applies to policy/review-backends.yaml?
+  (check). Design question: 'as committed' exists so an uncommitted edit cannot add
+  launchable kinds; an untracked vendored tree has no committed version — candidates:
+  pin to the vendored manifest/VERSION hash written by fw upgrade, or refuse loudly
+  with a clear remedy (commit the vendored tree). Ask 2 (easy, do regardless): judge
+  exits non-zero and says why when no seat registered.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-08T22:07:57Z
-last_update: 2026-10-08T22:08:14Z
-date_finished: null
+last_update: 2026-10-09T05:47:30Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +62,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-08T22:15:23Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-08T22:15:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4010: fw reviewer judge cannot register any seat in a consumer whose .agentic-framework/ is untracked; judge exits 0 with 'unknown (no-ledger-row)' (dimitri-mint-dev G-010)
@@ -62,8 +102,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] (Ask 2) `fw reviewer judge` exits non-zero and names the cause when no dispatched seat produced a ledger row (every result `no-ledger-row` / dispatch failed), instead of printing `unknown` and exiting 0
+- [ ] (Ask 1) In a consumer whose `.agentic-framework/` is not tracked in its git, `launchable_kinds()` / the registry lookup still resolve — WITHOUT letting an uncommitted edit add launchable kinds (design decision recorded; operator asked if it changes the T-3580 property)
+- [ ] Tests for both; existing verdict-ledger/judge suites stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -320,3 +361,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4010-fw-reviewer-judge-cannot-register-any-se.md
 - **Context:** Initial task creation
+
+### 2026-10-09T05:45:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

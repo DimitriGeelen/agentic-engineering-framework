@@ -909,6 +909,17 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
         res["dispatches"].append(entry)
     res["outcomes"], res["why"] = _final(root, task_id, judged, res["dispatches"])
     res["code"] = 0
+    # T-4010 (dimitri-mint-dev G-010): seats were dispatched but none left a ledger row — in a
+    # consumer this is every run when the dispatch could not register (no launchable kind).
+    # Printing "unknown (no-ledger-row)" and exiting 0 read as a finished review. Say so, fail.
+    dispatched = [d for d in res["dispatches"] if d.get("dispatch_id") or d.get("error")]
+    if dispatched and not any(r.get("source") == "ledger" or str(r.get("source", "")).startswith("ledger-")
+                              for d in dispatched for r in d.get("results") or []):
+        res["no_seat_recorded"] = (
+            f"no review seat recorded a verdict: {len(dispatched)} seat(s) dispatched, 0 ledger rows "
+            f"— the dispatch likely could not register (check `fw termlink worker-kinds` and that "
+            f"agents/termlink/termlink.sh and policy/review-backends.yaml are committed, T-4010)")
+        res["code"] = 3
     return res
 
 
@@ -999,6 +1010,8 @@ def _print_result(res: dict) -> None:
               f"{st['outcome']}{' - ' + st['why'] if st['why'] else ''}")
     for ac, why in sorted((res.get("why") or {}).items()):
         print(f"  final AC#{ac}: {res['outcomes'][ac]} - {why}")
+    if res.get("no_seat_recorded"):
+        print(f"ERROR: {res['no_seat_recorded']}", file=sys.stderr)
 
 
 def main(argv: list[str] | None = None, *, dispatcher: Dispatcher | None = None,
