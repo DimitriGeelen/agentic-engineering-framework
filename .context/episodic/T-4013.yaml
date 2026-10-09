@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4013: Judge trusts a vendored judge-relevant file when it matches an operator-approved exception pinned in the committed .framework.yaml
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-09T21:13:34Z
+# ============================================================================
+
+task_id: T-4013
+task_name: "Judge trusts a vendored judge-relevant file when it matches an operator-approved exception pinned in the committed .framework.yaml"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-09T19:42:26Z
+completed: 2026-10-09T21:12:39Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-09T21:52:05+02:00
+last_commit: 2026-10-09T23:12:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the judge trusts an untracked vendored judge-relevant file only when its bytes match an operator-approved exception in .framework.yaml as committed at the reviewed revision; exception-approve (operator-only) and exception-check verbs; 11 tests, 562 ledger/judge tests green. codex review fixes — canonical paths only, strict YAML (no duplicate keys or extra documents), fallback only in the consumer layout when nothing is tracked, prove-then-write approval, status reports the hash it judged; forgeable approver documented as the stated limit; 19 tests, 570 ledger/judge tests green. follow-up review — status judges each file from one read; alias-path and status tests now fail on the pre-fix code; real-git tests for the three normal committed paths; 22 tests, 573 ledger/judge tests green
+
+# Key outcomes
+outcomes:
+  - '`_committed_blob` falls back, only after every committed candidate fails, to the vendored working copy `<root>/.agentic-framework/<rel>` when its sha256 equals a `vendored_exceptions` entry for `<rel>` in `.framework.yaml` AS COMMITTED at the reviewed revision; `where` says "approved exception"'
+  - 'An uncommitted exception entry, a mismatching sha256, an entry for another path, a symlink resolving outside the project, or a malformed entry → nothing is trusted, and the "no committed …" reason names the file and the fix (approve + commit .framework.yaml)'
+  - '`exception-approve <rel> --reason "…"` writes/replaces the entry with the current sha256; refused under CLAUDECODE=1 without --i-am-human; refuses a path outside the judge-relevant set. `exception-check` lists each judge-relevant file as committed / approved exception / UNTRUSTED (with sha256)'
+  - 'Tests for all of the above; existing verdict-ledger and judge suites stay green; vendored copy synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'follow-up review — status judges each file from one read; alias-path and status tests now fail on the pre-fix code; real-git tests for the three normal committed paths; 22 tests, 573 ledger/judge tests green'
+    source: git-mined
+  - description: 'codex review fixes — canonical paths only, strict YAML (no duplicate keys or extra documents), fallback only in the consumer layout when nothing is tracked, prove-then-write approval, status reports the hash it judged; forgeable approver documented as the stated limit; 19 tests, 570 ledger/judge tests green'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-09 — independent codex review of 674ce1f63 (.context/working/t4013-codex.txt)'
+    chose: 'fix findings 2-6 in code; record finding 1 as the stated limit, not a fix. - (2, medium) non-canonical `./path` entry survived re-approval → exception paths must equal the canonical string exactly; anything else is malformed. - (3, medium) approval corrupted an indentless list / wrote after `...` → strict parse before, rewrite, re-parse and prove only `vendored_exceptions` changed, else refuse with nothing written; atomic replace. - (4, medium) fallback too broad → only in the consumer layout (framework is `<root>/.agentic-framework`), only when the revision resolves and git tracks neither path (an emptied tracked file does not fall back). - (5, medium) duplicate YAML keys silently overrode → strict loader refuses any repeated key and multiple documents; `approved_by: null` is malformed. - (6, low) status re-read the file → status reports the hash the trust decision used. - **Why not fix (1, high):** `approved_by` is text an agent can write and commit; no same-user mechanism can prove a human approved it (T-4010 decision states this; the ledger''s other "as committed" inputs have the same boundary). Documented in `_approved_vendored_copy`''s docstring. A signature outside the agent''s write boundary would be the fix and is a separate operator decision. - **Follow-up review of ab35a4cb9 (docs/reports/T-4013-codex-review-2.md):** no new trust bypass; findings 2-5 fixed; finding 1''s documentation accurate. Two lows fixed: status now judges each file from one read (`_committed_only` + a single `_approved_vendored_copy` call); the alias-path and status tests were rewritten so each fails on the pre-fix code (checked against 674ce1f63 and ab35a4cb9). Added real-git tests that the three normal committed paths (tracked vendored tree, external framework HEAD, the framework repo itself) still win.'
+    alternatives_rejected: ['a YAML round-trip library (not installed on consumers; the prove-then-write check gives the same safety without a dependency).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - '.context/costs/reviews.jsonl'
+  - 'docs/reports/T-4013-codex-review-2.md'
+  - 'docs/reports/T-4013-codex-review.md'
+  - 'lib/verdict_ledger.py'
+  - '.tasks/active/T-4013-judge-trusts-a-vendored-judge-relevant-f.md'
+  - 'tests/unit/t4013_vendored_exception_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-09T21:52:05'
+    action: 'T-4013: the judge trusts an untracked vendored judge-relevant file only when its bytes match an operator-approved exception in .framework.yaml as committed at the reviewed revision; exception-approve (operator-only) and exception-check verbs; 11 tests, 562 ledger/judge tests green'
+  - time: '2026-10-09T22:51:53'
+    action: 'T-4013: codex review fixes — canonical paths only, strict YAML (no duplicate keys or extra documents), fallback only in the consumer layout when nothing is tracked, prove-then-write approval, status reports the hash it judged; forgeable approver documented as the stated limit; 19 tests, 570 ledger/judge tests green'
+  - time: '2026-10-09T23:12:35'
+    action: 'T-4013: follow-up review — status judges each file from one read; alias-path and status tests now fail on the pre-fix code; real-git tests for the three normal committed paths; 22 tests, 573 ledger/judge tests green'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 90 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 90
+  commits: 3
+  files_changed: 7
+  lines_added: 1026
+  lines_removed: 130
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4013-judge-trusts-a-vendored-judge-relevant-f.md
+generated_by: context-agent-hybrid
