@@ -5096,3 +5096,61 @@ decisions:
     date: 2026-10-08
     task: T-3934
     rationale: "Auto-captured from task file on completion"
+
+  - id: D-729
+    decision: "`codex exec -s workspace-write` in the disposable `git archive` export, `--add-dir $WDIR/tmp` + `TMPDIR=$WDIR/tmp`, `exclude_slash_tmp=true`, network off; the export is fingerprinted before and after, and a changed export exits the seat non-zero (no green of it counts)."
+    scope: project
+    date: 2026-10-08
+    task: T-3986
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-730
+    decision: "not-evaluated seats are excluded; the panel needs ≥2 evaluating seats of distinct vendors (`MIN_EVALUATING_SEATS`). A single-seat run with a not-evaluated seat never closes. With no not-evaluated seat the original rule (every seat green, `required_vendors` distinct) is unchanged."
+    scope: project
+    date: 2026-10-08
+    task: T-3986
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-731
+    decision: "`fw reviewer judge` (now `judge_with_reassign`) re-judges a not-evaluated criterion in a NEW run that seats no worker kind which could not evaluate it, up to `MAX_REASSIGN`=2 times; if it is still not evaluated, or the new run cannot seat a panel, the result says `OPERATOR: …` with the reasons."
+    scope: project
+    date: 2026-10-08
+    task: T-3986
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-732
+    decision: "humanise on screen only."
+    scope: project
+    date: 2026-10-08
+    task: T-4000
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-733
+    decision: "discard and re-review — operator answered \"Discard and re-review\" when asked in session."
+    scope: project
+    date: 2026-10-08
+    task: T-4008
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-734
+    decision: "fix findings 2-6 in code; record finding 1 as the stated limit, not a fix."
+    scope: project
+    date: 2026-10-09
+    task: T-4013
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-735
+    decision: "a shell-only fallback in budget-gate.sh (worker 5f667a5d6, reviewed by the parent session): at a cached critical with a dead parser, only plain wrap-up spellings pass; anything with shell metacharacters blocks."
+    scope: project
+    date: 2026-10-09
+    task: T-4005
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-736
+    decision: "Master receives only stable releases whose fixes are verified working; bleeding-edge is what gets deployed for testing on Ring20"
+    scope: project
+    date: 2026-10-09
+    task: T-4020
+    rationale: "Operator ruling 2026-10-10 declining v1.8.9 while T-4003's tmux delivery was not yet proven live: deploy bleeding-edge in the Ring20 test state, deploy to production (master) only stable versions with verified working fixes. Each release to master is asked as an explicit yes/no with the dry run shown."
+    alternatives_rejected:
+      - "Releasing to master as soon as tests pass (tested is not verified working)"

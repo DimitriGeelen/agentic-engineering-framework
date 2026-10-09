@@ -1459,6 +1459,14 @@ Between releases `master` deliberately lags. That lag **is** the product: a
 consumer running `fw upgrade` inherits the last released state, not tonight's
 half-finished refactor.
 
+**Only verified-working fixes reach master (operator ruling 2026-10-10, standing, T-4020).**
+`bleeding-edge` is what gets deployed for testing (the Ring20 test state); `master` is
+production and receives a release only when every fix in it is verified working —
+live, where a live check exists, not merely unit-green. Before cutting, list any fix
+whose live check is still open, and ask the release as an explicit question
+("Release vX.Y.Z to master now? yes/no") with the `--dry-run` output shown. A general
+"go" or "proceed" is not a release approval.
+
 **Why this DISSOLVES T-100201 rather than resolving it.** T-100201 was filed
 because T-100196's "session commits straight to master" collided with the T-2394
 master-merge-only gate (`agents/git/lib/master-guard.sh`, `PROTECT_MASTER=1`),
