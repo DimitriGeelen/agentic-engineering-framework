@@ -1,28 +1,17 @@
 ---
-id: T-4010
-name: "fw reviewer judge cannot register any seat in a consumer whose .agentic-framework/
-  is untracked; judge exits 0 with 'unknown (no-ledger-row)' (dimitri-mint-dev G-010)"
+id: T-4013
+name: "Judge trusts a vendored judge-relevant file when it matches an operator-approved exception pinned in the committed .framework.yaml"
 description: >
-  dimitri-mint-dev (msg 965b504b, 1.8.3; still true at bleeding-edge): lib/verdict_ledger.py
-  _committed_blob looks up agents/termlink/termlink.sh as committed in (1) the project
-  at rev, (2) the vendored path <root>/.agentic-framework/... at rev; the framework's
-  own git HEAD fallback is only used when the framework is OUTSIDE the project root.
-  In a consumer whose vendored tree is not tracked in git, (1) and (2) fail -> launchable_kinds()=set(),
-  verified_kind_vendors()={} -> no review-dispatches row -> run.sh start refused ->
-  judge prints 'AC#1: unknown (no-ledger-row)' and exits 0. Same applies to policy/review-backends.yaml?
-  (check). Design question: 'as committed' exists so an uncommitted edit cannot add
-  launchable kinds; an untracked vendored tree has no committed version — candidates:
-  pin to the vendored manifest/VERSION hash written by fw upgrade, or refuse loudly
-  with a clear remedy (commit the vendored tree). Ask 2 (easy, do regardless): judge
-  exits non-zero and says why when no seat registered.
+  T-4010 decision leg 1. Record approved local exceptions (file, sha256, approved_by, reason, date) in the consumer's committed .framework.yaml via an operator-only route; the judge's launchable_kinds/registry lookup accepts the vendored working copy only when its sha256 matches such an exception read at the reviewed revision; otherwise refuse naming the file. Unblocks dimitri-mint-dev G-010.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
 tags: []
 components: []
-related_tasks: []
+related_tasks: [T-4010, T-4011]
+origin: {kind: "operator"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -49,9 +38,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-08T22:07:57Z
-last_update: 2026-10-09T06:55:13Z
-date_finished:
+created: 2026-10-09T19:42:26Z
+last_update: 2026-10-09T19:42:26Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -62,37 +51,9 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-08T22:15:23Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-08T22:15:53Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4010: fw reviewer judge cannot register any seat in a consumer whose .agentic-framework/ is untracked; judge exits 0 with 'unknown (no-ledger-row)' (dimitri-mint-dev G-010)
+# T-4013: Judge trusts a vendored judge-relevant file when it matches an operator-approved exception pinned in the committed .framework.yaml
 
 ## Context
 
@@ -102,9 +63,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] (Ask 2) `fw reviewer judge` exits non-zero and names the cause when no dispatched seat produced a ledger row (every result `no-ledger-row` / dispatch failed), instead of printing `unknown` and exiting 0
-- [ ] (Ask 1) In a consumer whose `.agentic-framework/` is not tracked in its git, `launchable_kinds()` / the registry lookup still resolve — WITHOUT letting an uncommitted edit add launchable kinds (design decision recorded; operator asked if it changes the T-3580 property)
-- [ ] Tests for both; existing verdict-ledger/judge suites stay green
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -334,14 +294,6 @@ bvp_scores_proposed:
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-**Recommendation:** GO — option A (committed manifest pin), as the three consults conditioned it
-**Rationale:** All three independent consults (codex, dimitri-mint-dev, ring20-management) chose A and rejected C. A keeps the T-3580 round-7 property: an edit to a judge-relevant file only counts once it is committed and therefore visible in history, which is the same guarantee B gives, without making every consumer track `.agentic-framework/`. None of the options defends against an agent that commits; all three consults said so plainly.
-**Evidence:**
-- docs/reports/T-4010-consult-brief.md (question), docs/reports/T-4010-consult-codex.md (codex answer)
-- dimitri-mint-dev and ring20 answers received via sidecar on 2026-10-09 (in .context/sidecar/receiver/messages/)
-- Converging conditions: (1) read the pin from `.framework.yaml` AS COMMITTED at the reviewed revision, never the working copy; (2) one manifest digest over only the judge-relevant files (termlink.sh, review-backends.yaml), so consumer patches to other vendored files keep working; (3) `fw upgrade` writes the pin last; (4) fail closed with a named cause ("commit .framework.yaml", "termlink.sh differs from pin"); (5) symlinked vendored tree: hash resolved content, refuse targets outside the project (overlaps T-4011); (6) hash bytes as read, normalise CRLF
-- Later step D (ring20, dimitri-mint-dev): a release-signed manifest so the consumer's tree is not trusted at all; file separately
-
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -352,12 +304,6 @@ bvp_scores_proposed:
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
-
-### 2026-10-09 — how a vendored judge-relevant file is trusted when the consumer does not track .agentic-framework/ (operator: "Go ahead")
-- **Chose:** the judge accepts the vendored working copy of a judge-relevant file (termlink.sh, review-backends.yaml) when EITHER (1) its sha256 equals the fingerprint the framework release named in the consumer's committed `.framework.yaml` published, OR (2) its sha256 equals an operator-approved local exception recorded in the committed `.framework.yaml` (file, sha256, approved_by, reason, date), written only through the operator approval route. Anything else is refused with the file named ("neither the release version nor an approved exception"). Everything is read at the reviewed revision, never the working tree. Build order: (1) the approved-exception pin and judge check, which unblocks dimitri-mint-dev; (2) the release fingerprint manifest in `fw release` / `fw upgrade`.
-- **Why:** the operator approves tailor-made changes in vendored copies (ring20, 832's re-applied fixes, dimitri-mint-dev's boundary fixes) and has a process to fold them back; a release-only check would block those, a working-tree check would let an agent add its own reviewer kind. Approval leaves a committed, attributable record, as T-3580 r7 requires. Consults (codex, dimitri-mint-dev, ring20) all chose a committed pin and rejected trusting the working copy.
-- **Rejected:** B (consumers must commit .agentic-framework/: an operator decision per project, dimitri-mint-dev has not taken it); C (trust the working copy: drops the property); making worker-kind edits a separate approval gate (approval files are same-user writable, adds visibility only).
-- **Limit stated:** an agent that forges and commits an approval record defeats it; the record is then an approval the operator never gave, visible in history and checkable against the approval log.
 
 ## Decision
 
@@ -371,10 +317,7 @@ bvp_scores_proposed:
 
 ## Updates
 
-### 2026-10-08T22:07:57Z — task-created [task-create-agent]
+### 2026-10-09T19:42:26Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4010-fw-reviewer-judge-cannot-register-any-se.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4013-judge-trusts-a-vendored-judge-relevant-f.md
 - **Context:** Initial task creation
-
-### 2026-10-09T05:45:18Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
