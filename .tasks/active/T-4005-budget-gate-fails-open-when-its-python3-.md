@@ -96,11 +96,11 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] With python3 failing (a stub python3 on PATH that exits non-zero) and `.budget-status` level `critical`, a non-wrap-up Bash call (e.g. `npm run build`) and a Write to a source file exit 2 with a message naming the parser failure (agents/context/budget-gate.sh)
-- [ ] Same setup: `git commit -m x`, `git push`, `fw handover`, a Read, and an Edit under `.tasks/` still exit 0 (wrap-up stays allowed)
-- [ ] Same setup with cached level `ok`/`warn`/`urgent`, or no `.budget-status` at all: exit 0 (no new block when the cache does not say critical)
-- [ ] Working python3: the existing budget-gate suites stay green (t2919, t3204, t3241, t3598, t3989)
-- [ ] New regression test `tests/unit/t4005_budget_gate_python_dead.bats` covers the three cases above and fails on the pre-fix gate
+- [x] With python3 failing (a stub python3 on PATH that exits non-zero) and `.budget-status` level `critical`, a non-wrap-up Bash call (e.g. `npm run build`) and a Write to a source file exit 2 with a message naming the parser failure (agents/context/budget-gate.sh)
+- [x] Same setup: `git commit -m x`, `git push`, `fw handover`, a Read, and an Edit under `.tasks/` still exit 0 (wrap-up stays allowed)
+- [x] Same setup with cached level `ok`/`warn`/`urgent`, or no `.budget-status` at all: exit 0 (no new block when the cache does not say critical)
+- [x] Working python3: the existing budget-gate suites stay green (t2919, t3204, t3241, t3598, t3989)
+- [x] New regression test `tests/unit/t4005_budget_gate_python_dead.bats` covers the three cases above and fails on the pre-fix gate
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,6 +260,8 @@ cost_estimate_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+out=$(bats tests/unit/t4005_budget_gate_python_dead.bats tests/unit/t2919_budget_gate_command_classify.bats tests/unit/t3204_budget_cap_legibility.bats tests/unit/t3241_budget_status_unknown_state.bats tests/unit/t3598_budget_cache_session_keyed.bats tests/unit/t3989_budget_critical_handover.bats tests/unit/template_budget_parity.bats 2>&1); echo "$out" | grep -q '^1\.\.80' && ! echo "$out" | grep -q '^not ok'
+bin/fw vendor self --check
 
 ## RCA
 

@@ -119,6 +119,63 @@ _supervision_notice() {
     fi
 }
 
+# T-4005: when the python3 call below yields nothing usable (python3 died, or
+# crashed before printing), the gate used to fall through to exit 0 even with a
+# cached level of critical. This runs without python: it reads the cached level
+# with grep, and at critical it classifies the call with shell tools only. It
+# errs toward BLOCK: any shell metacharacter, backslash escape or '..' path is
+# refused, so only the plain wrap-up spellings get through. Not critical: returns
+# and the gate continues exactly as before.
+_budget_json_field() {
+    local key="$1" v
+    v=$(printf '%s' "$INPUT" | tr '\n' ' ' | grep -oE "\"$key\"[[:space:]]*:[[:space:]]*\"([^\"\\\\]|\\\\.)*\"" | head -1) || true
+    v=${v#*:}; v=${v#*\"}; v=${v%\"}
+    printf '%s' "${v//\\\"/\"}"
+}
+_budget_cmd_wrapup() {
+    case "$1" in *\\*|*\;*|*\&*|*\|*|*\`*|*\$*|*\<*|*\>*) return 1 ;; esac
+    printf '%s' "$1" | grep -qE '^[[:space:]]*(git[[:space:]]+(commit|add|push)|([[:alnum:]_./-]*/)?fw[[:space:]]+(handover|context[[:space:]]+focus))([[:space:]]|$)'
+}
+_budget_path_wrapup() {
+    case "$1" in ""|*..*) return 1 ;; *.context/*|*.tasks/*|*.claude/*) return 0 ;; esac
+    return 1
+}
+_budget_parser_dead_gate() {
+    local cached tokens tool cmd fp allowed=0
+    cached=""
+    if [ -f "$STATUS_FILE" ]; then
+        cached=$(grep -o '"level"[[:space:]]*:[[:space:]]*"[a-z]*"' "$STATUS_FILE" 2>/dev/null | head -1 | sed 's/.*"\([a-z]*\)"$/\1/') || true
+    fi
+    [ "$cached" = "critical" ] || return 0
+    tokens=$(grep -o '"tokens"[[:space:]]*:[[:space:]]*[0-9]*' "$STATUS_FILE" 2>/dev/null | head -1 | grep -o '[0-9]*$') || true
+    case "$tokens" in ''|*[!0-9]*) tokens=0 ;; esac
+    tool=$(_budget_json_field tool_name)
+    case "$tool" in
+        Read|Glob|Grep) allowed=1 ;;
+        Bash) cmd=$(_budget_json_field command); _budget_cmd_wrapup "$cmd" && allowed=1 ;;
+        Write|Edit) fp=$(_budget_json_field file_path); _budget_path_wrapup "$fp" && allowed=1 ;;
+    esac
+    [ "$allowed" -eq 1 ] && exit 0
+    echo "" >&2
+    echo "══════════════════════════════════════════════════════════" >&2
+    echo "  BUDGET PARSER FAILED (python3 produced no reading)" >&2
+    echo "══════════════════════════════════════════════════════════" >&2
+    echo "" >&2
+    echo "  Cached budget level is critical (~${tokens} tokens). The gate cannot re-measure" >&2
+    echo "  the transcript without python3, so it trusts the last reading and blocks new work." >&2
+    echo "" >&2
+    echo "  ALLOWED: git commit/add/push, $(_fw_cmd) handover, $(_fw_cmd) context focus," >&2
+    echo "           Read/Glob/Grep, Write/Edit to .context/ .tasks/ .claude/" >&2
+    echo "  BLOCKED: everything else (this call: ${tool:-unknown tool})" >&2
+    echo "" >&2
+    echo "  Action: restore python3 (python3 -c 'print(1)'), commit your work, then run '$(_fw_cmd) handover'" >&2
+    echo "══════════════════════════════════════════════════════════" >&2
+    echo "" >&2
+    _start_auto_handover "$tokens"
+    _write_restart_signal "$tokens"
+    exit 2
+}
+
 # CONFIGURED BUDGET CAP — not a measurement of the model's context window.
 # A deliberate quality-and-cost dial, override via FW_CONTEXT_WINDOW / fw config set
 # CONTEXT_WINDOW. Every percentage derived from it is a percentage OF THIS CAP, and
@@ -274,6 +331,14 @@ CALLER_SID=$(echo "$RESULT" | awk '{print $7}')
 [ "$CALLER_SID" = "-" ] && CALLER_SID=""
 CACHE_OWNER=$(echo "$RESULT" | awk '{print $8}')
 CMD_REASON=$(echo "$RESULT" | cut -d' ' -f9-)
+
+# T-4005: no usable reading from python3 (empty RESULT, or a level outside the
+# known set) — decide from the cached level without python.
+case "$STATUS_LEVEL" in ok|warn|urgent|critical|unknown) _BUDGET_PY_OK=1 ;; *) _BUDGET_PY_OK=0 ;; esac
+[ -n "$RESULT" ] || _BUDGET_PY_OK=0
+if [ "$_BUDGET_PY_OK" -eq 0 ]; then
+    _budget_parser_dead_gate
+fi
 
 # Default to safe values if Python failed
 STATUS_LEVEL=${STATUS_LEVEL:-unknown}
