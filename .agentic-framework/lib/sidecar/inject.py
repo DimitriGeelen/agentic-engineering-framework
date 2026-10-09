@@ -239,7 +239,129 @@ def claim_for(msg_id: str, session: dict) -> None:
     _write_claim(msg_id, datetime.now(timezone.utc), session)
 
 
-def choose_target(urgent: bool, runner=subprocess.run) -> tuple[dict | None, str]:
+def choose_target(urgent: bool, runner=subprocess.run, input_state=None) -> tuple[dict | None, str]:
+    """T-4003: one target decision for both launch modes (055's design, aef-mail-delivery-both-modes).
+
+      (c1) a TermLink session registered for this project — `_choose_termlink`, unchanged;
+      (c2) else the tmux pane whose tty is the one the agent's claude actually reads
+           (claude_pid → /proc/<pid>/fd/0), typed into by pane id — never by a session name
+           such as `fleet-<dir>`, which is the claude-fw wrapper, not Claude;
+      (c3) else nothing to type into: the message waits for the next prompt, and the reason
+           ("terminal not injectable") reaches the sender as WAITING_NO_RECIPIENT.
+    A busy c1 session is never bypassed for c2: the c1 rules decide when to type there."""
+    target, why = _choose_termlink(urgent, runner)
+    if target is not None or _C1_BUSY.search(why):
+        return target, why
+    t2, why2 = _choose_tmux(urgent, runner, input_state)
+    if t2 is not None:
+        return t2, why2
+    return None, (why2 or why)
+
+
+# c1 found a live agent session that is merely busy: wait for its Stop, never route around it.
+# ("agent not ready: no session in a registered TermLink PTY …" is NOT busy — no agent is there.)
+_C1_BUSY = re.compile(r"^agent not ready: \d+ registered session\(s\), none has stopped")
+_STATE_URL = "http://127.0.0.1:8090/api/claude/input-state"
+_FRESH_COCKPIT_S = 120
+
+
+def _tty_of(pid) -> str | None:
+    """The terminal a process reads (its stdin), e.g. /dev/pts/3; None if it reads none."""
+    try:
+        t = os.readlink(f"/proc/{int(pid)}/fd/0")
+    except (OSError, ValueError, TypeError):
+        return None
+    return t if t.startswith(("/dev/pts/", "/dev/tty")) else None
+
+
+def _tmux_panes(runner) -> dict[str, tuple[str, str]]:
+    """{pane_tty: (pane_id, session_name)} for every tmux pane; {} when tmux is absent."""
+    try:
+        proc = runner(["tmux", "list-panes", "-a", "-F", "#{pane_tty} #{pane_id} #{session_name}"],
+                      capture_output=True, text=True, timeout=10)
+    except (OSError, subprocess.SubprocessError):
+        return {}
+    if proc.returncode != 0:
+        return {}
+    out = {}
+    for line in (proc.stdout or "").splitlines():
+        parts = line.split(" ", 2)
+        if len(parts) >= 2 and parts[0].startswith("/dev/"):
+            out[parts[0]] = (parts[1], parts[2] if len(parts) > 2 else "")
+    return out
+
+
+def _cockpit_input_state(root: Path, fetch=None) -> tuple[bool, str]:
+    """(may_type, why) from 055's input-state signal (055 T-479). Not free unless the cockpit
+    answers 200 with no unlocked pane, no external view and a start older than 2 min; 404, an
+    error or a timeout is UNKNOWN, never free (055's rule)."""
+    import urllib.parse
+    import urllib.request
+    url = f"{_STATE_URL}?project={urllib.parse.quote(str(root))}"
+    try:
+        if fetch is not None:
+            data = fetch(url)
+        else:
+            with urllib.request.urlopen(url, timeout=2) as resp:
+                data = json.loads(resp.read().decode("utf-8"))
+    except Exception as e:  # noqa: BLE001 - every failure is "unknown"
+        return False, f"cockpit input-state unknown ({type(e).__name__})"
+    if not isinstance(data, dict):
+        return False, "cockpit input-state unknown (bad payload)"
+    if data.get("unlocked"):
+        return False, "cockpit pane unlocked (someone may be typing)"
+    if data.get("external_view"):
+        return False, "a fleet window holds this agent (keys there cannot be timed)"
+    try:
+        started = datetime.fromisoformat(str(data.get("cockpit_started_at")).replace("Z", "+00:00"))
+        if (datetime.now(timezone.utc) - started).total_seconds() < _FRESH_COCKPIT_S:
+            return False, "cockpit restarted < 2 min ago (viewers may not have reconnected)"
+    except ValueError:
+        return False, "cockpit input-state unknown (no cockpit_started_at)"
+    return True, "cockpit input-state free"
+
+
+def _choose_tmux(urgent: bool, runner, input_state=None) -> tuple[dict | None, str]:
+    """(c2)/(c3): a live, interactive agent session of THIS project whose claude reads a tmux
+    pane's tty. '' as the reason when there is no such session at all (the c1 reason stands)."""
+    records = sorted((r for r in adapter.session_records()
+                      if r.get("alive") is not False and not r.get("headless") and r.get("claude_pid")),
+                     key=lambda r: str(r.get("updated_at") or ""), reverse=True)
+    if not records:
+        return None, ""
+    panes = _tmux_panes(runner)
+    busy, held, bare = [], [], []
+    for r in records:
+        tty = _tty_of(r["claude_pid"])
+        if not tty:
+            continue
+        pane = panes.get(tty)
+        if pane is None:
+            bare.append(tty)
+            continue
+        if not urgent and r.get("ready") is not True:
+            busy.append(f"{pane[0]} ({tty})")
+            continue
+        if pane[1].startswith("fleet-"):
+            ok, why = (input_state or _cockpit_input_state)(receiver._root().resolve())
+            if not ok:
+                held.append(f"{pane[0]}: {why}")
+                continue
+        return ({"session_id": r.get("session_id"), "termlink_session": None,
+                 "ready": r.get("ready") is True, "route": "tmux", "pane": pane[0], "tty": tty},
+                f"session {r.get('session_id')} in tmux pane {pane[0]} ({tty}, session "
+                f"{pane[1] or '?'})" + ("" if r.get("ready") is True else " — URGENT bypass"))
+    if busy:
+        return None, f"agent not ready: tmux session(s) {', '.join(busy)} not stopped since last prompt"
+    if held:
+        return None, f"agent not ready: {'; '.join(held)}"
+    if bare:
+        return None, (f"terminal not injectable ({', '.join(sorted(set(bare)))}): no TermLink session "
+                      "and no tmux pane owns it; mail waits for the agent's next prompt")
+    return None, ""
+
+
+def _choose_termlink(urgent: bool, runner=subprocess.run) -> tuple[dict | None, str]:
     """Pick the ONE session to type into, from per-session records (T-3745).
 
     A candidate is a Claude session whose own Stop/prompt hook recorded the
@@ -392,8 +514,9 @@ def _deliver_locked(trigger: str, runner) -> dict:
         return report
     # A busy target takes only the urgent messages; the rest wait for its Stop.
     batch = waiting if target["ready"] else urgent
-    session = target["termlink_session"]
+    session = target["termlink_session"] or target.get("pane")
     report["session"] = session
+    report["route"] = target.get("route", "termlink")
     report["target_session_id"] = target.get("session_id")
     # Clear THIS session's readiness and write the claims BEFORE typing: the
     # prompt hook can fire within milliseconds of Enter, and it surfaces only
@@ -407,12 +530,22 @@ def _deliver_locked(trigger: str, runner) -> dict:
         # the INJECT_ATTEMPT row below must not leave a typed line with no
         # ledger trace (seen live, T-3684 e2e run 1).
         receiver.record_event(m, "INJECT_TYPING", trigger=trigger, session=session,
-                              target_session_id=target.get("session_id"))
+                              target_session_id=target.get("session_id"),
+                              route=target.get("route", "termlink"))
     line = injection_line(batch)
     try:
-        proc = runner(["termlink", "pty", "inject", session, line, "--enter"],
-                      capture_output=True, text=True, timeout=15)
-        ok, err = proc.returncode == 0, (proc.stderr or "").strip()[:200]
+        if target.get("route") == "tmux":
+            # T-4003 (c2): by pane id, literal text, then Enter as its own key.
+            p1 = runner(["tmux", "send-keys", "-t", target["pane"], "-l", line],
+                        capture_output=True, text=True, timeout=15)
+            p2 = (runner(["tmux", "send-keys", "-t", target["pane"], "Enter"],
+                         capture_output=True, text=True, timeout=15) if p1.returncode == 0 else p1)
+            ok = p1.returncode == 0 and p2.returncode == 0
+            err = ((p1.stderr or "") + (p2.stderr or "")).strip()[:200]
+        else:
+            proc = runner(["termlink", "pty", "inject", session, line, "--enter"],
+                          capture_output=True, text=True, timeout=15)
+            ok, err = proc.returncode == 0, (proc.stderr or "").strip()[:200]
     except (OSError, subprocess.SubprocessError) as e:
         ok, err = False, str(e)
     for m in batch:
@@ -423,6 +556,7 @@ def _deliver_locked(trigger: str, runner) -> dict:
                 pass
         receiver.record_event(m, "INJECT_ATTEMPT", trigger=trigger, session=session,
                               target_session_id=target.get("session_id"),
+                              route=target.get("route", "termlink"),
                               ok=ok, error=err or None,
                               urgent_bypass=(m in urgent and not target["ready"]) or None)
     if ok:
