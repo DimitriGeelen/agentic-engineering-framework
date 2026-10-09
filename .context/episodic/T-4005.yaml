@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4005: budget-gate fails OPEN when its python3 dies at critical (ring20-dashboard local patch 0001, offered upstream)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-09T23:27:10Z
+# ============================================================================
+
+task_id: T-4005
+task_name: "budget-gate fails OPEN when its python3 dies at critical (ring20-dashboard local patch 0001, offered upstream)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-08T21:26:50Z
+completed: 2026-10-09T23:22:52Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-08T23:27:33+02:00
+last_commit: 2026-10-09T23:47:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capture ring20-dashboard v1.8.7 upgrade findings (T-4005 fail-open on python crash, T-4006 FW_CHECKPOINT_SH docs). real acceptance criteria (fail-closed at cached critical when python3 dies; wrap-up stays allowed). budget-gate fails closed at cached critical when python3 dies
+
+# Key outcomes
+outcomes:
+  - 'With python3 failing (a stub python3 on PATH that exits non-zero) and `.budget-status` level `critical`, a non-wrap-up Bash call (e.g. `npm run build`) and a Write to a source file exit 2 with a message naming the parser failure (agents/context/budget-gate.sh)'
+  - 'Same setup: `git commit -m x`, `git push`, `fw handover`, a Read, and an Edit under `.tasks/` still exit 0 (wrap-up stays allowed)'
+  - 'Same setup with cached level `ok`/`warn`/`urgent`, or no `.budget-status` at all: exit 0 (no new block when the cache does not say critical)'
+  - 'Working python3: the existing budget-gate suites stay green (t2919, t3204, t3241, t3598, t3989)'
+  - 'New regression test `tests/unit/t4005_budget_gate_python_dead.bats` covers the three cases above and fails on the pre-fix gate'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-10 — equivalent fix instead of waiting for ring20''s patch 0001'
+    chose: 'a shell-only fallback in budget-gate.sh (worker 5f667a5d6, reviewed by the parent session): at a cached critical with a dead parser, only plain wrap-up spellings pass; anything with shell metacharacters blocks.'
+    rationale: 'patch 0001 was asked for on 2026-10-08 and never arrived; the task allowed an equivalent fix. - **Accepted limit:** with python3 dead the gate cannot compare the cache''s claude_session_id to the caller''s (T-3598), so a worker''s critical cache can block the parent. Fail-closed, and only while python3 is broken.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/budget-gate.sh'
+  - 'agents/context/budget-gate.sh'
+  - '.tasks/active/T-4005-budget-gate-fails-open-when-its-python3-.md'
+  - '.tasks/active/T-4006-document-fwcheckpointsh-for-consumer-tes.md'
+  - 'tests/unit/t4005_budget_gate_python_dead.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-08T23:27:33'
+    action: 'T-4005: capture ring20-dashboard v1.8.7 upgrade findings (T-4005 fail-open on python crash, T-4006 FW_CHECKPOINT_SH docs)'
+  - time: '2026-10-09T23:40:45'
+    action: 'T-4005: real acceptance criteria (fail-closed at cached critical when python3 dies; wrap-up stays allowed)'
+  - time: '2026-10-09T23:47:04'
+    action: 'T-4005: budget-gate fails closed at cached critical when python3 dies'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1556 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1556
+  commits: 3
+  files_changed: 5
+  lines_added: 979
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4005-budget-gate-fails-open-when-its-python3-.md
+generated_by: context-agent-hybrid

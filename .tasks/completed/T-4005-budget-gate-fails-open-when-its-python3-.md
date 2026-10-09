@@ -10,12 +10,12 @@ description: >
   a crashed parser at a cached critical level must block non-wrap-up calls, wrap-up
   stays allowed. Reliability directive: no silent failures.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-007]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-08T21:26:50Z
-last_update: '2026-10-08T21:30:26Z'
-date_finished:
+last_update: 2026-10-09T23:22:52Z
+date_finished: 2026-10-09T23:22:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -279,6 +279,14 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** ring20-dashboard (v1.8.7 report, msg f73f1c27): with python3 broken and `.budget-status` at critical, a new-work tool call exited 0 — the critical budget block did not fire.
+
+**Root cause:** budget-gate.sh reads the cached level, the tool call and the wrap-up classification in ONE python3 call. When python3 dies, `RESULT` is empty and the shell defaults (`STATUS_LEVEL=unknown`, age 999) send it to the slow path, whose own python3 calls also fail; the gate then exits 0. The defaults were chosen to never deadlock a session, so "no reading" was silently treated as "no limit", even when the cache on disk said critical.
+
+**Why structurally allowed:** every budget-gate test ran with a working python3; no test exercised the interpreter-dead path, so the fail-open default was invisible. The degraded classifier (T-2919) covered a broken *import*, not a dead interpreter.
+
+**Prevention:** `tests/unit/t4005_budget_gate_python_dead.bats` runs the gate with a stub python3 that exits 1 (5 blocking cases fail on the pre-fix gate). The fix decides from the cached level with shell only and fails closed at critical.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -343,6 +351,13 @@ bin/fw vendor self --check
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-10 — equivalent fix instead of waiting for ring20's patch 0001
+- **Chose:** a shell-only fallback in budget-gate.sh (worker 5f667a5d6, reviewed by the parent session): at a cached critical with a dead parser, only plain wrap-up spellings pass; anything with shell metacharacters blocks.
+- **Why:** patch 0001 was asked for on 2026-10-08 and never arrived; the task allowed an equivalent fix.
+- **Accepted limit:** with python3 dead the gate cannot compare the cache's claude_session_id to the caller's (T-3598), so a worker's critical cache can block the parent. Fail-closed, and only while python3 is broken.
+<!--
+-->
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -362,3 +377,15 @@ bin/fw vendor self --check
 
 ### 2026-10-08T21:27:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-dfbbfbe0
+- **Timestamp:** 2026-10-09T23:26:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-09T23:22:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
