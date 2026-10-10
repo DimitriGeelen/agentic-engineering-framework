@@ -1,13 +1,23 @@
 ---
 id: T-4026
-name: "Something re-runs open tasks' ## Verification against live services: T-2529's verify line recreated the t2529-verify map in the live designer store, turning the corpus census test red"
+name: "Something re-runs open tasks' ## Verification against live services: T-2529's
+  verify line recreated the t2529-verify map in the live designer store, turning the
+  corpus census test red"
 description: >
-  Nightly unit run 2026-10-10 01:03Z: test_corpus_lint::test_live_corpus_all_versions_census red (48 vs 47). Cause: untracked .context/designer/projects/t2529-verify/ (21-byte '<definitions id="x"/>', note 'verify') created 2026-10-09 07:19:03 local, byte-identical to T-2529's ## Verification POST /api/save line. T-2653 had deleted that scratch. Removed again via /api/delete scope=map on 2026-10-10. Not yet localised: which runner executed it (candidates that execute Verification: lib/verify_queue.py, lib/reviewer/reverify.py, lib/outcome.py; the unclosed-satisfied audit scan was checked and only reads text). Two fixes to weigh: (1) runners must not execute state-changing verification outside a close; (2) T-2529's verification should clean up after itself.
+  Nightly unit run 2026-10-10 01:03Z: test_corpus_lint::test_live_corpus_all_versions_census
+  red (48 vs 47). Cause: untracked .context/designer/projects/t2529-verify/ (21-byte
+  '<definitions id="x"/>', note 'verify') created 2026-10-09 07:19:03 local, byte-identical
+  to T-2529's ## Verification POST /api/save line. T-2653 had deleted that scratch.
+  Removed again via /api/delete scope=map on 2026-10-10. Not yet localised: which
+  runner executed it (candidates that execute Verification: lib/verify_queue.py, lib/reviewer/reverify.py,
+  lib/outcome.py; the unclosed-satisfied audit scan was checked and only reads text).
+  Two fixes to weigh: (1) runners must not execute state-changing verification outside
+  a close; (2) T-2529's verification should clean up after itself.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T09:48:34Z
-last_update: 2026-10-10T09:48:34Z
-date_finished: null
+last_update: 2026-10-10T10:51:03Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +60,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-10T10:00:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-10T10:01:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4026: Something re-runs open tasks' ## Verification against live services: T-2529's verify line recreated the t2529-verify map in the live designer store, turning the corpus census test red
@@ -62,8 +100,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Localised: the runner is lib/verify_queue.py (T-2765), called by the daily full `fw audit` (07:12, ends 07:19); it re-runs stored Verification for review-queue tasks, and T-2529 is in that queue.
+- [ ] verify_queue.py skips (counts as skipped, never executes) a line that writes over HTTP: curl with -X/--request POST|PUT|PATCH|DELETE (incl. -XPOST), -d/--data*/-F/--form/--json, or wget --post-data/--post-file/--method.
+- [ ] Read-only lines still run: plain `curl -sf URL`, `curl ... | grep`, and a line that merely mentions "POST" in a grep pattern.
+- [ ] T-2529's own verify line cleans up the map it creates (POST /api/delete scope=map after the save check), so a real close leaves nothing behind.
+- [ ] tests/unit/t2765_verify_queue.bats gains cases for the write forms (skipped, and the target file is untouched) and the read-only controls (run); the write case fails on the pre-fix module.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -320,3 +361,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4026-something-re-runs-open-tasks--verificati.md
 - **Context:** Initial task creation
+
+### 2026-10-10T10:51:03Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
