@@ -42,6 +42,34 @@ A fourth state matters as much as the three verdicts: **not exercised.** A featu
 
    A red or not-exercised feature can still ship. But the operator says so knowingly, per feature, and that is recorded.
 
+## Second lens (operator, 2026-10-10): bleeding-edge releases, field telemetry, promotion per change
+
+Five ideas the operator added:
+
+- **We cut bleeding-edge *releases*, not just a branch tip.** A numbered pre-release (e.g. `v1.8.9-be.1`) is announced to field projects (peer agents and their frameworks), and they pull it in. Every report then names exactly what it ran.
+- **Many changes fix issues the field reported.** For those, usage telemetry answers directly whether the fix worked. The symptom the field saw either stops recurring after the upgrade, or it doesn't. This is the strongest evidence available: the field defined the failure, and the field observes its absence.
+- **Telemetry itself is either deterministic or stochastic.** A test run inside the vendored instance gives a hard positive or negative. Usage counts give rates.
+- **What telemetry cannot measure, the field agent collects.** Each release carries an *evaluation brief*: instructions to the field agent saying what to run, what to read, and what to ask its user. The agent asks the user, collects the answers, and sends them back as part of the release evaluation.
+- **Maturity is judged per change, and changes with positive field feedback go into a bucket to merge into master.**
+
+### What this changes in the candidate shape
+
+1. **Each fix carries its symptom signature.** A fix task records how the field saw the bug:
+   - a ledger reason;
+   - an error string;
+   - an exit code;
+   - a canary.
+
+   The field report counts that signature before and after the upgrade. "0 recurrences in N days after, against M before" is a direct verdict on the fix.
+2. **The release ships an evaluation brief.** It is generated from the per-task field checks. One part is machine work (probes, ledger counts); the other is questions for the user, which the field agent asks.
+3. **Promotion per change is the hard part, technically.** Today master only fast-forwards from bleeding-edge. That is what guarantees the two can never diverge (§Release-Train). "Merge into master only the changes that earned it" breaks that guarantee unless it is done one of these ways:
+   - **(a) Hold back by revert on a release branch.** Cut a release branch from the candidate, revert the changes that are not ready, and fast-forward master to it. Master stays linear, and bleeding-edge keeps everything. Cost: revert commits, and a later re-promotion has to revert the revert.
+   - **(b) Cherry-pick the matured changes onto master.** This is the most literal reading of "a bucket", but it breaks the invariant. Commits for different tasks interleave, and one task's fix can silently depend on another's. It is the divergence the release train was built to prevent.
+   - **(c) Feature switches.** Everything ships to master, and a change that has not matured stays switched off there until its evidence arrives. This only works for changes that can be switched. A fix to an existing bug usually cannot be (you want the fix, or the old bug).
+   - **(d) The whole candidate is the unit.** It promotes when every change in it is mature, or is waived per change. Simplest, but one stuck change blocks the rest.
+
+   Recommendation: **(d) with (a) as the escape hatch.** Normally the candidate promotes whole. When one or two changes are not ready, the release step reverts them on a release branch and says so in the release question. Per-change maturity is still the unit of judgement; the reverts are just how a "not yet" change stays out. Avoid (b).
+
 ## Open questions for the operator
 
 1. **Testbed members.** Which projects make up the Ring20 estate testbed: ring20-manager, ring20-dashboard, proxmox-ring20-management? Do 055 and 832 count? dimitri-mint-dev is the only consumer that exercises the vendored-exception path.
@@ -59,3 +87,4 @@ A fourth state matters as much as the three verdicts: **not exercised.** A featu
 
 - **2026-10-10, operator (on not cutting v1.8.9):** "We can deploy Bleeding Edge in our Ring20 [estate]. Keep the sustaining rule that we deploy Bleeding Edge in the [estate] and only deploy stable versions with verified working fixes into production, into master." Recorded as T-4020.
 - **2026-10-10, operator (restating):** "Before cutting a release into production we should have from the field feedback that it's working … that the new features are working or that there are problems … our testbed currently is our Ring20 estate. They can run bleeding edge. So we need to think about how we get their information on new features and the functionality of the new features, and it's working well or not and it's good or not. Maybe some are deterministic, some are stochastic or some need to [be judged by how they] operate." This gave the three kinds above.
+- **2026-10-10, operator (second lens):** "We cut a Bleeding Edge release. We push it out to the field … projects pull it in. They have fixes for existing issues. We have telemetry based on usage, so we should get telemetry back whether the fix has worked … Some things cannot be measured through telemetry; then the project agent needs to ask the user and feed that back … telemetry can be stochastic and deterministic … you can run a test in a vendored instance, negative/positive … an instruction you can give an agent in the field to collect that data and send it back as part of release evaluation … assess the maturity of a Bleeding Edge release … changes that get positive feedback can be put in the bucket to merge into Master." This led to the second-lens section: bleeding-edge pre-releases, symptom signatures for fixes, the evaluation brief, and the per-change promotion options (a)–(d).
