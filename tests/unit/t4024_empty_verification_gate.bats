@@ -37,6 +37,7 @@ _make_project() {
           declared) printf '## Verification\n\n# verification: none — pure docs change, nothing executable\n\n' ;;
           hyphen)   printf '## Verification\n\n# verification: none -- docs only\n\n' ;;
           emptyrsn) printf '## Verification\n\n# verification: none —   \n\n' ;;
+          placeholder) printf '## Verification\n\n# verification: none — <why nothing can be run>\n\n' ;;
           absent)   : ;;
       esac
       printf '## Decisions\n\n'; } > "$P/.tasks/active/T-9999-fixture.md"
@@ -91,6 +92,14 @@ assert isinstance(r["files"], list) and r["ts"].endswith("Z"), r
 
 @test "a declaration with an EMPTY reason is refused" {
     _make_project build emptyrsn
+    run _close
+    [ "$status" -ne 0 ]
+    echo "$output" | grep -q "BLOCKED"
+    [ ! -f "$(_ledger)" ]
+}
+
+@test "the template hint copied verbatim (<placeholder> reason) is refused" {
+    _make_project build placeholder
     run _close
     [ "$status" -ne 0 ]
     echo "$output" | grep -q "BLOCKED"

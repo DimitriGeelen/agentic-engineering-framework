@@ -1379,6 +1379,9 @@ _t4024_enforce_empty_verification() {
     # Raw section (comments kept): heading to next heading.
     reason=$(awk '/^## Verification/{f=1;next} f&&/^## /{exit} f{print}' "$TASK_FILE" \
         | sed -nE 's/^#[[:space:]]*[Vv]erification:[[:space:]]*[Nn]one[[:space:]]*(—|-{1,2})[[:space:]]*([^[:space:]].*)$/\2/p' | head -1 || true)
+    # The template hint shows the line with a <placeholder>; copying it verbatim
+    # declares nothing, so a reason that is still the placeholder does not count.
+    case "$reason" in "<"*">") reason="" ;; esac
     if [ -n "$reason" ]; then
         echo -e "  ${YELLOW}Verification: declared none — \"$reason\" (serviced: queued in .context/audits/verification-servicing.jsonl).${NC}"
         _t4024_ledger_append declaration "$reason" "$wf"
