@@ -374,12 +374,16 @@ def test_claude_fw_starts_the_sidecar_for_every_session_and_says_when_inert():
     src = (FW_ROOT / "bin" / "claude-fw").read_text()
     assert "sidecar start --quiet --json" in src
     assert "INERT for injection — TermLink absent" in src
-    assert "no --termlink: peer messages reach the agent at its next prompt" in src
+    # T-4003: a plain session is reached through a tmux pane when it runs in one,
+    # so the wrapper names both routes and says which one this session lacks.
+    assert "no tmux/--termlink: peer messages reach the agent at its next prompt" in src
+    assert "this session runs in tmux, so peer messages are typed in when it is idle" in src
 
 
 @pytest.mark.parametrize("args,expect", [
     (["--termlink"], "INERT for injection — TermLink absent"),
-    ([], "no --termlink: peer messages reach the agent at its next prompt"),
+    # Captured output is not a terminal, so T-4003's tmux re-launch is skipped.
+    ([], "no tmux/--termlink: peer messages reach the agent at its next prompt"),
 ])
 def test_claude_fw_really_starts_the_sidecar(proj, tmp_path, args, expect):
     """Run the REAL bin/claude-fw with a stub `claude` on a PATH without
