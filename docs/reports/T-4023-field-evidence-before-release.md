@@ -70,6 +70,41 @@ Five ideas the operator added:
 
    Recommendation: **(d) with (a) as the escape hatch.** Normally the candidate promotes whole. When one or two changes are not ready, the release step reverts them on a release branch and says so in the release question. Per-change maturity is still the unit of judgement; the reverts are just how a "not yet" change stays out. Avoid (b).
 
+## Review round 1 (2026-10-10)
+
+**Sent:** a design review to codex and opencode, and a field review to four projects:
+- proxmox-ring20-management
+- ring20-dashboard
+- 055
+- 832
+
+dimitri-mint-dev asked to be included; the brief was resent to them.
+
+**Results:**
+- **codex** (docs/reports/T-4023-codex-review.md): GO-WITH-CHANGES.
+- **opencode:** failed twice with a server error on Z.ai's side (err_d9330e43, err_8eeff287); not reviewed.
+- **Field:** answers from ring20 (proxmox-ring20-management), 832 and 055. Still waiting on ring20-dashboard and dimitri-mint-dev.
+
+### Findings that change the design
+
+| # | Finding | From | Change |
+|---|---|---|---|
+| R1 | **Reachability is the first problem.** A request reached about 1 agent in 4 unprompted; 055, 999, 832 and 1409 run as plain `claude -c` (non-injectable, our T-4003 c3 case). 055's answer was late for exactly this reason. | 055 | Prerequisite: T-4003 (tmux delivery) and T-4018 (mail watch). Add a per-release response-rate signal: who received the brief, who answered. |
+| R2 | **Reverting on a release branch breaks ancestry.** Master moves to R (with reverts) while bleeding-edge continues to D; neither contains the other, and the next release hits the divergence refusal. It also certifies a combination nobody tested. | codex | Replace option (a): **revert on bleeding-edge and cut a new numbered candidate**, which is then field-tested itself. Master only ever fast-forwards to a tested candidate. |
+| R3 | **"0 recurrences" can mean lost visibility:** an error renamed, a logger broken, traffic gone. | codex, ring20 | Count eligible events too (the denominator). Check that the telemetry is healthy. Add a positive check that the formerly failing operation now succeeds. Keep equal windows. Low frequency means not exercised. |
+| R4 | **Symptom counters must come from the framework, not be reconstructed from project ledgers;** each fix names a grep-able signature (audit check id, error string, hook id). Hook BLOCKs have no per-hook reason log today. | ring20, 832 | Each fix ships its signature and the counter that emits it. Filed gap: per-hook block log. |
+| R5 | **A report can describe different code than the candidate** (local patches, a stale process, a forged SHA). 832 carries 36 local fixes; 055 carries 3. | codex, 832, 055 | The report carries a measured identity of the vendored tree. Split before/after per changed path. The brief lists the fixes that touch paths the project has diverged. Ask which carried patches the release adopts. |
+| R6 | **Coverage must come from the release diff, not from closed tasks.** | codex | The candidate manifest enumerates from `git diff`, with each changed path mapped to a task or flagged. |
+| R7 | **Not exercised must be distinct from flaky.** 832's INCOMPLETE (timeouts under load) is not a problem report. | 832 | Add a fourth field state: inconclusive. |
+| R8 | **"Confirmed working" needs a definition when most changes are not exercised at one site,** or nothing ever matures. | ring20 | A per-change maturity rule: e.g. a deterministic probe green at ≥2 sites, or observed in ≥N events, or an explicit operator waiver. |
+| R9 | **Field cost:** 15-60 min agent time, 0-2 batched operator questions. Testbeds would stop over unacknowledged reports, questions that a probe could measure, or candidates faster than weekly / faster than their own test runs. | all three | The brief has a time budget. Operator questions are batched into one runme or one message. Every report gets a per-change verdict back. Cadence is at most one candidate per week. |
+| R10 | **Release tooling is not ready for pre-releases.** `lib/release.sh` matches `v[0-9]*` (so it picks up pre-release tags) and publishes with `--latest`. | codex | Separate pre-release creation, selection and promotion. |
+| R11 | **Rollback is a prerequisite.** Field safeguards: pin to an immutable tag+sha, keep the vendored tree in git (rollback = revert one commit), push gate green after the upgrade (T-4019), never mid-run or mid-release. T-3735 (`--check`) and T-3874 (tag pinning) must work first. | ring20, 832, 055, codex | Ship a rehearsed rollback, and list these as prerequisites. |
+| R12 | **Trust:** an authenticated sender proves who submitted, not what is true. Free-text answers can carry injected instructions. | codex | Strict report schema with bounded payloads. Reports are never executed. Waived ≠ verified in the table. |
+| R13 | **Release notes should list the files each change touches;** patch collisions are the real upgrade cost. | ring20 | Add the file list to the candidate manifest (it falls out of R6). |
+
+**Operator-only answers so far (field D):** ring20 is asking its operator. 832's agent recommends yes, with an immutable tag+sha pin and a rehearsed rollback. 055's agent says yes, with the safeguards they used for 1.8.8.
+
 ## Open questions for the operator
 
 1. **Testbed members.** Which projects make up the Ring20 estate testbed: ring20-manager, ring20-dashboard, proxmox-ring20-management? Do 055 and 832 count? dimitri-mint-dev is the only consumer that exercises the vendored-exception path.
