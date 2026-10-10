@@ -348,3 +348,17 @@ bvp_scores_proposed:
 
 ### 2026-10-10T09:24:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-10 — measurement (AC 1)
+Measured on build/refactor/decommission tasks in this repo: a `## Verification` heading whose body, after stripping comments, holds no command.
+
+| | real commands | heading present, 0 commands | no section |
+|---|---|---|---|
+| completed (all) | 2219 | **238** | 103 |
+| completed T-3800+ | 101 | 9 | 0 |
+| active (all) | 330 | **330** | 2 |
+| active T-3800+ | 9 | 89 | 0 |
+
+So 238 closed build-type tasks (about 10% of those closed with a heading) passed the gate having verified nothing. And 330 open ones would be refused at close under the proposed rule. Many of those are captured stubs that have not been worked yet, but each would need a verification line or a logged bypass.
+
+Because this tightens a gate every consumer inherits, and reverses the T-3546 choice for present-but-empty sections, the block-vs-warn call goes to the operator before building.
