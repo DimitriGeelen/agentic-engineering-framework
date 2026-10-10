@@ -105,6 +105,29 @@ dimitri-mint-dev asked to be included; the brief was resent to them.
 
 **Operator-only answers so far (field D):** ring20 is asking its operator. 832's agent recommends yes, with an immutable tag+sha pin and a rehearsed rollback. 055's agent says yes, with the safeguards they used for 1.8.8.
 
+## Testbed membership proposals (2026-10-10)
+
+What each candidate brings, from the field answers:
+
+| Project | Their operator | Vendored tree | Divergence | What it exercises | Reachable unprompted |
+|---|---|---|---|---|---|
+| AEF itself (999) | — (always on bleeding-edge) | is the source | none | everything, dogfooded | n/a |
+| proxmox-ring20-management | **YES** (2026-10-10) | tracked in git (rollback = checkout) | in-file patches, 0 conflicts on 1.8.8 | infrastructure ops, orchestrator, upgrade/vendor path | via its hub |
+| 055-agentic-fleet-cockpit | agent: yes; operator not asked yet | tracked (rollback = revert one commit) | 3 carried patches | sessions, mail delivery, TermLink, cockpit — T-4003/T-4018 | no (plain `claude -c`) |
+| dimitri-mint-dev | pending | **untracked** (rollback = downgrade from a tag clone) | in-file patches | the only consumer with an untracked vendored copy: T-4013, retrieval (arc-001), the judge | no |
+| 832-Workflow-designer | agent: yes; operator decides | tracked, pristine-commit protocol | **36 local fixes** (confounds evidence) | the largest test suite (256 bridge legs), runme, reviewer | no |
+| ring20-dashboard | no answer | ? | in-file patches | web/dashboard | **no** (WAITING_NO_RECIPIENT) |
+
+**Options:**
+- **A — Minimal:** AEF + proxmox-ring20-management. The only confirmed member. Fast to start, but one external site means most changes read "not exercised" (ring20 R8).
+- **B — Ring20 estate only:** AEF + proxmox-ring20-management + ring20-dashboard. Matches "the Ring20 estate" literally, but ring20-dashboard is unreachable today and has not answered.
+- **C — Tiered (recommended):**
+  - **Core**, on every bleeding-edge pre-release: AEF, proxmox-ring20-management, 055, dimitri-mint-dev. The four differ on the axes that matter: tracked vs untracked vendored tree, infrastructure vs sessions/mail vs retrieval/judge, low vs moderate divergence.
+  - **Extended**, invited per release when a change touches their area or fixes a bug they reported: 832 (36 local fixes make it a poor default baseline, but its suite is the strongest regression net), ring20-dashboard (once reachable), other fleet projects.
+- **D — Whole fleet:** maximum coverage, but about 1 in 4 is reachable unprompted today, and the cost multiplies.
+
+Rationale for C: maturity needs at least two independent sites per change (R8). A core of four diverse sites makes that reachable without asking the whole fleet. Inviting the extended tier per change keeps reporters' cost down (R9) while still verifying fixes with the projects that reported the bug.
+
 ## Open questions for the operator
 
 1. **Testbed members.** Which projects make up the Ring20 estate testbed: ring20-manager, ring20-dashboard, proxmox-ring20-management? Do 055 and 832 count? dimitri-mint-dev is the only consumer that exercises the vendored-exception path.
