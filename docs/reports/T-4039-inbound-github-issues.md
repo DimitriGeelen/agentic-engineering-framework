@@ -29,6 +29,12 @@
 
 Every comment uses one fixed, machine-readable template: a stage marker, the date, the task id and a link. The sync can then read back the stage the issue is in, and the submitter sees a consistent record.
 
+Every stage comment ends with the same footer (operator, 2026-10-10): *"These status updates are automated, but Dimitri personally looks at every issue and decides what happens to it. Replies on this issue are read."*
+
+**First batch, 2026-10-10:**
+- Received was posted on #85–#94 as INTAKE-0001…0010 (ledger: `.context/issues/intake.jsonl`).
+- The footer line was added the same day by editing the 10 comments in place.
+
 ## Mechanisms
 
 - **Ingest:** a cron job (e.g. every 2 h) running `fw issues sync`. It uses `gh api` with the token already configured for the GitHub mirror and appends only new or changed issues to the ledger.
