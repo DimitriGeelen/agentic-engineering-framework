@@ -440,10 +440,14 @@ _restart_handover_line() {
 # UserPromptSubmit hooks write (.context/sidecar/sessions/<id>.json, T-3745) — never the
 # project-wide flag, which any other Claude process in the project also writes. The
 # record is matched by claude_pid (a child of this wrapper) or by TermLink session name.
-# "idle <epoch>": ready, written after the signal, and the transcript has not moved since
-# (a Stop that another hook rejected continues the turn without UserPromptSubmit).
-# "busy": anything else. "norecord": no matching record (hooks not wired) — the caller
-# then waits for the ceiling, never ends early.
+# "idle <epoch>": ready, written after the signal, AND the transcript says the turn is
+# over: its latest user / assistant / stop_hook_summary entry is a stop_hook_summary that
+# did not prevent continuation. Any later user or assistant entry — a new prompt, or the
+# continuation of a Stop another hook rejected (no UserPromptSubmit clears the record
+# then) — is "busy". Content, not mtime: Claude Code appends bookkeeping entries
+# (last-prompt, cost-state) 0.2-5 s after every Stop, so no mtime slack is right.
+# An unreadable transcript is "busy". "norecord": no matching record (hooks not wired) —
+# the caller then waits for the ceiling, never ends early.
 # Args: $1=root, $2=since (float epoch of the first signal), $3=pids, $4=termlink name.
 _turn_state() {
     python3 - "$1" "$2" "$3" "$4" <<'PY' 2>/dev/null || echo busy
@@ -464,13 +468,30 @@ try:
     up = datetime.datetime.fromisoformat(str(rec.get("updated_at"))).timestamp()
 except ValueError:
     print("busy"); sys.exit()
+if rec.get("ready") is not True or up < since:
+    print("busy"); sys.exit()
 try:
-    moved = os.stat(rec.get("transcript_path") or "").st_mtime > up + 5
+    with open(rec.get("transcript_path") or "", "rb") as fh:
+        fh.seek(0, 2); fh.seek(max(0, fh.tell() - 2_000_000))
+        lines = fh.read().decode("utf-8", "replace").splitlines()[1:]
 except OSError:
-    moved = False
-print("idle %d" % up if rec.get("ready") is True and up >= since and not moved else "busy")
+    print("busy"); sys.exit()
+last = None
+for ln in lines:
+    try:
+        d = json.loads(ln)
+    except ValueError:
+        continue
+    if d.get("type") in ("user", "assistant") or (d.get("type") == "system" and d.get("subtype") == "stop_hook_summary"):
+        last = d
+ended = (last is not None and last.get("subtype") == "stop_hook_summary"
+         and not last.get("preventedContinuation"))
+print("idle %d" % up if ended else "busy")
 PY
 }
+
+# Monotonic seconds for the waits (a wall-clock jump must not shorten or stretch them).
+_mono() { cut -d. -f1 /proc/uptime 2>/dev/null || date +%s; }
 
 _terminator_watch() {
     set +e
@@ -480,14 +501,14 @@ _terminator_watch() {
     local grace="${FW_TERMINATOR_GRACE:-5}"
     local max_wait="${FW_TERMINATOR_MAX_WAIT:-900}"
     local settle="${FW_TERMINATOR_IDLE_SETTLE:-10}"
-    local mt now pids p seen=0 first_mt=0 first_mtf=0 root st idle_since=0 idle_epoch=0 why noted=0
+    local mt now mono thr pids p seen=0 first_mt=0 first_mtf=0 root st idle_since=0 idle_epoch=0 why noted=0
     root="$(cd "$(dirname "$sigfile")/../.." 2>/dev/null && pwd)"
     while true; do
         sleep "$poll"
         # Wrapper gone → stop watching.
         kill -0 "$wrapper_pid" 2>/dev/null || return 0
         if [ ! -f "$sigfile" ]; then seen=0; idle_since=0; continue; fi
-        now=$(date +%s)
+        now=$(date +%s); mono=$(_mono)
         if [ "$seen" -eq 0 ]; then
             mt=$(stat -c %Y "$sigfile" 2>/dev/null || echo 0)
             # Edge case a: only act on a signal written DURING this run (mtime >= run
@@ -495,7 +516,7 @@ _terminator_watch() {
             [ "$mt" -ge "$run_start" ] || continue
             # Align freshness window with is_signal_fresh (<5min).
             [ $((now - mt)) -lt 300 ] || continue
-            seen=$now; first_mt=$mt; idle_since=0; noted=0
+            seen=$mono; first_mt=$mt; idle_since=0; noted=0
             # LC_ALL=C: some locales print the fraction with a comma, which python rejects.
             first_mtf=$(LC_ALL=C stat -c %.6Y "$sigfile" 2>/dev/null || echo "$mt")
             echo "[terminator] restart signal seen at $(date -u +%FT%TZ) — waiting for the turn to end (max ${max_wait}s, T-4032)" \
@@ -509,23 +530,25 @@ _terminator_watch() {
         # T-4032: end the session only between turns of THIS session, or at the ceiling.
         st=$(_turn_state "$root" "$first_mtf" "$pids" "")
         case "$st" in
-            idle\ *) [ "$idle_since" -gt 0 ] || idle_since=$now; idle_epoch=${st#idle } ;;
+            idle\ *) [ "$idle_since" -gt 0 ] || idle_since=$mono; idle_epoch=${st#idle } ;;
             norecord) idle_since=0
                 [ "$noted" -eq 1 ] || echo "[terminator] no session record for claude pid(s) ${pids} — hooks not wired? waiting for the ${max_wait}s ceiling (T-4032)" \
                     >> "$root/.context/working/.compact-log" 2>/dev/null || true
                 noted=1 ;;
             *) idle_since=0 ;;
         esac
-        if [ "$idle_since" -gt 0 ] && [ $((now - idle_since)) -ge "$settle" ]; then why=idle
-        elif [ $((now - seen)) -ge "$max_wait" ]; then why=ceiling
+        if [ "$idle_since" -gt 0 ] && [ $((mono - idle_since)) -ge "$settle" ]; then why=idle
+        elif [ $((mono - seen)) -ge "$max_wait" ]; then why=ceiling
         else continue
         fi
         echo "" >&2
-        # T-3918: capture the session before it ends. At the end of a turn, a handover
-        # written in the last 2 minutes of it counts (the agent's own wrap-up); an older
-        # one — e.g. the T-3989 auto-handover from the first block — does not.
+        # T-3918: capture the session before it ends. Only a handover newer than BOTH the
+        # signal and the last 30 s of the turn counts — the agent's own final act. An
+        # earlier one (e.g. the T-3989 auto-handover from the first block) predates the
+        # wrap-up, so a fresh one is written.
+        thr=$((idle_epoch - 30)); [ "$thr" -ge "$first_mt" ] || thr=$first_mt
         if [ "$why" = idle ]; then
-            _ensure_handover_before_kill "$root" "$((idle_epoch - 120))" || true
+            _ensure_handover_before_kill "$root" "$thr" || true
             # The handover can take minutes: if a new turn started meanwhile, go back to waiting.
             pids=$(pgrep -P "$wrapper_pid" 2>/dev/null | grep -v "^${self}$" | tr '\n' ' ' || true)
             case "$(_turn_state "$root" "$first_mtf" "$pids" "")" in
@@ -998,11 +1021,11 @@ while true; do
             if [ "${FW_NO_TERMINATOR:-0}" != "1" ]; then
                 _tl_sig=$(find_signal_file 2>/dev/null || true)
                 if [ -n "$_tl_sig" ] && [ -f "$_tl_sig" ]; then
-                    _tl_now=$(date +%s)
+                    _tl_now=$(date +%s); _tl_mono=$(_mono)
                     if [ "$_tl_seen" -eq 0 ]; then
                         _tl_mt=$(stat -c %Y "$_tl_sig" 2>/dev/null || echo 0)
                         if [ "$_tl_mt" -ge "$run_start_epoch" ] && [ $(( _tl_now - _tl_mt )) -lt 300 ]; then
-                            _tl_seen=$_tl_now; _tl_first_mt=$_tl_mt
+                            _tl_seen=$_tl_mono; _tl_first_mt=$_tl_mt
                             _tl_first_mtf=$(LC_ALL=C stat -c %.6Y "$_tl_sig" 2>/dev/null || echo "$_tl_mt")
                         fi
                     fi
@@ -1010,18 +1033,19 @@ while true; do
                         _tl_root="$(cd "$(dirname "$_tl_sig")/../.." 2>/dev/null && pwd)"
                         _tl_st=$(_turn_state "$_tl_root" "$_tl_first_mtf" "" "$TERMLINK_SESSION")
                         case "$_tl_st" in
-                            idle\ *) [ "$_tl_idle_since" -gt 0 ] || _tl_idle_since=$_tl_now; _tl_idle_epoch=${_tl_st#idle } ;;
+                            idle\ *) [ "$_tl_idle_since" -gt 0 ] || _tl_idle_since=$_tl_mono; _tl_idle_epoch=${_tl_st#idle } ;;
                             *) _tl_idle_since=0 ;;
                         esac
                         _tl_go=""
-                        if [ "$_tl_idle_since" -gt 0 ] && [ $(( _tl_now - _tl_idle_since )) -ge "${FW_TERMINATOR_IDLE_SETTLE:-10}" ]; then
+                        if [ "$_tl_idle_since" -gt 0 ] && [ $(( _tl_mono - _tl_idle_since )) -ge "${FW_TERMINATOR_IDLE_SETTLE:-10}" ]; then
                             _tl_go=idle
-                        elif [ $(( _tl_now - _tl_seen )) -ge "${FW_TERMINATOR_MAX_WAIT:-900}" ]; then
+                        elif [ $(( _tl_mono - _tl_seen )) -ge "${FW_TERMINATOR_MAX_WAIT:-900}" ]; then
                             _tl_go=ceiling
                         fi
                         if [ -n "$_tl_go" ]; then
                             if [ "$_tl_go" = idle ]; then
-                                _ensure_handover_before_kill "$_tl_root" "$(( _tl_idle_epoch - 120 ))" || true
+                                _tl_thr=$(( _tl_idle_epoch - 30 )); [ "$_tl_thr" -ge "$_tl_first_mt" ] || _tl_thr=$_tl_first_mt
+                                _ensure_handover_before_kill "$_tl_root" "$_tl_thr" || true
                                 case "$(_turn_state "$_tl_root" "$_tl_first_mtf" "" "$TERMLINK_SESSION")" in
                                     idle\ *) ;;
                                     *) _tl_idle_since=0; continue ;;   # a new turn started during the handover

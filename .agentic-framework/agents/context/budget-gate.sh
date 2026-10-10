@@ -415,6 +415,7 @@ if [ "$CACHE_OWNER" != "foreign" ] && [ "${STATUS_AGE}" -lt "$STATUS_MAX_AGE" ];
             echo "  Action: Commit your work, then run '$(_fw_cmd) handover'" >&2
             echo "  Under claude-fw the session ends when THIS turn ends (T-4032): wrap up now," >&2
             echo "  in this turn. A handover is written for you if you do not write one." >&2
+            echo "  (Exception: a turn still running after 15 min, or a project whose Stop hooks are not wired, is ended at that ceiling.)" >&2
             echo "  Details: docs/context-compaction.md (budget ladder, what handover/compact capture)" >&2
             _supervision_notice
             echo "══════════════════════════════════════════════════════════" >&2
@@ -623,6 +624,7 @@ case "$LEVEL" in
         echo "  Action: Commit your work, then run '$(_fw_cmd) handover'" >&2
         echo "  Under claude-fw the session ends when THIS turn ends (T-4032): wrap up now," >&2
         echo "  in this turn. A handover is written for you if you do not write one." >&2
+        echo "  (Exception: a turn still running after 15 min, or a project whose Stop hooks are not wired, is ended at that ceiling.)" >&2
         echo "  Details: docs/context-compaction.md (budget ladder, what handover/compact capture)" >&2
         _supervision_notice
         echo "══════════════════════════════════════════════════════════" >&2

@@ -27,6 +27,7 @@ SH
     eval "$(awk '/^_ensure_handover_before_kill\(\) \{/,/^}/' "$FRAMEWORK_ROOT/bin/claude-fw")"
     eval "$(awk '/^_terminator_watch\(\) \{/,/^}/' "$FRAMEWORK_ROOT/bin/claude-fw")"
     eval "$(awk '/^_turn_state\(\) \{/,/^}/' "$FRAMEWORK_ROOT/bin/claude-fw")"
+    eval "$(grep '^_mono()' "$FRAMEWORK_ROOT/bin/claude-fw")"
     export FW_TERMINATOR_IDLE_SETTLE=1
     unset FAKE_HANDOVER FW_TERMINATOR_HANDOVER_TIMEOUT
 }
@@ -80,11 +81,23 @@ teardown() {
 # inert (that is how the original T-3918 kill test passed on code it did not test).
 
 _fake_wrapper() { bash -c 'sleep 60 & wait' & WRAP=$!; sleep 0.3; CHILD=$(pgrep -P "$WRAP" | head -1); }
-# _session READY [AGE_SECONDS] [PID] — this session's record (Stop: true, UserPromptSubmit: false)
+# _session READY [AGE_SECONDS] [PID] [TAIL] — this session's record (Stop: true,
+# UserPromptSubmit: false) plus a transcript whose tail is TAIL:
+#   ended     : ... assistant, stop_hook_summary, then bookkeeping (a real turn end)
+#   continued : ... stop_hook_summary, then a user entry (a rejected Stop's continuation)
 _session() {
-    local ready="$1" age="${2:-0}" pid="${3:-$CHILD}"
+    local ready="$1" age="${2:-0}" pid="${3:-$CHILD}" tail="${4:-ended}"
     mkdir -p "$ROOT/.context/sidecar/sessions"
-    touch -d "-$((age + 1)) seconds" "$T/transcript.jsonl"
+    {
+        echo '{"type":"summary"}'
+        echo '{"type":"assistant","message":{"stop_reason":"end_turn","content":[{"type":"text","text":"done"}]}}'
+        echo '{"type":"system","subtype":"stop_hook_summary","preventedContinuation":false}'
+        if [ "$tail" = continued ]; then
+            echo '{"type":"user","message":{"content":"Stop hook feedback: keep going"}}'
+        fi
+        echo '{"type":"last-prompt"}'
+        echo '{"type":"cost-state"}'
+    } > "$T/transcript.jsonl"
     python3 -c 'import json,sys,datetime as d
 r,age,pid,tp,out=sys.argv[1:6]
 ts=(d.datetime.now(d.timezone.utc)-d.timedelta(seconds=int(age))).isoformat()
@@ -136,14 +149,13 @@ _stop_bg() { kill "$TW" 2>/dev/null || true; }
     _stop_bg
 }
 
-@test "T-4032: a Stop that another hook rejected (transcript still moving) does not end the session" {
+@test "T-4032: a Stop that another hook rejected (a user entry after the stop summary) does not end the session" {
     export FW_TERMINATOR_POLL=0.2 FW_TERMINATOR_GRACE=0.2 FW_TERMINATOR_MAX_WAIT=60
     _fake_wrapper
     echo '{}' > "$SIG"
-    sleep 1; _session true 10                # ready written 10 s ago ...
-    touch "$T/transcript.jsonl"              # ... but the turn kept writing after it
+    sleep 1; _session true 0 "$CHILD" continued    # fresh ready record, written AFTER the signal
     _watch_bg; sleep 3
-    _alive
+    _alive                                          # the same record with an "ended" tail is killed (next test)
     _stop_bg
 }
 
