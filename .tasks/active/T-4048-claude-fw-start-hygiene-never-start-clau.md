@@ -1,22 +1,10 @@
 ---
-id: T-4003
-name: "Peer mail injection works for both claude-fw -c and --termlink: resolve the
-  target PTY from the agent's pid (termlink inject / tmux pane / wait for prompt hook)"
+id: T-4048
+name: "claude-fw start hygiene: never start claude with an empty argv (agents view), refuse/explain resuming a background job (claude attach), verify claude runs on the pane tty after start, resume by exact id (055 T-491 proposals A-D)"
 description: >
-  Operator 2026-10-08: do option 1 (tmux adapter) AND option 2 (fix --termlink with
-  the fleet cockpit); -c and --termlink must work on the same sidecar mechanism; consult
-  010 and 055. 055 answered (b)+(c) on aef-mail-delivery-both-modes (msg 6e6f72e2):
-  resolve the target from the agent pid -> Claude's tty (ps -o tty=), then (c1) a
-  TermLink session owns that tty -> termlink pty inject; (c2) a tmux pane has that
-  tty (tmux list-panes -a -F '#{pane_id} #{pane_tty}') -> send-keys to that pane id;
-  (c3) neither -> mail waits for the prompt hook, ledger WAITING_NO_RECIPIENT 'terminal
-  not injectable'. Same readiness check (prompt free, nobody typing) and ledger for
-  all three. Never send-keys to fleet-<dir> (that is the claude-fw wrapper, not Claude).
-  055 offers a 'someone is typing here' flag; cockpit must NOT carry mail. 055 T-474
-  fixed --termlink garbling under the cockpit (retry and report symptoms). Waiting
-  on 010 for (a) after their operator decision.
+  055 msg 3f0d69ea (2026-10-10, docs/reports/T-491-session-hops.md in 055): one T-4003 test restart cost the operator 7 conversations in a day. Causes: bare claude-fw + defaultToAgentsView opens the agents overview and starts a background conversation in the shared claude daemon (no tty; T-3629 covers restarts only); --resume of a background job becomes 'claude attach' (a viewer; T-4003 cannot reach it, T-4037); T-4036 blocked -c/--resume. Proposals: A never start with empty argv (or warn when defaultToAgentsView), B check ~/.claude/jobs/<id>/state.json before resume and say plainly it is a background job + how to foreground it, C after start verify claude itself is on a tty (not attach) and print PASS/FAIL, D restart guidance: resume by exact id, never fresh, never -c.
 
-status: started-work
+status: captured
 workflow_type: build
 owner: agent
 horizon: now
@@ -49,9 +37,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-08T20:56:19Z
-last_update: 2026-10-09T08:41:09Z
-date_finished:
+created: 2026-10-10T18:11:48Z
+last_update: 2026-10-10T18:11:48Z
+date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -62,57 +50,20 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-08T21:00:31Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
-    rubric_sha: e4a00f38e801
-bvp_scores_proposed:
-  - ts: '2026-10-08T21:01:08Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 1
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
-      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4003: Peer mail injection works for both claude-fw -c and --termlink: resolve the target PTY from the agent's pid (termlink inject / tmux pane / wait for prompt hook)
+# T-4048: claude-fw start hygiene: never start claude with an empty argv (agents view), refuse/explain resuming a background job (claude attach), verify claude runs on the pane tty after start, resume by exact id (055 T-491 proposals A-D)
 
 ## Context
 
-Design from 055 (msg 6e6f72e2): resolve the target from the agent pid → tty → (c1) TermLink session owning it → `termlink pty inject`; (c2) tmux pane owning it → send-keys to that pane id; (c3) neither → wait for the prompt hook, ledger WAITING_NO_RECIPIENT "terminal not injectable". Never send-keys to `fleet-<dir>` (that is the claude-fw wrapper).
-
-**055 typing signal — LIVE 2026-10-09 (055 T-479, msg 1a3544e8), final contract:**
-`GET http://127.0.0.1:8090/api/claude/input-state?project=<abs path as in the cockpit's fleet.json: no trailing slash, not symlinked>` (loopback).
-200 → `{project, session, unlocked: bool, writable_bridges: int, last_key_at: UTC|null, external_view: bool, cockpit_started_at: UTC}`; 400 no project; 404 not a fleet project.
-Read it as: do NOT type if `unlocked` or `external_view` is true; `cockpit_started_at` < ~2 min ago → unknown; 404/error/timeout → unknown, never free; operator terminals outside the cockpit are invisible (case c3); `last_key_at` also moves on scroll and terminal replies — lean on `unlocked`, use `last_key_at` only as a refinement. 055 T-478: cockpit buttons now type into the TermLink PTY, not the wrapper.
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] The injector finds the terminal Claude actually runs on from the session record's `claude_pid` (already written by the Stop/prompt hook): `/proc/<pid>/fd/0` → `/dev/pts/N`, read at decision time — never a session chosen by name
-- [x] Target resolution, in order: (c1) a TermLink session that is registered for this project (today's path, unchanged); (c2) else a tmux pane whose `pane_tty` equals the agent's tty → `tmux send-keys -t <pane_id> -l <line>` + Enter, never a session name such as `fleet-<dir>`; (c3) else no injection, with the reason "terminal not injectable (<tty>): mail waits for the next prompt" recorded as WAITING_NO_RECIPIENT
-- [x] Readiness is the same for c1 and c2: the session record says ready (Stop since last prompt) — urgent may bypass as today; and for a fleet project 055's input-state is read (`unlocked` or `external_view` true, cockpit started < 2 min ago, 404/error/timeout → do not type)
-- [x] One ledger: c2 records INJECT_TYPING / INJECT_ATTEMPT exactly like c1 (with `route: tmux`), and HANDED_OVER still comes only from the prompt hook
-- [x] Tests with stub `tmux` / `termlink` / input-state: c1 unchanged; c2 types into the pane with the matching tty and never into another; c3 records the reason; a busy/unlocked/unknown input-state blocks c2; the injected line is the same fixed line (no peer content)
-- [ ] Live check on this host: a peer message to AEF while this session runs in a tmux pane is typed in and surfaces; while it runs on a bare terminal the sender gets WAITING_NO_RECIPIENT with the "terminal not injectable" reason
+- [ ] [First criterion]
+- [ ] [Second criterion]
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -150,6 +101,9 @@ Read it as: do NOT type if `unlocked` or `external_view` is true; `cockpit_start
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
+# Build/refactor/decommission tasks with NO command here are refused. If nothing can be
+# run, add the line `# verification: none — <why nothing can be run>`; it is serviced
+# (queued for review: add a check / other evidence / accept). See docs/reports/T-4024-servicing-loop.md.
 #
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
@@ -365,23 +319,7 @@ Read it as: do NOT type if `unlocked` or `external_view` is true; `cockpit_start
 
 ## Updates
 
-### 2026-10-08T20:56:19Z — task-created [task-create-agent]
+### 2026-10-10T18:11:48Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4003-peer-mail-injection-works-for-both-claud.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4048-claude-fw-start-hygiene-never-start-clau.md
 - **Context:** Initial task creation
-
-### 2026-10-09T07:58:43Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
-
-### 2026-10-09T19:10Z — real-tmux smoke of c2 (no mocks below choose_target)
-- Started a pane on the real private server (`tmux -L fw-agents -f /dev/null`, prefix None) running `cat`, used its pane_pid as claude_pid.
-- `_tty_of` → /dev/pts/107; `choose_target` → route tmux, pane %0, socket fw-agents; `send-keys -l` + Enter → the line arrived verbatim in the pane's reader.
-- Still pending: the live check with a real Claude session. This session (claude-fw pid 2176991) was launched before the wrapper existed, so it runs bare on /dev/pts/29 (c3); it needs one restart via `claude-fw -c`.
-- 2026-10-09 live, bare half (c3) PASSES: after the restart, dimitri-mint-dev's message 11afedb1 (conv arc-001-pickup) was ledgered `no-live-recipient` with reason "terminal not injectable (/dev/pts/29): no TermLink session and no tmux pane owns it; mail waits for the agent's next prompt" (`fw sidecar waiting`), and it surfaced through the prompt hook on the next turn.
-- The tmux half (c2) did not run: the restart used `~/.local/bin/claude-fw`, which is byte-identical to the released v1.8.8 copy (commit 9b8a78b67, before bea15f7f7/064370db9), so the wrapper never re-launched into tmux. Not a defect: the installed copy is the last release; T-4003 is unreleased. Needs the installed wrapper refreshed from the repo (doctor's own Refresh line) and one more restart.
-- 2026-10-10 FIELD EVIDENCE, tmux half (c2) WORKS (055-agentic-fleet-cockpit T-491, msg 166550d8, bleeding-edge 4e391a4a0 on 055 only):
-  - **Setup:** claude-fw --resume in a real terminal re-launched in tmux -L fw-agents, with claude itself on the pane tty.
-  - **Result:** real peer mail from 010 went STORED 18:09:02.722Z → INJECT_TYPING route=tmux pane %8 → INJECT_ATTEMPT ok → HANDED_OVER 18:09:04.906Z. That is 2.2 s from arrival to the session, with no human input.
-  - **Earlier failure explained:** 055's INJECT_BLOCKED at 14:42 was the background-job / `claude attach` case, now filed as T-4036 and T-4037. It is not this route.
-  - **Release rule:** this is the field confirmation T-4020 asks for, for the c2 route. The AC's own "this host, this session" check still needs this session in a tmux pane (a restart).
