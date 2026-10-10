@@ -73,6 +73,7 @@ ${human_acs}
 ${rec_block}
 
 ## Verification
+# verification: none — fixture: this test exercises another close gate (T-4024 declaration)
 
 EOF
     echo "$task_file"
@@ -193,6 +194,7 @@ risk: high
 - [x] done
 
 ## Verification
+# verification: none — fixture: this test exercises another close gate (T-4024 declaration)
 
 EOF
     export FW_ALLOW_EMPTY_RECOMMENDATION=1

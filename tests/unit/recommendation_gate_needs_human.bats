@@ -60,6 +60,7 @@ ${extra_fm}---
 - [x] Agent finished
 
 ## Verification
+# verification: none — fixture: this test exercises another close gate (T-4024 declaration)
 
 ${extra_body}
 EOF

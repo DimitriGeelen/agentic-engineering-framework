@@ -90,6 +90,7 @@ _mktask() {
         fi
         echo ""
         echo "## Verification"
+        echo "# verification: none — fixture: this test exercises another close gate (T-4024 declaration)"
         echo ""
     } > "$f"
     printf '%s' "$f"

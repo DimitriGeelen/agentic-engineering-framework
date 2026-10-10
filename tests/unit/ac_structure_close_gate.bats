@@ -76,6 +76,7 @@ _make_malformed_task() {
         echo "  **If not:** Fix it"
         echo ""
         echo "## Verification"
+        echo "# verification: none — fixture: this test exercises another close gate (T-4024 declaration)"
         echo ""
         echo "## Recommendation"
         echo ""
@@ -124,6 +125,7 @@ _make_correct_task() {
         echo "Some content after the AC block -- harmless here."
         echo ""
         echo "## Verification"
+        echo "# verification: none — fixture: this test exercises another close gate (T-4024 declaration)"
         echo ""
         echo "## Recommendation"
         echo ""
@@ -196,6 +198,7 @@ _make_commented_mention_task() {
         echo "-->"
         echo ""
         echo "## Verification"
+        echo "# verification: none — fixture: this test exercises another close gate (T-4024 declaration)"
     } > "$task_file"
     echo "$task_file"
 }

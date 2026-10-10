@@ -70,7 +70,7 @@ _ledger() { echo "$P/.context/audits/verification-servicing.jsonl"; }
     _make_project build declared
     run _close
     echo "$output" | grep -q "declared none"
-    ! echo "$output" | grep -q "BLOCKED"
+    [[ "$output" != *"BLOCKED"* ]]
     [ -f "$(_ledger)" ]
     run python3 -c '
 import json,sys
@@ -86,7 +86,7 @@ assert isinstance(r["files"], list) and r["ts"].endswith("Z"), r
 @test "a double-hyphen declaration is accepted" {
     _make_project build hyphen
     run _close
-    ! echo "$output" | grep -q "BLOCKED"
+    [[ "$output" != *"BLOCKED"* ]]
     grep -q '"source": "declaration"' "$(_ledger)"
 }
 
@@ -109,7 +109,7 @@ assert isinstance(r["files"], list) and r["ts"].endswith("Z"), r
 @test "FW_ALLOW_EMPTY_VERIFICATION=1 closes, logs Tier-2, ledger source bypass" {
     _make_project build comments
     FW_ALLOW_EMPTY_VERIFICATION=1 run _close
-    ! echo "$output" | grep -q "BLOCKED"
+    [[ "$output" != *"BLOCKED"* ]]
     grep -q "FW_ALLOW_EMPTY_VERIFICATION" "$P/.context/working/.gate-bypass-log.yaml"
     grep -q '"source": "bypass"' "$(_ledger)"
     grep -q '"reason": "bypass"' "$(_ledger)"
@@ -119,7 +119,7 @@ assert isinstance(r["files"], list) and r["ts"].endswith("Z"), r
     _make_project build absent
     run _close
     echo "$output" | grep -q "Verification: skipped"
-    ! echo "$output" | grep -q "BLOCKED"
+    [[ "$output" != *"BLOCKED"* ]]
     [ ! -f "$(_ledger)" ]
 }
 

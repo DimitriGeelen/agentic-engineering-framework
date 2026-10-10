@@ -60,6 +60,7 @@ date_finished: null
 - [$box] The one criterion
 
 ## Verification
+# verification: none — fixture: this test exercises another close gate (T-4024 declaration)
 $verif
 
 ## Recommendation

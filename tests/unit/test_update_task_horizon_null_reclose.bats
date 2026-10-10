@@ -55,6 +55,7 @@ last_update: 2026-06-01T00:00:00Z
 - [x] Done
 
 ## Verification
+# verification: none — fixture: this test exercises another close gate (T-4024 declaration)
 EOF
     git -C "$PROJECT_ROOT" add ".tasks/completed/${id}-test.md" 2>/dev/null
     git -C "$PROJECT_ROOT" commit -qm "init $id stale-PC" 2>/dev/null
@@ -128,6 +129,7 @@ last_update: 2026-06-01T00:00:00Z
 - [x] Done
 
 ## Verification
+# verification: none — fixture: this test exercises another close gate (T-4024 declaration)
 EOF
     git -C "$PROJECT_ROOT" add ".tasks/active/T-9302-test.md" 2>/dev/null
     git -C "$PROJECT_ROOT" commit -qm "init T-9302" 2>/dev/null

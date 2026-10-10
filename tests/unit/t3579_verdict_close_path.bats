@@ -62,6 +62,7 @@ date_finished: null
   **If not:** note the section that stalls
 
 ## Verification
+# verification: none — fixture: this test exercises another close gate (T-4024 declaration)
 
 ## Recommendation
 
