@@ -16,7 +16,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-09T23:58:30Z
-last_update: 2026-10-09T23:59:20Z
+last_update: '2026-10-10T00:00:28Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -42,6 +42,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-10T00:00:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=140,acs=4)
     rubric_sha: e4a00f38e801
 ---
 
@@ -74,9 +84,9 @@ bvp_scores_proposed:
 -->
 
 - **IW-1: Which projects make up the Ring20 estate testbed, and does each run bleeding-edge pinned to a candidate commit?**
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: Operator 2026-10-10 chose option C (artifact §Testbed membership proposals): core = AEF, proxmox-ring20-management (its operator: YES), 055, dimitri-mint-dev; extended per change = 832, ring20-dashboard; each pinned to an immutable -be tag+sha.
 - **IW-2: Who answers judged checks — the testbed agent, or its operator for human-facing features?**
   confidence: 0
   disposition:
@@ -155,6 +165,25 @@ bvp_scores_proposed:
 **Rationale:**
 
 The operator's rule (T-4020, 2026-10-10) requires field evidence before master, and today that evidence arrives only as free-text upgrade reports (ring20 and 055 sent two on 2026-10-10), which say what broke but not whether each new feature worked. A per-feature field check declared at build time, collected from the testbed with one command and shown in the release question, turns the rule into something checkable. GO on that shape in slices; the open questions (testbed members, who answers judged checks, hard gate vs shown-and-asked, soak period) are for the operator and are listed in docs/reports/T-4023-field-evidence-before-release.md.
+
+**Revised after review round 1 (codex GO-WITH-CHANGES; field answers from all five projects asked): GO, reordered.** Build order:
+1. Reachability: T-4003 live check, T-4018 mail watch.
+2. Release prerequisites:
+   - pre-release (-be) tags in lib/release.sh, without --latest;
+   - fw update/upgrade to an exact ref (T-3874, T-3735);
+   - push gate green after upgrade (T-4019);
+   - a rehearsed rollback for tracked and untracked vendored trees.
+3. Field checks with symptom signatures and exposure counts.
+4. fw field report plus a roll-call.
+5. The release table, with revert-and-recandidate on bleeding-edge (never a release branch, never cherry-pick).
+
+Testbed: option C (operator, 2026-10-10).
+
+Recommended defaults for the remaining questions:
+- IW-2: the agent answers; the operator answers only human-facing items, at most one batched question per release.
+- IW-3: problems / not-exercised / missing evidence BLOCK unless waived per change, and waived is shown apart from verified.
+- IW-4: minimum soak of 2 days, ending early only if every change is mature; at most one candidate per week.
+- Field reports are automatic and agent-only, addressed to AEF.
 
 **Evidence:**
 
