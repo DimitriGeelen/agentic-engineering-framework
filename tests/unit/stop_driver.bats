@@ -78,6 +78,26 @@ assert d.get('reason'), 'reason must be non-empty'
 "
 }
 
+# --- T-4032: a pending budget restart ends the turn ------------------------
+# The claude-fw terminator restarts the session at the END of the turn; a
+# continuation driven from here would be killed mid-turn instead.
+
+@test "T-4032: armed, but a fresh restart signal yields stop" {
+    armed_state
+    echo '{}' > "$TMP/.context/working/.restart-requested"
+    run run_driver '{}'
+    [ "$status" -eq 0 ]
+    [ "$output" = "{}" ]
+}
+
+@test "T-4032: a STALE restart signal (>300 s) does not stop an armed loop" {
+    armed_state
+    echo '{}' > "$TMP/.context/working/.restart-requested"
+    touch -d "-10 minutes" "$TMP/.context/working/.restart-requested"
+    run run_driver '{}'
+    [ "$output" != "{}" ]
+}
+
 # --- the measured contract (T-3163) ----------------------------------------
 
 @test "continue payload uses decision:block — the shape that actually drives a turn" {

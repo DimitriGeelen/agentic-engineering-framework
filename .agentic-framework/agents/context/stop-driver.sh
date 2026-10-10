@@ -58,6 +58,14 @@ PROJECT_ROOT="${CLAUDE_PROJECT_DIR:-${PROJECT_ROOT:-$(pwd)}}"
 WORKING_DIR="${PROJECT_ROOT}/.context/working"
 STATE_FILE="${WORKING_DIR}/.continuous-mode.yaml"
 HALT_FILE="${FW_CONTINUOUS_HALT:-${WORKING_DIR}/.continuous-halt}"
+
+# T-4032: a restart is pending (budget critical): let this turn END. The claude-fw
+# terminator restarts the session at the end of the turn, and a continuation driven
+# from here would be killed mid-turn instead — the cutoff T-4032 exists to prevent.
+_rs="${WORKING_DIR}/.restart-requested"
+if [ -f "$_rs" ] && [ $(( $(date +%s) - $(stat -c %Y "$_rs" 2>/dev/null || echo 0) )) -lt 300 ]; then
+    yield
+fi
 DIRECTIVE_FILE="${WORKING_DIR}/.next-directive.yaml"
 LOG_FILE="${WORKING_DIR}/.stop-driver.log"
 
