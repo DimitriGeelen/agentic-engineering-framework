@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4026: Something re-runs open tasks' ## Verification against live services: T-2529's verify line recreated the t2529-verify map in the live designer store, turning the corpus census test red
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-10T10:53:30Z
+# ============================================================================
+
+task_id: T-4026
+task_name: "Something re-runs open tasks' ## Verification against live services: T-2529's verify line recreated the t2529-verify map in the live designer store, turning the corpus census test red"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-10T09:48:34Z
+completed: 2026-10-10T10:53:02Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-10T11:48:58+02:00
+last_commit: 2026-10-10T12:53:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file the live-store leak behind the nightly census red (T-2529 verify line re-run outside a close); scratch map removed via /api/delete. real ACs (runner localised to lib/verify_queue.py; skip HTTP-write lines in the re-check; T-2529 verify line cleans up). the verification re-check rail no longer re-runs HTTP writes against live services (T-2529's save-check re-created a deleted map in the live designer store at every daily audit); T-2529's line cleans up after itself; 2 regression tests, write case fails pre-fix
+
+# Key outcomes
+outcomes:
+  - 'Localised: the runner is lib/verify_queue.py (T-2765), called by the daily full `fw audit` (07:12, ends 07:19); it re-runs stored Verification for review-queue tasks, and T-2529 is in that queue.'
+  - 'verify_queue.py skips (counts as skipped, never executes) a line that writes over HTTP: curl with -X/--request POST|PUT|PATCH|DELETE (incl. -XPOST), -d/--data*/-F/--form/--json, or wget --post-data/--post-file/--method.'
+  - 'Read-only lines still run: plain `curl -sf URL`, `curl ... | grep`, and a line that merely mentions "POST" in a grep pattern.'
+  - 'T-2529''s own verify line cleans up the map it creates (POST /api/delete scope=map after the save check), so a real close leaves nothing behind.'
+  - 'tests/unit/t2765_verify_queue.bats gains cases for the write forms (skipped, and the target file is untouched) and the read-only controls (run); the write case fails on the pre-fix module.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'the verification re-check rail no longer re-runs HTTP writes against live services (T-2529''s save-check re-created a deleted map in the live designer store at every daily audit); T-2529''s line cleans up after itself; 2 regression tests, write case fails pre-fix'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/verify_queue.py'
+  - 'lib/verify_queue.py'
+  - '.tasks/active/T-2529-designer-gallery-server-api-implement-ap.md'
+  - '.tasks/active/T-4026-something-re-runs-open-tasks--verificati.md'
+  - 'tests/unit/t2765_verify_queue.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-10T11:48:58'
+    action: 'T-4026: file the live-store leak behind the nightly census red (T-2529 verify line re-run outside a close); scratch map removed via /api/delete'
+  - time: '2026-10-10T12:51:24'
+    action: 'T-4026: real ACs (runner localised to lib/verify_queue.py; skip HTTP-write lines in the re-check; T-2529 verify line cleans up)'
+  - time: '2026-10-10T12:53:00'
+    action: 'T-4026: the verification re-check rail no longer re-runs HTTP writes against live services (T-2529''s save-check re-created a deleted map in the live designer store at every daily audit); T-2529''s line cleans up after itself; 2 regression tests, write case fails pre-fix'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 64 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 64
+  commits: 3
+  files_changed: 5
+  lines_added: 450
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4026-something-re-runs-open-tasks--verificati.md
+generated_by: context-agent-hybrid
