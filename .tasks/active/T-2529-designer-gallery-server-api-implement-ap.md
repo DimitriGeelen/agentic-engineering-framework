@@ -179,7 +179,7 @@ plus `rendered/<id>.bpmn` (corpus, follow-up). When AEF answers `/api/health` ok
 # NOTE: the gate runs EACH line in a separate shell — no cross-line variables.
 # Every line self-resolves the watchtower URL (never hard-code :3001).
 h=$(curl -sf "$(bin/fw watchtower url)/api/health" 2>&1); echo "$h" | grep -q '"ok"'
-s=$(curl -sf -X POST "$(bin/fw watchtower url)/api/save" -H 'Content-Type: application/json' -d '{"id":"t2529-verify","bpmn":"<definitions id=\"x\"/>","png":"","note":"verify"}' 2>&1); echo "$s" | grep -q '"v"'
+s=$(curl -sf -X POST "$(bin/fw watchtower url)/api/save" -H 'Content-Type: application/json' -d '{"id":"t2529-verify","bpmn":"<definitions id=\"x\"/>","png":"","note":"verify"}' 2>&1); curl -sf -X POST "$(bin/fw watchtower url)/api/delete" -H 'Content-Type: application/json' -d '{"id":"t2529-verify","scope":"map"}' > /dev/null; echo "$s" | grep -q '"v"'
 l=$(curl -sf "$(bin/fw watchtower url)/api/list" 2>&1); echo "$l" | grep -q 't2529-verify'
 v=$(curl -sf "$(bin/fw watchtower url)/api/versions?id=t2529-verify" 2>&1); echo "$v" | grep -q '"v"'
 b=$(curl -sf "$(bin/fw watchtower url)/api/version?id=t2529-verify&v=1" 2>&1); echo "$b" | grep -q 'definitions'

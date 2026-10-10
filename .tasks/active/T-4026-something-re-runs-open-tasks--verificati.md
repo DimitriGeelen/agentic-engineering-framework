@@ -100,11 +100,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Localised: the runner is lib/verify_queue.py (T-2765), called by the daily full `fw audit` (07:12, ends 07:19); it re-runs stored Verification for review-queue tasks, and T-2529 is in that queue.
-- [ ] verify_queue.py skips (counts as skipped, never executes) a line that writes over HTTP: curl with -X/--request POST|PUT|PATCH|DELETE (incl. -XPOST), -d/--data*/-F/--form/--json, or wget --post-data/--post-file/--method.
-- [ ] Read-only lines still run: plain `curl -sf URL`, `curl ... | grep`, and a line that merely mentions "POST" in a grep pattern.
-- [ ] T-2529's own verify line cleans up the map it creates (POST /api/delete scope=map after the save check), so a real close leaves nothing behind.
-- [ ] tests/unit/t2765_verify_queue.bats gains cases for the write forms (skipped, and the target file is untouched) and the read-only controls (run); the write case fails on the pre-fix module.
+- [x] Localised: the runner is lib/verify_queue.py (T-2765), called by the daily full `fw audit` (07:12, ends 07:19); it re-runs stored Verification for review-queue tasks, and T-2529 is in that queue.
+- [x] verify_queue.py skips (counts as skipped, never executes) a line that writes over HTTP: curl with -X/--request POST|PUT|PATCH|DELETE (incl. -XPOST), -d/--data*/-F/--form/--json, or wget --post-data/--post-file/--method.
+- [x] Read-only lines still run: plain `curl -sf URL`, `curl ... | grep`, and a line that merely mentions "POST" in a grep pattern.
+- [x] T-2529's own verify line cleans up the map it creates (POST /api/delete scope=map after the save check), so a real close leaves nothing behind.
+- [x] tests/unit/t2765_verify_queue.bats gains cases for the write forms (skipped, and the target file is untouched) and the read-only controls (run); the write case fails on the pre-fix module.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -265,7 +265,20 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 600 bats tests/unit/t2765_verify_queue.bats > /tmp/.t4026.out 2>&1 && ! grep -q "^not ok" /tmp/.t4026.out
+test "$(grep -c '# skip' /tmp/.t4026.out)" -eq 0
+python3 -c "import sys; sys.path.insert(0,'lib'); import verify_queue as v; assert v._unsafe('curl -sf -X POST http://x/api/save -d {}'); assert not v._unsafe('curl -sf http://x/api/list')"
+bin/fw vendor self --check
+
 ## RCA
+
+**Symptom:** the nightly unit run (2026-10-10 01:03Z) turned `test_corpus_lint::test_live_corpus_all_versions_census` red: 48 stored map versions where 47 were pinned. The extra one was `.context/designer/projects/t2529-verify/`, a 21-byte placeholder that T-2653 had deleted.
+
+**Root cause:** lib/verify_queue.py (T-2765) re-runs the stored `## Verification` of every task in the human review queue, during the daily full `fw audit` (07:12–07:19). T-2529 is in that queue. Its verify line POSTs to the live Watchtower `/api/save`, so every daily audit re-created the map (mtime 2026-10-09 07:19:03, matching the audit's end). The rail's UNSAFE_PATTERNS list covered rm -rf, git push and nested audits, but not HTTP writes.
+
+**Why structurally allowed:** a Verification line is written for ONE execution, at close. T-2765 turned it into a daily, repeated execution outside any close, without reclassifying which lines are safe to repeat. A denylist only stops what it names, and nothing named a write to a live service. T-2529's line also left its scratch behind even at a real close.
+
+**Prevention:** HTTP-write forms (curl -X POST/PUT/PATCH/DELETE, -d/--data*/-F/--form/--json; wget --post-*/--method) are now skipped by the re-check rail and counted as skipped, never as passed. Two regression tests in tests/unit/t2765_verify_queue.bats: the write case fails on the pre-fix module, and a marker file proves the line never executed. T-2529's line now deletes what it creates.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).

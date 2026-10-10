@@ -42,6 +42,18 @@ UNSAFE_PATTERNS = [
     (re.compile(r"\brm\s+-rf\b"), "destructive"),
     (re.compile(r"\bgit\s+push\b"), "outward-facing"),
     (re.compile(r"\bgit\s+reset\s+--hard\b"), "destructive"),
+    # T-4026: an HTTP write changes a live service. This rail re-runs blocks
+    # OUTSIDE a close, every day, so it must only observe: T-2529's save-check
+    # re-created a deleted map in the live designer store at each 07:12 audit.
+    # Scoped to the curl/wget segment (no |;& in between) so a line that merely
+    # greps for "POST" still runs. Case-sensitive on purpose: -D (dump headers)
+    # is a read and must not match -d.
+    (re.compile(r"\bcurl\b[^|;&\n]*?\s(?:-[A-Za-z]*X\s*(?i:POST|PUT|PATCH|DELETE)\b"
+                r"|--request[=\s]+(?i:POST|PUT|PATCH|DELETE)\b"
+                r"|-d\b|--data(?:-[a-z]+)?\b|-F\b|--form\b|--json\b)"),
+     "HTTP write against a live service"),
+    (re.compile(r"\bwget\b[^|;&\n]*?\s--(?:post-data|post-file|method)\b"),
+     "HTTP write against a live service"),
 ]
 
 

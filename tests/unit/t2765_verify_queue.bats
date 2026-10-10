@@ -165,6 +165,37 @@ true')"
     [[ "$output" != *"PASS"* ]]
 }
 
+# T-4026: this rail re-runs blocks outside a close, daily, so an HTTP write in a
+# stored line changed a live service each run (T-2529 re-created a deleted map in
+# the live designer store). The marker proves the line never executed.
+@test "T-4026: an HTTP write line is SKIPPED and never executed" {
+    PROJECT="$(create_test_project)"
+    for form in "curl -s -X POST http://127.0.0.1:9/x" "curl -sXPOST http://127.0.0.1:9/x" \
+                "curl -s --request put http://127.0.0.1:9/x" "curl -s -d k=v http://127.0.0.1:9/x" \
+                "curl -s --data-raw x http://127.0.0.1:9/x" "curl -s --json {} http://127.0.0.1:9/x" \
+                "wget -q --post-data=x http://127.0.0.1:9/x"; do
+        rm -f "$PROJECT/marker"
+        make_queue_task "$PROJECT" T-9020 "$form || true; touch marker" > /dev/null
+        run_vq "$PROJECT" --task T-9020
+        [ "$status" -eq 0 ]
+        [[ "$output" == *"SKIP"* ]] || { echo "not skipped: $form"; false; }
+        [ ! -e "$PROJECT/marker" ] || { echo "executed: $form"; false; }
+    done
+}
+
+# Controls: reads still run, including a line that only mentions POST and a
+# header dump (-D is a read; the pattern is case-sensitive so it is not -d).
+@test "T-4026: read-only curl lines and a grep for POST still run" {
+    PROJECT="$(create_test_project)"
+    for form in "curl --version | grep -q curl" "echo 'method POST' | grep -q POST" \
+                "curl -s -D - --version > /dev/null"; do
+        make_queue_task "$PROJECT" T-9021 "$form" > /dev/null
+        run_vq "$PROJECT" --task T-9021
+        [ "$status" -eq 0 ]
+        [[ "$output" == *"PASS"* ]] || { echo "did not run: $form"; echo "$output"; false; }
+    done
+}
+
 # A timeout is absence of evidence, not evidence of failure. Collapsing the two
 # would put L-539's own defect inside the rail built to report it.
 @test "T-2765: a timeout is reported over-budget and not counted red" {
