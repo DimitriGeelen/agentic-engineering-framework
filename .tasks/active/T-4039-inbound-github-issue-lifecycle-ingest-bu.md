@@ -76,25 +76,25 @@ bvp_scores_proposed:
 -->
 
 - **IW-1: May the fixed template status comments (Received, Classified, In progress, Fixed, Available for testing, Released) be posted automatically, with only the decision comment needing the operator's yes?**
-  confidence: 0
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: Operator 2026-10-10: yes. Template stage comments post automatically; the decision comment (Accepted / Needs info / Duplicate / Not planned) needs the operator's yes.
 - **IW-2: Scope: outside users only, or also the agent-filed issues from our own account?**
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: answered
+  rationale: Operator 2026-10-10 asked for the agent's view ("might not be a bad thing"). Recommended: include them as class 'internal'. No Received/Classified comments; link to the task that already owns them, then post Fixed/Released and close when done, so the public tracker stops showing long-fixed items as open. Confirmed in chat.
 - **IW-3: May the pipeline create and apply labels (triaged, area:*, severity:*, status:*)?**
-  confidence: 0
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: Operator 2026-10-10: yes, definitely.
 - **IW-4: Sync interval, and should the -be stage ask the submitter to confirm the fix (external field tester, T-4023)?**
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: Operator 2026-10-10: every 2 hours. Yes: issues become part of bleeding-edge; the submitter gets the option to pull the individual fix in, apply and test it, and give feedback.
 - **IW-5: Handle MikeEchoVoid's #86-#94 (and #85) by hand now while the pipeline is built?**
   confidence: 2
-  disposition:
-  rationale:
+  disposition: answered
+  rationale: Operator asked for a recommendation. Recommended: yes. Post Received on all 10 now (template, covered by IW-1), classify them today, and bring the decisions as one batch. The pipeline is built behind it, and this batch is its first fixture.
 
 ## Exploration Plan
 
