@@ -5140,3 +5140,9 @@ X'` returning empty group."
   task: T-3991
   date: 2026-10-08
   context: Added via context agent
+- id: L-701
+  learning: "A scan, check or verification block that yields nothing is a signal, not a pass: either the check is useless (fix or retire it) or it is blind to what matters (exposure, needs other evidence). Both need remediation. Origin: T-4024, 238 build tasks closed with 0 verification commands at a flat rate after a warning shipped."
+  source: P-001
+  task: T-4024
+  date: 2026-10-10
+  context: Added via context agent
