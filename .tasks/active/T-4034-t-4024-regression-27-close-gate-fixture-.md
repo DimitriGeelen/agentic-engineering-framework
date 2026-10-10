@@ -87,8 +87,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Each fixture in the 8 files that writes an empty `## Verification` on a close it expects to succeed carries `# verification: none — fixture: <the gate this test exercises>`; all 8 files pass without FW_ALLOW_EMPTY_VERIFICATION.
-- [ ] The 4 inert `! echo ... | grep -q` assertions in tests/unit/t4024_empty_verification_gate.bats are rewritten so they can fail; `python3 tools/bats-dead-negation-lint.py` (or `fw test invariants`) is clean.
+- [x] Each fixture in the 8 files that writes an empty `## Verification` on a close it expects to succeed carries `# verification: none — fixture: <the gate this test exercises>`; all 8 files pass without FW_ALLOW_EMPTY_VERIFICATION.
+- [x] The 4 inert `! echo ... | grep -q` assertions in tests/unit/t4024_empty_verification_gate.bats are rewritten so they can fail; `python3 tools/bats-dead-negation-lint.py` (or `fw test invariants`) is clean.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -252,7 +252,20 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 900 bats tests/unit/ac_structure_close_gate.bats tests/unit/recommendation_gate_build_partial.bats tests/unit/recommendation_gate_needs_human.bats tests/unit/t3235_archived_horizon_invariant.bats tests/unit/t3579_verdict_close_path.bats tests/unit/t3586_skip_flag_policy.bats tests/unit/test_update_task_horizon_null_reclose.bats tests/unit/update_task_horizon_null_on_close.bats tests/unit/t4024_empty_verification_gate.bats > /tmp/.t4034.out 2>&1 && ! grep -q "^not ok" /tmp/.t4034.out
+test "$(grep -c '# skip' /tmp/.t4034.out)" -eq 0
+python3 tools/bats-dead-negation-lint.py tests > /tmp/.t4034-lint.out 2>&1 && grep -q "dead 0 in 0" /tmp/.t4034-lint.out
+
 ## RCA
+
+**Symptom:** after T-4024 landed (de02bfd45), the unit-suite run reported 27 new reds in 8 close-gate test files, and the pre-push gate refused the push that carried the urgent T-4032 fix.
+
+**Root cause:** these fixtures build `workflow_type: build` tasks with a bare `## Verification` heading and no commands, then expect the close to succeed. Under T-4024 option D that close is refused, so every test exercising another gate through a successful close failed. Confirmed: all pass with FW_ALLOW_EMPTY_VERIFICATION=1.
+
+**Why structurally allowed:** T-4024 was verified against its own tests and the T-3546 suite only. Nobody searched for other suites that drive update-task.sh to a successful close with an empty block. A gate change at update-task.sh has a wide test blast radius (72 fabric edges), and the full suite is the only thing that sees it. Two smaller misses: the T-4024 tests also carried 4 `! cmd` assertions, which bats never fails on, and the dead-negation lint only runs in the full audit.
+
+**Prevention:** for a change to a close gate, run `grep -rln 'update-task.sh\|--status work-completed' tests/unit` and run those files before committing. The 13 fixtures now state why they have no commands (a T-4024 declaration), which is the contract the gate enforces. Learning recorded.
+
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).

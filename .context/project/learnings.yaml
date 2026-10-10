@@ -5146,3 +5146,9 @@ X'` returning empty group."
   task: T-4024
   date: 2026-10-10
   context: Added via context agent
+- id: L-702
+  learning: "Before committing a change to a close gate in update-task.sh, find and run every suite that drives a successful close: grep -rln 'update-task.sh\\|--status work-completed' tests/unit. T-4024 was checked against its own tests only and broke 27 fixture tests in 8 files, which then blocked an urgent push."
+  source: P-001
+  task: T-4034
+  date: 2026-10-10
+  context: Added via context agent
