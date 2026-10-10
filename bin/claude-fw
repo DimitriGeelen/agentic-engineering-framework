@@ -522,6 +522,10 @@ _terminator_watch() {
             echo "[terminator] restart signal seen at $(date -u +%FT%TZ) — waiting for the turn to end (max ${max_wait}s, T-4032)" \
                 >> "$root/.context/working/.compact-log" 2>/dev/null || true
         fi
+        # T-4032 (codex round 3): an ACCEPTED restart stays fresh for as long as we wait,
+        # so a session that exits by itself after a long wrap-up still restarts (the
+        # parent only honours a signal < 300 s old). -c: a deleted signal is not recreated.
+        touch -c "$sigfile" 2>/dev/null || true
         # The wrapper's only direct children during a run are `claude` and this
         # watcher — so its direct children minus self == claude. No comm filter
         # (would miss claude when its comm is node/truncated).
@@ -1030,6 +1034,7 @@ while true; do
                         fi
                     fi
                     if [ "$_tl_seen" -gt 0 ]; then
+                        touch -c "$_tl_sig" 2>/dev/null || true   # keep an accepted restart fresh (T-4032)
                         _tl_root="$(cd "$(dirname "$_tl_sig")/../.." 2>/dev/null && pwd)"
                         _tl_st=$(_turn_state "$_tl_root" "$_tl_first_mtf" "" "$TERMLINK_SESSION")
                         case "$_tl_st" in

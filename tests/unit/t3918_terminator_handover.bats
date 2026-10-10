@@ -172,6 +172,28 @@ _stop_bg() { kill "$TW" 2>/dev/null || true; }
     ! _alive || false
 }
 
+@test "T-4032: an accepted restart signal is kept fresh while waiting (a natural exit still restarts)" {
+    export FW_TERMINATOR_POLL=0.2 FW_TERMINATOR_GRACE=0.2 FW_TERMINATOR_MAX_WAIT=60
+    _fake_wrapper; _session false
+    echo '{}' > "$SIG"
+    touch -d "-290 seconds" "$SIG"           # accepted at 290 s: without refresh it is stale in 10 s
+    _terminator_watch "$WRAP" "$SIG" "$(( $(date +%s) - 300 ))" & TW=$!   # run began before the signal
+    sleep 2
+    _stop_bg
+    [ $(( $(date +%s) - $(stat -c %Y "$SIG") )) -lt 10 ]
+}
+
+@test "T-4032: a DELETED signal is not recreated by the refresh" {
+    export FW_TERMINATOR_POLL=0.2 FW_TERMINATOR_GRACE=0.2 FW_TERMINATOR_MAX_WAIT=60
+    _fake_wrapper; _session false
+    echo '{}' > "$SIG"
+    _watch_bg; sleep 1
+    rm -f "$SIG"; sleep 1
+    _stop_bg
+    [ ! -e "$SIG" ]
+    _alive
+}
+
 @test "T-4032: a turn that never ends is cut at FW_TERMINATOR_MAX_WAIT (no dead-lock)" {
     export FW_TERMINATOR_POLL=0.2 FW_TERMINATOR_GRACE=0.2 FW_TERMINATOR_MAX_WAIT=2
     _fake_wrapper; _session false
