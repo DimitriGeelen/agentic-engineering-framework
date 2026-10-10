@@ -64,6 +64,17 @@ Until then the steps are manual and logged here.
 
 - **Fix:** committed on bleeding-edge as 661c026f3. The push is waiting on the full unit-suite gate.
 - **Applies cleanly to v1.8.8** (simulated with git merge-tree): the five code/test files merge without conflict.
-- **Review:** codex is running.
-- **Field:** 1409 takes it through their planned upgrade path (their T-1800) and reports.
-- **Then:** the release question to the operator.
+- **Review:** codex ran 4 rounds:
+  - Round 1, DO-NOT-SHIP: another session's idle flag counted; a long wrap-up let the restart expire; the TermLink path killed at once; an early handover counted.
+  - Round 2, DO-NOT-SHIP: an mtime slack was wrong in both directions. Measured: Claude Code appends bookkeeping 0.2–5.3 s after every Stop. A pre-signal handover qualified, and one test was vacuous.
+  - Round 3, SHIP-WITH-CHANGES: a natural exit could lose the restart.
+  - Round 4, SHIP.
+
+  All four reports are in docs/reports/T-4032-codex-review*.md. Each finding was fixed with a test that fails on the code before it, and the rejected-Stop test was mutation-checked.
+- **Hotfix branch** `hotfix/v1.8.9`, built from a temporary index without touching the main checkout:
+  - v1.8.8 (f0fc58393) → d5ce92d7a (the fix: 8 files, vendored copies identical) → b82294243 (VERSION 1.8.9).
+  - Master fast-forwards to it.
+  - 85/85 related tests pass on the exported hotfix tree, i.e. against v1.8.8's code, not bleeding-edge's.
+- **Lessons from the first run:** bleeding-edge pushes were held up twice by my own regressions from another task (T-4024 fixtures, and the template-hash list), each surfacing only in the full suite. The lane should run the full suite on the hotfix tree, not just the related suites, before the release question.
+- **Field:** 1409 has asked their operator. Their confirmation is pending.
+- **Then:** the release question to the operator, the manual release steps, and the merge-back.
