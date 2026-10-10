@@ -355,6 +355,27 @@ cost_estimate_proposed:
 
 **Strawman of keeping it (the weak version):** "the warning is enough, agents will read it." The flat monthly rate since 2026-09-28, including this session's own T-3997, refutes it.
 
+**Servicing the declarations (operator, 2026-10-10):** a declaration is not an end point. "Nothing to verify" means one of two things, and both need remediation:
+1. **A check exists and was not written.** Remediate: add it. It might be a probe, an existing test pointed at, or a regression test.
+2. **Nothing a shell can see.** This is exposure: a change nobody can prove works. Remediate with another kind of evidence:
+   - a unit/bats test;
+   - a T-4023 field check (deterministic, observed or judged);
+   - a human check;
+   - or an explicit, recorded risk acceptance.
+
+The loop:
+- **Record:** every declaration (and every logged bypass) appends one row to a servicing ledger: task, reason, files changed, date.
+- **Pre-investigate (agent):** for each row, the agent reads the change and the reason, and proposes one of the following:
+  - (a) the concrete check to add, with the command;
+  - (b) the other evidence it needs;
+  - (c) "reason holds, accept", with why;
+  - (d) "reason is wrong", with why.
+- **Decide (operator, for now):** the queue with those proposals is listed for the operator (Watchtower /approvals section, the handover, `fw` verb), and the operator accepts or redirects each one. (a) and (b) become remediation tasks; (c) is recorded as accepted risk.
+- **Later:** once the proposals prove sound, the decision moves to the independent reviewer agent (the same delegation path as D-626), and the operator only sees escalations.
+- **Backfill:** the 238 historical empty closes go through the same pre-investigation, newest first. Recent fixes like T-3997 are mostly case 1: the tests exist, and the Verification block simply never pointed at them.
+
+**General principle, recorded as a learning:** a scan or check that yields nothing is a signal, not a pass. Either the scan is useless (fix or retire it) or it is blind to the thing that matters (exposure). Both need remediation (see also L-539).
+
 **Rollout:**
 - Applies at close. A task with no `## Verification` heading is unchanged.
 - Other workflow types are unchanged.
