@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T09:22:55Z
-last_update: 2026-10-10T09:24:28Z
+last_update: '2026-10-10T09:30:34Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -72,6 +72,16 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-10T09:30:34Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=288,acs=6)
     rubric_sha: e4a00f38e801
 ---
 
@@ -317,6 +327,40 @@ bvp_scores_proposed:
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO — option D (block a present-but-empty block on build/refactor/decommission tasks, unless the block says why there is nothing to run).
+
+**Rationale:** The T-3546 warning has been in place since 2026-09-28, and empty closes continued at the same rate: 10 in September, 8 so far in October. Among them is T-3997, a budget-gate fix closed with template comments only. The warning informs, but it does not change what happens. A hard block alone invites the worse failure, vacuous `true` lines that look verified. Option D makes "nothing to verify" an explicit, recorded statement, so it costs less to be honest than to fake a command.
+
+**Evidence:**
+- 238 completed build/refactor/decommission tasks closed with a present-but-empty block (≈10% of those with the heading). Per month: 7, 7, 10, 13, 10, 8 (May–Oct).
+- Recent examples: T-3946, T-3956, T-3958, T-3997, T-3999, T-4000, T-4001.
+- Who it would hit now: 330 open tasks have an empty block. 295 of them are only captured, 22 are started, and 13 are partial-complete awaiting the operator. Those 13 are the ones that would surprise the operator at finalisation.
+- External report: ring20-dashboard closed 4 decommission tasks this way on v1.8.8 and asked for a block or a loud warning.
+
+**Options compared** (1-5, against the constitutional directives D1 Antifragility, D2 Reliability, D3 Usability, D4 Portability):
+
+| Option | D1 | D2 | D3 | D4 | Notes |
+|---|---|---|---|---|---|
+| A. Keep the T-3546 warning | 1 | 1 | 4 | 4 | Proven not to change behaviour (rate flat after it shipped). |
+| B. Louder warning + audit WARN + count in handover | 2 | 2 | 4 | 4 | More visible, but still after the fact. A closed task cannot reopen (T-4015), so a late warning cannot be acted on. |
+| C. Hard block, logged bypass only | 3 | 3 | 2 | 3 | Stops the silent pass, but pushes authors to write `true`, which is an invisible false green. Worse than a visible zero. |
+| **D. Block unless the block declares `# verification: none — <reason>`** | **4** | **4** | **3** | **4** | A deliberate, greppable, auditable statement. The reviewer and audit can count declarations and judge the reasons. |
+
+**Steelman of not blocking (strongest case for A/B):** T-3546 chose reporting over guarding on purpose. Many build tasks genuinely have nothing a shell command can prove (a release cut, a doc fix, a decommission whose proof is absence). A gate that cannot tell those apart forces a fake command, and a fake command is indistinguishable from a real one. It is the same as a real one to every later reader, so blocking could *reduce* the honesty of the record. The cost also lands on every consumer project at once.
+
+**How D answers it:** the "nothing to verify" case stays one line away, and that line says *why*. The record becomes more honest, not less. A separate reviewer check can flag vacuous commands (`true`, a bare `echo`), so the fake-command route is watched too.
+
+**Strawman of blocking (the weak version nobody should build):** block every task with no commands, including inceptions, specs and tasks with no section at all. That would break the backward compatibility T-3546 protected and refuse hundreds of legitimate closes. Not proposed.
+
+**Strawman of keeping it (the weak version):** "the warning is enough, agents will read it." The flat monthly rate since 2026-09-28, including this session's own T-3997, refutes it.
+
+**Rollout:**
+- Applies at close. A task with no `## Verification` heading is unchanged.
+- Other workflow types are unchanged.
+- The 13 partial-complete tasks get the declaration line or real commands added before they reach the operator.
+- The bypass `FW_ALLOW_EMPTY_VERIFICATION=1` is logged Tier-2.
+- Consumers get it with the next release, through the testbed first (T-4020).
 
 ## Decisions
 
