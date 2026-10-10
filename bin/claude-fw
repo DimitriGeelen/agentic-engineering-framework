@@ -426,13 +426,52 @@ _restart_handover_line() {
 # T-4032 (1409, 5th hard cutoff): it used to kill on first sight of the signal, and
 # budget-gate writes the signal on the FIRST critical block (T-2403) — so the session
 # died 3 s after the block, mid-turn, and the "ALLOWED: commit, fw handover" the block
-# message promised was never reachable. Now it waits for the END OF THE TURN: the Stop
-# hook's ready-for-input flag (lib/sidecar/adapter.py) reading `ready: true`, written
-# at or after the signal it first saw. A session that never goes idle (an agent looping
-# on blocked calls) still ends at FW_TERMINATOR_MAX_WAIT, so the T-2403 autonomous loop
-# cannot dead-lock. The wait runs from first sight, not from the signal's mtime: the
-# gate rewrites the signal on every blocked call.
+# message promised was never reachable. Now it ends the session only at the END OF THE
+# TURN of THIS session (_turn_state), held for FW_TERMINATOR_IDLE_SETTLE seconds and
+# re-checked after the handover; a session that never goes idle still ends at
+# FW_TERMINATOR_MAX_WAIT, so the T-2403 autonomous loop cannot dead-lock. The wait runs
+# from first sight, not from the signal's mtime (the gate rewrites it on every blocked
+# call), and the signal is refreshed just before the kill: the restart branch only
+# honours a signal under 300 s old, and a long wrap-up must not turn the restart into
+# an exit (codex review, docs/reports/T-4032-codex-review.md).
 # Args: $1=wrapper PID, $2=signal file path, $3=this run's start epoch.
+
+# T-4032: where is THIS session in its turn? Reads the per-session record the Stop /
+# UserPromptSubmit hooks write (.context/sidecar/sessions/<id>.json, T-3745) — never the
+# project-wide flag, which any other Claude process in the project also writes. The
+# record is matched by claude_pid (a child of this wrapper) or by TermLink session name.
+# "idle <epoch>": ready, written after the signal, and the transcript has not moved since
+# (a Stop that another hook rejected continues the turn without UserPromptSubmit).
+# "busy": anything else. "norecord": no matching record (hooks not wired) — the caller
+# then waits for the ceiling, never ends early.
+# Args: $1=root, $2=since (float epoch of the first signal), $3=pids, $4=termlink name.
+_turn_state() {
+    python3 - "$1" "$2" "$3" "$4" <<'PY' 2>/dev/null || echo busy
+import datetime, glob, json, os, sys
+root, since, pids, tl = sys.argv[1], float(sys.argv[2] or 0), set(sys.argv[3].split()), sys.argv[4]
+rec = None
+for f in glob.glob(os.path.join(root, ".context/sidecar/sessions/*.json")):
+    try:
+        r = json.load(open(f))
+    except Exception:
+        continue
+    if str(r.get("claude_pid")) in pids or (tl and r.get("termlink_session") == tl):
+        rec = r
+        break
+if rec is None:
+    print("norecord"); sys.exit()
+try:
+    up = datetime.datetime.fromisoformat(str(rec.get("updated_at"))).timestamp()
+except ValueError:
+    print("busy"); sys.exit()
+try:
+    moved = os.stat(rec.get("transcript_path") or "").st_mtime > up + 5
+except OSError:
+    moved = False
+print("idle %d" % up if rec.get("ready") is True and up >= since and not moved else "busy")
+PY
+}
+
 _terminator_watch() {
     set +e
     local wrapper_pid="$1" sigfile="$2" run_start="$3"
@@ -440,14 +479,14 @@ _terminator_watch() {
     local poll="${FW_TERMINATOR_POLL:-5}"
     local grace="${FW_TERMINATOR_GRACE:-5}"
     local max_wait="${FW_TERMINATOR_MAX_WAIT:-900}"
-    local mt now pids p seen=0 first_mt=0 root rf idle
+    local settle="${FW_TERMINATOR_IDLE_SETTLE:-10}"
+    local mt now pids p seen=0 first_mt=0 first_mtf=0 root st idle_since=0 idle_epoch=0 why noted=0
     root="$(cd "$(dirname "$sigfile")/../.." 2>/dev/null && pwd)"
-    rf="$root/.context/sidecar/ready-for-input.yaml"
     while true; do
         sleep "$poll"
         # Wrapper gone → stop watching.
         kill -0 "$wrapper_pid" 2>/dev/null || return 0
-        if [ ! -f "$sigfile" ]; then seen=0; continue; fi
+        if [ ! -f "$sigfile" ]; then seen=0; idle_since=0; continue; fi
         now=$(date +%s)
         if [ "$seen" -eq 0 ]; then
             mt=$(stat -c %Y "$sigfile" 2>/dev/null || echo 0)
@@ -456,32 +495,55 @@ _terminator_watch() {
             [ "$mt" -ge "$run_start" ] || continue
             # Align freshness window with is_signal_fresh (<5min).
             [ $((now - mt)) -lt 300 ] || continue
-            seen=$now; first_mt=$mt
+            seen=$now; first_mt=$mt; idle_since=0; noted=0
+            # LC_ALL=C: some locales print the fraction with a comma, which python rejects.
+            first_mtf=$(LC_ALL=C stat -c %.6Y "$sigfile" 2>/dev/null || echo "$mt")
             echo "[terminator] restart signal seen at $(date -u +%FT%TZ) — waiting for the turn to end (max ${max_wait}s, T-4032)" \
                 >> "$root/.context/working/.compact-log" 2>/dev/null || true
         fi
-        # T-4032: end the session only between turns, or at the ceiling.
-        idle=0
-        if grep -q '^ready: true' "$rf" 2>/dev/null \
-            && [ "$(stat -c %Y "$rf" 2>/dev/null || echo 0)" -ge "$first_mt" ]; then
-            idle=1
-        fi
-        [ "$idle" -eq 1 ] || [ $((now - seen)) -ge "$max_wait" ] || continue
         # The wrapper's only direct children during a run are `claude` and this
         # watcher — so its direct children minus self == claude. No comm filter
         # (would miss claude when its comm is node/truncated).
-        pids=$(pgrep -P "$wrapper_pid" 2>/dev/null | grep -v "^${self}$" || true)
-        [ -n "$pids" ] || continue
-        [ "$idle" -eq 1 ] || echo "[terminator] turn did not end within ${max_wait}s — ending the session anyway (T-4032)" \
-            >> "$root/.context/working/.compact-log" 2>/dev/null || true
+        pids=$(pgrep -P "$wrapper_pid" 2>/dev/null | grep -v "^${self}$" | tr '\n' ' ' || true)
+        [ -n "${pids// /}" ] || continue
+        # T-4032: end the session only between turns of THIS session, or at the ceiling.
+        st=$(_turn_state "$root" "$first_mtf" "$pids" "")
+        case "$st" in
+            idle\ *) [ "$idle_since" -gt 0 ] || idle_since=$now; idle_epoch=${st#idle } ;;
+            norecord) idle_since=0
+                [ "$noted" -eq 1 ] || echo "[terminator] no session record for claude pid(s) ${pids} — hooks not wired? waiting for the ${max_wait}s ceiling (T-4032)" \
+                    >> "$root/.context/working/.compact-log" 2>/dev/null || true
+                noted=1 ;;
+            *) idle_since=0 ;;
+        esac
+        if [ "$idle_since" -gt 0 ] && [ $((now - idle_since)) -ge "$settle" ]; then why=idle
+        elif [ $((now - seen)) -ge "$max_wait" ]; then why=ceiling
+        else continue
+        fi
         echo "" >&2
-        # T-3918: capture the session before it ends.
-        # A handover the agent wrote itself during the wait is newer than first_mt,
-        # so this is then a logged no-op.
-        _ensure_handover_before_kill "$root" "$first_mt" || true
-        # The handover may have taken a while — re-read the children.
-        pids=$(pgrep -P "$wrapper_pid" 2>/dev/null | grep -v "^${self}$" || true)
-        [ -n "$pids" ] || return 0
+        # T-3918: capture the session before it ends. At the end of a turn, a handover
+        # written in the last 2 minutes of it counts (the agent's own wrap-up); an older
+        # one — e.g. the T-3989 auto-handover from the first block — does not.
+        if [ "$why" = idle ]; then
+            _ensure_handover_before_kill "$root" "$((idle_epoch - 120))" || true
+            # The handover can take minutes: if a new turn started meanwhile, go back to waiting.
+            pids=$(pgrep -P "$wrapper_pid" 2>/dev/null | grep -v "^${self}$" | tr '\n' ' ' || true)
+            case "$(_turn_state "$root" "$first_mtf" "$pids" "")" in
+                idle\ *) ;;
+                *) idle_since=0
+                   echo "[terminator] a new turn started during the handover — waiting again (T-4032)" \
+                       >> "$root/.context/working/.compact-log" 2>/dev/null || true
+                   continue ;;
+            esac
+        else
+            echo "[terminator] turn did not end within ${max_wait}s — ending the session anyway (T-4032)" \
+                >> "$root/.context/working/.compact-log" 2>/dev/null || true
+            _ensure_handover_before_kill "$root" "$first_mt" || true
+            pids=$(pgrep -P "$wrapper_pid" 2>/dev/null | grep -v "^${self}$" | tr '\n' ' ' || true)
+        fi
+        [ -n "${pids// /}" ] || return 0
+        # Keep the restart intent alive: the restart branch only honours a signal < 300 s old.
+        touch "$sigfile" 2>/dev/null || true
         echo "claude-fw: budget-critical signal detected — ending claude to trigger auto-restart." >&2
         for p in $pids; do kill -TERM "$p" 2>/dev/null || true; done
         sleep "$grace"
@@ -924,22 +986,59 @@ while true; do
         _TL_PING_FAILS=0 # T-3648: each run starts with a clean failure count
         # Wait for claude to exit by polling the PTY for shell prompt
         # We check if claude process is still running inside the session
+        _tl_seen=0; _tl_first_mt=0; _tl_first_mtf=0; _tl_idle_since=0; _tl_idle_epoch=0
         while true; do
             sleep 5
             # T-2373: budget-critical terminator (TermLink mode). If a fresh
             # signal appears while claude is still running, end the PTY claude
             # session so the restart-on-exit branch below fires.
+            # T-4032: same protocol as _terminator_watch — only at the end of this
+            # session's turn (matched by TermLink session name; no match = wait for
+            # the ceiling), with a handover first and the signal kept fresh.
             if [ "${FW_NO_TERMINATOR:-0}" != "1" ]; then
                 _tl_sig=$(find_signal_file 2>/dev/null || true)
                 if [ -n "$_tl_sig" ] && [ -f "$_tl_sig" ]; then
-                    _tl_mt=$(stat -c %Y "$_tl_sig" 2>/dev/null || echo 0)
-                    if [ "$_tl_mt" -ge "$run_start_epoch" ] && [ $(( $(date +%s) - _tl_mt )) -lt 300 ]; then
-                        echo "claude-fw: budget-critical signal detected — ending TermLink claude session to trigger auto-restart."
-                        termlink pty inject "$TERMLINK_SESSION" "/exit" --enter >/dev/null 2>&1 || true
-                        sleep 2
-                        exit_code=0
-                        break
+                    _tl_now=$(date +%s)
+                    if [ "$_tl_seen" -eq 0 ]; then
+                        _tl_mt=$(stat -c %Y "$_tl_sig" 2>/dev/null || echo 0)
+                        if [ "$_tl_mt" -ge "$run_start_epoch" ] && [ $(( _tl_now - _tl_mt )) -lt 300 ]; then
+                            _tl_seen=$_tl_now; _tl_first_mt=$_tl_mt
+                            _tl_first_mtf=$(LC_ALL=C stat -c %.6Y "$_tl_sig" 2>/dev/null || echo "$_tl_mt")
+                        fi
                     fi
+                    if [ "$_tl_seen" -gt 0 ]; then
+                        _tl_root="$(cd "$(dirname "$_tl_sig")/../.." 2>/dev/null && pwd)"
+                        _tl_st=$(_turn_state "$_tl_root" "$_tl_first_mtf" "" "$TERMLINK_SESSION")
+                        case "$_tl_st" in
+                            idle\ *) [ "$_tl_idle_since" -gt 0 ] || _tl_idle_since=$_tl_now; _tl_idle_epoch=${_tl_st#idle } ;;
+                            *) _tl_idle_since=0 ;;
+                        esac
+                        _tl_go=""
+                        if [ "$_tl_idle_since" -gt 0 ] && [ $(( _tl_now - _tl_idle_since )) -ge "${FW_TERMINATOR_IDLE_SETTLE:-10}" ]; then
+                            _tl_go=idle
+                        elif [ $(( _tl_now - _tl_seen )) -ge "${FW_TERMINATOR_MAX_WAIT:-900}" ]; then
+                            _tl_go=ceiling
+                        fi
+                        if [ -n "$_tl_go" ]; then
+                            if [ "$_tl_go" = idle ]; then
+                                _ensure_handover_before_kill "$_tl_root" "$(( _tl_idle_epoch - 120 ))" || true
+                                case "$(_turn_state "$_tl_root" "$_tl_first_mtf" "" "$TERMLINK_SESSION")" in
+                                    idle\ *) ;;
+                                    *) _tl_idle_since=0; continue ;;   # a new turn started during the handover
+                                esac
+                            else
+                                _ensure_handover_before_kill "$_tl_root" "$_tl_first_mt" || true
+                            fi
+                            touch "$_tl_sig" 2>/dev/null || true
+                            echo "claude-fw: budget-critical signal detected — ending TermLink claude session to trigger auto-restart."
+                            termlink pty inject "$TERMLINK_SESSION" "/exit" --enter >/dev/null 2>&1 || true
+                            sleep 2
+                            exit_code=0
+                            break
+                        fi
+                    fi
+                else
+                    _tl_seen=0; _tl_idle_since=0
                 fi
             fi
             # Check if the session is still alive and claude is running.
