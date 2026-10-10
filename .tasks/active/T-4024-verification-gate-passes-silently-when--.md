@@ -95,10 +95,12 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Measured first: how many build/refactor/decommission tasks (active and completed) have a `## Verification` section that yields 0 commands vs no section vs real commands. Numbers are recorded in ## Updates before any gate change.
-- [ ] A build/refactor/decommission task whose `## Verification` heading is PRESENT but yields 0 commands is refused at `--status work-completed`. The refusal names the cause and the bypass `FW_ALLOW_EMPTY_VERIFICATION=1`, which is logged Tier-2 (agents/task-create/update-task.sh).
+- [x] Measured first: how many build/refactor/decommission tasks (active and completed) have a `## Verification` section that yields 0 commands vs no section vs real commands. Numbers are recorded in ## Updates before any gate change.
+- [ ] Option D (operator, 2026-10-10): a build/refactor/decommission task whose `## Verification` heading is PRESENT but yields 0 commands is refused at `--status work-completed`, UNLESS the block carries a declaration line `# verification: none — <reason>` with a non-empty reason. The refusal names both remedies (add a command, or declare why nothing runs) and the bypass `FW_ALLOW_EMPTY_VERIFICATION=1`, which is logged Tier-2 (agents/task-create/update-task.sh).
+- [ ] Each accepted declaration and each bypass appends one JSON row to `.context/audits/verification-servicing.jsonl` (task, source declaration|bypass, reason, workflow_type, files changed by the task's commits, ts, state open). This is the intake of the servicing loop (docs/reports/T-4024-servicing-loop.md §1); the rest of the loop is T-4028..T-4031.
 - [ ] Unchanged (T-3546 backward compatibility): a task with NO `## Verification` section still closes with the existing "skipped" notice. Other workflow types (inception, specification, design, test) still only get the warning.
-- [ ] A bats test covers refused / bypassed / absent-section / other-workflow, and the refused case fails on the pre-fix code.
+- [ ] A bats test covers: refused, declared (closes and writes a ledger row), bypassed (closes, logs Tier-2, writes a row), a declaration with an empty reason (refused), absent section, and another workflow type. The refused case fails on the pre-fix code.
+- [ ] The task template's `## Verification` comment names the declaration line, so authors meet it before the gate does (.tasks/templates/default.md and its vendored copy).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
