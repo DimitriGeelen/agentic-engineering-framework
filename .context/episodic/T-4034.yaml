@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4034: T-4024 regression: 27 close-gate fixture tests in 8 files write build tasks with an empty ## Verification and are now refused by the option-D gate
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-10T13:03:02Z
+# ============================================================================
+
+task_id: T-4034
+task_name: "T-4024 regression: 27 close-gate fixture tests in 8 files write build tasks with an empty ## Verification and are now refused by the option-D gate"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-10T12:53:26Z
+completed: 2026-10-10T12:59:06Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-10T14:58:39+02:00
+last_commit: 2026-10-10T14:59:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  13 close-gate fixtures in 8 files declare why their Verification is empty (they exercise other gates), fixing 27 reds T-4024 introduced; 4 inert '! cmd' assertions in the T-4024 tests made real; 82/82 green, dead-negation lint clean. verification, RCA, learning (run every close-driving suite before changing a close gate)
+
+# Key outcomes
+outcomes:
+  - 'Each fixture in the 8 files that writes an empty `## Verification` on a close it expects to succeed carries `# verification: none — fixture: <the gate this test exercises>`; all 8 files pass without FW_ALLOW_EMPTY_VERIFICATION.'
+  - 'The 4 inert `! echo ... | grep -q` assertions in tests/unit/t4024_empty_verification_gate.bats are rewritten so they can fail; `python3 tools/bats-dead-negation-lint.py` (or `fw test invariants`) is clean.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: '13 close-gate fixtures in 8 files declare why their Verification is empty (they exercise other gates), fixing 27 reds T-4024 introduced; 4 inert ''! cmd'' assertions in the T-4024 tests made real; 82/82 green, dead-negation lint clean'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/learnings.yaml'
+  - '.tasks/active/T-4034-t-4024-regression-27-close-gate-fixture-.md'
+  - 'tests/unit/ac_structure_close_gate.bats'
+  - 'tests/unit/recommendation_gate_build_partial.bats'
+  - 'tests/unit/recommendation_gate_needs_human.bats'
+  - 'tests/unit/t3235_archived_horizon_invariant.bats'
+  - 'tests/unit/t3579_verdict_close_path.bats'
+  - 'tests/unit/t3586_skip_flag_policy.bats'
+  - 'tests/unit/t4024_empty_verification_gate.bats'
+  - 'tests/unit/test_update_task_horizon_null_reclose.bats'
+  - 'tests/unit/update_task_horizon_null_on_close.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-10T14:58:39'
+    action: 'T-4034: 13 close-gate fixtures in 8 files declare why their Verification is empty (they exercise other gates), fixing 27 reds T-4024 introduced; 4 inert ''! cmd'' assertions in the T-4024 tests made real; 82/82 green, dead-negation lint clean'
+  - time: '2026-10-10T14:59:05'
+    action: 'T-4034: verification, RCA, learning (run every close-driving suite before changing a close gate)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 2
+  files_changed: 11
+  lines_added: 391
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4034-t-4024-regression-27-close-gate-fixture-.md
+generated_by: context-agent-hybrid
