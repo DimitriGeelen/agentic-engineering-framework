@@ -88,17 +88,17 @@ cost_estimate_proposed:
   disposition: answered
   rationale: Operator 2026-10-10 chose option C (artifact §Testbed membership proposals): core = AEF, proxmox-ring20-management (its operator: YES), 055, dimitri-mint-dev; extended per change = 832, ring20-dashboard; each pinned to an immutable -be tag+sha.
 - **IW-2: Who answers judged checks — the testbed agent, or its operator for human-facing features?**
-  confidence: 0
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: deferred
+  rationale: Operator's call at the GO; recommended default in ## Recommendation (agent answers, operator only for human-facing, at most 1 batched question per release), matching all five field answers (R9).
 - **IW-3: Does a red or not-exercised feature block the release unless waived, or is it only shown in the release question?**
-  confidence: 0
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: deferred
+  rationale: Operator's call at the GO; recommended default is block unless waived per change, with waived shown apart from verified (codex review §4 release enforcement).
 - **IW-4: Is there a minimum soak period, or does the soak end once every feature has its evidence?**
-  confidence: 0
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: deferred
+  rationale: Operator's call at the GO; recommended default is 2 days minimum and at most one candidate per week (field cadence limits, R9; codex: early end selects for quick successes).
 
 ## Exploration Plan
 
