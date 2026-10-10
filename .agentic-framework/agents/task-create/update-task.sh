@@ -1344,6 +1344,68 @@ check_verification_unjudged_test_runs() {
     exit 1
 }
 
+# T-4024: empty-verification enforcement for build/refactor/decommission tasks.
+# Called only from the "heading present, 0 commands" branch. Returns 0 to allow
+# (declaration or bypass), exits 1 to refuse; other workflow types fall through.
+_t4024_ledger_append() {
+    local source="$1" reason="$2" wf="$3"
+    local ledger="$PROJECT_ROOT/.context/audits/verification-servicing.jsonl"
+    mkdir -p "$(dirname "$ledger")" 2>/dev/null || true
+    T4024_TASK="$TASK_ID" T4024_SRC="$source" T4024_REASON="$reason" T4024_WF="$wf" \
+    T4024_LEDGER="$ledger" T4024_ROOT="$PROJECT_ROOT" python3 -c '
+import json, os, subprocess, datetime
+t = os.environ["T4024_TASK"]
+try:
+    out = subprocess.run(["git", "-C", os.environ["T4024_ROOT"], "log", "--format=", "--name-only", "--grep", "^" + t + "[: ]"],
+                         capture_output=True, text=True, timeout=30).stdout
+except Exception:
+    out = ""
+files = []
+for l in out.splitlines():
+    if l and l not in files:
+        files.append(l)
+row = {"task": t, "source": os.environ["T4024_SRC"], "reason": os.environ["T4024_REASON"],
+       "workflow_type": os.environ["T4024_WF"], "files": files[:200],
+       "ts": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "state": "open"}
+with open(os.environ["T4024_LEDGER"], "a") as f:
+    f.write(json.dumps(row) + "\n")
+' 2>/dev/null || echo -e "  ${YELLOW}WARNING: could not append to verification-servicing.jsonl (close continues).${NC}"
+}
+
+_t4024_enforce_empty_verification() {
+    local wf reason
+    wf=$(grep -m1 '^workflow_type:' "$TASK_FILE" | sed 's/workflow_type:[[:space:]]*//' | tr -d '"' | tr -d "'" || true)
+    case "$wf" in build|refactor|decommission) ;; *) return 0 ;; esac
+    # Raw section (comments kept): heading to next heading.
+    reason=$(awk '/^## Verification/{f=1;next} f&&/^## /{exit} f{print}' "$TASK_FILE" \
+        | sed -nE 's/^#[[:space:]]*[Vv]erification:[[:space:]]*[Nn]one[[:space:]]*(—|-{1,2})[[:space:]]*([^[:space:]].*)$/\2/p' | head -1 || true)
+    if [ -n "$reason" ]; then
+        echo -e "  ${YELLOW}Verification: declared none — \"$reason\" (serviced: queued in .context/audits/verification-servicing.jsonl).${NC}"
+        _t4024_ledger_append declaration "$reason" "$wf"
+        return 0
+    fi
+    if [ "${FW_ALLOW_EMPTY_VERIFICATION:-0}" = "1" ]; then
+        log_gate_bypass "FW_ALLOW_EMPTY_VERIFICATION" \
+            "empty ## Verification block on $wf task" 2>/dev/null || true
+        _t4024_ledger_append bypass bypass "$wf"
+        return 0
+    fi
+    echo "" >&2
+    echo -e "${RED}BLOCKED: ## Verification yields 0 commands on a $wf task (T-4024).${NC}" >&2
+    echo "" >&2
+    echo "  The block holds only comments, so closing would verify nothing." >&2
+    echo "  Either:" >&2
+    echo "    1. Add a real command to ## Verification, or" >&2
+    echo "    2. If nothing can be run, add this line inside the block:" >&2
+    echo "         # verification: none — <why nothing can be run>" >&2
+    echo "       Every declaration is serviced: it enters a review queue where it gets" >&2
+    echo "       a check added, other evidence, or an explicit accept" >&2
+    echo "       (docs/reports/T-4024-servicing-loop.md)." >&2
+    echo "" >&2
+    echo "  Bypass: FW_ALLOW_EMPTY_VERIFICATION=1 (logged Tier-2)" >&2
+    exit 1
+}
+
 # Verification Gate (P-011)
 # Runs shell commands from ## Verification section before allowing work-completed.
 run_verification_commands() {
@@ -1421,12 +1483,25 @@ run_verification_commands() {
     # deliberate decision at the rc=2 branch not to re-derive the heading — a
     # guard that reimplements the code it guards cannot detect that code being
     # fixed or re-broken (the G-072 class 577-CashWeb raised).
+    #
+    # T-4024 (option D, operator 2026-10-10): the "REPORTING, NOT GUARDING"
+    # decision above held for the three-way wording, but not for the first
+    # branch on work that ships code. 238 build/refactor/decommission tasks
+    # closed on a present-but-empty block (template comments only), and the rate
+    # stayed flat after the T-3546 warning shipped — a warning nobody must answer
+    # is not a control. So that ONE case (heading at line start, 0 commands,
+    # workflow_type build|refactor|decommission) now refuses, unless the block
+    # carries `# verification: none — <reason>` (allowed, and queued for
+    # servicing in .context/audits/verification-servicing.jsonl) or the Tier-2
+    # bypass FW_ALLOW_EMPTY_VERIFICATION=1. Every other shape stays report-only.
+    # See docs/reports/T-4024-servicing-loop.md.
     if [ -z "$verify_cmds" ]; then
         echo ""
         echo -e "${CYAN}=== Verification Gate (P-011) ===${NC}"
         if grep -q '^## Verification' "$TASK_FILE" 2>/dev/null; then
             echo -e "  ${YELLOW}Verification: 0 commands — the section is present but yielded none.${NC}"
             echo "  Nothing was verified. Most likely the block holds only comments."
+            _t4024_enforce_empty_verification
         elif grep -q '## Verification' "$TASK_FILE" 2>/dev/null; then
             # T-3545's exact shape, and the reason this branch exists: the file
             # visibly contains '## Verification', so telling the reader there is
