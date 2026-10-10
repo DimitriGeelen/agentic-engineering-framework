@@ -9,12 +9,12 @@ description: >
   A silent pass (P-011 false green). Ask: warn loudly or block for build/refactor/decommission
   when the section yields 0 commands. Reproduce first.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/task-create/update-task.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T09:22:55Z
-last_update: '2026-10-10T09:30:34Z'
-date_finished:
+last_update: 2026-10-10T12:03:33Z
+date_finished: 2026-10-10T12:03:33Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -433,3 +433,20 @@ Measured on build/refactor/decommission tasks in this repo: a `## Verification` 
 So 238 closed build-type tasks (about 10% of those closed with a heading) passed the gate having verified nothing. And 330 open ones would be refused at close under the proposed rule. Many of those are captured stubs that have not been worked yet, but each would need a verification line or a logged bypass.
 
 Because this tightens a gate every consumer inherits, and reverses the T-3546 choice for present-but-empty sections, the block-vs-warn call goes to the operator before building.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d863dba2
+- **Timestamp:** 2026-10-10T12:04:57Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — Each accepted declaration and each bypass appends one JSON row to `.context/audits/verification-servicing.jsonl` (task, source declaration|bypass, reason, workflow_type, files changed by the task's co
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/audits/verification-servicing.jsonl in: Each accepted declaration and each bypass appends one JSON row to `.context/audits/verification-servicing.jsonl` (task, source declaration|bypass, rea`
+
+### 2026-10-10T12:03:33Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

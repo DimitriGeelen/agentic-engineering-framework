@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4032: claude-fw kills a live session 3 s after the first critical budget block: budget-gate arms the restart signal on the first block and the terminator kills mid-turn with no wrap-up window (1409, 5th hard cutoff)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-10T12:27:25Z
+# ============================================================================
+
+task_id: T-4032
+task_name: "claude-fw kills a live session 3 s after the first critical budget block: budget-gate arms the restart signal on the first block and the terminator kills mid-turn with no wrap-up window (1409, 5th hard cutoff)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-10T12:06:08Z
+completed: 2026-10-10T12:25:57Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-10T14:25:42+02:00
+last_commit: 2026-10-10T14:25:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  claude-fw no longer kills a session mid-turn at the first critical budget block — the terminator waits for the Stop hook's end-of-turn flag (written after the signal) with a 900 s ceiling, then hands over and restarts; block message states the real contract; 4 regression tests (3 fail pre-fix) and the T-3918 kill test un-neutered (set +e leaked into the test shell)
+
+# Key outcomes
+outcomes:
+  - 'The claude-fw terminator does NOT end claude on first sight of a fresh .restart-requested. It waits until the session is idle: the Stop hook''s ready-for-input flag reads `ready: true` and was written (mtime) at or after the signal the terminator first saw. Only then does it run the handover (T-3918) and end claude (bin/claude-fw _terminator_watch).'
+  - 'A hard ceiling still ends a session that never goes idle (an agent looping on blocked calls): FW_TERMINATOR_MAX_WAIT seconds after first sight (default 900), so the T-2403 autonomous loop cannot dead-lock.'
+  - 'The wait is measured from the terminator''s first sight of the signal, not from the signal''s mtime, so the gate rewriting the signal on every blocked call neither resets nor expires the wait.'
+  - 'Regression test (tests/unit/t3918_terminator_handover.bats or a new t4032 file) with a stub claude child: a fresh signal while the flag says busy does NOT kill within the grace; flag idle after the signal -> killed (after handover); never idle -> killed at the ceiling. The not-killed-while-busy case fails on the pre-fix wrapper.'
+  - 'The budget-gate block message tells the truth: in supervised mode the session ends when the turn ends (or at the ceiling), so wrap up in THIS turn: commit, then fw handover (agents/context/budget-gate.sh).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'claude-fw no longer kills a session mid-turn at the first critical budget block — the terminator waits for the Stop hook''s end-of-turn flag (written after the signal) with a 900 s ceiling, then hands over and restarts; block message states the real contract; 4 regression tests (3 fail pre-fix) and the T-3918 kill test un-neutered (set +e leaked into the test shell)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/budget-gate.sh'
+  - '.agentic-framework/bin/claude-fw'
+  - 'agents/context/budget-gate.sh'
+  - 'bin/claude-fw'
+  - '.tasks/active/T-4032-claude-fw-kills-a-live-session-3-s-after.md'
+  - '.tasks/completed/T-4024-verification-gate-passes-silently-when--.md'
+  - 'tests/unit/t3918_terminator_handover.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-10T14:25:42'
+    action: 'T-4032: claude-fw no longer kills a session mid-turn at the first critical budget block — the terminator waits for the Stop hook''s end-of-turn flag (written after the signal) with a 900 s ceiling, then hands over and restarts; block message states the real contract; 4 regression tests (3 fail pre-fix) and the T-3918 kill test un-neutered (set +e leaked into the test shell)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 19 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 19
+  commits: 1
+  files_changed: 7
+  lines_added: 536
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4032-claude-fw-kills-a-live-session-3-s-after.md
+generated_by: context-agent-hybrid
