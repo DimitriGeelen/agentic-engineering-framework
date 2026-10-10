@@ -422,6 +422,16 @@ _restart_handover_line() {
 # during the current run, it SIGTERMs (then SIGKILLs after a grace) the wrapper's
 # claude child so the existing restart-on-exit branch executes.
 # Fail-safe: if it can't find a child to kill, it no-ops — it never spurious-kills.
+#
+# T-4032 (1409, 5th hard cutoff): it used to kill on first sight of the signal, and
+# budget-gate writes the signal on the FIRST critical block (T-2403) — so the session
+# died 3 s after the block, mid-turn, and the "ALLOWED: commit, fw handover" the block
+# message promised was never reachable. Now it waits for the END OF THE TURN: the Stop
+# hook's ready-for-input flag (lib/sidecar/adapter.py) reading `ready: true`, written
+# at or after the signal it first saw. A session that never goes idle (an agent looping
+# on blocked calls) still ends at FW_TERMINATOR_MAX_WAIT, so the T-2403 autonomous loop
+# cannot dead-lock. The wait runs from first sight, not from the signal's mtime: the
+# gate rewrites the signal on every blocked call.
 # Args: $1=wrapper PID, $2=signal file path, $3=this run's start epoch.
 _terminator_watch() {
     set +e
@@ -429,27 +439,46 @@ _terminator_watch() {
     local self="$BASHPID"
     local poll="${FW_TERMINATOR_POLL:-5}"
     local grace="${FW_TERMINATOR_GRACE:-5}"
-    local mt now pids p
+    local max_wait="${FW_TERMINATOR_MAX_WAIT:-900}"
+    local mt now pids p seen=0 first_mt=0 root rf idle
+    root="$(cd "$(dirname "$sigfile")/../.." 2>/dev/null && pwd)"
+    rf="$root/.context/sidecar/ready-for-input.yaml"
     while true; do
         sleep "$poll"
         # Wrapper gone → stop watching.
         kill -0 "$wrapper_pid" 2>/dev/null || return 0
-        [ -f "$sigfile" ] || continue
-        mt=$(stat -c %Y "$sigfile" 2>/dev/null || echo 0)
+        if [ ! -f "$sigfile" ]; then seen=0; continue; fi
         now=$(date +%s)
-        # Edge case a: only act on a signal written DURING this run (mtime >= run
-        # start), so a leftover signal cannot instantly re-kill a resumed session.
-        [ "$mt" -ge "$run_start" ] || continue
-        # Align freshness window with is_signal_fresh (<5min).
-        [ $((now - mt)) -lt 300 ] || continue
+        if [ "$seen" -eq 0 ]; then
+            mt=$(stat -c %Y "$sigfile" 2>/dev/null || echo 0)
+            # Edge case a: only act on a signal written DURING this run (mtime >= run
+            # start), so a leftover signal cannot instantly re-kill a resumed session.
+            [ "$mt" -ge "$run_start" ] || continue
+            # Align freshness window with is_signal_fresh (<5min).
+            [ $((now - mt)) -lt 300 ] || continue
+            seen=$now; first_mt=$mt
+            echo "[terminator] restart signal seen at $(date -u +%FT%TZ) — waiting for the turn to end (max ${max_wait}s, T-4032)" \
+                >> "$root/.context/working/.compact-log" 2>/dev/null || true
+        fi
+        # T-4032: end the session only between turns, or at the ceiling.
+        idle=0
+        if grep -q '^ready: true' "$rf" 2>/dev/null \
+            && [ "$(stat -c %Y "$rf" 2>/dev/null || echo 0)" -ge "$first_mt" ]; then
+            idle=1
+        fi
+        [ "$idle" -eq 1 ] || [ $((now - seen)) -ge "$max_wait" ] || continue
         # The wrapper's only direct children during a run are `claude` and this
         # watcher — so its direct children minus self == claude. No comm filter
         # (would miss claude when its comm is node/truncated).
         pids=$(pgrep -P "$wrapper_pid" 2>/dev/null | grep -v "^${self}$" || true)
         [ -n "$pids" ] || continue
+        [ "$idle" -eq 1 ] || echo "[terminator] turn did not end within ${max_wait}s — ending the session anyway (T-4032)" \
+            >> "$root/.context/working/.compact-log" 2>/dev/null || true
         echo "" >&2
         # T-3918: capture the session before it ends.
-        _ensure_handover_before_kill "$(cd "$(dirname "$sigfile")/../.." && pwd)" "$mt" || true
+        # A handover the agent wrote itself during the wait is newer than first_mt,
+        # so this is then a logged no-op.
+        _ensure_handover_before_kill "$root" "$first_mt" || true
         # The handover may have taken a while — re-read the children.
         pids=$(pgrep -P "$wrapper_pid" 2>/dev/null | grep -v "^${self}$" || true)
         [ -n "$pids" ] || return 0

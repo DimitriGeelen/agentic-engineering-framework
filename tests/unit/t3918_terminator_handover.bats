@@ -76,9 +76,74 @@ teardown() {
     sleep 0.3
     run_start=$(( $(date +%s) - 1 ))
     echo '{}' > "$SIG"
-    _terminator_watch "$WRAP" "$SIG" "$run_start"
+    _idle                                   # T-4032: the turn has ended
+    # In a subshell: the function starts with `set +e`, which in the test's own
+    # shell would switch off errexit and make every assertion below inert (T-4032
+    # found this test passing on code that did not do what it asserts).
+    ( _terminator_watch "$WRAP" "$SIG" "$run_start" )
     grep -q "\[terminator\] Handover FAILED" "$LOG"
     # The child is gone: the kill happened after the (failed) handover.
+    sleep 0.3
+    [ -z "$(pgrep -P "$WRAP" 2>/dev/null)" ]
+}
+
+# ── T-4032 (1409, 5th hard cutoff): never end a session mid-turn ─────────────
+# budget-gate writes the signal on the FIRST critical block; the terminator used
+# to kill on first sight, 3 s later, mid-turn. It now waits for the Stop hook's
+# idle flag (written at or after the signal), or a hard ceiling.
+
+_idle() { mkdir -p "$ROOT/.context/sidecar"; printf 'ready: true\n' > "$ROOT/.context/sidecar/ready-for-input.yaml"; }
+_busy() { mkdir -p "$ROOT/.context/sidecar"; printf 'ready: false\n' > "$ROOT/.context/sidecar/ready-for-input.yaml"; }
+_fake_wrapper() { bash -c 'sleep 60 & wait' & WRAP=$!; sleep 0.3; }
+
+@test "T-4032: a fresh signal while the turn is still running does NOT kill" {
+    export FW_TERMINATOR_POLL=0.2 FW_TERMINATOR_GRACE=0.2 FW_TERMINATOR_MAX_WAIT=60
+    _fake_wrapper
+    _busy
+    echo '{}' > "$SIG"
+    _terminator_watch "$WRAP" "$SIG" "$(( $(date +%s) - 1 ))" &
+    TW=$!
+    sleep 3
+    # Pre-T-4032 the child was dead within one 0.2 s poll.
+    [ -n "$(pgrep -P "$WRAP" 2>/dev/null)" ]
+    kill "$TW" 2>/dev/null || true
+    grep -q "waiting for the turn to end" "$LOG"
+}
+
+@test "T-4032: a stale idle flag (from before the signal) does not count as the turn ending" {
+    export FW_TERMINATOR_POLL=0.2 FW_TERMINATOR_GRACE=0.2 FW_TERMINATOR_MAX_WAIT=60
+    _fake_wrapper
+    _idle
+    touch -d "-2 minutes" "$ROOT/.context/sidecar/ready-for-input.yaml"
+    echo '{}' > "$SIG"
+    _terminator_watch "$WRAP" "$SIG" "$(( $(date +%s) - 1 ))" &
+    TW=$!
+    sleep 2
+    [ -n "$(pgrep -P "$WRAP" 2>/dev/null)" ]
+    kill "$TW" 2>/dev/null || true
+}
+
+@test "T-4032: when the turn ends after the signal, the session ends (after the handover)" {
+    export FW_TERMINATOR_POLL=0.2 FW_TERMINATOR_GRACE=0.2 FW_TERMINATOR_MAX_WAIT=60
+    _fake_wrapper
+    _busy
+    echo '{}' > "$SIG"
+    ( sleep 1.5; _idle ) &
+    ( _terminator_watch "$WRAP" "$SIG" "$(( $(date +%s) - 1 ))" )
+    grep -q "\[terminator\] Handover generated" "$LOG"
+    sleep 0.3
+    [ -z "$(pgrep -P "$WRAP" 2>/dev/null)" ]
+}
+
+@test "T-4032: a turn that never ends is cut at FW_TERMINATOR_MAX_WAIT (no dead-lock)" {
+    export FW_TERMINATOR_POLL=0.2 FW_TERMINATOR_GRACE=0.2 FW_TERMINATOR_MAX_WAIT=2
+    _fake_wrapper
+    _busy
+    echo '{}' > "$SIG"
+    start=$(date +%s)
+    ( _terminator_watch "$WRAP" "$SIG" "$(( start - 1 ))" )
+    [ $(( $(date +%s) - start )) -ge 2 ]
+    grep -q "turn did not end within 2s" "$LOG"
     sleep 0.3
     [ -z "$(pgrep -P "$WRAP" 2>/dev/null)" ]
 }
