@@ -76,5 +76,10 @@ Until then the steps are manual and logged here.
   - Master fast-forwards to it.
   - 85/85 related tests pass on the exported hotfix tree, i.e. against v1.8.8's code, not bleeding-edge's.
 - **Lessons from the first run:** bleeding-edge pushes were held up twice by my own regressions from another task (T-4024 fixtures, and the template-hash list), each surfacing only in the full suite. The lane should run the full suite on the hotfix tree, not just the related suites, before the release question.
+- **Full suite on the hotfix tree** (operator chose option b; a local clone of `hotfix/v1.8.9` in scratch, no worktree), 2026-10-10:
+  - **Totals:** bats 6729 tests / 95 failed; pytest 4112 / 7 failed. 65 failures are not in v1.8.8's baseline.
+  - **Control:** the same 29 bats files were run one at a time on an identically prepared clone of v1.8.8. Only 3 failures differed, and run sequentially they reproduce identically on both clones: audit.bats 5/15 failing, t1719_ask_routing.bats 3/11 failing.
+  - **Conclusion:** every failure is environmental to a scratch clone (no installed hooks, no deployed cron, no live corpus, no Watchtower, no ollama), and **none is attributable to the hotfix**.
+  - **Lesson:** a hotfix suite run needs a control run of the base release in the same environment, or the result cannot be read.
 - **Field:** 1409 has asked their operator. Their confirmation is pending.
 - **Then:** the release question to the operator, the manual release steps, and the merge-back.
