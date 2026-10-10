@@ -17,6 +17,8 @@ status: started-work
 workflow_type: build
 owner: human
 horizon: now
+github_issue: 88
+arc_id: mikeechovoid-requests
 tags: []
 components: []
 related_tasks: []
@@ -31,7 +33,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-04T20:54:48Z
-last_update: 2026-09-07T19:44:56Z
+last_update: 2026-10-10T18:09:08Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -397,3 +399,6 @@ The refusal is only as strong as the callers that propagate it.
 
 ### 2026-08-04T22:07:51Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-10T18:09:08Z — status-update [task-update-agent]
+- **Change:** horizon: now → now

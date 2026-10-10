@@ -31,6 +31,8 @@ Every comment uses one fixed, machine-readable template: a stage marker, the dat
 
 Every stage comment ends with the same footer (operator, 2026-10-10): *"These status updates are automated, but Dimitri personally looks at every issue and decides what happens to it. Replies on this issue are read."*
 
+**Routing rule (operator, 2026-10-10):** every issue by GitHub user **MikeEchoVoid** goes to arc `mikeechovoid-requests` (arc-021) with horizon `now`. "Prioritise all the requests from Mike." The intake pipeline sets `arc_id:` and `horizon: now` on the task it creates for any accepted MikeEchoVoid issue.
+
 **First batch, 2026-10-10:**
 - Received was posted on #85–#94 as INTAKE-0001…0010 (ledger: `.context/issues/intake.jsonl`).
 - The footer line was added the same day by editing the 10 comments in place.

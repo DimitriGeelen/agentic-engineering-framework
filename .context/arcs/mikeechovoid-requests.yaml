@@ -1,0 +1,23 @@
+id: arc-021
+slug: mikeechovoid-requests
+name: "MikeEchoVoid requests"
+description: "All bugs and enhancement requests from GitHub user MikeEchoVoid (the framework's\
+  \ first outside user), prioritised by the operator 2026-10-10. New issues from MikeEchoVoid\
+  \ are routed here by the T-4039 intake pipeline."
+status: in-progress
+anchor_task: T-4039
+# close_task: T-XXX  # T-3843: the arc's close-out task. Its ## Recommendation (CLOSE|KEEP-OPEN,
+#                    # Rationale, Evidence) is the close recommendation on /arcs/<slug>/close and
+#                    # gates fw arc review; anchor_task is the fallback when unset.
+headline_mechanic: "MikeEchoVoid files an issue on GitHub and sees it acknowledged, classified, decided,\
+  \ fixed on bleeding-edge and released, with a status comment on the issue at each\
+  \ stage"
+demo_evidence: null
+created: 2026-10-10T18:10:54Z
+closed_at: null
+decision: null
+# T-1918 (arc-006, value-prioritisation): BVP scoring fields. Semantics in
+# docs/reports/T-1915-bvp-inception.md §4 (D7-reframe) and §7 (M2).
+bvp_scores: {}
+scoped_drivers: []           # max 3, weight ≤6 each (M2). Approved by fw arc approve-driver (T-1926).
+proposed_scoped_drivers: []  # uncapped persistence (D7-reframe). Estimator may write here freely.
