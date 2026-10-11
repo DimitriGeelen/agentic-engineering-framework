@@ -10,12 +10,12 @@ description: >
   logs. Conflicts with the operator's data rule (arc-001 R-32). Checked in source
   2026-10-11.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bug, security, privacy]
-components: []
+components: [lib/config.sh, lib/resolver.py, web/blueprints/api.py, web/blueprints/config.py, C-003, web/static/command-palette.js, web/static/js/search-qa.js, web/templates/_partials/search_input.html, web/templates/_partials/search_results.html]
 related_tasks: [T-4017]
 origin: {kind: "peer", source: "dimitri-mint-dev", ref: "arc-001"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -45,8 +45,8 @@ origin: {kind: "peer", source: "dimitri-mint-dev", ref: "arc-001"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T18:06:03Z
-last_update: 2026-10-11T18:19:44Z
-date_finished:
+last_update: 2026-10-11T19:48:10Z
+date_finished: 2026-10-11T19:48:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -102,7 +102,7 @@ cost_estimate_proposed:
 - [x] Watchtower `/api/v1/search`, `/api/v1/ask` and `/api/v1/ask/stream` accept the query in a POST body; the Watchtower pages that call them use POST. GET `?q=` keeps working for compatibility but is no longer what Watchtower's own UI sends, and the docstrings name POST as the way.
 - [x] Watchtower's own request log line does not contain the query string for these endpoints (path logged without the query, or `q` redacted).
 - [x] Regression tests (`tests/unit/t4061_query_text_not_kept_test.py` or bats + `tests/web/`): an `fw ask`-type capture leaves no file containing the query text; a task-worker capture still writes its prompt; Watchtower UI search/ask send POST; the request log line for a GET `?q=secret` holds no `secret`. Each fails on the pre-fix code.
-- [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
+- [x] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -357,6 +357,16 @@ bin/fw watchtower current
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** Your query text is no longer kept: the `fw ask` prompt is stored as a hash unless a project opts in (`CAPTURE_QUERY_TEXT`, default off), Watchtower's own search box, ⌘K palette and ask send the query in a POST body, and the access log redacts `q=`/`query=`. Verified live after restart; your check of how the search box feels is the open item.
+
+**Evidence:**
+- Commit e337c41e5 (+ the log filter in 89c937fa6): lib/resolver.py, web/blueprints/api.py, discovery.py, search templates/JS, config key in both registries
+- `tests/unit/t4061_query_text_not_kept_test.py` 10 pass; 3 behaviour tests fail on the old code
+- Live 2026-10-11: POST /search (form + CSRF) 200 with results; POST /api/v1/search and /api/v1/ask (X-CSRF-Token) 200; `handover` appears 0 times in watchtower.log; GET `?q=` still works for scripts
+- Residual: link fallbacks used only without JavaScript still carry `?q=`; a prompt hash is a fingerprint, not proof against a guessed query
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -392,3 +402,22 @@ bin/fw watchtower current
 - On HEAD code (lib/resolver.py, web/blueprints/api.py, web/blueprints/discovery.py restored, then put back): 3 of the 4 behaviour tests fail — `test_user_query_capture_leaves_no_query_text` (prompt.txt holds the query), `test_api_search_accepts_query_in_post_body` and `test_search_page_accepts_post_form` (405). `test_api_get_search_still_works` passes on both, as a compatibility check.
 - The two `web/app.py` log-redaction tests were not run on HEAD: that file is shared with T-4062, so it was not swapped. On HEAD, `QueryRedactFilter` does not exist, so they fail on import.
 - Design choice: the palette and search box send POST. Full-page palette search submits a form, so the address bar shows `/search` with no query, and reload resubmits. The `[REVIEW]` Human criterion covers that trade.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0df3510b
+- **Timestamp:** 2026-10-11T19:48:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `lib/resolver.py` `capture_dispatch` no longer writes the rendered prompt text for an `fw ask` / user-query workflow: it stores a hash (and length) of the rendered prompt instead of `prompt.txt`, unle
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/config.py in: `lib/resolver.py` `capture_dispatch` no longer writes the rendered prompt text for an `fw ask` / user-query workflow: it stores a hash (and length) of`
+- **AC#3 (Human)** — [REVIEW] Watchtower search box and ⌘K search still show results, and the address bar no longer carries the query
+  - **human-ac-mechanical-signal** (partial, heuristic) — `matched='shows `/search`' in Expected: results render after steps 2 and 3. The address bar shows `/search` with no `q=` after both. Reload asks to resubmit the form (no query in t`
+
+### 2026-10-11T19:48:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -9,12 +9,12 @@ description: >
   the LAN exposure (0.0.0.0, no login) is a separate operator decision recorded in
   T-4017.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, security, watchtower]
-components: []
+components: [bin/fw, lib/config.sh, lib/resolver.py, web/app.py, web/blueprints/api.py, web/blueprints/config.py, C-003, web/static/command-palette.js, web/static/js/search-qa.js, web/templates/_partials/search_input.html, web/templates/_partials/search_results.html]
 related_tasks: [T-4017]
 origin: {kind: "peer", source: "dimitri-mint-dev", ref: "arc-001"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -44,8 +44,8 @@ origin: {kind: "peer", source: "dimitri-mint-dev", ref: "arc-001"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T18:06:19Z
-last_update: 2026-10-11T18:16:19Z
-date_finished:
+last_update: 2026-10-11T19:49:13Z
+date_finished: 2026-10-11T19:49:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -100,7 +100,7 @@ cost_estimate_proposed:
 - [x] The new file is created 0600 from the start (no window where it exists with the umask's mode).
 - [x] `fw doctor` WARNs when the key file is group- or world-accessible (mode or ACL), with the one-line fix.
 - [x] pytest `tests/web/test_t4062_secret_key_mode.py`: generated key → 0600; pre-existing 0660 file → 0600 after resolve; key value unchanged. The existing-file case fails on the pre-fix code.
-- [ ] Watchtower restarted; `bin/fw watchtower current` exits 0; `.context/working/.fw-secret-key` on this host is 0600.
+- [x] Watchtower restarted; `bin/fw watchtower current` exits 0; `.context/working/.fw-secret-key` on this host is 0600.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -393,3 +393,20 @@ effective named ACL grant, with the one-line fix.
 - **Pre-fix run:** `tests/web/test_t4062_secret_key_mode.py` against HEAD `web/app.py` → 3 failed, 2 passed (the three existing-file cases: 0660, 0644, named ACL grant). Post-fix → 5 passed.
 - **Live host:** `.context/working/.fw-secret-key` was 660 root:root with `user:dimitri-mint-dev:rw-`; `chmod 600` applied, now 600, no effective ACL grant (mode check only, content not read).
 - **Pending:** Watchtower restart by the orchestrator; `bin/fw watchtower current` currently exits 1 (process predates web/ changes).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-813d8cbb
+- **Timestamp:** 2026-10-11T19:49:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `_resolve_secret_key` (web/app.py) leaves the key file at mode 0600 on EVERY path: generated, and existing (an existing wider-mode file is tightened before use; a POSIX ACL granting others access is r
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/app.py in: `_resolve_secret_key` (web/app.py) leaves the key file at mode 0600 on EVERY path: generated, and existing (an existing wider-mode file is tightened b`
+
+### 2026-10-11T19:49:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

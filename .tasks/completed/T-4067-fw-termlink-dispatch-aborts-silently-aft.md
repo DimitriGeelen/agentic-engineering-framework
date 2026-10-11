@@ -1,15 +1,23 @@
 ---
 id: T-4067
-name: "fw termlink dispatch aborts silently after 'Tagged:' when no task type is set: cmd_spawn ends with [ -n \"$task_type\" ] && echo, which returns 1 under set -e (010)"
+name: "fw termlink dispatch aborts silently after 'Tagged:' when no task type is set:
+  cmd_spawn ends with [ -n \"$task_type\" ] && echo, which returns 1 under set -e
+  (010)"
 description: >
-  agents/termlink/termlink.sh:387, last line of cmd_spawn: [ -n "$task_type" ] && echo "  Task-type: $task_type". With task_type empty the list returns 1, cmd_spawn returns 1, and under set -euo pipefail fw termlink dispatch exits non-zero right after 'Tagged:' — session registered, run.sh never injected, no 'Worker spawned' line, no error message. Reported by 010-termlink (reproduced twice on 1.8.9); workaround --task-type build. Fix + regression test; the same trailing-&& shape elsewhere is a lint candidate.
+  agents/termlink/termlink.sh:387, last line of cmd_spawn: [ -n "$task_type" ] &&
+  echo "  Task-type: $task_type". With task_type empty the list returns 1, cmd_spawn
+  returns 1, and under set -euo pipefail fw termlink dispatch exits non-zero right
+  after 'Tagged:' — session registered, run.sh never injected, no 'Worker spawned'
+  line, no error message. Reported by 010-termlink (reproduced twice on 1.8.9); workaround
+  --task-type build. Fix + regression test; the same trailing-&& shape elsewhere is
+  a lint candidate.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, termlink, dispatch]
-components: []
+components: [agents/termlink/termlink.sh]
 related_tasks: []
 origin: {kind: "peer", source: "010-termlink"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -39,8 +47,8 @@ origin: {kind: "peer", source: "010-termlink"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T18:57:48Z
-last_update: 2026-10-11T18:59:35Z
-date_finished: null
+last_update: 2026-10-11T19:49:58Z
+date_finished: 2026-10-11T19:49:58Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +59,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-11T19:00:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=285,acs=5)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-11T19:01:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4067: fw termlink dispatch aborts silently after 'Tagged:' when no task type is set: cmd_spawn ends with [ -n "$task_type" ] && echo, which returns 1 under set -e (010)
@@ -337,3 +373,15 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4067-fw-termlink-dispatch-aborts-silently-aft.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-557f6d93
+- **Timestamp:** 2026-10-11T19:50:04Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-11T19:49:58Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4067: fw termlink dispatch aborts silently after 'Tagged:' when no task type is set: cmd_spawn ends with [ -n \"$task_type\" ] && echo, which returns 1 under set -e (010)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-11T19:50:19Z
+# ============================================================================
+
+task_id: T-4067
+task_name: "fw termlink dispatch aborts silently after 'Tagged:' when no task type is set: cmd_spawn ends with [ -n \"$task_type\" ] && echo, which returns 1 under set -e (010)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-11T18:57:48Z
+completed: 2026-10-11T19:49:58Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-11T20:59:28+02:00
+last_commit: 2026-10-11T20:59:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  cmd_spawn ends with if-statements, not [ ] && echo, so fw termlink dispatch without --task-type no longer aborts silently after 'Tagged:' (010); scan test fails on the old file naming cmd_spawn. vendored termlink.sh
+
+# Key outcomes
+outcomes:
+  - '`cmd_spawn` no longer returns non-zero when no task type is given: its optional echo lines use `if …; then …; fi`, and no function in `agents/termlink/termlink.sh` ends with a `[ … ] && …` list.'
+  - '`tests/unit/t4067_termlink_no_trailing_and_list.bats`: a scan of termlink.sh finds no function ending in a `[ … ] && …` list (fails on the pre-fix file, naming cmd_spawn), plus a control showing the shape returns 1.'
+  - 'Existing dispatch tests stay green (`tests/unit/test_termlink_dispatch_task_type.py`); vendored copy synced.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - 'agents/termlink/termlink.sh'
+  - '.tasks/active/T-4067-fw-termlink-dispatch-aborts-silently-aft.md'
+  - 'tests/unit/t4067_termlink_no_trailing_and_list.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-11T20:59:28'
+    action: 'T-4067: cmd_spawn ends with if-statements, not [ ] && echo, so fw termlink dispatch without --task-type no longer aborts silently after ''Tagged:'' (010); scan test fails on the old file naming cmd_spawn'
+  - time: '2026-10-11T20:59:35'
+    action: 'T-4067: vendored termlink.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 52 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, termlink, dispatch]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 52
+  commits: 2
+  files_changed: 4
+  lines_added: 394
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4067-fw-termlink-dispatch-aborts-silently-aft.md
+generated_by: context-agent-hybrid

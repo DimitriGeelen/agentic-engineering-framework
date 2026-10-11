@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4062: Watchtower secret-key file is group-readable (0660 + ACL here) although _resolve_secret_key writes 0600; an existing file is never re-tightened (arc-001 F-8, corrected)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-11T19:49:37Z
+# ============================================================================
+
+task_id: T-4062
+task_name: "Watchtower secret-key file is group-readable (0660 + ACL here) although _resolve_secret_key writes 0600; an existing file is never re-tightened (arc-001 F-8, corrected)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-11T18:06:19Z
+completed: 2026-10-11T19:49:13Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-11T20:15:20+02:00
+last_commit: 2026-10-11T20:16:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  tighten Watchtower secret-key file on reuse, create at 0600, doctor WARN on group/world access. vendor synced — secret-key tightening and doctor check. record pre-fix evidence and live-host mode in task updates
+
+# Key outcomes
+outcomes:
+  - '`_resolve_secret_key` (web/app.py) leaves the key file at mode 0600 on EVERY path: generated, and existing (an existing wider-mode file is tightened before use; a POSIX ACL granting others access is removed when `setfacl` is available, otherwise a WARN is logged naming the file).'
+  - 'The new file is created 0600 from the start (no window where it exists with the umask''s mode).'
+  - '`fw doctor` WARNs when the key file is group- or world-accessible (mode or ACL), with the one-line fix.'
+  - 'pytest `tests/web/test_t4062_secret_key_mode.py`: generated key → 0600; pre-existing 0660 file → 0600 after resolve; key value unchanged. The existing-file case fails on the pre-fix code.'
+  - 'Watchtower restarted; `bin/fw watchtower current` exits 0; `.context/working/.fw-secret-key` on this host is 0600.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'record pre-fix evidence and live-host mode in task updates'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/web/app.py'
+  - 'bin/fw'
+  - '.tasks/active/T-4062-watchtower-secret-key-file-is-group-read.md'
+  - 'tests/web/test_t4062_secret_key_mode.py'
+  - 'web/app.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-11T20:15:20'
+    action: 'T-4062: tighten Watchtower secret-key file on reuse, create at 0600, doctor WARN on group/world access'
+  - time: '2026-10-11T20:15:55'
+    action: 'T-4062: vendor synced — secret-key tightening and doctor check'
+  - time: '2026-10-11T20:16:20'
+    action: 'T-4062: record pre-fix evidence and live-host mode in task updates'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 102 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, security, watchtower]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 102
+  commits: 3
+  files_changed: 6
+  lines_added: 302
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4062-watchtower-secret-key-file-is-group-read.md
+generated_by: context-agent-hybrid
