@@ -42,7 +42,7 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T13:13:53Z
-last_update: 2026-10-11T13:19:20Z
+last_update: 2026-10-11T13:20:52Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,9 +94,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `web/blueprints/config.py` SETTINGS carries the `HOST` row with the same default (`0.0.0.0`) and description as `lib/config.sh`.
-- [ ] `tests/lint/config-registry-parity.bats` passes, and `bin/fw test invariants` reports no red invariant.
-- [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
+- [x] `web/blueprints/config.py` SETTINGS carries the `HOST` row with the same default (`0.0.0.0`) and description as `lib/config.sh`.
+- [x] `tests/lint/config-registry-parity.bats` passes, and `bin/fw test invariants` reports no red invariant.
+- [x] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -278,6 +278,14 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** pre-push refused bleeding-edge: invariant suite RED on config-registry parity (lib/config.sh and web/blueprints/config.py keys differ).
+
+**Root cause:** T-4041 added the `HOST` key to `lib/config.sh`; the config registry is mirrored by hand in `web/blueprints/config.py`, and T-4041's worker was fenced off `web/` by its dispatch prompt (written by me to avoid the render-surface gate), so the mirror was never updated.
+
+**Why structurally allowed:** the parity lint runs at pre-push and in `fw test invariants`, not in T-4041's Verification block, so the task closed green with the mirror stale. The dispatch fence was mine, not the framework's.
+
+**Prevention:** the parity lint caught it before anything left the host (it worked as designed). Learning for dispatch prompts: a task that adds a config key must name both registries in scope, or the Verification must run `tests/lint/config-registry-parity.bats`.
 
 ## Evolution
 
