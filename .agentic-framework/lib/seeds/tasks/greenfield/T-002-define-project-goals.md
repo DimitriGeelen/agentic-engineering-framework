@@ -7,6 +7,8 @@ description: >
   the foundational decision — everything else follows from here.
 status: captured
 workflow_type: inception
+target_blast_radius: 3
+voi_score: 0.5
 owner: human
 horizon: now
 tags: [onboarding, inception, objectives-authoring]

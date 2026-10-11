@@ -96,10 +96,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] lib/seeds/tasks/greenfield/T-002-define-project-goals.md carries `target_blast_radius` and `voi_score` with values valid for agents/context/check-inception-schema.py, so a fresh `fw init` greenfield project's T-002 passes the inception schema gate (GitHub #86).
-- [ ] Systemic check (submitter's suggestion 2): a test asserts that EVERY seeded task under lib/seeds/tasks/ passes the schema gate for its workflow_type (today: the inception gate), so the next seed/gate drift fails a test instead of a user.
+- [x] lib/seeds/tasks/greenfield/T-002-define-project-goals.md carries `target_blast_radius` and `voi_score` with values valid for agents/context/check-inception-schema.py, so a fresh `fw init` greenfield project's T-002 passes the inception schema gate (GitHub #86).
+- [x] Systemic check (submitter's suggestion 2): a test asserts that EVERY seeded task under lib/seeds/tasks/ passes the schema gate for its workflow_type (today: the inception gate), so the next seed/gate drift fails a test instead of a user.
 - [ ] Regression: the test fails on the pre-fix seed. The existing greenfield suites stay green (tests/integration/t2922_greenfield_first_inception.bats and the fw init simulation suites that exist).
-- [ ] If cheap: the schema-gate block message states that FW_ALLOW_INCEPTION_SCHEMA_DRIFT=1 is an operator action (submitter's suggestion 3).
+- [x] If cheap: the schema-gate block message states that FW_ALLOW_INCEPTION_SCHEMA_DRIFT=1 is an operator action (submitter's suggestion 3).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -263,7 +263,19 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bats tests/unit/t4040_seeds_pass_schema_gate.bats > /tmp/t4040-verify.out 2>&1 && ! grep -q "^not ok" /tmp/t4040-verify.out
+test "$(grep -c '# skip' /tmp/t4040-verify.out)" -eq 0
+bin/fw vendor self --check
+
 ## RCA
+
+**Symptom:** a fresh `fw init` greenfield project's T-002 seed is `workflow_type: inception` without `target_blast_radius`/`voi_score`, so the first Write/Edit to it is refused by the inception schema gate (GitHub #86).
+
+**Root cause:** the seed was authored (T-3636) after the T-2188 gate made the two fields mandatory, and `lib/init.sh` copies seeds with `sed` only. The backfill that adds the fields (`lib/inception_schema_backfill.py`) runs only from `lib/upgrade.sh`, so a seed that is never upgraded never receives it.
+
+**Why structurally allowed:** no test checked the seed tree against the gates that apply to its `workflow_type`. The T-3948 backfill covered consumers' existing inceptions, not the shipped seeds.
+
+**Prevention:** `tests/unit/t4040_seeds_pass_schema_gate.bats` runs the gate's own check over every inception seed under `lib/seeds/tasks/` and asserts at least one was checked, so a future seed that lacks the fields fails the suite.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).

@@ -211,7 +211,7 @@ def main() -> int:
         "\n  Add the fields to frontmatter, e.g.:\n"
         "    target_blast_radius: 3\n"
         "    voi_score: 0.5\n\n"
-        "  Bypass (logged Tier-2):\n"
+        "  Bypass (logged Tier-2, operator action — agents do not set it):\n"
         "    FW_ALLOW_INCEPTION_SCHEMA_DRIFT=1 <your command>\n\n"
         "  Policy: T-2188 (inception schema gate)\n"
         "  Bypass-mechanism contract: T-1890 (env-var path)\n"
