@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3814: check-active-task is_commit_checkpoint_command admits 'git commit' but refuses 'fw git commit' and '.agentic-framework/bin/fw git commit' (check-active-task.sh:559-569) — the gate blocks the documented, secret-scanned spelling (010 H1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-11T16:09:20Z
+# ============================================================================
+
+task_id: T-3814
+task_name: "check-active-task is_commit_checkpoint_command admits 'git commit' but refuses 'fw git commit' and '.agentic-framework/bin/fw git commit' (check-active-task.sh:559-569) — the gate blocks the documented, secret-scanned spelling (010 H1)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-04T12:06:13Z
+completed: 2026-10-11T16:08:23Z
+duration_days: 7
+updates_count: 3
+first_commit: 2026-10-11T17:52:52+02:00
+last_commit: 2026-10-11T17:53:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  the commit-checkpoint allowance admits the documented fw git commit spellings (fw, bin/fw, .agentic-framework/bin/fw, absolute /bin/fw), with every existing refusal intact (010 H1); test 5/5, admit cases fail on the old code; t3221 17/17. vendored safe-commands.sh
+
+# Key outcomes
+outcomes:
+  - '`_fw_is_git_commit_clause` also accepts `<fw> git commit` where `<fw>` is exactly `fw`, `bin/fw`, `./bin/fw`, `.agentic-framework/bin/fw`, `./.agentic-framework/bin/fw`, or an absolute path ending in `/bin/fw` or `/.agentic-framework/bin/fw`. Nothing else is newly admitted (`somebinary git commit`, `fw git push`, `fw gitcommit`).'
+  - 'Every existing refusal still applies to the `fw` spellings: `--no-verify`/`-n`, write patterns, command substitution, chained unsafe clauses.'
+  - '`tests/unit/t3814_fw_git_commit_checkpoint.bats`: the four spellings admit; `fw git commit --no-verify`, `fw git commit -m x; rm -rf y`, `fw git commit -m "$(id)"`, `evil/fw-ish git commit`, `fw git push` refuse. The admit cases fail on the pre-fix code. `tests/unit/t3221_commit_exemption_clause.bats` stays green.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.tasks/active/T-3814-check-active-task-iscommitcheckpointcomm.md'
+  - 'tests/unit/t3814_fw_git_commit_checkpoint.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-11T17:52:52'
+    action: 'T-3814: the commit-checkpoint allowance admits the documented fw git commit spellings (fw, bin/fw, .agentic-framework/bin/fw, absolute /bin/fw), with every existing refusal intact (010 H1); test 5/5, admit cases fail on the old code; t3221 17/17'
+  - time: '2026-10-11T17:53:07'
+    action: 'T-3814: vendored safe-commands.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 10322 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 10322
+  commits: 2
+  files_changed: 4
+  lines_added: 121
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3814-check-active-task-iscommitcheckpointcomm.md
+generated_by: context-agent-hybrid

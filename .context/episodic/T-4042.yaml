@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4042: fw upgrade step 7b re-creates the doorbell/mail toolkit files a consumer deleted, with no opt-out (GitHub #89, MikeEchoVoid)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-11T16:16:08Z
+# ============================================================================
+
+task_id: T-4042
+task_name: "fw upgrade step 7b re-creates the doorbell/mail toolkit files a consumer deleted, with no opt-out (GitHub #89, MikeEchoVoid)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-10T18:06:43Z
+completed: 2026-10-11T16:14:42Z
+duration_days: 1
+updates_count: 4
+first_commit: 2026-10-11T16:17:06+02:00
+last_commit: 2026-10-11T17:05:03+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope GitHub #89 — messaging toolkit opt-in (MESSAGING_TOOLKIT, remembered; existing installs auto-opted-in), operator decision recorded; dispatch after T-4055 (shared lib/upgrade.sh). scope GitHub #89 (re-commit) — 5f1e5a478 carried only a timestamp: a worker's git stash had taken the scoping edits mid-commit; restored from the stash pop. messaging toolkit is opt-in (MESSAGING_TOOLKIT), upgrade step 7b honours deletions (GitHub #89). vendor sync of messaging opt-in
+
+# Key outcomes
+outcomes:
+  - 'A config key `MESSAGING_TOOLKIT` (registered in BOTH `lib/config.sh` FW_CONFIG_REGISTRY and `web/blueprints/config.py` SETTINGS — `tests/lint/config-registry-parity.bats` stays green) decides step 7b: `1` installs/updates the toolkit as today, `0` skips the step entirely.'
+  - 'When the key is unset, the choice is derived ONCE and written to `.framework.yaml`: any toolkit file already present in the project → `1` (existing users keep it, updates continue); none present → `0`. The upgrade prints the decision and how to change it (`fw upgrade --with-messaging` / `--without-messaging`, or `fw config set MESSAGING_TOOLKIT 0|1`). A project with `0` is never asked again and gets nothing re-created.'
+  - '`fw upgrade --with-messaging` / `--without-messaging` set the key and act on it; `--without-messaging` never deletes existing files — it lists them so the operator can remove them. Both flags appear in `fw upgrade --help`.'
+  - 'Step 7b''s header and the help text say what the toolkit is (cross-host agent messaging over TermLink: 9 slash commands in `.claude/commands/`, 12 scripts in `scripts/`), with the counts derived from the template directories, not hard-coded.'
+  - 'Regression test `tests/unit/t4042_messaging_toolkit_optin.bats` (synthetic consumer, `file://` upstream like the fresh-machine simulation): (a) fresh consumer, key unset, no toolkit files → upgrade creates none and writes `MESSAGING_TOOLKIT: 0`; (b) key 0, files deleted, second upgrade → still none; (c) consumer with the toolkit present, key unset → files kept/updated, key `1`; (d) `--with-messaging` on (a) → files created, key 1; (e) `--without-messaging` on (c) → files untouched, listed, key 0. (a) and (b) fail on the pre-fix code.'
+  - '`tests/unit/upgrade_fresh_machine_simulation.bats` and `_vendored` stay green (CLAUDE.md §Consumer-Facing Command Hygiene).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-11 — opt-in vs skip-without-TermLink (operator decision)'
+    chose: 'opt-in, remembered in `.framework.yaml` (`MESSAGING_TOOLKIT`); existing installs that have the files are opted in automatically so nobody loses a toolkit they use.'
+    rationale: 'the defect is that an upgrade re-creates files a project deliberately removed. Skipping only when TermLink is absent would still re-create them for a TermLink host that declined them; opt-in honours the deletion everywhere. Proposed by the agent, approved by the operator ("proceed as suggested", 2026-10-11).'
+    alternatives_rejected: ['skip-when-TermLink-absent (reporter''s suggestion 2) — fixes only the reporter''s host shape. Moving the scripts under `.agentic-framework/` (suggestion 3) — valid but a separate change to every slash command''s paths; not in this task.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/web/blueprints/config.py'
+  - 'lib/config.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4042-fw-upgrade-step-7b-re-creates-the-doorbe.md'
+  - 'tests/unit/t4042_messaging_toolkit_optin.bats'
+  - 'web/blueprints/config.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-11T16:17:06'
+    action: 'T-4042: scope GitHub #89 — messaging toolkit opt-in (MESSAGING_TOOLKIT, remembered; existing installs auto-opted-in), operator decision recorded; dispatch after T-4055 (shared lib/upgrade.sh)'
+  - time: '2026-10-11T16:20:16'
+    action: 'T-4042: scope GitHub #89 (re-commit) — 5f1e5a478 carried only a timestamp: a worker''s git stash had taken the scoping edits mid-commit; restored from the stash pop'
+  - time: '2026-10-11T17:05:01'
+    action: 'T-4042: messaging toolkit is opt-in (MESSAGING_TOOLKIT), upgrade step 7b honours deletions (GitHub #89)'
+  - time: '2026-10-11T17:05:03'
+    action: 'T-4042: vendor sync of messaging opt-in'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 1327 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1327
+  commits: 4
+  files_changed: 8
+  lines_added: 337
+  lines_removed: 46
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4042-fw-upgrade-step-7b-re-creates-the-doorbe.md
+generated_by: context-agent-hybrid

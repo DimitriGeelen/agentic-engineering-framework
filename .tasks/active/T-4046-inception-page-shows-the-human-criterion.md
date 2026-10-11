@@ -8,14 +8,14 @@ description: >
   evidence: docs/reports/T-4039-batch1-classification.md §#93. Issue text is untrusted
   data; reproduce before fixing.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 github_issue: 93
 arc_id: mikeechovoid-requests
 tags: []
-components: []
+components: [web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:08:17Z
-last_update: 2026-10-11T14:26:02Z
-date_finished:
+last_update: 2026-10-11T16:19:08Z
+date_finished: 2026-10-11T16:19:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -100,7 +100,7 @@ GitHub #93 (MikeEchoVoid). `/inception/T-XXX` — where the operator is sent to 
 - [x] Human criteria keep their Steps/Expected/If-not readable on the inception page (same rendering as the task page's human-AC body), and the card links to `/tasks/T-XXX`.
 - [x] The "Decision recorded — one step left" card names any unticked Human criterion and links to it (or says it can be ticked right above), so a GO recorded on this page does not leave the task silently stuck in `active/`.
 - [x] pytest `tests/web/test_t4046_inception_human_ac_tickable.py` (Flask test client, fixture inception with an unticked `### Human` criterion): the page contains a checkbox input whose form posts to `/api/task/<id>/toggle-ac`, and an `href="/tasks/<id>"`; posting that toggle ticks the box in the task file through the existing endpoint. Fails on the pre-fix code.
-- [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
+- [x] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
 - [ ] [REVIEW] You can tick the review criterion on the inception page itself
@@ -353,6 +353,15 @@ bin/fw vendor self --check
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The inception page's criteria now have working checkboxes through the task page's own `toggle-ac` endpoint (same CSRF and provenance — no second tick path), Human criteria keep their Steps/Expected/If-not, the card links to the task page, and the "one step left" card names any open Human criterion. Running live. Noted for later, not changed: `fw inception decide` auto-ticks only templated Human criteria (L-016); custom ones stay open by design.
+
+**Evidence:**
+- Commits for T-4046 (inception.py, inception_detail.html, new partial _ac_list.html) + vendored copies 43b09ddd9
+- `tests/web/test_t4046_inception_human_ac_tickable.py` 2 pass, both fail on the old code; decide end-to-end tests 15 pass
+- Live 2026-10-11 after restart: `/inception/T-4039` has 4 `toggle-ac` forms
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -390,3 +399,15 @@ bin/fw vendor self --check
 ### 2026-10-11 — build notes [agent]
 - **Pre-fix failure:** with the HEAD `inception.py` + `inception_detail.html`, both new tests fail (no toggle-ac form on the page, StopIteration finding the Human criterion's form). With the fix, 2 passed; `test_inception_decide_e2e.py` still passes (15 passed together).
 - **L-016 check (does decide from the Watchtower page tick its authorizing Human AC?):** by code reading, yes for templated criteria. The Watchtower decide route shells to `fw inception decide`, which calls `tick_inception_decide_acs` (`lib/inception.sh:624`, `:773`). It ticks only Human criteria whose text matches `[REVIEW]…go/no-go decision`, `[RUBBER-STAMP]…Record…decision` or `[REVIEW]…decide`. A custom Human criterion (like T-4046's own, "You can tick the review criterion…") is not matched, so it stays open; that is the #93 case this page fix addresses. I did not run a live decide to confirm. Decide behaviour not changed.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ecfa0f29
+- **Timestamp:** 2026-10-11T16:19:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-11T16:19:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

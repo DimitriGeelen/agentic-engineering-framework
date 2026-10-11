@@ -1,19 +1,26 @@
 ---
-id: T-3814
-name: "check-active-task is_commit_checkpoint_command admits 'git commit' but refuses
-  'fw git commit' and '.agentic-framework/bin/fw git commit' (check-active-task.sh:559-569)
-  — the gate blocks the documented, secret-scanned spelling (010 H1)"
+id: T-4055
+name: "Version derivation drops the tag's patch number: v1.8.9 + 92 commits reads
+  1.8.92, newer than 1.8.10 (bin/fw ~33, stamped into vendored VERSION/.framework.yaml)
+  (ring20 T-2311)"
 description: >
-  Peer report 2026-10-04 (010 T-3341 rehearsal or 832 T-1009); details in the name
-  and on the sidecar thread.
+  bin/fw version derivation maps git describe vX.Y.Z-N-gSHA to X.Y.N (comment: v1.4.0-5
+  → 1.4.5), which only holds when Z=0. On v1.8.9-92-ga6e06c286 it yields 1.8.92, which
+  the vendor step stamps into the consumer's VERSION and .framework.yaml and which
+  sorts newer than 1.8.10 — so version comparisons (upgrade/version-relation, doctor)
+  can misjudge a bleeding-edge consumer as ahead of the next release. ring20 suggests
+  1.8.9+92.ga6e06c28 (semver build metadata) or 1.8.9-be.92, and publishing -be tags
+  for pinning. Check every consumer of the derived string (version-relation, vendor
+  stamping, release) before changing the format.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: []
-components: []
+horizon: null
+tags: [bug, version, vendor]
+components: [bin/fw, lib/release.sh, lib/version.sh]
 related_tasks: []
+origin: {kind: "peer", source: "proxmox-ring20-management", ref: "T-2311"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -40,9 +47,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-04T12:06:13Z
-last_update: 2026-10-11T15:53:07Z
-date_finished:
+created: 2026-10-11T13:56:49Z
+last_update: 2026-10-11T16:09:41Z
+date_finished: 2026-10-11T16:09:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -53,18 +60,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-04T12:15:21Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-04T12:15:41Z'
+  - ts: '2026-10-11T13:59:59Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -81,21 +78,33 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-11T14:00:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-3814: check-active-task is_commit_checkpoint_command admits 'git commit' but refuses 'fw git commit' and '.agentic-framework/bin/fw git commit' (check-active-task.sh:559-569) — the gate blocks the documented, secret-scanned spelling (010 H1)
+# T-4055: Version derivation drops the tag's patch number: v1.8.9 + 92 commits reads 1.8.92, newer than 1.8.10 (bin/fw ~33, stamped into vendored VERSION/.framework.yaml) (ring20 T-2311)
 
 ## Context
 
-Peer report (010 H1). `is_commit_checkpoint_command` (`agents/context/lib/safe-commands.sh:1437`) lets a commit through the task gate with null focus (T-2054) or a partial-complete task (T-3179) — commits persist work already done. Its clause test `_fw_is_git_commit_clause` (`:1300`) matches only `^git commit`, so the framework's own documented, secret-scanned spellings `bin/fw git commit`, `fw git commit` and `.agentic-framework/bin/fw git commit` are refused at exactly the moments the allowance exists for (end of a task, critical budget). Reproduced 2026-10-11: `git commit` ADMIT; the three `fw` spellings refuse.
+Reported by ring20 (T-2311 testbed upgrade to bleeding-edge a6e06c28): the vendored VERSION and `.framework.yaml` read `1.8.92`. `bin/fw` `_derive_version` (~line 33) maps `git describe` `vX.Y.Z-N-gSHA` to `X.Y.N` — written when tags were `vX.Y.0` (comment: `v1.4.0-5 → 1.4.5`). With a patch tag it drops Z: `v1.8.9-92` → `1.8.92`, which reads as a release and sorts **newer than 1.8.10**, so version comparisons can judge a bleeding-edge consumer as ahead of the next release. Confirmed in the source 2026-10-11.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `_fw_is_git_commit_clause` also accepts `<fw> git commit` where `<fw>` is exactly `fw`, `bin/fw`, `./bin/fw`, `.agentic-framework/bin/fw`, `./.agentic-framework/bin/fw`, or an absolute path ending in `/bin/fw` or `/.agentic-framework/bin/fw`. Nothing else is newly admitted (`somebinary git commit`, `fw git push`, `fw gitcommit`).
-- [x] Every existing refusal still applies to the `fw` spellings: `--no-verify`/`-n`, write patterns, command substitution, chained unsafe clauses.
-- [x] `tests/unit/t3814_fw_git_commit_checkpoint.bats`: the four spellings admit; `fw git commit --no-verify`, `fw git commit -m x; rm -rf y`, `fw git commit -m "$(id)"`, `evil/fw-ish git commit`, `fw git push` refuse. The admit cases fail on the pre-fix code. `tests/unit/t3221_commit_exemption_clause.bats` stays green.
+- [x] `_derive_version` returns `X.Y.Z+N.gSHA` for `vX.Y.Z-N-gSHA` (semver build metadata; e.g. `1.8.9+92.ga6e06c286`), and `X.Y.Z` exactly on a tag. The comment is corrected.
+- [x] Every consumer of the derived string handles the `+N.gSHA` form: audit `lib/version.sh`, `lib/version-relation.sh`, `lib/upgrade.sh`, `lib/upstream.sh`, `lib/init.sh`, `lib/worktree.sh`, `lib/release.sh`, vendor stamping (VERSION / `.framework.yaml` `version:`), and `fw doctor`'s version checks. A comparison treats `1.8.9+92…` as after `1.8.9` and before `1.8.10` (or as equal to 1.8.9 where only release precedence matters), never as newer than `1.8.10`. List what you checked in the task's Updates.
+- [x] A consumer already stamped with the old form (`1.8.92`) is not misjudged after this change in any comparison a `fw upgrade` makes; if it would be, the upgrade path recognises the legacy form (document how).
+- [x] Regression test `tests/unit/t4055_version_derivation.bats`: a fixture repo tagged `v1.8.9` with N extra commits derives `1.8.9+N.g<sha>`; on the tag it derives `1.8.9`; the comparison helper orders `1.8.9 < 1.8.9+92.gx < 1.8.10`. The derivation test fails on the pre-fix code.
+- [x] Existing version/upgrade suites stay green: `tests/unit/*version*.bats`, t2762, t3714, t3886, and `tests/unit/upgrade_fresh_machine_simulation.bats` (CLAUDE.md §Consumer-Facing Command Hygiene). (Worker t4055-version run on the T-4055 tree, 2026-10-11: fw_derive_version_symlink, fw_version_output, hook_version_marker_parity, lib_version, pre_push_version_monotonicity, self_vendor_version, t3242, t3821, test_doctor_consumer_version_ahead, version_relation, t2762, t3714, t3886, upgrade_fresh_machine_simulation 16/16, _vendored 4/4 — no not-ok. Not re-run at close: T-4042 was mid-edit on lib/upgrade.sh.)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -133,6 +142,9 @@ Peer report (010 H1). `is_commit_checkpoint_command` (`agents/context/lib/safe-c
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
+# Build/refactor/decommission tasks with NO command here are refused. If nothing can be
+# run, add the line `# verification: none — <why nothing can be run>`; it is serviced
+# (queued for review: add a check / other evidence / accept). See docs/reports/T-4024-servicing-loop.md.
 #
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
@@ -255,12 +267,17 @@ Peer report (010 H1). `is_commit_checkpoint_command` (`agents/context/lib/safe-c
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-timeout 300 bats tests/unit/t3814_fw_git_commit_checkpoint.bats > .context/working/t3814-verify.out 2>&1 && ! grep -q "^not ok" .context/working/t3814-verify.out
-test "$(grep -c '# skip' .context/working/t3814-verify.out)" -eq 0
-timeout 300 bats tests/unit/t3221_commit_exemption_clause.bats > .context/working/t3814-t3221.out 2>&1 && ! grep -q "^not ok" .context/working/t3814-t3221.out
+timeout 600 bats tests/unit/t4055_version_derivation.bats > .context/working/t4055-verify.out 2>&1 && ! grep -q "^not ok" .context/working/t4055-verify.out
+test "$(grep -c '# skip' .context/working/t4055-verify.out)" -eq 0
+bash -n bin/fw
 bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** v1.8.9 + 92 commits derived `1.8.92`, stamped into vendored VERSION/`.framework.yaml`; reads as a release and sorts newer than 1.8.10.
+**Root cause:** `_derive_version` rebuilt `major.minor.<commits>` assuming tags are `vX.Y.0`; with a patch tag it discarded Z and used the commit count as the patch.
+**Why structurally allowed:** no test derived from a tag with non-zero patch; comparison helpers rejected non-numeric input, so no consumer exercised a build-metadata form.
+**Prevention:** `tests/unit/t4055_version_derivation.bats` (fixture repo tagged v1.8.9: derivation, ordering, legacy-pin cases).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -275,14 +292,6 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** with null focus (after a close) or a partial-complete task, `git commit` was let through the task gate but `bin/fw git commit` / `fw git commit` / `.agentic-framework/bin/fw git commit` were refused (010 H1) — the documented spelling that runs the secret scan was the one blocked.
-
-**Root cause:** `_fw_is_git_commit_clause` (`agents/context/lib/safe-commands.sh`) recognised a commit only as a clause starting with `git commit`. T-3221 tightened the old substring match to a clause anchor (correctly), and in doing so dropped the `fw git commit` spelling the substring match had happened to admit.
-
-**Why structurally allowed:** T-3221's test matrix probed only the raw `git commit` spelling and the attacks around it; no test asserted the framework's own commit wrapper passes, so the regression was invisible until a peer hit it at a critical-budget checkpoint.
-
-**Prevention:** `tests/unit/t3814_fw_git_commit_checkpoint.bats` pins all documented spellings (admit) beside the refusals (no-verify, chained write, substitution, redirect) and a no-widening leg (look-alike launchers, `fw git push`). Residual, accepted: any absolute path ending `/bin/fw` is trusted as the launcher; creating such a file already needs a task under the Write gate, and the commit-msg hook still enforces P-002.
 
 ## Evolution
 
@@ -339,6 +348,11 @@ bin/fw vendor self --check
 
 ## Decisions
 
+### 2026-10-11 — format of a between-releases version
+- **Chose:** `X.Y.Z+N.gSHA` (semver build metadata).
+- **Why:** it never reads as a release number, keeps the tag it builds on, and under semver precedence it is not newer than any later release.
+- **Rejected:** `X.Y.Z-be.N` (ring20's alternative) — a semver pre-release sorts BEFORE `X.Y.Z`, so a bleeding-edge consumer would look older than the release it already contains; `X.Y.(Z+N)` — the current bug's shape. Publishing `-be` tags for pinning is a separate question (not in this task).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -360,13 +374,28 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-04T12:06:13Z — task-created [task-create-agent]
+### 2026-10-11T13:56:49Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3814-check-active-task-iscommitcheckpointcomm.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4055-version-derivation-drops-the-tags-patch-.md
 - **Context:** Initial task creation
 
-### 2026-10-10T19:04:30Z — status-update [task-update-agent]
-- **Change:** horizon: next → now
-
-### 2026-10-11T15:50:15Z — status-update [task-update-agent]
+### 2026-10-11T13:59:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-11 — T-4055 implementation audit
+- **Changed:** bin/fw `_derive_version` (X.Y.Z+N.gSHA; comment corrected); lib/version.sh `_version_lt` and `fw version bump` (strip `+build`, bump from the X.Y.Z base); lib/release.sh `release_version_lt` (strip `+build`: equal to X.Y.Z, below X.Y.(Z+1)).
+- **Audited, no change needed:** lib/version-relation.sh (string equality, then git ancestry via `version_sha:`/tag; never string order); lib/upgrade.sh, lib/upstream.sh, lib/init.sh (stamp FW_VERSION verbatim, no parsing); lib/worktree.sh (comments only); agents/git hooks.sh pre-push monotonicity (`sort -V` + ancestor fallback; 1.8.9+92.gx sorts after 1.8.9, before 1.8.10); doctor badge (uses fw_version_relation).
+- **Legacy `1.8.92` pins:** no sha and no tag `v1.8.92` → `undecidable` (proceed-with-warning, T-2713 policy), never "ahead"; with a recorded `version_sha:` ancestry decides. Pinned by test.
+- **Pre-fix evidence:** with bin/fw, lib/version.sh, lib/release.sh stashed to HEAD, t4055 tests 2,3,4 `not ok`; post-fix 6/6 ok.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-816ab8c0
+- **Timestamp:** 2026-10-11T16:09:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-11T16:09:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

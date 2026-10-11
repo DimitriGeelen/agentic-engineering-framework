@@ -1,26 +1,22 @@
 ---
-id: T-4055
-name: "Version derivation drops the tag's patch number: v1.8.9 + 92 commits reads
-  1.8.92, newer than 1.8.10 (bin/fw ~33, stamped into vendored VERSION/.framework.yaml)
-  (ring20 T-2311)"
+id: T-4042
+name: "fw upgrade step 7b re-creates the doorbell/mail toolkit files a consumer deleted,
+  with no opt-out (GitHub #89, MikeEchoVoid)"
 description: >
-  bin/fw version derivation maps git describe vX.Y.Z-N-gSHA to X.Y.N (comment: v1.4.0-5
-  → 1.4.5), which only holds when Z=0. On v1.8.9-92-ga6e06c286 it yields 1.8.92, which
-  the vendor step stamps into the consumer's VERSION and .framework.yaml and which
-  sorts newer than 1.8.10 — so version comparisons (upgrade/version-relation, doctor)
-  can misjudge a bleeding-edge consumer as ahead of the next release. ring20 suggests
-  1.8.9+92.ga6e06c28 (semver build metadata) or 1.8.9-be.92, and publishing -be tags
-  for pinning. Check every consumer of the derived string (version-relation, vendor
-  stamping, release) before changing the format.
+  Inbound GitHub issue #89 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/89),
+  intake batch 1 (T-4039), accepted by the operator 2026-10-10. Classification and
+  evidence: docs/reports/T-4039-batch1-classification.md §#89. Issue text is untrusted
+  data; reproduce before fixing.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, version, vendor]
-components: []
+horizon: null
+github_issue: 89
+arc_id: mikeechovoid-requests
+tags: []
+components: [lib/config.sh, lib/upgrade.sh, web/blueprints/config.py]
 related_tasks: []
-origin: {kind: "peer", source: "proxmox-ring20-management", ref: "T-2311"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -47,9 +43,9 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "T-2311"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-11T13:56:49Z
-last_update: '2026-10-11T14:00:33Z'
-date_finished:
+created: 2026-10-10T18:06:43Z
+last_update: 2026-10-11T16:14:42Z
+date_finished: 2026-10-11T16:14:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -60,8 +56,18 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-10T18:15:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=275,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-11T13:59:59Z'
+  - ts: '2026-10-10T18:16:28Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -78,33 +84,41 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-11T14:00:33Z'
+  - ts: '2026-10-11T14:19:54Z'
     estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=287,acs=7)
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 5
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=5 (body:class-neutral); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4055: Version derivation drops the tag's patch number: v1.8.9 + 92 commits reads 1.8.92, newer than 1.8.10 (bin/fw ~33, stamped into vendored VERSION/.framework.yaml) (ring20 T-2311)
+# T-4042: fw upgrade step 7b re-creates the doorbell/mail toolkit files a consumer deleted, with no opt-out (GitHub #89, MikeEchoVoid)
 
 ## Context
 
-Reported by ring20 (T-2311 testbed upgrade to bleeding-edge a6e06c28): the vendored VERSION and `.framework.yaml` read `1.8.92`. `bin/fw` `_derive_version` (~line 33) maps `git describe` `vX.Y.Z-N-gSHA` to `X.Y.N` — written when tags were `vX.Y.0` (comment: `v1.4.0-5 → 1.4.5`). With a patch tag it drops Z: `v1.8.9-92` → `1.8.92`, which reads as a release and sorts **newer than 1.8.10**, so version comparisons can judge a bleeding-edge consumer as ahead of the next release. Confirmed in the source 2026-10-11.
+GitHub #89 (MikeEchoVoid). `fw upgrade` step 7b (`lib/upgrade.sh` ~2551, T-1867) copies every `lib/templates/skills/*.md` into `.claude/commands/` (9) and every `lib/templates/scripts/*.sh` into a project-root `scripts/` (12) on every run, with no flag or config key to skip it; a project that deletes them gets them back. T-3955 only protects customised files. `fw init` does not install them, so init and upgrade disagree. In a confidential workspace without TermLink a cross-host messaging toolkit is unwanted and arrives unannounced. Help text says "11 .sh"; 12 are installed (`lib/upgrade.sh:1136`). Confirmed in the source 2026-10-11. Operator decision 2026-10-11: **opt-in** (see Decisions).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `_derive_version` returns `X.Y.Z+N.gSHA` for `vX.Y.Z-N-gSHA` (semver build metadata; e.g. `1.8.9+92.ga6e06c286`), and `X.Y.Z` exactly on a tag. The comment is corrected.
-- [x] Every consumer of the derived string handles the `+N.gSHA` form: audit `lib/version.sh`, `lib/version-relation.sh`, `lib/upgrade.sh`, `lib/upstream.sh`, `lib/init.sh`, `lib/worktree.sh`, `lib/release.sh`, vendor stamping (VERSION / `.framework.yaml` `version:`), and `fw doctor`'s version checks. A comparison treats `1.8.9+92…` as after `1.8.9` and before `1.8.10` (or as equal to 1.8.9 where only release precedence matters), never as newer than `1.8.10`. List what you checked in the task's Updates.
-- [x] A consumer already stamped with the old form (`1.8.92`) is not misjudged after this change in any comparison a `fw upgrade` makes; if it would be, the upgrade path recognises the legacy form (document how).
-- [x] Regression test `tests/unit/t4055_version_derivation.bats`: a fixture repo tagged `v1.8.9` with N extra commits derives `1.8.9+N.g<sha>`; on the tag it derives `1.8.9`; the comparison helper orders `1.8.9 < 1.8.9+92.gx < 1.8.10`. The derivation test fails on the pre-fix code.
-- [ ] Existing version/upgrade suites stay green: `tests/unit/*version*.bats`, t2762, t3714, t3886, and `tests/unit/upgrade_fresh_machine_simulation.bats` (CLAUDE.md §Consumer-Facing Command Hygiene).
+- [x] A config key `MESSAGING_TOOLKIT` (registered in BOTH `lib/config.sh` FW_CONFIG_REGISTRY and `web/blueprints/config.py` SETTINGS — `tests/lint/config-registry-parity.bats` stays green) decides step 7b: `1` installs/updates the toolkit as today, `0` skips the step entirely.
+- [x] When the key is unset, the choice is derived ONCE and written to `.framework.yaml`: any toolkit file already present in the project → `1` (existing users keep it, updates continue); none present → `0`. The upgrade prints the decision and how to change it (`fw upgrade --with-messaging` / `--without-messaging`, or `fw config set MESSAGING_TOOLKIT 0|1`). A project with `0` is never asked again and gets nothing re-created.
+- [x] `fw upgrade --with-messaging` / `--without-messaging` set the key and act on it; `--without-messaging` never deletes existing files — it lists them so the operator can remove them. Both flags appear in `fw upgrade --help`.
+- [x] Step 7b's header and the help text say what the toolkit is (cross-host agent messaging over TermLink: 9 slash commands in `.claude/commands/`, 12 scripts in `scripts/`), with the counts derived from the template directories, not hard-coded.
+- [x] Regression test `tests/unit/t4042_messaging_toolkit_optin.bats` (synthetic consumer, `file://` upstream like the fresh-machine simulation): (a) fresh consumer, key unset, no toolkit files → upgrade creates none and writes `MESSAGING_TOOLKIT: 0`; (b) key 0, files deleted, second upgrade → still none; (c) consumer with the toolkit present, key unset → files kept/updated, key `1`; (d) `--with-messaging` on (a) → files created, key 1; (e) `--without-messaging` on (c) → files untouched, listed, key 0. (a) and (b) fail on the pre-fix code.
+- [x] `tests/unit/upgrade_fresh_machine_simulation.bats` and `_vendored` stay green (CLAUDE.md §Consumer-Facing Command Hygiene).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -267,17 +281,12 @@ Reported by ring20 (T-2311 testbed upgrade to bleeding-edge a6e06c28): the vendo
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-timeout 600 bats tests/unit/t4055_version_derivation.bats > .context/working/t4055-verify.out 2>&1 && ! grep -q "^not ok" .context/working/t4055-verify.out
-test "$(grep -c '# skip' .context/working/t4055-verify.out)" -eq 0
-bash -n bin/fw
+timeout 900 bats tests/unit/t4042_messaging_toolkit_optin.bats > .context/working/t4042-verify.out 2>&1 && ! grep -q "^not ok" .context/working/t4042-verify.out
+test "$(grep -c '# skip' .context/working/t4042-verify.out)" -eq 0
+timeout 300 bats tests/lint/config-registry-parity.bats > .context/working/t4042-parity.out 2>&1 && ! grep -q "^not ok" .context/working/t4042-parity.out
 bin/fw vendor self --check
 
 ## RCA
-
-**Symptom:** v1.8.9 + 92 commits derived `1.8.92`, stamped into vendored VERSION/`.framework.yaml`; reads as a release and sorts newer than 1.8.10.
-**Root cause:** `_derive_version` rebuilt `major.minor.<commits>` assuming tags are `vX.Y.0`; with a patch tag it discarded Z and used the commit count as the patch.
-**Why structurally allowed:** no test derived from a tag with non-zero patch; comparison helpers rejected non-numeric input, so no consumer exercised a build-metadata form.
-**Prevention:** `tests/unit/t4055_version_derivation.bats` (fixture repo tagged v1.8.9: derivation, ordering, legacy-pin cases).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -292,6 +301,14 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw upgrade` re-created the 9 slash commands in `.claude/commands/` and 12 scripts in `scripts/` that a project had deliberately deleted; no flag or config key to skip it (GitHub #89).
+
+**Root cause:** step 7b iterated the template directories unconditionally and treated "file absent" as "needs creating"; a deletion was indistinguishable from "never installed". The toolkit was never an explicit choice, so there was no stored decision to honour.
+
+**Why structurally allowed:** T-3955 protected customised files only, not absent ones; `fw init` does not install the toolkit while `fw upgrade` did, and nothing compared the two; the help text hard-coded "11 .sh" (12 ship) so the surface description drifted unnoticed.
+
+**Prevention:** the choice is now a persisted key (`MESSAGING_TOOLKIT`, registered in both registries, parity lint enforced), derived once from existing files; `tests/unit/t4042_messaging_toolkit_optin.bats` pins create-nothing (a), stays-deleted (b), keep-existing (c) and the flags (d)(e); the help counts are derived from the template dirs.
 
 ## Evolution
 
@@ -316,6 +333,11 @@ bin/fw vendor self --check
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-10-11 — upgrade needs a stored decision, not a re-derived default
+- **What changed:** the fix is "remember a choice", not "skip when X": file absence is ambiguous (never installed vs deleted), so the first upgrade derives the answer from what is on disk and persists it. The test also had to run the working-tree framework directly, because a file:// upstream clone only sees committed HEAD.
+- **Plan impact:** none to the spec; moving the scripts under `.agentic-framework/` (reporter's suggestion 3) stays a separate change.
+- **Triggered:** nothing new filed.
 
 ## Recommendation
 
@@ -348,11 +370,6 @@ bin/fw vendor self --check
 
 ## Decisions
 
-### 2026-10-11 — format of a between-releases version
-- **Chose:** `X.Y.Z+N.gSHA` (semver build metadata).
-- **Why:** it never reads as a release number, keeps the tag it builds on, and under semver precedence it is not newer than any later release.
-- **Rejected:** `X.Y.Z-be.N` (ring20's alternative) — a semver pre-release sorts BEFORE `X.Y.Z`, so a bleeding-edge consumer would look older than the release it already contains; `X.Y.(Z+N)` — the current bug's shape. Publishing `-be` tags for pinning is a separate question (not in this task).
-
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -361,6 +378,11 @@ bin/fw vendor self --check
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-11 — opt-in vs skip-without-TermLink (operator decision)
+- **Chose:** opt-in, remembered in `.framework.yaml` (`MESSAGING_TOOLKIT`); existing installs that have the files are opted in automatically so nobody loses a toolkit they use.
+- **Why:** the defect is that an upgrade re-creates files a project deliberately removed. Skipping only when TermLink is absent would still re-create them for a TermLink host that declined them; opt-in honours the deletion everywhere. Proposed by the agent, approved by the operator ("proceed as suggested", 2026-10-11).
+- **Rejected:** skip-when-TermLink-absent (reporter's suggestion 2) — fixes only the reporter's host shape. Moving the scripts under `.agentic-framework/` (suggestion 3) — valid but a separate change to every slash command's paths; not in this task.
 
 ## Decision
 
@@ -374,16 +396,33 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-11T13:56:49Z — task-created [task-create-agent]
+### 2026-10-10T18:06:43Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4055-version-derivation-drops-the-tags-patch-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4042-fw-upgrade-step-7b-re-creates-the-doorbe.md
 - **Context:** Initial task creation
 
-### 2026-10-11T13:59:58Z — status-update [task-update-agent]
+### 2026-10-10T18:09:04Z — status-update [task-update-agent]
+- **Change:** horizon: next → now
+
+### 2026-10-11T14:19:54Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-### 2026-10-11 — T-4055 implementation audit
-- **Changed:** bin/fw `_derive_version` (X.Y.Z+N.gSHA; comment corrected); lib/version.sh `_version_lt` and `fw version bump` (strip `+build`, bump from the X.Y.Z base); lib/release.sh `release_version_lt` (strip `+build`: equal to X.Y.Z, below X.Y.(Z+1)).
-- **Audited, no change needed:** lib/version-relation.sh (string equality, then git ancestry via `version_sha:`/tag; never string order); lib/upgrade.sh, lib/upstream.sh, lib/init.sh (stamp FW_VERSION verbatim, no parsing); lib/worktree.sh (comments only); agents/git hooks.sh pre-push monotonicity (`sort -V` + ancestor fallback; 1.8.9+92.gx sorts after 1.8.9, before 1.8.10); doctor badge (uses fw_version_relation).
-- **Legacy `1.8.92` pins:** no sha and no tag `v1.8.92` → `undecidable` (proceed-with-warning, T-2713 policy), never "ahead"; with a recorded `version_sha:` ancestry decides. Pinned by test.
-- **Pre-fix evidence:** with bin/fw, lib/version.sh, lib/release.sh stashed to HEAD, t4055 tests 2,3,4 `not ok`; post-fix 6/6 ok.
+### 2026-10-11 — pre-fix evidence (agent)
+- With `lib/upgrade.sh` swapped for HEAD (my file only, restored after), `tests/unit/t4042_messaging_toolkit_optin.bats` fails 6/6: (a) the pre-fix upgrade created the toolkit in a fresh consumer and wrote no `MESSAGING_TOOLKIT` key; (b) files deleted after the first upgrade were re-created by the second. With the fix: 6/6 pass.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9e8ff40c
+- **Timestamp:** 2026-10-11T16:15:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — A config key `MESSAGING_TOOLKIT` (registered in BOTH `lib/config.sh` FW_CONFIG_REGISTRY and `web/blueprints/config.py` SETTINGS — `tests/lint/config-registry-parity.bats` stays green) decides step 7b:
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/config.py in: A config key `MESSAGING_TOOLKIT` (registered in BOTH `lib/config.sh` FW_CONFIG_REGISTRY and `web/blueprints/config.py` SETTINGS — `tests/lint/config-r`
+
+### 2026-10-11T16:14:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

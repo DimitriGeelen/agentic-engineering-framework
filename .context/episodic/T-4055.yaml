@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4055: Version derivation drops the tag's patch number: v1.8.9 + 92 commits reads 1.8.92, newer than 1.8.10 (bin/fw ~33, stamped into vendored VERSION/.framework.yaml) (ring20 T-2311)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-11T16:10:02Z
+# ============================================================================
+
+task_id: T-4055
+task_name: "Version derivation drops the tag's patch number: v1.8.9 + 92 commits reads 1.8.92, newer than 1.8.10 (bin/fw ~33, stamped into vendored VERSION/.framework.yaml) (ring20 T-2311)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-11T13:56:49Z
+completed: 2026-10-11T16:09:41Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-11T16:13:04+02:00
+last_commit: 2026-10-11T16:13:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  derive X.Y.Z+N.gSHA, teach version comparators build metadata. vendor sync of version derivation fix
+
+# Key outcomes
+outcomes:
+  - '`_derive_version` returns `X.Y.Z+N.gSHA` for `vX.Y.Z-N-gSHA` (semver build metadata; e.g. `1.8.9+92.ga6e06c286`), and `X.Y.Z` exactly on a tag. The comment is corrected.'
+  - 'Every consumer of the derived string handles the `+N.gSHA` form: audit `lib/version.sh`, `lib/version-relation.sh`, `lib/upgrade.sh`, `lib/upstream.sh`, `lib/init.sh`, `lib/worktree.sh`, `lib/release.sh`, vendor stamping (VERSION / `.framework.yaml` `version:`), and `fw doctor`''s version checks. A comparison treats `1.8.9+92…` as after `1.8.9` and before `1.8.10` (or as equal to 1.8.9 where only release precedence matters), never as newer than `1.8.10`. List what you checked in the task''s Updates.'
+  - 'A consumer already stamped with the old form (`1.8.92`) is not misjudged after this change in any comparison a `fw upgrade` makes; if it would be, the upgrade path recognises the legacy form (document how).'
+  - 'Regression test `tests/unit/t4055_version_derivation.bats`: a fixture repo tagged `v1.8.9` with N extra commits derives `1.8.9+N.g<sha>`; on the tag it derives `1.8.9`; the comparison helper orders `1.8.9 < 1.8.9+92.gx < 1.8.10`. The derivation test fails on the pre-fix code.'
+  - 'Existing version/upgrade suites stay green: `tests/unit/*version*.bats`, t2762, t3714, t3886, and `tests/unit/upgrade_fresh_machine_simulation.bats` (CLAUDE.md §Consumer-Facing Command Hygiene). (Worker t4055-version run on the T-4055 tree, 2026-10-11: fw_derive_version_symlink, fw_version_output, hook_version_marker_parity, lib_version, pre_push_version_monotonicity, self_vendor_version, t3242, t3821, test_doctor_consumer_version_ahead, version_relation, t2762, t3714, t3886, upgrade_fresh_machine_simulation 16/16, _vendored 4/4 — no not-ok. Not re-run at close: T-4042 was mid-edit on lib/upgrade.sh.)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'vendor sync of version derivation fix'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-11 — format of a between-releases version'
+    chose: '`X.Y.Z+N.gSHA` (semver build metadata).'
+    rationale: 'it never reads as a release number, keeps the tag it builds on, and under semver precedence it is not newer than any later release.'
+    alternatives_rejected: ['`X.Y.Z-be.N` (ring20''s alternative) — a semver pre-release sorts BEFORE `X.Y.Z`, so a bleeding-edge consumer would look older than the release it already contains; `X.Y.(Z+N)` — the current bug''s shape. Publishing `-be` tags for pinning is a separate question (not in this task).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/release.sh'
+  - '.agentic-framework/lib/version.sh'
+  - 'bin/fw'
+  - 'lib/release.sh'
+  - 'lib/version.sh'
+  - '.tasks/active/T-4055-version-derivation-drops-the-tags-patch-.md'
+  - 'tests/unit/t4055_version_derivation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-11T16:13:04'
+    action: 'T-4055: derive X.Y.Z+N.gSHA, teach version comparators build metadata'
+  - time: '2026-10-11T16:13:21'
+    action: 'T-4055: vendor sync of version derivation fix'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 132 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, version, vendor]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 132
+  commits: 2
+  files_changed: 8
+  lines_added: 152
+  lines_removed: 32
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4055-version-derivation-drops-the-tags-patch-.md
+generated_by: context-agent-hybrid

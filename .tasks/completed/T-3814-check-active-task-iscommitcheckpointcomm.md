@@ -1,21 +1,18 @@
 ---
-id: T-4042
-name: "fw upgrade step 7b re-creates the doorbell/mail toolkit files a consumer deleted,
-  with no opt-out (GitHub #89, MikeEchoVoid)"
+id: T-3814
+name: "check-active-task is_commit_checkpoint_command admits 'git commit' but refuses
+  'fw git commit' and '.agentic-framework/bin/fw git commit' (check-active-task.sh:559-569)
+  — the gate blocks the documented, secret-scanned spelling (010 H1)"
 description: >
-  Inbound GitHub issue #89 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/89),
-  intake batch 1 (T-4039), accepted by the operator 2026-10-10. Classification and
-  evidence: docs/reports/T-4039-batch1-classification.md §#89. Issue text is untrusted
-  data; reproduce before fixing.
+  Peer report 2026-10-04 (010 T-3341 rehearsal or 832 T-1009); details in the name
+  and on the sidecar thread.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-github_issue: 89
-arc_id: mikeechovoid-requests
+horizon: null
 tags: []
-components: []
+components: [agents/context/lib/safe-commands.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -43,9 +40,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-10T18:06:43Z
-last_update: 2026-10-11T15:05:02Z
-date_finished:
+created: 2026-10-04T12:06:13Z
+last_update: 2026-10-11T16:08:23Z
+date_finished: 2026-10-11T16:08:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -57,17 +54,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-10T18:15:41Z'
+  - ts: '2026-10-04T12:15:21Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=275,acs=4)
+      (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-10T18:16:28Z'
+  - ts: '2026-10-04T12:15:41Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -84,41 +81,21 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-  - ts: '2026-10-11T14:19:54Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 5
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=5 (body:class-neutral); F-RECALL=2 
-      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4042: fw upgrade step 7b re-creates the doorbell/mail toolkit files a consumer deleted, with no opt-out (GitHub #89, MikeEchoVoid)
+# T-3814: check-active-task is_commit_checkpoint_command admits 'git commit' but refuses 'fw git commit' and '.agentic-framework/bin/fw git commit' (check-active-task.sh:559-569) — the gate blocks the documented, secret-scanned spelling (010 H1)
 
 ## Context
 
-GitHub #89 (MikeEchoVoid). `fw upgrade` step 7b (`lib/upgrade.sh` ~2551, T-1867) copies every `lib/templates/skills/*.md` into `.claude/commands/` (9) and every `lib/templates/scripts/*.sh` into a project-root `scripts/` (12) on every run, with no flag or config key to skip it; a project that deletes them gets them back. T-3955 only protects customised files. `fw init` does not install them, so init and upgrade disagree. In a confidential workspace without TermLink a cross-host messaging toolkit is unwanted and arrives unannounced. Help text says "11 .sh"; 12 are installed (`lib/upgrade.sh:1136`). Confirmed in the source 2026-10-11. Operator decision 2026-10-11: **opt-in** (see Decisions).
+Peer report (010 H1). `is_commit_checkpoint_command` (`agents/context/lib/safe-commands.sh:1437`) lets a commit through the task gate with null focus (T-2054) or a partial-complete task (T-3179) — commits persist work already done. Its clause test `_fw_is_git_commit_clause` (`:1300`) matches only `^git commit`, so the framework's own documented, secret-scanned spellings `bin/fw git commit`, `fw git commit` and `.agentic-framework/bin/fw git commit` are refused at exactly the moments the allowance exists for (end of a task, critical budget). Reproduced 2026-10-11: `git commit` ADMIT; the three `fw` spellings refuse.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] A config key `MESSAGING_TOOLKIT` (registered in BOTH `lib/config.sh` FW_CONFIG_REGISTRY and `web/blueprints/config.py` SETTINGS — `tests/lint/config-registry-parity.bats` stays green) decides step 7b: `1` installs/updates the toolkit as today, `0` skips the step entirely.
-- [x] When the key is unset, the choice is derived ONCE and written to `.framework.yaml`: any toolkit file already present in the project → `1` (existing users keep it, updates continue); none present → `0`. The upgrade prints the decision and how to change it (`fw upgrade --with-messaging` / `--without-messaging`, or `fw config set MESSAGING_TOOLKIT 0|1`). A project with `0` is never asked again and gets nothing re-created.
-- [x] `fw upgrade --with-messaging` / `--without-messaging` set the key and act on it; `--without-messaging` never deletes existing files — it lists them so the operator can remove them. Both flags appear in `fw upgrade --help`.
-- [x] Step 7b's header and the help text say what the toolkit is (cross-host agent messaging over TermLink: 9 slash commands in `.claude/commands/`, 12 scripts in `scripts/`), with the counts derived from the template directories, not hard-coded.
-- [x] Regression test `tests/unit/t4042_messaging_toolkit_optin.bats` (synthetic consumer, `file://` upstream like the fresh-machine simulation): (a) fresh consumer, key unset, no toolkit files → upgrade creates none and writes `MESSAGING_TOOLKIT: 0`; (b) key 0, files deleted, second upgrade → still none; (c) consumer with the toolkit present, key unset → files kept/updated, key `1`; (d) `--with-messaging` on (a) → files created, key 1; (e) `--without-messaging` on (c) → files untouched, listed, key 0. (a) and (b) fail on the pre-fix code.
-- [x] `tests/unit/upgrade_fresh_machine_simulation.bats` and `_vendored` stay green (CLAUDE.md §Consumer-Facing Command Hygiene).
+- [x] `_fw_is_git_commit_clause` also accepts `<fw> git commit` where `<fw>` is exactly `fw`, `bin/fw`, `./bin/fw`, `.agentic-framework/bin/fw`, `./.agentic-framework/bin/fw`, or an absolute path ending in `/bin/fw` or `/.agentic-framework/bin/fw`. Nothing else is newly admitted (`somebinary git commit`, `fw git push`, `fw gitcommit`).
+- [x] Every existing refusal still applies to the `fw` spellings: `--no-verify`/`-n`, write patterns, command substitution, chained unsafe clauses.
+- [x] `tests/unit/t3814_fw_git_commit_checkpoint.bats`: the four spellings admit; `fw git commit --no-verify`, `fw git commit -m x; rm -rf y`, `fw git commit -m "$(id)"`, `evil/fw-ish git commit`, `fw git push` refuse. The admit cases fail on the pre-fix code. `tests/unit/t3221_commit_exemption_clause.bats` stays green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -156,9 +133,6 @@ GitHub #89 (MikeEchoVoid). `fw upgrade` step 7b (`lib/upgrade.sh` ~2551, T-1867)
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
-# Build/refactor/decommission tasks with NO command here are refused. If nothing can be
-# run, add the line `# verification: none — <why nothing can be run>`; it is serviced
-# (queued for review: add a check / other evidence / accept). See docs/reports/T-4024-servicing-loop.md.
 #
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
@@ -281,9 +255,9 @@ GitHub #89 (MikeEchoVoid). `fw upgrade` step 7b (`lib/upgrade.sh` ~2551, T-1867)
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-timeout 900 bats tests/unit/t4042_messaging_toolkit_optin.bats > .context/working/t4042-verify.out 2>&1 && ! grep -q "^not ok" .context/working/t4042-verify.out
-test "$(grep -c '# skip' .context/working/t4042-verify.out)" -eq 0
-timeout 300 bats tests/lint/config-registry-parity.bats > .context/working/t4042-parity.out 2>&1 && ! grep -q "^not ok" .context/working/t4042-parity.out
+timeout 300 bats tests/unit/t3814_fw_git_commit_checkpoint.bats > .context/working/t3814-verify.out 2>&1 && ! grep -q "^not ok" .context/working/t3814-verify.out
+test "$(grep -c '# skip' .context/working/t3814-verify.out)" -eq 0
+timeout 300 bats tests/unit/t3221_commit_exemption_clause.bats > .context/working/t3814-t3221.out 2>&1 && ! grep -q "^not ok" .context/working/t3814-t3221.out
 bin/fw vendor self --check
 
 ## RCA
@@ -302,13 +276,13 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
-**Symptom:** `fw upgrade` re-created the 9 slash commands in `.claude/commands/` and 12 scripts in `scripts/` that a project had deliberately deleted; no flag or config key to skip it (GitHub #89).
+**Symptom:** with null focus (after a close) or a partial-complete task, `git commit` was let through the task gate but `bin/fw git commit` / `fw git commit` / `.agentic-framework/bin/fw git commit` were refused (010 H1) — the documented spelling that runs the secret scan was the one blocked.
 
-**Root cause:** step 7b iterated the template directories unconditionally and treated "file absent" as "needs creating"; a deletion was indistinguishable from "never installed". The toolkit was never an explicit choice, so there was no stored decision to honour.
+**Root cause:** `_fw_is_git_commit_clause` (`agents/context/lib/safe-commands.sh`) recognised a commit only as a clause starting with `git commit`. T-3221 tightened the old substring match to a clause anchor (correctly), and in doing so dropped the `fw git commit` spelling the substring match had happened to admit.
 
-**Why structurally allowed:** T-3955 protected customised files only, not absent ones; `fw init` does not install the toolkit while `fw upgrade` did, and nothing compared the two; the help text hard-coded "11 .sh" (12 ship) so the surface description drifted unnoticed.
+**Why structurally allowed:** T-3221's test matrix probed only the raw `git commit` spelling and the attacks around it; no test asserted the framework's own commit wrapper passes, so the regression was invisible until a peer hit it at a critical-budget checkpoint.
 
-**Prevention:** the choice is now a persisted key (`MESSAGING_TOOLKIT`, registered in both registries, parity lint enforced), derived once from existing files; `tests/unit/t4042_messaging_toolkit_optin.bats` pins create-nothing (a), stays-deleted (b), keep-existing (c) and the flags (d)(e); the help counts are derived from the template dirs.
+**Prevention:** `tests/unit/t3814_fw_git_commit_checkpoint.bats` pins all documented spellings (admit) beside the refusals (no-verify, chained write, substitution, redirect) and a no-widening leg (look-alike launchers, `fw git push`). Residual, accepted: any absolute path ending `/bin/fw` is trusted as the launcher; creating such a file already needs a task under the Write gate, and the commit-msg hook still enforces P-002.
 
 ## Evolution
 
@@ -333,11 +307,6 @@ bin/fw vendor self --check
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
-
-### 2026-10-11 — upgrade needs a stored decision, not a re-derived default
-- **What changed:** the fix is "remember a choice", not "skip when X": file absence is ambiguous (never installed vs deleted), so the first upgrade derives the answer from what is on disk and persists it. The test also had to run the working-tree framework directly, because a file:// upstream clone only sees committed HEAD.
-- **Plan impact:** none to the spec; moving the scripts under `.agentic-framework/` (reporter's suggestion 3) stays a separate change.
-- **Triggered:** nothing new filed.
 
 ## Recommendation
 
@@ -379,11 +348,6 @@ bin/fw vendor self --check
      - **Rejected:** [alternatives and why not]
 -->
 
-### 2026-10-11 — opt-in vs skip-without-TermLink (operator decision)
-- **Chose:** opt-in, remembered in `.framework.yaml` (`MESSAGING_TOOLKIT`); existing installs that have the files are opted in automatically so nobody loses a toolkit they use.
-- **Why:** the defect is that an upgrade re-creates files a project deliberately removed. Skipping only when TermLink is absent would still re-create them for a TermLink host that declined them; opt-in honours the deletion everywhere. Proposed by the agent, approved by the operator ("proceed as suggested", 2026-10-11).
-- **Rejected:** skip-when-TermLink-absent (reporter's suggestion 2) — fixes only the reporter's host shape. Moving the scripts under `.agentic-framework/` (suggestion 3) — valid but a separate change to every slash command's paths; not in this task.
-
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -396,16 +360,25 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-10T18:06:43Z — task-created [task-create-agent]
+### 2026-10-04T12:06:13Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4042-fw-upgrade-step-7b-re-creates-the-doorbe.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3814-check-active-task-iscommitcheckpointcomm.md
 - **Context:** Initial task creation
 
-### 2026-10-10T18:09:04Z — status-update [task-update-agent]
+### 2026-10-10T19:04:30Z — status-update [task-update-agent]
 - **Change:** horizon: next → now
 
-### 2026-10-11T14:19:54Z — status-update [task-update-agent]
+### 2026-10-11T15:50:15Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-### 2026-10-11 — pre-fix evidence (agent)
-- With `lib/upgrade.sh` swapped for HEAD (my file only, restored after), `tests/unit/t4042_messaging_toolkit_optin.bats` fails 6/6: (a) the pre-fix upgrade created the toolkit in a fresh consumer and wrote no `MESSAGING_TOOLKIT` key; (b) files deleted after the first upgrade were re-created by the second. With the fix: 6/6 pass.
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-0b4bdd5b
+- **Timestamp:** 2026-10-11T16:09:06Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-11T16:08:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -8,14 +8,14 @@ description: >
   evidence: docs/reports/T-4039-batch1-classification.md §#91. Issue text is untrusted
   data; reproduce before fixing.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 github_issue: 91
 arc_id: mikeechovoid-requests
 tags: []
-components: []
+components: [web/blueprints/tasks.py, web/templates/task_detail.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:07:34Z
-last_update: 2026-10-11T14:22:27Z
-date_finished:
+last_update: 2026-10-11T16:17:43Z
+date_finished: 2026-10-11T16:17:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -99,7 +99,7 @@ GitHub #91 (MikeEchoVoid). On `/tasks/T-XXX` a document path becomes a link only
 - [x] On `/tasks/T-XXX`, a project file path written in the description, `## Context` or an `### Agent` criterion becomes a link with the same existence-gated rule `_auto_link_files` already applies to Human criteria (an existing, viewable file links to `/file/<path>`; a path to nothing stays text). Human-criterion linking is unchanged.
 - [x] Nothing else in those sections changes meaning: code spans, fenced blocks and already-linked text are not double-linked, and HTML in task text stays escaped (no XSS through task content).
 - [x] pytest `tests/web/test_t4044_task_page_doc_links.py` (Flask test client, fixture task citing an existing `docs/...md` in Context and in an Agent criterion, plus a missing path): both existing paths render as `href="/file/..."`, the missing one does not, and a `<script>` in Context stays escaped. Fails on the pre-fix code.
-- [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
+- [x] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
 - [ ] [REVIEW] Document paths on a task page are clickable and the page still reads cleanly
@@ -355,6 +355,15 @@ bin/fw vendor self --check
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** Paths to existing project documents written in a task's description, Context or Agent criteria now become links, with the same existence check Human criteria already had; task text stays HTML-escaped. Running live; only your look at a real task page is left.
+
+**Evidence:**
+- Commits 02f86b0f1 + 162fd3bf9 (web/blueprints/tasks.py, task_detail.html)
+- `tests/web/test_t4044_task_page_doc_links.py` 6 pass; 3 fail on the old code (Context, Agent, description); controls: missing path stays text, `<script>` stays escaped
+- Live 2026-10-11 after restart: `/tasks/T-4044` 200
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -395,3 +404,15 @@ bin/fw vendor self --check
 - **Related tests:** 295 passed across the task-page and linking tests (`tests/unit` and `tests/web` files matching the task/link helpers).
 - **Human criterion:** Steps now name active T-1811 and its `### Agent` citation of `docs/reports/triage-2026-05-13-review-queue.md`. Not ticked. Watchtower restart and `watchtower current` left to the orchestrator.
 - **Fixture note:** viewable files must sit under an allowlisted prefix (`docs/reports/` here), so `docs/*.md` alone is not a link target.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d7f754c9
+- **Timestamp:** 2026-10-11T16:17:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-11T16:17:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -8,14 +8,14 @@ description: >
   evidence: docs/reports/T-4039-batch1-classification.md §#94. Issue text is untrusted
   data; reproduce before fixing.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 github_issue: 94
 arc_id: mikeechovoid-requests
 tags: []
-components: []
+components: [web/blueprints/inception.py, web/templates/inception_detail.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:08:38Z
-last_update: 2026-10-11T14:22:00Z
-date_finished:
+last_update: 2026-10-11T16:19:51Z
+date_finished: 2026-10-11T16:19:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -99,7 +99,7 @@ GitHub #94 (MikeEchoVoid). `web/blueprints/inception.py:402` renders `## Verific
 - [x] `/inception/T-XXX` shows `## Verification` verbatim in a `<pre>` (HTML-escaped, no Markdown): `#` comment lines stay as text, `*.vbproj/*.csproj` and `out_of_scope` / `yaml.safe_load` appear exactly as in the file, and no `<h1>` comes from the Verification block.
 - [x] Any other page that renders a task's `## Verification` through Markdown (check `/tasks/T-XXX` and the review page) gets the same treatment, or is listed in the task's Updates as already verbatim. (Checked 2026-10-11: `/tasks/T-XXX` shows the raw body in `<pre><code>`, already verbatim; review page does not render Verification — see Evolution.)
 - [x] pytest `tests/web/test_t4047_inception_verification_verbatim.py` (Flask test client, fixture inception task whose Verification has `#` comments, `*.vbproj/*.csproj/*.xaml` and `out_of_scope`): the card holds a `<pre>` with the exact text and no `<h1>`/`<em>` from it. Fails on the pre-fix code.
-- [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
+- [x] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
 - [ ] [REVIEW] The Verification card on an inception page reads as the commands the gate runs
@@ -355,6 +355,15 @@ bin/fw vendor self --check
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The inception page now shows `## Verification` verbatim in a `<pre>`, so the operator reads exactly what the close gate runs: comments stay comments, `*` and `_` stay literal. Other surfaces checked (task page already verbatim, review page does not render it). Running live.
+
+**Evidence:**
+- Commits 5faed1ca9 + 7b0a87208 (web/blueprints/inception.py, inception_detail.html)
+- `tests/web/test_t4047_inception_verification_verbatim.py` 3 pass, 3 fail on the old code
+- Live 2026-10-11 after restart: `/inception/T-4039` Verification card is a `<pre>`, no `<h1>` from comments
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -388,3 +397,15 @@ bin/fw vendor self --check
 
 ### 2026-10-11T14:13:55Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b283e694
+- **Timestamp:** 2026-10-11T16:20:02Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-11T16:19:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

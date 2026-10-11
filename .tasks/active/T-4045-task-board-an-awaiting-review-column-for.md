@@ -8,14 +8,14 @@ description: >
   evidence: docs/reports/T-4039-batch1-classification.md §#92. Issue text is untrusted
   data; reproduce before fixing.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 github_issue: 92
 arc_id: mikeechovoid-requests
 tags: []
-components: []
+components: [web/blueprints/tasks.py, web/shared.py, web/templates/tasks.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:07:55Z
-last_update: 2026-10-11T16:02:54Z
-date_finished:
+last_update: 2026-10-11T16:18:26Z
+date_finished: 2026-10-11T16:18:26Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -100,7 +100,7 @@ GitHub #92 (MikeEchoVoid). The Watchtower task board has one column per status (
 - [x] Each In Progress card with an open Human criterion that is still `waiting-on-agent` shows a small count of open Human criteria, so the two kinds stay distinguishable at a glance.
 - [x] Board filters and counts stay consistent: the column's count equals the "Ready for you" count on `/approvals` for the same corpus.
 - [x] pytest `tests/web/test_t4045_board_awaiting_review.py`: fixture with one ready task and one waiting task → the ready one renders in the Awaiting review column only, the waiting one in In Progress with its Human count; the column count matches `/approvals`' ready count. Fails on the pre-fix code.
-- [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
+- [x] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
 - [ ] [REVIEW] The board separates "agent is working" from "waiting for me"
@@ -348,6 +348,15 @@ bin/fw vendor self --check
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The task board has a derived "Awaiting review" column (no new status) fed by the same readiness rule as `/approvals` (T-4053), so the column and the "Ready for you" count agree; cards still waiting on the agent show their open-Human count. Running live; your judgement of the layout is the open item.
+
+**Evidence:**
+- Commits 1f6016113 + 54dd7f248 (web/blueprints/tasks.py, tasks.html, shared.task_review_state)
+- `tests/web/test_t4045_board_awaiting_review.py` 5 pass; 4 fail on the old code
+- Live 2026-10-11 after restart: `/tasks` renders the "Awaiting review" column
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -385,3 +394,15 @@ bin/fw vendor self --check
 ### 2026-10-11 — build [worker t4053-ready]
 - **Pre-fix failure:** with web/shared.py, web/blueprints/tasks.py and web/templates/tasks.html at HEAD (T-4053 predicate present, no board column), `tests/web/test_t4045_board_awaiting_review.py` → 4 failed, 1 passed (the 1 is the "no awaiting-review data-status" negative). Post-fix: 5 passed.
 - **Shape:** `shared.task_review_state(path)` (mtime-cached open-Human count + `review_readiness`) feeds `tasks()`; ready tasks go to `awaiting_tasks`, the rest stay in `board_tasks`.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8fa61385
+- **Timestamp:** 2026-10-11T16:18:37Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-11T16:18:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

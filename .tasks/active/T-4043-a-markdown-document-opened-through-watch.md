@@ -8,14 +8,14 @@ description: >
   evidence: docs/reports/T-4039-batch1-classification.md §#90. Issue text is untrusted
   data; reproduce before fixing.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 github_issue: 90
 arc_id: mikeechovoid-requests
 tags: []
-components: []
+components: [web/blueprints/docs.py, web/templates/docs_detail.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:07:11Z
-last_update: 2026-10-11T14:02:43Z
-date_finished:
+last_update: 2026-10-11T16:16:59Z
+date_finished: 2026-10-11T16:16:59Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -117,7 +117,7 @@ GitHub #90 (MikeEchoVoid). `web/blueprints/docs.py` `file_viewer` (`/file/<path>
 - [x] A Markdown document whose rendered body starts with an `<h1>` (from `/file/` and from `/docs/generated/`) is served with exactly one `<h1>` carrying that title. A document with no heading keeps the filename as the page title and its body unchanged.
 - [x] "← Back to Component Docs" and "View in Fabric" render only on the generated component docs route. On `/file/<path>` "View in Fabric" appears only when a Fabric component card's `location` is that file (linking to that card's real id), otherwise no Fabric link and no component-docs link.
 - [x] pytest (Flask test client) `tests/web/test_t4043_docs_detail_title.py` (or the repo's web-test location): a `# Title` document via `/file/` has one `<h1>`; no `/fabric/component/` link for a file with no card; a file with a card links to it; the generated-docs route still shows its back link. The duplicate-`<h1>` test fails on the pre-fix code.
-- [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
+- [x] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
 - [ ] [REVIEW] A report opened through Watchtower reads cleanly
@@ -369,6 +369,15 @@ bin/fw vendor self --check
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** A document opened through `/file/` now shows its title once, and the component-doc / Fabric links appear only where they apply (generated docs; files that have a Fabric card). Verified on the running Watchtower; only your look at the page is left.
+
+**Evidence:**
+- Commits 9e9923a45 + e069b1581 (web/blueprints/docs.py, docs_detail.html)
+- `tests/web/test_t4043_docs_detail_title.py` 5 pass; 3 fail on the old code (duplicate `<h1>` among them)
+- Live 2026-10-11 after restart: `/file/docs/reports/T-4039-inbound-github-issues.md` has 1 `<h1>`, no "View in Fabric"
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -406,3 +415,15 @@ bin/fw vendor self --check
 ### 2026-10-11 — fix + test [t4043-docs]
 - **Action:** stripped leading body h1, scoped links by route, added tests/web/test_t4043_docs_detail_title.py (5 pass).
 - **Red-first proof:** with web/blueprints/docs.py reverted, 3 tests fail incl. test_file_markdown_has_single_h1 (duplicate h1).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-f5d3cb41
+- **Timestamp:** 2026-10-11T16:17:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-11T16:16:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
