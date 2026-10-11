@@ -16,12 +16,12 @@ description: >
   an un-tick writes a withdrawal; the audit FAIL text names the Watchtower case and
   the ack command.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, watchtower, provenance, governance]
-components: []
+components: [agents/audit/audit.sh, lib/human_ac_ticks.py, web/blueprints/tasks.py]
 related_tasks: []
 origin: {kind: "peer", source: "dimitri-mint-dev", ref: "G-011"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -51,8 +51,8 @@ origin: {kind: "peer", source: "dimitri-mint-dev", ref: "G-011"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T20:32:32Z
-last_update: 2026-10-11T20:52:10Z
-date_finished:
+last_update: 2026-10-11T20:53:12Z
+date_finished: 2026-10-11T20:53:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -108,7 +108,7 @@ cost_estimate_proposed:
 - [x] Agent-criterion toggles are unchanged (no ledger row); un-ticking a Human box is handled consistently with the ledger's existing semantics (one row licenses one tick).
 - [x] The audit's FAIL Mitigation for an unprovenanced Human tick names the Watchtower case and the operator's `human_ac_ticks.py ack` command, instead of only "un-tick the box".
 - [x] Regression test (`tests/web/test_t4070_watchtower_tick_provenance.py`): in a temp git repo, a Human tick through the Flask test client writes the ledger row and the committed tick passes the detector; an Agent toggle writes none; a ledger write failure refuses the tick. The provenance test fails on the pre-fix code.
-- [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
+- [x] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -383,3 +383,22 @@ bin/fw vendor self --check
 ### 2026-10-11 — fix + pre-fix proof [worker]
 - **Pre-fix failure:** with HEAD's `web/blueprints/tasks.py` the new test file ran 3 failed / 2 passed (Human tick writes no row, untick count, write-failure not refused); with the fix 5 passed.
 - **Note:** open T-3722 describes the same defect; the operator may want to close it as duplicate.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-aa4a671b
+- **Timestamp:** 2026-10-11T20:53:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Watchtower's `toggle-ac` endpoint (`web/blueprints/tasks.py`, used by the task, review and inception pages) writes a provenance row via `lib/human_ac_ticks.py` (`record` / `record_ticked`, `via="watch
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/tasks.py in: Watchtower's `toggle-ac` endpoint (`web/blueprints/tasks.py`, used by the task, review and inception pages) writes a provenance row via `lib/human_ac_`
+- **AC#2 (Agent)** — A Human tick made through Watchtower and committed passes `python3 lib/human_ac_ticks.py audit` (no "unprovenanced … by AGENT"), and so passes the pre-push audit.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/human_ac_ticks.py in: A Human tick made through Watchtower and committed passes `python3 lib/human_ac_ticks.py audit` (no "unprovenanced … by AGENT"), and so passes the pre`
+
+### 2026-10-11T20:53:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

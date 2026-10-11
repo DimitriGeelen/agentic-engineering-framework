@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4069: A claude-fw wrapper started before a re-vendor keeps running the old code (bash loaded it), so a fix like T-4032 stays dormant in every live session while fw upgrade/vendor report success (010 RCA)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-11T20:54:29Z
+# ============================================================================
+
+task_id: T-4069
+task_name: "A claude-fw wrapper started before a re-vendor keeps running the old code (bash loaded it), so a fix like T-4032 stays dormant in every live session while fw upgrade/vendor report success (010 RCA)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-11T20:18:43Z
+completed: 2026-10-11T20:54:00Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-11T22:20:19+02:00
+last_commit: 2026-10-11T22:30:43+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope — stale-wrapper helper, doctor WARN, upgrade/vendor notice, regression test. stale claude-fw wrapper detector — helper, doctor WARN, upgrade/vendor notice, test. wire stale-wrapper check into fw doctor and upgrade/vendor end-of-run notice. vendor sync of stale-wrapper helper, fw, upgrade.sh
+
+# Key outcomes
+outcomes:
+  - 'One helper (shell or Python under `lib/`) lists running `claude-fw` wrapper processes for THIS project (the bash process whose script is this project''s `bin/claude-fw`, its vendored `.agentic-framework/bin/claude-fw`, or the on-PATH router serving this project — match by the process''s cwd / script path), with start time (from /proc) and the mtime of the script it runs, and flags each one started before that script''s current mtime.'
+  - '`fw doctor` WARNs per stale wrapper: "claude-fw pid N started <date>, before bin/claude-fw changed <date> — fixes in it (e.g. T-4032) are not active until that session is relaunched". OK line when none; silent when no wrapper runs.'
+  - '`fw upgrade` / `fw vendor` / `fw vendor self` end with the same notice when the run changed `bin/claude-fw` and a stale wrapper for the project is running; the exit code is unchanged.'
+  - 'Regression test `tests/unit/t4069_stale_claude_fw_wrapper.bats`: a fixture project + a sleeping `bash <fixture>/bin/claude-fw` process started, then the script touched to a newer mtime → doctor''s check (or the helper) reports it stale; untouched → not stale; other projects'' wrappers are not reported. Fails on the pre-fix code (no such check).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/stale_claude_fw.py'
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'bin/fw'
+  - 'lib/stale_claude_fw.py'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4069-a-claude-fw-wrapper-started-before-a-re-.md'
+  - 'tests/unit/t4069_stale_claude_fw_wrapper.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-11T22:20:19'
+    action: 'T-4069: scope — stale-wrapper helper, doctor WARN, upgrade/vendor notice, regression test'
+  - time: '2026-10-11T22:30:16'
+    action: 'T-4069: stale claude-fw wrapper detector — helper, doctor WARN, upgrade/vendor notice, test'
+  - time: '2026-10-11T22:30:26'
+    action: 'T-4069: wire stale-wrapper check into fw doctor and upgrade/vendor end-of-run notice'
+  - time: '2026-10-11T22:30:43'
+    action: 'T-4069: vendor sync of stale-wrapper helper, fw, upgrade.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 35 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, claude-fw, upgrade, doctor]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 35
+  commits: 4
+  files_changed: 8
+  lines_added: 407
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4069-a-claude-fw-wrapper-started-before-a-re-.md
+generated_by: context-agent-hybrid

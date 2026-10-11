@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4070: Watchtower's toggle-ac endpoint ticks a ### Human box without writing the provenance ledger, so every operator review in Watchtower FAILs the next push as 'ticked by AGENT' (dimitri-mint-dev G-011)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-11T20:53:37Z
+# ============================================================================
+
+task_id: T-4070
+task_name: "Watchtower's toggle-ac endpoint ticks a ### Human box without writing the provenance ledger, so every operator review in Watchtower FAILs the next push as 'ticked by AGENT' (dimitri-mint-dev G-011)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-11T20:32:32Z
+completed: 2026-10-11T20:53:12Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-11T22:33:43+02:00
+last_commit: 2026-10-11T22:52:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope Watchtower tick provenance (dimitri-mint-dev G-011). toggle-ac writes Human-tick provenance row; audit mitigation names Watchtower case. vendor sync of human_ac_ticks.py. vendored audit.sh + tasks.py
+
+# Key outcomes
+outcomes:
+  - 'Watchtower''s `toggle-ac` endpoint (`web/blueprints/tasks.py`, used by the task, review and inception pages) writes a provenance row via `lib/human_ac_ticks.py` (`record` / `record_ticked`, `via="watchtower"`, plus request id and remote address) whenever it ticks a `### Human` box, in the same request and before the task file is committed; if the row cannot be written, the tick is refused with a visible error (no unprovenanced tick).'
+  - 'A Human tick made through Watchtower and committed passes `python3 lib/human_ac_ticks.py audit` (no "unprovenanced … by AGENT"), and so passes the pre-push audit.'
+  - 'Agent-criterion toggles are unchanged (no ledger row); un-ticking a Human box is handled consistently with the ledger''s existing semantics (one row licenses one tick).'
+  - 'The audit''s FAIL Mitigation for an unprovenanced Human tick names the Watchtower case and the operator''s `human_ac_ticks.py ack` command, instead of only "un-tick the box".'
+  - 'Regression test (`tests/web/test_t4070_watchtower_tick_provenance.py`): in a temp git repo, a Human tick through the Flask test client writes the ledger row and the committed tick passes the detector; an Agent toggle writes none; a ledger write failure refuses the tick. The provenance test fails on the pre-fix code.'
+  - 'Watchtower restarted; `bin/fw watchtower current` exits 0.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/human_ac_ticks.py'
+  - '.agentic-framework/web/blueprints/tasks.py'
+  - 'agents/audit/audit.sh'
+  - 'lib/human_ac_ticks.py'
+  - '.tasks/active/T-4070-watchtowers-toggle-ac-endpoint-ticks-a--.md'
+  - 'tests/web/test_t4070_watchtower_tick_provenance.py'
+  - 'web/blueprints/tasks.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-11T22:33:43'
+    action: 'T-4070: scope Watchtower tick provenance (dimitri-mint-dev G-011)'
+  - time: '2026-10-11T22:37:02'
+    action: 'T-4070: toggle-ac writes Human-tick provenance row; audit mitigation names Watchtower case'
+  - time: '2026-10-11T22:37:11'
+    action: 'T-4070: vendor sync of human_ac_ticks.py'
+  - time: '2026-10-11T22:52:10'
+    action: 'T-4070: vendored audit.sh + tasks.py'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 20 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, watchtower, provenance, governance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 20
+  commits: 4
+  files_changed: 8
+  lines_added: 566
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4070-watchtowers-toggle-ac-endpoint-ticks-a--.md
+generated_by: context-agent-hybrid
