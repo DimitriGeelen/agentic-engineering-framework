@@ -28,6 +28,9 @@ effort: low
 # honest strategy — nothing is assembled from task frontmatter.
 prompt_template: ""
 prompt_strategy: static
+# T-4061 (arc-001 F-9): this prompt carries the operator's typed query. The
+# resolver stores its hash and length, not the text, unless CAPTURE_QUERY_TEXT is on.
+carries_user_query: true
 allowed_tools: []
 cost_cap_usd: 0.0
 cwd: $PROJECT_ROOT

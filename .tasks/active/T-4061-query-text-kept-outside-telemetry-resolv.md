@@ -45,7 +45,7 @@ origin: {kind: "peer", source: "dimitri-mint-dev", ref: "arc-001"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T18:06:03Z
-last_update: 2026-10-11T18:08:47Z
+last_update: 2026-10-11T18:19:44Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -76,6 +76,16 @@ bvp_scores_proposed:
       (body/components:prompt-incidental); F1=1 
       (body/components:context-fabric-incidental); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-11T18:15:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=278,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4061: Query text kept outside telemetry: resolver writes the rendered fw ask prompt to prompt.txt, and Watchtower GET ?q= search/ask put queries in request logs (arc-001 F-9)
@@ -88,10 +98,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `lib/resolver.py` `capture_dispatch` no longer writes the rendered prompt text for an `fw ask` / user-query workflow: it stores a hash (and length) of the rendered prompt instead of `prompt.txt`, unless the project explicitly opts in (`fw config` key, default off, registered in BOTH lib/config.sh and web/blueprints/config.py). Non-query dispatches (task workers) keep their prompt capture unchanged.
-- [ ] Watchtower `/api/v1/search`, `/api/v1/ask` and `/api/v1/ask/stream` accept the query in a POST body; the Watchtower pages that call them use POST. GET `?q=` keeps working for compatibility but is no longer what Watchtower's own UI sends, and the docstrings name POST as the way.
-- [ ] Watchtower's own request log line does not contain the query string for these endpoints (path logged without the query, or `q` redacted).
-- [ ] Regression tests (`tests/unit/t4061_query_text_not_kept_test.py` or bats + `tests/web/`): an `fw ask`-type capture leaves no file containing the query text; a task-worker capture still writes its prompt; Watchtower UI search/ask send POST; the request log line for a GET `?q=secret` holds no `secret`. Each fails on the pre-fix code.
+- [x] `lib/resolver.py` `capture_dispatch` no longer writes the rendered prompt text for an `fw ask` / user-query workflow: it stores a hash (and length) of the rendered prompt instead of `prompt.txt`, unless the project explicitly opts in (`fw config` key, default off, registered in BOTH lib/config.sh and web/blueprints/config.py). Non-query dispatches (task workers) keep their prompt capture unchanged.
+- [x] Watchtower `/api/v1/search`, `/api/v1/ask` and `/api/v1/ask/stream` accept the query in a POST body; the Watchtower pages that call them use POST. GET `?q=` keeps working for compatibility but is no longer what Watchtower's own UI sends, and the docstrings name POST as the way.
+- [x] Watchtower's own request log line does not contain the query string for these endpoints (path logged without the query, or `q` redacted).
+- [x] Regression tests (`tests/unit/t4061_query_text_not_kept_test.py` or bats + `tests/web/`): an `fw ask`-type capture leaves no file containing the query text; a task-worker capture still writes its prompt; Watchtower UI search/ask send POST; the request log line for a GET `?q=secret` holds no `secret`. Each fails on the pre-fix code.
 - [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
@@ -125,7 +135,21 @@ bvp_scores_proposed:
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
+- [ ] [REVIEW] Watchtower search box and ⌘K search still show results, and the address bar no longer carries the query
+  **Steps:**
+  1. Run `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url`, open that URL and append `/search`
+  2. Type `healing loop` in the search box and press Enter; note the address bar
+  3. Press Ctrl+K (⌘K on macOS), type `healing loop` and choose the "Search … in all content" row; note the address bar
+  4. Reload the page once
+  **Expected:** results render after steps 2 and 3. The address bar shows `/search` with no `q=` after both. Reload asks to resubmit the form (no query in the URL), which is the intended cost of keeping the query out of the URL.
+  **If not:** Note which step fails, whether results or the address bar are wrong, and any browser console error. Check `bin/fw watchtower current` first; a stale server still serves the GET-only page.
+
 ## Verification
+
+out=$(python3 -m pytest tests/unit/t4061_query_text_not_kept_test.py tests/unit/test_resolver.py -q -p no:cacheprovider 2>&1); echo "$out" | grep -q " passed" && ! echo "$out" | grep -q "failed"
+out=$(bats tests/lint/config-registry-parity.bats 2>&1); echo "$out" | grep -q '^ok 3 ' && ! echo "$out" | grep -q '^not ok'
+bin/fw vendor self --check
+bin/fw watchtower current
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -272,6 +296,14 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** The operator's typed `fw ask` query sat in plain text in `.context/.../blobs/<month>/<dispatch>/prompt.txt`. Watchtower search queries sat in the URL, and so in werkzeug's access log, via GET `?q=`.
+
+**Root cause:** `capture_dispatch` wrote every rendered prompt unconditionally, treating prompts as telemetry. The search endpoints modelled the query as a URL parameter, and werkzeug logs the full request target.
+
+**Why structurally allowed:** No classification of workflow content as user-supplied. No check of what the request log holds. The API offered GET as the only query form, so the UI followed it. Nothing tested the stored or logged bytes, only the response.
+
+**Prevention:** `carries_user_query: true` on the ask workflow, with the prompt reduced to `prompt_sha256` and `prompt_chars` unless `CAPTURE_QUERY_TEXT` is opted in (default off). POST is the documented query path for `/api/v1/search|ask|ask/stream` and `/search`, and the UI sends POST. A logging filter on the werkzeug logger redacts `q=` and `query=`. Regression tests in `tests/unit/t4061_query_text_not_kept_test.py` assert on stored and logged bytes.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -355,3 +387,8 @@ bvp_scores_proposed:
 
 ### 2026-10-11T18:08:01Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-11 — pre-fix failure record (TermLink worker)
+- On HEAD code (lib/resolver.py, web/blueprints/api.py, web/blueprints/discovery.py restored, then put back): 3 of the 4 behaviour tests fail — `test_user_query_capture_leaves_no_query_text` (prompt.txt holds the query), `test_api_search_accepts_query_in_post_body` and `test_search_page_accepts_post_form` (405). `test_api_get_search_still_works` passes on both, as a compatibility check.
+- The two `web/app.py` log-redaction tests were not run on HEAD: that file is shared with T-4062, so it was not swapped. On HEAD, `QueryRedactFilter` does not exist, so they fail on import.
+- Design choice: the palette and search box send POST. Full-page palette search submits a form, so the address bar shows `/search` with no query, and reload resubmits. The `[REVIEW]` Human criterion covers that trade.

@@ -47,7 +47,8 @@ function _renderRecentSearches() {
         chip.textContent = q.length > 40 ? q.substring(0, 37) + '...' : q;
         chip.title = q;
         chip.href = '?q=' + encodeURIComponent(q) + '&mode=hybrid';
-        chip.setAttribute('hx-get', '/search?q=' + encodeURIComponent(q) + '&mode=hybrid');
+        chip.setAttribute('hx-post', '/search');
+        chip.setAttribute('hx-vals', JSON.stringify({ q: q, mode: 'hybrid' }));
         chip.setAttribute('hx-target', '#content');
         chip.setAttribute('hx-swap', 'innerHTML');
         chip.setAttribute('hx-push-url', 'true');

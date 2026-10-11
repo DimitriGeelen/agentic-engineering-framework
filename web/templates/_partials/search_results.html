@@ -80,7 +80,7 @@
         {% for item in tag_cloud %}
         {% set size_class = 'tag-xl' if item.count >= 25 else ('tag-lg' if item.count >= 15 else ('tag-md' if item.count >= 8 else 'tag-sm')) %}
         <a href="?q={{ item.tag | urlencode }}&mode=hybrid" class="tag-chip {{ size_class }}"
-           hx-get="{{ url_for('discovery.search_view', q=item.tag, mode='hybrid') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
+           hx-post="{{ url_for('discovery.search_view') }}" hx-vals='{{ {"q": item.tag, "mode": "hybrid"} | tojson }}' hx-target="#content" hx-swap="innerHTML" hx-push-url="true"
            title="{{ item.count }} items">{{ item.tag }}</a>
         {% endfor %}
     </div>
@@ -121,7 +121,7 @@
         <div style="margin-top: 0.5rem;">
             {% for qa in saved_answers %}
             <a href="?q={{ qa.title | urlencode }}&mode=hybrid" class="saved-answer-link"
-               hx-get="{{ url_for('discovery.search_view', q=qa.title, mode='hybrid') }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
+               hx-post="{{ url_for('discovery.search_view') }}" hx-vals='{{ {"q": qa.title, "mode": "hybrid"} | tojson }}' hx-target="#content" hx-swap="innerHTML" hx-push-url="true">
                 <svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:var(--pico-primary);fill:none;stroke-width:2;flex-shrink:0;">
                     <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
                 </svg>

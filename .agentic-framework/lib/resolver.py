@@ -765,6 +765,28 @@ def append_dispatch_row(row: Dict[str, Any]) -> None:
             f.write(json.dumps(row) + "\n")
 
 
+QUERY_TEXT_KEY = "CAPTURE_QUERY_TEXT"
+
+
+def _capture_query_text_opted_in() -> bool:
+    """T-4061: opt-in to keeping a user query's rendered prompt on disk.
+
+    Resolution: FW_CAPTURE_QUERY_TEXT env, then .framework.yaml (top level or
+    under `config:`), default off. Same 4-tier shape as fw_config.
+    """
+    env = os.environ.get("FW_" + QUERY_TEXT_KEY, "").strip()
+    if env:
+        return env.lower() in ("1", "true", "yes")
+    try:
+        data = yaml.safe_load((PROJECT_ROOT / ".framework.yaml").read_text()) or {}
+    except Exception:
+        return False
+    for scope in (data, data.get("config") or {}):
+        if isinstance(scope, dict) and scope.get(QUERY_TEXT_KEY) not in (None, ""):
+            return str(scope[QUERY_TEXT_KEY]).strip().lower() in ("1", "true", "yes")
+    return False
+
+
 def capture_dispatch(
     *,
     task_id: str,
@@ -780,15 +802,22 @@ def capture_dispatch(
     write=False: dry-run mode — no files written, no IDs minted? Actually
     we DO mint a UUID and compute SHAs (those are read-only) so the dry-run
     output is faithful, but we skip the JSONL append + blob mkdir.
+
+    T-4061 (arc-001 F-9): a workflow declaring `carries_user_query: true`
+    (fw ask) has its prompt — which contains the operator's typed query — NOT
+    written to prompt.txt. The row carries prompt_sha256 + prompt_chars
+    instead, unless CAPTURE_QUERY_TEXT is opted in. Task workers are unchanged.
     """
     dispatch_id = str(uuid.uuid4())
     ts = datetime.now(timezone.utc).isoformat()
     yyyy_mm = ts[:7]
     blob_dir = BLOBS_ROOT / yyyy_mm / dispatch_id
+    redact_query = workflow.get("carries_user_query") is True and not _capture_query_text_opted_in()
 
     if write:
         blob_dir.mkdir(parents=True, exist_ok=True)
-        (blob_dir / "prompt.txt").write_text(rendered_prompt)
+        if not redact_query:
+            (blob_dir / "prompt.txt").write_text(rendered_prompt)
 
     workflow_path = workflow.get("_source_path", "")
     workflow_sha = git_sha(workflow_path) if workflow_path else None
@@ -825,6 +854,11 @@ def capture_dispatch(
     }
     if row["dry_run"] is None:
         del row["dry_run"]
+    if redact_query:
+        # T-4061: a fingerprint and a length in place of the prompt text. A
+        # fingerprint is not a secret: a guessed query can be checked against it.
+        row["prompt_sha256"] = hashlib.sha256(rendered_prompt.encode()).hexdigest()
+        row["prompt_chars"] = len(rendered_prompt)
     if extra:
         row.update(extra)
 

@@ -4,7 +4,8 @@ Endpoints:
     GET  /api/v1          — API index with endpoint documentation
     POST /api/v1/ask      — RAG-assisted Q&A (non-streaming JSON)
     POST /api/v1/ask/stream — RAG-assisted Q&A (SSE streaming)
-    GET  /api/v1/search   — Search results as JSON
+    POST /api/v1/search   — Search results as JSON (query in the body)
+    GET  /api/v1/search   — same, query in ?q= (compatibility; URL is logged)
     GET  /api/v1/health   — API health check
 """
 
@@ -79,12 +80,25 @@ def index():
     })
 
 
+def _request_query():
+    """T-4061: the query from a POST body (JSON, else form) or GET ?q=.
+
+    POST is the path that keeps the query out of request logs and browser
+    history; GET remains for compatibility.
+    """
+    if request.method == "POST":
+        data = request.get_json(silent=True) or request.form
+        return (data.get("query") or data.get("q") or "").strip()
+    return request.args.get("q", "").strip()
+
+
 @bp.route("/ask", methods=["GET", "POST"])
 def ask():
     """RAG-assisted Q&A returning complete JSON answer.
 
-    GET:  /api/v1/ask?q=How does the audit system work?
-    POST: /api/v1/ask with JSON {"query": "...", "history": [...]}
+    POST: /api/v1/ask with JSON {"query": "...", "history": [...]} (preferred)
+    GET:  /api/v1/ask?q=How does the audit system work? (compatibility; the
+          query is written to the request log)
 
     Returns:
         {
@@ -109,12 +123,9 @@ def ask():
     start = time.time()
     history = []
 
+    query = _request_query()
     if request.method == "POST":
-        data = request.get_json(silent=True) or {}
-        query = (data.get("query") or data.get("q") or "").strip()
-        history = data.get("history") or []
-    else:
-        query = request.args.get("q", "").strip()
+        history = (request.get_json(silent=True) or {}).get("history") or []
 
     if not query or len(query) < 2:
         return jsonify({"error": "Query too short (min 2 characters)"}), 400
@@ -203,12 +214,9 @@ def ask_stream():
     from web.embeddings import rag_retrieve
 
     history = []
+    query = _request_query()
     if request.method == "POST":
-        data = request.get_json(silent=True) or {}
-        query = (data.get("query") or data.get("q") or "").strip()
-        history = data.get("history") or []
-    else:
-        query = request.args.get("q", "").strip()
+        history = (request.get_json(silent=True) or {}).get("history") or []
 
     if not query or len(query) < 2:
         def error_stream():
@@ -227,11 +235,12 @@ def ask_stream():
     )
 
 
-@bp.route("/search")
+@bp.route("/search", methods=["GET", "POST"])
 def search():
     """Search results as JSON.
 
-    GET /api/v1/search?q=healing+loop&mode=hybrid&limit=20
+    POST /api/v1/search with JSON {"query": "healing loop", "mode": "hybrid"} (preferred)
+    GET  /api/v1/search?q=healing+loop&mode=hybrid&limit=20 (compatibility)
 
     Returns:
         {
@@ -244,9 +253,16 @@ def search():
     """
     from web.search import search as bm25_search, index_stats
 
-    query = request.args.get("q", "").strip()
-    mode = request.args.get("mode", "hybrid")
-    limit = request.args.get("limit", 20, type=int)
+    query = _request_query()
+    if request.method == "POST":
+        params = request.get_json(silent=True) or request.form
+    else:
+        params = request.args
+    mode = params.get("mode", "hybrid")
+    try:
+        limit = int(params.get("limit", 20))
+    except (TypeError, ValueError):
+        limit = 20
 
     if not query or len(query) < 2:
         return jsonify({"error": "Query too short (min 2 characters)"}), 400

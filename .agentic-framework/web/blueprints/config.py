@@ -26,6 +26,7 @@ SETTINGS = [
     ("STALE_TASK_DAYS", "7", "Days before a task is flagged stale"),
     ("MAX_RESTARTS", "5", "Max auto-restarts within RESTART_WINDOW seconds. T-3243 made this a RATE limit: it was a lifetime count that killed a healthy loop after 4 hours-apart restarts, and claude-fw hardcoded 5 rather than reading this key at all."),
     ("RESTART_WINDOW", "3600", "Sliding window (seconds) over which MAX_RESTARTS is counted. Restarts older than this stop counting, so an hours-apart continuous run never accumulates while a spin still trips the cap (T-3243)."),
+    ("CAPTURE_QUERY_TEXT", "0", "Keep the rendered prompt of a user query (fw ask) on disk in the dispatch blob. Default 0: the dispatch row keeps only prompt_sha256 and prompt_chars, so the typed query is not stored (arc-001 F-9, T-4061). Set 1 to opt in for debugging."),
     ("SAFE_MODE", "0", "Bypass task gate (escape hatch)"),
     ("CALL_WARN", "40", "Tool-call count threshold for warn level (fallback)"),
     ("CALL_URGENT", "60", "Tool-call count threshold for urgent level (fallback)"),

@@ -215,6 +215,7 @@ FW_CONFIG_REGISTRY=(
     "PORT|3000|Watchtower web UI listen port"
     "HOST|0.0.0.0|Watchtower bind address (env FW_HOST, read by web/config.py). A specific address makes the shell side probe and advertise that address instead of localhost; 0.0.0.0 or :: means all interfaces (T-4041, GitHub #88)"
     "PORT_SCAN_BASE|3000|First port tried when a project has no PORT set: fw serve scans 100 ports up from here, skips any held by another service, and records the chosen port as PORT in .framework.yaml (T-3662)"
+    "CAPTURE_QUERY_TEXT|0|Keep the rendered prompt of a user query (fw ask) on disk in the dispatch blob. Default 0: the dispatch row keeps only prompt_sha256 and prompt_chars, so the typed query is not stored (arc-001 F-9, T-4061). Set 1 to opt in for debugging."
     "RAIL_IDENTITY_FILE||Project-owned termlink signing identity for outbound rail posts (T-2904). Empty = sign as host key, which is indistinguishable from co-resident agents. Created on first use."
     "RAIL_PROJECT_LABEL||Canonical from_project label attached to outbound rail posts (T-2905). Empty = derived from the project directory name, normalised. Emitted, never typed at a call site."
     "DISPATCH_LIMIT|0|Built-in harness sub-agent (Agent tool) dispatches allowed before the TermLink gate blocks. Default 0 (operator ruling 2026-10-06, T-3910): sub-agents run as TermLink workers, never through a vendor harness's dispatcher"

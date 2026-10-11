@@ -103,9 +103,11 @@
       rows.push({ url: d.url, kind: "jump", label: d.label, group: d.group });
     });
     if (query) {
-      // search fall-through — always offered as the last row when there's a query
+      // search fall-through — always offered as the last row when there's a query.
+      // T-4061: sent as a POST form body, so the query never lands in the URL or access log.
       rows.push({
-        url: "/search?q=" + encodeURIComponent(query),
+        url: "/search",
+        post: { q: query, mode: "hybrid" },
         kind: "search",
         label: "Search “" + query + "” in all content",
         group: "Search",
@@ -160,21 +162,41 @@
     highlight();
   }
 
-  function navigate(url, kind) {
+  function postForm(url, fields) {
+    var form = document.createElement("form");
+    form.method = "post";
+    form.action = url;
+    var token = document.querySelector('meta[name="csrf-token"]');
+    var all = Object.assign({}, fields);
+    if (token) all._csrf_token = token.getAttribute("content");
+    Object.keys(all).forEach(function (name) {
+      var input = document.createElement("input");
+      input.type = "hidden";
+      input.name = name;
+      input.value = all[name];
+      form.appendChild(input);
+    });
+    document.body.appendChild(form);
+    form.submit();
+  }
+
+  function navigate(row) {
     close();
     // jump → SPA swap via htmx (matches the nav links); fall back to a full load.
-    if (kind === "jump" && window.htmx) {
-      window.htmx.ajax("GET", url, { target: "#content", swap: "innerHTML" });
-      try { window.history.pushState({}, "", url); } catch (e) { /* ignore */ }
+    if (row.kind === "jump" && window.htmx) {
+      window.htmx.ajax("GET", row.url, { target: "#content", swap: "innerHTML" });
+      try { window.history.pushState({}, "", row.url); } catch (e) { /* ignore */ }
+    } else if (row.post) {
+      postForm(row.url, row.post);
     } else {
-      window.location.assign(url);
+      window.location.assign(row.url);
     }
   }
 
   function activate(i) {
     if (i == null) i = selected;
     if (i < 0 || i >= rows.length) return;
-    navigate(rows[i].url, rows[i].kind);
+    navigate(rows[i]);
   }
 
   function onKeydown(e) {

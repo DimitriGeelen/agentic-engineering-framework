@@ -250,10 +250,13 @@ def _execute_search(query, mode):
     return results, index_stats(), vec_stats
 
 
-@bp.route("/search")
+@bp.route("/search", methods=["GET", "POST"])
 def search_view():
-    query = request.args.get("q", "").strip()
-    mode = request.args.get("mode", "hybrid")
+    """Search page. The UI posts q/mode in the form body (T-4061) so the query
+    stays out of request logs and browser history; GET ?q= still works."""
+    params = request.form if request.method == "POST" else request.args
+    query = params.get("q", "").strip()
+    mode = params.get("mode", "hybrid")
     results = {}
     stats = None
     vec_stats = None
@@ -279,7 +282,7 @@ def search_view():
         from web.search_utils import aggregate_tags
         tag_cloud = aggregate_tags(limit=24)
 
-    is_chat = request.args.get("mode") == "ask"
+    is_chat = params.get("mode") == "ask"
     return render_page(
         "search.html",
         page_title="Search",
