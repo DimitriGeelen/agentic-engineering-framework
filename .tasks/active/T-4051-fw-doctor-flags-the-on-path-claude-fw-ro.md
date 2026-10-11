@@ -1,8 +1,13 @@
 ---
 id: T-4051
-name: "fw doctor flags the on-PATH claude-fw router (T-2854) as drifted from repo source and advises overwriting it with the project copy (010)"
+name: "fw doctor flags the on-PATH claude-fw router (T-2854) as drifted from repo
+  source and advises overwriting it with the project copy (010)"
 description: >
-  fw doctor WARNs 'Installed claude-fw drifted from repo source' and suggests rm + cp of bin/claude-fw onto ~/.local/bin/claude-fw. That file is the T-2854 router (forwards to the project copy), so the comparison is a false positive and the advice would regress T-2854. Fix: recognise the router by its header and compare router-to-router (or skip). Reported by 010-termlink after installing v1.8.9; not applied there.
+  fw doctor WARNs 'Installed claude-fw drifted from repo source' and suggests rm +
+  cp of bin/claude-fw onto ~/.local/bin/claude-fw. That file is the T-2854 router
+  (forwards to the project copy), so the comparison is a false positive and the advice
+  would regress T-2854. Fix: recognise the router by its header and compare router-to-router
+  (or skip). Reported by 010-termlink after installing v1.8.9; not applied there.
 
 status: captured
 workflow_type: build
@@ -39,8 +44,8 @@ origin: {kind: "peer", source: "010-termlink"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T11:18:19Z
-last_update: 2026-10-11T11:18:19Z
-date_finished: null
+last_update: 2026-10-11T12:20:44Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,20 +56,49 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-11T11:30:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-11T11:31:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4051: fw doctor flags the on-PATH claude-fw router (T-2854) as drifted from repo source and advises overwriting it with the project copy (010)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reported by 010-termlink after installing v1.8.9 (sidecar, conversation aef-release-v1.8.9). `fw doctor` compares every on-PATH `claude-fw` byte-for-byte with `bin/claude-fw` (`bin/fw` ~3225, `cmp -s`). Since T-2854 `install.sh` puts the 72-line **router** `bin/claude-fw-router` on PATH, which forwards to the project's own `claude-fw`; so every router install WARNs, and the advised `rm -f … && cp bin/claude-fw …` would replace the router with a fixed copy, regressing T-2854. 010 did not apply it. Confirmed in the source 2026-10-11.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw doctor`'s claude-fw drift check (`bin/fw` ~line 3200) recognises an on-PATH `claude-fw` that is the T-2854 router (its header names `claude-fw-router`) and compares it to `bin/claude-fw-router`, not `bin/claude-fw`. A router identical to the repo router: no WARN. A drifted router: WARN whose refresh line copies `bin/claude-fw-router`, never `bin/claude-fw`.
+- [ ] A fixed copy of the wrapper on PATH (pre-T-2854 install) is still compared to `bin/claude-fw` and still WARNs when it drifts, and the message now also says the recommended install is the router (`install.sh` puts it there).
+- [ ] Regression test `tests/unit/t4051_doctor_claude_fw_router.bats`: PATH holding (a) a copy of the repo router → no drift WARN, and no suggestion to cp `bin/claude-fw`; (b) a modified router → WARN naming the router as the refresh source; (c) a drifted fixed copy → WARN as before. (a) fails on the pre-fix code.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -227,6 +261,10 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/t4051_doctor_claude_fw_router.bats > .context/working/t4051-verify.out 2>&1 && ! grep -q "^not ok" .context/working/t4051-verify.out
+test "$(grep -c '# skip' .context/working/t4051-verify.out)" -eq 0
+bash -n bin/fw
+bin/fw vendor self --check
 
 ## RCA
 

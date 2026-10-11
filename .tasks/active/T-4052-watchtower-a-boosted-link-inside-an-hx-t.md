@@ -1,8 +1,17 @@
 ---
 id: T-4052
-name: "Watchtower: a boosted link inside an hx-target=this polling container swaps the page into the container and the next poll reverts it (/approvals, cockpit activity, orchestrator_parallel) (ring20 T-2306)"
+name: "Watchtower: a boosted link inside an hx-target=this polling container swaps
+  the page into the container and the next poll reverts it (/approvals, cockpit activity,
+  orchestrator_parallel) (ring20 T-2306)"
 description: >
-  base.html has hx-boost on body with hx-target=#content; polling containers set hx-target=this (T-2060), which boosted links inside them inherit. Clicking a task on /approvals swaps the task page into #approvals-content and the 10 s poll overwrites it while the URL stays on the task. ring20 reproduced with Playwright (htmx 2.0.4) and verified a fix: an htmx:beforeSwap listener that retargets boosted swaps to #content. Ship it with a browser regression test (boosted link inside every 'every'-polled container survives two poll intervals). Minor, separate: web/test_app.py does not import in a vendored consumer (ModuleNotFoundError: design_comments).
+  base.html has hx-boost on body with hx-target=#content; polling containers set hx-target=this
+  (T-2060), which boosted links inside them inherit. Clicking a task on /approvals
+  swaps the task page into #approvals-content and the 10 s poll overwrites it while
+  the URL stays on the task. ring20 reproduced with Playwright (htmx 2.0.4) and verified
+  a fix: an htmx:beforeSwap listener that retargets boosted swaps to #content. Ship
+  it with a browser regression test (boosted link inside every 'every'-polled container
+  survives two poll intervals). Minor, separate: web/test_app.py does not import in
+  a vendored consumer (ModuleNotFoundError: design_comments).
 
 status: captured
 workflow_type: build
@@ -39,8 +48,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "T-2306"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T11:18:36Z
-last_update: 2026-10-11T11:18:36Z
-date_finished: null
+last_update: '2026-10-11T11:31:24Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,22 +60,59 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-11T11:30:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-11T11:31:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4052: Watchtower: a boosted link inside an hx-target=this polling container swaps the page into the container and the next poll reverts it (/approvals, cockpit activity, orchestrator_parallel) (ring20 T-2306)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reported by ring20 (proxmox-ring20-management, their T-2306; sidecar conversation ring20-testbed-t2306-watchtower-poll-bounce), seen by the operator in several projects. `base.html` boosts navigation (`hx-boost` on body, `hx-target=#content`); polling containers set `hx-target="this"` (T-2060), and boosted links inside them inherit it. Clicking a task on /approvals swaps the task page INTO `#approvals-content`, pushes the URL, and the next 10 s poll swaps the list back while the URL still names the task. Affected: approvals.html (10 s), cockpit.html Recent Activity `#wt-activity` (15 s), orchestrator_parallel.html (2 s). ring20 reproduced it with Playwright (htmx 2.0.4) and verified this fix: an `htmx:beforeSwap` listener in base.html that retargets boosted swaps to `#content` (polls and explicit hx-* requests are not boosted and keep their targets). Rejected alternative: `hx-disinherit` per poller. Separate minor item: `web/test_app.py` does not import in a vendored consumer (ModuleNotFoundError: design_comments) — out of scope here.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `web/templates/base.html` has an `htmx:beforeSwap` listener (next to the `htmx:beforeRequest` one) that, when `evt.detail.boosted` and the target is not `#content`, sets the target to `#content`. Non-boosted swaps (polls, explicit hx-get/hx-post) keep their targets.
+- [ ] Playwright test `tests/playwright/test_t4052_boosted_link_in_poller.py`: for /approvals (and the cockpit activity list when it has a link), click a boosted task link inside the polling container, wait past two poll intervals, assert the URL and the page `h1` are still the task's and `#approvals-content` is no longer in the DOM; control: /approvals left alone still refreshes `#approvals-content` in place with one page header. The test fails on the pre-fix base.html.
+- [ ] Watchtower restarted after the change and `bin/fw watchtower current` exits 0.
 
 ### Human
+- [ ] [REVIEW] Opening a task from /approvals stays on the task
+  **Steps:**
+  1. Open Watchtower `/approvals` (`bin/fw watchtower url` prints the address)
+  2. Click any task link in the list
+  3. Wait 30 seconds without touching the page
+  **Expected:** the task page stays; the approvals list does not come back while the URL shows the task
+  **If not:** note which page you started from and how long it took to switch back
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -227,6 +273,10 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+grep -q "htmx:beforeSwap" web/templates/base.html
+timeout 600 python3 -m pytest tests/playwright/test_t4052_boosted_link_in_poller.py -q > .context/working/t4052-verify.out 2>&1 && grep -q passed .context/working/t4052-verify.out && ! grep -qE "[0-9]+ (failed|skipped)" .context/working/t4052-verify.out
+bin/fw watchtower current
+bin/fw vendor self --check
 
 ## RCA
 
