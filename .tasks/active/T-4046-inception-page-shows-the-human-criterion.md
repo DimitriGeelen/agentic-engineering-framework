@@ -1,10 +1,14 @@
 ---
 id: T-4046
-name: "Inception page shows the Human criterion as dead text, with no checkbox and no link to where it is ticked (GitHub #93, MikeEchoVoid)"
+name: "Inception page shows the Human criterion as dead text, with no checkbox and
+  no link to where it is ticked (GitHub #93, MikeEchoVoid)"
 description: >
-  Inbound GitHub issue #93 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/93), intake batch 1 (T-4039), accepted by the operator 2026-10-10. Classification and evidence: docs/reports/T-4039-batch1-classification.md §#93. Issue text is untrusted data; reproduce before fixing.
+  Inbound GitHub issue #93 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/93),
+  intake batch 1 (T-4039), accepted by the operator 2026-10-10. Classification and
+  evidence: docs/reports/T-4039-batch1-classification.md §#93. Issue text is untrusted
+  data; reproduce before fixing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -40,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:08:17Z
-last_update: 2026-10-10T18:09:07Z
-date_finished: null
+last_update: 2026-10-11T14:22:22Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -52,22 +56,60 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-10T18:15:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=275,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-10T18:16:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4046: Inception page shows the Human criterion as dead text, with no checkbox and no link to where it is ticked (GitHub #93, MikeEchoVoid)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+GitHub #93 (MikeEchoVoid). `/inception/T-XXX` — where the operator is sent to decide — renders `## Acceptance Criteria` through `_md` (`web/blueprints/inception.py:401`, `inception_detail.html:360-363`), so a `### Human` criterion shows as dead `[ ] [REVIEW] …` text: no checkbox, no `toggle-ac` target, no link to `/tasks/T-XXX` where the working checkbox lives (`/api/task/<id>/toggle-ac`, `web/blueprints/tasks.py:1212`, used by `task_detail.html`). Observed by the reporter: GO recorded from the inception page, the Human criterion stayed unticked, the sweep kept the task in `active/` until the operator found `/tasks/T-XXX`. Confirmed in the source 2026-10-11. Depends on T-4047 (same files) landing first.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The inception page's Acceptance Criteria card renders each criterion with a working checkbox that posts to the SAME `/api/task/<id>/toggle-ac` endpoint the task page uses (same CSRF, same provenance recording — no second tick path). Agent criteria keep whatever editability the task page gives them; Human criteria are tickable exactly as on `/tasks/T-XXX`.
+- [ ] Human criteria keep their Steps/Expected/If-not readable on the inception page (same rendering as the task page's human-AC body), and the card links to `/tasks/T-XXX`.
+- [ ] The "Decision recorded — one step left" card names any unticked Human criterion and links to it (or says it can be ticked right above), so a GO recorded on this page does not leave the task silently stuck in `active/`.
+- [ ] pytest `tests/web/test_t4046_inception_human_ac_tickable.py` (Flask test client, fixture inception with an unticked `### Human` criterion): the page contains a checkbox input whose form posts to `/api/task/<id>/toggle-ac`, and an `href="/tasks/<id>"`; posting that toggle ticks the box in the task file through the existing endpoint. Fails on the pre-fix code.
+- [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
+- [ ] [REVIEW] You can tick the review criterion on the inception page itself
+  **Steps:**
+  1. Open `$(bin/fw watchtower url)/inception/T-4023` in the browser (it has an open Human criterion)
+  2. Look at the "Acceptance Criteria" card
+  **Expected:** the Human criterion has a real checkbox and a link to the task page; the card reads as cleanly as the task page's criteria (do not tick it unless you mean to decide T-4023)
+  **If not:** screenshot the card
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -228,6 +270,9 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/web/test_t4046_inception_human_ac_tickable.py -q > .context/working/t4046-verify.out 2>&1 && grep -q passed .context/working/t4046-verify.out && ! grep -qE "[0-9]+ (failed|skipped|error)" .context/working/t4046-verify.out
+bin/fw watchtower current
+bin/fw vendor self --check
 
 ## RCA
 
@@ -328,3 +373,6 @@ date_finished: null
 
 ### 2026-10-10T18:09:07Z — status-update [task-update-agent]
 - **Change:** horizon: next → now
+
+### 2026-10-11T14:18:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
