@@ -235,7 +235,7 @@ do_start() {
         if [ -n "$run_port" ] && { [ -z "$port" ] || [ "$port" = "$run_port" ]; } \
             && _watchtower_port_holder_is_ours "$run_port"; then
             log_info "Watchtower is already running for this project (PID $pid, identity verified)."
-            echo "  Local:  http://localhost:${run_port}"
+            echo "  Local:  http://$(_watchtower_probe_host):${run_port}"
             return 0
         fi
         log_warn "Watchtower is already running (PID $pid)${run_port:+ on port $run_port}, but it was not reused."
@@ -335,11 +335,23 @@ do_start() {
     if [ -n "$debug_flag" ]; then
         echo "$$" > "$PID_FILE"
         printf '%s\n' "$port" > "$PORT_FILE"
-        printf '%s\n' "http://localhost:${port}" > "$URL_FILE"
+        printf '%s\n' "http://$(_watchtower_probe_host):${port}" > "$URL_FILE"
         [ "$allocated" -eq 1 ] && persist_port "$port"
         log_info "Foreground (--debug): output below, Ctrl-C to stop."
+        export FW_HOST="$(fw_config "HOST" "0.0.0.0" 2>/dev/null || echo 0.0.0.0)"
+        export WATCHTOWER_URL="http://$(_watchtower_probe_host):${port}"
         exec python3 -m web.app --port "$port" --debug
     fi
+
+    # T-4041 (GitHub #88): FW_HOST may live only in .framework.yaml; web/config.py
+    # reads the environment, so hand the resolved value down. WATCHTOWER_URL is
+    # exported into the server so processes Watchtower itself starts (the
+    # inception decide chain) can find it instead of guessing another port.
+    local _bound_host _probe
+    _bound_host=$(fw_config "HOST" "0.0.0.0" 2>/dev/null || echo "0.0.0.0")
+    export FW_HOST="$_bound_host"
+    _probe=$(_watchtower_probe_host)
+    export WATCHTOWER_URL="http://${_probe}:${port}"
 
     watchtower_rotate_log "$LOG_FILE" 3  # T-3627: rotate, never truncate the evidence
     # T-3660 (P-01 F-16): detach for real. A plain `&` child stays in the
@@ -370,7 +382,7 @@ do_start() {
         fi
 
         # Check HTTP response
-        if curl -sf "http://localhost:${port}/" > /dev/null 2>&1; then
+        if curl -sf "http://${_probe}:${port}/" > /dev/null 2>&1; then
             # T-1803: triple self-validation — the 200 must come from OUR instance,
             # not a foreign service that grabbed the port in a race. Only then is
             # the watchtower.{port,url} triple trustworthy. On mismatch, refuse to
@@ -392,7 +404,9 @@ do_start() {
             # T-1287: write port + url triple atomically (Layer 1 source of truth)
             # URL prefers LAN IP for external callers; falls back to localhost.
             local url
-            if [ -n "$lan_ip" ]; then
+            if _watchtower_bound_host >/dev/null; then
+                url="http://${_probe}:${port}"   # T-4041: bound to one address
+            elif [ -n "$lan_ip" ]; then
                 url="http://${lan_ip}:${port}"
             else
                 url="http://localhost:${port}"
@@ -402,8 +416,8 @@ do_start() {
 
             echo ""
             echo -e "${BOLD}Watchtower is running${NC}"
-            echo -e "  Local:  http://localhost:${port}"
-            if [ -n "$lan_ip" ]; then
+            echo -e "  Local:  http://${_probe}:${port}"
+            if [ -n "$lan_ip" ] && ! _watchtower_bound_host >/dev/null; then
                 echo -e "  LAN:    http://${lan_ip}:${port}"
             fi
             echo -e "  PID:    $new_pid"
@@ -414,7 +428,7 @@ do_start() {
 
     # Process running but not responding
     log_warn "Watchtower started (PID $new_pid) but health check failed after 5s."
-    log_warn "It may still be initializing. Check: curl http://localhost:${port}/"
+    log_warn "It may still be initializing. Check: curl http://${_probe}:${port}/"
     log_warn "Log: $LOG_FILE"
 }
 
@@ -543,8 +557,8 @@ _url_refuse() {
     # multi-project host, "which project am I actually being asked about" is
     # half the answer.
     echo "  Project: $PROJECT_ROOT" >&2
-    if _probe=$(curl -sf --max-time 2 "http://localhost:${_p}/api/_identity" 2>/dev/null); then
-        echo "  Something IS listening on localhost:${_p}, but it is not this" >&2
+    if _probe=$(curl -sf --max-time 2 "http://$(_watchtower_probe_host):${_p}/api/_identity" 2>/dev/null); then
+        echo "  Something IS listening on $(_watchtower_probe_host):${_p}, but it is not this" >&2
         echo "  project's Watchtower. Do not treat it as ours — on a multi-project" >&2
         echo "  host the same Flask app answers 200 for almost any path, so a curl" >&2
         echo "  against it passes while asserting nothing." >&2
@@ -552,7 +566,7 @@ _url_refuse() {
         echo "  Identity reported: $(printf '%s' "$_probe" | head -c 200)" >&2
         echo "  Start yours on another port: fw serve --port <N>" >&2
     else
-        echo "  Nothing is listening on localhost:${_p}." >&2
+        echo "  Nothing is listening on $(_watchtower_probe_host):${_p}." >&2
         echo "  Start one with: fw serve" >&2
     fi
     echo "  Or set WATCHTOWER_URL explicitly." >&2
@@ -577,7 +591,9 @@ do_url() {
         local p lan_ip
         p=$(do_port)
         lan_ip=$(detect_lan_ip)
-        if [ -n "$lan_ip" ]; then
+        if _watchtower_bound_host >/dev/null; then
+            echo "http://$(_watchtower_probe_host):${p}"   # T-4041
+        elif [ -n "$lan_ip" ]; then
             echo "http://${lan_ip}:${p}"
         else
             echo "http://localhost:${p}"
@@ -627,6 +643,8 @@ case "$cmd" in
         echo ""
         echo "Environment:"
         echo "  FW_PORT  Default port (default: 3000)"
+        echo "  FW_HOST  Bind address (default: 0.0.0.0 = all interfaces). A specific address is"
+        echo "           what start probes, writes to the url file and exports as WATCHTOWER_URL"
         ;;
     *)
         log_error "Unknown command: $cmd"

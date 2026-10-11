@@ -822,7 +822,7 @@ fi
 
 # ── Block with explanation ──
 # Detect Watchtower URL via shared helper (T-1154, T-1156)
-WT_URL=$(_watchtower_url 2>/dev/null || echo "http://localhost:3000")
+WT_URL=$(_watchtower_url 2>/dev/null || true)
 
 echo "" >&2
 echo "══════════════════════════════════════════════════════════" >&2
@@ -869,8 +869,12 @@ echo "  To request approval, ask the operator (human-only) to run:" >&2
 echo "    $(_emit_user_command "tier0 approve")" >&2
 echo "  (approves the action(s) above when listed, else this exact command)" >&2
 echo "" >&2
-echo "  Or approve this exact command text in Watchtower:" >&2
-echo "    ${WT_URL}/approvals" >&2
+if [ -n "$WT_URL" ]; then
+    echo "  Or approve this exact command text in Watchtower:" >&2
+    echo "    ${WT_URL}/approvals" >&2
+else
+    echo "  No Watchtower reachable for this project (start one with: fw serve)." >&2
+fi
 echo "" >&2
 echo "  Policy: 011-EnforcementConfig.md §Tier 0" >&2
 echo "══════════════════════════════════════════════════════════" >&2
@@ -930,7 +934,7 @@ os.replace(tmp_path, sys.argv[1])
 # Push notification for Tier 0 block (T-709)
 if [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then
     source "$FRAMEWORK_ROOT/lib/notify.sh"
-    fw_notify "Tier 0 Approval Needed" "$DESCRIPTION — Approve: ${WT_URL}/approvals" "task_blocked" "framework"
+    fw_notify "Tier 0 Approval Needed" "$DESCRIPTION — Approve: ${WT_URL:+${WT_URL}/approvals}${WT_URL:-run fw tier0 approve}" "task_blocked" "framework"
 fi
 
 exit 2

@@ -989,6 +989,18 @@
             }
         });
 
+        // T-4052: a boosted link inside a polling container (hx-target="this", T-2060)
+        // inherits that target and would swap the whole page into the container, which
+        // the next poll then reverts. Boosted navigation always targets #content; polls
+        // and explicit hx-get/hx-post are not boosted and keep their own targets.
+        document.body.addEventListener('htmx:beforeSwap', function(evt) {
+            if (!evt.detail.boosted) return;
+            var content = document.getElementById('content');
+            if (content && evt.detail.target !== content) {
+                evt.detail.target = content;
+            }
+        });
+
         // CSRF listener + fetchWithCsrf moved to web/static/csrf-htmx.js (T-1453)
         // so standalone templates (review.html) can share the same code.
 

@@ -71,13 +71,13 @@ do_verify_acs() {
 
     source "$FRAMEWORK_ROOT/lib/watchtower.sh" 2>/dev/null || true
     local wt_base_url wt_port
-    wt_base_url=$(_watchtower_url 2>/dev/null || echo "http://localhost:3000")
+    wt_base_url=$(_watchtower_url 2>/dev/null || true)
     # Extract port from URL for downstream use
-    wt_port=$(echo "$wt_base_url" | grep -oP ':\K\d+$' || echo "3000")
+    wt_port=$(echo "$wt_base_url" | grep -oP ':\K\d+$' || true)
 
     # Check if Watchtower is running (needed for HTTP checks)
     local wt_running=false
-    if curl -sf --max-time 2 "${wt_base_url}/" >/dev/null 2>&1; then
+    if [ -n "$wt_base_url" ] && curl -sf --max-time 2 "${wt_base_url}/" >/dev/null 2>&1; then
         wt_running=true
     fi
 
@@ -87,12 +87,13 @@ do_verify_acs() {
     echo ""
 
     # Find all tasks with unchecked Human ACs
-    FRAMEWORK_ROOT="$FRAMEWORK_ROOT" PROJECT_ROOT="$PROJECT_ROOT" FW_VERIFY_ACS_ARC="$arc_filter" python3 - "$PROJECT_ROOT" "$filter_task" "$wt_port" "$wt_running" "$verbose" "$auto_check" "$execute" << 'PYVERIFY'
+    FRAMEWORK_ROOT="$FRAMEWORK_ROOT" PROJECT_ROOT="$PROJECT_ROOT" FW_VERIFY_ACS_ARC="$arc_filter" python3 - "$PROJECT_ROOT" "$filter_task" "$wt_port" "$wt_running" "$verbose" "$auto_check" "$execute" "$wt_base_url" << 'PYVERIFY'
 import os, re, sys, subprocess, json
 
 project_root = sys.argv[1]
 filter_task = sys.argv[2] if len(sys.argv) > 2 else ""
-wt_port = sys.argv[3] if len(sys.argv) > 3 else "3000"
+wt_port = sys.argv[3] if len(sys.argv) > 3 else ""
+wt_base = sys.argv[8] if len(sys.argv) > 8 else ""
 wt_running = sys.argv[4] == "true" if len(sys.argv) > 4 else False
 verbose = sys.argv[5] == "true" if len(sys.argv) > 5 else False
 auto_check = sys.argv[6] == "true" if len(sys.argv) > 6 else False
@@ -153,28 +154,28 @@ def auto_verify_ac(task_id, ac_text):
     # URL/page load checks
     url_patterns = [
         (r'http://localhost:\d+/\S+', None),
-        (r'/review/T-\d+', f"http://localhost:{wt_port}"),
-        (r'/config', f"http://localhost:{wt_port}"),
-        (r'/approvals', f"http://localhost:{wt_port}"),
-        (r'/fabric', f"http://localhost:{wt_port}"),
+        (r'/review/T-\d+', f"{wt_base}"),
+        (r'/config', f"{wt_base}"),
+        (r'/approvals', f"{wt_base}"),
+        (r'/fabric', f"{wt_base}"),
     ]
 
     # Watchtower page verification
     if wt_running:
         if '/config' in text or 'config page' in text:
-            return check_url(f"http://localhost:{wt_port}/config")
+            return check_url(f"{wt_base}/config")
         if '/review/' in text or 'review page' in text or 'task page' in text:
-            return check_url(f"http://localhost:{wt_port}/review/{task_id}")
+            return check_url(f"{wt_base}/review/{task_id}")
         if '/approvals' in text or 'approval' in text:
-            return check_url(f"http://localhost:{wt_port}/approvals")
+            return check_url(f"{wt_base}/approvals")
         if 'landing page' in text or 'dashboard' in text or 'summary card' in text:
-            return check_url(f"http://localhost:{wt_port}/")
+            return check_url(f"{wt_base}/")
         if 'file link' in text or 'file viewer' in text or 'clickable' in text:
             # Use a file from a viewable directory
-            return check_url(f"http://localhost:{wt_port}/file/docs/reports/T-823-automated-human-ac-verification.md")
+            return check_url(f"{wt_base}/file/docs/reports/T-823-automated-human-ac-verification.md")
         if 'qr code' in text or 'qr' in text:
             # QR is generated client-side; verify the review page loads
-            return check_url(f"http://localhost:{wt_port}/review/{task_id}")
+            return check_url(f"{wt_base}/review/{task_id}")
 
     # Command execution checks
     if 'fw version' in text:
@@ -488,12 +489,10 @@ if checked_count > 0:
 
 if results['pass'] > 0 and not auto_check:
     print()
-    # Get LAN IP for Watchtower URL
-    try:
-        ip = subprocess.run(["hostname", "-I"], capture_output=True, text=True).stdout.split()[0]
-    except:
-        ip = "localhost"
-    print(f"  {BOLD}Review verified tasks:{NC} http://{ip}:{wt_port}/approvals")
+    if wt_base:
+        print(f"  {BOLD}Review verified tasks:{NC} {wt_base}/approvals")
+    else:
+        print(f"  {BOLD}Review verified tasks:{NC} no Watchtower reachable for this project (fw serve)")
     print(f"  {BOLD}Auto-check:{NC} fw verify-acs --auto-check --execute")
 
 # Exit code: 0 if any passes, 1 if all fail

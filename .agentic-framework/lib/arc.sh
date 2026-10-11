@@ -856,7 +856,6 @@ arc_close() {
         if [ -z "$wt_url" ]; then
             wt_url="$("${FRAMEWORK_ROOT:-$PROJECT_ROOT}/bin/fw" watchtower url 2>/dev/null || true)"
         fi
-        [ -z "$wt_url" ] && wt_url="http://localhost:3000"
         echo "Error: agents must not invoke 'fw arc close' directly (§ACD/G-062, T-1671)." >&2
         echo "" >&2
         echo "  You appear to be running inside Claude Code (\$CLAUDECODE=1)." >&2
@@ -873,7 +872,7 @@ arc_close() {
         echo "    2. Human: open the Watchtower URL, review the demo evidence," >&2
         echo "       run 'bin/fw arc close ${id} --demo <path> --decision \"...\"'" >&2
         echo "" >&2
-        echo "  Arc detail: ${wt_url}/arcs/${id}" >&2
+        if [ -n "$wt_url" ]; then echo "  Arc detail: ${wt_url}/arcs/${id}" >&2; else echo "  No Watchtower reachable for this project (start one with: fw serve)." >&2; fi
         echo "" >&2
         echo "  Overrides (mirror T-1259 inception-decide): --i-am-human (human typing" >&2
         echo "  into an agent session, rare); --from-watchtower (Flask backend)." >&2
@@ -1005,7 +1004,6 @@ arc_abandon() {
         if [ -z "$wt_url" ]; then
             wt_url="$("${FRAMEWORK_ROOT:-$PROJECT_ROOT}/bin/fw" watchtower url 2>/dev/null || true)"
         fi
-        [ -z "$wt_url" ] && wt_url="http://localhost:3000"
         echo "Error: agents must not invoke 'fw arc abandon' directly (§ACD/G-062, T-1671)." >&2
         echo "" >&2
         echo "  You appear to be running inside Claude Code (\$CLAUDECODE=1)." >&2
@@ -1022,7 +1020,7 @@ arc_abandon() {
         echo "    2. Human: open the Watchtower URL, review the reasoning," >&2
         echo "       run 'bin/fw arc abandon ${id} --reason \"...\"'" >&2
         echo "" >&2
-        echo "  Arc detail: ${wt_url}/arcs/${id}" >&2
+        if [ -n "$wt_url" ]; then echo "  Arc detail: ${wt_url}/arcs/${id}" >&2; else echo "  No Watchtower reachable for this project (start one with: fw serve)." >&2; fi
         echo "" >&2
         echo "  Overrides (mirror T-1259 inception-decide): --i-am-human (human typing" >&2
         echo "  into an agent session, rare); --from-watchtower (Flask backend)." >&2
@@ -1392,8 +1390,7 @@ arc_review() {
     if declare -F _watchtower_url >/dev/null 2>&1; then
         base_url=$(_watchtower_url "$id" 2>/dev/null || true)
     fi
-    [ -z "$base_url" ] && base_url="http://localhost:3000"
-    review_url="${base_url}/arcs/${id}/close"
+    if [ -n "$base_url" ]; then review_url="${base_url}/arcs/${id}/close"; else review_url="(no Watchtower reachable for this project — start one with: fw serve)"; fi
 
     echo ""
     echo "══════════════════════════════════════════"
