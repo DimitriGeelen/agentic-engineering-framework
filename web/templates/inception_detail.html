@@ -368,7 +368,8 @@
 {% if sections.verification %}
 <article class="section-card">
     <header>Verification</header>
-    <div class="section-content">{{ sections.verification }}</div>
+    {# T-4047: verbatim — shell commands and # comments, not Markdown #}
+    <pre class="section-content" style="white-space: pre-wrap; margin: 0;">{{ sections.verification }}</pre>
 </article>
 {% endif %}
 

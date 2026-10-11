@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:08:38Z
-last_update: 2026-10-11T14:13:55Z
+last_update: 2026-10-11T14:21:45Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,9 +96,9 @@ GitHub #94 (MikeEchoVoid). `web/blueprints/inception.py:402` renders `## Verific
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `/inception/T-XXX` shows `## Verification` verbatim in a `<pre>` (HTML-escaped, no Markdown): `#` comment lines stay as text, `*.vbproj/*.csproj` and `out_of_scope` / `yaml.safe_load` appear exactly as in the file, and no `<h1>` comes from the Verification block.
-- [ ] Any other page that renders a task's `## Verification` through Markdown (check `/tasks/T-XXX` and the review page) gets the same treatment, or is listed in the task's Updates as already verbatim.
-- [ ] pytest `tests/web/test_t4047_inception_verification_verbatim.py` (Flask test client, fixture inception task whose Verification has `#` comments, `*.vbproj/*.csproj/*.xaml` and `out_of_scope`): the card holds a `<pre>` with the exact text and no `<h1>`/`<em>` from it. Fails on the pre-fix code.
+- [x] `/inception/T-XXX` shows `## Verification` verbatim in a `<pre>` (HTML-escaped, no Markdown): `#` comment lines stay as text, `*.vbproj/*.csproj` and `out_of_scope` / `yaml.safe_load` appear exactly as in the file, and no `<h1>` comes from the Verification block.
+- [x] Any other page that renders a task's `## Verification` through Markdown (check `/tasks/T-XXX` and the review page) gets the same treatment, or is listed in the task's Updates as already verbatim. (Checked 2026-10-11: `/tasks/T-XXX` shows the raw body in `<pre><code>`, already verbatim; review page does not render Verification — see Evolution.)
+- [x] pytest `tests/web/test_t4047_inception_verification_verbatim.py` (Flask test client, fixture inception task whose Verification has `#` comments, `*.vbproj/*.csproj/*.xaml` and `out_of_scope`): the card holds a `<pre>` with the exact text and no `<h1>`/`<em>` from it. Fails on the pre-fix code.
 - [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
@@ -289,7 +289,20 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** on `/inception/T-XXX` the Verification card showed `#` comments as `<h1>` headings and ate `*`/`_` as emphasis, so the operator read different commands from the ones the close gate runs (GitHub #94).
+
+**Root cause:** `web/blueprints/inception.py` built every section, Verification included, with the Markdown helper `_md`, although Verification is shell lines plus `#` comments — the opposite of Markdown, where `#` is a heading.
+
+**Why structurally allowed:** sections were rendered by one uniform loop with no notion of a section's content type, and no test looked at a rendered Verification card; the task page never had the problem (it shows the raw body), so nobody compared the two.
+
+**Prevention:** `tests/web/test_t4047_inception_verification_verbatim.py` pins verbatim rendering (comments, `*.vbproj/*.csproj/*.xaml`, `out_of_scope`) and fails on the old code; the template comment names why Verification is a `<pre>`.
+
 ## Evolution
+
+### 2026-10-11 — one section is not Markdown
+- **What changed:** the page renders all sections through one Markdown path; Verification is the one section whose content is shell, so it needs its own (verbatim) path. Checked the other surfaces: `/tasks/T-XXX` shows the raw task body in a code block (already verbatim) and the review page does not render Verification, so the fix is inception-page only.
+- **Plan impact:** none.
+- **Triggered:** process incident during the build (worker ran `git stash` in the shared checkout, sweeping other workers' edits); recovered without loss by the orchestrator; future dispatch prompts forbid `git stash`.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at

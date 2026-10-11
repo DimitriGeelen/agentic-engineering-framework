@@ -399,7 +399,10 @@ def inception_detail(task_id):
         # so Context/RCA/AC/Verification/Decisions surface when present.
         "context": _md(all_raw_sections.get("Context", "")),
         "acceptance_criteria": _md(all_raw_sections.get("Acceptance Criteria", "")),
-        "verification": _md(all_raw_sections.get("Verification", "")),
+        # T-4047: shell commands and `#` comments, not Markdown — passed raw so the
+        # template prints it escaped in a <pre> (rendering it through _md turns
+        # comments into <h1> and `*`/`_` into emphasis).
+        "verification": all_raw_sections.get("Verification", ""),
         "decisions": _md(all_raw_sections.get("Decisions", "")),
         "rca": _md(all_raw_sections.get("RCA", "")),
     }
