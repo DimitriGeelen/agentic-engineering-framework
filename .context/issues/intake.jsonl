@@ -18,3 +18,4 @@
 {"issue": 93, "stage": "classified+accepted", "tasks": ["T-4046"], "severity": "medium", "comment": "https://github.com/DimitriGeelen/agentic-engineering-framework/issues/93#issuecomment-6100625034", "ts": "2026-10-10T18:10:31Z"}
 {"issue": 94, "stage": "classified+accepted", "tasks": ["T-4047"], "severity": "low", "comment": "https://github.com/DimitriGeelen/agentic-engineering-framework/issues/94#issuecomment-6100625509", "ts": "2026-10-10T18:10:34Z"}
 {"issue": 85, "stage": "classified+not-planned", "comment": "https://github.com/DimitriGeelen/agentic-engineering-framework/issues/85#issuecomment-6100625933", "ts": "2026-10-10T18:10:38Z"}
+{"issue": 87, "stage": "in-progress", "tasks": ["T-3886"], "comment": "https://github.com/DimitriGeelen/agentic-engineering-framework/issues/87#issuecomment-6107207699", "ts": "2026-10-11T08:38:29Z"}
