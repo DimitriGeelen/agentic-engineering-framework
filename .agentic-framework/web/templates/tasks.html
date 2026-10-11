@@ -108,7 +108,7 @@ main.container:has(.tasks-toolbar) {
 /* ── Kanban Board ───────────────────────────────────────── */
 .kanban-board {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 0.5rem;
     align-items: start;
 }
@@ -377,6 +377,10 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
 .kanban-column[data-status="{{ s }}"] .kanban-card { border-left: 3px solid {{ color }}; }
 {% endif %}
 {% endfor %}
+/* T-4045: derived column, not a status — no data-status, so drag-drop onto it is a no-op. */
+.kanban-column[data-column="awaiting-review"] .kanban-column-header { border-bottom-color: #f9a825; }
+.kanban-column[data-column="awaiting-review"] .kanban-card { border-left: 3px solid #f9a825; }
+.kanban-human-open { font-size: 0.65rem; color: var(--pico-muted-color); }
 </style>
 
 <div class="tasks-toolbar">
@@ -525,6 +529,9 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
             {{ inline_select(task.id, 'owner', enum_owners, task.owner, select_class='inline-owner-select', hx_target='closest .kanban-card', hx_swap='none', form_class='inline-reset', lazy=True) }}
             {{ arc_badge(task) }}
             {{ bvp_badge(task) }}
+            {% if task._open_human and task._review_state != 'ready' %}
+            <span class="kanban-human-open" title="{{ task._wait_reasons|join('; ') }}">{{ task._open_human }} Human open</span>
+            {% endif %}
         </div>
     </article>
     {% endmacro %}
@@ -556,6 +563,19 @@ td .status-update-result, td .horizon-update-result, td .type-update-result, td 
         </div>
         {% endif %}
     </div>
+    {% if s == 'started-work' %}
+    {# T-4045: derived "Awaiting review" column — tasks the readiness predicate calls ready. #}
+    <div class="kanban-column" data-column="awaiting-review">
+        <div class="kanban-column-header">
+            Awaiting review <span class="count">({{ awaiting_tasks|length }})</span>
+        </div>
+        {% for task in awaiting_tasks %}
+        {{ kanban_card(task) }}
+        {% else %}
+        <div class="kanban-empty">No tasks</div>
+        {% endfor %}
+    </div>
+    {% endif %}
     {% endfor %}
 </div>
 
