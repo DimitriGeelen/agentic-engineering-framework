@@ -63,6 +63,28 @@ Every stage comment ends with the same footer (operator, 2026-10-10): *"These st
 5. **Submitter as tester.** Should the "available for testing in -be" comment ask the submitter to confirm? That makes MikeEchoVoid an optional external field tester for T-4023.
 6. **The first batch.** Classify and acknowledge MikeEchoVoid's #86–#94 and #85 by hand now, while the pipeline is built? The issues have waited 3 days.
 
+## Operator answers (2026-10-10)
+
+1. **Standing permission:** yes. Template stage comments (Received, Classified, In progress, Fixed on bleeding-edge, Available for testing, Released) post automatically; decision comments (Accepted / Needs info / Duplicate / Not planned) need the operator's yes each time.
+2. **Scope:** all issues, with agent-filed ones (`fw upstream`) handled as class **internal** (agent recommendation, accepted).
+3. **Labels:** allowed (`triaged`, `area:*`, `severity:*`, `status:*`, plus stage labels such as `fixed-on-bleeding-edge`).
+4. **Sync interval:** every 2 hours.
+5. **Submitter as tester:** yes — fixes land on bleeding-edge, and submitters are offered a way to pull an individual fix, apply and test it, and report back.
+6. **First batch:** handled by hand now (operator approved all recommendations as "1").
+7. **Footer** on every comment (added on request): "These status updates are automated, but Dimitri personally looks at every issue and decides what happens to it. Replies on this issue are read."
+8. **Routing:** every MikeEchoVoid issue goes to arc `mikeechovoid-requests` (arc-021), horizon `now`.
+
+## First batch, by hand (evidence for the build)
+
+Run 2026-10-10 → 2026-10-11 with `gh` and the intake ledger `.context/issues/intake.jsonl`:
+- #85–#94 received and classified; #85 not planned; #86–#94 accepted as T-4040…T-4047 + T-3886 + T-2802/T-4041.
+- Fixed on bleeding-edge and posted with commit, test-it-yourself command and footer: #86, #87, #88 (2026-10-11). #89–#94 built and committed the same day.
+- What the manual run showed the automation needs: (a) stage labels do not exist yet (`gh issue edit --add-label` failed on #86/#87); (b) a comment must name commits that are already on GitHub's `bleeding-edge` (checked with `git ls-remote github`) or the submitter cannot pull them; (c) the "how to test" line differs per issue type (upgrade vs fresh init), so the Fixed template needs a per-issue test command field; (d) ledger rows were appended by hand after each post — the verb must post and log atomically.
+
 ## Dialogue Log
 
 - **2026-10-10, operator:** "We've got our first user, our second user beside me … has submitted bug fixes in GitHub … Mike Acker-Voy is the GitHub user [MikeEchoVoid] … devise a way to pull in these bug fixes, bugs and enhancement requests, systematically, regularly … ingest it, classify, categorize it, then incept it. Before that also give a notification back to the requester … that we have ingested it and the different steps … you serve it to me and you offer me to tell what to do with it. And then we give that message back. And then once it gets in, we need to assign a task … link it to task … when we start developing it, we update the GitHub issue. When we test it … once it gets submitted in a release … I find it really important to have a structured way to ingest it, automate it, to classify it, to service it to me operator so I can decide … but also to feedback what we do with it in the framework, with consistent structured information into the issue tickets in GitHub."
+- **2026-10-10, operator (on the six questions):** "On one yes. Two, what do you think? … On three, yes definitely. On four, every two hours sounds fine. Yeah, [fixes] become part of Bleeding Edge and we can give submitter an option to pull individual fixes in and apply that and test that and give us feedback. On 5, what do you recommend?" → agent recommended including internal issues as class "internal" and the submitter-as-tester comment; operator: "yes".
+- **2026-10-10, operator:** "Can we add, by the way, that this is automated, but Dimitri will have a personal look at each issue provided?" → footer added to all 10 Received comments in place.
+- **2026-10-10, operator:** "1" (approve the batch-1 recommendations as proposed); "can we prioritize all the requests from Mike?"; "put this all in one arc … any new one from Mike just gets routed in this" → arc-021 `mikeechovoid-requests`, routing rule.
+- **2026-10-11, operator:** "Proceed … work the MikeEchoVoid arc (#87 and #86 first), then T-3814, then build T-4039." → batch 1 fixed by hand first; the build waits on the go/no-go decision (inception gate).

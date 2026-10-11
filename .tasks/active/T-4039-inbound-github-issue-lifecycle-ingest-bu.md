@@ -19,7 +19,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-10T17:47:33Z
-last_update: 2026-10-11T13:29:24Z
+last_update: 2026-10-11T16:00:04Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -127,11 +127,11 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
@@ -147,12 +147,13 @@ cost_estimate_proposed:
 
 <!-- Fill these BEFORE writing the recommendation. The placeholder detector will block review/decide if left empty. -->
 **GO if:**
-- Root cause identified with bounded fix path
-- Fix is scoped, testable, and reversible
+- The lifecycle can be run end to end by hand with the existing tools (`gh`, a ledger), proving the stages and templates before anything is automated
+- Every outward write can go through one idempotent, logged verb, with decision comments gated on the operator
+- The build splits into slices that each ship and test on their own
 
 **NO-GO if:**
-- Problem requires fundamental redesign or unbounded scope
-- Fix cost exceeds benefit given current evidence
+- Posting to GitHub cannot be made idempotent and auditable (a stage could be posted twice or unlogged)
+- Issue text would have to be executed or obeyed to classify it (untrusted input)
 
 ## Verification
 
@@ -173,11 +174,19 @@ cost_estimate_proposed:
 
 Evidence: the framework has an outbound path only (lib/upstream.sh creates issues from field installs); nothing reads GitHub. The first outside user (MikeEchoVoid) filed 9 well-evidenced issues (#86-#94) on 2026-10-07 that sit unanswered 3 days later; #85 (reflectme-source) likewise. Recommend GO on a pipeline: scheduled ingest into a ledger, acknowledgement comment, agent classification, an operator decision surface (Watchtower /approvals + handover), task creation with a github_issue link, and status comments driven by task and release transitions. Open questions for the operator are in docs/reports/T-4039-inbound-github-issues.md.
 
-**Evidence:**
+All six design questions are answered (report §Operator answers), and the lifecycle has been run by hand for batch 1, so the GO criteria are met on evidence, not on design alone.
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+**Build slices after GO** (one task each, in this order — each ships and tests alone):
+1. `fw issues comment <n> --stage <stage> [--task T-X --commit <sha> --test-cmd "…"]` — the one outward verb: fixed templates + footer, idempotent per (issue, stage) by reading the ledger and the issue's existing stage markers, refuses a decision stage without `--approved-by-operator`, refuses a Fixed stage whose commit is not on GitHub's bleeding-edge, logs every post to `.context/issues/intake.jsonl` atomically; creates missing labels.
+2. `fw issues sync` + 2-hourly cron entry — ingest new/changed issues and submitter replies into the ledger, posts Received, classifies (type/area/severity/duplicate/internal) via agent, applies the MikeEchoVoid → arc-021/now routing.
+3. Decision surface — Watchtower /approvals "Inbound issues" section (accept / needs-info / duplicate / not-planned) + one handover line; accept creates the task with `github_issue:`.
+4. Lifecycle hooks — update-task.sh posts In progress (started-work) and Fixed on bleeding-edge (work-completed, after push); release tooling posts Available for testing / Released and closes the issue.
+
+**Evidence:**
+- Report: `docs/reports/T-4039-inbound-github-issues.md` (lifecycle, mechanisms, risks, operator answers, batch-1 run, dialogue log).
+- Ledger: `.context/issues/intake.jsonl` — Received ×10, Classified ×10, In progress, Fixed on bleeding-edge #86/#87/#88 (comment URLs recorded).
+- Batch 1 outcomes: 9 MikeEchoVoid issues accepted into arc-021; #86, #87, #88 fixed and posted 2026-10-11; #89–#94 built 2026-10-11.
+- Gaps the manual run exposed (feed slice 1): labels missing; commits must be on GitHub before a Fixed post; per-issue test command; post+log must be atomic.
 
 ## Decisions
 
