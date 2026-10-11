@@ -49,7 +49,7 @@ origin: {kind: "peer", source: "010-termlink"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T20:18:43Z
-last_update: 2026-10-11T20:20:19Z
+last_update: 2026-10-11T20:30:16Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,10 +91,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] One helper (shell or Python under `lib/`) lists running `claude-fw` wrapper processes for THIS project (the bash process whose script is this project's `bin/claude-fw`, its vendored `.agentic-framework/bin/claude-fw`, or the on-PATH router serving this project — match by the process's cwd / script path), with start time (from /proc) and the mtime of the script it runs, and flags each one started before that script's current mtime.
-- [ ] `fw doctor` WARNs per stale wrapper: "claude-fw pid N started <date>, before bin/claude-fw changed <date> — fixes in it (e.g. T-4032) are not active until that session is relaunched". OK line when none; silent when no wrapper runs.
-- [ ] `fw upgrade` / `fw vendor` / `fw vendor self` end with the same notice when the run changed `bin/claude-fw` and a stale wrapper for the project is running; the exit code is unchanged.
-- [ ] Regression test `tests/unit/t4069_stale_claude_fw_wrapper.bats`: a fixture project + a sleeping `bash <fixture>/bin/claude-fw` process started, then the script touched to a newer mtime → doctor's check (or the helper) reports it stale; untouched → not stale; other projects' wrappers are not reported. Fails on the pre-fix code (no such check).
+- [x] One helper (shell or Python under `lib/`) lists running `claude-fw` wrapper processes for THIS project (the bash process whose script is this project's `bin/claude-fw`, its vendored `.agentic-framework/bin/claude-fw`, or the on-PATH router serving this project — match by the process's cwd / script path), with start time (from /proc) and the mtime of the script it runs, and flags each one started before that script's current mtime.
+- [x] `fw doctor` WARNs per stale wrapper: "claude-fw pid N started <date>, before bin/claude-fw changed <date> — fixes in it (e.g. T-4032) are not active until that session is relaunched". OK line when none; silent when no wrapper runs.
+- [x] `fw upgrade` / `fw vendor` / `fw vendor self` end with the same notice when the run changed `bin/claude-fw` and a stale wrapper for the project is running; the exit code is unchanged.
+- [x] Regression test `tests/unit/t4069_stale_claude_fw_wrapper.bats`: a fixture project + a sleeping `bash <fixture>/bin/claude-fw` process started, then the script touched to a newer mtime → doctor's check (or the helper) reports it stale; untouched → not stale; other projects' wrappers are not reported. Fails on the pre-fix code (no such check).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -263,6 +263,11 @@ bash -n bin/fw
 bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** 010 was killed mid-turn by the budget terminator after vendoring the T-4032 fix, because its claude-fw (started 2026-10-08) predated the re-vendor.
+**Root cause:** bash holds the code it loaded; a long-lived claude-fw never sees a re-vendored bin/claude-fw, and nothing compared a running wrapper's start time with its script's mtime.
+**Why structurally allowed:** upgrade/vendor/doctor only examined files on disk, never the processes running them; success output implied the fix was live.
+**Prevention:** lib/stale_claude_fw.py + fw doctor WARN + end-of-run notice in fw upgrade / fw vendor / fw vendor self; tests/unit/t4069_stale_claude_fw_wrapper.bats (3 of 4 tests fail without the helper). Notice fires whenever a stale wrapper exists after the run (staleness itself is mtime-based), not only when this run rewrote the file.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
