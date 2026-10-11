@@ -15,12 +15,12 @@ description: >
   .opencode/plugin/x.ts stays byte-identical after an opencode seat run. Impact: their
   T-2302 panel cannot close; voided rows FAIL their pre-push audit.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/termlink/termlink.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -49,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T09:28:33Z
-last_update: 2026-10-11T09:40:03Z
-date_finished:
+last_update: 2026-10-11T10:02:40Z
+date_finished: 2026-10-11T10:02:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -101,10 +101,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] agents/termlink/termlink.sh runs the opencode review seat with OPENCODE_DISABLE_PROJECT_CONFIG=1, so the reviewed project's own opencode config and plugins are not loaded (the isolation the codex seat already has).
-- [ ] The opencode stub in tests/unit/t3582_harness_kinds_test.py behaves like opencode 1.18.25: with a `.opencode/` folder in its cwd and project config not disabled, it installs files into it.
-- [ ] Regression test: an export containing .opencode/plugin/x.ts stays byte-identical after an opencode seat run, and the seat's green counts. The test fails on the pre-fix termlink.sh.
-- [ ] Existing harness/not-evaluated suites stay green (t3582_harness_kinds_test.py, t3986_not_evaluated_test.py).
+- [x] agents/termlink/termlink.sh runs the opencode review seat with OPENCODE_DISABLE_PROJECT_CONFIG=1, so the reviewed project's own opencode config and plugins are not loaded (the isolation the codex seat already has).
+- [x] The opencode stub in tests/unit/t3582_harness_kinds_test.py behaves like opencode 1.18.25: with a `.opencode/` folder in its cwd and project config not disabled, it installs files into it.
+- [x] Regression test: an export containing .opencode/plugin/x.ts stays byte-identical after an opencode seat run, and the seat's green counts. The test fails on the pre-fix termlink.sh.
+- [x] Existing harness/not-evaluated suites stay green (t3582_harness_kinds_test.py, t3986_not_evaluated_test.py).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -267,6 +267,9 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+grep -q 'OPENCODE_DISABLE_PROJECT_CONFIG=1' agents/termlink/termlink.sh
+python3 -m pytest tests/unit/t3582_harness_kinds_test.py tests/unit/t3986_not_evaluated_test.py -q > .context/working/t4050-verify.out 2>&1 && grep -q passed .context/working/t4050-verify.out
+bin/fw vendor self --check
 
 ## RCA
 
@@ -307,6 +310,11 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-10-11 — opencode loads the reviewed project's own config
+- **What changed:** the export-mutation void was not a seat bug in run.sh; opencode itself reads `.opencode/`/`opencode.json` from its cwd and installs the plugin SDK there. `OPENCODE_DISABLE_PROJECT_CONFIG=1` stops that without touching the export check, which stays as the backstop.
+- **Plan impact:** none beyond the one-line seat change; the stub in t3582 now mimics the real install so the regression is reproducible without opencode.
+- **Triggered:** no new task.
 
 ## Recommendation
 
@@ -367,3 +375,20 @@ bvp_scores_proposed:
 
 ### 2026-10-11T09:40:03Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a5045488
+- **Timestamp:** 2026-10-11T10:03:43Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — Regression test: an export containing .opencode/plugin/x.ts stays byte-identical after an opencode seat run, and the seat's green counts. The test fails on the pre-fix termlink.sh.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=opencode/plugin/x.ts in: Regression test: an export containing .opencode/plugin/x.ts stays byte-identical after an opencode seat run, and the seat's green counts. The test fai`
+
+### 2026-10-11T10:02:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

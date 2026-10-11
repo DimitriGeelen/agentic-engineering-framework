@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4040: fw init greenfield T-002 seed lacks target_blast_radius/voi_score, so the inception schema gate blocks edits to it (GitHub #86, MikeEchoVoid)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-11T10:00:42Z
+# ============================================================================
+
+task_id: T-4040
+task_name: "fw init greenfield T-002 seed lacks target_blast_radius/voi_score, so the inception schema gate blocks edits to it (GitHub #86, MikeEchoVoid)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-10T18:05:36Z
+completed: 2026-10-11T10:00:08Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-10-11T10:39:46+02:00
+last_commit: 2026-10-11T11:28:01+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  real ACs for GitHub #86 (seed fields, every-seed-passes-its-gate test, operator-action wording). greenfield T-002 seed carries target_blast_radius/voi_score; seed-vs-gate test over lib/seeds/tasks; gate message names the bypass as operator action (GitHub #86). AC3 evidence — t2922 identical on pre-fix and fix exports (2 pre-existing Watchtower-environment reds)
+
+# Key outcomes
+outcomes:
+  - 'lib/seeds/tasks/greenfield/T-002-define-project-goals.md carries `target_blast_radius` and `voi_score` with values valid for agents/context/check-inception-schema.py, so a fresh `fw init` greenfield project''s T-002 passes the inception schema gate (GitHub #86).'
+  - 'Systemic check (submitter''s suggestion 2): a test asserts that EVERY seeded task under lib/seeds/tasks/ passes the schema gate for its workflow_type (today: the inception gate), so the next seed/gate drift fails a test instead of a user.'
+  - 'Regression: the test fails on the pre-fix seed. The existing greenfield suites stay green (tests/integration/t2922_greenfield_first_inception.bats and the fw init simulation suites that exist). Evidence (parent session, 2026-10-11): t2922 run on clean exports of the pre-fix commit 72274ac25 and the fix 20289bf2d gives an identical result, 7/9 with tests 5 and 7 red on both. Those two assume no Watchtower and fail on this host''s live one, so they are pre-existing and environmental, not caused by T-4040.'
+  - 'If cheap: the schema-gate block message states that FW_ALLOW_INCEPTION_SCHEMA_DRIFT=1 is an operator action (submitter''s suggestion 3).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'AC3 evidence — t2922 identical on pre-fix and fix exports (2 pre-existing Watchtower-environment reds)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-inception-schema.py'
+  - '.agentic-framework/lib/seeds/tasks/greenfield/T-002-define-project-goals.md'
+  - 'agents/context/check-inception-schema.py'
+  - 'lib/seeds/tasks/greenfield/T-002-define-project-goals.md'
+  - '.tasks/active/T-4040-fw-init-greenfield-t-002-seed-lacks-targ.md'
+  - 'tests/unit/t4040_seeds_pass_schema_gate.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-11T10:39:46'
+    action: 'T-4040: real ACs for GitHub #86 (seed fields, every-seed-passes-its-gate test, operator-action wording)'
+  - time: '2026-10-11T11:16:58'
+    action: 'T-4040: greenfield T-002 seed carries target_blast_radius/voi_score; seed-vs-gate test over lib/seeds/tasks; gate message names the bypass as operator action (GitHub #86)'
+  - time: '2026-10-11T11:28:01'
+    action: 'T-4040: AC3 evidence — t2922 identical on pre-fix and fix exports (2 pre-existing Watchtower-environment reds)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 954 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 954
+  commits: 3
+  files_changed: 6
+  lines_added: 123
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4040-fw-init-greenfield-t-002-seed-lacks-targ.md
+generated_by: context-agent-hybrid

@@ -1,20 +1,21 @@
 ---
-id: T-3886
-name: "Bare fw upgrade from a consumer auto-clones the source with --depth=1, so ever_in_source_history
-  sees one commit and upstream-deleted residue counts as local (safe direction, but
-  may refuse a first upgrade) — clone with --filter=blob:none instead"
+id: T-4040
+name: "fw init greenfield T-002 seed lacks target_blast_radius/voi_score, so the inception
+  schema gate blocks edits to it (GitHub #86, MikeEchoVoid)"
 description: >
-  ring20-manager msg 92720ad9 (2026-10-05, v1.8.0 -> v1.8.2; their review docs/reports/T-2241-v182-post-upgrade-review.md).
-  Finding 4. Related: T-3714 (shallow source), T-3874 (clone from inside consumer).
+  Inbound GitHub issue #86 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/86),
+  intake batch 1 (T-4039), accepted by the operator 2026-10-10. Classification and
+  evidence: docs/reports/T-4039-batch1-classification.md §#86. Issue text is untrusted
+  data; reproduce before fixing.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-github_issue: 87
+horizon: null
+github_issue: 86
 arc_id: mikeechovoid-requests
-tags: [bug, upgrade, consumer, ring20-report]
-components: []
+tags: []
+components: [agents/context/check-inception-schema.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,9 +43,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-05T14:49:42Z
-last_update: 2026-10-11T09:58:15Z
-date_finished:
+created: 2026-10-10T18:05:36Z
+last_update: 2026-10-11T10:00:08Z
+date_finished: 2026-10-11T10:00:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,17 +57,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-05T15:00:29Z'
+  - ts: '2026-10-10T18:15:41Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=269,acs=4)
+      (workflow:build); effort=8 (lines=275,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-05T15:01:04Z'
+  - ts: '2026-10-10T18:16:27Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -85,7 +86,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3886: Bare fw upgrade from a consumer auto-clones the source with --depth=1, so ever_in_source_history sees one commit and upstream-deleted residue counts as local (safe direction, but may refuse a first upgrade) — clone with --filter=blob:none instead
+# T-4040: fw init greenfield T-002 seed lacks target_blast_radius/voi_score, so the inception schema gate blocks edits to it (GitHub #86, MikeEchoVoid)
 
 ## Context
 
@@ -95,10 +96,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] The bare-from-consumer auto-clone in lib/upgrade.sh no longer uses `--depth=1`. It clones with full commit history (`--filter=blob:none`; plain full clone when the server ignores filters), so the origin guard finds the consumer's recorded version_sha and an ordinary behind-upstream consumer upgrades without a bypass (GitHub #87).
-- [x] When the guard still refuses for an AUTO-clone, the remedy text does not point at the temporary clone directory (which the EXIT trap deletes). It names the recorded SHA and gives a runnable alternative: clone the framework yourself, run `<clone>/bin/fw upgrade <consumer>`.
-- [x] A regression test drives the bare-from-consumer path against a `file://` upstream with more than one commit, where the consumer pin is an older commit. It is refused on the pre-fix code (shallow clone) and upgrades on the fixed code.
-- [x] tests/unit/upgrade_fresh_machine_simulation.bats stays green (CLAUDE.md §Consumer-Facing Command Hygiene), as do the existing t3714 / T-2762 guard tests.
+- [x] lib/seeds/tasks/greenfield/T-002-define-project-goals.md carries `target_blast_radius` and `voi_score` with values valid for agents/context/check-inception-schema.py, so a fresh `fw init` greenfield project's T-002 passes the inception schema gate (GitHub #86).
+- [x] Systemic check (submitter's suggestion 2): a test asserts that EVERY seeded task under lib/seeds/tasks/ passes the schema gate for its workflow_type (today: the inception gate), so the next seed/gate drift fails a test instead of a user.
+- [x] Regression: the test fails on the pre-fix seed. The existing greenfield suites stay green (tests/integration/t2922_greenfield_first_inception.bats and the fw init simulation suites that exist). Evidence (parent session, 2026-10-11): t2922 run on clean exports of the pre-fix commit 72274ac25 and the fix 20289bf2d gives an identical result, 7/9 with tests 5 and 7 red on both. Those two assume no Watchtower and fail on this host's live one, so they are pre-existing and environmental, not caused by T-4040.
+- [x] If cheap: the schema-gate block message states that FW_ALLOW_INCEPTION_SCHEMA_DRIFT=1 is an operator action (submitter's suggestion 3).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -136,6 +137,9 @@ bvp_scores_proposed:
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
+# Build/refactor/decommission tasks with NO command here are refused. If nothing can be
+# run, add the line `# verification: none — <why nothing can be run>`; it is serviced
+# (queued for review: add a check / other evidence / accept). See docs/reports/T-4024-servicing-loop.md.
 #
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
@@ -258,11 +262,20 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-bats tests/unit/t3886_upgrade_autoclone_history.bats > .context/working/t3886-verify.out 2>&1 && ! grep -q "^not ok" .context/working/t3886-verify.out
-test "$(grep -c '# skip' .context/working/t3886-verify.out)" -eq 0
+
+bats tests/unit/t4040_seeds_pass_schema_gate.bats > /tmp/t4040-verify.out 2>&1 && ! grep -q "^not ok" /tmp/t4040-verify.out
+test "$(grep -c '# skip' /tmp/t4040-verify.out)" -eq 0
 bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** a fresh `fw init` greenfield project's T-002 seed is `workflow_type: inception` without `target_blast_radius`/`voi_score`, so the first Write/Edit to it is refused by the inception schema gate (GitHub #86).
+
+**Root cause:** the seed was authored (T-3636) after the T-2188 gate made the two fields mandatory, and `lib/init.sh` copies seeds with `sed` only. The backfill that adds the fields (`lib/inception_schema_backfill.py`) runs only from `lib/upgrade.sh`, so a seed that is never upgraded never receives it.
+
+**Why structurally allowed:** no test checked the seed tree against the gates that apply to its `workflow_type`. The T-3948 backfill covered consumers' existing inceptions, not the shipped seeds.
+
+**Prevention:** `tests/unit/t4040_seeds_pass_schema_gate.bats` runs the gate's own check over every inception seed under `lib/seeds/tasks/` and asserts at least one was checked, so a future seed that lacks the fields fails the suite.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -277,14 +290,6 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** bare `fw upgrade` from a consumer behind upstream refused its own auto-clone as `foreign-source` (GitHub #87). The remedy then told the reader to run `git -C <temp dir> fetch --unshallow`, a directory the EXIT trap had already deleted.
-
-**Root cause:** the auto-clone used `git clone --depth=1`. The origin guard cannot see the consumer's recorded `version_sha` in a shallow clone, so it refuses. The remedy was built from the temp path, which only exists for the life of the process.
-
-**Why structurally allowed:** T-3714 added a shallow-aware remedy for a user-run clone and did not consider the auto-clone, whose directory lifetime the guard never knew about. No test ran the bare-from-consumer path against a behind consumer with real history, so a shallow clone was never exercised end to end.
-
-**Prevention:** `tests/unit/t3886_upgrade_autoclone_history.bats` runs the bare path against a multi-commit upstream with an older pin, and asserts both no `foreign-source` refusal and a remedy that never names the temp dir. The child now receives `FW_AUTOCLONE_SOURCE`, so the guard states its auto-clone identity explicitly. **Found while fixing, not fixed here:** a filtered clone of a shallow source over a transport that ignores filters (`file://` on git 2.43) never completes. The auto-clone skips the filter for a local shallow source. A remote shallow source with a non-filter server is untested and remains a possible hang.
 
 ## Evolution
 
@@ -310,10 +315,10 @@ bin/fw vendor self --check
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
-### 2026-10-11 — the fix is the clone depth, not the guard
-- **What changed:** filed as a guard/remedy problem; the cause was the auto-clone's `--depth=1`. A `--filter=blob:none` clone keeps full commit history at a fraction of the size, and the guard then accepts an ordinary behind-upstream consumer untouched. Separately learned: a filtered clone of a shallow local source over `file://` never completes on git 2.43, so a shallow local source is cloned without the filter.
-- **Plan impact:** the remedy rewrite stays, but only for the residual case (a source that is itself shallow); it names a runnable full clone instead of the deleted temp dir.
-- **Triggered:** no new task; the remote-shallow-source + non-filter-server hang risk is recorded in the RCA Prevention paragraph.
+### 2026-10-11 — the seed drifted, not the gate
+- **What changed:** the inception schema gate was correct; the shipped greenfield T-002 seed predated the `target_blast_radius`/`voi_score` fields, so every new project started with a task its own gate refused to edit. Nothing tested shipped seeds against the gates that guard them.
+- **Plan impact:** beyond fixing the one seed, a seed-vs-gate test over all of `lib/seeds/tasks` now catches the next seed that falls behind a schema change.
+- **Triggered:** no new task; the gate message was also reworded to name its bypass as an operator action.
 
 ## Recommendation
 
@@ -367,13 +372,35 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-05T14:49:42Z — task-created [task-create-agent]
+### 2026-10-10T18:05:36Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3886-bare-fw-upgrade-from-a-consumer-auto-clo.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4040-fw-init-greenfield-t-002-seed-lacks-targ.md
 - **Context:** Initial task creation
 
-### 2026-10-10T18:09:08Z — status-update [task-update-agent]
-- **Change:** horizon: next → now
+### 2026-10-10T18:09:03Z — status-update [task-update-agent]
+- **Change:** horizon: now → now
 
-### 2026-10-11T08:38:00Z — status-update [task-update-agent]
+### 2026-10-11T08:39:23Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-75d58d32
+- **Timestamp:** 2026-10-11T10:00:18Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — Regression: the test fails on the pre-fix seed. The existing greenfield suites stay green (tests/integration/t2922_greenfield_first_inception.bats and the fw init simulation suites that exist). Eviden
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/integration/t2922_greenfield_first_inception.bats in: Regression: the test fails on the pre-fix seed. The existing greenfield suites stay green (tests/integration/t2922_greenfield_first_inception.bats and`
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `bats tests/unit/t4040_seeds_pass_schema_gate.bats > /tmp/t4040-verify.out 2>&1 && ! grep -q "^not ok" /tmp/t4040-verify.out`
+
+### 2026-10-11T10:00:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3886: Bare fw upgrade from a consumer auto-clones the source with --depth=1, so ever_in_source_history sees one commit and upstream-deleted residue counts as local (safe direction, but may refuse a first upgrade) — clone with --filter=blob:none instead
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-11T09:59:11Z
+# ============================================================================
+
+task_id: T-3886
+task_name: "Bare fw upgrade from a consumer auto-clones the source with --depth=1, so ever_in_source_history sees one commit and upstream-deleted residue counts as local (safe direction, but may refuse a first upgrade) — clone with --filter=blob:none instead"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T14:49:42Z
+completed: 2026-10-11T09:58:20Z
+duration_days: 6
+updates_count: 3
+first_commit: 2026-10-11T10:38:20+02:00
+last_commit: 2026-10-11T11:58:15+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  real ACs for GitHub #87 (full-history auto-clone, runnable remedy for auto-clones, regression test against a multi-commit file:// upstream). #87 In progress posted (intake ledger). bare fw upgrade from a consumer auto-clones with full commit history (--filter=blob:none), so a behind-upstream consumer is no longer refused as foreign-source; residual remedy names a runnable full clone, never the deleted temp dir (GitHub #87); regression test fails on the old code. refresh vendored copies (lib/upgrade.sh, lib/version-relation.sh, and T-4050's agents/termlink/termlink.sh)
+
+# Key outcomes
+outcomes:
+  - 'The bare-from-consumer auto-clone in lib/upgrade.sh no longer uses `--depth=1`. It clones with full commit history (`--filter=blob:none`; plain full clone when the server ignores filters), so the origin guard finds the consumer''s recorded version_sha and an ordinary behind-upstream consumer upgrades without a bypass (GitHub #87).'
+  - 'When the guard still refuses for an AUTO-clone, the remedy text does not point at the temporary clone directory (which the EXIT trap deletes). It names the recorded SHA and gives a runnable alternative: clone the framework yourself, run `<clone>/bin/fw upgrade <consumer>`.'
+  - 'A regression test drives the bare-from-consumer path against a `file://` upstream with more than one commit, where the consumer pin is an older commit. It is refused on the pre-fix code (shallow clone) and upgrades on the fixed code.'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats stays green (CLAUDE.md §Consumer-Facing Command Hygiene), as do the existing t3714 / T-2762 guard tests.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/lib/version-relation.sh'
+  - '.agentic-framework/VERSION'
+  - '.context/issues/intake.jsonl'
+  - 'lib/upgrade.sh'
+  - 'lib/version-relation.sh'
+  - '.tasks/active/T-3886-bare-fw-upgrade-from-a-consumer-auto-clo.md'
+  - 'tests/unit/t3886_upgrade_autoclone_history.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-11T10:38:20'
+    action: 'T-3886: real ACs for GitHub #87 (full-history auto-clone, runnable remedy for auto-clones, regression test against a multi-commit file:// upstream)'
+  - time: '2026-10-11T10:38:42'
+    action: 'T-3886: #87 In progress posted (intake ledger)'
+  - time: '2026-10-11T11:57:56'
+    action: 'T-3886: bare fw upgrade from a consumer auto-clones with full commit history (--filter=blob:none), so a behind-upstream consumer is no longer refused as foreign-source; residual remedy names a runnable full clone, never the deleted temp dir (GitHub #87); regression test fails on the old code'
+  - time: '2026-10-11T11:58:15'
+    action: 'T-3886: refresh vendored copies (lib/upgrade.sh, lib/version-relation.sh, and T-4050''s agents/termlink/termlink.sh)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 8348 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, upgrade, consumer, ring20-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 8348
+  commits: 4
+  files_changed: 9
+  lines_added: 208
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3886-bare-fw-upgrade-from-a-consumer-auto-clo.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4050: The opencode review seat is voided on every rung-5 panel in consumers that track .opencode/ or opencode.json: opencode installs the project plugin SDK (node_modules, +3,650 files) into the export it reviews (ring20 T-2303)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-11T10:03:58Z
+# ============================================================================
+
+task_id: T-4050
+task_name: "The opencode review seat is voided on every rung-5 panel in consumers that track .opencode/ or opencode.json: opencode installs the project plugin SDK (node_modules, +3,650 files) into the export it reviews (ring20 T-2303)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-11T09:28:33Z
+completed: 2026-10-11T10:02:40Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-11T11:29:04+02:00
+last_commit: 2026-10-11T11:42:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file ring20's opencode-seat export-mutation defect (OPENCODE_DISABLE_PROJECT_CONFIG=1 fix). the opencode review seat runs with OPENCODE_DISABLE_PROJECT_CONFIG=1, so a consumer that tracks .opencode/ no longer has opencode install its plugin SDK into the export and void the seat (ring20 T-2303); stub mimics opencode 1.18.25, regression test fails on the old line
+
+# Key outcomes
+outcomes:
+  - 'agents/termlink/termlink.sh runs the opencode review seat with OPENCODE_DISABLE_PROJECT_CONFIG=1, so the reviewed project''s own opencode config and plugins are not loaded (the isolation the codex seat already has).'
+  - 'The opencode stub in tests/unit/t3582_harness_kinds_test.py behaves like opencode 1.18.25: with a `.opencode/` folder in its cwd and project config not disabled, it installs files into it.'
+  - 'Regression test: an export containing .opencode/plugin/x.ts stays byte-identical after an opencode seat run, and the seat''s green counts. The test fails on the pre-fix termlink.sh.'
+  - 'Existing harness/not-evaluated suites stay green (t3582_harness_kinds_test.py, t3986_not_evaluated_test.py).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'file ring20''s opencode-seat export-mutation defect (OPENCODE_DISABLE_PROJECT_CONFIG=1 fix)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'agents/termlink/termlink.sh'
+  - '.tasks/active/T-4050-the-opencode-review-seat-is-voided-on-ev.md'
+  - 'tests/unit/t3582_harness_kinds_test.py'
+  - 'tests/unit/t3986_not_evaluated_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-11T11:29:04'
+    action: 'T-4050: file ring20''s opencode-seat export-mutation defect (OPENCODE_DISABLE_PROJECT_CONFIG=1 fix)'
+  - time: '2026-10-11T11:42:57'
+    action: 'T-4050: the opencode review seat runs with OPENCODE_DISABLE_PROJECT_CONFIG=1, so a consumer that tracks .opencode/ no longer has opencode install its plugin SDK into the export and void the seat (ring20 T-2303); stub mimics opencode 1.18.25, regression test fails on the old line'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 34 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 34
+  commits: 2
+  files_changed: 4
+  lines_added: 411
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4050-the-opencode-review-seat-is-voided-on-ev.md
+generated_by: context-agent-hybrid
