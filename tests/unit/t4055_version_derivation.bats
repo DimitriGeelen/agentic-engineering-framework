@@ -36,18 +36,19 @@ derive_in_place() {
 @test "comparison orders 1.8.9 < 1.8.9+92.gx < 1.8.10 (release_version_lt)" {
     source "$ROOT/lib/release.sh"
     # build metadata has no release precedence: equal to 1.8.9, below 1.8.10
-    ! release_version_lt 1.8.9+92.gabc 1.8.9
-    ! release_version_lt 1.8.9 1.8.9+92.gabc
+    # `! cmd` mid-block is inert under bats (L-628): assert with if/false.
+    if release_version_lt 1.8.9+92.gabc 1.8.9; then false; fi
+    if release_version_lt 1.8.9 1.8.9+92.gabc; then false; fi
     release_version_lt 1.8.9+92.gabc 1.8.10
-    ! release_version_lt 1.8.10 1.8.9+92.gabc
+    if release_version_lt 1.8.10 1.8.9+92.gabc; then false; fi
 }
 
 @test "comparison orders the same way (_version_lt)" {
     source "$ROOT/lib/version.sh"
     release_version_lt() { :; }
-    ! _version_lt 1.8.9+92.gabc 1.8.9
+    if _version_lt 1.8.9+92.gabc 1.8.9; then false; fi
     _version_lt 1.8.9+92.gabc 1.8.10
-    ! _version_lt 1.8.10 1.8.9+92.gabc
+    if _version_lt 1.8.10 1.8.9+92.gabc; then false; fi
 }
 
 @test "legacy pin 1.8.92 (no sha, no such tag) is undecidable, never ahead" {
