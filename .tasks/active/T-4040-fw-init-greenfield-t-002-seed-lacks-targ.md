@@ -98,7 +98,7 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] lib/seeds/tasks/greenfield/T-002-define-project-goals.md carries `target_blast_radius` and `voi_score` with values valid for agents/context/check-inception-schema.py, so a fresh `fw init` greenfield project's T-002 passes the inception schema gate (GitHub #86).
 - [x] Systemic check (submitter's suggestion 2): a test asserts that EVERY seeded task under lib/seeds/tasks/ passes the schema gate for its workflow_type (today: the inception gate), so the next seed/gate drift fails a test instead of a user.
-- [ ] Regression: the test fails on the pre-fix seed. The existing greenfield suites stay green (tests/integration/t2922_greenfield_first_inception.bats and the fw init simulation suites that exist).
+- [x] Regression: the test fails on the pre-fix seed. The existing greenfield suites stay green (tests/integration/t2922_greenfield_first_inception.bats and the fw init simulation suites that exist). Evidence (parent session, 2026-10-11): t2922 run on clean exports of the pre-fix commit 72274ac25 and the fix 20289bf2d gives an identical result, 7/9 with tests 5 and 7 red on both. Those two assume no Watchtower and fail on this host's live one, so they are pre-existing and environmental, not caused by T-4040.
 - [x] If cheap: the schema-gate block message states that FW_ALLOW_INCEPTION_SCHEMA_DRIFT=1 is an operator action (submitter's suggestion 3).
 
 ### Human
