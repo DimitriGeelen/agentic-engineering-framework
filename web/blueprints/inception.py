@@ -1015,6 +1015,25 @@ def _commit_decision(task_id: str, decision: str, followup: bool = False):
         os.close(fd)
 
 
+def _refresh_real_index(paths):
+    """T-4081: set the real index entries for `paths` to HEAD (`git reset -q -- paths`).
+
+    Called after a commit built against a scratch `GIT_INDEX_FILE` advanced HEAD.
+    Touches only the named paths: the working tree is never written and anything
+    else staged in the real index stays staged. Best-effort and silent — the
+    decision commit already succeeded, and `fw audit` reports a decision that
+    still ends up reverted (G-114).
+    """
+    import subprocess
+    if not paths:
+        return
+    try:
+        subprocess.run(["git", "reset", "-q", "--"] + list(paths),
+                       cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30)
+    except Exception:
+        pass
+
+
 def _commit_decision_unlocked(task_id: str, decision: str, followup: bool = False):
     """T-2053: commit the recorded inception decision so it is P-002-traceable.
 
@@ -1141,6 +1160,11 @@ def _commit_decision_unlocked(task_id: str, decision: str, followup: bool = Fals
             if commit.returncode != 0:
                 return False, (_operator_facing_stderr(commit.stderr or commit.stdout or "")
                                or "git commit failed").strip()[:200]
+            # T-4081 (G-114): HEAD just moved, but the REAL index still holds the
+            # pre-decision blobs for `wanted`. The next ordinary commit from it would
+            # write them back and silently revert the decision. Point exactly those
+            # entries at the new HEAD; the working tree and every other path stay put.
+            _refresh_real_index(wanted)
             return True, msg
     except Exception as e:  # never let a commit problem break the decision response
         return False, str(e)[:200]

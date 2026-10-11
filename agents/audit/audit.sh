@@ -2880,6 +2880,25 @@ else
          "Restore it: bin/fw vendor self (or fw upgrade)"
 fi
 
+# T-4081 / G-114: a Watchtower decision commit that a later commit reverted (the scratch-index
+# commit left the real index on the old blobs). WARN, not FAIL: recovery is operator-gated
+# (restored ticks need operator provenance), and a FAIL would jam every push until then.
+if [ -f "$FRAMEWORK_ROOT/lib/watchtower_decision_revert.py" ]; then
+    _wdr_out=$(python3 -I "$FRAMEWORK_ROOT/lib/watchtower_decision_revert.py" --repo "$PROJECT_ROOT" 2>&1)
+    _wdr_rc=$?
+    if [ "$_wdr_rc" -eq 0 ]; then
+        pass "Watchtower decisions: $(echo "$_wdr_out" | tail -1)"
+    elif [ "$_wdr_rc" -eq 2 ]; then
+        warn "Watchtower decisions reverted at HEAD: $(echo "$_wdr_out" | tail -1)" \
+             "$(echo "$_wdr_out" | grep '^REVERTED' | awk '{print $2}' | head -40 | tr '\n' ' ')" \
+             "Operator-gated recovery (G-114): python3 lib/watchtower_decision_revert.py lists each task and the commit that recorded its decision"
+    else
+        warn "Watchtower decisions: detector could not run (rc=$_wdr_rc)" \
+             "$(echo "$_wdr_out" | tail -2 | tr '\n' ';')" \
+             "Run: python3 lib/watchtower_decision_revert.py"
+    fi
+fi
+
 # T-3580 round 7: every spend-ceiling step-down (a review run registered one rung below what IW-7
 # requires) is a WARN — the lever must be visible even when it was exercised legitimately.
 _audit_review_step_downs() {
