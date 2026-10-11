@@ -1,10 +1,21 @@
 ---
 id: T-4050
-name: "The opencode review seat is voided on every rung-5 panel in consumers that track .opencode/ or opencode.json: opencode installs the project plugin SDK (node_modules, +3,650 files) into the export it reviews (ring20 T-2303)"
+name: "The opencode review seat is voided on every rung-5 panel in consumers that
+  track .opencode/ or opencode.json: opencode installs the project plugin SDK (node_modules,
+  +3,650 files) into the export it reviews (ring20 T-2303)"
 description: >
-  proxmox-ring20-management testbed finding (msg 9a0265af, AEF 1.8.8, opencode 1.18.25): run.sh 'FATAL: the opencode reviewer modified the export it reviewed (T-3986)' on every panel. Reproduced by them with the exact export/prompt/command: opencode installs @opencode-ai/plugin into ./.opencode/ (package.json, package-lock.json, .gitignore, node_modules). --pure disables only external plugins. Control: OPENCODE_DISABLE_PROJECT_CONFIG=1 keeps the export byte-identical and still answers. Fix: agents/termlink/termlink.sh harness review branch opencode) runs the seat with OPENCODE_DISABLE_PROJECT_CONFIG=1 (as the codex seat already ignores project rules). Regression test: an export containing .opencode/plugin/x.ts stays byte-identical after an opencode seat run. Impact: their T-2302 panel cannot close; voided rows FAIL their pre-push audit.
+  proxmox-ring20-management testbed finding (msg 9a0265af, AEF 1.8.8, opencode 1.18.25):
+  run.sh 'FATAL: the opencode reviewer modified the export it reviewed (T-3986)' on
+  every panel. Reproduced by them with the exact export/prompt/command: opencode installs
+  @opencode-ai/plugin into ./.opencode/ (package.json, package-lock.json, .gitignore,
+  node_modules). --pure disables only external plugins. Control: OPENCODE_DISABLE_PROJECT_CONFIG=1
+  keeps the export byte-identical and still answers. Fix: agents/termlink/termlink.sh
+  harness review branch opencode) runs the seat with OPENCODE_DISABLE_PROJECT_CONFIG=1
+  (as the codex seat already ignores project rules). Regression test: an export containing
+  .opencode/plugin/x.ts stays byte-identical after an opencode seat run. Impact: their
+  T-2302 panel cannot close; voided rows FAIL their pre-push audit.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T09:28:33Z
-last_update: 2026-10-11T09:28:33Z
-date_finished: null
+last_update: 2026-10-11T09:40:03Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-11T09:30:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-11T09:31:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4050: The opencode review seat is voided on every rung-5 panel in consumers that track .opencode/ or opencode.json: opencode installs the project plugin SDK (node_modules, +3,650 files) into the export it reviews (ring20 T-2303)
@@ -62,8 +101,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] agents/termlink/termlink.sh runs the opencode review seat with OPENCODE_DISABLE_PROJECT_CONFIG=1, so the reviewed project's own opencode config and plugins are not loaded (the isolation the codex seat already has).
+- [ ] The opencode stub in tests/unit/t3582_harness_kinds_test.py behaves like opencode 1.18.25: with a `.opencode/` folder in its cwd and project config not disabled, it installs files into it.
+- [ ] Regression test: an export containing .opencode/plugin/x.ts stays byte-identical after an opencode seat run, and the seat's green counts. The test fails on the pre-fix termlink.sh.
+- [ ] Existing harness/not-evaluated suites stay green (t3582_harness_kinds_test.py, t3986_not_evaluated_test.py).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -323,3 +364,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4050-the-opencode-review-seat-is-voided-on-ev.md
 - **Context:** Initial task creation
+
+### 2026-10-11T09:40:03Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

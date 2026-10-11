@@ -59,7 +59,13 @@ _OPENCODE = r'''#!/usr/bin/env python3
 import json, os, re, sys
 a = sys.argv[1:]
 w = os.environ["WDIR_EXPECTED"].rstrip("/")
-open(w + ".seen", "w").write(json.dumps({"argv": a, "cwd": os.getcwd()}))
+open(w + ".seen", "w").write(json.dumps({"argv": a, "cwd": os.getcwd(),
+    "disable_project_config": os.environ.get("OPENCODE_DISABLE_PROJECT_CONFIG", "")}))
+# T-4050 (ring20 T-2303): like opencode 1.18.25, a project .opencode/ folder gets its plugin SDK
+# installed into it (node_modules etc.) unless project config is disabled; --pure does not stop it.
+if os.path.isdir(".opencode") and os.environ.get("OPENCODE_DISABLE_PROJECT_CONFIG") != "1":
+    os.makedirs(".opencode/node_modules/@opencode-ai/plugin", exist_ok=True)
+    open(".opencode/package.json", "w").write("{}")
 prompt = a[-1]
 mode = os.environ.get("STUB_MODE", "green")
 print(json.dumps({"type": "step_start", "sessionID": "ses_1", "part": {}}))

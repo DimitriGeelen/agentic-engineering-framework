@@ -94,6 +94,29 @@ class TestSeatTempDir:
         assert (w / "exit_code").read_text().strip() == "0", (w / "stderr.log").read_text()
         assert [r["outcome"] for r in _rows(hrepo, did)] == ["green"]
 
+    def test_opencode_seat_does_not_load_the_reviewed_projects_opencode_config(self, hrepo):
+        """T-4050 (ring20 T-2303): a consumer that tracks .opencode/ had every opencode seat voided,
+        because opencode installed its plugin SDK into the export. The seat runs with
+        OPENCODE_DISABLE_PROJECT_CONFIG=1, so the export stays byte-identical and the green counts."""
+        import os
+        import subprocess
+        (hrepo / ".opencode" / "plugin").mkdir(parents=True)
+        (hrepo / ".opencode" / "plugin" / "x.ts").write_text("export default {}\n")
+        env = {**os.environ, "GIT_AUTHOR_NAME": "Operator", "GIT_AUTHOR_EMAIL": "op@x.y",
+               "GIT_COMMITTER_NAME": "Operator", "GIT_COMMITTER_EMAIL": "op@x.y"}
+        for args in (["add", ".opencode"], ["commit", "-q", "-m", "fixture: consumer tracks .opencode"]):
+            subprocess.run(["git", "-c", "core.hooksPath=/dev/null", *args], cwd=hrepo, check=True,
+                           capture_output=True, env=env)
+        rev = r3._head(hrepo)
+        did = "judge-t-9200-r1-opencode-projcfg001"
+        w, out, rc = _launch(hrepo, did=did, kind="opencode", brief=_brief(hrepo, "opencode", rev),
+                             revision=rev)
+        assert "modified the export it reviewed" not in (w / "stderr.log").read_text()
+        seen = json.loads(Path(str(w) + ".seen").read_text())
+        assert seen["disable_project_config"] == "1"
+        assert (w / "exit_code").read_text().strip() == "0", (w / "stderr.log").read_text()
+        assert [r["outcome"] for r in _rows(hrepo, did)] == ["green"]
+
     def test_a_seat_that_modifies_its_export_has_its_greens_voided(self, hrepo):
         rev = r3._head(hrepo)
         did = "judge-t-9200-r1-codex-touched00001"
