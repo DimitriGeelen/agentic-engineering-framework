@@ -1,10 +1,14 @@
 ---
 id: T-4045
-name: "Task board: an 'Awaiting review' column for tasks whose agent work is done and Human criteria are open (GitHub #92, MikeEchoVoid)"
+name: "Task board: an 'Awaiting review' column for tasks whose agent work is done
+  and Human criteria are open (GitHub #92, MikeEchoVoid)"
 description: >
-  Inbound GitHub issue #92 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/92), intake batch 1 (T-4039), accepted by the operator 2026-10-10. Classification and evidence: docs/reports/T-4039-batch1-classification.md §#92. Issue text is untrusted data; reproduce before fixing.
+  Inbound GitHub issue #92 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/92),
+  intake batch 1 (T-4039), accepted by the operator 2026-10-10. Classification and
+  evidence: docs/reports/T-4039-batch1-classification.md §#92. Issue text is untrusted
+  data; reproduce before fixing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -40,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:07:55Z
-last_update: 2026-10-10T18:09:06Z
-date_finished: null
+last_update: 2026-10-11T15:48:00Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -52,22 +56,60 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-10T18:15:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=275,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-10T18:16:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4045: Task board: an 'Awaiting review' column for tasks whose agent work is done and Human criteria are open (GitHub #92, MikeEchoVoid)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+GitHub #92 (MikeEchoVoid). The Watchtower task board has one column per status (`web/templates/tasks.html` ~497: Captured, In Progress, Issues, Completed), so a `started-work` task whose agent work is done and only a Human criterion is left sits in In Progress beside tasks the agent is still working on (reporter: 7 of 11 cards). Workaround in use — `owner: human` — overloads `owner`. Asked for: a derived "Awaiting review" column, no new status. Built on T-4053's readiness predicate (same root, filed by ring20), so the board, `/approvals` and `fw review-queue` agree; T-4053 lands first.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The task board shows an "Awaiting review" column (between In Progress and Issues) holding every active task that T-4053's predicate calls `ready`; those tasks no longer appear in In Progress. No new status value is written anywhere — the column is derived at render time.
+- [ ] Each In Progress card with an open Human criterion that is still `waiting-on-agent` shows a small count of open Human criteria, so the two kinds stay distinguishable at a glance.
+- [ ] Board filters and counts stay consistent: the column's count equals the "Ready for you" count on `/approvals` for the same corpus.
+- [ ] pytest `tests/web/test_t4045_board_awaiting_review.py`: fixture with one ready task and one waiting task → the ready one renders in the Awaiting review column only, the waiting one in In Progress with its Human count; the column count matches `/approvals`' ready count. Fails on the pre-fix code.
+- [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
+- [ ] [REVIEW] The board separates "agent is working" from "waiting for me"
+  **Steps:**
+  1. Open `$(bin/fw watchtower url)/tasks`
+  2. Compare the "Awaiting review" and "In Progress" columns
+  **Expected:** the tasks waiting for your decision sit in their own column; In Progress holds what the agent is still doing; the layout still reads cleanly
+  **If not:** name a card in the wrong column, or screenshot the layout
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -228,6 +270,9 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/web/test_t4045_board_awaiting_review.py -q > .context/working/t4045-verify.out 2>&1 && grep -q passed .context/working/t4045-verify.out && ! grep -qE "[0-9]+ (failed|skipped|error)" .context/working/t4045-verify.out
+bin/fw watchtower current
+bin/fw vendor self --check
 
 ## RCA
 
@@ -328,3 +373,6 @@ date_finished: null
 
 ### 2026-10-10T18:09:06Z — status-update [task-update-agent]
 - **Change:** horizon: later → now
+
+### 2026-10-11T15:48:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

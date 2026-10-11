@@ -1,13 +1,20 @@
 ---
 id: T-4053
-name: "/approvals and fw review-queue: separate 'ready for you' from 'waiting on the agent' (open Agent criteria, independent review not green) with one shared predicate (ring20 T-2302)"
+name: "/approvals and fw review-queue: separate 'ready for you' from 'waiting on the
+  agent' (open Agent criteria, independent review not green) with one shared predicate
+  (ring20 T-2302)"
 description: >
-  /approvals admits a task iff it has an unchecked ### Human criterion (needs_human_review), regardless of open Agent criteria or a non-green independent-review verdict, so the operator is sent to tasks that are not ready (ring20: 188 entries). Ask: hold back or group 'not ready yet' with the reason (N agent criteria open; review not green), and offer the operator decision only once prerequisites hold. Keep one canonical predicate for page and CLI (T-2075).
+  /approvals admits a task iff it has an unchecked ### Human criterion (needs_human_review),
+  regardless of open Agent criteria or a non-green independent-review verdict, so
+  the operator is sent to tasks that are not ready (ring20: 188 entries). Ask: hold
+  back or group 'not ready yet' with the reason (N agent criteria open; review not
+  green), and offer the operator decision only once prerequisites hold. Keep one canonical
+  predicate for page and CLI (T-2075).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [watchtower, approvals, review-queue]
 components: []
 related_tasks: [T-2075]
@@ -39,8 +46,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "T-2302"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T11:18:51Z
-last_update: 2026-10-11T11:18:51Z
-date_finished: null
+last_update: 2026-10-11T15:48:39Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,22 +58,62 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-11T11:30:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-11T11:31:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4053: /approvals and fw review-queue: separate 'ready for you' from 'waiting on the agent' (open Agent criteria, independent review not green) with one shared predicate (ring20 T-2302)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reported by ring20 (their T-2302/T-2306, operator-requested): `/approvals` admits a task iff `needs_human_review(body)` (`web/shared.py:1444`, ≥1 unchecked `### Human` criterion; `_load_pending_human_acs` in `web/blueprints/approvals.py:392`), and `fw review-queue` (`bin/fw` ~8510, T-1536) mirrors it. Neither looks at open Agent criteria or at whether an independent-review criterion has a green verdict, so "pending" means "has an open human box", not "ready for the human" (ring20: 188 entries, many with agent work open). Same root as GitHub #92 (T-4045, board column), which builds on the predicate this task adds. Built together, this task first.
+
+**Readiness rule (decided here):** a task with ≥1 unchecked Human criterion is **ready for you** when (1) every `### Agent` criterion is ticked and (2) no unticked Human criterion of the reviewer-judged class (`lib/delegation.py` `classify` → `REVIEWER-JUDGES`) lacks a green verdict in the ledger (`lib/verdict_ledger.py` `satisfying_verdict`). Otherwise it is **waiting on the agent**, with the reasons ("N agent criteria open", "independent review not green on criterion K"). One predicate, in `web/shared.py`, used by the page, the CLI and (T-4045) the board — T-2075's one-predicate rule.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `web/shared.py` gains one predicate (e.g. `review_readiness(task_id, status, body) -> (state, reasons)`, state `ready` | `waiting-on-agent`) implementing the readiness rule in Context, built on `count_human_acs` scoping (T-3139) and the existing verdict ledger / delegation classifier — no reimplemented AC parser. It degrades safely: if the ledger or classifier cannot be read, the reason says so and the task is `waiting-on-agent`, never silently `ready`.
+- [ ] `/approvals` shows two groups: "Ready for you" first, then "Waiting on the agent" with each task's reasons; the page's ready count counts only the first group. Batch-complete behaviour (`is_ready_for_batch_completion`) is unchanged.
+- [ ] `fw review-queue` uses the same predicate (calling into the Python helper, not a bash re-derivation) and prints the same two groups with reasons; `--ids-only` keeps printing only ready ids unless a flag asks for both.
+- [ ] pytest `tests/web/test_t4053_review_readiness.py`: fixtures for (a) all Agent ticked + open Human → ready; (b) one Agent open → waiting, reason names the count; (c) reviewer-judged Human criterion with no green verdict → waiting, reason names it; (d) /approvals renders both groups in that order; plus a bats or pytest check that `fw review-queue` output agrees with the page for the same fixtures. (b) and (d) fail on the pre-fix code.
+- [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
+- [ ] [REVIEW] /approvals tells you what is actually yours to decide
+  **Steps:**
+  1. Open `$(bin/fw watchtower url)/approvals`
+  2. Read the "Ready for you" group, then skim "Waiting on the agent"
+  **Expected:** the first group holds only tasks where your decision is the next step; the second explains per task why it is not yet yours; the split feels right for how you work
+  **If not:** name a task that is in the wrong group and why
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -227,6 +274,9 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/web/test_t4053_review_readiness.py -q > .context/working/t4053-verify.out 2>&1 && grep -q passed .context/working/t4053-verify.out && ! grep -qE "[0-9]+ (failed|skipped|error)" .context/working/t4053-verify.out
+bin/fw watchtower current
+bin/fw vendor self --check
 
 ## RCA
 
@@ -324,3 +374,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4053-approvals-and-fw-review-queue-separate-r.md
 - **Context:** Initial task creation
+
+### 2026-10-11T15:48:19Z — status-update [task-update-agent]
+- **Change:** horizon: next → now
+
+### 2026-10-11T15:48:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
