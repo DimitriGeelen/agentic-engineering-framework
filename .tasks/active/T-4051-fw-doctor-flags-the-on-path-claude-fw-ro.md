@@ -9,7 +9,7 @@ description: >
   would regress T-2854. Fix: recognise the router by its header and compare router-to-router
   (or skip). Reported by 010-termlink after installing v1.8.9; not applied there.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ origin: {kind: "peer", source: "010-termlink"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T11:18:19Z
-last_update: 2026-10-11T12:20:44Z
+last_update: 2026-10-11T12:25:06Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,9 +96,9 @@ Reported by 010-termlink after installing v1.8.9 (sidecar, conversation aef-rele
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw doctor`'s claude-fw drift check (`bin/fw` ~line 3200) recognises an on-PATH `claude-fw` that is the T-2854 router (its header names `claude-fw-router`) and compares it to `bin/claude-fw-router`, not `bin/claude-fw`. A router identical to the repo router: no WARN. A drifted router: WARN whose refresh line copies `bin/claude-fw-router`, never `bin/claude-fw`.
-- [ ] A fixed copy of the wrapper on PATH (pre-T-2854 install) is still compared to `bin/claude-fw` and still WARNs when it drifts, and the message now also says the recommended install is the router (`install.sh` puts it there).
-- [ ] Regression test `tests/unit/t4051_doctor_claude_fw_router.bats`: PATH holding (a) a copy of the repo router → no drift WARN, and no suggestion to cp `bin/claude-fw`; (b) a modified router → WARN naming the router as the refresh source; (c) a drifted fixed copy → WARN as before. (a) fails on the pre-fix code.
+- [x] `fw doctor`'s claude-fw drift check (`bin/fw` ~line 3200) recognises an on-PATH `claude-fw` that is the T-2854 router (its header names `claude-fw-router`) and compares it to `bin/claude-fw-router`, not `bin/claude-fw`. A router identical to the repo router: no WARN. A drifted router: WARN whose refresh line copies `bin/claude-fw-router`, never `bin/claude-fw`.
+- [x] A fixed copy of the wrapper on PATH (pre-T-2854 install) is still compared to `bin/claude-fw` and still WARNs when it drifts, and the message now also says the recommended install is the router (`install.sh` puts it there).
+- [x] Regression test `tests/unit/t4051_doctor_claude_fw_router.bats`: PATH holding (a) a copy of the repo router → no drift WARN, and no suggestion to cp `bin/claude-fw`; (b) a modified router → WARN naming the router as the refresh source; (c) a drifted fixed copy → WARN as before. (a) fails on the pre-fix code.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -282,6 +282,14 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** `fw doctor` WARNed "Installed claude-fw drifted from repo source" on every host with the T-2854 router on PATH, advising `rm -f` + `cp bin/claude-fw` over the router.
+
+**Root cause:** the drift check (T-3358 loop in `bin/fw`) ran `cmp -s <on-PATH file> bin/claude-fw` for every hit; it predates T-2854, which changed what `install.sh` puts on PATH to `bin/claude-fw-router`.
+
+**Why structurally allowed:** T-2854 changed the installed artefact without touching its consumer (doctor); no test exercised the drift check against a router install.
+
+**Prevention:** `tests/unit/t4051_doctor_claude_fw_router.bats` lifts the real check block from `bin/fw` and runs it against router / drifted router / fixed copy; case (a) is red on the pre-fix code.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -362,3 +370,10 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4051-fw-doctor-flags-the-on-path-claude-fw-ro.md
 - **Context:** Initial task creation
+
+### 2026-10-11 — fix + test [t4051-fix]
+- **Action:** `bin/fw` drift check now detects the router by header (`claude-fw-router` in first 3 lines) and compares to `bin/claude-fw-router`; fixed copies are still compared to `bin/claude-fw`, with a note recommending the router. The refresh line uses the matching reference file.
+- **Test:** `tests/unit/t4051_doctor_claude_fw_router.bats` 5/5 pass. Pre-fix (bin/fw stashed): case (a) `not ok` (false WARN on an identical router); (b) and the harness-marker test also fail pre-fix; (c)/(d) pass pre-fix, as expected.
+
+### 2026-10-11T12:21:39Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

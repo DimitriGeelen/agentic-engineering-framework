@@ -3225,16 +3225,29 @@ PY
     if [ "${#_cfw_hits[@]}" -gt 0 ]; then
         local _cfw_drifted=0 _cfw_hit
         for _cfw_hit in "${_cfw_hits[@]}"; do
-            if ! cmp -s "$_cfw_hit" "$_cfw_src"; then
-                echo -e "  ${YELLOW}WARN${NC}  Installed claude-fw drifted from repo source — supervision export may be stale"
+            # T-4051: since T-2854 install.sh puts the ROUTER (bin/claude-fw-router) on
+            # PATH, not a copy of bin/claude-fw. A router is recognised by its header
+            # and compared to the router; comparing it to bin/claude-fw is a false
+            # positive whose advised refresh would regress T-2854.
+            local _cfw_ref="$_cfw_src" _cfw_kind="fixed copy"
+            if head -n 3 "$_cfw_hit" 2>/dev/null | grep -q 'claude-fw-router' \
+                && [ -f "$FRAMEWORK_ROOT/bin/claude-fw-router" ]; then
+                _cfw_ref="$FRAMEWORK_ROOT/bin/claude-fw-router"
+                _cfw_kind="router"
+            fi
+            if ! cmp -s "$_cfw_hit" "$_cfw_ref"; then
+                echo -e "  ${YELLOW}WARN${NC}  Installed claude-fw ($_cfw_kind) drifted from repo source — supervision export may be stale"
                 echo -e "         on PATH: $_cfw_hit"
-                echo -e "         repo:    $_cfw_src"
+                echo -e "         repo:    $_cfw_ref"
+                if [ "$_cfw_kind" = "fixed copy" ]; then
+                    echo -e "         Note:    install.sh now installs the router (bin/claude-fw-router), which forwards to the project copy"
+                fi
                 # T-2807: this used to say `bash ~/.agentic-framework/install.sh`, which
                 # assumes a git checkout in $HOME. It is already fragile (the global may
                 # be absent or not a checkout) and becomes false under T-2800, which
                 # removes the global entirely. Both lines below work with nothing in
                 # $HOME; the direct copy is the one that needs no network.
-                echo -e "         Refresh: rm -f \"$_cfw_hit\" && cp \"$_cfw_src\" \"$_cfw_hit\" && chmod +x \"$_cfw_hit\""
+                echo -e "         Refresh: rm -f \"$_cfw_hit\" && cp \"$_cfw_ref\" \"$_cfw_hit\" && chmod +x \"$_cfw_hit\""
                 echo -e "                  (rm -f first — a bare cp onto a symlink writes through it)"
                 echo -e "         Or:      curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh | bash"
                 warnings=$((warnings + 1))
