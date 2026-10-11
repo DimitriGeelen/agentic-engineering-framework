@@ -1,13 +1,18 @@
 ---
 id: T-4056
-name: "fw doctor misparses interpreter-prefixed hook commands (python3 \"$CLAUDE_PROJECT_DIR/scripts/x.py\"): reports 'script not found: python3/bash' and a broken hook path (ring20)"
+name: "fw doctor misparses interpreter-prefixed hook commands (python3 \"$CLAUDE_PROJECT_DIR/scripts/x.py\"\
+  ): reports 'script not found: python3/bash' and a broken hook path (ring20)"
 description: >
-  ring20 reports fw doctor 'Hook path validation 1/47 broken' and 'Hook config: script not found: python3/bash' for hooks of the shape python3 "$CLAUDE_PROJECT_DIR/scripts/x.py" — the check takes the interpreter as the script path. Pre-existing (bin/fw unchanged across their upgrade). Fix: skip a leading interpreter word (python3/bash/sh/node…) and validate the script argument, so a real missing script still FAILs.
+  ring20 reports fw doctor 'Hook path validation 1/47 broken' and 'Hook config: script
+  not found: python3/bash' for hooks of the shape python3 "$CLAUDE_PROJECT_DIR/scripts/x.py"
+  — the check takes the interpreter as the script path. Pre-existing (bin/fw unchanged
+  across their upgrade). Fix: skip a leading interpreter word (python3/bash/sh/node…)
+  and validate the script argument, so a real missing script still FAILs.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, doctor, hooks]
 components: []
 related_tasks: []
@@ -39,8 +44,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "T-2311"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T13:57:06Z
-last_update: 2026-10-11T13:57:06Z
-date_finished: null
+last_update: 2026-10-11T17:18:51Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-11T14:00:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-11T14:01:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4056: fw doctor misparses interpreter-prefixed hook commands (python3 "$CLAUDE_PROJECT_DIR/scripts/x.py"): reports 'script not found: python3/bash' and a broken hook path (ring20)
@@ -63,8 +96,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Both doctor hook checks — "Hook path validation" (`bin/fw` ~2085) and "Hook config" (`bin/fw` ~3400) — treat a leading interpreter word (`python3`, `python`, `bash`, `sh`, `node`, `env …`) as the interpreter and validate the script argument after it, with quotes stripped and `$CLAUDE_PROJECT_DIR` / `${CLAUDE_PROJECT_DIR}` expanded to the project root.
+- [ ] A hook `python3 "$CLAUDE_PROJECT_DIR/scripts/x.py"` whose script exists passes both checks; the same hook with the script missing FAILs and names the missing script path (not "python3"). Existing hook shapes (`fw hook …`, `.agentic-framework/bin/fw hook …`, absolute paths) keep their verdicts.
+- [ ] Regression test `tests/unit/t4056_doctor_interpreter_hooks.bats`: a temp project whose `.claude/settings.json` has (a) an interpreter-prefixed hook with the script present → no broken count, no "script not found"; (b) script absent → FAIL naming the script; (c) a `fw hook` entry → unchanged. (a) fails on the pre-fix code.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -227,6 +261,10 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/t4056_doctor_interpreter_hooks.bats > .context/working/t4056-verify.out 2>&1 && ! grep -q "^not ok" .context/working/t4056-verify.out
+test "$(grep -c '# skip' .context/working/t4056-verify.out)" -eq 0
+bash -n bin/fw
+bin/fw vendor self --check
 
 ## RCA
 
@@ -324,3 +362,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4056-fw-doctor-misparses-interpreter-prefixed.md
 - **Context:** Initial task creation
+
+### 2026-10-11T17:18:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

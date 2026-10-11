@@ -1,10 +1,17 @@
 ---
 id: T-4059
-name: "Sidecar receiver: a retried delivery racing the first one fails with HTTP 400 (both use messages/<id>.json.tmp; the loser's os.replace finds no file) (055)"
+name: "Sidecar receiver: a retried delivery racing the first one fails with HTTP 400
+  (both use messages/<id>.json.tmp; the loser's os.replace finds no file) (055)"
 description: >
-  lib/sidecar/receiver.py:195 writes every delivery of a client_msg_id through the same tmp path msg_path.with_suffix('.json.tmp'). Two concurrent deliveries of one message (a sender retry while the first is in flight) share it: the first os.replace moves it, the second fails 'No such file or directory' and the receiver answers HTTP 400 although the message is stored. Seen by 055 (msg daf85260). Fix: unique tmp name per write (pid+random), and on a failed replace re-check msg_path with the same content digest → success (idempotent). Test with two concurrent writers.
+  lib/sidecar/receiver.py:195 writes every delivery of a client_msg_id through the
+  same tmp path msg_path.with_suffix('.json.tmp'). Two concurrent deliveries of one
+  message (a sender retry while the first is in flight) share it: the first os.replace
+  moves it, the second fails 'No such file or directory' and the receiver answers
+  HTTP 400 although the message is stored. Seen by 055 (msg daf85260). Fix: unique
+  tmp name per write (pid+random), and on a failed replace re-check msg_path with
+  the same content digest → success (idempotent). Test with two concurrent writers.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +46,8 @@ origin: {kind: "peer", source: "055-agentic-fleet-cockpit"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T17:17:41Z
-last_update: 2026-10-11T17:17:41Z
-date_finished: null
+last_update: 2026-10-11T17:19:50Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +58,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-11T17:19:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4059: Sidecar receiver: a retried delivery racing the first one fails with HTTP 400 (both use messages/<id>.json.tmp; the loser's os.replace finds no file) (055)
@@ -63,8 +88,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `lib/sidecar/receiver.py` writes each delivery through its own temp file (unique per write: pid + random suffix, same directory), so concurrent deliveries of one `client_msg_id` never share a temp path.
+- [ ] If the final rename fails or loses the race, the receiver re-checks `messages/<id>.json`: present with the same content digest → success (and the ready flag is ensured); different digest → the existing "conflict" answer. A delivery whose message is stored is never answered with HTTP 400.
+- [ ] No temp file is left behind on any path (success, failure, lost race).
+- [ ] Regression test (pytest, `tests/unit/t4059_sidecar_receiver_concurrent_delivery_test.py`): N threads/processes deliver the same envelope at once → all succeed, exactly one message file + one ready flag, no `.tmp` left; a different-content reuse of the id still returns conflict. The concurrent test fails on the pre-fix code (run it enough times, or force the interleaving with a patched `os.replace`, so the pre-fix failure is deterministic).
+- [ ] Existing sidecar receiver/inbox tests stay green (`tests/unit/*sidecar*`).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -227,6 +255,8 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/t4059_sidecar_receiver_concurrent_delivery_test.py -q > .context/working/t4059-verify.out 2>&1 && grep -q passed .context/working/t4059-verify.out && ! grep -qE "[0-9]+ (failed|skipped|error)" .context/working/t4059-verify.out
+bin/fw vendor self --check
 
 ## RCA
 
@@ -324,3 +354,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4059-sidecar-receiver-a-retried-delivery-raci.md
 - **Context:** Initial task creation
+
+### 2026-10-11T17:19:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -1,10 +1,17 @@
 ---
 id: T-4058
-name: "unit-suite.sh deletes every per-file output on exit, so a red test's failure text is lost (audit names the file, never the assertion) (055 T-495)"
+name: "unit-suite.sh deletes every per-file output on exit, so a red test's failure
+  text is lost (audit names the file, never the assertion) (055 T-495)"
 description: >
-  agents/audit/unit-suite.sh:102 trap 'rm -rf "$RESULTS"' EXIT removes every <leg>/<file>.out, so the report and the pre-push audit name a red test file but the failing assertion and its output are gone; an intermittent red (055: 6 of 8 nightly runs, never reproduced by hand) cannot be diagnosed. 055's vendored patch: before the rm, copy the .out of every file whose .meta rc != 0 to $REPORT_DIR/failures/<STARTED>/, keep the newest 14 run dirs, best effort, exit code unchanged; tested red/green/rotation. Also name the kept path in the audit's Mitigation line.
+  agents/audit/unit-suite.sh:102 trap 'rm -rf "$RESULTS"' EXIT removes every <leg>/<file>.out,
+  so the report and the pre-push audit name a red test file but the failing assertion
+  and its output are gone; an intermittent red (055: 6 of 8 nightly runs, never reproduced
+  by hand) cannot be diagnosed. 055's vendored patch: before the rm, copy the .out
+  of every file whose .meta rc != 0 to $REPORT_DIR/failures/<STARTED>/, keep the newest
+  14 run dirs, best effort, exit code unchanged; tested red/green/rotation. Also name
+  the kept path in the audit's Mitigation line.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +46,8 @@ origin: {kind: "peer", source: "055-agentic-fleet-cockpit", ref: "T-495"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T17:17:25Z
-last_update: 2026-10-11T17:18:04Z
-date_finished: null
+last_update: 2026-10-11T17:19:10Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +58,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-11T17:19:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4058: unit-suite.sh deletes every per-file output on exit, so a red test's failure text is lost (audit names the file, never the assertion) (055 T-495)
@@ -63,8 +88,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Before `agents/audit/unit-suite.sh` removes `$RESULTS` on exit, it copies the `.out` (and `.meta`) of every file whose recorded rc is non-zero to `$REPORT_DIR/failures/<run STARTED stamp>/<leg>/`, keeps only the newest 14 run directories, is best effort (a copy failure never changes the suite's exit code or report), and copies nothing on an all-green run.
+- [ ] The unit-suite report (LATEST.yaml or its run record) names the kept failures directory for that run, and the audit's unit-suite FAIL/WARN Mitigation line names it, so a red test points at its own failure text.
+- [ ] Regression test `tests/unit/t4058_unit_suite_keeps_failures.bats` with a tiny fixture suite (one passing, one failing bats file): the failing file's output (its `not ok` line and assertion text) is kept under failures/<run>/; the passing one is not; an all-green run keeps nothing; 17 pre-existing run dirs are rotated down to 14; the suite's exit code equals the pre-fix exit code. The keep test fails on the pre-fix code.
+- [ ] `.context/audits/unit-suite/failures/` is gitignored (failure output can hold host detail, like runme logs).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -227,6 +254,10 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 900 bats tests/unit/t4058_unit_suite_keeps_failures.bats > .context/working/t4058-verify.out 2>&1 && ! grep -q "^not ok" .context/working/t4058-verify.out
+test "$(grep -c '# skip' .context/working/t4058-verify.out)" -eq 0
+bash -n agents/audit/unit-suite.sh
+bin/fw vendor self --check
 
 ## RCA
 
@@ -324,3 +355,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4058-unit-suitesh-deletes-every-per-file-outp.md
 - **Context:** Initial task creation
+
+### 2026-10-11T17:19:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
