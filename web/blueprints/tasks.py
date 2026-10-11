@@ -17,6 +17,7 @@ from web.shared import (
     protect_path_underscores,
     _auto_link_files,
     count_human_acs,
+    task_review_state,
 )
 from web.subprocess_utils import run_fw_command
 
@@ -790,6 +791,16 @@ def tasks():
 
     # Board columns: newest first, so a cap trims the stalest cards, not the current ones.
     board_tasks = sorted(all_tasks, key=_board_order_key, reverse=True)
+    # T-4045: derived "Awaiting review" column (no new status is stored). The one
+    # readiness predicate (T-4053) decides; waiting tasks stay where their status puts
+    # them and carry their open-Human count so the two kinds are told apart.
+    awaiting_tasks = []
+    for t in board_tasks:
+        t["_review_state"], t["_wait_reasons"], t["_open_human"] = (
+            task_review_state(t["_path"]) if t.get("_location") == "active" and t.get("_path")
+            else (None, [], 0))
+    awaiting_tasks = [t for t in board_tasks if t["_review_state"] == "ready"]
+    board_tasks = [t for t in board_tasks if t["_review_state"] != "ready"]
     # "+N more" must land on the same filtered list the board came from.
     overflow_qs = urlencode([(k, v) for k, v in (
         ("owner", owner_filter), ("horizon", horizon_filter), ("tag", tag_filter),
@@ -818,6 +829,7 @@ def tasks():
         page_title="Tasks",
         tasks=all_tasks,
         board_tasks=board_tasks,
+        awaiting_tasks=awaiting_tasks,
         board_column_cap=BOARD_COLUMN_CAP,
         board_capped_statuses=BOARD_CAPPED_STATUSES,
         overflow_qs=overflow_qs,

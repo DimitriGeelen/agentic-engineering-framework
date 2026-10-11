@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:07:55Z
-last_update: 2026-10-11T15:48:00Z
+last_update: 2026-10-11T16:02:35Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,10 +96,10 @@ GitHub #92 (MikeEchoVoid). The Watchtower task board has one column per status (
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The task board shows an "Awaiting review" column (between In Progress and Issues) holding every active task that T-4053's predicate calls `ready`; those tasks no longer appear in In Progress. No new status value is written anywhere — the column is derived at render time.
-- [ ] Each In Progress card with an open Human criterion that is still `waiting-on-agent` shows a small count of open Human criteria, so the two kinds stay distinguishable at a glance.
-- [ ] Board filters and counts stay consistent: the column's count equals the "Ready for you" count on `/approvals` for the same corpus.
-- [ ] pytest `tests/web/test_t4045_board_awaiting_review.py`: fixture with one ready task and one waiting task → the ready one renders in the Awaiting review column only, the waiting one in In Progress with its Human count; the column count matches `/approvals`' ready count. Fails on the pre-fix code.
+- [x] The task board shows an "Awaiting review" column (between In Progress and Issues) holding every active task that T-4053's predicate calls `ready`; those tasks no longer appear in In Progress. No new status value is written anywhere — the column is derived at render time.
+- [x] Each In Progress card with an open Human criterion that is still `waiting-on-agent` shows a small count of open Human criteria, so the two kinds stay distinguishable at a glance.
+- [x] Board filters and counts stay consistent: the column's count equals the "Ready for you" count on `/approvals` for the same corpus.
+- [x] pytest `tests/web/test_t4045_board_awaiting_review.py`: fixture with one ready task and one waiting task → the ready one renders in the Awaiting review column only, the waiting one in In Progress with its Human count; the column count matches `/approvals`' ready count. Fails on the pre-fix code.
 - [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
@@ -314,6 +314,11 @@ bin/fw vendor self --check
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+### 2026-10-11 — derived column, not a status
+- **What changed:** the readiness predicate (T-4053) decides on the task file's open Agent/Human criteria and the verdict ledger, so the board needs no status value; the column carries `data-column` (no `data-status`), which makes `kanban-drag.js` treat a drop on it as a no-op instead of POSTing an invalid status. Partial-complete tasks (status work-completed, still in active/) that are ready also move here from Completed.
+- **Plan impact:** none to the issue's ask; the board grid went from 4 to 5 columns.
+- **Triggered:** nothing new; Human count chip on waiting cards shows reasons in its tooltip.
+
 ## Recommendation
 
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
@@ -376,3 +381,7 @@ bin/fw vendor self --check
 
 ### 2026-10-11T15:48:00Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-11 — build [worker t4053-ready]
+- **Pre-fix failure:** with web/shared.py, web/blueprints/tasks.py and web/templates/tasks.html at HEAD (T-4053 predicate present, no board column), `tests/web/test_t4045_board_awaiting_review.py` → 4 failed, 1 passed (the 1 is the "no awaiting-review data-status" negative). Post-fix: 5 passed.
+- **Shape:** `shared.task_review_state(path)` (mtime-cached open-Human count + `review_readiness`) feeds `tasks()`; ready tasks go to `awaiting_tasks`, the rest stay in `board_tasks`.

@@ -1623,6 +1623,31 @@ def review_readiness(task_id: str, status: str, body: str,
     return state, list(reasons)
 
 
+_OPEN_HUMAN_CACHE: dict[str, tuple[int, int]] = {}
+
+
+def task_review_state(path: Path | str) -> tuple[str | None, list[str], int]:
+    """``(state, reasons, open_human)`` for one task file (T-4045 board column).
+
+    ``state`` is None when the task has no unchecked Human criterion (it is not
+    awaiting anyone); otherwise ``review_readiness``'s verdict. Both the open-Human
+    count and the readiness are cached per file mtime."""
+    p = Path(path)
+
+    def _count(q: Path) -> int:
+        try:
+            return count_human_acs(q.read_text(encoding="utf-8", errors="replace"))[1]
+        except OSError:
+            return 0
+
+    open_human = mtime_cached_get(p, _count, _OPEN_HUMAN_CACHE, 0)
+    if open_human == 0:
+        return None, [], 0
+    state, reasons = review_readiness(p.name.split("-", 2)[0] + "-" + p.name.split("-", 2)[1],
+                                      "", "", p)
+    return state, reasons, open_human
+
+
 def extract_reviewer_verdict(body: str) -> dict:
     """Extract the reviewer agent's verdict from `## Reviewer Verdict (vX.Y)`.
 
