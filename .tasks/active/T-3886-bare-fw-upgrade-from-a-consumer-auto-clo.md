@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T14:49:42Z
-last_update: 2026-10-11T08:38:00Z
+last_update: 2026-10-11T09:57:56Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,10 +95,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The bare-from-consumer auto-clone in lib/upgrade.sh no longer uses `--depth=1`. It clones with full commit history (`--filter=blob:none`; plain full clone when the server ignores filters), so the origin guard finds the consumer's recorded version_sha and an ordinary behind-upstream consumer upgrades without a bypass (GitHub #87).
-- [ ] When the guard still refuses for an AUTO-clone, the remedy text does not point at the temporary clone directory (which the EXIT trap deletes). It names the recorded SHA and gives a runnable alternative: clone the framework yourself, run `<clone>/bin/fw upgrade <consumer>`.
-- [ ] A regression test drives the bare-from-consumer path against a `file://` upstream with more than one commit, where the consumer pin is an older commit. It is refused on the pre-fix code (shallow clone) and upgrades on the fixed code.
-- [ ] tests/unit/upgrade_fresh_machine_simulation.bats stays green (CLAUDE.md §Consumer-Facing Command Hygiene), as do the existing t3714 / T-2762 guard tests.
+- [x] The bare-from-consumer auto-clone in lib/upgrade.sh no longer uses `--depth=1`. It clones with full commit history (`--filter=blob:none`; plain full clone when the server ignores filters), so the origin guard finds the consumer's recorded version_sha and an ordinary behind-upstream consumer upgrades without a bypass (GitHub #87).
+- [x] When the guard still refuses for an AUTO-clone, the remedy text does not point at the temporary clone directory (which the EXIT trap deletes). It names the recorded SHA and gives a runnable alternative: clone the framework yourself, run `<clone>/bin/fw upgrade <consumer>`.
+- [x] A regression test drives the bare-from-consumer path against a `file://` upstream with more than one commit, where the consumer pin is an older commit. It is refused on the pre-fix code (shallow clone) and upgrades on the fixed code.
+- [x] tests/unit/upgrade_fresh_machine_simulation.bats stays green (CLAUDE.md §Consumer-Facing Command Hygiene), as do the existing t3714 / T-2762 guard tests.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -258,6 +258,9 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bats tests/unit/t3886_upgrade_autoclone_history.bats > .context/working/t3886-verify.out 2>&1 && ! grep -q "^not ok" .context/working/t3886-verify.out
+test "$(grep -c '# skip' .context/working/t3886-verify.out)" -eq 0
+bin/fw vendor self --check
 
 ## RCA
 
@@ -274,6 +277,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** bare `fw upgrade` from a consumer behind upstream refused its own auto-clone as `foreign-source` (GitHub #87). The remedy then told the reader to run `git -C <temp dir> fetch --unshallow`, a directory the EXIT trap had already deleted.
+
+**Root cause:** the auto-clone used `git clone --depth=1`. The origin guard cannot see the consumer's recorded `version_sha` in a shallow clone, so it refuses. The remedy was built from the temp path, which only exists for the life of the process.
+
+**Why structurally allowed:** T-3714 added a shallow-aware remedy for a user-run clone and did not consider the auto-clone, whose directory lifetime the guard never knew about. No test ran the bare-from-consumer path against a behind consumer with real history, so a shallow clone was never exercised end to end.
+
+**Prevention:** `tests/unit/t3886_upgrade_autoclone_history.bats` runs the bare path against a multi-commit upstream with an older pin, and asserts both no `foreign-source` refusal and a remedy that never names the temp dir. The child now receives `FW_AUTOCLONE_SOURCE`, so the guard states its auto-clone identity explicitly. **Found while fixing, not fixed here:** a filtered clone of a shallow source over a transport that ignores filters (`file://` on git 2.43) never completes. The auto-clone skips the filter for a local shallow source. A remote shallow source with a non-filter server is untested and remains a possible hang.
 
 ## Evolution
 
@@ -298,6 +309,11 @@ bvp_scores_proposed:
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-10-11 — the fix is the clone depth, not the guard
+- **What changed:** filed as a guard/remedy problem; the cause was the auto-clone's `--depth=1`. A `--filter=blob:none` clone keeps full commit history at a fraction of the size, and the guard then accepts an ordinary behind-upstream consumer untouched. Separately learned: a filtered clone of a shallow local source over `file://` never completes on git 2.43, so a shallow local source is cloned without the filter.
+- **Plan impact:** the remedy rewrite stays, but only for the residual case (a source that is itself shallow); it names a runnable full clone instead of the deleted temp dir.
+- **Triggered:** no new task; the remote-shallow-source + non-filter-server hang risk is recorded in the RCA Prevention paragraph.
 
 ## Recommendation
 
