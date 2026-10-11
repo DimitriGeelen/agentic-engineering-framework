@@ -82,4 +82,15 @@ Until then the steps are manual and logged here.
   - **Conclusion:** every failure is environmental to a scratch clone (no installed hooks, no deployed cron, no live corpus, no Watchtower, no ollama), and **none is attributable to the hotfix**.
   - **Lesson:** a hotfix suite run needs a control run of the base release in the same environment, or the result cannot be read.
 - **Field:** 1409 has asked their operator. Their confirmation is pending.
+- **Released 2026-10-11** on the operator's explicit "yes" to "Release v1.8.9 (hotfix: T-4032 only) to master now?":
+  - The first atomic push to origin was refused by the pre-push ratchet, for one load-flake red unrelated to the hotfix (T-4038). The operator accepted it into the baseline until 2026-10-25 via runme. The retry landed master f0fc58393 → b82294243 plus tag v1.8.9 on origin.
+  - On GitHub, master and the tag were already mirrored from OneDev. Our annotated-tag push was correctly refused as a moved tag; no force was used.
+  - GitHub release created.
+  - Merge-back 974c2f464: only VERSION changed on bleeding-edge, and bleeding-edge contains master again.
+  - Announced to 1409 first, then ring20 ×2, 055, 832, 010, dimitri-mint-dev and 050.
+- **What to add to the lane (from this run):**
+  1. A full-suite run on the hotfix tree needs a control run of the base release in the same environment.
+  2. The pre-push ratchet grades the development branch's last full run, not the hotfix tree. A hotfix push should be graded on its own run.
+  3. On GitHub, the OneDev mirror carries tags as lightweight refs, so pushing the annotated tag there is refused. Skip it when the commit already matches.
+  4. Each of those three is a candidate for `fw release hotfix`.
 - **Then:** the release question to the operator, the manual release steps, and the merge-back.
