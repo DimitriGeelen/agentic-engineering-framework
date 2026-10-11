@@ -4,12 +4,12 @@ name: "Invariant mcp-termlink-runtime-dir compares against the first 'termlink h
 description: >
   tests/lint/mcp-termlink-runtime-dir.bats:32 takes pgrep -f 'termlink hub start' | head -1. On 2026-10-11 the first match was a debug hub (/opt/termlink/target/debug/termlink, TERMLINK_RUNTIME_DIR=/tmp/dbg/run), not the systemd termlink-hub.service (MainPID, /var/lib/termlink, matching .mcp.json), and the push was refused. Fix: compare against the systemd unit's MainPID when the unit is active, else skip.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, tests, flaky]
-components: []
+components: [tests/lint/mcp-termlink-runtime-dir.bats]
 related_tasks: []
 origin: {kind: "agent"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -39,8 +39,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T20:03:43Z
-last_update: 2026-10-11T20:05:06Z
-date_finished: null
+last_update: 2026-10-11T20:05:08Z
+date_finished: 2026-10-11T20:05:08Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -333,3 +333,15 @@ timeout 120 bats tests/lint/mcp-termlink-runtime-dir.bats > .context/working/t40
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4068-invariant-mcp-termlink-runtime-dir-compa.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6dbc33d3
+- **Timestamp:** 2026-10-11T20:05:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-11T20:05:08Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
