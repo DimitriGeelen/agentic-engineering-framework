@@ -2966,6 +2966,29 @@ PY
         echo -e "  ${CYAN}SKIP${NC}  Watchtower not running (no triple) — start with: fw serve"
     fi
 
+    # Check: Watchtower secret-key file mode (T-4062). Watchtower tightens it on
+    # start, but an agent or operator can widen it afterwards, and the key signs
+    # CSRF/session tokens — group or world read, or a named ACL grant, defeats 0600.
+    local _sk_file="$PROJECT_ROOT/.context/working/.fw-secret-key"
+    if [ -f "$_sk_file" ]; then
+        local _sk_mode _sk_acl=""
+        _sk_mode=$(stat -c %a "$_sk_file" 2>/dev/null || stat -f %Lp "$_sk_file" 2>/dev/null || echo "")
+        # Named entries only (base user::/group::/other:: are mode, not grants), and
+        # only those with effective access — chmod 600 masks a grant to #effective:---.
+        if command -v getfacl >/dev/null 2>&1 && getfacl -cp "$_sk_file" 2>/dev/null \
+            | grep -E '^(user|group):[^:]+:' | grep -vE '#effective:-+$' \
+            | grep -qE '^(user|group):[^:]+:[rwx-]*[rwx]'; then
+            _sk_acl=" + named/other POSIX ACL grant"
+        fi
+        if { [ -n "$_sk_mode" ] && [ $(( 0$_sk_mode & 077 )) -ne 0 ]; } || [ -n "$_sk_acl" ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Watchtower secret key is group/world-accessible (mode ${_sk_mode:-?}$_sk_acl)"
+            echo -e "         Fix: chmod 600 $_sk_file && setfacl -b $_sk_file"
+            warnings=$((warnings + 1))
+        else
+            echo -e "  ${GREEN}OK${NC}  Watchtower secret key is owner-only (mode $_sk_mode)"
+        fi
+    fi
+
     # Check: Session supervision (T-2499) — is the auto-restart loop armed?
     # The arc-012 continuous-run loop (budget-critical → auto-handover →
     # .restart-requested → claude-fw restart → directive re-injection) only fires

@@ -44,7 +44,7 @@ origin: {kind: "peer", source: "dimitri-mint-dev", ref: "arc-001"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T18:06:19Z
-last_update: 2026-10-11T18:08:20Z
+last_update: 2026-10-11T18:15:19Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -86,10 +86,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `_resolve_secret_key` (web/app.py) leaves the key file at mode 0600 on EVERY path: generated, and existing (an existing wider-mode file is tightened before use; a POSIX ACL granting others access is removed when `setfacl` is available, otherwise a WARN is logged naming the file).
-- [ ] The new file is created 0600 from the start (no window where it exists with the umask's mode).
-- [ ] `fw doctor` WARNs when the key file is group- or world-accessible (mode or ACL), with the one-line fix.
-- [ ] pytest `tests/web/test_t4062_secret_key_mode.py`: generated key → 0600; pre-existing 0660 file → 0600 after resolve; key value unchanged. The existing-file case fails on the pre-fix code.
+- [x] `_resolve_secret_key` (web/app.py) leaves the key file at mode 0600 on EVERY path: generated, and existing (an existing wider-mode file is tightened before use; a POSIX ACL granting others access is removed when `setfacl` is available, otherwise a WARN is logged naming the file).
+- [x] The new file is created 0600 from the start (no window where it exists with the umask's mode).
+- [x] `fw doctor` WARNs when the key file is group- or world-accessible (mode or ACL), with the one-line fix.
+- [x] pytest `tests/web/test_t4062_secret_key_mode.py`: generated key → 0600; pre-existing 0660 file → 0600 after resolve; key value unchanged. The existing-file case fails on the pre-fix code.
 - [ ] Watchtower restarted; `bin/fw watchtower current` exits 0; `.context/working/.fw-secret-key` on this host is 0600.
 
 ### Human
@@ -254,6 +254,11 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(python3 -m pytest tests/web/test_t4062_secret_key_mode.py -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
+bash -n bin/fw
+bin/fw vendor self --check
+bin/fw watchtower current
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -269,6 +274,26 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** the Watchtower secret-key file `.context/working/.fw-secret-key` was `-rw-rw----+`
+(0660 plus a named-user ACL for another account) on host .107, although `_resolve_secret_key`
+is written to chmod it 0600.
+
+**Root cause:** the 0600 chmod ran only on the generate branch. An existing file took the
+`is_file()` read path and returned before any mode handling, so whatever mode it already had
+was kept forever. The function also created new files with `write_text()` (umask mode first,
+chmod after), so a brief readable window existed.
+
+**Why structurally allowed:** no test covered the existing-file path (the generate path was the
+only one ever exercised), and `fw doctor` did not look at the key file's mode or ACL at all.
+The arc-001 F-8 report had first said the key was empty; checking the source before acting is
+what showed it was persisted, which left the real gap (mode is not enforced on reuse) unnamed.
+
+**Prevention:** (1) `_resolve_secret_key` tightens an existing file on every start (mode plus
+`setfacl -b`), and creates new files at 0600 via `os.open`. (2) `tests/web/test_t4062_secret_key_mode.py`
+pins generated, 0660, 0644 and named-ACL cases; the three existing-file cases fail on the
+pre-fix code. (3) `fw doctor` WARNs when the key file is group/world-accessible or has an
+effective named ACL grant, with the one-line fix.
 
 ## Evolution
 
