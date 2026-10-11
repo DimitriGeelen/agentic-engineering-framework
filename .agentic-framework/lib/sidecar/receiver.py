@@ -36,6 +36,7 @@ import hashlib
 import json
 import os
 import re
+import secrets
 from datetime import datetime, timezone
 from pathlib import Path
 
@@ -192,25 +193,40 @@ def store_message(msg_id: str, envelope: dict) -> tuple[bool, str]:
     record = dict(envelope)
     record["_content_sha256"] = digest
     record["_stored_at"] = _now_iso()
-    tmp_path = msg_path.with_suffix(".json.tmp")
+    # A unique temp name per write: two deliveries of one id in flight at once
+    # must never share a temp path (T-4059 — the shared path made the loser's
+    # commit find no file and answer HTTP 400 for a stored message).
+    tmp_path = msg_path.with_name(
+        f"{msg_id}.json.{os.getpid()}.{secrets.token_hex(8)}.tmp")
     try:
         with open(tmp_path, "w", encoding="utf-8") as fh:
             json.dump(record, fh, indent=2)
             fh.flush()
             os.fsync(fh.fileno())
-        os.replace(tmp_path, msg_path)
+        # link, not replace: it creates msg_path only if absent, so a concurrent
+        # winner's message is never overwritten by a loser's.
+        try:
+            os.link(tmp_path, msg_path)
+        except FileExistsError:
+            # Lost the race: the message is already stored. Same content → this
+            # delivery is a successful retry; different content → conflict.
+            stored = read_message(msg_id) or {}
+            if stored.get("_content_sha256") != digest:
+                return False, "conflict: client_msg_id reused with different content"
     except OSError as e:
+        return False, f"failed to write message: {e}"
+    finally:
         try:
             tmp_path.unlink()
         except OSError:
             pass
-        return False, f"failed to write message: {e}"
 
     # The flag is written only after the message is fully in place: a crash
     # between the two leaves a complete message with no flag (finished on the
     # retry above), never a flag pointing at a partial message.
     try:
-        _write_flag(ready_path)
+        if not ready_path.exists():
+            _write_flag(ready_path)
     except OSError as e:
         return False, f"failed to write ready flag: {e}"
     record_event(msg_id, "STORED", sender=envelope.get("from"))
