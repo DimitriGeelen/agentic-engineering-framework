@@ -5154,3 +5154,17 @@ decisions:
     rationale: "Operator ruling 2026-10-10 declining v1.8.9 while T-4003's tmux delivery was not yet proven live: deploy bleeding-edge in the Ring20 test state, deploy to production (master) only stable versions with verified working fixes. Each release to master is asked as an explicit yes/no with the dry run shown."
     alternatives_rejected:
       - "Releasing to master as soon as tests pass (tested is not verified working)"
+
+  - id: D-737
+    decision: "`X.Y.Z+N.gSHA` (semver build metadata)."
+    scope: project
+    date: 2026-10-11
+    task: T-4055
+    rationale: "Auto-captured from task file on completion"
+
+  - id: D-738
+    decision: "opt-in, remembered in `.framework.yaml` (`MESSAGING_TOOLKIT`); existing installs that have the files are opted in automatically so nobody loses a toolkit they use."
+    scope: project
+    date: 2026-10-11
+    task: T-4042
+    rationale: "Auto-captured from task file on completion"
