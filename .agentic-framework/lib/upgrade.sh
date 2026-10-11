@@ -2892,7 +2892,25 @@ EOF
             # this is the one moment a pull-only propagation model gets to speak.
             _t3113_emit_worktree_advisory "$target_dir"
         fi
+        _t4069_stale_wrapper_notice "$target_dir"
     fi
+}
+
+# T-4069: end-of-run notice. A claude-fw wrapper started before bin/claude-fw
+# changed keeps the code bash loaded, so the fix is dormant until it is relaunched.
+# Advisory only: never changes the caller's exit code. $1 = project root.
+_t4069_stale_wrapper_notice() {
+    local root="${1:-}" helper out line pid start script mtime flag n=0
+    helper="${FRAMEWORK_ROOT:-}/lib/stale_claude_fw.py"
+    [ -n "$root" ] && [ -f "$helper" ] || return 0
+    out=$(python3 "$helper" "$root" --stale-only 2>/dev/null || true)
+    while IFS=$'\t' read -r pid start script mtime flag; do
+        [ -n "$pid" ] || continue
+        if [ "$n" -eq 0 ]; then echo ""; fi
+        n=$((n + 1))
+        echo "  NOTE: claude-fw pid $pid started $(date -u -d "@$start" '+%Y-%m-%d %H:%MZ'), before ${script##*/} changed $(date -u -d "@$mtime" '+%Y-%m-%d %H:%MZ') — fixes in it (e.g. T-4032) are not active until that session is relaunched"
+    done <<< "$out"
+    return 0
 }
 
 # T-2094 F10 (T-2078 V1-C): post-upgrade fw doctor advisory helper.
