@@ -895,3 +895,10 @@ entries:
   added: '2026-10-08'
   expires: '2026-10-22'
   added_by: human
+- leg: bats
+  name: 'fw_mode_detection.bats: T-1406: fw doctor prints Active mode line in framework-repo mode'
+  file: fw_mode_detection.bats
+  owner: T-4038
+  added: '2026-10-11'
+  expires: '2026-10-25'
+  added_by: human
