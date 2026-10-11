@@ -11,7 +11,7 @@
 
 set -euo pipefail
 
-# Version: derived from git tags (major.minor = human tag, patch = commits since tag)
+# Version: derived from git tags (X.Y.Z on a tag, X.Y.Z+N.gSHA N commits past it)
 # Falls back to VERSION file for consumer installs without git history
 _derive_version() {
     # T-2450/F3: resolve symlinks before deriving fw_dir. fw is invoked via the
@@ -31,15 +31,12 @@ _derive_version() {
         desc=$(git -C "$fw_dir" describe --tags --match 'v[0-9]*' 2>/dev/null) || true
     fi
     if [ -n "$desc" ]; then
-        # v1.4.0 → 1.4.0 | v1.4.0-5-gabc123 → 1.4.5
+        # v1.8.9 → 1.8.9 | v1.8.9-92-gabc123 → 1.8.9+92.gabc123 (T-4055: the old
+        # X.Y.N form dropped the tag's patch, so v1.8.9-92 read 1.8.92 — "newer"
+        # than 1.8.10. Semver build metadata never reads as a release.)
         desc="${desc#v}"  # strip leading v
-        if [[ "$desc" == *-*-* ]]; then
-            local base commits
-            base="${desc%%-*}"          # 1.4.0
-            local rest="${desc#*-}"     # 5-gabc123
-            commits="${rest%%-*}"       # 5
-            local major_minor="${base%.*}"  # 1.4
-            echo "${major_minor}.${commits}"
+        if [[ "$desc" =~ ^([0-9]+\.[0-9]+\.[0-9]+)-([0-9]+)-(g[0-9a-f]+)$ ]]; then
+            echo "${BASH_REMATCH[1]}+${BASH_REMATCH[2]}.${BASH_REMATCH[3]}"
         else
             echo "$desc"
         fi

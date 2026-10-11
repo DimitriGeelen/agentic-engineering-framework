@@ -1,10 +1,19 @@
 ---
 id: T-4055
-name: "Version derivation drops the tag's patch number: v1.8.9 + 92 commits reads 1.8.92, newer than 1.8.10 (bin/fw ~33, stamped into vendored VERSION/.framework.yaml) (ring20 T-2311)"
+name: "Version derivation drops the tag's patch number: v1.8.9 + 92 commits reads
+  1.8.92, newer than 1.8.10 (bin/fw ~33, stamped into vendored VERSION/.framework.yaml)
+  (ring20 T-2311)"
 description: >
-  bin/fw version derivation maps git describe vX.Y.Z-N-gSHA to X.Y.N (comment: v1.4.0-5 → 1.4.5), which only holds when Z=0. On v1.8.9-92-ga6e06c286 it yields 1.8.92, which the vendor step stamps into the consumer's VERSION and .framework.yaml and which sorts newer than 1.8.10 — so version comparisons (upgrade/version-relation, doctor) can misjudge a bleeding-edge consumer as ahead of the next release. ring20 suggests 1.8.9+92.ga6e06c28 (semver build metadata) or 1.8.9-be.92, and publishing -be tags for pinning. Check every consumer of the derived string (version-relation, vendor stamping, release) before changing the format.
+  bin/fw version derivation maps git describe vX.Y.Z-N-gSHA to X.Y.N (comment: v1.4.0-5
+  → 1.4.5), which only holds when Z=0. On v1.8.9-92-ga6e06c286 it yields 1.8.92, which
+  the vendor step stamps into the consumer's VERSION and .framework.yaml and which
+  sorts newer than 1.8.10 — so version comparisons (upgrade/version-relation, doctor)
+  can misjudge a bleeding-edge consumer as ahead of the next release. ring20 suggests
+  1.8.9+92.ga6e06c28 (semver build metadata) or 1.8.9-be.92, and publishing -be tags
+  for pinning. Check every consumer of the derived string (version-relation, vendor
+  stamping, release) before changing the format.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +48,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "T-2311"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T13:56:49Z
-last_update: 2026-10-11T13:57:45Z
-date_finished: null
+last_update: '2026-10-11T14:00:33Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +60,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-11T13:59:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-11T14:00:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4055: Version derivation drops the tag's patch number: v1.8.9 + 92 commits reads 1.8.92, newer than 1.8.10 (bin/fw ~33, stamped into vendored VERSION/.framework.yaml) (ring20 T-2311)
@@ -63,10 +100,10 @@ Reported by ring20 (T-2311 testbed upgrade to bleeding-edge a6e06c28): the vendo
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `_derive_version` returns `X.Y.Z+N.gSHA` for `vX.Y.Z-N-gSHA` (semver build metadata; e.g. `1.8.9+92.ga6e06c286`), and `X.Y.Z` exactly on a tag. The comment is corrected.
-- [ ] Every consumer of the derived string handles the `+N.gSHA` form: audit `lib/version.sh`, `lib/version-relation.sh`, `lib/upgrade.sh`, `lib/upstream.sh`, `lib/init.sh`, `lib/worktree.sh`, `lib/release.sh`, vendor stamping (VERSION / `.framework.yaml` `version:`), and `fw doctor`'s version checks. A comparison treats `1.8.9+92…` as after `1.8.9` and before `1.8.10` (or as equal to 1.8.9 where only release precedence matters), never as newer than `1.8.10`. List what you checked in the task's Updates.
-- [ ] A consumer already stamped with the old form (`1.8.92`) is not misjudged after this change in any comparison a `fw upgrade` makes; if it would be, the upgrade path recognises the legacy form (document how).
-- [ ] Regression test `tests/unit/t4055_version_derivation.bats`: a fixture repo tagged `v1.8.9` with N extra commits derives `1.8.9+N.g<sha>`; on the tag it derives `1.8.9`; the comparison helper orders `1.8.9 < 1.8.9+92.gx < 1.8.10`. The derivation test fails on the pre-fix code.
+- [x] `_derive_version` returns `X.Y.Z+N.gSHA` for `vX.Y.Z-N-gSHA` (semver build metadata; e.g. `1.8.9+92.ga6e06c286`), and `X.Y.Z` exactly on a tag. The comment is corrected.
+- [x] Every consumer of the derived string handles the `+N.gSHA` form: audit `lib/version.sh`, `lib/version-relation.sh`, `lib/upgrade.sh`, `lib/upstream.sh`, `lib/init.sh`, `lib/worktree.sh`, `lib/release.sh`, vendor stamping (VERSION / `.framework.yaml` `version:`), and `fw doctor`'s version checks. A comparison treats `1.8.9+92…` as after `1.8.9` and before `1.8.10` (or as equal to 1.8.9 where only release precedence matters), never as newer than `1.8.10`. List what you checked in the task's Updates.
+- [x] A consumer already stamped with the old form (`1.8.92`) is not misjudged after this change in any comparison a `fw upgrade` makes; if it would be, the upgrade path recognises the legacy form (document how).
+- [x] Regression test `tests/unit/t4055_version_derivation.bats`: a fixture repo tagged `v1.8.9` with N extra commits derives `1.8.9+N.g<sha>`; on the tag it derives `1.8.9`; the comparison helper orders `1.8.9 < 1.8.9+92.gx < 1.8.10`. The derivation test fails on the pre-fix code.
 - [ ] Existing version/upgrade suites stay green: `tests/unit/*version*.bats`, t2762, t3714, t3886, and `tests/unit/upgrade_fresh_machine_simulation.bats` (CLAUDE.md §Consumer-Facing Command Hygiene).
 
 ### Human
@@ -237,6 +274,11 @@ bin/fw vendor self --check
 
 ## RCA
 
+**Symptom:** v1.8.9 + 92 commits derived `1.8.92`, stamped into vendored VERSION/`.framework.yaml`; reads as a release and sorts newer than 1.8.10.
+**Root cause:** `_derive_version` rebuilt `major.minor.<commits>` assuming tags are `vX.Y.0`; with a patch tag it discarded Z and used the commit count as the patch.
+**Why structurally allowed:** no test derived from a tag with non-zero patch; comparison helpers rejected non-numeric input, so no consumer exercised a build-metadata form.
+**Prevention:** `tests/unit/t4055_version_derivation.bats` (fixture repo tagged v1.8.9: derivation, ordering, legacy-pin cases).
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -336,3 +378,12 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4055-version-derivation-drops-the-tags-patch-.md
 - **Context:** Initial task creation
+
+### 2026-10-11T13:59:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-11 — T-4055 implementation audit
+- **Changed:** bin/fw `_derive_version` (X.Y.Z+N.gSHA; comment corrected); lib/version.sh `_version_lt` and `fw version bump` (strip `+build`, bump from the X.Y.Z base); lib/release.sh `release_version_lt` (strip `+build`: equal to X.Y.Z, below X.Y.(Z+1)).
+- **Audited, no change needed:** lib/version-relation.sh (string equality, then git ancestry via `version_sha:`/tag; never string order); lib/upgrade.sh, lib/upstream.sh, lib/init.sh (stamp FW_VERSION verbatim, no parsing); lib/worktree.sh (comments only); agents/git hooks.sh pre-push monotonicity (`sort -V` + ancestor fallback; 1.8.9+92.gx sorts after 1.8.9, before 1.8.10); doctor badge (uses fw_version_relation).
+- **Legacy `1.8.92` pins:** no sha and no tag `v1.8.92` → `undecidable` (proceed-with-warning, T-2713 policy), never "ahead"; with a recorded `version_sha:` ancestry decides. Pinned by test.
+- **Pre-fix evidence:** with bin/fw, lib/version.sh, lib/release.sh stashed to HEAD, t4055 tests 2,3,4 `not ok`; post-fix 6/6 ok.

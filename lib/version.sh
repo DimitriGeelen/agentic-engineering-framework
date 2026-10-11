@@ -52,6 +52,9 @@ do_version_bump() {
         return 1
     fi
 
+    # T-4055: FW_VERSION is X.Y.Z+N.gSHA between releases; bump from the X.Y.Z base
+    current_version="${current_version%%+*}"
+
     # Validate semver format
     if ! echo "$current_version" | grep -qE '^[0-9]+\.[0-9]+\.[0-9]+$'; then
         echo -e "${RED}ERROR: Current version '$current_version' is not valid semver (X.Y.Z)${NC}" >&2
@@ -377,7 +380,8 @@ do_version_sync() {
 # lexical). Self-contained duplicate of lib/release.sh:release_version_lt so
 # version.sh keeps standing alone in vendored copies. Non-numeric → "not less".
 _version_lt() {
-    local a="${1%%-*}" b="${2%%-*}"
+    local a="${1%%+*}" b="${2%%+*}"   # T-4055: drop +N.gSHA build metadata
+    a="${a%%-*}"; b="${b%%-*}"
     case "$a$b" in ''|*[!0-9.]*) return 1 ;; esac
     [ "$a" = "$b" ] && return 1
     local a1 a2 a3 b1 b2 b3
