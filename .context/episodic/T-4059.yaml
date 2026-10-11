@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4059: Sidecar receiver: a retried delivery racing the first one fails with HTTP 400 (both use messages/<id>.json.tmp; the loser's os.replace finds no file) (055)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-11T17:44:57Z
+# ============================================================================
+
+task_id: T-4059
+task_name: "Sidecar receiver: a retried delivery racing the first one fails with HTTP 400 (both use messages/<id>.json.tmp; the loser's os.replace finds no file) (055)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-11T17:17:41Z
+completed: 2026-10-11T17:44:28Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-11T19:19:50+02:00
+last_commit: 2026-10-11T19:27:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope T-4056 (doctor interpreter hooks, ring20), T-4058 (unit-suite keeps failure text, 055) and T-4059 (receiver tmp race, 055) — ACs, Verification. sidecar receiver — unique tmp per delivery, lost race re-checks stored digest (no 400 on retry). vendored sidecar receiver sync
+
+# Key outcomes
+outcomes:
+  - '`lib/sidecar/receiver.py` writes each delivery through its own temp file (unique per write: pid + random suffix, same directory), so concurrent deliveries of one `client_msg_id` never share a temp path.'
+  - 'If the final rename fails or loses the race, the receiver re-checks `messages/<id>.json`: present with the same content digest → success (and the ready flag is ensured); different digest → the existing "conflict" answer. A delivery whose message is stored is never answered with HTTP 400.'
+  - 'No temp file is left behind on any path (success, failure, lost race).'
+  - 'Regression test (pytest, `tests/unit/t4059_sidecar_receiver_concurrent_delivery_test.py`): N threads/processes deliver the same envelope at once → all succeed, exactly one message file + one ready flag, no `.tmp` left; a different-content reuse of the id still returns conflict. The concurrent test fails on the pre-fix code (run it enough times, or force the interleaving with a patched `os.replace`, so the pre-fix failure is deterministic).'
+  - 'Existing sidecar receiver/inbox tests stay green (`tests/unit/*sidecar*`).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/receiver.py'
+  - 'lib/sidecar/receiver.py'
+  - '.tasks/active/T-4056-fw-doctor-misparses-interpreter-prefixed.md'
+  - '.tasks/active/T-4058-unit-suitesh-deletes-every-per-file-outp.md'
+  - '.tasks/active/T-4059-sidecar-receiver-a-retried-delivery-raci.md'
+  - 'tests/unit/t4059_sidecar_receiver_concurrent_delivery_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-11T19:19:50'
+    action: 'T-4059: scope T-4056 (doctor interpreter hooks, ring20), T-4058 (unit-suite keeps failure text, 055) and T-4059 (receiver tmp race, 055) — ACs, Verification'
+  - time: '2026-10-11T19:27:48'
+    action: 'T-4059: sidecar receiver — unique tmp per delivery, lost race re-checks stored digest (no 400 on retry)'
+  - time: '2026-10-11T19:27:50'
+    action: 'T-4059: vendored sidecar receiver sync'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 26 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, sidecar]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 26
+  commits: 3
+  files_changed: 6
+  lines_added: 289
+  lines_removed: 39
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4059-sidecar-receiver-a-retried-delivery-raci.md
+generated_by: context-agent-hybrid

@@ -1,24 +1,24 @@
 ---
-id: T-4058
-name: "unit-suite.sh deletes every per-file output on exit, so a red test's failure
-  text is lost (audit names the file, never the assertion) (055 T-495)"
+id: T-4059
+name: "Sidecar receiver: a retried delivery racing the first one fails with HTTP 400
+  (both use messages/<id>.json.tmp; the loser's os.replace finds no file) (055)"
 description: >
-  agents/audit/unit-suite.sh:102 trap 'rm -rf "$RESULTS"' EXIT removes every <leg>/<file>.out,
-  so the report and the pre-push audit name a red test file but the failing assertion
-  and its output are gone; an intermittent red (055: 6 of 8 nightly runs, never reproduced
-  by hand) cannot be diagnosed. 055's vendored patch: before the rm, copy the .out
-  of every file whose .meta rc != 0 to $REPORT_DIR/failures/<STARTED>/, keep the newest
-  14 run dirs, best effort, exit code unchanged; tested red/green/rotation. Also name
-  the kept path in the audit's Mitigation line.
+  lib/sidecar/receiver.py:195 writes every delivery of a client_msg_id through the
+  same tmp path msg_path.with_suffix('.json.tmp'). Two concurrent deliveries of one
+  message (a sender retry while the first is in flight) share it: the first os.replace
+  moves it, the second fails 'No such file or directory' and the receiver answers
+  HTTP 400 although the message is stored. Seen by 055 (msg daf85260). Fix: unique
+  tmp name per write (pid+random), and on a failed replace re-check msg_path with
+  the same content digest → success (idempotent). Test with two concurrent writers.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, audit, unit-suite]
-components: []
+horizon: null
+tags: [bug, sidecar]
+components: [lib/sidecar/receiver.py]
 related_tasks: []
-origin: {kind: "peer", source: "055-agentic-fleet-cockpit", ref: "T-495"}
+origin: {kind: "peer", source: "055-agentic-fleet-cockpit"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -45,9 +45,9 @@ origin: {kind: "peer", source: "055-agentic-fleet-cockpit", ref: "T-495"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-11T17:17:25Z
-last_update: 2026-10-11T17:28:12Z
-date_finished:
+created: 2026-10-11T17:17:41Z
+last_update: 2026-10-11T17:44:28Z
+date_finished: 2026-10-11T17:44:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -59,7 +59,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-11T17:19:11Z'
+  - ts: '2026-10-11T17:19:30Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -76,9 +76,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-11T17:30:47Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=288,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4058: unit-suite.sh deletes every per-file output on exit, so a red test's failure text is lost (audit names the file, never the assertion) (055 T-495)
+# T-4059: Sidecar receiver: a retried delivery racing the first one fails with HTTP 400 (both use messages/<id>.json.tmp; the loser's os.replace finds no file) (055)
 
 ## Context
 
@@ -88,10 +98,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Before `agents/audit/unit-suite.sh` removes `$RESULTS` on exit, it copies the `.out` (and `.meta`) of every file whose recorded rc is non-zero to `$REPORT_DIR/failures/<run STARTED stamp>/<leg>/`, keeps only the newest 14 run directories, is best effort (a copy failure never changes the suite's exit code or report), and copies nothing on an all-green run.
-- [x] The unit-suite report (LATEST.yaml or its run record) names the kept failures directory for that run, and the audit's unit-suite FAIL/WARN Mitigation line names it, so a red test points at its own failure text.
-- [x] Regression test `tests/unit/t4058_unit_suite_keeps_failures.bats` with a tiny fixture suite (one passing, one failing bats file): the failing file's output (its `not ok` line and assertion text) is kept under failures/<run>/; the passing one is not; an all-green run keeps nothing; 17 pre-existing run dirs are rotated down to 14; the suite's exit code equals the pre-fix exit code. The keep test fails on the pre-fix code.
-- [x] `.context/audits/unit-suite/failures/` is gitignored (failure output can hold host detail, like runme logs).
+- [x] `lib/sidecar/receiver.py` writes each delivery through its own temp file (unique per write: pid + random suffix, same directory), so concurrent deliveries of one `client_msg_id` never share a temp path.
+- [x] If the final rename fails or loses the race, the receiver re-checks `messages/<id>.json`: present with the same content digest → success (and the ready flag is ensured); different digest → the existing "conflict" answer. A delivery whose message is stored is never answered with HTTP 400.
+- [x] No temp file is left behind on any path (success, failure, lost race).
+- [x] Regression test (pytest, `tests/unit/t4059_sidecar_receiver_concurrent_delivery_test.py`): N threads/processes deliver the same envelope at once → all succeed, exactly one message file + one ready flag, no `.tmp` left; a different-content reuse of the id still returns conflict. The concurrent test fails on the pre-fix code (run it enough times, or force the interleaving with a patched `os.replace`, so the pre-fix failure is deterministic).
+- [x] Existing sidecar receiver/inbox tests stay green (`tests/unit/*sidecar*`).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -254,20 +265,18 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-timeout 900 bats tests/unit/t4058_unit_suite_keeps_failures.bats > .context/working/t4058-verify.out 2>&1 && ! grep -q "^not ok" .context/working/t4058-verify.out
-test "$(grep -c '# skip' .context/working/t4058-verify.out)" -eq 0
-bash -n agents/audit/unit-suite.sh
+python3 -m pytest tests/unit/t4059_sidecar_receiver_concurrent_delivery_test.py -q > .context/working/t4059-verify.out 2>&1 && grep -q passed .context/working/t4059-verify.out && ! grep -qE "[0-9]+ (failed|skipped|error)" .context/working/t4059-verify.out
 bin/fw vendor self --check
 
 ## RCA
 
-**Symptom:** A nightly unit-suite run went red (055: 6 of 8 nightlies) and the audit named the red test file, but not the failing assertion or its output. The intermittent red could not be reproduced by hand, so it could not be diagnosed from the report.
+**Symptom:** a sender retry of a message still in flight gets HTTP 400 ("failed to write message: No such file or directory") although the message is stored (seen by 055, msg daf85260).
 
-**Root cause:** `agents/audit/unit-suite.sh` ran `trap 'rm -rf "$RESULTS"' EXIT`, and `$RESULTS` held each file's `.out` (the only copy of the tool output). The report recorded per-file rc and parsed `not ok` lines, but the raw output was deleted on every exit, red or green.
+**Root cause:** `store_message` wrote every delivery through one fixed temp path, `<id>.json.tmp`. Two concurrent deliveries share it: the first `os.replace` moves the file into place, the second's commit finds no file and the error is returned as a write failure. Also, `os.replace` silently overwrites, so a lost race with different content would not be detected at all.
 
-**Why structurally allowed:** The runner was built to produce a verdict report (T-3302, T-3602), and nothing asserted that a red verdict was reproducible from its artefacts. The report's tests covered the verdict fields and the audit branch, not whether the evidence behind a red survived the run.
+**Why structurally allowed:** the store had only sequential tests (the idempotent-retry path was tested by calling twice, never concurrently), so no test drove two writers into the same window.
 
-**Prevention:** `_keep_failures` in `_finish` copies every non-zero-rc file's `.out`/`.meta` to `failures/<STARTED>/<leg>/` before the EXIT trap runs, keeps the newest 14 run dirs, and the report names the kept dir (`failures_dir`), which the audit's red-path Mitigation line echoes. `tests/unit/t4058_unit_suite_keeps_failures.bats` pins the keep, the all-green no-op, rotation, and the unchanged exit code; it fails on the HEAD runner (4 of 5 tests red pre-fix).
+**Prevention:** `tests/unit/t4059_sidecar_receiver_concurrent_delivery_test.py` races 8–16 threads through one barrier on the same id (repeated 40 rounds, and with differing bodies), asserting every identical delivery succeeds, exactly one message is stored, and no `.tmp` remains.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -359,10 +368,22 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-11T17:17:25Z — task-created [task-create-agent]
+### 2026-10-11T17:17:41Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4058-unit-suitesh-deletes-every-per-file-outp.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4059-sidecar-receiver-a-retried-delivery-raci.md
 - **Context:** Initial task creation
 
-### 2026-10-11T17:19:10Z — status-update [task-update-agent]
+### 2026-10-11T17:19:29Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2977d976
+- **Timestamp:** 2026-10-11T17:44:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-11T17:44:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

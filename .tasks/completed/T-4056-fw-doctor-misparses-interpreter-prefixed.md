@@ -1,24 +1,22 @@
 ---
-id: T-4059
-name: "Sidecar receiver: a retried delivery racing the first one fails with HTTP 400
-  (both use messages/<id>.json.tmp; the loser's os.replace finds no file) (055)"
+id: T-4056
+name: "fw doctor misparses interpreter-prefixed hook commands (python3 \"$CLAUDE_PROJECT_DIR/scripts/x.py\"\
+  ): reports 'script not found: python3/bash' and a broken hook path (ring20)"
 description: >
-  lib/sidecar/receiver.py:195 writes every delivery of a client_msg_id through the
-  same tmp path msg_path.with_suffix('.json.tmp'). Two concurrent deliveries of one
-  message (a sender retry while the first is in flight) share it: the first os.replace
-  moves it, the second fails 'No such file or directory' and the receiver answers
-  HTTP 400 although the message is stored. Seen by 055 (msg daf85260). Fix: unique
-  tmp name per write (pid+random), and on a failed replace re-check msg_path with
-  the same content digest → success (idempotent). Test with two concurrent writers.
+  ring20 reports fw doctor 'Hook path validation 1/47 broken' and 'Hook config: script
+  not found: python3/bash' for hooks of the shape python3 "$CLAUDE_PROJECT_DIR/scripts/x.py"
+  — the check takes the interpreter as the script path. Pre-existing (bin/fw unchanged
+  across their upgrade). Fix: skip a leading interpreter word (python3/bash/sh/node…)
+  and validate the script argument, so a real missing script still FAILs.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, sidecar]
-components: []
+horizon: null
+tags: [bug, doctor, hooks]
+components: [bin/fw]
 related_tasks: []
-origin: {kind: "peer", source: "055-agentic-fleet-cockpit"}
+origin: {kind: "peer", source: "proxmox-ring20-management", ref: "T-2311"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -45,9 +43,9 @@ origin: {kind: "peer", source: "055-agentic-fleet-cockpit"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-11T17:17:41Z
-last_update: 2026-10-11T17:27:49Z
-date_finished:
+created: 2026-10-11T13:57:06Z
+last_update: 2026-10-11T17:43:07Z
+date_finished: 2026-10-11T17:43:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,8 +56,18 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-11T14:00:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-11T17:19:30Z'
+  - ts: '2026-10-11T14:01:15Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -78,7 +86,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4059: Sidecar receiver: a retried delivery racing the first one fails with HTTP 400 (both use messages/<id>.json.tmp; the loser's os.replace finds no file) (055)
+# T-4056: fw doctor misparses interpreter-prefixed hook commands (python3 "$CLAUDE_PROJECT_DIR/scripts/x.py"): reports 'script not found: python3/bash' and a broken hook path (ring20)
 
 ## Context
 
@@ -88,11 +96,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `lib/sidecar/receiver.py` writes each delivery through its own temp file (unique per write: pid + random suffix, same directory), so concurrent deliveries of one `client_msg_id` never share a temp path.
-- [x] If the final rename fails or loses the race, the receiver re-checks `messages/<id>.json`: present with the same content digest → success (and the ready flag is ensured); different digest → the existing "conflict" answer. A delivery whose message is stored is never answered with HTTP 400.
-- [x] No temp file is left behind on any path (success, failure, lost race).
-- [x] Regression test (pytest, `tests/unit/t4059_sidecar_receiver_concurrent_delivery_test.py`): N threads/processes deliver the same envelope at once → all succeed, exactly one message file + one ready flag, no `.tmp` left; a different-content reuse of the id still returns conflict. The concurrent test fails on the pre-fix code (run it enough times, or force the interleaving with a patched `os.replace`, so the pre-fix failure is deterministic).
-- [x] Existing sidecar receiver/inbox tests stay green (`tests/unit/*sidecar*`).
+- [x] Both doctor hook checks — "Hook path validation" (`bin/fw` ~2085) and "Hook config" (`bin/fw` ~3400) — treat a leading interpreter word (`python3`, `python`, `bash`, `sh`, `node`, `env …`) as the interpreter and validate the script argument after it, with quotes stripped and `$CLAUDE_PROJECT_DIR` / `${CLAUDE_PROJECT_DIR}` expanded to the project root.
+- [x] A hook `python3 "$CLAUDE_PROJECT_DIR/scripts/x.py"` whose script exists passes both checks; the same hook with the script missing FAILs and names the missing script path (not "python3"). Existing hook shapes (`fw hook …`, `.agentic-framework/bin/fw hook …`, absolute paths) keep their verdicts.
+- [x] Regression test `tests/unit/t4056_doctor_interpreter_hooks.bats`: a temp project whose `.claude/settings.json` has (a) an interpreter-prefixed hook with the script present → no broken count, no "script not found"; (b) script absent → FAIL naming the script; (c) a `fw hook` entry → unchanged. (a) fails on the pre-fix code.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -255,18 +261,12 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-python3 -m pytest tests/unit/t4059_sidecar_receiver_concurrent_delivery_test.py -q > .context/working/t4059-verify.out 2>&1 && grep -q passed .context/working/t4059-verify.out && ! grep -qE "[0-9]+ (failed|skipped|error)" .context/working/t4059-verify.out
+timeout 600 bats tests/unit/t4056_doctor_interpreter_hooks.bats > .context/working/t4056-verify.out 2>&1 && ! grep -q "^not ok" .context/working/t4056-verify.out
+test "$(grep -c '# skip' .context/working/t4056-verify.out)" -eq 0
+bash -n bin/fw
 bin/fw vendor self --check
 
 ## RCA
-
-**Symptom:** a sender retry of a message still in flight gets HTTP 400 ("failed to write message: No such file or directory") although the message is stored (seen by 055, msg daf85260).
-
-**Root cause:** `store_message` wrote every delivery through one fixed temp path, `<id>.json.tmp`. Two concurrent deliveries share it: the first `os.replace` moves the file into place, the second's commit finds no file and the error is returned as a write failure. Also, `os.replace` silently overwrites, so a lost race with different content would not be detected at all.
-
-**Why structurally allowed:** the store had only sequential tests (the idempotent-retry path was tested by calling twice, never concurrently), so no test drove two writers into the same window.
-
-**Prevention:** `tests/unit/t4059_sidecar_receiver_concurrent_delivery_test.py` races 8–16 threads through one barrier on the same id (repeated 40 rounds, and with differing bodies), asserting every identical delivery succeeds, exactly one message is stored, and no `.tmp` remains.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -281,6 +281,14 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw doctor` on ring20 reports `Hook path validation 1/47 broken` and `Hook config: script not found: python3` for hooks of the shape `python3 "$CLAUDE_PROJECT_DIR/scripts/x.py"`.
+
+**Root cause:** Both hook checks in `bin/fw` (`Hook path validation` and `Hook config`) took the first non-assignment word of the command as the script. For an interpreter-prefixed hook that word is `python3` (or `bash`, `node`, `env`), so the check looked for the interpreter file, not the script. Quotes were not stripped, and `$CLAUDE_PROJECT_DIR` (without braces) was not expanded.
+
+**Why structurally allowed:** The only fixture hooks in the doctor tests were direct-script or `fw hook` shapes; no test exercised an interpreter-prefixed command, so the first-word heuristic was never challenged. The doctor check is also advisory on the hook shape it misreads, so the false FAIL looked like a host problem.
+
+**Prevention:** `tests/unit/t4056_doctor_interpreter_hooks.bats` pins the interpreter case (present passes, missing FAILs naming the script) and the existing `fw hook` shape. Test 1 and 2 fail on the pre-fix code.
 
 ## Evolution
 
@@ -358,10 +366,35 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-11T17:17:41Z — task-created [task-create-agent]
+### 2026-10-11T13:57:06Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4059-sidecar-receiver-a-retried-delivery-raci.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4056-fw-doctor-misparses-interpreter-prefixed.md
 - **Context:** Initial task creation
 
-### 2026-10-11T17:19:29Z — status-update [task-update-agent]
+### 2026-10-11T17:18:51Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-11 — fix + pre-fix evidence [t4056-fix worker]
+- **Pre-fix (HEAD bin/fw):** `tests/unit/t4056_doctor_interpreter_hooks.bats` tests 1 and 2 FAIL (`not ok`), test 3 passes. Reproduces `script not found: python3` on the interpreter-prefixed hook.
+- **Post-fix:** 3/3 ok. Verification lines (bats gate, silent-skip gate, `bash -n bin/fw`) pass.
+- **Related suites:** `t3226_doctor_direct_script_claude_project_dir.bats` 3/3 ok. `doctor_hook_counters.bats` tests 2–4 FAIL on HEAD as well (pre-existing, not caused by this change; not investigated here).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-735ae527
+- **Timestamp:** 2026-10-11T17:43:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — A hook `python3 "$CLAUDE_PROJECT_DIR/scripts/x.py"` whose script exists passes both checks; the same hook with the script missing FAILs and names the missing script path (not "python3"). Existing hook
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=CLAUDE_PROJECT_DIR/scripts/x.py in: A hook `python3 "$CLAUDE_PROJECT_DIR/scripts/x.py"` whose script exists passes both checks; the same hook with the script missing FAILs and names the `
+- **AC#3 (Agent)** — Regression test `tests/unit/t4056_doctor_interpreter_hooks.bats`: a temp project whose `.claude/settings.json` has (a) an interpreter-prefixed hook with the script present → no broken count, no "scrip
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/settings.json in: Regression test `tests/unit/t4056_doctor_interpreter_hooks.bats`: a temp project whose `.claude/settings.json` has (a) an interpreter-prefixed hook wi`
+
+### 2026-10-11T17:43:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

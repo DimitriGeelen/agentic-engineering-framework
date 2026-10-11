@@ -1,22 +1,24 @@
 ---
-id: T-4056
-name: "fw doctor misparses interpreter-prefixed hook commands (python3 \"$CLAUDE_PROJECT_DIR/scripts/x.py\"\
-  ): reports 'script not found: python3/bash' and a broken hook path (ring20)"
+id: T-4058
+name: "unit-suite.sh deletes every per-file output on exit, so a red test's failure
+  text is lost (audit names the file, never the assertion) (055 T-495)"
 description: >
-  ring20 reports fw doctor 'Hook path validation 1/47 broken' and 'Hook config: script
-  not found: python3/bash' for hooks of the shape python3 "$CLAUDE_PROJECT_DIR/scripts/x.py"
-  — the check takes the interpreter as the script path. Pre-existing (bin/fw unchanged
-  across their upgrade). Fix: skip a leading interpreter word (python3/bash/sh/node…)
-  and validate the script argument, so a real missing script still FAILs.
+  agents/audit/unit-suite.sh:102 trap 'rm -rf "$RESULTS"' EXIT removes every <leg>/<file>.out,
+  so the report and the pre-push audit name a red test file but the failing assertion
+  and its output are gone; an intermittent red (055: 6 of 8 nightly runs, never reproduced
+  by hand) cannot be diagnosed. 055's vendored patch: before the rm, copy the .out
+  of every file whose .meta rc != 0 to $REPORT_DIR/failures/<STARTED>/, keep the newest
+  14 run dirs, best effort, exit code unchanged; tested red/green/rotation. Also name
+  the kept path in the audit's Mitigation line.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, doctor, hooks]
-components: []
+horizon: null
+tags: [bug, audit, unit-suite]
+components: [agents/audit/audit.sh, agents/audit/unit-suite.sh]
 related_tasks: []
-origin: {kind: "peer", source: "proxmox-ring20-management", ref: "T-2311"}
+origin: {kind: "peer", source: "055-agentic-fleet-cockpit", ref: "T-495"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -43,9 +45,9 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "T-2311"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-11T13:57:06Z
-last_update: 2026-10-11T17:33:19Z
-date_finished:
+created: 2026-10-11T17:17:25Z
+last_update: 2026-10-11T17:45:34Z
+date_finished: 2026-10-11T17:45:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,18 +58,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-11T14:00:33Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=272,acs=4)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-11T14:01:15Z'
+  - ts: '2026-10-11T17:19:11Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -84,9 +76,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-11T17:30:47Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=289,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4056: fw doctor misparses interpreter-prefixed hook commands (python3 "$CLAUDE_PROJECT_DIR/scripts/x.py"): reports 'script not found: python3/bash' and a broken hook path (ring20)
+# T-4058: unit-suite.sh deletes every per-file output on exit, so a red test's failure text is lost (audit names the file, never the assertion) (055 T-495)
 
 ## Context
 
@@ -96,9 +98,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Both doctor hook checks — "Hook path validation" (`bin/fw` ~2085) and "Hook config" (`bin/fw` ~3400) — treat a leading interpreter word (`python3`, `python`, `bash`, `sh`, `node`, `env …`) as the interpreter and validate the script argument after it, with quotes stripped and `$CLAUDE_PROJECT_DIR` / `${CLAUDE_PROJECT_DIR}` expanded to the project root.
-- [x] A hook `python3 "$CLAUDE_PROJECT_DIR/scripts/x.py"` whose script exists passes both checks; the same hook with the script missing FAILs and names the missing script path (not "python3"). Existing hook shapes (`fw hook …`, `.agentic-framework/bin/fw hook …`, absolute paths) keep their verdicts.
-- [x] Regression test `tests/unit/t4056_doctor_interpreter_hooks.bats`: a temp project whose `.claude/settings.json` has (a) an interpreter-prefixed hook with the script present → no broken count, no "script not found"; (b) script absent → FAIL naming the script; (c) a `fw hook` entry → unchanged. (a) fails on the pre-fix code.
+- [x] Before `agents/audit/unit-suite.sh` removes `$RESULTS` on exit, it copies the `.out` (and `.meta`) of every file whose recorded rc is non-zero to `$REPORT_DIR/failures/<run STARTED stamp>/<leg>/`, keeps only the newest 14 run directories, is best effort (a copy failure never changes the suite's exit code or report), and copies nothing on an all-green run.
+- [x] The unit-suite report (LATEST.yaml or its run record) names the kept failures directory for that run, and the audit's unit-suite FAIL/WARN Mitigation line names it, so a red test points at its own failure text.
+- [x] Regression test `tests/unit/t4058_unit_suite_keeps_failures.bats` with a tiny fixture suite (one passing, one failing bats file): the failing file's output (its `not ok` line and assertion text) is kept under failures/<run>/; the passing one is not; an all-green run keeps nothing; 17 pre-existing run dirs are rotated down to 14; the suite's exit code equals the pre-fix exit code. The keep test fails on the pre-fix code.
+- [x] `.context/audits/unit-suite/failures/` is gitignored (failure output can hold host detail, like runme logs).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -261,12 +264,20 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-timeout 600 bats tests/unit/t4056_doctor_interpreter_hooks.bats > .context/working/t4056-verify.out 2>&1 && ! grep -q "^not ok" .context/working/t4056-verify.out
-test "$(grep -c '# skip' .context/working/t4056-verify.out)" -eq 0
-bash -n bin/fw
+timeout 900 bats tests/unit/t4058_unit_suite_keeps_failures.bats > .context/working/t4058-verify.out 2>&1 && ! grep -q "^not ok" .context/working/t4058-verify.out
+test "$(grep -c '# skip' .context/working/t4058-verify.out)" -eq 0
+bash -n agents/audit/unit-suite.sh
 bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** A nightly unit-suite run went red (055: 6 of 8 nightlies) and the audit named the red test file, but not the failing assertion or its output. The intermittent red could not be reproduced by hand, so it could not be diagnosed from the report.
+
+**Root cause:** `agents/audit/unit-suite.sh` ran `trap 'rm -rf "$RESULTS"' EXIT`, and `$RESULTS` held each file's `.out` (the only copy of the tool output). The report recorded per-file rc and parsed `not ok` lines, but the raw output was deleted on every exit, red or green.
+
+**Why structurally allowed:** The runner was built to produce a verdict report (T-3302, T-3602), and nothing asserted that a red verdict was reproducible from its artefacts. The report's tests covered the verdict fields and the audit branch, not whether the evidence behind a red survived the run.
+
+**Prevention:** `_keep_failures` in `_finish` copies every non-zero-rc file's `.out`/`.meta` to `failures/<STARTED>/<leg>/` before the EXIT trap runs, keeps the newest 14 run dirs, and the report names the kept dir (`failures_dir`), which the audit's red-path Mitigation line echoes. `tests/unit/t4058_unit_suite_keeps_failures.bats` pins the keep, the all-green no-op, rotation, and the unchanged exit code; it fails on the HEAD runner (4 of 5 tests red pre-fix).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -281,14 +292,6 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** `fw doctor` on ring20 reports `Hook path validation 1/47 broken` and `Hook config: script not found: python3` for hooks of the shape `python3 "$CLAUDE_PROJECT_DIR/scripts/x.py"`.
-
-**Root cause:** Both hook checks in `bin/fw` (`Hook path validation` and `Hook config`) took the first non-assignment word of the command as the script. For an interpreter-prefixed hook that word is `python3` (or `bash`, `node`, `env`), so the check looked for the interpreter file, not the script. Quotes were not stripped, and `$CLAUDE_PROJECT_DIR` (without braces) was not expanded.
-
-**Why structurally allowed:** The only fixture hooks in the doctor tests were direct-script or `fw hook` shapes; no test exercised an interpreter-prefixed command, so the first-word heuristic was never challenged. The doctor check is also advisory on the hook shape it misreads, so the false FAIL looked like a host problem.
-
-**Prevention:** `tests/unit/t4056_doctor_interpreter_hooks.bats` pins the interpreter case (present passes, missing FAILs naming the script) and the existing `fw hook` shape. Test 1 and 2 fail on the pre-fix code.
 
 ## Evolution
 
@@ -366,16 +369,22 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-11T13:57:06Z — task-created [task-create-agent]
+### 2026-10-11T17:17:25Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4056-fw-doctor-misparses-interpreter-prefixed.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4058-unit-suitesh-deletes-every-per-file-outp.md
 - **Context:** Initial task creation
 
-### 2026-10-11T17:18:51Z — status-update [task-update-agent]
+### 2026-10-11T17:19:10Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
 
-### 2026-10-11 — fix + pre-fix evidence [t4056-fix worker]
-- **Pre-fix (HEAD bin/fw):** `tests/unit/t4056_doctor_interpreter_hooks.bats` tests 1 and 2 FAIL (`not ok`), test 3 passes. Reproduces `script not found: python3` on the interpreter-prefixed hook.
-- **Post-fix:** 3/3 ok. Verification lines (bats gate, silent-skip gate, `bash -n bin/fw`) pass.
-- **Related suites:** `t3226_doctor_direct_script_claude_project_dir.bats` 3/3 ok. `doctor_hook_counters.bats` tests 2–4 FAIL on HEAD as well (pre-existing, not caused by this change; not investigated here).
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-719034b3
+- **Timestamp:** 2026-10-11T17:45:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-11T17:45:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

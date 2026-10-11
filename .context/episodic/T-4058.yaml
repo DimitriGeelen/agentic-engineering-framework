@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4058: unit-suite.sh deletes every per-file output on exit, so a red test's failure text is lost (audit names the file, never the assertion) (055 T-495)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-11T17:46:08Z
+# ============================================================================
+
+task_id: T-4058
+task_name: "unit-suite.sh deletes every per-file output on exit, so a red test's failure text is lost (audit names the file, never the assertion) (055 T-495)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-11T17:17:25Z
+completed: 2026-10-11T17:45:34Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-11T19:27:55+02:00
+last_commit: 2026-10-11T19:28:12+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  unit-suite keeps red files' output before the EXIT trap deletes it (failures/<run>/, newest 14, report names it, audit Mitigation echoes it); regression test pins keep/no-op/rotation/exit-code. vendor sync — unit-suite failure keep + audit Mitigation (own files only)
+
+# Key outcomes
+outcomes:
+  - 'Before `agents/audit/unit-suite.sh` removes `$RESULTS` on exit, it copies the `.out` (and `.meta`) of every file whose recorded rc is non-zero to `$REPORT_DIR/failures/<run STARTED stamp>/<leg>/`, keeps only the newest 14 run directories, is best effort (a copy failure never changes the suite''s exit code or report), and copies nothing on an all-green run.'
+  - 'The unit-suite report (LATEST.yaml or its run record) names the kept failures directory for that run, and the audit''s unit-suite FAIL/WARN Mitigation line names it, so a red test points at its own failure text.'
+  - 'Regression test `tests/unit/t4058_unit_suite_keeps_failures.bats` with a tiny fixture suite (one passing, one failing bats file): the failing file''s output (its `not ok` line and assertion text) is kept under failures/<run>/; the passing one is not; an all-green run keeps nothing; 17 pre-existing run dirs are rotated down to 14; the suite''s exit code equals the pre-fix exit code. The keep test fails on the pre-fix code.'
+  - '`.context/audits/unit-suite/failures/` is gitignored (failure output can hold host detail, like runme logs).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/audit/unit-suite.sh'
+  - 'agents/audit/audit.sh'
+  - 'agents/audit/unit-suite.sh'
+  - '.gitignore'
+  - '.tasks/active/T-4058-unit-suitesh-deletes-every-per-file-outp.md'
+  - 'tests/unit/t4058_unit_suite_keeps_failures.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-11T19:27:55'
+    action: 'T-4058: unit-suite keeps red files'' output before the EXIT trap deletes it (failures/<run>/, newest 14, report names it, audit Mitigation echoes it); regression test pins keep/no-op/rotation/exit-code'
+  - time: '2026-10-11T19:28:12'
+    action: 'T-4058: vendor sync — unit-suite failure keep + audit Mitigation (own files only)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 28 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, audit, unit-suite]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 28
+  commits: 2
+  files_changed: 7
+  lines_added: 219
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4058-unit-suitesh-deletes-every-per-file-outp.md
+generated_by: context-agent-hybrid

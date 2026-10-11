@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4056: fw doctor misparses interpreter-prefixed hook commands (python3 \"$CLAUDE_PROJECT_DIR/scripts/x.py\"\ ): reports 'script not found: python3/bash' and a broken hook path (ring20)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-11T17:44:09Z
+# ============================================================================
+
+task_id: T-4056
+task_name: "fw doctor misparses interpreter-prefixed hook commands (python3 \"$CLAUDE_PROJECT_DIR/scripts/x.py\"\ ): reports 'script not found: python3/bash' and a broken hook path (ring20)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-11T13:57:06Z
+completed: 2026-10-11T17:43:07Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-11T19:32:58+02:00
+last_commit: 2026-10-11T19:33:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  doctor hook checks read the script after an interpreter (python3/bash/env). vendor sync of bin/fw doctor hook-check fix
+
+# Key outcomes
+outcomes:
+  - 'Both doctor hook checks — "Hook path validation" (`bin/fw` ~2085) and "Hook config" (`bin/fw` ~3400) — treat a leading interpreter word (`python3`, `python`, `bash`, `sh`, `node`, `env …`) as the interpreter and validate the script argument after it, with quotes stripped and `$CLAUDE_PROJECT_DIR` / `${CLAUDE_PROJECT_DIR}` expanded to the project root.'
+  - 'A hook `python3 "$CLAUDE_PROJECT_DIR/scripts/x.py"` whose script exists passes both checks; the same hook with the script missing FAILs and names the missing script path (not "python3"). Existing hook shapes (`fw hook …`, `.agentic-framework/bin/fw hook …`, absolute paths) keep their verdicts.'
+  - 'Regression test `tests/unit/t4056_doctor_interpreter_hooks.bats`: a temp project whose `.claude/settings.json` has (a) an interpreter-prefixed hook with the script present → no broken count, no "script not found"; (b) script absent → FAIL naming the script; (c) a `fw hook` entry → unchanged. (a) fails on the pre-fix code.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'vendor sync of bin/fw doctor hook-check fix'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.tasks/active/T-4056-fw-doctor-misparses-interpreter-prefixed.md'
+  - 'tests/unit/t4056_doctor_interpreter_hooks.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-11T19:32:58'
+    action: 'T-4056: doctor hook checks read the script after an interpreter (python3/bash/env)'
+  - time: '2026-10-11T19:33:19'
+    action: 'T-4056: vendor sync of bin/fw doctor hook-check fix'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 226 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, doctor, hooks]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 226
+  commits: 2
+  files_changed: 4
+  lines_added: 142
+  lines_removed: 25
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4056-fw-doctor-misparses-interpreter-prefixed.md
+generated_by: context-agent-hybrid
