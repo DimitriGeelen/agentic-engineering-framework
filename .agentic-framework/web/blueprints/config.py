@@ -34,6 +34,7 @@ SETTINGS = [
     ("KEYLOCK_TIMEOUT", "300", "Per-key lock stale cleanup timeout in seconds"),
     ("TERMLINK_WORKER_TIMEOUT", "600", "TermLink worker execution timeout in seconds"),
     ("TERMLINK_MAX_WORKERS", "5", "Concurrent fw termlink dispatch workers per project (T-3910). Raise situationally, on the operator's say-so: FW_TERMLINK_MAX_WORKERS=N for one run, fw config set TERMLINK_MAX_WORKERS N to keep it"),
+    ("MESSAGING_TOOLKIT", "0", "Install/update the cross-host messaging toolkit (9 slash commands + 12 scripts, TermLink) on fw upgrade. Opt-in; derived once from existing files (T-4042). 1=install, 0=skip"),
     ("HANDOVER_DEDUP_COOLDOWN", "300", "Seconds between duplicate handover detection"),
     ("INCEPTION_COMMIT_LIMIT", "2", "Max exploration commits before inception decision gate"),
     ("CONSUMER_SCAN_DIRS", "/opt", "Colon-separated directories to scan for consumer projects"),
