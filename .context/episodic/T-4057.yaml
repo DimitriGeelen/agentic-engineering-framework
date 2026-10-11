@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4057: t4055_version_derivation.bats has three inert '! cmd' assertions (dead-negation lint FAIL blocks push)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-11T16:34:17Z
+# ============================================================================
+
+task_id: T-4057
+task_name: "t4055_version_derivation.bats has three inert '! cmd' assertions (dead-negation lint FAIL blocks push)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-11T16:28:47Z
+completed: 2026-10-11T16:33:57Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-11T18:33:53+02:00
+last_commit: 2026-10-11T18:33:53+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t4055 comparison assertions use if/false instead of inert mid-block '! cmd' (L-628); mutation check bites; dead-negation lint clean
+
+# Key outcomes
+outcomes:
+  - 'The three non-final `! cmd` lines in `tests/unit/t4055_version_derivation.bats` (39, 40, 48) are rewritten as `if cmd; then false; fi`, so each ordering is actually asserted.'
+  - 'Each rewritten assertion bites: with the comparator mutated to return the opposite answer (in a temp copy, not the source), the test fails. (2026-10-11: scratch copy with both comparators returning 0 → both comparison tests `not ok`.)'
+  - '`tools/bats-dead-negation-lint.py` reports nothing for the file and `bin/fw test invariants` has no red invariant; the T-4055 test still passes 6/6.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4057-t4055versionderivationbats-has-three-ine.md'
+  - 'tests/unit/t4055_version_derivation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-11T18:33:53'
+    action: 'T-4057: t4055 comparison assertions use if/false instead of inert mid-block ''! cmd'' (L-628); mutation check bites; dead-negation lint clean'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 5 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, tests]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 5
+  commits: 1
+  files_changed: 2
+  lines_added: 377
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4057-t4055versionderivationbats-has-three-ine.md
+generated_by: context-agent-hybrid
