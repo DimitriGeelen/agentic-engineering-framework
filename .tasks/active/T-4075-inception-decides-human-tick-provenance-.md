@@ -1,8 +1,17 @@
 ---
 id: T-4075
-name: "Inception decide's Human-tick provenance row does not back the tick it records (T-4039 GO from Watchtower: row present, audit still FAILs as unprovenanced); 62 ledger rows carry task '?'"
+name: "Inception decide's Human-tick provenance row does not back the tick it records
+  (T-4039 GO from Watchtower: row present, audit still FAILs as unprovenanced); 62
+  ledger rows carry task '?'"
 description: >
-  2026-10-11: the operator recorded GO on T-4039 in Watchtower. lib/inception.sh tick_inception_decide_acs wrote a human-ac-ticks.jsonl row (task T-4039, via inception-decide, by root), yet python3 lib/human_ac_ticks.py audit FAILs 'T-4039 ticked … by AGENT … no Watchtower/operator record'. Separately, 62 ledger rows have task '?' (dates 2026-10-09..11, many at 01:31 — likely the nightly inception sweep), which can never back any tick. Find why the row does not match (digest key vs the committed criterion text?), why rows get '?', and add a test that a Watchtower/CLI decide → commit → audit passes. Blocks the push of the T-4039 close-out until the operator acks.
+  2026-10-11: the operator recorded GO on T-4039 in Watchtower. lib/inception.sh tick_inception_decide_acs
+  wrote a human-ac-ticks.jsonl row (task T-4039, via inception-decide, by root), yet
+  python3 lib/human_ac_ticks.py audit FAILs 'T-4039 ticked … by AGENT … no Watchtower/operator
+  record'. Separately, 62 ledger rows have task '?' (dates 2026-10-09..11, many at
+  01:31 — likely the nightly inception sweep), which can never back any tick. Find
+  why the row does not match (digest key vs the committed criterion text?), why rows
+  get '?', and add a test that a Watchtower/CLI decide → commit → audit passes. Blocks
+  the push of the T-4039 close-out until the operator acks.
 
 status: started-work
 workflow_type: build
@@ -39,8 +48,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T21:25:29Z
-last_update: 2026-10-11T21:26:30Z
-date_finished: null
+last_update: '2026-10-11T21:31:07Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +60,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-11T21:30:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=275,acs=6)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-11T21:31:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4075: Inception decide's Human-tick provenance row does not back the tick it records (T-4039 GO from Watchtower: row present, audit still FAILs as unprovenanced); 62 ledger rows carry task '?'
@@ -63,10 +100,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Root cause found and written in `## RCA`: why the T-4039 row (task T-4039, via inception-decide) does not back the committed tick (digest/key mismatch, consumption order, a later edit of the criterion text, or the tick landing in a different commit than expected), and where the 62 `task: "?"` rows come from.
-- [ ] `fw inception decide` (CLI and Watchtower `--from-watchtower`) and `fw inception sweep` write provenance rows that back the ticks they make: after decide → commit, `python3 lib/human_ac_ticks.py audit` reports nothing for that task. No row is ever written with task `?` (refuse or derive the id; never a placeholder).
-- [ ] Regression test (bats or pytest, temp git repo): an inception with the stock `[REVIEW] Review exploration findings…` Human criterion, decided GO through the same code path Watchtower uses, then committed → audit clean; the same for a sweep-ticked task; fails on the pre-fix code.
-- [ ] The detector's semantics are not weakened: an agent-made tick without a row still FAILs (control case in the test).
+- [x] Root cause found and written in `## RCA`: why the T-4039 row (task T-4039, via inception-decide) does not back the committed tick (digest/key mismatch, consumption order, a later edit of the criterion text, or the tick landing in a different commit than expected), and where the 62 `task: "?"` rows come from.
+- [x] `fw inception decide` (CLI and Watchtower `--from-watchtower`) and `fw inception sweep` write provenance rows that back the ticks they make: after decide → commit, `python3 lib/human_ac_ticks.py audit` reports nothing for that task. No row is ever written with task `?` (refuse or derive the id; never a placeholder).
+- [x] Regression test (bats or pytest, temp git repo): an inception with the stock `[REVIEW] Review exploration findings…` Human criterion, decided GO through the same code path Watchtower uses, then committed → audit clean; the same for a sweep-ticked task; fails on the pre-fix code.
+- [x] The detector's semantics are not weakened: an agent-made tick without a row still FAILs (control case in the test).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -232,6 +269,16 @@ date_finished: null
 bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** after the operator's GO on T-4039 in Watchtower, the ledger holds a row (task T-4039, via inception-decide, digest bd9d5a7a…) yet `human_ac_ticks.py audit` FAILs the tick in 84d6a042f; and 62 ledger rows carry task `?`.
+
+**Root cause (T-4039):** the row is correct and DOES back a tick — its digest equals the key of the committed criterion (verified against `git show 84d6a042f`). It was spent by an EARLIER tick: 7b6af93ac (Watchtower decide) ticked the box, consuming the one row (oldest-first). Then 3fef4b9f5 (an unrelated WM-001 commit by a worker) committed a stale copy of the task file that reverted the whole decision (box `[ ]`, status started-work, Decision block gone). 84d6a042f restored the decision by text and re-ticked the box: a second tick, one row, so the detector (one row licenses ONE tick) FAILs it. decide/sweep are not at fault; the tick sequence was tick, revert, re-tick. Operator ack of that second tick is the correct remedy (a second row).
+
+**Root cause ('?' rows):** `tick_inception_decide_acs` falls back to task id `'?'` when the file name has no `T-NNN`. The 62 rows (31 pairs, 2026-10-02..10-11, the two stock criterion titles) come from unit tests that run it on fixture files (`markered.md`, `regex.md`, `negative.md` in `inception_tick_marker.bats`) with PROJECT_ROOT unset, so the rows land in the REAL ledger. They are test pollution, not decisions. No tick can ever match them (digest is keyed on the id `?`); they are harmless dead budget. History is not rewritten; no action needed beyond this fix (the operator may prune them in a ledger-hygiene commit if wanted).
+
+**Why structurally allowed:** the ledger accepted any task string, and the fixtures shared the real PROJECT_ROOT. Nothing distinguished a placeholder row from a real one.
+
+**Prevention:** `record()`/`record_ticked()` raise on any id that is not `T-\d+`, and inception.sh passes '' (not '?') so the WARN path fires; `inception_tick_marker.bats` now isolates PROJECT_ROOT; `tests/unit/t4075_inception_decide_tick_provenance.bats` pins decide/sweep audit-clean, the revert+re-tick shape, the agent-tick control, and the no-'?' rule (test 5 fails on pre-fix code).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).

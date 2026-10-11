@@ -9,6 +9,7 @@ load ../test_helper
 
 setup() {
     TMP="$(mktemp -d)"
+    export PROJECT_ROOT="$TMP"  # T-4075: never record fixture ticks in the real ledger
     export FRAMEWORK_ROOT
     source "$FRAMEWORK_ROOT/lib/colors.sh"
     source "$FRAMEWORK_ROOT/lib/errors.sh"
