@@ -10,17 +10,17 @@ description: >
   for a decision, link to a task, and post structured status back at each stage until
   release
 
-status: work-completed
+status: started-work
 workflow_type: inception
 owner: human
-horizon: null
+horizon: now
 arc_id: mikeechovoid-requests
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-10T17:47:33Z
-last_update: 2026-10-11T17:16:18Z
-date_finished: 2026-10-11T17:16:18Z
+last_update: 2026-10-11T16:50:45Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -135,7 +135,7 @@ cost_estimate_proposed:
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [x] [REVIEW] Review exploration findings and approve go/no-go decision
+- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -201,13 +201,7 @@ All six design questions are answered (report §Operator answers), and the lifec
 
 ## Decision
 
-**Decision**: GO
-
-**Rationale**: Evidence: the framework has an outbound path only (lib/upstream.sh creates issues from field installs); nothing reads GitHub. The first outside user (MikeEchoVoid) filed 9 well-evidenced issues (#86-#94) on 2026-10-07 that sit unanswered 3 days later; #85 (reflectme-source) likewise. Recommend GO on a pipeline: scheduled ingest into a ledger, acknowledgement comment, agent classification, an operator decision surface (Watchtower /approvals + handover), task creation with a github_issue link, and status comments driven by task and release transitions. Open questions for the operator are in docs/reports/T-4039-inbound-github-issues.md.
-
-All six design questions are answered (report §Operator answers), and the lifecycle has been run by hand for batch 1, so the GO criteria are met on evidence, not on design alone.
-
-**Date**: 2026-10-11T17:16:17Z
+<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
 
 ## Updates
 
@@ -216,48 +210,3 @@ All six design questions are answered (report §Operator answers), and the lifec
 
 ### 2026-10-10T17:48:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-
-### 2026-10-11T17:16:17Z — inception-decision [inception-workflow]
-- **Action:** Recorded inception decision
-- **Decision:** GO
-- **Rationale:** Evidence: the framework has an outbound path only (lib/upstream.sh creates issues from field installs); nothing reads GitHub. The first outside user (MikeEchoVoid) filed 9 well-evidenced issues (#86-#94) on 2026-10-07 that sit unanswered 3 days later; #85 (reflectme-source) likewise. Recommend GO on a pipeline: scheduled ingest into a ledger, acknowledgement comment, agent classification, an operator decision surface (Watchtower /approvals + handover), task creation with a github_issue link, and status comments driven by task and release transitions. Open questions for the operator are in docs/reports/T-4039-inbound-github-issues.md.
-
-All six design questions are answered (report §Operator answers), and the lifecycle has been run by hand for batch 1, so the GO criteria are met on evidence, not on design alone.
-
-## Reviewer Verdict (v1.5)
-
-- **Scan ID:** R-f988ce4d
-- **Timestamp:** 2026-10-11T17:16:21Z
-- **Catalogue:** v1.3-seed
-- **Overall:** CONCERN
-- **Needs Human:** no
-- **Findings:** 5
-
-**Verification-level findings:**
-
-  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
-     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
-     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
-     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-  4. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
-     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-  5. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-5
-     - evidence: `IW-5 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
-
-## Recommendation Verdict (v1.0)
-
-- **Scan ID:** RC-94fdaf63
-- **Timestamp:** 2026-10-11T17:16:21Z
-- **Overall:** CONFIRMED
-- **Claims:** 2
-
-| Claim | Type | Status |
-|-------|------|--------|
-| `.context/issues/intake.jsonl` | file | ✓ pass |
-| `docs/reports/T-4039-inbound-github-issues.md` | file | ✓ pass |
-
-### 2026-10-11T17:16:18Z — status-update [task-update-agent]
-- **Change:** status: started-work → work-completed
-- **Reason:** Inception decision: GO
