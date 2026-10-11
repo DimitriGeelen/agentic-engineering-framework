@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-09T21:41:29Z
-last_update: 2026-10-09T21:42:42Z
+last_update: 2026-10-11T17:31:37Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -41,13 +41,25 @@ bvp_scores_proposed:
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-09T21:45:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=136,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4017: arc-001 pickup from dimitri-mint-dev: local retrieval stack refresh (telemetry, benchmark, model manifest, reranker health, per-project keyword index)
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+dimitri-mint-dev (the operator's workstation project on .107) runs arc-001 "Local retrieval stack refresh" and sent AEF a pickup on 2026-10-09 (conversation arc-001-pickup; docs in OneDev project dimitri-mint-dev-workstation: `docs/designs/arc-001-01-requirements.md` v1.3, `arc-001-02-design.md` v0.4, `arc-001-03-pickup-proposal.md`). Phases asked of AEF: P1a signed deciding records + GPU baseline/stop rule; P1 telemetry, reranker/search health, benchmark harness; P2 model manifest, item tags, per-project multilingual keyword index; P3 night runner for model switches; P6 AEF's own default model. Findings against AEF: query text stored against the operator's data rule; `fw recall` never reranked; silent embed failover; hourly reindex is daytime bulk and model-unaware; Ollama open on the LAN; Watchtower on 0.0.0.0 with an empty secret key; cloud fallback in `fw ask`.
+
+**Coordination (2026-10-11).** The pickup was filed here but never acknowledged for ~30 h (ring20 relayed the gap). The same migration snapshotted and deleted seven Qdrant collections on 192.168.10.201:6333 on 2026-10-10 12:54 UTC; ring20-dashboard asked who did it. The operator confirmed it was dimitri-mint-dev's planned Qdrant migration and asked AEF to coordinate. Sent: acknowledgement + request for the whole plan to dimitri-mint-dev (arc-001-pickup, msg a780d1f9), correction to ring20-dashboard (vectordb-kms-1011), task id to ring20. Next: read the three docs when dimitri-mint-dev shares them, answer each finding with a task id, agree the phase order.
 
 ## Assumptions
 
