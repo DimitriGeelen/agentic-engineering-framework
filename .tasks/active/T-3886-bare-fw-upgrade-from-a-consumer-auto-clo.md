@@ -7,7 +7,7 @@ description: >
   ring20-manager msg 92720ad9 (2026-10-05, v1.8.0 -> v1.8.2; their review docs/reports/T-2241-v182-post-upgrade-review.md).
   Finding 4. Related: T-3714 (shallow source), T-3874 (clone from inside consumer).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T14:49:42Z
-last_update: 2026-10-10T18:09:08Z
+last_update: 2026-10-11T08:38:00Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] The bare-from-consumer auto-clone in lib/upgrade.sh no longer uses `--depth=1`. It clones with full commit history (`--filter=blob:none`; plain full clone when the server ignores filters), so the origin guard finds the consumer's recorded version_sha and an ordinary behind-upstream consumer upgrades without a bypass (GitHub #87).
+- [ ] When the guard still refuses for an AUTO-clone, the remedy text does not point at the temporary clone directory (which the EXIT trap deletes). It names the recorded SHA and gives a runnable alternative: clone the framework yourself, run `<clone>/bin/fw upgrade <consumer>`.
+- [ ] A regression test drives the bare-from-consumer path against a `file://` upstream with more than one commit, where the consumer pin is an older commit. It is refused on the pre-fix code (shallow clone) and upgrades on the fixed code.
+- [ ] tests/unit/upgrade_fresh_machine_simulation.bats stays green (CLAUDE.md §Consumer-Facing Command Hygiene), as do the existing t3714 / T-2762 guard tests.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -356,3 +358,6 @@ bvp_scores_proposed:
 
 ### 2026-10-10T18:09:08Z — status-update [task-update-agent]
 - **Change:** horizon: next → now
+
+### 2026-10-11T08:38:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
