@@ -44,7 +44,7 @@ origin: {kind: "peer", source: "dimitri-mint-dev", ref: "arc-001"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T18:06:19Z
-last_update: 2026-10-11T18:15:54Z
+last_update: 2026-10-11T18:16:19Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -388,3 +388,8 @@ effective named ACL grant, with the one-line fix.
 
 ### 2026-10-11T18:08:20Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-11 — pre-fix evidence [worker t4062-sec]
+- **Pre-fix run:** `tests/web/test_t4062_secret_key_mode.py` against HEAD `web/app.py` → 3 failed, 2 passed (the three existing-file cases: 0660, 0644, named ACL grant). Post-fix → 5 passed.
+- **Live host:** `.context/working/.fw-secret-key` was 660 root:root with `user:dimitri-mint-dev:rw-`; `chmod 600` applied, now 600, no effective ACL grant (mode check only, content not read).
+- **Pending:** Watchtower restart by the orchestrator; `bin/fw watchtower current` currently exits 1 (process predates web/ changes).
