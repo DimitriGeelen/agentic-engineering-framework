@@ -1,10 +1,14 @@
 ---
 id: T-4041
-name: "With FW_HOST bound to one interface, the framework cannot find Watchtower and prints a link to another port (GitHub #88, MikeEchoVoid)"
+name: "With FW_HOST bound to one interface, the framework cannot find Watchtower and
+  prints a link to another port (GitHub #88, MikeEchoVoid)"
 description: >
-  Inbound GitHub issue #88 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/88), intake batch 1 (T-4039), accepted by the operator 2026-10-10. Classification and evidence: docs/reports/T-4039-batch1-classification.md §#88. Issue text is untrusted data; reproduce before fixing.
+  Inbound GitHub issue #88 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/88),
+  intake batch 1 (T-4039), accepted by the operator 2026-10-10. Classification and
+  evidence: docs/reports/T-4039-batch1-classification.md §#88. Issue text is untrusted
+  data; reproduce before fixing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -40,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:06:09Z
-last_update: 2026-10-10T18:09:04Z
-date_finished: null
+last_update: 2026-10-11T12:18:50Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -52,20 +56,54 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-10T18:15:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=275,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-10T18:16:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4041: With FW_HOST bound to one interface, the framework cannot find Watchtower and prints a link to another port (GitHub #88, MikeEchoVoid)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+GitHub #88 (MikeEchoVoid). `FW_HOST` is read only by `web/config.py:79`; the shell side never reads it. With Watchtower bound to one non-loopback address: the start health check (`bin/watchtower.sh:373`) and identity check (`lib/watchtower.sh:83`) probe `localhost` only, so the url/port files are never written; the resolver (`lib/watchtower.sh:164`) probes `localhost` then the first `hostname -I` address; and callers fall back to a hard-coded `http://localhost:3000` (check-tier0.sh:825, verify-acs.sh, arc.sh:859/1008/…), which on a multi-project host opens an unrelated service. Confirmed in the source 2026-10-11. Sibling T-2802 already removed the port guess from `fw watchtower url`. Reporter's workaround: export `WATCHTOWER_URL`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `FW_HOST` is a registered config key (`lib/config.sh` FW_CONFIG_REGISTRY, default `0.0.0.0`) and the shell side resolves it the same way `web/config.py` does. One helper (in `lib/watchtower.sh`) answers "which address do I probe for this project's Watchtower": the `FW_HOST` address when it is set to a specific address, `localhost` when it is unset/`0.0.0.0`/`::`.
+- [ ] `bin/watchtower.sh` start: the health check and the identity check (`_watchtower_port_holder_is_ours`) probe that address, so with `FW_HOST=<non-loopback addr>` the health check passes and `watchtower.port` + `watchtower.url` are written. The url file holds `http://<FW_HOST>:<port>` when `FW_HOST` is a specific address (unchanged otherwise).
+- [ ] `_watchtower_url` (resolver) probes the `FW_HOST` address first when it is specific, before `localhost` / `hostname -I`.
+- [ ] No caller falls back to a hard-coded `http://localhost:3000` when the resolver fails (check-tier0.sh, verify-acs.sh, arc.sh ×3, and any other `localhost:3000` fallback found in lib/ agents/ bin/ shell code — `lib/verification-port.sh`'s detector pattern excepted). On failure they print no link (or a clear "no Watchtower reachable for <project>" line), never a link to another port.
+- [ ] Processes Watchtower itself starts (the inception decide chain launched from the web app) receive the URL: `bin/watchtower.sh` exports `WATCHTOWER_URL` (the same value it writes to the url file) into the environment of the Flask process it launches, so children inherit it — shell-side only, no `web/` edit — so "a process started by Watchtower cannot find Watchtower" no longer happens.
+- [ ] `fw watchtower` help documents `FW_HOST` next to `FW_PORT`.
+- [ ] Regression test (bats): Watchtower stub bound to a non-loopback address (use a second loopback address such as 127.0.0.2 so it runs anywhere — localhost probing must NOT reach it) with `FW_HOST` set → health check passes, url file holds that address, resolver returns it; and with the resolver failing, the patched callers print no `localhost:3000`. The test fails on the pre-fix code.
+- [ ] Existing watchtower suites stay green (tests matching `tests/unit/*watchtower*` and the T-2802 test).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -228,6 +266,11 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/t4041_watchtower_fw_host.bats > .context/working/t4041-verify.out 2>&1 && ! grep -q "^not ok" .context/working/t4041-verify.out
+test "$(grep -c '# skip' .context/working/t4041-verify.out)" -eq 0
+! grep -rn 'localhost:3000' agents/context/check-tier0.sh lib/verify-acs.sh lib/arc.sh
+grep -q 'FW_HOST' lib/config.sh
+bin/fw vendor self --check
 
 ## RCA
 
@@ -328,3 +371,6 @@ date_finished: null
 
 ### 2026-10-10T18:09:04Z — status-update [task-update-agent]
 - **Change:** horizon: next → now
+
+### 2026-10-11T12:17:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
