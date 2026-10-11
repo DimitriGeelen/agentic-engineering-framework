@@ -7,7 +7,7 @@ description: >
   Peer report 2026-10-04 (010 T-3341 rehearsal or 832 T-1009); details in the name
   and on the sidecar thread.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T12:06:13Z
-last_update: 2026-10-10T19:04:30Z
+last_update: 2026-10-11T15:52:51Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,14 +87,15 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Peer report (010 H1). `is_commit_checkpoint_command` (`agents/context/lib/safe-commands.sh:1437`) lets a commit through the task gate with null focus (T-2054) or a partial-complete task (T-3179) — commits persist work already done. Its clause test `_fw_is_git_commit_clause` (`:1300`) matches only `^git commit`, so the framework's own documented, secret-scanned spellings `bin/fw git commit`, `fw git commit` and `.agentic-framework/bin/fw git commit` are refused at exactly the moments the allowance exists for (end of a task, critical budget). Reproduced 2026-10-11: `git commit` ADMIT; the three `fw` spellings refuse.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `_fw_is_git_commit_clause` also accepts `<fw> git commit` where `<fw>` is exactly `fw`, `bin/fw`, `./bin/fw`, `.agentic-framework/bin/fw`, `./.agentic-framework/bin/fw`, or an absolute path ending in `/bin/fw` or `/.agentic-framework/bin/fw`. Nothing else is newly admitted (`somebinary git commit`, `fw git push`, `fw gitcommit`).
+- [x] Every existing refusal still applies to the `fw` spellings: `--no-verify`/`-n`, write patterns, command substitution, chained unsafe clauses.
+- [x] `tests/unit/t3814_fw_git_commit_checkpoint.bats`: the four spellings admit; `fw git commit --no-verify`, `fw git commit -m x; rm -rf y`, `fw git commit -m "$(id)"`, `evil/fw-ish git commit`, `fw git push` refuse. The admit cases fail on the pre-fix code. `tests/unit/t3221_commit_exemption_clause.bats` stays green.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -254,6 +255,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t3814_fw_git_commit_checkpoint.bats > .context/working/t3814-verify.out 2>&1 && ! grep -q "^not ok" .context/working/t3814-verify.out
+test "$(grep -c '# skip' .context/working/t3814-verify.out)" -eq 0
+timeout 300 bats tests/unit/t3221_commit_exemption_clause.bats > .context/working/t3814-t3221.out 2>&1 && ! grep -q "^not ok" .context/working/t3814-t3221.out
+bin/fw vendor self --check
 
 ## RCA
 
@@ -270,6 +275,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** with null focus (after a close) or a partial-complete task, `git commit` was let through the task gate but `bin/fw git commit` / `fw git commit` / `.agentic-framework/bin/fw git commit` were refused (010 H1) — the documented spelling that runs the secret scan was the one blocked.
+
+**Root cause:** `_fw_is_git_commit_clause` (`agents/context/lib/safe-commands.sh`) recognised a commit only as a clause starting with `git commit`. T-3221 tightened the old substring match to a clause anchor (correctly), and in doing so dropped the `fw git commit` spelling the substring match had happened to admit.
+
+**Why structurally allowed:** T-3221's test matrix probed only the raw `git commit` spelling and the attacks around it; no test asserted the framework's own commit wrapper passes, so the regression was invisible until a peer hit it at a critical-budget checkpoint.
+
+**Prevention:** `tests/unit/t3814_fw_git_commit_checkpoint.bats` pins all documented spellings (admit) beside the refusals (no-verify, chained write, substitution, redirect) and a no-widening leg (look-alike launchers, `fw git push`). Residual, accepted: any absolute path ending `/bin/fw` is trusted as the launcher; creating such a file already needs a task under the Write gate, and the commit-msg hook still enforces P-002.
 
 ## Evolution
 
@@ -354,3 +367,6 @@ bvp_scores_proposed:
 
 ### 2026-10-10T19:04:30Z — status-update [task-update-agent]
 - **Change:** horizon: next → now
+
+### 2026-10-11T15:50:15Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

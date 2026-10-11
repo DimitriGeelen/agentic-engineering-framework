@@ -1302,6 +1302,11 @@ _fw_is_git_commit_clause() {
     seg="$(_fw_strip_quoted "$1")" || return 1
     seg="${seg#"${seg%%[![:space:]]*}"}"
     _fw_strip_env_prefixes "$seg"; seg="$_FW_ENV_STRIPPED"
+    # T-3814 (010 H1): the framework's own documented, secret-scanned spellings
+    # are a commit too. The launcher must be exactly `fw`, `[./]bin/fw`,
+    # `[./].agentic-framework/bin/fw`, or an absolute path ending in one of the
+    # last two — not any binary whose name ends in "fw".
+    [[ "$seg" =~ ^((\./)?(\.agentic-framework/)?bin/fw|fw|/([^[:space:]]+/)?(\.agentic-framework/)?bin/fw)[[:space:]]+git[[:space:]]+commit([[:space:]]|$) ]] && return 0
     [[ "$seg" =~ ^git[[:space:]]+commit([[:space:]]|$) ]]
 }
 
