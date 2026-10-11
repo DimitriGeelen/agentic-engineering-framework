@@ -427,7 +427,7 @@
         <p class="editable-desc" role="button" tabindex="0"
            onclick="startDescEdit('{{ task_id }}')"
            onkeydown="if(event.key==='Enter')startDescEdit('{{ task_id }}')"
-           title="Click to edit">{{ task.description }}</p>
+           title="Click to edit">{{ description_html | safe }}</p>
     </div>
     <div id="desc-edit" style="display:none;">
         <form hx-post="/api/task/{{ task_id }}/description" hx-target="#desc-result" hx-swap="innerHTML">
@@ -470,7 +470,7 @@
                        onchange="this.form.requestSubmit()"
                        style="margin:0;">
             </form>
-            <span class="{% if ac.checked %}ac-checked{% endif %}">{{ ac.text }}</span>
+            <span class="{% if ac.checked %}ac-checked{% endif %}">{{ ac.text_html | safe }}</span>
         </li>
         {% endfor %}
     </ul>
@@ -654,7 +654,7 @@
 {% if task_content %}
 <details>
     <summary><strong>Task Body</strong></summary>
-    <pre><code>{{ task_content }}</code></pre>
+    <pre><code>{{ task_body_html | safe }}</code></pre>
 </details>
 {% endif %}
 

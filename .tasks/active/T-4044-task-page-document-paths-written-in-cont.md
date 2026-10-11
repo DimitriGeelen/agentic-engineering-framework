@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:07:34Z
-last_update: 2026-10-11T14:14:44Z
+last_update: 2026-10-11T14:22:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,16 +96,16 @@ GitHub #91 (MikeEchoVoid). On `/tasks/T-XXX` a document path becomes a link only
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] On `/tasks/T-XXX`, a project file path written in the description, `## Context` or an `### Agent` criterion becomes a link with the same existence-gated rule `_auto_link_files` already applies to Human criteria (an existing, viewable file links to `/file/<path>`; a path to nothing stays text). Human-criterion linking is unchanged.
-- [ ] Nothing else in those sections changes meaning: code spans, fenced blocks and already-linked text are not double-linked, and HTML in task text stays escaped (no XSS through task content).
-- [ ] pytest `tests/web/test_t4044_task_page_doc_links.py` (Flask test client, fixture task citing an existing `docs/...md` in Context and in an Agent criterion, plus a missing path): both existing paths render as `href="/file/..."`, the missing one does not, and a `<script>` in Context stays escaped. Fails on the pre-fix code.
+- [x] On `/tasks/T-XXX`, a project file path written in the description, `## Context` or an `### Agent` criterion becomes a link with the same existence-gated rule `_auto_link_files` already applies to Human criteria (an existing, viewable file links to `/file/<path>`; a path to nothing stays text). Human-criterion linking is unchanged.
+- [x] Nothing else in those sections changes meaning: code spans, fenced blocks and already-linked text are not double-linked, and HTML in task text stays escaped (no XSS through task content).
+- [x] pytest `tests/web/test_t4044_task_page_doc_links.py` (Flask test client, fixture task citing an existing `docs/...md` in Context and in an Agent criterion, plus a missing path): both existing paths render as `href="/file/..."`, the missing one does not, and a `<script>` in Context stays escaped. Fails on the pre-fix code.
 - [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
 - [ ] [REVIEW] Document paths on a task page are clickable and the page still reads cleanly
   **Steps:**
-  1. Open `$(bin/fw watchtower url)/tasks/T-4044` in the browser (worker: replace with a real active task whose Context or Agent criterion cites a viewable document that is NOT a `docs/reports/T-XXX-*` artifact of that task, and name that document here)
-  2. Find that path in the Context / Agent criteria and click it
+  1. Open `$(bin/fw watchtower url)/tasks/T-1811` in the browser (active task T-1811; its `### Agent` criterion cites `docs/reports/triage-2026-05-13-review-queue.md`, which is not a T-1811 artifact)
+  2. Find `docs/reports/triage-2026-05-13-review-queue.md` in the Agent criterion that reads "Triage report at ..." and click it
   **Expected:** the path is a link, it opens the document; the rest of the section looks as before
   **If not:** screenshot the section
 
@@ -289,6 +289,14 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** On `/tasks/T-XXX`, a project file path written in the description, `## Context` or an `### Agent` criterion is plain text. The same path in a `### Human` criterion's Steps/Expected/If-not is a live `/file/` link (GitHub #91, MikeEchoVoid). Reporter's agent added "open this note" Human criteria only to carry links.
+
+**Root cause:** `_auto_link_files` is applied only in `_render_md_inline` / `_render_md_block`, which only the parsed Human criteria pass through. The description renders as bare `{{ task.description }}`, Agent criteria as bare `{{ ac.text }}`, and `## Context` only exists inside the raw Task Body `<pre>`, which had no link pass at all.
+
+**Why structurally allowed:** Linking is a per-call-site choice, not a property of the task surface. No test pinned "a path anywhere on the task page links when it exists", so the Human-only coverage looked complete. The existing tests asserted the Human link path only.
+
+**Prevention:** `tests/web/test_t4044_task_page_doc_links.py` pins linking for the description, Context and Agent criteria, a missing-path control, Human-link non-regression, and `<script>` escaping. The three positive cases fail on the pre-fix code (see Updates). The fix routes the three surfaces through the same `_auto_link_files` existence gate, so a future surface added to the task page has one shared rule to follow.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -312,6 +320,11 @@ bin/fw vendor self --check
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-10-11 — linking scope for the task page
+- **What changed:** The description and Agent criteria are shown as escaped text, so the shared `_auto_link_files` gate had no call site there. The Task Body `<pre>` was not linked at all. Linking now covers exactly those three surfaces, and the rest of the page is unchanged.
+- **Plan impact:** The reporter offered two options, linking in place or a `documents:` frontmatter list. The first was chosen, so no new field. The Human-criterion path is unchanged.
+- **Triggered:** none; the GitHub #91 issue is tracked by this task (`github_issue: 91`).
 
 ## Recommendation
 
@@ -375,3 +388,10 @@ bin/fw vendor self --check
 
 ### 2026-10-11T14:14:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-11 — build (TermLink worker t4044-links)
+- **Fix:** `web/blueprints/tasks.py` adds `_link_plain_text` (escape, then `_auto_link_files`) and `_link_task_body` (escape every line; link only inside `## Context` and `### Agent`). The description, Agent criterion text and Task Body are routed through them. `web/templates/task_detail.html` renders the three pre-built fields with `| safe`. `_auto_link_files` in `web/shared.py` is unchanged.
+- **Test:** `tests/web/test_t4044_task_page_doc_links.py`, 6 tests. Fixed code: 6 passed. Pre-fix (HEAD `tasks.py` and `task_detail.html` swapped in): 3 failed (Context, Agent criterion, description links), 3 passed (missing-path, Human-link control, `<script>` escaped).
+- **Related tests:** 295 passed across the task-page and linking tests (`tests/unit` and `tests/web` files matching the task/link helpers).
+- **Human criterion:** Steps now name active T-1811 and its `### Agent` citation of `docs/reports/triage-2026-05-13-review-queue.md`. Not ticked. Watchtower restart and `watchtower current` left to the orchestrator.
+- **Fixture note:** viewable files must sit under an allowlisted prefix (`docs/reports/` here), so `docs/*.md` alone is not a link target.

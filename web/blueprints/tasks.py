@@ -1,6 +1,7 @@
 """Tasks blueprint — task list, detail, status API."""
 
 import re as re_mod
+from html import escape as _html_escape
 from urllib.parse import urlencode
 from datetime import datetime, timezone
 
@@ -473,6 +474,33 @@ def _parse_ac_body(body):
     return steps, expected, if_not
 
 
+def _link_plain_text(text):
+    """T-4044: escape plain (non-Markdown) task text and link existing file paths.
+
+    Same existence-gated `_auto_link_files` rule the Human criteria get, applied
+    to text that is shown as-is (description, Agent criterion). Escaping first
+    keeps `<script>` and friends as text.
+    """
+    return _auto_link_files(_html_escape(text))
+
+
+def _link_task_body(body):
+    """T-4044: the raw Task Body with file paths linked in `## Context` and
+    `### Agent` only. Every line is escaped; other sections are not linked, so
+    the Verification and Human text stays exactly as it was."""
+    out = []
+    in_scope = False
+    for line in body.split("\n"):
+        heading = re_mod.match(r"^(#{2,3})\s+(.*?)\s*$", line)
+        if heading:
+            if len(heading.group(1)) == 2:
+                in_scope = heading.group(2) == "Context"
+            else:
+                in_scope = heading.group(2) == "Agent"
+        out.append(_link_plain_text(line) if in_scope else _html_escape(line))
+    return "\n".join(out)
+
+
 def _parse_acceptance_criteria(body_text):
     """Parse AC checkboxes with section, confidence, and body details.
 
@@ -851,6 +879,9 @@ def task_detail(task_id):
 
     # Parse AC checkboxes for interactive rendering
     ac_items = _parse_acceptance_criteria(task_content)
+    for ac in ac_items:  # T-4044: Agent criteria link file paths like Human ones do
+        if ac["section"] == "agent":
+            ac["text_html"] = _link_plain_text(ac["text"])
 
     # Find research artifacts (docs/reports/T-XXX-* and fw-agent-tXXX-*)
     artifacts = []
@@ -895,6 +926,8 @@ def task_detail(task_id):
         page_title=f"Task {task_id}",
         task=task_data,
         task_content=task_content,
+        task_body_html=_link_task_body(task_content),
+        description_html=_link_plain_text(str(task_data.get("description") or "")),
         episodic=episodic,
         task_id=task_id,
         status_options=status_options,
