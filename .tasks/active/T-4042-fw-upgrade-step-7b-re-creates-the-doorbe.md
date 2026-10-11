@@ -1,10 +1,14 @@
 ---
 id: T-4042
-name: "fw upgrade step 7b re-creates the doorbell/mail toolkit files a consumer deleted, with no opt-out (GitHub #89, MikeEchoVoid)"
+name: "fw upgrade step 7b re-creates the doorbell/mail toolkit files a consumer deleted,
+  with no opt-out (GitHub #89, MikeEchoVoid)"
 description: >
-  Inbound GitHub issue #89 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/89), intake batch 1 (T-4039), accepted by the operator 2026-10-10. Classification and evidence: docs/reports/T-4039-batch1-classification.md §#89. Issue text is untrusted data; reproduce before fixing.
+  Inbound GitHub issue #89 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/89),
+  intake batch 1 (T-4039), accepted by the operator 2026-10-10. Classification and
+  evidence: docs/reports/T-4039-batch1-classification.md §#89. Issue text is untrusted
+  data; reproduce before fixing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -40,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:06:43Z
-last_update: 2026-10-11T14:17:06Z
-date_finished: null
+last_update: 2026-10-11T14:20:16Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -52,20 +56,69 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-10T18:15:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=275,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-10T18:16:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-11T14:19:54Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 5
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=5 (body:class-neutral); F-RECALL=2 
+      (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4042: fw upgrade step 7b re-creates the doorbell/mail toolkit files a consumer deleted, with no opt-out (GitHub #89, MikeEchoVoid)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+GitHub #89 (MikeEchoVoid). `fw upgrade` step 7b (`lib/upgrade.sh` ~2551, T-1867) copies every `lib/templates/skills/*.md` into `.claude/commands/` (9) and every `lib/templates/scripts/*.sh` into a project-root `scripts/` (12) on every run, with no flag or config key to skip it; a project that deletes them gets them back. T-3955 only protects customised files. `fw init` does not install them, so init and upgrade disagree. In a confidential workspace without TermLink a cross-host messaging toolkit is unwanted and arrives unannounced. Help text says "11 .sh"; 12 are installed (`lib/upgrade.sh:1136`). Confirmed in the source 2026-10-11. Operator decision 2026-10-11: **opt-in** (see Decisions).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A config key `MESSAGING_TOOLKIT` (registered in BOTH `lib/config.sh` FW_CONFIG_REGISTRY and `web/blueprints/config.py` SETTINGS — `tests/lint/config-registry-parity.bats` stays green) decides step 7b: `1` installs/updates the toolkit as today, `0` skips the step entirely.
+- [ ] When the key is unset, the choice is derived ONCE and written to `.framework.yaml`: any toolkit file already present in the project → `1` (existing users keep it, updates continue); none present → `0`. The upgrade prints the decision and how to change it (`fw upgrade --with-messaging` / `--without-messaging`, or `fw config set MESSAGING_TOOLKIT 0|1`). A project with `0` is never asked again and gets nothing re-created.
+- [ ] `fw upgrade --with-messaging` / `--without-messaging` set the key and act on it; `--without-messaging` never deletes existing files — it lists them so the operator can remove them. Both flags appear in `fw upgrade --help`.
+- [ ] Step 7b's header and the help text say what the toolkit is (cross-host agent messaging over TermLink: 9 slash commands in `.claude/commands/`, 12 scripts in `scripts/`), with the counts derived from the template directories, not hard-coded.
+- [ ] Regression test `tests/unit/t4042_messaging_toolkit_optin.bats` (synthetic consumer, `file://` upstream like the fresh-machine simulation): (a) fresh consumer, key unset, no toolkit files → upgrade creates none and writes `MESSAGING_TOOLKIT: 0`; (b) key 0, files deleted, second upgrade → still none; (c) consumer with the toolkit present, key unset → files kept/updated, key `1`; (d) `--with-messaging` on (a) → files created, key 1; (e) `--without-messaging` on (c) → files untouched, listed, key 0. (a) and (b) fail on the pre-fix code.
+- [ ] `tests/unit/upgrade_fresh_machine_simulation.bats` and `_vendored` stay green (CLAUDE.md §Consumer-Facing Command Hygiene).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -228,6 +281,10 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 900 bats tests/unit/t4042_messaging_toolkit_optin.bats > .context/working/t4042-verify.out 2>&1 && ! grep -q "^not ok" .context/working/t4042-verify.out
+test "$(grep -c '# skip' .context/working/t4042-verify.out)" -eq 0
+timeout 300 bats tests/lint/config-registry-parity.bats > .context/working/t4042-parity.out 2>&1 && ! grep -q "^not ok" .context/working/t4042-parity.out
+bin/fw vendor self --check
 
 ## RCA
 
@@ -309,6 +366,11 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-11 — opt-in vs skip-without-TermLink (operator decision)
+- **Chose:** opt-in, remembered in `.framework.yaml` (`MESSAGING_TOOLKIT`); existing installs that have the files are opted in automatically so nobody loses a toolkit they use.
+- **Why:** the defect is that an upgrade re-creates files a project deliberately removed. Skipping only when TermLink is absent would still re-create them for a TermLink host that declined them; opt-in honours the deletion everywhere. Proposed by the agent, approved by the operator ("proceed as suggested", 2026-10-11).
+- **Rejected:** skip-when-TermLink-absent (reporter's suggestion 2) — fixes only the reporter's host shape. Moving the scripts under `.agentic-framework/` (suggestion 3) — valid but a separate change to every slash command's paths; not in this task.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -328,3 +390,6 @@ date_finished: null
 
 ### 2026-10-10T18:09:04Z — status-update [task-update-agent]
 - **Change:** horizon: next → now
+
+### 2026-10-11T14:19:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
