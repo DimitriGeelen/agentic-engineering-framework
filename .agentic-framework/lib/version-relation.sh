@@ -122,6 +122,13 @@ fw_version_relation() {
             # its absence proves nothing about origin. Still refuse (the commit
             # is unverifiable either way), but name the real cause and remedy —
             # "foreign"/"stale shim" sent 055 and 832 after the wrong fault.
+            if fw_source_is_shallow "$froot" && [ "${FW_AUTOCLONE_SOURCE:-0}" = 1 ]; then
+                # T-3886 (#87): the shallow source is the bare-from-consumer auto-clone.
+                # Its path is a temp dir the caller deletes, so the reason names no
+                # command; the caller prints the runnable remedy (lib/upgrade.sh).
+                _vr_set foreign-source "consumer recorded version_sha ${csha:0:12}, which this auto-cloned SHALLOW copy cannot see — its history is truncated, so origin is unverified, not disproved"
+                return 0
+            fi
             if fw_source_is_shallow "$froot"; then
                 _vr_set foreign-source "consumer recorded version_sha ${csha:0:12}, which this SHALLOW clone (${froot}) cannot see — its history is truncated, so origin is unverified, not disproved. Run: git -C ${froot} fetch --unshallow   (or clone without --depth), then retry"
                 return 0

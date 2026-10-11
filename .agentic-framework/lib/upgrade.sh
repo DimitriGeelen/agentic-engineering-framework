@@ -1310,7 +1310,19 @@ do_upgrade() {
         fi
 
         echo -n "  Cloning... "
-        if ! git clone --depth=1 --quiet "$_upstream_url" "$_tmpd/fw" 2>"$_tmpd/clone.err"; then
+        # T-3886 (GitHub #87): full history, not --depth=1. The origin guard below
+        # must find the consumer's recorded version_sha, and a shallow clone cannot
+        # see it. --filter=blob:none keeps the clone cheap; a server that ignores
+        # filters falls back to a full clone (git warns, does not fail).
+        # Exception: a LOCAL shallow source. Under file:// the filter is ignored and
+        # git 2.43 then never completes the clone of a shallow repo (measured: 60 s
+        # timeout, endless "filtering not recognized" warnings). Plain clone instead;
+        # the guard then refuses with the runnable remedy, which is the right outcome.
+        local _clone_filter=(--filter=blob:none) _clone_src="${_upstream_url#file://}"
+        if [ -d "$_clone_src" ] && [ "$(git -C "$_clone_src" rev-parse --is-shallow-repository 2>/dev/null)" = "true" ]; then
+            _clone_filter=()
+        fi
+        if ! git clone ${_clone_filter[@]+"${_clone_filter[@]}"} --quiet "$_upstream_url" "$_tmpd/fw" 2>"$_tmpd/clone.err"; then
             echo "FAILED"
             echo -e "${RED}ERROR: git clone failed${NC}" >&2
             sed 's/^/    /' "$_tmpd/clone.err" >&2 2>/dev/null || true
@@ -1334,7 +1346,11 @@ do_upgrade() {
         # makes resolve_framework honour a caller-supplied FRAMEWORK_ROOT.
         # Origin: /opt/termlink ran fw upgrade twice in one hour, fork-bombed both
         # times. Forensic evidence + recipe via framework.upgrade.report TermLink topic.
+        # T-3886: FW_AUTOCLONE_SOURCE tells the child's origin guard that its
+        # FRAMEWORK_ROOT is this temp dir (deleted on exit), so any remedy it prints
+        # must not name that path. FW_AUTOCLONE_UPSTREAM is the URL to re-clone from.
         env FRAMEWORK_ROOT="$_tmpd/fw" PROJECT_ROOT="$target_dir" \
+            FW_AUTOCLONE_SOURCE=1 FW_AUTOCLONE_UPSTREAM="$_upstream_url" \
             "$_tmpd/fw/bin/fw" "${_replay_args[@]}"
         local _rc=$?
         # T-2232 self-healing: if the upstream resolved via the vendored
@@ -1464,7 +1480,13 @@ do_upgrade() {
                 # put in front of the reader. Naming the targeted bypass is L-399
                 # discipline — a block message that offers only a mechanism aimed at
                 # another failure is how agents end up routing around the gate.
-                if fw_source_is_shallow "$FRAMEWORK_ROOT"; then
+                if fw_source_is_shallow "$FRAMEWORK_ROOT" && [ "${FW_AUTOCLONE_SOURCE:-0}" = 1 ]; then
+                    # T-3886 (#87): the shallow source is the auto-clone, which is deleted
+                    # on exit, so `fetch --unshallow` on it is not a remedy. Name the
+                    # recorded SHA and a copy the operator can keep and run.
+                    echo -e "          Remedy: clone the framework without --depth, then run that copy against this consumer:" >&2
+                    echo -e "            ${BOLD}git clone ${FW_AUTOCLONE_UPSTREAM:-<upstream-url>} framework-full && framework-full/bin/fw upgrade $target_dir${NC}" >&2
+                elif fw_source_is_shallow "$FRAMEWORK_ROOT"; then
                     # T-3714: truncated history, not a foreign one — one command fixes it.
                     echo -e "          Remedy: ${BOLD}git -C $FRAMEWORK_ROOT fetch --unshallow${NC}, then re-run fw upgrade." >&2
                 else
