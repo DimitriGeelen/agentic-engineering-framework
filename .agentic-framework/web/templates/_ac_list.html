@@ -1,0 +1,77 @@
+{# T-4046: tickable acceptance criteria for pages other than /tasks/<id> (the inception page).
+   Same toggle-ac form as task_detail.html — same endpoint, same CSRF, no second tick path.
+   Needs: ac_items (web.blueprints.tasks._parse_acceptance_criteria), task_id. #}
+<style>
+    .ac-list { list-style: none; padding-left: 0; }
+    .ac-list li { display: flex; align-items: flex-start; gap: 0.5rem; padding: 0.25rem 0; font-size: 0.9rem; }
+    .ac-list li input[type="checkbox"] { margin-top: 0.2rem; cursor: pointer; }
+    .ac-checked { text-decoration: line-through; color: var(--pico-muted-color); }
+    .ac-section-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
+        color: var(--pico-muted-color); margin: 0.75rem 0 0.25rem; padding-bottom: 0.15rem;
+        border-bottom: 1px solid var(--pico-muted-border-color); }
+    .human-ac-card { border: 1px solid var(--pico-muted-border-color); border-radius: var(--pico-border-radius);
+        padding: 0.75rem; margin: 0.5rem 0; background: var(--pico-card-background-color); }
+    .human-ac-card summary { display: flex; align-items: center; gap: 0.5rem; cursor: pointer; font-size: 0.9rem; }
+    .human-ac-card summary::-webkit-details-marker { display: none; }
+    .human-ac-card summary::before { content: "▸ "; font-size: 0.7rem; }
+    .human-ac-card[open] summary::before { content: "▾ "; }
+    .confidence-badge { font-size: 0.65rem; font-weight: 700; text-transform: uppercase; padding: 0.1rem 0.35rem;
+        border-radius: 3px; white-space: nowrap; }
+    .badge-review { background: #f59e0b22; color: #b45309; border: 1px solid #f59e0b55; }
+    .badge-rubber-stamp { background: #10b98122; color: #047857; border: 1px solid #10b98155; }
+    .human-ac-body { margin-top: 0.5rem; padding-left: 0.5rem; font-size: 0.85rem;
+        border-left: 2px solid var(--pico-muted-border-color); }
+    .human-ac-body h6 { font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.03em;
+        color: var(--pico-muted-color); margin: 0.5rem 0 0.15rem; }
+    .human-ac-body h6:first-child { margin-top: 0; }
+    .human-ac-body ol, .human-ac-body ul { margin: 0.15rem 0; padding-left: 1.25rem; font-size: 0.85rem; }
+    .human-ac-body p { margin: 0.15rem 0; }
+</style>
+{% macro tick(ac) %}
+<form hx-post="/api/task/{{ task_id }}/toggle-ac" hx-target="find input[type=checkbox]" hx-swap="outerHTML"
+      class="inline-reset" onclick="event.stopPropagation();">
+    <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
+    <input type="hidden" name="line" value="{{ ac.line_idx }}">
+    <input type="checkbox" {% if ac.checked %}checked{% endif %} onchange="this.form.requestSubmit()" style="margin:0;">
+</form>
+{% endmacro %}
+{% set agent_acs = ac_items | selectattr('section', 'equalto', 'agent') | list %}
+{% set human_acs = ac_items | selectattr('section', 'equalto', 'human') | list %}
+{% set other_acs = ac_items | rejectattr('section', 'in', ['agent', 'human']) | list %}
+{% if agent_acs %}
+<div class="ac-section-label">Agent <small>({{ agent_acs | selectattr('checked') | list | length }}/{{ agent_acs|length }})</small></div>
+<ul class="ac-list">
+    {% for ac in agent_acs %}
+    <li>{{ tick(ac) }}<span class="{% if ac.checked %}ac-checked{% endif %}">{{ (ac.text_html or ac.text) | safe }}</span></li>
+    {% endfor %}
+</ul>
+{% endif %}
+{% if human_acs %}
+<div id="human-ac" class="ac-section-label">Human <small>({{ human_acs | selectattr('checked') | list | length }}/{{ human_acs|length }})</small></div>
+{% for ac in human_acs %}
+<details class="human-ac-card" {% if not ac.checked %}open{% endif %}>
+    <summary>
+        {{ tick(ac) }}
+        {% if ac.confidence == 'review' %}<span class="confidence-badge badge-review">Review</span>
+        {% elif ac.confidence == 'rubber-stamp' %}<span class="confidence-badge badge-rubber-stamp">Rubber-stamp</span>{% endif %}
+        <span class="{% if ac.checked %}ac-checked{% endif %}">{{ ac.text }}</span>
+    </summary>
+    {% if ac.steps or ac.expected or ac.if_not %}
+    <div class="human-ac-body">
+        {% if ac.steps %}<h6>Steps</h6><ol>{% for step in ac.steps %}<li>{{ step | safe }}</li>{% endfor %}</ol>{% endif %}
+        {% if ac.expected %}<h6>Expected</h6><p>{{ ac.expected | safe }}</p>{% endif %}
+        {% if ac.if_not %}<h6>If not</h6><p>{{ ac.if_not | safe }}</p>{% endif %}
+    </div>
+    {% elif ac.body %}
+    <div class="human-ac-body"><pre style="font-size:0.8rem; margin:0; white-space:pre-wrap;">{{ ac.body }}</pre></div>
+    {% endif %}
+</details>
+{% endfor %}
+{% endif %}
+{% if other_acs %}
+<ul class="ac-list">
+    {% for ac in other_acs %}
+    <li>{{ tick(ac) }}<span class="{% if ac.checked %}ac-checked{% endif %}">{{ ac.text }}</span></li>
+    {% endfor %}
+</ul>
+{% endif %}

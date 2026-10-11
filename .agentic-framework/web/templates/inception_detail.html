@@ -357,10 +357,11 @@
 {% endif %}
 
 <!-- Acceptance Criteria (T-2077: T-2066 GO scope) -->
-{% if sections.acceptance_criteria %}
-<article class="section-card">
-    <header>Acceptance Criteria</header>
-    <div class="section-content">{{ sections.acceptance_criteria }}</div>
+{% if ac_items %}
+<article class="section-card" id="acceptance-criteria">
+    <header>Acceptance Criteria
+        <small><a href="/tasks/{{ task_id }}">{{ task_id }} task page</a></small></header>
+    <div class="section-content">{% include "_ac_list.html" %}</div>
 </article>
 {% endif %}
 
@@ -501,6 +502,16 @@
         <code>fw task update --status work-completed</code>, so every gate still fires —
         if one refuses, the reason appears below rather than the task closing quietly.
     </p>
+    {% if open_human_acs %}
+    <p style="font-size:0.9rem; margin-bottom:0.75rem; color:#b45309;">
+        Still unticked — closing needs {{ open_human_acs|length }} Human
+        criteri{{ 'a' if open_human_acs|length != 1 else 'on' }} ticked first. You can tick
+        {{ 'them' if open_human_acs|length != 1 else 'it' }} in the
+        <a href="#human-ac">Acceptance Criteria card above</a> (or on
+        <a href="/tasks/{{ task_id }}">the task page</a>):
+        <strong>{{ open_human_acs | map(attribute='text') | join('; ') }}</strong>
+    </p>
+    {% endif %}
     <div id="complete-button">
     <form hx-post="/api/task/{{ task_id }}/complete" hx-target="#complete-result" hx-swap="innerHTML">
         <input type="hidden" name="_csrf_token" value="{{ csrf_token() }}">
