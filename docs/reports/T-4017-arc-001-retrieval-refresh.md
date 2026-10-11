@@ -27,7 +27,7 @@ Not asked of AEF: estate hardening, retiring the old .201 knowledge collections 
 | F-9 | Query text kept outside telemetry | **confirmed** | `lib/resolver.py:791` writes the rendered `fw ask` prompt to `prompt.txt`; GET `?q=` on search/ask lands in request logs | bug now |
 | F-10 | Cloud fallback in `fw ask` | confirmed; **decided** OD-15 (2026-10-10): allowed for framework stores, never email, always marked external | `lib/ask.py:121-225` | build: mark it external in answer + telemetry |
 
-Found while checking (not in their list): saved Q&A (`.context/qa/`, written by Watchtower "save answer", T-265) is **tracked in git**; 8 files with the question text in their names are on OneDev and the public GitHub mirror. Every consumer has the same default. Operator decision.
+Found while checking (not in their list): saved Q&A (`.context/qa/`, written by Watchtower "save answer", T-265) is **tracked in git**; 8 files with the question text in their names are on OneDev and the public GitHub mirror. Every consumer has the same default. **Operator decision 2026-10-11: keep tracking it** — a saved answer is a curated, reusable answer (the retrieval flywheel), and that value outweighs keeping the question text local. Accepted consequence: saved questions are visible wherever the repo is pushed, including the public GitHub mirror. This is an explicit exception to R-32 for answers the operator chooses to save, not for query text in general (T-4061 still applies).
 
 ## Open items for the operator (from the proposal, §6)
 
