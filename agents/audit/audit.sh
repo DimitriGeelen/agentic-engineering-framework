@@ -3583,7 +3583,7 @@ check_unit_suite_report() {
     # undetermined (run ceiling hit, a file killed, or files never reached).
     local _parsed
     _parsed=$(python3 - "$_report" "$_baseline" "${PROJECT_ROOT:-}" <<'PYEOF' 2>/dev/null
-import sys, yaml, datetime
+import sys, os, yaml, datetime
 try:
     d = yaml.safe_load(open(sys.argv[1])) or {}
     legs = d.get("legs") or {}
@@ -3671,12 +3671,18 @@ try:
     root = (sys.argv[3] if len(sys.argv) > 3 else "").rstrip("/")
     if sd and root and sd.startswith(root + "/"):
         sd = sd[len(root) + 1:]
-    print("%d|%d|%d|%d|%d|%d|%s|%s|%s|%d|%s|%d|%d|%d|%s|%s|%s" % (
+    # T-4058: the kept failure-output dir, named relative to PROJECT_ROOT like sd.
+    fd = str(d.get("failures_dir") or "").strip("/")
+    if fd:
+        fd = os.path.join(os.path.dirname(sys.argv[1]), fd)
+        if root and fd.startswith(root + "/"):
+            fd = fd[len(root) + 1:]
+    print("%d|%d|%d|%d|%d|%d|%s|%s|%s|%d|%s|%d|%d|%d|%s|%s|%s|%s" % (
         total, failed, rc, age_h, to, tos,
         "; ".join(shown).replace("|", "/"), ran,
         ", ".join(ftimed).replace("|", "/"), partial,
         bl_state, n_base, len(new), len(expired), _bound(new), _bound(expired),
-        sd.replace("|", "/")))
+        sd.replace("|", "/"), fd.replace("|", "/")))
 except Exception:
     pass
 PYEOF
@@ -3691,10 +3697,13 @@ PYEOF
 
     local _us_total _us_failed _us_rc _us_age _us_timedout _us_timeout_s _us_names
     local _us_ran _us_ftimed _us_partial
-    local _us_bl _us_nbase _us_nnew _us_nexp _us_new _us_exp _us_dir
+    local _us_bl _us_nbase _us_nnew _us_nexp _us_new _us_exp _us_dir _us_fdir
     IFS='|' read -r _us_total _us_failed _us_rc _us_age _us_timedout _us_timeout_s _us_names \
-        _us_ran _us_ftimed _us_partial _us_bl _us_nbase _us_nnew _us_nexp _us_new _us_exp _us_dir <<< "$_parsed"
+        _us_ran _us_ftimed _us_partial _us_bl _us_nbase _us_nnew _us_nexp _us_new _us_exp _us_dir _us_fdir <<< "$_parsed"
     local _us_label="Unit suite${_us_dir:+ ($_us_dir)}"
+    # T-4058: a red names the kept failure output, so the assertion text is reachable.
+    local _us_kept=""
+    [ -n "$_us_fdir" ] && _us_kept="Failure output (assertion text, T-4058) kept at $_us_fdir/. "
 
     local _us_ceiling_txt="its timeout ceiling"
     [ "${_us_timeout_s:-0}" -gt 0 ] && _us_ceiling_txt="its ${_us_timeout_s}s ceiling"
@@ -3726,12 +3735,12 @@ PYEOF
             if [ "${_us_nnew:-0}" -gt 0 ] || [ "${_us_nexp:-0}" -gt 0 ]; then
                 fail "$_us_label: ${_us_nnew} NEW red(s), ${_us_nexp} EXPIRED baselined red(s) — pre-push ratchet (T-3621)" \
                      "${_us_incomplete}NEW (not in baseline): ${_us_new:-none}. EXPIRED (baselined, past expiry): ${_us_exp:-none}. ${_us_nbase} other baselined red(s) grade WARN" \
-                     "New red: fix it or file a task (one bug = one task); only the operator may accept it into the baseline (python3 agents/audit/unit_suite_baseline.py add --i-am-human --name '<name>'). Expired: fix it, or the operator re-arms it the same way. Report: .context/audits/unit-suite/LATEST.yaml"
+                     "${_us_kept}New red: fix it or file a task (one bug = one task); only the operator may accept it into the baseline (python3 agents/audit/unit_suite_baseline.py add --i-am-human --name '<name>'). Expired: fix it, or the operator re-arms it the same way. Report: .context/audits/unit-suite/LATEST.yaml"
                 return 0
             fi
             warn "$_us_label: ${_us_nbase} BASELINED red(s), 0 new, 0 expired — pre-push ratchet grade; the full fw audit still FAILs them (T-3621)" \
                  "${_us_incomplete:-$_us_ran. }runner_exit=$_us_rc; baseline: $_baseline. Baselined reds are a known backlog owned by their triage tasks, not green" \
-                 "Fix the reds via their owning tasks (owner: in the baseline); once a nightly run shows them green, shrink the baseline: python3 agents/audit/unit_suite_baseline.py regenerate"
+                 "${_us_kept}Fix the reds via their owning tasks (owner: in the baseline); once a nightly run shows them green, shrink the baseline: python3 agents/audit/unit_suite_baseline.py regenerate"
             # Unchanged rule: a stale report is still called stale.
             if [ "$_us_age" -lt 0 ] || [ "$_us_age" -ge 48 ]; then
                 warn "$_us_label report STALE — last run ${_us_age}h ago, threshold 48h (T-3302)" \
@@ -3742,7 +3751,7 @@ PYEOF
         fi
         fail "$_us_label: $_us_failed of $_us_total unit test(s) RED (T-3302, T-3602)" \
              "${_us_incomplete:-$_us_ran. }${_us_bl_note}runner_exit=$_us_rc; recorded failures: ${_us_names:-none listed}" \
-             "Read the report (.context/audits/unit-suite/LATEST.yaml), fix or file per red (one bug = one task), re-run: agents/audit/unit-suite.sh"
+             "${_us_kept}Read the report (.context/audits/unit-suite/LATEST.yaml), fix or file per red (one bug = one task), re-run: agents/audit/unit-suite.sh"
         return 0
     fi
 
@@ -3759,7 +3768,7 @@ PYEOF
     if [ "$_us_rc" -ne 0 ]; then
         fail "$_us_label: $_us_failed of $_us_total unit test(s) RED (T-3302)" \
              "runner_exit=$_us_rc; first failures: ${_us_names:-none listed}" \
-             "Read the report (.context/audits/unit-suite/LATEST.yaml), fix or file per red (one bug = one task), re-run: agents/audit/unit-suite.sh"
+             "${_us_kept}Read the report (.context/audits/unit-suite/LATEST.yaml), fix or file per red (one bug = one task), re-run: agents/audit/unit-suite.sh"
         return 0
     fi
 

@@ -246,6 +246,35 @@ _leg_rc() {
 [ -z "$BATS_ERROR" ] && BATS_RC=$(_leg_rc "$RESULTS/bats")
 [ -z "$PY_ERROR" ] && PY_RC=$(_leg_rc "$RESULTS/pytest")
 
+# T-4058: the EXIT trap removes $RESULTS, and with it every per-file .out — the
+# only place a red test's assertion text lives. Keep the output of each red file
+# under failures/<run STARTED>/<leg>/ before that happens. Best effort: a copy or
+# rotation failure must never change the exit code or the report.
+FAILURES_KEPT=""
+_keep_failures() {
+    local keep_root="$REPORT_DIR/failures" run_dir="$REPORT_DIR/failures/$STARTED"
+    local leg m rc st kept=0 d n=0
+    for leg in bats pytest; do
+        for m in "$RESULTS/$leg"/*.meta; do
+            [ -f "$m" ] || continue
+            read -r st rc _ < "$m" 2>/dev/null || continue
+            [ "${rc:-0}" -ne 0 ] 2>/dev/null || continue
+            mkdir -p "$run_dir/$leg" 2>/dev/null || continue
+            cp -- "${m%.meta}.out" "$m" "$run_dir/$leg/" 2>/dev/null && kept=1
+        done
+    done
+    [ "$kept" -eq 1 ] && FAILURES_KEPT="failures/$STARTED"
+    # Newest 14 run dirs survive. ISO stamps sort lexically = chronologically.
+    if [ -d "$keep_root" ]; then
+        while IFS= read -r d; do
+            n=$(( n + 1 ))
+            [ "$n" -gt 14 ] && rm -rf -- "$d"
+        done < <(find "$keep_root" -mindepth 1 -maxdepth 1 -type d | sort -r)
+    fi
+    return 0
+}
+_keep_failures
+
 FINISHED="$(date -u +%FT%TZ)"
 
 # ── Report (A2): parse both legs, emit LATEST.yaml + dated sibling ──────────
@@ -263,6 +292,7 @@ T3302_PY_FILES="$PY_FILES" T3302_PY_RC="$PY_RC" T3302_PY_ERROR="$PY_ERROR" \
 T3302_BATS_BUDGET="$BATS_BUDGET" T3302_PY_BUDGET="$PY_BUDGET" \
 T3302_PY_RESERVE="$PY_RESERVE" T3602_JOBS="$JOBS" T3602_FILE_TIMEOUT="$FILE_TIMEOUT" \
 T3302_REPORT_DIR="$REPORT_DIR" T3602_INTERRUPTED="$INTERRUPTED" T3602_WALL=$(( $(date +%s) - START_EPOCH )) \
+T4058_FAILURES="$FAILURES_KEPT" \
 python3 - "$RESULTS" <<'PY'
 import glob, os, re, sys, yaml, datetime
 
@@ -368,6 +398,9 @@ report = {
     # T-3602: killed from outside before it could finish (signal trap).
     "interrupted": env.get("T3602_INTERRUPTED") == "1",
     "runner_exit": _int("T3302_RUNNER_EXIT"),
+    # T-4058: where the failing files' output was kept (relative to the report
+    # dir), or None when this run had no red file. The audit names it.
+    "failures_dir": env.get("T4058_FAILURES") or None,
     "legs": {
         "bats": _leg_report(B, "BATS"),
         "pytest": _leg_report(P, "PY"),

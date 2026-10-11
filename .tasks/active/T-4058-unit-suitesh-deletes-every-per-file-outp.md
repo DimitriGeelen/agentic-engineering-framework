@@ -46,7 +46,7 @@ origin: {kind: "peer", source: "055-agentic-fleet-cockpit", ref: "T-495"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T17:17:25Z
-last_update: 2026-10-11T17:19:10Z
+last_update: 2026-10-11T17:27:55Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,10 +88,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Before `agents/audit/unit-suite.sh` removes `$RESULTS` on exit, it copies the `.out` (and `.meta`) of every file whose recorded rc is non-zero to `$REPORT_DIR/failures/<run STARTED stamp>/<leg>/`, keeps only the newest 14 run directories, is best effort (a copy failure never changes the suite's exit code or report), and copies nothing on an all-green run.
-- [ ] The unit-suite report (LATEST.yaml or its run record) names the kept failures directory for that run, and the audit's unit-suite FAIL/WARN Mitigation line names it, so a red test points at its own failure text.
-- [ ] Regression test `tests/unit/t4058_unit_suite_keeps_failures.bats` with a tiny fixture suite (one passing, one failing bats file): the failing file's output (its `not ok` line and assertion text) is kept under failures/<run>/; the passing one is not; an all-green run keeps nothing; 17 pre-existing run dirs are rotated down to 14; the suite's exit code equals the pre-fix exit code. The keep test fails on the pre-fix code.
-- [ ] `.context/audits/unit-suite/failures/` is gitignored (failure output can hold host detail, like runme logs).
+- [x] Before `agents/audit/unit-suite.sh` removes `$RESULTS` on exit, it copies the `.out` (and `.meta`) of every file whose recorded rc is non-zero to `$REPORT_DIR/failures/<run STARTED stamp>/<leg>/`, keeps only the newest 14 run directories, is best effort (a copy failure never changes the suite's exit code or report), and copies nothing on an all-green run.
+- [x] The unit-suite report (LATEST.yaml or its run record) names the kept failures directory for that run, and the audit's unit-suite FAIL/WARN Mitigation line names it, so a red test points at its own failure text.
+- [x] Regression test `tests/unit/t4058_unit_suite_keeps_failures.bats` with a tiny fixture suite (one passing, one failing bats file): the failing file's output (its `not ok` line and assertion text) is kept under failures/<run>/; the passing one is not; an all-green run keeps nothing; 17 pre-existing run dirs are rotated down to 14; the suite's exit code equals the pre-fix exit code. The keep test fails on the pre-fix code.
+- [x] `.context/audits/unit-suite/failures/` is gitignored (failure output can hold host detail, like runme logs).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,6 +260,14 @@ bash -n agents/audit/unit-suite.sh
 bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** A nightly unit-suite run went red (055: 6 of 8 nightlies) and the audit named the red test file, but not the failing assertion or its output. The intermittent red could not be reproduced by hand, so it could not be diagnosed from the report.
+
+**Root cause:** `agents/audit/unit-suite.sh` ran `trap 'rm -rf "$RESULTS"' EXIT`, and `$RESULTS` held each file's `.out` (the only copy of the tool output). The report recorded per-file rc and parsed `not ok` lines, but the raw output was deleted on every exit, red or green.
+
+**Why structurally allowed:** The runner was built to produce a verdict report (T-3302, T-3602), and nothing asserted that a red verdict was reproducible from its artefacts. The report's tests covered the verdict fields and the audit branch, not whether the evidence behind a red survived the run.
+
+**Prevention:** `_keep_failures` in `_finish` copies every non-zero-rc file's `.out`/`.meta` to `failures/<STARTED>/<leg>/` before the EXIT trap runs, keeps the newest 14 run dirs, and the report names the kept dir (`failures_dir`), which the audit's red-path Mitigation line echoes. `tests/unit/t4058_unit_suite_keeps_failures.bats` pins the keep, the all-green no-op, rotation, and the unchanged exit code; it fails on the HEAD runner (4 of 5 tests red pre-fix).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).

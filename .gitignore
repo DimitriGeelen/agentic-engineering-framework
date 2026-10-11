@@ -64,6 +64,9 @@ lib/ts/node_modules/
 # Cron audit history (only LATEST-CRON.yaml is tracked)
 .context/audits/cron/2*.yaml
 
+# Unit-suite failure output (T-4058): per-file .out can hold host detail, like runme logs
+.context/audits/unit-suite/failures/
+
 # Temporary screenshots (Playwright MCP output → /tmp/playwright-mcp/ since T-1949).
 # Belt-and-braces: also gitignore stray *.png in case MCP config drifts back to cwd.
 *.png
