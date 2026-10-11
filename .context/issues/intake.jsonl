@@ -22,3 +22,4 @@
 {"issue": 86, "stage": "in-progress", "tasks": ["T-4040"], "comment": "https://github.com/DimitriGeelen/agentic-engineering-framework/issues/86#issuecomment-6107218277", "ts": "2026-10-11T08:39:54Z"}
 {"issue": 87, "stage": "fixed-on-bleeding-edge", "tasks": ["T-3886"], "commit": "e8b6d839a", "comment": "https://github.com/DimitriGeelen/agentic-engineering-framework/issues/87#issuecomment-6108456093", "ts": "2026-10-11T11:17:41Z"}
 {"issue": 86, "stage": "fixed-on-bleeding-edge", "tasks": ["T-4040"], "commit": "20289bf2d", "comment": "https://github.com/DimitriGeelen/agentic-engineering-framework/issues/86#issuecomment-6108456231", "ts": "2026-10-11T11:17:41Z"}
+{"issue": 88, "stage": "fixed-on-bleeding-edge", "tasks": ["T-4041", "T-4054"], "commit": "1bee3e5f1", "comment": "https://github.com/DimitriGeelen/agentic-engineering-framework/issues/88#issuecomment-6109533717", "ts": "2026-10-11T13:29:24Z"}
