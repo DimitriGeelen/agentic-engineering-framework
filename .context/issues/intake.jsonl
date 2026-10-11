@@ -19,3 +19,6 @@
 {"issue": 94, "stage": "classified+accepted", "tasks": ["T-4047"], "severity": "low", "comment": "https://github.com/DimitriGeelen/agentic-engineering-framework/issues/94#issuecomment-6100625509", "ts": "2026-10-10T18:10:34Z"}
 {"issue": 85, "stage": "classified+not-planned", "comment": "https://github.com/DimitriGeelen/agentic-engineering-framework/issues/85#issuecomment-6100625933", "ts": "2026-10-10T18:10:38Z"}
 {"issue": 87, "stage": "in-progress", "tasks": ["T-3886"], "comment": "https://github.com/DimitriGeelen/agentic-engineering-framework/issues/87#issuecomment-6107207699", "ts": "2026-10-11T08:38:29Z"}
+{"issue": 86, "stage": "in-progress", "tasks": ["T-4040"], "comment": "https://github.com/DimitriGeelen/agentic-engineering-framework/issues/86#issuecomment-6107218277", "ts": "2026-10-11T08:39:54Z"}
+{"issue": 87, "stage": "fixed-on-bleeding-edge", "tasks": ["T-3886"], "commit": "e8b6d839a", "comment": "https://github.com/DimitriGeelen/agentic-engineering-framework/issues/87#issuecomment-6108456093", "ts": "2026-10-11T11:17:41Z"}
+{"issue": 86, "stage": "fixed-on-bleeding-edge", "tasks": ["T-4040"], "commit": "20289bf2d", "comment": "https://github.com/DimitriGeelen/agentic-engineering-framework/issues/86#issuecomment-6108456231", "ts": "2026-10-11T11:17:41Z"}
