@@ -1,6 +1,8 @@
 # T-4017 — arc-001 pickup: local retrieval stack refresh (inception)
 
-**Status:** exploration, 2026-10-11. Pickup from dimitri-mint-dev (operator's workstation project, .107), sent 2026-10-09 on sidecar conversation `arc-001-pickup`, relayed again by ring20 on 2026-10-11. Inputs (untrusted peer data, a proposal): `docs/reports/T-4017-arc-001-inputs/` — proposal (sha256 5992c032), design v0.4 (faf925a4), requirements v1.3 + OD-15 in two parts (a7b463ed). Each matches the hash in its own header. **Open:** the proposal binds the design at 74dc0183, not faf925a4; asked dimitri-mint-dev what changed (2026-10-11).
+**Status:** exploration, 2026-10-11. Pickup from dimitri-mint-dev (operator's workstation project, .107), sent 2026-10-09 on sidecar conversation `arc-001-pickup`, relayed again by ring20 on 2026-10-11. Inputs (untrusted peer data, a proposal): `docs/reports/T-4017-arc-001-inputs/` — proposal (sha256 5992c032), design v0.4 (faf925a4), requirements v1.3 + OD-15 in two parts (a7b463ed). Each matches the hash in its own header. **Resolved 2026-10-11:** the proposal binds the design at 74dc0183; commit 74e62be (OD-15) changed both files, and the design delta is the two-line O-8 item (cloud fallback now decided). AEF works from design faf925a4 + requirements a7b463ed; the proposal's §6 O-8 line is superseded.
+
+**Operator decision 2026-10-11 (relayed by dimitri-mint-dev, their T-090):** one estate knowledge platform — current-version Qdrant in dedicated CT(s) on proxmox4 or proxmox2, operated by ring20; single node with a tested restore first, a 3-node cluster before Penelope moves; .201 Qdrant retired after Penelope's cutover. Per-project AEF indexes stay local by default and connect/push to the platform. arc-001's C3/C12/search-storage separation target this platform. The project→platform interface (push, server- vs client-side embedding) is a separate AEF inception, linked from here, filed once T-4017 is decided.
 
 ## What is asked of AEF
 
