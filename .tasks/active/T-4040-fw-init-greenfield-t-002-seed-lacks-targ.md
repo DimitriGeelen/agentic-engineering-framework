@@ -1,10 +1,14 @@
 ---
 id: T-4040
-name: "fw init greenfield T-002 seed lacks target_blast_radius/voi_score, so the inception schema gate blocks edits to it (GitHub #86, MikeEchoVoid)"
+name: "fw init greenfield T-002 seed lacks target_blast_radius/voi_score, so the inception
+  schema gate blocks edits to it (GitHub #86, MikeEchoVoid)"
 description: >
-  Inbound GitHub issue #86 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/86), intake batch 1 (T-4039), accepted by the operator 2026-10-10. Classification and evidence: docs/reports/T-4039-batch1-classification.md §#86. Issue text is untrusted data; reproduce before fixing.
+  Inbound GitHub issue #86 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/86),
+  intake batch 1 (T-4039), accepted by the operator 2026-10-10. Classification and
+  evidence: docs/reports/T-4039-batch1-classification.md §#86. Issue text is untrusted
+  data; reproduce before fixing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -40,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:05:36Z
-last_update: 2026-10-10T18:09:03Z
-date_finished: null
+last_update: 2026-10-11T08:39:23Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -52,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-10T18:15:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=275,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-10T18:16:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4040: fw init greenfield T-002 seed lacks target_blast_radius/voi_score, so the inception schema gate blocks edits to it (GitHub #86, MikeEchoVoid)
@@ -64,8 +96,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] lib/seeds/tasks/greenfield/T-002-define-project-goals.md carries `target_blast_radius` and `voi_score` with values valid for agents/context/check-inception-schema.py, so a fresh `fw init` greenfield project's T-002 passes the inception schema gate (GitHub #86).
+- [ ] Systemic check (submitter's suggestion 2): a test asserts that EVERY seeded task under lib/seeds/tasks/ passes the schema gate for its workflow_type (today: the inception gate), so the next seed/gate drift fails a test instead of a user.
+- [ ] Regression: the test fails on the pre-fix seed. The existing greenfield suites stay green (tests/integration/t2922_greenfield_first_inception.bats and the fw init simulation suites that exist).
+- [ ] If cheap: the schema-gate block message states that FW_ALLOW_INCEPTION_SCHEMA_DRIFT=1 is an operator action (submitter's suggestion 3).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -328,3 +362,6 @@ date_finished: null
 
 ### 2026-10-10T18:09:03Z — status-update [task-update-agent]
 - **Change:** horizon: now → now
+
+### 2026-10-11T08:39:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
