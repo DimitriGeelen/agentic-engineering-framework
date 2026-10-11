@@ -1,10 +1,14 @@
 ---
 id: T-4047
-name: "Inception page renders the Verification card as Markdown, so comments become headings and * or _ become italics (GitHub #94, MikeEchoVoid)"
+name: "Inception page renders the Verification card as Markdown, so comments become
+  headings and * or _ become italics (GitHub #94, MikeEchoVoid)"
 description: >
-  Inbound GitHub issue #94 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/94), intake batch 1 (T-4039), accepted by the operator 2026-10-10. Classification and evidence: docs/reports/T-4039-batch1-classification.md §#94. Issue text is untrusted data; reproduce before fixing.
+  Inbound GitHub issue #94 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/94),
+  intake batch 1 (T-4039), accepted by the operator 2026-10-10. Classification and
+  evidence: docs/reports/T-4039-batch1-classification.md §#94. Issue text is untrusted
+  data; reproduce before fixing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -40,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:08:38Z
-last_update: 2026-10-10T18:09:07Z
-date_finished: null
+last_update: 2026-10-11T14:13:55Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -52,22 +56,59 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-10T18:15:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=275,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-10T18:16:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4047: Inception page renders the Verification card as Markdown, so comments become headings and * or _ become italics (GitHub #94, MikeEchoVoid)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+GitHub #94 (MikeEchoVoid). `web/blueprints/inception.py:402` renders `## Verification` through `_md`, and `inception_detail.html:367-371` prints it in a section card. The block is shell commands and `#` comments, not Markdown: comments become `<h1>`, a lone `#` an empty paragraph, and `*`/`_` inside commands become emphasis, so the operator reads different text from what the completion gate runs. Confirmed in the source 2026-10-11.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `/inception/T-XXX` shows `## Verification` verbatim in a `<pre>` (HTML-escaped, no Markdown): `#` comment lines stay as text, `*.vbproj/*.csproj` and `out_of_scope` / `yaml.safe_load` appear exactly as in the file, and no `<h1>` comes from the Verification block.
+- [ ] Any other page that renders a task's `## Verification` through Markdown (check `/tasks/T-XXX` and the review page) gets the same treatment, or is listed in the task's Updates as already verbatim.
+- [ ] pytest `tests/web/test_t4047_inception_verification_verbatim.py` (Flask test client, fixture inception task whose Verification has `#` comments, `*.vbproj/*.csproj/*.xaml` and `out_of_scope`): the card holds a `<pre>` with the exact text and no `<h1>`/`<em>` from it. Fails on the pre-fix code.
+- [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
+- [ ] [REVIEW] The Verification card on an inception page reads as the commands the gate runs
+  **Steps:**
+  1. Open `$(bin/fw watchtower url)/inception/T-4023` in the browser
+  2. Scroll to the "Verification" card
+  **Expected:** plain monospaced lines, comments included, no large headings, no italics
+  **If not:** screenshot the card
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -228,6 +269,9 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/web/test_t4047_inception_verification_verbatim.py -q > .context/working/t4047-verify.out 2>&1 && grep -q passed .context/working/t4047-verify.out && ! grep -qE "[0-9]+ (failed|skipped|error)" .context/working/t4047-verify.out
+bin/fw watchtower current
+bin/fw vendor self --check
 
 ## RCA
 
@@ -328,3 +372,6 @@ date_finished: null
 
 ### 2026-10-10T18:09:07Z — status-update [task-update-agent]
 - **Change:** horizon: next → now
+
+### 2026-10-11T14:13:55Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

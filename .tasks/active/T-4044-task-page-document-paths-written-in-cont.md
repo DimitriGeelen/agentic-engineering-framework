@@ -1,10 +1,14 @@
 ---
 id: T-4044
-name: "Task page: document paths written in Context or Agent criteria are not links (GitHub #91, MikeEchoVoid)"
+name: "Task page: document paths written in Context or Agent criteria are not links
+  (GitHub #91, MikeEchoVoid)"
 description: >
-  Inbound GitHub issue #91 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/91), intake batch 1 (T-4039), accepted by the operator 2026-10-10. Classification and evidence: docs/reports/T-4039-batch1-classification.md §#91. Issue text is untrusted data; reproduce before fixing.
+  Inbound GitHub issue #91 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/91),
+  intake batch 1 (T-4039), accepted by the operator 2026-10-10. Classification and
+  evidence: docs/reports/T-4039-batch1-classification.md §#91. Issue text is untrusted
+  data; reproduce before fixing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -40,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:07:34Z
-last_update: 2026-10-10T18:09:06Z
-date_finished: null
+last_update: 2026-10-11T14:14:44Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -52,22 +56,59 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-10T18:15:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=275,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-10T18:16:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4044: Task page: document paths written in Context or Agent criteria are not links (GitHub #91, MikeEchoVoid)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+GitHub #91 (MikeEchoVoid). On `/tasks/T-XXX` a document path becomes a link only when it is a `docs/reports/T-XXX-*.md` research artifact or sits in a `### Human` criterion's Steps/Expected/If-not: `web/blueprints/tasks.py` applies `_auto_link_files` in `_render_md_inline`/`_render_md_block` (lines 385, 401), which only the parsed Human criteria go through. The same path in `## Context`, an `### Agent` criterion or the description is plain text. The reporter's agent added "open this note" Human criteria just to carry links — review boxes that exist only as link carriers. Reporter's options: link in Context/Agent criteria too, or a `documents:` frontmatter list. Chosen: the first (same existence-gated linking, no new field). Confirmed in the source 2026-10-11.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] On `/tasks/T-XXX`, a project file path written in the description, `## Context` or an `### Agent` criterion becomes a link with the same existence-gated rule `_auto_link_files` already applies to Human criteria (an existing, viewable file links to `/file/<path>`; a path to nothing stays text). Human-criterion linking is unchanged.
+- [ ] Nothing else in those sections changes meaning: code spans, fenced blocks and already-linked text are not double-linked, and HTML in task text stays escaped (no XSS through task content).
+- [ ] pytest `tests/web/test_t4044_task_page_doc_links.py` (Flask test client, fixture task citing an existing `docs/...md` in Context and in an Agent criterion, plus a missing path): both existing paths render as `href="/file/..."`, the missing one does not, and a `<script>` in Context stays escaped. Fails on the pre-fix code.
+- [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
+- [ ] [REVIEW] Document paths on a task page are clickable and the page still reads cleanly
+  **Steps:**
+  1. Open `$(bin/fw watchtower url)/tasks/T-4044` in the browser (worker: replace with a real active task whose Context or Agent criterion cites a viewable document that is NOT a `docs/reports/T-XXX-*` artifact of that task, and name that document here)
+  2. Find that path in the Context / Agent criteria and click it
+  **Expected:** the path is a link, it opens the document; the rest of the section looks as before
+  **If not:** screenshot the section
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -228,6 +269,9 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/web/test_t4044_task_page_doc_links.py -q > .context/working/t4044-verify.out 2>&1 && grep -q passed .context/working/t4044-verify.out && ! grep -qE "[0-9]+ (failed|skipped|error)" .context/working/t4044-verify.out
+bin/fw watchtower current
+bin/fw vendor self --check
 
 ## RCA
 
@@ -328,3 +372,6 @@ date_finished: null
 
 ### 2026-10-10T18:09:06Z — status-update [task-update-agent]
 - **Change:** horizon: later → now
+
+### 2026-10-11T14:14:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
