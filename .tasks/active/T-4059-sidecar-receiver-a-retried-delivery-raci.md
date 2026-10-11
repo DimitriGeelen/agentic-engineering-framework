@@ -46,7 +46,7 @@ origin: {kind: "peer", source: "055-agentic-fleet-cockpit"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T17:17:41Z
-last_update: 2026-10-11T17:19:50Z
+last_update: 2026-10-11T17:27:48Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,11 +88,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `lib/sidecar/receiver.py` writes each delivery through its own temp file (unique per write: pid + random suffix, same directory), so concurrent deliveries of one `client_msg_id` never share a temp path.
-- [ ] If the final rename fails or loses the race, the receiver re-checks `messages/<id>.json`: present with the same content digest → success (and the ready flag is ensured); different digest → the existing "conflict" answer. A delivery whose message is stored is never answered with HTTP 400.
-- [ ] No temp file is left behind on any path (success, failure, lost race).
-- [ ] Regression test (pytest, `tests/unit/t4059_sidecar_receiver_concurrent_delivery_test.py`): N threads/processes deliver the same envelope at once → all succeed, exactly one message file + one ready flag, no `.tmp` left; a different-content reuse of the id still returns conflict. The concurrent test fails on the pre-fix code (run it enough times, or force the interleaving with a patched `os.replace`, so the pre-fix failure is deterministic).
-- [ ] Existing sidecar receiver/inbox tests stay green (`tests/unit/*sidecar*`).
+- [x] `lib/sidecar/receiver.py` writes each delivery through its own temp file (unique per write: pid + random suffix, same directory), so concurrent deliveries of one `client_msg_id` never share a temp path.
+- [x] If the final rename fails or loses the race, the receiver re-checks `messages/<id>.json`: present with the same content digest → success (and the ready flag is ensured); different digest → the existing "conflict" answer. A delivery whose message is stored is never answered with HTTP 400.
+- [x] No temp file is left behind on any path (success, failure, lost race).
+- [x] Regression test (pytest, `tests/unit/t4059_sidecar_receiver_concurrent_delivery_test.py`): N threads/processes deliver the same envelope at once → all succeed, exactly one message file + one ready flag, no `.tmp` left; a different-content reuse of the id still returns conflict. The concurrent test fails on the pre-fix code (run it enough times, or force the interleaving with a patched `os.replace`, so the pre-fix failure is deterministic).
+- [x] Existing sidecar receiver/inbox tests stay green (`tests/unit/*sidecar*`).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -259,6 +259,14 @@ python3 -m pytest tests/unit/t4059_sidecar_receiver_concurrent_delivery_test.py 
 bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** a sender retry of a message still in flight gets HTTP 400 ("failed to write message: No such file or directory") although the message is stored (seen by 055, msg daf85260).
+
+**Root cause:** `store_message` wrote every delivery through one fixed temp path, `<id>.json.tmp`. Two concurrent deliveries share it: the first `os.replace` moves the file into place, the second's commit finds no file and the error is returned as a write failure. Also, `os.replace` silently overwrites, so a lost race with different content would not be detected at all.
+
+**Why structurally allowed:** the store had only sequential tests (the idempotent-retry path was tested by calling twice, never concurrently), so no test drove two writers into the same window.
+
+**Prevention:** `tests/unit/t4059_sidecar_receiver_concurrent_delivery_test.py` races 8–16 threads through one barrier on the same id (repeated 40 rounds, and with differing bodies), asserting every identical delivery succeeds, exactly one message is stored, and no `.tmp` remains.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
