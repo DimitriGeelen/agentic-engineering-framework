@@ -40,6 +40,10 @@ _predicate() {
     grep -qx "$(readlink -f "$CFW")" "$T/tmux.argv"
     grep -qx -- "-c" "$T/tmux.argv"                   # the operator's own argument is passed on
     grep -qx "destroy-unattached" "$T/tmux.argv"
+    # T-4049: scoped to the wrapper's own session, never -g on the shared server (a global
+    # setting destroyed every detached worker session a wrapped agent dispatched).
+    [ "$(grep -B1 -x destroy-unattached "$T/tmux.argv" | head -1)" != "-g" ]
+    [ "$(grep -B2 -x destroy-unattached "$T/tmux.argv" | head -1)" = "-t" ]
     grep -qx "status" "$T/tmux.argv"
     grep -q "^PATH=" "$T/tmux.argv"                  # the environment is carried over
 }

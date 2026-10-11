@@ -101,6 +101,9 @@ if _cfw_should_wrap_tmux; then
     # The 055 cockpit's display faults came from its browser bridge (polled relay, competing
     # viewer sizes, 055 T-474); none of that is here: one client, the operator's own terminal.
     # lib/sidecar/inject.py looks for panes on this server as well as the default one.
+    # destroy-unattached is set on THIS session only (T-4049, 055 G-014): the server is shared
+    # by every wrapped project, and a session inside it inherits $TMUX, so a global setting
+    # destroyed every detached session a wrapped agent created (fw termlink dispatch workers).
     exec tmux -L fw-agents -f /dev/null new-session -s "$_cfw_name" -c "$PWD" "${_cfw_env[@]}" -- "$_cfw_self" "$@" \; \
         set-option -s escape-time 0 \; \
         set-option -g prefix None \; \
@@ -108,7 +111,7 @@ if _cfw_should_wrap_tmux; then
         set-option -g default-terminal tmux-256color \; \
         set-option -as terminal-overrides ',*:RGB' \; \
         set-option -g status off \; \
-        set-option -g destroy-unattached on \; \
+        set-option -t "$_cfw_name" destroy-unattached on \; \
         set-option -g history-limit 50000 \; \
         set-option -g mouse on
 fi
