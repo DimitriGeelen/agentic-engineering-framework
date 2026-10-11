@@ -1,8 +1,12 @@
 ---
 id: T-4043
-name: "A Markdown document opened through Watchtower /file/ shows its title twice, with Fabric links that do not apply (GitHub #90, MikeEchoVoid)"
+name: "A Markdown document opened through Watchtower /file/ shows its title twice,
+  with Fabric links that do not apply (GitHub #90, MikeEchoVoid)"
 description: >
-  Inbound GitHub issue #90 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/90), intake batch 1 (T-4039), accepted by the operator 2026-10-10. Classification and evidence: docs/reports/T-4039-batch1-classification.md §#90. Issue text is untrusted data; reproduce before fixing.
+  Inbound GitHub issue #90 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/90),
+  intake batch 1 (T-4039), accepted by the operator 2026-10-10. Classification and
+  evidence: docs/reports/T-4039-batch1-classification.md §#90. Issue text is untrusted
+  data; reproduce before fixing.
 
 status: captured
 workflow_type: build
@@ -40,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:07:11Z
-last_update: 2026-10-10T18:09:05Z
-date_finished: null
+last_update: 2026-10-11T13:59:35Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -52,22 +56,58 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-10T18:15:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=275,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-10T18:16:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4043: A Markdown document opened through Watchtower /file/ shows its title twice, with Fabric links that do not apply (GitHub #90, MikeEchoVoid)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+GitHub #90 (MikeEchoVoid). `web/blueprints/docs.py` `file_viewer` (`/file/<path>`) takes the page title from the file's first `#` line and `docs_detail.html` prints it as `<h1>` above `html_content`, which is the whole document rendered, first heading included — so every normal Markdown document shows its title twice. The same template hard-codes "← Back to Component Docs" and "View in Fabric" (`/fabric/component/<file stem>`), which only make sense for the generated component docs route (`/docs/generated/<card>`); for a project document the Fabric link answers "Not Found". Confirmed in the source 2026-10-11. The generated-docs route has the same duplicate-title shape.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A Markdown document whose rendered body starts with an `<h1>` (from `/file/` and from `/docs/generated/`) is served with exactly one `<h1>` carrying that title. A document with no heading keeps the filename as the page title and its body unchanged.
+- [ ] "← Back to Component Docs" and "View in Fabric" render only on the generated component docs route. On `/file/<path>` "View in Fabric" appears only when a Fabric component card's `location` is that file (linking to that card's real id), otherwise no Fabric link and no component-docs link.
+- [ ] pytest (Flask test client) `tests/web/test_t4043_docs_detail_title.py` (or the repo's web-test location): a `# Title` document via `/file/` has one `<h1>`; no `/fabric/component/` link for a file with no card; a file with a card links to it; the generated-docs route still shows its back link. The duplicate-`<h1>` test fails on the pre-fix code.
+- [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
+- [ ] [REVIEW] A report opened through Watchtower reads cleanly
+  **Steps:**
+  1. Open `$(bin/fw watchtower url)/file/docs/reports/T-4039-inbound-github-issues.md` in the browser
+  2. Look at the top of the page
+  **Expected:** the title appears once; no "Back to Component Docs" / "View in Fabric" links
+  **If not:** screenshot the top of the page
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -228,6 +268,9 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/web/test_t4043_docs_detail_title.py -q > .context/working/t4043-verify.out 2>&1 && grep -q passed .context/working/t4043-verify.out && ! grep -qE "[0-9]+ (failed|skipped|error)" .context/working/t4043-verify.out
+bin/fw watchtower current
+bin/fw vendor self --check
 
 ## RCA
 

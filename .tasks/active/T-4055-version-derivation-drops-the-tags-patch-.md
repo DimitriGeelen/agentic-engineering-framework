@@ -57,14 +57,17 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Reported by ring20 (T-2311 testbed upgrade to bleeding-edge a6e06c28): the vendored VERSION and `.framework.yaml` read `1.8.92`. `bin/fw` `_derive_version` (~line 33) maps `git describe` `vX.Y.Z-N-gSHA` to `X.Y.N` — written when tags were `vX.Y.0` (comment: `v1.4.0-5 → 1.4.5`). With a patch tag it drops Z: `v1.8.9-92` → `1.8.92`, which reads as a release and sorts **newer than 1.8.10**, so version comparisons can judge a bleeding-edge consumer as ahead of the next release. Confirmed in the source 2026-10-11.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `_derive_version` returns `X.Y.Z+N.gSHA` for `vX.Y.Z-N-gSHA` (semver build metadata; e.g. `1.8.9+92.ga6e06c286`), and `X.Y.Z` exactly on a tag. The comment is corrected.
+- [ ] Every consumer of the derived string handles the `+N.gSHA` form: audit `lib/version.sh`, `lib/version-relation.sh`, `lib/upgrade.sh`, `lib/upstream.sh`, `lib/init.sh`, `lib/worktree.sh`, `lib/release.sh`, vendor stamping (VERSION / `.framework.yaml` `version:`), and `fw doctor`'s version checks. A comparison treats `1.8.9+92…` as after `1.8.9` and before `1.8.10` (or as equal to 1.8.9 where only release precedence matters), never as newer than `1.8.10`. List what you checked in the task's Updates.
+- [ ] A consumer already stamped with the old form (`1.8.92`) is not misjudged after this change in any comparison a `fw upgrade` makes; if it would be, the upgrade path recognises the legacy form (document how).
+- [ ] Regression test `tests/unit/t4055_version_derivation.bats`: a fixture repo tagged `v1.8.9` with N extra commits derives `1.8.9+N.g<sha>`; on the tag it derives `1.8.9`; the comparison helper orders `1.8.9 < 1.8.9+92.gx < 1.8.10`. The derivation test fails on the pre-fix code.
+- [ ] Existing version/upgrade suites stay green: `tests/unit/*version*.bats`, t2762, t3714, t3886, and `tests/unit/upgrade_fresh_machine_simulation.bats` (CLAUDE.md §Consumer-Facing Command Hygiene).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -227,6 +230,10 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/t4055_version_derivation.bats > .context/working/t4055-verify.out 2>&1 && ! grep -q "^not ok" .context/working/t4055-verify.out
+test "$(grep -c '# skip' .context/working/t4055-verify.out)" -eq 0
+bash -n bin/fw
+bin/fw vendor self --check
 
 ## RCA
 
@@ -298,6 +305,11 @@ date_finished: null
 -->
 
 ## Decisions
+
+### 2026-10-11 — format of a between-releases version
+- **Chose:** `X.Y.Z+N.gSHA` (semver build metadata).
+- **Why:** it never reads as a release number, keeps the tag it builds on, and under semver precedence it is not newer than any later release.
+- **Rejected:** `X.Y.Z-be.N` (ring20's alternative) — a semver pre-release sorts BEFORE `X.Y.Z`, so a bleeding-edge consumer would look older than the release it already contains; `X.Y.(Z+N)` — the current bug's shape. Publishing `-be` tags for pinning is a separate question (not in this task).
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
