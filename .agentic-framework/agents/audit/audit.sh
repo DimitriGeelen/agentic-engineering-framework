@@ -2861,7 +2861,7 @@ if [ -f "$FRAMEWORK_ROOT/lib/human_ac_ticks.py" ]; then
     elif [ "$_hat_rc" -eq 2 ]; then
         fail "Human-AC ticks: $(echo "$_hat_out" | tail -1)" \
              "$(echo "$_hat_out" | grep '^FAIL' | head -3 | tr '\n' ';')" \
-             "Inspect: python3 lib/human_ac_ticks.py audit — if the operator really ticked it, the operator records it in their own terminal: python3 lib/human_ac_ticks.py ack T-XXX --ac N; otherwise un-tick the box and hand the task over with fw task review T-XXX"
+             "Inspect: python3 lib/human_ac_ticks.py audit — if the operator really ticked it, the operator records it in their own terminal: python3 lib/human_ac_ticks.py ack T-XXX --ac N (also the remedy for a Watchtower tick made before T-4070 or on a stale server — bin/fw watchtower restart); otherwise un-tick the box and hand the task over with fw task review T-XXX"
     elif [ "$_hat_rc" -eq 4 ]; then
         # T-3728: no commit exists (no repo, or unborn HEAD with no refs), so no committed
         # tick exists to judge — an unknown, not a failure (same tier as every other NOT
