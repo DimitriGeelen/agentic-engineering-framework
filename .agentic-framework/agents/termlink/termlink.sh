@@ -383,8 +383,10 @@ cmd_spawn() {
 
     termlink spawn "${spawn_args[@]}"
     echo -e "${GREEN}OK${NC}  Session '$name' registered"
-    [ -n "$task" ] && echo "  Tagged: $task"
-    [ -n "$task_type" ] && echo "  Task-type: $task_type"
+    # T-4067: `if`, not `[ ] && echo` — as the function's last statement a false
+    # test became its return status and aborted `fw termlink dispatch` under set -e.
+    if [ -n "$task" ]; then echo "  Tagged: $task"; fi
+    if [ -n "$task_type" ]; then echo "  Task-type: $task_type"; fi
 }
 
 cmd_exec() {
