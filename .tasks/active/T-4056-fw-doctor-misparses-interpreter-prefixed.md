@@ -44,7 +44,7 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "T-2311"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T13:57:06Z
-last_update: 2026-10-11T17:18:51Z
+last_update: 2026-10-11T17:32:58Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,9 +96,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Both doctor hook checks — "Hook path validation" (`bin/fw` ~2085) and "Hook config" (`bin/fw` ~3400) — treat a leading interpreter word (`python3`, `python`, `bash`, `sh`, `node`, `env …`) as the interpreter and validate the script argument after it, with quotes stripped and `$CLAUDE_PROJECT_DIR` / `${CLAUDE_PROJECT_DIR}` expanded to the project root.
-- [ ] A hook `python3 "$CLAUDE_PROJECT_DIR/scripts/x.py"` whose script exists passes both checks; the same hook with the script missing FAILs and names the missing script path (not "python3"). Existing hook shapes (`fw hook …`, `.agentic-framework/bin/fw hook …`, absolute paths) keep their verdicts.
-- [ ] Regression test `tests/unit/t4056_doctor_interpreter_hooks.bats`: a temp project whose `.claude/settings.json` has (a) an interpreter-prefixed hook with the script present → no broken count, no "script not found"; (b) script absent → FAIL naming the script; (c) a `fw hook` entry → unchanged. (a) fails on the pre-fix code.
+- [x] Both doctor hook checks — "Hook path validation" (`bin/fw` ~2085) and "Hook config" (`bin/fw` ~3400) — treat a leading interpreter word (`python3`, `python`, `bash`, `sh`, `node`, `env …`) as the interpreter and validate the script argument after it, with quotes stripped and `$CLAUDE_PROJECT_DIR` / `${CLAUDE_PROJECT_DIR}` expanded to the project root.
+- [x] A hook `python3 "$CLAUDE_PROJECT_DIR/scripts/x.py"` whose script exists passes both checks; the same hook with the script missing FAILs and names the missing script path (not "python3"). Existing hook shapes (`fw hook …`, `.agentic-framework/bin/fw hook …`, absolute paths) keep their verdicts.
+- [x] Regression test `tests/unit/t4056_doctor_interpreter_hooks.bats`: a temp project whose `.claude/settings.json` has (a) an interpreter-prefixed hook with the script present → no broken count, no "script not found"; (b) script absent → FAIL naming the script; (c) a `fw hook` entry → unchanged. (a) fails on the pre-fix code.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -282,6 +282,14 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** `fw doctor` on ring20 reports `Hook path validation 1/47 broken` and `Hook config: script not found: python3` for hooks of the shape `python3 "$CLAUDE_PROJECT_DIR/scripts/x.py"`.
+
+**Root cause:** Both hook checks in `bin/fw` (`Hook path validation` and `Hook config`) took the first non-assignment word of the command as the script. For an interpreter-prefixed hook that word is `python3` (or `bash`, `node`, `env`), so the check looked for the interpreter file, not the script. Quotes were not stripped, and `$CLAUDE_PROJECT_DIR` (without braces) was not expanded.
+
+**Why structurally allowed:** The only fixture hooks in the doctor tests were direct-script or `fw hook` shapes; no test exercised an interpreter-prefixed command, so the first-word heuristic was never challenged. The doctor check is also advisory on the hook shape it misreads, so the false FAIL looked like a host problem.
+
+**Prevention:** `tests/unit/t4056_doctor_interpreter_hooks.bats` pins the interpreter case (present passes, missing FAILs naming the script) and the existing `fw hook` shape. Test 1 and 2 fail on the pre-fix code.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -366,3 +374,8 @@ bin/fw vendor self --check
 ### 2026-10-11T17:18:51Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-11 — fix + pre-fix evidence [t4056-fix worker]
+- **Pre-fix (HEAD bin/fw):** `tests/unit/t4056_doctor_interpreter_hooks.bats` tests 1 and 2 FAIL (`not ok`), test 3 passes. Reproduces `script not found: python3` on the interpreter-prefixed hook.
+- **Post-fix:** 3/3 ok. Verification lines (bats gate, silent-skip gate, `bash -n bin/fw`) pass.
+- **Related suites:** `t3226_doctor_direct_script_claude_project_dir.bats` 3/3 ok. `doctor_hook_counters.bats` tests 2–4 FAIL on HEAD as well (pre-existing, not caused by this change; not investigated here).

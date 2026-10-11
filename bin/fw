@@ -2082,7 +2082,7 @@ for event, entries in data.get('hooks', {}).items():
             # (plus contradictory advice: one remedy line says make paths portable,
             # the next says make them absolute). L-399 producer/consumer parity --
             # the generator learned the placeholder, this validator had not.
-            cmd = cmd.replace('\${CLAUDE_PROJECT_DIR}', '$PROJECT_ROOT')
+            cmd = cmd.replace('\${CLAUDE_PROJECT_DIR}', '$PROJECT_ROOT').replace('\$CLAUDE_PROJECT_DIR', '$PROJECT_ROOT')
             parts = cmd.split()
             # Check for portable 'fw hook' format (bare fw in PATH)
             if len(parts) >= 2 and parts[0] == 'fw':
@@ -2100,13 +2100,24 @@ for event, entries in data.get('hooks', {}).items():
                     broken += 1
                     continue
             # Old-style: absolute path — check if executable exists
-            exe = None
-            for p in parts:
-                if '=' not in p:
-                    exe = p
-                    break
-            if exe and not (os.path.isfile(exe) and os.access(exe, os.X_OK)):
-                if not shutil.which(exe or ''):
+            # T-4056: an interpreter-prefixed hook (python3 with a script path, env ...,
+            # bash ...) names its script AFTER the interpreter. The first word is not the
+            # file to check; the script only has to exist, not be executable.
+            # Quotes are stripped with \x27 and \x22 (this block sits in a double-quoted string,
+            # so no literal quote characters or dollar signs may appear in these comments).
+            words = [w.strip('\x27\x22') for w in parts if '=' not in w]
+            interp = False
+            while words and os.path.basename(words[0]) in ('env', 'python3', 'python', 'bash', 'sh', 'node'):
+                interp = True
+                words = words[1:]
+                while words and words[0].startswith('-'):
+                    words = words[1:]
+            exe = words[0] if words else None
+            if exe and interp:
+                if not os.path.isfile(exe):
+                    broken += 1
+            elif exe and not (os.path.isfile(exe) and os.access(exe, os.X_OK)):
+                if not shutil.which(exe):
                     broken += 1
             # Check for hardcoded absolute paths (path isolation violation)
             if '/agents/context/' in cmd or 'PROJECT_ROOT=' in cmd:
@@ -3321,6 +3332,19 @@ for event_type, hook_list in hooks.items():
                 if '=' not in p:
                     script_path = p
                     break
+            # T-4056: an interpreter-prefixed hook (python3 with a script path, env ...)
+            # names its script after the interpreter; skip the interpreter and its flags so
+            # the script is the path checked. Quotes stripped with \x27 and \x22.
+            # (No literal quote or dollar characters in this comment: see the note above.)
+            words = [w.strip('\x27\x22') for w in parts if '=' not in w]
+            interp = False
+            while words and os.path.basename(words[0]) in ('env', 'python3', 'python', 'bash', 'sh', 'node'):
+                interp = True
+                words = words[1:]
+                while words and words[0].startswith('-'):
+                    words = words[1:]
+            if words:
+                script_path = words[0]
             # Portable 'fw hook' commands — resolve via PATH or vendored path
             # T-573: Also recognize .agentic-framework/bin/fw and other paths ending in /fw
             is_fw = (script_path == 'fw' or script_path.endswith('/fw'))
@@ -3387,7 +3411,7 @@ for event_type, hook_list in hooks.items():
             # The executable and Cellar checks below were also unreachable for
             # these hooks, since the existence test short-circuits first — a
             # genuinely non-executable hook would have been reported as missing.
-            resolved_path = script_path.replace('\${CLAUDE_PROJECT_DIR}', os.environ.get('PROJECT_ROOT', ''))
+            resolved_path = script_path.replace('\${CLAUDE_PROJECT_DIR}', os.environ.get('PROJECT_ROOT', '')).replace('\$CLAUDE_PROJECT_DIR', os.environ.get('PROJECT_ROOT', ''))
             if not os.path.isabs(resolved_path):
                 resolved_path = os.path.join(os.environ.get('PROJECT_ROOT', ''), resolved_path)
             if not os.path.exists(resolved_path):
@@ -3395,7 +3419,7 @@ for event_type, hook_list in hooks.items():
                     issues.append(f'{event_type}: stale Homebrew Cellar path (run fw init --provider claude --force to fix): {os.path.basename(script_path)}')
                 else:
                     issues.append(f'{event_type}: script not found: {os.path.basename(script_path)}')
-            elif not os.access(resolved_path, os.X_OK):
+            elif not interp and not os.access(resolved_path, os.X_OK):
                 warnings.append(f'{event_type}: script not executable: {os.path.basename(script_path)}')
             elif '/Cellar/' in script_path:
                 warnings.append(f'Hook uses Cellar path (will break on brew upgrade). Run: fw init --provider claude --force')
