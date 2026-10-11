@@ -1075,6 +1075,8 @@ UPSTREAM
     echo ""
     echo "The project now contains its own framework at .agentic-framework/"
     echo "Hooks should reference: .agentic-framework/bin/fw hook <name>"
+    command -v _t4069_stale_wrapper_notice >/dev/null 2>&1 || source "$FRAMEWORK_ROOT/lib/upgrade.sh"
+    _t4069_stale_wrapper_notice "$target"
 }
 
 # --- Auto-init dialogue ---
@@ -3296,6 +3298,28 @@ PY
         fi
     else
         echo -e "  ${CYAN}SKIP${NC}  claude-fw not on PATH (no auto-restart wrapper installed)"
+    fi
+
+    # Check: running claude-fw wrappers older than the script they run (T-4069).
+    # bash keeps the code it loaded, so a wrapper started before a re-vendor never
+    # sees the fix (T-4032) even though upgrade/vendor reported success.
+    # Silent when no wrapper runs for this project.
+    if [ -f "$FRAMEWORK_ROOT/lib/stale_claude_fw.py" ]; then
+        local _sw_out _sw_n=0 _sw_stale=0 _sw_pid _sw_start _sw_script _sw_mtime _sw_flag
+        _sw_out=$(python3 "$FRAMEWORK_ROOT/lib/stale_claude_fw.py" "$PROJECT_ROOT" 2>/dev/null || true)
+        while IFS=$'\t' read -r _sw_pid _sw_start _sw_script _sw_mtime _sw_flag; do
+            [ -n "$_sw_pid" ] || continue
+            _sw_n=$((_sw_n + 1))
+            if [ "$_sw_flag" = "1" ]; then
+                _sw_stale=$((_sw_stale + 1))
+                echo -e "  ${YELLOW}WARN${NC}  claude-fw pid $_sw_pid started $(date -u -d "@$_sw_start" '+%Y-%m-%d %H:%MZ'), before ${_sw_script##*/} changed $(date -u -d "@$_sw_mtime" '+%Y-%m-%d %H:%MZ') — fixes in it (e.g. T-4032) are not active until that session is relaunched"
+                echo -e "         script: $_sw_script"
+                warnings=$((warnings + 1))
+            fi
+        done <<< "$_sw_out"
+        if [ "$_sw_n" -gt 0 ] && [ "$_sw_stale" -eq 0 ]; then
+            echo -e "  ${GREEN}OK${NC}  Running claude-fw wrapper(s) ($_sw_n) newer than their script"
+        fi
     fi
 
     # Check: Claude Code hook configuration (CTL-R023 — T-199)
@@ -10344,6 +10368,7 @@ PYSEARCH
                 [ "$_vs_dry" = true ] || _self_vendor_version false
             )
             [ -n "$_vs_out" ] && printf '%s\n' "$_vs_out"
+            [ "$_vs_check" = true ] || _t4069_stale_wrapper_notice "$PROJECT_ROOT"
             if [ "$_vs_check" = true ]; then
                 if printf '%s' "$_vs_out" | grep -q "would sync"; then
                     echo "Self-vendor: DRIFT — vendored .agentic-framework/ is out of sync. Run 'fw vendor self' to sync." >&2
