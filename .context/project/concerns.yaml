@@ -5456,3 +5456,23 @@ concerns:
   detection_gap: no check compared installed hook content with the template; fw doctor reads the marker
   what_remains: T-3998 makes install-hooks compare content byte for byte. Consumers pick it up on their next
     fw upgrade. Close once a consumer upgrade is observed redeploying a changed hook.
+- id: G-114
+  type: gap
+  title: Operator decisions recorded in Watchtower are silently reverted in git by the next ordinary commit
+  description: 'Watchtower commits a decision through a scratch index seeded from HEAD (T-2708) and advances
+    HEAD, but the real .git/index keeps the pre-decision blobs for those paths. The next commit made from the
+    real index (agent, worker, handover, task close) writes them back: the decision and its Human tick are
+    reverted at HEAD while the working tree keeps them as uncommitted changes. 55 reverts in 60 days; 22 tasks
+    had no decision at HEAD on 2026-10-11 (20 only in the working tree, 2 only in history). It surfaced as
+    "uncommitted operator tick files" and as unprovenanced-tick push FAILs, and was mistaken for agent ticks.'
+  severity: high
+  status: watching
+  detected_in: T-4075
+  observed: '2026-10-11'
+  reported_by: agent (T-4075 worker RCA of the T-4039 GO tick)
+  blast_radius: every operator decision or tick committed by Watchtower, in this repo and every consumer
+  detection_gap: no check compares a Watchtower decision commit with HEAD later; the reverting commits carry
+    unrelated messages, and the working tree still showed the decision, so nothing looked wrong
+  what_remains: T-4081 fixes the index refresh; recovery of the 22 decisions is operator-gated (ticks need
+    operator provenance). Close after the fix ships, the 22 are restored, and a detector (Watchtower decision
+    no longer at HEAD) exists.
