@@ -1,10 +1,20 @@
 ---
 id: T-4069
-name: "A claude-fw wrapper started before a re-vendor keeps running the old code (bash loaded it), so a fix like T-4032 stays dormant in every live session while fw upgrade/vendor report success (010 RCA)"
+name: "A claude-fw wrapper started before a re-vendor keeps running the old code (bash
+  loaded it), so a fix like T-4032 stays dormant in every live session while fw upgrade/vendor
+  report success (010 RCA)"
 description: >
-  010, 2026-10-11 18:43Z: mid-turn budget kill AFTER vendoring 1.8.9 (T-4032 fix) at 12:01, because the claude-fw running the session (pid 240941) started 2026-10-08, before the re-vendor; bash had the pre-T-4032 _terminator_watch in memory. Evidence: zero '[terminator] restart signal seen' lines in .compact-log; auto-handover 18:43:39Z, terminator kill 18:43:44Z; vendored bin/claude-fw has 11 T-4032 refs, the old copy 0. Proposal: fw upgrade/update/vendor and fw doctor detect a running claude-fw whose /proc start time is older than its bin/claude-fw mtime and say 'fix not active until the wrapper is relaunched'. Same class as long-lived processes on old code (010's T-2405 canary).
+  010, 2026-10-11 18:43Z: mid-turn budget kill AFTER vendoring 1.8.9 (T-4032 fix)
+  at 12:01, because the claude-fw running the session (pid 240941) started 2026-10-08,
+  before the re-vendor; bash had the pre-T-4032 _terminator_watch in memory. Evidence:
+  zero '[terminator] restart signal seen' lines in .compact-log; auto-handover 18:43:39Z,
+  terminator kill 18:43:44Z; vendored bin/claude-fw has 11 T-4032 refs, the old copy
+  0. Proposal: fw upgrade/update/vendor and fw doctor detect a running claude-fw whose
+  /proc start time is older than its bin/claude-fw mtime and say 'fix not active until
+  the wrapper is relaunched'. Same class as long-lived processes on old code (010's
+  T-2405 canary).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +49,8 @@ origin: {kind: "peer", source: "010-termlink"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T20:18:43Z
-last_update: 2026-10-11T20:19:28Z
-date_finished: null
+last_update: 2026-10-11T20:20:19Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +61,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-11T20:19:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4069: A claude-fw wrapper started before a re-vendor keeps running the old code (bash loaded it), so a fix like T-4032 stays dormant in every live session while fw upgrade/vendor report success (010 RCA)
@@ -63,8 +91,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] One helper (shell or Python under `lib/`) lists running `claude-fw` wrapper processes for THIS project (the bash process whose script is this project's `bin/claude-fw`, its vendored `.agentic-framework/bin/claude-fw`, or the on-PATH router serving this project — match by the process's cwd / script path), with start time (from /proc) and the mtime of the script it runs, and flags each one started before that script's current mtime.
+- [ ] `fw doctor` WARNs per stale wrapper: "claude-fw pid N started <date>, before bin/claude-fw changed <date> — fixes in it (e.g. T-4032) are not active until that session is relaunched". OK line when none; silent when no wrapper runs.
+- [ ] `fw upgrade` / `fw vendor` / `fw vendor self` end with the same notice when the run changed `bin/claude-fw` and a stale wrapper for the project is running; the exit code is unchanged.
+- [ ] Regression test `tests/unit/t4069_stale_claude_fw_wrapper.bats`: a fixture project + a sleeping `bash <fixture>/bin/claude-fw` process started, then the script touched to a newer mtime → doctor's check (or the helper) reports it stale; untouched → not stale; other projects' wrappers are not reported. Fails on the pre-fix code (no such check).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -227,6 +257,10 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/t4069_stale_claude_fw_wrapper.bats > .context/working/t4069-verify.out 2>&1 && ! grep -q "^not ok" .context/working/t4069-verify.out
+test "$(grep -c '# skip' .context/working/t4069-verify.out)" -eq 0
+bash -n bin/fw
+bin/fw vendor self --check
 
 ## RCA
 
@@ -324,3 +358,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4069-a-claude-fw-wrapper-started-before-a-re-.md
 - **Context:** Initial task creation
+
+### 2026-10-11T20:19:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
