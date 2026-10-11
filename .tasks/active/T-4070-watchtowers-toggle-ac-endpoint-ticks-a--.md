@@ -51,7 +51,7 @@ origin: {kind: "peer", source: "dimitri-mint-dev", ref: "G-011"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T20:32:32Z
-last_update: 2026-10-11T20:33:43Z
+last_update: 2026-10-11T20:37:01Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,11 +93,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Watchtower's `toggle-ac` endpoint (`web/blueprints/tasks.py`, used by the task, review and inception pages) writes a provenance row via `lib/human_ac_ticks.py` (`record` / `record_ticked`, `via="watchtower"`, plus request id and remote address) whenever it ticks a `### Human` box, in the same request and before the task file is committed; if the row cannot be written, the tick is refused with a visible error (no unprovenanced tick).
-- [ ] A Human tick made through Watchtower and committed passes `python3 lib/human_ac_ticks.py audit` (no "unprovenanced … by AGENT"), and so passes the pre-push audit.
-- [ ] Agent-criterion toggles are unchanged (no ledger row); un-ticking a Human box is handled consistently with the ledger's existing semantics (one row licenses one tick).
-- [ ] The audit's FAIL Mitigation for an unprovenanced Human tick names the Watchtower case and the operator's `human_ac_ticks.py ack` command, instead of only "un-tick the box".
-- [ ] Regression test (`tests/web/test_t4070_watchtower_tick_provenance.py`): in a temp git repo, a Human tick through the Flask test client writes the ledger row and the committed tick passes the detector; an Agent toggle writes none; a ledger write failure refuses the tick. The provenance test fails on the pre-fix code.
+- [x] Watchtower's `toggle-ac` endpoint (`web/blueprints/tasks.py`, used by the task, review and inception pages) writes a provenance row via `lib/human_ac_ticks.py` (`record` / `record_ticked`, `via="watchtower"`, plus request id and remote address) whenever it ticks a `### Human` box, in the same request and before the task file is committed; if the row cannot be written, the tick is refused with a visible error (no unprovenanced tick).
+- [x] A Human tick made through Watchtower and committed passes `python3 lib/human_ac_ticks.py audit` (no "unprovenanced … by AGENT"), and so passes the pre-push audit.
+- [x] Agent-criterion toggles are unchanged (no ledger row); un-ticking a Human box is handled consistently with the ledger's existing semantics (one row licenses one tick).
+- [x] The audit's FAIL Mitigation for an unprovenanced Human tick names the Watchtower case and the operator's `human_ac_ticks.py ack` command, instead of only "un-tick the box".
+- [x] Regression test (`tests/web/test_t4070_watchtower_tick_provenance.py`): in a temp git repo, a Human tick through the Flask test client writes the ledger row and the committed tick passes the detector; an Agent toggle writes none; a ledger write failure refuses the tick. The provenance test fails on the pre-fix code.
 - [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
@@ -267,6 +267,11 @@ bin/fw vendor self --check
 
 ## RCA
 
+**Symptom:** An operator tick of a `### Human` box in Watchtower, once committed, FAILed `fw audit` / pre-push as "ticked by AGENT" (dimitri-mint-dev T-100, G-011).
+**Root cause:** `toggle_ac` rewrote the checkbox line and wrote nothing else; `lib/human_ac_ticks.py` accepts a tick only with a ledger row, and its docstring promised that Watchtower would write it, but nothing under `web/` did.
+**Why structurally allowed:** The detector (T-3695) and the endpoint were built in separate tasks and the endpoint half was left as an unfiled "follow-up"; no test joined the two.
+**Prevention:** `tests/web/test_t4070_watchtower_tick_provenance.py` runs endpoint → commit → detector end to end, so the join is pinned; a ledger write failure rolls the tick back; the audit Mitigation now names the Watchtower/stale-server case and the `ack` command.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -364,3 +369,7 @@ bin/fw vendor self --check
 
 ### 2026-10-11T20:33:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-11 — fix + pre-fix proof [worker]
+- **Pre-fix failure:** with HEAD's `web/blueprints/tasks.py` the new test file ran 3 failed / 2 passed (Human tick writes no row, untick count, write-failure not refused); with the fix 5 passed.
+- **Note:** open T-3722 describes the same defect; the operator may want to close it as duplicate.

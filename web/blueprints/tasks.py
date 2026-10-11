@@ -1236,7 +1236,22 @@ def toggle_ac(task_id):
     if not task_file:
         abort(404)
 
+    old_text = task_file.read_text()
     ok, new_state, err = _toggle_ac_line(task_file, line_idx)
+    if ok and new_state:
+        # T-4070: a tick on a `### Human` box needs a provenance row written in this
+        # request; if it cannot be written the tick is rolled back, never left unprovenanced.
+        try:
+            import uuid
+            from lib import human_ac_ticks
+            extra = {"request_id": request.headers.get("X-Request-Id") or uuid.uuid4().hex,
+                     "remote_addr": request.remote_addr or ""}
+            for key, _kind, _vid in human_ac_ticks.unprovenanced_ticks(old_text, task_file.read_text()):
+                human_ac_ticks.record(PROJECT_ROOT, task_id, key, "watchtower", "watchtower", extra)
+        except Exception as e:  # noqa: BLE001 - any failure must refuse the tick
+            task_file.write_text(old_text)
+            return ('<p style="color: var(--pico-del-color);">Tick refused: could not write the '
+                    f'provenance record ({_escape(str(e))[:300]})</p>', 500)
     if ok:
         checked_attr = "checked" if new_state else ""
         return f'<input type="checkbox" {checked_attr} onchange="this.form.requestSubmit()" style="margin:0;">'

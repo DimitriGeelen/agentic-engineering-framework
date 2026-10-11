@@ -11,7 +11,7 @@ of `### Human` and ticked) without provenance.
 
 PROVENANCE — a tick counts as the human's when either holds:
   1. the ledger `.context/reviews/human-ac-ticks.jsonl` has a row for (task, criterion
-     text) — written by Watchtower's tick endpoint (follow-up task, render surface) or by
+     text) — written by Watchtower's toggle-ac endpoint (T-4070, via=watchtower) or by
      the operator: `python3 lib/human_ac_ticks.py ack T-XXX --ac N` (refused under agent
      control unless --i-am-human);
   2. the criterion carries a `**Reviewer verdict:** green <id>` annotation whose id is a
@@ -277,9 +277,11 @@ def ledger_rows(root: Path) -> list[dict]:
     return rows
 
 
-def record(root: Path, task_id: str, key: str, via: str, by: str) -> dict:
+def record(root: Path, task_id: str, key: str, via: str, by: str,
+           extra: dict | None = None) -> dict:
     row = {"ts": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "task": task_id,
            "digest": key_digest(task_id, key), "criterion": key[:200], "via": via, "by": by}
+    row.update({k: v for k, v in (extra or {}).items() if k not in row})
     p = root / LEDGER
     p.parent.mkdir(parents=True, exist_ok=True)
     with p.open("a", encoding="utf-8") as f:
@@ -447,7 +449,9 @@ def audit(root: Path, since: str | None = None) -> tuple[int, list[str]]:
         lines.append(
             f"FAIL {f['task']} {f['kind']} in {'merge ' if f.get('merge') else ''}{f['commit'][:10]} by "
             f"{'AGENT ' if f['agent'] else ''}{f['who']}: \"{f['criterion']}\" — no Watchtower/"
-            f"operator record and no reviewer verdict")
+            f"operator record and no reviewer verdict. Ticked in Watchtower? Then the server is "
+            f"stale (bin/fw watchtower restart) or the tick predates T-4070: the operator "
+            f"records it with: python3 lib/human_ac_ticks.py ack {f['task']} --ac N")
     lines.append(f"{len(findings)} unprovenanced ### Human tick(s) since {since}")
     return 2, lines
 
