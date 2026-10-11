@@ -46,7 +46,7 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "T-2302"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T11:18:51Z
-last_update: 2026-10-11T15:48:39Z
+last_update: 2026-10-11T16:00:15Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,10 +100,10 @@ Reported by ring20 (their T-2302/T-2306, operator-requested): `/approvals` admit
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `web/shared.py` gains one predicate (e.g. `review_readiness(task_id, status, body) -> (state, reasons)`, state `ready` | `waiting-on-agent`) implementing the readiness rule in Context, built on `count_human_acs` scoping (T-3139) and the existing verdict ledger / delegation classifier — no reimplemented AC parser. It degrades safely: if the ledger or classifier cannot be read, the reason says so and the task is `waiting-on-agent`, never silently `ready`.
-- [ ] `/approvals` shows two groups: "Ready for you" first, then "Waiting on the agent" with each task's reasons; the page's ready count counts only the first group. Batch-complete behaviour (`is_ready_for_batch_completion`) is unchanged.
-- [ ] `fw review-queue` uses the same predicate (calling into the Python helper, not a bash re-derivation) and prints the same two groups with reasons; `--ids-only` keeps printing only ready ids unless a flag asks for both.
-- [ ] pytest `tests/web/test_t4053_review_readiness.py`: fixtures for (a) all Agent ticked + open Human → ready; (b) one Agent open → waiting, reason names the count; (c) reviewer-judged Human criterion with no green verdict → waiting, reason names it; (d) /approvals renders both groups in that order; plus a bats or pytest check that `fw review-queue` output agrees with the page for the same fixtures. (b) and (d) fail on the pre-fix code.
+- [x] `web/shared.py` gains one predicate (e.g. `review_readiness(task_id, status, body) -> (state, reasons)`, state `ready` | `waiting-on-agent`) implementing the readiness rule in Context, built on `count_human_acs` scoping (T-3139) and the existing verdict ledger / delegation classifier — no reimplemented AC parser. It degrades safely: if the ledger or classifier cannot be read, the reason says so and the task is `waiting-on-agent`, never silently `ready`.
+- [x] `/approvals` shows two groups: "Ready for you" first, then "Waiting on the agent" with each task's reasons; the page's ready count counts only the first group. Batch-complete behaviour (`is_ready_for_batch_completion`) is unchanged.
+- [x] `fw review-queue` uses the same predicate (calling into the Python helper, not a bash re-derivation) and prints the same two groups with reasons; `--ids-only` keeps printing only ready ids unless a flag asks for both.
+- [x] pytest `tests/web/test_t4053_review_readiness.py`: fixtures for (a) all Agent ticked + open Human → ready; (b) one Agent open → waiting, reason names the count; (c) reviewer-judged Human criterion with no green verdict → waiting, reason names it; (d) /approvals renders both groups in that order; plus a bats or pytest check that `fw review-queue` output agrees with the page for the same fixtures. (b) and (d) fail on the pre-fix code.
 - [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
@@ -380,3 +380,8 @@ bin/fw vendor self --check
 
 ### 2026-10-11T15:48:19Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-11 — build [worker t4053-ready]
+- **Pre-fix failure:** with web/shared.py, approvals.py, _approvals_content.html and bin/fw at HEAD, `tests/web/test_t4053_review_readiness.py` → 3 failed, 1 passed, 4 errors (no `review_readiness`; `readiness` key absent; no "Waiting on the agent" group). Post-fix: 8 passed.
+- **Measured /approvals (Flask test client, 763 active tasks):** before cold 15.15 s / warm 4.04–4.22 s / 2.35 MB; after cold 18.41 s / warm 3.98–4.03 s / 0.94 MB (only the ready group is rendered in full). Cold readiness over all 763 tasks = 3.4 s; the first attempt (ctx via `_Ctx.__init__`) cost 1.4 s/task from a `git log` render-surface probe, avoided by building the ctx directly.
+- **CLI:** `fw review-queue` now 55 ready / 309 waiting on this corpus (4.4 s); `--ids` = ready only, `--include-waiting` adds the rest.

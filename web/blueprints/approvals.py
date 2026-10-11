@@ -17,7 +17,7 @@ from pathlib import Path
 import yaml
 from flask import Blueprint, request
 
-from web.shared import FRAMEWORK_ROOT, PROJECT_ROOT, render_page, render_markdown_safe, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict, count_unchecked_human_acs, needs_human_review, mtime_cached_get, has_unchecked_review_ac, request_task_metadata, is_ready_for_batch_completion, inception_handoff_blockers
+from web.shared import READY, review_readiness, FRAMEWORK_ROOT, PROJECT_ROOT, render_page, render_markdown_safe, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict, count_unchecked_human_acs, needs_human_review, mtime_cached_get, has_unchecked_review_ac, request_task_metadata, is_ready_for_batch_completion, inception_handoff_blockers
 
 # T-1808: paused-dispatch surface — needs lib/ on the path so the helper imports cleanly.
 # T-2645 (832 G-004 sibling): lib/ is FRAMEWORK-owned — PROJECT_ROOT resolution broke
@@ -429,6 +429,10 @@ def _load_pending_human_acs():
         if not needs_human_review(body):
             continue
 
+        # T-4053: ready for the operator, or waiting on the agent (with reasons).
+        readiness, wait_reasons = review_readiness(
+            str(fm.get("id", "")), str(fm.get("status", "")), body, path)
+
         # DISPLAY ONLY (T-3590): the per-criterion detail rendered in the card.
         # No decision on this page reads it — `_parse_acceptance_criteria` stops
         # at an intervening `## ` heading and so can see zero Human criteria on a
@@ -472,6 +476,8 @@ def _load_pending_human_acs():
             # T-3590: canonical count (every `### Human` block) — the badge and the
             # card's Complete button read this, never the display list above.
             "unchecked_count": count_unchecked_human_acs(body),
+            "readiness": readiness,           # T-4053
+            "wait_reasons": wait_reasons,     # T-4053
             "age_days": age_days,
             "is_stale": is_stale,
             "sort_priority": sort_priority,
@@ -992,7 +998,11 @@ def _count_pending_human_ac_tasks() -> int:
             continue
         body = _get_body_cached(fm["_path"])
         if body and needs_human_review(body):
-            count += 1
+            # T-4053: the tile counts what is the operator's to decide, as the page does.
+            state, _ = review_readiness(str(fm.get("id", "")), str(fm.get("status", "")),
+                                        body, fm["_path"])
+            if state == READY:
+                count += 1
     return count
 
 
@@ -1024,7 +1034,11 @@ def _build_approvals_context(expand_overflow: bool = False):
     pending_tier0 = _load_pending_approvals()
     resolved_tier0 = _load_resolved_approvals()
     pending_go = _load_pending_go_decisions()
-    pending_acs = _load_pending_human_acs()
+    all_pending_acs = _load_pending_human_acs()
+    # T-4053: two groups. pending_acs is the READY group only, so every count
+    # derived from it (badge, tile, total) means "yours to decide".
+    pending_acs = [t for t in all_pending_acs if t["readiness"] == READY]
+    waiting_acs = [t for t in all_pending_acs if t["readiness"] != READY]
     decided_unclosed = _load_decided_unclosed()  # T-3175
     stale_keystones = _load_stale_keystones()  # T-3694
     deferred_count = _count_deferred_inceptions()
@@ -1066,6 +1080,7 @@ def _build_approvals_context(expand_overflow: bool = False):
         decided_unclosed_count=decided_unclosed_count,  # T-3175
         stale_keystones=stale_keystones,            # T-3694
         pending_acs=pending_acs,
+        waiting_acs=waiting_acs,                    # T-4053
         paused_dispatches=paused_dispatches,
         arcs_close_ready=arcs_close_ready,
         bvp_proposals=bvp_proposals,

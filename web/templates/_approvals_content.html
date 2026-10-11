@@ -564,7 +564,7 @@
 
 <!-- T-1416 (T-1388 B6 / F5): Verifications group (Section C) -->
 {% if pending_acs %}
-<h2 id="section-verifications" class="approvals-group-heading">Verifications</h2>
+<h2 id="section-verifications" class="approvals-group-heading">Ready for you</h2>
 
 <!-- Section C: Human ACs (renamed to "Verifications" under new group heading) -->
 <div class="section-header">
@@ -830,8 +830,25 @@ function filterACs(filter) {
 {% if pending_acs|length > _ac_cap %}</details>{% endif %}
 {% endif %}
 
+{# T-4053: tasks with an open Human box that are not yet the operator's call. #}
+{% if waiting_acs %}
+<h2 id="section-waiting-on-agent" class="approvals-group-heading">Waiting on the agent</h2>
+<div class="section-header">
+    <small>{{ waiting_acs|length }} task{{ 's' if waiting_acs|length != 1 }} with open Human criteria that are not ready for you yet</small>
+</div>
+<details class="waiting-on-agent" {% if not pending_acs %}open{% endif %} style="margin-bottom:1rem;">
+<summary style="cursor:pointer;">Show {{ waiting_acs|length }} waiting task{{ 's' if waiting_acs|length != 1 }} and why</summary>
+<ul>
+{% for t in waiting_acs %}
+<li data-task="{{ t.task_id }}"><a href="/tasks/{{ t.task_id }}"><strong>{{ t.task_id }}</strong></a>: {{ t.name }}
+  <br><small style="color:var(--pico-muted-color);">{{ t.wait_reasons | join('; ') }}</small></li>
+{% endfor %}
+</ul>
+</details>
+{% endif %}
+
 <!-- Empty state -->
-{% if not pending_tier0 and not pending_go and not pending_acs and not paused_dispatches and not waiting_messages and not waiting_error %}
+{% if not pending_tier0 and not pending_go and not pending_acs and not waiting_acs and not paused_dispatches and not waiting_messages and not waiting_error %}
 <div class="empty-state">
     <p>Nothing needs your attention.</p>
     <p><small>Tier 0 gates, inception decisions, and human acceptance criteria will appear here when pending.</small></p>
