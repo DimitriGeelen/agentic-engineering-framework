@@ -20,12 +20,12 @@ description: >
   HEAD. Recovery of the 22 is a separate, operator-gated step (ticks need operator
   provenance).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, critical, watchtower, git, governance]
-components: []
+components: [agents/audit/audit.sh, web/blueprints/inception.py]
 related_tasks: [T-4075, T-2708]
 origin: {kind: "agent"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -55,8 +55,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T21:44:42Z
-last_update: 2026-10-11T22:15:11Z
-date_finished:
+last_update: 2026-10-11T22:16:18Z
+date_finished: 2026-10-11T22:16:18Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -111,7 +111,7 @@ bvp_scores_proposed:
 - [x] Every other place that commits through a scratch/alternate index or advances HEAD without the real index (search web/, lib/, agents/, bin/ for GIT_INDEX_FILE, read-tree, commit-tree, update-ref) gets the same refresh, or is listed in the task's Updates as not affected.
 - [x] Regression test (`tests/unit/t4081_watchtower_commit_keeps_real_index.bats` or pytest, temp git repo): perform the Watchtower decision-commit path, then an unrelated `git add x && git commit` from the real index → the decision is still at HEAD (fails on the pre-fix code); a path staged in the real index before the decision commit stays staged.
 - [x] A detector exists (in `fw audit` or `fw doctor`): a task whose last Watchtower decision commit is no longer reflected at HEAD (decision block missing at HEAD but present in that commit) is reported by name — so G-114's 22 cases show up until restored.
-- [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
+- [x] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -388,3 +388,20 @@ python3 -m pytest tests/unit/test_t4081_watchtower_commit_keeps_real_index.py te
 - **Other committers:** web/blueprints/inception.py is the only scratch-index committer (GIT_INDEX_FILE appears nowhere else in web/ lib/ agents/ bin/). Not affected: lib/release.sh `release_version_restore` (update-ref HEAD back, but restores the VERSION index entries itself); lib/push-resolve.sh (update-ref on a remote-tracking ref only); lib/verdict_ledger.py (`git commit -- paths` updates the real index); agents/context/lib/safe-commands.sh (mentions GIT_INDEX_FILE in a comment only).
 - **Detector:** lib/watchtower_decision_revert.py, wired into agents/audit/audit.sh as a WARN. Live read-only run lists 19 tasks: T-3596 T-3659 T-3667 T-3672 T-3737 T-3742 T-3751 T-3752 T-3770 T-3772 T-3774 T-3780 T-3795 T-3818 T-3825 T-3828 T-3830 T-3857 T-3891. It is narrower than the 22 in G-114 (T-3159, T-3278 have no recent "(via Watchtower)" decision commit).
 - **Not done:** Watchtower restart AC left unticked for the orchestrator; no vendor sync or commit.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-171dfeed
+- **Timestamp:** 2026-10-11T22:16:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — After Watchtower's scratch-index decision commit (`web/blueprints/inception.py`, T-2708) advances HEAD, the real `.git/index` is refreshed for exactly the committed paths (e.g. `git reset -q -- <paths
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/inception.py in: After Watchtower's scratch-index decision commit (`web/blueprints/inception.py`, T-2708) advances HEAD, the real `.git/index` is refreshed for exactly`
+
+### 2026-10-11T22:16:18Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

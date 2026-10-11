@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4075: Inception decide's Human-tick provenance row does not back the tick it records (T-4039 GO from Watchtower: row present, audit still FAILs as unprovenanced); 62 ledger rows carry task '?
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-11T22:17:36Z
+# ============================================================================
+
+task_id: T-4075
+task_name: "Inception decide's Human-tick provenance row does not back the tick it records (T-4039 GO from Watchtower: row present, audit still FAILs as unprovenanced); 62 ledger rows carry task '?"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-11T21:25:29Z
+completed: 2026-10-11T22:17:13Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-11T23:26:30+02:00
+last_commit: 2026-10-11T23:31:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file + scope — inception decide provenance row does not back its tick (T-4039), 62 rows with task '?'. inception tick provenance — refuse '?' task rows, isolate fixture ledger, regression test; RCA (T-4039 = tick/revert/re-tick, not a decide defect). vendored copies of inception.sh + human_ac_ticks.py
+
+# Key outcomes
+outcomes:
+  - 'Root cause found and written in `## RCA`: why the T-4039 row (task T-4039, via inception-decide) does not back the committed tick (digest/key mismatch, consumption order, a later edit of the criterion text, or the tick landing in a different commit than expected), and where the 62 `task: "?"` rows come from.'
+  - '`fw inception decide` (CLI and Watchtower `--from-watchtower`) and `fw inception sweep` write provenance rows that back the ticks they make: after decide → commit, `python3 lib/human_ac_ticks.py audit` reports nothing for that task. No row is ever written with task `?` (refuse or derive the id; never a placeholder).'
+  - 'Regression test (bats or pytest, temp git repo): an inception with the stock `[REVIEW] Review exploration findings…` Human criterion, decided GO through the same code path Watchtower uses, then committed → audit clean; the same for a sweep-ticked task; fails on the pre-fix code.'
+  - 'The detector''s semantics are not weakened: an agent-made tick without a row still FAILs (control case in the test).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'inception tick provenance — refuse ''?'' task rows, isolate fixture ledger, regression test; RCA (T-4039 = tick/revert/re-tick, not a decide defect)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/human_ac_ticks.py'
+  - '.agentic-framework/lib/inception.sh'
+  - 'lib/human_ac_ticks.py'
+  - 'lib/inception.sh'
+  - '.tasks/active/T-4075-inception-decides-human-tick-provenance-.md'
+  - 'tests/unit/inception_tick_marker.bats'
+  - 'tests/unit/t4075_inception_decide_tick_provenance.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-11T23:26:30'
+    action: 'T-4075: file + scope — inception decide provenance row does not back its tick (T-4039), 62 rows with task ''?'''
+  - time: '2026-10-11T23:31:12'
+    action: 'T-4075: inception tick provenance — refuse ''?'' task rows, isolate fixture ledger, regression test; RCA (T-4039 = tick/revert/re-tick, not a decide defect)'
+  - time: '2026-10-11T23:31:14'
+    action: 'T-4075: vendored copies of inception.sh + human_ac_ticks.py'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 51 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, provenance, inception, governance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 51
+  commits: 3
+  files_changed: 7
+  lines_added: 493
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4075-inception-decides-human-tick-provenance-.md
+generated_by: context-agent-hybrid

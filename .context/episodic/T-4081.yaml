@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4081: CRITICAL: Watchtower commits operator decisions through a scratch index and never refreshes the real index, so the next ordinary commit silently reverts them (55 reverted decisions in 60 days; 22 tasks lost their decision at HEAD)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-11T22:16:47Z
+# ============================================================================
+
+task_id: T-4081
+task_name: "CRITICAL: Watchtower commits operator decisions through a scratch index and never refreshes the real index, so the next ordinary commit silently reverts them (55 reverted decisions in 60 days; 22 tasks lost their decision at HEAD)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-11T21:44:42Z
+completed: 2026-10-11T22:16:18Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-11T23:46:14+02:00
+last_commit: 2026-10-12T00:15:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope — refresh real index after scratch-index commits, other committers, regression test, detector. Watchtower refreshes the real index for the paths it committed through its scratch index, so the next ordinary commit no longer reverts operator decisions (G-114); regression test (2 of 3 fail without the refresh); audit WARN lists decisions no longer at HEAD (19 live). vendored copies
+
+# Key outcomes
+outcomes:
+  - 'After Watchtower''s scratch-index decision commit (`web/blueprints/inception.py`, T-2708) advances HEAD, the real `.git/index` is refreshed for exactly the committed paths (e.g. `git reset -q -- <paths>`: index entries := new HEAD, working tree untouched), so a following ordinary `git add <other> && git commit` does not revert the decision. The refresh never touches other paths (other in-flight work stays staged as it was).'
+  - 'Every other place that commits through a scratch/alternate index or advances HEAD without the real index (search web/, lib/, agents/, bin/ for GIT_INDEX_FILE, read-tree, commit-tree, update-ref) gets the same refresh, or is listed in the task''s Updates as not affected.'
+  - 'Regression test (`tests/unit/t4081_watchtower_commit_keeps_real_index.bats` or pytest, temp git repo): perform the Watchtower decision-commit path, then an unrelated `git add x && git commit` from the real index → the decision is still at HEAD (fails on the pre-fix code); a path staged in the real index before the decision commit stays staged.'
+  - 'A detector exists (in `fw audit` or `fw doctor`): a task whose last Watchtower decision commit is no longer reflected at HEAD (decision block missing at HEAD but present in that commit) is reported by name — so G-114''s 22 cases show up until restored.'
+  - 'Watchtower restarted; `bin/fw watchtower current` exits 0.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'Watchtower refreshes the real index for the paths it committed through its scratch index, so the next ordinary commit no longer reverts operator decisions (G-114); regression test (2 of 3 fail without the refresh); audit WARN lists decisions no longer at HEAD (19 live)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/lib/watchtower_decision_revert.py'
+  - '.agentic-framework/web/blueprints/inception.py'
+  - 'agents/audit/audit.sh'
+  - 'lib/watchtower_decision_revert.py'
+  - '.tasks/active/T-4081-critical-watchtower-commits-operator-dec.md'
+  - 'tests/unit/test_t4081_watchtower_commit_keeps_real_index.py'
+  - 'web/blueprints/inception.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-11T23:46:14'
+    action: 'T-4081: scope — refresh real index after scratch-index commits, other committers, regression test, detector'
+  - time: '2026-10-12T00:14:52'
+    action: 'T-4081: Watchtower refreshes the real index for the paths it committed through its scratch index, so the next ordinary commit no longer reverts operator decisions (G-114); regression test (2 of 3 fail without the refresh); audit WARN lists decisions no longer at HEAD (19 live)'
+  - time: '2026-10-12T00:15:11'
+    action: 'T-4081: vendored copies'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 31 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, critical, watchtower, git, governance]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 31
+  commits: 3
+  files_changed: 8
+  lines_added: 419
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4081-critical-watchtower-commits-operator-dec.md
+generated_by: context-agent-hybrid

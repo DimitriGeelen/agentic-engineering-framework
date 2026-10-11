@@ -13,12 +13,12 @@ description: >
   get '?', and add a test that a Watchtower/CLI decide → commit → audit passes. Blocks
   the push of the T-4039 close-out until the operator acks.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, provenance, inception, governance]
-components: []
+components: [lib/human_ac_ticks.py, lib/inception.sh, tests/unit/inception_tick_marker.bats]
 related_tasks: [T-4070]
 origin: {kind: "agent"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -48,8 +48,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T21:25:29Z
-last_update: '2026-10-11T21:31:07Z'
-date_finished:
+last_update: 2026-10-11T22:17:13Z
+date_finished: 2026-10-11T22:17:13Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -374,3 +374,20 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4075-inception-decides-human-tick-provenance-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ece413d2
+- **Timestamp:** 2026-10-11T22:17:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — `fw inception decide` (CLI and Watchtower `--from-watchtower`) and `fw inception sweep` write provenance rows that back the ticks they make: after decide → commit, `python3 lib/human_ac_ticks.py audit
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/human_ac_ticks.py in: `fw inception decide` (CLI and Watchtower `--from-watchtower`) and `fw inception sweep` write provenance rows that back the ticks they make: after dec`
+
+### 2026-10-11T22:17:13Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
