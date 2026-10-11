@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4049: claude-fw sets destroy-unattached GLOBALLY (-g) on the shared fw-agents tmux server, so fw termlink dispatch from a wrapped session spawns workers that are destroyed at once (055 G-014, T-4003 regression)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-11T08:29:53Z
+# ============================================================================
+
+task_id: T-4049
+task_name: "claude-fw sets destroy-unattached GLOBALLY (-g) on the shared fw-agents tmux server, so fw termlink dispatch from a wrapped session spawns workers that are destroyed at once (055 G-014, T-4003 regression)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-11T08:27:09Z
+completed: 2026-10-11T08:29:27Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-11T10:29:25+02:00
+last_commit: 2026-10-11T10:29:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  claude-fw scopes destroy-unattached to its own tmux session instead of the whole shared fw-agents server, so workers dispatched from a wrapped session survive (055 G-014); test asserts -t not -g and fails on the old line; real-tmux repro: -g destroys a detached probe, -t keeps it
+
+# Key outcomes
+outcomes:
+  - 'bin/claude-fw sets destroy-unattached only on the wrapper''s own session (`set-option -t <session>`), never globally (`-g`) on the shared fw-agents server'
+  - 'tests/unit/t4003_claude_fw_tmux_wrap.bats asserts the option is session-scoped and not -g, and fails on the previous line'
+  - 'Real tmux check: on a private server where the wrapper''s session has the option, a second detached session (as fw termlink dispatch creates) survives'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - 'bin/claude-fw'
+  - '.tasks/active/T-4049-claude-fw-sets-destroy-unattached-global.md'
+  - 'tests/unit/t4003_claude_fw_tmux_wrap.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-11T10:29:25'
+    action: 'T-4049: claude-fw scopes destroy-unattached to its own tmux session instead of the whole shared fw-agents server, so workers dispatched from a wrapped session survive (055 G-014); test asserts -t not -g and fails on the old line; real-tmux repro: -g destroys a detached probe, -t keeps it'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 4
+  lines_added: 381
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4049-claude-fw-sets-destroy-unattached-global.md
+generated_by: context-agent-hybrid
