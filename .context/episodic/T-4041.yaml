@@ -1,0 +1,102 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4041: With FW_HOST bound to one interface, the framework cannot find Watchtower and prints a link to another port (GitHub #88, MikeEchoVoid)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-11T12:50:38Z
+# ============================================================================
+
+task_id: T-4041
+task_name: "With FW_HOST bound to one interface, the framework cannot find Watchtower and prints a link to another port (GitHub #88, MikeEchoVoid)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-10T18:06:09Z
+completed: 2026-10-11T12:50:12Z
+duration_days: 1
+updates_count: 4
+first_commit: 2026-10-11T14:18:50+02:00
+last_commit: 2026-10-11T14:24:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope GitHub #88 (FW_HOST ignored by the shell side; localhost:3000 fallbacks) — context, 8 ACs, Verification. shell side honours FW_HOST — probe/advertise the bound address, export WATCHTOWER_URL to the server, drop hard-coded localhost:3000 fallbacks (GitHub #88). refresh vendored copies (watchtower/config/arc/verify-acs/tier0/designer; bin/fw and base.html were already drifted from source)
+
+# Key outcomes
+outcomes:
+  - '`FW_HOST` is a registered config key (`lib/config.sh` FW_CONFIG_REGISTRY, default `0.0.0.0`) and the shell side resolves it the same way `web/config.py` does. One helper (in `lib/watchtower.sh`) answers "which address do I probe for this project''s Watchtower": the `FW_HOST` address when it is set to a specific address, `localhost` when it is unset/`0.0.0.0`/`::`.'
+  - '`bin/watchtower.sh` start: the health check and the identity check (`_watchtower_port_holder_is_ours`) probe that address, so with `FW_HOST=<non-loopback addr>` the health check passes and `watchtower.port` + `watchtower.url` are written. The url file holds `http://<FW_HOST>:<port>` when `FW_HOST` is a specific address (unchanged otherwise).'
+  - '`_watchtower_url` (resolver) probes the `FW_HOST` address first when it is specific, before `localhost` / `hostname -I`.'
+  - 'No caller falls back to a hard-coded `http://localhost:3000` when the resolver fails (check-tier0.sh, verify-acs.sh, arc.sh ×3, and any other `localhost:3000` fallback found in lib/ agents/ bin/ shell code — `lib/verification-port.sh`''s detector pattern excepted). On failure they print no link (or a clear "no Watchtower reachable for <project>" line), never a link to another port.'
+  - 'Processes Watchtower itself starts (the inception decide chain launched from the web app) receive the URL: `bin/watchtower.sh` exports `WATCHTOWER_URL` (the same value it writes to the url file) into the environment of the Flask process it launches, so children inherit it — shell-side only, no `web/` edit — so "a process started by Watchtower cannot find Watchtower" no longer happens.'
+  - '`fw watchtower` help documents `FW_HOST` next to `FW_PORT`.'
+  - 'Regression test (bats): Watchtower stub bound to a non-loopback address (use a second loopback address such as 127.0.0.2 so it runs anywhere — localhost probing must NOT reach it) with `FW_HOST` set → health check passes, url file holds that address, resolver returns it; and with the resolver failing, the patched callers print no `localhost:3000`. The test fails on the pre-fix code.'
+  - 'Existing watchtower suites stay green (tests matching `tests/unit/*watchtower*` and the T-2802 test).'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-tier0.sh'
+  - '.agentic-framework/agents/designer/designer.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/bin/watchtower.sh'
+  - '.agentic-framework/lib/arc.sh'
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/verify-acs.sh'
+  - '.agentic-framework/lib/watchtower.sh'
+  - '.agentic-framework/web/templates/base.html'
+  - 'agents/context/check-tier0.sh'
+  - 'agents/designer/designer.sh'
+  - 'bin/watchtower.sh'
+  - 'lib/arc.sh'
+  - 'lib/config.sh'
+  - 'lib/verify-acs.sh'
+  - 'lib/watchtower.sh'
+  - '.tasks/active/T-4041-with-fwhost-bound-to-one-interface-the-f.md'
+  - 'tests/unit/t4041_watchtower_fw_host.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-11T14:18:50'
+    action: 'T-4041: scope GitHub #88 (FW_HOST ignored by the shell side; localhost:3000 fallbacks) — context, 8 ACs, Verification'
+  - time: '2026-10-11T14:24:09'
+    action: 'T-4041: shell side honours FW_HOST — probe/advertise the bound address, export WATCHTOWER_URL to the server, drop hard-coded localhost:3000 fallbacks (GitHub #88)'
+  - time: '2026-10-11T14:24:35'
+    action: 'T-4041: refresh vendored copies (watchtower/config/arc/verify-acs/tier0/designer; bin/fw and base.html were already drifted from source)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1124 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1124
+  commits: 3
+  files_changed: 18
+  lines_added: 451
+  lines_removed: 116
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4041-with-fwhost-bound-to-one-interface-the-f.md
+generated_by: context-agent-hybrid

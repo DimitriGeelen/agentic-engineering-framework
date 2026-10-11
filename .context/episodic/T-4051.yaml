@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4051: fw doctor flags the on-PATH claude-fw router (T-2854) as drifted from repo source and advises overwriting it with the project copy (010)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-11T12:49:51Z
+# ============================================================================
+
+task_id: T-4051
+task_name: "fw doctor flags the on-PATH claude-fw router (T-2854) as drifted from repo source and advises overwriting it with the project copy (010)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-11T11:18:19Z
+completed: 2026-10-11T12:49:30Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-11T14:20:44+02:00
+last_commit: 2026-10-11T14:25:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope doctor router false positive (010) and T-4052 Watchtower poll-bounce (ring20) — context, ACs, Verification. doctor compares on-PATH claude-fw router to bin/claude-fw-router, not bin/claude-fw
+
+# Key outcomes
+outcomes:
+  - '`fw doctor`''s claude-fw drift check (`bin/fw` ~line 3200) recognises an on-PATH `claude-fw` that is the T-2854 router (its header names `claude-fw-router`) and compares it to `bin/claude-fw-router`, not `bin/claude-fw`. A router identical to the repo router: no WARN. A drifted router: WARN whose refresh line copies `bin/claude-fw-router`, never `bin/claude-fw`.'
+  - 'A fixed copy of the wrapper on PATH (pre-T-2854 install) is still compared to `bin/claude-fw` and still WARNs when it drifts, and the message now also says the recommended install is the router (`install.sh` puts it there).'
+  - 'Regression test `tests/unit/t4051_doctor_claude_fw_router.bats`: PATH holding (a) a copy of the repo router → no drift WARN, and no suggestion to cp `bin/claude-fw`; (b) a modified router → WARN naming the router as the refresh source; (c) a drifted fixed copy → WARN as before. (a) fails on the pre-fix code.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - '.tasks/active/T-4051-fw-doctor-flags-the-on-path-claude-fw-ro.md'
+  - '.tasks/active/T-4052-watchtower-a-boosted-link-inside-an-hx-t.md'
+  - 'tests/unit/t4051_doctor_claude_fw_router.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-11T14:20:44'
+    action: 'T-4051: scope doctor router false positive (010) and T-4052 Watchtower poll-bounce (ring20) — context, ACs, Verification'
+  - time: '2026-10-11T14:25:06'
+    action: 'T-4051: doctor compares on-PATH claude-fw router to bin/claude-fw-router, not bin/claude-fw'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 91 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, doctor, claude-fw]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 91
+  commits: 2
+  files_changed: 4
+  lines_added: 211
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4051-fw-doctor-flags-the-on-path-claude-fw-ro.md
+generated_by: context-agent-hybrid

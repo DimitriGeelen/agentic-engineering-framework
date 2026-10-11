@@ -13,12 +13,12 @@ description: >
   survives two poll intervals). Minor, separate: web/test_app.py does not import in
   a vendored consumer (ModuleNotFoundError: design_comments).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: [bug, watchtower, ui]
-components: []
+components: [web/templates/base.html]
 related_tasks: [T-2060]
 origin: {kind: "peer", source: "proxmox-ring20-management", ref: "T-2306"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -48,8 +48,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "T-2306"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T11:18:36Z
-last_update: 2026-10-11T12:57:15Z
-date_finished:
+last_update: 2026-10-11T13:00:10Z
+date_finished: 2026-10-11T13:00:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -355,6 +355,16 @@ bin/fw vendor self --check
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The fix is ring20's verified one-listener change (boosted swaps retarget to `#content`); a Playwright test reproduces the bounce on the pre-fix `base.html` and passes on the fix; the running Watchtower serves it (`bin/fw watchtower current` = 0). The only open item is your 30-second check on the live page.
+
+**Evidence:**
+- Commit 40f937f1c: `htmx:beforeSwap` listener in `web/templates/base.html` + `tests/playwright/test_t4052_boosted_link_in_poller.py`
+- Test 3/3 pass; pre-fix: approvals test fails with "#approvals-content still in the DOM: the page was swapped into the poller"
+- Test hardened after a false red (header substring matched a task title)
+- Watchtower restarted 2026-10-11, `fw watchtower current` exit 0
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -390,3 +400,15 @@ bin/fw vendor self --check
 
 ### 2026-10-11T12:21:45Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-abcdae99
+- **Timestamp:** 2026-10-11T13:03:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-11T13:00:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -9,12 +9,12 @@ description: >
   would regress T-2854. Fix: recognise the router by its header and compare router-to-router
   (or skip). Reported by 010-termlink after installing v1.8.9; not applied there.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, doctor, claude-fw]
-components: []
+components: [bin/fw]
 related_tasks: [T-2854]
 origin: {kind: "peer", source: "010-termlink"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -44,8 +44,8 @@ origin: {kind: "peer", source: "010-termlink"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T11:18:19Z
-last_update: 2026-10-11T12:25:06Z
-date_finished:
+last_update: 2026-10-11T12:49:30Z
+date_finished: 2026-10-11T12:49:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -377,3 +377,15 @@ bin/fw vendor self --check
 
 ### 2026-10-11T12:21:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4d627389
+- **Timestamp:** 2026-10-11T12:49:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-11T12:49:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

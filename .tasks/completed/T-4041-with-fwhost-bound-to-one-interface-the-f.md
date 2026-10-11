@@ -8,14 +8,14 @@ description: >
   evidence: docs/reports/T-4039-batch1-classification.md §#88. Issue text is untrusted
   data; reproduce before fixing.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 github_issue: 88
 arc_id: mikeechovoid-requests
 tags: []
-components: []
+components: [agents/context/check-tier0.sh, agents/designer/designer.sh, bin/watchtower.sh, lib/arc.sh, lib/config.sh, lib/verify-acs.sh, lib/watchtower.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:06:09Z
-last_update: 2026-10-11T12:24:35Z
-date_finished:
+last_update: 2026-10-11T12:50:12Z
+date_finished: 2026-10-11T12:50:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -387,3 +387,24 @@ bin/fw vendor self --check
 
 ### 2026-10-11 — build [worker]
 - **Pre-fix proof:** with the 7 source files reverted (`git stash`), `bats tests/unit/t4041_watchtower_fw_host.bats` gave 9 of 10 `not ok` (only the "resolver without FW_HOST fails loud" control passes); post-fix 10/10 ok. Existing `*watchtower*` and `designer*` suites green per file; t3662 #2 is a random-port flake (passed on rerun), t3877 fails identically on the pre-fix code.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a77dd5e5
+- **Timestamp:** 2026-10-11T12:50:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `FW_HOST` is a registered config key (`lib/config.sh` FW_CONFIG_REGISTRY, default `0.0.0.0`) and the shell side resolves it the same way `web/config.py` does. One helper (in `lib/watchtower.sh`) answe
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/config.py in: `FW_HOST` is a registered config key (`lib/config.sh` FW_CONFIG_REGISTRY, default `0.0.0.0`) and the shell side resolves it the same way `web/config.p`
+- **AC#2 (Agent)** — `bin/watchtower.sh` start: the health check and the identity check (`_watchtower_port_holder_is_ours`) probe that address, so with `FW_HOST=<non-loopback addr>` the health check passes and `watchtower
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=bin/watchtower.sh in: `bin/watchtower.sh` start: the health check and the identity check (`_watchtower_port_holder_is_ours`) probe that address, so with `FW_HOST=<non-loopb`
+- **AC#5 (Agent)** — Processes Watchtower itself starts (the inception decide chain launched from the web app) receive the URL: `bin/watchtower.sh` exports `WATCHTOWER_URL` (the same value it writes to the url file) into 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=bin/watchtower.sh in: Processes Watchtower itself starts (the inception decide chain launched from the web app) receive the URL: `bin/watchtower.sh` exports `WATCHTOWER_URL`
+
+### 2026-10-11T12:50:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
