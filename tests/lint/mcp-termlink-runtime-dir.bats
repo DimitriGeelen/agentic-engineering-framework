@@ -29,8 +29,12 @@ sys.exit(0 if val.startswith('/') else 1)
     # Skip only when there is no hub process to compare against (CI, a
     # consumer host without the systemd unit) — the first test still pins
     # the config on its own.
-    pid=$(pgrep -f "termlink hub start" | head -1)
-    [ -n "$pid" ] || skip "no termlink hub process on this host"
+    # T-4068: ask systemd for THE hub. `pgrep … | head -1` picked whichever hub
+    # came first, e.g. a debug build with its own runtime dir, and failed a
+    # correct configuration.
+    command -v systemctl >/dev/null 2>&1 || skip "no systemd on this host"
+    pid=$(systemctl show -p MainPID --value termlink-hub.service 2>/dev/null)
+    [ -n "$pid" ] && [ "$pid" != "0" ] || skip "termlink-hub.service not running on this host"
     hub_dir=$(tr '\0' '\n' < "/proc/$pid/environ" 2>/dev/null | sed -n 's/^TERMLINK_RUNTIME_DIR=//p' | head -1)
     [ -n "$hub_dir" ] || skip "hub process environment unreadable"
     cfg_dir=$(python3 -c "import json; print((json.load(open('$FRAMEWORK_ROOT/.mcp.json'))['mcpServers']['termlink'].get('env') or {}).get('TERMLINK_RUNTIME_DIR',''))")
