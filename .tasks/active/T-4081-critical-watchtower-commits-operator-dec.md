@@ -1,10 +1,26 @@
 ---
 id: T-4081
-name: "CRITICAL: Watchtower commits operator decisions through a scratch index and never refreshes the real index, so the next ordinary commit silently reverts them (55 reverted decisions in 60 days; 22 tasks lost their decision at HEAD)"
+name: "CRITICAL: Watchtower commits operator decisions through a scratch index and
+  never refreshes the real index, so the next ordinary commit silently reverts them
+  (55 reverted decisions in 60 days; 22 tasks lost their decision at HEAD)"
 description: >
-  web/blueprints/inception.py (T-2708) commits a Watchtower decision with GIT_INDEX_FILE=<scratch> seeded from HEAD, then advances HEAD — but the real .git/index still holds the pre-decision blobs for those paths. The next commit made from the real index (any agent, worker, handover, close) writes those old blobs back: the decision and its Human tick are reverted in git while the working tree keeps them (uncommitted). Found 2026-10-11 via T-4075 (T-4039 GO at 19:16:27 reverted by 3fef4b9f5 at 19:18). Scan of the last 60 days (.context/working/wt-revert-scan.txt): 55 reverts; 22 tasks have no decision at HEAD — 20 only in the working tree (the '17 uncommitted operator decision files' of this session), 2 (T-3159, T-3278) only in history. Fix: after a scratch-index commit, refresh the real index for exactly the committed paths (git reset -q -- <paths>, which updates index entries to the new HEAD without touching the working tree), and the same for any other scratch-index committer; regression test: Watchtower decision commit, then an unrelated git add+commit, then the decision is still at HEAD. Recovery of the 22 is a separate, operator-gated step (ticks need operator provenance).
+  web/blueprints/inception.py (T-2708) commits a Watchtower decision with GIT_INDEX_FILE=<scratch>
+  seeded from HEAD, then advances HEAD — but the real .git/index still holds the pre-decision
+  blobs for those paths. The next commit made from the real index (any agent, worker,
+  handover, close) writes those old blobs back: the decision and its Human tick are
+  reverted in git while the working tree keeps them (uncommitted). Found 2026-10-11
+  via T-4075 (T-4039 GO at 19:16:27 reverted by 3fef4b9f5 at 19:18). Scan of the last
+  60 days (.context/working/wt-revert-scan.txt): 55 reverts; 22 tasks have no decision
+  at HEAD — 20 only in the working tree (the '17 uncommitted operator decision files'
+  of this session), 2 (T-3159, T-3278) only in history. Fix: after a scratch-index
+  commit, refresh the real index for exactly the committed paths (git reset -q --
+  <paths>, which updates index entries to the new HEAD without touching the working
+  tree), and the same for any other scratch-index committer; regression test: Watchtower
+  decision commit, then an unrelated git add+commit, then the decision is still at
+  HEAD. Recovery of the 22 is a separate, operator-gated step (ticks need operator
+  provenance).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +55,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T21:44:42Z
-last_update: 2026-10-11T21:45:19Z
-date_finished: null
+last_update: 2026-10-11T21:46:14Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +67,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-11T21:45:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-11T21:45:51Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4081: CRITICAL: Watchtower commits operator decisions through a scratch index and never refreshes the real index, so the next ordinary commit silently reverts them (55 reverted decisions in 60 days; 22 tasks lost their decision at HEAD)
@@ -63,8 +107,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] After Watchtower's scratch-index decision commit (`web/blueprints/inception.py`, T-2708) advances HEAD, the real `.git/index` is refreshed for exactly the committed paths (e.g. `git reset -q -- <paths>`: index entries := new HEAD, working tree untouched), so a following ordinary `git add <other> && git commit` does not revert the decision. The refresh never touches other paths (other in-flight work stays staged as it was).
+- [ ] Every other place that commits through a scratch/alternate index or advances HEAD without the real index (search web/, lib/, agents/, bin/ for GIT_INDEX_FILE, read-tree, commit-tree, update-ref) gets the same refresh, or is listed in the task's Updates as not affected.
+- [ ] Regression test (`tests/unit/t4081_watchtower_commit_keeps_real_index.bats` or pytest, temp git repo): perform the Watchtower decision-commit path, then an unrelated `git add x && git commit` from the real index → the decision is still at HEAD (fails on the pre-fix code); a path staged in the real index before the decision commit stays staged.
+- [ ] A detector exists (in `fw audit` or `fw doctor`): a task whose last Watchtower decision commit is no longer reflected at HEAD (decision block missing at HEAD but present in that commit) is reported by name — so G-114's 22 cases show up until restored.
+- [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -227,6 +274,8 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bin/fw watchtower current
+bin/fw vendor self --check
 
 ## RCA
 
@@ -324,3 +373,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4081-critical-watchtower-commits-operator-dec.md
 - **Context:** Initial task creation
+
+### 2026-10-11T21:45:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
