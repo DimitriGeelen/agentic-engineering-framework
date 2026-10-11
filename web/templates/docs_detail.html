@@ -1,10 +1,16 @@
 <div class="page-header">
     <h1>{{ page_title }}</h1>
+    {% if show_component_nav or fabric_card %}
     <p>
+        {% if show_component_nav %}
         <a href="/docs/generated" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">&larr; Back to Component Docs</a>
-        &nbsp;|&nbsp;
-        <a href="/fabric/component/{{ card_name }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">View in Fabric</a>
+        {% endif %}
+        {% if show_component_nav and fabric_card %}&nbsp;|&nbsp;{% endif %}
+        {% if fabric_card %}
+        <a href="/fabric/component/{{ fabric_card }}" hx-target="#content" hx-swap="innerHTML" hx-push-url="true">View in Fabric</a>
+        {% endif %}
     </p>
+    {% endif %}
 </div>
 
 <article>

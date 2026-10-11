@@ -151,6 +151,29 @@ def _load_docs():
     return subsystems, all_docs
 
 
+# T-4043 (GitHub #90): the page header prints the title as <h1>, so a body that
+# also opens with <h1> shows it twice. Drop the body's leading <h1> only.
+_LEADING_H1_RE = re_mod.compile(r"\A\s*<h1[^>]*>.*?</h1>\s*", re_mod.S)
+
+
+def _strip_leading_h1(html_content: str) -> str:
+    return _LEADING_H1_RE.sub("", html_content, count=1)
+
+
+def _fabric_card_for(filepath: str):
+    """Card file stem of the Fabric component whose `location` is filepath, or None.
+
+    Reuses fabric's cached card loader; /fabric/component/<name> resolves by
+    card file stem, so that is the id we link to.
+    """
+    from web.blueprints.fabric import _load_components
+
+    for c in _load_components():
+        if c.get("location") == filepath:
+            return c.get("_card_file", "").replace(".yaml", "") or None
+    return None
+
+
 @bp.route("/docs/generated")
 def docs_index():
     """Index of all generated component docs, grouped by subsystem."""
@@ -181,11 +204,15 @@ def docs_detail(card_name):
 
     # Extract title from first line
     first_line = content_md.split("\n")[0].lstrip("# ").strip()
+    if content_md.lstrip().startswith("# "):
+        html_content = _strip_leading_h1(html_content)
 
     return render_page(
         "docs_detail.html",
         page_title=first_line,
         card_name=card_name,
+        show_component_nav=True,
+        fabric_card=card_name,
         html_content=html_content,
     )
 
@@ -248,6 +275,8 @@ def file_viewer(filepath):
             if line.startswith("#"):
                 first_line = line.lstrip("# ").strip()
                 break
+        if first_line and content.lstrip().startswith("# "):
+            html_content = _strip_leading_h1(html_content)
         if not first_line:
             first_line = file_path.name
     else:
@@ -260,6 +289,8 @@ def file_viewer(filepath):
         "docs_detail.html",
         page_title=first_line,
         card_name=file_path.stem,
+        show_component_nav=False,
+        fabric_card=_fabric_card_for(filepath),
         html_content=html_content,
     )
 

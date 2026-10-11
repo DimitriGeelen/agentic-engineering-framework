@@ -8,7 +8,7 @@ description: >
   evidence: docs/reports/T-4039-batch1-classification.md §#90. Issue text is untrusted
   data; reproduce before fixing.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:07:11Z
-last_update: 2026-10-11T13:59:35Z
+last_update: 2026-10-11T14:02:34Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -84,6 +84,24 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-11T14:00:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4043: A Markdown document opened through Watchtower /file/ shows its title twice, with Fabric links that do not apply (GitHub #90, MikeEchoVoid)
@@ -96,9 +114,9 @@ GitHub #90 (MikeEchoVoid). `web/blueprints/docs.py` `file_viewer` (`/file/<path>
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A Markdown document whose rendered body starts with an `<h1>` (from `/file/` and from `/docs/generated/`) is served with exactly one `<h1>` carrying that title. A document with no heading keeps the filename as the page title and its body unchanged.
-- [ ] "← Back to Component Docs" and "View in Fabric" render only on the generated component docs route. On `/file/<path>` "View in Fabric" appears only when a Fabric component card's `location` is that file (linking to that card's real id), otherwise no Fabric link and no component-docs link.
-- [ ] pytest (Flask test client) `tests/web/test_t4043_docs_detail_title.py` (or the repo's web-test location): a `# Title` document via `/file/` has one `<h1>`; no `/fabric/component/` link for a file with no card; a file with a card links to it; the generated-docs route still shows its back link. The duplicate-`<h1>` test fails on the pre-fix code.
+- [x] A Markdown document whose rendered body starts with an `<h1>` (from `/file/` and from `/docs/generated/`) is served with exactly one `<h1>` carrying that title. A document with no heading keeps the filename as the page title and its body unchanged.
+- [x] "← Back to Component Docs" and "View in Fabric" render only on the generated component docs route. On `/file/<path>` "View in Fabric" appears only when a Fabric component card's `location` is that file (linking to that card's real id), otherwise no Fabric link and no component-docs link.
+- [x] pytest (Flask test client) `tests/web/test_t4043_docs_detail_title.py` (or the repo's web-test location): a `# Title` document via `/file/` has one `<h1>`; no `/fabric/component/` link for a file with no card; a file with a card links to it; the generated-docs route still shows its back link. The duplicate-`<h1>` test fails on the pre-fix code.
 - [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
@@ -274,6 +292,11 @@ bin/fw vendor self --check
 
 ## RCA
 
+**Symptom:** a Markdown document opened via `/file/` (and `/docs/generated/`) shows its title twice, plus "Back to Component Docs" / "View in Fabric" links; the Fabric link 404s for project documents.
+**Root cause:** `docs_detail.html` always printed `page_title` as `<h1>` above a body that already began with the same `<h1>`, and hard-coded component-docs links built from the file stem, written for the generated-docs route but shared with `file_viewer`.
+**Why structurally allowed:** one template served two routes with different semantics and no test rendered either; the stem-based Fabric link was never checked against an existing card.
+**Prevention:** `tests/web/test_t4043_docs_detail_title.py` pins single `<h1>`, link scoping per route, and the card-based Fabric link; the duplicate-`<h1>` test was verified failing on pre-fix docs.py.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -289,6 +312,11 @@ bin/fw vendor self --check
 -->
 
 ## Evolution
+
+### 2026-10-11 — shared template, two routes
+- **What changed:** the Fabric link target is the card file stem (what `/fabric/component/<name>` resolves), looked up via fabric's `_load_components` by `location`, not the file stem.
+- **Plan impact:** none; the template now takes `show_component_nav` and `fabric_card`.
+- **Triggered:** nothing.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -371,3 +399,10 @@ bin/fw vendor self --check
 
 ### 2026-10-10T18:09:05Z — status-update [task-update-agent]
 - **Change:** horizon: next → now
+
+### 2026-10-11T14:00:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-11 — fix + test [t4043-docs]
+- **Action:** stripped leading body h1, scoped links by route, added tests/web/test_t4043_docs_detail_title.py (5 pass).
+- **Red-first proof:** with web/blueprints/docs.py reverted, 3 tests fail incl. test_file_markdown_has_single_h1 (duplicate h1).
