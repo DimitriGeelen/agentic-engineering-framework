@@ -16,6 +16,9 @@ from tests.playwright.target import url
 APPROVALS_WAIT_MS = 22_000
 COCKPIT_WAIT_MS = 33_000
 TASK_HREF = re.compile(r"^/(tasks|inception|review)/")
+# The list page's h1 is "Approvals <small>(N pending)</small>": anchor the start and the
+# count suffix, so a task title that merely mentions approvals does not match.
+APPROVALS_H1 = re.compile(r"^\s*Approvals\s*(\(\d+ pending\))?\s*$")
 
 
 def _first_link(page: Page, container: str):
@@ -37,7 +40,9 @@ def _assert_navigated(page: Page, href: str | None, container_id: str, wait_ms: 
     assert page.locator("#content h1").count() >= 1
     assert page.locator("#content h1").first.inner_text().strip() != ""
     # The list page's own header must be gone (it came back on the poll before the fix).
-    assert page.locator("#content .page-header h1", has_text="Approvals").count() == 0
+    # Exact match: has_text is a case-insensitive substring, and a task whose title
+    # mentions "/approvals" (T-4052 itself, once it tops the activity list) matched it.
+    assert page.locator("#content .page-header h1", has_text=APPROVALS_H1).count() == 0
 
 
 def test_approvals_boosted_link_survives_polls(page: Page):
@@ -75,4 +80,4 @@ def test_approvals_control_still_polls_in_place(page: Page):
     page.wait_for_timeout(APPROVALS_WAIT_MS)
     assert page.locator(f"#{marker}").count() == 0, "poll did not refresh the container"
     assert page.locator("#approvals-content").count() == 1
-    assert page.locator(".page-header h1", has_text="Approvals").count() == 1
+    assert page.locator(".page-header h1", has_text=APPROVALS_H1).count() == 1
