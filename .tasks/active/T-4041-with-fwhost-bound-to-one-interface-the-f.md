@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:06:09Z
-last_update: 2026-10-11T12:18:50Z
+last_update: 2026-10-11T12:24:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,14 +96,14 @@ GitHub #88 (MikeEchoVoid). `FW_HOST` is read only by `web/config.py:79`; the she
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `FW_HOST` is a registered config key (`lib/config.sh` FW_CONFIG_REGISTRY, default `0.0.0.0`) and the shell side resolves it the same way `web/config.py` does. One helper (in `lib/watchtower.sh`) answers "which address do I probe for this project's Watchtower": the `FW_HOST` address when it is set to a specific address, `localhost` when it is unset/`0.0.0.0`/`::`.
-- [ ] `bin/watchtower.sh` start: the health check and the identity check (`_watchtower_port_holder_is_ours`) probe that address, so with `FW_HOST=<non-loopback addr>` the health check passes and `watchtower.port` + `watchtower.url` are written. The url file holds `http://<FW_HOST>:<port>` when `FW_HOST` is a specific address (unchanged otherwise).
-- [ ] `_watchtower_url` (resolver) probes the `FW_HOST` address first when it is specific, before `localhost` / `hostname -I`.
-- [ ] No caller falls back to a hard-coded `http://localhost:3000` when the resolver fails (check-tier0.sh, verify-acs.sh, arc.sh ×3, and any other `localhost:3000` fallback found in lib/ agents/ bin/ shell code — `lib/verification-port.sh`'s detector pattern excepted). On failure they print no link (or a clear "no Watchtower reachable for <project>" line), never a link to another port.
-- [ ] Processes Watchtower itself starts (the inception decide chain launched from the web app) receive the URL: `bin/watchtower.sh` exports `WATCHTOWER_URL` (the same value it writes to the url file) into the environment of the Flask process it launches, so children inherit it — shell-side only, no `web/` edit — so "a process started by Watchtower cannot find Watchtower" no longer happens.
-- [ ] `fw watchtower` help documents `FW_HOST` next to `FW_PORT`.
-- [ ] Regression test (bats): Watchtower stub bound to a non-loopback address (use a second loopback address such as 127.0.0.2 so it runs anywhere — localhost probing must NOT reach it) with `FW_HOST` set → health check passes, url file holds that address, resolver returns it; and with the resolver failing, the patched callers print no `localhost:3000`. The test fails on the pre-fix code.
-- [ ] Existing watchtower suites stay green (tests matching `tests/unit/*watchtower*` and the T-2802 test).
+- [x] `FW_HOST` is a registered config key (`lib/config.sh` FW_CONFIG_REGISTRY, default `0.0.0.0`) and the shell side resolves it the same way `web/config.py` does. One helper (in `lib/watchtower.sh`) answers "which address do I probe for this project's Watchtower": the `FW_HOST` address when it is set to a specific address, `localhost` when it is unset/`0.0.0.0`/`::`.
+- [x] `bin/watchtower.sh` start: the health check and the identity check (`_watchtower_port_holder_is_ours`) probe that address, so with `FW_HOST=<non-loopback addr>` the health check passes and `watchtower.port` + `watchtower.url` are written. The url file holds `http://<FW_HOST>:<port>` when `FW_HOST` is a specific address (unchanged otherwise).
+- [x] `_watchtower_url` (resolver) probes the `FW_HOST` address first when it is specific, before `localhost` / `hostname -I`.
+- [x] No caller falls back to a hard-coded `http://localhost:3000` when the resolver fails (check-tier0.sh, verify-acs.sh, arc.sh ×3, and any other `localhost:3000` fallback found in lib/ agents/ bin/ shell code — `lib/verification-port.sh`'s detector pattern excepted). On failure they print no link (or a clear "no Watchtower reachable for <project>" line), never a link to another port.
+- [x] Processes Watchtower itself starts (the inception decide chain launched from the web app) receive the URL: `bin/watchtower.sh` exports `WATCHTOWER_URL` (the same value it writes to the url file) into the environment of the Flask process it launches, so children inherit it — shell-side only, no `web/` edit — so "a process started by Watchtower cannot find Watchtower" no longer happens.
+- [x] `fw watchtower` help documents `FW_HOST` next to `FW_PORT`.
+- [x] Regression test (bats): Watchtower stub bound to a non-loopback address (use a second loopback address such as 127.0.0.2 so it runs anywhere — localhost probing must NOT reach it) with `FW_HOST` set → health check passes, url file holds that address, resolver returns it; and with the resolver failing, the patched callers print no `localhost:3000`. The test fails on the pre-fix code.
+- [x] Existing watchtower suites stay green (tests matching `tests/unit/*watchtower*` and the T-2802 test).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -274,6 +274,11 @@ bin/fw vendor self --check
 
 ## RCA
 
+**Symptom:** With `FW_HOST` bound to one non-loopback address, `fw serve` never wrote `watchtower.port`/`.url`, the resolver failed, and gate messages (Tier-0 block, arc close, verify-acs, designer) printed `http://localhost:3000` — on a multi-project host, another project's service (GitHub #88).
+**Root cause:** `FW_HOST` was read only by `web/config.py`. Every shell-side probe (health check, identity check, resolver, url writer) hard-coded `localhost`, which does not answer when the server binds one specific interface; callers then papered over the failed resolve with a literal `localhost:3000`.
+**Why structurally allowed:** the bind address was configured on one side with no registry entry and no shared helper on the other; every test ran with the default 0.0.0.0, where localhost always works. The T-2732 detector polices Verification blocks only, not shell fallbacks.
+**Prevention:** `FW_HOST` is a registered key; `_watchtower_probe_host`/`_watchtower_bound_host` are the single "which address" answer; `tests/unit/t4041_watchtower_fw_host.bats` binds a stub and a real Watchtower to 127.0.0.2 so localhost probing cannot pass, and asserts no `localhost:3000` in the patched callers.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -289,6 +294,11 @@ bin/fw vendor self --check
 -->
 
 ## Evolution
+
+### 2026-10-11 — shell side now owns the bind address
+- **What changed:** The issue read as "resolver probes the wrong host", but the same blind spot sat in the start health check, identity guard, url file and every caller fallback; one helper covers all. `bin/watchtower.sh` also re-exports the resolved `FW_HOST` to Flask because a yaml-only value never reached `web/config.py`.
+- **Plan impact:** None to the arc; `agents/ux-review/ux-review.py` still has a python-side `localhost:3000` fallback (not shell, out of scope).
+- **Triggered:** nothing new filed.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -374,3 +384,6 @@ bin/fw vendor self --check
 
 ### 2026-10-11T12:17:48Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-11 — build [worker]
+- **Pre-fix proof:** with the 7 source files reverted (`git stash`), `bats tests/unit/t4041_watchtower_fw_host.bats` gave 9 of 10 `not ok` (only the "resolver without FW_HOST fails loud" control passes); post-fix 10/10 ok. Existing `*watchtower*` and `designer*` suites green per file; t3662 #2 is a random-port flake (passed on rerun), t3877 fails identically on the pre-fix code.

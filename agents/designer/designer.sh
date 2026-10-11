@@ -290,7 +290,10 @@ do_sync_from_tag() {
 do_url() {
     local base
     base="$("${FRAMEWORK_ROOT:-$PROJECT_ROOT}/bin/fw" watchtower url 2>/dev/null || true)"
-    [ -n "$base" ] || base="http://localhost:3000"
+    if [ -z "$base" ]; then
+        echo "No Watchtower reachable for this project — start one with: fw serve" >&2
+        return 1
+    fi
     printf '%s/designer\n' "$base"
 }
 
@@ -380,7 +383,10 @@ do_draft_new() {
     local store="$PROJECT_ROOT/.context/designer/projects/$name"
     local base
     base="$("${FRAMEWORK_ROOT:-$PROJECT_ROOT}/bin/fw" watchtower url 2>/dev/null || true)"
-    [ -n "$base" ] || base="http://localhost:3000"
+    if [ -z "$base" ]; then
+        echo "No Watchtower reachable for this project — start one with: fw serve" >&2
+        return 1
+    fi
     local link="$base/designer/app?load=%2Fapi%2Fversion%3Fid%3D$name%26v%3D1"
     if [ -d "$store" ]; then
         echo "refused: draft '$name' already exists — open it instead:" >&2

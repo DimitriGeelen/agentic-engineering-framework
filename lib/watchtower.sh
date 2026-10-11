@@ -70,9 +70,35 @@ _watchtower_identity_matches() {
     [ "$_svc" = "watchtower" ] && [ -n "$_our_root" ] && [ "$_proot" = "$_our_root" ]
 }
 
+# _watchtower_bound_host
+#
+# T-4041 (GitHub #88): the address Watchtower was told to bind (FW_HOST — read by
+# web/config.py, default 0.0.0.0). Prints it, bracketed for IPv6, and returns 0
+# only when it is a SPECIFIC address. Returns 1 for unset / 0.0.0.0 / :: (all
+# interfaces), where localhost reaches the server. A server bound to one
+# non-loopback interface does not answer on localhost, so probing localhost alone
+# never finds it.
+_watchtower_bound_host() {
+    local _h
+    _h=$(fw_config "HOST" "0.0.0.0" 2>/dev/null || echo "0.0.0.0")
+    _h="${_h//[[:space:]]/}"
+    case "$_h" in
+        ''|0.0.0.0|::|'[::]') return 1 ;;
+        \[*\]) printf '%s' "$_h" ;;
+        *:*) printf '[%s]' "$_h" ;;
+        *) printf '%s' "$_h" ;;
+    esac
+}
+
+# _watchtower_probe_host — the address to probe for THIS project's Watchtower:
+# the FW_HOST address when specific, else localhost.
+_watchtower_probe_host() {
+    _watchtower_bound_host || printf 'localhost'
+}
+
 # _watchtower_port_holder_is_ours PORT
 #
-# Returns 0 iff the service listening on localhost:PORT identifies as THIS
+# Returns 0 iff the service listening on PORT (at the FW_HOST address, else localhost) identifies as THIS
 # project's Watchtower. The launcher uses this to tell its own stale instance
 # (safe to recycle) from a FOREIGN service that happens to hold the port (must
 # NOT be killed — the T-1802 wrong-dashboard / neighbor-kill hazard). A holder
@@ -80,7 +106,7 @@ _watchtower_identity_matches() {
 _watchtower_port_holder_is_ours() {
     local _port="$1"
     [ -n "$_port" ] || return 1
-    _watchtower_identity_matches "http://localhost:${_port}"
+    _watchtower_identity_matches "http://$(_watchtower_probe_host):${_port}"
 }
 
 # _watchtower_url [TASK_ID]
@@ -155,6 +181,16 @@ _watchtower_url() {
     # -----------------------------------------------------------------
     local _cfg_port
     _cfg_port=$(fw_config "PORT" 3000 2>/dev/null || echo 3000)
+
+    # T-4041: a Watchtower bound to one specific address (FW_HOST) is reachable
+    # only there — probe it first and return it as-is.
+    local _bound
+    if _bound=$(_watchtower_bound_host); then
+        if _wt_identity_matches "http://${_bound}:${_cfg_port}"; then
+            echo "http://${_bound}:${_cfg_port}"
+            return 0
+        fi
+    fi
 
     local _host
     _host=$(hostname -I 2>/dev/null | awk '{print $1}')
@@ -238,7 +274,7 @@ _watchtower_base_or_placeholder() {
     for _cand in "${_candidates[@]}"; do
         case "$_cand" in ''|*[!0-9]*) continue ;; esac
         _watchtower_port_listening "$_cand" && continue
-        printf 'http://localhost:%s\n' "$_cand"
+        printf 'http://%s:%s\n' "$(_watchtower_probe_host)" "$_cand"
         return 2
     done
     printf 'http://watchtower-not-running.invalid\n'

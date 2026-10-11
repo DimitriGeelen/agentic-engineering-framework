@@ -213,6 +213,7 @@ fw_consumer_yamls() {
 FW_CONFIG_REGISTRY=(
     "CONTEXT_WINDOW|300000|Context window size for budget enforcement (tokens)"
     "PORT|3000|Watchtower web UI listen port"
+    "HOST|0.0.0.0|Watchtower bind address (env FW_HOST, read by web/config.py). A specific address makes the shell side probe and advertise that address instead of localhost; 0.0.0.0 or :: means all interfaces (T-4041, GitHub #88)"
     "PORT_SCAN_BASE|3000|First port tried when a project has no PORT set: fw serve scans 100 ports up from here, skips any held by another service, and records the chosen port as PORT in .framework.yaml (T-3662)"
     "RAIL_IDENTITY_FILE||Project-owned termlink signing identity for outbound rail posts (T-2904). Empty = sign as host key, which is indistinguishable from co-resident agents. Created on first use."
     "RAIL_PROJECT_LABEL||Canonical from_project label attached to outbound rail posts (T-2905). Empty = derived from the project directory name, normalised. Emitted, never typed at a call site."
