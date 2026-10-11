@@ -77,7 +77,8 @@ release_bump_version() {
 #   Pre-release suffixes are stripped; non-numeric input is "not less" (rc 1).
 # ---------------------------------------------------------------------------
 release_version_lt() {
-    local a="${1%%-*}" b="${2%%-*}"
+    local a="${1%%+*}" b="${2%%+*}"   # T-4055: drop +N.gSHA build metadata
+    a="${a%%-*}"; b="${b%%-*}"
     case "$a$b" in ''|*[!0-9.]*) return 1 ;; esac
     [ "$a" = "$b" ] && return 1
     local a1 a2 a3 b1 b2 b3
