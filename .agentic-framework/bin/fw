@@ -8513,6 +8513,7 @@ print('0')
         # T-2405: --arc <id> filters to tasks tagged with that arc.
         rq_arc_filter=""
         rq_ids_only=0
+        rq_include_waiting=0
         while [ $# -gt 0 ]; do
             case "$1" in
                 --help|-h|help)
@@ -8548,11 +8549,20 @@ print('0')
                     echo "                                   one per line, oldest first"
                     echo "                                   (machine-readable; the population"
                     echo "                                   fw verify-queue runs over)"
+                    echo "  fw review-queue --include-waiting  With --ids: also print tasks that are"
+                    echo "                                   waiting on the agent (default: ready only)"
                     echo "  fw review-queue --help           This message"
+                    echo ""
+                    echo "VERDICT lists tasks READY for you (T-4053): every Agent criterion"
+                    echo "ticked and independent review green. WAITING ON THE AGENT lists the"
+                    echo "rest with the reason. Same predicate as /approvals (web.shared)."
                     exit 0
                     ;;
                 --ids)
                     rq_ids_only=1
+                    ;;
+                --include-waiting)
+                    rq_include_waiting=1
                     ;;
                 --arc)
                     shift
@@ -8572,7 +8582,7 @@ print('0')
             esac
             shift
         done
-        PROJECT_ROOT="$PROJECT_ROOT" FW_REVQ_ARC="$rq_arc_filter" FW_REVQ_IDS="$rq_ids_only" FW_LIB_DIR="$FW_LIB_DIR" python3 - <<'PYREVQ'
+        PROJECT_ROOT="$PROJECT_ROOT" FW_REVQ_ARC="$rq_arc_filter" FW_REVQ_IDS="$rq_ids_only" FW_REVQ_WAITING="$rq_include_waiting" FW_LIB_DIR="$FW_LIB_DIR" python3 - <<'PYREVQ'
 import os, re, sys, time
 from pathlib import Path
 from datetime import datetime
@@ -8612,6 +8622,20 @@ except ImportError:
             return 0
         human_text = re.sub(r"<!--.*?-->", "", human_m.group(1), flags=re.DOTALL)
         return len(re.findall(r"^\s*-\s*\[ \]", human_text, re.MULTILINE))
+
+# T-4053: readiness is IMPORTED from web.shared (the /approvals predicate), never
+# re-derived here. Unavailable -> every task is reported as waiting with that reason,
+# not silently ready.
+_review_readiness = None
+for _base in (os.environ.get("PROJECT_ROOT", "."),
+              os.path.dirname(os.environ.get("FW_LIB_DIR", "") or "")):
+    if _review_readiness is not None or not _base:
+        continue
+    try:
+        sys.path.insert(0, _base)
+        from web.shared import review_readiness as _review_readiness
+    except Exception:
+        _review_readiness = None
 
 ROOT = Path(os.environ.get("PROJECT_ROOT", ".")).resolve()
 ACTIVE = ROOT / ".tasks" / "active"
@@ -8703,6 +8727,7 @@ def _task_matches_arc(fm_text, body_text, canonical):
 now = time.time()
 rows = []
 decision_rows = []
+waiting_rows = []  # T-4053: open Human criteria, but the agent is not done
 decided_rows = []  # T-3178: decided but still open — one operator action left
 # T-1571 / F5: precompute pending-inception scan once, reuse below for both passes
 # Pattern matches the canonical block emitted by lib/inception.sh do_inception_decide.
@@ -8809,7 +8834,14 @@ for f in sorted(ACTIVE.glob("*.md")):
             except (ValueError, OSError):
                 pass
     verdict = extract_recommendation_state(text)
-    rows.append((verdict, age_days, tid_v, name, unchecked))
+    if _review_readiness is None:
+        r_state, r_why = "waiting-on-agent", ["readiness predicate unavailable (web.shared not importable)"]
+    else:
+        r_state, r_why = _review_readiness(tid_v, status, text, f)
+    if r_state == "ready":
+        rows.append((verdict, age_days, tid_v, name, unchecked))
+    else:
+        waiting_rows.append((verdict, age_days, tid_v, name, "; ".join(r_why)))
 
 # T-1808: PAUSED section — workers awaiting operator resolution (dispatch-safety slice 4).
 paused_rows = []
@@ -8826,7 +8858,8 @@ except Exception:
 # it from status/owner. A second definition of "awaiting human review" is how the
 # populations drift; L-539 is the cost of a rail measured over the wrong set.
 if os.environ.get("FW_REVQ_IDS") == "1":
-    for _r in sorted(rows, key=lambda r: -r[1]):
+    _id_rows = rows + (waiting_rows if os.environ.get("FW_REVQ_WAITING") == "1" else [])
+    for _r in sorted(_id_rows, key=lambda r: -r[1]):
         print(_r[2])
     sys.exit(0)
 
@@ -8834,7 +8867,7 @@ if os.environ.get("FW_REVQ_IDS") == "1":
 # tasks awaiting human review." over a corpus whose ONLY outstanding item is an
 # inception awaiting closure — a confident false negative, which is the exact
 # failure this section was added to end rather than relocate.
-if not rows and not decision_rows and not paused_rows and not decided_rows and not um_rows:
+if not rows and not waiting_rows and not decision_rows and not paused_rows and not decided_rows and not um_rows:
     print("No tasks awaiting human review.")
     sys.exit(0)
 
@@ -8842,6 +8875,7 @@ if not rows and not decision_rows and not paused_rows and not decided_rows and n
 # T-1576: NO-REC sorts after ? (truly unactionable — agent owes a recommendation).
 order = {"GO": 0, "DEFER": 1, "NO-GO": 2, "?": 3, "NO-REC": 4}
 rows.sort(key=lambda r: (order.get(r[0], 9), -r[1]))
+waiting_rows.sort(key=lambda r: (order.get(r[0], 9), -r[1]))
 decision_rows.sort(key=lambda r: (order.get(r[0], 9), -r[1]))
 # T-3178: no verdict axis here — the decision IS the verdict, and both values are
 # equally closable. Oldest first, so the one that has been waiting longest leads.
@@ -8907,12 +8941,19 @@ if um_rows:
     print()
 
 if rows:
-    print(f"\033[1mVERDICT — Human ACs awaiting verification ({len(rows)})\033[0m")
+    print(f"\033[1mVERDICT — Human ACs awaiting verification, ready for you ({len(rows)})\033[0m")
     print(f"\033[1m{'VERDICT':<7}  {'AGE':>4}  {'ID':<8}  NAME\033[0m")
     for verdict, age_days, tid_v, name, _unchecked in rows:
         truncated = (name[:NAME_W] + "...") if len(name) > NAME_W else name
         col = _verdict_color(verdict)
         print(f"{col}{verdict:<7}\033[0m  {str(age_days)+'d':>4}  {tid_v:<8}  {truncated}")
+if waiting_rows:
+    print()
+    print(f"\033[1mWAITING ON THE AGENT — open Human ACs, not ready for you ({len(waiting_rows)})\033[0m")
+    for verdict, age_days, tid_v, name, why in waiting_rows:
+        truncated = (name[:NAME_W] + "...") if len(name) > NAME_W else name
+        print(f"{tid_v:<8}  {str(age_days)+'d':>4}  {truncated}")
+        print(f"\033[2m    {why}\033[0m")
 go = sum(1 for r in rows if r[0] == "GO")
 defer = sum(1 for r in rows if r[0] == "DEFER")
 nogo = sum(1 for r in rows if r[0] == "NO-GO")
@@ -8925,7 +8966,9 @@ if nogo: parts.append(f"\033[31m{nogo} NO-GO\033[0m")
 if unk: parts.append(f"\033[90m{unk} ?\033[0m")
 if no_rec: parts.append(f"\033[36m{no_rec} NO-REC\033[0m")
 total = len(rows) + len(decision_rows) + len(paused_rows) + len(decided_rows) + len(um_rows)
-verif_only = f"{len(rows)} task(s) awaiting human review" if rows else ""
+verif_only = f"{len(rows)} task(s) ready for human review" if rows else ""
+if waiting_rows:
+    verif_only = (verif_only + " · " if verif_only else "") + f"{len(waiting_rows)} waiting on the agent"
 dec_only = f"{len(decision_rows)} pending decision(s)" if decision_rows else ""
 paused_only = f"{len(paused_rows)} paused dispatch(es)" if paused_rows else ""
 # T-3178: counted in the summary too — a section the operator can see but the

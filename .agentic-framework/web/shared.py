@@ -1514,6 +1514,115 @@ def is_ready_for_batch_completion(status: str, body: str) -> bool:
     return total > 0 and unchecked == 0
 
 
+# T-4053: review readiness — the ONE predicate behind /approvals, `fw review-queue`
+# and (T-4045) the task board. A task with an unchecked Human criterion is READY for
+# the operator only when the agent is finished: every `### Agent` criterion ticked and
+# every open reviewer-judged Human criterion carries a green independent verdict.
+READY = "ready"
+WAITING_ON_AGENT = "waiting-on-agent"
+_READINESS_CACHE: dict[str, tuple[int, tuple, tuple]] = {}
+_LEDGER_CACHE: dict[str, tuple] = {}
+
+
+def _readiness_stamp(root: Path) -> tuple:
+    """What the verdict ledger's verdict depends on besides the task file: the ledger
+    file and the commit history it is verified against."""
+    out = []
+    for rel in (".context/reviews/verdicts.jsonl", ".git/logs/HEAD"):
+        try:
+            out.append((root / rel).stat().st_mtime_ns)
+        except OSError:
+            out.append(0)
+    return tuple(out)
+
+
+def _shared_ledger(vl, root: Path, stamp: tuple):
+    hit = _LEDGER_CACHE.get(str(root))
+    if hit and hit[0] == stamp:
+        return hit[1]
+    led = vl.load_ledger(root)
+    _LEDGER_CACHE[str(root)] = (stamp, led)
+    return led
+
+
+def _compute_readiness(task_id: str, body: str, root: Path, path: Path | None,
+                       stamp: tuple) -> tuple[str, tuple]:
+    reasons: list[str] = []
+    try:
+        import sys as _sys
+        _lib = str(FRAMEWORK_ROOT / "lib")
+        if _lib not in _sys.path:
+            _sys.path.insert(0, _lib)
+        import delegation as dg
+        if path is not None:  # frontmatter is needed for workflow_type / components
+            body = path.read_text(encoding="utf-8", errors="replace")
+        crits = dg.parse_criteria(body)
+        open_agent = [c for c in crits if c.subhead.lower().startswith("agent") and not c.ticked]
+        if open_agent:
+            n = len(open_agent)
+            reasons.append(f"{n} agent criteri{'on' if n == 1 else 'a'} open")
+        judged = []
+        fm = dg.frontmatter(body)
+        wt = str(fm.get("workflow_type") or "")
+        rs = None
+        for c in dg.human_criteria(body):
+            if c.ticked:
+                continue
+            if rs is None:
+                rs = dg.task_touches_render_surface_cheap(body, FRAMEWORK_ROOT, fm)
+            if dg.classify(c, workflow_type=wt, render_surface=rs).reviewer_judges:
+                judged.append(c)
+        if judged:
+            try:
+                import verdict_ledger as vl
+                if path is None:
+                    ctx = vl._task_ctx(root, task_id)
+                    if ctx is None:
+                        raise RuntimeError("task is not an active task file")
+                else:
+                    # path known: skip _find_task's directory glob and _Ctx.__init__'s
+                    # `git log` render-surface probe (~1.4 s/task); the cheap predicate
+                    # over-reports, which can only turn a green into "not green" (safe).
+                    ctx = object.__new__(vl._Ctx)
+                    vl._Base.__init__(ctx, root, task_id, body)
+                    ctx.path, ctx.workflow, ctx.owner = path, wt.strip().lower(), str(fm.get("owner") or "")
+                    ctx.render, ctx._ledger = bool(rs), None
+                ctx._ledger = _shared_ledger(vl, root, stamp)
+                for c in judged:
+                    row, why = vl.satisfying_verdict(ctx, c)
+                    if row is None:
+                        reasons.append(f"independent review not green on criterion {c.index}")
+            except Exception as e:  # never silently ready (T-4053)
+                reasons.append(f"independent-review state unreadable ({type(e).__name__}: {e})")
+    except Exception as e:
+        reasons.append(f"readiness could not be computed ({type(e).__name__}: {e})")
+    return (WAITING_ON_AGENT if reasons else READY), tuple(reasons)
+
+
+def review_readiness(task_id: str, status: str, body: str,
+                     path: Path | str | None = None) -> tuple[str, list[str]]:
+    """``(state, reasons)`` for a task awaiting the operator; state is ``READY`` or
+    ``WAITING_ON_AGENT``. Reasons are empty iff ready. Cached per task-file mtime and
+    the ledger stamp when ``path`` is given. Fails toward waiting, never silently ready."""
+    root = Path(PROJECT_ROOT)
+    p = Path(path) if path else None
+    stamp = _readiness_stamp(root)
+    mtime = 0
+    if p is not None:
+        try:
+            mtime = p.stat().st_mtime_ns
+        except OSError:
+            p = None
+    if p is not None:
+        hit = _READINESS_CACHE.get(str(p))
+        if hit and hit[0] == mtime and hit[1] == stamp:
+            return hit[2][0], list(hit[2][1])
+    state, reasons = _compute_readiness(task_id, body, root, p, stamp)
+    if p is not None:
+        _READINESS_CACHE[str(p)] = (mtime, stamp, (state, reasons))
+    return state, list(reasons)
+
+
 def extract_reviewer_verdict(body: str) -> dict:
     """Extract the reviewer agent's verdict from `## Reviewer Verdict (vX.Y)`.
 
