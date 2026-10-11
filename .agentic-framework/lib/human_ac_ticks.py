@@ -118,6 +118,9 @@ def record_ticked(root: Path, task_id: str, text: str, titles: list[str], via: s
     The ledger key is the full criterion key (title + body, see `boxes`); callers that
     only know the line they ticked pass its title. Each title occurrence records one
     ticked box with that title (duplicates are matched in order)."""
+    if not re.fullmatch(r"T-\d+", task_id or ""):
+        raise ValueError(f"refusing to record provenance for task id {task_id!r}: a row with no "
+                         "real task can never back a tick (T-4075)")
     used: set[int] = set()
     n = 0
     bx = boxes(_human_section(text))
@@ -279,6 +282,8 @@ def ledger_rows(root: Path) -> list[dict]:
 
 def record(root: Path, task_id: str, key: str, via: str, by: str,
            extra: dict | None = None) -> dict:
+    if not re.fullmatch(r"T-\d+", task_id or ""):  # T-4075: never a '?' placeholder row
+        raise ValueError(f"refusing to record provenance for task id {task_id!r}")
     row = {"ts": datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "task": task_id,
            "digest": key_digest(task_id, key), "criterion": key[:200], "via": via, "by": by}
     row.update({k: v for k, v in (extra or {}).items() if k not in row})
