@@ -398,7 +398,7 @@ def inception_detail(task_id):
         # the floor. /inception/<id> now mirrors task_detail.html section set
         # so Context/RCA/AC/Verification/Decisions surface when present.
         "context": _md(all_raw_sections.get("Context", "")),
-        "acceptance_criteria": _md(all_raw_sections.get("Acceptance Criteria", "")),
+        "acceptance_criteria": all_raw_sections.get("Acceptance Criteria", ""),
         # T-4047: shell commands and `#` comments, not Markdown — passed raw so the
         # template prints it escaped in a <pre> (rendering it through _md turns
         # comments into <h1> and `*`/`_` into emphasis).
@@ -406,6 +406,18 @@ def inception_detail(task_id):
         "decisions": _md(all_raw_sections.get("Decisions", "")),
         "rca": _md(all_raw_sections.get("RCA", "")),
     }
+
+    # T-4046: criteria render as the task page's tickable list (same toggle-ac endpoint),
+    # not as dead _md text. Parsed from the body exactly as /tasks/<id> does, so the
+    # line indices the toggle endpoint expects line up.
+    from web.blueprints.tasks import _link_plain_text, _parse_acceptance_criteria
+    ac_items = _parse_acceptance_criteria(task_body)
+    for ac in ac_items:
+        if ac["section"] == "agent":
+            ac["text_html"] = _link_plain_text(ac["text"])
+    open_human_acs = [
+        ac for ac in ac_items if ac["section"] == "human" and not ac["checked"]
+    ]
 
     # Extra sections not in the known set — rendered generically (G-036 fix)
     # T-1585: also skip "Reviewer Verdict (vX.Y)" — surfaced structurally below.
@@ -499,6 +511,8 @@ def inception_detail(task_id):
         extra_sections=extra_sections,
         decision_state=decision_state,
         decided_unclosed=decided_unclosed,
+        ac_items=ac_items,
+        open_human_acs=open_human_acs,
         linked_assumptions=linked_assumptions,
         episodic=episodic,
         task_id=task_id,

@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:08:17Z
-last_update: 2026-10-11T14:22:22Z
+last_update: 2026-10-11T14:25:37Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,10 +96,10 @@ GitHub #93 (MikeEchoVoid). `/inception/T-XXX` — where the operator is sent to 
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] The inception page's Acceptance Criteria card renders each criterion with a working checkbox that posts to the SAME `/api/task/<id>/toggle-ac` endpoint the task page uses (same CSRF, same provenance recording — no second tick path). Agent criteria keep whatever editability the task page gives them; Human criteria are tickable exactly as on `/tasks/T-XXX`.
-- [ ] Human criteria keep their Steps/Expected/If-not readable on the inception page (same rendering as the task page's human-AC body), and the card links to `/tasks/T-XXX`.
-- [ ] The "Decision recorded — one step left" card names any unticked Human criterion and links to it (or says it can be ticked right above), so a GO recorded on this page does not leave the task silently stuck in `active/`.
-- [ ] pytest `tests/web/test_t4046_inception_human_ac_tickable.py` (Flask test client, fixture inception with an unticked `### Human` criterion): the page contains a checkbox input whose form posts to `/api/task/<id>/toggle-ac`, and an `href="/tasks/<id>"`; posting that toggle ticks the box in the task file through the existing endpoint. Fails on the pre-fix code.
+- [x] The inception page's Acceptance Criteria card renders each criterion with a working checkbox that posts to the SAME `/api/task/<id>/toggle-ac` endpoint the task page uses (same CSRF, same provenance recording — no second tick path). Agent criteria keep whatever editability the task page gives them; Human criteria are tickable exactly as on `/tasks/T-XXX`.
+- [x] Human criteria keep their Steps/Expected/If-not readable on the inception page (same rendering as the task page's human-AC body), and the card links to `/tasks/T-XXX`.
+- [x] The "Decision recorded — one step left" card names any unticked Human criterion and links to it (or says it can be ticked right above), so a GO recorded on this page does not leave the task silently stuck in `active/`.
+- [x] pytest `tests/web/test_t4046_inception_human_ac_tickable.py` (Flask test client, fixture inception with an unticked `### Human` criterion): the page contains a checkbox input whose form posts to `/api/task/<id>/toggle-ac`, and an `href="/tasks/<id>"`; posting that toggle ticks the box in the task file through the existing endpoint. Fails on the pre-fix code.
 - [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
@@ -276,6 +276,11 @@ bin/fw vendor self --check
 
 ## RCA
 
+**Symptom:** On `/inception/T-XXX` the Acceptance Criteria card showed `### Human` criteria as dead `[ ] [REVIEW] …` text — no checkbox, no link to `/tasks/T-XXX`. After a GO the Human criterion stayed unticked and the task sat in `active/` until the operator found the task page (GitHub #93).
+**Root cause:** `inception_detail` rendered the whole `## Acceptance Criteria` section through `_md` (text → HTML), never through `_parse_acceptance_criteria`, which is the only thing that yields the line indices the `toggle-ac` endpoint needs. The tickable markup lived only inline in `task_detail.html`.
+**Why structurally allowed:** the interactive AC list was a template-local block, not a shared partial, so each new page that showed criteria (T-2077 added them to the inception page) copied the section as prose. No test asserted that a page showing criteria could tick them.
+**Prevention:** shared partial `web/templates/_ac_list.html` (same endpoint, same CSRF) plus `tests/web/test_t4046_inception_human_ac_tickable.py`, which asserts the toggle form, the task-page link, and the round-trip tick.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -291,6 +296,11 @@ bin/fw vendor self --check
 -->
 
 ## Evolution
+
+### 2026-10-11 — shared AC partial instead of editing the task page
+- **What changed:** the tickable markup only existed inline in `task_detail.html`; reusing it meant a copy. Put it in a new `_ac_list.html` partial (inception page only) rather than touching `task_detail.html`/`tasks.py`, which another worker's scope may overlap.
+- **Plan impact:** `task_detail.html` still carries its own copy of the same markup; folding it onto the partial is a follow-up, not done here.
+- **Triggered:** none filed.
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
      understanding evolved during build — what was learned that wasn't known at
@@ -376,3 +386,7 @@ bin/fw vendor self --check
 
 ### 2026-10-11T14:18:22Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-11 — build notes [agent]
+- **Pre-fix failure:** with the HEAD `inception.py` + `inception_detail.html`, both new tests fail (no toggle-ac form on the page, StopIteration finding the Human criterion's form). With the fix, 2 passed; `test_inception_decide_e2e.py` still passes (15 passed together).
+- **L-016 check (does decide from the Watchtower page tick its authorizing Human AC?):** by code reading, yes for templated criteria. The Watchtower decide route shells to `fw inception decide`, which calls `tick_inception_decide_acs` (`lib/inception.sh:624`, `:773`). It ticks only Human criteria whose text matches `[REVIEW]…go/no-go decision`, `[RUBBER-STAMP]…Record…decision` or `[REVIEW]…decide`. A custom Human criterion (like T-4046's own, "You can tick the review criterion…") is not matched, so it stays open; that is the #93 case this page fix addresses. I did not run a live decide to confirm. Decide behaviour not changed.
