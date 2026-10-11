@@ -1073,6 +1073,7 @@ do_upgrade() {
     # hasn't yet wired `fw vendor self` into pre-push. Operators who have wired
     # pre-push (no inline redundancy needed) opt out via --no-self-vendor.
     local no_self_vendor=false
+    local messaging_flag=""   # T-4042: "" | 1 (--with-messaging) | 0 (--without-messaging)
     # T-3850: passed through to do_vendor, which otherwise refuses when local
     # files under .agentic-framework/ would be deleted or overwritten.
     local -a _vendor_extra=()
@@ -1085,6 +1086,8 @@ do_upgrade() {
             --force-downgrade) force_downgrade=true; shift ;;
             --strict) strict=true; shift ;;
             --no-self-vendor) no_self_vendor=true; shift ;;
+            --with-messaging) messaging_flag=1; shift ;;
+            --without-messaging) messaging_flag=0; shift ;;
             --dedupe-user-hooks) dedupe_user_hooks=true; shift ;;
             --from-upstream)
                 from_upstream="$2"; shift 2 ;;
@@ -1108,6 +1111,8 @@ do_upgrade() {
                 echo "  --allow-delete-locals   Let the vendor step delete/overwrite local files under"
                 echo "                          .agentic-framework/ not listed in .fwvendor-preserve.yaml"
                 echo "                          (T-3850; logged Tier-2, copies kept). Default: refuse."
+                echo "  --with-messaging        Install/update the cross-host messaging toolkit (sets MESSAGING_TOOLKIT=1)"
+                echo "  --without-messaging     Skip the toolkit (sets MESSAGING_TOOLKIT=0); existing files are listed, never deleted"
                 echo "  --no-self-vendor        Skip the inline framework self-vendor refresh"
                 echo "                          (T-2095 V1-D, F2). Default: keep inline (T-1217"
                 echo "                          invariant). Opt-out for operators who fire"
@@ -1132,8 +1137,12 @@ do_upgrade() {
                 echo "  - Git hooks"
                 echo "  - .claude/settings.json (hook config)"
                 echo "  - .claude/commands/resume.md"
-                echo "  - .claude/commands/doorbell+mail toolkit (be-reachable, peers, recent-chat, recent-dm, broadcast-chat, pulse, conversations, check-arc, agent-handoff) — T-1867"
-                echo "  - scripts/doorbell+mail supporting toolkit (11 .sh) — T-1867"
+                local _n_sk _n_sc
+                _n_sk=$(ls "$FRAMEWORK_ROOT/lib/templates/skills"/*.md 2>/dev/null | wc -l)
+                _n_sc=$(ls "$FRAMEWORK_ROOT/lib/templates/scripts"/*.sh 2>/dev/null | wc -l)
+                echo "  - OPT-IN messaging toolkit (cross-host agent messaging over TermLink, T-1867/T-4042):"
+                echo "      $((_n_sk)) slash commands in .claude/commands/, $((_n_sc)) scripts in scripts/."
+                echo "      Controlled by MESSAGING_TOOLKIT in .framework.yaml (--with-messaging / --without-messaging)"
                 echo "  - lib/*.sh (fw subcommands: inception, upgrade, init, etc.)"
                 echo "  - Agent scripts (task-create, handover, git, healing, fabric, etc.)"
                 echo "  - bin/fw (CLI entry point)"
@@ -2552,21 +2561,69 @@ MCPJSON
     # Skills + supporting scripts from upstream lib/templates/{skills,scripts}/ to the
     # project's .claude/commands/ and scripts/. Only enumerated files are touched; every
     # decision goes through the same helper as step 7 (T-3955).
-    echo -e "${YELLOW}[7b/10] Doorbell+mail toolkit (T-1867)${NC}"
-    _t1867_changes=0
-    local _t1867_src
-    for _t1867_src in "$FRAMEWORK_ROOT/lib/templates/skills"/*.md; do
-        [ -f "$_t1867_src" ] || continue
-        _uts_line=$(python3 "$_uts" "$target_dir" "$_t1867_src" ".claude/commands/$(basename "$_t1867_src")" $_uts_dry 2>&1) || _uts_line="ERROR helper failed: ${_uts_line:-no output}"
-        _uts_report "$_uts_line"
+    local _t4042_nsk _t4042_nsc
+    _t4042_nsk=$(ls "$FRAMEWORK_ROOT/lib/templates/skills"/*.md 2>/dev/null | wc -l)
+    _t4042_nsc=$(ls "$FRAMEWORK_ROOT/lib/templates/scripts"/*.sh 2>/dev/null | wc -l)
+    echo -e "${YELLOW}[7b/10] Messaging toolkit — cross-host agent messaging over TermLink: $((_t4042_nsk)) slash commands, $((_t4042_nsc)) scripts (opt-in, T-4042)${NC}"
+    local _t4042_yaml="$target_dir/.framework.yaml" _t4042_cur="" _t4042_src _t4042_rel
+    local -a _t4042_present=()
+    for _t4042_src in "$FRAMEWORK_ROOT/lib/templates/skills"/*.md; do
+        [ -f "$_t4042_src" ] || continue
+        _t4042_rel=".claude/commands/$(basename "$_t4042_src")"
+        [ -e "$target_dir/$_t4042_rel" ] && _t4042_present+=("$_t4042_rel")
     done
-    for _t1867_src in "$FRAMEWORK_ROOT/lib/templates/scripts"/*.sh; do
-        [ -f "$_t1867_src" ] || continue
-        _uts_line=$(python3 "$_uts" "$target_dir" "$_t1867_src" "scripts/$(basename "$_t1867_src")" $_uts_dry --exec 2>&1) || _uts_line="ERROR helper failed: ${_uts_line:-no output}"
-        _uts_report "$_uts_line"
+    for _t4042_src in "$FRAMEWORK_ROOT/lib/templates/scripts"/*.sh; do
+        [ -f "$_t4042_src" ] || continue
+        _t4042_rel="scripts/$(basename "$_t4042_src")"
+        [ -e "$target_dir/$_t4042_rel" ] && _t4042_present+=("$_t4042_rel")
     done
-    if [ "$_t1867_changes" -eq 0 ]; then
-        echo -e "  ${GREEN}OK${NC}  doorbell+mail toolkit in sync (0 changes)"
+    [ -f "$_t4042_yaml" ] && _t4042_cur=$(grep "^MESSAGING_TOOLKIT:" "$_t4042_yaml" 2>/dev/null | head -1 | sed 's/^MESSAGING_TOOLKIT:[[:space:]]*//; s/["'"'"'[:space:]]//g' || true)
+    local _t4042_new="" _t4042_why=""
+    if [ -n "$messaging_flag" ]; then
+        _t4042_new="$messaging_flag"; _t4042_why="set by flag"
+    elif [ "$_t4042_cur" = "0" ] || [ "$_t4042_cur" = "1" ]; then
+        _t4042_new="$_t4042_cur"
+    elif [ "${#_t4042_present[@]}" -gt 0 ]; then
+        _t4042_new=1; _t4042_why="toolkit files already present (${#_t4042_present[@]})"
+    else
+        _t4042_new=0; _t4042_why="no toolkit files present"
+    fi
+    if [ "$_t4042_new" != "$_t4042_cur" ] && [ -f "$_t4042_yaml" ]; then
+        if [ "$dry_run" = true ]; then
+            echo -e "  ${CYAN}WOULD SET${NC}  MESSAGING_TOOLKIT: $_t4042_new ($_t4042_why)"
+        else
+            if grep -q "^MESSAGING_TOOLKIT:" "$_t4042_yaml" 2>/dev/null; then
+                _sed_i "s/^MESSAGING_TOOLKIT:.*/MESSAGING_TOOLKIT: $_t4042_new/" "$_t4042_yaml"
+            else
+                echo "MESSAGING_TOOLKIT: $_t4042_new" >> "$_t4042_yaml"
+            fi
+            echo -e "  ${GREEN}SET${NC}  MESSAGING_TOOLKIT: $_t4042_new ($_t4042_why)"
+        fi
+    fi
+    if [ "$_t4042_new" = "1" ]; then
+        _t1867_changes=0
+        local _t1867_src
+        for _t1867_src in "$FRAMEWORK_ROOT/lib/templates/skills"/*.md; do
+            [ -f "$_t1867_src" ] || continue
+            _uts_line=$(python3 "$_uts" "$target_dir" "$_t1867_src" ".claude/commands/$(basename "$_t1867_src")" $_uts_dry 2>&1) || _uts_line="ERROR helper failed: ${_uts_line:-no output}"
+            _uts_report "$_uts_line"
+        done
+        for _t1867_src in "$FRAMEWORK_ROOT/lib/templates/scripts"/*.sh; do
+            [ -f "$_t1867_src" ] || continue
+            _uts_line=$(python3 "$_uts" "$target_dir" "$_t1867_src" "scripts/$(basename "$_t1867_src")" $_uts_dry --exec 2>&1) || _uts_line="ERROR helper failed: ${_uts_line:-no output}"
+            _uts_report "$_uts_line"
+        done
+        if [ "$_t1867_changes" -eq 0 ]; then
+            echo -e "  ${GREEN}OK${NC}  messaging toolkit in sync (0 changes)"
+        fi
+        echo "  Disable: fw upgrade --without-messaging  (or: fw config set MESSAGING_TOOLKIT 0)"
+    else
+        echo -e "  ${GREEN}SKIP${NC}  messaging toolkit not installed (MESSAGING_TOOLKIT=0)"
+        if [ "${#_t4042_present[@]}" -gt 0 ]; then
+            echo "  Existing toolkit files are left untouched; remove them yourself if unwanted:"
+            printf '    %s\n' "${_t4042_present[@]}"
+        fi
+        echo "  Enable: fw upgrade --with-messaging  (or: fw config set MESSAGING_TOOLKIT 1)"
     fi
 
     # ── 8. Context subdirectories (create missing) ──

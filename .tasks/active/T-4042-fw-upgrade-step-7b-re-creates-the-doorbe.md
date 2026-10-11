@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:06:43Z
-last_update: 2026-10-11T14:20:16Z
+last_update: 2026-10-11T15:05:00Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -113,12 +113,12 @@ GitHub #89 (MikeEchoVoid). `fw upgrade` step 7b (`lib/upgrade.sh` ~2551, T-1867)
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] A config key `MESSAGING_TOOLKIT` (registered in BOTH `lib/config.sh` FW_CONFIG_REGISTRY and `web/blueprints/config.py` SETTINGS — `tests/lint/config-registry-parity.bats` stays green) decides step 7b: `1` installs/updates the toolkit as today, `0` skips the step entirely.
-- [ ] When the key is unset, the choice is derived ONCE and written to `.framework.yaml`: any toolkit file already present in the project → `1` (existing users keep it, updates continue); none present → `0`. The upgrade prints the decision and how to change it (`fw upgrade --with-messaging` / `--without-messaging`, or `fw config set MESSAGING_TOOLKIT 0|1`). A project with `0` is never asked again and gets nothing re-created.
-- [ ] `fw upgrade --with-messaging` / `--without-messaging` set the key and act on it; `--without-messaging` never deletes existing files — it lists them so the operator can remove them. Both flags appear in `fw upgrade --help`.
-- [ ] Step 7b's header and the help text say what the toolkit is (cross-host agent messaging over TermLink: 9 slash commands in `.claude/commands/`, 12 scripts in `scripts/`), with the counts derived from the template directories, not hard-coded.
-- [ ] Regression test `tests/unit/t4042_messaging_toolkit_optin.bats` (synthetic consumer, `file://` upstream like the fresh-machine simulation): (a) fresh consumer, key unset, no toolkit files → upgrade creates none and writes `MESSAGING_TOOLKIT: 0`; (b) key 0, files deleted, second upgrade → still none; (c) consumer with the toolkit present, key unset → files kept/updated, key `1`; (d) `--with-messaging` on (a) → files created, key 1; (e) `--without-messaging` on (c) → files untouched, listed, key 0. (a) and (b) fail on the pre-fix code.
-- [ ] `tests/unit/upgrade_fresh_machine_simulation.bats` and `_vendored` stay green (CLAUDE.md §Consumer-Facing Command Hygiene).
+- [x] A config key `MESSAGING_TOOLKIT` (registered in BOTH `lib/config.sh` FW_CONFIG_REGISTRY and `web/blueprints/config.py` SETTINGS — `tests/lint/config-registry-parity.bats` stays green) decides step 7b: `1` installs/updates the toolkit as today, `0` skips the step entirely.
+- [x] When the key is unset, the choice is derived ONCE and written to `.framework.yaml`: any toolkit file already present in the project → `1` (existing users keep it, updates continue); none present → `0`. The upgrade prints the decision and how to change it (`fw upgrade --with-messaging` / `--without-messaging`, or `fw config set MESSAGING_TOOLKIT 0|1`). A project with `0` is never asked again and gets nothing re-created.
+- [x] `fw upgrade --with-messaging` / `--without-messaging` set the key and act on it; `--without-messaging` never deletes existing files — it lists them so the operator can remove them. Both flags appear in `fw upgrade --help`.
+- [x] Step 7b's header and the help text say what the toolkit is (cross-host agent messaging over TermLink: 9 slash commands in `.claude/commands/`, 12 scripts in `scripts/`), with the counts derived from the template directories, not hard-coded.
+- [x] Regression test `tests/unit/t4042_messaging_toolkit_optin.bats` (synthetic consumer, `file://` upstream like the fresh-machine simulation): (a) fresh consumer, key unset, no toolkit files → upgrade creates none and writes `MESSAGING_TOOLKIT: 0`; (b) key 0, files deleted, second upgrade → still none; (c) consumer with the toolkit present, key unset → files kept/updated, key `1`; (d) `--with-messaging` on (a) → files created, key 1; (e) `--without-messaging` on (c) → files untouched, listed, key 0. (a) and (b) fail on the pre-fix code.
+- [x] `tests/unit/upgrade_fresh_machine_simulation.bats` and `_vendored` stay green (CLAUDE.md §Consumer-Facing Command Hygiene).
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -302,6 +302,14 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** `fw upgrade` re-created the 9 slash commands in `.claude/commands/` and 12 scripts in `scripts/` that a project had deliberately deleted; no flag or config key to skip it (GitHub #89).
+
+**Root cause:** step 7b iterated the template directories unconditionally and treated "file absent" as "needs creating"; a deletion was indistinguishable from "never installed". The toolkit was never an explicit choice, so there was no stored decision to honour.
+
+**Why structurally allowed:** T-3955 protected customised files only, not absent ones; `fw init` does not install the toolkit while `fw upgrade` did, and nothing compared the two; the help text hard-coded "11 .sh" (12 ship) so the surface description drifted unnoticed.
+
+**Prevention:** the choice is now a persisted key (`MESSAGING_TOOLKIT`, registered in both registries, parity lint enforced), derived once from existing files; `tests/unit/t4042_messaging_toolkit_optin.bats` pins create-nothing (a), stays-deleted (b), keep-existing (c) and the flags (d)(e); the help counts are derived from the template dirs.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -325,6 +333,11 @@ bin/fw vendor self --check
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+### 2026-10-11 — upgrade needs a stored decision, not a re-derived default
+- **What changed:** the fix is "remember a choice", not "skip when X": file absence is ambiguous (never installed vs deleted), so the first upgrade derives the answer from what is on disk and persists it. The test also had to run the working-tree framework directly, because a file:// upstream clone only sees committed HEAD.
+- **Plan impact:** none to the spec; moving the scripts under `.agentic-framework/` (reporter's suggestion 3) stays a separate change.
+- **Triggered:** nothing new filed.
 
 ## Recommendation
 
@@ -393,3 +406,6 @@ bin/fw vendor self --check
 
 ### 2026-10-11T14:19:54Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-11 — pre-fix evidence (agent)
+- With `lib/upgrade.sh` swapped for HEAD (my file only, restored after), `tests/unit/t4042_messaging_toolkit_optin.bats` fails 6/6: (a) the pre-fix upgrade created the toolkit in a fresh consumer and wrote no `MESSAGING_TOOLKIT` key; (b) files deleted after the first upgrade were re-created by the second. With the fix: 6/6 pass.
