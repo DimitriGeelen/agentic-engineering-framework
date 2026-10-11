@@ -13,7 +13,7 @@ description: >
   survives two poll intervals). Minor, separate: web/test_app.py does not import in
   a vendored consumer (ModuleNotFoundError: design_comments).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -48,7 +48,7 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "T-2306"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T11:18:36Z
-last_update: '2026-10-11T11:31:24Z'
+last_update: 2026-10-11T12:31:44Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -100,8 +100,8 @@ Reported by ring20 (proxmox-ring20-management, their T-2306; sidecar conversatio
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `web/templates/base.html` has an `htmx:beforeSwap` listener (next to the `htmx:beforeRequest` one) that, when `evt.detail.boosted` and the target is not `#content`, sets the target to `#content`. Non-boosted swaps (polls, explicit hx-get/hx-post) keep their targets.
-- [ ] Playwright test `tests/playwright/test_t4052_boosted_link_in_poller.py`: for /approvals (and the cockpit activity list when it has a link), click a boosted task link inside the polling container, wait past two poll intervals, assert the URL and the page `h1` are still the task's and `#approvals-content` is no longer in the DOM; control: /approvals left alone still refreshes `#approvals-content` in place with one page header. The test fails on the pre-fix base.html.
+- [x] `web/templates/base.html` has an `htmx:beforeSwap` listener (next to the `htmx:beforeRequest` one) that, when `evt.detail.boosted` and the target is not `#content`, sets the target to `#content`. Non-boosted swaps (polls, explicit hx-get/hx-post) keep their targets.
+- [x] Playwright test `tests/playwright/test_t4052_boosted_link_in_poller.py`: for /approvals (and the cockpit activity list when it has a link), click a boosted task link inside the polling container, wait past two poll intervals, assert the URL and the page `h1` are still the task's and `#approvals-content` is no longer in the DOM; control: /approvals left alone still refreshes `#approvals-content` in place with one page header. The test fails on the pre-fix base.html.
 - [ ] Watchtower restarted after the change and `bin/fw watchtower current` exits 0.
 
 ### Human
@@ -280,6 +280,14 @@ bin/fw vendor self --check
 
 ## RCA
 
+**Symptom:** Clicking a task link on /approvals swaps the task page into `#approvals-content`; the next 10 s poll swaps the list back while the URL still names the task.
+
+**Root cause:** `body` has `hx-boost` + `hx-target="#content"`; polling containers override with `hx-target="this"` (T-2060), and boosted links inside them inherit that target, so boosted navigation lands in the container.
+
+**Why structurally allowed:** T-2060 overrode the target on the container without considering that the attribute is inherited by descendants; no test clicked a link inside a poller and waited past a poll interval.
+
+**Prevention:** `htmx:beforeSwap` listener in base.html retargets every boosted swap to `#content` (covers all pollers, present and future); Playwright test `test_t4052_boosted_link_in_poller.py` clicks a boosted link inside /approvals and the cockpit activity list and waits past two poll intervals.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -374,3 +382,11 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4052-watchtower-a-boosted-link-inside-an-hx-t.md
 - **Context:** Initial task creation
+
+### 2026-10-11 — build [T-4052 worker]
+- **Action:** Added `htmx:beforeSwap` retarget listener to web/templates/base.html; added tests/playwright/test_t4052_boosted_link_in_poller.py (approvals, cockpit activity, control).
+- **Result:** 3 passed with the fix. Against `git show HEAD:web/templates/base.html` the approvals test FAILS (`#approvals-content still in the DOM: the page was swapped into the poller`; 1 failed, 2 passed). The cockpit test passes pre-fix because `_cockpit_activity.html` links already set explicit `hx-target="#content"`; it stays as a guard.
+- **Not done:** Watchtower restart / `fw watchtower current` AC left unticked for the orchestrator.
+
+### 2026-10-11T12:21:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
