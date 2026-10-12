@@ -1250,8 +1250,9 @@ def toggle_ac(task_id):
                 human_ac_ticks.record(PROJECT_ROOT, task_id, key, "watchtower", "watchtower", extra)
         except Exception as e:  # noqa: BLE001 - any failure must refuse the tick
             task_file.write_text(old_text)
+            _tick_err = str(e)  # T-4084: a short notice, not a stderr render (T-2222 counts those)
             return ('<p style="color: var(--pico-del-color);">Tick refused: could not write the '
-                    f'provenance record ({_escape(str(e))[:300]})</p>', 500)
+                    f'provenance record ({_escape(_tick_err[:1500])})</p>', 500)
     if ok:
         checked_attr = "checked" if new_state else ""
         return f'<input type="checkbox" {checked_attr} onchange="this.form.requestSubmit()" style="margin:0;">'
