@@ -139,7 +139,9 @@ except:
     # Quick pre-filter: if no absolute path reference, skip Python analysis.
     # T-1702: include any leading-slash token (read-side detection needs to see
     # /root, /var, /home etc. even when they are not write/cd targets).
-    if ! echo "$COMMAND" | grep -qE '(cd\s+/|/opt/|/home/|/root/|/var/|/etc/|/usr/|>+\s*/|tee\s+/|\.agentic-framework/bin/fw)'; then
+    # T-4114: any tee with an absolute path anywhere after it must reach the
+    # analysis — `tee\s+/` let `tee -a /srv/x` skip it entirely.
+    if ! echo "$COMMAND" | grep -qE '(cd\s+/|/opt/|/home/|/root/|/var/|/etc/|/usr/|>+\s*/|tee\s.*/|\.agentic-framework/bin/fw)'; then
         exit 0
     fi
 
@@ -560,8 +562,26 @@ for fw_path in fw_pattern.findall(command):
         sys.exit(0)
 
 # Pattern 3: File write operations targeting absolute paths outside project
-write_ops = re.compile(r'(?:>>?\s*|tee\s+)(/[^\s;&|]+)')
-for target_file in write_ops.findall(command):
+#
+# T-4114: tee is parsed, not matched. `tee\s+(/path)` saw only a path in the
+# FIRST argument slot, so `tee -a /etc/fstab` (any option first) and
+# `tee /tmp/ok /etc/x` (outside path second) both walked past it — and the
+# read-side Pattern 4 allowlists /etc/, so nothing else caught them. Every
+# argument of tee up to the end of its segment is a write target; options
+# (`-a`, `--append`, `--output-error=warn`, `--`) are skipped, not terminators.
+write_ops = re.compile(r'>>?\s*(/[^\s;&|]+)')
+_TEE_RE = re.compile(r'(?<![\w.-])tee(?![\w.-])')
+
+
+def _tee_targets(cmd):
+    for m in _TEE_RE.finditer(cmd):
+        seg = re.split(r'[;&|<>()\n]', cmd[m.end():], maxsplit=1)[0]
+        for tok in seg.split():
+            if tok.startswith('/'):
+                yield tok
+
+
+for target_file in list(write_ops.findall(command)) + list(_tee_targets(command)):
     if target_file.startswith(('/tmp/', '/root/.claude/', '/dev/', '/etc/cron.d/')):
         continue
     if not target_file.startswith(project_root + '/'):
