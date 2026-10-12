@@ -1,8 +1,15 @@
 ---
 id: T-4077
-name: "fw issues comment: the one outward verb for GitHub stage comments (templates + footer, idempotent per issue/stage, operator gate on decision stages, Fixed only for commits on GitHub, atomic ledger log, labels created)"
+name: "fw issues comment: the one outward verb for GitHub stage comments (templates
+  + footer, idempotent per issue/stage, operator gate on decision stages, Fixed only
+  for commits on GitHub, atomic ledger log, labels created)"
 description: >
-  T-4039 build slice 1 (GO 2026-10-11). Spec: docs/reports/T-4039-inbound-github-issues.md §Mechanisms and §First batch (gaps a-d: labels missing, commit must be on GitHub bleeding-edge, per-issue test command, post+log atomic). Stages: received, classified, in-progress, fixed-on-bleeding-edge, available-for-testing, released; decision stages accepted/needs-info/duplicate/not-planned refuse without operator approval. Ledger .context/issues/intake.jsonl. Issue text is untrusted data.
+  T-4039 build slice 1 (GO 2026-10-11). Spec: docs/reports/T-4039-inbound-github-issues.md
+  §Mechanisms and §First batch (gaps a-d: labels missing, commit must be on GitHub
+  bleeding-edge, per-issue test command, post+log atomic). Stages: received, classified,
+  in-progress, fixed-on-bleeding-edge, available-for-testing, released; decision stages
+  accepted/needs-info/duplicate/not-planned refuse without operator approval. Ledger
+  .context/issues/intake.jsonl. Issue text is untrusted data.
 
 status: captured
 workflow_type: build
@@ -39,8 +46,8 @@ origin: {kind: "operator", source: "T-4039-GO"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T21:40:42Z
-last_update: 2026-10-11T21:40:42Z
-date_finished: null
+last_update: 2026-10-12T07:03:21Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-11T21:45:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-11T21:45:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4077: fw issues comment: the one outward verb for GitHub stage comments (templates + footer, idempotent per issue/stage, operator gate on decision stages, Fixed only for commits on GitHub, atomic ledger log, labels created)
@@ -63,8 +98,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw issues comment <n> --stage <stage> [--task T-X] [--commit SHA] [--test-cmd "…"] [--version vX.Y.Z] [--text "…"]` exists (new `lib/issues.py` + `bin/fw issues` route). Stages: received, classified, in-progress, fixed-on-bleeding-edge, available-for-testing, released (template stages); accepted, needs-info, duplicate, not-planned (decision stages). Every comment = the stage's fixed template + the operator's verbatim footer (`docs/reports/T-4039-inbound-github-issues.md`), with a machine-readable stage marker (e.g. an HTML comment) so the stage can be read back from the issue.
+- [ ] Idempotent per (issue, stage): a stage already in the intake ledger, or already marked on the issue (read back via `gh`), is not posted again; the command says so and exits 0.
+- [ ] Decision stages refuse without `--approved-by-operator <ref>`, and refuse under `CLAUDECODE=1` unless that ref is an operator approval record (same pattern as `fw review approve`); template stages post under the standing permission (2026-10-10).
+- [ ] `fixed-on-bleeding-edge` refuses unless `--commit` is an ancestor of the GitHub mirror's `bleeding-edge` (`git ls-remote github` / `merge-base --is-ancestor`), and requires `--test-cmd` (per-issue "how to test" line).
+- [ ] Post + ledger append are one operation: the ledger row (`.context/issues/intake.jsonl`: issue, stage, tasks, commit, comment URL, ts) is written only after GitHub returns the comment URL, and a failure after posting is reported loudly with the URL so the row can be reconciled (never a silent half state). Missing stage labels (`status:*`, `fixed-on-bleeding-edge`, …) are created on first use.
+- [ ] Tests (`tests/unit/t4077_issues_comment_test.py`) with a stubbed `gh` on PATH (no network): template rendering + footer + marker; idempotence (ledger and read-back); decision-stage refusal; fixed-stage refusal for a commit not on the mirror; ledger written only on success; label creation call. Issue text from GitHub is treated as data only.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -227,6 +266,9 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/t4077_issues_comment_test.py -q > .context/working/t4077-verify.out 2>&1 && grep -q passed .context/working/t4077-verify.out && ! grep -qE "[0-9]+ (failed|skipped|error)" .context/working/t4077-verify.out
+bash -n bin/fw
+bin/fw vendor self --check
 
 ## RCA
 
