@@ -27,6 +27,8 @@ SH
     chmod +x "$ROOT/bin/fw"
     source "$FRAMEWORK_ROOT/lib/handover-lock.sh"
     eval "$(awk '/^_ensure_handover_before_kill\(\) \{/,/^}/' "$FRAMEWORK_ROOT/bin/claude-fw")"
+    eval "$(awk '/^_handover_git_busy\(\) \{/,/^}/' "$FRAMEWORK_ROOT/bin/claude-fw")"   # T-4119
+    eval "$(awk '/^_bounded_handover\(\) \{/,/^}/' "$FRAMEWORK_ROOT/bin/claude-fw")"    # T-4119
     unset FAKE_PUSH FW_TERMINATOR_HANDOVER_TIMEOUT
 }
 

@@ -25,6 +25,8 @@ SH
     chmod +x "$ROOT/bin/fw"
     # Pull the two functions out of claude-fw without running its main.
     eval "$(awk '/^_ensure_handover_before_kill\(\) \{/,/^}/' "$FRAMEWORK_ROOT/bin/claude-fw")"
+    eval "$(awk '/^_handover_git_busy\(\) \{/,/^}/' "$FRAMEWORK_ROOT/bin/claude-fw")"   # T-4119
+    eval "$(awk '/^_bounded_handover\(\) \{/,/^}/' "$FRAMEWORK_ROOT/bin/claude-fw")"    # T-4119
     eval "$(awk '/^_terminator_watch\(\) \{/,/^}/' "$FRAMEWORK_ROOT/bin/claude-fw")"
     eval "$(awk '/^_turn_state\(\) \{/,/^}/' "$FRAMEWORK_ROOT/bin/claude-fw")"
     eval "$(grep '^_mono()' "$FRAMEWORK_ROOT/bin/claude-fw")"

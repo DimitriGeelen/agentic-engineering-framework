@@ -1,13 +1,18 @@
 ---
 id: T-4119
-name: "terminator's 180 s handover limit is shorter than one slow commit plus the handover commit; handover killed at 'Auto-committing handover' and claude killed mid-push (832 T-1140)"
+name: "terminator's 180 s handover limit is shorter than one slow commit plus the
+  handover commit; handover killed at 'Auto-committing handover' and claude killed
+  mid-push (832 T-1140)"
 description: >
-  832: commit spent 59 s in post-commit hooks, then git push; the terminator's fw handover --commit timed out at 180 s (rc=124) and claude was killed during the push. Options: handover commit skips post-commit advisories, extend the limit while a commit/push is in progress, or wait for the turn first (T-4032). Pin with a test.
+  832: commit spent 59 s in post-commit hooks, then git push; the terminator's fw
+  handover --commit timed out at 180 s (rc=124) and claude was killed during the push.
+  Options: handover commit skips post-commit advisories, extend the limit while a
+  commit/push is in progress, or wait for the turn first (T-4032). Pin with a test.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, claude-fw, handover]
 components: []
 related_tasks: []
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T14:04:46Z
-last_update: 2026-10-12T14:04:46Z
-date_finished: null
+last_update: 2026-10-12T18:09:54Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-12T14:15:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-12T14:15:56Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4119: terminator's 180 s handover limit is shorter than one slow commit plus the handover commit; handover killed at 'Auto-committing handover' and claude killed mid-push (832 T-1140)
@@ -62,8 +95,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] A handover whose commit/push git work is still running at the terminator limit is NOT cut there (new test: stub git in flight at the limit -> handover rc 0, LATEST committed)
+- [ ] A handover with no git process of the repo in flight is still cut at the limit (hang test keeps passing)
+- [ ] Git work still running past FW_TERMINATOR_HANDOVER_MAX is cut at the ceiling (no dead-lock)
+- [ ] A git process outside the project root does not extend the limit
+- [ ] bin/claude-fw restart re-exec (T-4118) and terminator/T-3918/T-4032/T-3942 suites stay green
+- [ ] bin/claude-fw vendored copy synced (`bin/fw vendor self --check` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +134,10 @@ date_finished: null
 -->
 
 ## Verification
+
+bats tests/unit/t4119_terminator_handover_git_extension.bats > .context/scratch/t4119-new.out 2>&1 && ! grep -q "^not ok" .context/scratch/t4119-new.out
+bats tests/unit/t4118_claude_fw_reexec_on_change.bats tests/unit/t3918_terminator_handover.bats tests/unit/t3942_handover_landed.bats tests/unit/t4004_handover_push_retry.bats > .context/scratch/t4119-old.out 2>&1 && ! grep -q "^not ok" .context/scratch/t4119-old.out
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -229,6 +270,14 @@ date_finished: null
 
 ## RCA
 
+**Symptom:** 832 T-1140. The agent's own commit spent 59 s in post-commit hooks, then `git push` ran. The claude-fw terminator's `fw handover --commit` was cut by its 180 s limit at 'Auto-committing handover...' (rc=124), and claude was killed mid-push.
+
+**Root cause:** The terminator's clock was a fixed number, but the work under it was not. `_ensure_handover_before_kill` wrapped the whole handover in `timeout ${FW_TERMINATOR_HANDOVER_TIMEOUT:-180}`. That one clock covered handover generation, the handover commit (post-commit hooks, measured at 59 s), and the push, whose own budget is derived per project from the measured pre-push gate (lib/prepush-lock-wait.sh; 268 s+ in some hosts). So the outer kill fired inside work the handover itself was still legitimately doing, and the terminator then ended claude while the push was still in flight.
+
+**Why structurally allowed:** The handover's push timeout (T-1277 → T-3062 → T-3450) was repeatedly re-derived from measured gate cost, but the terminator's outer limit (T-3918, T-3942) was never checked against the sum of its inner bounds. Nothing asserted `outer ≥ generate + commit + push`. T-3942 made a landed commit count as success, but a commit that had not yet landed when the timer fired still got killed. The existing hang test (`sleep 60`) only proves that a silent hang is cut, so the test suite could not distinguish "hung" from "committing".
+
+**Prevention:** (1) The limit is now a floor: while a git process whose cwd is inside the project root is running, the handover is extended in 30 s steps, up to `FW_TERMINATOR_HANDOVER_MAX` (default 900 s, matching the turn ceiling). A hang with no git in flight is still cut at the limit. (2) tests/unit/t4119_terminator_handover_git_extension.bats reproduces the cut on HEAD (stub git in flight at the limit → rc 124, status 1) and pins the three other legs: hang still cut, ceiling still cuts a git that never ends, and a git outside the root is not counted.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -298,6 +347,15 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-12 — how to stop the cut inside a commit-in-flight
+- **Chose:** extend the handover's limit while a git process of this repo (cwd under project root, via /proc) is running, capped at a new `FW_TERMINATOR_HANDOVER_MAX` ceiling (default 900 s). Replace `timeout` with a small watcher (`_bounded_handover`) that runs the handover in its own process group, so the cut still reaches its git children.
+- **Why:** it addresses the measured failure directly. The limit only covers work that is really in progress, so a hang stays bounded. It needs no change to the handover agent, the git agent, or hook behaviour.
+- **Rejected:**
+  - *Raising the static limit to e.g. 600 s:* a guess again, and still wrong for a slower host. The limit should follow the work.
+  - *Skipping post-commit advisories in the handover commit:* changes the git agent's hook contract for every commit. The hooks are the cost, so this is the wrong layer.
+  - *Running the handover with no limit after the turn ends:* a hung handover would dead-lock the restart loop (the T-2403 concern), so a ceiling is still needed.
+- **Known limits:** `/proc` is Linux-only, so elsewhere the old fixed limit applies. Any git process of the same checkout counts (including other workers), so a hung handover can run to the ceiling while a concurrent git is busy. That is bounded by the ceiling and accepted.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -323,3 +381,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4119-terminators-180-s-handover-limit-is-shor.md
 - **Context:** Initial task creation
+
+### 2026-10-12T18:09:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
