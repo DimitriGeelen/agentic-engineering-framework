@@ -189,9 +189,12 @@ def test_commit_decision_failure_leaves_index_untouched(tmp_path, monkeypatch):
     assert committed is False
     assert msg
 
-    after = _git("diff", "--cached", "--name-only", cwd=tmp_path).stdout
-    assert after == before  # real index byte-identical: no residue from the failed attempt
-    assert after.strip() == "agent-in-progress.txt"
+    # T-4127: the decision commit goes through the real index, so a failed commit may
+    # leave the decision's OWN paths staged (harmless: a later commit carries them);
+    # it must never lose or add anything else.
+    after = _git("diff", "--cached", "--name-only", cwd=tmp_path).stdout.split()
+    assert "agent-in-progress.txt" in after
+    assert all(p == "agent-in-progress.txt" or "T-9100" in p for p in after), after
 
 
 def test_commit_decision_ignores_preexisting_staged_work(tmp_path, monkeypatch):

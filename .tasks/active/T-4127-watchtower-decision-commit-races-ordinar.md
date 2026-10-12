@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T19:32:42Z
-last_update: 2026-10-12T19:33:37Z
+last_update: '2026-10-12T19:45:26Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -79,6 +79,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-12T19:45:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=290,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4127: Watchtower decision commit races ordinary commits (codex round 2 DO-NOT-SHIP): commit through git's own index under git's lock (git commit --only) instead of a scratch GIT_INDEX_FILE + refresh
@@ -91,10 +101,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Watchtower's decision commit has no window in which an ordinary commit can revert it (committed through git's real index under git's lock, or the closest alternative with the residual stated exactly in ## Decisions)
-- [ ] Regression test reproduces codex round-2 finding 1 (competing commit between Watchtower's commit and its refresh) and fails on the pre-fix code; passes after
-- [ ] Other staged changes in the real index are neither swept into the decision commit nor lost; plain move and git mv both work (codex finding 2); a held index.lock makes the decision fail visibly, never silently
-- [ ] test_t4081, test_t4113, t4075 and every test importing web.blueprints.inception green; `bin/fw vendor self --check` clean; Watchtower restarted and `bin/fw watchtower current` passes
+- [x] Watchtower's decision commit has no window in which an ordinary commit can revert it (committed through git's real index under git's lock, or the closest alternative with the residual stated exactly in ## Decisions)
+- [x] Regression test reproduces codex round-2 finding 1 (competing commit between Watchtower's commit and its refresh) and fails on the pre-fix code; passes after
+- [x] Other staged changes in the real index are neither swept into the decision commit nor lost; plain move and git mv both work (codex finding 2); a held index.lock makes the decision fail visibly, never silently
+- [x] test_t4081, test_t4113, t4075 and every test importing web.blueprints.inception green; `bin/fw vendor self --check` clean; Watchtower restarted and `bin/fw watchtower current` passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -128,6 +138,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_t4127_decision_commit_no_window.py tests/unit/test_t4081_watchtower_commit_keeps_real_index.py tests/unit/test_decide_commit.py tests/unit/test_inception_commit_rename_paths.py tests/unit/test_t3749_decide_detached.py tests/unit/test_t4113_watchtower_decision_value.py -q > .context/scratch/t4127-verify.out 2>&1 && grep -q passed .context/scratch/t4127-verify.out
+bin/fw vendor self --check
+bin/fw watchtower current
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -260,6 +274,11 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** an ordinary commit landing between Watchtower's decision commit and its real-index refresh reverts the decision; the refresh then reports success against the reverted HEAD.
+**Root cause:** the decision was committed through a scratch GIT_INDEX_FILE, so HEAD advanced while the real index still held pre-decision blobs; the repair was a separate, later `git reset`. Two non-atomic steps on two indexes cannot be made safe by retrying.
+**Why structurally allowed:** T-4081/T-4112 treated the symptom (stale index, lock contention) with post-hoc refresh + retry; no test injected a commit inside the window.
+**Prevention:** commit via `git commit --only -- paths` on the real index (git holds index.lock from tree build to ref+index update). tests/unit/test_t4127_decision_commit_no_window.py injects a competing commit after the commit and from inside a pre-commit hook; both fail on the pre-fix code.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -328,6 +347,10 @@ bvp_scores_proposed:
 -->
 
 ## Decisions
+
+- `git commit --only` on the real index chosen over scratch index + refresh. Window-free: git locks index.lock before building the tree and keeps it until the ref moved and the real-index entries for the paths are updated; other staged paths are not committed and stay staged.
+- Stated residual: a preceding `git add -- <paths>` (needed so a plain `mv`'s untracked new file is known to `--only`) is a separate locked call. A commit landing right after it commits the move whole (the same call stages the old path's deletion); ours then commits any remaining difference or reports nothing to commit. Nothing is reverted. A failed commit may leave the decision's own paths staged (harmless).
+- Finding 2: paths known to neither disk, HEAD nor index are dropped, so no pathspec error. Finding 3: _refresh_real_index (the "~4s" claim, really ~184s) and _index_refresh_failed were deleted; the only retry left (_run_git_retry) documents its true worst case. A stale real index from an earlier failure is healed by the `git add` that precedes the commit.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
