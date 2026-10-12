@@ -522,14 +522,21 @@ do_current() {
     fi
     # shellcheck source=/dev/null
     . "$FRAMEWORK_ROOT/lib/watchtower-staleness.sh"
-    local stale
-    if stale=$(watchtower_stale_sources "$pid" "$PROJECT_ROOT/web"); then
-        log_error "STALE: Watchtower pid $pid predates $(printf '%s\n' "$stale" | grep -c .) file(s) under web/"
+    local stale web_dir rc=0
+    web_dir=$(watchtower_web_dir)
+    stale=$(watchtower_stale_sources "$pid" "$web_dir") || rc=$?
+    if [ "$rc" -eq 0 ]; then
+        log_error "STALE: Watchtower pid $pid predates $(printf '%s\n' "$stale" | grep -c .) file(s) under $web_dir"
         printf '%s\n' "$stale" | head -5 | sed 's|^|  - |' >&2
         log_error "Every web/ change since it started is inert. Run: bin/fw watchtower restart"
         return 1
     fi
-    log_info "current: Watchtower pid $pid is newer than every file under web/"
+    if [ "$rc" -eq 2 ]; then
+        # T-4132: a running server whose web tree we cannot find is NOT current.
+        log_error "CANNOT TELL: Watchtower pid $pid is running but $web_dir does not exist"
+        return 1
+    fi
+    log_info "current: Watchtower pid $pid is newer than every file under $web_dir"
     return 0
 }
 

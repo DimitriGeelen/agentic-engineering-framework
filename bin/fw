@@ -2953,13 +2953,18 @@ PY
                 if [ -f "$FRAMEWORK_ROOT/lib/watchtower-staleness.sh" ]; then
                     # shellcheck source=/dev/null
                     . "$FRAMEWORK_ROOT/lib/watchtower-staleness.sh"
-                    local _wt_stale _wt_stale_n
-                    if _wt_stale=$(watchtower_stale_sources "$_wt_pid" "$PROJECT_ROOT/web"); then
+                    local _wt_stale _wt_stale_n _wt_web _wt_rc=0
+                    _wt_web=$(watchtower_web_dir)
+                    _wt_stale=$(watchtower_stale_sources "$_wt_pid" "$_wt_web") || _wt_rc=$?
+                    if [ "$_wt_rc" -eq 0 ]; then
                         _wt_stale_n=$(printf '%s\n' "$_wt_stale" | grep -c .)
                         echo -e "  ${YELLOW}WARN${NC}  Watchtower process predates its own source ($_wt_stale_n file(s) newer than pid $_wt_pid)"
                         printf '%s\n' "$_wt_stale" | head -3 | sed 's|^|         - |'
                         echo -e "         Every web/ change since it started is inert, including any awaiting [REVIEW]."
                         echo -e "         Run: bin/fw watchtower restart"
+                        warnings=$((warnings + 1))
+                    elif [ "$_wt_rc" -eq 2 ]; then
+                        echo -e "  ${YELLOW}WARN${NC}  Watchtower currency cannot be determined ($_wt_web missing while pid $_wt_pid runs)"
                         warnings=$((warnings + 1))
                     fi
                 fi

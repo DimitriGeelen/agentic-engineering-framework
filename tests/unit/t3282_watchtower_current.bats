@@ -17,6 +17,9 @@ setup() {
     # $PROJECT_ROOT/web for the staleness scan (lib/paths.sh honours the env).
     export PROJECT_ROOT="$BATS_TEST_TMPDIR/proj"
     mkdir -p "$PROJECT_ROOT/.context/working" "$PROJECT_ROOT/web"
+    # T-4132: the scan target is the web dir the server serves from
+    # (FRAMEWORK_ROOT/web), which here is the real checkout — point it at the fixture.
+    export FW_WATCHTOWER_WEB_DIR="$PROJECT_ROOT/web"
     PID_FILE="$PROJECT_ROOT/.context/working/watchtower.pid"
 }
 

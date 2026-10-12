@@ -71,18 +71,30 @@ _wt_file_mtime() {
     echo "$m"
 }
 
-# Source files under $2 (default: $PROJECT_ROOT/web) modified after process $1
+# The web/ tree the RUNNING Watchtower serves from (T-4132). bin/watchtower.sh
+# does `cd "$FRAMEWORK_ROOT"; python3 -m web.app`, so the code lives under
+# FRAMEWORK_ROOT/web: the project's own web/ in the framework repo, and
+# .agentic-framework/web in a vendored consumer. $PROJECT_ROOT/web is the right
+# answer only where the two coincide — in a consumer it does not exist, and the
+# old default made every currency check return "current" (832's T-1139 report).
+watchtower_web_dir() {
+    echo "${FW_WATCHTOWER_WEB_DIR:-${FRAMEWORK_ROOT:-${PROJECT_ROOT:-.}}/web}"
+}
+
+# Source files under $2 (default: watchtower_web_dir) modified after process $1
 # started. Prints one path per line, newest first is NOT guaranteed — callers
 # show a sample, so ordering is not load-bearing.
 #
 # rc 0 = at least one newer file (the WARN condition)
 # rc 1 = none newer, or the start time could not be determined
+# rc 2 = cannot tell: the web dir is missing. Callers that know a Watchtower is
+#        running must WARN — a missing tree is not evidence of currency (T-4132).
 watchtower_stale_sources() {
     local pid="$1"
-    local web_dir="${2:-${PROJECT_ROOT:-.}/web}"
+    local web_dir="${2:-$(watchtower_web_dir)}"
     local started file mtime found=1
 
-    [ -d "$web_dir" ] || return 1
+    [ -d "$web_dir" ] || return 2
     started=$(watchtower_process_start_epoch "$pid") || return 1
 
     # Only the file types the server actually loads. __pycache__ is excluded:

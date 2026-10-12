@@ -2930,11 +2930,17 @@ if ! fw_is_linked_worktree "$PROJECT_ROOT" && [ -f "$_wt_cur_pid_f" ] \
     if [ -n "$_wt_cur_pid" ] && kill -0 "$_wt_cur_pid" 2>/dev/null; then
         # shellcheck source=/dev/null
         . "$FRAMEWORK_ROOT/lib/watchtower-staleness.sh"
-        if _wt_cur_list=$(watchtower_stale_sources "$_wt_cur_pid" "$PROJECT_ROOT/web"); then
+        _wt_cur_rc=0
+        _wt_cur_list=$(watchtower_stale_sources "$_wt_cur_pid" "$(watchtower_web_dir)") || _wt_cur_rc=$?
+        if [ "$_wt_cur_rc" -eq 0 ]; then
             _wt_cur_n=$(printf '%s\n' "$_wt_cur_list" | grep -c .)
             _wt_cur_sample=$(printf '%s\n' "$_wt_cur_list" | head -3 | while IFS= read -r _f; do basename "$_f"; done | tr '\n' ' ')
             warn "Watchtower serving stale code: pid $_wt_cur_pid predates $_wt_cur_n file(s) under web/" \
                  "${_wt_cur_sample}— every web/ change since the process started is inert, including operator review/decision surfaces (G-104)" \
+                 "Run: bin/fw watchtower restart"
+        elif [ "$_wt_cur_rc" -eq 2 ]; then
+            warn "Watchtower currency cannot be determined: pid $_wt_cur_pid is running but $(watchtower_web_dir) is missing" \
+                 "a missing web tree is not evidence of currency (T-4132)" \
                  "Run: bin/fw watchtower restart"
         else
             pass "Watchtower currency: running pid $_wt_cur_pid is newer than every file under web/"

@@ -2015,6 +2015,25 @@ CRONREGEOF
             fi
         fi
         changes=$((changes + 1))
+        # T-4132: a running Watchtower keeps serving the pre-upgrade web/ bytes
+        # (Flask debug=False, no reloader). Notice only, no auto-restart: the
+        # operator may be mid-[REVIEW] in that very process, and a restart
+        # drops their session. The predicate is the same one `fw watchtower
+        # current` uses, so the notice fires iff that verb would say STALE.
+        if [ "$dry_run" != true ] && [ -f "$FRAMEWORK_ROOT/lib/watchtower-staleness.sh" ]; then
+            local _up_wt_pidf="$target_dir/.context/working/watchtower.pid" _up_wt_pid _up_wt_rc=0
+            if [ -f "$_up_wt_pidf" ]; then
+                _up_wt_pid=$(tr -d '[:space:]' < "$_up_wt_pidf" 2>/dev/null || true)
+                if [ -n "$_up_wt_pid" ] && kill -0 "$_up_wt_pid" 2>/dev/null; then
+                    # shellcheck source=/dev/null
+                    ( . "$FRAMEWORK_ROOT/lib/watchtower-staleness.sh"
+                      watchtower_stale_sources "$_up_wt_pid" "$vendored_dir/web" >/dev/null ) || _up_wt_rc=$?
+                    if [ "$_up_wt_rc" -eq 0 ]; then
+                        echo -e "  ${YELLOW}NOTE${NC}  Watchtower (pid $_up_wt_pid) predates the upgraded web/ files — restart it: ${BOLD}cd $target_dir && .agentic-framework/bin/fw watchtower restart${NC}"
+                    fi
+                fi
+            fi
+        fi
     else
         echo -e "  ${CYAN}SKIP${NC}  No .agentic-framework/ directory"
     fi

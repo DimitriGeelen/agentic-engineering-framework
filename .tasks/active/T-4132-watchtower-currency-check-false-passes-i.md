@@ -1,10 +1,21 @@
 ---
 id: T-4132
-name: "Watchtower currency check false-passes in vendored consumers: lib/watchtower-staleness.sh scans $PROJECT_ROOT/web, which a consumer lacks (code lives in .agentic-framework/web); and nothing says 'restart Watchtower' after fw upgrade (832 field finding, their T-1139)"
+name: "Watchtower currency check false-passes in vendored consumers: lib/watchtower-staleness.sh
+  scans $PROJECT_ROOT/web, which a consumer lacks (code lives in .agentic-framework/web);
+  and nothing says 'restart Watchtower' after fw upgrade (832 field finding, their
+  T-1139)"
 description: >
-  832 field test of ed683536a (msg 8ae34a8d, finding A): audit/'watchtower current' reported the running pid newer than every file under web/ while the running Watchtower predated .agentic-framework/web/templates changed by the upgrade. lib/watchtower-staleness.sh:82 defaults web_dir to ${PROJECT_ROOT}/web and returns early when it is missing, so in a vendored consumer the check is blind (false green). Fix: resolve the web dir Watchtower actually serves from (FRAMEWORK_ROOT/web, i.e. .agentic-framework/web in a consumer); a missing dir must not read as current; fw upgrade ends with a 'restart Watchtower' notice (or restarts it) when web/ changed. Regression test with a synthetic vendored consumer.
+  832 field test of ed683536a (msg 8ae34a8d, finding A): audit/'watchtower current'
+  reported the running pid newer than every file under web/ while the running Watchtower
+  predated .agentic-framework/web/templates changed by the upgrade. lib/watchtower-staleness.sh:82
+  defaults web_dir to ${PROJECT_ROOT}/web and returns early when it is missing, so
+  in a vendored consumer the check is blind (false green). Fix: resolve the web dir
+  Watchtower actually serves from (FRAMEWORK_ROOT/web, i.e. .agentic-framework/web
+  in a consumer); a missing dir must not read as current; fw upgrade ends with a 'restart
+  Watchtower' notice (or restarts it) when web/ changed. Regression test with a synthetic
+  vendored consumer.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T21:31:54Z
-last_update: 2026-10-12T21:31:54Z
-date_finished: null
+last_update: 2026-10-12T22:52:22Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-12T21:45:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-12T21:46:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4132: Watchtower currency check false-passes in vendored consumers: lib/watchtower-staleness.sh scans $PROJECT_ROOT/web, which a consumer lacks (code lives in .agentic-framework/web); and nothing says 'restart Watchtower' after fw upgrade (832 field finding, their T-1139)
@@ -62,8 +101,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `watchtower_stale_sources` defaults to the web dir Watchtower serves from ($FRAMEWORK_ROOT/web; bin/watchtower.sh cd's to FRAMEWORK_ROOT before `python3 -m web.app`), and `fw watchtower current`, `fw doctor` and `fw audit` pass that dir, so a vendored consumer scans .agentic-framework/web
+- [x] A missing web dir while a Watchtower is running yields rc 2 ("cannot tell") and a WARN in current/doctor/audit, never "current"
+- [x] `fw upgrade` (consumer path) prints a one-line `fw watchtower restart` notice when vendored web/ files changed and a Watchtower is running for the project (notice only, no auto-restart)
+- [x] Regression tests: synthetic vendored consumer stale detected; framework-repo layout unchanged; no Watchtower running exits 0; existing staleness/current bats and upgrade_fresh_machine_simulation.bats green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +138,9 @@ date_finished: null
 -->
 
 ## Verification
+
+bats tests/unit/t4132_watchtower_currency_vendored.bats tests/unit/t2938_watchtower_source_staleness.bats tests/unit/t3282_watchtower_current.bats > /tmp/.t4132.out 2>&1 && ! grep -q "^not ok" /tmp/.t4132.out
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -243,6 +287,14 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** In a vendored consumer, `fw watchtower current`, `fw doctor` and `fw audit` reported Watchtower current while the running process predated the web files `fw upgrade` had just written (832's T-1139 report).
+
+**Root cause:** `lib/watchtower-staleness.sh` defaulted its scan to `$PROJECT_ROOT/web` and `return 1` (= "not stale") when that dir was missing; all three callers (`bin/fw`, `bin/watchtower.sh`, `agents/audit/audit.sh`) also passed `$PROJECT_ROOT/web` explicitly. The server does `cd "$FRAMEWORK_ROOT"; python3 -m web.app` (`bin/watchtower.sh:330,343`), so it serves `FRAMEWORK_ROOT/web` = `.agentic-framework/web` in a consumer. The two roots coincide only in the framework repo, where every test ran.
+
+**Why structurally allowed:** "Directory missing" and "nothing newer" shared one return code, so an unobservable state read as the healthy one (false green). All T-2938/T-3282 tests built their fixture as `$PROJECT_ROOT/web`, i.e. the one layout where the bug cannot occur. Nothing told the operator to restart after `fw upgrade`, so the blind check was the only safety net.
+
+**Prevention:** `watchtower_web_dir` is the single resolver (FRAMEWORK_ROOT/web) used by all callers; rc 2 = "cannot tell" is WARN/fail in current/doctor/audit; `fw upgrade` prints a restart notice driven by the same predicate; `tests/unit/t4132_watchtower_currency_vendored.bats` uses a synthetic vendored layout and pins that no caller hard-codes PROJECT_ROOT/web (6 of 10 tests fail on the pre-fix lib).
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -319,7 +371,16 @@ date_finished: null
 
 ## Updates
 
+### 2026-10-13 — fix landed
+- **Pre-fix failure:** with HEAD's lib, 6 of 10 tests in t4132_watchtower_currency_vendored.bats fail (no `watchtower_web_dir`, missing dir returns 1).
+- **Post-fix:** t4132 + t2938 + t3282 = 27/27 ok; upgrade_fresh_machine_simulation.bats 16/16 ok, 0 skips.
+- **Decision:** `fw upgrade` prints a notice only, no auto-restart — the operator may be mid-[REVIEW] in that process.
+- **Other:** `fw test lint` output is dominated by pre-existing warnings/fails in other files; `audit --section structure` has one FAIL (vendor drift of lib/verdict_ledger.py, web/shared.py = T-4133's in-flight files, not mine).
+
 ### 2026-10-12T21:31:54Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4132-watchtower-currency-check-false-passes-i.md
 - **Context:** Initial task creation
+
+### 2026-10-12T22:17:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
