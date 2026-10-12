@@ -13,10 +13,10 @@ description: >
   the recipient-side cap, or offers to split. Check the full body is actually stored
   on the receiving side.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T21:18:41Z
-last_update: '2026-10-12T21:31:05Z'
+last_update: 2026-10-12T22:26:22Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -101,8 +101,11 @@ from there). So the fix can be small: the truncation marker names the read verb 
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The prompt hook's truncation marker names a read-only command (`<fw> sidecar inbox --show <msg-id>`) that prints the full stored body
+- [x] `fw sidecar inbox --show <msg-id>` prints the full stored body inside the PEER-DATA framing, never executes anything, and exits non-zero with a reason for an unknown id
+- [x] `fw sidecar send` prints one warning line when the body exceeds BODY_CAP, and still sends
+- [x] Unit tests cover marker text, the show verb (known/unknown id) and the send warning; existing sidecar tests stay green
+- [x] BODY_CAP and the PEER-DATA framing are unchanged
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -136,6 +139,9 @@ from there). So the fix can be small: the truncation marker names the read verb 
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_sidecar_truncation_t4131.py -q > /tmp/.t4131.out 2>&1 && grep -q passed /tmp/.t4131.out
+bin/fw vendor self --check > /tmp/.t4131v.out 2>&1; true
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -268,6 +274,11 @@ from there). So the fix can be small: the truncation marker names the read verb 
 
 ## RCA
 
+**Symptom:** a ~13 KB review and a 9.4 KB answer arrived as "RECEIVED" but the recipient's prompt showed only 4000 chars, ending "[truncated, N more chars]", with no way to the rest (two field instances, 2026-10-12).
+**Root cause:** `lib/sidecar/hooks.py` `_block` cut the body at BODY_CAP and appended a marker naming no read path. The full body was already stored by the receiver (`lib/sidecar/receiver.py:store_message`, file `.context/sidecar/receiver/messages/<id>.json`, read by `receiver.read_message` at receiver.py:254) but no verb printed it.
+**Why structurally allowed:** the sender had no signal that the recipient-side cap would cut the body (delivery state RECEIVED says nothing about display), and the truncation path was never tested for what the reader can do next.
+**Prevention:** marker now names `fw sidecar inbox --show <msg-id>`; `fw sidecar send` warns on bodies over BODY_CAP; tests/unit/test_sidecar_truncation_t4131.py pins marker, verb and warning.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -362,3 +373,7 @@ from there). So the fix can be small: the truncation marker names the read verb 
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4131-sidecar-prompt-hook-truncates-peer-messa.md
 - **Context:** Initial task creation
+
+### 2026-10-12T22:17:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

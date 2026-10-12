@@ -55,6 +55,7 @@ BODY_CAP = 4000
 # evidence, and the whole list came back at every prompt. Stay well under it;
 # what does not fit surfaces at the next prompt.
 FRAME_CAP = 8000
+TRUNC_MARKER_ROOM = 300     # T-4131: the marker names the full-text command
 FINALIZE_WAIT_S = 90        # how long the finalizer looks for transcript evidence
 SURFACING_HOLD_S = 120      # a message being finalized is not surfaced twice
 OPEN, CLOSE = "<<<PEER-DATA", "PEER-DATA>>>"
@@ -144,11 +145,13 @@ def _header(msg: dict, surfacing: str) -> str:
 
 def _block(msg: dict, surfacing: str, fw: str, body_cap: int = BODY_CAP) -> list[str]:
     body = str(msg.get("body", "")).strip()
-    if len(body) > body_cap:
-        body = body[:body_cap] + f" [truncated, {len(body) - body_cap} more chars]"
-    body = body.replace(OPEN, "<<<peer-data").replace(CLOSE, "peer-data>>>")
     conv = safe_meta(msg.get("conversation_id"), "-")
     mid = safe_meta(msg.get("client_msg_id") or msg.get("msg_id"), "?")
+    if len(body) > body_cap:
+        # T-4131: the receiver stores the full body; name the read-only verb that prints it.
+        body = (body[:body_cap] + f" [truncated, {len(body) - body_cap} more chars; "
+                f"full text: {fw} sidecar inbox --show {mid}]")
+    body = body.replace(OPEN, "<<<peer-data").replace(CLOSE, "peer-data>>>")
     to = _reply_to(msg)
     reply = (f"reply: {fw} sidecar send --to {to} --conversation {conv} "
              f"--in-reply-to {mid} --body '<your answer>'") if to else \
@@ -172,7 +175,7 @@ def _fit(messages: list[dict], surfacing: str, cap: int = FRAME_CAP) -> tuple[li
             break
     if len(text) > cap:
         over = len(text) - cap
-        body_cap = max(200, min(BODY_CAP, len(str(messages[0].get("body", "")).strip())) - over - 64)
+        body_cap = max(200, min(BODY_CAP, len(str(messages[0].get("body", "")).strip())) - over - 64 - TRUNC_MARKER_ROOM)
         text = _frame(messages[:1], surfacing, deferred=len(messages) - 1, body_cap=body_cap)
     return messages[:n], text
 
