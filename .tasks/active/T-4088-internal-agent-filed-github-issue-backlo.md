@@ -1,8 +1,15 @@
 ---
 id: T-4088
-name: "Internal (agent-filed) GitHub issue backlog cleanup: close fixed and duplicate ones with one comment each, list still-open ones for the operator (operator standing instruction 2026-10-12)"
+name: "Internal (agent-filed) GitHub issue backlog cleanup: close fixed and duplicate
+  ones with one comment each, list still-open ones for the operator (operator standing
+  instruction 2026-10-12)"
 description: >
-  fw issues sync --dry-run (T-4078) found 67 open internal issues (filed by the framework's own fw upstream identity). Operator 2026-10-12: internal issues get context in our ledger and no intake comments; fixed and duplicate ones are closed immediately with one comment (task + commit, or the original) — no approval needed, the operator reviews the list afterwards; still-open ones are listed for the operator to decide. Report: docs/reports/T-4088-internal-issues-triage.md.
+  fw issues sync --dry-run (T-4078) found 67 open internal issues (filed by the framework's
+  own fw upstream identity). Operator 2026-10-12: internal issues get context in our
+  ledger and no intake comments; fixed and duplicate ones are closed immediately with
+  one comment (task + commit, or the original) — no approval needed, the operator
+  reviews the list afterwards; still-open ones are listed for the operator to decide.
+  Report: docs/reports/T-4088-internal-issues-triage.md.
 
 status: started-work
 workflow_type: build
@@ -39,8 +46,8 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T10:18:17Z
-last_update: 2026-10-12T10:19:20Z
-date_finished: null
+last_update: 2026-10-12T10:32:30Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-12T10:30:51Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=275,acs=6)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-12T10:31:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4088: Internal (agent-filed) GitHub issue backlog cleanup: close fixed and duplicate ones with one comment each, list still-open ones for the operator (operator standing instruction 2026-10-12)
@@ -63,10 +98,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Every open issue filed by the framework's own identity (internal class, as `fw issues sync --dry-run` classifies it) is triaged into exactly one of: **fixed** (a completed task whose commit is on GitHub's `bleeding-edge` or `master` addresses it — cite task id + commit), **duplicate** (another issue or task covers it — cite which), **still-open** (no completed fix found). Evidence is checked, not assumed: the task file is in `.tasks/completed/`, the commit exists on the GitHub mirror, and the issue's symptom matches the task's.
-- [ ] Fixed and duplicate issues are closed on GitHub with ONE comment each (fixed: task id, commit, "on bleeding-edge, ships in the next release" or the release it is in; duplicate: link to the original), with the operator's footer, and a ledger row in `.context/issues/intake.jsonl` (stage `closed-fixed` / `closed-duplicate`). Idempotent: an issue already closed or already commented by this run is skipped. External issues are never touched by this task.
-- [ ] Still-open issues get no GitHub comment; each is listed for the operator with its proposed task (existing or "file new") and a one-line recommendation.
-- [ ] Report `docs/reports/T-4088-internal-issues-triage.md`: one row per issue (number, title, class, verdict, evidence, action taken + comment URL), plus the still-open list with recommendations, plus counts.
+- [x] Every open issue filed by the framework's own identity (internal class, as `fw issues sync --dry-run` classifies it) is triaged into exactly one of: **fixed** (a completed task whose commit is on GitHub's `bleeding-edge` or `master` addresses it — cite task id + commit), **duplicate** (another issue or task covers it — cite which), **still-open** (no completed fix found). Evidence is checked, not assumed: the task file is in `.tasks/completed/`, the commit exists on the GitHub mirror, and the issue's symptom matches the task's.
+- [x] Fixed and duplicate issues are closed on GitHub with ONE comment each (fixed: task id, commit, "on bleeding-edge, ships in the next release" or the release it is in; duplicate: link to the original), with the operator's footer, and a ledger row in `.context/issues/intake.jsonl` (stage `closed-fixed` / `closed-duplicate`). Idempotent: an issue already closed or already commented by this run is skipped. External issues are never touched by this task.
+- [x] Still-open issues get no GitHub comment; each is listed for the operator with its proposed task (existing or "file new") and a one-line recommendation.
+- [x] Report `docs/reports/T-4088-internal-issues-triage.md`: one row per issue (number, title, class, verdict, evidence, action taken + comment URL), plus the still-open list with recommendations, plus counts.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

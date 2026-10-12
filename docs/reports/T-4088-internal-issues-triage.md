@@ -101,8 +101,22 @@ Many Pen (050-email-archive) reports were filed against v1.6.258 and describe de
 
 ## Actions taken
 
-See the table below, filled in after the closes. Each close is one comment ending with the operator footer, a ledger row (stage `closed-fixed`) in `.context/issues/intake.jsonl`, then `gh issue close`.
+All 15 closes ran on 2026-10-12 through `python3 lib/issues.py close` (new verb, T-4088): one comment each, ending with the operator footer, a `closed-fixed` ledger row in `.context/issues/intake.jsonl`, then the issue closed (`--reason completed`). The 40-issue cap was not approached. No comment was posted on any still-open or external issue, and the `issues-sync-2h` cron was not touched.
 
 | # | Result | Comment URL |
 |---|---|---|
-| (pending) | | |
+| 3 | closed (fixed) | https://github.com/DimitriGeelen/agentic-engineering-framework/issues/3#issuecomment-6122500516 |
+| 4 | closed (fixed) | https://github.com/DimitriGeelen/agentic-engineering-framework/issues/4#issuecomment-6122502128 |
+| 8 | closed (fixed) | https://github.com/DimitriGeelen/agentic-engineering-framework/issues/8#issuecomment-6122503684 |
+| 16 | closed (fixed) | https://github.com/DimitriGeelen/agentic-engineering-framework/issues/16#issuecomment-6122505512 |
+| 20 | closed (fixed) | https://github.com/DimitriGeelen/agentic-engineering-framework/issues/20#issuecomment-6122506537 |
+| 24 | closed (fixed) | https://github.com/DimitriGeelen/agentic-engineering-framework/issues/24#issuecomment-6122507942 |
+| 31 | closed (fixed) | https://github.com/DimitriGeelen/agentic-engineering-framework/issues/31#issuecomment-6122509244 |
+| 34 | closed (fixed) | https://github.com/DimitriGeelen/agentic-engineering-framework/issues/34#issuecomment-6122510964 |
+| 35 | closed (fixed) | https://github.com/DimitriGeelen/agentic-engineering-framework/issues/35#issuecomment-6122512243 |
+| 57 | closed (fixed) | https://github.com/DimitriGeelen/agentic-engineering-framework/issues/57#issuecomment-6122513597 |
+| 59 | closed (fixed) | https://github.com/DimitriGeelen/agentic-engineering-framework/issues/59#issuecomment-6122514916 |
+| 60 | closed (fixed) | https://github.com/DimitriGeelen/agentic-engineering-framework/issues/60#issuecomment-6122516240 |
+| 66 | closed (fixed) | https://github.com/DimitriGeelen/agentic-engineering-framework/issues/66#issuecomment-6122517535 |
+| 69 | closed (fixed) | https://github.com/DimitriGeelen/agentic-engineering-framework/issues/69#issuecomment-6122518733 |
+| 75 | closed (fixed) | https://github.com/DimitriGeelen/agentic-engineering-framework/issues/75#issuecomment-6122520035 |
