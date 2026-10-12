@@ -286,7 +286,8 @@ _classifier = 'full'
 try:
     sys.path.insert(0, '$FRAMEWORK_ROOT/lib')
     from cmd_classify import classify as _classify
-    is_allowed_cmd, _reason = _classify(command)
+    _pcwd = data.get('cwd', '')
+    is_allowed_cmd, _reason = _classify(command, cwd=_pcwd if isinstance(_pcwd, str) else '', framework_root='$FRAMEWORK_ROOT', project_root='$PROJECT_ROOT')
 except Exception as _e:
     # Degraded: minimal anchored allowlist so a broken import can never deadlock
     # a session that is trying to wrap up (one gate prescribing what another

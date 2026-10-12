@@ -1,10 +1,17 @@
 ---
 id: T-4125
-name: "SECURITY: budget-gate command classifier (lib/cmd_classify.py) still admits planted fw launchers at critical budget (/tmp/x/bin/fw handover, cd /tmp/x && bin/fw git commit) — T-4108 class"
+name: "SECURITY: budget-gate command classifier (lib/cmd_classify.py) still admits
+  planted fw launchers at critical budget (/tmp/x/bin/fw handover, cd /tmp/x && bin/fw
+  git commit) — T-4108 class"
 description: >
-  Found by the T-4108 round-2 worker, verified: lib/cmd_classify.py (budget-gate wrap-up allowance) admits /tmp/x/bin/fw handover, /tmp/x/bin/fw git commit, and cd /tmp/x && bin/fw git commit. Same bug class as T-4108 (fixed in safe-commands.sh). Apply the same rule: absolute launcher must realpath to this project's own fw; relative launcher resolved against the payload cwd; refused after any in-chain directory change. Release-blocking for v1.8.11 alongside T-4108.
+  Found by the T-4108 round-2 worker, verified: lib/cmd_classify.py (budget-gate wrap-up
+  allowance) admits /tmp/x/bin/fw handover, /tmp/x/bin/fw git commit, and cd /tmp/x
+  && bin/fw git commit. Same bug class as T-4108 (fixed in safe-commands.sh). Apply
+  the same rule: absolute launcher must realpath to this project's own fw; relative
+  launcher resolved against the payload cwd; refused after any in-chain directory
+  change. Release-blocking for v1.8.11 alongside T-4108.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T18:36:20Z
-last_update: 2026-10-12T18:36:20Z
-date_finished: null
+last_update: '2026-10-12T18:45:27Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-12T18:39:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-12T18:45:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=282,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4125: SECURITY: budget-gate command classifier (lib/cmd_classify.py) still admits planted fw launchers at critical budget (/tmp/x/bin/fw handover, cd /tmp/x && bin/fw git commit) — T-4108 class
@@ -62,8 +97,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] lib/cmd_classify.py admits an absolute fw launcher only when its realpath is $FRAMEWORK_ROOT/bin/fw or $PROJECT_ROOT/.agentic-framework/bin/fw
+- [x] A relative fw launcher is resolved against the payload cwd (passed by budget-gate.sh), tracked through literal `cd ABS` clauses; refused with no payload cwd or after any non-literal directory change
+- [x] Bare `fw` and plain `git commit` behave unchanged; the prescribed `cd /project && bin/fw ...` form is still admitted
+- [x] New bats tests fail on HEAD and pass now; t2919, t2923, t3814 and prescribed-commands lint stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +134,11 @@ date_finished: null
 -->
 
 ## Verification
+
+python3 -m py_compile lib/cmd_classify.py
+bash -n agents/context/budget-gate.sh
+out=$(bats tests/unit/t4125_cmd_classify_launcher.bats tests/unit/t2919_budget_gate_command_classify.bats tests/unit/t2923_cmd_classify_heredoc.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -243,6 +285,11 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** At critical budget, `/tmp/x/bin/fw handover`, `/tmp/x/bin/fw git commit` and `cd /tmp/x && bin/fw git commit` were all classified "allowed" by lib/cmd_classify.py (reproduced before the fix), so a planted launcher ran under the wrap-up allowance.
+**Root cause:** The allowed-verb patterns matched any path ending in `fw` (`(?:[\w.\-/]*/)?fw`) and any wrap-up script name; the classifier never asked whose launcher it was, and had no notion of the shell's cwd.
+**Why structurally allowed:** T-4108 fixed the same class in safe-commands.sh only; the budget-gate classifier is a separate allowlist with its own copy of the launcher shape, and nothing tied the two together or tested the planted-launcher case end to end.
+**Prevention:** classify() now takes the payload cwd (budget-gate.sh passes it). Path launchers must realpath into this install; relative ones resolve against the cwd tracked through literal `cd ABS` clauses and are refused when it is unknown; PATH/LD_*/BASH_ENV-style assignments are refused. tests/unit/t4125_cmd_classify_launcher.bats drives the real hook (7 of 11 legs fail on HEAD).
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -323,3 +370,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4125-security-budget-gate-command-classifier-.md
 - **Context:** Initial task creation
+
+### 2026-10-12T18:39:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-12 — pre-fix failure recorded
+- On HEAD, `python3 lib/cmd_classify.py` returned `allowed` for `/tmp/x/bin/fw handover`, `/tmp/x/bin/fw git commit`, `cd /tmp/x && bin/fw git commit`; t4125 bats: 7 of 11 legs `not ok` on HEAD, 11/11 ok after the fix. t2919 helper now sends the payload cwd (relative launchers need it by design).

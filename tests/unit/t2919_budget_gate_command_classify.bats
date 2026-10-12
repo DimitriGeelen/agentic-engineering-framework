@@ -31,7 +31,9 @@ teardown() { rm -rf "$WORK"; }
 # 0 = allowed, 2 = blocked.
 gate() {
     local json
-    json=$(python3 -c 'import json,sys; print(json.dumps({"tool_name":"Bash","tool_input":{"command":sys.argv[1]}}))' "$1")
+    # T-4125: the payload carries the shell's cwd, which relative fw launchers
+    # are resolved against; default = the framework root (a real cwd for them).
+    json=$(python3 -c 'import json,sys; print(json.dumps({"tool_name":"Bash","cwd":sys.argv[2],"tool_input":{"command":sys.argv[1]}}))' "$1" "${GATE_CWD:-$FRAMEWORK_ROOT}")
     output=$(printf '%s' "$json" | PROJECT_ROOT="$WORK" bash "$GATE" 2>&1)
     return $?
 }
@@ -114,7 +116,8 @@ assert_blocked() {
 
 @test "t2919: the consumer path form of fw still passes" {
     # CLAUDE.md §Copy-Pasteable Commands: consumers have no bin/ at root.
-    assert_allowed ".agentic-framework/bin/fw handover"
+    mkdir -p "$WORK/.agentic-framework/bin" && : > "$WORK/.agentic-framework/bin/fw"
+    GATE_CWD="$WORK" assert_allowed ".agentic-framework/bin/fw handover"
 }
 
 @test "t2919: the prescribed 'cd /path && <cmd>' shape still passes" {

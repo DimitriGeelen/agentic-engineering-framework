@@ -37,6 +37,7 @@ worth keeping:
     python3 lib/cmd_classify.py 'git commit -m x'              # -> allowed, exit 0
 """
 
+import os
 import re
 import sys
 
@@ -318,11 +319,77 @@ def split_segments(command):
     return segments
 
 
-def _segment_allowed(segment, after_pipe):
+# ── Launcher identity (T-4125, same class as T-4108) ─────────────────────────
+# The verb patterns above accept ANY path ending in `fw` or a wrap-up script, so
+# `/tmp/x/bin/fw handover` or `cd /tmp/x && bin/fw git commit` — a planted
+# launcher — was allowed at critical budget. A path-qualified launcher is
+# admitted only when it resolves to THIS project's own copy; a relative one is
+# resolved against the shell's cwd (the PreToolUse payload `cwd`, followed
+# through literal `cd ABS` clauses); a bare name is PATH-resolved and unchanged.
+_FW_LAUNCHER = "fw"
+_SCRIPT_LAUNCHERS = ("context.sh", "resume.sh", "checkpoint.sh",
+                     "budget-gate.sh", "handover.sh", "update-task.sh")
+
+# A leading assignment of one of these re-points what a bare name resolves to.
+_DANGEROUS_ENV = {"PATH", "BASH_ENV", "ENV", "CDPATH", "FRAMEWORK_ROOT",
+                  "PROJECT_ROOT", "PYTHONPATH", "PYTHONHOME", "HOME", "SHELL"}
+
+_CD_ARG_RE = re.compile(r"^[\w.\-/+@%:,=]+$")
+
+
+class _Ctx:
+    """Where the command runs and which installs are 'ours'."""
+
+    def __init__(self, cwd=None, framework_root=None, project_root=None):
+        fr = framework_root or os.environ.get("FRAMEWORK_ROOT") or \
+            os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        pr = project_root or os.environ.get("PROJECT_ROOT") or ""
+        self.cwd = os.path.realpath(cwd) if isinstance(cwd, str) and cwd.startswith("/") else None
+        self.fw_paths = {os.path.realpath(os.path.join(fr, "bin", "fw"))}
+        self.roots = [os.path.realpath(fr)]
+        if pr:
+            self.fw_paths.add(os.path.realpath(os.path.join(pr, ".agentic-framework", "bin", "fw")))
+            self.roots.append(os.path.realpath(os.path.join(pr, ".agentic-framework")))
+
+    def launcher_ok(self, token):
+        """Is path-qualified-or-bare `token` this install's own launcher?"""
+        base = os.path.basename(token)
+        if base not in (_FW_LAUNCHER,) + _SCRIPT_LAUNCHERS:
+            return True  # not a launcher verb (git, echo, cd, …)
+        if "/" not in token:
+            return True  # bare: resolved through PATH, unchanged
+        if token.startswith("/"):
+            path = token
+        else:
+            if self.cwd is None:
+                return False  # relative launcher, shell cwd unknown
+            path = os.path.join(self.cwd, token)
+        real = os.path.realpath(path)
+        if base == _FW_LAUNCHER:
+            return real in self.fw_paths
+        return any(real.startswith(r + os.sep) for r in self.roots)
+
+    def apply_cd(self, segment, isolated):
+        """Track the cwd through a `cd` segment; unknown when it cannot be told."""
+        m = re.match(r"cd\s+(\S+)\s*$", segment)
+        arg = m.group(1) if m else None
+        if isolated or arg is None or arg == "-" or not _CD_ARG_RE.match(arg):
+            self.cwd = None
+        elif arg.startswith("/"):
+            self.cwd = os.path.realpath(arg)
+        elif self.cwd is not None and (arg.startswith(("./", "../")) or arg in (".", "..")):
+            self.cwd = os.path.realpath(os.path.join(self.cwd, arg))
+        else:
+            self.cwd = None  # bare relative name: CDPATH could redirect it
+
+
+def _segment_allowed(segment, after_pipe, ctx=None):
     """Judge one segment. Returns (allowed, reason_when_blocked)."""
     s = segment.strip()
     if not s:
         return True, ""  # empty segment (trailing `;`) decides nothing
+    if ctx is None:
+        ctx = _Ctx()
 
     if "$(" in s or "`" in s:
         return False, "command substitution can carry an arbitrary command"
@@ -334,9 +401,13 @@ def _segment_allowed(segment, after_pipe):
         stripped = _ENV_ASSIGN_RE.sub("", s)
         if stripped == s:
             break
+        if s.split("=", 1)[0] in _DANGEROUS_ENV or s.split("=", 1)[0].startswith("LD_"):
+            return False, "assignment re-points command resolution"
         s = stripped
 
     if _ALLOWED_LEADING_RE.match(s):
+        if not ctx.launcher_ok(s.split()[0]):
+            return False, "launcher is not this project's own (T-4125)"
         return True, ""
     if after_pipe and _ALLOWED_PIPE_SINK_RE.match(s):
         return True, ""
@@ -345,13 +416,16 @@ def _segment_allowed(segment, after_pipe):
     return False, f"'{verb}' is not a wrap-up command"
 
 
-def classify(command):
+def classify(command, cwd=None, framework_root=None, project_root=None):
     """Classify a Bash command for the at-critical allowlist.
 
     Returns (allowed: bool, reason: str). `reason` is empty when allowed and
     names the specific segment that failed when blocked — so the agent can
     restructure the command instead of reaching for a bypass. A gate that says
     only "blocked" teaches nothing about what to type next.
+
+    `cwd` is the shell's working directory at the call (the hook payload's
+    `cwd`); without it a relative launcher is refused (T-4125).
     """
     if not command or not command.strip():
         return False, "empty command"
@@ -367,8 +441,15 @@ def classify(command):
         # The whole command was a comment.
         return False, "comment-only command"
 
-    for sep, segment in split_segments(cleaned):
-        ok, reason = _segment_allowed(segment, after_pipe=(sep == "|"))
+    ctx = _Ctx(cwd, framework_root, project_root)
+    segs = split_segments(cleaned)
+    for i, (sep, segment) in enumerate(segs):
+        ok, reason = _segment_allowed(segment, after_pipe=(sep == "|"), ctx=ctx)
+        if ok and re.match(r"\s*cd\s", segment):
+            nxt = segs[i + 1][0] if i + 1 < len(segs) else ""
+            # A cd in a pipeline/background runs in a subshell; one followed by
+            # `||` may have failed — either way the cwd is no longer knowable.
+            ctx.apply_cd(segment.strip(), sep in ("|", "&") or nxt in ("|", "&", "||"))
         if not ok:
             shown = segment.strip()
             if len(shown) > 60:
