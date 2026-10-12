@@ -1,14 +1,14 @@
 ---
-id: T-4117
-name: "commit-msg hook in a consumer refuses WM-NNN references after upgrading to ed683536a (055 field test)"
+id: T-4118
+name: "claude-fw wrapper started before an upgrade keeps old functions in memory across its restart loop, so fixes like T-4032 never reach it (832 T-1140: killed mid-turn at budget-critical)"
 description: >
-  055: after the ed683536a upgrade 'WM-002: ...' is refused with 'No task reference found'; WM-NNN commits were accepted that morning. In this repo WM-001 still commits (92db3d8f4). Localise: consumer hook template vs framework hook, what changed in the range v1.8.9..ed683536a.
+  832 evidence: wrapper pid started under 1.8.5, project upgraded to 1.8.9; the claude -c restart loop reused the in-memory 1.8.5 _terminator_watch (no 'waiting for the turn to end' line in .compact-log). Fix: before each restart iteration compare the script's mtime/hash with the one at start and re-exec itself (exec "$0" with the same args) or at minimum warn loudly. T-4069 covers the doctor/upgrade notice; this is the self-heal.
 
 status: captured
 workflow_type: build
 owner: agent
 horizon: now
-tags: [bug, git-hooks, field-test]
+tags: [bug, claude-fw, field-test]
 components: []
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -37,8 +37,8 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-12T14:00:19Z
-last_update: 2026-10-12T14:00:19Z
+created: 2026-10-12T14:04:29Z
+last_update: 2026-10-12T14:04:29Z
 date_finished: null
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -52,7 +52,7 @@ date_finished: null
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 ---
 
-# T-4117: commit-msg hook in a consumer refuses WM-NNN references after upgrading to ed683536a (055 field test)
+# T-4118: claude-fw wrapper started before an upgrade keeps old functions in memory across its restart loop, so fixes like T-4032 never reach it (832 T-1140: killed mid-turn at budget-critical)
 
 ## Context
 
@@ -319,7 +319,7 @@ date_finished: null
 
 ## Updates
 
-### 2026-10-12T14:00:19Z — task-created [task-create-agent]
+### 2026-10-12T14:04:29Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4117-commit-msg-hook-in-a-consumer-refuses-wm.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4118-claude-fw-wrapper-started-before-an-upgr.md
 - **Context:** Initial task creation
