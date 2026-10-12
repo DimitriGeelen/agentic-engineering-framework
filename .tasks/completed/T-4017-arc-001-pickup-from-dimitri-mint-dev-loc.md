@@ -6,16 +6,16 @@ description: >
   Inception: arc-001 pickup from dimitri-mint-dev: local retrieval stack refresh (telemetry,
   benchmark, model manifest, reranker health, per-project keyword index)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-09T21:41:29Z
-last_update: 2026-10-12T07:14:42Z
-date_finished:
+last_update: 2026-10-12T09:03:57Z
+date_finished: 2026-10-12T09:03:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -124,7 +124,7 @@ dimitri-mint-dev (the operator's workstation project on .107) runs arc-001 "Loca
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -185,7 +185,11 @@ The earlier DEFER was an evidence gap that is now closed: the documents were rec
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The earlier DEFER was an evidence gap that is now closed: the documents were received intact (sha256 checked), all ten findings were checked against AEF source (nine confirmed, F-8 corrected), and six of them already have tasks — two fixed and shipped today (T-4061 query text, T-4062 key-file mode). The first phases need no model change, so they are safe to build: measurement and signed approvals first, exactly the order dimitri-mint-dev and the operator asked for. The signing question O-5 is answered by three independent consults: phone as signer (shows the record on its own screen — the only option that closes "signing the wrong thing"), one FIDO2 key stored away as backup, and the trusted-key list kept off .107 (at ring20); TOTP is unsuitable. The central estate store (T-090, Qdrant on ring20) is designed in from the start via C3/C12, and its push interface gets its own inception.
+
+**Date**: 2026-10-12T09:03:56Z
 
 ## Updates
 
@@ -194,3 +198,41 @@ The earlier DEFER was an evidence gap that is now closed: the documents were rec
 
 ### 2026-10-09T21:42:42Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-12T09:03:56Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The earlier DEFER was an evidence gap that is now closed: the documents were received intact (sha256 checked), all ten findings were checked against AEF source (nine confirmed, F-8 corrected), and six of them already have tasks — two fixed and shipped today (T-4061 query text, T-4062 key-file mode). The first phases need no model change, so they are safe to build: measurement and signed approvals first, exactly the order dimitri-mint-dev and the operator asked for. The signing question O-5 is answered by three independent consults: phone as signer (shows the record on its own screen — the only option that closes "signing the wrong thing"), one FIDO2 key stored away as backup, and the trusted-key list kept off .107 (at ring20); TOTP is unsuitable. The central estate store (T-090, Qdrant on ring20) is designed in from the start via C3/C12, and its push interface gets its own inception.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8bae368d
+- **Timestamp:** 2026-10-12T09:04:01Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-0f1521f4
+- **Timestamp:** 2026-10-12T09:04:01Z
+- **Overall:** CONFIRMED
+- **Claims:** 10
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-4017-arc-001-retrieval-refresh.md` | file | ✓ pass |
+| `T-4061` | task | ✓ pass |
+| `T-4062` | task | ✓ pass |
+| `T-090` | task | ✓ pass |
+| `T-4063` | task | ✓ pass |
+| `T-4064` | task | ✓ pass |
+| `T-4065` | task | ✓ pass |
+| `T-4066` | task | ✓ pass |
+| `T-3967` | task | ✓ pass |
+| `T-4071` | task | ✓ pass |
+
+### 2026-10-12T09:03:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
