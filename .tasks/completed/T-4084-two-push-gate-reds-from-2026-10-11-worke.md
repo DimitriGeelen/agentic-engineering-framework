@@ -4,12 +4,12 @@ name: "Two push-gate reds from 2026-10-11 workers: T-4070 added a narrow [:300] 
 description: >
   Pre-push 2026-10-12 after a fresh full unit run: (1) tests/unit/test_tasks_error_render_widen.py::test_no_narrow_stderr_truncations_remain — web/blueprints/tasks.py:1254 '_escape(str(e))[:300]' added by T-4070 (d82574407); T-2222 widened error renders to [:1500]. (2) tests/lint invariant 'every top-level router command appears in show_help' — T-4077 added the 'issues' route without a help line. Fix both; run both tests.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, tests, regression]
-components: []
+components: [bin/fw, web/blueprints/tasks.py]
 related_tasks: [T-4070, T-4077]
 origin: {kind: "agent"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -39,8 +39,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T08:23:14Z
-last_update: 2026-10-12T08:24:59Z
-date_finished: null
+last_update: 2026-10-12T08:26:02Z
+date_finished: 2026-10-12T08:26:02Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -335,3 +335,20 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4084-two-push-gate-reds-from-2026-10-11-worke.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-99c64171
+- **Timestamp:** 2026-10-12T08:26:15Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `web/blueprints/tasks.py` T-4070 error render uses the widened `[:1500]` (T-2222); `tests/unit/test_tasks_error_render_widen.py` passes.
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/tasks.py in: `web/blueprints/tasks.py` T-4070 error render uses the widened `[:1500]` (T-2222); `tests/unit/test_tasks_error_render_widen.py` passes.`
+
+### 2026-10-12T08:26:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
