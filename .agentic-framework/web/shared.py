@@ -1533,6 +1533,14 @@ def _readiness_stamp(root: Path) -> tuple:
             out.append((root / rel).stat().st_mtime_ns)
         except OSError:
             out.append(0)
+    # T-4133: the other ledgers a verdict is validated against (completions, dispatch
+    # registry, acknowledgements...) - an uncommitted edit to one changes the verdict too.
+    try:
+        for f in sorted((root / ".context" / "reviews").glob("*.jsonl")):
+            if f.name != "verdicts.jsonl":
+                out.append(f.stat().st_mtime_ns)
+    except OSError:
+        pass
     return tuple(out)
 
 
@@ -1546,7 +1554,9 @@ def _shared_ledger(vl, root: Path, stamp: tuple):
 
 
 def _compute_readiness(task_id: str, body: str, root: Path, path: Path | None,
-                       stamp: tuple) -> tuple[str, tuple]:
+                       stamp: tuple, used: list | None = None) -> tuple[str, tuple]:
+    """``used`` (T-4133), when given, receives True iff the verdict ledger / git history was
+    consulted - only then does the result depend on the ledger stamp."""
     reasons: list[str] = []
     try:
         import sys as _sys
@@ -1573,6 +1583,8 @@ def _compute_readiness(task_id: str, body: str, root: Path, path: Path | None,
             if dg.classify(c, workflow_type=wt, render_surface=rs).reviewer_judges:
                 judged.append(c)
         if judged:
+            if used is not None:
+                used.append(True)
             try:
                 import verdict_ledger as vl
                 if path is None:
@@ -1615,11 +1627,14 @@ def review_readiness(task_id: str, status: str, body: str,
             p = None
     if p is not None:
         hit = _READINESS_CACHE.get(str(p))
-        if hit and hit[0] == mtime and hit[1] == stamp:
+        # T-4133: an entry that never consulted the ledger is stored with stamp None - it
+        # depends on the task file alone, so a commit elsewhere does not invalidate it.
+        if hit and hit[0] == mtime and (hit[1] is None or hit[1] == stamp):
             return hit[2][0], list(hit[2][1])
-    state, reasons = _compute_readiness(task_id, body, root, p, stamp)
+    used: list = []
+    state, reasons = _compute_readiness(task_id, body, root, p, stamp, used)
     if p is not None:
-        _READINESS_CACHE[str(p)] = (mtime, stamp, (state, reasons))
+        _READINESS_CACHE[str(p)] = (mtime, stamp if used else None, (state, reasons))
     return state, list(reasons)
 
 

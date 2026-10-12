@@ -1921,9 +1921,62 @@ class Ledger:
         return next((i for r, i in self.committed if r.get("id") == row_id), None)
 
 
+# T-4133: read-only git subcommands whose output is a pure function of the object database
+# and the refs. Anything that reads the index or working tree (status, diff, ls-files) or the
+# config is never memoised.
+_GIT_MEMO_CMDS = frozenset({"show", "ls-tree", "cat-file", "log", "rev-parse", "merge-base"})
+_GIT_MEMO: dict[str, tuple[tuple, dict]] = {}
+_GIT_MEMO_MAX = 4096
+
+
+def _git_state_token(root: Path) -> tuple | None:
+    """Fingerprint of everything those subcommands depend on: HEAD, its reflog (moves on every
+    commit, amend, checkout and reset), packed-refs, every loose ref, shallow/replace/alternates.
+    None when it cannot be taken (worktree `.git` file, unreadable) - the caller then does not
+    memoise. A new HEAD or any moved ref changes the token, so history is never served stale."""
+    gd = root / ".git"
+    try:
+        if not gd.is_dir():
+            return None
+        parts: list = []
+        for rel in ("HEAD", "logs/HEAD", "packed-refs", "shallow", "objects/info/alternates"):
+            try:
+                st = (gd / rel).stat()
+                parts.append((rel, st.st_mtime_ns, st.st_size, st.st_ino))
+            except OSError:
+                parts.append((rel, 0, 0, 0))
+        stack = [gd / "refs"]
+        while stack:
+            with os.scandir(stack.pop()) as it:
+                for e in it:
+                    if e.is_dir(follow_symlinks=False):
+                        stack.append(Path(e.path))
+                    else:
+                        st = e.stat(follow_symlinks=False)
+                        parts.append((e.path, st.st_mtime_ns, st.st_size, st.st_ino))
+        return tuple(sorted(parts))
+    except OSError:
+        return None
+
+
 def _git_out(root: Path, *args: str) -> tuple[int, str]:
+    memo = bool(args) and args[0] in _GIT_MEMO_CMDS
+    key = str(root)
+    tok = _git_state_token(root) if memo else None
+    if tok is not None:
+        held = _GIT_MEMO.get(key)
+        if held is not None and held[0] == tok:
+            hit = held[1].get(args)
+            if hit is not None:
+                return hit
     cp = subprocess.run(["git", *args], cwd=str(root), capture_output=True, text=True, timeout=60)
-    return cp.returncode, cp.stdout
+    res = (cp.returncode, cp.stdout)
+    if tok is not None and cp.returncode == 0 and _git_state_token(root) == tok:
+        held = _GIT_MEMO.get(key)
+        if held is None or held[0] != tok or len(held[1]) >= _GIT_MEMO_MAX:
+            held = _GIT_MEMO[key] = (tok, {})
+        held[1][args] = res
+    return res
 
 
 def _nonblank(text: str) -> list[str]:
