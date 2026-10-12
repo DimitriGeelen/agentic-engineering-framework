@@ -398,6 +398,55 @@ is_signal_fresh() {
     fi
 }
 
+# T-4119 (832 T-1140): the handover limit was a fixed 180 s, but what runs under it is not.
+# The handover commit goes through post-commit hooks (59 s measured in 832) and the
+# pre-push gate, then the push, so one slow commit plus the handover commit outlives
+# 180 s. `timeout` cut the handover mid-push and the terminator killed claude straight
+# after. So the limit is a floor, not a ceiling: at the limit, if a git process of this
+# repo is still running (the commit, its hooks, or the push), the handover gets another
+# 30 s, up to FW_TERMINATOR_HANDOVER_MAX. With no git in flight it is cut at the limit as
+# before. The handover runs in its own process group, so the cut reaches the git
+# children it spawned, as `timeout` did. Linux (/proc); elsewhere nothing is found busy
+# and the limit is the old one.
+# _handover_git_busy <root> — is a git process running with its cwd inside <root>?
+_handover_git_busy() {
+    local root="$1" d cwd
+    for d in /proc/[0-9]*; do
+        cwd=$(readlink "$d/cwd" 2>/dev/null) || continue
+        case "$cwd" in "$root"|"$root"/*) ;; *) continue ;; esac
+        [ "$(cat "$d/comm" 2>/dev/null)" = git ] && return 0
+    done
+    return 1
+}
+# _bounded_handover <root> <limit> <ceiling> <out-file> <cmd...> — returns cmd's rc, or 124
+# when it was cut (the same code `timeout` gives).
+_bounded_handover() {
+    local root="$1" limit="$2" ceiling="$3" out="$4" pid start deadline now
+    shift 4
+    start=$(date +%s); deadline=$((start + limit))
+    set -m   # the job gets its own process group (pgid = pid) for the cut below
+    (cd "$root" && exec "$@") > "$out" 2>&1 &
+    pid=$!
+    set +m
+    while kill -0 "$pid" 2>/dev/null; do
+        sleep 1
+        now=$(date +%s)
+        [ "$now" -ge "$deadline" ] || continue
+        if [ $((now - start)) -lt "$ceiling" ] && _handover_git_busy "$root"; then
+            echo "claude-fw: handover still running git at ${limit}s — extending (T-4119)" >&2
+            deadline=$((now + 30))
+            [ "$deadline" -le $((start + ceiling)) ] || deadline=$((start + ceiling))
+            continue
+        fi
+        kill -TERM -- "-$pid" 2>/dev/null || kill -TERM "$pid" 2>/dev/null || true
+        sleep 2
+        kill -KILL -- "-$pid" 2>/dev/null || kill -KILL "$pid" 2>/dev/null || true
+        wait "$pid" 2>/dev/null || true
+        return 124
+    done
+    wait "$pid"
+}
+
 # T-3918 (G-110, RC-1 of ring20-manager's T-2248): never end a session at
 # budget-critical before a handover exists. budget-gate writes the restart signal
 # on the FIRST critical block (T-2403) and the terminator below used to SIGTERM
@@ -427,8 +476,9 @@ _ensure_handover_before_kill() {
     echo "claude-fw: budget-critical — writing a handover before ending the session (T-3918)..." >&2
     local started sha hl
     started=$(date +%s)
-    (cd "$root" && timeout "${FW_TERMINATOR_HANDOVER_TIMEOUT:-180}" bash "$fwbin" handover --commit \
-        > "$root/.context/working/.terminator.handover.out" 2>&1)
+    # T-4119: a floor, not a ceiling — see _bounded_handover.
+    _bounded_handover "$root" "${FW_TERMINATOR_HANDOVER_TIMEOUT:-180}" "${FW_TERMINATOR_HANDOVER_MAX:-900}" \
+        "$root/.context/working/.terminator.handover.out" bash "$fwbin" handover --commit
     rc=$?
     if [ "$rc" -eq 0 ]; then
         echo "[terminator] Handover generated at $ts" >> "$log" 2>/dev/null || true
