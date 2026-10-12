@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-09T21:41:29Z
-last_update: 2026-10-12T07:03:19Z
+last_update: 2026-10-12T07:14:42Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -84,17 +84,17 @@ dimitri-mint-dev (the operator's workstation project on .107) runs arc-001 "Loca
 -->
 
 - **IW-1: Which of the nine components (C1-C7, C12, C13) does AEF want at all, and in what order?**
-  confidence: 0
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: answered
+  rationale: P1a (C5 core, C7 baseline + stop rule) then P1 (C1, C4, C2, C5 rest, C7 collector) — the order dimitri-mint-dev and the operator set (no model change before benchmark + health); C3/C12/C13/C6 (P2-P3) deferred to a re-inception after P1's benchmark exists (docs/reports/T-4017-arc-001-retrieval-refresh.md §Recommendation).
 - **IW-2: How much of C1/C4 already exists (web/recall_telemetry.py, lib/vector_index_health.py, T-3953 reranker fix, T-3967 query-text switch)?**
-  confidence: 1
-  disposition:
-  rationale:
+  confidence: 3
+  disposition: answered
+  rationale: checked against source 2026-10-11 (design §1.2 confirmed): telemetry rows exist (query_hash, n_hits, top_score, latency; miss rows carry query text, web/recall_telemetry.py:278 → T-3967), index health exists (lib/vector_index_health.py), reranker fixed in 1.8.8 but silent when unavailable and absent from fw recall (T-4063); C1/C4 extend these, they do not replace them.
 - **IW-3: Does C5 (signed deciding records, operator key off-host) fit AEF's existing provenance model or is it a new trust root (operator/Tier 0 call)?**
-  confidence: 0
-  disposition:
-  rationale:
+  confidence: 2
+  disposition: answered
+  rationale: it is a new trust root: AEF's existing provenance (human_ac_ticks ledger, review-dispatch HMAC) is same-user and forgeable by a root agent (T-3581's stated residual), which R-34 forbids; three consults (docs/reports/T-4017-O5-consult-*.md) agree on an off-host asymmetric key with the trust list kept off .107 — operator chose the phone (2026-10-11); enrolment of the trust anchor is an operator action.
 
 ## Exploration Plan
 
