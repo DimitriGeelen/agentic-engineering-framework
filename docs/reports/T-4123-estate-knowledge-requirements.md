@@ -13,6 +13,7 @@ status: collecting
 | Version | Date | Change | Task |
 |---|---|---|---|
 | 0.1 | 2026-10-12 | Skeleton; operator's framing captured; five stakeholder consults sent | T-4123 |
+| 0.2 | 2026-10-12 | Draft R-1..R-32, conflicts CF-1..CF-8, earlier requirements, D-1..D-3, open questions — from dimitri-mint-dev and ring20-manager only | T-4123 |
 
 ## 1 Why this document exists
 
@@ -87,12 +88,324 @@ which TermLink learnings others should find; 1409 — non-English knowledge, pra
 | Prune | remove an item that is stale, wrong or superseded, everywhere it was pushed |
 | Collapse | merge items that say the same thing into one, keeping every source |
 | Combine | synthesise related items (possibly across projects) into a higher-order item, e.g. a practice |
+| Raw item | an item pushed from one project's source, unchanged in meaning; fast lane, no review |
+| Curated item | an item produced by collapse or combine; always labelled, keeps every source |
+| Superseded | an item its source (or an approved reviewer finding) declares replaced by a newer one |
+| Retired on purpose | an item or collection deliberately taken out of use; never restored without a new operator decision |
+| Error class | what a recurring error IS (sanitised signature, component), which projects hit it, how often, last seen, resolution status; an occurrence is telemetry and stays local |
+| Source | the project file or task an item came from; every answer links to it |
+| Data class | the sensitivity class of a collection, set by the operator in `_manifest` |
+| Solution-finder mode | a retrieval mode that ranks other projects' items first ("who already has this?") |
 
-## 6 Requirements (R-n) — to be collected
+## 6 Requirements (draft v0.2, from two of five stakeholders)
 
-(empty until the consultation and the operator dialogue fill it)
+Sources are cited by stakeholder file and section: **DM** = `T-4123-inputs/01-dimitri-mint-dev.txt` (+ `01b` for
+G), **RM** = `02-ring20-manager.txt`, **OP** = the operator (Dialogue Log), **A9.7** = arc-001's earlier list.
+Priority: MUST-pilot (needed for the first project to write), MUST (needed before a second project writes),
+SHOULD. Every requirement is a proposal until the operator signs the list off. Hosts are named by role.
 
-## 6.1 Conflicts — to be collected
+### 6.A Content
+
+**R-1** (functional, MUST-pilot) The platform MUST accept these item types: learning, failure pattern with its
+resolution, decision with rationale and rejected options, episodic task summary, gap/concern with status, fabric
+component card, report/design reference (summary plus chunks), error class (R-23).
+Source: DM A, RM A.1, OP area A. Rationale: the units other projects reuse.
+Verify: test. AC: Given a pilot project with N items of each pushed type, when one push cycle completes, then the
+store's count per `item_type` for that project equals N for every type (DM pilot 1).
+
+**R-2** (security invariant, MUST-pilot) It MUST be impossible for secret values, `.env` contents, process command
+lines, email or mail data, personal data, raw command/tool output, browser cookies or profiles, raw session
+transcripts, `.context/working` state and runme logs to enter the store. Filtering MUST be by value pattern, at
+write time (before the item leaves the project), reusing the framework's secret-scan patterns.
+Holds against: a confused agent pushing raw output; a compromised session using its write token to stage data.
+Source: DM A, RM A.2/M.1, A9.7. Rationale: key-name redaction misses encoded copies (RM A.2).
+Verify: test + scan. AC: Given an item carrying a planted token in plain, base64 and URL-encoded form, when pushed,
+then the push of that item is refused, the refusal is logged, and nothing reaches the store. Invariant: a
+store-wide secret-pattern scan returns 0 hits after every cycle.
+
+**R-3** (functional, MUST-pilot) Pushing MUST be opt-in per project and per item type.
+Source: A9.7 (hard). Verify: test. AC: Given a project with type `report` disabled, when a cycle runs, then no
+`report` item of that project exists in the store.
+
+**R-4** (quality, MUST) Freshness: learnings, patterns and fabric cards MUST be findable within 24 h of being
+recorded or changed; episodic summaries within 24 h of task close; reports within 24 h of commit. Status changes
+(gap closed, learning corrected) MUST propagate within the same bound.
+Source: DM A, RM A.3. Rationale: "a problem I have now that someone solved last week". Verify: measurement.
+AC: Given a task closed at time t, when queried by exact title at t+24 h, then it is top-1.
+
+**R-5** (functional, MUST-pilot) Change and deletion MUST propagate: a deleted source item is gone from the store
+within one cycle; an edited one replaces its predecessor (old `content_hash` gone, new present).
+Source: DM pilot 3, A9.7. Verify: test. AC: delete a test learning → absent after one cycle; edit one → only the
+new hash present.
+
+### 6.B Curation
+
+**R-6** (functional, MUST) The store MUST keep two labelled layers: raw items, which flow automatically and fast
+(R-4), and curated items, which wait for review. A curated item MUST NOT silently replace or hide its raw sources.
+Source: RM M.2 (resolves CF-4). Verify: inspection + test. AC: every curated item carries `layer: curated` and the
+ids of its sources, and each source stays retrievable.
+
+**R-7** (functional, MUST) Prune: an item MUST be marked superseded automatically when its source is deleted or
+marked superseded/corrected in its project; a reviewer agent MAY propose "superseded by X" with attached evidence;
+nothing is pruned silently. Superseded items MUST NOT appear in default top results, and MUST be retrievable on
+request with the flag visible.
+Source: DM B, RM B.1, C.4 (resolves CF-6). Verify: test. AC: Given a learning marked `corrected` at source, after
+one cycle a default query does not return it in the top 5, and a query with `include_superseded` returns it
+flagged.
+
+**R-8** (functional, MUST) Collapse: a reviewer agent proposes; applied automatically when the texts match above an
+agreed threshold; reversible; every source kept and linked.
+Source: DM B, RM B.2. Verify: test. AC: undoing a collapse restores the N raw items unchanged.
+
+**R-9** (security invariant, MUST) Combine: a reviewer agent drafts; the item is labelled `proposed` until the
+operator approves it. It MUST be impossible for a combined item to be shown as an approved practice without a
+recorded operator approval. Holds against: a confused reviewer agent (a synthesis that states what no source
+said, RM B.3) and a hurried approver (approval needs the sources shown beside the draft).
+Source: DM B, RM B.3, OP area B. Verify: test. AC: a combined item without an approval record is always returned
+with `status: proposed`.
+
+**R-10** (security invariant, MUST) "Retired on purpose" MUST be a first-class state for items and collections,
+recorded in `_manifest`; it MUST be impossible for a retired item or collection to return to service (by restore,
+re-push or cleanup) without a new operator decision. Holds against: a restore from backup, and an agent with a
+stale write path to a retired store (DM 01b: six user-level commands still point at the retired store).
+Source: RM B.4/P.7/M.1. Verify: drill. AC: restoring a snapshot that contains a retired collection leaves it
+retired, and the probe reports it.
+
+**R-11** (functional, MUST) Provenance MUST survive collapse and combine: every curated item lists its sources,
+each linking to the project's own file or task.
+Source: RM M.1. Verify: inspection. AC: for every curated item, each source link resolves to an existing item.
+
+### 6.C Retrieval
+
+**R-12** (interface, MUST-pilot) Every answer MUST carry: source project, task id or path, item type, date
+recorded, date last confirmed, evidence type (tested / observed / reasoned), status (open / closed / superseded /
+retired / proposed), model id, score.
+Source: DM C, RM C.3. Rationale: an uncheckable answer is not used. Verify: schema test.
+AC: every result of every query in the R-15 question set has all fields non-empty.
+
+**R-13** (functional, MUST) Scope MUST be selectable per query: own project only, estate only, or both; a
+cross-project hit is always labelled as such.
+Source: DM C. Verify: test.
+
+**R-14** (functional, MUST) Ranking MUST have two modes: default (own items first when scores are within a
+configurable margin; a cross-project item ranks above own when it is newer and evidence `tested`) and
+solution-finder (other projects first). A collapsed item ranks by its sources, own included.
+Source: DM C, RM C.4/M.2, OP area D (resolves CF-3, CF-8). Verify: test on a fixed corpus.
+
+**R-15** (quality, MUST-pilot) Each pilot project MUST keep a fixed question set with an agreed expected top-5,
+re-run every cycle; every pushed item MUST be top-1 for its exact title.
+Source: DM pilot 2. Verify: measurement. AC: recall ≥ the agreed threshold on two consecutive cycles before a
+second project writes.
+
+**R-16** (operational, MUST-pilot) When the store or the embedder is unavailable, `fw ask`/`fw recall` MUST answer
+from the local index and say "estate unavailable".
+Source: DM missed, A9.7/A9.6. Verify: test. AC: with the store unreachable, a recall returns local results and the
+banner, exit 0.
+
+**R-17** (quality, SHOULD) Items and queries in English, Dutch and German MUST be retrievable across languages to
+the benchmark threshold. Source: DM missed, 1409 (pending). Verify: benchmark (arc-001 C2).
+
+### 6.D Fabric as solution finder
+
+**R-18** (interface, SHOULD) A fabric card pushed for solution finding MUST carry: purpose (one line), the problem
+it solves phrased as the symptom someone would search for, technology tags, interfaces, dependencies (credential
+*type*, never value), host/OS constraints, status (live / experimental / retired), owning project and sidecar
+contact, how to reuse (entrypoint), known limits. Cards below this minimum MUST NOT be pushed as solutions.
+Source: DM D, RM D.2, OP area D. Rationale: 11 of 13 (DM) and 110 of 398 (RM) cards lack edges; the finder needs
+card quality, not only a store. Verify: lint. AC: the card linter rejects a card missing `problem` or `tags`.
+
+### 6.E Model and embedding
+
+**R-19** (functional, MUST) The embedding model MUST have a default, be configurable per install (`fw config` and
+Watchtower), and be selectable from the models the configured Ollama offers. Every vector MUST carry model id and
+digest; one collection per model; a write whose model or digest differs from the collection's MUST be refused.
+Source: OP area E, DM E, RM E.1, arc-001 C3. Verify: test. AC: a write declaring another digest is refused and
+logged.
+
+**R-20** (operational, MUST) A model change MUST pass the arc-001 C2 benchmark first; no model change on the shared
+GPU host before arc-001 P1a/P1. Source: arc-001. Verify: gate.
+
+**R-21** (operational, MUST) Embedding load MUST be bounded: batches of at most ~64 texts, retry with backoff, no
+bulk re-embedding on the shared GPU host during the day, and the embedder's load counted under T-4090's rule.
+Source: RM E.2/P.5, DM E. Verify: inspection + monitoring.
+
+### 6.G Error resolution
+
+**R-22** (functional, SHOULD) Occurrences of errors MUST stay local (telemetry). Only the error class goes to the
+store.
+Source: OP area G, DM 01b, RM G. Verify: inspection.
+
+**R-23** (security invariant, SHOULD) An error-class item MUST hold only: class name, sanitised signature
+(normalised message with variables replaced, exit code, component), projects that hit it, counts, first and last
+seen, resolution status (none yet / fixed upstream in version X / verified in M of N projects) and the resolving
+task ids. It MUST be impossible for raw output, environment dumps, file contents, credential-bearing URLs or
+command lines to enter an error item. Holds against: a confused agent pasting raw output into an error report.
+Source: DM 01b (4), RM G.4. Verify: test. AC: an error item with a planted raw-output block is refused.
+
+**R-24** (functional, SHOULD) "N projects hit this, no fix yet" and "fixed upstream in vX, verified in M of N"
+MUST be queryable and surfaced as a priority signal.
+Source: DM 01b (3), RM G.3. Rationale: G-012 and G-114 were each found by accident in one project while every
+consumer had them.
+
+### 6.P Platform and security
+
+**R-25** (security invariant, MUST-pilot) Each project writes with its own token, scoped to its own collections;
+reads use an estate read-only token; the master key is never given to a project; tokens live in the secret store
+and are never printed. It MUST be impossible for project A's token to write or delete project B's points.
+Holds against: a compromised session in one project. Source: RM P.1, DM pilot 5. Verify: test. AC: a write with A's
+token to B's collection returns 403; an anonymous request returns 401.
+
+**R-26** (operational, MUST-pilot) Every collection MUST be registered in `_manifest` before its first write:
+owner project, model and digest, vector size, data class, retention, size budget. A write to an unregistered
+collection MUST be refused, and an unregistered collection is a probe finding.
+Source: RM P.2/P.3. Verify: probe.
+
+**R-27** (security invariant, MUST) A collection's data class MUST be set by the operator, never by the writing
+project; the estate store holds framework knowledge only, never email. Source: RM P.6, A9.7.
+
+**R-28** (operational, MUST) The operator MUST be able to stop one project's writes without affecting any other
+(per-project kill switch). Source: RM M.1. Verify: drill. AC: with A switched off, A's push is refused and B's
+succeeds.
+
+**R-29** (operational, MUST) Every write MUST be audit-logged: which project, which token, which items, when.
+Source: DM missed. Verify: inspection.
+
+**R-30** (operational, MUST) Nightly per-collection snapshots, a monthly restore test; a restored collection MUST
+pass R-1, R-5 and R-15's checks. Source: RM P.4, DM pilot 6. Verify: drill.
+
+**R-31** (security invariant, MUST) Every point MUST carry tenant and project tags from day one; a tenant MUST NOT
+be able to read another tenant's points unless shared. Holds against: a future second tenant's compromised
+session. Source: A9.7, DM missed.
+
+**R-32** (operational, SHOULD) What happens to a retired project's items MUST be decided by the operator per
+project; until decided, they are `retired on purpose` (R-10). Source: DM missed.
+
+## 6.1 Conflicts
+
+| Id | Conflict | Between | State |
+|---|---|---|---|
+| CF-1 | OD-15 allows cloud fallback for framework stores (marked external); estate items carry internal topology and incident detail | DM conflict 1 vs R-27 | **OPEN — operator ruling needed**: is the estate store a "framework store" for OD-15? Recommendation: no; the estate store never falls back to an external model. |
+| CF-2 | Server-side embedding (one point keeps "never mix models" true; queries embedded by the same point) vs client-side (the shared GPU host is a single point of failure; any host with the same model+digest can embed) | DM E vs RM E.2 | **OPEN — operator**. Note: RM's own enforcement for client-side (the platform re-embeds a sample to spot-check) contradicts RM P.5 ("the platform never calls Ollama"). A third option: client-side embedding with the spot-check run by an independent verifier agent off the platform host. |
+| CF-3 | Own-first ranking vs the solution finder (cross-project first) | DM C vs OP area D | Resolved by R-14 (two modes) — pending sign-off |
+| CF-4 | Freshness within a day vs reviewer/operator curation | RM A.3 vs B.2/B.3 | Resolved by R-6 (two layers) — pending sign-off |
+| CF-5 | Full text in the payload (easy curation) vs leak cost; backups inherit the class | DM conflict 2, RM A.1 | **OPEN — operator**: RM reports "full text OK for curated framework knowledge" (2026-10-12, ring20 T-2325); confirm whether that covers raw items and reports. |
+| CF-6 | Superseded must stay visible (DM) vs never in top results (RM) | DM C vs RM C.4 | Resolved by R-7 (out of default top results, retrievable with flag) — pending sign-off |
+| CF-7 | Hostnames and IPs in items: replace with roles (DM 01b) vs allowed while the store stays inside the estate (RM G.4) | DM vs RM | **OPEN — operator**. Recommendation: roles in error items and cross-project items (they are the most-read data, and CF-1 is unresolved). |
+| CF-8 | Own-first ranking vs collapsed items with many owners | RM M.2 | Resolved by R-14 (rank by sources, own included) |
+
+## 6.2 Earlier requirements (arc-001 A9.7)
+
+| A9.7 item | Status | Now |
+|---|---|---|
+| never email (hard) | kept | R-2, R-27 |
+| opt-in per project and per type (hard) | kept | R-3 |
+| tenant + project tags from day one (hard) | kept | R-31 |
+| content hash (hard) | kept | R-5 |
+| deletion propagation (hard) | kept | R-5 |
+| per-project index works when the store is down (hard, A9.6) | kept | R-16 |
+| push rather than federated query (leaning) | open | OQ-1 |
+| server-side embedding (leaning) | changed to open conflict | CF-2 |
+| monitored sync (leaning) | kept | R-4, R-15, R-26 probe |
+
+## 6.3 Drawings
+
+Drawing D-1: context view (structure)
+
+```mermaid
+flowchart LR
+  subgraph Projects
+    P1[Project agent A]
+    P2[Project agent B]
+  end
+  OP[Operator]
+  RV[Reviewer agent]
+  ADV[[Adversaries: confused agent, compromised session, hurried approver, backup restore]]
+  EMB[(Embedder: Ollama on a GPU host)]
+  ST[(Estate store + _manifest)]
+  SEC[(Secret store: tokens)]
+  BK[(Snapshots)]
+  P1 -- redacted items + vectors, own token --> ST
+  P2 -- queries, read token --> ST
+  P1 -- texts --> EMB
+  RV -- collapse/combine proposals --> ST
+  OP -- data class, approvals, kill switch, retire --> ST
+  SEC -- tokens --> P1
+  ST -- nightly --> BK
+  ADV -. attempts .-> ST
+```
+
+1. Projects push redacted items (with vectors) using their own write token and query with the estate read token.
+2. Embedding happens on an Ollama host (where: CF-2).
+3. A reviewer agent proposes collapses and drafts combinations; the operator sets data classes, approves combinations,
+   retires items or collections, and can stop one project's writes.
+4. Tokens come from the secret store; the store is snapshotted nightly.
+5. Adversaries act against the store through these same channels (R-2, R-9, R-10, R-25).
+
+Drawing D-2: main flow, push of one item including the refusal paths (behaviour)
+
+```mermaid
+sequenceDiagram
+  participant A as Project agent
+  participant R as Redactor (client)
+  participant E as Embedder
+  participant S as Estate store
+  A->>R: item (type enabled? R-3)
+  alt secret pattern found
+    R-->>A: refused + logged (R-2)
+  else clean
+    R->>E: text, model id
+    E-->>R: vector, model digest
+    R->>S: point + model/digest + tags, project token
+    alt kill switch on / unregistered collection / wrong model / foreign collection
+      S-->>A: refused (R-28, R-26, R-19, R-25)
+    else accepted
+      S-->>A: stored + audit row (R-29)
+    end
+  end
+```
+
+1. The agent offers an item of an enabled type.
+2. The client redactor scans it by value pattern; a hit refuses the item and logs it.
+3. A clean item is embedded; the vector comes back with the model digest.
+4. The store refuses the write if the project is switched off, the collection is unregistered, the model or digest
+   does not match, or the token does not own the collection; otherwise it stores the point and writes an audit row.
+
+Drawing D-3: lifecycle of an item (behaviour)
+
+```mermaid
+stateDiagram-v2
+  [*] --> Raw: pushed (R-1..R-5)
+  Raw --> Raw: source edited (new hash)
+  Raw --> Superseded: source superseded/corrected, or approved reviewer finding (R-7)
+  Raw --> Collapsed: reviewer proposal, close match (R-8)
+  Collapsed --> Raw: collapse undone
+  Raw --> Proposed: reviewer drafts a combination (R-9)
+  Proposed --> Practice: operator approves
+  Proposed --> [*]: operator rejects
+  Raw --> Retired: operator retires (R-10)
+  Superseded --> Retired: operator retires
+  Practice --> Superseded: newer practice
+  Raw --> [*]: source deleted (R-5)
+  Retired --> Raw: only by a new operator decision
+```
+
+1. A pushed item is raw; edits at the source replace it; deleting the source removes it.
+2. It becomes superseded when its source says so or an approved reviewer finding does.
+3. Raw items may be collapsed (reversibly) or drafted into a combination, which stays proposed until the operator
+   approves it as a practice.
+4. The operator may retire any item; a retired item returns only by a new operator decision.
+
+## 6.4 Open questions
+
+- **OQ-1** Push (each project writes) or federated query (the store asks projects)? A9.7 leans push; no stakeholder
+  argued otherwise yet.
+- **OQ-2** Which project runs the reviewer agent for prune/collapse/combine, and on what schedule?
+- **OQ-3** CF-1, CF-2, CF-5, CF-7 need operator rulings.
+- **OQ-4** Answers still to come: 832 (fabric search, designer corpus), 010 (non-Python, remote hosts), 1409
+  (non-English knowledge), 055 (cockpit view). Draft v0.3 after they arrive; then the paid external consults.
+- **OQ-5** Gap review per the role card (credential custody, compromised sessions, approval fatigue, offline,
+  recovery, revocation, resource identity, unsupported targets): offline (R-16), recovery (R-30), revocation (token
+  revocation not yet stated), approval fatigue (combine approvals could pile up: not yet stated). To add in v0.3.
 
 ## 7 Unedited answers
 
@@ -122,3 +435,6 @@ Verbatim in `docs/reports/T-4123-inputs/00-brief-as-sent.txt`; `{TO}` and `{SPEC
   → Agent checked existing pieces (healing FP-n, concerns, host error service, arc-001 C1 is search telemetry)
   and proposed the event/knowledge split; unresolved classes seen in several projects flagged as a priority
   signal. Added as scope area G and IW-6; follow-up question sent to the stakeholders.
+- **2026-10-12, operator:** "proceed as you see fit" while the hotfix worker runs. → Agent drafted v0.2 (R-1..R-32,
+  CF-1..CF-8, D-1..D-3) from the two answers in; four conflicts left open for operator rulings; v0.3 after 832, 010,
+  1409 and 055 answer.
