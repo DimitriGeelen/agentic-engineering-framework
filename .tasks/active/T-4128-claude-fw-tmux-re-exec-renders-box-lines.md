@@ -56,7 +56,17 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Field reports from ring20-dashboard (msgs 55981d76, d2d61865, 2026-10-12), all from the T-4003 tmux wrap on a
+browser LXC console / /dev/tty1:
+1. Box lines render as qqqq/xxxx: tmux runs without -u under LANG=C, client utf8=0, ACS line drawing.
+2. Copy regression: scrolled-off output lives in tmux history, not the browser scrollback; browser selection no
+   longer works as before.
+3. No way out without loss: prefix None (so Ctrl-B reaches Claude Code) + destroy-unattached on means any detach
+   ends the session; an agent-side `tmux detach-client` killed one. A UTF-8 fix after launch needs a full restart.
+Proposals: (a) -u on new-session and printed attach lines, LANG=C.UTF-8 when unset/C/POSIX; (b) a one-line start
+notice naming the opt-out FW_CLAUDE_FW_NO_TMUX=1; (c) do not wrap when TERM=linux (raw console). Weigh (c)
+against T-4003's purpose (peer mail needs an injectable terminal) — a console session without the wrap goes back
+to mail waiting until someone types.
 
 ## Acceptance Criteria
 
