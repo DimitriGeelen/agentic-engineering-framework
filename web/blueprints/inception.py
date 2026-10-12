@@ -998,55 +998,31 @@ def _commit_decision(task_id: str, decision: str, followup: bool = False):
         os.close(fd)
 
 
-def _refresh_real_index(paths, attempts=6, delay=0.25):
-    """T-4081: set the real index entries for `paths` to HEAD (`git reset -q -- paths`).
+def _run_git_retry(cmd, env, fallback, attempts=4, delay=0.25):
+    """T-4127: run a git command that needs .git/index.lock; "" on success, else the reason.
 
-    Called after a commit built against a scratch `GIT_INDEX_FILE` advanced HEAD.
-    Touches only the named paths: the working tree is never written and anything
-    else staged in the real index stays staged.
-
-    T-4112: returns "" when the refresh happened, else the reason it did not. It
-    used to ignore git's exit code, so a `.git/index.lock` held by a concurrent
-    git command made the refresh a silent no-op and the next ordinary commit
-    reverted the decision. Lock contention is usually momentary, so it retries
-    (bounded, ~4s); a lock that outlives that — or any other failure — is the
-    caller's to surface.
+    Lock contention is momentary, so it retries a few times (`delay * attempt` apart);
+    anything else - or a lock that outlives the retries - is returned, never swallowed.
+    Worst case ~ attempts x 30s timeouts + 1.5s of sleeping.
     """
     import subprocess
     import time
-    if not paths:
-        return ""
     err = ""
     for attempt in range(attempts):
         if attempt:
             time.sleep(delay * attempt)
         try:
-            r = subprocess.run(["git", "reset", "-q", "--"] + list(paths),
-                               cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30)
+            r = subprocess.run(cmd, cwd=PROJECT_ROOT, capture_output=True, text=True,
+                               timeout=30, env=env)
         except Exception as e:  # timeout, git missing
-            err = str(e)
+            err = str(e)[:200]
             continue
         if r.returncode == 0:
             return ""
-        err = (_operator_facing_stderr(r.stderr or r.stdout or "")
-               or f"git reset exited {r.returncode}").strip()
-    return err or "git reset failed"
-
-
-def _index_refresh_failed(task_id, paths, reason):
-    """T-4112: the (ok, message) a decision commit returns when its index refresh failed.
-
-    Not ok on purpose: every surface that reports a decision commit (the decide
-    response, the inception page, decide_runner.surface) shows the message only
-    when ok is False, and the hazard is real until the index is refreshed — the
-    next ordinary commit reverts the decision. The runner's follow-up commit
-    retries the refresh, and a clean follow-up clears it.
-    """
-    msg = (f"{task_id}: decision committed, git index NOT refreshed - the next commit "
-           f"reverts it unless you first run: git reset -q -- {' '.join(paths)} "
-           f"(reason: {reason[:160]})")
-    logger.error("T-4112 %s", msg)
-    return False, msg[:600]
+        err = (_operator_facing_stderr(r.stderr or r.stdout or "") or fallback).strip()[:200]
+        if "index.lock" not in (r.stderr or r.stdout or ""):
+            return err
+    return err or fallback
 
 
 def _commit_decision_unlocked(task_id: str, decision: str, followup: bool = False):
@@ -1058,15 +1034,18 @@ def _commit_decision_unlocked(task_id: str, decision: str, followup: bool = Fals
     Watchtower path has no agent follow-up, so without this the decision is left
     as uncommitted working-tree changes (T-2030).
 
-    T-2708: built entirely against a SCRATCH index (`GIT_INDEX_FILE` seeded from
-    `git read-tree HEAD`), never the operator's real `.git/index`. Two decisions
-    recorded seconds apart in one operator batch are, to each other, the "foreign
-    staged file" a same-index guard would refuse — the old implementation staged
-    into the real index and self-blocked on exactly that (T-2708 RCA). Building
-    off-index removes the shared channel: only `wanted` paths are ever added to
-    the scratch index, so unrelated work (including another in-flight decision)
-    can never leak in — by construction, not by refusal — and a failed commit
-    leaves the real index untouched because it was never written to.
+    T-4127: committed with `git commit --only -- <decision paths>` through git's REAL
+    index. Git holds `.git/index.lock` from before it builds the commit tree until the
+    ref has moved and the real index entries for those paths are updated, so no ordinary
+    commit can run in between (the T-2708 scratch-index design advanced HEAD first and
+    refreshed afterwards - that window cannot be closed by retries; codex round 2).
+    `--only` commits just the named paths: other staged work is not swept in and stays
+    staged (this is what T-2708's scratch index was for). Two decisions recorded in one
+    batch are serialised by the caller's flock.
+    Residual, stated exactly: the prior `git add -- <paths>` (needed so a plain `mv`'s
+    untracked new file is known) is a separate locked call. A commit landing right
+    after it commits the move whole (same call stages the deletion) and ours then
+    commits any later difference or reports "nothing to commit" - nothing is reverted.
 
     Graceful: returns `(committed: bool, message: str)`; a commit failure (e.g. a
     commit-msg hook rejecting a DEFER without a research artifact) is non-fatal.
@@ -1080,7 +1059,6 @@ def _commit_decision_unlocked(task_id: str, decision: str, followup: bool = Fals
     """
     import subprocess
     import os  # T-2509: needed for the FW_ALLOW_MASTER_COMMIT env below
-    import tempfile
     try:
         status = subprocess.run(
             ["git", "status", "--porcelain", "--untracked-files=all"],
@@ -1128,77 +1106,66 @@ def _commit_decision_unlocked(task_id: str, decision: str, followup: bool = Fals
         # commit. Scoped to THIS subprocess only (not os.environ) so agent/session
         # commits on master stay guarded. Off master / on a feature branch the
         # guard exits before the bypass matters, so this is a safe no-op there.
-        with tempfile.TemporaryDirectory() as tmp_dir:
-            scratch_index = os.path.join(tmp_dir, "index")
-            _env = {
-                **os.environ,
-                "GIT_INDEX_FILE": scratch_index,
-                "FW_ALLOW_MASTER_COMMIT": "1",
-            }
+        _env = {**os.environ, "FW_ALLOW_MASTER_COMMIT": "1"}
 
-            # Seed the scratch index from HEAD — NOT from the operator's real
-            # index — so nothing pre-staged there (by an agent session, or by
-            # another decision landed a moment ago) is ever visible to us.
-            read_tree = subprocess.run(
-                ["git", "read-tree", "HEAD"],
-                cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
-                env=_env,
-            )
-            if read_tree.returncode != 0:
-                return False, (_operator_facing_stderr(read_tree.stderr or read_tree.stdout or "")
-                               or "git read-tree failed").strip()[:200]
+        # A decision is never the root commit of a repo (the old read-tree HEAD refused).
+        if subprocess.run(["git", "rev-parse", "--verify", "-q", "HEAD"], cwd=PROJECT_ROOT,
+                          capture_output=True, timeout=30).returncode != 0:
+            return False, "git has no HEAD commit to commit the decision onto"
 
-            # `git add` on the scratch index reads the working tree (shared) but
-            # writes only to GIT_INDEX_FILE (not shared) — an explicit pathspec
-            # here stages the active→completed deletion too (git treats a named,
-            # now-missing path as "remove it", unlike a glob).
-            add = subprocess.run(
-                ["git", "add", "--"] + wanted,
-                cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
-                env=_env,
-            )
-            if add.returncode != 0:
-                return False, (_operator_facing_stderr(add.stderr or add.stdout or "")
-                               or "git add failed").strip()[:200]
+        # T-4127: drop paths git can know nothing about (deleted on disk and in neither
+        # HEAD nor the index) - naming them is a pathspec error, not a deletion.
+        known, addable = [], []
+        for p in wanted:
+            if os.path.exists(os.path.join(PROJECT_ROOT, p)):
+                known.append(p)
+                addable.append(p)
+                continue
+            in_head = subprocess.run(["git", "cat-file", "-e", f"HEAD:{p}"], cwd=PROJECT_ROOT,
+                                     capture_output=True, timeout=30).returncode == 0
+            in_index = subprocess.run(["git", "ls-files", "--error-unmatch", "--", p],
+                                      cwd=PROJECT_ROOT, capture_output=True, timeout=30).returncode == 0
+            if in_head or in_index:
+                known.append(p)
+            if in_index:
+                addable.append(p)
+        wanted = known
+        if not wanted:
+            return True, "nothing to commit"
 
-            # T-4112: `wanted` already matches HEAD in the scratch index — the paths
-            # showed in `git status` only because an earlier refresh failed and the
-            # real index still holds pre-decision blobs. Committing would fail with
-            # "nothing to commit"; retry the refresh instead (the follow-up heal).
-            same = subprocess.run(
-                ["git", "diff", "--cached", "--quiet", "HEAD", "--"] + wanted,
-                cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
-                env=_env,
-            )
-            if same.returncode == 0:
-                refresh_err = _refresh_real_index(wanted)
-                if refresh_err:
-                    return _index_refresh_failed(task_id, wanted, refresh_err)
-                return True, "nothing to commit (git index refreshed)"
+        msg = f"{task_id}: inception decision {decision.upper()} (via Watchtower)"
+        if followup:
+            # T-3749: the runner's commit after the chain finished - the
+            # post-move writes, or the whole decision if it got here first.
+            msg = (f"{task_id}: inception decision {decision.upper()} \u2014 "
+                   f"decide chain finished (via Watchtower)")
 
-            msg = f"{task_id}: inception decision {decision.upper()} (via Watchtower)"
-            if followup:
-                # T-3749: the runner's commit after the chain finished — the
-                # post-move writes, or the whole decision if it got here first.
-                msg = (f"{task_id}: inception decision {decision.upper()} — "
-                       f"decide chain finished (via Watchtower)")
-            commit = subprocess.run(
-                ["git", "commit", "-m", msg],
-                cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
-                env=_env,
-            )
-            if commit.returncode != 0:
-                return False, (_operator_facing_stderr(commit.stderr or commit.stdout or "")
-                               or "git commit failed").strip()[:200]
-            # T-4081 (G-114): HEAD just moved, but the REAL index still holds the
-            # pre-decision blobs for `wanted`. The next ordinary commit from it would
-            # write them back and silently revert the decision. Point exactly those
-            # entries at the new HEAD; the working tree and every other path stay put.
-            # T-4112: a refresh that did not happen is reported, never swallowed.
-            refresh_err = _refresh_real_index(wanted)
-            if refresh_err:
-                return _index_refresh_failed(task_id, wanted, refresh_err)
-            return True, msg
+        # Make every path known to the index in ONE locked `git add` (a plain `mv` leaves
+        # the new file untracked and `--only` refuses unknown paths; the same call stages
+        # the old path's deletion, so a commit that lands right after it sees the move
+        # whole, never half). Only adds entries - nothing can be reverted by it.
+        if addable:
+            err = _run_git_retry(["git", "add", "--"] + addable, _env, "git add failed")
+            if err:
+                return False, err
+
+        # Our paths already equal HEAD (committed earlier; the `git add` above also
+        # re-pointed any stale real-index entries at the working tree = HEAD).
+        if subprocess.run(["git", "diff", "--cached", "--quiet", "HEAD", "--"] + wanted,
+                          cwd=PROJECT_ROOT, capture_output=True, timeout=30).returncode == 0 \
+                and subprocess.run(["git", "diff", "--quiet", "HEAD", "--"] + wanted,
+                                   cwd=PROJECT_ROOT, capture_output=True, timeout=30).returncode == 0:
+            return True, "nothing to commit"
+
+        # `--only`: git takes .git/index.lock on the REAL index before it builds the tree
+        # and keeps it until the ref has moved and the index entries for `wanted` are
+        # updated. There is no moment where HEAD has the decision and the index does not,
+        # and other staged paths are never in the commit and stay staged.
+        err = _run_git_retry(["git", "commit", "--only", "-m", msg, "--"] + wanted, _env,
+                             "git commit failed")
+        if err:
+            return False, err
+        return True, msg
     except Exception as e:  # never let a commit problem break the decision response
         return False, str(e)[:200]
 
