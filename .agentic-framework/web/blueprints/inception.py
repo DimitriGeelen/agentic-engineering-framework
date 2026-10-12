@@ -1149,6 +1149,24 @@ def _commit_decision_unlocked(task_id: str, decision: str, followup: bool = Fals
             if err:
                 return False, err
 
+        # T-4127b: the `git add` above can remove the last trace of a path (a stale index
+        # entry for the obsolete active file whose deletion HEAD already has) - naming it
+        # to `git commit --only` is then a pathspec error. Rebuild the list AFTER staging:
+        # keep a path only if it is in the working tree, HEAD or the index (a path in HEAD
+        # but deleted is the deletion being committed and must stay).
+        live = []
+        for p in wanted:
+            if (os.path.exists(os.path.join(PROJECT_ROOT, p))
+                    or subprocess.run(["git", "cat-file", "-e", f"HEAD:{p}"], cwd=PROJECT_ROOT,
+                                      capture_output=True, timeout=30).returncode == 0
+                    or subprocess.run(["git", "ls-files", "--error-unmatch", "--", p],
+                                      cwd=PROJECT_ROOT, capture_output=True,
+                                      timeout=30).returncode == 0):
+                live.append(p)
+        wanted = live
+        if not wanted:
+            return True, "nothing to commit"
+
         # Our paths already equal HEAD (committed earlier; the `git add` above also
         # re-pointed any stale real-index entries at the working tree = HEAD).
         if subprocess.run(["git", "diff", "--cached", "--quiet", "HEAD", "--"] + wanted,
