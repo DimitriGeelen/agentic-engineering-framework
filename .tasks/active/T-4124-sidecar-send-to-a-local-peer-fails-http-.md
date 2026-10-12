@@ -287,6 +287,19 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** every send to 055 got HTTP 401 from 20:24 to 23:06 local on 2026-10-12 (after the host reboot).
+
+**Root cause (055's diagnosis, msg 552102ea, consistent with AEF's localisation 857294887):** AEF's cron
+`* * * * * fw sidecar ensure --all` (and its @reboot line), run from AEF's own `bin/fw`, started 055's receiver at
+19:51 from AEF's OWN `lib/sidecar/http_server.py` (pid 16898, root's registry). At 20:06 a 055 session under the
+desktop user started 055's vendored receiver, which rewrote the shared token file without finding/stopping the
+first. Senders read the new token and posted to the old receiver → 401. Two defects: (1) `ensure --all` runs one
+framework's code for another project's sidecar and can create a second receiver beside the project's own;
+(2) receiver start writes the token before confirming no live receiver holds the port (no lock, no rollback).
+055 fixed its side at 23:06 (one receiver, registry + token consistent).
+
+**Why structurally allowed / Prevention:** to be filled with the fix.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
