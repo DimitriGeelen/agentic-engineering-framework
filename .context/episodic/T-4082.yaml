@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4082: Unit regressions from T-4053/T-4041 (2026-10-11): approvals overflow fixture lacks 'readiness' (KeyError), arc review/close-recommendation tests expect a URL without a known Watchtower
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-12T07:20:39Z
+# ============================================================================
+
+task_id: T-4082
+task_name: "Unit regressions from T-4053/T-4041 (2026-10-11): approvals overflow fixture lacks 'readiness' (KeyError), arc review/close-recommendation tests expect a URL without a known Watchtower"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-12T07:17:30Z
+completed: 2026-10-12T07:19:47Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-12T09:19:45+02:00
+last_commit: 2026-10-12T09:19:45+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  tests follow T-4053 (readiness field in approvals fixture rows) and T-4041 (arc URL asserted against a known WATCHTOWER_URL); 6/6 + 16 ok
+
+# Key outcomes
+outcomes:
+  - '`tests/unit/test_approvals_expand_overflow.py` fixture rows carry `readiness: "ready"` (the T-4053 field); the file passes 6/6.'
+  - '`tests/unit/arc_review_verb.bats` and `tests/unit/t3843_arc_close_recommendation.bats` set `WATCHTOWER_URL` to a fixture address where they assert a `/arcs/<slug>/close` URL; both files pass with no `not ok`; the no-Watchtower behaviour from T-4041 is unchanged in lib/arc.sh.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'tests follow T-4053 (readiness field in approvals fixture rows) and T-4041 (arc URL asserted against a known WATCHTOWER_URL); 6/6 + 16 ok'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4082-unit-regressions-from-t-4053t-4041-2026-.md'
+  - 'tests/unit/arc_review_verb.bats'
+  - 'tests/unit/t3843_arc_close_recommendation.bats'
+  - 'tests/unit/test_approvals_expand_overflow.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-12T09:19:45'
+    action: 'T-4082: tests follow T-4053 (readiness field in approvals fixture rows) and T-4041 (arc URL asserted against a known WATCHTOWER_URL); 6/6 + 16 ok'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, tests, regression]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 4
+  lines_added: 342
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4082-unit-regressions-from-t-4053t-4041-2026-.md
+generated_by: context-agent-hybrid

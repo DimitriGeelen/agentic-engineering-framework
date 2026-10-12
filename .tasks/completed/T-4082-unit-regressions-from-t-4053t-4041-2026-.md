@@ -4,12 +4,12 @@ name: "Unit regressions from T-4053/T-4041 (2026-10-11): approvals overflow fixt
 description: >
   Pre-push unit ratchet, 2026-10-12: tests/unit/test_approvals_expand_overflow.py (5) fails with KeyError 'readiness' at web/blueprints/approvals.py:1040 — its fake _load_pending_human_acs rows predate T-4053's readiness field. tests/unit/arc_review_verb.bats (3) and t3843_arc_close_recommendation.bats (3) assert a /arcs/<slug>/close URL, but since T-4041 no URL is printed when no Watchtower is resolvable (intended: no link to another port). Fix the tests: readiness in the fixture rows; WATCHTOWER_URL set to a fixture address where a URL is expected (resolver fast path), plus keep a no-Watchtower case asserting the 'no Watchtower reachable' line. The T-4053/T-4041 workers ran their own suites but not these older ones.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, tests, regression]
-components: []
+components: [tests/unit/arc_review_verb.bats]
 related_tasks: [T-4053, T-4041]
 origin: {kind: "agent"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -39,8 +39,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T07:17:30Z
-last_update: 2026-10-12T07:19:45Z
-date_finished: null
+last_update: 2026-10-12T07:19:47Z
+date_finished: 2026-10-12T07:19:47Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -334,3 +334,15 @@ timeout 600 bats tests/unit/arc_review_verb.bats tests/unit/t3843_arc_close_reco
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4082-unit-regressions-from-t-4053t-4041-2026-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ef53267c
+- **Timestamp:** 2026-10-12T07:20:22Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-12T07:19:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

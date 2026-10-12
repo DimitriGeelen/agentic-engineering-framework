@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4077: fw issues comment: the one outward verb for GitHub stage comments (templates + footer, idempotent per issue/stage, operator gate on decision stages, Fixed only for commits on GitHub, atomic ledger log, labels created)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-12T07:24:07Z
+# ============================================================================
+
+task_id: T-4077
+task_name: "fw issues comment: the one outward verb for GitHub stage comments (templates + footer, idempotent per issue/stage, operator gate on decision stages, Fixed only for commits on GitHub, atomic ledger log, labels created)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-11T21:40:42Z
+completed: 2026-10-12T07:23:27Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-12T09:03:21+02:00
+last_commit: 2026-10-12T09:17:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope fw issues comment (templates, idempotence, operator gate, mirror check, atomic ledger, stubbed tests). fw issues comment — template stages, decision gate, fixed-on-mirror check, atomic ledger, labels. vendored copies
+
+# Key outcomes
+outcomes:
+  - '`fw issues comment <n> --stage <stage> [--task T-X] [--commit SHA] [--test-cmd "…"] [--version vX.Y.Z] [--text "…"]` exists (new `lib/issues.py` + `bin/fw issues` route). Stages: received, classified, in-progress, fixed-on-bleeding-edge, available-for-testing, released (template stages); accepted, needs-info, duplicate, not-planned (decision stages). Every comment = the stage''s fixed template + the operator''s verbatim footer (`docs/reports/T-4039-inbound-github-issues.md`), with a machine-readable stage marker (e.g. an HTML comment) so the stage can be read back from the issue.'
+  - 'Idempotent per (issue, stage): a stage already in the intake ledger, or already marked on the issue (read back via `gh`), is not posted again; the command says so and exits 0.'
+  - 'Decision stages refuse without `--approved-by-operator <ref>`, and refuse under `CLAUDECODE=1` unless that ref is an operator approval record (same pattern as `fw review approve`); template stages post under the standing permission (2026-10-10).'
+  - '`fixed-on-bleeding-edge` refuses unless `--commit` is an ancestor of the GitHub mirror''s `bleeding-edge` (`git ls-remote github` / `merge-base --is-ancestor`), and requires `--test-cmd` (per-issue "how to test" line).'
+  - 'Post + ledger append are one operation: the ledger row (`.context/issues/intake.jsonl`: issue, stage, tasks, commit, comment URL, ts) is written only after GitHub returns the comment URL, and a failure after posting is reported loudly with the URL so the row can be reconciled (never a silent half state). Missing stage labels (`status:*`, `fixed-on-bleeding-edge`, …) are created on first use.'
+  - 'Tests (`tests/unit/t4077_issues_comment_test.py`) with a stubbed `gh` on PATH (no network): template rendering + footer + marker; idempotence (ledger and read-back); decision-stage refusal; fixed-stage refusal for a commit not on the mirror; ledger written only on success; label creation call. Issue text from GitHub is treated as data only.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'fw issues comment — template stages, decision gate, fixed-on-mirror check, atomic ledger, labels'
+    source: git-mined
+  - description: 'scope fw issues comment (templates, idempotence, operator gate, mirror check, atomic ledger, stubbed tests)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/issues.py'
+  - 'bin/fw'
+  - 'lib/issues.py'
+  - '.tasks/active/T-4077-fw-issues-comment-the-one-outward-verb-f.md'
+  - 'tests/unit/t4077_issues_comment_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-12T09:03:21'
+    action: 'T-4077: scope fw issues comment (templates, idempotence, operator gate, mirror check, atomic ledger, stubbed tests)'
+  - time: '2026-10-12T09:17:07'
+    action: 'T-4077: fw issues comment — template stages, decision gate, fixed-on-mirror check, atomic ledger, labels'
+  - time: '2026-10-12T09:17:25'
+    action: 'T-4077: vendored copies'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 582 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github-intake, T-4039]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 582
+  commits: 3
+  files_changed: 6
+  lines_added: 1154
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4077-fw-issues-comment-the-one-outward-verb-f.md
+generated_by: context-agent-hybrid

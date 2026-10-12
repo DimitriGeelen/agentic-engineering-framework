@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4083: fw vendor dies when lib/upgrade.sh is absent: T-4069's end-of-run notice sources it unconditionally (bin/fw ~1078), so t2232's synthetic-source vendor runs exit non-zero
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-12T07:23:07Z
+# ============================================================================
+
+task_id: T-4083
+task_name: "fw vendor dies when lib/upgrade.sh is absent: T-4069's end-of-run notice sources it unconditionally (bin/fw ~1078), so t2232's synthetic-source vendor runs exit non-zero"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-12T07:18:04Z
+completed: 2026-10-12T07:22:39Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-12T09:22:18+02:00
+last_commit: 2026-10-12T09:22:26+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-4069's stale-wrapper notice goes through one best-effort helper (sources lib/upgrade.sh only if present, never changes exit status), so fw vendor no longer dies on a tree without it; t2232 8/8 + t4069 4/4. vendored bin/fw
+
+# Key outcomes
+outcomes:
+  - 'Both T-4069 notice call sites in `bin/fw` (end of `fw vendor`, end of `fw vendor self`) go through one best-effort helper that sources `lib/upgrade.sh` only when it exists and never changes the command''s exit status.'
+  - '`tests/unit/t2232_durable_in_consumer_upgrade.bats` passes with no `not ok` (its synthetic source has no lib/upgrade.sh); `tests/unit/t4069_stale_claude_fw_wrapper.bats` still passes.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.tasks/active/T-4083-fw-vendor-dies-when-libupgradesh-is-abse.md'
+  - '.tasks/completed/T-4082-unit-regressions-from-t-4053t-4041-2026-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-12T09:22:18'
+    action: 'T-4083: T-4069''s stale-wrapper notice goes through one best-effort helper (sources lib/upgrade.sh only if present, never changes exit status), so fw vendor no longer dies on a tree without it; t2232 8/8 + t4069 4/4'
+  - time: '2026-10-12T09:22:26'
+    action: 'T-4083: vendored bin/fw'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, vendor, regression]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 4
+  lines_added: 397
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4083-fw-vendor-dies-when-libupgradesh-is-abse.md
+generated_by: context-agent-hybrid
