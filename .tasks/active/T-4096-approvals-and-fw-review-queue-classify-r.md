@@ -47,7 +47,7 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "T-2348"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T12:22:29Z
-last_update: 2026-10-12T12:34:54Z
+last_update: 2026-10-12T13:02:05Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,13 +99,20 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Root cause of the divergence found and written in `## RCA` (which input set or routing differs between `/approvals` and `fw review-queue`: inception decisions placed in Ready on the page vs DECISIONS in the CLI; tasks the CLI calls ready that the page does not admit, or vice versa).
-- [ ] Both surfaces derive their groups from one function over one input set: the same tasks are "Ready for you", "Waiting on the agent" and "Decisions" on the page and in `fw review-queue` (inception decisions are their own group on both, never mixed into Ready).
-- [ ] Parity test (`tests/web/test_t4096_review_parity.py`) over one fixture corpus containing a ready task, a waiting task, an undecided inception and a partial-complete task with a reviewer-judged criterion: page groups == CLI groups, per task id. Fails on the pre-fix code.
-- [ ] On this repo, live: the counts of `fw review-queue` and `/approvals` agree per group (record both in Updates).
+- [x] Root cause of the divergence found and written in `## RCA` (which input set or routing differs between `/approvals` and `fw review-queue`: inception decisions placed in Ready on the page vs DECISIONS in the CLI; tasks the CLI calls ready that the page does not admit, or vice versa).
+- [x] Both surfaces derive their groups from one function over one input set: the same tasks are "Ready for you", "Waiting on the agent" and "Decisions" on the page and in `fw review-queue` (inception decisions are their own group on both, never mixed into Ready).
+- [x] Parity test (`tests/web/test_t4096_review_parity.py`) over one fixture corpus containing a ready task, a waiting task, an undecided inception and a partial-complete task with a reviewer-judged criterion: page groups == CLI groups, per task id. Fails on the pre-fix code.
+- [x] On this repo, live: the counts of `fw review-queue` and `/approvals` agree per group (record both in Updates).
 - [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
+- [ ] [REVIEW] /approvals grouping reads right after the change
+  **Steps:**
+  1. Open the URL printed by `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` + `/approvals`
+  2. Compare the Ready / Waiting / Decisions counts with `cd /opt/999-Agentic-Engineering-Framework && bin/fw review-queue`
+  **Expected:** counts equal per group; an inception awaiting GO/NO-GO appears only under decisions, not again as a waiting card
+  **If not:** note the task id that appears twice or in a different group
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -272,6 +279,22 @@ bin/fw vendor self --check
 
 ## RCA
 
+**Symptom:** ring20: `fw review-queue` 73 ready vs `/approvals` 51, and the page's Ready held
+inception decisions the CLI listed under DECISIONS.
+**Root cause:** T-4053 shared only the readiness predicate, not the grouping. Each surface still
+decided admission and routing itself: the CLI globbed `.tasks/active` with regexes, the page used
+the yaml `_task_meta` cache plus three independent loaders. An inception awaiting GO/NO-GO that
+also carried an unticked Human criterion was routed to DECISIONS AND to a ready/waiting card
+(both surfaces; on this repo 24 tasks were double-listed, inflating Waiting 306 vs 282), and the
+two admission paths (regex vs yaml/cache) can disagree on any task whose frontmatter one parses
+and the other does not.
+**Why structurally allowed:** only the leaf predicate was shared and tested; no test compared the
+surfaces' groups over one corpus (the T-4053 parity test compared the two ready SETS on the live
+repo, where the divergence class was absent).
+**Prevention:** `web.shared.review_queue_groups` is the single grouping (decisions / ready /
+waiting; an inception GO/NO-GO is never also a review card); the page loaders and the CLI both
+consume it; `tests/web/test_t4096_review_parity.py` compares per task id over a fixture corpus.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -369,3 +392,9 @@ bin/fw vendor self --check
 
 ### 2026-10-12T12:34:05Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-12 — T-4096 fix + evidence
+- **Pre-fix:** with approvals.py at HEAD, `test_page_equals_cli_per_task_id` fails (undecided inception with an open Human criterion shown as both a decision and a review card).
+- **Live counts BEFORE** (this repo): CLI ready 55 / waiting 306 / decisions 25; page ready 55 / waiting 306 / decisions 25 (24 inceptions double-listed in waiting).
+- **Live counts AFTER:** CLI and page both ready 55 / waiting 282 / decisions 25; dashboard tile 55.
+- **Page grouping visibly changes** (24 inception cards leave "Waiting on the agent"): see Human criterion.
