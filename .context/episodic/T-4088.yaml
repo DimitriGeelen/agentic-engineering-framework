@@ -1,0 +1,99 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4088: Internal (agent-filed) GitHub issue backlog cleanup: close fixed and duplicate ones with one comment each, list still-open ones for the operator (operator standing instruction 2026-10-12)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-12T10:47:23Z
+# ============================================================================
+
+task_id: T-4088
+task_name: "Internal (agent-filed) GitHub issue backlog cleanup: close fixed and duplicate ones with one comment each, list still-open ones for the operator (operator standing instruction 2026-10-12)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-12T10:18:17Z
+completed: 2026-10-12T10:47:05Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-12T12:19:20+02:00
+last_commit: 2026-10-12T12:46:55+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  scope internal-issue cleanup (operator standing instruction: close fixed/duplicate immediately, list still-open). internal issue triage report — 15 fixed, 0 duplicate, 52 still-open (evidence per issue; closes not yet performed). fw issues close — internal issues only, one comment + footer, ledger row, idempotent; 9 tests (8 fail on the pre-change file). 15 fixed internal issues closed on GitHub (#3 #4 #8 #16 #20 #24 #31 #34 #35 #57 #59 #60 #66 #69 #75), comment URLs in the report, closed-fixed ledger rows; ACs ticked. vendored lib/issues.py (fw issues close)
+
+# Key outcomes
+outcomes:
+  - 'Every open issue filed by the framework''s own identity (internal class, as `fw issues sync --dry-run` classifies it) is triaged into exactly one of: **fixed** (a completed task whose commit is on GitHub''s `bleeding-edge` or `master` addresses it — cite task id + commit), **duplicate** (another issue or task covers it — cite which), **still-open** (no completed fix found). Evidence is checked, not assumed: the task file is in `.tasks/completed/`, the commit exists on the GitHub mirror, and the issue''s symptom matches the task''s.'
+  - 'Fixed and duplicate issues are closed on GitHub with ONE comment each (fixed: task id, commit, "on bleeding-edge, ships in the next release" or the release it is in; duplicate: link to the original), with the operator''s footer, and a ledger row in `.context/issues/intake.jsonl` (stage `closed-fixed` / `closed-duplicate`). Idempotent: an issue already closed or already commented by this run is skipped. External issues are never touched by this task.'
+  - 'Still-open issues get no GitHub comment; each is listed for the operator with its proposed task (existing or "file new") and a one-line recommendation.'
+  - 'Report `docs/reports/T-4088-internal-issues-triage.md`: one row per issue (number, title, class, verdict, evidence, action taken + comment URL), plus the still-open list with recommendations, plus counts.'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'vendored lib/issues.py (fw issues close)'
+    source: git-mined
+  - description: '15 fixed internal issues closed on GitHub (#3 #4 #8 #16 #20 #24 #31 #34 #35 #57 #59 #60 #66 #69 #75), comment URLs in the report, closed-fixed ledger rows; ACs ticked'
+    source: git-mined
+  - description: 'fw issues close — internal issues only, one comment + footer, ledger row, idempotent; 9 tests (8 fail on the pre-change file)'
+    source: git-mined
+  - description: 'internal issue triage report — 15 fixed, 0 duplicate, 52 still-open (evidence per issue; closes not yet performed)'
+    source: git-mined
+  - description: 'scope internal-issue cleanup (operator standing instruction: close fixed/duplicate immediately, list still-open)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/issues.py'
+  - '.context/issues/intake.jsonl'
+  - 'docs/reports/T-4088-internal-issues-triage.md'
+  - 'lib/issues.py'
+  - '.tasks/active/T-4088-internal-agent-filed-github-issue-backlo.md'
+  - 'tests/unit/t4088_issues_close_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-12T12:19:20'
+    action: 'T-4088: scope internal-issue cleanup (operator standing instruction: close fixed/duplicate immediately, list still-open)'
+  - time: '2026-10-12T12:32:19'
+    action: 'T-4088: internal issue triage report — 15 fixed, 0 duplicate, 52 still-open (evidence per issue; closes not yet performed)'
+  - time: '2026-10-12T12:32:28'
+    action: 'T-4088: fw issues close — internal issues only, one comment + footer, ledger row, idempotent; 9 tests (8 fail on the pre-change file)'
+  - time: '2026-10-12T12:34:57'
+    action: 'T-4088: 15 fixed internal issues closed on GitHub (#3 #4 #8 #16 #20 #24 #31 #34 #35 #57 #59 #60 #66 #69 #75), comment URLs in the report, closed-fixed ledger rows; ACs ticked'
+  - time: '2026-10-12T12:46:55'
+    action: 'T-4088: vendored lib/issues.py (fw issues close)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 28 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [github-intake, T-4039, cleanup]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 28
+  commits: 5
+  files_changed: 6
+  lines_added: 907
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4088-internal-agent-filed-github-issue-backlo.md
+generated_by: context-agent-hybrid
