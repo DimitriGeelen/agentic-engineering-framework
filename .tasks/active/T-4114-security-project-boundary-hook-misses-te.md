@@ -9,7 +9,7 @@ description: >
   -ai, -a -p): outside path exit 2, /tmp exit 0. Consumer carries it as a .fwvendor-preserve
   in_file patch since 1.6.x.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T13:59:22Z
-last_update: '2026-10-12T14:01:10Z'
+last_update: 2026-10-12T18:09:50Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Pre-fix bypass reproduced: `echo x | tee -a /etc/fstab` exits 0 on HEAD hook, plain `tee /etc/fstab` exits 2 (negative control)
+- [x] check-project-boundary.sh blocks (exit 2) tee to an outside path with leading options (-a, --append, -ai, -a -p, `--`) and with multiple paths where any one is outside
+- [x] tee to /tmp or to an in-project path still exits 0
+- [x] tests/unit/t4114_boundary_tee_options.bats covers the above and fails on the HEAD hook
+- [ ] Existing boundary bats suites green; `bin/fw test lint` and `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -259,6 +262,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n agents/context/check-project-boundary.sh
+timeout 300 bats tests/unit/t4114_boundary_tee_options.bats > /tmp/.t4114.out 2>&1 && ! grep -q "^not ok" /tmp/.t4114.out
+test "$(grep -c '# skip' /tmp/.t4114.out)" -eq 0
+bin/fw vendor self --check
 
 ## RCA
 
@@ -275,6 +282,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `echo x | tee -a /etc/fstab` (any option before the path) is allowed by the project-boundary PreToolUse hook (exit 0); `echo x | tee /etc/fstab` is blocked (exit 2). Reported from consumer dimitri-mint-dev. Reproduced on HEAD: 11 of 11 bypass spellings exit 0 (`-a`, `--append`, `-ai`, `-a -p`, `--output-error=warn`, `--`, `sudo tee -a`, `/usr/bin/tee -a`, multi-path with an outside second/third path).
+
+**Root cause:** Pattern 3 used `(?:>>?\s*|tee\s+)(/[^\s;&|]+)` — the path was only recognised as the first token directly after `tee`. Any option token shifted the path out of that slot. A second layer compounded it: the bash pre-filter gated Python analysis on `tee\s+/`, so `tee -a /srv/x` never reached Pattern 3 at all. Pattern 4 (read-side) allowlists `/etc/`, so the outside write was not caught by any other rule.
+
+**Why structurally allowed:** the hook's bats coverage pinned the no-option shape only (control spelling), and no suite drove the hook with option-before-path spellings or multi-path tee. The pre-filter and Pattern 3 were both written against the same assumed argument order, so neither failed visibly.
+
+**Prevention:** (1) fix: tee is parsed as a verb; every absolute-path token in its segment is a write target, options skipped; pre-filter widened to `tee\s.*/`. (2) `tests/unit/t4114_boundary_tee_options.bats` pins 17 spellings — 11 fail on HEAD (negative control, run by swapping the HEAD hook in and restoring), 6 allow-cases pass on both. (3) Out of scope, listed for a follow-up task (not fixed here, no option-before-path bypass in them): Pattern 3 has no `cp`/`mv`/`dd`/`install`/`ln`/`sed -i` write verbs, so `cp /tmp/a /etc/fstab` exits 0 on the fixed hook. That is missing coverage, a different gap from this one, and needs its own task and design.
 
 ## Evolution
 
@@ -356,3 +371,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4114-security-project-boundary-hook-misses-te.md
 - **Context:** Initial task creation
+
+### 2026-10-12T14:03:37Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
