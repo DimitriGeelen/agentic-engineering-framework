@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4023: Field evidence before release: how the Ring20 estate (running bleeding-edge) tells AEF whether each new feature works, per feature class (deterministic / observed in use / judged)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-12T11:11:50Z
+# ============================================================================
+
+task_id: T-4023
+task_name: "Field evidence before release: how the Ring20 estate (running bleeding-edge) tells AEF whether each new feature works, per feature class (deterministic / observed in use / judged)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-09T23:58:30Z
+completed: 2026-10-12T11:11:34Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-10-10T01:59:39+02:00
+last_commit: 2026-10-10T11:24:16+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception — field evidence before release (deterministic probes / observed ledger counts / judged questions, plus not-exercised); artifact with dialogue log and four operator questions. second lens — bleeding-edge pre-releases, symptom signatures for fixes, evaluation brief for field agents, per-change promotion options (recommend whole candidate + revert escape hatch, not cherry-pick). review round 1 — codex GO-WITH-CHANGES, field answers from ring20, 832, 055 (opencode failed twice server-side); 13 findings folded in (reachability first, revert-and-recandidate on bleeding-edge, exposure-based recurrence, diff-derived coverage). testbed membership proposals A-D (recommend tiered core: AEF, proxmox-ring20-management, 055, dimitri-mint-dev; extended per change: 832, ring20-dashboard); ring20 operator confirmed YES. operator chose testbed option C (IW-1 answered); recommendation revised to GO-reordered with defaults for IW-2..4. IW-2..4 deferred to the operator's GO with recommended defaults
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'review round 1 — codex GO-WITH-CHANGES, field answers from ring20, 832, 055 (opencode failed twice server-side); 13 findings folded in (reachability first, revert-and-recandidate on bleeding-edge, exposure-based recurrence, diff-derived coverage)'
+    source: git-mined
+  - description: 'second lens — bleeding-edge pre-releases, symptom signatures for fixes, evaluation brief for field agents, per-change promotion options (recommend whole candidate + revert escape hatch, not cherry-pick)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/costs/reviews.jsonl'
+  - 'docs/reports/T-4023-codex-review.md'
+  - 'docs/reports/T-4023-field-evidence-before-release.md'
+  - '.tasks/active/T-4023-field-evidence-before-release-how-the-ri.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-10T01:59:39'
+    action: 'T-4023: inception — field evidence before release (deterministic probes / observed ledger counts / judged questions, plus not-exercised); artifact with dialogue log and four operator questions'
+  - time: '2026-10-10T02:05:33'
+    action: 'T-4023: second lens — bleeding-edge pre-releases, symptom signatures for fixes, evaluation brief for field agents, per-change promotion options (recommend whole candidate + revert escape hatch, not cherry-pick)'
+  - time: '2026-10-10T02:15:35'
+    action: 'T-4023: review round 1 — codex GO-WITH-CHANGES, field answers from ring20, 832, 055 (opencode failed twice server-side); 13 findings folded in (reachability first, revert-and-recandidate on bleeding-edge, exposure-based recurrence, diff-derived coverage)'
+  - time: '2026-10-10T02:28:28'
+    action: 'T-4023: testbed membership proposals A-D (recommend tiered core: AEF, proxmox-ring20-management, 055, dimitri-mint-dev; extended per change: 832, ring20-dashboard); ring20 operator confirmed YES'
+  - time: '2026-10-10T11:22:46'
+    action: 'T-4023: operator chose testbed option C (IW-1 answered); recommendation revised to GO-reordered with defaults for IW-2..4'
+  - time: '2026-10-10T11:24:16'
+    action: 'T-4023: IW-2..4 deferred to the operator''s GO with recommended defaults'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 3553 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3553
+  commits: 7
+  files_changed: 5
+  lines_added: 488
+  lines_removed: 22
+  footprint_refreshed_at: '2026-10-12T11:12:04Z'
+  footprint_refreshed_by_commit: b12948acc
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4023-field-evidence-before-release-how-the-ri.md
+generated_by: context-agent-hybrid
