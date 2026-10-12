@@ -902,3 +902,11 @@ entries:
   added: '2026-10-11'
   expires: '2026-10-25'
   added_by: human
+- leg: bats
+  name: 't3110_worktree_corpus_commit_guard.bats: no bypass log entry is written when nothing would have
+    been refused'
+  file: t3110_worktree_corpus_commit_guard.bats
+  owner: T-4085
+  added: '2026-10-12'
+  expires: '2026-10-19'
+  added_by: human
