@@ -8,10 +8,10 @@ description: >
   value the Watchtower commit recorded, allowing a later legitimate decision commit.
   Bleeding-edge only; not hotfix scope.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, g-114]
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T13:56:55Z
-last_update: '2026-10-12T14:01:10Z'
+last_update: 2026-10-12T18:41:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A Watchtower GO later reverted to DEFER at HEAD is reported as REVERTED (rc 2); the new test file has this case and it fails on the pre-fix detector
+- [x] A Watchtower GO followed by a later legitimate NO-GO decision commit (CLI or Watchtower) and HEAD showing NO-GO is NOT reported
+- [x] A Watchtower GO still at HEAD is NOT reported (rc 0)
+- [x] A Watchtower GO, then a later NO-GO commit, then a stale revert to GO at HEAD is reported (value at HEAD differs from the latest decision commit)
+- [x] The existing detector test in tests/unit/test_t4081_watchtower_commit_keeps_real_index.py still passes; audit.sh caller and WARN wording unchanged
+- [x] lib/watchtower_decision_revert.py is vendored to .agentic-framework/lib/ via bin/fw vendor self and --check is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -258,8 +262,19 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_t4113_watchtower_decision_value.py -q > .context/scratch/t4113-pytest.out 2>&1 && grep -q passed .context/scratch/t4113-pytest.out && ! grep -q failed .context/scratch/t4113-pytest.out
+python3 -m pytest tests/unit/test_t4081_watchtower_commit_keeps_real_index.py -q > .context/scratch/t4113-t4081.out 2>&1 && grep -q passed .context/scratch/t4113-t4081.out && ! grep -q failed .context/scratch/t4113-t4081.out
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** A Watchtower-recorded GO that was later rolled back to an earlier DEFER (the G-114 index write-back) was not reported by `watchtower_decision_revert.py`; the audit stayed green while the decision in git was DEFER.
+
+**Root cause:** `find_reverted` tested presence, not value. It reported a task only when the HEAD task file had no `**Decision**:` line at all. Any decision block at HEAD, whatever its value, counted as "still there". The detector compared the wrong property: it checked that a decision existed, not that it was the one recorded.
+
+**Why structurally allowed:** The detector's own tests (`test_t4081_…`) only covered the "decision block removed" shape, so the value-changed shape was never exercised. The audit WARN is also keyed to the detector's exit code, so a false negative in the detector is invisible in the audit output.
+
+**Prevention:** `tests/unit/test_t4113_watchtower_decision_value.py` pins the GO→DEFER revert (fails on the pre-fix detector, verified), the GO→later legitimate NO-GO non-flag, the GO-at-HEAD non-flag, and the stale revert after a later CLI decision. The detector now takes the newest decision commit of either source as the target value, so a legitimate later decision supersedes an earlier one.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -355,3 +370,12 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4113-watchtowerdecisionrevert-detector-any-de.md
 - **Context:** Initial task creation
+
+### 2026-10-12 — fix (worker t4113-detect)
+- **Pre-fix failure:** `tests/unit/test_t4113_watchtower_decision_value.py` run against the HEAD detector: GO→DEFER-at-HEAD returned rc 0 ("0 Watchtower decision(s) no longer at HEAD"); stale GO after a later NO-GO also rc 0. The three non-regression cases passed on HEAD, as intended.
+- **Post-fix:** 5/5 new tests and 5/5 `test_t4081_*` tests pass. Live repo: pre-fix and post-fix detectors both report 0.
+- **Verification:** `bin/fw vendor self --check` clean; `bin/fw test lint` FAILs are only the pre-existing classes (sessions list.sh, t4088, .context/scratch/*); `bin/fw audit --section structure` has 0 FAIL, and the Watchtower decisions check is PASS.
+
+### 2026-10-12T18:09:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
