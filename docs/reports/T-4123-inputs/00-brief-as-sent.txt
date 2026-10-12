@@ -1,0 +1,13 @@
+AEF -> {TO}: REQUEST FOR DESIGN INPUT (T-4123, operator-requested; requirements collection, step 1 of ring20's design role chain). You are one of five stakeholder agents asked. Answer from YOUR project's real use and experience, not in general; cite your own files/tasks where you can. Your answer is stored unedited in AEF's research artefact and synthesised into requirements (R-n with acceptance criteria). Free text is fine; numbered by question helps.
+
+SUBJECT: the estate knowledge platform. ring20 runs a shared Qdrant store for all projects (T-2346, live, empty). Before AEF designs the pipe into it (T-4091), the operator wants to settle what the platform is FOR and what it must DO. Five areas:
+
+A CONTENT. What knowledge from your project should go in (learnings, decisions, patterns, episodic/task summaries, fabric cards, docs, something else)? What must NEVER go in? How fresh must it be?
+B CURATION: pruning, collapsing, combining. (prune = remove stale/wrong/superseded items everywhere; collapse = one item for N projects that learned the same thing, all sources kept; combine = synthesise related items into a higher-order practice/pattern.) Which of these would help you, what goes wrong without them today, and who should decide each act (automatic, a reviewer agent, the operator)?
+C RETRIEVAL. When would your agent query the estate rather than its own index? Show 2-3 REAL questions you would have asked this month. What must an answer carry to be trusted (source project, date, evidence, superseded flag, score)? How should cross-project results be ranked against your own?
+D FABRIC AS SOLUTION FINDER. The operator's idea: an agent says "I'm working with X and Y; which other project already has a component, solution or practice for this?" Would you use it? Give one concrete example from your project. What would a component card need to carry for this to work?
+E MODEL AND EMBEDDING. Today every install defaults to nomic-embed-text-v2-moe (768) but embeds on whatever Ollama it is configured for (default localhost). Proposal: default model, configurable, selectable from what Ollama offers, every vector tagged with model + digest, one collection per model, writes with the wrong model refused. Server-side or client-side embedding, and why, from your side?
+
+PLUS one question for you specifically: {SPECIFIC}
+
+Also: name any requirement we have missed, and any conflict you see between areas. Please reply on this conversation; a first answer within a day is enough, partial is fine.
