@@ -1,0 +1,114 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4017: arc-001 pickup from dimitri-mint-dev: local retrieval stack refresh (telemetry, benchmark, model manifest, reranker health, per-project keyword index)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-12T09:04:23Z
+# ============================================================================
+
+task_id: T-4017
+task_name: "arc-001 pickup from dimitri-mint-dev: local retrieval stack refresh (telemetry, benchmark, model manifest, reranker health, per-project keyword index)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-09T21:41:29Z
+completed: 2026-10-12T09:03:57Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-10-09T23:43:16+02:00
+last_commit: 2026-10-12T11:04:06+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file arc-001 pickup inception (dimitri-mint-dev retrieval refresh); documents fetched from 50665be, sha256 verified; DEFER until read against AEF code. arc-001 problem statement + coordination record (pickup unacknowledged ~30 h; Qdrant migration on .201 confirmed as dimitri-mint-dev's; whole plan requested). arc-001 inputs received from dimitri-mint-dev over sidecar (proposal, design v0.4, requirements v1.3+OD-15 in two parts); each matches the sha256 in its own header. research artifact — asks, phases, ten findings checked against source (F-8 partly: key generated, LAN exposure real), open operator items, draft GO in two tracks, dialogue log. design-hash question resolved (OD-15 commit changed both files); T-090 platform decision recorded; interface gets its own inception. O-5 signing consult brief (steelman/strawman, scored on D1-D4) for two external models. operator decision — keep .context/qa/ tracked (saved answers are reusable; public visibility accepted). O-5 signing consults — codex (phone signer with own display + hardware recovery key, external trust authority) and opencode (FIDO2 ssh-keygen -Y sign, two keys, phone later). O-5 consult #3 — gemini-2.5-pro via OpenRouter (approved RP-b1e8caaa, 0.044 USD). O-5 consult #3 (gemini-2.5-pro, third vendor, approved RP-b1e8caaa; 0.044 USD recorded in the report header). recommendation GO — accept arc-001, P1a then P1, phone signing + FIDO2 backup + trust list off .107; P2+ re-incepted after the benchmark. dispose IW-1..IW-3 (all answered, with evidence). inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/reviews/human-ac-ticks.jsonl'
+  - 'docs/reports/T-4017-arc-001-inputs/1-arc-001-03-pickup-proposal.md'
+  - 'docs/reports/T-4017-arc-001-inputs/2-arc-001-02-design.md'
+  - 'docs/reports/T-4017-arc-001-inputs/3-arc-001-01-requirements.md'
+  - 'docs/reports/T-4017-arc-001-inputs/4-arc-001-01-requirements.md'
+  - 'docs/reports/T-4017-arc-001-retrieval-refresh.md'
+  - 'docs/reports/T-4017-O5-consult-brief.md'
+  - 'docs/reports/T-4017-O5-consult-codex.md'
+  - 'docs/reports/T-4017-O5-consult-gemini.md'
+  - 'docs/reports/T-4017-O5-consult-opencode.md'
+  - '.tasks/active/T-4017-arc-001-pickup-from-dimitri-mint-dev-loc.md'
+  - '.tasks/active/T-4070-watchtowers-toggle-ac-endpoint-ticks-a--.md'
+  - '.tasks/active/T-4076-the-credential---exec-wrapper-logs-a-pai.md'
+  - '.tasks/completed/T-4017-arc-001-pickup-from-dimitri-mint-dev-loc.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-09T23:43:16'
+    action: 'T-4017: file arc-001 pickup inception (dimitri-mint-dev retrieval refresh); documents fetched from 50665be, sha256 verified; DEFER until read against AEF code'
+  - time: '2026-10-11T19:31:37'
+    action: 'T-4017: arc-001 problem statement + coordination record (pickup unacknowledged ~30 h; Qdrant migration on .201 confirmed as dimitri-mint-dev''s; whole plan requested)'
+  - time: '2026-10-11T20:04:41'
+    action: 'T-4017: arc-001 inputs received from dimitri-mint-dev over sidecar (proposal, design v0.4, requirements v1.3+OD-15 in two parts); each matches the sha256 in its own header'
+  - time: '2026-10-11T20:05:40'
+    action: 'T-4017: research artifact — asks, phases, ten findings checked against source (F-8 partly: key generated, LAN exposure real), open operator items, draft GO in two tracks, dialogue log'
+  - time: '2026-10-11T21:00:01'
+    action: 'T-4017: design-hash question resolved (OD-15 commit changed both files); T-090 platform decision recorded; interface gets its own inception'
+  - time: '2026-10-11T22:36:39'
+    action: 'T-4017: O-5 signing consult brief (steelman/strawman, scored on D1-D4) for two external models'
+  - time: '2026-10-11T22:47:43'
+    action: 'T-4017: operator decision — keep .context/qa/ tracked (saved answers are reusable; public visibility accepted)'
+  - time: '2026-10-11T22:51:42'
+    action: 'T-4017: O-5 signing consults — codex (phone signer with own display + hardware recovery key, external trust authority) and opencode (FIDO2 ssh-keygen -Y sign, two keys, phone later)'
+  - time: '2026-10-11T23:27:59'
+    action: 'T-4017: O-5 consult #3 — gemini-2.5-pro via OpenRouter (approved RP-b1e8caaa, 0.044 USD)'
+  - time: '2026-10-11T23:29:19'
+    action: 'T-4017: O-5 consult #3 (gemini-2.5-pro, third vendor, approved RP-b1e8caaa; 0.044 USD recorded in the report header)'
+  - time: '2026-10-12T09:03:19'
+    action: 'T-4017: recommendation GO — accept arc-001, P1a then P1, phone signing + FIDO2 backup + trust list off .107; P2+ re-incepted after the benchmark'
+  - time: '2026-10-12T09:14:43'
+    action: 'T-4017: dispose IW-1..IW-3 (all answered, with evidence)'
+  - time: '2026-10-12T11:04:06'
+    action: 'T-4017: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 13 commit(s), 3562 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3562
+  commits: 13
+  files_changed: 14
+  lines_added: 2217
+  lines_removed: 41
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4017-arc-001-pickup-from-dimitri-mint-dev-loc.md
+generated_by: context-agent-hybrid
