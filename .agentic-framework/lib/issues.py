@@ -558,6 +558,100 @@ def cmd_sync(a) -> int:
     return 0
 
 
+# ── close (T-4088) ───────────────────────────────────────────────────────────
+# Operator standing instruction 2026-10-12: INTERNAL issues (authored by the repo owner, i.e. the
+# framework's own `fw upstream` identity) that are fixed or duplicated are closed with ONE comment
+# and no per-issue approval. External issues are never touched: the author check is the gate.
+
+CLOSE_STAGES = {"fixed": "closed-fixed", "duplicate": "closed-duplicate"}
+
+
+def _close_render(a, date: str) -> str:
+    st = CLOSE_STAGES[a.reason]
+    t_md = ", ".join(f"**{t}**" for t in (a.task or []))
+    out = [f"<!-- aef-intake:stage={st} -->", f"**[AEF intake] Closed: {a.reason}** — {date}", ""]
+    if a.reason == "fixed":
+        where = f"released in **{a.release}**" if a.release else (
+            "on the `bleeding-edge` branch; it ships in the next release")
+        out.append(f"Fixed under {t_md} in commit {a.commit} ({where}).")
+    else:
+        out.append(f"Duplicate of #{a.of}." if a.of else f"Covered by {t_md}.")
+    if (a.text or "").strip():
+        out += ["", a.text.strip()]
+    out += ["", FOOTER]
+    return "\n".join(out) + "\n"
+
+
+def cmd_close(a) -> int:
+    if a.reason == "fixed":
+        if not a.task or not a.commit:
+            raise IssuesError("--as fixed needs --task and --commit")
+    elif not (a.of or a.task):
+        raise IssuesError("--as duplicate needs --of <issue> or --task")
+    for t in a.task or []:
+        if not _TASK_RE.match(t):
+            raise IssuesError(f"--task must be T-NNN, got {t!r}")
+    if a.commit and not _COMMIT_RE.match(a.commit):
+        raise IssuesError(f"--commit must be a hex sha, got {a.commit!r}")
+    if a.release and not _VERSION_RE.match(a.release):
+        raise IssuesError(f"--release must look like vX.Y.Z, got {a.release!r}")
+    st = CLOSE_STAGES[a.reason]
+    owner = _repo().split("/")[0]
+    p = _gh(["issue", "view", str(a.issue), "--repo", _repo(), "--json", "state,author"])
+    if p.returncode != 0:
+        raise IssuesError(f"cannot read issue #{a.issue}: {p.stderr.strip()[:300]}", 2)
+    try:
+        info = json.loads(p.stdout or "{}")
+    except ValueError:
+        raise IssuesError(f"gh returned unparseable JSON for issue #{a.issue}", 2)
+    author = _login(info.get("author"))
+    if author.lower() != owner.lower():
+        raise IssuesError(f"#{a.issue} is by {author or '?'}, not {owner}: not an internal issue, "
+                          f"refusing to comment or close", 2)
+    if str(info.get("state", "")).upper() != "OPEN":
+        print(f"#{a.issue} is already {info.get('state')} — skipped")
+        return 0
+    if a.reason == "fixed":
+        _commit_on_mirror(a.commit)
+    prior = _ledger_has(a.issue, st)
+    url = (prior or {}).get("comment", "")
+    if not prior:
+        if _marked_on_issue(a.issue, st):
+            print(f"#{a.issue} already carries the {st} comment — not posting again")
+        else:
+            body = _close_render(a, _now()[:10])
+            if a.dry_run:
+                print(body, end="")
+                return 0
+            c = _gh(["issue", "comment", str(a.issue), "--repo", _repo(), "--body-file", "-"], stdin=body)
+            url = next((w for w in c.stdout.split() if w.startswith("https://")), "") if c.returncode == 0 else ""
+            if not url:
+                raise IssuesError(f"GitHub did not return a comment URL (rc={c.returncode}): "
+                                  f"{(c.stderr or c.stdout).strip()[:300]}. Nothing was logged; check "
+                                  f"the issue before retrying.", 3)
+            row = {"issue": a.issue, "stage": st}
+            for k, v in (("tasks", a.task), ("commit", a.commit), ("release", a.release), ("of", a.of)):
+                if v:
+                    row[k] = v
+            row.update(comment=url, ts=_now())
+            try:
+                _append_row(_issues_dir() / "intake.jsonl", row)
+            except OSError as e:
+                print(f"LOUD: comment POSTED at {url} but the ledger write failed ({e}). Reconcile by "
+                      f"appending this row to intake.jsonl:\n{json.dumps(row)}", file=sys.stderr)
+                return 4
+    elif a.dry_run:
+        print(f"#{a.issue} {st} already logged ({url}); would only close")
+        return 0
+    gh_reason = "completed" if a.reason == "fixed" else "not planned"
+    q = _gh(["issue", "close", str(a.issue), "--repo", _repo(), "--reason", gh_reason])
+    if q.returncode != 0:
+        raise IssuesError(f"comment is on #{a.issue} ({url}) but closing failed: "
+                          f"{q.stderr.strip()[:300]}. Re-run to retry the close only.", 3)
+    print(f"closed #{a.issue} ({a.reason}): {url}")
+    return 0
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(prog="fw issues")
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -579,6 +673,16 @@ def main(argv=None) -> int:
     ap_.add_argument("--reason")
     ap_.add_argument("--i-am-human", action="store_true")
     ap_.set_defaults(fn=cmd_approve)
+    cl = sub.add_parser("close", help="close an INTERNAL issue as fixed/duplicate with one comment (T-4088)")
+    cl.add_argument("issue", type=int)
+    cl.add_argument("--as", dest="reason", required=True, choices=sorted(CLOSE_STAGES))
+    cl.add_argument("--task", action="append")
+    cl.add_argument("--commit")
+    cl.add_argument("--release")
+    cl.add_argument("--of", type=int, help="duplicate: the original issue number")
+    cl.add_argument("--text")
+    cl.add_argument("--dry-run", action="store_true", help="print the comment, post and close nothing")
+    cl.set_defaults(fn=cmd_close)
     s = sub.add_parser("sync", help="ingest new/changed issues and submitter replies (cron)")
     s.add_argument("--dry-run", action="store_true", help="list what would change; post and write nothing")
     s.set_defaults(fn=cmd_sync)
