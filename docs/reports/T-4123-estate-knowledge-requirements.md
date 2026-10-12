@@ -26,6 +26,14 @@ Method: the ring20 **design role chain** (ring20-manager's T-2222 answer to AEF,
 steps run in the orchestrator's session with the operator. Later chain steps (threat modeler, security floor and
 phasing, architect, evidence, pseudo-code, external panel, planner) follow only after a GO.
 
+**Output format (from the role card, `T-4123-inputs/02b-ring20-manager-role-cards.txt`):** Answers (numbered);
+Glossary; Requirements R-n, each with statement (RFC 2119), type (functional / security invariant / interface /
+operational / quality), source, rationale, priority, verification method and at least one testable acceptance
+criterion (Given-When-Then or pre/postcondition/invariant), "must be impossible" requirements naming the adversary;
+Conflicts (resolved or open); Earlier requirements (kept/changed/dropped); drawings D-1 context view, D-2 main flow
+incl. the refusal path, D-3 lifecycle of the central entity (an item). The adversary is a named stakeholder. The
+human decides what is required and signs the list off.
+
 ## 2 Scope areas named by the operator (2026-10-12)
 
 | Area | Operator's words (paraphrased) | Notes |
@@ -56,10 +64,10 @@ Answers are stored unedited in section 7 and synthesised into sections 5, 6 and 
 | Stakeholder | Why them | Sent | Answer |
 |---|---|---|---|
 | dimitri-mint-dev | pilot tenant; arc-001 author; owns requirements A9.7 | 2026-10-12 | 2026-10-12 → `T-4123-inputs/01-dimitri-mint-dev.txt`, area G: `01b-dimitri-mint-dev-G.txt` |
-| proxmox-ring20-management (ring20-manager) | operates the platform; author of the role chain | 2026-10-12 | — |
+| proxmox-ring20-management (ring20-manager) | operates the platform; author of the role chain | 2026-10-12 | 2026-10-12 → `T-4123-inputs/02-ring20-manager.txt` (incl. platform-operator constraints P.1–P.7); role cards → `02b-ring20-manager-role-cards.txt` |
 | 832-Workflow-designer | designer corpus; heavy fabric user | 2026-10-12 | acked (their T-1141), answer within the day |
 | 010-termlink | cross-project transport; a different codebase (Rust) | 2026-10-12 | acked, answer within a day (host incident) |
-| 1409-sprind | German-language project; own focus-anchor practice | 2026-10-12 | — |
+| 1409-sprind | German-language project; own focus-anchor practice | 2026-10-12 | acked, answer within a day (their operator sees it first) |
 
 055-agentic-fleet-cockpit was the intended fifth stakeholder; its receiver rejected the send twice with HTTP 401
 after the host reboot (filed as T-4124). 1409 was asked instead; 055 can be added once its receiver accepts.
