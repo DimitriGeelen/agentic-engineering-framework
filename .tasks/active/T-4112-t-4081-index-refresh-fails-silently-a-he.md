@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T13:56:38Z
-last_update: '2026-10-12T14:00:35Z'
+last_update: 2026-10-12T15:05:26Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,9 +96,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `_refresh_real_index` checks `git reset`'s exit code, retries transient `index.lock` contention (bounded), and on a final failure returns/logs it so the decision response tells the operator the decision may be reverted by the next commit (not a silent success)
-- [ ] Regression test: with `.git/index.lock` held through the retries, the failure is surfaced; with the lock released during the retries, the decision survives the next ordinary commit. The test fails on the current code
-- [ ] Landed on bleeding-edge with vendored copies synced (`bin/fw vendor self --check` clean); test_t4081 + the new test green
+- [x] `_refresh_real_index` checks `git reset`'s exit code, retries transient `index.lock` contention (bounded), and on a final failure returns/logs it so the decision response tells the operator the decision may be reverted by the next commit (not a silent success)
+- [x] Regression test: with `.git/index.lock` held through the retries, the failure is surfaced; with the lock released during the retries, the decision survives the next ordinary commit. The test fails on the current code
+- [x] Landed on bleeding-edge with vendored copies synced (`bin/fw vendor self --check` clean); test_t4081 + the new test green
 - [ ] Folded into `hotfix/v1.8.10` (scratch clone `hf`, then fetched into the main repo's branch); the hotfix's related tests are green, and the 5 files that were red only on the hotfix side of the full-suite comparison (check_render_surface_human_ac_sigpipe, t2244_audit_self_vendor_drift, t3062_prepush_runtime, t3662_watchtower_port_allocation ×2) are rerun on both clones and attributed
 
 ### Human
@@ -282,6 +282,14 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** A Watchtower decision commit reported success, but when `.git/index.lock` was held by a concurrent git command, the next ordinary commit reverted the decision (`.tasks/completed/` file back to pre-decision content). codex review of hotfix v1.8.10 flagged it as DO-NOT-SHIP.
+
+**Root cause:** `_refresh_real_index` (web/blueprints/inception.py) ran `git reset -q -- <paths>` and discarded its return code. A held index lock makes that reset fail with no effect on the real index, so the caller had no signal: `_commit_decision_unlocked` returned `(True, msg)`, and the stale pre-decision blobs stayed in `.git/index` for the next commit to write back.
+
+**Why structurally allowed:** The T-4081 fix (G-114) was written as "best-effort and silent" by design; nothing checked that the refresh actually happened, and the only detector (`lib/watchtower_decision_revert.py`) runs on demand, after the revert has already landed. The T-4081 test only covered the happy path (index refresh succeeds), so the failure branch had no test.
+
+**Prevention:** (1) `_refresh_real_index` returns the failure reason; it retries transient lock contention (6 attempts, ~4s total). (2) A final failure returns `_index_refresh_failed` — `ok=False`, with the exact `git reset -q -- <paths>` command to run — so every decide surface shows it, and the runner's follow-up commit re-attempts the refresh and heals it. (3) Regression tests in `tests/unit/test_t4081_watchtower_commit_keeps_real_index.py`: held lock → surfaced + follow-up heals; lock released mid-retry → decision survives the next commit. Pre-fix proof (fix reverted, in a scratch clone): both lock tests FAIL, the other three PASS.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -365,3 +373,8 @@ bin/fw vendor self --check
 
 ### 2026-10-12T13:58:00Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-12T17:30Z — pre-fix proof and hotfix rebuild [worker t4112-c]
+- **Pre-fix proof:** bleeding-edge commit 1a7eae801 with web/blueprints/inception.py reverted to 1a7eae801^ (scratch clone `.context/scratch/hotfix/proof`, deleted after): `test_t4081_watchtower_commit_keeps_real_index.py` 2 failed / 3 passed — `test_held_index_lock_is_surfaced_not_a_silent_success` and `test_lock_released_during_retries_keeps_the_decision` (the decision is reverted by the next commit).
+- **With the fix:** same file 5 passed on bleeding-edge and on the hotfix rebuild.
+- **Hotfix rebuild:** master b82294243 → T-4081 (ff82b31b0 cherry-picked) → T-4112 (1a7eae801 cherry-picked, applied clean) → VERSION (4cb700f99 cherry-picked, same content 1.8.10). Full report: docs/reports/T-4092-hotfix-v1810.md.
