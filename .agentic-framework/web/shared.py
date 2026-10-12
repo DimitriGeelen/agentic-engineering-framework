@@ -8,7 +8,7 @@ import subprocess
 import threading
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import Callable, TypeVar
+from typing import Callable, Iterable, TypeVar
 
 import yaml
 from flask import g, has_request_context, render_template, request
@@ -1646,6 +1646,65 @@ def task_review_state(path: Path | str) -> tuple[str | None, list[str], int]:
     state, reasons = review_readiness(p.name.split("-", 2)[0] + "-" + p.name.split("-", 2)[1],
                                       "", "", p)
     return state, reasons, open_human
+
+
+_INCEPTION_DECIDED_RE = re_mod.compile(r"^\*\*Decision\*\*:\s*(GO|NO-GO|DEFER)\b", re_mod.M)
+
+
+def review_queue_groups(root: Path | str | None = None,
+                        entries: "Iterable[tuple] | None" = None) -> dict[str, list[str]]:
+    """The ONE grouping behind ``/approvals`` and ``fw review-queue`` (T-4096).
+
+    Reads ``.tasks/active/*.md`` directly (no metadata cache, so neither surface can
+    admit a different set) and returns ``{"decisions", "ready", "waiting"}`` id lists:
+
+    * decisions - inception with no recorded decision, and a substantive Recommendation
+      or ``started-work``. Such a task is the operator's GO/NO-GO, NOT a review: it never
+      also appears in ready/waiting, even when it carries an unticked Human criterion.
+    * ready / waiting - every other task with an unticked Human criterion, split by
+      ``review_readiness``.
+
+    ``entries`` is an optional ``(path, text[, frontmatter])`` source (the page passes its mtime-cached
+    bodies); the CLI reads the directory. The classification below is the only logic.
+    """
+    out: dict[str, list[str]] = {"decisions": [], "ready": [], "waiting": []}
+    if entries is None:
+        base = Path(root) if root else Path(PROJECT_ROOT)
+        entries = []
+        for f in sorted((base / ".tasks" / "active").glob("T-*.md"),
+                        key=lambda p: task_id_sort_key(str(p))):
+            try:
+                entries.append((f, f.read_text(encoding="utf-8", errors="replace")))
+            except OSError:
+                continue
+    for entry in entries:
+        f, text = entry[0], entry[1]
+        meta = entry[2] if len(entry) > 2 else None  # parsed frontmatter, when the caller has it
+        m = re_mod.match(r"^---\s*\n(.*?)\n---", text, re_mod.DOTALL)
+        fm = m.group(1) if m else ""
+
+        def field(k: str) -> str:
+            if meta is not None:
+                return str(meta.get(k) or "")
+            mm = re_mod.search(rf"^{k}:\s*(\S+)", fm, re_mod.M)
+            return mm.group(1).strip().strip("'\"") if mm else ""
+
+        tid = field("id")
+        if not tid:
+            continue
+        if field("workflow_type") == "inception" and not _INCEPTION_DECIDED_RE.search(text):
+            rec = re_mod.search(r"^## Recommendation\s*$(.*?)(?=^#{2,} |\Z)", text,
+                                re_mod.M | re_mod.DOTALL)
+            rec_clean = re_mod.sub(r"<!--.*?-->", "", rec.group(1) if rec else "",
+                                   flags=re_mod.DOTALL).strip()
+            if len(rec_clean) >= 20 or field("status") == "started-work":
+                out["decisions"].append(tid)
+                continue
+        if count_unchecked_human_acs(text) == 0:
+            continue
+        state, _ = review_readiness(tid, field("status"), text, f)
+        out["ready" if state == READY else "waiting"].append(tid)
+    return out
 
 
 def extract_reviewer_verdict(body: str) -> dict:

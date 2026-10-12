@@ -8724,6 +8724,14 @@ for _base in (os.environ.get("PROJECT_ROOT", "."),
         _review_readiness = None
 
 ROOT = Path(os.environ.get("PROJECT_ROOT", ".")).resolve()
+# T-4096: each task's group comes from web.shared.review_queue_groups, the function
+# /approvals calls, so the two surfaces cannot admit or route differently.
+_rq_groups = None
+try:
+    from web.shared import review_queue_groups as _rqg
+    _rq_groups = _rqg(ROOT)
+except Exception:
+    _rq_groups = None
 ACTIVE = ROOT / ".tasks" / "active"
 if not ACTIVE.is_dir():
     print("No .tasks/active directory.", file=sys.stderr)
@@ -8898,6 +8906,8 @@ for f in sorted(ACTIVE.glob("*.md")):
     unchecked = count_unchecked_human_acs(text)
     if unchecked == 0:
         continue
+    if _rq_groups is not None and tid_v in _rq_groups["decisions"]:
+        continue  # T-4096: an inception GO/NO-GO is listed under DECISIONS only
     # T-1540 iter1 originally filtered to (owner=human OR status=work-completed) so
     # tasks with template-only Human ACs (the placeholder example AC inside the
     # `<!-- ... -->` block) wouldn't surface as spurious entries with verdict=?.
@@ -8924,6 +8934,8 @@ for f in sorted(ACTIVE.glob("*.md")):
         r_state, r_why = "waiting-on-agent", ["readiness predicate unavailable (web.shared not importable)"]
     else:
         r_state, r_why = _review_readiness(tid_v, status, text, f)
+    if _rq_groups is not None:  # T-4096: group membership decides, not a re-derivation
+        r_state = "ready" if tid_v in _rq_groups["ready"] else "waiting-on-agent"
     if r_state == "ready":
         rows.append((verdict, age_days, tid_v, name, unchecked))
     else:

@@ -17,7 +17,7 @@ from pathlib import Path
 import yaml
 from flask import Blueprint, request
 
-from web.shared import READY, review_readiness, FRAMEWORK_ROOT, PROJECT_ROOT, render_page, render_markdown_safe, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict, count_unchecked_human_acs, needs_human_review, mtime_cached_get, has_unchecked_review_ac, request_task_metadata, is_ready_for_batch_completion, inception_handoff_blockers
+from web.shared import READY, review_readiness, review_queue_groups, FRAMEWORK_ROOT, PROJECT_ROOT, render_page, render_markdown_safe, parse_frontmatter, task_id_sort_key, get_all_task_metadata, extract_recommendation_verdict, extract_recommendation_state, extract_reviewer_verdict, count_unchecked_human_acs, needs_human_review, mtime_cached_get, has_unchecked_review_ac, request_task_metadata, is_ready_for_batch_completion, inception_handoff_blockers
 
 # T-1808: paused-dispatch surface — needs lib/ on the path so the helper imports cleanly.
 # T-2645 (832 G-004 sibling): lib/ is FRAMEWORK-owned — PROJECT_ROOT resolution broke
@@ -241,6 +241,18 @@ def _active_task_fms() -> dict:
     return out
 
 
+def _queue_groups() -> dict:
+    """decisions / ready / waiting ids from the one grouping `fw review-queue` also
+    uses (T-4096), fed from this request's cached task bodies."""
+    entries = []
+    for fm in sorted(_task_meta(), key=lambda m: task_id_sort_key(m.get("_path", ""))):
+        if fm.get("_location") == "active" and fm.get("_path"):
+            body = _get_body_cached(fm["_path"])
+            if body:
+                entries.append((Path(str(fm["_path"])), body, fm))
+    return review_queue_groups(entries=entries)
+
+
 def _load_pending_go_decisions():
     """Scan active inception tasks where decision is still pending.
 
@@ -251,6 +263,8 @@ def _load_pending_go_decisions():
 
     assumptions = _load_assumptions()
     results = []
+    # T-4096: admission comes from the one grouping shared with `fw review-queue`.
+    queue_decisions = set(_queue_groups()["decisions"])
 
     # T-1244: Use shared task metadata cache to filter to active+inception tasks
     # before reading bodies. Avoids re-globbing 100+ active tasks per request.
@@ -268,7 +282,7 @@ def _load_pending_go_decisions():
         body = _get_body_cached(path)
         if not body:
             continue
-        if _extract_decision(body) != "pending":
+        if _extract_decision(body) != "pending" or fm.get("id", "") not in queue_decisions:
             continue
 
         # T-1123 / T-1570 (F4): Only drop captured/unexplored inceptions when the
@@ -402,6 +416,10 @@ def _load_pending_human_acs():
 
     results = []
     now = time.time()
+    # T-4096: the same grouping `fw review-queue` prints; an inception awaiting its
+    # GO/NO-GO is in DECISIONS, never also a review card.
+    _groups = _queue_groups()
+    queue_ids = set(_groups["ready"]) | set(_groups["waiting"])
 
     # T-1244: Pull active-task frontmatter from shared cache instead of
     # re-globbing per request. Body still required for AC parse.
@@ -426,7 +444,7 @@ def _load_pending_human_acs():
         # filter on `section == "human"` → filter on `not checked` — which
         # drifted from the CLI's inline regex on tasks with HTML-commented
         # template stubs. Centralising the predicate kills the drift class.
-        if not needs_human_review(body):
+        if not needs_human_review(body) or str(fm.get("id", "")) not in queue_ids:
             continue
 
         # T-4053: ready for the operator, or waiting on the agent (with reasons).
@@ -992,18 +1010,8 @@ def _count_pending_human_ac_tasks() -> int:
     Same candidates and the same admission predicate; skips the per-criterion
     parse and markdown render, which is display-only (T-3600).
     """
-    count = 0
-    for fm in _task_meta():
-        if fm.get("_location") != "active" or not fm.get("_path"):
-            continue
-        body = _get_body_cached(fm["_path"])
-        if body and needs_human_review(body):
-            # T-4053: the tile counts what is the operator's to decide, as the page does.
-            state, _ = review_readiness(str(fm.get("id", "")), str(fm.get("status", "")),
-                                        body, fm["_path"])
-            if state == READY:
-                count += 1
-    return count
+    # T-4096: the tile counts the shared grouping's ready set, as the page and CLI do.
+    return len(_queue_groups()["ready"])
 
 
 def approval_summary() -> dict:
