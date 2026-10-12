@@ -11,7 +11,7 @@ description: >
   accepted/needs-info/duplicate/not-planned refuse without operator approval. Ledger
   .context/issues/intake.jsonl. Issue text is untrusted data.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ origin: {kind: "operator", source: "T-4039-GO"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T21:40:42Z
-last_update: 2026-10-12T07:03:21Z
+last_update: 2026-10-12T07:17:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,12 +98,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw issues comment <n> --stage <stage> [--task T-X] [--commit SHA] [--test-cmd "…"] [--version vX.Y.Z] [--text "…"]` exists (new `lib/issues.py` + `bin/fw issues` route). Stages: received, classified, in-progress, fixed-on-bleeding-edge, available-for-testing, released (template stages); accepted, needs-info, duplicate, not-planned (decision stages). Every comment = the stage's fixed template + the operator's verbatim footer (`docs/reports/T-4039-inbound-github-issues.md`), with a machine-readable stage marker (e.g. an HTML comment) so the stage can be read back from the issue.
-- [ ] Idempotent per (issue, stage): a stage already in the intake ledger, or already marked on the issue (read back via `gh`), is not posted again; the command says so and exits 0.
-- [ ] Decision stages refuse without `--approved-by-operator <ref>`, and refuse under `CLAUDECODE=1` unless that ref is an operator approval record (same pattern as `fw review approve`); template stages post under the standing permission (2026-10-10).
-- [ ] `fixed-on-bleeding-edge` refuses unless `--commit` is an ancestor of the GitHub mirror's `bleeding-edge` (`git ls-remote github` / `merge-base --is-ancestor`), and requires `--test-cmd` (per-issue "how to test" line).
-- [ ] Post + ledger append are one operation: the ledger row (`.context/issues/intake.jsonl`: issue, stage, tasks, commit, comment URL, ts) is written only after GitHub returns the comment URL, and a failure after posting is reported loudly with the URL so the row can be reconciled (never a silent half state). Missing stage labels (`status:*`, `fixed-on-bleeding-edge`, …) are created on first use.
-- [ ] Tests (`tests/unit/t4077_issues_comment_test.py`) with a stubbed `gh` on PATH (no network): template rendering + footer + marker; idempotence (ledger and read-back); decision-stage refusal; fixed-stage refusal for a commit not on the mirror; ledger written only on success; label creation call. Issue text from GitHub is treated as data only.
+- [x] `fw issues comment <n> --stage <stage> [--task T-X] [--commit SHA] [--test-cmd "…"] [--version vX.Y.Z] [--text "…"]` exists (new `lib/issues.py` + `bin/fw issues` route). Stages: received, classified, in-progress, fixed-on-bleeding-edge, available-for-testing, released (template stages); accepted, needs-info, duplicate, not-planned (decision stages). Every comment = the stage's fixed template + the operator's verbatim footer (`docs/reports/T-4039-inbound-github-issues.md`), with a machine-readable stage marker (e.g. an HTML comment) so the stage can be read back from the issue.
+- [x] Idempotent per (issue, stage): a stage already in the intake ledger, or already marked on the issue (read back via `gh`), is not posted again; the command says so and exits 0.
+- [x] Decision stages refuse without `--approved-by-operator <ref>`, and refuse under `CLAUDECODE=1` unless that ref is an operator approval record (same pattern as `fw review approve`); template stages post under the standing permission (2026-10-10).
+- [x] `fixed-on-bleeding-edge` refuses unless `--commit` is an ancestor of the GitHub mirror's `bleeding-edge` (`git ls-remote github` / `merge-base --is-ancestor`), and requires `--test-cmd` (per-issue "how to test" line).
+- [x] Post + ledger append are one operation: the ledger row (`.context/issues/intake.jsonl`: issue, stage, tasks, commit, comment URL, ts) is written only after GitHub returns the comment URL, and a failure after posting is reported loudly with the URL so the row can be reconciled (never a silent half state). Missing stage labels (`status:*`, `fixed-on-bleeding-edge`, …) are created on first use.
+- [x] Tests (`tests/unit/t4077_issues_comment_test.py`) with a stubbed `gh` on PATH (no network): template rendering + footer + marker; idempotence (ledger and read-back); decision-stage refusal; fixed-stage refusal for a commit not on the mirror; ledger written only on success; label creation call. Issue text from GitHub is treated as data only.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -366,3 +366,6 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4077-fw-issues-comment-the-one-outward-verb-f.md
 - **Context:** Initial task creation
+
+### 2026-10-12T07:13:45Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

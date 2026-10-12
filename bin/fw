@@ -11277,6 +11277,11 @@ YAMLEOF
                 ;;
         esac
         ;;
+    issues)
+        # T-4077: GitHub issue intake. `comment` is the one outward verb; `sync` is T-4078.
+        PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" python3 "$FW_LIB_DIR/issues.py" "$@"
+        exit $?
+        ;;
     review)
         # T-3583/T-3586: review and dispatch cost (registry, ledger, paid proposals).
         # lib/review.sh is the `fw task review` emitter — T-3583 overwrote it; do not reuse the name.
