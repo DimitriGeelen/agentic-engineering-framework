@@ -8,16 +8,16 @@ description: >
   get scored, park when low-value, and are bundled or mined for patterns — FW-001
   audit findings, FW-002 inception review loop
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-01T15:59:37Z
-last_update: '2026-10-01T16:15:18Z'
-date_finished:
+last_update: 2026-10-05T22:33:16Z
+date_finished: 2026-10-05T22:33:16Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -124,15 +124,15 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -189,7 +189,17 @@ Operator proposal 2026-10-01. Continuous work has no home today: 373 pending obs
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+Operator proposal 2026-10-01. Continuous work has no home today: 373 pending observations, ignored audit WARNs, 114 baselined test reds, 055's unread backlog all pile up undrained, because arcs are delivery-shaped (headline, demo gate, stale WARN). A standing arc gives low-value findings a declinable parking place (O-3), turns accumulation into a bundling/pattern signal (Level D), and gives arc-008's continuing operator-side loop a cleaner home (FW-002) than a re-scope. Design choices remain (lifecycle, intake, drain, scoring, health rails), not evidence gaps.
+
+Evidence:
+
+**Date**: 2026-10-05T22:33:16Z
 
 ## Updates
 
@@ -198,3 +208,42 @@ Operator proposal 2026-10-01. Continuous work has no home today: 373 pending obs
 
 ### 2026-10-01T16:00:45Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-05T22:33:16Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+Operator proposal 2026-10-01. Continuous work has no home today: 373 pending observations, ignored audit WARNs, 114 baselined test reds, 055's unread backlog all pile up undrained, because arcs are delivery-shaped (headline, demo gate, stale WARN). A standing arc gives low-value findings a declinable parking place (O-3), turns accumulation into a bundling/pattern signal (Level D), and gives arc-008's continuing operator-side loop a cleaner home (FW-002) than a re-scope. Design choices remain (lifecycle, intake, drain, scoring, health rails), not evidence gaps.
+
+Evidence:
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5cb5f479
+- **Timestamp:** 2026-10-05T22:33:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-5
+     - evidence: `IW-5 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-38cbdb80
+- **Timestamp:** 2026-10-05T22:33:19Z
+- **Overall:** UNVERIFIED
+- **Claims:** 0
+- No verifiable claims found in ## Recommendation
+
+### 2026-10-05T22:33:16Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO

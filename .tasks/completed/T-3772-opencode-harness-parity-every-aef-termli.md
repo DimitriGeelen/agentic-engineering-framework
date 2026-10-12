@@ -12,16 +12,16 @@ description: >
   (tool.execute.before/after, session.idle) onto the same fw hook scripts; release
   parity test; T-3670 names an opencode plugin as the per-harness adapter.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-03T16:22:35Z
-last_update: '2026-10-03T16:30:46Z'
-date_finished:
+last_update: 2026-10-05T22:36:26Z
+date_finished: 2026-10-05T22:36:26Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -119,15 +119,15 @@ Measured gap (055 T-439): a Claude Code agent gets 36 fw hooks + slash commands 
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -176,9 +176,47 @@ Measured gap (055 T-439): a Claude Code agent gets 36 fw hooks + slash commands 
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: Operator direction is explicit and the gap is measured (0 of 36 hooks under opencode); the open questions are the adapter shape and the parity test, not whether.
+
+**Date**: 2026-10-05T22:36:23Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-10-05T22:36:23Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: Operator direction is explicit and the gap is measured (0 of 36 hooks under opencode); the open questions are the adapter shape and the parity test, not whether.
+
+### 2026-10-05T22:36:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1d379729
+- **Timestamp:** 2026-10-05T22:36:28Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-24e4e883
+- **Timestamp:** 2026-10-05T22:36:28Z
+- **Overall:** UNVERIFIED
+- **Claims:** 0
+- No verifiable claims found in ## Recommendation
+
+### 2026-10-05T22:36:26Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
