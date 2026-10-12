@@ -141,7 +141,8 @@ except:
     # /root, /var, /home etc. even when they are not write/cd targets).
     # T-4114: any tee with an absolute path anywhere after it must reach the
     # analysis — `tee\s+/` let `tee -a /srv/x` skip it entirely.
-    if ! echo "$COMMAND" | grep -qE '(cd\s+/|/opt/|/home/|/root/|/var/|/etc/|/usr/|>+\s*/|tee\s.*/|\.agentic-framework/bin/fw)'; then
+    # T-4126: same for the write verbs parsed in Pattern 3 and for `>|`.
+    if ! echo "$COMMAND" | grep -qE '(cd\s+/|/opt/|/home/|/root/|/var/|/etc/|/usr/|>+\s*/|tee\s.*/|>\|\s*/|(^|[^[:alnum:]_.-])(cp|mv|install|ln|rsync|dd|sed|perl|truncate|chmod|chown|chgrp|touch|mkdir)\s.*/|\.agentic-framework/bin/fw)'; then
         exit 0
     fi
 
@@ -569,7 +570,7 @@ for fw_path in fw_pattern.findall(command):
 # read-side Pattern 4 allowlists /etc/, so nothing else caught them. Every
 # argument of tee up to the end of its segment is a write target; options
 # (`-a`, `--append`, `--output-error=warn`, `--`) are skipped, not terminators.
-write_ops = re.compile(r'>>?\s*(/[^\s;&|]+)')
+write_ops = re.compile(r'>>?\|?\s*(/[^\s;&|]+)')   # T-4126: `>|` (noclobber override)
 _TEE_RE = re.compile(r'(?<![\w.-])tee(?![\w.-])')
 
 
@@ -581,7 +582,110 @@ def _tee_targets(cmd):
                 yield tok
 
 
-for target_file in list(write_ops.findall(command)) + list(_tee_targets(command)):
+# T-4126: the other write verbs. tee above takes every absolute token; these
+# differ in WHICH operands are written, so each verb names its destinations.
+# Reading from an outside path is Pattern 4's concern and is not touched here.
+_WRAPPERS = {'sudo', 'env', 'nohup', 'command', 'exec', 'time', 'nice', 'ionice',
+             'timeout', 'setsid', 'stdbuf', 'builtin', 'doas'}
+# wrapper options that consume the next token (`sudo -u root cp ...`)
+_WRAPPER_ARG_OPTS = {'sudo': {'-u', '-g', '-h', '-C', '-D', '-R', '-T', '-p', '-r', '-t', '-U'},
+                     'doas': {'-u', '-C'}, 'env': {'-u', '-C', '-S'},
+                     'nice': {'-n'}, 'ionice': {'-c', '-n', '-p'},
+                     'timeout': {'-s', '-k'}, 'stdbuf': set()}
+_ALL_ABS = {'chmod', 'chown', 'chgrp', 'truncate', 'touch', 'mkdir', 'mknod', 'mkfifo'}
+_DEST_LAST = {'cp', 'install', 'ln', 'rsync'}
+_TARGET_DIR_OPT = re.compile(r'^(?:--target-directory=(.*)|-t(.+))$')
+
+
+def _write_verb_targets(cmd):
+    for seg in re.split(r'[;&|<>()\n]', cmd):
+        toks = seg.split()
+        i = 0
+        while i < len(toks):
+            t = toks[i]
+            base = t.rsplit('/', 1)[-1]
+            if re.match(r'^[A-Za-z_][A-Za-z0-9_]*=', t):       # VAR=val prefix
+                i += 1
+            elif base in _WRAPPERS:
+                i += 1
+                while i < len(toks) and toks[i].startswith('-'):
+                    i += 2 if toks[i] in _WRAPPER_ARG_OPTS.get(base, ()) else 1
+                if base == 'timeout' and i < len(toks):          # DURATION operand
+                    i += 1
+            else:
+                break
+        if i >= len(toks):
+            continue
+        verb = toks[i].rsplit('/', 1)[-1]
+        args = toks[i + 1:]
+        opts_done = False
+        pos, tdir, inplace, has_script_opt = [], [], False, False
+        j = 0
+        while j < len(args):
+            a = args[j]
+            j += 1
+            if not opts_done and a == '--':
+                opts_done = True
+                continue
+            if not opts_done and a.startswith('-') and a != '-':
+                m = _TARGET_DIR_OPT.match(a) if verb in _DEST_LAST | {'mv'} else None
+                if m:
+                    tdir.append(m.group(1) or m.group(2))
+                elif a in ('-t', '--target-directory') and verb in _DEST_LAST | {'mv'}:
+                    if j < len(args):
+                        tdir.append(args[j])
+                        j += 1
+                elif verb in ('sed', 'perl'):
+                    if a.startswith('--'):
+                        inplace = inplace or a.startswith('--in-place')
+                        has_script_opt = has_script_opt or a.startswith(('--expression', '--file'))
+                    else:
+                        inplace = inplace or bool(re.match(r'^-[a-hj-zA-HJ-LN-Z]*i(\..*)?$', a))
+                        if a in ('-e', '-f'):
+                            has_script_opt = True
+                            j += 1                              # script operand
+                        elif a.startswith(('-e', '-f')) and verb == 'sed':
+                            has_script_opt = True
+                elif verb == 'truncate' and a in ('-s', '--size', '-r', '--reference'):
+                    j += 1
+                elif verb in ('chmod', 'chown', 'chgrp') and a in ('--reference',):
+                    j += 1
+                elif verb == 'touch' and a in ('-d', '-t', '-r', '--date', '--reference'):
+                    j += 1
+                elif verb == 'rsync' and a in ('-e', '--rsh', '--exclude', '--include',
+                                               '--filter', '--rsync-path', '--log-file'):
+                    j += 1
+                continue
+            pos.append(a)
+        if verb == 'dd':
+            for a in args:
+                if a.startswith('of='):
+                    yield a[3:]
+        elif verb == 'mv':
+            # a move removes every source and creates the destination
+            for a in tdir + pos:
+                yield a
+        elif verb in _DEST_LAST:
+            if tdir:
+                for a in tdir:
+                    yield a
+            elif pos:
+                yield pos[-1]
+        elif verb in ('sed', 'perl'):
+            if inplace:
+                files = pos if (verb == 'perl' or has_script_opt) else pos[1:]
+                for a in files:
+                    yield a
+        elif verb in ('chmod', 'chown', 'chgrp'):
+            for a in pos[1:]:                                   # first positional = mode/owner
+                yield a
+        elif verb in _ALL_ABS:
+            for a in pos:
+                yield a
+
+
+for target_file in (list(write_ops.findall(command)) + list(_tee_targets(command))
+                    + [t for t in _write_verb_targets(command) if t.startswith('/')]):
     if target_file.startswith(('/tmp/', '/root/.claude/', '/dev/', '/etc/cron.d/')):
         continue
     if not target_file.startswith(project_root + '/'):

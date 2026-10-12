@@ -1,10 +1,14 @@
 ---
 id: T-4126
-name: "SECURITY: project-boundary Pattern 3 has no cp/mv/dd/install/ln/sed -i verbs — cp /tmp/a /etc/fstab exits 0 (found by T-4114)"
+name: "SECURITY: project-boundary Pattern 3 has no cp/mv/dd/install/ln/sed -i verbs
+  — cp /tmp/a /etc/fstab exits 0 (found by T-4114)"
 description: >
-  T-4114 worker: after the tee fix, Pattern 3 in agents/context/check-project-boundary.sh still has no write verbs other than redirect and tee; cp /tmp/a /etc/fstab is allowed. Add cp/mv/dd of=/install/ln/sed -i/rsync/truncate etc. with outside-path destination parsing; bats per verb; negative control on HEAD.
+  T-4114 worker: after the tee fix, Pattern 3 in agents/context/check-project-boundary.sh
+  still has no write verbs other than redirect and tee; cp /tmp/a /etc/fstab is allowed.
+  Add cp/mv/dd of=/install/ln/sed -i/rsync/truncate etc. with outside-path destination
+  parsing; bats per verb; negative control on HEAD.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T18:36:38Z
-last_update: 2026-10-12T18:36:38Z
-date_finished: null
+last_update: 2026-10-12T18:47:51Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-12T18:38:55Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-12T18:45:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=290,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4126: SECURITY: project-boundary Pattern 3 has no cp/mv/dd/install/ln/sed -i verbs — cp /tmp/a /etc/fstab exits 0 (found by T-4114)
@@ -62,8 +94,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Pattern 3 of check-project-boundary.sh parses cp, mv, install, ln, rsync, dd of=, sed/perl -i, truncate, chmod/chown/chgrp, touch, mkdir as write verbs: an outside-project destination exits 2
+- [x] Options-before-paths, `--`, `-t DIR`/`--target-directory=`, sudo/env prefixes and absolute /usr/bin/<verb> are all covered; `>|` redirect is covered
+- [x] /tmp and in-project destinations still exit 0 (no new false refusals); read-side behaviour unchanged
+- [x] tests/unit/t4126_boundary_write_verbs.bats passes, and its outside cases fail on HEAD (negative control recorded in Updates)
+- [x] Existing boundary suites green; deliberate omissions listed in RCA
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -98,6 +133,9 @@ date_finished: null
 
 ## Verification
 
+bash -n agents/context/check-project-boundary.sh
+out=$(bats tests/unit/t4126_boundary_write_verbs.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bin/fw vendor self --check
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -229,6 +267,12 @@ date_finished: null
 
 ## RCA
 
+**Symptom:** `cp /tmp/a /etc/fstab` (also mv/install/ln/dd of=/sed -i/rsync/truncate/chmod) exits 0 from check-project-boundary.sh.
+**Root cause:** Pattern 3 recognised only redirects and (after T-4114) tee as writes. Other verbs' destinations were never extracted, and read-side Pattern 4 allowlists /etc/ and /usr/, so nothing else fired. The bash pre-filter also skipped analysis for e.g. `cp /tmp/a /srv/x` (no listed prefix).
+**Why structurally allowed:** the pattern was a denylist of syntax (`>`/`tee`) rather than a model of which operand of which verb is written; T-4114 fixed one verb, not the class.
+**Prevention:** `_write_verb_targets` holds a per-verb destination model (wrappers sudo/env/VAR=, absolute-path verbs, `--`, -t DIR, of=, sed/perl -i script skipping); tests/unit/t4126_boundary_write_verbs.bats (61 cases; all 38 outside-block cases fail on HEAD).
+**Deliberately NOT covered:** `bash -c "cp ..."`, eval, xargs cp, command substitution (quoted strings are stripped before analysis; same text-gate boundary as Tier 0); scripts that run cp inside; rm/rmdir/unlink/shred (Tier 0 recursive-delete territory); curl/wget -o, tar -x/-C, unzip -d, git -C/clone into outside dirs, python/node one-liners; relative paths and `$VAR` paths (no cwd/env resolution); `ln` with a single operand (creates in cwd).
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -319,7 +363,13 @@ date_finished: null
 
 ## Updates
 
+### 2026-10-12 — pre-fix evidence
+- On HEAD: `cp /tmp/a /etc/fstab`, `echo x >| /etc/fstab`, `sed -i s/a/b/ /etc/hosts` all exit 0. New suite against the HEAD hook: 38 not ok (every outside case), 23 ok (allow cases). With fix: 61/61. Existing boundary suites green; tests/integration/check_project_boundary.bats #16 was red before.
+
 ### 2026-10-12T18:36:38Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4126-security-project-boundary-pattern-3-has-.md
 - **Context:** Initial task creation
+
+### 2026-10-12T18:38:54Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
