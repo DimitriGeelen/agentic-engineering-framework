@@ -1,0 +1,11 @@
+DO-NOT-SHIP
+
+1. **HIGH — web/blueprints/inception.py:1198, :1022:** The refresh still permits silent decision loss when an ordinary commit intervenes after the scratch-index commit. That commit consumes the stale real index and reverts the decision; `git reset` then refreshes against the reverted HEAD and returns success. I reproduced this on the final follow-up call: `_commit_decision(..., followup=True)` returned `True`, but HEAD lacked the decision. The decision lock only serializes Watchtower commits. Retries do not close this race, and the tests model lock release without the competing Git operation actually committing.
+
+2. **MEDIUM — web/blueprints/inception.py:1154:** Follow-up healing fails for the supported plain-move case. After the initial commit’s refresh fails, the real index still contains the deleted active path. The follow-up includes it in `wanted`, but it exists in neither HEAD nor the working tree, so scratch-index `git add` fails before reaching the healing branch. Reproduced: `fatal: pathspec '.tasks/active/T-9200-decide-me.md' did not match any files`. The subsequent status replaces the actionable refresh warning with this generic failure while the index remains unsafe. The regression fixture covers only `git mv`.
+
+3. **LOW — web/blueprints/inception.py:1010:** “Bounded, ~4s” describes the 3.75 seconds of backoff for immediate failures. Six 30-second subprocess timeouts allow approximately 184 seconds before failure is surfaced. Exhausted failures are otherwise correctly returned as unsuccessful and logged.
+
+All three vendored copies are byte-identical. Scope contains only the three implementation files, their vendored copies, the regression test, and VERSION. The deliberately deferred detector limitation does not independently block this hotfix.
+
+Ran: specified diff/log, vendored `cmp`, `git diff --check`, four focused test modules (**64 passed**), in-memory baseline substitution (**4 regression tests failed, detector test passed**), and temporary-repository reproductions of findings 1–2; no tracked files modified.
