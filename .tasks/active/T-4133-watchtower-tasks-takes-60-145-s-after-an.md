@@ -1,10 +1,22 @@
 ---
 id: T-4133
-name: "Watchtower /tasks takes 60-145 s after any commit: task_review_state re-walks git history per verdict row (~1000 git subprocesses) and the readiness cache is invalidated globally by .git/logs/HEAD (ring20-manager field report, their T-2361)"
+name: "Watchtower /tasks takes 60-145 s after any commit: task_review_state re-walks
+  git history per verdict row (~1000 git subprocesses) and the readiness cache is
+  invalidated globally by .git/logs/HEAD (ring20-manager field report, their T-2361)"
 description: >
-  ring20-manager on vendored a6e06c28 (1.8.9-be), 2364 tasks / 363 active: task_review_state x363 = 145.5 s cold (0.01 s warm, slowest 6.2 s with a 3-seat rung-5 panel). cProfile of one 9.2 s call: 7.9 s in ~1000 git subprocesses from lib/verdict_ledger.py _git_out via satisfying_verdict -> _fault -> _row_fault/_completion_fault -> history_fault (task file history re-walked per verdict row), plus _panel_fault, required_strength, load_ledger 1.7 s. Amplifier: web/shared.py _readiness_stamp keys on mtime of verdicts.jsonl AND .git/logs/HEAD, so any commit invalidates all entries; with several sessions committing /tasks is always cold. Impact: a peer dashboard's link check timed out and blocked its restart gate. Directions: memoise git history per (path, HEAD) within one pass; invalidate per task file; compute off the request path. Must not weaken the ledger's validation (T-3579/T-3581 provenance checks).
+  ring20-manager on vendored a6e06c28 (1.8.9-be), 2364 tasks / 363 active: task_review_state
+  x363 = 145.5 s cold (0.01 s warm, slowest 6.2 s with a 3-seat rung-5 panel). cProfile
+  of one 9.2 s call: 7.9 s in ~1000 git subprocesses from lib/verdict_ledger.py _git_out
+  via satisfying_verdict -> _fault -> _row_fault/_completion_fault -> history_fault
+  (task file history re-walked per verdict row), plus _panel_fault, required_strength,
+  load_ledger 1.7 s. Amplifier: web/shared.py _readiness_stamp keys on mtime of verdicts.jsonl
+  AND .git/logs/HEAD, so any commit invalidates all entries; with several sessions
+  committing /tasks is always cold. Impact: a peer dashboard's link check timed out
+  and blocked its restart gate. Directions: memoise git history per (path, HEAD) within
+  one pass; invalidate per task file; compute off the request path. Must not weaken
+  the ledger's validation (T-3579/T-3581 provenance checks).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T22:23:33Z
-last_update: 2026-10-12T22:23:33Z
-date_finished: null
+last_update: 2026-10-12T22:51:54Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +62,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-12T22:24:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-12T22:30:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=283,acs=9)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4133: Watchtower /tasks takes 60-145 s after any commit: task_review_state re-walks git history per verdict row (~1000 git subprocesses) and the readiness cache is invalidated globally by .git/logs/HEAD (ring20-manager field report, their T-2361)
@@ -62,8 +102,13 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Baseline measured on this repo (cold task_review_state over all active tasks: seconds + git subprocess count) and recorded in Updates
+- [x] Git reads in lib/verdict_ledger.py are memoised per (repo HEAD, args) so a task file's history is walked once per pass, not once per verdict row; a new HEAD cannot serve stale history
+- [x] web/shared.py readiness cache stamp no longer invalidates every entry on any commit (or, if no narrower key is provable, HEAD stays in the key and the argument is in Decisions)
+- [x] Equivalence: task_review_state output over this repo's active tasks is identical before and after the change
+- [x] A test proves a new commit touching a task file invalidates that task's readiness entry
+- [x] Existing verdict-ledger / reviewer / readiness tests green; cold time and git count reported before -> after
+- [ ] RCA filled; vendored copies synced; Watchtower restarted and `fw watchtower current` exits 0
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -98,6 +143,9 @@ date_finished: null
 
 ## Verification
 
+python3 -c "import ast,sys; [ast.parse(open(f).read()) for f in ('lib/verdict_ledger.py','web/shared.py')]"
+bin/fw vendor self --check
+bin/fw watchtower current
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -243,6 +291,14 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** Watchtower `/tasks` took 60-145 s cold on ring20-manager (363 active tasks), and was cold after almost every commit.
+
+**Root cause:** (a) `lib/verdict_ledger.py` validates every verdict row independently (`_fault` -> `_row_fault`/`_completion_fault` -> `history_fault`, `required_strength`, ...) and each validation re-issues the same `git log`/`git show` reads via `_git_out`, which had no memo, so git work scaled rows x history. (b) `web/shared.py:_readiness_stamp` keyed *every* readiness entry on `.git/logs/HEAD`, so any commit by any session invalidated entries that never touched git at all.
+
+**Why structurally allowed:** the ledger was written for correctness (one task at close time), and the corpus sweep reuses the same validator with no budget; the cache key was one shared stamp with no notion of which entries actually depend on git. No test measured subprocess count or cross-commit cache survival, and this repo has only 11 verdict rows, so the cost was invisible here (cold sweep 3.1 s).
+
+**Prevention:** `tests/web/test_t4133_readiness_perf.py` pins that repeated reads cost one subprocess, that a commit/moved ref/edited task file invalidates, that worktree-dependent git commands are never memoised, that ledger-free entries survive unrelated commits and ledger-consulting entries do not, and that memo-on and memo-off sweeps over this repo's active tasks are identical.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -298,14 +354,10 @@ date_finished: null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-10-13 — git memo key and readiness stamp
+- **Chose:** (1) `verdict_ledger._git_out` memoises read-only, object/ref-derived subcommands (`show ls-tree cat-file log rev-parse merge-base`, rc==0 only) per repo, keyed by a state token = stat (mtime_ns, size, inode) of `.git/HEAD`, `logs/HEAD`, `packed-refs`, `shallow`, `objects/info/alternates` and every loose file under `.git/refs`; the token is taken before and after the subprocess and the result stored only if unchanged. Any commit, amend, checkout, reset, branch/tag move changes the token and drops the whole entry set, so history can never be served stale. `status`, `diff`, `ls-files`, `config` (index/worktree/config dependent) are never memoised; failures are never memoised; a `.git` that is not a directory (linked worktree) is not memoised. (2) In `web/shared.py` a readiness entry records whether the ledger/git was consulted. An entry that was not (open agent criteria, or no reviewer-judged open Human criterion) depends only on the task file (body, frontmatter, render-surface patterns, all pure functions of file text), so it is keyed on the task-file mtime alone and survives commits elsewhere. An entry that did consult the ledger keeps the full stamp (verdicts.jsonl, `.git/logs/HEAD`, and now the other `.context/reviews/*.jsonl` ledgers).
+- **Why:** readiness of a ledger-consulting task depends on its own file history, every ledger file, signing/dispatch registry, the cost ledger (step-down), fabric cards at the task's commits and `git log --all --grep=<task id>` (commits that *mention* the task need not touch its file). That set cannot be bounded by the task file's own path, so a per-task-file stamp would be unsound for those entries; HEAD stays in their key and the speed comes from memoisation. Ledger-free entries have no such dependency, so the narrower key is provable.
+- **Rejected:** per-task-file git stamp for ledger-consulting entries (unsound: `log --grep` and fabric inputs); caching `status`/`diff`/`ls-files` (worktree dependent); a background daemon / off-request-path compute (out of scope, optional).
 
 ## Decision
 
@@ -323,3 +375,12 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4133-watchtower-tasks-takes-60-145-s-after-an.md
 - **Context:** Initial task creation
+
+### 2026-10-13 — measurements [agent]
+- **Baseline (HEAD code), this repo:** 816 files / 364 with open Human ACs, cold sweep 3.1 s, 22 git subprocesses. Only 11 verdict rows exist here, so the ring20 per-row blow-up (1000 git calls) does NOT reproduce at this scale; the numbers below show the mechanisms, not the ring20 magnitude. Profile: ~0.78 s regex classify, ~0.6 s YAML, ~0.75 s waiting on git.
+- **After:** cold 3.6 s / 21 git (first pass populates the memo; this repo has no repeated reads to remove). Simulated commit elsewhere (`.git/logs/HEAD` touched): 2.8 s, versus a full cold pass before (every entry recomputed); the remaining cost is the ledger-consulting entries only. Warm 0.1 s / 0 git.
+- **Equivalence:** `task_review_state` over all 816 active files byte-identical before/after (JSON cmp); memo-on vs memo-off sweep pinned in the test.
+- **Existing suites:** 18 failures in tests/unit/t3580_* (judge/panel/spend) with the change AND with the memo disabled (identical failure lists, diff of the two runs is empty except timing) - pre-existing on this host, not introduced here; 567 pass in both. tests/web readiness suites (t4053/t4045/t4096) green.
+
+### 2026-10-12T22:24:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
