@@ -431,3 +431,11 @@ jobs:
     `fw resume status` on every start/resume/compact, not only this nightly
     sweep — this cron entry remains the full-corpus backstop for cards a
     session never touches."
+- id: issues-sync-2h
+  name: GitHub issue intake sync (every 2 h, T-4078)
+  schedule: 17 */2 * * *
+  command: flock -n /var/lock/agentic-cron-issues-sync-2h.lock -c 'fw issues sync'
+  source_file: agentic-audit.crontab
+  origin_task: T-4078
+  status: active
+  description: "T-4078 (T-4039 slice 2). Reads open GitHub issues into .context/issues/intake.jsonl: new issues get Received and Classified comments through fw issues comment; changed title/body is recorded (not re-classified); submitter replies are recorded and surfaced, never answered. Unattended-safe: a gh failure leaves the ledger untouched and exits non-zero. flock prevents overlap."

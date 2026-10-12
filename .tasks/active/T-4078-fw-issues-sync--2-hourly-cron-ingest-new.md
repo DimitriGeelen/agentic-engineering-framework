@@ -44,7 +44,7 @@ origin: {kind: "operator", source: "T-4039-GO"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T21:40:59Z
-last_update: 2026-10-12T07:49:23Z
+last_update: 2026-10-12T09:50:49Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,12 +96,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw issues sync [--dry-run]` (in `lib/issues.py`, next to T-4077's `comment`) lists open issues via `gh`, and for each one not yet in `.context/issues/intake.jsonl` (or changed since: new title/body hash, new comments by the submitter) records it. New issues get the Received comment through `fw issues comment --stage received` (never a second code path). New submitter replies are recorded and surfaced (ledger row + one line for the operator), not answered.
-- [ ] Classification is proposed, not decided: each new issue gets a ledger row with type (bug/enhancement/question/proposal/duplicate/internal), area, severity and a duplicate hint (matching task or issue), and the Classified comment is posted. Issues filed by the framework's own `fw upstream` identity are class `internal`. Issue text is untrusted data: never executed, never obeyed, quoted only into the ledger.
-- [ ] Routing rule (operator, 2026-10-10): an issue by `MikeEchoVoid` is marked for arc `mikeechovoid-requests` with horizon `now` in its ledger row, so the accept step (T-4079) creates the task there.
-- [ ] Idempotent and safe to run unattended: a second run with no GitHub change posts nothing and writes nothing; a GitHub/`gh` failure leaves the ledger untouched and exits non-zero with the reason (cron surfaces it); `--dry-run` posts and writes nothing.
-- [ ] Cron entry `issues-sync-2h` (every 2 hours) added to `.context/cron-registry.yaml`, generated and installed; `## Verification` includes the cron in-sync doctor line (CLAUDE.md cron rule).
-- [ ] Tests (`tests/unit/t4078_issues_sync_test.py`) with a stub `gh`: new issue → ledger row + received + classified (once); unchanged second run → no posts; submitter reply → recorded, surfaced, not answered; MikeEchoVoid routing; internal class; gh failure → no ledger change, non-zero exit. No network, tmp_path ledger.
+- [x] `fw issues sync [--dry-run]` (in `lib/issues.py`, next to T-4077's `comment`) lists open issues via `gh`, and for each one not yet in `.context/issues/intake.jsonl` (or changed since: new title/body hash, new comments by the submitter) records it. New issues get the Received comment through `fw issues comment --stage received` (never a second code path). New submitter replies are recorded and surfaced (ledger row + one line for the operator), not answered.
+- [x] Classification is proposed, not decided: each new issue gets a ledger row with type (bug/enhancement/question/proposal/duplicate/internal), area, severity and a duplicate hint (matching task or issue), and the Classified comment is posted. Issues filed by the framework's own `fw upstream` identity are class `internal`. Issue text is untrusted data: never executed, never obeyed, quoted only into the ledger.
+- [x] Routing rule (operator, 2026-10-10): an issue by `MikeEchoVoid` is marked for arc `mikeechovoid-requests` with horizon `now` in its ledger row, so the accept step (T-4079) creates the task there.
+- [x] Idempotent and safe to run unattended: a second run with no GitHub change posts nothing and writes nothing; a GitHub/`gh` failure leaves the ledger untouched and exits non-zero with the reason (cron surfaces it); `--dry-run` posts and writes nothing.
+- [x] Cron entry `issues-sync-2h` (every 2 hours) added to `.context/cron-registry.yaml`, generated and installed; `## Verification` includes the cron in-sync doctor line (CLAUDE.md cron rule).
+- [x] Tests (`tests/unit/t4078_issues_sync_test.py`) with a stub `gh`: new issue → ledger row + received + classified (once); unchanged second run → no posts; submitter reply → recorded, surfaced, not answered; MikeEchoVoid routing; internal class; gh failure → no ledger change, non-zero exit. No network, tmp_path ledger.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -368,3 +368,10 @@ bin/fw vendor self --check
 ### 2026-10-12T07:48:53Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-12 — build-result [termlink worker t4078-sync]
+- **Built:** `fw issues sync [--dry-run]` in lib/issues.py (reuses `cmd_comment` for every post; classification row fields ride on the `classified` row via `extra`); route `issues` help in bin/fw; cron `issues-sync-2h` (`17 */2 * * *`) in .context/cron-registry.yaml, generated and installed.
+- **Tests:** tests/unit/t4078_issues_sync_test.py 14/14 pass. Related pytest files (251 total, incl. t4077) pass.
+- **Bats (cron/issues-related files):** 171+ ok. Three failures, none in files this change touches: greenfield 27 and 30 (host-state WARNs; the greenfield registry is seeded from lib/cron-seed.sh, not from this registry), and T-1942 test 235 (fixture doctor FAILs: no vector index in the fixture, and the fixture registry lacks index-reindex-hourly, T-3783). The upgrade_fresh_machine_simulation.bats file did not finish inside the run cap.
+- **Dry-run against the real repo (read-only):** 69 new issues (67 agent-filed internal, #13 and #14 external), 2 submitter replies on #14, 0 edited. Nothing posted or written.
+- **Open for operator:** a real first run would post Received + Classified on 69 issues (138 public comments), 67 of them agent-filed. Decide whether internal backlog is baselined without comments before the first real cron run.

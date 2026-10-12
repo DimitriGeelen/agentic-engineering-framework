@@ -4,7 +4,7 @@
 Subcommands:
   comment <n> --stage S ...   the ONE outward verb: post a stage comment on a GitHub issue
   approve <ref> ...           record an operator approval for a decision-stage comment
-  (sync is T-4078 and will be added to main() below)
+  sync [--dry-run]            T-4078: ingest new/changed issues and submitter replies (cron, 2 h)
 
 Spec: docs/reports/T-4039-inbound-github-issues.md. Rules this file enforces:
   - every comment is the stage's fixed template + the operator's verbatim footer + a stage marker;
@@ -22,6 +22,7 @@ FW_ISSUES_GIT_REMOTE (git remote of the GitHub mirror, default "github"), FW_ISS
 """
 import argparse
 import fcntl
+import hashlib
 import json
 import os
 import re
@@ -360,6 +361,7 @@ def cmd_comment(a) -> int:
         row["commit"] = a.commit
     if a.version:
         row["version"] = a.version
+    row.update(getattr(a, "extra", None) or {})  # sync's classification fields ride on the row
     row.update(comment=url, ts=_now())
     try:
         _append_row(_issues_dir() / "intake.jsonl", row)
@@ -372,6 +374,187 @@ def cmd_comment(a) -> int:
         print(f"WARN: comment posted and logged ({url}) but adding labels failed: "
               f"{e.stderr.strip()[:200]}", file=sys.stderr)
     print(f"posted {st} on #{a.issue}: {url}")
+    return 0
+
+
+# ── sync (T-4078) ────────────────────────────────────────────────────────────
+# Reads the repo's open issues and records what is new to the ledger. Posting goes through
+# cmd_comment (the one outward verb) so the idempotence and template rules apply here too.
+# Everything read from GitHub is untrusted: it is hashed, compared, searched for ids and
+# quoted into the ledger; the only text posted publicly is built from this file's own vocabulary.
+
+ROUTES = {  # operator ruling 2026-10-10: every issue by this submitter goes to arc-021, horizon now
+    "mikeechovoid": {"arc_id": "mikeechovoid-requests", "horizon": "now"},
+}
+DUP_THRESHOLD = 0.6   # Jaccard over title words; a hint only, never a decision
+AREAS = {"lib", "bin", "agents", "web", "tests", "docs", "policy"}
+
+
+def _project_root() -> Path:
+    return Path(os.environ.get("PROJECT_ROOT") or os.getcwd())
+
+
+def _login(obj) -> str:
+    return (obj or {}).get("login") or ""
+
+
+def _body_hash(issue: dict) -> str:
+    return hashlib.sha256(f"{issue.get('title') or ''}\0{issue.get('body') or ''}".encode()).hexdigest()[:16]
+
+
+def _has(rows: list, n: int, stage: str) -> bool:
+    return any(r.get("issue") == n and stage in str(r.get("stage", "")).split("+") for r in rows)
+
+
+def _list_open_issues() -> list:
+    p = _gh(["issue", "list", "--repo", _repo(), "--state", "open", "--limit", "500",
+             "--json", "number,title,body,author,labels,comments"])
+    if p.returncode != 0:
+        raise IssuesError(f"cannot list issues: {p.stderr.strip()[:300]}", 2)
+    try:
+        return json.loads(p.stdout or "[]")
+    except ValueError:
+        raise IssuesError("gh returned unparseable issue list", 2)
+
+
+def _task_slugs() -> list:
+    out = []
+    for sub in ("active", "completed"):
+        d = _project_root() / ".tasks" / sub
+        if d.is_dir():
+            for f in d.glob("T-*.md"):
+                m = re.match(r"(T-\d+)-(.*)\.md$", f.name)
+                if m:
+                    out.append((m.group(1), m.group(2).replace("-", " ")))
+    return out
+
+
+def _words(s: str) -> set:
+    return {w for w in re.findall(r"[a-z0-9]+", (s or "").lower()) if len(w) >= 4}
+
+
+def _similar(a: str, b: str) -> float:
+    wa, wb = _words(a), _words(b)
+    return len(wa & wb) / len(wa | wb) if wa and wb else 0.0
+
+
+def _classify(issue: dict, others: list, tasks: list, owner: str) -> dict:
+    title = issue.get("title") or ""
+    body = issue.get("body") or ""
+    author = _login(issue.get("author"))
+    labels = {(x.get("name") or "").lower() for x in issue.get("labels") or []}
+    lt = title.strip().lower()
+    if author.lower() == owner.lower():
+        typ = "internal"
+    elif "bug" in labels or re.match(r"(bug|fix|error|crash)\b", lt):
+        typ = "bug"
+    elif "proposal" in labels or lt.startswith("proposal"):
+        typ = "proposal"
+    elif "question" in labels or lt.endswith("?"):
+        typ = "question"
+    elif labels & {"enhancement", "feature"} or re.match(r"(enhancement|feature|add)\b", lt):
+        typ = "enhancement"
+    else:
+        typ = "question"  # unclear from the title: parked for the maintainer to read
+    m = re.search(r"\b(lib|bin|agents|web|tests|docs|policy)/", f"{title} {body}")
+    area = m.group(1) if m and m.group(1) in AREAS else "unspecified"
+    if typ in ("enhancement", "question", "proposal"):
+        sev = "low"
+    elif re.search(r"data loss|corrupt|crash|security|cannot|fails? on every", f"{title} {body}".lower()):
+        sev = "high"
+    else:
+        sev = "medium"
+    best, hint = 0.0, ""
+    for n2, t2 in others:
+        s = _similar(title, t2)
+        if s > best:
+            best, hint = s, f"#{n2}"
+    for tid, slug in tasks:
+        s = _similar(title, slug)
+        if s > best:
+            best, hint = s, tid
+    route = ROUTES.get(author.lower(), {})
+    return {"class": "internal" if typ == "internal" else "external", "type": typ, "area": area,
+            "severity": sev, "duplicate_hint": hint if best >= DUP_THRESHOLD else "",
+            "arc_id": route.get("arc_id", ""), "horizon": route.get("horizon", "")}
+
+
+def _classified_text(c: dict) -> str:
+    lines = [f"Type: {c['type']}; area: {c['area']}; severity: {c['severity']}."]
+    if c["duplicate_hint"]:
+        lines.append(f"Possible duplicate of {c['duplicate_hint']} (title similarity; not confirmed).")
+    return "\n".join(lines)
+
+
+def _stage_comment(n: int, stage: str, text, extra: dict) -> None:
+    cmd_comment(argparse.Namespace(issue=n, stage=stage, task=None, commit=None, test_cmd=None,
+                                   version=None, text=text, approved_by_operator=None,
+                                   dry_run=False, extra=extra))
+
+
+def cmd_sync(a) -> int:
+    issues = _list_open_issues()
+    ledger = _issues_dir() / "intake.jsonl"
+    rows = _read_rows(ledger)
+    owner = _repo().split("/")[0]
+    tasks = _task_slugs()
+    counts = {"new": 0, "classified": 0, "edited": 0, "reply": 0}
+    lines = []
+    for it in sorted(issues, key=lambda i: int(i.get("number", 0))):
+        n = int(it["number"])
+        title = it.get("title") or ""
+        author = _login(it.get("author"))
+        internal = author.lower() == owner.lower()
+        h = _body_hash(it)
+        is_new = not _has(rows, n, "received")
+        needs_cls = is_new or not _has(rows, n, "classified")
+        c: dict = {}
+        if needs_cls:
+            others = [(int(i["number"]), i.get("title") or "") for i in issues if int(i["number"]) != n]
+            c = _classify(it, others, tasks, owner)
+        if is_new:
+            counts["new"] += 1
+            lines.append(f"NEW #{n} from {author or '?'}: {c['type']}/{c['area']}/{c['severity']}"
+                         + (f", arc {c['arc_id']}" if c["arc_id"] else ""))
+            if not a.dry_run:
+                _stage_comment(n, "received", None, {"body_hash": h, "title": title[:120],
+                                                     "author": author})
+        if needs_cls and not _has(rows, n, "classified"):
+            counts["classified"] += 1
+            if not a.dry_run:
+                _stage_comment(n, "classified", _classified_text(c),
+                               {k: v for k, v in c.items() if v})
+        if not is_new:
+            prior = [r["body_hash"] for r in rows if r.get("issue") == n and r.get("body_hash")]
+            if not prior:
+                if not a.dry_run:
+                    _append_row(ledger, {"issue": n, "stage": "baseline", "body_hash": h, "ts": _now()})
+            elif prior[-1] != h:
+                counts["edited"] += 1
+                lines.append(f"EDITED #{n}: title or body changed; recorded, not re-classified")
+                if not a.dry_run:
+                    _append_row(ledger, {"issue": n, "stage": "edited", "body_hash": h,
+                                         "prev_body_hash": prior[-1], "ts": _now()})
+        if internal:
+            continue  # the operator reads their own comments directly; nothing to surface
+        seen = {str(r.get("reply_id")) for r in rows if r.get("issue") == n and r.get("stage") == "reply"}
+        for cm in it.get("comments") or []:
+            rid = str(cm.get("id") or "")
+            if not rid or rid in seen or _login(cm.get("author")).lower() != author.lower():
+                continue
+            seen.add(rid)
+            counts["reply"] += 1
+            lines.append(f"REPLY #{n} from {author}: recorded, NOT answered (read it on the issue)")
+            if not a.dry_run:
+                _append_row(ledger, {"issue": n, "stage": "reply", "reply_id": rid, "author": author,
+                                     "created": cm.get("createdAt") or "",
+                                     "excerpt": (cm.get("body") or "")[:500], "answered": False,
+                                     "ts": _now()})
+    for ln in lines:
+        print(ln)
+    tag = " (dry-run: nothing posted or written)" if a.dry_run else ""
+    print(f"sync: {counts['new']} new, {counts['classified']} classified, {counts['edited']} edited, "
+          f"{counts['reply']} submitter replies{tag}")
     return 0
 
 
@@ -396,6 +579,9 @@ def main(argv=None) -> int:
     ap_.add_argument("--reason")
     ap_.add_argument("--i-am-human", action="store_true")
     ap_.set_defaults(fn=cmd_approve)
+    s = sub.add_parser("sync", help="ingest new/changed issues and submitter replies (cron)")
+    s.add_argument("--dry-run", action="store_true", help="list what would change; post and write nothing")
+    s.set_defaults(fn=cmd_sync)
     a = ap.parse_args(argv)
     try:
         return a.fn(a)
