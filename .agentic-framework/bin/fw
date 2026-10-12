@@ -1075,8 +1075,21 @@ UPSTREAM
     echo ""
     echo "The project now contains its own framework at .agentic-framework/"
     echo "Hooks should reference: .agentic-framework/bin/fw hook <name>"
-    command -v _t4069_stale_wrapper_notice >/dev/null 2>&1 || source "$FRAMEWORK_ROOT/lib/upgrade.sh"
-    _t4069_stale_wrapper_notice "$target"
+    _fw_stale_wrapper_notice "$target"
+}
+
+# T-4069/T-4083: best-effort "claude-fw started before this change" notice. Loads
+# lib/upgrade.sh only when it exists (a minimal or partial source tree may lack it)
+# and never changes the caller's exit status.
+_fw_stale_wrapper_notice() {
+    if ! command -v _t4069_stale_wrapper_notice >/dev/null 2>&1; then
+        [ -f "$FRAMEWORK_ROOT/lib/upgrade.sh" ] || return 0
+        # shellcheck source=lib/upgrade.sh
+        source "$FRAMEWORK_ROOT/lib/upgrade.sh" 2>/dev/null || return 0
+    fi
+    command -v _t4069_stale_wrapper_notice >/dev/null 2>&1 || return 0
+    _t4069_stale_wrapper_notice "$1" || true
+    return 0
 }
 
 # --- Auto-init dialogue ---
@@ -10368,7 +10381,7 @@ PYSEARCH
                 [ "$_vs_dry" = true ] || _self_vendor_version false
             )
             [ -n "$_vs_out" ] && printf '%s\n' "$_vs_out"
-            [ "$_vs_check" = true ] || _t4069_stale_wrapper_notice "$PROJECT_ROOT"
+            [ "$_vs_check" = true ] || _fw_stale_wrapper_notice "$PROJECT_ROOT"
             if [ "$_vs_check" = true ]; then
                 if printf '%s' "$_vs_out" | grep -q "would sync"; then
                     echo "Self-vendor: DRIFT — vendored .agentic-framework/ is out of sync. Run 'fw vendor self' to sync." >&2
