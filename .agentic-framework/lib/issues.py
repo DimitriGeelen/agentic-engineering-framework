@@ -31,6 +31,12 @@ import sys
 from datetime import datetime, timezone
 from pathlib import Path
 
+# T-4093: arc ids are normalised by the canonical helper (T-3516), never re-derived here.
+try:
+    from lib.arc_membership import parse_arc_id_value
+except ImportError:  # run as `python3 lib/issues.py` (lib/ is sys.path[0])
+    from arc_membership import parse_arc_id_value
+
 DEFAULT_REPO = "DimitriGeelen/agentic-engineering-framework"
 FOOTER = ("*These status updates are automated, but Dimitri personally looks at every issue "
           "and decides what happens to it. Replies on this issue are read.*")
@@ -476,7 +482,7 @@ def _classify(issue: dict, others: list, tasks: list, owner: str) -> dict:
     route = ROUTES.get(author.lower(), {})
     return {"class": "internal" if typ == "internal" else "external", "type": typ, "area": area,
             "severity": sev, "duplicate_hint": hint if best >= DUP_THRESHOLD else "",
-            "arc_id": route.get("arc_id", ""), "horizon": route.get("horizon", "")}
+            "arc_id": parse_arc_id_value(route.get("arc_id", "")), "horizon": route.get("horizon", "")}
 
 
 def _classified_text(c: dict) -> str:
