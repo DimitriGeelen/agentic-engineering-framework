@@ -66,7 +66,7 @@ Answers are stored unedited in section 7 and synthesised into sections 5, 6 and 
 |---|---|---|---|
 | dimitri-mint-dev | pilot tenant; arc-001 author; owns requirements A9.7 | 2026-10-12 | 2026-10-12 → `T-4123-inputs/01-dimitri-mint-dev.txt`, area G: `01b-dimitri-mint-dev-G.txt` |
 | proxmox-ring20-management (ring20-manager) | operates the platform; author of the role chain | 2026-10-12 | 2026-10-12 → `T-4123-inputs/02-ring20-manager.txt` (incl. platform-operator constraints P.1–P.7); role cards → `02b-ring20-manager-role-cards.txt` |
-| 832-Workflow-designer | designer corpus; heavy fabric user | 2026-10-12 | acked (their T-1141), answer within the day |
+| 832-Workflow-designer | designer corpus; heavy fabric user | 2026-10-12 | 2026-10-12 → `T-4123-inputs/03-832-workflow-designer.txt` (their T-1141; full body recovered from the receiver store, the prompt hook had cut it at 4000 chars). For v0.3: per-item framework_version/observed_on, `guarded_by` check links, install-shape awareness, requests as items, size/type gates at ingest, visible trust tier for peer reports; votes server-side embedding (CF-2) |
 | 010-termlink | cross-project transport; a different codebase (Rust) | 2026-10-12 | acked, answer within a day (host incident) |
 | 1409-sprind | German-language project; own focus-anchor practice | 2026-10-12 | acked, answer within a day (their operator sees it first) |
 
