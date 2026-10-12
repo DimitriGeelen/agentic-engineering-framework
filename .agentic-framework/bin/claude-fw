@@ -61,6 +61,45 @@ for arg in "$@"; do
     esac
 done
 
+# T-4118 (832 T-1140, ring20-dashboard T-2509): bash holds this whole script in memory
+# for the wrapper's life, and the restart loop below can run for days. A wrapper started
+# before an upgrade kept the old _terminator_watch through every `claude` relaunch, so
+# the T-4032 "wait for the turn to end" fix never reached it and both sessions were
+# killed mid-tool-call. So remember what we were started as — original argv, resolved
+# path and content hash — and at the restart boundary (_cfw_reexec_if_changed, between
+# two claude runs, never during one) exec the file on disk if it is no longer that.
+_CFW_ORIG_ARGS=("$@")
+_CFW_SELF_PATH="$(readlink -f "$0" 2>/dev/null || echo "$0")"   # this script, as the tmux re-launch below
+_cfw_script_id() {
+    [ -r "$1" ] || return 1
+    local h; h=$(sha256sum < "$1" 2>/dev/null | cut -c1-64) || return 1
+    [ -n "$h" ] && printf '%s' "$h"
+}
+_CFW_SELF_ID="$(_cfw_script_id "$_CFW_SELF_PATH" || true)"
+# State a re-exec hands to the new copy. Honoured only when it names THIS pid (exec keeps
+# the pid; any other process that inherited it stray ignores it), then scrubbed so claude
+# and its children never see it.
+_CFW_RESUMED=0
+if [ -n "${FW_CFW_REEXEC_PID:-}" ] && [ "${FW_CFW_REEXEC_PID}" = "$$" ]; then
+    _CFW_RESUMED=1
+    _CFW_R_COUNT="${FW_CFW_REEXEC_COUNT:-0}"
+    _CFW_R_TIMES="${FW_CFW_REEXEC_TIMES:-}"
+    _CFW_R_ARGS="${FW_CFW_REEXEC_ARGS:-}"
+    _CFW_R_TL_SESSION="${FW_CFW_REEXEC_TL_SESSION:-}"
+    _CFW_R_TL_ENABLED="${FW_CFW_REEXEC_TL_ENABLED:-0}"
+    _CFW_R_OLD_ID="${FW_CFW_REEXEC_OLD_ID:-}"
+    [[ "$_CFW_R_COUNT" =~ ^[0-9]+$ ]] || _CFW_R_COUNT=0
+    [[ "$_CFW_R_TIMES" =~ ^[0-9\ ]*$ ]] || _CFW_R_TIMES=""
+    [[ "$_CFW_R_TL_SESSION" =~ ^[A-Za-z0-9._-]*$ ]] || _CFW_R_TL_SESSION=""
+    # The next run's claude argv (a restart replaces the user's, T-3166): NUL-joined, base64.
+    CLAUDE_ARGS=()
+    if [ -n "$_CFW_R_ARGS" ]; then
+        mapfile -d '' -t CLAUDE_ARGS < <(printf '%s' "$_CFW_R_ARGS" | base64 -d 2>/dev/null)
+    fi
+fi
+unset FW_CFW_REEXEC_PID FW_CFW_REEXEC_COUNT FW_CFW_REEXEC_TIMES FW_CFW_REEXEC_ARGS \
+    FW_CFW_REEXEC_TL_SESSION FW_CFW_REEXEC_TL_ENABLED FW_CFW_REEXEC_OLD_ID
+
 # T-4003 (operator 2026-10-09: "we wanted reliable to work for every project"): peer mail can
 # only reach an agent through a terminal something can type into — a TermLink session or a
 # tmux pane (lib/sidecar/inject.py c1/c2). A bare terminal window cannot be typed into from
@@ -72,6 +111,7 @@ done
 # (fleet panes), headless or non-terminal runs, dispatched workers, and when tmux is missing.
 # Opt out: FW_CLAUDE_FW_NO_TMUX=1.
 _cfw_should_wrap_tmux() {
+    [ "$_CFW_RESUMED" = 1 ] && return 1   # T-4118: a re-exec stays where the session already is
     [ "${FW_CLAUDE_FW_NO_TMUX:-0}" = 1 ] && return 1
     [ "${FW_CLAUDE_FW_IN_TMUX:-0}" = 1 ] && return 1
     [ "$TERMLINK_ENABLED" = 1 ] && return 1
@@ -118,6 +158,12 @@ fi
 
 # TermLink session management
 TERMLINK_SESSION=""
+if [ "$_CFW_RESUMED" = 1 ]; then
+    # T-4118: same pid after exec, so claude-master-$$ is the session we already own.
+    TERMLINK_SESSION="$_CFW_R_TL_SESSION"
+    TERMLINK_ENABLED="$_CFW_R_TL_ENABLED"
+    [ -n "$TERMLINK_SESSION" ] || TERMLINK_ENABLED=0
+fi
 
 # T-3693: `fw-project=<16 hex of sha256(realpath project root)>`. Project root:
 # PROJECT_ROOT, else the nearest ancestor holding .framework.yaml (or the
@@ -168,6 +214,7 @@ _cfw_lib() {
 
 termlink_start() {
     if [ "$TERMLINK_ENABLED" != "1" ]; then return; fi
+    [ "$_CFW_RESUMED" = 1 ] && return   # T-4118: reuse the session spawned before the re-exec
     if ! command -v termlink >/dev/null 2>&1; then
         echo "claude-fw: --termlink requested but termlink not found on PATH. Ignoring."
         TERMLINK_ENABLED=0
@@ -734,6 +781,12 @@ RESTART_WINDOW=$(_fw_cfg RESTART_WINDOW 3600)
 [[ "$RESTART_WINDOW" =~ ^[0-9]+$ ]] || RESTART_WINDOW=3600
 
 restart_times=()   # epoch seconds of restarts still inside the window
+if [ "$_CFW_RESUMED" = 1 ]; then
+    # T-4118: a re-exec is the same supervisor, so it keeps its restart count and budget.
+    restart_count="$_CFW_R_COUNT"
+    # shellcheck disable=SC2206 # validated digits-and-spaces above
+    restart_times=($_CFW_R_TIMES)
+fi
 
 # _restart_budget_prune — drop restarts older than the window, set RESTART_SPENT.
 #
@@ -931,6 +984,12 @@ sidecar_start() {
 }
 _TERMLINK_REQUESTED=0
 for _a in "$@"; do [ "$_a" = "--termlink" ] && _TERMLINK_REQUESTED=1; done
+# T-4118: sidecar, banner and the `start armed` event belong to the first launch only.
+if [ "$_CFW_RESUMED" = 1 ]; then
+    echo "claude-fw: now running the updated wrapper (restart #${restart_count}, T-4118)" >&2
+    _record_loop_event start reexec \
+        "wrapper re-exec'd at the restart boundary: ${_CFW_R_OLD_ID:0:12} -> ${_CFW_SELF_ID:0:12} (${_CFW_SELF_PATH})"
+else
 sidecar_start
 
 # T-2411: one-shot startup overview (before main loop — not re-emitted on restart).
@@ -949,6 +1008,7 @@ _print_startup_banner
 # an in-loop start event would flatten. Non-fatal like every other call site.
 _record_loop_event start armed \
     "restart=$([ "$AUTO_RESTART" = false ] && echo disabled || echo enabled) max_restarts=${MAX_RESTARTS} window=${RESTART_WINDOW}s armed=$(_continuous_armed && echo yes || echo no) termlink=${TERMLINK_ENABLED:-0}"
+fi
 
 # T-3629: a relaunch must never hand claude an empty argv. Claude Code 2.1.28x
 # opens its AGENTS OVERVIEW, not a conversation, when started with no arguments
@@ -993,7 +1053,59 @@ _conversation_guard() {
     return 1
 }
 
+# T-4118: at the restart boundary, run the wrapper that is on disk now rather than the
+# one in memory. Called only between two claude runs — the previous claude has exited
+# and its terminator has been reaped — so no turn is ever cut short by it. The new copy
+# gets the ORIGINAL argv (its own flag parsing stays authoritative) plus the loop state
+# in FW_CFW_REEXEC_*; exec keeps the pid, so the EXIT trap does not fire and the
+# TermLink session claude-master-$$ carries over. Never fatal: a file that is gone,
+# unreadable, fails `bash -n`, or cannot be exec'd is a loud warning and the loop goes
+# on with the code it already has. FW_CLAUDE_FW_NO_REEXEC=1 opts out.
+_cfw_reexec_if_changed() {
+    [ "${FW_CLAUDE_FW_NO_REEXEC:-0}" = 1 ] && return 0
+    [ -n "$_CFW_SELF_ID" ] || return 0   # never fingerprinted: nothing to compare against
+    local now_id="" root log ts
+    ts=$(date -u +%Y-%m-%dT%H:%M:%SZ)
+    root=$(git rev-parse --show-toplevel 2>/dev/null) || root=""
+    log=/dev/null
+    [ -n "$root" ] && [ -d "$root/.context/working" ] && log="$root/.context/working/.compact-log"
+    now_id=$(_cfw_script_id "$_CFW_SELF_PATH") || now_id=""
+    if [ -z "$now_id" ]; then
+        echo "claude-fw: WARNING: cannot read $_CFW_SELF_PATH at the restart boundary — continuing on the wrapper code loaded at start, which may be out of date (T-4118)" >&2
+        echo "[claude-fw] $ts re-exec check: $_CFW_SELF_PATH missing or unreadable — continuing on in-memory code ${_CFW_SELF_ID:0:12} (T-4118)" >> "$log" 2>/dev/null || true
+        return 0
+    fi
+    [ "$now_id" = "$_CFW_SELF_ID" ] && return 0
+    if ! bash -n "$_CFW_SELF_PATH" 2>/dev/null; then
+        echo "claude-fw: WARNING: $_CFW_SELF_PATH changed but does not parse (bash -n) — NOT switching to it; continuing on the code loaded at start (T-4118)" >&2
+        echo "[claude-fw] $ts re-exec refused: $_CFW_SELF_PATH ${now_id:0:12} fails bash -n — continuing on ${_CFW_SELF_ID:0:12} (T-4118)" >> "$log" 2>/dev/null || true
+        return 0
+    fi
+    echo "[claude-fw] $ts re-exec at restart boundary: $_CFW_SELF_PATH changed ${_CFW_SELF_ID:0:12} -> ${now_id:0:12} (restart #${restart_count}, T-4118)" >> "$log" 2>/dev/null || true
+    echo "claude-fw: wrapper updated on disk since this session started — re-executing it before the relaunch (T-4118)" >&2
+    local args_b64=""
+    [ "${#CLAUDE_ARGS[@]}" -gt 0 ] && args_b64=$(printf '%s\0' "${CLAUDE_ARGS[@]}" | base64 -w0)
+    export FW_CFW_REEXEC_PID="$$" \
+        FW_CFW_REEXEC_COUNT="$restart_count" \
+        FW_CFW_REEXEC_TIMES="${restart_times[*]+${restart_times[*]}}" \
+        FW_CFW_REEXEC_ARGS="$args_b64" \
+        FW_CFW_REEXEC_TL_SESSION="$TERMLINK_SESSION" \
+        FW_CFW_REEXEC_TL_ENABLED="${TERMLINK_ENABLED:-0}" \
+        FW_CFW_REEXEC_OLD_ID="$_CFW_SELF_ID"
+    shopt -s execfail
+    # shellcheck disable=SC2093 # execfail: a failed exec returns here and we carry on
+    exec bash "$_CFW_SELF_PATH" ${_CFW_ORIG_ARGS[@]+"${_CFW_ORIG_ARGS[@]}"}
+    shopt -u execfail
+    unset FW_CFW_REEXEC_PID FW_CFW_REEXEC_COUNT FW_CFW_REEXEC_TIMES FW_CFW_REEXEC_ARGS \
+        FW_CFW_REEXEC_TL_SESSION FW_CFW_REEXEC_TL_ENABLED FW_CFW_REEXEC_OLD_ID
+    echo "claude-fw: WARNING: exec of $_CFW_SELF_PATH failed — continuing on the code loaded at start (T-4118)" >&2
+    echo "[claude-fw] $ts re-exec FAILED: exec $_CFW_SELF_PATH — continuing on ${_CFW_SELF_ID:0:12} (T-4118)" >> "$log" 2>/dev/null || true
+    return 0
+}
+
 while true; do
+    # T-4118: between runs only — never mid-turn.
+    [ "$restart_count" -gt 0 ] && _cfw_reexec_if_changed
     # T-2373: record when this run started so the terminator only acts on a
     # signal written DURING the run (edge case a — not a leftover/stale signal).
     run_start_epoch=$(date +%s)
