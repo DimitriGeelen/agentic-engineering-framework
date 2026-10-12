@@ -14,7 +14,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-09T21:41:29Z
-last_update: 2026-10-11T21:29:19Z
+last_update: 2026-10-12T07:03:19Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -116,11 +116,11 @@ dimitri-mint-dev (the operator's workstation project on .107) runs arc-001 "Loca
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
@@ -136,8 +136,9 @@ dimitri-mint-dev (the operator's workstation project on .107) runs arc-001 "Loca
 
 <!-- Fill these BEFORE writing the recommendation. The placeholder detector will block review/decide if left empty. -->
 **GO if:**
-- Root cause identified with bounded fix path
-- Fix is scoped, testable, and reversible
+- The proposal's findings hold against AEF's own code (each checked, not taken on trust)
+- The first phases (P1a, P1) split into build tasks that each ship, test and upgrade on their own, without a model change
+- The signing question (O-5) has a viable answer that meets R-34 against a root agent on .107
 
 **NO-GO if:**
 - Problem requires fundamental redesign or unbounded scope
@@ -156,17 +157,20 @@ dimitri-mint-dev (the operator's workstation project on .107) runs arc-001 "Loca
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO — accept arc-001 for AEF, starting with P1a then P1; re-incept P2/P3/P6 after P1's benchmark exists.
 
 **Rationale:**
 
-Evidence gap, not a confidence gap: the proposal binds two documents (requirements v1.3, 910 lines; design v0.4, 328 lines) fetched from dimitri-mint-dev commit 50665be with matching sha256, but AEF has not yet read them against its own code. Nine components across phases P1a-P3, so this needs decomposing into one inception per question before any GO. Next step: read both documents, map each component to existing AEF code (web/recall_telemetry.py, web/embeddings, lib/vector_index_health.py, T-3967), and bring a scoped recommendation to the operator.
+The earlier DEFER was an evidence gap that is now closed: the documents were received intact (sha256 checked), all ten findings were checked against AEF source (nine confirmed, F-8 corrected), and six of them already have tasks — two fixed and shipped today (T-4061 query text, T-4062 key-file mode). The first phases need no model change, so they are safe to build: measurement and signed approvals first, exactly the order dimitri-mint-dev and the operator asked for. The signing question O-5 is answered by three independent consults: phone as signer (shows the record on its own screen — the only option that closes "signing the wrong thing"), one FIDO2 key stored away as backup, and the trusted-key list kept off .107 (at ring20); TOTP is unsuitable. The central estate store (T-090, Qdrant on ring20) is designed in from the start via C3/C12, and its push interface gets its own inception.
+
+**Proposed build tasks after GO** (one per component, P1a first): C5 signing core (sign/verify/hash binding, AC-34.1–34.3, test key first, phone enrolment once the app is chosen); C7 GPU baseline + stop rule; then P1: C1 telemetry extension, C4 reranker/search health (incl. T-4063 `fw recall` rerank), C2 benchmark harness, C5 rest, C7 collector. Plus a separate inception for the T-090 push interface.
 
 **Evidence:**
-
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- Research artifact: `docs/reports/T-4017-arc-001-retrieval-refresh.md` (asks, phases, ten findings with file:line, operator decisions, dialogue log)
+- Inputs: `docs/reports/T-4017-arc-001-inputs/` (proposal 5992c032, design faf925a4, requirements a7b463ed — hashes verified)
+- Signing consults: `docs/reports/T-4017-O5-consult-{codex,opencode,gemini}.md` (2 of 3 recommend phone + hardware backup; all three: two keys, trust list off .107; TOTP rejected)
+- Findings filed: T-4061 (done), T-4062 (done), T-4063, T-4064, T-4065, T-4066, T-3967; F-2/F-6 folded into C2/C3/C6; F-3 estate (not AEF)
+- Operator decisions recorded: keep `.context/qa/` tracked; Watchtower login optional (T-4071); phone for signing
 
 ## Decisions
 
