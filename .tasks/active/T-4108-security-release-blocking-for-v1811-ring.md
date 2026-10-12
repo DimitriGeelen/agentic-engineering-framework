@@ -52,7 +52,7 @@ origin: {kind: "peer", source: "ring20-dashboard"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T12:53:56Z
-last_update: '2026-10-12T13:01:26Z'
+last_update: 2026-10-12T18:32:51Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -295,6 +295,12 @@ bin/fw vendor self --check
 **Why structurally allowed:** the predicates matched shape, not identity (path / process / login); tests only exercised the honest spellings.
 **Prevention:** realpath identity check; ancestry-aware `_is_agent` with no flag override and only `by: human` rows accepted; markers trusted only from `gh api user`. t4108_issues_security_test.py (5 of 7 fail on HEAD) and the T-3814 planted-path bats case (fails on HEAD) pin it.
 
+**Round 2 (ring20-dashboard, third review round):**
+**Symptom:** round 1 still admitted RELATIVE launchers (`bin/fw`, `./bin/fw`, `.agentic-framework/bin/fw`) by spelling. The Bash tool keeps its cwd across calls, so `cd /tmp/x` in one call followed by `bin/fw git commit …` in the next ran /tmp/x/bin/fw. Within one command, `cd /tmp/x && bin/fw git commit …` did the same.
+**Root cause:** the hook judged a relative path as if it resolved in the hook's own cwd. The shell's cwd, which the PreToolUse payload carries as `cwd`, was never read. The segments of a chain were also judged one at a time, so an earlier `cd` could not affect the verdict on a later segment.
+**Why structurally allowed:** round 1 replaced spelling with identity for absolute paths only, and the tests used the honest cwd.
+**Prevention:** check-active-task.sh now reads the payload `cwd`. A relative launcher is resolved against it and admitted only when its realpath is the project's own fw. With no absolute payload cwd it is refused. Once any earlier segment may change directory (`_fw_segment_may_change_dir`: cd/pushd/popd/source/./eval/builtin/command/exec/…, or anything unclassifiable), every later relative launcher is refused. No state is carried between calls. Six t3814 cases pin this; four of them fail on HEAD, and the other two are positive controls. **Residual, out of scope:** the critical-budget gate's classifier (`lib/cmd_classify.py`) still admits `/tmp/x/bin/fw handover` and `cd /tmp/x && bin/fw git commit`, because it matches spelling. The round-1 note that this was "wrap-up gates (critical budget included)" covers only check-active-task.sh.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -379,3 +385,6 @@ bin/fw vendor self --check
 ### 2026-10-12 — fixed [T-4108 worker]
 - Pre-fix failures: new pytest file 5 failed against HEAD lib/issues.py; bats planted-launcher case failed against HEAD safe-commands.sh. Post-fix all green.
 - t4077/78/88 fixtures neutralise only the ancestry probe in-process (they run under a Claude worker); t4077 agent test now expects --i-am-human refused.
+
+### 2026-10-12 — round 2 [T-4108 r2 worker]
+- Relative launchers are resolved against the payload `cwd`, and any directory change earlier in the same command refuses them. Pre-fix: t3814 tests 7, 8, 9 and 12 failed against HEAD safe-commands.sh plus check-active-task.sh. Tests 10 and 11 are positive controls. All 12 pass post-fix.

@@ -164,6 +164,17 @@ try:
 except:
     print('')
 " 2>/dev/null)
+    # T-4108 round 2: the shell's cwd at the call, from the payload — a relative
+    # fw launcher in a commit clause is resolved against it (safe-commands.sh).
+    # Assigned unconditionally so an inherited value can never stand in for it.
+    _FW_PAYLOAD_CWD=$(echo "$INPUT" | python3 -c "
+import sys, json
+try:
+    c = json.load(sys.stdin).get('cwd', '')
+    print(c if isinstance(c, str) else '')
+except Exception:
+    print('')
+" 2>/dev/null) || _FW_PAYLOAD_CWD=""
 
     # fw hook commands are always allowed (hooks calling hooks)
     case "$BASH_CMD" in
