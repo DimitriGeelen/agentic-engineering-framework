@@ -1,8 +1,24 @@
 ---
 id: T-4124
-name: "sidecar send to a local peer fails HTTP 401 unauthorized after a host reboot (055-agentic-fleet-cockpit receiver on 127.0.0.1:37415); worked hours before"
+name: "sidecar send to a local peer fails HTTP 401 unauthorized after a host reboot
+  (055-agentic-fleet-cockpit receiver on 127.0.0.1:37415); worked hours before"
 description: >
-  2026-10-12 after the system crash/reboot: fw sidecar send --to 055-agentic-fleet-cockpit -> REJECTED HTTP 401 unauthorized, twice. Other local peers (dimitri-mint-dev, 832, 010, 1409) accept. Hypothesis: 055's receiver regenerated its token on restart and our cached peer credentials are stale. A send that is rejected should name the cause and the remedy, and should stay queued for a retry once credentials refresh.
+  LOCALISED 2026-10-12 21:xx: 055's registered receiver (pid 16898) is alive and holds port 37415, but 055's
+  receiver.token was rewritten ~16 min AFTER that receiver started (registry mtime 1791827468, token mtime
+  1791828416). Senders read the file (direct.py post_with_token → lifecycle.read_token), the server compares
+  against the token it loaded at start → 401 for every sender (010 confirmed independently). Code path:
+  lib/sidecar_cli.py:600-625 — when the triple file is missing/unreadable the receiver is treated as not
+  running, write_token() overwrites the token BEFORE the new server binds; with a fixed configured port the new
+  server cannot bind and dies, the old one keeps the old token. No lock, no token rollback on a failed start.
+  Fix shape: take a lock; write the token only after confirming no live listener for this project on the
+  port (or have the server re-read the token file per request / on change); restore the previous token when
+  the new server does not come up; and a REJECTED 401 should stay queued for retry. Immediate remedy for 055:
+  restart its receiver (stop + start).
+  2026-10-12 after the system crash/reboot: fw sidecar send --to 055-agentic-fleet-cockpit
+  -> REJECTED HTTP 401 unauthorized, twice. Other local peers (dimitri-mint-dev, 832,
+  010, 1409) accept. Hypothesis: 055's receiver regenerated its token on restart and
+  our cached peer credentials are stale. A send that is rejected should name the cause
+  and the remedy, and should stay queued for a retry once credentials refresh.
 
 status: captured
 workflow_type: build
@@ -38,8 +54,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T18:25:02Z
-last_update: 2026-10-12T18:25:02Z
-date_finished: null
+last_update: '2026-10-12T18:31:15Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +66,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-12T18:30:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-12T18:31:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4124: sidecar send to a local peer fails HTTP 401 unauthorized after a host reboot (055-agentic-fleet-cockpit receiver on 127.0.0.1:37415); worked hours before
