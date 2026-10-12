@@ -14,6 +14,7 @@ status: collecting
 |---|---|---|---|
 | 0.1 | 2026-10-12 | Skeleton; operator's framing captured; five stakeholder consults sent | T-4123 |
 | 0.2 | 2026-10-12 | Draft R-1..R-32, conflicts CF-1..CF-8, earlier requirements, D-1..D-3, open questions — from dimitri-mint-dev and ring20-manager only | T-4123 |
+| 0.3 | 2026-10-13 | 832's answer: R-33..R-40, CF-9..CF-11; sent to three external models (operator-approved paid consults) before 010/1409/055 answered | T-4123 |
 
 ## 1 Why this document exists
 
@@ -280,6 +281,52 @@ session. Source: A9.7, DM missed.
 **R-32** (operational, SHOULD) What happens to a retired project's items MUST be decided by the operator per
 project; until decided, they are `retired on purpose` (R-10). Source: DM missed.
 
+### 6.Q From 832's answer (v0.3)
+
+Source **WD** = `T-4123-inputs/03-832-workflow-designer.txt`.
+
+**R-33** (functional, MUST-pilot) Every item MUST carry `observed_on` and the framework (or artefact) version it
+is about; retrieval MUST be able to say "true at version X, not re-observed since".
+Source: WD A, missed 1. Rationale: a lesson about one framework version can be wrong in the next. Verify: schema
+test. AC: every result carries both fields; a query filtered by the asker's version flags items about older versions.
+
+**R-34** (functional, SHOULD) An item MAY link to the check that guards it (`guarded_by`: test or script id, with
+the date it last passed); retrieval MUST show whether such a check exists.
+Source: WD A, missed 2 ("a learning with a check is a fact, one without is an opinion"). Verify: schema test.
+
+**R-35** (functional, SHOULD) Items about files or components MUST state the install shape they apply to
+(framework repo / vendored consumer) and the per-shape location; retrieval MUST be able to filter by the asker's
+shape. Source: WD D, 832-specific, missed 3. Verify: test. AC: a query from a vendored consumer does not rank a
+hit about a path that only exists in the framework repo above one that applies.
+
+**R-36** (security invariant, MUST) A peer agent's report MUST be stored as "project X reported Y on date D, msg
+id", never as a fact; retrieval MUST show a visible trust tier (tested / observed / reasoned / peer report).
+Holds against: a confused or compromised peer whose message would otherwise become estate knowledge.
+Source: WD A, G(4), conflict 2. Verify: test. AC: an item of type peer report never returns with evidence `tested`.
+
+**R-37** (security invariant, MUST-pilot) Ingest MUST refuse binaries, caches and derived artefacts (vector
+indexes, databases, archives) and items above a size limit declared per type.
+Holds against: a confused agent pushing a cache (832 committed a 991 MB local index to git by accident).
+Source: WD A, missed 5; complements R-2 and RM P.3. Verify: test. AC: a push of a 2 MB binary blob is refused.
+
+**R-38** (functional, SHOULD) A request received from a peer (for example a field-test list) SHOULD be storable as
+an item with its id when it arrives. Source: WD A, missed 4. Verify: inspection.
+
+**R-39** (functional, MUST) Collapse MUST keep every observation with its own date and version (refines R-8).
+Source: WD conflict 1. Verify: test. AC: a collapsed item lists N observations, each with `observed_on` and version.
+
+**R-40** (functional, SHOULD) An error-class item MUST route to the owning project and MUST NOT name an agent or a
+person as cause ("names the structural gap, not who tripped it"). Source: WD G(3), G(4).
+
+**Curation, 832's view (for the operator, refines R-7..R-9):** prune flags automatically but never auto-deletes;
+collapse is proposed by an agent and decided by the originating project; combining across projects is AEF's
+(as framework owner), keeping every source; anything that becomes a rule (directive, carve-out, gate) is the
+operator's — curation never promotes a learning into enforcement on its own. Recorded as CF-9.
+
+**Fabric (refines R-18):** cards need runtime edges (`served_by`, `executed_by`, `reads_at_runtime`), per-install-shape
+locations and `guarded_by`; 176 of 507 cards in 832 have no edges. The designer corpus goes in as an index (map ids,
+versions, rails passed, changing task) linking to a pinned commit, never as a copy.
+
 ## 6.1 Conflicts
 
 | Id | Conflict | Between | State |
@@ -292,6 +339,9 @@ project; until decided, they are `retired on purpose` (R-10). Source: DM missed.
 | CF-6 | Superseded must stay visible (DM) vs never in top results (RM) | DM C vs RM C.4 | Resolved by R-7 (out of default top results, retrievable with flag) — pending sign-off |
 | CF-7 | Hostnames and IPs in items: replace with roles (DM 01b) vs allowed while the store stays inside the estate (RM G.4) | DM vs RM | **OPEN — operator**. Recommendation: roles in error items and cross-project items (they are the most-read data, and CF-1 is unresolved). |
 | CF-8 | Own-first ranking vs collapsed items with many owners | RM M.2 | Resolved by R-14 (rank by sources, own included) |
+| CF-9 | Who curates: reviewer agent applies collapse automatically on close match (RM) / reviewer agent, reversible (DM) vs the originating project decides collapse and only AEF combines across projects (WD) | RM B.2, DM B vs WD B | **OPEN — operator** |
+| CF-10 | Embedding vote count: server-side DM + WD, client-side RM | CF-2 | Input to CF-2; WD adds: client index per project multiplies size (991 MB for one project), keep only a small offline cache outside the repo |
+| CF-11 | Server-side store vs portability: one more dependency for every project | WD conflict 3 | Resolved by R-16 (degrade to own-project recall, say so) |
 
 ## 6.2 Earlier requirements (arc-001 A9.7)
 

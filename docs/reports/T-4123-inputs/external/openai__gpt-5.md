@@ -1,0 +1,19 @@
+model: openai/gpt-5
+usage: {"prompt_tokens": 7104, "completion_tokens": 6000, "total_tokens": 13104, "cost": 0.06888, "is_byok": false, "prompt_tokens_details": {"cached_tokens": 0, "cache_write_tokens": 0, "audio_tokens": 0, "video_tokens": 0}, "cost_details": {"upstream_inference_cost": 0.06888, "upstream_inference_prompt_cost": 0.00888, "upstream_inference_completions_cost": 0.06}, "completion_tokens_details": {"reasoning_tokens": 5184, "image_tokens": 0, "audio_tokens": 0}}
+
+1) Five most important missing requirements (with one-line acceptance criterion)
+- M-1 Transport and at‑rest encryption. AC: All client→store connections require TLS1.2+ (self-test refuses plaintext), and nightly snapshots/restores prove data is encrypted at rest with keys in the secret store.
+- M-2 Token revocation and rotation. AC: After revoking a project token, any write with it is rejected within 60 seconds and an audit row records the revocation; a rotated token (old→new) supports uninterrupted writes and the old token is invalid.
+- M-3 Retention and budget enforcement. AC: When a collection exceeds its size/TTL budget from _manifest, an automated sweep brings it under budget per policy and emits an alert; probe shows size ≤ budget after the sweep.
+- M-4 Read visibility policy (sharing controls). AC: An item/collection marked project-only is not retrievable by any other project using the estate read token; default cross‑project read returns curated items only unless explicitly shared.
+- M-5 Monitoring and alerting. AC: Dashboards expose ingest rate, refusal reasons (secret-scan, size, model/digest), latency, freshness lag, and capacity; killing the embedder or store triggers an alert within 5 minutes.
+
+2) Requirements that are wrong, untestable, contradictory or over-scoped (with fix)
+- R-2: “Store‑wide secret-pattern scan returns 0 hits after every cycle” is impractical and brittle; false negatives remain. Fix: require pre‑push scanning (as written) plus a scheduled full-tenant scan at least weekly and sampled scans each cycle; acceptance based on zero hits in sample and no critical hits in weekly scan.
+- R-4: AC uses “exact title top‑1,” which tests ranking, not freshness. Fix: measure ingest‑to‑availability latency: each item’s last_changed_at to first_available_at ≤ 24h; ranking is covered in R‑14/R‑15 tests.
+- R-8: “Applied automatically when texts match above an agreed threshold” conflicts with R‑39/CF‑9 and lacks a defined threshold. Fix: no auto‑apply across projects; within a project, allow auto‑collapse only above a published threshold (e.g., ≥0.95 cosine using model X) and make it reversible; require retaining per‑observation metadata (R‑39).
+- R-10: “Impossible” to restore retired content is absolute and unverifiable. Fix: state “refused by store policy on write/read based on _manifest retired flags; verified via restore drills that prove retired content remains inaccessible,” and require pre‑push guards.
+- R-12: “Every result… all fields non‑empty” is unrealistic (e.g., last_confirmed may be unknown); “model id” is ambiguous. Fix: make nullable fields explicit; rename to embedding_model_id and retrieval_model_id (or drop retrieval model); acceptance requires mandatory subset non‑null (project, source link, type, status, score) and optional fields present when known.
+- R-14: “Configurable margin” is undefined; “newer and tested outranks own” is too rigid. Fix: define a default margin (e.g., 0.05) and use it only as a tie‑breaker; document tunables with defaults in _manifest.
+- R-15: “Every pushed item top‑1 for its exact title” is fragile with duplicate titles and noisy corpora. Fix: require top‑3 for exact title, or top‑1 when the title is unique in the scoped corpus.
+- R-17: Labeled SHOULD but text says “MUST be retrievable across languages.” Fix:
