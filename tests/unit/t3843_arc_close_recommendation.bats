@@ -17,6 +17,8 @@ setup() {
     mkdir -p "$ARCS_DIR" "$PROJECT_ROOT/.context/working" \
              "$PROJECT_ROOT/.tasks/active" "$PROJECT_ROOT/.tasks/completed"
     unset FW_ALLOW_EMPTY_RECOMMENDATION
+    # T-4082: since T-4041 no URL is printed unless a Watchtower is resolvable.
+    export WATCHTOWER_URL="http://wt.test:3999"
 
     _task T-901 completed "anchor text"
     _task T-902 completed "close-out text"

@@ -13,6 +13,9 @@ setup() {
     export PROJECT_ROOT="$BATS_TEST_TMPDIR/project"
     export ARCS_DIR="$PROJECT_ROOT/.context/arcs"
     export ARC_FOCUS_FILE="$PROJECT_ROOT/.context/working/arc-focus.yaml"
+    # T-4082: since T-4041 no URL is printed unless a Watchtower is resolvable (no
+    # fallback link to another port), so the URL assertions name a known one.
+    export WATCHTOWER_URL="http://wt.test:3999"
     mkdir -p "$ARCS_DIR" "$PROJECT_ROOT/.context/working"
 
     # Three arcs: one in-progress (the happy path), one closed (refuse), one with

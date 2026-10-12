@@ -55,6 +55,7 @@ def _fake_pending_acs(n: int):
             "verdict": "GO",
             "state": "OK",
             "reviewer": {"overall": "PASS", "findings": 0, "needs_human": False},
+            "readiness": "ready",  # T-4053/T-4082: rows now carry the review-readiness state
         })
     return out
 
