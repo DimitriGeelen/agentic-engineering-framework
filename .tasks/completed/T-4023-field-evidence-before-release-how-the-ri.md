@@ -8,16 +8,16 @@ description: >
   tells AEF whether each new feature works, per feature class (deterministic / observed
   in use / judged)
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-09T23:58:30Z
-last_update: '2026-10-10T00:00:28Z'
-date_finished:
+last_update: 2026-10-12T11:11:34Z
+date_finished: 2026-10-12T11:11:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -52,6 +52,15 @@ cost_estimate_proposed:
       effort: 6
     rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
       (workflow:inception); effort=6 (lines=140,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-11T00:00:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=7 (lines=159,acs=4)
     rubric_sha: e4a00f38e801
 ---
 
@@ -120,15 +129,15 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -204,7 +213,11 @@ Recommended defaults for the remaining questions:
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The operator's rule (T-4020, 2026-10-10) requires field evidence before master, and today that evidence arrives only as free-text upgrade reports (ring20 and 055 sent two on 2026-10-10), which say what broke but not whether each new feature worked. A per-feature field check declared at build time, collected from the testbed with one command and shown in the release question, turns the rule into something checkable. GO on that shape in slices; the open questions (testbed members, who answers judged checks, hard gate vs shown-and-asked, soak period) are for the operator and are listed in docs/reports/T-4023-field-evidence-before-release.md.
+
+**Date**: 2026-10-12T11:11:33Z
 
 ## Updates
 
@@ -213,3 +226,42 @@ Recommended defaults for the remaining questions:
 
 ### 2026-10-09T23:59:20Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-12T11:11:33Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The operator's rule (T-4020, 2026-10-10) requires field evidence before master, and today that evidence arrives only as free-text upgrade reports (ring20 and 055 sent two on 2026-10-10), which say what broke but not whether each new feature worked. A per-feature field check declared at build time, collected from the testbed with one command and shown in the release question, turns the rule into something checkable. GO on that shape in slices; the open questions (testbed members, who answers judged checks, hard gate vs shown-and-asked, soak period) are for the operator and are listed in docs/reports/T-4023-field-evidence-before-release.md.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-094b72f1
+- **Timestamp:** 2026-10-12T11:11:37Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-74de79a1
+- **Timestamp:** 2026-10-12T11:11:37Z
+- **Overall:** CONFIRMED
+- **Claims:** 6
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-4020` | task | ✓ pass |
+| `T-4003` | task | ✓ pass |
+| `T-4018` | task | ✓ pass |
+| `T-3874` | task | ✓ pass |
+| `T-3735` | task | ✓ pass |
+| `T-4019` | task | ✓ pass |
+
+### 2026-10-12T11:11:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
