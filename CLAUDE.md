@@ -1219,6 +1219,8 @@ When agent ACs are complete and human ACs remain:
 
 **Why this rule exists:** The agent defaults to (a) pasting CLI commands instead of using Watchtower, and (b) leaving the rationale blank for the human to figure out. Both were corrected 3 times in the same session (T-679). The agent has all the evidence — the human needs a recommendation to confirm or override, not a blank form. T-2144 added a third failure mode: filing a recommendation that *looks* like a decision (DEFER) but reads as a placeholder once the operator opens the artifact.
 
+**Pending lists come from live state (T-4095):** any list of things waiting on the operator ("waiting on you", session-end queues) is the verbatim output of `bin/fw operator pending` run just before sending — never composed from memory of earlier asks. Decided inceptions are excluded by construction, and `fw task review`/`review-batch` print `already decided: …` instead of a decide link. Origin: T-4023 re-asked 25 minutes after its recorded GO.
+
 **Structural enforcement (T-1259, T-1260):** `lib/inception.sh do_inception_decide` refuses when `$CLAUDECODE=1` and points agents at `fw task review T-XXX`. Override flag `--i-am-human` exists for script/test contexts; `--from-watchtower` is the Flask-backend exemption.
 
 **Recommendation-completeness gate (T-2204, all 4 producer legs + consumer + cron):** When an agent files a task with `workflow_type: inception` under `$CLAUDECODE=1`, the framework refuses the filing unless `--recommendation GO|NO-GO|DEFER` AND `--rationale "..."` are supplied. The gate fires at **every plausible filing path** plus the handoff verb, and a cron backstop catches anything that slips past:

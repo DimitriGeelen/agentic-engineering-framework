@@ -1,8 +1,25 @@
 ---
 id: T-4095
-name: "The agent re-asks the operator for decisions already recorded (T-4023 GO at 13:12, still listed as 'waiting on you' after 13:37): pending-for-operator lists are built from agent memory, and fw task review emits a decide link for an already-decided inception"
+name: "The agent re-asks the operator for decisions already recorded (T-4023 GO at
+  13:12, still listed as 'waiting on you' after 13:37): pending-for-operator lists
+  are built from agent memory, and fw task review emits a decide link for an already-decided
+  inception"
 description: >
-  Operator 2026-10-12: 'It keeps happening that you are asking me for inception to approve them which already have been approved for a long time, 4023 for instance… I approve in the dashboard… It's on Go… But you're still asking me for it.' Timeline: b12948acc 13:12:02 T-4023 inception decision GO (via Watchtower); the agent's next status (after 13:37) still listed T-4023 as waiting. Same class earlier: T-4017 listed as waiting after it was decided; T-4039 re-asked (there worsened by G-114 reverts). Root cause: the agent composes 'waiting on you' from its own memory of earlier asks and never re-reads live state; no single command answers 'what is pending for the operator now'; fw task review / review-batch still emit a decide link for a decided inception. Fix: (1) fw operator pending — live list (undecided inceptions, partial-complete Human checks, unrun runmes, pending paid proposals, open release ask), decided items never listed; (2) fw task review / review-batch on an inception that has a Decision print 'already decided: <GO|NO-GO|DEFER> <date> (via …)' and no decide link; (3) CLAUDE.md rule: every operator-facing pending list is the verbatim output of fw operator pending.
+  Operator 2026-10-12: 'It keeps happening that you are asking me for inception to
+  approve them which already have been approved for a long time, 4023 for instance…
+  I approve in the dashboard… It's on Go… But you're still asking me for it.' Timeline:
+  b12948acc 13:12:02 T-4023 inception decision GO (via Watchtower); the agent's next
+  status (after 13:37) still listed T-4023 as waiting. Same class earlier: T-4017
+  listed as waiting after it was decided; T-4039 re-asked (there worsened by G-114
+  reverts). Root cause: the agent composes 'waiting on you' from its own memory of
+  earlier asks and never re-reads live state; no single command answers 'what is pending
+  for the operator now'; fw task review / review-batch still emit a decide link for
+  a decided inception. Fix: (1) fw operator pending — live list (undecided inceptions,
+  partial-complete Human checks, unrun runmes, pending paid proposals, open release
+  ask), decided items never listed; (2) fw task review / review-batch on an inception
+  that has a Decision print 'already decided: <GO|NO-GO|DEFER> <date> (via …)' and
+  no decide link; (3) CLAUDE.md rule: every operator-facing pending list is the verbatim
+  output of fw operator pending.
 
 status: started-work
 workflow_type: build
@@ -39,8 +56,8 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T11:46:14Z
-last_update: 2026-10-12T11:47:24Z
-date_finished: null
+last_update: 2026-10-12T12:05:33Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +68,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-12T12:00:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=286,acs=6)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-12T12:01:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4095: The agent re-asks the operator for decisions already recorded (T-4023 GO at 13:12, still listed as 'waiting on you' after 13:37): pending-for-operator lists are built from agent memory, and fw task review emits a decide link for an already-decided inception
@@ -63,10 +108,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw operator pending [--json]` (new `lib/operator_pending.py` + bin/fw route + help line) lists, from LIVE state only: active inceptions with no `**Decision**` (with recommendation + `/inception/<id>` link); partial-complete tasks with unticked Human criteria that the T-4053 readiness predicate calls ready (with `/review/<id>`); runmes not yet run (`fw runme pending`); paid review proposals awaiting approval; and nothing else. An inception that has a Decision (in the file, or a "(via Watchtower)" decision commit for it at HEAD) never appears. Output is a short markdown list grouped by kind, suitable to paste verbatim.
-- [ ] `fw task review T-XXX` and `fw task review-batch` on an inception that already has a Decision print `already decided: <GO|NO-GO|DEFER> on <date> (<source>)` and emit no decide link (exit 0); undecided inceptions unchanged.
-- [ ] Tests (`tests/unit/t4095_operator_pending_test.py` or bats) with fixture tasks: decided inception absent from the list and refused by review; undecided present; ready partial-complete present, waiting-on-agent absent; a pending runme present. The "decided inception still emits a decide link" case fails on the pre-fix code.
-- [ ] CLAUDE.md §Presenting Work for Human Review gains the rule: any list of things waiting for the operator is the verbatim output of `fw operator pending` (never composed from memory), with this task's RCA as origin.
+- [x] `fw operator pending [--json]` (new `lib/operator_pending.py` + bin/fw route + help line) lists, from LIVE state only: active inceptions with no `**Decision**` (with recommendation + `/inception/<id>` link); partial-complete tasks with unticked Human criteria that the T-4053 readiness predicate calls ready (with `/review/<id>`); runmes not yet run (`fw runme pending`); paid review proposals awaiting approval; and nothing else. An inception that has a Decision (in the file, or a "(via Watchtower)" decision commit for it at HEAD) never appears. Output is a short markdown list grouped by kind, suitable to paste verbatim.
+- [x] `fw task review T-XXX` and `fw task review-batch` on an inception that already has a Decision print `already decided: <GO|NO-GO|DEFER> on <date> (<source>)` and emit no decide link (exit 0); undecided inceptions unchanged.
+- [x] Tests (`tests/unit/t4095_operator_pending_test.py` or bats) with fixture tasks: decided inception absent from the list and refused by review; undecided present; ready partial-complete present, waiting-on-agent absent; a pending runme present. The "decided inception still emits a decide link" case fails on the pre-fix code.
+- [x] CLAUDE.md §Presenting Work for Human Review gains the rule: any list of things waiting for the operator is the verbatim output of `fw operator pending` (never composed from memory), with this task's RCA as origin.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -338,3 +383,9 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4095-the-agent-re-asks-the-operator-for-decis.md
 - **Context:** Initial task creation
+
+### 2026-10-12 — build [dispatch worker]
+- **Shipped:** `lib/operator_pending.py` (`pending [--json]`, `decided <file>`), `fw operator pending` route + help line in bin/fw, `_inception_already_decided` short-circuit in `lib/review.sh` (emit_review, emit_review_batch pre-pass and table), CLAUDE.md paragraph, `tests/unit/t4095_operator_pending_test.py` (3 tests).
+- **Decision-source:** a Decision counts when the file has `**Decision**: GO|NO-GO|DEFER` OR a `T-N: inception decision <V>` commit is reachable from HEAD (covers G-114-reverted files). `inception.sh` sets `FW_REVIEW_POST_DECISION=1` for its own post-decision `emit_review` so the confirmation view and review marker keep working (the existing post_move bats failed without this).
+- **Pre-fix failure:** with HEAD `lib/review.sh`, `test_review_emit_prints_no_decide_link_for_decided` fails (decide link emitted for the decided inception); the other two tests exercise the new module.
+- **Live:** `bin/fw operator pending` lists T-2899, T-3501, T-3670, T-3682, T-4012 (undecided inceptions) + ready Human checks; T-4023 absent (0 matches). `bin/fw task review T-4023` → `T-4023: already decided: GO on 2026-10-12T11:11:33Z (via Watchtower)`; review-batch shows the same in the Link column.
