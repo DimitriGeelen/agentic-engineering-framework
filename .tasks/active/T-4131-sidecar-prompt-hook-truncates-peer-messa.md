@@ -1,8 +1,17 @@
 ---
 id: T-4131
-name: "Sidecar prompt hook truncates peer messages at 4000 chars with no way to read the rest: point to a full-body read verb, and warn the sender when a body exceeds the cap"
+name: "Sidecar prompt hook truncates peer messages at 4000 chars with no way to read
+  the rest: point to a full-body read verb, and warn the sender when a body exceeds
+  the cap"
 description: >
-  Field 2026-10-12: AEF's review to 1409 (~13 KB) arrived as 'delivered: RECEIVED', but 1409's prompt hook (lib/sidecar/hooks.py:147, BODY_CAP=4000) cut it to 4000 chars with '[truncated, N more chars]' and no pointer to the full text; 1409's boundary gate stopped it reading our file, so it had to ask for a resend in chunks. Proposal: (1) the truncation marker names a read-only verb that prints the full stored body by msg id (add one if none exists); (2) fw sidecar send warns when the body exceeds the recipient-side cap, or offers to split. Check the full body is actually stored on the receiving side.
+  Field 2026-10-12: AEF's review to 1409 (~13 KB) arrived as 'delivered: RECEIVED',
+  but 1409's prompt hook (lib/sidecar/hooks.py:147, BODY_CAP=4000) cut it to 4000
+  chars with '[truncated, N more chars]' and no pointer to the full text; 1409's boundary
+  gate stopped it reading our file, so it had to ask for a resend in chunks. Proposal:
+  (1) the truncation marker names a read-only verb that prints the full stored body
+  by msg id (add one if none exists); (2) fw sidecar send warns when the body exceeds
+  the recipient-side cap, or offers to split. Check the full body is actually stored
+  on the receiving side.
 
 status: captured
 workflow_type: build
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T21:18:41Z
-last_update: 2026-10-12T21:18:41Z
-date_finished: null
+last_update: '2026-10-12T21:31:05Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,13 +59,43 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-12T21:30:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-12T21:31:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4131: Sidecar prompt hook truncates peer messages at 4000 chars with no way to read the rest: point to a full-body read verb, and warn the sender when a body exceeds the cap
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Second instance the same evening: 832's T-4123 answer (msg a0a4789f, 9433 chars) was cut to 4000 in AEF's own
+prompt. The full body IS stored by the receiver at `.context/sidecar/receiver/messages/<msg-id>.json` (recovered
+from there). So the fix can be small: the truncation marker names the read verb / path for that stored body.
 
 ## Acceptance Criteria
 
