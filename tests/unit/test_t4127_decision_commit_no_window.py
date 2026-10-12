@@ -159,3 +159,28 @@ def test_stale_real_index_with_decision_already_in_head_is_healed(repo, tmp_path
     assert ok, msg
     _ordinary_commit(path)
     _kept(path)
+
+
+def test_pathspec_rebuilt_after_staging_when_stale_index_plus_followup_write(repo):
+    """T-4127b, codex round 3 finding 2: an old scratch-index decision commit left the real
+    index stale (obsolete active entry kept); a follow-up write then changes the completed
+    file. `git add` drops the obsolete path's last trace, so a pathspec built before
+    staging names a path git no longer knows and `git commit --only` failed."""
+    path, inc = repo
+    env = {**os.environ, "GIT_INDEX_FILE": str(path / "scratch-index")}
+
+    def sg(*a):
+        r = subprocess.run(["git", *a], cwd=path, capture_output=True, text=True, env=env, timeout=30)
+        assert r.returncode == 0, r.stderr
+        return r.stdout.strip()
+    sg("read-tree", "HEAD")
+    sg("rm", "--cached", "-q", ACTIVE)
+    sg("add", COMPLETED)
+    commit = sg("commit-tree", sg("write-tree"), "-p", "HEAD", "-m", "old scratch-index decision")
+    _git(path, "update-ref", "HEAD", commit)
+    os.remove(path / "scratch-index")
+    (path / COMPLETED).write_text(DECIDED + "\nfollow-up write\n")
+    ok, msg = inc._commit_decision_unlocked(TASK_ID, "go", followup=True)
+    assert ok, msg
+    assert "follow-up write" in _git(path, "show", f"HEAD:{COMPLETED}").stdout
+    assert _git(path, "status", "--porcelain", "--", ".tasks").stdout.strip() == ""

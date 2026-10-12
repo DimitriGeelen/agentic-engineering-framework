@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T19:32:42Z
-last_update: '2026-10-12T19:45:26Z'
+last_update: 2026-10-12T19:47:09Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -351,6 +351,7 @@ bin/fw watchtower current
 - `git commit --only` on the real index chosen over scratch index + refresh. Window-free: git locks index.lock before building the tree and keeps it until the ref moved and the real-index entries for the paths are updated; other staged paths are not committed and stay staged.
 - Stated residual: a preceding `git add -- <paths>` (needed so a plain `mv`'s untracked new file is known to `--only`) is a separate locked call. A commit landing right after it commits the move whole (the same call stages the old path's deletion); ours then commits any remaining difference or reports nothing to commit. Nothing is reverted. A failed commit may leave the decision's own paths staged (harmless).
 - Finding 2: paths known to neither disk, HEAD nor index are dropped, so no pathspec error. Finding 3: _refresh_real_index (the "~4s" claim, really ~184s) and _index_refresh_failed were deleted; the only retry left (_run_git_retry) documents its true worst case. A stale real index from an earlier failure is healed by the `git add` that precedes the commit.
+- Follow-up (codex round 3 finding 2): the commit pathspec is rebuilt AFTER `git add` — keep a path only if in working tree, HEAD or index (HEAD-present-but-deleted stays: it is the deletion being committed). Pre-fix, plain mv + stale index from an old scratch-index commit + follow-up write failed with "pathspec ... did not match" (new test red on HEAD code for plain-mv); git-mv variant passes both ways.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
