@@ -93,6 +93,10 @@ bvp_scores_proposed:
   confidence: 1
   disposition:
   rationale: web/config.py:64 env-only today; arc-001 C3 manifest; server- vs client-side still open
+- **IW-6: Error resolution — how are error classes, their resolutions (or lack of one) and occurrence counts shared across projects, and what stays with healing patterns, the host error service and telemetry?**
+  confidence: 0
+  disposition:
+  rationale: operator added 2026-10-12; proposed split: occurrences = telemetry, error class + resolution + count = knowledge
 
 ## Exploration Plan
 

@@ -36,6 +36,7 @@ phasing, architect, evidence, pseudo-code, external panel, planner) follow only 
 | D Fabric solution finder | "I'm working with this and this — which other applications already have elements, solutions or practices that would help us" | component fabric (`.fabric/`) across projects |
 | E Model selection | default model, configurable, selectable from what Ollama has | arc-001 C3 (model manifest), P6; no model change on .107 before P1a/P1 |
 | F Push interface | T-4091 | plumbing; designed after this is decided |
+| G Error resolution | "store errors across projects with their resolutions, or even not if they do not have resolutions, then we can store the amount of times this happens" | overlap check: per-project healing patterns (`fw healing`, FP-n) and concerns (G-n); a host-level error service (skills `errors_*`, `/error-patterns`); arc-001 C1 telemetry is search telemetry, not errors. Proposed split: occurrences are telemetry (stay local / error service); the error class with its resolution status and occurrence count is knowledge (store) |
 
 ## 3 Facts established so far
 
@@ -108,3 +109,8 @@ Verbatim in `docs/reports/T-4123-inputs/00-brief-as-sent.txt`; `{TO}` and `{SPEC
 - **Operator:** "first think about what it is"; use the role-based format from ring20-manager; then "go talk with
   5 different agents externally to get input, design input." → this document, role chain step 1, five
   stakeholder consults.
+- **Operator:** another category, error resolution: errors across projects with their resolutions, or without
+  when there is none, plus how often each happens; "a little more telemetry, I don't know if I start overlapping."
+  → Agent checked existing pieces (healing FP-n, concerns, host error service, arc-001 C1 is search telemetry)
+  and proposed the event/knowledge split; unresolved classes seen in several projects flagged as a priority
+  signal. Added as scope area G and IW-6; follow-up question sent to the stakeholders.
