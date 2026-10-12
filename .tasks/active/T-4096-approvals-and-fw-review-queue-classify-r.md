@@ -1,10 +1,18 @@
 ---
 id: T-4096
-name: "/approvals and fw review-queue classify 'ready for you' differently (ring20 field test: CLI 73 ready vs page 51; page's Ready holds 9 inception decisions the CLI lists under DECISIONS) — T-4053 promised one predicate"
+name: "/approvals and fw review-queue classify 'ready for you' differently (ring20
+  field test: CLI 73 ready vs page 51; page's Ready holds 9 inception decisions the
+  CLI lists under DECISIONS) — T-4053 promised one predicate"
 description: >
-  ring20 field test of ed683536a (their T-2348), item 6: 'Waiting on the agent' matches 88/88, but of fw review-queue's 73 'ready for you' tasks only 51 are in the page's Ready section, and the page's Ready also holds 9 inception decisions that review-queue lists under DECISIONS. Examples page-only T-1052, T-1058, T-1145; queue-only T-1008, T-1100, T-1167 (ring20 corpus). Find where page and CLI diverge (inception routing, admission filter before the predicate, cache), make both call the same function with the same input set, and add a parity test over one fixture corpus.
+  ring20 field test of ed683536a (their T-2348), item 6: 'Waiting on the agent' matches
+  88/88, but of fw review-queue's 73 'ready for you' tasks only 51 are in the page's
+  Ready section, and the page's Ready also holds 9 inception decisions that review-queue
+  lists under DECISIONS. Examples page-only T-1052, T-1058, T-1145; queue-only T-1008,
+  T-1100, T-1167 (ring20 corpus). Find where page and CLI diverge (inception routing,
+  admission filter before the predicate, cache), make both call the same function
+  with the same input set, and add a parity test over one fixture corpus.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +47,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "T-2348"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T12:22:29Z
-last_update: 2026-10-12T12:22:49Z
-date_finished: null
+last_update: 2026-10-12T12:34:54Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +59,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-12T12:30:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-12T12:31:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4096: /approvals and fw review-queue classify 'ready for you' differently (ring20 field test: CLI 73 ready vs page 51; page's Ready holds 9 inception decisions the CLI lists under DECISIONS) — T-4053 promised one predicate
@@ -63,8 +99,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Root cause of the divergence found and written in `## RCA` (which input set or routing differs between `/approvals` and `fw review-queue`: inception decisions placed in Ready on the page vs DECISIONS in the CLI; tasks the CLI calls ready that the page does not admit, or vice versa).
+- [ ] Both surfaces derive their groups from one function over one input set: the same tasks are "Ready for you", "Waiting on the agent" and "Decisions" on the page and in `fw review-queue` (inception decisions are their own group on both, never mixed into Ready).
+- [ ] Parity test (`tests/web/test_t4096_review_parity.py`) over one fixture corpus containing a ready task, a waiting task, an undecided inception and a partial-complete task with a reviewer-judged criterion: page groups == CLI groups, per task id. Fails on the pre-fix code.
+- [ ] On this repo, live: the counts of `fw review-queue` and `/approvals` agree per group (record both in Updates).
+- [ ] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -227,6 +266,9 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/web/test_t4096_review_parity.py -q > .context/working/t4096.out 2>&1 && grep -q passed .context/working/t4096.out && ! grep -qE "[0-9]+ (failed|error)" .context/working/t4096.out
+bin/fw watchtower current
+bin/fw vendor self --check
 
 ## RCA
 
@@ -324,3 +366,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4096-approvals-and-fw-review-queue-classify-r.md
 - **Context:** Initial task creation
+
+### 2026-10-12T12:34:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
