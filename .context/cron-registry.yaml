@@ -23,49 +23,50 @@ jobs:
     \ audit slots (T-3070 collision class), though it takes its own lock, not audit.lock."
 - id: sidecar-sweep-5m
   name: Sidecar ack-ledger sweep (5 min)
-  schedule: '3,8,13,18,23,28,33,38,43,48,53,58 * * * *'
+  schedule: 3,8,13,18,23,28,33,38,43,48,53,58 * * * *
   command: flock -n /var/lock/agentic-cron-sidecar-sweep-5m.lock -c 'fw sidecar sweep'
   source_file: agentic-audit.crontab
   origin_task: T-3418
   status: active
   description: "arc-011 peer-consult sidecar, slice 7 (T-3418), now the drive wheel\
-    \ of the universal message retry ladder (T-3434, D-600 — OBS-447 ruled). Every\
-    \ 5 minutes, walk every open ack-ledger row and work the ones whose rung has\
-    \ come due: re-post what never reached the hub, escalate what the hub holds\
-    \ unread (a pointer to the recipient's inbox from the 15-minute rung, an\
-    \ operator `fw note` from the 1-day rung), and dead-letter after the last of 16\
-    \ attempts across ~76 days. A reply on the conversation closes the row. It no\
-    \ longer merely records failures — the pre-T-3434 behaviour was to flip a\
-    \ past-deadline STORED row to UNKNOWN and never re-send. Idempotent and a no-op\
-    \ on a clean ledger; one hub read per sweep, and a peek that never advances the\
-    \ inbox cursor `fw sidecar inbox` owns. `fw sidecar status` (T-3417) shows the\
-    \ pre-sweep backlog as expired_unswept and the give-ups as dead_letters.\
-    \ Offset to :03/:08/... off the audit slots (T-3070 collision class); takes its\
-    \ own lock, not audit.lock."
+    \ of the universal message retry ladder (T-3434, D-600 \u2014 OBS-447 ruled).\
+    \ Every 5 minutes, walk every open ack-ledger row and work the ones whose rung\
+    \ has come due: re-post what never reached the hub, escalate what the hub holds\
+    \ unread (a pointer to the recipient's inbox from the 15-minute rung, an operator\
+    \ `fw note` from the 1-day rung), and dead-letter after the last of 16 attempts\
+    \ across ~76 days. A reply on the conversation closes the row. It no longer merely\
+    \ records failures \u2014 the pre-T-3434 behaviour was to flip a past-deadline\
+    \ STORED row to UNKNOWN and never re-send. Idempotent and a no-op on a clean ledger;\
+    \ one hub read per sweep, and a peek that never advances the inbox cursor `fw\
+    \ sidecar inbox` owns. `fw sidecar status` (T-3417) shows the pre-sweep backlog\
+    \ as expired_unswept and the give-ups as dead_letters. Offset to :03/:08/... off\
+    \ the audit slots (T-3070 collision class); takes its own lock, not audit.lock."
 - id: sidecar-ensure-1m
   name: Sidecar watcher supervisor keep-alive (1 min)
   schedule: '* * * * *'
-  command: flock -n /var/lock/agentic-cron-sidecar-ensure.lock -c 'fw sidecar ensure --all'
+  command: flock -n /var/lock/agentic-cron-sidecar-ensure.lock -c 'fw sidecar ensure
+    --all'
   source_file: agentic-audit.crontab
   origin_task: T-3685
   status: active
   description: "arc-011 S-LIVE (R14/R15). Every agent's sidecar watcher runs under\
     \ a supervisor that restarts the watcher (died or hung) and the receiver. This\
-    \ restarts the SUPERVISOR: for every project on this host whose sidecar was\
-    \ started with fw sidecar start (or claude-fw --termlink) and not stopped \u2014\
-    \ the host enabled-registry ~/.local/state/fw-sidecar/enabled/ \u2014 start\
-    \ its supervisor if it is not running. A no-op while everything is up. Host-wide\
-    \ by design, so consumer projects on this host are covered too."
+    \ restarts the SUPERVISOR: for every project on this host whose sidecar was started\
+    \ with fw sidecar start (or claude-fw --termlink) and not stopped \u2014 the host\
+    \ enabled-registry ~/.local/state/fw-sidecar/enabled/ \u2014 start its supervisor\
+    \ if it is not running. A no-op while everything is up. Host-wide by design, so\
+    \ consumer projects on this host are covered too."
 - id: sidecar-ensure-boot
   name: Sidecar watchers on startup
   schedule: '@reboot'
-  command: sleep 30 && flock -n /var/lock/agentic-cron-sidecar-ensure.lock -c 'fw sidecar ensure --all'
+  command: sleep 30 && flock -n /var/lock/agentic-cron-sidecar-ensure.lock -c 'fw
+    sidecar ensure --all'
   source_file: agentic-audit.crontab
   origin_task: T-3685
   status: active
-  description: "arc-011 S-LIVE: bring every enabled sidecar watcher back after a reboot\
-    \ (the 1-minute keep-alive would too, within a minute; this is the explicit\
-    \ boot leg). The 30 s delay lets the TermLink hub come up first."
+  description: 'arc-011 S-LIVE: bring every enabled sidecar watcher back after a reboot
+    (the 1-minute keep-alive would too, within a minute; this is the explicit boot
+    leg). The 30 s delay lets the TermLink hub come up first.'
 - id: reviewer-audit-daily
   name: Reviewer Layer-3 audit (daily Pass B)
   schedule: 37 4 * * *
@@ -394,18 +395,17 @@ jobs:
   source_file: agentic-audit.crontab
   origin_task: T-3302
   status: active
-  description: "T-3302 (OBS-361) — runs the full tests/unit corpus (615 bats +
-    191 pytest files) once nightly via agents/audit/unit-suite.sh and writes a
-    machine-readable report to .context/audits/unit-suite/LATEST.yaml (+ dated
-    sibling) that fw audit surfaces as 'Unit suite (tests/unit)' (FAIL on red,
-    WARN missing/>48h). Before this, nothing scheduled tests/unit: the daily
-    audit's invariant-suite line covers tests/lint ONLY, so unit reds sat
-    invisible until an adjacent run tripped over them (two found by accident
-    2026-09-06 — OBS-359/OBS-360). Nightly + off-peak (03:03) because the
-    corpus is heavy AND its suites spawn 'audit.sh --section structure', which
-    contends the shared audit lock (T-3070 collision class) — the runner takes
-    its OWN overlap lock (.context/locks/unit-suite.lock, skip-if-held logged
-    exit 0) and never holds the audit lock itself."
+  description: "T-3302 (OBS-361) \u2014 runs the full tests/unit corpus (615 bats\
+    \ + 191 pytest files) once nightly via agents/audit/unit-suite.sh and writes a\
+    \ machine-readable report to .context/audits/unit-suite/LATEST.yaml (+ dated sibling)\
+    \ that fw audit surfaces as 'Unit suite (tests/unit)' (FAIL on red, WARN missing/>48h).\
+    \ Before this, nothing scheduled tests/unit: the daily audit's invariant-suite\
+    \ line covers tests/lint ONLY, so unit reds sat invisible until an adjacent run\
+    \ tripped over them (two found by accident 2026-09-06 \u2014 OBS-359/OBS-360).\
+    \ Nightly + off-peak (03:03) because the corpus is heavy AND its suites spawn\
+    \ 'audit.sh --section structure', which contends the shared audit lock (T-3070\
+    \ collision class) \u2014 the runner takes its OWN overlap lock (.context/locks/unit-suite.lock,\
+    \ skip-if-held logged exit 0) and never holds the audit lock itself."
 - id: fabric-describe-daily
   name: Fabric card describe sweep (daily)
   schedule: 26 4 * * *
@@ -414,28 +414,31 @@ jobs:
   source_file: agentic-audit.crontab
   origin_task: T-3430
   status: active
-  description: "T-3430 (OBS-464) — fills `purpose` and `subsystem` on component
-    cards that still carry the register-time placeholders, deriving each
-    sentence from the file's own docstring/header or its created_by task and
-    recording the provenance as purpose_source:. Never overwrites a purpose a
-    human wrote, so re-running is a no-op on a clean corpus. --describe-only
-    because the nightly sweep has no business recomputing the dependency graph;
-    edge enrichment stays an explicit `fw fabric enrich`. Exists because 792 of
-    1314 cards carried the template TODO with no verb, hook or cron that would
-    ever fill them — new files land between sweeps and register only derives at
-    creation, so a scheduled pass is what keeps the count near zero rather than
-    letting it climb again. Off the audit minutes (:07/:17/:27/…) and takes its
-    own lock, not audit.lock (T-3070 collision class); the run is read-mostly
-    and idempotent. Per-session counterpart: T-3431 (D-592) runs the same
-    describe pass (`--quiet`, ~3s measured) from the SessionStart hook and
-    `fw resume status` on every start/resume/compact, not only this nightly
-    sweep — this cron entry remains the full-corpus backstop for cards a
-    session never touches."
+  description: "T-3430 (OBS-464) \u2014 fills `purpose` and `subsystem` on component\
+    \ cards that still carry the register-time placeholders, deriving each sentence\
+    \ from the file's own docstring/header or its created_by task and recording the\
+    \ provenance as purpose_source:. Never overwrites a purpose a human wrote, so\
+    \ re-running is a no-op on a clean corpus. --describe-only because the nightly\
+    \ sweep has no business recomputing the dependency graph; edge enrichment stays\
+    \ an explicit `fw fabric enrich`. Exists because 792 of 1314 cards carried the\
+    \ template TODO with no verb, hook or cron that would ever fill them \u2014 new\
+    \ files land between sweeps and register only derives at creation, so a scheduled\
+    \ pass is what keeps the count near zero rather than letting it climb again. Off\
+    \ the audit minutes (:07/:17/:27/\u2026) and takes its own lock, not audit.lock\
+    \ (T-3070 collision class); the run is read-mostly and idempotent. Per-session\
+    \ counterpart: T-3431 (D-592) runs the same describe pass (`--quiet`, ~3s measured)\
+    \ from the SessionStart hook and `fw resume status` on every start/resume/compact,\
+    \ not only this nightly sweep \u2014 this cron entry remains the full-corpus backstop\
+    \ for cards a session never touches."
 - id: issues-sync-2h
   name: GitHub issue intake sync (every 2 h, T-4078)
   schedule: 17 */2 * * *
   command: flock -n /var/lock/agentic-cron-issues-sync-2h.lock -c 'fw issues sync'
   source_file: agentic-audit.crontab
   origin_task: T-4078
-  status: active
-  description: "T-4078 (T-4039 slice 2). Reads open GitHub issues into .context/issues/intake.jsonl: new issues get Received and Classified comments through fw issues comment; changed title/body is recorded (not re-classified); submitter replies are recorded and surfaced, never answered. Unattended-safe: a gh failure leaves the ledger untouched and exits non-zero. flock prevents overlap."
+  status: paused
+  description: 'T-4078 (T-4039 slice 2). Reads open GitHub issues into .context/issues/intake.jsonl:
+    new issues get Received and Classified comments through fw issues comment; changed
+    title/body is recorded (not re-classified); submitter replies are recorded and
+    surfaced, never answered. Unattended-safe: a gh failure leaves the ledger untouched
+    and exits non-zero. flock prevents overlap.'
