@@ -74,6 +74,12 @@ BANNER
     return 0
 }
 
+# T-4095: prints "already decided: <VERDICT> on <date> (<source>)" and returns 0 when the task file
+# is an inception with a recorded Decision (file, or a decision commit at HEAD); returns 1 otherwise.
+_inception_already_decided() {
+    python3 "${FRAMEWORK_ROOT:-.}/lib/operator_pending.py" decided "$1" 2>/dev/null
+}
+
 emit_review() {
     local task_id="${1:-}"
     local task_file="${2:-}"
@@ -97,6 +103,14 @@ emit_review() {
     fi
     if [ -z "$task_file" ] || [ ! -f "$task_file" ]; then
         return 1
+    fi
+
+    # T-4095: an inception that already has a recorded Decision is not a decision to hand off —
+    # say so and emit no decide link (the agent re-asked T-4023 after its GO).
+    local _decided
+    if [ "${FW_REVIEW_POST_DECISION:-0}" != "1" ] && _decided=$(_inception_already_decided "$task_file"); then
+        echo "$task_id: $_decided"
+        return 0
     fi
 
     # T-1657: arc-parent gate — print three-question check before the URL.
@@ -613,6 +627,7 @@ emit_review_batch() {
                 fi
             done
             [ -z "$tf" ] && continue  # NOT-FOUND handled in main loop
+            _inception_already_decided "$tf" >/dev/null && continue  # T-4095
             local wt
             wt=$(grep -m1 'workflow_type:' "$tf" 2>/dev/null | sed 's/.*workflow_type:[[:space:]]*//' | tr -d '[:space:]')
             if [ "$wt" = "inception" ]; then
@@ -679,6 +694,11 @@ emit_review_batch() {
 
         local wtype
         wtype=$(grep -m1 'workflow_type:' "$task_file" 2>/dev/null | sed 's/.*workflow_type:[[:space:]]*//' | tr -d '[:space:]')
+        local _dec
+        if _dec=$(_inception_already_decided "$task_file"); then  # T-4095
+            echo "| $tid | $wtype | $_dec |"
+            continue
+        fi
         local url
         if [ "$wtype" = "inception" ]; then
             url="${base_url}/inception/${tid}"

@@ -851,7 +851,8 @@ EOF
     # rediscovers from $task_id; defense-in-depth lives in review.sh.
     if [ -f "$FW_LIB_DIR/review.sh" ]; then
         source "$FW_LIB_DIR/review.sh"
-        emit_review "$task_id"
+        # T-4095: this IS the post-decision confirmation view; skip the already-decided short-circuit.
+        FW_REVIEW_POST_DECISION=1 emit_review "$task_id"
     fi
 
     if [ "$decision" = "go" ]; then
