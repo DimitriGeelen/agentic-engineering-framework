@@ -1015,23 +1015,55 @@ def _commit_decision(task_id: str, decision: str, followup: bool = False):
         os.close(fd)
 
 
-def _refresh_real_index(paths):
+def _refresh_real_index(paths, attempts=6, delay=0.25):
     """T-4081: set the real index entries for `paths` to HEAD (`git reset -q -- paths`).
 
     Called after a commit built against a scratch `GIT_INDEX_FILE` advanced HEAD.
     Touches only the named paths: the working tree is never written and anything
-    else staged in the real index stays staged. Best-effort and silent — the
-    decision commit already succeeded, and `fw audit` reports a decision that
-    still ends up reverted (G-114).
+    else staged in the real index stays staged.
+
+    T-4112: returns "" when the refresh happened, else the reason it did not. It
+    used to ignore git's exit code, so a `.git/index.lock` held by a concurrent
+    git command made the refresh a silent no-op and the next ordinary commit
+    reverted the decision. Lock contention is usually momentary, so it retries
+    (bounded, ~4s); a lock that outlives that — or any other failure — is the
+    caller's to surface.
     """
     import subprocess
+    import time
     if not paths:
-        return
-    try:
-        subprocess.run(["git", "reset", "-q", "--"] + list(paths),
-                       cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30)
-    except Exception:
-        pass
+        return ""
+    err = ""
+    for attempt in range(attempts):
+        if attempt:
+            time.sleep(delay * attempt)
+        try:
+            r = subprocess.run(["git", "reset", "-q", "--"] + list(paths),
+                               cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30)
+        except Exception as e:  # timeout, git missing
+            err = str(e)
+            continue
+        if r.returncode == 0:
+            return ""
+        err = (_operator_facing_stderr(r.stderr or r.stdout or "")
+               or f"git reset exited {r.returncode}").strip()
+    return err or "git reset failed"
+
+
+def _index_refresh_failed(task_id, paths, reason):
+    """T-4112: the (ok, message) a decision commit returns when its index refresh failed.
+
+    Not ok on purpose: every surface that reports a decision commit (the decide
+    response, the inception page, decide_runner.surface) shows the message only
+    when ok is False, and the hazard is real until the index is refreshed — the
+    next ordinary commit reverts the decision. The runner's follow-up commit
+    retries the refresh, and a clean follow-up clears it.
+    """
+    msg = (f"{task_id}: decision committed, git index NOT refreshed - the next commit "
+           f"reverts it unless you first run: git reset -q -- {' '.join(paths)} "
+           f"(reason: {reason[:160]})")
+    logger.error("T-4112 %s", msg)
+    return False, msg[:600]
 
 
 def _commit_decision_unlocked(task_id: str, decision: str, followup: bool = False):
@@ -1146,6 +1178,21 @@ def _commit_decision_unlocked(task_id: str, decision: str, followup: bool = Fals
                 return False, (_operator_facing_stderr(add.stderr or add.stdout or "")
                                or "git add failed").strip()[:200]
 
+            # T-4112: `wanted` already matches HEAD in the scratch index — the paths
+            # showed in `git status` only because an earlier refresh failed and the
+            # real index still holds pre-decision blobs. Committing would fail with
+            # "nothing to commit"; retry the refresh instead (the follow-up heal).
+            same = subprocess.run(
+                ["git", "diff", "--cached", "--quiet", "HEAD", "--"] + wanted,
+                cwd=PROJECT_ROOT, capture_output=True, text=True, timeout=30,
+                env=_env,
+            )
+            if same.returncode == 0:
+                refresh_err = _refresh_real_index(wanted)
+                if refresh_err:
+                    return _index_refresh_failed(task_id, wanted, refresh_err)
+                return True, "nothing to commit (git index refreshed)"
+
             msg = f"{task_id}: inception decision {decision.upper()} (via Watchtower)"
             if followup:
                 # T-3749: the runner's commit after the chain finished — the
@@ -1164,7 +1211,10 @@ def _commit_decision_unlocked(task_id: str, decision: str, followup: bool = Fals
             # pre-decision blobs for `wanted`. The next ordinary commit from it would
             # write them back and silently revert the decision. Point exactly those
             # entries at the new HEAD; the working tree and every other path stay put.
-            _refresh_real_index(wanted)
+            # T-4112: a refresh that did not happen is reported, never swallowed.
+            refresh_err = _refresh_real_index(wanted)
+            if refresh_err:
+                return _index_refresh_failed(task_id, wanted, refresh_err)
             return True, msg
     except Exception as e:  # never let a commit problem break the decision response
         return False, str(e)[:200]
