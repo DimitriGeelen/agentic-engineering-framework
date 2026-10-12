@@ -155,3 +155,6 @@ docs/reports/T-3239-continuous-loop-demo/.livefire-run-copy.sh
 .context/working/watchtower.log.*
 # T-3749: Watchtower decide runs (logs, status, locks) — host detail, never committed
 .context/working/decide/
+
+# Scratch clones/output that must survive a reboot (/tmp is wiped) and stay inside the project boundary (T-4112)
+.context/scratch/
