@@ -1,10 +1,17 @@
 ---
 id: T-4118
-name: "claude-fw wrapper started before an upgrade keeps old functions in memory across its restart loop, so fixes like T-4032 never reach it (832 T-1140: killed mid-turn at budget-critical)"
+name: "claude-fw wrapper started before an upgrade keeps old functions in memory across
+  its restart loop, so fixes like T-4032 never reach it (832 T-1140: killed mid-turn
+  at budget-critical)"
 description: >
-  832 evidence: wrapper pid started under 1.8.5, project upgraded to 1.8.9; the claude -c restart loop reused the in-memory 1.8.5 _terminator_watch (no 'waiting for the turn to end' line in .compact-log). Fix: before each restart iteration compare the script's mtime/hash with the one at start and re-exec itself (exec "$0" with the same args) or at minimum warn loudly. T-4069 covers the doctor/upgrade notice; this is the self-heal.
+  832 evidence: wrapper pid started under 1.8.5, project upgraded to 1.8.9; the claude
+  -c restart loop reused the in-memory 1.8.5 _terminator_watch (no 'waiting for the
+  turn to end' line in .compact-log). Fix: before each restart iteration compare the
+  script's mtime/hash with the one at start and re-exec itself (exec "$0" with the
+  same args) or at minimum warn loudly. T-4069 covers the doctor/upgrade notice; this
+  is the self-heal.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T14:04:29Z
-last_update: 2026-10-12T14:04:29Z
-date_finished: null
+last_update: 2026-10-12T15:07:57Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +57,58 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-12T14:15:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-12T14:15:56Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4118: claude-fw wrapper started before an upgrade keeps old functions in memory across its restart loop, so fixes like T-4032 never reach it (832 T-1140: killed mid-turn at budget-critical)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Field reports 832 T-1140 and ring20-dashboard T-2509: a claude-fw wrapper started before
+an upgrade kept its old bash functions (`_terminator_watch`) across its own restart loop, so
+the T-4032 "wait for the turn to end" fix never ran and both sessions were killed mid-turn.
+Fix: `bin/claude-fw` records its own identity (path + content hash) at start and, at the
+restart boundary only, re-execs itself when the file on disk changed — carrying restart
+state forward.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] At the restart boundary (top of every iteration after the first), if `bin/claude-fw` on disk differs from the copy the wrapper started with, the wrapper re-execs the new file with its ORIGINAL arguments, and the next claude launch runs under the new code (test: marker env set by the modified script is seen by the 2nd claude invocation)
+- [x] Restart state survives the re-exec: restart counter, sliding-window restart times, the next iteration's claude arguments, TermLink session name/enabled flag (same PID, so the session is reused); first-launch-only steps (tmux wrap, termlink spawn, sidecar start, banner, `start armed` event) are skipped on the resumed run
+- [x] One line naming old/new hash goes to `.context/working/.compact-log`, and a `reexec` event to `continuous-run.jsonl`
+- [x] No re-exec when the script is unchanged; never re-exec mid-turn (check only runs between claude runs, after the old terminator has been reaped)
+- [x] Script missing/unreadable or new script failing `bash -n` → loud WARNING on stderr + `.compact-log`, loop continues on the in-memory code
+- [x] New `tests/unit/t4118_claude_fw_reexec_on_change.bats` passes and fails on HEAD's `bin/claude-fw`; existing claude-fw / terminator suites stay green
+- [ ] `bin/fw vendor self --check` clean; `bin/fw test lint` and `bin/fw audit --section structure` introduce no new failures
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -226,6 +271,11 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n bin/claude-fw
+timeout 300 bats tests/unit/t4118_claude_fw_reexec_on_change.bats > /tmp/.t4118.out 2>&1 && ! grep -q "^not ok" /tmp/.t4118.out
+test "$(grep -c '# skip' /tmp/.t4118.out)" -eq 0
+timeout 600 bats tests/unit/claude_fw_restart_mode.bats tests/unit/t3918_terminator_handover.bats tests/unit/t3358_claude_fw_exit_detection.bats > /tmp/.t4118b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4118b.out
+bin/fw vendor self --check
 
 ## RCA
 
@@ -242,6 +292,29 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** 832 (T-1140) and ring20-dashboard (T-2509) were killed mid-tool-call at
+budget-critical after their projects had been upgraded past T-4032. `.compact-log` had no
+"waiting for the turn to end" line: the terminator that ran was the pre-T-4032 one.
+
+**Root cause:** `bin/claude-fw` is one long-lived bash process. bash parses its functions
+(`_terminator_watch` included) when the script starts and keeps them in memory; the restart
+loop relaunches `claude -c` from that same process for days. `fw upgrade` replaces the file
+on disk, but nothing ever made the running wrapper look at the file again, so every fix to
+the wrapper's own logic reached only wrappers started after the upgrade.
+
+**Why structurally allowed:** every test of the wrapper starts a fresh process on the
+current file, so "the code on disk is the code running" was always true under test and
+never true in the field for a long-running supervisor. T-4069 added a doctor/upgrade
+*notice* about stale wrappers, but that informs the operator; it does not heal the process.
+
+**Prevention:** the wrapper now fingerprints itself (sha256 of the resolved script) at start
+and, at each restart boundary only (after claude has exited and the per-run terminator is
+reaped), execs the on-disk copy when it differs, carrying restart count, window times, next
+argv and TermLink session (same pid). Missing/unreadable/unparseable files warn loudly and
+continue. `tests/unit/t4118_claude_fw_reexec_on_change.bats` pins it (fails 6/9 on HEAD).
+Limit: a wrapper started on a version *before* this fix still has no re-exec code; it heals
+once, after its next manual restart — T-4069's notice remains the route for those.
 
 ## Evolution
 
@@ -323,3 +396,11 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4118-claude-fw-wrapper-started-before-an-upgr.md
 - **Context:** Initial task creation
+
+### 2026-10-12T14:32:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-12 — pre-fix failure recorded [agent]
+- `FW_TEST_WRAPPER=<HEAD bin/claude-fw> bats tests/unit/t4118_claude_fw_reexec_on_change.bats`:
+  tests 1, 2, 3, 5, 6, 9 fail on HEAD (second launch ran gen=old; no re-exec/warn lines;
+  resumed state ignored); 4, 7, 8 pass (they assert the no-re-exec paths). With the fix: 9/9 ok.
