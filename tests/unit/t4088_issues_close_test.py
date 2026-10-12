@@ -11,6 +11,11 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 ISSUES_PY = ROOT / "lib" / "issues.py"
 
+# T-4108: _is_agent() now looks at the process ancestry, and these tests run under a Claude worker.
+# Fixtures stand in for an operator terminal by neutralising ONLY the ancestry probe, in-process.
+WRAP = ("import sys; sys.path.insert(0, %r); import issues; issues._agent_ancestry = lambda: False; "
+        "sys.exit(issues.main(sys.argv[1:]))" % str(ROOT / "lib"))
+
 GH_STUB = r'''#!/usr/bin/env python3
 import json, os, sys
 d = os.environ["STUB_DIR"]
@@ -19,6 +24,8 @@ open(os.path.join(d, "calls.log"), "a").write(json.dumps(args) + "\n")
 def rd(n, default=""):
     p = os.path.join(d, n)
     return open(p).read() if os.path.exists(p) else default
+if args[:2] == ["api", "user"]:
+    sys.stdout.write(rd("login.txt", "maint") + "\n"); sys.exit(0)
 if args[:2] == ["issue", "view"]:
     if "state,author" in args:
         sys.stdout.write(rd("state.json", '{"state":"OPEN","author":{"login":"o"}}'))
@@ -51,12 +58,13 @@ def env(tmp_path):
     ledger = tmp_path / "issues"
     e = dict(os.environ, PATH=f"{bindir}:{os.environ['PATH']}", STUB_DIR=str(stub),
              FW_ISSUES_DIR=str(ledger), FW_ISSUES_REPO="o/r", FW_ISSUES_GIT_REMOTE="github")
-    e.pop("CLAUDECODE", None)
+    for k in ("CLAUDECODE", "AI_AGENT", "CLAUDE_CODE_ENTRYPOINT"):
+        e.pop(k, None)
     return e, stub, ledger
 
 
 def run(env_, *args, cwd=None):
-    return subprocess.run([sys.executable, str(ISSUES_PY), *args], env=env_, cwd=cwd,
+    return subprocess.run([sys.executable, "-c", WRAP, *args], env=env_, cwd=cwd,
                           capture_output=True, text=True)
 
 
@@ -164,7 +172,7 @@ def test_readback_marker_prevents_second_comment(env, repo):
     e, stub, ledger = env
     work, on, _ = repo
     (stub / "view.json").write_text(json.dumps({"author": {"login": "o"}, "comments": [
-        {"author": {"login": "someone"}, "body": "<!-- aef-intake:stage=closed-fixed -->"}]}))
+        {"author": {"login": "maint"}, "body": "<!-- aef-intake:stage=closed-fixed -->"}]}))
     r = run(e, "close", "8", "--as", "fixed", "--task", "T-518", "--commit", on, cwd=work)
     assert r.returncode == 0 and "already carries" in r.stdout
     assert not (stub / "body.txt").exists()

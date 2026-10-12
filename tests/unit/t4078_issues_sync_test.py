@@ -12,6 +12,11 @@ import yaml
 ROOT = Path(__file__).resolve().parents[2]
 ISSUES_PY = ROOT / "lib" / "issues.py"
 
+# T-4108: _is_agent() now looks at the process ancestry, and these tests run under a Claude worker.
+# Fixtures stand in for an operator terminal by neutralising ONLY the ancestry probe, in-process.
+WRAP = ("import sys; sys.path.insert(0, %r); import issues; issues._agent_ancestry = lambda: False; "
+        "sys.exit(issues.main(sys.argv[1:]))" % str(ROOT / "lib"))
+
 # Repo is "o/r", so the token owner (internal-class author) is "o".
 GH_STUB = r'''#!/usr/bin/env python3
 import json, os, sys
@@ -25,6 +30,8 @@ if args[:2] == ["issue", "list"]:
     if os.path.exists(os.path.join(d, "fail_list")):
         sys.stderr.write("HTTP 503: service unavailable"); sys.exit(1)
     sys.stdout.write(rd("issues.json", "[]")); sys.exit(0)
+if args[:2] == ["api", "user"]:
+    sys.stdout.write(rd("login.txt", "maint") + "\n"); sys.exit(0)
 if args[:2] == ["issue", "view"]:
     sys.stdout.write(rd("view.json", '{"author":{"login":"reporter"},"comments":[]}')); sys.exit(0)
 if args[:2] == ["label", "list"]:
@@ -58,7 +65,8 @@ def env(tmp_path):
     e = dict(os.environ, PATH=f"{bindir}:{os.environ['PATH']}", STUB_DIR=str(stub),
              FW_ISSUES_DIR=str(ledger), FW_ISSUES_REPO="o/r", FW_ISSUES_GIT_REMOTE="github",
              PROJECT_ROOT=str(project))
-    e.pop("CLAUDECODE", None)
+    for k in ("CLAUDECODE", "AI_AGENT", "CLAUDE_CODE_ENTRYPOINT"):
+        e.pop(k, None)
     return e, stub, ledger
 
 
@@ -77,7 +85,7 @@ def set_issues(stub, items):
 
 
 def sync(env_, *extra):
-    return subprocess.run([sys.executable, str(ISSUES_PY), "sync", *extra], env=env_,
+    return subprocess.run([sys.executable, "-c", WRAP, "sync", *extra], env=env_,
                           capture_output=True, text=True)
 
 

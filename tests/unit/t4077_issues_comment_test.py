@@ -11,6 +11,11 @@ import pytest
 ROOT = Path(__file__).resolve().parents[2]
 ISSUES_PY = ROOT / "lib" / "issues.py"
 
+# T-4108: _is_agent() now looks at the process ancestry, and these tests run under a Claude worker.
+# Fixtures stand in for an operator terminal by neutralising ONLY the ancestry probe, in-process.
+WRAP = ("import sys; sys.path.insert(0, %r); import issues; issues._agent_ancestry = lambda: False; "
+        "sys.exit(issues.main(sys.argv[1:]))" % str(ROOT / "lib"))
+
 GH_STUB = r'''#!/usr/bin/env python3
 import json, os, sys
 d = os.environ["STUB_DIR"]
@@ -19,6 +24,8 @@ open(os.path.join(d, "calls.log"), "a").write(json.dumps(args) + "\n")
 def rd(n, default=""):
     p = os.path.join(d, n)
     return open(p).read() if os.path.exists(p) else default
+if args[:2] == ["api", "user"]:
+    sys.stdout.write(rd("login.txt", "maint") + "\n"); sys.exit(0)
 if args[:2] == ["issue", "view"]:
     sys.stdout.write(rd("view.json", '{"author":{"login":"reporter"},"comments":[]}')); sys.exit(0)
 if args[:2] == ["label", "list"]:
@@ -48,12 +55,13 @@ def env(tmp_path):
     ledger = tmp_path / "issues"
     e = dict(os.environ, PATH=f"{bindir}:{os.environ['PATH']}", STUB_DIR=str(stub),
              FW_ISSUES_DIR=str(ledger), FW_ISSUES_REPO="o/r", FW_ISSUES_GIT_REMOTE="github")
-    e.pop("CLAUDECODE", None)
+    for k in ("CLAUDECODE", "AI_AGENT", "CLAUDE_CODE_ENTRYPOINT"):
+        e.pop(k, None)
     return e, stub, ledger
 
 
 def run(env_, *args, cwd=None):
-    return subprocess.run([sys.executable, str(ISSUES_PY), *args], env=env_, cwd=cwd,
+    return subprocess.run([sys.executable, "-c", WRAP, *args], env=env_, cwd=cwd,
                           capture_output=True, text=True)
 
 
@@ -140,11 +148,14 @@ def test_decision_stage_refuses_without_approval(env, stage, extra):
 
 def test_decision_stage_under_agent_needs_real_record(env):
     e, stub, ledger = env
+    op = e
     e = dict(e, CLAUDECODE="1")
     r = run(e, "comment", "86", "--stage", "accepted", "--task", "T-1", "--approved-by-operator", "made-up")
     assert r.returncode != 0 and "operator approval record" in r.stderr
     assert run(e, "approve", "AP-1", "--issue", "86", "--stage", "accepted").returncode != 0  # agent can't
-    assert run(e, "approve", "AP-1", "--issue", "86", "--stage", "accepted", "--i-am-human").returncode == 0
+    # T-4108: --i-am-human does not lift agent control; only the operator's terminal records it
+    assert run(e, "approve", "AP-1", "--issue", "86", "--stage", "accepted", "--i-am-human").returncode != 0
+    assert run(op, "approve", "AP-1", "--issue", "86", "--stage", "accepted").returncode == 0
     r = run(e, "comment", "86", "--stage", "accepted", "--task", "T-1", "--approved-by-operator", "AP-1")
     assert r.returncode == 0, r.stderr
     # the record is for #86 only

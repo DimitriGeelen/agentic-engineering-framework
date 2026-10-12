@@ -48,10 +48,21 @@ _verdict() {
              'bin/fw git commit -m "TT-9: x"' \
              './bin/fw git commit -m "TT-9: x"' \
              '.agentic-framework/bin/fw git commit -m "TT-9: x"' \
-             '/opt/some-project/.agentic-framework/bin/fw git commit -m "TT-9: x"' \
-             '/opt/999-x/bin/fw git commit -m "TT-9: x"'; do
+             "$ROOT/bin/fw git commit -m \"TT-9: x\"" \
+             "$r/.agentic-framework/bin/fw git commit -m \"TT-9: x\""; do
         v="$(_verdict "$r" "$c")"
         [ "$v" = "ADMITTED" ] || { echo "refused: $c" >&2; false; }
+    done
+}
+
+@test "T-4108: an absolute launcher outside this project's own fw is refused" {
+    r="$(_mkroot)"
+    for c in '/tmp/x/bin/fw git commit -m "TT-9: x"' \
+             '/opt/some-project/.agentic-framework/bin/fw git commit -m "TT-9: x"' \
+             '/opt/999-x/bin/fw git commit -m "TT-9: x"' \
+             "$r/../elsewhere/bin/fw git commit -m \"TT-9: x\""; do
+        v="$(_verdict "$r" "$c")"
+        [ "$v" = "blocked" ] || { echo "admitted: $c" >&2; false; }
     done
 }
 

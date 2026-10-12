@@ -1,8 +1,21 @@
 ---
 id: T-4108
-name: "SECURITY (release-blocking for v1.8.11, ring20-dashboard review): (1) commit-checkpoint allowance admits ANY absolute */bin/fw git commit (T-3814) — a planted /tmp/x/bin/fw passes the wrap-up gates incl. critical budget; (2) fw issues approve honours --i-am-human under CLAUDECODE=1 and accepts its own 'human-override' rows, and _is_agent() is bypassed by env -u CLAUDECODE (T-4077); (3) issue stage markers trusted from any commenter except the author (T-4077 idempotence)"
+name: "SECURITY (release-blocking for v1.8.11, ring20-dashboard review): (1) commit-checkpoint
+  allowance admits ANY absolute */bin/fw git commit (T-3814) — a planted /tmp/x/bin/fw
+  passes the wrap-up gates incl. critical budget; (2) fw issues approve honours --i-am-human
+  under CLAUDECODE=1 and accepts its own 'human-override' rows, and _is_agent() is
+  bypassed by env -u CLAUDECODE (T-4077); (3) issue stage markers trusted from any
+  commenter except the author (T-4077 idempotence)"
 description: >
-  ring20-dashboard automated security review of ed683536a, each checked by reading the code. Fixes: (1) absolute launcher form only when its realpath equals $FRAMEWORK_ROOT/bin/fw or $PROJECT_ROOT/.agentic-framework/bin/fw — else refuse; T-3814 test gains the planted-path case. (2) decision-stage approvals: --i-am-human refused under agent control (same as the Human-AC tick guard), agent detection not reliant on CLAUDECODE alone (also AI_AGENT, parent process), _approval_ok never accepts self-recorded overrides; approvals only via an operator channel (operator terminal runme / Watchtower). (3) markers trusted only from the authenticated maintainer login (gh api user), never third parties. Each with a regression test that fails on the old code.
+  ring20-dashboard automated security review of ed683536a, each checked by reading
+  the code. Fixes: (1) absolute launcher form only when its realpath equals $FRAMEWORK_ROOT/bin/fw
+  or $PROJECT_ROOT/.agentic-framework/bin/fw — else refuse; T-3814 test gains the
+  planted-path case. (2) decision-stage approvals: --i-am-human refused under agent
+  control (same as the Human-AC tick guard), agent detection not reliant on CLAUDECODE
+  alone (also AI_AGENT, parent process), _approval_ok never accepts self-recorded
+  overrides; approvals only via an operator channel (operator terminal runme / Watchtower).
+  (3) markers trusted only from the authenticated maintainer login (gh api user),
+  never third parties. Each with a regression test that fails on the old code.
 
 status: started-work
 workflow_type: build
@@ -39,8 +52,8 @@ origin: {kind: "peer", source: "ring20-dashboard"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T12:53:56Z
-last_update: 2026-10-12T12:55:26Z
-date_finished: null
+last_update: '2026-10-12T13:01:26Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +64,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-12T13:00:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=277,acs=6)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-12T13:01:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4108: SECURITY (release-blocking for v1.8.11, ring20-dashboard review): (1) commit-checkpoint allowance admits ANY absolute */bin/fw git commit (T-3814) — a planted /tmp/x/bin/fw passes the wrap-up gates incl. critical budget; (2) fw issues approve honours --i-am-human under CLAUDECODE=1 and accepts its own 'human-override' rows, and _is_agent() is bypassed by env -u CLAUDECODE (T-4077); (3) issue stage markers trusted from any commenter except the author (T-4077 idempotence)
@@ -63,10 +104,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] (1) `_fw_is_git_commit_clause` (agents/context/lib/safe-commands.sh) admits an absolute launcher only when its realpath equals the project's own `bin/fw` or `.agentic-framework/bin/fw` (FRAMEWORK_ROOT / PROJECT_ROOT); `/tmp/x/bin/fw git commit` is refused. `tests/unit/t3814_fw_git_commit_checkpoint.bats` gains that case (fails on the old code) and stays green otherwise; t3221 stays green.
-- [ ] (2) `lib/issues.py`: decision-stage approvals cannot be self-recorded by an agent — `--i-am-human` is refused under agent control (CLAUDECODE=1 or AI_AGENT set), and `_approval_ok` does not accept rows the agent path can write (no 'human-override'); an approval row needs operator provenance (written from an operator runme / terminal without agent env). Test: agent env + --i-am-human → refused; an existing 'human-override' row → not accepted; operator path → accepted. Fails on the old code.
-- [ ] (3) `lib/issues.py` idempotence read-back trusts a stage marker only in comments by the authenticated maintainer login (`gh api user`), never other accounts; test with a stubbed third-party comment carrying a marker → stage still posted. Fails on the old code.
-- [ ] All issue tests (t4077, t4078, t4088) and the hook suites stay green; `bin/fw test lint` and `bin/fw audit --section structure` clean for these files; vendored copies synced.
+- [x] (1) `_fw_is_git_commit_clause` (agents/context/lib/safe-commands.sh) admits an absolute launcher only when its realpath equals the project's own `bin/fw` or `.agentic-framework/bin/fw` (FRAMEWORK_ROOT / PROJECT_ROOT); `/tmp/x/bin/fw git commit` is refused. `tests/unit/t3814_fw_git_commit_checkpoint.bats` gains that case (fails on the old code) and stays green otherwise; t3221 stays green.
+- [x] (2) `lib/issues.py`: decision-stage approvals cannot be self-recorded by an agent — `--i-am-human` is refused under agent control (CLAUDECODE=1 or AI_AGENT set), and `_approval_ok` does not accept rows the agent path can write (no 'human-override'); an approval row needs operator provenance (written from an operator runme / terminal without agent env). Test: agent env + --i-am-human → refused; an existing 'human-override' row → not accepted; operator path → accepted. Fails on the old code.
+- [x] (3) `lib/issues.py` idempotence read-back trusts a stage marker only in comments by the authenticated maintainer login (`gh api user`), never other accounts; test with a stubbed third-party comment carrying a marker → stage still posted. Fails on the old code.
+- [x] All issue tests (t4077, t4078, t4088) and the hook suites stay green; `bin/fw test lint` and `bin/fw audit --section structure` clean for these files; vendored copies synced.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -249,6 +290,11 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** ring20-dashboard review: a planted absolute `*/bin/fw git commit` passed the wrap-up gates; an agent could self-approve decision comments via `--i-am-human` or `env -u CLAUDECODE`; any non-author account could plant a stage marker and suppress a stage.
+**Root cause:** (1) the launcher regex accepted any absolute path ending in bin/fw; (2) agent detection was CLAUDECODE-only, and `--i-am-human` plus 'human-override' rows were an agent-writable approval path; (3) the idempotence read-back trusted every commenter except the issue author.
+**Why structurally allowed:** the predicates matched shape, not identity (path / process / login); tests only exercised the honest spellings.
+**Prevention:** realpath identity check; ancestry-aware `_is_agent` with no flag override and only `by: human` rows accepted; markers trusted only from `gh api user`. t4108_issues_security_test.py (5 of 7 fail on HEAD) and the T-3814 planted-path bats case (fails on HEAD) pin it.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -329,3 +375,7 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4108-security-release-blocking-for-v1811-ring.md
 - **Context:** Initial task creation
+
+### 2026-10-12 — fixed [T-4108 worker]
+- Pre-fix failures: new pytest file 5 failed against HEAD lib/issues.py; bats planted-launcher case failed against HEAD safe-commands.sh. Post-fix all green.
+- t4077/78/88 fixtures neutralise only the ancestry probe in-process (they run under a Claude worker); t4077 agent test now expects --i-am-human refused.

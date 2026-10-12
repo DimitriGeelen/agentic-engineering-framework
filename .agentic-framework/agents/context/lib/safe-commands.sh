@@ -1306,7 +1306,18 @@ _fw_is_git_commit_clause() {
     # are a commit too. The launcher must be exactly `fw`, `[./]bin/fw`,
     # `[./].agentic-framework/bin/fw`, or an absolute path ending in one of the
     # last two — not any binary whose name ends in "fw".
-    [[ "$seg" =~ ^((\./)?(\.agentic-framework/)?bin/fw|fw|/([^[:space:]]+/)?(\.agentic-framework/)?bin/fw)[[:space:]]+git[[:space:]]+commit([[:space:]]|$) ]] && return 0
+    [[ "$seg" =~ ^((\./)?(\.agentic-framework/)?bin/fw|fw)[[:space:]]+git[[:space:]]+commit([[:space:]]|$) ]] && return 0
+    # T-4108: an ABSOLUTE launcher is admitted only when it resolves to this
+    # project's own fw — a planted /tmp/x/bin/fw would otherwise pass the
+    # wrap-up gates (critical budget included).
+    if [[ "$seg" =~ ^(/[^[:space:]]*/bin/fw)[[:space:]]+git[[:space:]]+commit([[:space:]]|$) ]]; then
+        local _l _a _b
+        _l="$(realpath -m -- "${BASH_REMATCH[1]}" 2>/dev/null)" || return 1
+        _a="$(realpath -m -- "${FRAMEWORK_ROOT:-/nonexistent}/bin/fw" 2>/dev/null)"
+        _b="$(realpath -m -- "${PROJECT_ROOT:-/nonexistent}/.agentic-framework/bin/fw" 2>/dev/null)"
+        [ -n "$_l" ] && { [ "$_l" = "$_a" ] || [ "$_l" = "$_b" ]; } && return 0
+        return 1
+    fi
     [[ "$seg" =~ ^git[[:space:]]+commit([[:space:]]|$) ]]
 }
 

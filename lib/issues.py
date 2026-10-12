@@ -106,8 +106,35 @@ def _now() -> str:
     return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
+def _agent_ancestry() -> bool:
+    """True when a Claude process is among this process's ancestors. `env -u CLAUDECODE` clears
+    the variable but not the parent chain (T-4108)."""
+    pid = os.getppid()
+    for _ in range(64):
+        if pid <= 1:
+            return False
+        try:
+            argv = Path(f"/proc/{pid}/cmdline").read_bytes().split(b"\0")
+            stat = Path(f"/proc/{pid}/stat").read_text()
+        except OSError:
+            return False
+        names = {os.path.basename(x.decode(errors="replace")) for x in argv[:3] if x}
+        if names & {"claude", "claude-fw", "claude-code"} or any(
+                b"@anthropic-ai/claude-code" in x for x in argv[:3]):
+            return True
+        try:
+            pid = int(stat.rsplit(")", 1)[1].split()[1])
+        except (IndexError, ValueError):
+            return False
+    return False
+
+
 def _is_agent() -> bool:
-    return os.environ.get("CLAUDECODE") == "1"
+    """Agent control is not decided by CLAUDECODE alone: AI_AGENT, the Claude entrypoint variable
+    and the parent process chain all count, so unsetting one variable is not an escape."""
+    e = os.environ
+    return (e.get("CLAUDECODE") == "1" or bool(e.get("AI_AGENT"))
+            or bool(e.get("CLAUDE_CODE_ENTRYPOINT")) or _agent_ancestry())
 
 
 def _read_rows(path: Path) -> list:
@@ -162,10 +189,21 @@ def _gh(args, stdin=None):
         raise IssuesError("gh CLI not found on PATH", 2)
 
 
+def _maintainer_login() -> str:
+    p = _gh(["api", "user", "--jq", ".login"])
+    login = (p.stdout or "").strip()
+    if p.returncode != 0 or not login:
+        raise IssuesError("cannot determine the authenticated GitHub login (gh api user) — needed "
+                          f"to know whose stage markers to trust: {p.stderr.strip()[:300]}", 2)
+    return login
+
+
 def _marked_on_issue(issue: int, stage: str) -> bool:
     """Read the stage marker back from the issue. Untrusted text: only the marker is looked for,
-    and comments by the issue's own author are ignored so a reporter cannot suppress a stage."""
-    p = _gh(["issue", "view", str(issue), "--repo", _repo(), "--json", "comments,author"])
+    and only in comments by the authenticated maintainer login — any other account, the reporter
+    included, can write a marker and so suppress a stage (T-4108)."""
+    me = _maintainer_login()
+    p = _gh(["issue", "view", str(issue), "--repo", _repo(), "--json", "comments"])
     if p.returncode != 0:
         raise IssuesError(f"cannot read issue #{issue} back from GitHub (needed for the "
                           f"idempotence check): {p.stderr.strip()[:300]}", 2)
@@ -173,9 +211,8 @@ def _marked_on_issue(issue: int, stage: str) -> bool:
         data = json.loads(p.stdout or "{}")
     except ValueError:
         raise IssuesError(f"gh returned unparseable JSON for issue #{issue}", 2)
-    author = (data.get("author") or {}).get("login")
     for c in data.get("comments") or []:
-        if author and (c.get("author") or {}).get("login") == author:
+        if (c.get("author") or {}).get("login") != me:
             continue
         body = c.get("body") or ""
         for m in MARKER_RE.finditer(body):
@@ -223,19 +260,21 @@ def _commit_on_mirror(commit: str) -> None:
 def _approval_ok(ref: str, issue: int, stage: str) -> bool:
     for r in _read_rows(_issues_dir() / "approvals.jsonl"):
         if (r.get("ref") == ref and r.get("issue") == issue and r.get("stage") == stage
-                and r.get("by") in ("human", "human-override")):
+                and r.get("by") == "human"):
             return True
     return False
 
 
 def cmd_approve(a) -> int:
-    if _is_agent() and not a.i_am_human:
+    if _is_agent():
         raise IssuesError("approving a decision comment is an operator action — refused under "
-                          "CLAUDECODE=1. Hand it to the operator (their terminal, --i-am-human).")
+                          "agent control (CLAUDECODE/AI_AGENT set, or a Claude process is an "
+                          "ancestor); --i-am-human does not lift it. Hand it to the operator "
+                          "(their own terminal / runme).")
     if a.stage not in DECISION_STAGES:
         raise IssuesError(f"--stage must be a decision stage: {', '.join(DECISION_STAGES)}")
     rec = {"ref": a.ref, "issue": a.issue, "stage": a.stage, "ts": _now(), "reason": a.reason or "",
-           "by": ("human-override" if a.i_am_human else "human") if _is_agent() else "human"}
+           "by": "human"}
     _append_row(_issues_dir() / "approvals.jsonl", rec)
     print(f"approval {a.ref} recorded for #{a.issue} {a.stage}")
     return 0
