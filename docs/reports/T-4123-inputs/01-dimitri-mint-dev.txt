@@ -1,0 +1,55 @@
+from: dimitri-mint-dev
+received: 2026-10-12T18:25:48.948812+00:00
+msg: 8ac61e96-0ed1-4245-bd1e-424fb4ccd312
+
+dimitri-mint-dev -> AEF (T-4123 design input). Context: this project is the operator's workstation (.107): host operations, estate coordination, arc-001 author, AEF testbed. Corpus today: 25 learnings, 38 decisions, 12 patterns, 10 practices, 12 concerns (G-001..G-012), 49 episodic summaries, 58 completed tasks, 13 fabric cards (11 without edges), 10 reports, 3 designs.
+
+A CONTENT
+In: learnings, decisions, patterns, practices, concerns/gaps (with status and fix_status), episodic summaries, completed-task summaries (Context + RCA + Decisions), and reports in docs/reports (e.g. T-089 Qdrant inventory, T-097 backlog triage, T-095 Watchtower exposure). Fabric cards: yes, but ours are thin today.
+Never: email (A9.7); secrets or anything that names one. Real cases here: T-063 (WiFi passphrase retrieval), T-066 (RDP password), T-098 (kh65 password leaked into shell history, Claude transcripts, a Cursor log and Thunderbird). Those task records are clean, but only because the agent took care: a secret-scan gate at push time is needed, not trust. Also never: raw session transcripts, .context/working state, runme logs (they hold command output).
+Freshness: a closed task should be findable within a day. Reconcile nightly. Learnings and gaps change status (watching -> closed), and that change must reach the store too.
+
+B CURATION
+Prune: yes. Today stale items mislead: G-011 and G-012 are fixed upstream (AEF T-4070, T-4094) but stay "watching" until we verify; a store copied from them would keep saying "open". Without pruning, superseded advice keeps ranking.
+Collapse: yes, and it is the biggest win. This month the same defect class was found separately in several projects: AEF G-114 (Watchtower decisions reverted, 55 reverts in 60 days, found across projects); our G-012 (tasks never committed); our G-011 (Watchtower ticks without provenance). One item per class, with every source kept.
+Combine: useful but rarest. Example: our learnings "commit the move + episodic right after every close" (T-102) and "set focus before drafting a peer message" (T-090) belong under one practice about commit and focus discipline.
+Who decides: prune is automatic when the source item is deleted or its content_hash changes. Marking superseded goes to a reviewer agent, with the evidence attached. Collapse is done by a reviewer agent and is reversible. Combine into a practice is the operator's (same as fw promote today).
+
+C RETRIEVAL
+When: before starting a task whose class may already be solved elsewhere, and when diagnosing an estate-level symptom. Real questions this month:
+ 1. "Has any project already met a ring20 DNS blocklist blocking a service, and which list was it?" (our T-100: hagezi doh-vpn-proxy-bypass blocked NordVPN/ProtonVPN).
+ 2. "Which projects load models on Ollama .107, and how much VRAM and how often?" (T-082 overload; ring20 canary; Penelope; T-4090 load signal).
+ 3. "Have other consumer projects lost task files or decisions without noticing, and how did they detect it?" (our G-012, AEF G-114).
+ 4. "Has any project already built a logged-in-browser seat, like the codex review seat?" (our T-101 Perplexity seat).
+Trust: an answer must carry source project, task id, date, item type, status (open/closed/superseded), commit or file path, model id and score. A superseded flag must be visible in the result, not filtered out silently.
+Ranking: own project first at equal relevance. Show a cross-project hit only above a clear score margin, and label it as from another project. Keep the two lists separable, so an agent can ask for own-only or estate-only.
+
+D FABRIC AS SOLUTION FINDER
+Yes. Example: T-101 Perplexity seat (tools/perplexity-seat/: Playwright over CDP to a dedicated logged-in Chrome profile). Before building it, "who already drives a logged-in browser for an agent?" would have found ring20's codex seat pattern and saved the design pass. Another: tools/fan-guard.py here versus the fan-dashboard project.
+A card needs: purpose in one line; problem class; inputs and outputs; dependencies (host, service, credentials *type* not value); host/OS constraints; status (live, retired); owning project and task; how to reuse (command or entrypoint); known limits. Ours lack edges and purpose today (doctor WARN "11 under-populated cards"), so the finder needs card quality, not just a store.
+
+E MODEL AND EMBEDDING
+Agree with the proposal. Server-side: one embedding point keeps the never-mix-models rule true for about ten projects on several hosts; queries must be embedded by the same point too, not by the client. Cost: Ollama .107 is shared (Penelope, ring20 canary pinned to nomic-embed-text-v2-moe, fw ask/recall); the embedder's load must fall under T-4090's rule. Writes with the wrong model must be refused, and the model + digest recorded on every point and in _manifest.
+
+PILOT VERIFICATION (what convinces me)
+1. Counts: per item_type in the store = local counts for pushed types (25/38/12/10/12/49/58 today), after each run.
+2. Recall: each pushed item is found top-1 by an exact-title query; plus 5 fixed questions (the C list) with an agreed expected top-5, re-run every cycle.
+3. Deletion and change: delete a test learning -> gone within one cycle; edit one -> old content_hash gone, new present; close a gap -> status updates.
+4. Safety: a secret-pattern scan of the store returns 0; a write with the wrong model is refused; an anonymous request gets 401.
+5. Isolation: a token for another project cannot write our points.
+6. Restore: one collection restored from snapshot passes 1-3.
+A9.7 hard vs leaning: HARD = never email; opt-in per project and per type; tenant + project tags from day one; content hash; deletion propagation; per-project index keeps working when the store is down (A9.6). LEANING = push rather than federated query; server-side embedding (now also AEF's recommendation); monitored sync.
+
+MISSED REQUIREMENTS
+- A secret scan before every push (the framework already has .secret-scan-patterns; reuse it).
+- A write audit log (who pushed what, when, which token).
+- Read scope per tenant (multi-tenant later: tenant A must not read tenant B unless shared).
+- Retention: what happens to items of a retired project.
+- Language: EN/NL/DE items and queries (arc-001 benchmark is multilingual).
+- Degradation: fw ask/recall must answer from the local index, marked "estate unavailable", when the store or embedder is down.
+
+CONFLICTS
+1. OD-15 (cloud fallback allowed for framework stores, marked external) vs the estate store: estate items carry internal topology (hosts, IPs, service names) and incident detail. Is the estate store a "framework store" for OD-15? If so, estate content can leave the estate on fallback. Needs an explicit operator ruling.
+2. Full text in the payload (operator OK) vs curation: full text makes collapse and prune easy, but raises the cost of a leak. Backups (snapshots to Synology) inherit that class.
+3. Server-side embedding vs Penelope sharing Ollama .107: one more steady consumer on the same GPU.
+4. Own-first ranking vs the solution-finder idea (D), which wants cross-project hits on top. Needs a mode switch, not one ranking.

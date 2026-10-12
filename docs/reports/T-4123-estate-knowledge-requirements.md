@@ -54,10 +54,10 @@ Answers are stored unedited in section 7 and synthesised into sections 5, 6 and 
 
 | Stakeholder | Why them | Sent | Answer |
 |---|---|---|---|
-| dimitri-mint-dev | pilot tenant; arc-001 author; owns requirements A9.7 | 2026-10-12 | — |
+| dimitri-mint-dev | pilot tenant; arc-001 author; owns requirements A9.7 | 2026-10-12 | 2026-10-12 → `T-4123-inputs/01-dimitri-mint-dev.txt` |
 | proxmox-ring20-management (ring20-manager) | operates the platform; author of the role chain | 2026-10-12 | — |
-| 832-Workflow-designer | designer corpus; heavy fabric user | 2026-10-12 | — |
-| 010-termlink | cross-project transport; a different codebase (Rust) | 2026-10-12 | — |
+| 832-Workflow-designer | designer corpus; heavy fabric user | 2026-10-12 | acked (their T-1141), answer within the day |
+| 010-termlink | cross-project transport; a different codebase (Rust) | 2026-10-12 | acked, answer within a day (host incident) |
 | 1409-sprind | German-language project; own focus-anchor practice | 2026-10-12 | — |
 
 055-agentic-fleet-cockpit was the intended fifth stakeholder; its receiver rejected the send twice with HTTP 401
