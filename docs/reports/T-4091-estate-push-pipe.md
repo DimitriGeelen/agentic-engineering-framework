@@ -113,3 +113,5 @@ the vectors comparable. Load rule: batches ≤ 64, backoff, no bulk re-embedding
   → IW-1 answered: A. Proposed names: main `estate__knowledge__nomic-embed-text-v2-moe-768` behind alias
   `estate_knowledge` (T-4123 naming convention: tenant__scope__model-dims, one collection per model, R-19);
   first staging `staging_aef`. Creation held until the operator confirms A and where the ingest worker runs (IW-2).
+- **2026-10-13, operator:** "1 yes, 2a" — option A for the pilot; the ingest worker runs on the AEF host, built and
+  tested by AEF. → IW-1 and IW-2 answered; recommendation GO; ring20 asked to create the collections and tokens.

@@ -45,7 +45,7 @@ origin: {kind: "operator", source: "T-4017-GO"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T10:21:16Z
-last_update: 2026-10-13T14:51:18Z
+last_update: '2026-10-13T15:00:45Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -67,6 +67,15 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=272,acs=4)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-13T15:00:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 8
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=8 (lines=350,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-10-12T10:32:00Z'
     estimator: bvp-estimator-v1-heuristic
@@ -84,6 +93,22 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-13T15:00:45Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -114,29 +139,29 @@ write.
 <!-- T-2190: every IW-N needs confidence / disposition / rationale before close. -->
 
 - **IW-1: Transport — staging collection (A), ingest service (B) or file batches (C)?**
-  confidence: 1
-  disposition:
-  rationale: artefact §3 leans A for the pilot; needs a spike on payload-only/dummy-vector points in Qdrant and the operator's view
+  confidence: 3
+  disposition: answered
+  rationale: option A — operator 2026-10-13 ("1 yes"); ring20 spike measured payload-only staging + per-collection JWT scoping work (T-4091-inputs-ring20-spike.txt)
 - **IW-2: Central embedder — where does it run, who operates it, how is it pinned to one model + digest?**
-  confidence: 1
-  disposition:
-  rationale: needs the shared GPU host's Ollama; one process, one pin (R-19, R-21)
+  confidence: 3
+  disposition: answered
+  rationale: runs on the AEF host, built and tested by AEF (operator 2026-10-13, "2a"); one process, one model pin, calls the shared GPU host's Ollama (R-19, R-21)
 - **IW-3: Identity and change — chunk id scheme so edits and deletions propagate exactly?**
   confidence: 2
-  disposition:
-  rationale: local file_state already has a per-file content_hash (web/embeddings.py:368)
+  disposition: deferred
+  rationale: design detail for the build task; local file_state already has a per-file content_hash (web/embeddings.py:368)
 - **IW-4: Redaction — which secret-pattern set, and where does the hostname→role map live?**
-  confidence: 1
-  disposition:
-  rationale: R-2 value patterns at write time; CF-7 roles (all three external models)
-- **IW-5: Read side — what does fw recall --scope estate return and how does it rank against local hits?**
-  confidence: 1
-  disposition:
-  rationale: R-12..R-16 define fields, scopes, ranking modes, degradation
-- **IW-6: Pilot proof — which checks prove the pilot works?**
   confidence: 2
-  disposition:
-  rationale: dimitri-mint-dev's pilot list in T-4123 (counts, exact-title top-1, deletion in one cycle, secret scan 0, foreign token refused)
+  disposition: deferred
+  rationale: build-task detail; R-2 value patterns at write time, CF-7 roles (all three external models)
+- **IW-5: Read side — what does fw recall --scope estate return and how does it rank against local hits?**
+  confidence: 2
+  disposition: deferred
+  rationale: second build slice after the push works; R-12..R-16 define fields, scopes, ranking, degradation
+- **IW-6: Pilot proof — which checks prove the pilot works?**
+  confidence: 3
+  disposition: answered
+  rationale: dimitri-mint-dev's pilot list in T-4123 (counts per category equal, exact-title top-1, deletion in one cycle, secret scan 0, foreign token refused)
 
 ## Exploration Plan
 
@@ -389,13 +414,17 @@ write.
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
-**Recommendation:** DEFER
+**Recommendation:** GO
 
 **Rationale:**
 
-Evidence gap: the transport choice (IW-1) depends on a spike the platform operator must answer — whether the store
-can hold staging points without real vectors and scope a project token to its staging collection — and on where the
-central embedder runs (IW-2). Everything else is settled by T-4123. Expected to move to GO within a day.
+Both open design questions are answered: transport is option A (per-project payload-only staging collection drained
+by one central ingest worker) — measured working on the estate store by ring20 — and the ingest worker runs on the AEF
+host, built and tested here (operator 2026-10-13: "1 yes, 2a"). Everything else was settled by T-4123. GO means build
+slices: (1) `fw estate push` (diff local index → staging, filters, redaction, deletions); (2) the ingest worker
+(embed with one pinned model, write main collection with model+digest, manifest check, kill switch, audit log);
+(3) read side (`--scope estate`). ring20 creates `estate__knowledge__nomic-embed-text-v2-moe-768` (alias
+`estate_knowledge`) and `staging_aef` with tokens on request.
 
 **Evidence:**
 
