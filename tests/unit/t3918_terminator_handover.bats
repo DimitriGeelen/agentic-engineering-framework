@@ -31,6 +31,7 @@ SH
     eval "$(awk '/^_turn_state\(\) \{/,/^}/' "$FRAMEWORK_ROOT/bin/claude-fw")"
     eval "$(grep '^_mono()' "$FRAMEWORK_ROOT/bin/claude-fw")"
     export FW_TERMINATOR_IDLE_SETTLE=1
+    export FW_TERMINATOR_BANNER_SECS=0.1   # T-4170: keep the pre-kill countdown short
     unset FAKE_HANDOVER FW_TERMINATOR_HANDOVER_TIMEOUT
 }
 

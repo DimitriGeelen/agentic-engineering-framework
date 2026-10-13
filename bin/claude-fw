@@ -514,6 +514,28 @@ _restart_handover_line() {
     fi
 }
 
+# T-4170 (dimitri-mint-dev P-008): a budget restart looked like a crash — nothing on
+# screen said why the session ended. _handover_id names the handover a restart
+# resumes from (LATEST.md's session_id); the banner and the relaunch line both use it.
+_handover_id() {
+    local latest="$1/.context/handovers/LATEST.md" id
+    id=$(sed -n 's/^session_id:[[:space:]]*//p' "$latest" 2>/dev/null | head -1)
+    echo "${id:-unknown}"
+}
+
+# Printed just before the terminator ends claude: reason, handover, countdown.
+# Args: $1=project root, $2=seconds until the session ends.
+_budget_end_banner() {
+    local root="$1" secs="$2"
+    {
+        echo ""
+        echo "claude-fw: === CONTEXT BUDGET CRITICAL — this session is about to end (NOT a crash) ==="
+        echo "  Reason:   context budget reached the critical threshold; claude-fw restarts a fresh session"
+        echo "  Handover: $(_handover_id "$root") (.context/handovers/LATEST.md)"
+        echo "  Ending in ${secs}s — the new session resumes from that handover."
+    } >&2
+}
+
 # T-2373: budget-critical terminator (plain mode).
 # The restart chain (checkpoint.sh writes .restart-requested at critical) only
 # restarts AFTER claude exits — but in plain mode `command claude` runs in the
@@ -672,6 +694,9 @@ _terminator_watch() {
         # Keep the restart intent alive: the restart branch only honours a signal < 300 s old.
         touch "$sigfile" 2>/dev/null || true
         echo "claude-fw: budget-critical signal detected — ending claude to trigger auto-restart." >&2
+        local banner="${FW_TERMINATOR_BANNER_SECS:-5}"
+        _budget_end_banner "$root" "$banner"
+        sleep "$banner"
         for p in $pids; do kill -TERM "$p" 2>/dev/null || true; done
         sleep "$grace"
         for p in $pids; do kill -KILL "$p" 2>/dev/null || true; done
@@ -1376,6 +1401,8 @@ while true; do
         else
             echo "  Restart mode: fresh (new session, seeded from the handover)"
         fi
+        echo "  Reason: context budget critical — the previous session was ended on purpose, not a crash."
+        echo "  Handover: $(_handover_id "$(cd "$(dirname "$signal_file")/../.." && pwd)") (.context/handovers/LATEST.md)"
         # T-3919: say "committed" only when it is true (signal mtime read before rm below).
         _restart_handover_line "$(cd "$(dirname "$signal_file")/../.." && pwd)" \
             "$(stat -c %Y "$signal_file" 2>/dev/null || echo 0)"

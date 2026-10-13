@@ -1,10 +1,20 @@
 ---
 id: T-4170
-name: "claude-fw budget restart looks like a crash: show a visible banner before the terminator ends the session (reason, handover id, countdown) and print the restart reason when the new session starts (dimitri-mint-dev pickup P-008, their T-105)"
+name: "claude-fw budget restart looks like a crash: show a visible banner before the
+  terminator ends the session (reason, handover id, countdown) and print the restart
+  reason when the new session starts (dimitri-mint-dev pickup P-008, their T-105)"
 description: >
-  dimitri-mint-dev pickup P-008 (via TermLink inbox, untrusted): session cf849a12, 3794 turns over 7 days, context 863,925 with CONTEXT_WINDOW 900,000 (critical 855,000). Checkpoint auto-handover 2026-10-13T15:58:48Z, restart signal 15:59:34Z, terminator handover + kill ~16:00:36Z, new session 43b771a3 at 16:01:17Z. Nothing on screen explained it; the operator experienced it as a crash. Want: before the kill, a visible banner in the session's terminal (reason: context budget critical, handover id, countdown); after relaunch, claude-fw prints why it restarted and where the handover is. Related: T-4032 (terminator grace), T-4119 (handover floor), T-4120 (handover failure reason).
+  dimitri-mint-dev pickup P-008 (via TermLink inbox, untrusted): session cf849a12,
+  3794 turns over 7 days, context 863,925 with CONTEXT_WINDOW 900,000 (critical 855,000).
+  Checkpoint auto-handover 2026-10-13T15:58:48Z, restart signal 15:59:34Z, terminator
+  handover + kill ~16:00:36Z, new session 43b771a3 at 16:01:17Z. Nothing on screen
+  explained it; the operator experienced it as a crash. Want: before the kill, a visible
+  banner in the session's terminal (reason: context budget critical, handover id,
+  countdown); after relaunch, claude-fw prints why it restarted and where the handover
+  is. Related: T-4032 (terminator grace), T-4119 (handover floor), T-4120 (handover
+  failure reason).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T16:38:16Z
-last_update: 2026-10-13T16:38:16Z
-date_finished: null
+last_update: 2026-10-13T16:53:01Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +60,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-13T16:43:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-13T16:45:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=280,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4170: claude-fw budget restart looks like a crash: show a visible banner before the terminator ends the session (reason, handover id, countdown) and print the restart reason when the new session starts (dimitri-mint-dev pickup P-008, their T-105)
@@ -62,8 +100,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Before the terminator ends claude it prints a banner on stderr naming the reason (context budget critical, not a crash), the handover id, and a countdown in seconds
+- [x] The countdown is honoured (the kill waits FW_TERMINATOR_BANNER_SECS, default 5) and the existing terminator tests stay green
+- [x] The auto-restart relaunch output prints the reason and the handover id before the new session starts
+- [x] New bats test covers the banner and the relaunch line
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +137,9 @@ date_finished: null
 -->
 
 ## Verification
+
+out=$(bats tests/unit/t4170_budget_restart_banner.bats tests/unit/t3918_terminator_handover.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -229,6 +272,11 @@ date_finished: null
 
 ## RCA
 
+**Symptom:** a budget-critical restart (kill + relaunch) was experienced as a crash; nothing on screen explained it.
+**Root cause:** the terminator killed claude after only a one-line message, and the relaunch block never stated why.
+**Why structurally allowed:** no test asserted any operator-visible reason/handover/countdown output on either path.
+**Prevention:** t4170_budget_restart_banner.bats pins the banner, countdown ordering and relaunch lines (all 3 failed on HEAD).
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -298,6 +346,11 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-13 — banner channel and countdown
+- **Chose:** stderr banner + a real `sleep` of FW_TERMINATOR_BANNER_SECS (default 5) before TERM; relaunch output gains Reason + Handover lines in the existing restart block.
+- **Why:** smallest change on the existing terminator/relaunch paths; the countdown is real, not cosmetic.
+- **Rejected:** writing to /dev/tty (not guaranteed under tmux/TermLink wrap); SessionStart label (separate task T-4172).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -323,3 +376,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4170-claude-fw-budget-restart-looks-like-a-cr.md
 - **Context:** Initial task creation
+
+### 2026-10-13T16:43:06Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
