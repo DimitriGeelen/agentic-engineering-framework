@@ -5,8 +5,8 @@ Drains a project's payload-only staging collection, embeds each text with the ON
 pinned model on the shared embedding host, writes the main collection with model
 and digest on every point, and deletes the drained staging points. Refuses, and
 writes nothing, when the target is not registered in `_manifest` (R-26), when the
-project is switched off (R-28), when the model digest differs from the pinned one
-(R-19), when the store refuses the token (R-25), or on a daytime bulk embed (R-21).
+project is switched off (R-28), when the entry is retired or not 768-dimensional, when
+the model digest differs from the one ring20 recorded in the entry (R-19), when the store refuses the token (R-25), or on a daytime bulk embed (R-21).
 Every write leaves an audit row (R-29) that carries counts only, never text or tokens.
 Design: docs/reports/T-4091-estate-push-pipe.md §4; slice 1 is lib/estate_push.py.
 """
@@ -31,6 +31,9 @@ DIMS = 768
 MAIN = "estate__knowledge__nomic-embed-text-v2-moe-768"  # alias: estate_knowledge
 MANIFEST = "_manifest"
 MANIFEST_KEY = "collection"  # payload field that names the collection an entry registers
+# ring20 owns `_manifest`: the ingest token is `_manifest:r` only (RBAC is per collection, and
+# write would expose every project's entry), so the worker reads its entry and never writes it.
+WRITABLE_STATES = ("candidate", "active")  # anything else (retired, unknown, missing) is refused
 INGEST_TOKEN = "qdrant_estate_ingest_aef"
 BATCH = 64  # R-21: batches of at most ~64 texts
 RETRIES = 4  # total embed attempts per batch, with exponential backoff
@@ -99,10 +102,6 @@ class QdrantStore:
     def delete(self, token, collection, ids):
         self._call("POST", f"/collections/{collection}/points/delete?wait=true", token, {"points": ids})
 
-    def set_manifest_active(self, token, entry_id, digest):
-        self._call("POST", f"/collections/{MANIFEST}/points/payload?wait=true", token, {
-            "payload": {"state": "active", "model_digest": digest}, "points": [entry_id]})
-
 
 class Ollama:
     """The shared embedding host. Only the pinned model is ever requested."""
@@ -140,6 +139,40 @@ def killed_projects(root: Path) -> set:
     return {str(p) for p in (data.get("switched_off") or [])}
 
 
+def _bare(digest) -> str:
+    # Ollama's /api/tags gives the bare hex; tolerate a `sha256:` prefix on either side.
+    d = str(digest or "").strip().lower()
+    return d[len("sha256:"):] if d.startswith("sha256:") else d
+
+
+def check_manifest(entry, digest, apply) -> None:
+    """Refuse unless ring20's `_manifest` entry for MAIN admits a write by this worker's model."""
+    if not entry:
+        raise Refused(f"collection {MAIN} is not registered in {MANIFEST} (R-26); nothing written")
+    p = entry.get("payload") or {}
+    state = p.get("state")
+    if state not in WRITABLE_STATES:
+        raise Refused(f"{MANIFEST} entry for {MAIN} is in state {state!r}, not one of "
+                      f"{'/'.join(WRITABLE_STATES)}; nothing written")
+    try:
+        dims = int(p.get("dims"))
+    except (TypeError, ValueError):
+        dims = None
+    if dims != DIMS:
+        raise Refused(f"{MANIFEST} entry for {MAIN} has dims {p.get('dims')!r}, not {DIMS}; nothing written")
+    pinned = _bare(p.get("model_digest"))
+    if not pinned:
+        return
+    if not digest:
+        if apply:  # fail closed: an apply must know the digest it embeds with
+            raise Refused(f"no digest for {MODEL} on the embedding host to compare with the pinned "
+                          f"{pinned} (R-19); nothing written")
+        return  # a dry run has no digest to compare
+    if _bare(digest) != pinned:
+        raise Refused(f"model digest {_bare(digest)} differs from the collection's pinned digest {pinned} "
+                      "(R-19); nothing written")
+
+
 def _embed(embedder, texts, sleep):
     last = None
     for attempt in range(RETRIES):
@@ -175,12 +208,7 @@ def drain(project, *, store, token, embedder, digest, staging, patterns, now, ap
     """Drain up to `max_points` staged points for `project`. Dry run unless `apply`."""
     if project in killed:
         raise Refused(f"project '{project}' is switched off (kill switch, R-28); nothing written")
-    entry = store.get_manifest(token, MAIN)
-    if not entry:
-        raise Refused(f"collection {MAIN} is not registered in {MANIFEST} (R-26); nothing written")
-    pinned = entry["payload"].get("model_digest")
-    if pinned and digest and pinned != digest:  # a dry run has no digest to compare
-        raise Refused(f"model digest {digest} differs from the collection's pinned digest {pinned} (R-19)")
+    check_manifest(store.get_manifest(token, MAIN), digest, apply)
 
     upserts, deletes, refused = [], [], []
     points = store.scroll(token, staging, max_points)
@@ -211,15 +239,11 @@ def drain(project, *, store, token, embedder, digest, staging, patterns, now, ap
                "written": 0, "deleted": 0, "refused": 0, "model": MODEL, "digest": digest,
                "staging": staging, **counts})
 
-    activated = bool(pinned)
     for i in range(0, len(upserts), BATCH):
         chunk = upserts[i:i + BATCH]
         vectors = _embed(embedder, [pt["payload"]["text"] for pt in chunk], sleep)
         store.upsert(token, MAIN, [_main_point(pt["payload"], v, digest) for pt, v in zip(chunk, vectors)])
         store.delete(token, staging, [pt["id"] for pt in chunk])
-        if not activated:
-            store.set_manifest_active(token, entry["id"], digest)
-            activated = True
         summary["written"] += len(chunk)
         row(written=len(chunk))
 
