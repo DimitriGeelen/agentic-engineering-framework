@@ -131,3 +131,132 @@ def test_point_ids_are_deterministic(tmp_path):
     (tmp_path / "idx.db").unlink()
     b = plan(tmp_path, [(".tasks/completed/T-1.md", "Completed Tasks", 0, "x")])
     assert a.upserts[0]["id"] == b.upserts[0]["id"]
+
+
+# --- T-4162 batched first fill: cap, continuation, budget headroom, unreadable count -----------
+
+class FakeStore:
+    """Stands in for staging: `stage` adds points, `count` reads them back."""
+
+    def __init__(self, staged=0, readable=True):
+        self.staged = staged
+        self.readable = readable
+        self.stage_calls = []
+
+    def count(self, url, token, collection):
+        if not self.readable:
+            raise OSError("connection refused")
+        return self.staged
+
+    def stage(self, plan, url, token, collection):
+        self.stage_calls.append(len(plan.upserts) + len(plan.deletes))
+        self.staged += len(plan.upserts) + len(plan.deletes)
+        return len(plan.upserts) + len(plan.deletes)
+
+
+def project(tmp_path, n_rows):
+    root = tmp_path / "proj"
+    (root / ".context/working").mkdir(parents=True)
+    make_db(tmp_path, [(".tasks/completed/T-%d.md" % i, "Completed Tasks", 0, "t%d" % i) for i in range(n_rows)])
+    (tmp_path / "idx.db").rename(root / ".context/working/fw-vec-index.db")
+    return root
+
+
+def run_main(monkeypatch, root, store, *extra):
+    monkeypatch.setattr(ep, "_token", lambda: "TOK")
+    monkeypatch.setattr(ep, "_count", store.count)
+    monkeypatch.setattr(ep, "stage", store.stage)
+    return ep.main(["--apply", "--project-root", str(root), *extra])
+
+
+def ledger_of(root):
+    return json.loads((root / ".context/working/estate-push-state.json").read_text())
+
+
+def test_cap_limits_one_run(tmp_path, monkeypatch, capsys):
+    root = project(tmp_path, 130)
+    store = FakeStore()
+    assert run_main(monkeypatch, root, store, "--max-points", "50") == 0
+    assert store.stage_calls == [50]
+    assert len(ledger_of(root)) == 50
+    assert "this run stages 50" in capsys.readouterr().out
+
+
+def test_continuation_across_runs_stages_everything_once(tmp_path, monkeypatch):
+    root = project(tmp_path, 130)
+    store = FakeStore()
+    for _ in range(3):
+        run_main(monkeypatch, root, store, "--max-points", "50")
+    assert store.stage_calls == [50, 50, 30]
+    assert len(ledger_of(root)) == 130
+    run_main(monkeypatch, root, store, "--max-points", "50")
+    assert store.stage_calls == [50, 50, 30]  # nothing left: a finished fill stages nothing more
+
+
+def test_budget_headroom_bounds_the_batch(tmp_path, monkeypatch):
+    monkeypatch.setattr(ep, "STAGING_BUDGET", 60)
+    root = project(tmp_path, 130)
+    store = FakeStore(staged=40)
+    run_main(monkeypatch, root, store, "--max-points", "50")
+    assert store.stage_calls == [20]  # headroom 60-40 is tighter than the cap of 50
+    assert store.staged == 60
+
+
+def test_full_budget_stages_nothing_and_says_so(tmp_path, monkeypatch, capsys):
+    monkeypatch.setattr(ep, "STAGING_BUDGET", 60)
+    root = project(tmp_path, 10)
+    store = FakeStore(staged=60)
+    assert run_main(monkeypatch, root, store) == 0
+    assert store.stage_calls == []
+    assert "staging budget full" in capsys.readouterr().out
+    assert not (root / ".context/working/estate-push-state.json").exists()
+
+
+def test_unreadable_count_stages_nothing(tmp_path, monkeypatch, capsys):
+    root = project(tmp_path, 10)
+    store = FakeStore(readable=False)
+    assert run_main(monkeypatch, root, store) == 1
+    assert store.stage_calls == []
+    out = capsys.readouterr().out
+    assert "connection refused" in out and "staging nothing" in out
+    assert not (root / ".context/working/estate-push-state.json").exists()
+
+
+def test_dry_run_reports_batch_and_runs_left_without_writing(tmp_path, monkeypatch, capsys):
+    root = project(tmp_path, 130)
+    store = FakeStore()
+    monkeypatch.setattr(ep, "_token", lambda: "TOK")
+    monkeypatch.setattr(ep, "_count", store.count)
+    monkeypatch.setattr(ep, "stage", store.stage)
+    assert ep.main(["--project-root", str(root), "--max-points", "50"]) == 0
+    out = capsys.readouterr().out
+    assert "130 to stage in total" in out and "this run stages 50" in out and "2 run(s) remain" in out
+    assert store.stage_calls == []
+
+
+def test_max_points_from_env(tmp_path, monkeypatch):
+    root = project(tmp_path, 130)
+    store = FakeStore()
+    monkeypatch.setenv("FW_ESTATE_PUSH_MAX_POINTS", "40")
+    run_main(monkeypatch, root, store)
+    assert store.stage_calls == [40]
+
+
+def test_non_positive_cap_is_refused(tmp_path, monkeypatch):
+    root = project(tmp_path, 3)
+    store = FakeStore()
+    try:
+        run_main(monkeypatch, root, store, "--max-points", "0")
+        raise AssertionError("expected SystemExit")
+    except SystemExit as e:
+        assert "positive" in str(e)
+    assert store.stage_calls == []
+
+
+def test_tombstones_count_towards_the_cap():
+    plan = ep.Plan(upserts=[{"payload": {"op": "upsert", "chunk_key": "u%d" % i}} for i in range(2)],
+                   deletes=[{"payload": {"op": "delete", "chunk_key": "d%d" % i}} for i in range(5)])
+    batch, remaining = ep.select_batch(plan, 4)
+    assert [u["payload"]["chunk_key"] for u in batch.upserts] == ["u0", "u1"]
+    assert [d["payload"]["chunk_key"] for d in batch.deletes] == ["d0", "d1"]
+    assert remaining == 3

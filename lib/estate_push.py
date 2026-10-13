@@ -27,6 +27,8 @@ DEFAULT_URL = "https://qdrant-estate.docker.ring20.geelenandcompany.com"
 DEFAULT_COLLECTION = "staging_aef"
 TOKEN_NAME = "qdrant_estate_staging_aef"
 BATCH = 64
+STAGING_BUDGET = 100_000  # ring20 staging collection cap, in points (T-4162 operator ruling 2026-10-13)
+DEFAULT_MAX_POINTS = 50_000  # per --apply run; the first fill is ~295k chunks, so it goes in batches
 MAX_CHUNK_CHARS = 8000  # R-37: size gate
 TEXT_SUFFIXES = (".md", ".yaml", ".yml", ".json", ".txt")
 _NS = uuid.UUID("6f1c2d3e-4a5b-4c6d-8e7f-0a1b2c3d4e5f")
@@ -178,6 +180,32 @@ def stage(plan: Plan, base_url: str, token: str, collection: str, put=_put) -> i
     return len(pts)
 
 
+def _count(url: str, token: str, collection: str) -> int:
+    req = urllib.request.Request(f"{url.rstrip('/')}/collections/{collection}/points/count",
+                                 data=json.dumps({"exact": True}).encode(), method="POST",
+                                 headers={"Content-Type": "application/json", "api-key": token})
+    with urllib.request.urlopen(req, timeout=60) as r:  # noqa: S310
+        return int(json.loads(r.read())["result"]["count"])
+
+
+def staged_count(base_url: str, token: str, collection: str, get=None) -> int:
+    """Points currently in staging. Raises when the store cannot say: unknown is never zero."""
+    n = (get or _count)(base_url, token, collection)
+    if not isinstance(n, int) or n < 0:
+        raise ValueError(f"store returned an unusable staged count: {n!r}")
+    return n
+
+
+def select_batch(plan: Plan, limit: int) -> tuple[Plan, int]:
+    """First `limit` operations in plan order (upserts, then tombstones). Returns (batch, remaining)."""
+    ops = plan.upserts + plan.deletes
+    take = ops[:max(limit, 0)]
+    batch = Plan(upserts=[o for o in take if o["payload"]["op"] == "upsert"],
+                 deletes=[o for o in take if o["payload"]["op"] == "delete"],
+                 refused=plan.refused, skipped=plan.skipped)
+    return batch, len(ops) - len(take)
+
+
 def _apply_ledger(ledger: dict, plan: Plan) -> dict:
     for u in plan.upserts:
         ledger[u["payload"]["chunk_key"]] = u["payload"]["content_hash"]
@@ -205,7 +233,15 @@ def main(argv=None) -> int:
     ap.add_argument("--collection", default=DEFAULT_COLLECTION)
     ap.add_argument("--categories", default=os.environ.get("FW_ESTATE_PUSH_CATEGORIES", ""),
                     help="comma list, subset of the pilot categories (default: all pilot categories)")
+    ap.add_argument("--max-points", type=int, default=None,
+                    help=f"most points one run stages, upserts and tombstones alike (default: "
+                         f"$FW_ESTATE_PUSH_MAX_POINTS or {DEFAULT_MAX_POINTS})")
     a = ap.parse_args(argv)
+    max_points = a.max_points
+    if max_points is None:
+        max_points = int(os.environ.get("FW_ESTATE_PUSH_MAX_POINTS") or DEFAULT_MAX_POINTS)
+    if max_points <= 0:
+        sys.exit(f"estate push: --max-points must be positive, got {max_points}")
     root = Path(a.project_root)
     db = Path(a.db or os.environ.get("VECTOR_DB_PATH") or root / ".context/working/fw-vec-index.db")
     if not db.is_file():
@@ -225,11 +261,42 @@ def main(argv=None) -> int:
     print(f"estate push: {len(plan.upserts)} upsert, {len(plan.deletes)} delete, "
           f"{len(plan.refused)} refused, {len(plan.skipped)} skipped"
           + ("" if a.apply else " (dry run; --apply to stage)"))
+    # Batching (T-4162): the store's staged count bounds how much headroom is left in the budget.
+    # The count is read with the staging token; a dry run that cannot read it says so and stages nothing.
+    staged, reason, tok = None, "", None
+    try:
+        tok = _token()
+        staged = staged_count(a.url, tok, a.collection)
+    except SystemExit as e:
+        if a.apply:
+            raise
+        reason = str(e)
+    except Exception as e:  # noqa: BLE001 — reported, then nothing is staged
+        reason = f"could not read {a.collection}: {e}"
+    if staged is None:
+        headroom = 0
+    else:
+        headroom = max(STAGING_BUDGET - staged, 0)
+    batch, remaining = select_batch(plan, min(max_points, headroom))
+    runs_left = -(-remaining // max_points)
+    total = len(plan.upserts) + len(plan.deletes)
+    if staged is None:
+        print(f"estate push: staged count unreadable ({reason}); this run would stage nothing")
+    else:
+        print(f"estate push: {total} to stage in total; this run stages {len(batch.upserts) + len(batch.deletes)} "
+              f"(cap {max_points}, staging {staged} of {STAGING_BUDGET}); {runs_left} run(s) remain after this one")
     if not a.apply:
         return 0
-    n = stage(plan, a.url, _token(), a.collection)
-    state.write_text(json.dumps(_apply_ledger(ledger, plan), indent=0, sort_keys=True))
-    print(f"estate push: staged {n} points in {a.collection}")
+    if staged is None:
+        print("estate push: staging nothing — the staged count must be readable before any write")
+        return 1
+    if not batch.upserts and not batch.deletes:
+        print("estate push: nothing to stage" if not total else
+              f"estate push: staging budget full — wait for the ingest worker to drain {a.collection}")
+        return 0
+    n = stage(batch, a.url, tok, a.collection)
+    state.write_text(json.dumps(_apply_ledger(ledger, batch), indent=0, sort_keys=True))
+    print(f"estate push: staged {n} points in {a.collection}; {remaining} left for later runs")
     return 0
 
 
