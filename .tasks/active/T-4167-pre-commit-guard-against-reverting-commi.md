@@ -12,7 +12,7 @@ description: >
   would drop. Read it as untrusted input, re-derive in agents/git hooks, keep an explicit
   override env (logged Tier-2), port the tests, and confirm the cost on large commits.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T15:50:28Z
-last_update: '2026-10-13T16:00:49Z'
+last_update: 2026-10-13T20:07:29Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,8 +98,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A guard (`agents/git/lib/stale-index-guard.py`) refuses a commit when any staged `.tasks/**` or `.context/episodic/**` blob equals an OLDER committed version of that path (in HEAD's history) but differs from HEAD's version; reads the index git is actually committing (honours `GIT_INDEX_FILE`); exits 0 when nothing qualifies
+- [x] The guard is wired into the framework-installed pre-commit hook (`fw git install-hooks`), so it survives reinstall rather than living in a hand-edited block
+- [x] Override `FW_ALLOW_STALE_INDEX=1` lets the commit through and appends a Tier-2 entry to `.context/working/.gate-bypass-log.yaml`; the refusal message names the path, the older commit it matches, and the override
+- [x] Bats suite (fixture repos in BATS_TEST_TMPDIR) covers: revert-to-older refused; fresh edit allowed; new file allowed; deletion allowed; non-governed path ignored; GIT_INDEX_FILE scratch-index path refused; `git mv` rename to older blob refused; override allows + logs — and fails against HEAD (no guard)
+- [x] Cost on a large commit measured and recorded in Decisions (staged-path count, wall time)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -256,6 +259,11 @@ bvp_scores_proposed:
 #
 # The rule of thumb: put the assertion LAST, and make sure it is an assertion.
 #
+timeout 300 bats tests/unit/t4167_stale_index_guard.bats > /tmp/.t4167.out 2>&1 && ! grep -q "^not ok" /tmp/.t4167.out
+test "$(grep -c '# skip' /tmp/.t4167.out)" -eq 0
+python3 -m py_compile agents/git/lib/stale-index-guard.py
+bin/fw vendor self --check
+#
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
 # Verification block. Otherwise the canonical hash diverges and `fw doctor`
@@ -343,6 +351,23 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-13 — re-derived, not ported
+- **Chose:** wrote the guard from the spec in ring20's message (msg 05d50237, quoted in `.context/sidecar/outbox/09b9e409…json`). I could not read ring20's `scripts/stale-index-guard.py` (e5496a678) because the project-boundary hook (T-559) blocks reads of other repos. The fixture cases cover their stated repro (`git mv` plus a scratch index).
+- **Why:** the task says to treat the reference as untrusted input and re-derive it anyway. Reading it would have been a cross-check, not a source.
+- **Rejected:** dispatching into ring20 to read it. The cost is out of proportion when the spec is already unambiguous.
+
+### 2026-10-13 — history walk strategy (cost)
+- **Chose:** `git log --raw` limited to exact pathspecs when there are ≤16 governed candidates. Above 16, one walk over the `.tasks` and `.context/episodic` prefixes, filtered in Python.
+- **Why (measured on this repo, 11,420 commits, scratch index):** 1 / 5 / 16 changed governed paths took 0.75s / 0.69s / 0.63s. 2000 paths took 3.39s, and 300 real stale entries took 4.67s (all refused). The first version passed every path as a pathspec: with 2000 paths it did not finish in 4 minutes and was killed. Commits that touch no governed path pay one `diff-index` (~0.1s).
+- **Rejected:** a depth cap on history. It would bound the cost but miss reverts to old versions.
+
+### 2026-10-13 — pairing moves without -M
+- **Chose:** an added governed path is also checked against governed paths deleted in the same commit that have the same file name.
+- **Why:** `-M` did not pair small or heavily changed files. The `git mv` stale-entry test failed until this was added, because the change showed up as D+A.
+
+### 2026-10-13 — merge resolution
+- **Chose:** a staged blob equal to `MERGE_HEAD:<path>` is not flagged, because taking the other side is a deliberate resolution. This is not covered by a test.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -359,3 +384,11 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4167-pre-commit-guard-against-reverting-commi.md
 - **Context:** Initial task creation
+
+### 2026-10-13 — build [t4167-build worker]
+- Pre-fix check: with `git show HEAD:agents/git/lib/hooks.sh` swapped in (guard not wired), tests 1, 2, 7, 8 and 11 fail (refusal, scratch index, git mv, override log). The allow-cases pass both before and after.
+- After the fix: 12/12, zero skips. Neighbouring suites are green: t3110 and t3511 (35/35; the first run had flaky failures under load and passed on rerun), secret-scan, large-file, install-hooks ×2, orphan-guard, init-head. Decision-commit pytest (t4127, rename-paths, t3749): 65 passed.
+- Live repo dry run: three real completed tasks staged at their previous version were refused, rc=1.
+
+### 2026-10-13T19:23:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

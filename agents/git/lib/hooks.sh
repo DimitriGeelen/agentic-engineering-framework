@@ -334,10 +334,10 @@ HOOK_EOF
     cat > "$pre_commit_hook" << 'HOOK_EOF'
 #!/bin/bash
 # pre-commit hook - Master-merge-only guard (T-2396) + task-corpus guard (T-3110)
-#                   + Secret Scan (T-1844)
+#                   + stale-index guard (T-4167) + Secret Scan (T-1844)
 # Installed by: ./agents/git/git.sh install-hooks
 # Part of: Agentic Engineering Framework
-# VERSION=1.4
+# VERSION=1.5
 
 PROJECT_ROOT="$(git rev-parse --show-toplevel)"
 
@@ -414,6 +414,18 @@ elif [ -n "$AUTHORITY_ROOT" ] && [ "$AUTHORITY_ROOT" != "$PROJECT_ROOT" ] && [ -
     echo "Commits touching .tasks/ from this worktree are unguarded." >&2
     echo "Fix at the authority: cd $AUTHORITY_ROOT && bin/fw upgrade" >&2
     echo "  (framework repo: bin/fw vendor self)" >&2
+fi
+
+# FW-HOOK-BLOCK: t4167-stale-index-guard
+# T-4167: refuse a commit whose staged .tasks/** or .context/episodic/** blob is
+# an OLDER committed version of that path — a stale index entry that would
+# silently revert later commits. Placed before the secret scan, which exits 0
+# early when its scanner is missing. Inherits GIT_INDEX_FILE (git sets it for
+# `commit --only` / scratch indexes). Override: FW_ALLOW_STALE_INDEX=1 (Tier-2,
+# logged). Origin: ring20-manager T-2215.
+STALE_INDEX_GUARD="$FRAMEWORK_ROOT/agents/git/lib/stale-index-guard.py"
+if [ -f "$STALE_INDEX_GUARD" ] && command -v python3 >/dev/null 2>&1; then
+    PROJECT_ROOT="$PROJECT_ROOT" python3 "$STALE_INDEX_GUARD" || exit 1
 fi
 
 SCANNER="$FRAMEWORK_ROOT/agents/git/lib/secret-scan.sh"
