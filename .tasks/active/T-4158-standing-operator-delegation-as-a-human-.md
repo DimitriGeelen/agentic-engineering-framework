@@ -1,8 +1,19 @@
 ---
 id: T-4158
-name: "Standing operator delegation as a Human-tick provenance kind (scope, grantor, date, revocable; ticks inside scope cite a green verdict) — or route such criteria through the existing reviewer verdict path (ring20-manager request, arc-008 role-chain step approvals)"
+name: "Standing operator delegation as a Human-tick provenance kind (scope, grantor,
+  date, revocable; ticks inside scope cite a green verdict) — or route such criteria
+  through the existing reviewer verdict path (ring20-manager request, arc-008 role-chain
+  step approvals)"
 description: >
-  ring20-manager (msg a8be58ce): their operator delegated the routine '[REVIEW] Step N output approved' ticks of the arc-008 role chain to ring20 when independent review is green. Ticking works only via FW_ALLOW_HUMAN_AC_TICK=1 and lib/human_ac_ticks.py audit then FAILs until the operator acks each tick (--i-am-human), turning a delegation into a per-step chore. Ask: a sanctioned provenance kind 'standing delegation' recorded once by the operator. First question: does the existing route already cover it — fw task delegate classifies such criteria as REVIEWER-JUDGES and a recorded green verdict (T-3579/T-3581 verdict ledger) ticks them with provenance? If they classify as operator-only, which class and why. Related: D-626, T-3557, T-4156.
+  ring20-manager (msg a8be58ce): their operator delegated the routine '[REVIEW] Step
+  N output approved' ticks of the arc-008 role chain to ring20 when independent review
+  is green. Ticking works only via FW_ALLOW_HUMAN_AC_TICK=1 and lib/human_ac_ticks.py
+  audit then FAILs until the operator acks each tick (--i-am-human), turning a delegation
+  into a per-step chore. Ask: a sanctioned provenance kind 'standing delegation' recorded
+  once by the operator. First question: does the existing route already cover it —
+  fw task delegate classifies such criteria as REVIEWER-JUDGES and a recorded green
+  verdict (T-3579/T-3581 verdict ledger) ticks them with provenance? If they classify
+  as operator-only, which class and why. Related: D-626, T-3557, T-4156.
 
 status: captured
 workflow_type: inception
@@ -12,8 +23,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-13T15:13:47Z
-last_update: 2026-10-13T15:13:47Z
-date_finished: null
+last_update: '2026-10-13T15:15:37Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +33,33 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-10-13T15:15:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=112,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-13T15:15:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4158: Standing operator delegation as a Human-tick provenance kind (scope, grantor, date, revocable; ticks inside scope cite a green verdict) — or route such criteria through the existing reviewer verdict path (ring20-manager request, arc-008 role-chain step approvals)
@@ -112,9 +150,15 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO
 
-**Rationale:** Evidence gap: whether fw task delegate --dry-run on one of ring20's step-approval tasks already routes these criteria to the reviewer-verdict path (which provides provenance without any new kind). Asked ring20-manager to run it; the answer decides between 'use the existing path / fix the classifier' and a new standing-delegation kind.
+**Rationale:** The evidence is in (ring20-manager, msg c2d56775): on their T-2363, `fw task delegate --dry-run` classes "[REVIEW] Independent review: step 3 output meets its role card…" as reviewer-judgeable, but "[REVIEW] Step 3 output approved" as a sovereignty field — a carve-out that stays human, correctly by today's rules. So the existing verdict path cannot reach it, and their operator has deliberately delegated exactly that criterion. GO for a narrow, operator-recorded standing delegation: granted once by the operator (Watchtower or --i-am-human), naming the criterion pattern and its scope (arc / task family), the condition (a named reviewer-judged criterion on the same task has a green recorded verdict), grantor, date, expiry, revocable; the audit accepts an agent tick inside the scope only when it cites that verdict id. Never delegable: tier-0-or-bypass and act-in-the-world classes. Rejected: keeping per-tick acks (turns a delegation into a chore) and reclassifying approval criteria as reviewer-judged (would remove the carve-out for everyone, not only where an operator delegated it).
+
+**Evidence:**
+
+- ring20-manager dry-run on T-2363 (msg c2d56775): AC#1 unclassified/reviewer-judgeable, AC#2 sovereignty-field, stays human.
+- Their operator's delegation (2026-10-13): "Why do you need my reviewer approval? … you have my approval", conditional on a green independent review and the operator taking new decisions (e.g. residual-risk acceptance) himself.
+- Today's workaround: FW_ALLOW_HUMAN_AC_TICK=1 then a per-tick `human_ac_ticks.py ack --i-am-human` via runme.
 
 ## Decisions
 
