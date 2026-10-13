@@ -14,7 +14,7 @@ description: >
   scan before write. Pilot proof: exact-title query top-1 for pushed items; a write
   with a foreign project's token refused; anonymous 401 (T-4123 DM pilot list).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T15:32:26Z
-last_update: '2026-10-13T15:46:27Z'
+last_update: 2026-10-13T18:47:11Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -110,8 +110,16 @@ written to the repo, a file or a log, and never printed.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Ingest worker `lib/estate_ingest.py` drains `staging_<project>` (scroll, payload-only points), embeds each text with the one pinned model (`nomic-embed-text-v2-moe`, 768) via an injectable Ollama client, records model name + digest, batches <= 64 with backoff on failure
+- [x] Writes the main collection `estate__knowledge__nomic-embed-text-v2-moe-768` with vector + payload (model, digest, project, content_hash, chunk_key); deletes drained staging point ids only after the main write succeeds
+- [x] Refuses (non-zero, nothing written) an unregistered collection (no `_manifest` entry for the target) and a switched-off project (kill-switch file/config entry), per R-26 and R-28
+- [x] Refuses a write whose token is not the ingest token for that project (foreign project token refused), and treats anonymous (no token) as 401
+- [x] Daytime bulk re-embed guard: a run that would embed more than the per-run cap in daytime hours is refused unless `--allow-daytime`; default cap documented in code
+- [x] Second secret scan before every main write: an item still matching a secret pattern is not written and is logged as refused
+- [x] Audit row appended per write batch to an append-only log (R-29): ts, project, count written, count deleted, model, digest, refused count — no token, no text
+- [x] Manifest check: `_manifest` entry is set `state=active` and `model_digest` recorded on first successful ingest
+- [x] Operator wiring: `fw estate ingest` is routed in bin/fw; NO cron entry is installed in this slice (a scheduled live writer waits for the pilot proof below). Schedule after push is a follow-up task
+- [ ] Pilot proof against the live store (exact-title top-1, wrong-token refused, anonymous 401): NOT runnable from this host in this dispatch — left to the operator; recorded in Updates
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -145,6 +153,9 @@ written to the repo, a file or a log, and never printed.
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_estate_ingest.py tests/unit/test_estate_push.py -q -p no:cacheprovider > .context/scratch/t4163-pytest.out 2>&1 && grep -q "passed" .context/scratch/t4163-pytest.out && ! grep -q "failed" .context/scratch/t4163-pytest.out
+python3 -m py_compile lib/estate_ingest.py
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -355,6 +366,18 @@ written to the repo, a file or a log, and never printed.
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-13 — Worker shape and guards
+- **Chose:** one Python module `lib/estate_ingest.py` (`fw estate ingest`, dry run unless `--apply`), reusing slice 1's patterns, secret scan and namespace from `lib/estate_push.py`; HTTP and embedder injected so the guards are unit-tested against fakes.
+- **Why:** the description names the guards (manifest, kill switch, digest pin, foreign token, daytime cap, audit) and each is a refusal with nothing written past it; fakes let every refusal path be pinned without touching the live store.
+- **Rejected:** a bats suite (the logic is Python; slice 1 uses pytest); a scheduled cron entry in this slice (a live writer must not start before the pilot proof).
+- **Stable main ids:** `uuid5(main|chunk_key)`, so an edit overwrites and a deletion removes by the same id.
+- **Kill switch:** `.context/estate/kill-switch.yaml`, key `switched_off:`. The bare key `off:` was rejected because YAML 1.1 reads it as boolean `False`, which switches nothing off (caught by a failing test).
+- **Refused staged points** are deleted from staging after the refusal is logged, so they do not block later runs.
+- **Manifest** entry matched on payload key `collection` (`MANIFEST_KEY`). ASSUMED: the live `_manifest` payload shape was not read from this host; confirm before the pilot.
+
+### 2026-10-13 — Manifest read needs a scope ring20 has not granted
+- **Finding:** the ingest token is listed for staging_aef, the main collection and the alias; `_manifest` is not in its list. The worker reads `_manifest` with the same token, so against the live store the first check returns 403 and the worker refuses (fail-closed). Fix options for ring20: list `_manifest` in the ingest token (rw, to set state/digest), or give the worker a separate read token. Not changed in this dispatch.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -371,3 +394,6 @@ written to the repo, a file or a log, and never printed.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4163-t-4091-slice-2-estate-ingest-worker-on-t.md
 - **Context:** Initial task creation
+
+### 2026-10-13T18:38:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

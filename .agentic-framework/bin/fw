@@ -7185,11 +7185,20 @@ except Exception as exc:
                 cd "$PROJECT_ROOT" && PYTHONPATH="$FRAMEWORK_ROOT${PYTHONPATH:+:$PYTHONPATH}" \
                     exec python3 "$FRAMEWORK_ROOT/lib/estate_push.py" --project-root "$PROJECT_ROOT" "$@"
                 ;;
+            ingest)
+                # T-4163 (T-4091 slice 2): the central worker — drain staging, embed, write main.
+                shift
+                cd "$PROJECT_ROOT" && PYTHONPATH="$FRAMEWORK_ROOT${PYTHONPATH:+:$PYTHONPATH}" \
+                    exec python3 "$FRAMEWORK_ROOT/lib/estate_ingest.py" --project-root "$PROJECT_ROOT" "$@"
+                ;;
             ""|-h|--help)
                 echo "Usage: fw estate push [--apply] [--categories A,B] [--url URL]"
                 echo "  estate push: diff the local vector index against the push ledger and stage"
                 echo "  new/changed chunks (text + payload, never vectors) and deletions in staging_aef."
                 echo "  Dry run unless --apply. Token: key store name qdrant_estate_staging_aef."
+                echo "Usage: fw estate ingest [--apply] [--max-points N] [--allow-daytime]"
+                echo "  estate ingest: drain staging_aef, embed with the pinned model, write the main"
+                echo "  collection. Dry run unless --apply. Token: key store name qdrant_estate_ingest_aef."
                 ;;
             *)
                 echo -e "${RED}Unknown estate subcommand:${NC} $est_sub"
