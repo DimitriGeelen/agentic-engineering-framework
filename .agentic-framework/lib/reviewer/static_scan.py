@@ -3013,6 +3013,41 @@ def append_feedback_event(stream_path: Path, event: dict) -> None:
 # ───────────────────────── CLI entry ─────────────────────────
 
 
+# ───── severe-finding close gate (T-4197, 832 OBS-454) ─────
+#
+# Operator ruling 2026-10-13 (2b): a finding that is BOTH FAIL-level by severity
+# (the catalogue's fail_on_severities — severe/complete) AND deterministic blocks
+# --status work-completed. Heuristic or lower-severity findings stay advisory.
+# update-task.sh calls `--severe-gate`; exit 0 = none, 5 = blocking findings,
+# anything else = the reviewer itself failed (the caller fails open, audibly).
+SEVERE_GATE_EXIT = 5
+
+_SECTION_LINE_RE = re.compile(r"^([A-Za-z][A-Za-z ]*):line (\d+)$")
+
+
+def severe_deterministic_findings(verdict: Verdict, thresholds: dict) -> list[Finding]:
+    fail_on = set(thresholds.get("fail_on_severities", ["complete", "severe"]))
+    return [
+        f for f in verdict.findings
+        if f.lie_severity in fail_on and f.detection_confidence == "deterministic"
+    ]
+
+
+def finding_file_location(task_path: Path, location: str) -> str:
+    """Map a section-relative location ("Verification:line 3") to "<file>:<line>".
+
+    Section line 1 is the first line after the `## <Section>` heading. Locations
+    with no line ("AC#2 (Agent)") keep their label after the file path.
+    """
+    m = _SECTION_LINE_RE.match(location or "")
+    if m:
+        heading = f"## {m.group(1)}"
+        for idx, line in enumerate(task_path.read_text().splitlines(), start=1):
+            if line.rstrip() == heading:
+                return f"{task_path}:{idx + int(m.group(2))}"
+    return f"{task_path} ({location})"
+
+
 def find_task_file(project_root: Path, task_id: str) -> Path | None:
     for sub in ("active", "completed"):
         for candidate in (project_root / ".tasks" / sub).glob(f"{task_id}-*.md"):
@@ -3024,10 +3059,12 @@ def main(argv: list[str] | None = None) -> int:
     argv = argv if argv is not None else sys.argv[1:]
     if not argv or argv[0] in {"-h", "--help"}:
         print(
-            "Usage: python -m lib.reviewer.static_scan <T-XXX> [--json] [--no-write]\n"
+            "Usage: python -m lib.reviewer.static_scan <T-XXX> [--json] [--no-write] [--severe-gate]\n"
             "  Scans the named task for v1.0 anti-patterns and writes verdict.\n"
-            "  --json      emit machine-readable verdict on stdout\n"
-            "  --no-write  do not modify the task file or feedback stream",
+            "  --json         emit machine-readable verdict on stdout\n"
+            "  --no-write     do not modify the task file or feedback stream\n"
+            "  --severe-gate  write nothing; print severe+deterministic findings as\n"
+            "                 pattern<TAB>file:line<TAB>evidence; exit 5 if any (T-4197)",
             file=sys.stderr,
         )
         return 2
@@ -3064,6 +3101,15 @@ def main(argv: list[str] | None = None) -> int:
     overrides = load_overrides()
 
     verdict = scan_task(task_file, catalogue, escalation_catalogue, overrides=overrides)
+
+    if "--severe-gate" in argv:
+        blocking = severe_deterministic_findings(verdict, catalogue.get("verdict_thresholds", {}))
+        for f in blocking:
+            loc = finding_file_location(task_file, f.location)
+            evidence = " ".join((f.evidence or "").split())[:160]
+            print(f"{f.pattern_id}\t{loc}\t{evidence}")
+        return SEVERE_GATE_EXIT if blocking else 0
+
     stream = project_root / ".context" / "working" / "feedback-stream.yaml"
 
     if not no_write:
