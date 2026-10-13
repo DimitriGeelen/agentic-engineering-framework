@@ -1,10 +1,16 @@
 ---
 id: T-4153
-name: "T-4142 leg 1: capability-card schema on fabric subsystems + a lint that enforces the quality bar"
+name: "T-4142 leg 1: capability-card schema on fabric subsystems + a lint that enforces
+  the quality bar"
 description: >
-  From inception T-4142 (GO 2026-10-13). Extend .fabric/subsystems.yaml entries (the module level, 'clusters') with a capability card: capabilities (what it can do), problem_solved (phrased as the symptom someone would search), technology tags, entry points / how to reuse, status (live/experimental/retired), owner project + contact, known limits. A lint (fw fabric lint or audit section) refuses cards missing problem_solved/capabilities/tags or with placeholder text, and lists auto-discovered subsystems without a card.
+  From inception T-4142 (GO 2026-10-13). Extend .fabric/subsystems.yaml entries (the
+  module level, 'clusters') with a capability card: capabilities (what it can do),
+  problem_solved (phrased as the symptom someone would search), technology tags, entry
+  points / how to reuse, status (live/experimental/retired), owner project + contact,
+  known limits. A lint (fw fabric lint or audit section) refuses cards missing problem_solved/capabilities/tags
+  or with placeholder text, and lists auto-discovered subsystems without a card.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T14:52:35Z
-last_update: 2026-10-13T14:52:35Z
-date_finished: null
+last_update: 2026-10-13T16:53:20Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-13T15:00:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-13T15:00:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4153: T-4142 leg 1: capability-card schema on fabric subsystems + a lint that enforces the quality bar
@@ -62,8 +96,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `.fabric/subsystems.yaml` entries accept a `capability_card:` block (capabilities, problem_solved, tags, entry_points, status, owner, limits); schema documented in the file header
+- [x] `fw fabric lint` refuses cards missing problem_solved/capabilities/tags, with placeholder text, or with a bad status (exit non-zero), and lists subsystems with no card
+- [x] A bats test covers pass, each refusal class, placeholder text and uncarded-subsystem listing, and fails on HEAD
+- [x] At least one real subsystem carries a card that passes the lint; `fw fabric lint` is wired to `fw fabric help`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -98,6 +134,9 @@ date_finished: null
 
 ## Verification
 
+bats tests/unit/t4153_capability_card_lint.bats > /tmp/.t4153.out 2>&1 && ! grep -q "^not ok" /tmp/.t4153.out
+bin/fw fabric lint > /tmp/.t4153.lint 2>&1; grep -q "capability" /tmp/.t4153.lint
+bin/fw vendor self --check
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -298,14 +337,14 @@ date_finished: null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-10-13 — Lint severity for uncarded subsystems
+- **Chose:** Invalid card = exit 1; subsystem without a card = listed, exit 0; `--strict` makes it exit 1.
+- **Why:** 17 of 18 subsystems have no card yet (cards are drafted in later legs); failing now would make the lint unusable in audit.
+- **Rejected:** Always fail on uncarded (red on day one); a separate cards file (T-4142 says extend subsystems.yaml in place).
+
+### 2026-10-13 — Placeholder detection
+- **Chose:** Regex on TODO/FIXME/TBD/XXX/placeholder/lorem ipsum and bare n/a/none/... values, per field.
+- **Why:** Same spirit as describe.is_placeholder_purpose, but cards are hand/agent-written free text, so a few more tokens.
 
 ## Decision
 
@@ -323,3 +362,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4153-t-4142-leg-1-capability-card-schema-on-f.md
 - **Context:** Initial task creation
+
+### 2026-10-13T16:42:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

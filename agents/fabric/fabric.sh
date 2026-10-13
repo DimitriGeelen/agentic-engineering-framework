@@ -12,6 +12,7 @@
 #   ui <route>          Interactive elements on a route
 #   drift               Detect unregistered, orphaned, stale and under-populated components
 #   validate [id]       Deep-validate component edges
+#   lint [--strict]     Lint subsystem capability cards
 #   overview            Compact subsystem summary for onboarding
 #   subsystem <id>      Drill into one subsystem
 #   stats               Component count, edge count, coverage
@@ -70,6 +71,7 @@ show_usage() {
     echo "Completeness (UC-6):"
     echo "  drift                Detect unregistered/orphaned/stale"
     echo "  validate [id]        Deep-validate component edges"
+    echo "  lint [--strict]      Lint subsystem capability cards (T-4153)"
     echo ""
     echo "Enrichment:"
     echo "  enrich [--dry-run] [--subsystem X]  Auto-detect dependency edges"
@@ -132,6 +134,10 @@ case "${1:-}" in
         shift
         source "$LIB_DIR/drift.sh"
         do_validate "$@"
+        ;;
+    lint)
+        shift
+        exec python3 -I "$LIB_DIR/cardlint.py" "$FABRIC_DIR/subsystems.yaml" "$@"
         ;;
     overview)
         shift

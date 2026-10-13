@@ -9,6 +9,15 @@
 # the broad one above it. No match => `subsystem: unknown`, printed as a
 # refusal rather than guessed. Add a pattern here to route a new directory.
 
+# T-4153: optional `capability_card:` per subsystem, enforced by `fw fabric lint`:
+#   capabilities (list, required)   what it can do
+#   problem_solved (str, required)  phrased as the symptom someone would search
+#   tags (list, required)           technology / topic tags
+#   status (required)               live | experimental | retired
+#   owner (str, required)           owning project + contact
+#   entry_points (list), limits (str)  optional: how to reuse it, known limits
+# Placeholder text (TODO/TBD/n/a...) is refused. Subsystems with no card are listed.
+
 subsystems:
   - id: watchtower
     paths:
@@ -200,3 +209,13 @@ subsystems:
     summary: "fw termlink → termlink binary → tagged PTY sessions"
     entry_points:
       - "fw termlink <command>"
+    capability_card:
+      capabilities:
+        - "Dispatch a task to an isolated worker session with its own context window"
+        - "Observe, attach to and clean up worker sessions tagged by task"
+      problem_solved: "My agent session runs out of context when I hand it big parallel jobs"
+      tags: [termlink, dispatch, workers, parallelism]
+      status: live
+      owner: "agentic-engineering-framework (agents/termlink)"
+      entry_points: ["fw termlink dispatch", "fw termlink cleanup"]
+      limits: "Max 5 concurrent workers per project; needs the termlink binary on PATH"
