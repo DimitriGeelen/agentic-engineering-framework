@@ -835,7 +835,9 @@ if items:
     parts = [f'{t} ({d})' for t, d in items]
     count = len(items)
     more = len(tasks_seen) - count
-    summary = 'Session worked on: ' + '; '.join(parts)
+    # T-4191 (832 OBS-452): this is mined from commit subjects, not authored —
+    # say so, so a reader does not take it for the session's own account.
+    summary = 'AUTO-MINED from commit subjects — VERIFY: Session worked on: ' + '; '.join(parts)
     if more > 0:
         summary += f'. Plus {more} more commit(s).'
     else:
@@ -1082,9 +1084,10 @@ for tid, tname, tstatus, h, lu in wip:
     print(f'- **Last action:** {last_action}')
     if not digest:
         # Constant across 119/119 entries when measured (§11b). Kept in full mode
-        # so `HANDOVER_DIGEST=0` reproduces the old output byte-for-byte.
-        print(f'- **Next step:** See task file')
-        print(f'- **Blockers:** None')
+        # so `HANDOVER_DIGEST=0` still carries the fields, but as [TODO] rather
+        # than a filler that reads as answered (T-4191, 832 OBS-452).
+        print(f'- **Next step:** [TODO] see task file')
+        print(f'- **Blockers:** [TODO]')
     print()
     print()
 
@@ -1445,15 +1448,15 @@ fi
 cat >> "$HANDOVER_FILE" << EOF
 ## Decisions Made This Session
 
-None
+[TODO] — record decisions, or write "None" if there were none
 
 ## Things Tried That Failed
 
-None
+[TODO] — record failed approaches, or write "None"
 
 ## Open Questions / Blockers
 
-None
+[TODO] — record open questions and blockers, or write "None"
 
 ## Token Usage
 

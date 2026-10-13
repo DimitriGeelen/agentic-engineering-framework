@@ -196,8 +196,9 @@ PY
     # Next step / Blockers were constant across 119/119 entries when measured,
     # which is why the digest drops them — but digest-off must still reproduce
     # the old output, so their absence there would be an unreversible change.
-    grep -q '^- \*\*Next step:\*\* See task file' "$FULL"
-    grep -q '^- \*\*Blockers:\*\* None' "$FULL"
+    # T-4191: the fields stay, but as [TODO] rather than filler that reads as answered.
+    grep -q '^- \*\*Next step:\*\* \[TODO\]' "$FULL"
+    grep -q '^- \*\*Blockers:\*\* \[TODO\]' "$FULL"
 }
 
 @test "an empty section digests to nothing, not to a zero stub" {

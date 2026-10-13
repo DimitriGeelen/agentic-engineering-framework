@@ -1,10 +1,16 @@
 ---
 id: T-4191
-name: "handover: emit [TODO] not None for narrative sections; mark commit-derived Where We Are as unverified (832 OBS-452, their T-1150)"
+name: "handover: emit [TODO] not None for narrative sections; mark commit-derived
+  Where We Are as unverified (832 OBS-452, their T-1150)"
 description: >
-  agents/handover/handover.sh:1086-1087 writes Next step: See task file and Blockers: None, and :1448-1456 writes bare None under Decisions, Failures and Open Questions, with no [TODO] marker, so an empty handover looks complete and /resume gives no warning. Where We Are is built from commit subjects at :813-819. 832's fix: emit [TODO] for narrative, decisions, failures and blockers, and mark the commit-derived section as AUTO-MINED, VERIFY.
+  agents/handover/handover.sh:1086-1087 writes Next step: See task file and Blockers:
+  None, and :1448-1456 writes bare None under Decisions, Failures and Open Questions,
+  with no [TODO] marker, so an empty handover looks complete and /resume gives no
+  warning. Where We Are is built from commit subjects at :813-819. 832's fix: emit
+  [TODO] for narrative, decisions, failures and blockers, and mark the commit-derived
+  section as AUTO-MINED, VERIFY.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T19:10:26Z
-last_update: 2026-10-13T19:10:26Z
-date_finished: null
+last_update: 2026-10-13T19:37:24Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-13T19:15:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-13T19:16:05Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4191: handover: emit [TODO] not None for narrative sections; mark commit-derived Where We Are as unverified (832 OBS-452, their T-1150)
@@ -62,8 +96,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A generated handover writes `[TODO]` (not a bare `None`) under `## Decisions Made This Session`, `## Things Tried That Failed` and `## Open Questions / Blockers` (new bats test, fails on HEAD)
+- [x] In full (non-digest) mode, per-task `Next step` / `Blockers` lines emit `[TODO]` instead of the constant `See task file` / `None` (test, fails on HEAD)
+- [x] The commit-derived `## Where We Are` summary carries an `AUTO-MINED from commit subjects — VERIFY` marker (test, fails on HEAD)
+- [ ] Existing handover/resume/audit suites that reference these sections stay green; `bin/fw test lint` and `bin/fw audit --section structure` introduce no new failure
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -226,22 +262,21 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t4191_handover_todo_markers.bats > /tmp/.t4191a 2>&1 && ! grep -q "^not ok" /tmp/.t4191a
+test "$(grep -c '# skip' /tmp/.t4191a)" -eq 0
+timeout 600 bats tests/unit/handover_digest.bats > /tmp/.t4191b 2>&1 && ! grep -q "^not ok" /tmp/.t4191b
+bash -n agents/handover/handover.sh
+bin/fw vendor self --check
 
 ## RCA
 
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
+**Symptom:** A handover nobody filled in (auto-handover, or `fw handover` without editing) read as complete: Decisions / Failures / Open Questions said `None`, every task said `Next step: See task file` / `Blockers: None`, and `/resume`'s `[TODO]` count was 0 — no warning. "Where We Are" was mined from commit subjects but read like an authored account (832 OBS-452, their T-1150).
 
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+**Root cause:** T-395 (G-018) made the generator "zero-TODO" to stop `[TODO]` rot: it replaced every placeholder with a filler value. The filler is indistinguishable from a real answer, so the signal the TODO counters (resume.sh, D8 audit, post-commit stale hint) depend on was removed at the source rather than addressed.
 
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
+**Why structurally allowed:** Every consumer counts `[TODO]` markers; none can tell "None, because nothing happened" from "None, because nobody looked". The generator's output had no test asserting the narrative sections are distinguishable from filled ones.
+
+**Prevention:** `tests/unit/t4191_handover_todo_markers.bats` pins the `[TODO]` markers, the AUTO-MINED marker, and that digest mode emits exactly 3 `[TODO]` (audit D8 WARN threshold, not FAIL >3), so the next "fill it with a default" change fails a test.
 
 ## Evolution
 
@@ -307,6 +342,11 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-13 — partially reverse T-395's zero-TODO generator
+- **Chose:** `[TODO]` in the three narrative sections (digest mode: exactly 3, so audit D8 WARNs and the post-commit "HANDOVER STALE" hint (>3) stays quiet); per-task `[TODO]` only in opt-in full mode (HANDOVER_DIGEST=0); Where We Are prefixed `AUTO-MINED from commit subjects — VERIFY:`.
+- **Why:** an unfilled handover must look unfilled (832's fix); keeping default output at the D8 WARN threshold makes it visible without turning every auto-handover into an audit FAIL — the rot T-395 fixed.
+- **Rejected:** per-task `[TODO]` in digest mode too (would push every handover past D8 FAIL >3); dropping the per-task fields in full mode (breaks the digest-off reversibility the T-3028 suite pins).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -323,3 +363,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4191-handover-emit-todo-not-none-for-narrativ.md
 - **Context:** Initial task creation
+
+### 2026-10-13 — pre-fix failure recorded [t4191-build]
+- `tests/unit/t4191_handover_todo_markers.bats` on HEAD's handover.sh: ok 1, not ok 2-5 (no `[TODO]` in the three narrative sections, per-task `See task file`/`None`, no AUTO-MINED marker). After the change: 5/5 ok. `handover_digest.bats` and `handover.bats` green; shellcheck output for handover.sh identical to HEAD.
+
+### 2026-10-13T19:23:10Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
