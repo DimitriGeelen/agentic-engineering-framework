@@ -84,14 +84,57 @@ _resolve_commit_task() {
     COMMIT_TASK="T-000"
 }
 
+# T-4196 (832 OBS-413): what a push is about to do, computed once so the
+# announcement, the --no-push notice and the push loop agree. Sets
+# _ps_branch, _ps_targets (space-separated, same origin-only rule as the loop
+# below: T-1255/T-1474) and _ps_count (commits on HEAD the first target's
+# tracking ref does not have; local view, no fetch).
+_push_summary() {
+    _ps_branch=$(git -C "$PROJECT_ROOT" rev-parse --abbrev-ref HEAD 2>/dev/null || echo "?")
+    local _n _origin=false
+    _n=$(git -C "$PROJECT_ROOT" remote 2>/dev/null | wc -l)
+    git -C "$PROJECT_ROOT" remote 2>/dev/null | grep -qx 'origin' && _origin=true
+    if [ "$_origin" = true ] && [ "$_n" -gt 1 ]; then
+        _ps_targets="origin"
+    else
+        _ps_targets=$(git -C "$PROJECT_ROOT" remote 2>/dev/null | tr '\n' ' ')
+        _ps_targets="${_ps_targets% }"
+    fi
+    local _first="${_ps_targets%% *}"
+    if [ -n "$_first" ] && git -C "$PROJECT_ROOT" rev-parse -q --verify "refs/remotes/$_first/$_ps_branch" >/dev/null 2>&1; then
+        _ps_count=$(git -C "$PROJECT_ROOT" rev-list --count "refs/remotes/$_first/$_ps_branch..HEAD" 2>/dev/null || echo "?")
+        _ps_where="not yet on $_first"
+    else
+        _ps_count=$(git -C "$PROJECT_ROOT" rev-list --count HEAD 2>/dev/null || echo "?")
+        _ps_where="branch not yet on ${_first:-any remote}"
+    fi
+}
+
 # T-2588: Shared push leg for both normal handovers and --checkpoint commits.
 # Checkpoint commits previously accumulated locally with no push — exactly the
 # state a checkpoint exists to protect gets stranded if the session dies or
 # the budget gate blocks a later push (T-2587). Push failures are warnings,
 # never a silent skip: the caller sees explicit WARNING lines either way.
 _push_to_remotes() {
+    _push_summary
     echo ""
+    # T-4196: --no-push is an explicit, logged opt-out. Push stays the default
+    # (CLAUDE.md §Session End, T-1144) — operator ruling 2026-10-13 on 832 OBS-413.
+    if [ "$NO_PUSH" = true ]; then
+        echo -e "${YELLOW}Not pushing (--no-push): branch $_ps_branch has $_ps_count commit(s) $_ps_where (remotes: ${_ps_targets:-none}). Push before ending the session: git push${NC}"
+        local _np_log="$PROJECT_ROOT/.context/working/.gate-bypass-log.yaml"
+        mkdir -p "$(dirname "$_np_log")"
+        {
+            echo "- timestamp: '$(date -u +"%Y-%m-%dT%H:%M:%SZ")'"
+            echo "  task: '${COMMIT_TASK:-}'"
+            echo "  flag: '--no-push'"
+            echo "  caller: 'handover.sh'"
+            echo "  reason: 'handover push opt-out, branch $_ps_branch, $_ps_count unpushed (T-4196)'"
+        } >> "$_np_log"
+        return 0
+    fi
     echo -e "${CYAN}Pushing to remotes...${NC}"
+    echo -e "${CYAN}Pushing branch $_ps_branch: $_ps_count commit(s) $_ps_where -> remotes: ${_ps_targets:-none}${NC}"
     _push_failed=false
     # T-1277 set 60s to bound an UNREACHABLE remote. But the wall-clock this
     # timeout actually has to cover is network + the pre-push hook, and the hook
@@ -231,11 +274,13 @@ SESSION_ID=""
 AUTO_COMMIT=true
 COMMIT_TASK=""
 CHECKPOINT_MODE=false
+NO_PUSH=false
 while [[ $# -gt 0 ]]; do
     case $1 in
         --session) SESSION_ID="$2"; shift 2 ;;
         --commit) AUTO_COMMIT=true; shift ;;
         --no-commit) AUTO_COMMIT=false; shift ;;
+        --no-push) NO_PUSH=true; shift ;;
         --task|-t) COMMIT_TASK="$2"; shift 2 ;;
         --owner) AGENT_OWNER="$2"; shift 2 ;;
         --emergency) AUTO_COMMIT=true; shift ;;  # Deprecated (D-028): treated as normal handover
@@ -247,6 +292,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --session ID   Use specific session ID (default: auto-generated)"
             echo "  --commit       Auto-commit handover via git agent (default)"
             echo "  --no-commit    Skip auto-commit"
+            echo "  --no-push      Commit but do not push (logged Tier-2; push is the default, T-4196)"
             echo "  --task, -t ID  Task ID for commit (default: T-012)"
             echo "  --owner NAME   Agent/provider name (default: \$AGENT_OWNER or claude-code)"
             echo "  --checkpoint   Mid-session checkpoint (does not replace LATEST.md)"

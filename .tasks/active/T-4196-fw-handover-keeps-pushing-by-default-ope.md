@@ -11,10 +11,10 @@ description: >
   Do not change the checkpoint/auto-handover paths' behaviour except to print the
   same line.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T19:21:48Z
-last_update: '2026-10-13T19:31:30Z'
+last_update: 2026-10-13T21:40:33Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -92,13 +92,16 @@ bvp_scores_proposed:
 ## Context
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+This came from 832 OBS-413 (their T-1150): `fw handover` pushed with no notice and offered no opt-out. The operator ruled on 2026-10-13 (option 1a): push stays the default, `--no-push` is added and logged, and the handover announces what it will push before pushing.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Default `fw handover` (normal and `--checkpoint`) still pushes — pinned by a sandbox test asserting the bare remote carries HEAD
+- [x] Before pushing, one line names branch, number of commits not yet on the remote, and the remotes it will push to (same line on the checkpoint path) — `tests/unit/t4196_handover_no_push.bats`
+- [x] `--no-push` commits locally, leaves the remote untouched, says so with the unpushed count, and writes a Tier-2 entry to `.context/working/.gate-bypass-log.yaml`; `--help` documents it
+- [ ] New tests fail on HEAD; existing handover push suites stay green; vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -261,6 +264,9 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/t4196_handover_no_push.bats tests/unit/handover_push_no_origin.bats tests/unit/handover_push_timeout.bats > /tmp/.t4196.out 2>&1 && ! grep -q "^not ok" /tmp/.t4196.out
+test "$(grep -c '# skip' /tmp/.t4196.out)" -eq 0
+bin/fw vendor self --check
 
 ## RCA
 
@@ -352,9 +358,22 @@ bvp_scores_proposed:
      without auto-creating; T-1832 added auto-create as fallback for
      legacy tasks lacking this section. -->
 
+### 2026-10-13 — where the opt-out and the announcement live
+- **Chose:** both inside `_push_to_remotes` (one new helper `_push_summary` computes branch / count / targets), so the normal handover and the `--checkpoint` path print the identical line and honour `--no-push` the same way.
+- **Why:** the description asked for the same line on the checkpoint path; one function means the two paths cannot drift.
+- **Rejected:** guarding the two call sites (:396, :1666) separately. That is two copies of the same decision, and a third caller would have to remember both.
+- **Count semantics:** commits on HEAD that the first target's local tracking ref (`refs/remotes/<remote>/<branch>`) does not have. No fetch, so the count is a local view. If there is no tracking ref, it prints the full HEAD count and says "branch not yet on <remote>". The old "Pushing to remotes..." line stays because `tests/unit/handover_checkpoint_push.bats:72` pins it.
+
 ## Updates
 
 ### 2026-10-13T19:21:48Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4196-fw-handover-keeps-pushing-by-default-ope.md
 - **Context:** Initial task creation
+
+### 2026-10-13 — pre-fix failure recorded
+- `tests/unit/t4196_handover_no_push.bats` on HEAD: 4/4 not ok. Test 1 got past the remote-carries-HEAD assertion, so the default push already worked, and then failed on the missing announcement line. Tests 2 and 3 exited 1 with `Unknown option: --no-push`. Test 4 failed because `--help` had no `--no-push`. After the change: 4/4 ok.
+
+### 2026-10-13T21:40:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
