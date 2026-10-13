@@ -118,7 +118,7 @@ Reported by ring20 (their T-2302/T-2306, operator-requested): `/approvals` admit
 - [x] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
-- [x] [REVIEW] /approvals tells you what is actually yours to decide
+- [ ] [REVIEW] /approvals tells you what is actually yours to decide
   **Steps:**
   1. Open `$(bin/fw watchtower url)/approvals`
   2. Read the "Ready for you" group, then skim "Waiting on the agent"
