@@ -34,3 +34,12 @@ where they quoted a probe or ledger count it is noted. Sources: sidecar conversa
 - 832: task pages log 5 "preloaded but not used" font warnings per load; `/favicon.ico` 404 on /search (minor, not filed yet).
 - dimitri-mint-dev: Complete on a gate refusal returns HTTP 500 → T-4130.
 - ring20-dashboard: claude-fw tmux wrap on a raw console (UTF-8 lines, copy, no lossless detach) → T-4128.
+
+## Live re-check of T-4127 for hotfix v1.8.10 (ring20-dashboard, 2026-10-13, on 650f14b12)
+
+PASS on all three points (their T-2520/T-2521): the operator recorded a NO-GO in Watchtower with an unrelated file
+deliberately staged. (1) Watchtower's two commits (264d804c3 decision, be1168e6b decide-chain) contain only the
+task file and its episodic — the staged file is in neither. (2) The staged file was still staged afterwards.
+(3) An ordinary commit right after (38c301484) carried exactly that file, and the decision stayed at HEAD;
+`watchtower_decision_revert.py` → 0. Their verdict: "Fine to ship T-4127 in v1.8.10 from our side."
+Note: 650f14b12 includes the T-4127 follow-up (d77e21fe3) that hotfix tip 704c9988f also carries.
