@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4091: Inception: how projects push into the estate knowledge platform (T-090 Qdrant on ring20) — push vs pull, server- vs client-side embedding, deletion propagation, model manifest fit
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-13T15:30:00Z
+# ============================================================================
+
+task_id: T-4091
+task_name: "Inception: how projects push into the estate knowledge platform (T-090 Qdrant on ring20) — push vs pull, server- vs client-side embedding, deletion propagation, model manifest fit"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-12T10:21:16Z
+completed: 2026-10-13T15:29:25Z
+duration_days: 1
+updates_count: 4
+first_commit: 2026-10-13T16:52:23+02:00
+last_commit: 2026-10-13T17:29:29+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception started — research artefact (settled by T-4123, local index facts, transport options A/B/C, push cycle), IW-1..IW-6. ring20 spike — option A works (payload-only staging, per-collection JWT scoping; ingest needs rw on staging); IW-1 answered A; names proposed. operator chose option A and the AEF host for the ingest worker; IW-1/IW-2 answered; recommendation GO. tick the two Agent ACs (work in place) — decide was refused. inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Research artefact `docs/reports/T-4091-estate-push-pipe.md` states what T-4123 settled, the local index facts, the transport options and the push cycle'
+  - 'Every IW-N has a disposition and rationale'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-4091-estate-push-pipe.md'
+  - 'docs/reports/T-4091-inputs-ring20-spike.txt'
+  - '.tasks/active/T-4091-inception-how-projects-push-into-the-est.md'
+  - '.tasks/completed/T-4091-inception-how-projects-push-into-the-est.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-13T16:52:23'
+    action: 'T-4091: inception started — research artefact (settled by T-4123, local index facts, transport options A/B/C, push cycle), IW-1..IW-6'
+  - time: '2026-10-13T17:10:37'
+    action: 'T-4091: ring20 spike — option A works (payload-only staging, per-collection JWT scoping; ingest needs rw on staging); IW-1 answered A; names proposed'
+  - time: '2026-10-13T17:25:52'
+    action: 'T-4091: operator chose option A and the AEF host for the ingest worker; IW-1/IW-2 answered; recommendation GO'
+  - time: '2026-10-13T17:27:52'
+    action: 'T-4091: tick the two Agent ACs (work in place) — decide was refused'
+  - time: '2026-10-13T17:29:29'
+    action: 'T-4091: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 1748 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [arc-001, T-4017]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1748
+  commits: 5
+  files_changed: 4
+  lines_added: 355
+  lines_removed: 45
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4091-inception-how-projects-push-into-the-est.md
+generated_by: context-agent-hybrid
