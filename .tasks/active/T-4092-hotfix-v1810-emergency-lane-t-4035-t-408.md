@@ -362,6 +362,11 @@ git merge-base --is-ancestor b82294243 hotfix/v1.8.10
 - **Conditions the agent holds itself to:** ring20-dashboard live re-check PASS (recorded); full-suite comparison 704c9988f vs master shows no failure attributed to the hotfix diff; `fw release` dry-run clean and reported to the operator with the result.
 - **Scope:** this release. Whether this replaces T-4020's explicit-question rule for future releases is asked separately.
 
+### 2026-10-13 — release v1.8.10 despite armed entries from before the fix
+- **Chose:** option 1 (operator: "1, proceed as suggested") — release v1.8.10 once the fresh full suite is green; follow quickly with v1.8.11 carrying the one-time reconcile (T-4166); the announcement tells every consumer to check `git diff --cached --name-only -- .tasks .context/episodic` before their next commit.
+- **Why:** ring20 (msg 05d50237) showed the fix is forward-only: entries staged by pre-fix decisions survive an upgrade. Releasing does not arm anything and stops new arming; holding leaves every consumer exposed to new damage.
+- **Rejected:** hold v1.8.10 until the reconcile is built and field-tested.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
