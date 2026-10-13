@@ -15,16 +15,16 @@ description: >
   verdict (T-3579/T-3581 verdict ledger) ticks them with provenance? If they classify
   as operator-only, which class and why. Related: D-626, T-3557, T-4156.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-13T15:13:47Z
-last_update: '2026-10-13T15:15:37Z'
-date_finished:
+last_update: 2026-10-13T15:29:53Z
+date_finished: 2026-10-13T15:29:53Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -110,15 +110,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -173,9 +173,47 @@ bvp_scores_proposed:
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The evidence is in (ring20-manager, msg c2d56775): on their T-2363, `fw task delegate --dry-run` classes "[REVIEW] Independent review: step 3 output meets its role card…" as reviewer-judgeable, but "[REVIEW] Step 3 output approved" as a sovereignty field — a carve-out that stays human, correctly by today's rules. So the existing verdict path cannot reach it, and their operator has deliberately delegated exactly that criterion. GO for a narrow, operator-recorded standing delegation: granted once by the operator (Watchtower or --i-am-human), naming the criterion pattern and its scope (arc / task family), the condition (a named reviewer-judged criterion on the same task has a green recorded verdict), grantor, date, expiry, revocable; the audit accepts an agent tick inside the scope only when it cites that verdict id. Never delegable: tier-0-or-bypass and act-in-the-world classes. Rejected: keeping per-tick acks (turns a delegation into a chore) and reclassifying approval criteria as reviewer-judged (would remove the carve-out for everyone, not only where an operator delegated it).
+
+**Date**: 2026-10-13T15:29:49Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-10-13T15:29:49Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The evidence is in (ring20-manager, msg c2d56775): on their T-2363, `fw task delegate --dry-run` classes "[REVIEW] Independent review: step 3 output meets its role card…" as reviewer-judgeable, but "[REVIEW] Step 3 output approved" as a sovereignty field — a carve-out that stays human, correctly by today's rules. So the existing verdict path cannot reach it, and their operator has deliberately delegated exactly that criterion. GO for a narrow, operator-recorded standing delegation: granted once by the operator (Watchtower or --i-am-human), naming the criterion pattern and its scope (arc / task family), the condition (a named reviewer-judged criterion on the same task has a green recorded verdict), grantor, date, expiry, revocable; the audit accepts an agent tick inside the scope only when it cites that verdict id. Never delegable: tier-0-or-bypass and act-in-the-world classes. Rejected: keeping per-tick acks (turns a delegation into a chore) and reclassifying approval criteria as reviewer-judged (would remove the carve-out for everyone, not only where an operator delegated it).
+
+### 2026-10-13T15:29:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ed344f01
+- **Timestamp:** 2026-10-13T15:29:55Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-3b3f7980
+- **Timestamp:** 2026-10-13T15:29:55Z
+- **Overall:** CONFIRMED
+- **Claims:** 1
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-2363` | task | ✓ pass |
+
+### 2026-10-13T15:29:53Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
