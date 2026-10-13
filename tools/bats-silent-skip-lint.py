@@ -47,6 +47,7 @@ guessed at the rest would produce exactly the noise that gets a lint disabled.
 import argparse
 import os
 import re
+import subprocess
 import sys
 
 # A `skip` invoked as a command: at the start of a statement, or after a
@@ -290,6 +291,33 @@ def tap_mode(tap_path):
     return 1 if other else 0
 
 
+def bats_under(d):
+    """Every .bats file under directory d, git-ignored paths excluded (T-4122).
+
+    Inside a git work tree (and d itself not ignored) git enumerates, so a
+    clone parked under an ignored directory is never scanned as ours. Else
+    os.walk, pruning `scratch` the way .gitignore would have."""
+    try:
+        inside = subprocess.run(['git', '-C', d, 'rev-parse', '--is-inside-work-tree'],
+                                capture_output=True, text=True).stdout.strip() == 'true'
+        ignored = inside and subprocess.run(['git', '-C', d, 'check-ignore', '-q', '.'],
+                                            capture_output=True).returncode == 0
+        if inside and not ignored:
+            out = subprocess.run(['git', '-C', d, 'ls-files', '-z', '-co',
+                                  '--exclude-standard', '--', '*.bats'],
+                                 capture_output=True, check=True).stdout
+            return [os.path.join(d, f) for f in sorted(out.decode().split('\0'))
+                    if f and os.path.isfile(os.path.join(d, f))]
+    except (OSError, subprocess.CalledProcessError):
+        pass
+    found = []
+    for root, dirs, names in os.walk(d):
+        dirs[:] = [x for x in dirs if x not in ('.git', 'scratch')]
+        found += [os.path.join(root, n) for n in sorted(names) if n.endswith('.bats')]
+    return found
+
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__.split('\n')[0])
     ap.add_argument('paths', nargs='*', help='.bats files to scan')
@@ -306,9 +334,7 @@ def main():
     files = []
     for p in a.paths:
         if os.path.isdir(p):
-            for root, _, names in os.walk(p):
-                files += [os.path.join(root, n) for n in sorted(names)
-                          if n.endswith('.bats')]
+            files += bats_under(p)
         else:
             files.append(p)
     return static_mode(sorted(files), a.census)

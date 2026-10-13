@@ -1,13 +1,16 @@
 ---
 id: T-4122
-name: "fw test lint scans git-ignored scratch clones (.context/scratch/**) and reports their shellcheck findings as FAILs"
+name: "fw test lint scans git-ignored scratch clones (.context/scratch/**) and reports
+  their shellcheck findings as FAILs"
 description: >
-  After adding .context/scratch/ (T-4112), fw test lint FAILs on files inside a scratch clone (.context/scratch/hotfix/proof/...). Lint should skip git-ignored paths (git ls-files based, or honour .gitignore).
+  After adding .context/scratch/ (T-4112), fw test lint FAILs on files inside a scratch
+  clone (.context/scratch/hotfix/proof/...). Lint should skip git-ignored paths (git
+  ls-files based, or honour .gitignore).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: later
+horizon: now
 tags: [bug, lint]
 components: []
 related_tasks: []
@@ -38,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T18:08:54Z
-last_update: 2026-10-12T18:08:54Z
-date_finished: null
+last_update: 2026-10-13T14:09:39Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +53,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-12T18:15:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-12T18:15:59Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4122: fw test lint scans git-ignored scratch clones (.context/scratch/**) and reports their shellcheck findings as FAILs
@@ -62,8 +93,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] ShellCheck pass of `fw test lint` enumerates `*.sh` via `git ls-files -co --exclude-standard` (git-ignored paths such as `.context/scratch/` are skipped), falling back to `find` (with `.context/scratch` pruned) when FRAMEWORK_ROOT is not in a git work tree
+- [x] Silent-Skip pass (`tools/bats-silent-skip-lint.py`) skips git-ignored paths when walking a directory
+- [x] Regression test: a planted `.sh` with a shellcheck error under `.context/scratch/` of a temp git copy is NOT reported, while the same file at a tracked path IS reported
+- [x] `bin/fw test lint` wall time measured before/after with scratch clones present; after-run prints the Silent-Skip section and finishes well under 600 s
+- [x] `tests/lint/bats-silent-skip.bats` passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -227,6 +261,11 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+timeout 600 bats tests/lint/lint-skips-git-ignored.bats > /tmp/.t4122a 2>&1 && ! grep -q "^not ok" /tmp/.t4122a
+test "$(grep -c '# skip' /tmp/.t4122a)" -eq 0
+timeout 900 bats tests/lint/bats-silent-skip.bats > /tmp/.t4122b 2>&1 && ! grep -q "^not ok" /tmp/.t4122b
+bin/fw vendor self --check
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -242,6 +281,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `bin/fw test lint` ran past 600 s and reported shellcheck FAILs in files under `.context/scratch/` (hotfix/suite repo clones). That turned `tests/lint/bats-silent-skip.bats` ("fw test lint actually reports a silent-skip section", `timeout 600`) red, so the pre-push audit failed (Invariant suite 1 of 122 RED). Workers also got lint findings that belonged to scratch clones.
+
+**Root cause:** the ShellCheck pass built its file list with a bare `find "$FRAMEWORK_ROOT" -name '*.sh'`, which knows nothing about `.gitignore`. It excluded only `node_modules`, `.git` and `test_helper*`. When T-4112 started parking full clones in the git-ignored `.context/scratch/` (7.4 GB, 4,364 of the 4,953 `.sh` files `find` returned), every one of them was linted as if it were ours. The silent-skip pass's `os.walk` had the same blind spot, but it only walks `tests/`, so it did not bite yet.
+
+**Why structurally allowed:** the lint's idea of what is in the repo came from the filesystem, not from git. Nothing asserted that lint candidates are repo files. The only signal was the 600 s timeout in an unrelated invariant test, and that went red only after the clones grew large enough.
+
+**Prevention:** both passes now enumerate through git (`git ls-files -co --exclude-standard`), so any ignored tree is skipped, not just scratch. `tests/lint/lint-skips-git-ignored.bats` pins this for both passes and for the non-git fallback. Each case has a control: the same planted file at a non-ignored path IS reported.
 
 ## Evolution
 
@@ -323,3 +370,13 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4122-fw-test-lint-scans-git-ignored-scratch-c.md
 - **Context:** Initial task creation
+
+### 2026-10-13 — fix + measurements [t4122-lint-scratch worker]
+- **Before (HEAD, scratch 7.4 GB present):** `bin/fw test lint` killed unfinished at ~810 s; 967 findings so far, 881 of them under `.context/scratch/`. `find` returned 4,953 `.sh` files, 4,364 of them in scratch.
+- **After:** 87 s, 553 files, 0 scratch paths, `=== Silent-Skip Lint ===` + `OK no silent skips` printed. rc=1 comes from 6 FAILs that were already there, in files this task does not touch (untracked `.context/working/t4088/sc*.sh`, `agents/sessions/{antigravity,claude-code}/list.sh` and their vendored copies).
+- **Pre-fix proof:** the same fixture run with `git show HEAD:bin/fw` reports `.context/scratch/clone/ignored_probe.sh` (2 files). The silent-skip test fails on the HEAD `tools/bats-silent-skip-lint.py` (`[ "$status" -eq 0 ]`, line 80).
+- **Per pass:** ShellCheck → `git ls-files -z -co --exclude-standard -- '*.sh'` when FRAMEWORK_ROOT is a work-tree top level, otherwise `find` with `.context/scratch` pruned. Silent-Skip → `git ls-files` inside a non-ignored work tree, otherwise `os.walk` pruning `.git`/`scratch`. The dead-negation lint is not part of `fw test lint` (it runs from `fw audit`, over `tests/` only), so it is untouched. No cron-env pass exists in this route.
+
+### 2026-10-13T13:51:08Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
