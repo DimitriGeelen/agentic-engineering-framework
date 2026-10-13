@@ -343,6 +343,21 @@ versions, rails passed, changing task) linking to a pinned commit, never as a co
 | CF-10 | Embedding vote count: server-side DM + WD, client-side RM | CF-2 | Input to CF-2; WD adds: client index per project multiplies size (991 MB for one project), keep only a small offline cache outside the repo |
 | CF-11 | Server-side store vs portability: one more dependency for every project | WD conflict 3 | Resolved by R-16 (degrade to own-project recall, say so) |
 
+## 6.1.a External consultation on the open conflicts (2026-10-13)
+
+Three models via OpenRouter (operator-approved paid consults RP-ee8d27f1, RP-8bb3c40a, RP-67a694a3; ~$0.28 in all
+incl. the cut-off first calls), each given the same sanitised v0.3 draft (no hostnames, IPs, names or secrets).
+Answers unedited in `T-4123-inputs/external/`.
+
+| Conflict | gemini-2.5-pro | gpt-5 | grok-4.7 | Agreement |
+|---|---|---|---|---|
+| CF-1 outside fallback | No | No — queries never leave the estate | No — skip the cycle, use local recall (R-16) | **unanimous: No** |
+| CF-2 where to embed | per-project + independent verifier | phased "both": central only for the pilot, verifier, client fallback later with identical model+digest | central only; client vectors are a poisoning / digest-skew channel; revisit only once a verifier re-embeds 100% of writes | split; two of three start central |
+| CF-5 full text | full text, stronger security | full text for curated items only; raw items minimal excerpts + source link | no full text for raw, reports or errors; cross-project readers get a structured summary + source pointer | two of three: full text only where curated |
+| CF-7 hostnames | roles (names are brittle, they change) | roles in everything estate-visible; exact names only own-project scope | roles in every cross-project payload; "inside the estate" is not a boundary once backups and a broad read token exist | **unanimous: roles** |
+| CF-9 who curates | the originating project decides (WD model) | owner project approves collapse; operator approves cross-project combine | originating project accepts; reviewer only proposes; no auto-apply | **unanimous: owner decides, no auto-apply** |
+| R-8 auto-collapse | wrong and dangerous → propose only | unsafe → owner approval | no auto-apply; threshold in config; a near-miss test case | **unanimous: change R-8** |
+
 ## 6.2 Earlier requirements (arc-001 A9.7)
 
 | A9.7 item | Status | Now |
