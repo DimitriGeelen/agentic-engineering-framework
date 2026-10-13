@@ -91,7 +91,10 @@ bvp_scores_proposed:
 Field instance 2026-10-13: T-4091 was converted build → inception. `fw task review T-4091` passed readiness and
 emitted the decide link, but the operator's GO in Watchtower was refused: "2/2 agent AC unchecked" — the converted
 task's Agent ACs had no `<!-- @auto-tick-on-decide -->` markers and the readiness check (inception_handoff_blockers)
-does not count unticked Agent ACs. So the handoff gate and the decide gate disagree. Fix both here: scaffold the
+does not count unticked Agent ACs. So the handoff gate and the decide gate disagree. Second instance (832 T-1094,
+msg 7ad1a976): an Agent AC "the operator's decision is recorded … and on GO a build task is created" can only be met
+by the decision itself, so decide can never pass — the template must not suggest such ACs (or they must carry the
+auto-tick-on-decide marker). Fix both here: scaffold the
 inception ACs with auto-tick markers on conversion, and make the readiness check refuse when decide would refuse.
 
 ## Acceptance Criteria
