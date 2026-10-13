@@ -114,6 +114,19 @@ def safe_meta(value, default: str) -> str:
     return raw
 
 
+def escape_markers(text: str) -> str:
+    """The frame markers inside peer text are defused, so a body can never close
+    its own frame early (T-3782; shared with every CLI view by T-4145)."""
+    return str(text).replace(OPEN, "<<<peer-data").replace(CLOSE, "peer-data>>>")
+
+
+def frame_lines(text) -> list[str]:
+    """Peer-written free text as the framed block every view must use: OPEN,
+    the marker-escaped text, CLOSE. Header fields are NOT framed — they go
+    through safe_meta."""
+    return [OPEN, escape_markers(str(text or "").strip()), CLOSE]
+
+
 def _sender(msg: dict) -> str:
     """T-3855 (ring20 §3.6): the sender's name — from_agent, else the name its
     from_circuit carries; a post with neither is `unattributed (raw post)`,
@@ -151,7 +164,7 @@ def _block(msg: dict, surfacing: str, fw: str, body_cap: int = BODY_CAP) -> list
         # T-4131: the receiver stores the full body; name the read-only verb that prints it.
         body = (body[:body_cap] + f" [truncated, {len(body) - body_cap} more chars; "
                 f"full text: {fw} sidecar inbox --show {mid}]")
-    body = body.replace(OPEN, "<<<peer-data").replace(CLOSE, "peer-data>>>")
+    body = escape_markers(body)
     to = _reply_to(msg)
     reply = (f"reply: {fw} sidecar send --to {to} --conversation {conv} "
              f"--in-reply-to {mid} --body '<your answer>'") if to else \
