@@ -357,6 +357,11 @@ git merge-base --is-ancestor b82294243 hotfix/v1.8.10
 - **Why:** rounds 2-4 each found a narrower edge; this one is visible and lossless; the emergency lane is meant to stay small.
 - **Rejected:** round 5 with a bounded pathspec revalidation/retry (can go to bleeding-edge later as its own task).
 
+### 2026-10-13 — release authorisation for v1.8.10
+- **Chose:** release v1.8.10 to master without a further operator yes/no, because positive field tests are in (operator, verbatim: "Okay, if you got that in from positive tests in from other agents, then doesn't need my decision.").
+- **Conditions the agent holds itself to:** ring20-dashboard live re-check PASS (recorded); full-suite comparison 704c9988f vs master shows no failure attributed to the hotfix diff; `fw release` dry-run clean and reported to the operator with the result.
+- **Scope:** this release. Whether this replaces T-4020's explicit-question rule for future releases is asked separately.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
