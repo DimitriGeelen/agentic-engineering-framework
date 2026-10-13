@@ -10812,10 +10812,24 @@ PYPREDICT
                     exit 1
                 fi
                 echo -e "${BOLD}=== ShellCheck Lint ===${NC}"
+                # T-4122: enumerate through git so git-ignored trees are skipped.
+                # `.context/scratch/` holds full repo clones (GBs, ~4k .sh files);
+                # a bare `find` linted them all, reported their findings as ours
+                # and pushed the run past the 600 s invariant timeout. Only when
+                # FRAMEWORK_ROOT is itself a work-tree top level: a vendored
+                # .agentic-framework/ may be ignored by its consumer, and ls-files
+                # there would list nothing — that case keeps `find`, scratch pruned.
                 _lint_files=()
-                while IFS= read -r -d '' f; do
-                    _lint_files+=("$f")
-                done < <(find "$FRAMEWORK_ROOT" -name "*.sh" -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/test_helper*" -print0)
+                if [ "$(git -C "$FRAMEWORK_ROOT" rev-parse --show-toplevel 2>/dev/null)" = "$(cd "$FRAMEWORK_ROOT" && pwd -P)" ]; then
+                    while IFS= read -r -d '' f; do
+                        case "$f" in */node_modules/*|node_modules/*|*test_helper*) continue ;; esac
+                        [ -f "$FRAMEWORK_ROOT/$f" ] && _lint_files+=("$FRAMEWORK_ROOT/$f")
+                    done < <(git -C "$FRAMEWORK_ROOT" ls-files -z -co --exclude-standard -- '*.sh')
+                else
+                    while IFS= read -r -d '' f; do
+                        _lint_files+=("$f")
+                    done < <(find "$FRAMEWORK_ROOT" -path "$FRAMEWORK_ROOT/.context/scratch" -prune -o -name "*.sh" -not -path "*/node_modules/*" -not -path "*/.git/*" -not -path "*/test_helper*" -print0)
+                fi
                 _lint_fail=0
                 _lint_pass=0
                 _lint_warn=0
