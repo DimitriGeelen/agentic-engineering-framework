@@ -1,10 +1,20 @@
 ---
 id: T-4176
-name: "Triage 832's 25 framework findings (their T-1150 report): for each — already tracked here (task id), new defect to file, or not a defect (with reason)"
+name: "Triage 832's 25 framework findings (their T-1150 report): for each — already
+  tracked here (task id), new defect to file, or not a defect (with reason)"
 description: >
-  832 (msg f90be604): /opt/832-Workflow-designer/docs/reports/T-1150-framework-findings-for-aef.md (commit 6b2bb93c), 25 findings re-checked against bleeding-edge 1146a745: 22 still true, 2 partly overlap T-3471 and T-3839, 1 partly fixed (OBS-449 Tier 0 via script), 1 not checkable (OBS-387, termlink binary). Their top consumer impact: OBS-449, OBS-413 (fw handover pushes with no flag), OBS-375 (focus-drift strands closure commits), OBS-426 (deleting a task file recycles its id), OBS-454 (severe reviewer findings do not block completion). Deliverable: a triage table docs/reports/T-XXXX-triage-832-T-1150.md with, per finding, existing task id / proposed new task (one bug one task, title + one-line description) / not-a-defect reason, each grounded in our code (file:line). Read-only on 832's side.
+  832 (msg f90be604): /opt/832-Workflow-designer/docs/reports/T-1150-framework-findings-for-aef.md
+  (commit 6b2bb93c), 25 findings re-checked against bleeding-edge 1146a745: 22 still
+  true, 2 partly overlap T-3471 and T-3839, 1 partly fixed (OBS-449 Tier 0 via script),
+  1 not checkable (OBS-387, termlink binary). Their top consumer impact: OBS-449,
+  OBS-413 (fw handover pushes with no flag), OBS-375 (focus-drift strands closure
+  commits), OBS-426 (deleting a task file recycles its id), OBS-454 (severe reviewer
+  findings do not block completion). Deliverable: a triage table docs/reports/T-XXXX-triage-832-T-1150.md
+  with, per finding, existing task id / proposed new task (one bug one task, title
+  + one-line description) / not-a-defect reason, each grounded in our code (file:line).
+  Read-only on 832's side.
 
-status: captured
+status: started-work
 workflow_type: test
 owner: agent
 horizon: now
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T18:38:38Z
-last_update: 2026-10-13T18:38:38Z
-date_finished: null
+last_update: 2026-10-13T18:44:12Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +60,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-13T18:40:16Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4176: Triage 832's 25 framework findings (their T-1150 report): for each — already tracked here (task id), new defect to file, or not a defect (with reason)
@@ -62,8 +90,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Each of the 25 findings in 832's T-1150 report is verified against this repo's code with file:line evidence
+- [ ] Each finding is searched against .tasks/ (active + completed) and classed TRACKED / NEW / NOT A DEFECT
+- [ ] docs/reports/T-4176-triage-832-T-1150.md holds the triage table and a ranked top-5 with agreement/disagreement
+- [ ] No source file changed; no task created; nothing pushed
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -323,3 +353,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4176-triage-832s-25-framework-findings-their-.md
 - **Context:** Initial task creation
+
+### 2026-10-13T18:40:15Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
