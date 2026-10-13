@@ -8,16 +8,16 @@ description: >
   (role chain step 1: requirements collector) across content, curation (prune/collapse/combine),
   retrieval, fabric solution-finding and model selection
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-12T18:22:09Z
-last_update: '2026-10-12T18:30:32Z'
-date_finished:
+last_update: 2026-10-13T13:48:34Z
+date_finished: 2026-10-13T13:48:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -132,15 +132,15 @@ Time-box: consults answered within a day; synthesis in one session.
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -198,7 +198,11 @@ The requirements are collected well enough to start: draft v0.3 holds R-1..R-40 
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The requirements are collected well enough to start: draft v0.3 holds R-1..R-40 with acceptance criteria from three of five stakeholders, three external models agree unanimously on the hardest calls (no outside fallback, roles instead of hostnames, owner-decided curation, no auto-collapse), and the operator set the direction on 2026-10-13: feed the central store from each project's local index now and rationalise later; recompute vectors centrally; capability cards at module level as a separate high-priority task (T-4142). GO means: finish v0.4 with the operator's rulings and the remaining answers (010, 1409, 055), then unblock T-4091 (the push pipe) for a pilot — one project writing, one reading — limited to the raw layer and the categories the operator picks. Curation (prune/collapse/combine) and per-project embedding come later.
+
+**Date**: 2026-10-13T13:48:33Z
 
 ## Updates
 
@@ -207,3 +211,43 @@ The requirements are collected well enough to start: draft v0.3 holds R-1..R-40 
 
 ### 2026-10-12T18:23:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-13T13:48:33Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The requirements are collected well enough to start: draft v0.3 holds R-1..R-40 with acceptance criteria from three of five stakeholders, three external models agree unanimously on the hardest calls (no outside fallback, roles instead of hostnames, owner-decided curation, no auto-collapse), and the operator set the direction on 2026-10-13: feed the central store from each project's local index now and rationalise later; recompute vectors centrally; capability cards at module level as a separate high-priority task (T-4142). GO means: finish v0.4 with the operator's rulings and the remaining answers (010, 1409, 055), then unblock T-4091 (the push pipe) for a pilot — one project writing, one reading — limited to the raw layer and the categories the operator picks. Curation (prune/collapse/combine) and per-project embedding come later.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-05e19335
+- **Timestamp:** 2026-10-13T13:48:37Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-1
+     - evidence: `IW-1 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-3
+     - evidence: `IW-3 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-5
+     - evidence: `IW-5 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-89139ec5
+- **Timestamp:** 2026-10-13T13:48:37Z
+- **Overall:** CONFIRMED
+- **Claims:** 3
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-4123-estate-knowledge-requirements.md` | file | ✓ pass |
+| `T-4142` | task | ✓ pass |
+| `T-4091` | task | ✓ pass |
+
+### 2026-10-13T13:48:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
