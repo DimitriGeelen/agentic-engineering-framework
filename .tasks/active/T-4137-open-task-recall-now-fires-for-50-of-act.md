@@ -1,10 +1,19 @@
 ---
 id: T-4137
-name: "Open-task recall now fires for 50% of active tasks (413/818), crossing T-3056's hazard bound (strict minority): decide whether recall precision degraded with corpus growth or the live-corpus test needs a committed fixture (t3056 A3 red at pre-push 2026-10-13)"
+name: "Open-task recall now fires for 50% of active tasks (413/818), crossing T-3056's
+  hazard bound (strict minority): decide whether recall precision degraded with corpus
+  growth or the live-corpus test needs a committed fixture (t3056 A3 red at pre-push
+  2026-10-13)"
 description: >
-  tests/unit/t3056_recall_open_tasks.bats A3 runs memory-recall search_open_tasks over the LIVE active corpus and requires 0 < hit fraction < 0.5. 2026-10-13: 413/818 = 50.5% → red, blocking pre-push as a NEW red. History: 22% at ship, 38% at T-3604 (bound raised from 0.35). Two readings: (a) real precision loss as active tasks pile up (the hazard T-3056 names: wrong answers on half of focus calls); (b) a mutable-corpus anchor (T-3326) to replace with a fixture plus a precision measure. Investigate before choosing; one bug = this task.
+  tests/unit/t3056_recall_open_tasks.bats A3 runs memory-recall search_open_tasks
+  over the LIVE active corpus and requires 0 < hit fraction < 0.5. 2026-10-13: 413/818
+  = 50.5% → red, blocking pre-push as a NEW red. History: 22% at ship, 38% at T-3604
+  (bound raised from 0.35). Two readings: (a) real precision loss as active tasks
+  pile up (the hazard T-3056 names: wrong answers on half of focus calls); (b) a mutable-corpus
+  anchor (T-3326) to replace with a fixture plus a precision measure. Investigate
+  before choosing; one bug = this task.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T10:41:48Z
-last_update: 2026-10-13T10:41:48Z
-date_finished: null
+last_update: '2026-10-13T10:45:36Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +59,97 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-13T10:43:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-13T10:45:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=282,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4137: Open-task recall now fires for 50% of active tasks (413/818), crossing T-3056's hazard bound (strict minority): decide whether recall precision degraded with corpus growth or the live-corpus test needs a committed fixture (t3056 A3 red at pre-push 2026-10-13)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+### Answer (measured 2026-10-13, before any code change): (a) real precision loss
+
+Measured with `.context/scratch/t4137/measure.py` (seed 4137) on the live corpus:
+820 open tasks, 415 (51%) get a hit, 679 hit pairs. 30 pairs sampled at random and
+judged by reading both names:
+
+- **Precision 12/30 = 40%** (11 clear + 1 borderline related). Wrong on 3 of 5 hits.
+- Related: T-1961→T-1911 (arc close, same feature), T-3754→T-3753 and T-4028→T-4029
+  (consecutive slices), T-2066→T-2077 (bug → its fix), T-3992→T-3621 (ratchet flake
+  → ratchet), T-2667→T-2666 and T-2555→T-2558 (sibling corpus maps / diagrams),
+  T-4079→T-4078 (issue intake pair), T-2040→T-2039 (same unbounded-list class),
+  T-4044→T-4043 (sibling Watchtower doc-render issues), T-3845→T-3776 (same t3511
+  flake), T-3623→T-3316 (borderline: triage range covers create_task.bats).
+- Unrelated (18): e.g. T-3695 (Bash can tick Human AC) → T-3299 (G-020 escape routes)
+  on {bash, check, edit, write}; T-3653 (fw_pickup yaml quoting) → T-3303 (OBS-362
+  correction) on {tests, bats, yaml, test}; T-2063 (CSRF silent-fail) → T-3302 on
+  {happens, nothing, fail, review}; T-3604 → T-3324 (doctor bats --count perf) on
+  generic test words.
+
+**Concentration:** yes. The top hit targets are tasks whose `name:` is a paragraph,
+not a title: T-3299 (132 topic tokens) receives 66 of 679 hits, T-3303 (112) 30,
+T-3302 (89) 26, T-3328 25, T-3294 (69) 14 — five tasks take 24% of all hits. The
+median name has 10 topic tokens, p90 22. A name of 100+ words contains four of
+almost any query's words. The shared words in hits are generic (unit 82, tests 77,
+bats 68, test 67, audit 54…), each under the 10% DF ceiling so none is dropped.
+
+**Why it drifted:** the floor counts *distinct shared words* — unweighted and not
+length-normalised — so the score grows with name length. Names have grown since
+T-3056 tuned the floor (22% at ship, 38% at T-3604, 51% now) with the recall code
+unchanged: the bound fired on a genuine precision fall, not on a denser corpus.
+
+**Candidate score, same 30 pairs:** BM25-shaped (IDF over names, length-normalised
+on the hit's name) puts all 11 clear-related pairs at ≥14.1 and all 18 unrelated at
+≤13.0. IDF-cosine separates worse (related 0.22 overlaps unrelated 0.24).
+
+### After the fix (OPEN_TASK_MIN_SCORE = 2.0, BM25 k1=1.2 b=0.75, IDF / log N)
+
+- **Same 30 pairs:** 0/18 unrelated still offered; 10/12 related still offered
+  (T-4028→T-4029 displaced by its other siblings T-4030/T-4031, so still a related
+  hit; T-3623→T-3316 borderline, dropped). Precision of the surviving pairs 10/10.
+- **Fresh sample** of post-fix hits (seed 41370, so the threshold is not judged on
+  its own tuning data): **24/30 = 80%** related. Residual unrelated: T-4047→T-4079
+  and T-2038→T-1808 (shared surface words: github/issues, /approvals),
+  T-3927→T-3678, T-3612→T-3131, T-3616→T-1891, T-2171→T-3611.
+- **Hit fraction:** 255/820 = 31% (was 51%). Most-hit target receives 7 hits (was 66).
+- **Known residual:** three unrelated pairs with SHORT names (T-2349→T-3912,
+  T-3715→T-4132, T-3938→T-3713) sit at the threshold. They are in the fixture as
+  `marginal`: counted in its precision, not asserted one by one.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Question answered in this file BEFORE code changes: 30 live hits sampled with a fixed seed, each judged related/unrelated with a one-line reason, precision reported, and concentration (generic tasks / common words) checked
+- [x] If precision is poor, search_open_tasks ranking/threshold fixed so precision rises on the same sample; before/after precision and hit fraction recorded
+- [x] Live-corpus A3 assertion replaced by a COMMITTED fixture corpus under tests/ encoding related and unrelated pairs; test asserts every related pair hits and no unrelated query gets a hit; live fraction is an informational print only (no assertion)
+- [ ] tests/unit/t3056_recall_open_tasks.bats and tests/unit/test_t3789_recall_hit_mapping.py green; bin/fw vendor self --check clean for memory-recall.py
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +183,11 @@ date_finished: null
 -->
 
 ## Verification
+
+timeout 600 bats tests/unit/t3056_recall_open_tasks.bats > /tmp/.t4137-bats.out 2>&1 && ! grep -q "^not ok" /tmp/.t4137-bats.out
+test "$(grep -c '# skip' /tmp/.t4137-bats.out)" -eq 0
+python3 -m pytest tests/unit/test_t3789_recall_hit_mapping.py -q > /tmp/.t4137-py.out 2>&1 && grep -q passed /tmp/.t4137-py.out
+cmp -s agents/context/lib/memory-recall.py .agentic-framework/agents/context/lib/memory-recall.py
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -229,6 +320,30 @@ date_finished: null
 
 ## RCA
 
+**Symptom:** t3056 A3 went red at pre-push: 413/818 (50.5%) of open tasks got an
+open-task recall hit, at or above the "strict minority" bound. Behind the number,
+`fw context focus` was offering an unrelated task on 3 of every 5 hits
+(precision 12/30).
+
+**Root cause:** `search_open_tasks` accepted any task whose name shared ≥4
+distinct topic words with the query, unweighted and with no length
+normalisation. Task `name:` fields have grown into paragraphs (T-3299: 132 topic
+words, against a median of 10), and a paragraph contains four of almost any
+query's generic words (unit, tests, bats, check, write…). Five such tasks drew 24%
+of all hits. The code did not change; the corpus moved (22% → 38% → 51%).
+
+**Why structurally allowed:** the only guard was the live-corpus hit fraction. It
+measures how often recall fires, not whether the hits are right. It was relaxed
+once (T-3604, 0.35 → 0.5) as a mutable-corpus anchor, without measuring precision,
+so the precision loss had been building, unobserved, since then.
+
+**Prevention:** precision is now pinned on a committed fixture
+(`tests/fixtures/t4137_recall_precision.yaml`): real names with labeled
+related/unrelated pairs plus a seeded background, so DF and IDF behave as they do
+live. A mutation test proves the fixture fails the old unweighted filter. The live
+fraction is printed only. The scoring change (IDF-weighted, length-normalised
+score floor) removes the length bias at its source.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -323,3 +438,14 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4137-open-task-recall-now-fires-for-50-of-act.md
 - **Context:** Initial task creation
+
+### 2026-10-13T10:43:16Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-13 — pre-fix failure recorded [agent]
+- With `git show HEAD:agents/context/lib/memory-recall.py` swapped in, the new
+  fixture test fails: `labeled precision 15/29 = 0.52`, NOISE on 11 of 13
+  unrelated pairs (e.g. T-3695 -> T-3294, T-3801 -> T-3303) and on synthetic
+  generic query T-99002. With the fix: `labeled precision 15/18 = 0.83`, all
+  fixture assertions hold; all 13 t3056 tests and the 4 test_t3789 tests pass.
+- Measurement scripts (not committed): .context/scratch/t4137/{measure,explore,grid,survive,genfix2}.py

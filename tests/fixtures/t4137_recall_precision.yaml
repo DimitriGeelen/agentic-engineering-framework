@@ -1,0 +1,951 @@
+# T-4137 — committed fixture for open-task recall precision
+# (agents/context/lib/memory-recall.py search_open_tasks), read by
+# tests/unit/t3056_recall_open_tasks.bats. Replaces the live-corpus anchor (T-3326).
+#
+# tasks:     real open-task names/descriptions/tags captured 2026-10-13: every task
+#            in a labeled pair, plus 120 background tasks drawn at seed 4137 so the
+#            name frequencies (DF ceiling, IDF) resemble the live corpus. Three
+#            T-990xx tasks are synthetic: nothing but generic words.
+# related:   query -> a task judged related by reading both names; must be offered.
+# unrelated: query -> a task judged unrelated that the word-count floor offered
+#            (mostly paragraph-length names sharing generic words); must not be.
+# marginal:  judged unrelated, short names, scoring at the threshold on the live
+#            corpus too — the known residual. Counted in precision, not each asserted.
+# no_hit:    queries that must get no open-task hit at all.
+#
+# Labels and the 30-hit precision measurement: task T-4137, section ## Context.
+# Regenerate only with a new labeled sample; do not edit labels to make a test pass.
+tasks:
+- id: T-334
+  name: 'Execute launch sequence: r/ClaudeAI soft launch → Show HN → amplification'
+  description: 'Launch sequence: Week -1: Post to r/ClaudeAI with ''here is what I built'' framing'
+- id: T-558
+  name: Build task risk signal detection — PreToolUse gate requiring inception for high-impact builds
+  description: Apply structural risk signals as PreToolUse gate on BUILD tasks (not inception creation).
+- id: T-801
+  name: fw costs CLI — token usage tracking from JSONL transcripts
+  description: Build task following T-799 (GO) and T-800 (GO) inception decisions. Implement fw
+  tags: cost, tokens, observability, cli
+- id: T-802
+  name: Watchtower token dashboard — /costs page with session table and project summary
+  description: Add /costs page to Watchtower showing token usage data from fw costs. Display project
+  tags: watchtower, tokens, observability
+- id: T-803
+  name: Landing page token widget — show current session tokens on Watchtower dashboard
+  description: Add a token usage summary widget to the Watchtower landing page (/). Show current
+  tags: watchtower, tokens, observability
+- id: T-844
+  name: SSD evaluation — Simple Self-Distillation for code generation (arxiv 2604.01193)
+  description: 'Inception: SSD evaluation — Simple Self-Distillation for code generation (arxiv'
+- id: T-1624
+  name: Refresh ring20-dashboard hub.secret on this anchor — secret-mismatch after .143 migration (T-1054
+    heal)
+  description: Refresh ring20-dashboard hub.secret on this anchor — secret-mismatch after .143
+  tags: termlink, secret, fleet, security, from-g-045, t-1054-heal
+- id: T-1636
+  name: 'Orchestrator routing: refactor composite cache key to RoutingKey newtype before adding more dimensions'
+  description: T-1064 supplementary review flagged the composite cache key 'method::task_type'
+  tags: from-T-1064, termlink, routing, cleanup
+- id: T-1637
+  name: 'Multi-LLM routing: cost-aware learning — weight RouteCache success rates by cost-per-call'
+  description: T-1065 supplementary review flagged that 'cost-effective' in the AC was not directly
+  tags: from-T-1065, termlink, multi-llm, cost-routing
+- id: T-1799
+  name: 'Watchtower /orchestrator: add Workflow coverage panel — surface T-1798 audit check on web (matrix
+    of workflow × worker_kind × routable)'
+  description: 'Watchtower /orchestrator: add Workflow coverage panel — surface T-1798 audit check'
+  tags: web, observability
+- id: T-1801
+  name: extend Workflow coverage panel with missing-provider class — web parity for T-1800 (sibling to
+    T-1799)
+  description: extend Workflow coverage panel with missing-provider class — web parity for T-1800
+  tags: web, observability
+- id: T-1802
+  name: 'Workflow coverage panel: per-workflow last-dispatch timestamp — surface deprecation candidates
+    (T-1799 follow-up)'
+  description: 'Workflow coverage panel: per-workflow last-dispatch timestamp — surface deprecation'
+  tags: web, observability
+- id: T-1827
+  name: 'Pickup: Cross-hub relay stall: termlink-agents framework:pickup offsets 9+10 never reached framework-agent
+    (only seq 47 visible) (from 999-Agentic-Engineering-Framework)'
+  description: 'Auto-created from pickup envelope. Source: 999-Agentic-Engineering-Framework, task'
+  tags: pickup, bug-report, fw-upgrade-incident-2026-05-14, termlink-relay
+- id: T-1843
+  name: T-1603 smarter hook + mirror-sync stderr capture (T-1829 build child)
+  description: T-1603 smarter hook + mirror-sync stderr capture (T-1829 build child)
+  tags: bug
+- id: T-1891
+  name: CLAUDE.md governance rule — producer/consumer parity for hook bypass contracts (L-399 codification)
+  description: CLAUDE.md governance rule — producer/consumer parity for hook bypass contracts (L-399
+  tags: docs, governance, hook-ux, L-399, meta-rca:T-1890
+- id: T-1911
+  name: Watchtower /arcs/<slug>/close build — review surface, POST handler, CLI fw arc review (T-1902
+    build slices)
+  description: Build the close-review surface GO'd by user via T-1902 inception. /arcs/<slug>/close
+  tags: watchtower, ui, arc, arc-closure-ux
+- id: T-1954
+  name: BVP /bvp perf — 17.9s load time, cache _collect_task_points() or batch 1918 task reads
+  description: 'Watchtower /bvp page takes 17.9s on this host. Root cause: web/blueprints/bvp.py:168'
+- id: T-1961
+  name: /approvals ingestion of close-ready arcs — ARC CLOSURE section
+  description: 'T-1959 build child B: add ''ARC CLOSURE — ready for review (N)'' section to /approvals.'
+  tags: approval-ux, watchtower, arc, T-1959-followup, arc:arc-grooming
+- id: T-1964
+  name: BVP driver add form — /api/bvp/driver/add POST + add-driver form below sliders (T-1958 A)
+  description: 'T-1958 build child A: web/blueprints/bvp.py /api/bvp/driver/add POST + web/templates/bvp.html'
+  tags: watchtower, bvp, approval-ux, T-1958-followup, arc:bvp
+- id: T-1982
+  name: show BVP badge on /tasks listing cards + list view — T-1980 sibling
+  description: show BVP badge on /tasks listing cards + list view — T-1980 sibling
+- id: T-1984
+  name: 'T-1983A: inception GO-scope traceability — schema + hook + close gate'
+  description: 'T-1983A: inception GO-scope traceability — schema + hook + close gate'
+- id: T-1988
+  name: Watchtower /settings/appearance page — preset picker + foundation axes + sticky live preview +
+    per-user YAML persistence (arc-007 S1)
+  description: Build the appearance settings page from docs/design/watchtower-redesign-2026-05-13/project/appearance-settings.jsx.
+  tags: watchtower, redesign, ui, settings
+- id: T-1994
+  name: Watchtower Fabric + Arcs page redesign — apply foundation tokens, dense graph, subsystem rail
+    (arc-007 S5)
+  description: Redesign /fabric (cytoscape graph) and /arcs pages with foundation tokens and any
+  tags: watchtower, redesign, ui, fabric, arcs
+- id: T-1999
+  name: arc-007 review enablement — visual review surface for S0/S1 presets (palette/theme contact sheet
+    + live preview)
+  description: arc-007 review enablement — visual review surface for S0/S1 presets (palette/theme
+- id: T-2002
+  name: UX-review TermLink agent preloaded with design style guides (T-2000 approach C) — browser-driving
+    console+interaction+guide-coherence review
+  description: T-2000 approach C (qualitative layer). A specialised UX-review agent dispatched
+  tags: review, ux, termlink
+- id: T-2004
+  name: make Typography & Density picker axes actually apply (self-host webfonts, headings use --wt-font-head,
+    wire density scaling)
+  description: 'arc-007 S1/S3: the appearance picker exposes Typography and Density controls that'
+  tags: ux, css, fonts, render-surface
+- id: T-2008
+  name: arc-007 S2a nav IA regroup + Govern sub-grouping (top-bar layout)
+  description: arc-007 S2a nav IA regroup + Govern sub-grouping (top-bar layout)
+  tags: watchtower, redesign, ui, nav
+- id: T-2014
+  name: 'Root-cause: extensionless ImageMagick exports land in repo root (sys, os — 2nd incident)'
+  description: 2nd incident of a large (10MB+) ImageMagick PostScript export written to PROJECT_ROOT
+- id: T-2018
+  name: arc-007 S4e/S6c -- bulk multi-select + floating action bar on the tasks board
+  description: arc-007 S4e/S6c -- bulk multi-select + floating action bar on the tasks board
+  tags: arc:watchtower-redesign, ui, watchtower
+- id: T-2039
+  name: fabric page renders 33000px tall — same unbounded-list class as T-2038
+  description: ux-review sweep (T-2005) flags /fabric as clipped @33109px — a second pathologically-tall
+  tags: arc-007, perf, watchtower, fabric, ui, render-surface
+- id: T-2040
+  name: inception board renders 83000px tall — unbounded card list (T-2038 class)
+  description: 'Height-bomb class found by the T-2039 page-height sweep: /inception renders 83,146px'
+  tags: arc-007, perf, watchtower, inception, ui, render-surface
+- id: T-2041
+  name: timeline renders 90000px tall — unbounded grouped event lists (T-2038 class)
+  description: 'Height-bomb class found by the T-2039 page-height sweep: /timeline renders 90,283px'
+  tags: arc-007, perf, watchtower, timeline, ui, render-surface
+- id: T-2044
+  name: /learnings renders 67000px tall — unbounded table (T-2038 class)
+  description: '/learnings renders 67,890px (table-dominant: {% for l in learnings %} rows in a'
+  tags: arc-007, perf, watchtower, learnings, ui, render-surface
+- id: T-2063
+  name: Watchtower Complete button silent-fail — htmx form hits CSRF 403, swallows non-200
+  description: On /review/T-2060 the user presses "Complete Task" — nothing happens.
+  tags: bug, watchtower, htmx, csrf, silent-fail, render-fidelity
+- id: T-2066
+  name: inception detail template silently drops Context/RCA/AC/Verification/Decisions sections
+  description: web/blueprints/inception.py lists Context, RCA, Acceptance Criteria,
+  tags: bug, watchtower, inception, template, silent-drop, render-fidelity
+- id: T-2077
+  name: add render slots in inception_detail.html for Context/RCA/AC/Verification/Decisions (T-2066 GO
+    scope)
+  description: 'Implements T-2066 inception GO. Symptom: /inception/T-XXXX Watchtower page shows'
+- id: T-2083
+  name: /inception page renders in 12.2s — aggregation perf (T-1954 sibling)
+  description: 'Empirical measurement during the broken-link scanner sweep (this session): GET /inception'
+- id: T-2087
+  name: fix /arcs/<slug> constituent-table unbounded height (T-2038 class on parametrized route)
+  description: fix /arcs/<slug> constituent-table unbounded height (T-2038 class on parametrized
+- id: T-2102
+  name: Watchtower /approvals page renders in 14.8s — aggregation perf (T-1954/T-2083 sibling, body-extraction
+    cache)
+  description: /approvals takes 14.8s end-to-end. Profile shows _load_pending_go_decisions (2.8s),
+  tags: perf, watchtower, approvals, T-1954-cluster, arc-007
+- id: T-2112
+  name: /approvals 'Review' click swaps into polling div + bounces back after 10s — hx-target inheritance
+    bug
+  description: 'USER report: clicking Review on /approvals Arc-Closure card briefly shows the /arcs/<slug>/review'
+  tags: watchtower, approvals, htmx, ui-bug, arc-007
+- id: T-2116
+  name: /arcs/<slug>/close headline-mechanic-box contrast — primary-on-primary-bg same-hue-family fails
+    contrast (third surface)
+  description: 'User-reported: cannot read text in headline mechanic on /arcs/<slug>/close. Same'
+  tags: watchtower, ui-bug, contrast, arc-007
+- id: T-2137
+  name: Multi-option AC pattern — choice spawns child inception (T-1776 surfaces the gap)
+  description: 'Inception: Multi-option AC pattern — choice spawns child inception (T-1776 surfaces'
+  tags: inception-spawn, arc-008, multi-option-ac, review-loop, ac-classification
+- id: T-2183
+  name: 'T-2181 Slice 2: chat-bare-path Stop-hook scanner + UserPromptSubmit warning injector'
+  description: 'Per T-2181 GO Candidate D. agents/context/chat-bare-path-scan.sh (Stop hook): regex-scan'
+- id: T-2200
+  name: dispatch AEF setup worker on /opt/fan-dashboard
+  description: dispatch AEF setup worker on /opt/fan-dashboard
+- id: T-2205
+  name: T-2204 Slice B — PreToolUse Write/Edit hook refuses save when inception has template-only Recommendation
+    block (under $CLAUDECODE=1)
+  description: T-2204 Slice B — PreToolUse Write/Edit hook refuses save when inception has template-only
+- id: T-2220
+  name: T-2217 Slice 2 — Playwright contract test for inception_decide side-effect-warning rendering (G-068
+    META detector)
+  description: 'T-2217 GO scope Slice 2 (F8 3.0, M-cost). Systemic class-detector for G-068 META:'
+- id: T-2268
+  name: 'arc-010 Slice 3 — HM-A demo agent: fresh-session MCP-only task drive (no Bash bin/fw)'
+  description: Materialize T-2209:iw4-headline-mechanic. A fresh Claude Code session, with .mcp.json
+  tags: arc:capability-overlay, mcp, demo, headline-mechanic
+- id: T-2274
+  name: Author AEF README draft + research dossier (worker contract)
+  description: Author AEF README draft + research dossier (worker contract)
+- id: T-2278
+  name: 'T-2277 build: port-scoped SESSION_COOKIE_NAME (Candidate 1, Leg A) — eliminates cross-Watchtower
+    CSRF pollution'
+  description: 'T-2277 build: port-scoped SESSION_COOKIE_NAME (Candidate 1, Leg A) — eliminates'
+- id: T-2321
+  name: 'Pickup: AEF→TermLink first-contact: T-2303 arc-011 parallel-execution scoping (from 999-Agentic-Engineering-Framework)'
+  description: 'Auto-created from pickup envelope. Source: 999-Agentic-Engineering-Framework, task'
+  tags: pickup, feature-proposal
+- id: T-2349
+  name: T-2347a Slice A1 — arc_detail.html Close-arc button + collapsible CLI fallback
+  description: Replace inline CLI block at web/templates/arc_detail.html:417-447 with primary Close-arc
+  tags: watchtower, arc-mechanics, ux
+- id: T-2350
+  name: T-2347b Slice B1 — _completion_stats / _resolve_constituents parity (arc-006 ready for /approvals)
+  description: Fix constituent-counter parity gap between web/blueprints/arcs.py:_resolve_constituents
+  tags: watchtower, arc-mechanics, parity-bug, fix
+- id: T-2428
+  name: 'Governance by payload mediation: model-agnostic LLM gateway'
+  description: Inception. Should the framework adopt governance-by-payload-mediation — a
+- id: T-2434
+  name: 'payload-mediation: Lock-1 acceptance demo (headline-mechanic)'
+  description: 'Arc demo: operator prompts agent to attempt a self-authorizing action; proxy denies'
+- id: T-2485
+  name: dispatch loop probe (T-2484 spike 2)
+  description: Throwaway probe to prove the orchestrator dispatch loop turns over end-to-end
+  tags: probe, throwaway, dispatch-test
+- id: T-2529
+  name: 'designer gallery-server API: implement /api/* endpoints 832 client already calls'
+  description: 'designer gallery-server API: implement /api/* endpoints 832 client already calls'
+- id: T-2530
+  name: align designer gallery API to 832 authoritative contract (sources, latest.ts/count, health.store)
+  description: align designer gallery API to 832 authoritative contract (sources, latest.ts/count,
+- id: T-2555
+  name: 'designer-corpus D1: task-lifecycle process diagram (draft BPMN + gallery + compile dogfood)'
+  description: 'designer-corpus D1: task-lifecycle process diagram (draft BPMN + gallery + compile'
+- id: T-2558
+  name: 'designer-corpus D2: inception-flow process diagram (explore → go/no-go → build children)'
+  description: 'designer-corpus D2: inception-flow process diagram (explore → go/no-go → build children)'
+- id: T-2631
+  name: map catch-up pair-round seed — 2 missing lifecycle flows, conformance GREEN
+  description: map catch-up pair-round seed — 2 missing lifecycle flows, conformance GREEN
+- id: T-2632
+  name: designer 0.7.0 adoption — re-pin + annotation-seam overlay e2e
+  description: designer 0.7.0 adoption — re-pin + annotation-seam overlay e2e
+- id: T-2661
+  name: self-vendor root-data class + patternless sim tests (T-2656 follow-up)
+  description: T-2656 shipped do_vendor includes (.secret-scan-patterns/.secret-scan-allowlist)
+- id: T-2666
+  name: 'corpus map: task-creation (package dogfood catalog)'
+  description: Map the task-creation process (capture → classification → BVP estimation → confirmation
+  tags: process-layer, corpus
+- id: T-2667
+  name: 'corpus map: knowledge-leveling (package dogfood catalog)'
+  description: Map the knowledge-leveling process (capture → universal-vs-framework classification
+  tags: process-layer, corpus
+- id: T-2713
+  name: Consumer staleness decided by a VERSION counter that does not order
+  description: 'VERSION is a tag counter that resets: this repo went 1.6.354 (2026-07-07) then 1.6.121'
+  tags: consumer, version, doctor, upgrade
+- id: T-2721
+  name: 'Keystone: escalation ladder trigger derived from witnessed failures, not self-report'
+  description: 'Arc keystone for T-2715 GO item 5 (IW-12). Diagnosis complete in T-2715: the Escalation'
+  tags: arc:ladder-trigger-producer
+- id: T-2748
+  name: Find the cross-test polluter making 6 web tests fail only in full-suite order
+  description: Find the cross-test polluter making 6 web tests fail only in full-suite order. Filed
+- id: T-2773
+  name: stale 'Read-only — live weight sliders ship in T-1929' copy still rendered on /bvp
+  description: T-1971 shipped the removal of the stale read-only notice from the BVP page once
+- id: T-2775
+  name: Watchtower /timeline renders 69.8MB of HTML with no bound
+  description: The /timeline route returns 69,814,921 bytes (69.8 MB) in a single response, measured
+- id: T-2787
+  name: test fixtures escaped to filesystem root — guard against framework markers at /
+  description: test fixtures escaped to filesystem root — guard against framework markers at /
+- id: T-2864
+  name: G-052 duplicate task IDs block the T-2863 GO decision commit
+  description: G-052 duplicate task IDs block the T-2863 GO decision commit
+- id: T-2906
+  name: 'fw context status reports Learnings: 0 against a 608-entry corpus — 119 days blind'
+  description: 'agents/context/lib/status.sh:55 counts learnings with grep -c ''^  - id: L-''. learnings.yaml'
+- id: T-3082
+  name: state the AEF side of the admissibility seam as requirements for TermLink's policy surface
+  description: 'TermLink''s agent asked for it explicitly (agent-chat-arc @115, their T-2791): ''I'
+- id: T-3090
+  name: handover auto-commit sweeps the whole index, absorbing another session's staged work
+  description: handover auto-commit sweeps the whole index, absorbing another session's staged
+  tags: bug, git, handover, concurrency
+- id: T-3115
+  name: 'Audit check: vendored config.sh registry must be inert'
+  description: tests/ is deliberately outside the vendored include list, so no consumer tree asserts
+- id: T-3127
+  name: no check asserts the full-audit timeout budget still fits the corpus it must scan
+  description: T-3070 measured an uncontended full 'fw audit' at 1729s against a 3000s FW_AUDIT_FULL_TIMEOUT
+- id: T-3128
+  name: the framework has a canonical list of its own self-churning paths and one consumer uses it
+  description: the framework has a canonical list of its own self-churning paths and one consumer
+- id: T-3130
+  name: episodic mining runs before the completion commit exists, so single-commit tasks record zero by
+    construction
+  description: The episodic is generated by update-task.sh --status work-completed; the commit
+- id: T-3135
+  name: fw update treats any VERSION difference as an upgrade, and VERSION resets to zero at every tag
+  description: lib/update.sh:167 decides update-vs-current with a bare string inequality; anything
+  tags: update, versioning, consumer-report
+- id: T-3136
+  name: fw update reverts consumer local patches with no record that a patch existed
+  description: lib/update.sh re-vendors wholesale via do_vendor and overwrites bin/fw and every
+  tags: update, vendoring, provenance, consumer-report
+- id: T-3153
+  name: Enumerate the complete set of framework-written files in a consumer
+  description: IW-2 from T-3149, deferred. Four members known; the rest are unenumerated, so a
+  tags: upgrade, governance
+- id: T-3157
+  name: Re-pin Workflow Designer 0.8.0 -> 0.11.0 (three releases of consumer-visible fixes unconsumed)
+  description: Re-pin Workflow Designer 0.8.0 -> 0.11.0 (three releases of consumer-visible fixes
+- id: T-3183
+  name: Human AC markdown double-escapes on /approvals and /tasks/<id>
+  description: Reported by 001-CashWeb over TermLink (agent-chat-arc offset 556). Backticks in
+- id: T-3243
+  name: 'claude-fw supervisor dies on healthy runs: lifetime restart cap, off-by-one, and clean-exit teardown'
+  description: The arc-012 continuous loop fires correctly — 7 autonomous budget restarts over
+  tags: bug, arc-012, supervisor
+- id: T-3290
+  name: ' text: ''VERIFIED (was suspicion, wrong mechanism): .budget-status is a per-PROJECT file shared
+    by every'
+  description: Promoted from observation OBS-203
+- id: T-3294
+  name: 'Gate catch-22 under agent control: T-2188 check-inception-schema validates the file ON DISK,
+    not the proposed edit. It ALLOWED the workflow_type build->inception transition that created the invalid
+    state, then blocked every subsequent Write/Edit — including the edit that adds the target_blast_radius/voi_score
+    fields it demands. Its documented bypass FW_ALLOW_INCEPTION_SCHEMA_DRIFT=1 is an env prefix, which
+    the Write/Edit tool surface cannot carry (T-1890/L-399 producer-consumer parity: bypass exists for
+    Bash only). Compounded by G-020 blocking ''fw task update T-XXX --type inception'' — the exact command
+    G-020''s own block message recommends as the unblock. Hit live in T-3025 filing; escaped only by work-on
+    + a shell-side python rewrite with the env prefix. Two independent gates each recommending a remedy
+    they themselves refuse.'
+  description: Promoted from observation OBS-273
+- id: T-3297
+  name: 'PRE-PUSH AUDIT GATE CAN DEADLOCK AGAINST CRON AUDIT PILEUP, WITH NO TIER-2 ESCAPE. The gate (T-2930/OBS-221,
+    agents/git/lib/hooks.sh:915) correctly BLOCKS on exit 75 (lock contention) rather than false-passing
+    — that reasoning is sound and should stay. What has gone stale is its premise: the block message says
+    ''usually the daily cron audit — it finishes within a minute or two''. Observed 2026-08-16: THREE
+    concurrent 999-framework audits (PIDs 250439, 251163, 365610) all running ''audit.sh --section structure,compliance,quality,discovery
+    --cron'', ages 3:45/3:45/2:47, plus 2 more from 050-email-archive — 5-7 audit.sh across the host.
+    structural-30m fires every 30 min; if a run exceeds that, runs stack and the lock is effectively never
+    free. The pre-push gate runs ''--section structure'', the SAME section the cron holds, so it contends
+    every time. Net effect: 5 commits could not be pushed for 15+ min, and the ONLY documented escape
+    is Tier 0 ''git push --no-verify''. A gate whose wait-it-out advice no longer holds and whose only
+    bypass is Tier 0 pushes agents toward Tier 0 for a routine push. Sibling to OBS-304 (full audit >10
+    min, no partial output) — same root (audit runtime), different consequence (there: unusable as an
+    AC; here: push path unreliable). Candidate fixes: cron overlap guard (skip if lock held), a Tier-2
+    env bypass for contention-only exit 75 distinct from the Tier-0 --no-verify, or bounded lock wait
+    in the gate itself.'
+  description: Promoted from observation OBS-305
+- id: T-3299
+  name: 'G-020 scope gate blocks BOTH escape routes its own block message prescribes — an agent focused
+    on a placeholder-AC build task can be wedged. Measured 2026-08-29 (T-3216 run, focus landed on auto-created
+    T-3215/T-3216). The message names: (1) ''Edit the task file: replace the [First …] placeholder ACs
+    with real ACs'' (literal placeholder token elided here so the review-gate''s placeholder scan does
+    not match this quotation); (2) ''bin/fw task update T-XXX --type inception''. Route (2) is refused
+    by check-active-task itself — not on the read-only allowlist (agents/context/lib/safe-commands.sh),
+    so the gate quotes the remedy back verbatim while refusing it. Route (1) is refused for every SHELL
+    form (heredoc, sed -i, any redirect all match the write-pattern regex); it survives only via a Write/Edit
+    TOOL call, which is not routed through the same regex. So an agent whose only write surface is bash
+    has no legal move at all. I escaped only by using the Edit tool. Also blocked in the same state: ''fw
+    task update --horizon later'', ''fw push'', and plain reads that merely contain sed/awk/2>/dev/null
+    — the write-pattern regex is matching read commands (sibling of T-2410, already filed, but the deadlock
+    is distinct from the false-positive class). Fix direction, cheapest first: allowlist the gate''s own
+    two prescribed remedies in safe-commands.sh so the block message is reachable from the blocked state.
+    Structural lesson worth a rail: a block message is an executable contract — for every gate that prints
+    a remedy, run that remedy verbatim WHILE the gate is firing, not from a clean shell. Ours was written
+    by someone who was not blocked at the time. Sibling to L-399/T-1890 producer-consumer parity, one
+    notch worse: there the bypass existed and was rejected downstream; here the gate rejects it itself.
+    Second trigger in the same run: an automated process created T-3215 in started-work with template
+    ACs and TOOK FOCUS from the session twice, which is how the session entered the wedged state at all
+    — that focus-stealing is worth its own look.'
+  description: Promoted from observation OBS-353
+- id: T-3300
+  name: 'tests/unit/ac_counter_sed_range_one_line_comment.bats:34 asserts an EXACT count — grep -c of
+    the ''>''-tolerant comment-strip regex in agents/task-create/update-task.sh must equal 2. There are
+    now 3 (lines 138, 163, 1590), all correct uses of the tolerant form, so the suite is RED for adding
+    a third correct site. Measured identical (3) at HEAD and in the working tree, so it predates T-3235''s
+    edit. The assertion is testing the wrong property: what T-2554 cares about is that NO occurrence uses
+    the broken ''<!--[^>]*-->'' form and that the tolerant form is present — a floor, not an equality.
+    An exact count turns every legitimate new call site into a false red, and a false red in a suite the
+    daily audit does not run (audit covers tests/lint only, not tests/unit) is a red nobody sees. Fix
+    shape: replace -eq 2 with -ge 2 and keep the existing zero-occurrences-of-the-broken-form assertion
+    as the real invariant.'
+  description: Promoted from observation OBS-359
+- id: T-3302
+  name: 'STRUCTURAL: nothing runs tests/unit on a schedule, so reds there are invisible until someone
+    happens to run an adjacent suite. Measured today while landing T-3235: TWO independent pre-existing
+    failures surfaced by accident — ac_counter_sed_range_one_line_comment (OBS-359, brittle exact-count
+    assertion) and inception_decide_emit_review_post_move (separate note). Both predate today''s edits;
+    neither was reported by anything. The daily audit''s ''Invariant suite green'' line covers tests/lint
+    ONLY (104 invariants, agents/audit + bin/fw glob tests/lint/*.bats), and its green reads to an agent
+    like the test corpus is green. Same family as T-2697 (tests/lint itself was globbed by no runner for
+    months while ''fw test lint'' ran shellcheck and reassured) and as peer 832''s T-654 BUG 2 (a detector
+    with no delivery) and their OBS-333 (a 13-minute bridge suite nothing schedules). The failure mode
+    is not ''tests fail'' — it is ''a green line that answers a narrower question than the one the reader
+    is asking''. Candidate fix: a scheduled tests/unit run whose result is surfaced the way the invariant
+    suite is, plus an audit line that states WHICH corpus it examined rather than the bare word ''suite''.'
+  description: Promoted from observation OBS-361
+- id: T-3303
+  name: 'CORRECTION to OBS-362 and OBS-363 — root cause found, and it is neither suite. The harness reported
+    three background commands as ''killed'', but the kill did not reach their children: bats process TREES
+    kept running against the LIVE repo for ~40 minutes afterwards (PIDs 3155301/3155304/3155345/3155346
+    for a 68-suite tests/unit run, 3483957+ for a tests/lint run), still appending to /tmp/.t3235adj.out
+    and still executing update_task.bats. That orphan is what rewrote .context/working/focus.yaml to ''current_task:
+    T-001'' — twice, including once immediately after I had restored it, which is why it looked like the
+    suite I had just run. It also explains the phantom measurement: a file I created with 32 tests read
+    back at 75 lines containing ''ok 379'', because two writers were interleaving into it, and grep -c
+    returned nothing because the file was being rewritten under the read. OBS-363''s ''update_task.bats
+    does not complete at 280s'' is now suspect for the same reason — the timing was taken while an orphan
+    was running the same suite concurrently against the same live tree; re-measure on a quiet host before
+    treating it as a property of the suite. Terminated with pkill -TERM -f bats-core; 0 remain. THE CLASS:
+    a background test run that outlives its supervisor is indistinguishable, from inside the session,
+    from the session''s own state changes — the agent attributes the damage to whatever it did most recently.
+    Two guards worth having: assert no bats process is already running before starting one, and check
+    for orphaned bats trees the way fw termlink cleanup checks for orphaned dispatches (T-577, exact same
+    shape: the supervisor deregisters, the process does not die).'
+  description: Promoted from observation OBS-364
+- id: T-3305
+  name: 'T-3179''''s partial-complete commit allowance does not recognise ''''bin/fw git commit'''' -
+    only bare ''''git commit''''. Measured on T-3251: with the task at work-completed and focus on it,
+    ''''bin/fw git commit -m ...'''' was blocked three times (multi-line message, single-line message,
+    with and without an env prefix), each time with a block message whose own second line says: "Note:
+    ''''git commit'''' IS allowed here (T-3179) - a partial-complete task may always checkpoint its own
+    verified work under its own ID." Bare ''''git commit -m ...'''' succeeded immediately with the same
+    staged content. The allowance exists and works; it just does not cover the framework''''s own canonical
+    commit verb, which CLAUDE.md''''s Quick Reference lists first (''''fw git commit -m T-XXX: ...'''').
+    In this state the block message is actively misleading: it names the allowance, says to run the commit
+    bare, and the agent re-runs the fw-prefixed form because that IS the bare form of the documented verb.
+    Cost: three blocked attempts and a workaround that bypasses the fw wrapper''''s own pre-commit path.
+    Fix shape: add the ''''bin/fw git commit'''' / ''''fw git commit'''' prefixes to the same allowance
+    in agents/context/lib/safe-commands.sh (or wherever the T-3179 exemption matches), pinned by a test
+    exercising BOTH spellings under a work-completed focus - the single-spelling test is what let this
+    ship.'
+  description: Promoted from observation OBS-366
+- id: T-3306
+  name: 'Close-gate self-reentry deadlock: ''fw task update T-1719 --status work-completed'' hung 3h+
+    because its P-011 verification runs t1719_happiness_signal.bats, which itself invokes ''fw task update
+    T-1719 --happiness N'' on the SAME task mid-close. Direct suite run passes 37/37 in minutes; only
+    under the close gate does it wedge (parent update-task.sh holds the task''s close context). Sibling
+    of OBS-363/365 (update_task bats hangs). Class fix candidates: verification runs with FW_TASK_UPDATE_NO_REENTRY
+    guard, or bats that mutate the task-under-close use a fixture task id, or gate detects self-referential
+    verification lines. Killed tree at 15:5xZ, exit 144, T-1719 still active/started-work, no corruption
+    observed.'
+  description: Promoted from observation OBS-372
+- id: T-3318
+  name: 'fw mirror status reports ''github: in sync'' while github/master was 404 commits behind origin/master.
+    It compares origin''s HEAD (which points at the checked-out branch, t2539-staging) against github''s
+    same-named branch and says NOTHING about master — then renders a green line. ''fw mirror sync'' has
+    the same scope: it synced t2539-staging only and reported ''synced 9cf2eb6f4 -> 398bf5385'' as success.
+    Exactly the T-3105 class: a check that does not state the ref set it compared, so ''in sync'' and
+    ''looked at one branch'' render identically. Fix shape: name the refs compared and their count, per
+    the R5 rule in docs/design/task-corpus-concurrency-model.md.'
+  description: Promoted from observation OBS-337
+- id: T-3319
+  name: 'fw bvp --include-proposed --quadrant hv-lc returns a degenerate ranking: the top 10 tasks all
+    score BVP=108, NORM=0.40, COST=3.6 — identical to three significant figures. A ranking whose entries
+    are indistinguishable cannot order work, which is its only purpose. Two compounding causes: (1) 120/147
+    tasks (82%) have no measurable cost because components: is unresolved (T-3068), so quadrant thresholds
+    are computed over 27 tasks and applied to 147; (2) the v1 heuristic estimator appears to assign the
+    same driver scores to any build task with similar AC/line counts, so proposed scores carry almost
+    no per-task information. Same family as the T-3105 false-green class: the output looks like signal
+    and is not. Relevant now that the standing directive is to prioritise HV/LC and HV/HC from this ranking.'
+  description: Promoted from observation OBS-338
+- id: T-3324
+  name: 'fw doctor spends ~79s of every run on ''bats --count tests/unit/'' (606 files, 5161 tests) to
+    print a cosmetic count on the ''Test infrastructure'' line (bin/fw:1931). doctor --quick does not
+    skip it — check 9 has no _doctor_quick_skip guard. Measured 2026-09-05 during T-3281: ''fw doctor
+    --quick'' exceeded a 120s timeout having reached only check 8. doctor is invoked by hooks, cron and
+    pre-push paths, so the cost is paid constantly and it makes doctor unusable inside test suites. Candidate
+    fixes: guard check 9 with _doctor_quick_skip, cache the count, or replace with a cheap ''ls tests/unit/*.bats
+    | wc -l'' file count.'
+  description: Promoted from observation OBS-368
+- id: T-3326
+  name: 'Stale-verification class: P-011 lines and unit tests anchored to MUTABLE CORPUS STATE rot as
+    the corpus moves, blocking closes for reasons unrelated to the code under test. Two instances measured
+    in one close-out sweep (2026-09-06): (1) T-2969 verification line 3 greps ''fw audit --section structure''
+    for the ''readme-first-run is draft with all 2 constituent'' line — that arc moved draft->in-progress
+    since authoring, so the warning legitimately vanished and the close is blocked by corpus drift; (2)
+    T-2871''s tests/unit/test_aef_meta_census.py pins exact census counts (56 carriers, 102 state hits)
+    from the August measurement — corpus grew to 74/138, tests red, close blocked; the assertion cannot
+    distinguish ''measurement method broke'' from ''corpus changed''. Fix shape per instance: anchor tests
+    to committed FIXTURE corpora (hermetic), or pin the invariant/property rather than the live count;
+    verification lines should not grep live-audit output for specific corpus entities. Sibling of the
+    false-green/false-red family (T-1828, T-3105): a check whose subject can drift under it measures the
+    drift, not the code.'
+  description: Promoted from observation OBS-377
+- id: T-3329
+  name: 'Running the bats suite against the live repo rewrites .context/working/focus.yaml (observed:
+    reset to T-001 repeatedly during a 62-file run), which makes the focus-drift gate block every write
+    in the parent session until the run ends. Test harness mutating the framework state the session depends
+    on — hermeticity gap, sibling to L-606. Candidate fix: tests that call fw work-on/context focus must
+    set CONTEXT_DIR or PROJECT_ROOT to their sandbox; a lint could assert no test touches the live focus
+    file. Found during T-3138.'
+  description: Promoted from observation OBS-345
+- id: T-3331
+  name: External writer mutated an active task status mid-session with no notice — attribute the sweep,
+    decide whether non-owner task-file mutations must surface
+  description: 'Promoted from OBS-347. Fingerprint: status/horizon/tags flipped by machinery, envelopes'
+- id: T-3338
+  name: 'arc-020 S8: wire aef_resolve endpoint-probe seam to live termlink probes (G3 self-heal)'
+  description: 'arc-020 S8: wire aef_resolve endpoint-probe seam to live termlink probes (G3 self-heal)'
+  tags: arc:arc-020
+- id: T-3339
+  name: 'arc-020 S8: wire fleet peer-query/materialize seam to live termlink discover+file_receive (G3
+    re-provision)'
+  description: 'arc-020 S8: wire fleet peer-query/materialize seam to live termlink discover+file_receive'
+- id: T-3340
+  name: 'arc-020 headline demo G1 leg: distinct co-resident agents stay distinct correspondents (kills
+    G-105 fingerprint collapse)'
+  description: 'arc-020 headline demo G1 leg: distinct co-resident agents stay distinct correspondents'
+  tags: arc:arc-020
+- id: T-3346
+  name: claude-fw --termlink tears down its own live claude — exit-detect false-positives on TUI caret
+  description: claude-fw --termlink tears down its own live claude — exit-detect false-positives
+- id: T-3361
+  name: push to origin fails with Authentication failed — 39 commits unpushed
+  description: push to origin fails with Authentication failed — 39 commits unpushed
+- id: T-3435
+  name: 'Fabric card quality, second pass: header comments for the 32 files that describe themselves nowhere
+    (one honest line each, refuse if unclear), edge enrichment over the 189 zero-edge cards, describe
+    re-run, counts recorded'
+  description: 'Fabric card quality, second pass: header comments for the 32 files that describe'
+- id: T-3582
+  name: Rung-5 review panel is three Claude workers with vendor labels - make codex and opencode real
+    panel seats (termlink dispatch only spawns Claude)
+  description: T-3580's judge builds the IW-7 rung-5 panel as three sequential dispatches labelled
+- id: T-3588
+  name: Watchtower approvals surface for paid review proposals (T-3583 criterion 4 remainder)
+  description: 'Found by T-3586: T-3583 ticked ''operator approves via Watchtower /approvals and'
+- id: T-3597
+  name: 'Triage ring20-dashboard''s 20 v1.7.0 defect reports (each with a failing regression test and
+    a patch 0001-0042): one task per accepted defect'
+  description: 'Consumer report @21 (thread T-2382). Already covered: #12 (Watchtower task cache'
+- id: T-3603
+  name: 'OBS-587 triage A: red unit suites approvals..lib_review (25 bats files)'
+  description: Classify each red file stale-test vs code-regression; fix stale tests (test files
+  tags: tests, OBS-587
+- id: T-3604
+  name: 'OBS-587 triage B: red unit suites no_root..t3056 (21 bats) + 6 pytest files'
+  description: Classify each red file stale-test vs code-regression; fix stale tests (test files
+  tags: tests, OBS-587
+- id: T-3610
+  name: 'A test still writes to filesystem root: /.git/config user t@t and /.git/hooks/commit-msg rewritten
+    2026-09-30 22:30'
+  description: T-2787 guard (no_root_framework_markers.bats) is red; /.git/config gained [user]
+  tags: bug, tests, T-2787
+- id: T-3614
+  name: 'Split-root shell ratchet: 8 undispositioned PROJECT_ROOT framework-asset sites (baseline 12,
+    now 20)'
+  description: 'OBS-587 triage (T-3603). Failing: tests/unit/audit_split_root_asset_lint.bats test'
+  tags: bug, OBS-587
+- id: T-3621
+  name: 'Pre-push unit-suite gate as a ratchet: block NEW reds against a recorded baseline; full red list
+    stays FAIL in daily fw audit'
+  description: Since T-3602 the nightly run completes and pre-push (audit --section structure)
+  tags: audit, pre-push, OBS-587, T-3602
+- id: T-3622
+  name: Every fw termlink dispatch leaves a live 'termlink register --shell' process with a zombie shell;
+    sessions pile up (47 found 2026-10-01)
+  description: After a dispatched worker exits, its bash shell becomes defunct but the parent 'termlink
+  tags: bug, termlink, gap-homing
+- id: T-3653
+  name: fw_pickup.bats test 10 asserts quoted YAML scalars that safe_dump never emits
+  description: tests/integration/fw_pickup.bats:104 greps quoted summary/project but lib/pickup.sh
+  tags: bug
+- id: T-3656
+  name: fw note promote inbox lookup matches OBS-0220 when given OBS-022
+  description: Found while fixing T-3646. agents/observe/observe.sh do_promote reads the text with
+  tags: bug, 055
+- id: T-3662
+  name: Every project resolves Watchtower port 3000; second project collides and identity is not checked
+    (P-01 WSL F-28)
+  description: 'P-01 finding F-28: a second project resolves :3000 too; the P-01 launcher picks'
+  tags: bug, P-01, T-3659, install
+- id: T-3682
+  name: 'Sidecar design-conformance audit: T-3396/T-3397 spec vs built slices — receive half (30s inject
+    tick, Stop-hook ready flag, urgent bypass, liveness self-probe, always-on per-agent sidecar) never
+    built; deferred by every slice, owned by none'
+  description: Operator demanded 2026-10-02 a full check of the sidecar arc against its design.
+  tags: sidecar, audit, design-conformance, arc-020
+- id: T-3695
+  name: 'check-human-ac-tick guards only Write|Edit: a Bash sed -i / tee / cp can tick a ### Human acceptance
+    criterion (sovereignty bypass)'
+  description: From the T-3678 consult triage (docs/reports/T-3678-consult-triage.md §2 row 1,
+  tags: bug, consult-triage, T-3678, security, sovereignty
+- id: T-3700
+  name: fw hook-enable --name registers a hook whose script does not exist; the runtime fails open (OBS-466)
+  description: From the T-3678 consult triage (docs/reports/T-3678-consult-triage.md §2 row 6,
+  tags: bug, consult-triage, T-3678
+- id: T-3704
+  name: fw vendor / fw update rsync --delete strips consumer-local patches with no warning
+  description: From the T-3678 consult triage (docs/reports/T-3678-consult-triage.md §2 row 10,
+  tags: bug, consult-triage, T-3678
+- id: T-3713
+  name: agents/audit/unit-suite.sh cds to FRAMEWORK_ROOT before each file, so a consumer test importing
+    its own project modules fails ModuleNotFoundError and is reported as rc=2 with no failing test
+  description: Reported by 055-agentic-fleet-cockpit 2026-10-02 (inbox @64, from upgrading 055
+  tags: bug, upgrade, consumer, 055-report
+- id: T-3715
+  name: 'After fw upgrade, a restarted Claude Code fleet agent stalls on the New MCP server found (fw)
+    approval prompt: autonomous agents hang silently; set enabledMcpjsonServers or say so in upgrade output'
+  description: Reported by 055-agentic-fleet-cockpit 2026-10-02 (inbox @64, from upgrading 055
+  tags: bug, upgrade, consumer, 055-report
+- id: T-3721
+  name: 'Lint: test helpers that git-commit in a scratch repo must set an explicit author/committer (nightly
+    cron has no git identity; T-3655 and T-3718 hit it)'
+  description: Follow-up proposed by the T-3718 worker. Two regressions in two days passed in identity-carrying
+  tags: tests, lint, unit-suite
+- id: T-3729
+  name: 'Bump designer pin to 0.15.2 from 832''s announce (independent anchor), and fix fw designer check-currency
+    advice: it says sync --from-tag re-pins, but sync refuses until the pin is updated from the rail announce'
+  description: '055 @72 2026-10-02: 832 released designer 0.15.2 (tag designer-v0.15.2, MANIFEST'
+  tags: designer, 055-report, consumer
+- id: T-3730
+  name: fw upgrade's CLAUDE.md governance refresh silently deletes project-written sections inside the
+    regenerated region, while reporting project-owned sections kept
+  description: '055 @71 2026-10-02 (upgrade to 1.7.740): two project ### sections (Operator Commands'
+  tags: bug, upgrade, consumer, 055-report
+- id: T-3733
+  name: fw bvp judge --dispatch fails with rc=1 and an empty error message (inline judge works)
+  description: '2026-10-02: ''fw bvp judge T-3731 --dispatch --timeout 800'' printed ''ERROR: dispatch'
+  tags: bug, bvp, dispatch
+- id: T-3735
+  name: 'fw config set wraps long YAML values at 80 chars: shell readers (grep+sed) then read '''' and
+    fw update silently loses upstream_repo (T-1853 class)'
+  description: 'ring20-dashboard T-2430 2026-10-02 (inbox @83): lib/config-file.sh dumps .framework.yaml'
+  tags: bug, config, consumer, ring20-report, T-3731
+- id: T-3736
+  name: 'Watchtower /inception pages take minutes: _resolve_bare_name forces a full basename-index rebuild
+    (os.walk) on every miss once the index is 3s old; under load nearly every unmatched bare name re-walks
+    the tree'
+  description: 'Operator 2026-10-02: inception pages take minutes. Measured: /inception/T-3726 timed'
+  tags: bug, watchtower, performance, T-3587
+- id: T-3746
+  name: 'has_bash_write_pattern misses 2>/&> redirects to files, sed w flag/command, and sort -o/--output:
+    check-active-task lets these writes through with no active task'
+  description: '832 @112 2026-10-02 (their T-1005, fixed locally 6fc8e737, lost at a 1.7.68 re-vendor):'
+  tags: bug, security, gates, 832-report
+- id: T-3748
+  name: 'Upstream 055''s local patches: the Tier 0 hook blocks kill-by-name (pkill -f, any SIGKILL spelling,
+    killall -r) (055 T-346); safe-commands _fw_is_git_commit_clause admits the framework''s own fw git
+    commit launcher paths (055 T-367)'
+  description: 055 @115 2026-10-02 after upgrading to 1.7.825; each has tests in 055's repo. Reproduce,
+  tags: gates, 055-report
+- id: T-3753
+  name: 'T-3726 F2: one inception readiness API (fw inception readiness T-XXX --json -> ready, blockers[];
+    exit 0/1/2) used by review, Watchtower, decide and close'
+  description: Merges the readiness logic of G-067, T-3549, T-3279 and T-2190 into one function
+- id: T-3754
+  name: 'T-3726 F1: Watchtower inception page hides or disables GO/NO-GO with the blockers listed when
+    not decision-ready; submit re-checks atomically'
+  description: Consumes the F2 readiness API at render time so the operator never meets a decide-time
+- id: T-3757
+  name: 'T-3726 F5: independent acceptance — closing work against a GOd design needs evidence the closing
+    worker did not author'
+  description: Different worker or model must produce the acceptance evidence (catches E4-class
+- id: T-3761
+  name: 'T-3693 e2e test leaks its two sidecar receivers (t3693a/b): http_server.py processes ran 22 h
+    after the run and sat in the host receiver registry'
+  description: 'Found 2026-10-03: pids 1472851/1474547 alive since 2026-10-02 03:15, registry entries'
+- id: T-3765
+  name: 'Watchtower dashboard / takes >30 s: every request re-reads and YAML-parses all task frontmatter
+    for arc membership (blueprints/core.py:206 _arc_membership_index); review-batch reachability probe
+    times out on it'
+  description: 'py-spy 2026-10-03 01:24: request threads in arc_membership.scan_tasks_by_arc_membership'
+- id: T-3776
+  name: t3511_parked_merge_guard 'clean merge of a PARKED branch is refused' red only under the full unit
+    suite
+  description: Unit-suite run 2026-10-03T14:51Z recorded t3511_parked_merge_guard.bats test 3 red
+  tags: unit-suite, test-red
+- id: T-3798
+  name: handover.sh pushes the real repo's HEAD when run with fixture overrides (TASKS_DIR/CONTEXT_DIR/HANDOVER_DIR)
+    and the AUTO_COMMIT=true default
+  description: 'Found by T-3747 round 3: tests/unit/handover_digest.bats ran agents/handover/handover.sh'
+- id: T-3799
+  name: 'Watchtower /cron renders in ~15-37 s: web/blueprints/cron.py _last_run_info yaml.safe_loads ~800
+    audit files with the pure-Python loader'
+  description: 'T-3747 round 3 profile (Flask test client, GET /cron): 37.7 s total, 37.3 s in 805'
+- id: T-3801
+  name: Doctor-calling bats files exceed the 900 s per-file cap under the unit-suite pool (audit, doctor_designer_pin_drift,
+    fw_doctor_vendored_drift, t2243, t2290, t3119, test_doctor_scope_tags)
+  description: 'Pre-existing: the same files are in files_timed_out in .context/audits/unit-suite/2026-10-01.yaml'
+- id: T-3802
+  name: 'fw reviewer judge panel seats leave TermLink registrations and live processes behind after the
+    verdict row is committed (055: 12 leftover judge-t-163-r5-* seats) — tear down each seat, and test
+    registration count before/after a judge run'
+  description: 055 finding 3523f4f6, 2026-10-04.
+- id: T-3815
+  name: 'fw upgrade step 5 reports PARTIAL: hooks check-paid-backend, check-worktree-governance-write,
+    stop-driver.sh shipped but not installed in consumer settings (010 T-3341)'
+  description: Peer report 2026-10-04 (010 T-3341 rehearsal or 832 T-1009); details in the name
+- id: T-3823
+  name: handover.sh never commits the discard manifest it generates (1409 OBS-068)
+  description: 1409-sprind, 2026-09-25 13:13Z (rescued 2026-10-04). agents/handover/handover.sh
+- id: T-3838
+  name: lib/shell_write_scan.py does not treat 'truncate -s 0 <task file>' as a write
+  description: ring20-dashboard T-2460 msg 6b1ada91 (vendored consumer upgrade 1.7.0 -> 1.8.0);
+- id: T-3842
+  name: 'fw context focus WM-001|WM-002'' prints nothing and leaves focus.yaml current_task: null (vendored
+    1.7.x, 055) while the no-active-task gate prints exactly those commands as its remedy'
+  description: 055 msg 01ee2716 (2), measured twice 2026-10-04. Agents then invent a task just
+- id: T-3843
+  name: 'Arc close must carry the agent''s close recommendation (055 innovation T-454, operator-requested):
+    arc YAML close_task names the close-out task whose ## Recommendation (CLOSE|KEEP-OPEN + Rationale
+    + Evidence) feeds /arcs/<id>/close, anchor_task as fallback; fw arc review refuses without one (FW_ALLOW_EMPTY_RECOMMENDATION
+    bypass); visible ''No close recommendation yet'' card'
+  description: 055 pickup c21841e6 + addendum 01ee2716 (2026-10-04). Built and tested in 055's
+- id: T-3845
+  name: t3511 'FW_ALLOW_PARKED_MERGE=1 permits the merge and says so' red under unit-suite load only
+  description: Passes alone (13/13, 5.8s, 2026-10-04); red in the full runs of 2026-10-03 and 2026-10-04.
+  tags: unit-suite, flaky, load
+- id: T-3848
+  name: 'fw release pushes master + tag atomically but never pushes the development branch carrying the
+    VERSION-reconcile commit: after v1.8.1 origin/bleeding-edge was 1 commit BEHIND origin/master, breaking
+    the release-train invariant (dev branch is master''s only writer, master never leads it)'
+  description: Observed 2026-10-05 cutting v1.8.1 (master d18b0ba01). Fixed by hand with git push
+- id: T-3862
+  name: 'fw upgrade completes without checking the vector index prerequisites (sqlite-vec, a reachable
+    embedding host): only fw doctor reports them afterwards (7 FAILs on ring20-dashboard, which runs no
+    Ollama) — upgrade should check and say what to install or configure, and the index health must say
+    ''not configured on this host'' rather than FAIL where semantic recall is deliberately absent'
+  description: ring20-dashboard T-2462 finding 10 (2026-10-05).
+- id: T-3867
+  name: lib/cron-seed.sh cron_seed_ensure_jobs appends a job block at column 0 into a registry whose jobs
+    list is indented ('jobs:' then ' - id:'), its own yaml.safe_load then fails and nothing is written,
+    yet it prints 'ADDED <job>' — consumers predating T-3673 never get sidecar-sweep-5m (or index-reindex-hourly)
+    via fw upgrade
+  description: '050-email-archive msg 21b9f087 (2026-10-05, 1.7.754; check 1.8.x). Fix: match the'
+- id: T-3885
+  name: 'fw upgrade in_file (locally edited) files: take upstream and only report MARKER MISSING (33 at
+    ring20) — when the vendor base is known (.fw-vendor-stamp.json), run git merge-file backup/base/new
+    automatically and report conflicts only (ring20 merged 17/17 by hand with no conflict)'
+  description: ring20-manager msg 92720ad9 (2026-10-05, v1.8.0 -> v1.8.2; their review docs/reports/T-2241-v182-post-upgrade-review.md).
+  tags: upgrade, vendor, ring20-report
+- id: T-3892
+  name: 'claude-fw -c (and --resume) gives no warning when the conversation it continues was left at budget
+    CRITICAL: ring20-manager resumed a 6-day-old conversation at ~807K tokens that could not act (''this
+    session is mute'') — warn loudly (or refuse, with an override) before launching, naming the level
+    and the fresh-session alternative'
+  description: ring20-dashboard msg fa994afc (2026-10-05, conversation t2459-s6-joint-test), side
+  tags: claude-fw, budget, ring20-report
+- id: T-3910
+  name: 'Default FW_DISPATCH_LIMIT to 0: sub-agents run as TermLink workers, never through the vendor
+    harness''s built-in Agent tool (operator ruling 2026-10-06)'
+  description: 'Default FW_DISPATCH_LIMIT to 0: sub-agents run as TermLink workers, never through'
+- id: T-3912
+  name: 'Theme-token reds from my own template edits: T-3896''s not-ready box (#b45309 fallback in _approvals_content.html
+    / inception_detail.html) and T-3893/T-3894''s arc_close.html (#c62828) hard-code hexes the token tests
+    forbid — blocks the v1.8.4 release push'
+  description: 'Theme-token reds from my own template edits: T-3896''s not-ready box (#b45309 fallback'
+- id: T-3914
+  name: 'Watchtower arc close writes the arc YAML (status: closed, closed_via: watchtower) but never commits
+    it — arc-grooming''s close (2026-10-05 18:34Z) sat uncommitted for ~10h until found by a red test'
+  description: Same family as T-3722 (Watchtower writes without provenance/commit). The inception
+- id: T-3938
+  name: memory-recall.py resolves the index under .agentic-framework/ unless PROJECT_ROOT is set — consumer
+    recall silently returns nothing relevant (832 7ba7b01f, bug 2 of 3)
+  description: Reported by 832 on 1.8.3 (sidecar 7ba7b01f, 2026-10-06) while searching the vector
+- id: T-3992
+  name: Pre-push unit-suite ratchet blocks on random parallel-load flakes every night — re-run a NEW red
+    once in isolation before grading it (t3511 x2, t2452, t3973-class)
+  description: 2026-10-07 and 2026-10-08 nightlies each produced 1-2 NEW reds that pass in isolation
+- id: T-3993
+  name: 'Budget ladder by absolute reserve, not fixed %: R = clamp(20K + 0.05*(W-300K), 20K, 50K); warn
+    W-3R, urgent W-2R, critical W-R (1409 finding 3, operator-confirmed there)'
+  description: From T-3989. Fixed 75/85/95% of a 950K cap puts the first warning at 712K where
+- id: T-4033
+  name: fw reviewer judge leaves a verdict row uncommitted and says nothing when its commit loses the
+    git index.lock race (832 T-1114, T-310 row V-20261010-08c85aa1)
+  description: '832 (msg 885af175, 2026-10-10): the panel commit raced with a commit in their session'
+- id: T-4043
+  name: 'A Markdown document opened through Watchtower /file/ shows its title twice, with Fabric links
+    that do not apply (GitHub #90, MikeEchoVoid)'
+  description: 'Inbound GitHub issue #90 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/90),'
+- id: T-4044
+  name: 'Task page: document paths written in Context or Agent criteria are not links (GitHub #91, MikeEchoVoid)'
+  description: 'Inbound GitHub issue #91 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/91),'
+- id: T-4045
+  name: 'Task board: an ''Awaiting review'' column for tasks whose agent work is done and Human criteria
+    are open (GitHub #92, MikeEchoVoid)'
+  description: 'Inbound GitHub issue #92 by MikeEchoVoid (https://github.com/DimitriGeelen/agentic-engineering-framework/issues/92),'
+- id: T-4052
+  name: 'Watchtower: a boosted link inside an hx-target=this polling container swaps the page into the
+    container and the next poll reverts it (/approvals, cockpit activity, orchestrator_parallel) (ring20
+    T-2306)'
+  description: base.html has hx-boost on body with hx-target=#content; polling containers set hx-target=this
+  tags: bug, watchtower, ui
+- id: T-4053
+  name: '/approvals and fw review-queue: separate ''ready for you'' from ''waiting on the agent'' (open
+    Agent criteria, independent review not green) with one shared predicate (ring20 T-2302)'
+  description: '/approvals admits a task iff it has an unchecked ### Human criterion (needs_human_review),'
+  tags: watchtower, approvals, review-queue
+- id: T-4078
+  name: 'fw issues sync + 2-hourly cron: ingest new/changed GitHub issues and submitter replies into the
+    intake ledger, post Received, classify (type/area/severity/duplicate/internal), route MikeEchoVoid
+    issues to arc-021 horizon now'
+  description: T-4039 build slice 2 (GO 2026-10-11). Depends on slice 1 (fw issues comment). Operator
+  tags: github-intake, T-4039
+- id: T-4079
+  name: 'Watchtower /approvals ''Inbound issues'' section: classification + recommendation with accept
+    / needs-info / duplicate / not-planned buttons (accept creates the task with github_issue:), plus
+    one handover line with counts'
+  description: T-4039 build slice 3 (GO 2026-10-11). Depends on slices 1-2. Decision buttons post
+  tags: github-intake, T-4039
+- id: T-4091
+  name: 'Inception: how projects push into the estate knowledge platform (T-090 Qdrant on ring20) — push
+    vs pull, server- vs client-side embedding, deletion propagation, model manifest fit'
+  description: 'Split out of T-4017 (one inception, one question). Inputs: ring20''s T-2325 platform'
+  tags: arc-001, T-4017
+- id: T-4100
+  name: 'T-4023 step 4: fw field report — a testbed agent runs one command that evaluates every declared
+    field check for the candidate and sends the per-item result (works / broken / not exercised + exposure)
+    to AEF; plus a roll-call of testbeds'
+  description: Replaces free-text upgrade reports (ring20/055/832 sent those by hand). Reports
+  tags: release, field-evidence, T-4023
+- id: T-4101
+  name: 'T-4023 step 5: release table + gate — fw release tag-and-release refuses unless every change
+    in the range has field evidence or a per-change waiver (shown apart from verified), after a 2-day
+    soak; revert-and-recandidate on bleeding-edge'
+  description: 'IW-3/IW-4 defaults: problems / not-exercised / missing evidence BLOCK unless waived'
+  tags: release, field-evidence, T-4023
+- id: T-4102
+  name: 'Release channel per install: .framework.yaml channel: master (default) | bleeding-edge | ref:<tag|sha>;
+    fw upgrade AND claude-fw follow it, switching is explicit and logged; fw doctor shows it and WARNs
+    when the installed version does not fit; field reports carry it'
+  description: 'Operator 2026-10-12: testbeds can inadvertently pull master (or production pull'
+  tags: release, upgrade, config, T-4023
+- id: T-4112
+  name: 'T-4081 index refresh fails silently: a held .git/index.lock lets the next commit revert a Watchtower
+    decision (codex DO-NOT-SHIP on hotfix v1.8.10)'
+  description: 'codex review of hotfix/v1.8.10: _refresh_real_index (web/blueprints/inception.py)'
+  tags: bug, g-114, hotfix
+- id: T-4114
+  name: 'SECURITY: project-boundary hook misses tee with leading options (tee -a /etc/fstab exits 0) —
+    dimitri-mint-dev upstream proposal (their T-052/G-005)'
+  description: agents/context/check-project-boundary.sh Pattern 3 regex 'tee\s+(/...)' lets any
+  tags: bug, security, boundary
+- id: T-4125
+  name: 'SECURITY: budget-gate command classifier (lib/cmd_classify.py) still admits planted fw launchers
+    at critical budget (/tmp/x/bin/fw handover, cd /tmp/x && bin/fw git commit) — T-4108 class'
+  description: 'Found by the T-4108 round-2 worker, verified: lib/cmd_classify.py (budget-gate wrap-up'
+  tags: bug, security, budget-gate
+- id: T-4127
+  name: 'Watchtower decision commit races ordinary commits (codex round 2 DO-NOT-SHIP): commit through
+    git''s own index under git''s lock (git commit --only) instead of a scratch GIT_INDEX_FILE + refresh'
+  description: 'Codex round 2 on hotfix/v1.8.10: (1 HIGH) an ordinary commit between Watchtower''s'
+  tags: bug, g-114, hotfix
+- id: T-4131
+  name: 'Sidecar prompt hook truncates peer messages at 4000 chars with no way to read the rest: point
+    to a full-body read verb, and warn the sender when a body exceeds the cap'
+  description: 'Field 2026-10-12: AEF''s review to 1409 (~13 KB) arrived as ''delivered: RECEIVED'','
+- id: T-4132
+  name: 'Watchtower currency check false-passes in vendored consumers: lib/watchtower-staleness.sh scans
+    $PROJECT_ROOT/web, which a consumer lacks (code lives in .agentic-framework/web); and nothing says
+    ''restart Watchtower'' after fw upgrade (832 field finding, their T-1139)'
+  description: '832 field test of ed683536a (msg 8ae34a8d, finding A): audit/''watchtower current'''
+- id: T-100131
+  name: Rewrite README opening with Garbage-In narrative + onboarding prompts
+  description: Rewrite README opening with Garbage-In narrative + onboarding prompts
+- id: T-99001
+  name: every operator review of the live corpus renders
+- id: T-99002
+  name: consumer upgrade of the framework project agent context
+- id: T-99003
+  name: claude gate audit check class page termlink
+related:
+- query: T-1961
+  expect: T-1911
+- query: T-3754
+  expect: T-3753
+- query: T-2066
+  expect: T-2077
+- query: T-3992
+  expect: T-3621
+- query: T-2667
+  expect: T-2666
+- query: T-4079
+  expect: T-4078
+- query: T-2040
+  expect: T-2039
+- query: T-4044
+  expect: T-4043
+- query: T-2555
+  expect: T-2558
+- query: T-3845
+  expect: T-3776
+- query: T-2083
+  expect: T-2102
+- query: T-4112
+  expect: T-4127
+- query: T-3136
+  expect: T-3704
+- query: T-803
+  expect: T-802
+- query: T-1802
+  expect: T-1799
+unrelated:
+- query: T-1891
+  never: T-3294
+- query: T-2063
+  never: T-3302
+- query: T-2183
+  never: T-3305
+- query: T-2205
+  never: T-3299
+- query: T-3127
+  never: T-3326
+- query: T-3299
+  never: T-3297
+- query: T-3306
+  never: T-3299
+- query: T-3604
+  never: T-3324
+- query: T-3653
+  never: T-3303
+- query: T-3695
+  never: T-3294
+- query: T-3801
+  never: T-3303
+- query: T-3838
+  never: T-3294
+- query: T-4100
+  never: T-3862
+marginal:
+- query: T-2349
+  never: T-3912
+- query: T-3715
+  never: T-4132
+- query: T-3938
+  never: T-3713
+no_hit:
+- T-99001
+- T-99002
+- T-99003
