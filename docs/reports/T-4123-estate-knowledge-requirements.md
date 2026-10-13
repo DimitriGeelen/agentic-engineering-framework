@@ -306,7 +306,7 @@ Source: WD A, G(4), conflict 2. Verify: test. AC: an item of type peer report ne
 
 **R-37** (security invariant, MUST-pilot) Ingest MUST refuse binaries, caches and derived artefacts (vector
 indexes, databases, archives) and items above a size limit declared per type.
-Holds against: a confused agent pushing a cache (832 committed a 991 MB local index to git by accident).
+Holds against: a confused agent pushing a cache (832's local index was tracked in git by accident: a 36 KB blob was committed, and it grew to 991 MB on disk afterwards, so the next bulk `git add` would have committed it; corrected by 832, `T-4123-inputs/03b-832-correction.txt`).
 Source: WD A, missed 5; complements R-2 and RM P.3. Verify: test. AC: a push of a 2 MB binary blob is refused.
 
 **R-38** (functional, SHOULD) A request received from a peer (for example a field-test list) SHOULD be storable as
