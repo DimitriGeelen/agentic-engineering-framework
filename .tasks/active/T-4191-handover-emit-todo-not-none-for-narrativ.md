@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T19:10:26Z
-last_update: 2026-10-13T19:37:35Z
+last_update: 2026-10-13T19:48:28Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,7 +99,7 @@ bvp_scores_proposed:
 - [x] A generated handover writes `[TODO]` (not a bare `None`) under `## Decisions Made This Session`, `## Things Tried That Failed` and `## Open Questions / Blockers` (new bats test, fails on HEAD)
 - [x] In full (non-digest) mode, per-task `Next step` / `Blockers` lines emit `[TODO]` instead of the constant `See task file` / `None` (test, fails on HEAD)
 - [x] The commit-derived `## Where We Are` summary carries an `AUTO-MINED from commit subjects — VERIFY` marker (test, fails on HEAD)
-- [ ] Existing handover/resume/audit suites that reference these sections stay green; `bin/fw test lint` and `bin/fw audit --section structure` introduce no new failure
+- [x] Existing handover/resume/audit suites that reference these sections stay green; `bin/fw test lint` and `bin/fw audit --section structure` introduce no new failure
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
