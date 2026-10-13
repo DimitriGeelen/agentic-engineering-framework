@@ -1,10 +1,21 @@
 ---
 id: T-4162
-name: "T-4091 slice 1: fw estate push — diff the local vector index against the store and stage new/changed chunks (text + payload, never vectors) and deletions in staging_aef"
+name: "T-4091 slice 1: fw estate push — diff the local vector index against the store
+  and stage new/changed chunks (text + payload, never vectors) and deletions in staging_aef"
 description: >
-  From T-4091 (GO 2026-10-13), design in docs/reports/T-4091-estate-push-pipe.md §4. Reads web/embeddings.py documents + file_state; filters to the operator's pilot categories (completed tasks, episodic, project memory, reports/designs, saved answers, agent docs, specifications, module capability cards; NOT active tasks or handovers) and opt-in per type (R-3); size/type gate (R-37); write-time redaction: secret value patterns (R-2, reuse the secret-scan patterns) + hostname/IP → role map (CF-7), refuse and log an item that still matches; payload: tenant, project, category, item_type, source path, task id, content_hash, chunk index, observed_on, framework version (R-33); deletions for removed sources (R-5). Token by name from the credential store (never printed). Pilot proof (T-4123 DM list): counts per category equal after a cycle, deletion within one cycle, secret scan of staged items 0.
+  From T-4091 (GO 2026-10-13), design in docs/reports/T-4091-estate-push-pipe.md §4.
+  Reads web/embeddings.py documents + file_state; filters to the operator's pilot
+  categories (completed tasks, episodic, project memory, reports/designs, saved answers,
+  agent docs, specifications, module capability cards; NOT active tasks or handovers)
+  and opt-in per type (R-3); size/type gate (R-37); write-time redaction: secret value
+  patterns (R-2, reuse the secret-scan patterns) + hostname/IP → role map (CF-7),
+  refuse and log an item that still matches; payload: tenant, project, category, item_type,
+  source path, task id, content_hash, chunk index, observed_on, framework version
+  (R-33); deletions for removed sources (R-5). Token by name from the credential store
+  (never printed). Pilot proof (T-4123 DM list): counts per category equal after a
+  cycle, deletion within one cycle, secret scan of staged items 0.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T15:31:27Z
-last_update: 2026-10-13T15:31:27Z
-date_finished: null
+last_update: 2026-10-13T16:55:50Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-13T15:45:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-13T15:46:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4162: T-4091 slice 1: fw estate push — diff the local vector index against the store and stage new/changed chunks (text + payload, never vectors) and deletions in staging_aef
@@ -62,8 +101,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/estate_push.py` builds a plan from a local index DB: only opted-in pilot categories (completed tasks, episodic, project memory, reports/designs, saved answers, agent docs, specs, module cards; never active tasks/handovers), size/type gate, deterministic chunk id (project+path+chunk index+content hash), payload fields per R-33
+- [x] Write-time redaction: secret value patterns and hostname/IP→role map applied; an item that still matches a secret pattern is refused and logged, not staged
+- [x] Diff against the store: new/changed chunks staged as text+payload only (no vectors), deletions for removed sources (R-5); dry-run default, `--apply` writes to `staging_aef`; token read by name from the credential store, never printed
+- [x] `bin/fw estate push` verb routes to it; unit tests (written first, failing on HEAD) pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -98,6 +139,9 @@ date_finished: null
 
 ## Verification
 
+python3 -m pytest tests/unit/test_estate_push.py -q > /tmp/.t4162.out 2>&1 && grep -q passed /tmp/.t4162.out
+bin/fw estate push --help > /tmp/.t4162b.out 2>&1 && grep -q "estate push" /tmp/.t4162b.out
+bin/fw vendor self --check
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -298,14 +342,14 @@ date_finished: null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-10-13 — what "the store has" is diffed against
+- **Chose:** a local push ledger `.context/working/estate-push-state.json` (chunk_key → content_hash); deletions are tombstone points (`op: delete`) in staging for the ingest worker to apply.
+- **Why:** the project's staging token cannot read the main collection (403, ring20 spike), and staging is drained by ingest, so staging cannot answer "what is already in the store".
+- **Rejected:** scrolling staging (drained, incomplete); giving the project a main-read token (breaks R-25 scoping).
+
+### 2026-10-13 — chunk identity
+- **Chose:** stable key `project|path|chunk_index`; content hash (of the redacted text) in the payload; point id = uuid5(key, hash, op) so re-staging is idempotent.
+- **Rejected:** hash inside the key — a changed file would need delete+insert pairs for every chunk.
 
 ## Decision
 
@@ -323,3 +367,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4162-t-4091-slice-1-fw-estate-push--diff-the-.md
 - **Context:** Initial task creation
+
+### 2026-10-13T16:42:44Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
