@@ -1,0 +1,21 @@
+id: lib/estate_push.py
+name: estate_push
+type: script
+subsystem: framework-core
+location: lib/estate_push.py
+tags: []
+
+purpose: "fw estate push (T-4162, T-4091 slice 1): stage new/changed/deleted index chunks."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-13
+created_by: unknown

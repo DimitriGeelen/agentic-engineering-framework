@@ -1,8 +1,16 @@
 ---
 id: T-4011
-name: "_committed_blob: a symlinked .agentic-framework is classified as an external framework and falls back to the framework repo's HEAD, bypassing the consumer's own committed copy"
+name: "_committed_blob: a symlinked .agentic-framework is classified as an external
+  framework and falls back to the framework repo's HEAD, bypassing the consumer's
+  own committed copy"
 description: >
-  Found by the independent codex consult for T-4010 (docs/reports/T-4010-consult-codex.md): lib/verdict_ledger.py _committed_blob computes fw=_HERE.parent.resolve(); when <project>/.agentic-framework is a symlink, resolve() points outside the project, the vendored-path candidate is skipped and candidate 3 (framework repo HEAD) is used — the consumer's committed/pinned copy never decides. Define the boundary on the unresolved vendored path; never let path resolution select the framework-HEAD fallback for a consumer. Test with a symlinked vendored tree.
+  Found by the independent codex consult for T-4010 (docs/reports/T-4010-consult-codex.md):
+  lib/verdict_ledger.py _committed_blob computes fw=_HERE.parent.resolve(); when <project>/.agentic-framework
+  is a symlink, resolve() points outside the project, the vendored-path candidate
+  is skipped and candidate 3 (framework repo HEAD) is used — the consumer's committed/pinned
+  copy never decides. Define the boundary on the unresolved vendored path; never let
+  path resolution select the framework-HEAD fallback for a consumer. Test with a symlinked
+  vendored tree.
 
 status: captured
 workflow_type: build
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-09T06:59:50Z
-last_update: 2026-10-09T07:00:08Z
-date_finished: null
+last_update: '2026-10-09T07:15:53Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-09T07:15:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-09T07:15:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4011: _committed_blob: a symlinked .agentic-framework is classified as an external framework and falls back to the framework repo's HEAD, bypassing the consumer's own committed copy

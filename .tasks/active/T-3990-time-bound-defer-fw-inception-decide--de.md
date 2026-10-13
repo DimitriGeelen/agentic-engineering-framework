@@ -1,8 +1,21 @@
 ---
 id: T-3990
-name: "Time-bound DEFER: fw inception decide ... defer --revisit <Nd|date> (default 90 days) — deferred decisions come back on their date (approvals, handover, audit, one push)"
+name: "Time-bound DEFER: fw inception decide ... defer --revisit <Nd|date> (default
+  90 days) — deferred decisions come back on their date (approvals, handover, audit,
+  one push)"
 description: >
-  Operator enhancement request 2026-10-08 (walkthrough): 'I want to defer also to time bound ... I want it to come back. It needs more of my brain power which I don't have at this moment. But also don't want it to get lost.' Default when no date is given: 90 days (operator). Build: (1) fw inception decide T-XXX defer --revisit 2d|YYYY-MM-DD writes revisit_on: into frontmatter and the Decision entry; default today+90d; (2) Watchtower inception DEFER form gets a revisit field (render surface: [REVIEW] Human AC); (3) when due: listed as 'due again' on /approvals, in the handover Suggested First Action, a fw audit WARN, one fw notify push; (4) tests. (5) IN SCOPE (operator, same walkthrough: 'Inception should be able to be parked on the horizon later, right?'): parking any task, inceptions included, with fw task update --horizon later takes the same --revisit (default 90 days) and comes back the same way; the revisit date is cleared when the task is decided, started or re-planned.
+  Operator enhancement request 2026-10-08 (walkthrough): 'I want to defer also to
+  time bound ... I want it to come back. It needs more of my brain power which I don't
+  have at this moment. But also don't want it to get lost.' Default when no date is
+  given: 90 days (operator). Build: (1) fw inception decide T-XXX defer --revisit
+  2d|YYYY-MM-DD writes revisit_on: into frontmatter and the Decision entry; default
+  today+90d; (2) Watchtower inception DEFER form gets a revisit field (render surface:
+  [REVIEW] Human AC); (3) when due: listed as 'due again' on /approvals, in the handover
+  Suggested First Action, a fw audit WARN, one fw notify push; (4) tests. (5) IN SCOPE
+  (operator, same walkthrough: 'Inception should be able to be parked on the horizon
+  later, right?'): parking any task, inceptions included, with fw task update --horizon
+  later takes the same --revisit (default 90 days) and comes back the same way; the
+  revisit date is cleared when the task is decided, started or re-planned.
 
 status: captured
 workflow_type: build
@@ -38,8 +51,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-08T09:27:30Z
-last_update: 2026-10-08T09:27:30Z
-date_finished: null
+last_update: '2026-10-08T09:30:57Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +63,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-08T09:30:25Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-08T09:30:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3990: Time-bound DEFER: fw inception decide ... defer --revisit <Nd|date> (default 90 days) — deferred decisions come back on their date (approvals, handover, audit, one push)

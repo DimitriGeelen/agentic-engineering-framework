@@ -112,7 +112,7 @@ quote/comment/heredoc-aware lexer for substitution bodies. Reproducer:
 - [x] Controls stay allowed: in-project writes (quoted, relative, `..` inside the project), `/tmp` writes, `2>/dev/null`/`>/dev/stderr`, commit messages / quoted heredoc bodies that MENTION outside writes, `echo '$(touch …)'`
 - [x] Every existing test file referencing the boundary hook or `shell_write_scan` passes (T-3695 guard behaviour unchanged or stricter) — except `tests/integration/check_project_boundary.bats` "Bash redirect to /etc: blocked", which is red on HEAD too (it expects `> /etc/cron.d/…` blocked; `/etc/cron.d` is a sanctioned write zone since T-603/T-1191); not changed here
 - [x] `## Decisions` states what the parser guarantees and what it does not (script files, run-time-built paths, inline interpreter code)
-- [ ] `bin/fw vendor self --check` clean for the touched files; `bin/fw test lint` introduces nothing
+- [x] `bin/fw vendor self --check` clean for the touched files; `bin/fw test lint` introduces nothing
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

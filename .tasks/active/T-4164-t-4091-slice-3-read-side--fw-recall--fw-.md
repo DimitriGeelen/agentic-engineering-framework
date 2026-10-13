@@ -1,8 +1,14 @@
 ---
 id: T-4164
-name: "T-4091 slice 3: read side — fw recall / fw ask --scope own|estate|both, cross-project hits labelled with provenance, local fallback 'estate unavailable'"
+name: "T-4091 slice 3: read side — fw recall / fw ask --scope own|estate|both, cross-project
+  hits labelled with provenance, local fallback 'estate unavailable'"
 description: >
-  From T-4091 (GO 2026-10-13); T-4123 R-12..R-16, R-33..R-36: every answer carries source project, task/path, item type, dates, evidence type, status, model id, score; scope selectable; default ranking own-first within a margin, solution-finder mode cross-project first; superseded out of default top results; when the store or embedder is down answer from the local index and say so. Query embedding uses the same pinned model as ingest.
+  From T-4091 (GO 2026-10-13); T-4123 R-12..R-16, R-33..R-36: every answer carries
+  source project, task/path, item type, dates, evidence type, status, model id, score;
+  scope selectable; default ranking own-first within a margin, solution-finder mode
+  cross-project first; superseded out of default top results; when the store or embedder
+  is down answer from the local index and say so. Query embedding uses the same pinned
+  model as ingest.
 
 status: captured
 workflow_type: build
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T15:33:12Z
-last_update: 2026-10-13T15:33:12Z
-date_finished: null
+last_update: '2026-10-13T15:46:27Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,35 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-13T15:45:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-13T15:46:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 4
+      F-RECALL: 3
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 1
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=4 (body:cross-machine); F-RECALL=3 
+      (body:fw-recall-or-memory-link); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=1 (body/components:context-fabric-incidental); F2=0 
+      (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4164: T-4091 slice 3: read side — fw recall / fw ask --scope own|estate|both, cross-project hits labelled with provenance, local fallback 'estate unavailable'

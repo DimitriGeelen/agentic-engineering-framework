@@ -1,8 +1,19 @@
 ---
 id: T-4048
-name: "claude-fw start hygiene: never start claude with an empty argv (agents view), refuse/explain resuming a background job (claude attach), verify claude runs on the pane tty after start, resume by exact id (055 T-491 proposals A-D)"
+name: "claude-fw start hygiene: never start claude with an empty argv (agents view),
+  refuse/explain resuming a background job (claude attach), verify claude runs on
+  the pane tty after start, resume by exact id (055 T-491 proposals A-D)"
 description: >
-  055 msg 3f0d69ea (2026-10-10, docs/reports/T-491-session-hops.md in 055): one T-4003 test restart cost the operator 7 conversations in a day. Causes: bare claude-fw + defaultToAgentsView opens the agents overview and starts a background conversation in the shared claude daemon (no tty; T-3629 covers restarts only); --resume of a background job becomes 'claude attach' (a viewer; T-4003 cannot reach it, T-4037); T-4036 blocked -c/--resume. Proposals: A never start with empty argv (or warn when defaultToAgentsView), B check ~/.claude/jobs/<id>/state.json before resume and say plainly it is a background job + how to foreground it, C after start verify claude itself is on a tty (not attach) and print PASS/FAIL, D restart guidance: resume by exact id, never fresh, never -c.
+  055 msg 3f0d69ea (2026-10-10, docs/reports/T-491-session-hops.md in 055): one T-4003
+  test restart cost the operator 7 conversations in a day. Causes: bare claude-fw
+  + defaultToAgentsView opens the agents overview and starts a background conversation
+  in the shared claude daemon (no tty; T-3629 covers restarts only); --resume of a
+  background job becomes 'claude attach' (a viewer; T-4003 cannot reach it, T-4037);
+  T-4036 blocked -c/--resume. Proposals: A never start with empty argv (or warn when
+  defaultToAgentsView), B check ~/.claude/jobs/<id>/state.json before resume and say
+  plainly it is a background job + how to foreground it, C after start verify claude
+  itself is on a tty (not attach) and print PASS/FAIL, D restart guidance: resume
+  by exact id, never fresh, never -c.
 
 status: captured
 workflow_type: build
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T18:11:48Z
-last_update: 2026-10-10T18:11:48Z
-date_finished: null
+last_update: '2026-10-10T18:16:29Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-10T18:15:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-10T18:16:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4048: claude-fw start hygiene: never start claude with an empty argv (agents view), refuse/explain resuming a background job (claude attach), verify claude runs on the pane tty after start, resume by exact id (055 T-491 proposals A-D)

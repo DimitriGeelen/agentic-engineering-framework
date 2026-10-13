@@ -1,8 +1,13 @@
 ---
 id: T-4103
-name: "bin/watchtower.sh do_current and the audit 'Watchtower currency' check compare against PROJECT_ROOT/web, but a vendored consumer runs .agentic-framework/web — a pre-upgrade Watchtower is reported current (055 field test)"
+name: "bin/watchtower.sh do_current and the audit 'Watchtower currency' check compare
+  against PROJECT_ROOT/web, but a vendored consumer runs .agentic-framework/web —
+  a pre-upgrade Watchtower is reported current (055 field test)"
 description: >
-  055, field test of ed683536a: a Watchtower started 2026-10-08 was reported 'newer than every file under web/' right after the upgrade replaced .agentic-framework/web. Resolve the web dir the running Watchtower actually serves, in do_current and the audit check; test with a vendored fixture.
+  055, field test of ed683536a: a Watchtower started 2026-10-08 was reported 'newer
+  than every file under web/' right after the upgrade replaced .agentic-framework/web.
+  Resolve the web dir the running Watchtower actually serves, in do_current and the
+  audit check; test with a vendored fixture.
 
 status: captured
 workflow_type: build
@@ -39,8 +44,8 @@ origin: {kind: "peer", source: "055-agentic-fleet-cockpit"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T12:37:44Z
-last_update: 2026-10-12T12:37:44Z
-date_finished: null
+last_update: '2026-10-12T12:46:24Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-12T12:45:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-12T12:46:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4103: bin/watchtower.sh do_current and the audit 'Watchtower currency' check compare against PROJECT_ROOT/web, but a vendored consumer runs .agentic-framework/web — a pre-upgrade Watchtower is reported current (055 field test)

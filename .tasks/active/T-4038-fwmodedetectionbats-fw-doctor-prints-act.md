@@ -1,8 +1,13 @@
 ---
 id: T-4038
-name: "fw_mode_detection.bats 'fw doctor prints Active mode line' goes red under full-suite load (148 s) and green alone, blocking pushes as a NEW red"
+name: "fw_mode_detection.bats 'fw doctor prints Active mode line' goes red under full-suite
+  load (148 s) and green alone, blocking pushes as a NEW red"
 description: >
-  2026-10-10: reported NEW red in two full unit-suite runs in a row (pre-push ratchet), passes 3/3 when run alone. The file took 148 s in the suite run: fw doctor is slow under load and the test likely times out. Make the test bound what it measures (doctor section only, or a longer per-test timeout), or mark the doctor run as load-sensitive in the ratchet.
+  2026-10-10: reported NEW red in two full unit-suite runs in a row (pre-push ratchet),
+  passes 3/3 when run alone. The file took 148 s in the suite run: fw doctor is slow
+  under load and the test likely times out. Make the test bound what it measures (doctor
+  section only, or a longer per-test timeout), or mark the doctor run as load-sensitive
+  in the ratchet.
 
 status: captured
 workflow_type: build
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-10T15:32:24Z
-last_update: 2026-10-10T15:32:24Z
-date_finished: null
+last_update: '2026-10-10T15:45:53Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-10T15:45:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-10T15:45:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4038: fw_mode_detection.bats 'fw doctor prints Active mode line' goes red under full-suite load (148 s) and green alone, blocking pushes as a NEW red

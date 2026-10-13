@@ -1,8 +1,20 @@
 ---
 id: T-4151
-name: "Worker kind 'vibe' (Mistral Vibe CLI) for review dispatches — a fourth vendor for review panels (ring20-manager proposal, their T-2366)"
+name: "Worker kind 'vibe' (Mistral Vibe CLI) for review dispatches — a fourth vendor
+  for review panels (ring20-manager proposal, their T-2366)"
 description: >
-  ring20-manager (msg e0509d2b): operator added a Mistral Le Chat Pro subscription; on ring20 the Vibe CLI 2.26.1 runs headless as 'vibe -p <prompt> --max-turns N --output text|json' (+ --prompt-file, --output-dir export.json with usage/stop reason); read-only via '--enabled-tools read_file' (write refused in -p mode, verified there). Gotchas: default harness rejects --time-limit after first login (use outer timeout or --legacy-harness); many tools (write_file, edit, bash, run_typescript, cron, subagents, web_search) must stay disabled; headless login needs a BROWSER shim; login stored in ~/.vibe/.env by the sign-in. Proposal only: scope a worker_kind in agents/termlink/termlink.sh + policy/review-backends.yaml worker_kind/vendor mapping (T-3580 round 5), absolute binary pin, read-only enforcement verified by a test, outer timeout, cost class internal (subscription). Relevant to T-3582 (rung-5 three-vendor panels). Credential stays the CLI's own login; never read or print ~/.vibe/.env.
+  ring20-manager (msg e0509d2b): operator added a Mistral Le Chat Pro subscription;
+  on ring20 the Vibe CLI 2.26.1 runs headless as 'vibe -p <prompt> --max-turns N --output
+  text|json' (+ --prompt-file, --output-dir export.json with usage/stop reason); read-only
+  via '--enabled-tools read_file' (write refused in -p mode, verified there). Gotchas:
+  default harness rejects --time-limit after first login (use outer timeout or --legacy-harness);
+  many tools (write_file, edit, bash, run_typescript, cron, subagents, web_search)
+  must stay disabled; headless login needs a BROWSER shim; login stored in ~/.vibe/.env
+  by the sign-in. Proposal only: scope a worker_kind in agents/termlink/termlink.sh
+  + policy/review-backends.yaml worker_kind/vendor mapping (T-3580 round 5), absolute
+  binary pin, read-only enforcement verified by a test, outer timeout, cost class
+  internal (subscription). Relevant to T-3582 (rung-5 three-vendor panels). Credential
+  stays the CLI's own login; never read or print ~/.vibe/.env.
 
 status: captured
 workflow_type: build
@@ -38,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T13:58:18Z
-last_update: 2026-10-13T13:58:18Z
-date_finished: null
+last_update: '2026-10-13T14:00:35Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +62,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-13T14:00:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-13T14:00:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4151: Worker kind 'vibe' (Mistral Vibe CLI) for review dispatches — a fourth vendor for review panels (ring20-manager proposal, their T-2366)

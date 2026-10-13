@@ -1,8 +1,16 @@
 ---
 id: T-4087
-name: "Readiness rule: a task whose review criterion the operator is to accept by override (panel not green, open finding accepted) shows under 'Waiting on the agent' although the next action is the operator's (ring20 T-2326 item 5, T-4053 follow-up)"
+name: "Readiness rule: a task whose review criterion the operator is to accept by
+  override (panel not green, open finding accepted) shows under 'Waiting on the agent'
+  although the next action is the operator's (ring20 T-2326 item 5, T-4053 follow-up)"
 description: >
-  ring20 (their T-2195): when the independent review panel is not green but the operator has decided to accept the open finding and tick the review criterion by override, web.shared.review_readiness still reports waiting-on-agent (review not green), so the task hides from 'Ready for you'. Design question first: how is 'operator will override' recorded so the predicate can see it (an escalate/amber verdict routed to the operator? a recorded intent?), then the predicate and both surfaces (/approvals, board, fw review-queue).
+  ring20 (their T-2195): when the independent review panel is not green but the operator
+  has decided to accept the open finding and tick the review criterion by override,
+  web.shared.review_readiness still reports waiting-on-agent (review not green), so
+  the task hides from 'Ready for you'. Design question first: how is 'operator will
+  override' recorded so the predicate can see it (an escalate/amber verdict routed
+  to the operator? a recorded intent?), then the predicate and both surfaces (/approvals,
+  board, fw review-queue).
 
 status: captured
 workflow_type: build
@@ -39,8 +47,8 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "T-2326"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T09:17:16Z
-last_update: 2026-10-12T09:17:16Z
-date_finished: null
+last_update: '2026-10-12T09:31:13Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +59,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-12T09:30:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-12T09:31:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4087: Readiness rule: a task whose review criterion the operator is to accept by override (panel not green, open finding accepted) shows under 'Waiting on the agent' although the next action is the operator's (ring20 T-2326 item 5, T-4053 follow-up)

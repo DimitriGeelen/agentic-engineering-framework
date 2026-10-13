@@ -15,7 +15,10 @@ workflow_type: build
 owner: human
 horizon: now
 tags: [bug, security, privacy]
-components: [lib/config.sh, lib/resolver.py, web/blueprints/api.py, web/blueprints/config.py, C-003, web/static/command-palette.js, web/static/js/search-qa.js, web/templates/_partials/search_input.html, web/templates/_partials/search_results.html]
+components: [lib/config.sh, lib/resolver.py, web/blueprints/api.py, 
+      web/blueprints/config.py, C-003, web/static/command-palette.js, 
+      web/static/js/search-qa.js, web/templates/_partials/search_input.html, 
+      web/templates/_partials/search_results.html]
 related_tasks: [T-4017]
 origin: {kind: "peer", source: "dimitri-mint-dev", ref: "arc-001"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -45,7 +48,7 @@ origin: {kind: "peer", source: "dimitri-mint-dev", ref: "arc-001"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T18:06:03Z
-last_update: 2026-10-11T19:48:10Z
+last_update: '2026-10-12T18:30:32Z'
 date_finished: 2026-10-11T19:48:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -85,6 +88,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=278,acs=7)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-12T18:30:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 7
+      tier: 2
+      effort: 8
+    rationale: blast_radius=7 (9-components-large-blast); tier=2 
+      (workflow:build); effort=8 (lines=334,acs=8)
     rubric_sha: e4a00f38e801
 ---
 

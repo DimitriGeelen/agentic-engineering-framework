@@ -16,7 +16,9 @@ workflow_type: build
 owner: human
 horizon: now
 tags: [watchtower, approvals, review-queue]
-components: [bin/fw, web/blueprints/approvals.py, web/blueprints/tasks.py, web/shared.py, web/templates/_approvals_content.html, web/templates/tasks.html]
+components: [bin/fw, web/blueprints/approvals.py, web/blueprints/tasks.py, 
+      web/shared.py, web/templates/_approvals_content.html, 
+      web/templates/tasks.html]
 related_tasks: [T-2075]
 origin: {kind: "peer", source: "proxmox-ring20-management", ref: "T-2302"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
@@ -46,7 +48,7 @@ origin: {kind: "peer", source: "proxmox-ring20-management", ref: "T-2302"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T11:18:51Z
-last_update: 2026-10-11T16:20:45Z
+last_update: '2026-10-12T11:45:32Z'
 date_finished: 2026-10-11T16:20:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -67,6 +69,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-12T11:45:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 5
+      tier: 2
+      effort: 8
+    rationale: blast_radius=5 (6-components-medium-blast); tier=2 
+      (workflow:build); effort=8 (lines=325,acs=8)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-10-11T11:31:25Z'
@@ -107,7 +118,7 @@ Reported by ring20 (their T-2302/T-2306, operator-requested): `/approvals` admit
 - [x] Watchtower restarted; `bin/fw watchtower current` exits 0.
 
 ### Human
-- [ ] [REVIEW] /approvals tells you what is actually yours to decide
+- [x] [REVIEW] /approvals tells you what is actually yours to decide
   **Steps:**
   1. Open `$(bin/fw watchtower url)/approvals`
   2. Read the "Ready for you" group, then skim "Waiting on the agent"
