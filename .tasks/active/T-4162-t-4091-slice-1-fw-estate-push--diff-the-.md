@@ -108,6 +108,7 @@ ingest worker (T-4163) has drained staging. Follow-up to add before the first li
 - [x] Write-time redaction: secret value patterns and hostname/IP→role map applied; an item that still matches a secret pattern is refused and logged, not staged
 - [x] Diff against the store: new/changed chunks staged as text+payload only (no vectors), deletions for removed sources (R-5); dry-run default, `--apply` writes to `staging_aef`; token read by name from the credential store, never printed
 - [x] `bin/fw estate push` verb routes to it; unit tests (written first, failing on HEAD) pass
+- [x] Batched first fill (operator 2026-10-13): an `--apply` run stages at most `--max-points` / `FW_ESTATE_PUSH_MAX_POINTS` (default 50,000) and never more than the staging budget (100,000) minus the staged count read from the store; an unreadable count stages nothing; the ledger carries progress so the next run continues; tombstones count towards the cap; the dry run prints total, this run's batch and runs remaining — `tests/unit/test_estate_push.py` covers cap, continuation, headroom and unreadable count
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
