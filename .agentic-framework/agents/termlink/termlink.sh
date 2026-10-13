@@ -493,9 +493,14 @@ cmd_cleanup() {
 Usage: fw termlink cleanup [--dry-run|-n] [--yes|-y]
 
 Remove finished dispatch workers' directories and terminate orphaned worker processes.
+Stop the TermLink endpoint a finished worker left registered (T-4152: workers dispatched
+before the exec fix kept their shell at its prompt, 'ready' forever) — only when the worker
+dir holds a run.sh, its exit_code is final (review workers: finalised) and run.sh is no
+longer running; never any session that is not such a dispatch worker.
 Active workers and unfinalised review workers are never removed.
 
-  --dry-run, -n   print the plan (dirs to remove, PIDs to signal, uncollected results); change nothing
+  --dry-run, -n   print the plan (dirs to remove, PIDs to signal, endpoints to stop, uncollected
+                  results); change nothing
   --yes, -y       consent to the removal/termination without a prompt
   --help, -h      this text
 
@@ -521,7 +526,10 @@ USAGE
     # `rm -rf "$DISPATCH_DIR"`, which took the dirs of the ACTIVE workers it had just
     # skipped (result, exit_code, meta, completion signing). Only dirs listed in
     # $remove are ever deleted: finished (exit_code present) or orphaned-and-terminated.
-    local remove=() uncollected=() orphan_plan=()
+    local remove=() uncollected=() orphan_plan=() endpoint_plan=()
+    # T-4152: one snapshot of the registered sessions, for the leaked-endpoint check below.
+    local tl_json=""
+    command -v termlink >/dev/null 2>&1 && tl_json=$(termlink list --json 2>/dev/null || true)
     for wdir in "$DISPATCH_DIR"/*/; do
         [ -d "$wdir" ] || continue
         local wname
@@ -534,6 +542,14 @@ USAGE
         if [ -f "$wdir/exit_code" ]; then
             if _worker_done "$wdir"; then
                 remove+=("$wdir")
+                # T-4152: a finished dispatch worker whose session is still registered leaked
+                # its endpoint. Stop it only when this dir is provably a dispatch worker's
+                # (cmd_dispatch wrote run.sh) and its run.sh is no longer running.
+                if [ -f "$wdir/run.sh" ] && ! _runtime_alive "$wdir"; then
+                    local sid
+                    sid=$(_dispatch_session_id "$tl_json" "$wname")
+                    [ -z "$sid" ] || endpoint_plan+=("$wname|$sid")
+                fi
                 # T-3651: a result nobody has read is the one thing cleanup must not destroy silently.
                 if [ ! -f "$wdir/collected" ] && { [ -s "$wdir/result.md" ] || [ -s "$wdir/result.jsonl" ]; }; then
                     uncollected+=("$wdir")
@@ -607,7 +623,10 @@ USAGE
     for entry in "${orphan_plan[@]}"; do
         echo -e "${YELLOW}ORPHAN${NC}  Worker '$(basename "${entry%%|*}")': would SIGTERM PID(s) ${entry#*|}"
     done
-    echo "Plan: remove ${#remove[@]} dir(s) (${#uncollected[@]} with uncollected results), terminate ${orphan_count} orphan(s), keep $kept_count."
+    for entry in "${endpoint_plan[@]}"; do
+        echo "PLAN    stop endpoint ${entry%%|*} (${entry#*|}) — worker finished, session still registered"
+    done
+    echo "Plan: remove ${#remove[@]} dir(s) (${#uncollected[@]} with uncollected results), terminate ${orphan_count} orphan(s), stop ${#endpoint_plan[@]} leaked endpoint(s), keep $kept_count."
 
     if [ "$dry_run" = true ]; then
         echo "Dry run — nothing changed."
@@ -615,7 +634,7 @@ USAGE
     fi
 
     # ---- consent gate ----
-    if [ "${#remove[@]}" -gt 0 ] && [ "$assume_yes" != true ]; then
+    if [ $(( ${#remove[@]} + ${#endpoint_plan[@]} )) -gt 0 ] && [ "$assume_yes" != true ]; then
         if [ -t 0 ] && [ -t 1 ]; then
             local reply=""
             read -r -p "Proceed? [y/N] " reply || true
@@ -640,6 +659,19 @@ USAGE
     done
 
     [ "$orphan_count" -gt 0 ] && echo -e "${YELLOW}Cleaned $orphan_count orphaned worker(s)${NC}"
+
+    # T-4152: stop leaked endpoints. SIGHUP ends the idle interactive shell (it ignores
+    # SIGTERM), its session deregisters; `termlink clean` below sweeps any dead remainder.
+    local stopped_count=0
+    for entry in "${endpoint_plan[@]}"; do
+        if termlink signal "${entry#*|}" HUP >/dev/null 2>&1; then
+            echo "STOPPED endpoint ${entry%%|*} (${entry#*|})"
+            stopped_count=$((stopped_count + 1))
+        else
+            echo -e "${YELLOW}WARN${NC}    could not signal endpoint ${entry%%|*} (${entry#*|})"
+        fi
+    done
+    [ "$stopped_count" -eq 0 ] || sleep 1
 
     # Collect tracked window IDs (macOS only) — of removed workers only: phase 1 below
     # kill -9's everything on the window's TTY, which would take an active worker with it.
@@ -701,6 +733,7 @@ USAGE
 
     local summary="Cleaned up $removed_count worker(s)"
     [ "$orphan_count" -gt 0 ] && summary="$summary ($orphan_count orphan(s) terminated)"
+    [ "$stopped_count" -gt 0 ] && summary="$summary; stopped $stopped_count leaked endpoint(s)"
     [ "$kept_count" -gt 0 ] && summary="$summary; kept $kept_count"
     echo "$summary."
 }
@@ -760,6 +793,25 @@ _worker_done() {
         *) return 1 ;;
     esac
     ! _runtime_alive "$w"
+}
+
+# T-4152: the id of the ONE registered session named exactly <name>, from a `termlink list
+# --json` snapshot; empty when none, when the name is ambiguous, or when it is a non-worker
+# session (claude-master-*, fleet-*) whatever its directory says.
+_dispatch_session_id() {
+    local json="$1" name="$2"
+    [ -n "$json" ] && [ -n "$name" ] || return 0
+    case "$name" in claude-master-*|fleet-*) return 0 ;; esac
+    printf '%s' "$json" | python3 -c '
+import json, sys
+try:
+    s = json.load(sys.stdin).get("sessions") or []
+except ValueError:
+    sys.exit(0)
+m = [x.get("id") for x in s if isinstance(x, dict) and x.get("display_name") == sys.argv[1] and x.get("id")]
+if len(m) == 1:
+    print(m[0])
+' "$name" 2>/dev/null || true
 }
 
 # True while a `run.sh` for this worker directory is still running.
@@ -1620,7 +1672,10 @@ if [ -n "$MODEL" ] && [ -n "$TASK_TYPE" ] && [ -n "$FW_BIN" ] && [ -x "$FW_BIN" 
     "$FW_BIN" termlink record-outcome \
         --model "$MODEL" --task-type "$TASK_TYPE" --exit-code "$EXIT_CODE" \
         --close-state "$CLOSE_STATE" --task "$CLOSE_TASK" \
-        >/dev/null 2>&1 || true
+        < /dev/null >/dev/null 2>&1 || true
+    # T-4152: stdin is /dev/null — run.sh's stdin is the session's PTY, and an fw that stops to
+    # read it (37 consumer workers found blocked here in n_tty_read) never lets run.sh exit,
+    # so neither the worker nor, after the exec fix, its session ever ends.
 fi
 
 termlink event emit "$WORKER_NAME" worker.done \
@@ -1648,7 +1703,12 @@ RUNEOF
     # record outcome into route_cache after it exits.
     local fw_bin="${FRAMEWORK_ROOT:-$(dirname "$(dirname "$(readlink -f "$0" 2>/dev/null || echo "$0")")")}/bin/fw"
     [ -x "$fw_bin" ] || fw_bin=""
-    termlink pty inject "$name" "bash $wdir/run.sh '$name' '$project_dir' '$wdir' '$timeout' '$model' '$task_type' '$fw_bin'" --enter >/dev/null 2>&1
+    # T-4152: `exec` — run.sh REPLACES the session's interactive shell, so the session ends
+    # (and TermLink deregisters it) when run.sh exits. Typed without exec, the shell outlived
+    # run.sh at its prompt and the endpoint stayed 'ready' forever (106 here, 43 on ring20).
+    # Safe for every kind: run.sh writes exit_code — and, for a review, `finalised` — before
+    # its last line, and results live in $wdir, never in the session.
+    termlink pty inject "$name" "exec bash $wdir/run.sh '$name' '$project_dir' '$wdir' '$timeout' '$model' '$task_type' '$fw_bin'" --enter >/dev/null 2>&1
 
 
     echo "Worker spawned: $name (wdir: $wdir)"
