@@ -8,10 +8,10 @@ description: >
   need a name and purpose first. Owner confirmation = this project (AEF). These cards
   are category 11 of the T-4123 pilot feed.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T14:52:44Z
-last_update: '2026-10-13T15:00:48Z'
+last_update: 2026-10-13T19:40:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -88,14 +88,16 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Leg 2 of inception T-4142 (GO 2026-10-13); schema + lint from leg 1 T-4153 (`agents/fabric/lib/cardlint.py`). The 9 auto-discovered ids were derived from `.fabric/components/*.yaml` `subsystem:` values absent from `.fabric/subsystems.yaml`.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The 9 auto-discovered subsystems (named by component cards but absent from `.fabric/subsystems.yaml`: testing, orchestrator-arc, capture, upgrade, task-system, learnings-bus, hook-enforcement, cli-entrypoints, agents) are declared with a name and purpose drafted from their components
+- [x] All 27 subsystems carry a `capability_card:` drafted from their code; `cardlint.py --strict` (no uncarded subsystem, no failing card) passes on the real file
+- [x] A bats test pins both invariants (every subsystem a component card names is declared; strict lint passes on the real registry) and fails on HEAD
+- [x] Routing unchanged: no `paths:` added to the newly declared entries, existing T-4153 lint suite still green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -129,6 +131,11 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bats tests/unit/t4154_capability_cards_complete.bats > /tmp/.t4154.out 2>&1 && ! grep -q "^not ok" /tmp/.t4154.out
+test "$(grep -c '# skip' /tmp/.t4154.out)" -eq 0
+bats tests/unit/t4153_capability_card_lint.bats > /tmp/.t4153b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4153b.out
+python3 agents/fabric/lib/cardlint.py .fabric/subsystems.yaml --strict
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -339,6 +346,18 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-13 — overlapping auto-discovered labels (testing, task-system, hook-enforcement, cli-entrypoints, agents)
+- **Chose:** declare each as its own entry with a card whose `limits:` names the overlap and the subsystem its components should migrate to; no `paths:` added.
+- **Why:** the task asks for a name + purpose for all 9; relabelling component cards is a separate change with routing/fabric-graph effects, out of this task's scope.
+- **Rejected:** re-pointing those component cards to the canonical ids now (wider write-set, changes counts other tests/pages read); marking them `retired` (the code is live).
+
+### 2026-10-13 — orchestrator-arc ownership
+- **Chose:** owner = termlink (/opt/termlink, crates/termlink-hub); limits say reuse through TermLink.
+- **Why:** the 6 components are Rust files in the TermLink repo; AEF only holds the cards for dependency tracing (gap homing, T-1333).
+
+### 2026-10-13 — placeholder rule vs `T-XXX`
+- **Chose:** write `<task-id>` in entry points; the leg-1 lint refuses `XXX` as placeholder text, which caught 3 drafts.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -355,3 +374,10 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4154-t-4142-leg-2-write-capability-cards-for-.md
 - **Context:** Initial task creation
+
+### 2026-10-13 — pre-fix failure recorded [t4154-build]
+- On HEAD, `tests/unit/t4154_capability_cards_complete.bats`: not ok 1 (undeclared: agents, capture, cli-entrypoints, hook-enforcement, learnings-bus, orchestrator-arc, task-system, testing, upgrade); not ok 2 (17 subsystems without a card). After: 27 cards, 0 problems, 0 uncarded; t4153/t4154/t3430/t3431 bats (24) and fabric pytest (53) green.
+
+### 2026-10-13T19:23:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

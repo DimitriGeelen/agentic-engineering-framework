@@ -32,6 +32,17 @@ subsystems:
     entry_points:
       - "fw serve (start server)"
       - "http://localhost:3000"
+    capability_card:
+      capabilities:
+        - "Browse tasks, inceptions, learnings, decisions, arcs and metrics of a project in a web dashboard"
+        - "Approve or decide human-gated work (task review, inception go/no-go, Tier 0, arc close) from a browser"
+        - "Inspect the component fabric, cron jobs, config and costs without a shell"
+      problem_solved: "I cannot see what my agents are doing or what is waiting for my decision without reading YAML files"
+      tags: [flask, htmx, web-ui, dashboard, approvals]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — web/"
+      entry_points: ["fw serve", "bin/fw watchtower url"]
+      limits: "Single-project per process; port is per-project (watchtower.url); runs debug=False, so code changes need fw watchtower restart"
 
   - id: context-fabric
     paths:
@@ -46,6 +57,18 @@ subsystems:
     summary: "context.sh → lib/{learning,decision,pattern,focus,init,status,episodic}.sh → .context/project/*.yaml"
     entry_points:
       - "fw context <command>"
+    capability_card:
+      capabilities:
+        - "Persist working, project and episodic memory for an agent across sessions"
+        - "Record and recall learnings, decisions and patterns per task"
+        - "Set and track the focused task that every gate reads"
+        - "Recover state after context compaction"
+      problem_solved: "My AI agent forgets everything between sessions and repeats the same mistakes"
+      tags: [memory, context, learnings, episodic, yaml]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — agents/context/"
+      entry_points: ["fw context init|focus|add-learning|add-decision", "fw resume status", "fw recall"]
+      limits: "File-based YAML under .context/; semantic recall needs the vector index (fw index reindex)"
 
   - id: framework-core
     paths:
@@ -62,6 +85,17 @@ subsystems:
     summary: "bin/fw → lib/{init,harvest,inception,promote,assumption,bus}.sh → metrics.sh"
     entry_points:
       - "fw <command>"
+    capability_card:
+      capabilities:
+        - "Single fw CLI that routes to every framework agent and library"
+        - "Initialise, upgrade and vendor the framework into consumer projects"
+        - "Shared shell/python libraries: config resolution, inception, release, bus, notifications"
+      problem_solved: "I want one governed command line for AI-agent engineering work instead of a pile of scripts"
+      tags: [cli, bash, python, governance, vendoring]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — bin/fw, lib/"
+      entry_points: ["fw help", "fw init", "fw upgrade"]
+      limits: "Bash + python3 + PyYAML required; a consumer reaches it through the .agentic-framework/ vendored copy"
 
   - id: git-traceability
     paths:
@@ -72,6 +106,18 @@ subsystems:
     summary: "git.sh → hooks/{commit-msg,post-commit,pre-push} → bypass-log.yaml"
     entry_points:
       - "fw git <command>"
+    capability_card:
+      capabilities:
+        - "Refuse commits that do not reference a task id"
+        - "Install commit-msg, post-commit and pre-push hooks that audit before push"
+        - "Log every hook bypass for later review"
+        - "Gate force-push and ref deletion at pre-push behind Tier 0 approval"
+      problem_solved: "I cannot tell which task or decision a commit belongs to, and agents push without checks"
+      tags: [git, hooks, traceability, pre-push]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — agents/git/"
+      entry_points: ["fw git commit", "fw git install-hooks"]
+      limits: "Client-side hooks only: --no-verify, a core.hooksPath override or forge-API pushes skip them"
 
   - id: component-fabric
     paths:
@@ -83,6 +129,18 @@ subsystems:
     summary: "fabric.sh → lib/{register,query,traverse,drift,summary,ui}.sh → .fabric/"
     entry_points:
       - "fw fabric <command>"
+    capability_card:
+      capabilities:
+        - "Map every significant file as a component card with dependencies and purpose"
+        - "Answer what breaks downstream if I change this file (blast radius, impact)"
+        - "Detect unregistered, orphaned and stale components"
+        - "Lint module capability cards on subsystems"
+      problem_solved: "I do not know what depends on this file or what a change will break"
+      tags: [dependency-graph, topology, impact-analysis, yaml]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — agents/fabric/"
+      entry_points: ["fw fabric deps|impact|blast-radius|drift", "fw fabric lint"]
+      limits: "Edges come from registered cards; a file never registered is invisible to impact analysis"
 
   - id: healing
     paths:
@@ -93,6 +151,17 @@ subsystems:
     summary: "healing.sh → lib/{diagnose,resolve,patterns,suggest}.sh → patterns.yaml"
     entry_points:
       - "fw healing <command>"
+    capability_card:
+      capabilities:
+        - "Classify a task failure and look up matching known patterns"
+        - "Suggest recovery steps along the A-D escalation ladder"
+        - "Record the resolution so the next occurrence is faster to fix"
+      problem_solved: "The same failure keeps coming back and nobody remembers how it was fixed last time"
+      tags: [error-recovery, antifragile, patterns, diagnosis]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — agents/healing/"
+      entry_points: ["fw healing diagnose <task-id>", "fw healing resolve <task-id> --mitigation", "fw healing patterns"]
+      limits: "Pattern matching is keyword-based over patterns.yaml; quality depends on resolutions being recorded"
 
   - id: learnings-pipeline
     name: Learnings Pipeline
@@ -102,6 +171,17 @@ subsystems:
     entry_points:
       - "fw context add-learning (CLI)"
       - "/learnings (web)"
+    capability_card:
+      capabilities:
+        - "Capture a learning against a task and source practice"
+        - "Store learnings and patterns as validated YAML"
+        - "Show and search learnings in Watchtower /learnings"
+      problem_solved: "Lessons from fixed bugs are lost and the next agent hits the same class of bug again"
+      tags: [learnings, knowledge, yaml, web-ui]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — agents/context/lib/learning.sh, web/blueprints/discovery.py"
+      entry_points: ["fw context add-learning", "fw learnings", "/learnings (web)"]
+      limits: "Per-project store; cross-project sharing goes through learnings-bus"
 
   - id: budget-management
     name: Context Budget Management
@@ -110,6 +190,17 @@ subsystems:
     summary: "PreToolUse → budget-gate.sh → .budget-status ← checkpoint.sh ← PostToolUse"
     entry_points:
       - "Automatic (hooks on every tool call)"
+    capability_card:
+      capabilities:
+        - "Read live token usage from the session transcript"
+        - "Warn at 75/85% and block source edits at 95% of the configured context window"
+        - "Trigger an automatic handover and restart signal at critical"
+      problem_solved: "My agent session runs out of context mid-task and loses uncommitted work"
+      tags: [context-window, tokens, hooks, claude-code]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — agents/context/budget-gate.sh, checkpoint.sh"
+      entry_points: ["Automatic PreToolUse/PostToolUse hooks", "agents/context/checkpoint.sh status|budget"]
+      limits: "Needs a readable Claude Code session JSONL; fails open without one; bands are % of CONTEXT_WINDOW"
 
   - id: task-management
     paths:
@@ -120,6 +211,17 @@ subsystems:
     summary: "create-task.sh + update-task.sh → .tasks/{active,completed}/"
     entry_points:
       - "fw task <command>"
+    capability_card:
+      capabilities:
+        - "Create tasks from templates with frontmatter, acceptance criteria and verification"
+        - "Enforce status/horizon invariants and the AC + verification completion gates"
+        - "Finalise completed tasks: move to completed/, generate episodic memory"
+      problem_solved: "AI agents start work without a ticket and declare done without proof"
+      tags: [tasks, acceptance-criteria, verification-gate, markdown]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — agents/task-create/"
+      entry_points: ["fw work-on", "fw task create|update|show", "fw task review"]
+      limits: "Markdown + YAML frontmatter files in .tasks/; one task per file, no database"
 
   - id: audit
     paths:
@@ -132,6 +234,17 @@ subsystems:
     summary: "audit.sh → .context/audits/ (cron every 30 min + pre-push)"
     entry_points:
       - "fw audit"
+    capability_card:
+      capabilities:
+        - "Check structure, task quality, git traceability, controls and drift"
+        - "Run on cron and at pre-push, writing dated audit YAML"
+        - "Exit 0/1/2 for pass/warn/fail so CI and hooks can gate on it"
+      problem_solved: "Governance rules silently decay and nobody notices until something breaks"
+      tags: [compliance, audit, cron, pre-push]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — agents/audit/"
+      entry_points: ["fw audit", "fw audit --section structure"]
+      limits: "Full audit is slow; sections run individually; one audit at a time per project"
 
   - id: handover
     paths:
@@ -142,6 +255,17 @@ subsystems:
     summary: "handover.sh → .context/handovers/LATEST.md"
     entry_points:
       - "fw handover"
+    capability_card:
+      capabilities:
+        - "Generate a forward-looking session handover document from tasks, git and memory"
+        - "Commit and push it at session end"
+        - "Write mid-session checkpoints"
+      problem_solved: "The next agent session starts cold and does not know what was in progress"
+      tags: [session-continuity, handover, markdown]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — agents/handover/"
+      entry_points: ["fw handover --commit", "fw handover --checkpoint"]
+      limits: "Pushes by default; quality depends on tasks carrying current state"
 
   - id: watchtower-web-ui
     name: Watchtower Web UI (Extended)
@@ -150,6 +274,16 @@ subsystems:
     summary: "watchtower.sh + discoveries blueprint + feedback analytics template"
     entry_points:
       - "bin/watchtower.sh"
+    capability_card:
+      capabilities:
+        - "Start, stop and restart the Watchtower process and publish its URL/port"
+        - "Show audit discoveries and feedback analytics pages"
+      problem_solved: "Two projects on one host fight over the dashboard port, or the dashboard serves stale code"
+      tags: [flask, process-management, web-ui]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — bin/watchtower.sh, web/blueprints/discoveries.py"
+      entry_points: ["bin/fw watchtower restart|current|url"]
+      limits: "Overlaps the watchtower subsystem; it is the process/launcher half plus two extra pages"
 
   - id: enforcement
     paths:
@@ -160,6 +294,17 @@ subsystems:
     summary: "settings.json → PreToolUse[task-gate, tier0, budget-gate] + PostToolUse[checkpoint, error-watchdog]"
     entry_points:
       - ".claude/settings.json"
+    capability_card:
+      capabilities:
+        - "Wire PreToolUse/PostToolUse hooks into Claude Code settings"
+        - "Block edits without an active task, destructive commands without Tier 0 approval and work past the context budget"
+        - "Keep a baseline hash so hook drift is reported by fw doctor"
+      problem_solved: "My AI coding agent ignores the process rules I wrote down"
+      tags: [claude-code, hooks, governance, enforcement]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — .claude/settings.json"
+      entry_points: [".claude/settings.json", "fw enforcement baseline"]
+      limits: "Hooks see the typed command, not scripts it runs; same-user processes can bypass by writing files directly"
 
   - id: tests
     name: Test Suite
@@ -169,6 +314,17 @@ subsystems:
     summary: "tests/{unit,integration,lint,web,governance,fixtures}/ — bats + pytest"
     entry_points:
       - "fw test all"
+    capability_card:
+      capabilities:
+        - "Run unit, integration, lint, web and governance suites (bats + pytest)"
+        - "Pin framework gates with executable tests"
+        - "Grade nightly reds against an expiring baseline at pre-push"
+      problem_solved: "Framework gates regress without anyone noticing"
+      tags: [bats, pytest, testing, ci]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — tests/"
+      entry_points: ["fw test all|unit|integration|lint"]
+      limits: "Full suite is long; run files near the change; some tests need termlink or a running Watchtower"
 
   - id: tests-playwright
     name: Playwright Browser Tests
@@ -178,6 +334,16 @@ subsystems:
     summary: "tests/playwright/ → live Watchtower → page assertions"
     entry_points:
       - "fw test playwright"
+    capability_card:
+      capabilities:
+        - "Drive a real browser against live Watchtower routes"
+        - "Assert rendered page content and interactive behaviour"
+      problem_solved: "A Watchtower page returns 200 but renders broken or empty"
+      tags: [playwright, browser-testing, e2e, python]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — tests/playwright/"
+      entry_points: ["fw test playwright"]
+      limits: "Needs Playwright browsers installed and a running Watchtower"
 
   - id: docs
     name: Documentation
@@ -189,6 +355,16 @@ subsystems:
     summary: "docs/{reports,adr,architecture,runbooks,design}/ + prompts/"
     entry_points:
       - "fw docs"
+    capability_card:
+      capabilities:
+        - "Hold research reports, ADRs, architecture notes and runbooks for every inception and build"
+        - "Serve them through fw docs and Watchtower /docs"
+      problem_solved: "I cannot find why a design decision was made or what the research showed"
+      tags: [documentation, adr, markdown, reports]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — docs/"
+      entry_points: ["fw docs", "docs/reports/<task-id>-*.md"]
+      limits: "Markdown only; findability relies on task-id file naming and fw search"
 
   - id: governance
     name: Governance Policy
@@ -198,6 +374,16 @@ subsystems:
     summary: "policy/{value-drivers.yaml,standards,prompts,capability-overlay}/"
     entry_points:
       - "fw bvp / fw reviewer"
+    capability_card:
+      capabilities:
+        - "Define business value drivers and scoring rubrics read by fw bvp"
+        - "Hold review-backend cost registry, standards and prompt bundles that gates read"
+      problem_solved: "Agents rank and review work without an explicit, auditable statement of what matters"
+      tags: [policy, value-drivers, bvp, yaml]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — policy/"
+      entry_points: ["fw bvp", "fw reviewer", "policy/review-backends.yaml"]
+      limits: "Operator-owned data; agents may propose but some edits (paid backends, sovereignty fields) are operator-only"
 
   - id: termlink-integration
     name: TermLink Integration
@@ -219,3 +405,159 @@ subsystems:
       owner: "agentic-engineering-framework (agents/termlink)"
       entry_points: ["fw termlink dispatch", "fw termlink cleanup"]
       limits: "Max 5 concurrent workers per project; needs the termlink binary on PATH"
+
+  # T-4154: the 9 subsystems below were auto-discovered (named by component cards,
+  # never declared). Declared without paths: so file routing is unchanged.
+
+  - id: testing
+    name: "Testing (legacy label)"
+    purpose: "Test files labelled 'testing' instead of 'tests'/'tests-playwright' — docgen unit tests, Playwright fixtures, test fixtures"
+    summary: "tests/playwright/conftest.py, tests/fixtures/, agents/docgen/test_docgen.py"
+    entry_points:
+      - "fw test all"
+    capability_card:
+      capabilities:
+        - "Unit tests for the docgen generator"
+        - "Playwright fixtures and DOM-contract tests"
+        - "Exemplar fixtures (e.g. BPMN pair drafts) used by tests"
+      problem_solved: "Test files exist but are not found under the tests subsystem when I search the fabric"
+      tags: [testing, fixtures, playwright, pytest]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — tests/"
+      entry_points: ["fw test all", "fw test playwright"]
+      limits: "Label overlaps tests and tests-playwright; these component cards should migrate to those ids"
+
+  - id: orchestrator-arc
+    name: "TermLink Hub Routing (orchestrator arc)"
+    purpose: "TermLink hub routing, bypass cache, circuit breaker and governance protocol, registered here for the orchestrator arc's dependency tracing"
+    summary: "/opt/termlink crates/termlink-hub/{router,bypass,circuit_breaker,route_cache}.rs + governance"
+    entry_points:
+      - "termlink hub status"
+    capability_card:
+      capabilities:
+        - "Route RPCs to the right worker session by tag, role and cached route"
+        - "Promote stable caller/target pairs to a bypass cache"
+        - "Open a circuit breaker on failing targets and route elsewhere"
+        - "Carry governance events between sessions"
+      problem_solved: "Requests to agent worker sessions go to the wrong or a dead session"
+      tags: [rust, termlink, routing, circuit-breaker]
+      status: live
+      owner: "termlink (/opt/termlink, crates/termlink-hub) — cards held by AEF for tracing"
+      entry_points: ["termlink hub status", "termlink fleet status"]
+      limits: "Code lives in the TermLink repo, not AEF; reuse it through TermLink"
+
+  - id: capture
+    name: "Conversation Capture"
+    purpose: "Emergency capture of an untracked conversation from the Claude Code transcript to disk"
+    summary: "/capture → agents/capture/read-transcript.py → session JSONL → task/report"
+    entry_points:
+      - "/capture"
+    capability_card:
+      capabilities:
+        - "Extract human/agent turns from the current Claude Code session transcript"
+        - "Save an untracked conversation into a task or research artifact"
+      problem_solved: "A valuable conversation happened without a task and will be lost when the session ends"
+      tags: [claude-code, transcript, capture, python]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — agents/capture/"
+      entry_points: ["/capture (slash command)"]
+      limits: "Reads Claude Code JSONL transcripts only"
+
+  - id: upgrade
+    name: "Consumer Upgrade"
+    purpose: "Bring a consumer project's vendored framework, hooks and templates up to the current framework version"
+    summary: "fw upgrade → lib/upgrade.sh → .agentic-framework/ + .claude/settings.json hooks"
+    entry_points:
+      - "fw upgrade [dir]"
+    capability_card:
+      capabilities:
+        - "Refresh a consumer's shims, hooks and version pin"
+        - "Regenerate hooks and verify they converge"
+        - "Sync shipped templates into the consumer"
+      problem_solved: "My project runs an old copy of the framework with stale hooks"
+      tags: [upgrade, vendoring, hooks, bash]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — lib/upgrade.sh"
+      entry_points: ["fw upgrade", "fw vendor"]
+      limits: "Kept green by tests/unit/upgrade_fresh_machine_simulation.bats; legacy consumers need fw consumer-recover"
+
+  - id: task-system
+    name: "Task System (legacy label)"
+    purpose: "Research on task status/horizon invariants, labelled apart from task-management"
+    summary: "docs/reports/T-1067-horizon-status-invariants.md → rules in update-task.sh"
+    entry_points:
+      - "fw task update"
+    capability_card:
+      capabilities:
+        - "Define the status/horizon consistency rules the task updater enforces"
+      problem_solved: "Tasks are marked started but parked, and the backlog lies about what is active"
+      tags: [tasks, invariants, documentation]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — docs/reports/T-1067-horizon-status-invariants.md"
+      entry_points: ["fw task update <task-id> --horizon|--status"]
+      limits: "Label overlaps task-management; this card set should migrate there"
+
+  - id: learnings-bus
+    name: "Learnings Bus"
+    purpose: "Share learnings between projects over a TermLink event channel"
+    summary: "publish-learning-to-bus.sh → channel:learnings → subscribe-learnings-from-bus.sh → learnings.yaml"
+    entry_points:
+      - "lib/subscribe-learnings-from-bus.sh"
+    capability_card:
+      capabilities:
+        - "Publish a new learning to the TermLink learnings channel"
+        - "Poll the channel and append other projects' learnings locally"
+      problem_solved: "A lesson learned in one project never reaches the other projects that hit the same bug"
+      tags: [termlink, event-bus, learnings, cross-project]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — lib/{publish,subscribe}-learning*-bus.sh"
+      entry_points: ["lib/publish-learning-to-bus.sh", "lib/subscribe-learnings-from-bus.sh"]
+      limits: "Needs a reachable TermLink hub session; no dedup beyond what the poller does"
+
+  - id: hook-enforcement
+    name: "Hook Enforcement (legacy label)"
+    purpose: "Individual PreToolUse guard scripts labelled apart from the enforcement subsystem — e.g. the project-boundary guard"
+    summary: "agents/context/check-project-boundary.sh (PreToolUse)"
+    entry_points:
+      - "Automatic PreToolUse hook"
+    capability_card:
+      capabilities:
+        - "Block Write/Edit/Bash operations aimed at paths outside the project root"
+      problem_solved: "An agent in one project edits files in another project"
+      tags: [claude-code, hooks, sandboxing]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — agents/context/check-project-boundary.sh"
+      entry_points: [".claude/settings.json PreToolUse"]
+      limits: "Text-level path check on the typed command; label overlaps enforcement"
+
+  - id: cli-entrypoints
+    name: "CLI Entry Points (legacy label)"
+    purpose: "Standalone bin/ helpers labelled apart from framework-core — hook registration"
+    summary: "bin/hook-enable.sh → .claude/settings.json"
+    entry_points:
+      - "fw hook-enable"
+    capability_card:
+      capabilities:
+        - "Register framework hooks in .claude/settings.json idempotently"
+      problem_solved: "Framework hooks are missing or duplicated in my Claude Code settings"
+      tags: [cli, hooks, claude-code, bash]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — bin/hook-enable.sh"
+      entry_points: ["fw hook-enable"]
+      limits: "Label overlaps framework-core"
+
+  - id: agents
+    name: "Agent Intelligence Files"
+    purpose: "AGENT.md checklists that pair with mechanical agent scripts — e.g. the session-capture checklist"
+    summary: "agents/<name>/AGENT.md (session-capture)"
+    entry_points:
+      - "agents/session-capture/AGENT.md"
+    capability_card:
+      capabilities:
+        - "Session-end checklist: all work captured as tasks, decisions and learnings recorded"
+      problem_solved: "Sessions end with untracked work and unrecorded decisions"
+      tags: [checklist, session-end, markdown]
+      status: live
+      owner: "agentic-engineering-framework (AEF) — agents/session-capture/AGENT.md"
+      entry_points: ["agents/session-capture/AGENT.md"]
+      limits: "Guidance an agent reads, not a gate; label overlaps context-fabric"
