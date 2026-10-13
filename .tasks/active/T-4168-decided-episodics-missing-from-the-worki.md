@@ -1,10 +1,18 @@
 ---
 id: T-4168
-name: "Decided episodics missing from the WORKING TREE (not only the index) on ring20 after Watchtower decisions: find any AEF path that rewrites the worktree from the index or deletes episodics"
+name: "Decided episodics missing from the WORKING TREE (not only the index) on ring20
+  after Watchtower decisions: find any AEF path that rewrites the worktree from the
+  index or deletes episodics"
 description: >
-  ring20-manager (msg 05d50237): for the four armed decisions the decided episodics were also missing from the working tree; not git clean or stash; ring20 found no framework code that deletes episodics. AEF search so far: no checkout-index / read-tree -u / git restore in web/blueprints/inception.py, lib, agents/context, task-create or bin/fw (the old scratch-index code used read-tree HEAD into the scratch index only). Candidates to check: episodic generation/rename on decide, fw resume/sync, handover sweeps, vendor/upgrade, consumer-side hooks.
+  ring20-manager (msg 05d50237): for the four armed decisions the decided episodics
+  were also missing from the working tree; not git clean or stash; ring20 found no
+  framework code that deletes episodics. AEF search so far: no checkout-index / read-tree
+  -u / git restore in web/blueprints/inception.py, lib, agents/context, task-create
+  or bin/fw (the old scratch-index code used read-tree HEAD into the scratch index
+  only). Candidates to check: episodic generation/rename on decide, fw resume/sync,
+  handover sweeps, vendor/upgrade, consumer-side hooks.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
 horizon: now
@@ -12,8 +20,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-13T15:50:47Z
-last_update: 2026-10-13T15:50:47Z
-date_finished: null
+last_update: 2026-10-13T15:57:47Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +30,23 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+bvp_scores_proposed:
+  - ts: '2026-10-13T15:57:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4168: Decided episodics missing from the WORKING TREE (not only the index) on ring20 after Watchtower decisions: find any AEF path that rewrites the worktree from the index or deletes episodics
@@ -36,6 +61,14 @@ commit-redo resets (10-10 12:33, 10-11 11:14), which do not touch the worktree; 
 14:16Z. ring20's session-start guard now restores such a file and will capture mtime, ctime and the process list
 first if it recurs. Lead to check: with the pre-T-4127 scratch-index decision path, the real index never knew the
 new episodic; any later step that syncs the worktree to the index (or removes paths staged as deleted) would delete it.
+
+**Hypothesis 1 (2026-10-13):** an agent's `git stash` / `git stash pop`. After a pre-T-4127 decide, HEAD has the
+episodic but the real index does not, so `git status` shows it as a staged deletion. `git stash` records that index
+state; `git stash pop` (or `apply --index`) re-applies the staged deletion and removes the file from the worktree.
+No AEF framework code runs stash, clean or rm on these paths (grep of agents/, lib/, bin/, web/ — only messages and
+tier-0 test patterns), so the writer would be an agent command. Test: (a) reproduce in a temp repo — commit a file
+via a scratch index, leave the real index stale, stash + pop → file gone from the worktree; (b) ask ring20 to grep
+their session transcripts after 2026-10-11 14:16Z for `git stash`, and `.git/logs/refs/stash`.
 
 ## Assumptions
 
@@ -58,6 +91,15 @@ new episodic; any later step that syncs the worktree to the index (or removes pa
      §Disposition Gate. Bypass: --skip-disposition-gate "rationale" (direct) or
      FW_SKIP_DISPOSITION_GATE=1 (env-var, T-1890 producer/consumer parity).
 -->
+
+- **IW-1: Which command removes a decided episodic from the worktree when the real index is stale after a scratch-index decide?**
+  confidence: 0
+  disposition:
+  rationale: three hypotheses tested in a scratch repro (.context/scratch/t4168-stash-repro.sh, scratch-index decide, stale real index) — `stash` + `pop`, `stash` + `pop --index`, `stash push -u` + `pop` (pop fails "could not restore untracked files", entry kept): the episodic stays on disk in all three. Disproved; per the 3-hypothesis rule, wait for ring20's captured mtime/ctime/process list on recurrence
+- **IW-2: Does any AEF framework code path do it?**
+  confidence: 1
+  disposition:
+  rationale: grep of agents/, lib/, bin/, web/ finds no stash/clean/rm/checkout-index/read-tree -u on these paths
 
 ## Exploration Plan
 
@@ -142,3 +184,6 @@ new episodic; any later step that syncs the worktree to the index (or removes pa
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-10-13T15:57:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
