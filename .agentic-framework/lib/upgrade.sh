@@ -2824,7 +2824,8 @@ EOF
     if [ "$dry_run" != true ] && [ -f "$FRAMEWORK_ROOT/lib/index_reconcile.py" ] \
        && git -C "$target_dir" rev-parse --git-dir >/dev/null 2>&1; then
         local _ir_out
-        _ir_out=$(python3 -I "$FRAMEWORK_ROOT/lib/index_reconcile.py" --repo "$target_dir" --apply --quiet 2>&1)
+        _ir_out=$(python3 -I "$FRAMEWORK_ROOT/lib/index_reconcile.py" --repo "$target_dir" --apply --quiet 2>&1 || true)
+        # `|| true`: set -e is live here and the reconcile is advisory — it must never abort the upgrade.
         if echo "$_ir_out" | grep -q '^RESET'; then
             echo -e "  ${GREEN}RECONCILED${NC}  Stale index entries reset to HEAD (G-114):"
             echo "$_ir_out" | sed 's/^/         /'

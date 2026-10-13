@@ -1,10 +1,24 @@
 ---
 id: T-4166
-name: "G-114 armed entries survive the fix: one-time reconcile on upgrade and in doctor — reset to HEAD (index only) any staged .tasks/** or .context/episodic/** entry whose blob is an older committed version of that path, and any staged deletion of an episodic present in HEAD (ring20: 4 operator GOs armed for silent revert after T-4081 was vendored)"
+name: "G-114 armed entries survive the fix: one-time reconcile on upgrade and in doctor
+  — reset to HEAD (index only) any staged .tasks/** or .context/episodic/** entry
+  whose blob is an older committed version of that path, and any staged deletion of
+  an episodic present in HEAD (ring20: 4 operator GOs armed for silent revert after
+  T-4081 was vendored)"
 description: >
-  ring20-manager (msg 05d50237, their T-2215, gap G-234): T-4081/T-4127 are forward-only. On ring20 four GO decisions (T-2250, T-2312, T-2313, T-2316) had staged blobs byte-identical to the pre-decision versions (e.g. T-2250 d4c3e2b51 = parent of decision 6aef13a96, 7 days old) after upgrading past T-4081; caught before a commit; the 2026-10-03 occurrence did revert two GOs. Fix: a reconcile (index only, never the worktree) run by fw upgrade and reported by fw doctor/audit, detecting a staged blob equal to an earlier committed version of that path (not HEAD's) for task and episodic paths, and staged deletions of episodics in HEAD; dry-run by default in doctor, applied on upgrade with a printed list. Relevance to hotfix v1.8.10: consumers upgrading to it still carry armed entries, so the next ordinary commit reverts — decide whether v1.8.10 needs this before release.
+  ring20-manager (msg 05d50237, their T-2215, gap G-234): T-4081/T-4127 are forward-only.
+  On ring20 four GO decisions (T-2250, T-2312, T-2313, T-2316) had staged blobs byte-identical
+  to the pre-decision versions (e.g. T-2250 d4c3e2b51 = parent of decision 6aef13a96,
+  7 days old) after upgrading past T-4081; caught before a commit; the 2026-10-03
+  occurrence did revert two GOs. Fix: a reconcile (index only, never the worktree)
+  run by fw upgrade and reported by fw doctor/audit, detecting a staged blob equal
+  to an earlier committed version of that path (not HEAD's) for task and episodic
+  paths, and staged deletions of episodics in HEAD; dry-run by default in doctor,
+  applied on upgrade with a printed list. Relevance to hotfix v1.8.10: consumers upgrading
+  to it still carry armed entries, so the next ordinary commit reverts — decide whether
+  v1.8.10 needs this before release.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +52,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T15:50:09Z
-last_update: 2026-10-13T15:50:09Z
-date_finished: null
+last_update: 2026-10-13T16:42:15Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +64,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-13T16:00:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-13T16:00:49Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4166: G-114 armed entries survive the fix: one-time reconcile on upgrade and in doctor — reset to HEAD (index only) any staged .tasks/** or .context/episodic/** entry whose blob is an older committed version of that path, and any staged deletion of an episodic present in HEAD (ring20: 4 operator GOs armed for silent revert after T-4081 was vendored)
@@ -62,8 +104,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] lib/index_reconcile.py detects armed staged entries (.tasks/**, .context/episodic/**: staged blob equals an earlier committed blob of the path or its active<->completed twin; staged deletion of an episodic present in HEAD) and, with apply, resets ONLY those index entries to HEAD, never the worktree
+- [x] `fw git reconcile-index [--dry-run|--apply]` exists (dry-run default); `fw doctor` and `fw audit` WARN with paths + fix command; `fw upgrade` applies the reconcile and prints the reset list
+- [x] tests/unit/t4166_reconcile_index.bats (real git temp repos) covers: armed decision + rename + episodic detected, apply resets, following commit keeps decision, user's genuinely new staged edit untouched, worktree hashes unchanged, staged episodic deletion restored
+- [x] upgrade_fresh_machine_simulation.bats shows no new failure vs pristine HEAD (6 live-upgrade tests are red at pristine HEAD fa88bbc2c too: exit 3 after step 10, unrelated), bats lint and structure audit introduce nothing; vendored copies synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -227,7 +271,16 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m py_compile lib/index_reconcile.py
+out=$(bats tests/unit/t4166_reconcile_index.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bin/fw vendor self --check
+
 ## RCA
+
+**Symptom:** after upgrading past T-4081/T-4127, ring20 still had four decided GOs armed for silent revert: staged blobs identical to pre-decision versions; the next ordinary commit would have written them back.
+**Root cause:** the G-114 fix stops NEW scratch-index commits from leaving a stale real index, but nothing repaired an index already left stale by a decision made before the upgrade.
+**Why structurally allowed:** the fix was forward-only; no detector compared staged blobs against history, and doctor/audit only looked at HEAD (watchtower_decision_revert.py), which is clean until the revert commit lands.
+**Prevention:** lib/index_reconcile.py (staged blob == earlier committed version of path/twin, or staged episodic deletion) run by `fw upgrade` (applied), `fw doctor` and `fw audit` (WARN) and `fw git reconcile-index`; pinned by tests/unit/t4166_reconcile_index.bats incl. a control that proves the revert without it.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -323,3 +376,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4166-g-114-armed-entries-survive-the-fix-one-.md
 - **Context:** Initial task creation
+
+### 2026-10-13T16:42:15Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
