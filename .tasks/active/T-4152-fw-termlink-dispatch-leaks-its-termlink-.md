@@ -1,10 +1,23 @@
 ---
 id: T-4152
-name: "fw termlink dispatch leaks its TermLink endpoint forever: the worker is typed into a persistent interactive shell (pty inject 'bash run.sh' --enter), so the shell outlives run.sh and cleanup never deregisters it (ring20-manager report, their T-2359; 106 'ready' sessions here)"
+name: "fw termlink dispatch leaks its TermLink endpoint forever: the worker is typed
+  into a persistent interactive shell (pty inject 'bash run.sh' --enter), so the shell
+  outlives run.sh and cleanup never deregisters it (ring20-manager report, their T-2359;
+  106 'ready' sessions here)"
 description: >
-  ring20-manager (msg b335eaa4): agents/termlink/termlink.sh cmd_dispatch spawns 'termlink spawn --shell' (~1643) then injects 'bash $wdir/run.sh …' --enter (~1651); after run.sh exits the shell stays at its prompt, so the session never ends; fw termlink cleanup only kills orphaned worker processes and 'termlink clean' deregisters DEAD sessions only. ring20: 43 endpoints aged 1 h–6 d. Here: termlink list shows 106 'ready' sessions (2026-10-13). Side effect: watchers waiting for 'session ended' never fire. Fix: inject 'exec bash run.sh …' (or '; exit') so the shell ends with the worker — after run.sh's finalisation (review workers count as done only once finalised, _worker_done); and cleanup stops endpoints of workers whose exit_code is finalised. Test: a dispatched trivial worker's session is gone after it finishes; a review worker's session ends only after finalisation.
+  ring20-manager (msg b335eaa4): agents/termlink/termlink.sh cmd_dispatch spawns 'termlink
+  spawn --shell' (~1643) then injects 'bash $wdir/run.sh …' --enter (~1651); after
+  run.sh exits the shell stays at its prompt, so the session never ends; fw termlink
+  cleanup only kills orphaned worker processes and 'termlink clean' deregisters DEAD
+  sessions only. ring20: 43 endpoints aged 1 h–6 d. Here: termlink list shows 106
+  'ready' sessions (2026-10-13). Side effect: watchers waiting for 'session ended'
+  never fire. Fix: inject 'exec bash run.sh …' (or '; exit') so the shell ends with
+  the worker — after run.sh's finalisation (review workers count as done only once
+  finalised, _worker_done); and cleanup stops endpoints of workers whose exit_code
+  is finalised. Test: a dispatched trivial worker's session is gone after it finishes;
+  a review worker's session ends only after finalisation.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +51,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T14:18:00Z
-last_update: 2026-10-13T14:18:00Z
-date_finished: null
+last_update: 2026-10-13T14:18:48Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +63,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-13T14:18:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4152: fw termlink dispatch leaks its TermLink endpoint forever: the worker is typed into a persistent interactive shell (pty inject 'bash run.sh' --enter), so the shell outlives run.sh and cleanup never deregisters it (ring20-manager report, their T-2359; 106 'ready' sessions here)
@@ -62,8 +93,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `cmd_dispatch` injects the worker command so the session's shell ends when run.sh ends (`exec`), for every worker kind and the review path
+- [x] run.sh finalises (exit_code written; review workers finalised per `_worker_done`) BEFORE it exits, so ending the shell never loses finalisation — pinned by a test
+- [x] `fw termlink result|status|wait` read results from $wdir and still work once the session is gone
+- [x] `fw termlink cleanup` lists and (with consent, T-3651) stops/deregisters endpoints whose dispatch worker is finalised; never a running/unfinalised worker, never a non-dispatch session (claude-master-*, fleet-*)
+- [x] bats tests: injected command uses exec; cleanup --dry-run lists finalised leaked endpoints and never running ones or foreign sessions
+- [ ] Existing termlink dispatch/cleanup tests green; `bin/fw vendor self --check` clean for touched files
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -226,8 +261,20 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t4152_dispatch_endpoint_leak.bats > /tmp/.t4152 2>&1 && ! grep -q "^not ok" /tmp/.t4152 && test "$(grep -c '# skip' /tmp/.t4152)" -eq 0
+timeout 600 bats tests/unit/t3595_cleanup_scope.bats tests/unit/t3651_termlink_cleanup_guards.bats tests/unit/termlink.bats tests/unit/t3580_round7_cleanup.bats tests/unit/t4067_termlink_no_trailing_and_list.bats > /tmp/.t4152b 2>&1 && ! grep -q "^not ok" /tmp/.t4152b
+timeout 900 python3 -m pytest -q tests/unit/test_route_cache_record.py tests/unit/t3580_round3_test.py > /tmp/.t4152c 2>&1 && grep -q passed /tmp/.t4152c
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** `termlink list` on this host showed 106 'ready' sessions, most of them `fw termlink dispatch` workers that had finished hours or days earlier. ring20-manager reported 43, aged 1 h to 6 d. Watchers waiting for "session ended" never fired.
+
+**Root cause:** `cmd_dispatch` spawns `termlink spawn --shell` (a persistent interactive shell) and *types* `bash $wdir/run.sh …` into it with `pty inject --enter`. run.sh is a child of that shell, so when run.sh exits the shell goes back to its prompt and the session stays registered. `fw termlink cleanup` only deleted wdirs and signalled orphan processes, and `termlink clean` deregisters only *dead* sessions; a live idle shell is neither. A second, rarer cause was found in the live dry-run: 37 consumer workers (1409-sprind) had written `exit_code` but their run.sh was blocked in `fw termlink record-outcome`, which was reading the session PTY (stdin inherited, `n_tty_read`). Their run.sh never exits, so their session cannot end either.
+
+**Why structurally allowed:** nothing observed the session's lifetime. Every reader (`wait`, `result`, `status`, the review ledger) reads `$wdir` files, so a session that never ended broke none of them. `_running_workers` ignores dirs that have an `exit_code`, so the cap never counted the leaked sessions. No test spawned a session and checked that it ended.
+
+**Prevention:** `tests/unit/t4152_dispatch_endpoint_leak.bats` runs the real run.sh behind the exact inject string `cmd_dispatch` types, in a FIFO-driven shell. It asserts that the shell is gone afterwards (build and review). A control leg checks that the same string without `exec` leaks. The suite also pins that `finalised` is written before any post-launch exit, and that record-outcome's stdin is /dev/null. Cleanup now plans and (with consent) HUPs finished dispatch workers' endpoints, so older leaks drain too.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -323,3 +370,11 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4152-fw-termlink-dispatch-leaks-its-termlink-.md
 - **Context:** Initial task creation
+
+### 2026-10-13T14:18:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-13 — fix + pre-fix failure [worker t4152-endpoint-leak]
+- Pre-fix (HEAD termlink.sh under the new suite): 6/8 not ok — exec pin, build session still alive, review session still alive, record-outcome stdin pin, cleanup dry-run/--yes plan nothing. Ok as expected: the leak control and the no-tty consent refusal.
+- Probe on this host: an `exec`'d injected command ends a `termlink spawn --shell` session, which deregisters entirely. `termlink signal <id> TERM` does NOT end an idle interactive shell (bash ignores it); `HUP` does, and the session deregisters.
+- Live `fw termlink cleanup --dry-run` (not executed): 55 leaked endpoints planned out of 92 finished wdirs. The other 37 are 1409-sprind workers whose run.sh is still blocked in `fw termlink record-outcome` on the PTY, so cleanup correctly does not touch them; this change adds `< /dev/null` to that call for future workers.
