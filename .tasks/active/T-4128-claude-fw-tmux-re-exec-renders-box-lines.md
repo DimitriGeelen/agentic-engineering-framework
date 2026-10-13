@@ -1,8 +1,15 @@
 ---
 id: T-4128
-name: "claude-fw tmux re-exec renders box lines as qqqq/xxxx on a LANG=C Linux console: pass -u to tmux, default LANG=C.UTF-8 when unset/C/POSIX (ring20-dashboard field finding, their T-2509)"
+name: "claude-fw tmux re-exec renders box lines as qqqq/xxxx on a LANG=C Linux console:
+  pass -u to tmux, default LANG=C.UTF-8 when unset/C/POSIX (ring20-dashboard field
+  finding, their T-2509)"
 description: >
-  Field finding from ring20-dashboard on 1.8.9+227.ged683536a: bin/claude-fw re-execs into tmux -L fw-agents without -u; with LANG=C and TERM=linux the client is utf8=0, tmux draws box lines with DEC ACS (q/x) which a browser LXC console does not honour. Proposal: -u on new-session and on any printed attach line; when LANG/LC_ALL unset/C/POSIX and locale -a has C.UTF-8, hand LANG=C.UTF-8 to the session. Regression introduced by T-4003 tmux re-exec.
+  Field finding from ring20-dashboard on 1.8.9+227.ged683536a: bin/claude-fw re-execs
+  into tmux -L fw-agents without -u; with LANG=C and TERM=linux the client is utf8=0,
+  tmux draws box lines with DEC ACS (q/x) which a browser LXC console does not honour.
+  Proposal: -u on new-session and on any printed attach line; when LANG/LC_ALL unset/C/POSIX
+  and locale -a has C.UTF-8, hand LANG=C.UTF-8 to the session. Regression introduced
+  by T-4003 tmux re-exec.
 
 status: captured
 workflow_type: build
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T19:52:40Z
-last_update: 2026-10-12T19:52:40Z
-date_finished: null
+last_update: '2026-10-12T20:01:17Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,11 +57,46 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-12T20:00:34Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=282,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-12T20:01:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4128: claude-fw tmux re-exec renders box lines as qqqq/xxxx on a LANG=C Linux console: pass -u to tmux, default LANG=C.UTF-8 when unset/C/POSIX (ring20-dashboard field finding, their T-2509)
 
 ## Context
+
+Update 2026-10-13 (ring20-dashboard msg 390c3af0): with LANG=C.UTF-8 TERM=xterm-256color in the browser's xterm.js
+console, tmux 3.3a (client utf8=1) still leaves a few characters at the left edge of lines while Claude Code
+animates; Ctrl+L clears it. Unverified hypothesis: tmux (system wcwidth) and xterm.js (Unicode-6 widths without its
+unicode11 addon) disagree on the width of some animated symbols; tmux 3.5+ has `codepoint-widths`, 3.3a does not.
+Their operator: running without tmux is NOT acceptable (peer mail must be injectable) — this also answers
+proposal (c) for them: keep the wrap.
 
 Field reports from ring20-dashboard (msgs 55981d76, d2d61865, 2026-10-12), all from the T-4003 tmux wrap on a
 browser LXC console / /dev/tty1:

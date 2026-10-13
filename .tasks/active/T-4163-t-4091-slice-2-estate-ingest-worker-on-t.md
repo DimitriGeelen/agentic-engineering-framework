@@ -102,7 +102,9 @@ older than 7 days. Tokens (names only, in ring20's secret store, expire 2027-01-
 (rw staging_aef), QDRANT_ESTATE_TOKEN_INGEST_AEF (rw staging_aef, main, and the alias). Measured: JWT RBAC matches the
 name in the request path — a token reaches a collection through the alias only if the alias itself is listed; when
 the alias moves to a new model collection, the ingest token is re-issued. Store URL: see the input file (by role:
-the estate store's TLS endpoint). Token delivery to the worker: pending the operator's choice.
+the estate store's TLS endpoint). Token delivery (operator 2026-10-13, option 1): the worker reads
+QDRANT_ESTATE_TOKEN_INGEST_AEF by name from the secret store (Infisical, env prod) at each run; the value is never
+written to the repo, a file or a log, and never printed.
 
 ## Acceptance Criteria
 
