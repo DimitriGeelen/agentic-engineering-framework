@@ -39,6 +39,7 @@ Commands:
   install-hooks Install pre-commit and post-commit hooks
   log-bypass    Record a bypass in the bypass log
   log           Task-filtered git log
+  reconcile-index Reset armed stale index entries to HEAD (G-114, T-4166)
   worker-commits What did autonomous dispatch commit on my behalf (T-2917)
   help          Show this help
 
@@ -88,6 +89,24 @@ case "${1:-}" in
         shift
         source "$LIB_DIR/worker-commits.sh"
         do_worker_commits "$@"
+        ;;
+    reconcile-index)
+        # T-4166 / G-114: reset armed stale index entries (index only). Dry-run default.
+        shift
+        _ri_args=()
+        for _ri_a in "$@"; do
+            case "$_ri_a" in
+                --dry-run) ;;
+                --apply) _ri_args+=(--apply) ;;
+                -h|--help)
+                    echo "Usage: fw git reconcile-index [--dry-run|--apply]"
+                    echo "Reset staged .tasks/** and .context/episodic/** entries that are older committed versions (G-114). Index only; dry-run by default."
+                    exit 0 ;;
+                *) echo "Unknown option: $_ri_a" >&2; exit 1 ;;
+            esac
+        done
+        python3 -I "$FRAMEWORK_ROOT/lib/index_reconcile.py" --repo "$PROJECT_ROOT" "${_ri_args[@]}"
+        exit $?
         ;;
     help|--help|-h)
         show_help

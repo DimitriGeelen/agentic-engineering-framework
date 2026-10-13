@@ -2899,6 +2899,23 @@ if [ -f "$FRAMEWORK_ROOT/lib/watchtower_decision_revert.py" ]; then
     fi
 fi
 
+# T-4166 / G-114: staged index entries that would revert committed decisions on the next commit.
+if [ -f "$FRAMEWORK_ROOT/lib/index_reconcile.py" ]; then
+    _ir_out=$(python3 -I "$FRAMEWORK_ROOT/lib/index_reconcile.py" --repo "$PROJECT_ROOT" 2>&1)
+    _ir_rc=$?
+    if [ "$_ir_rc" -eq 0 ]; then
+        pass "Index reconcile: no armed stale index entries"
+    elif [ "$_ir_rc" -eq 2 ]; then
+        warn "Armed stale index entries (G-114): $(echo "$_ir_out" | tail -1)" \
+             "$(echo "$_ir_out" | grep '^ARMED' | awk '{print $3}' | head -20 | tr '\n' ' ')" \
+             "Fix (index only, worktree untouched): bin/fw git reconcile-index --apply"
+    else
+        warn "Index reconcile: detector could not run (rc=$_ir_rc)" \
+             "$(echo "$_ir_out" | tail -2 | tr '\n' ';')" \
+             "Run: bin/fw git reconcile-index"
+    fi
+fi
+
 # T-3580 round 7: every spend-ceiling step-down (a review run registered one rung below what IW-7
 # requires) is a WARN — the lever must be visible even when it was exercised legitimately.
 _audit_review_step_downs() {

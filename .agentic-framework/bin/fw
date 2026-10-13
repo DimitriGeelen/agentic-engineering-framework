@@ -3528,6 +3528,21 @@ else:
         warnings=$((warnings + 1))
     fi
 
+    # T-4166 / G-114: armed stale index entries (an old committed version of a task/episodic
+    # staged in the real index would be written back by the next ordinary commit).
+    if [ -f "$FRAMEWORK_ROOT/lib/index_reconcile.py" ] && git -C "$PROJECT_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
+        _ir_out=$(python3 -I "$FRAMEWORK_ROOT/lib/index_reconcile.py" --repo "$PROJECT_ROOT" 2>&1)
+        _ir_rc=$?
+        if [ "$_ir_rc" -eq 2 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Armed stale index entries (G-114): $(echo "$_ir_out" | tail -1)"
+            echo "$_ir_out" | grep '^ARMED' | head -10 | sed 's/^/         /'
+            echo -e "         Fix (index only, worktree untouched): bin/fw git reconcile-index --apply"
+            warnings=$((warnings + 1))
+        elif [ "$_ir_rc" -eq 0 ]; then
+            echo -e "  ${GREEN}OK${NC}  No armed stale index entries"
+        fi
+    fi
+
     _doctor_phase "Watchtower smoke test"  # T-3452
     # Check: Watchtower smoke test (T-486) — run if server is reachable
     # Use _watchtower_url for port detection (T-1154: no hardcoded 3000)

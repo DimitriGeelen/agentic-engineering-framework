@@ -2819,6 +2819,19 @@ EOF
             skipped=$((skipped + 1)) ;;
     esac
 
+    # T-4166 / G-114: T-4081/T-4127 are forward-only; reset stale index entries armed by a
+    # Watchtower decision made before this upgrade (index only, worktree untouched).
+    if [ "$dry_run" != true ] && [ -f "$FRAMEWORK_ROOT/lib/index_reconcile.py" ] \
+       && git -C "$target_dir" rev-parse --git-dir >/dev/null 2>&1; then
+        local _ir_out
+        _ir_out=$(python3 -I "$FRAMEWORK_ROOT/lib/index_reconcile.py" --repo "$target_dir" --apply --quiet 2>&1)
+        if echo "$_ir_out" | grep -q '^RESET'; then
+            echo -e "  ${GREEN}RECONCILED${NC}  Stale index entries reset to HEAD (G-114):"
+            echo "$_ir_out" | sed 's/^/         /'
+            changes=$((changes + 1))
+        fi
+    fi
+
     # T-1323: Detect stale tracked __pycache__ files inside vendored framework.
     # do_vendor now ships a .gitignore that prevents future leaks; this advisory
     # tells the consumer how to clean up files already added to their git index.
