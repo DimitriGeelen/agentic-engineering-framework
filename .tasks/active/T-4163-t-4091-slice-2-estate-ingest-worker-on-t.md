@@ -106,6 +106,13 @@ the estate store's TLS endpoint). Token delivery (operator 2026-10-13, option 1)
 QDRANT_ESTATE_TOKEN_INGEST_AEF by name from the secret store (Infisical, env prod) at each run; the value is never
 written to the repo, a file or a log, and never printed.
 
+Follow-up (ring20 msg f963ca58, 2026-10-13): by ring20 operator decision the ingest token has `_manifest:r` only
+(RBAC is per collection; write would expose every project's entry). Manifest payload keys: collection, alias, state,
+model_id, model_digest, dims, owner. ring20 writes state=active and model_digest (sent:
+nomic-embed-text-v2-moe:latest = ff9c2f10ef5e3722623a1b396e1e04efc27a93112c83e9b7b7b9ca1d05620965). Change the worker:
+no _manifest writes (lib/estate_ingest.py ~104); accept its own entry in state=candidate; when model_digest is set,
+refuse to write if it differs from the digest of the model it embeds with.
+
 ## Acceptance Criteria
 
 ### Agent
