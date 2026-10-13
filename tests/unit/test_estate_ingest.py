@@ -22,6 +22,8 @@ import estate_push as ep  # noqa: E402
 PROJECT = "aef"
 STAGING = "staging_aef"
 DIGEST = "sha256:" + "d" * 64
+# ring20's recorded digest for nomic-embed-text-v2-moe:latest (msg f963ca58), as Ollama's /api/tags gives it
+RING20_DIGEST = "ff9c2f10ef5e3722623a1b396e1e04efc27a93112c83e9b7b7b9ca1d05620965"
 PATTERNS = [("GitHub PAT", r"gh[pousr]_[A-Za-z0-9]{36,}")]
 GHP = "gh" + "p_" + "a" * 36  # built at run time: the source never holds a secret shape
 DAY = dt.datetime(2026, 10, 13, 14, 0)  # daytime
@@ -34,7 +36,7 @@ class FakeStore:
     def __init__(self, manifest: object = "registered"):
         self.cols = {STAGING: {}, ei.MAIN: {}}
         if manifest == "registered":
-            manifest = {"id": "m1", "payload": {"collection": ei.MAIN, "state": "candidate", "model_digest": None}}
+            manifest = entry("candidate", None)
         self.manifest = manifest
         self.log = []
 
@@ -56,9 +58,15 @@ class FakeStore:
         for i in ids:
             self.cols[collection].pop(i, None)
 
-    def set_manifest_active(self, token, entry_id, digest):
-        self.log.append(("manifest-set", entry_id, digest))
-        self.manifest["payload"].update({"state": "active", "model_digest": digest})
+    def __getattr__(self, name):  # any other store call (a _manifest write included) fails the test
+        raise AssertionError(f"worker made an unexpected store call: {name}")
+
+
+def entry(state, digest, dims=ei.DIMS):
+    """A `_manifest` entry as ring20 writes it (payload keys per msg f963ca58)."""
+    return {"id": "m1", "payload": {"collection": ei.MAIN, "alias": "estate_knowledge", "state": state,
+                                    "model_id": ei.MODEL, "model_digest": digest, "dims": dims,
+                                    "owner": "ring20"}}
 
 
 class FakeEmbedder:
@@ -89,8 +97,8 @@ def seed(store, *points):
         store.cols[STAGING][p["id"]] = {"payload": p["payload"], "vector": {}}
 
 
-def run(store, *, emb=None, apply=True, now=DAY, allow_daytime=False, killed=(), max_points=50_000):
-    return ei.drain(PROJECT, store=store, token="tok", embedder=emb or FakeEmbedder(), digest=DIGEST,
+def run(store, *, emb=None, apply=True, now=DAY, allow_daytime=False, killed=(), max_points=50_000, digest=DIGEST):
+    return ei.drain(PROJECT, store=store, token="tok", embedder=emb or FakeEmbedder(), digest=digest,
                     staging=STAGING, patterns=PATTERNS, now=now, apply=apply, allow_daytime=allow_daytime,
                     killed=set(killed), max_points=max_points, audit=lambda row: None, sleep=lambda s: None)
 
@@ -107,12 +115,92 @@ def test_drain_writes_main_with_model_and_digest_then_drains_staging():
     assert store.cols[STAGING] == {}, "drained staging points must be deleted after the main write"
 
 
-def test_manifest_gets_active_state_and_digest_on_first_ingest():
+def test_manifest_is_never_written_and_left_as_ring20_set_it():
+    # The ingest token is _manifest:r only: a write would be a 403. The worker only reads.
     store = FakeStore()
     seed(store, staged(f"{PROJECT}|a.md|0", "alpha"))
-    run(store)
-    assert store.manifest["payload"]["state"] == "active"
-    assert store.manifest["payload"]["model_digest"] == DIGEST
+    before = json.dumps(store.manifest, sort_keys=True)
+    assert run(store)["written"] == 1
+    assert json.dumps(store.manifest, sort_keys=True) == before
+    assert not hasattr(ei.QdrantStore, "set_manifest_active")
+
+
+def test_no_http_write_reaches_manifest_through_the_real_store_client():
+    """Full drain through QdrantStore over a fake HTTP layer: only a read (scroll) touches _manifest."""
+    calls = []
+    staged_pt = staged(f"{PROJECT}|a.md|0", "alpha")
+
+    def http(method, url, token, body=None):
+        calls.append((method, url))
+        if f"/collections/{ei.MANIFEST}/points/scroll" in url:
+            return 200, {"result": {"points": [entry("active", RING20_DIGEST)]}}
+        if url.endswith(f"/collections/{STAGING}/points/scroll"):
+            return 200, {"result": {"points": [staged_pt], "next_page_offset": None}}
+        return 200, {"result": {}}
+
+    out = ei.drain(PROJECT, store=ei.QdrantStore("https://q.example", http=http), token="tok",
+                   embedder=FakeEmbedder(), digest=RING20_DIGEST, staging=STAGING, patterns=PATTERNS,
+                   now=NIGHT, apply=True, allow_daytime=False, killed=set(), max_points=50_000,
+                   audit=lambda row: None, sleep=lambda s: None)
+    assert out["written"] == 1
+    manifest_calls = [c for c in calls if f"/collections/{ei.MANIFEST}/" in c[1]]
+    assert manifest_calls == [("POST", f"https://q.example/collections/{ei.MANIFEST}/points/scroll")]
+
+
+@pytest.mark.parametrize("state", ["candidate", "active"])
+def test_candidate_and_active_entries_are_accepted(state):
+    store = FakeStore(manifest=entry(state, None))
+    seed(store, staged(f"{PROJECT}|a.md|0", "alpha"))
+    assert run(store)["written"] == 1
+
+
+@pytest.mark.parametrize("state", ["retired", None, "draft"])
+def test_retired_or_unknown_state_is_refused(state):
+    store = FakeStore(manifest=entry(state, None))
+    seed(store, staged(f"{PROJECT}|a.md|0", "alpha"))
+    with pytest.raises(ei.Refused, match="state"):
+        run(store)
+    assert store.cols[ei.MAIN] == {} and len(store.cols[STAGING]) == 1
+
+
+@pytest.mark.parametrize("dims", [384, 1024, None])
+def test_entry_with_other_dims_is_refused(dims):
+    store = FakeStore(manifest=entry("active", None, dims=dims))
+    seed(store, staged(f"{PROJECT}|a.md|0", "alpha"))
+    with pytest.raises(ei.Refused, match="dims"):
+        run(store)
+    assert store.cols[ei.MAIN] == {}
+
+
+@pytest.mark.parametrize("pinned", [RING20_DIGEST, "sha256:" + RING20_DIGEST])
+def test_digest_matching_ring20_entry_is_accepted(pinned):
+    # Ollama's /api/tags gives bare hex; a sha256: prefix on either side compares equal.
+    store = FakeStore(manifest=entry("active", pinned))
+    seed(store, staged(f"{PROJECT}|a.md|0", "alpha"))
+    assert run(store, digest=RING20_DIGEST)["written"] == 1
+
+
+def test_digest_mismatch_with_ring20_entry_is_refused():
+    store = FakeStore(manifest=entry("active", RING20_DIGEST))
+    seed(store, staged(f"{PROJECT}|a.md|0", "alpha"))
+    with pytest.raises(ei.Refused, match="digest"):
+        run(store, digest="0" * 64)
+    assert store.cols[ei.MAIN] == {} and len(store.cols[STAGING]) == 1
+
+
+@pytest.mark.parametrize("unset", [None, ""])
+def test_digest_unset_in_entry_is_accepted(unset):
+    store = FakeStore(manifest=entry("candidate", unset))
+    seed(store, staged(f"{PROJECT}|a.md|0", "alpha"))
+    assert run(store, digest="0" * 64)["written"] == 1
+
+
+def test_apply_without_a_local_digest_is_refused_when_entry_pins_one():
+    store = FakeStore(manifest=entry("active", RING20_DIGEST))
+    seed(store, staged(f"{PROJECT}|a.md|0", "alpha"))
+    with pytest.raises(ei.Refused, match="no digest"):
+        run(store, digest="")
+    assert run(store, digest="", apply=False)["pending"] == 1  # a dry run has nothing to compare
 
 
 def test_unregistered_collection_is_refused_and_nothing_is_written():
@@ -124,8 +212,7 @@ def test_unregistered_collection_is_refused_and_nothing_is_written():
 
 
 def test_digest_mismatch_with_pinned_manifest_is_refused():
-    store = FakeStore(manifest={"id": "m1", "payload": {"collection": ei.MAIN, "state": "active",
-                                                        "model_digest": "sha256:" + "e" * 64}})
+    store = FakeStore(manifest=entry("active", "sha256:" + "e" * 64))
     seed(store, staged(f"{PROJECT}|a.md|0", "alpha"))
     with pytest.raises(ei.Refused, match="digest"):
         run(store)

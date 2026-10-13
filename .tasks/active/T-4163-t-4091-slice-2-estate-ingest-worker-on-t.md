@@ -48,7 +48,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T15:32:26Z
-last_update: 2026-10-13T18:47:11Z
+last_update: 2026-10-13T21:53:07Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -124,7 +124,7 @@ refuse to write if it differs from the digest of the model it embeds with.
 - [x] Daytime bulk re-embed guard: a run that would embed more than the per-run cap in daytime hours is refused unless `--allow-daytime`; default cap documented in code
 - [x] Second secret scan before every main write: an item still matching a secret pattern is not written and is logged as refused
 - [x] Audit row appended per write batch to an append-only log (R-29): ts, project, count written, count deleted, model, digest, refused count — no token, no text
-- [x] Manifest check: `_manifest` entry is set `state=active` and `model_digest` recorded on first successful ingest
+- [x] Manifest check (revised per ring20 msg f963ca58): the worker never writes `_manifest` (ingest token is `_manifest:r`); it reads the main collection's entry and refuses when the entry is missing, its state is not candidate/active (retired refused), dims != 768, or a set `model_digest` differs from the embedding host's digest for the pinned model
 - [x] Operator wiring: `fw estate ingest` is routed in bin/fw; NO cron entry is installed in this slice (a scheduled live writer waits for the pilot proof below). Schedule after push is a follow-up task
 - [ ] Pilot proof against the live store (exact-title top-1, wrong-token refused, anonymous 401): NOT runnable from this host in this dispatch — left to the operator; recorded in Updates
 
@@ -309,6 +309,11 @@ python3 -m py_compile lib/estate_ingest.py
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** the first ingest would have written `_manifest` (state=active + digest) with a token that ring20 grants `_manifest:r` only, so the live run would 403 after the first main write had already landed.
+**Root cause:** slice 2 was built on the design-doc assumption that the worker activates its own entry; ring20 then ruled that `_manifest` is ring20-owned (RBAC is per collection, write would expose every project's entry).
+**Why structurally allowed:** the fakes modelled a permissive store, so a write the real token cannot make passed every test; the RBAC scope was only settled after the code shipped.
+**Prevention:** the test FakeStore now fails on any store call it does not model (a `_manifest` write included), and a full-drain test through `QdrantStore` over fake HTTP asserts the only `_manifest` request is a scroll.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -404,3 +409,7 @@ python3 -m py_compile lib/estate_ingest.py
 
 ### 2026-10-13T18:38:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-13 — manifest read-only follow-up (ring20 msg f963ca58) [dispatch t4163b-manifest]
+- Removed `QdrantStore.set_manifest_active` and its call in `drain`; added `check_manifest` (missing / state not candidate|active / dims != 768 / pinned digest != host digest → Refused; `sha256:` prefix tolerated both sides; an apply with no host digest is refused when the entry pins one).
+- Pre-fix failure: with HEAD's `lib/estate_ingest.py`, 20 of the updated tests fail (the drain attempts the `_manifest` write, which the fake now rejects as the real 403 would; retired/dims are not refused). With the change: 54 passed (test_estate_ingest + test_estate_push). Not run against the live store.
