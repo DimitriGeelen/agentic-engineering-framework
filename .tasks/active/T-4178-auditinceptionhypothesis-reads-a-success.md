@@ -1,8 +1,14 @@
 ---
 id: T-4178
-name: "audit_inception_hypothesis reads a success clause wrapped onto the next line as empty ('we will know … when we see X' split across lines is refused as naming nothing checkable): join lines before matching (832 T-1094)"
+name: "audit_inception_hypothesis reads a success clause wrapped onto the next line
+  as empty ('we will know … when we see X' split across lines is refused as naming
+  nothing checkable): join lines before matching (832 T-1094)"
 description: >
-  832 (msg 7ad1a976): lib/task-audit.sh:264-275 greps the clauses on the joined text but extracts the success clause with a per-line sed 's/.*we will know\(.*\)/\1/p', so a clause wrapped onto the next line reads empty; same for 'we will' / 'achieve' split across lines. Fix: normalise whitespace/newlines once, then match and extract; test with wrapped and unwrapped hypotheses.
+  832 (msg 7ad1a976): lib/task-audit.sh:264-275 greps the clauses on the joined text
+  but extracts the success clause with a per-line sed 's/.*we will know\(.*\)/\1/p',
+  so a clause wrapped onto the next line reads empty; same for 'we will' / 'achieve'
+  split across lines. Fix: normalise whitespace/newlines once, then match and extract;
+  test with wrapped and unwrapped hypotheses.
 
 status: captured
 workflow_type: build
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T19:05:59Z
-last_update: 2026-10-13T19:05:59Z
-date_finished: null
+last_update: '2026-10-13T19:16:03Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-13T19:15:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-13T19:16:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4178: audit_inception_hypothesis reads a success clause wrapped onto the next line as empty ('we will know … when we see X' split across lines is refused as naming nothing checkable): join lines before matching (832 T-1094)
