@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4142: Module capability cards: what a good capability description of a module (fabric subsystem) is, and how every project gets its modules to that bar — basis for the estate 'do we already have this capability?' query (T-4123)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-13T11:29:43Z
+# ============================================================================
+
+task_id: T-4142
+task_name: "Module capability cards: what a good capability description of a module (fabric subsystem) is, and how every project gets its modules to that bar — basis for the estate 'do we already have this capability?' query (T-4123)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-13T11:25:20Z
+completed: 2026-10-13T11:29:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-13T13:25:41+02:00
+last_commit: 2026-10-13T13:29:26+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file inception — module capability cards (operator direction, T-4123). inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4142-module-capability-cards-what-a-good-capa.md'
+  - '.tasks/completed/T-4142-module-capability-cards-what-a-good-capa.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-13T13:25:41'
+    action: 'T-4142: file inception — module capability cards (operator direction, T-4123)'
+  - time: '2026-10-13T13:29:26'
+    action: 'T-4142: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4
+  commits: 2
+  files_changed: 2
+  lines_added: 213
+  lines_removed: 12
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4142-module-capability-cards-what-a-good-capa.md
+generated_by: context-agent-hybrid
