@@ -180,8 +180,8 @@ write.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Research artefact `docs/reports/T-4091-estate-push-pipe.md` states what T-4123 settled, the local index facts, the transport options and the push cycle
-- [ ] Every IW-N has a disposition and rationale
+- [x] Research artefact `docs/reports/T-4091-estate-push-pipe.md` states what T-4123 settled, the local index facts, the transport options and the push cycle
+- [x] Every IW-N has a disposition and rationale
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
