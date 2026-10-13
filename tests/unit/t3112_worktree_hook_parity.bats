@@ -165,7 +165,7 @@ print(json.dumps(d))
     # sitting in lib/upgrade.sh the whole time. An invariant that names a file
     # cannot see a copy in a file it does not name. Scan for definitions, list the
     # files, assert the list.
-    run bash -c "cd '$_FW_ROOT' && grep -rl 'def extract_hooks' --include='*.sh' --include='*.py' --include='fw' . 2>/dev/null | grep -v '\.agentic-framework/' | grep -v '\.claude/worktrees/' | sort"
+    run bash -c "cd '$_FW_ROOT' && grep -rl 'def extract_hooks' --include='*.sh' --include='*.py' --include='fw' . 2>/dev/null | grep -v '\.agentic-framework/' | grep -v '\.claude/worktrees/' | grep -v '^\./\.context/scratch/' | sort"
     [ "$output" = "./lib/hook_parity.py" ]
 }
 

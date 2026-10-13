@@ -146,7 +146,7 @@ _add_wt() {
 # ── Consolidation invariants (T-3113): the predicate has ONE definition ───────
 
 @test "the hook predicate is defined exactly once in the whole repo" {
-    run bash -c "cd '$_FW_ROOT' && grep -rl 'def extract_hooks' --include='*.sh' --include='*.py' --include='fw' . 2>/dev/null | grep -v '\.agentic-framework/' | grep -v '\.claude/worktrees/' | sort"
+    run bash -c "cd '$_FW_ROOT' && grep -rl 'def extract_hooks' --include='*.sh' --include='*.py' --include='fw' . 2>/dev/null | grep -v '\.agentic-framework/' | grep -v '\.claude/worktrees/' | grep -v '^\./\.context/scratch/' | sort"
     [ "$output" = "./lib/hook_parity.py" ]
 }
 

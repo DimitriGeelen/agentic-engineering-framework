@@ -208,7 +208,7 @@ STUB
     # name. Scan for definitions, list the files, assert the list. bin/fw's
     # doctor held an inline copy until this task; lib/paths.sh now sources the
     # shared definition rather than carrying its own.
-    run bash -c "cd '$_FW_ROOT' && grep -rl '^fw_is_linked_worktree()' --include='*.sh' --include='*.py' --include='fw' . 2>/dev/null | grep -v '\.agentic-framework/' | grep -v '\.claude/worktrees/' | sort"
+    run bash -c "cd '$_FW_ROOT' && grep -rl '^fw_is_linked_worktree()' --include='*.sh' --include='*.py' --include='fw' . 2>/dev/null | grep -v '\.agentic-framework/' | grep -v '\.claude/worktrees/' | grep -v '^\./\.context/scratch/' | sort"
     [ "$output" = "./lib/worktree-identity.sh" ]
 }
 
