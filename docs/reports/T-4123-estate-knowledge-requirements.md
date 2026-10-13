@@ -524,3 +524,10 @@ Verbatim in `docs/reports/T-4123-inputs/00-brief-as-sent.txt`; `{TO}` and `{SPEC
   different tagging, etcetera". Module capability descriptions: a separate task with high priority, start with
   what exists and improve, raise priority as value shows. → Agent filed inception T-4142 (capability cards,
   horizon now, recommendation GO); asked the operator to pick the categories to feed by number.
+- **2026-10-13, operator — pilot scope, categories to feed** (after GO on T-4123): (1) completed tasks — what
+  succeeded and what broke; (2) episodic memory — what went wrong and the solutions; (3) project memory —
+  learnings, decisions, recurring patterns, known gaps; (4) research reports incl. designs; (5/11) component
+  fabric at MODULE level only — "the overarching functionality descriptions … the clusters" (fabric subsystems),
+  i.e. the capability cards of T-4142, not per-file cards; (6) saved answers — yes; (7) agent docs — yes, so
+  agents and commands can be shared across projects; (8) specifications/designs — yes. NOT: (9) active tasks,
+  (10) handovers. → This is the feed list for the T-4091 pipe pilot.
