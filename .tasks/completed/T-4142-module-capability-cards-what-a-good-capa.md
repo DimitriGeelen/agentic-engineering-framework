@@ -1,19 +1,29 @@
 ---
 id: T-4142
-name: "Module capability cards: what a good capability description of a module (fabric subsystem) is, and how every project gets its modules to that bar — basis for the estate 'do we already have this capability?' query (T-4123)"
+name: "Module capability cards: what a good capability description of a module (fabric
+  subsystem) is, and how every project gets its modules to that bar — basis for the
+  estate 'do we already have this capability?' query (T-4123)"
 description: >
-  Operator 2026-10-13: the central store gets the component fabric at module level, not every component; a project asks 'I need this and this capability, do we already have it?' and gets back similar solutions. Today: 18 declared subsystems with purpose/summary/entry points, 9 auto-discovered with none, and no capabilities field. Start with what exists, improve, and raise priority as value shows. Inputs: stakeholder card fields (dimitri-mint-dev D, ring20 D.2, 832 D: problem solved as a searchable symptom, technology tags, interfaces, runtime edges, install shape, guarded_by, status, owner + contact, how to reuse, known limits). Question: card schema + quality bar + how cards are produced/kept current (agent-drafted, owner-confirmed?) across projects.
+  Operator 2026-10-13: the central store gets the component fabric at module level,
+  not every component; a project asks 'I need this and this capability, do we already
+  have it?' and gets back similar solutions. Today: 18 declared subsystems with purpose/summary/entry
+  points, 9 auto-discovered with none, and no capabilities field. Start with what
+  exists, improve, and raise priority as value shows. Inputs: stakeholder card fields
+  (dimitri-mint-dev D, ring20 D.2, 832 D: problem solved as a searchable symptom,
+  technology tags, interfaces, runtime edges, install shape, guarded_by, status, owner
+  + contact, how to reuse, known limits). Question: card schema + quality bar + how
+  cards are produced/kept current (agent-drafted, owner-confirmed?) across projects.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-13T11:25:20Z
-last_update: 2026-10-13T11:25:20Z
-date_finished: null
+last_update: 2026-10-13T11:29:22Z
+date_finished: 2026-10-13T11:29:22Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +32,23 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+bvp_scores_proposed:
+  - ts: '2026-10-13T11:29:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4142: Module capability cards: what a good capability description of a module (fabric subsystem) is, and how every project gets its modules to that bar — basis for the estate 'do we already have this capability?' query (T-4123)
@@ -72,15 +99,15 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -129,9 +156,46 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Evidence is in hand: the gap is measured (9 of 27 modules undescribed here, no capabilities field anywhere), three stakeholders independently listed the same card fields, and the operator has set the direction. GO for: a capability-card schema on fabric subsystems, a lint that enforces a quality bar, agent-drafted cards confirmed by the owning project, fed to the estate store with the T-4123 pilot. Start with existing subsystem descriptions; improve in place.
+
+**Date**: 2026-10-13T11:29:18Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-10-13T11:29:18Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Evidence is in hand: the gap is measured (9 of 27 modules undescribed here, no capabilities field anywhere), three stakeholders independently listed the same card fields, and the operator has set the direction. GO for: a capability-card schema on fabric subsystems, a lint that enforces a quality bar, agent-drafted cards confirmed by the owning project, fed to the estate store with the T-4123 pilot. Start with existing subsystem descriptions; improve in place.
+
+### 2026-10-13T11:29:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fbf0c83e
+- **Timestamp:** 2026-10-13T11:29:25Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-a5e40e12
+- **Timestamp:** 2026-10-13T11:29:25Z
+- **Overall:** CONFIRMED
+- **Claims:** 1
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-4123` | task | ✓ pass |
+
+### 2026-10-13T11:29:22Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
