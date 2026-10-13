@@ -503,3 +503,20 @@ Verbatim in `docs/reports/T-4123-inputs/00-brief-as-sent.txt`; `{TO}` and `{SPEC
 - **2026-10-12, operator:** "proceed as you see fit" while the hotfix worker runs. → Agent drafted v0.2 (R-1..R-32,
   CF-1..CF-8, D-1..D-3) from the two answers in; four conflicts left open for operator rulings; v0.3 after 832, 010,
   1409 and 055 answer.
+- **2026-10-13, operator (direction after the external consults):** "Each project has its own vector database …
+  used for knowledge management, prompt generation, retrieval … that will continue running. This we can use to
+  feed the central database. Let's just start feeding it and then later see if we need to aggregate or
+  rationalize it." And: "I don't want a whole component fabric in, but on a module level … knowledge modules with
+  certain capabilities … we also need to improve the module description … quality needs to be good … a project
+  can [ask the] central database: I need this and this capability, do we already have that? … gets back examples
+  of similar solutions." → Agent checked: every project's local index (web/embeddings.py, sqlite) uses the same
+  path-based categories (web/search_utils.py:19 categorize(): Active/Completed Tasks, Episodic, Project Memory,
+  Saved Answers, Handovers, Component Fabric, Research Reports, Agent Docs, Specifications), so the scheme is
+  standard across projects; project identity is implicit (one index per project) and must become a tag centrally.
+  Module level = fabric subsystems: here 18 declared with purpose/summary/entry points plus 9 auto-discovered with
+  no description; no "capabilities" field exists. Consequences recorded for v0.4: (1) feed from the local index,
+  raw layer first, curation later (matches gemini's pilot cut); (2) categories to feed vs exclude (Handovers and
+  Active Tasks hold working state); (3) feeding locally made vectors = per-project embedding (CF-2), so model +
+  digest must match and a checker is needed — or the centre re-embeds the chunk text; (4) a capability card per
+  module/subsystem (purpose, capabilities, problem solved as a searchable symptom, technology tags, entry points,
+  status, owner) with a quality bar, as the unit of the "do we already have this capability?" query.
