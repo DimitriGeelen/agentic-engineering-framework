@@ -10,7 +10,7 @@ description: >
   warning) and a required proposal for a planned handover at a natural break; consider
   surfacing the gauge in the status line.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T16:38:48Z
-last_update: '2026-10-13T16:46:17Z'
+last_update: 2026-10-13T19:47:13Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,14 +90,21 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Field report dimitri-mint-dev P-009 (their T-106): session cf849a12 crossed 75% and
+85% and the operator's first signal was the hard cut at 95%. `agents/context/budget-gate.sh`
+reports warn/urgent as stderr on a PreToolUse **exit 0** — Claude Code shows exit-0 hook
+stderr to neither the model nor the user (only the transcript/verbose view), so both
+bands were invisible to both audiences. Overlaps T-3994 (same symptom from 1409/T-3989,
+still captured); this task ships the operator-visible message + agent proposal leg.
 
 ## Acceptance Criteria
 
 ### Agent
-<!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] On the first gate call of a Claude session at `urgent`, budget-gate.sh prints hook JSON on stdout with a `systemMessage` (operator-visible) saying a restart is coming at the cap's 95% band, and `hookSpecificOutput.additionalContext` (agent-visible) requiring the agent to tell the operator and propose a planned handover at the next natural break — on both the fast (cached) and slow (transcript) paths
+- [x] On the first call at `warn`, the same channel carries a lighter operator message (gauge %, restart at 95%) and agent context
+- [x] Announcement is once per Claude session per band (marker file keyed by claude session id); later calls in the same band emit no stdout JSON; a different session id is announced again
+- [x] At urgent, one `fw_notify` push is sent (once per session), with its stdout/stderr kept off the hook's stdout
+- [x] Exit codes unchanged (warn/urgent exit 0; critical still exit 2); new bats file fails on HEAD and passes after; existing budget-gate suites gain no new reds (tests/integration/budget_gate.bats "T-2403: signal folds .next-directive.yaml" is red on HEAD too — pre-existing, not this change)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,6 +267,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t4171_budget_band_operator_visible.bats > /tmp/.t4171.out 2>&1 && ! grep -q "^not ok" /tmp/.t4171.out
+test "$(grep -c '# skip' /tmp/.t4171.out)" -eq 0
+timeout 600 bats tests/unit/t3598_budget_cache_session_keyed.bats tests/unit/t3989_budget_critical_handover.bats tests/unit/t2919_budget_gate_command_classify.bats > /tmp/.t4171b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4171b.out
+bin/fw vendor self --check
 
 ## RCA
 
@@ -276,6 +287,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** dimitri-mint-dev session cf849a12 crossed 75% and 85% of its budget cap without the operator being told; the first signal was the hard cut at 95%.
+
+**Root cause:** `agents/context/budget-gate.sh` (PreToolUse) wrote the warn/urgent notes to stderr and exited 0. Claude Code surfaces PreToolUse stderr only for exit 2 (to the model) — on exit 0 it goes to the transcript/verbose view, seen by neither the agent nor the operator. `checkpoint.sh` (PostToolUse) has the same shape. The bands existed; nothing carried them to a reader.
+
+**Why structurally allowed:** every budget test asserted the *text* in the hook's stderr, never the channel the harness actually delivers to a reader, so "the warning is printed" was green while "the warning is seen" was false. Only critical (exit 2) used a delivered channel.
+
+**Prevention:** `tests/unit/t4171_budget_band_operator_visible.bats` pins the delivered channel — stdout hook JSON with `systemMessage` (operator) and `hookSpecificOutput.additionalContext` (agent) on both fast and slow paths, once per session per band, plus the urgent push. Pre-fix: 5 of 7 tests fail on HEAD (the two controls — warn sends no push; ok/critical unchanged — pass on both).
 
 ## Evolution
 
@@ -341,6 +360,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-13 — channel for the operator-visible message
+- **Chose:** hook JSON on stdout (`systemMessage` + `additionalContext`), once per Claude session per band, keyed in `.context/working/.budget-band-announced`; plus one `fw_notify` push at urgent (no-op unless ntfy is enabled).
+- **Why:** `systemMessage` is the harness's own user-visible channel and needs no agent cooperation; `additionalContext` puts the "tell the operator + propose a planned handover at a natural break" instruction where the model reads it. Once-per-band keeps it from becoming per-call noise that gets tuned out.
+- **Rejected:** exit 2 at urgent (would block work — that is T-3994's proposed gate, a governance change, not this task); repeating the JSON every call (noise); a status-line gauge (the description says "consider" — the status line is user-level Claude config this repo does not own; left to T-3994).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -357,3 +381,11 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4171-budget-warn-75-and-urgent-85-never-reach.md
 - **Context:** Initial task creation
+
+### 2026-10-13 — build [t4171-build worker]
+- Pre-fix: tests/unit/t4171_budget_band_operator_visible.bats 5/7 not ok on HEAD (2 controls ok); 7/7 ok after.
+- 15 budget/gate suites rerun (169 tests): one red, budget_gate.bats #134 "T-2403 signal folds .next-directive.yaml", which reproduces with HEAD's budget-gate.sh, so it was already failing before this change.
+- `fw audit --section structure` could not run: "another audit is already running" for every retry over ~5 min.
+
+### 2026-10-13T19:23:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

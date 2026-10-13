@@ -102,8 +102,8 @@ tuned via config):
 | Level | Threshold (default window) | What fires | What you can still do |
 |-------|-----------------------------|------------|------------------------|
 | `ok` | below 75% (< 225,000 tokens) | nothing | Anything. |
-| `warn` | ≥ 75% (225,000 tokens) | A one-line note on the next tool call | Anything — just commit before starting new work. |
-| `urgent` | ≥ 85% (255,000 tokens) | A short warning | Anything, but don't start new implementation work — commit and prepare a handover. |
+| `warn` | ≥ 75% (225,000 tokens) | Once per session: a message shown to the operator (`systemMessage`) and an instruction to the agent (`additionalContext`) (T-4171) | Anything — just commit before starting new work. |
+| `urgent` | ≥ 85% (255,000 tokens) | Once per session: an operator message that a restart is coming, an agent instruction to tell the operator and propose a planned handover at the next natural break, and one `fw notify` push (T-4171) | Anything, but don't start new implementation work — commit and prepare a handover. |
 | `critical` | ≥ 95% (285,000 tokens) | Tool calls are **blocked** (exit 2) except an allowlist (git commit/add/push/fetch/status/log/diff, `fw handover`/`git`/`context init or focus`/`resume`/`task`, and Write/Edit under `.context/`, `.tasks/`, `.claude/`) | Wrap-up only: commit, then `fw handover`. |
 
 `agents/context/checkpoint.sh` runs the same three thresholds as a
