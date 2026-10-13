@@ -1,8 +1,18 @@
 ---
 id: T-4163
-name: "T-4091 slice 2: estate ingest worker on the AEF host — drain staging collections, embed with one pinned model + digest, write the main collection, manifest check, per-project kill switch, audit log, scheduled after push"
+name: "T-4091 slice 2: estate ingest worker on the AEF host — drain staging collections,
+  embed with one pinned model + digest, write the main collection, manifest check,
+  per-project kill switch, audit log, scheduled after push"
 description: >
-  From T-4091 (GO 2026-10-13; operator: runs on the AEF host, built and tested here). Reads staging_<project> with the ingest token (rw, ring20 spike), embeds via the shared GPU host's Ollama with the pinned model (nomic-embed-text-v2-moe 768, record digest; R-19), batches <= 64 with backoff, no bulk re-embed in daytime (R-21); writes estate__knowledge__nomic-embed-text-v2-moe-768 (alias estate_knowledge) with model+digest payload; refuses unregistered collections (R-26) and switched-off projects (R-28); deletes drained staging points; appends an audit row per write (R-29); second secret scan before write. Pilot proof: exact-title query top-1 for pushed items; a write with a foreign project's token refused; anonymous 401 (T-4123 DM pilot list).
+  From T-4091 (GO 2026-10-13; operator: runs on the AEF host, built and tested here).
+  Reads staging_<project> with the ingest token (rw, ring20 spike), embeds via the
+  shared GPU host's Ollama with the pinned model (nomic-embed-text-v2-moe 768, record
+  digest; R-19), batches <= 64 with backoff, no bulk re-embed in daytime (R-21); writes
+  estate__knowledge__nomic-embed-text-v2-moe-768 (alias estate_knowledge) with model+digest
+  payload; refuses unregistered collections (R-26) and switched-off projects (R-28);
+  deletes drained staging points; appends an audit row per write (R-29); second secret
+  scan before write. Pilot proof: exact-title query top-1 for pushed items; a write
+  with a foreign project's token refused; anonymous 401 (T-4123 DM pilot list).
 
 status: captured
 workflow_type: build
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T15:32:26Z
-last_update: 2026-10-13T15:32:26Z
-date_finished: null
+last_update: '2026-10-13T15:46:27Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,13 +60,49 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-13T15:45:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-13T15:46:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4163: T-4091 slice 2: estate ingest worker on the AEF host — drain staging collections, embed with one pinned model + digest, write the main collection, manifest check, per-project kill switch, audit log, scheduled after push
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Platform facts from ring20-manager (2026-10-13, unedited in `docs/reports/T-4091-inputs-ring20-collections-live.txt`):
+collections live — `estate__knowledge__nomic-embed-text-v2-moe-768` (768, Cosine, alias `estate_knowledge`) and
+`staging_aef` (payload-only); `_manifest` entries exist, main is `state=candidate`, `model_digest` null — the worker
+sets `state=active` and the digest on first ingest. Budgets: main 1M points / 8 GiB; staging 100k / 1 GiB, nothing
+older than 7 days. Tokens (names only, in ring20's secret store, expire 2027-01-11): QDRANT_ESTATE_TOKEN_STAGING_AEF
+(rw staging_aef), QDRANT_ESTATE_TOKEN_INGEST_AEF (rw staging_aef, main, and the alias). Measured: JWT RBAC matches the
+name in the request path — a token reaches a collection through the alias only if the alias itself is listed; when
+the alias moves to a new model collection, the ingest token is re-issued. Store URL: see the input file (by role:
+the estate store's TLS endpoint). Token delivery to the worker: pending the operator's choice.
 
 ## Acceptance Criteria
 
