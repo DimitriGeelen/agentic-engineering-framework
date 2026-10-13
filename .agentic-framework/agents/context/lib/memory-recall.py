@@ -9,6 +9,7 @@ T-246: Project memory read-path.
 """
 
 import argparse
+import math
 import os
 import re
 import sys
@@ -68,11 +69,31 @@ DF_MIN_CORPUS = 30
 #   floor 5 -> 11%, near-duplicates only (T-1792/T-1794 differ by one word).
 #              Correct but too strict: it would miss T-1773/T-1774.
 #
-# Re-measure rather than trusting these numbers; the corpus moves. The bound is
-# pinned two-sided in tests/unit/t3056_recall_open_tasks.bats, because 0% (silent
-# no-op) and 100% (noise on every call) are both failures and they look nothing
-# alike from the code.
+# Re-measure rather than trusting these numbers; the corpus moves. The live hit
+# rate was pinned two-sided until T-4137 showed it drifting to 51% as names grew;
+# precision is now pinned on a committed fixture instead (see below).
 OPEN_TASK_FLOOR = 4
+
+# T-4137: the word-count floor above stopped meaning anything as names grew. It
+# counts distinct shared words, unweighted and not normalised for length, so a
+# `name:` written as a paragraph (T-3299: 132 topic words) contains four of almost
+# any query's words and was offered on 66 of 679 hits. Measured on 820 open tasks,
+# 30 hits sampled at seed 4137: precision 12/30, hit rate 51% (22% at T-3056's
+# ship, with the code unchanged — the corpus moved, the names lengthened).
+#
+# So, once the corpus is big enough for frequency to mean something, a hit must
+# ALSO clear a BM25-shaped score: each shared word weighted by its rarity across
+# names (IDF, divided by log N so the scale does not move with corpus size), the
+# sum discounted by how long the hit's name is relative to the average. On the
+# same 30 pairs every clearly related hit scored >= 2.10 and every unrelated one
+# <= 1.94. Ranking uses the same score, so a short specific name outranks a long
+# one that merely shares common words.
+#
+# Pinned against a committed fixture, not the live corpus (T-3326):
+# tests/fixtures/t4137_recall_precision.yaml via t3056_recall_open_tasks.bats.
+OPEN_TASK_MIN_SCORE = 2.0
+BM25_K1 = 1.2
+BM25_B = 0.75
 
 
 def load_knowledge_items():
@@ -326,6 +347,10 @@ def search_open_tasks(query: str, tasks: list, limit: int):
     **Words in more than DF_CEILING of names are dropped**, and a task must match
     at least OPEN_TASK_FLOOR distinct words. Both thresholds are justified against
     measurements in their definitions above.
+
+    **On a corpus of DF_MIN_CORPUS or more, a hit must also clear
+    OPEN_TASK_MIN_SCORE** (T-4137): rarity-weighted, normalised for the hit's name
+    length, and the same score ranks the hits.
     """
     words = _topic_tokens(query)
     if not words:
@@ -336,12 +361,19 @@ def search_open_tasks(query: str, tasks: list, limit: int):
     if not haystacks:
         return []
 
-    if len(haystacks) >= DF_MIN_CORPUS:
-        ceiling = max(1, int(len(haystacks) * DF_CEILING))
-        words = {w for w in words
-                 if sum(1 for _i, names in haystacks if w in names) <= ceiling}
+    n = len(haystacks)
+    weighted = n >= DF_MIN_CORPUS
+    if weighted:
+        df = {}
+        for _i, names in haystacks:
+            for w in names:
+                df[w] = df.get(w, 0) + 1
+        ceiling = max(1, int(n * DF_CEILING))
+        words = {w for w in words if df.get(w, 0) <= ceiling}
         if not words:
             return []
+        log_n = math.log(n)
+        avg_len = sum(len(names) for _i, names in haystacks) / n
 
     # A query with fewer meaningful words than the floor can never clear it, and
     # silently returning nothing forever is the failure mode this task exists to
@@ -350,9 +382,19 @@ def search_open_tasks(query: str, tasks: list, limit: int):
 
     scored = []
     for item, names in haystacks:
-        score = len(words & names)
-        if score >= floor:
-            scored.append((score, item))
+        shared = words & names
+        if len(shared) < floor:
+            continue
+        if weighted:
+            # T-4137 — see OPEN_TASK_MIN_SCORE.
+            norm = (BM25_K1 + 1) / (
+                1 + BM25_K1 * (1 - BM25_B + BM25_B * len(names) / avg_len))
+            score = norm * sum(math.log(n / df[w]) / log_n for w in shared)
+            if score < OPEN_TASK_MIN_SCORE:
+                continue
+        else:
+            score = len(shared)
+        scored.append((score, item))
     scored.sort(key=lambda x: x[0], reverse=True)
     return scored[:limit]
 

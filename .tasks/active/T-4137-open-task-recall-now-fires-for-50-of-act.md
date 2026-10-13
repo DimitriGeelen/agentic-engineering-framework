@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T10:41:48Z
-last_update: '2026-10-13T10:45:36Z'
+last_update: 2026-10-13T11:18:28Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -149,7 +149,7 @@ on the hit's name) puts all 11 clear-related pairs at ≥14.1 and all 18 unrelat
 - [x] Question answered in this file BEFORE code changes: 30 live hits sampled with a fixed seed, each judged related/unrelated with a one-line reason, precision reported, and concentration (generic tasks / common words) checked
 - [x] If precision is poor, search_open_tasks ranking/threshold fixed so precision rises on the same sample; before/after precision and hit fraction recorded
 - [x] Live-corpus A3 assertion replaced by a COMMITTED fixture corpus under tests/ encoding related and unrelated pairs; test asserts every related pair hits and no unrelated query gets a hit; live fraction is an informational print only (no assertion)
-- [ ] tests/unit/t3056_recall_open_tasks.bats and tests/unit/test_t3789_recall_hit_mapping.py green; bin/fw vendor self --check clean for memory-recall.py
+- [x] tests/unit/t3056_recall_open_tasks.bats and tests/unit/test_t3789_recall_hit_mapping.py green; bin/fw vendor self --check clean for memory-recall.py
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
