@@ -136,13 +136,28 @@ except:
     # No command — allow (defensive)
     [ -z "$COMMAND" ] && exit 0
 
+    # T-4149: the session cwd, so a relative write target (`touch ../../x`) resolves.
+    CMD_CWD=$(echo "$INPUT" | python3 -c "
+import sys, json
+try:
+    print(json.load(sys.stdin).get('cwd', '') or '')
+except Exception:
+    print('')
+" 2>/dev/null)
+
     # Quick pre-filter: if no absolute path reference, skip Python analysis.
     # T-1702: include any leading-slash token (read-side detection needs to see
     # /root, /var, /home etc. even when they are not write/cd targets).
     # T-4114: any tee with an absolute path anywhere after it must reach the
     # analysis — `tee\s+/` let `tee -a /srv/x` skip it entirely.
     # T-4126: same for the write verbs parsed in Pattern 3 and for `>|`.
-    if ! echo "$COMMAND" | grep -qE '(cd\s+/|/opt/|/home/|/root/|/var/|/etc/|/usr/|>+\s*/|tee\s.*/|>\|\s*/|(^|[^[:alnum:]_.-])(cp|mv|install|ln|rsync|dd|sed|perl|truncate|chmod|chown|chgrp|touch|mkdir)\s.*/|\.agentic-framework/bin/fw)'; then
+    # T-4149: the tokenised pass (Pattern 5) must see every spelling bash can turn
+    # into an outside path — any slash, `~`, `..`, a brace, a substitution, an escape,
+    # a quote (`"/"etc`), or a cd (bare `cd` goes HOME). A regex that names verbs is
+    # exactly the parser differential this task removes, so the filter names
+    # characters instead; what it skips cannot spell a path outside the cwd.
+    if ! echo "$COMMAND" | grep -qE '(cd\s+/|/opt/|/home/|/root/|/var/|/etc/|/usr/|>+\s*/|tee\s.*/|>\|\s*/|(^|[^[:alnum:]_.-])(cp|mv|install|ln|rsync|dd|sed|perl|truncate|chmod|chown|chgrp|touch|mkdir)\s.*/|\.agentic-framework/bin/fw)' \
+       && ! printf '%s' "$COMMAND" | grep -qE '[/~{$`\\"'"'"']|\.\.|(^|[^[:alnum:]_.-])(cd|pushd)([^[:alnum:]_.-]|$)'; then
         exit 0
     fi
 
@@ -162,6 +177,7 @@ except:
 
     # Detailed analysis: detect cd to another project + write operations
     export _BOUNDARY_CMD="$COMMAND"
+    export _BOUNDARY_CWD="$CMD_CWD"
     export _BOUNDARY_FW_LIB="$FRAMEWORK_ROOT/lib"   # T-3766: registered credential files
     MATCH_RESULT=$(python3 << 'PYEOF'
 import re, sys, os, subprocess
@@ -778,6 +794,62 @@ for tok in _tok_iter(command):
     if top not in KNOWN_TOPS:
         continue  # not a recognisable filesystem path; skip rather than FP
     print(f'BLOCKED|Outside-path argument {cand} (not in read-side allowlist)')
+    sys.exit(0)
+
+# Pattern 5 (T-4149): the write targets and cd destinations as BASH reads them.
+#
+# Patterns 1-3 read a quote-BLANKED copy with regexes, so their reading differed from
+# bash: `touch "/etc/X"` (target blanked), `to""uch /etc/X` (verb not recognised),
+# `touch /tmp/../etc/X` (prefix test before normalising), `> /tmp/x touch /etc/X`
+# (leading redirection taken as the verb), `sed -ibak … /etc/X` (suffix cluster) all
+# passed. This pass hands the RAW command to lib/shell_write_scan.py — the bash-style
+# tokeniser T-3695 already uses for the task-file guard — in boundary mode: quote
+# removal, realpath+normpath of every target, brace/tilde expansion, redirections
+# anywhere, option clusters, $(...)/`...`/<(...) bodies, unquoted heredoc bodies and
+# static `sh -c`/`eval` scripts. Text that does not lex is refused, not guessed.
+# Patterns 1-4 stay: this pass only ever adds refusals.
+#
+# NOT seen (same boundary as Tier 0, CLAUDE.md T-2742): a script file the command runs,
+# a target built at run time ($VAR, printf, a path read from a file), code inside an
+# interpreter (python -c, perl -e, awk), and write verbs the scanner does not name.
+_ROOTS = {project_root, os.path.realpath(project_root)}
+_ZONES = tuple(sorted({z for p in ('/tmp', '/root/.claude', '/dev', '/etc/cron.d')
+                       for z in (p, os.path.realpath(p))}))
+
+
+def _under(p, base):
+    return p == base or p.startswith(base.rstrip('/') + '/')
+
+
+def _write_guarded(p):
+    p = p.rstrip('/') or '/'
+    if any(_under(p, r) for r in _ROOTS) or any(_under(p, z) for z in _ZONES):
+        return False
+    return not _in_sibling_worktree(p)
+
+
+def _cd_ok(p):
+    p = p.rstrip('/') or '/'
+    # `cd /` (leaving a temp dir before `rm -rf $T`) is not another project; a relative
+    # write after it resolves under / and is judged as a write.
+    return (p == '/' or any(_under(p, r) for r in _ROOTS) or _under(p, '/tmp')
+            or _under(p, '/root/.claude') or _in_sibling_worktree(p))
+
+
+try:
+    sys.path.insert(0, os.environ.get('_BOUNDARY_FW_LIB', ''))
+    import shell_write_scan
+    _hits = shell_write_scan.scan_boundary(
+        os.environ.get('_BOUNDARY_CMD', ''),
+        os.environ.get('_BOUNDARY_CWD', '') or project_root,
+        _write_guarded, _cd_ok)
+except Exception as e:   # fail closed: an unreadable command is not a safe one
+    _hits = [type('H', (), {'reason': f'boundary tokeniser unavailable ({type(e).__name__})',
+                            'target': ''})()]
+if _hits:
+    h = _hits[0]
+    tgt = f' {h.target}' if h.target else ''
+    print(f'BLOCKED|{h.reason}{tgt} (outside project root {project_root})')
     sys.exit(0)
 
 print('SAFE')
