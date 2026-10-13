@@ -1,19 +1,32 @@
 ---
 id: T-4155
-name: "Reviewer route for READY TO CLOSE tasks (owner: agent human, zero Human criteria, all Agent ACs ticked, verification green): an independent reviewer closes with recorded provenance instead of the operator rubber-stamping (832 proposal, their T-1127 / PD-357)"
+name: "Reviewer route for READY TO CLOSE tasks (owner: agent human, zero Human criteria,
+  all Agent ACs ticked, verification green): an independent reviewer closes with recorded
+  provenance instead of the operator rubber-stamping (832 proposal, their T-1127 /
+  PD-357)"
 description: >
-  832 (msg ec0c9369, operator-prompted): T-1127 shipped, 6/6 Agent ACs, verification 3/3, no ### Human section, owner: human. The agent cannot close it (human-owned), cannot re-own it (--skip-human-ownership refused in agent sessions, T-3586), and fw task delegate has nothing to convert, so it waits for the operator with nothing to judge (AEF's own T-3449 section calls this 'finished work with no route to closure'). Their operator: 'Why do you need me? We've got review agents.' Proposals: (a) a reviewer close: fw reviewer judge/close checks shipped evidence, ACs ticked, verification green, no Human section; PASS closes with reviewer provenance (verdict ledger), owner unchanged; doubt escalates; (b) alternative: owner flips to agent when no Human criteria exist (the operator not writing Human ACs = consent). Touches sovereignty (ownership, closure authority): inception.
+  832 (msg ec0c9369, operator-prompted): T-1127 shipped, 6/6 Agent ACs, verification
+  3/3, no ### Human section, owner: human. The agent cannot close it (human-owned),
+  cannot re-own it (--skip-human-ownership refused in agent sessions, T-3586), and
+  fw task delegate has nothing to convert, so it waits for the operator with nothing
+  to judge (AEF's own T-3449 section calls this 'finished work with no route to closure').
+  Their operator: 'Why do you need me? We've got review agents.' Proposals: (a) a
+  reviewer close: fw reviewer judge/close checks shipped evidence, ACs ticked, verification
+  green, no Human section; PASS closes with reviewer provenance (verdict ledger),
+  owner unchanged; doubt escalates; (b) alternative: owner flips to agent when no
+  Human criteria exist (the operator not writing Human ACs = consent). Touches sovereignty
+  (ownership, closure authority): inception.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner:
-horizon: next
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-13T14:53:28Z
-last_update: 2026-10-13T14:53:28Z
-date_finished: null
+last_update: 2026-10-13T14:55:30Z
+date_finished: 2026-10-13T14:55:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +35,23 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+bvp_scores_proposed:
+  - ts: '2026-10-13T14:55:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4155: Reviewer route for READY TO CLOSE tasks (owner: human, zero Human criteria, all Agent ACs ticked, verification green): an independent reviewer closes with recorded provenance instead of the operator rubber-stamping (832 proposal, their T-1127 / PD-357)
@@ -72,15 +102,15 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -129,9 +159,50 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: The gap is real and named in AEF's own docs (T-3449 READY TO CLOSE), the operator ruling D-626/T-3557 already routes everything outside the three carve-outs to an independent reviewer, and the verdict ledger (T-3579/T-3581) provides the provenance a reviewer close needs. GO for (a): reviewer acts on the close only, ownership stays as recorded, any doubt escalates; carve-out classes (act-in-the-world, tier-0-or-bypass, sovereignty fields) never qualify. Reject (b): silently flipping ownership changes a sovereignty field without an act.
+
+**Date**: 2026-10-13T14:55:29Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-10-13T14:55:29Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** The gap is real and named in AEF's own docs (T-3449 READY TO CLOSE), the operator ruling D-626/T-3557 already routes everything outside the three carve-outs to an independent reviewer, and the verdict ledger (T-3579/T-3581) provides the provenance a reviewer close needs. GO for (a): reviewer acts on the close only, ownership stays as recorded, any doubt escalates; carve-out classes (act-in-the-world, tier-0-or-bypass, sovereignty fields) never qualify. Reject (b): silently flipping ownership changes a sovereignty field without an act.
+
+### 2026-10-13T14:55:29Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b4cbfe44
+- **Timestamp:** 2026-10-13T14:55:31Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-03ea381a
+- **Timestamp:** 2026-10-13T14:55:31Z
+- **Overall:** CONFIRMED
+- **Claims:** 4
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-3449` | task | ✓ pass |
+| `T-3557` | task | ✓ pass |
+| `T-3579` | task | ✓ pass |
+| `T-3581` | task | ✓ pass |
+
+### 2026-10-13T14:55:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
