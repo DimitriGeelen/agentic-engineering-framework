@@ -8,12 +8,12 @@ description: >
   draft, dimitri-mint-dev's T-090, arc-001 A9.6–A9.8. Per-project index stays authoritative;
   the platform is fed from projects.
 
-status: started-work
+status: work-completed
 workflow_type: inception
 target_blast_radius: 3
 voi_score: 0.5
 owner: agent
-horizon: now
+horizon: null
 tags: [arc-001, T-4017]
 components: []
 related_tasks: [T-4017]
@@ -45,8 +45,8 @@ origin: {kind: "operator", source: "T-4017-GO"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T10:21:16Z
-last_update: '2026-10-13T15:00:45Z'
-date_finished:
+last_update: 2026-10-13T15:29:25Z
+date_finished: 2026-10-13T15:29:25Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -443,13 +443,17 @@ slices: (1) `fw estate push` (diff local index → staging, filters, redaction, 
 
 ## Decision
 
-<!-- Filled at completion of inception tasks via:
-     fw inception decide T-XXX go|no-go|defer --rationale "..."
+**Decision**: GO
 
-     For non-inception tasks this section is ignored. Kept in template
-     so `fw inception decide` (lib/inception.sh) finds the anchor heading
-     without auto-creating; T-1832 added auto-create as fallback for
-     legacy tasks lacking this section. -->
+**Rationale**: Both open design questions are answered: transport is option A (per-project payload-only staging collection drained
+by one central ingest worker) — measured working on the estate store by ring20 — and the ingest worker runs on the AEF
+host, built and tested here (operator 2026-10-13: "1 yes, 2a"). Everything else was settled by T-4123. GO means build
+slices: (1) `fw estate push` (diff local index → staging, filters, redaction, deletions); (2) the ingest worker
+(embed with one pinned model, write main collection with model+digest, manifest check, kill switch, audit log);
+(3) read side (`--scope estate`). ring20 creates `estate__knowledge__nomic-embed-text-v2-moe-768` (alias
+`estate_knowledge`) and `staging_aef` with tokens on request.
+
+**Date**: 2026-10-13T15:29:23Z
 
 ## Updates
 
@@ -465,3 +469,47 @@ slices: (1) `fw estate push` (diff local index → staging, filters, redaction, 
 ### 2026-10-13T14:51:18Z — status-update [task-update-agent]
 - **Change:** workflow_type: build → inception
 - **Change:** horizon: now → now
+
+### 2026-10-13T15:29:23Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Both open design questions are answered: transport is option A (per-project payload-only staging collection drained
+by one central ingest worker) — measured working on the estate store by ring20 — and the ingest worker runs on the AEF
+host, built and tested here (operator 2026-10-13: "1 yes, 2a"). Everything else was settled by T-4123. GO means build
+slices: (1) `fw estate push` (diff local index → staging, filters, redaction, deletions); (2) the ingest worker
+(embed with one pinned model, write main collection with model+digest, manifest check, kill switch, audit log);
+(3) read side (`--scope estate`). ring20 creates `estate__knowledge__nomic-embed-text-v2-moe-768` (alias
+`estate_knowledge`) and `staging_aef` with tokens on request.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-24c26a65
+- **Timestamp:** 2026-10-13T15:29:28Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-0cf3884f
+- **Timestamp:** 2026-10-13T15:29:28Z
+- **Overall:** CONTRADICTED
+- **Claims:** 5
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `lib/review.sh:205-211` | file | ✗ fail — file not found at PROJECT_ROOT |
+| `docs/reports/T-4091-estate-push-pipe.md` | file | ✓ pass |
+| `T-2945` | task | ✓ pass |
+| `T-2421` | task | ✓ pass |
+| `T-4123` | task | ✓ pass |
+
+### 2026-10-13T15:29:25Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
