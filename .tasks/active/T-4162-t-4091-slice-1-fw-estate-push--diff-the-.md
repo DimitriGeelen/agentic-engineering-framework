@@ -95,7 +95,10 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Operator 2026-10-13 (option 1): the first fill is ~295,000 staged chunks against ring20's staging budget of 100,000
+points, so push in BATCHES — at most ~50,000 points per `--apply` run (configurable), and never more than the
+staging budget minus what is still staged; the next run continues where the last stopped (ledger), after the
+ingest worker (T-4163) has drained staging. Follow-up to add before the first live --apply.
 
 ## Acceptance Criteria
 
