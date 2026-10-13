@@ -3528,6 +3528,21 @@ else:
         warnings=$((warnings + 1))
     fi
 
+    # T-4166 / G-114: armed stale index entries (an old committed version of a task/episodic
+    # staged in the real index would be written back by the next ordinary commit).
+    if [ -f "$FRAMEWORK_ROOT/lib/index_reconcile.py" ] && git -C "$PROJECT_ROOT" rev-parse --git-dir >/dev/null 2>&1; then
+        _ir_out=$(python3 -I "$FRAMEWORK_ROOT/lib/index_reconcile.py" --repo "$PROJECT_ROOT" 2>&1)
+        _ir_rc=$?
+        if [ "$_ir_rc" -eq 2 ]; then
+            echo -e "  ${YELLOW}WARN${NC}  Armed stale index entries (G-114): $(echo "$_ir_out" | tail -1)"
+            echo "$_ir_out" | grep '^ARMED' | head -10 | sed 's/^/         /'
+            echo -e "         Fix (index only, worktree untouched): bin/fw git reconcile-index --apply"
+            warnings=$((warnings + 1))
+        elif [ "$_ir_rc" -eq 0 ]; then
+            echo -e "  ${GREEN}OK${NC}  No armed stale index entries"
+        fi
+    fi
+
     _doctor_phase "Watchtower smoke test"  # T-3452
     # Check: Watchtower smoke test (T-486) — run if server is reachable
     # Use _watchtower_url for port detection (T-1154: no hardcoded 3000)
@@ -7160,6 +7175,27 @@ except Exception as exc:
                 ;;
         esac
         ;;
+    estate)
+        # T-4162 (T-4091 slice 1): stage new/changed/deleted index chunks for the estate store.
+        est_sub="${1:-}"
+        case "$est_sub" in
+            push)
+                shift
+                cd "$PROJECT_ROOT" && PYTHONPATH="$FRAMEWORK_ROOT${PYTHONPATH:+:$PYTHONPATH}" \
+                    exec python3 "$FRAMEWORK_ROOT/lib/estate_push.py" --project-root "$PROJECT_ROOT" "$@"
+                ;;
+            ""|-h|--help)
+                echo "Usage: fw estate push [--apply] [--categories A,B] [--url URL]"
+                echo "  estate push: diff the local vector index against the push ledger and stage"
+                echo "  new/changed chunks (text + payload, never vectors) and deletions in staging_aef."
+                echo "  Dry run unless --apply. Token: key store name qdrant_estate_staging_aef."
+                ;;
+            *)
+                echo -e "${RED}Unknown estate subcommand:${NC} $est_sub"
+                exit 1
+                ;;
+        esac
+        ;;
     docs)
         if [ "${1:-}" = "article" ]; then
             shift
@@ -9037,10 +9073,12 @@ if paused_rows:
 # and an agent cannot close a human-owned task directly. Per-task evidence
 # only, no batch-close affordance (CLAUDE.md §Human Task Completion Rule).
 if um_rows:
-    print(f"\033[1mREADY TO CLOSE — owner:human, no Human criteria, work already done ({len(um_rows)})\033[0m")
+    print(f"\033[1mREADY TO CLOSE — owner:human, no Human criteria, work already done ({len(um_rows)}) — reviewer route, not operator work\033[0m")
     for m in um_rows:
         print(f"  {m.task_id:<8}  {str(m.age_days)+'d':>5}  {m.agent_ac_count} agent AC(s) done")
-        print(f"    cd {ROOT} && bin/fw task update {m.task_id} --status work-completed")
+        # T-4156: not `task update --status work-completed` — R-033 refuses it for
+        # owner:human even from the operator's terminal. Route to the reviewer ladder.
+        print(f"    cd {ROOT} && bin/fw task delegate {m.task_id}   # then: bin/fw reviewer judge {m.task_id}")
     print()
 
 if rows:

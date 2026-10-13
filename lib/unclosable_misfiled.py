@@ -78,7 +78,7 @@ _HERE = Path(__file__).resolve().parent
 if str(_HERE.parent) not in sys.path:
     sys.path.insert(0, str(_HERE.parent))
 
-from lib.delegation import Criterion, frontmatter, parse_criteria  # noqa: E402
+from lib.delegation import CARVE_OUTS, Criterion, classify, frontmatter, parse_criteria  # noqa: E402
 
 
 def count_human_acs_total(body: str) -> int:
@@ -131,6 +131,23 @@ def is_unclosable_misfiled(meta: dict, text: str) -> bool:
     if not agents:
         return False
     return all(c.ticked for c in agents)
+
+
+def carve_out(meta: dict, text: str) -> str:
+    """Why a member of this class must stay with the operator, or "" (T-4156).
+
+    Risk classes of T-3557 (tier-0/bypass, sovereignty field, act-in-the-world),
+    read off the task's own Agent criteria, plus inception tasks (inception
+    gates are not rewired to the verdict ledger). Conservative on purpose: a
+    keyword hit sends the task to the operator, never the other way.
+    """
+    if str(meta.get("workflow_type") or "").strip().lower() == "inception":
+        return "inception task — the go/no-go is the operator's"
+    for c in agent_criteria(text):
+        cl = classify(c, workflow_type=str(meta.get("workflow_type") or ""))
+        if cl.cls in CARVE_OUTS:
+            return f"{cl.cls}: {cl.reason}"
+    return ""
 
 
 def age_days(meta: dict, now: Optional[datetime] = None) -> int:

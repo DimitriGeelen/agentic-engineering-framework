@@ -243,6 +243,17 @@ def _update_entry(task_id: str, converted: list[dict], refused: list[dict]) -> l
     ]
 
 
+def _update_entry_ready(task_id: str) -> list[str]:
+    return [
+        "",
+        f"### {_now()} — delegate ready-to-close [fw-task-delegate]",
+        "- **Ruling:** D-626 / T-3557 / T-4156 — no Human criteria, Agent criteria done: "
+        "one reviewer-judged close-readiness criterion added; owner unchanged.",
+        f"- **Close path:** `bin/fw reviewer judge {task_id}`; a green verdict ticks it, "
+        "red/amber returns findings to remediate.",
+    ]
+
+
 def _append_updates(lines: list[str], entry: list[str]) -> list[str]:
     for i in range(len(lines) - 1, -1, -1):
         if re.match(r"^## Updates[ \t]*$", lines[i]):
@@ -321,6 +332,11 @@ def cmd_delegate(args) -> int:
             print(f"        {cl.reason}")
         if not rows:
             print("  (no open Human criteria)")
+
+    if not rows:
+        from lib import unclosable_misfiled as um
+        if um.is_unclosable_misfiled(meta, text):
+            return _delegate_ready_to_close(task_id, path, text, meta, args, um.carve_out(meta, text))
 
     remaining_human = len(refused)
     owner = str(meta.get("owner") or "")
@@ -407,6 +423,85 @@ def cmd_delegate(args) -> int:
         print(f"  {GREEN}wrote{NC} {path}")
         print(f"  {GREEN}ledger{NC} {LEDGER}")
         _print_outcome(converted, refused, owner, new_owner, task_id, remaining_human)
+    return 0
+
+
+def _close_readiness_block(task_id: str) -> list[str]:
+    # Wording avoids every carve-out/taste vocabulary so classify() lands on
+    # REVIEWER-JUDGES; test_t4156 pins that.
+    return [
+        "- [ ] [REVIEW] Close-readiness: the work meets its Agent criteria and the "
+        f"Verification section passes ({task_id}, reviewer-judged, T-4156)",
+        "  **Steps:**",
+        f"  1. Run `cd {_project_root()} && bin/fw reviewer judge {task_id}`",
+        "  **Expected:** an independent reviewer records a green verdict for this "
+        "criterion's current text",
+        "  **If not:** remediate the findings the reviewer lists, then re-run the judge",
+    ]
+
+
+def _delegate_ready_to_close(task_id, path, text, meta, args, carve) -> int:
+    """T-4156: owner:human, zero Human criteria, Agent criteria all ticked.
+
+    There is nothing to convert, so give the reviewer ladder something to judge:
+    one close-readiness criterion. Ownership is NOT touched here; the verdict
+    ledger decides that at close. Carve-outs stay with the operator.
+    """
+    owner = str(meta.get("owner") or "")
+    record = {"ts": _now(), "task": task_id, "ruling": RULING, "dry_run": bool(args.dry_run),
+              "class": "ready-to-close", "owner_before": owner, "owner_after": owner,
+              "carve_out": carve, "converted": [], "refused": []}
+    if carve:
+        if args.json:
+            print(json.dumps(record, indent=2))
+        else:
+            print(f"{BOLD}Delegation scan — {task_id}{NC}: ready-to-close, but "
+                  f"{YELLOW}stays with the operator{NC}\n  {carve}")
+            print(f"  next: bin/fw task review {task_id}")
+        return 0
+    if args.dry_run:
+        if args.json:
+            print(json.dumps(record, indent=2))
+        else:
+            print(f"{BOLD}Delegation scan — {task_id}{NC}: ready-to-close "
+                  f"(no Human criteria, Agent criteria done)")
+            print(f"  would add one reviewer-judged close-readiness criterion; owner unchanged")
+            print(f"  {CYAN}--dry-run: nothing written{NC}")
+        return 0
+
+    lines = text.split("\n")
+    block = _close_readiness_block(task_id)
+    head = next((i for i, ln in enumerate(lines) if re.match(r"^### Human\b", ln)), None)
+    if head is not None:
+        at = head + 1
+        j = at
+        while j < len(lines) and not lines[j].strip():
+            j += 1
+        if j < len(lines) and lines[j].lstrip().startswith("<!--"):
+            while j < len(lines) and "-->" not in lines[j]:
+                j += 1
+            at = j + 1
+        lines[at:at] = block
+    else:
+        from lib.delegation import ac_section_bounds
+        _, end = ac_section_bounds(lines)
+        if end < 0:
+            print(f"{RED}ERROR: {task_id} has no ## Acceptance Criteria{NC}", file=sys.stderr)
+            return 2
+        lines[end:end] = ["### Human"] + block + [""]
+    out = _append_updates(lines, _update_entry_ready(task_id))
+    out = _set_frontmatter(out, "last_update", _now())
+    path.write_text("\n".join(out), encoding="utf-8")
+    ledger = _project_root() / LEDGER
+    ledger.parent.mkdir(parents=True, exist_ok=True)
+    with ledger.open("a", encoding="utf-8") as fh:
+        fh.write(json.dumps(record, separators=(",", ":")) + "\n")
+    if args.json:
+        print(json.dumps(record, indent=2))
+    else:
+        print(f"  {GREEN}wrote{NC} {path}\n  {GREEN}ledger{NC} {LEDGER}")
+        print(f"  owner: {owner} (unchanged; the verdict ledger decides at close)")
+        print(f"  next: bin/fw reviewer judge {task_id}")
     return 0
 
 

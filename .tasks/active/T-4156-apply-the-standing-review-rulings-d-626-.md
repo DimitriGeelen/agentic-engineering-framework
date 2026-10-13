@@ -1,10 +1,25 @@
 ---
 id: T-4156
-name: "Apply the standing review rulings (D-626, T-3557, T-3580 risk-graded reviewer ladder) to READY TO CLOSE tasks: owner: agenthuman, zero Human criteria, all Agent ACs ticked, verification green → fw reviewer judge at the task's due rung; green closes with verdict provenance (owner unchanged), not green → remediate, carve-outs escalate (16 here, 832 T-1127)"
+name: "Apply the standing review rulings (D-626, T-3557, T-3580 risk-graded reviewer
+  ladder) to READY TO CLOSE tasks: owner: agenthuman, zero Human criteria, all Agent
+  ACs ticked, verification green → fw reviewer judge at the task's due rung; green
+  closes with verdict provenance (owner unchanged), not green → remediate, carve-outs
+  escalate (16 here, 832 T-1127)"
 description: >
-  Operator 2026-10-13: only high-risk items go to the operator; the rest go to the reviewer ladder, close on all-green, remediate otherwise — 'already implemented; if it is implemented it is not applied appropriately'. Confirmed: D-626 (2026-09-23), T-3557 carve-outs, T-3580 rung policy exist, but bin/fw review-queue (T-3449, ~9033) routes READY TO CLOSE tasks to the operator because fw task delegate declines them ('nothing to convert'). 16 such tasks here. Fix: fw task delegate (or fw reviewer judge) accepts the zero-Human-criteria case — independent reviewer at the rung lib/review_policy.py requires; green verdict closes via the verdict-ledger path with provenance; red/amber → task back to the agent with findings to remediate; carve-out classes (act-in-the-world, tier-0-or-bypass, sovereignty fields) stay with the operator. The review-queue section stops presenting them as operator work. Inception T-4155 GO (2026-10-13) is the design record; this applies it.
+  Operator 2026-10-13: only high-risk items go to the operator; the rest go to the
+  reviewer ladder, close on all-green, remediate otherwise — 'already implemented;
+  if it is implemented it is not applied appropriately'. Confirmed: D-626 (2026-09-23),
+  T-3557 carve-outs, T-3580 rung policy exist, but bin/fw review-queue (T-3449, ~9033)
+  routes READY TO CLOSE tasks to the operator because fw task delegate declines them
+  ('nothing to convert'). 16 such tasks here. Fix: fw task delegate (or fw reviewer
+  judge) accepts the zero-Human-criteria case — independent reviewer at the rung lib/review_policy.py
+  requires; green verdict closes via the verdict-ledger path with provenance; red/amber
+  → task back to the agent with findings to remediate; carve-out classes (act-in-the-world,
+  tier-0-or-bypass, sovereignty fields) stay with the operator. The review-queue section
+  stops presenting them as operator work. Inception T-4155 GO (2026-10-13) is the
+  design record; this applies it.
 
-status: captured
+status: started-work
 workflow_type: build
 owner:
 horizon: now
@@ -38,8 +53,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T15:01:32Z
-last_update: 2026-10-13T15:01:32Z
-date_finished: null
+last_update: 2026-10-13T16:43:22Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +65,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-13T15:15:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=276,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-13T15:15:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4156: Apply the standing review rulings (D-626, T-3557, T-3580 risk-graded reviewer ladder) to READY TO CLOSE tasks: owner:human, zero Human criteria, all Agent ACs ticked, verification green → fw reviewer judge at the task's due rung; green closes with verdict provenance (owner unchanged), not green → remediate, carve-outs escalate (16 here, 832 T-1127)
@@ -66,8 +109,10 @@ but R-033 refuses it even from the operator's own terminal ("Cannot complete hum
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw task delegate T-XXX` on a READY TO CLOSE task (owner human, zero Human criteria, Agent ACs ticked) adds one reviewer-judged close-readiness criterion (owner unchanged, ledger line written) and names `fw reviewer judge` as the next step; `--dry-run` writes nothing
+- [x] Carve-out classes (tier-0/bypass, sovereignty, act-in-the-world) and inception tasks are not delegated: output points to `fw task review`
+- [x] `fw review-queue` READY TO CLOSE section no longer prints the R-033 dead-end `task update --status work-completed` command; it prints the delegate route
+- [x] Tests in tests/unit/test_t4156_ready_to_close_route.py fail on HEAD and pass now; test_unclosable_misfiled.py stays green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -102,6 +147,8 @@ but R-033 refuses it even from the operator's own terminal ("Cannot complete hum
 
 ## Verification
 
+python3 -m pytest tests/unit/test_t4156_ready_to_close_route.py tests/unit/test_unclosable_misfiled.py -q > /tmp/.t4156.out 2>&1 && grep -q passed /tmp/.t4156.out
+bin/fw vendor self --check
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -302,14 +349,10 @@ but R-033 refuses it even from the operator's own terminal ("Cannot complete hum
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-10-13 — how a zero-Human-criteria task reaches the reviewer ledger
+- **Chose:** `fw task delegate` adds one reviewer-judged `[REVIEW]` close-readiness Human criterion (owner untouched); `fw reviewer judge` + the existing verdict ledger do the rest. Carve-outs and inceptions are refused and point to `fw task review`.
+- **Why:** the ledger is criterion-keyed; a synthetic criterion reuses T-3579/T-3580 provenance and rung policy without a second close path.
+- **Rejected:** a new close-only verdict kind in verdict_ledger (large, signed-provenance surface); flipping owner (sovereignty field, T-4155 rejected it).
 
 ## Decision
 
@@ -327,3 +370,6 @@ but R-033 refuses it even from the operator's own terminal ("Cannot complete hum
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4156-apply-the-standing-review-rulings-d-626-.md
 - **Context:** Initial task creation
+
+### 2026-10-13T16:43:22Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
