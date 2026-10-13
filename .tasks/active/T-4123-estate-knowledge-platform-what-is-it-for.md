@@ -16,7 +16,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-12T18:22:09Z
-last_update: 2026-10-12T18:23:09Z
+last_update: '2026-10-12T18:30:32Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -42,6 +42,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-12T18:30:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 7
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=7 (lines=152,acs=4)
     rubric_sha: e4a00f38e801
 ---
 
@@ -162,17 +172,18 @@ Time-box: consults answered within a day; synthesis in one session.
 
 ## Recommendation
 
-**Recommendation:** DEFER
+**Recommendation:** GO
 
 **Rationale:**
 
-Evidence gap, not a confidence gap: the requirements have not been collected yet. Step 1 of the ring20 role chain (requirements collector) gathers them from the operator and five stakeholder agents; the recommendation follows from the collected R-n list. T-4091 (push interface) waits on this.
+The requirements are collected well enough to start: draft v0.3 holds R-1..R-40 with acceptance criteria from three of five stakeholders, three external models agree unanimously on the hardest calls (no outside fallback, roles instead of hostnames, owner-decided curation, no auto-collapse), and the operator set the direction on 2026-10-13: feed the central store from each project's local index now and rationalise later; recompute vectors centrally; capability cards at module level as a separate high-priority task (T-4142). GO means: finish v0.4 with the operator's rulings and the remaining answers (010, 1409, 055), then unblock T-4091 (the push pipe) for a pilot — one project writing, one reading — limited to the raw layer and the categories the operator picks. Curation (prune/collapse/combine) and per-project embedding come later.
 
 **Evidence:**
 
-<!-- Add evidence bullets as exploration progresses (file paths,
-     commit hashes, test results). The filing-time recommendation
-     can be revised before fw inception decide. -->
+- `docs/reports/T-4123-estate-knowledge-requirements.md` — R-1..R-40, CF-1..CF-11, §6.1.a external comparison table, D-1..D-3, Dialogue Log with the operator's direction.
+- `docs/reports/T-4123-inputs/` — stakeholder answers (dimitri-mint-dev, ring20-manager, 832 + correction) and `external/` (gemini-2.5-pro, gpt-5, grok-4.7), all unedited.
+- Measured: every project's local index uses the same path-based categories (web/search_utils.py:19); 9 of 27 modules here have no description, none has a capabilities field (→ T-4142).
+- Open for the operator before v0.4: which categories to feed (numbered list sent 2026-10-13), CF-1/2/5/7 rulings (external views now in hand).
 
 ## Decisions
 
