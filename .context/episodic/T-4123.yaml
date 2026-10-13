@@ -1,0 +1,126 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4123: Estate knowledge platform: what is it for and what must it do? Requirements (role chain step 1: requirements collector) across content, curation (prune/collapse/combine), retrieval, fabric solution-finding and model selection
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-13T13:49:09Z
+# ============================================================================
+
+task_id: T-4123
+task_name: "Estate knowledge platform: what is it for and what must it do? Requirements (role chain step 1: requirements collector) across content, curation (prune/collapse/combine), retrieval, fabric solution-finding and model selection"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-12T18:22:09Z
+completed: 2026-10-13T13:48:34Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-12T20:25:37+02:00
+last_commit: 2026-10-13T15:48:38+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  inception — estate knowledge platform requirements (role chain step 1); research artefact, IW-1..5, brief sent to 5 stakeholder agents; T-4124 filed (055 receiver 401 after reboot). dimitri-mint-dev's answer stored unedited; 832 and 010 acked. scope area G error resolution (operator); IW-6; follow-up question sent to the five stakeholders. dimitri-mint-dev's area-G answer stored unedited. ring20-manager's answer (incl. platform-operator constraints) and the requirements-collector + _common role cards stored unedited; output format pinned to the card. requirements draft v0.2 — R-1..R-32, conflicts CF-1..CF-8 (4 open for the operator), A9.7 mapping, drawings D-1..D-3, open questions. 832's answer stored unedited (full body from the receiver store); stakeholder table updated. draft v0.3 (832's answer: R-33..R-40, CF-9..CF-11); external consults: gemini-2.5-pro and gpt-5 answers stored unedited — both cut by max_tokens (reasoning tokens counted), grok-4 404. external consults rerun — openai/gpt-5 (complete, $0.072) and x-ai/grok-4.7 (resolved from the model list, $0.067) stored unedited; CF-2 gains the operator's 'both' option. external consultation table — three models on CF-1/2/5/7/9 and R-8 (unanimous on CF-1, CF-7, CF-9, R-8). dialogue — operator direction: feed the central store from each project's local index now, rationalise later; capability cards at module level for 'do we already have this capability?'. dialogue — recompute centrally (operator); capability cards split out as T-4142. 832's correction stored unedited (index was tracked, 36 KB committed, not 991 MB); R-37 rationale corrected; T-4144 filed for the large-file scan wording. recommendation GO (requirements collected enough for a pilot; operator direction recorded). IW-1..IW-6 dispositions (4 answered, 2 deferred to after the pilot). inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'scope area G error resolution (operator); IW-6; follow-up question sent to the five stakeholders'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-4123-estate-knowledge-requirements.md'
+  - 'docs/reports/T-4123-inputs/00b-followup-error-resolution.txt'
+  - 'docs/reports/T-4123-inputs/00-brief-as-sent.txt'
+  - 'docs/reports/T-4123-inputs/01b-dimitri-mint-dev-G.txt'
+  - 'docs/reports/T-4123-inputs/01-dimitri-mint-dev.txt'
+  - 'docs/reports/T-4123-inputs/02b-ring20-manager-role-cards.txt'
+  - 'docs/reports/T-4123-inputs/02-ring20-manager.txt'
+  - 'docs/reports/T-4123-inputs/03-832-workflow-designer.txt'
+  - 'docs/reports/T-4123-inputs/03b-832-correction.txt'
+  - 'docs/reports/T-4123-inputs/external/google__gemini-2.5-pro.json'
+  - 'docs/reports/T-4123-inputs/external/google__gemini-2.5-pro.md'
+  - 'docs/reports/T-4123-inputs/external/openai__gpt-5.json'
+  - 'docs/reports/T-4123-inputs/external/openai__gpt-5.md'
+  - 'docs/reports/T-4123-inputs/external/x-ai__grok-4.7.json'
+  - 'docs/reports/T-4123-inputs/external/x-ai__grok-4.7.md'
+  - '.tasks/active/T-4123-estate-knowledge-platform-what-is-it-for.md'
+  - '.tasks/active/T-4124-sidecar-send-to-a-local-peer-fails-http-.md'
+  - '.tasks/active/T-4144-large-file-scan-reports-a-tracked-files-.md'
+  - '.tasks/completed/T-4123-estate-knowledge-platform-what-is-it-for.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-12T20:25:37'
+    action: 'T-4123: inception — estate knowledge platform requirements (role chain step 1); research artefact, IW-1..5, brief sent to 5 stakeholder agents; T-4124 filed (055 receiver 401 after reboot)'
+  - time: '2026-10-12T20:26:32'
+    action: 'T-4123: dimitri-mint-dev''s answer stored unedited; 832 and 010 acked'
+  - time: '2026-10-12T20:29:53'
+    action: 'T-4123: scope area G error resolution (operator); IW-6; follow-up question sent to the five stakeholders'
+  - time: '2026-10-12T20:31:20'
+    action: 'T-4123: dimitri-mint-dev''s area-G answer stored unedited'
+  - time: '2026-10-12T21:35:26'
+    action: 'T-4123: ring20-manager''s answer (incl. platform-operator constraints) and the requirements-collector + _common role cards stored unedited; output format pinned to the card'
+  - time: '2026-10-12T23:48:27'
+    action: 'T-4123: requirements draft v0.2 — R-1..R-32, conflicts CF-1..CF-8 (4 open for the operator), A9.7 mapping, drawings D-1..D-3, open questions'
+  - time: '2026-10-12T23:52:06'
+    action: 'T-4123: 832''s answer stored unedited (full body from the receiver store); stakeholder table updated'
+  - time: '2026-10-13T00:09:24'
+    action: 'T-4123: draft v0.3 (832''s answer: R-33..R-40, CF-9..CF-11); external consults: gemini-2.5-pro and gpt-5 answers stored unedited — both cut by max_tokens (reasoning tokens counted), grok-4 404'
+  - time: '2026-10-13T13:03:10'
+    action: 'T-4123: external consults rerun — openai/gpt-5 (complete, $0.072) and x-ai/grok-4.7 (resolved from the model list, $0.067) stored unedited; CF-2 gains the operator''s ''both'' option'
+  - time: '2026-10-13T13:03:29'
+    action: 'T-4123: external consultation table — three models on CF-1/2/5/7/9 and R-8 (unanimous on CF-1, CF-7, CF-9, R-8)'
+  - time: '2026-10-13T13:19:57'
+    action: 'T-4123: dialogue — operator direction: feed the central store from each project''s local index now, rationalise later; capability cards at module level for ''do we already have this capability?'''
+  - time: '2026-10-13T13:25:49'
+    action: 'T-4123: dialogue — recompute centrally (operator); capability cards split out as T-4142'
+  - time: '2026-10-13T13:35:40'
+    action: 'T-4123: 832''s correction stored unedited (index was tracked, 36 KB committed, not 991 MB); R-37 rationale corrected; T-4144 filed for the large-file scan wording'
+  - time: '2026-10-13T13:52:12'
+    action: 'T-4123: recommendation GO (requirements collected enough for a pilot; operator direction recorded)'
+  - time: '2026-10-13T13:52:44'
+    action: 'T-4123: IW-1..IW-6 dispositions (4 answered, 2 deferred to after the pilot)'
+  - time: '2026-10-13T15:48:38'
+    action: 'T-4123: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 16 commit(s), 1166 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1166
+  commits: 16
+  files_changed: 19
+  lines_added: 2490
+  lines_removed: 78
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4123-estate-knowledge-platform-what-is-it-for.md
+generated_by: context-agent-hybrid
