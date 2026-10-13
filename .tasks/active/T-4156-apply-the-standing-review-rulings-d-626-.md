@@ -56,7 +56,11 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Design record: inception T-4155 (GO 2026-10-13). Also fix (832, msg 6b331355): the READY TO CLOSE section in
+bin/fw review-queue (~9068) prints `bin/fw task update T-XXX --status work-completed` as "one command closes each",
+but R-033 refuses it even from the operator's own terminal ("Cannot complete human-owned task … via Watchtower";
+832 runme job 022, rc 1) — a dead end. Until the reviewer route replaces the section, print the review URL
+(as `fw task review` does) instead.
 
 ## Acceptance Criteria
 
