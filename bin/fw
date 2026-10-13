@@ -1442,6 +1442,7 @@ show_help() {
     echo -e "  ${GREEN}bpmn${NC} <cmd>           Compile a BPMN diagram into AEF task skeletons"
     echo -e "  ${GREEN}corpus${NC} <cmd>         Spec-driven corpus authoring (derive, generate, canon, diff, prove, lint, explain)"
     echo -e "  ${GREEN}index${NC} <cmd>          Vector index maintenance (reindex — incremental, cron-driven)"
+    echo -e "  ${GREEN}estate${NC} <cmd>         Estate knowledge store (push — stage local index chunks, dry run unless --apply)"
     echo ""
     echo -e "${BOLD}Setup:${NC}"
     echo -e "  ${GREEN}init${NC} [dir]           Bootstrap a new project (auto-detects interactive mode)"
