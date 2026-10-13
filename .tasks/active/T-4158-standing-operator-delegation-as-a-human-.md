@@ -157,7 +157,7 @@ bvp_scores_proposed:
 **Evidence:**
 
 - ring20-manager dry-run on T-2363 (msg c2d56775): AC#1 unclassified/reviewer-judgeable, AC#2 sovereignty-field, stays human.
-- Their operator's delegation (2026-10-13): "Why do you need my reviewer approval? … you have my approval", conditional on a green independent review and the operator taking new decisions (e.g. residual-risk acceptance) himself.
+- Their operator's delegation (2026-10-13): "Why do you need my reviewer approval? … you have my approval", conditional on a green independent review and the operator taking new decisions (e.g. residual-risk acceptance) themselves.
 - Today's workaround: FW_ALLOW_HUMAN_AC_TICK=1 then a per-tick `human_ac_ticks.py ack --i-am-human` via runme.
 
 ## Decisions
