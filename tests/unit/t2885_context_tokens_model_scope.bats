@@ -108,7 +108,7 @@ _fixed_tokens() {  # file [session_start_ts]
 EOF
     result="$(_fixed_tokens "$f")"
     [ "$result" = "290000" ]
-    # Threshold check mirrors budget-gate.sh's TOKEN_CRITICAL at the 300K default window (95%)
+    # Threshold check mirrors budget-gate.sh's TOKEN_CRITICAL at a 300K window (95%; the default was 300K until T-4147)
     [ "$result" -ge 285000 ]
 }
 

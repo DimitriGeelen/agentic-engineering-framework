@@ -44,7 +44,7 @@ def compute_context_tokens_detail(lines, session_start_ts=""):
 
     The dominant model is computed anyway, to scope usage entries (T-2885). It
     is returned here rather than discarded because the gauges that consume this
-    module apply a CONFIGURED BUDGET CAP (CONTEXT_WINDOW, default 300000) and
+    module apply a CONFIGURED BUDGET CAP (CONTEXT_WINDOW, default 800000) and
     could not previously say which model the cap was being applied to — the cap's
     own justifying comment still named a model two releases old. Returned as ""
     whenever tokens are 0, since a count we refused to trust carries no model

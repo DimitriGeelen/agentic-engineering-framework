@@ -182,12 +182,12 @@ _budget_parser_dead_gate() {
 # the reader-facing messages say so (T-3204) — "~95% of context window" read as a
 # hard limit approaching, when it is a policy dial at its configured value, and the
 # two license opposite actions.
-CONTEXT_WINDOW=$(fw_config_int "CONTEXT_WINDOW" 300000)
+CONTEXT_WINDOW=$(fw_config_int "CONTEXT_WINDOW" 800000)
 
 # Token thresholds (autoCompact disabled — D-027)
-TOKEN_WARN=$((CONTEXT_WINDOW * 75 / 100))        # ~75% (225K at 300K)
-TOKEN_URGENT=$((CONTEXT_WINDOW * 85 / 100))      # ~85% (255K at 300K)
-TOKEN_CRITICAL=$((CONTEXT_WINDOW * 95 / 100))    # ~95% (285K at 300K)
+TOKEN_WARN=$((CONTEXT_WINDOW * 75 / 100))        # ~75% (600K at 800K)
+TOKEN_URGENT=$((CONTEXT_WINDOW * 85 / 100))      # ~85% (680K at 800K)
+TOKEN_CRITICAL=$((CONTEXT_WINDOW * 95 / 100))    # ~95% (760K at 800K)
 
 # How often to re-read the transcript (every Nth tool call)
 RECHECK_INTERVAL=$(fw_config_int "BUDGET_RECHECK_INTERVAL" 5)

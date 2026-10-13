@@ -1,7 +1,7 @@
 #!/usr/bin/env bats
 # T-3204: the budget gauge's denominator is a CONFIGURED CAP, and now says so.
 #
-# CONTEXT_WINDOW (default 300000) was never an estimate of the model's context
+# CONTEXT_WINDOW (default 300000 then; 800000 since T-4147) was never an estimate of the model's context
 # window — its own comment called it "a safe default for quality + cost control".
 # But five reader-facing messages reported the ratio as "% of context window",
 # which reads as a hard limit approaching rather than as a policy dial sitting at
@@ -131,13 +131,14 @@ EOF
 
 # ── the non-behaviour pins ────────────────────────────────────────────────────
 
-@test "the cap's value is UNCHANGED at 300000 in both gauges" {
+@test "the cap's fallback is the registry default (800000 since T-4147) in both gauges" {
     # T-3204 is a legibility change. If this reddens, someone converted a
     # deliberate cost-control policy into a derived value — which is an operator
     # decision, explicitly surfaced rather than taken (see the task's Recommendation).
-    run grep -c 'fw_config_int "CONTEXT_WINDOW" 300000' "$REPO_ROOT/agents/context/checkpoint.sh"
+    # T-4147: the operator moved the default 300000 -> 800000 on 2026-10-13.
+    run grep -c 'fw_config_int "CONTEXT_WINDOW" 800000' "$REPO_ROOT/agents/context/checkpoint.sh"
     [ "$output" = "1" ]
-    run grep -c 'fw_config_int "CONTEXT_WINDOW" 300000' "$REPO_ROOT/agents/context/budget-gate.sh"
+    run grep -c 'fw_config_int "CONTEXT_WINDOW" 800000' "$REPO_ROOT/agents/context/budget-gate.sh"
     [ "$output" = "1" ]
 }
 

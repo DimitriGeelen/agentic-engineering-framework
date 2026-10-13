@@ -35,12 +35,12 @@ BASELINE_FILE="$CONTEXT_DIR/working/.session-baseline"
 # the reader-facing messages say so (T-3204) — "~95% of context window" read as a
 # hard limit approaching, when it is a policy dial at its configured value, and the
 # two license opposite actions.
-CONTEXT_WINDOW=$(fw_config_int "CONTEXT_WINDOW" 300000)
+CONTEXT_WINDOW=$(fw_config_int "CONTEXT_WINDOW" 800000)
 
 # Token thresholds (autoCompact disabled — D-027)
-TOKEN_WARN=$((CONTEXT_WINDOW * 75 / 100))        # ~75% (225K at 300K) — informational
-TOKEN_URGENT=$((CONTEXT_WINDOW * 85 / 100))      # ~85% (255K at 300K) — commit + checkpoint
-TOKEN_CRITICAL=$((CONTEXT_WINDOW * 95 / 100))    # ~95% (285K at 300K) — handover NOW
+TOKEN_WARN=$((CONTEXT_WINDOW * 75 / 100))        # ~75% (600K at 800K) — informational
+TOKEN_URGENT=$((CONTEXT_WINDOW * 85 / 100))      # ~85% (680K at 800K) — commit + checkpoint
+TOKEN_CRITICAL=$((CONTEXT_WINDOW * 95 / 100))    # ~95% (760K at 800K) — handover NOW
 
 # Check tokens every N tool calls (balance: accuracy vs performance)
 TOKEN_CHECK_INTERVAL=$(fw_config_int "TOKEN_CHECK_INTERVAL" 5)

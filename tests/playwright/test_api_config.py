@@ -28,7 +28,7 @@ class TestConfigPageContent:
         page.wait_for_load_state("domcontentloaded")
         content = page.content()
         # Should show port number or context window value
-        assert "3000" in content or "300000" in content or "default" in content.lower()
+        assert "3000" in content or "800000" in content or "default" in content.lower()
 
     def test_config_has_source_info(self, page: Page):
         """Config page shows where settings come from (default, env, file)."""

@@ -1,10 +1,20 @@
 ---
 id: T-4147
-name: "Raise the CONTEXT_WINDOW registry default from 300,000 to 800,000 tokens (operator 2026-10-13); projects that set their own value keep it"
+name: "Raise the CONTEXT_WINDOW registry default from 300,000 to 800,000 tokens (operator
+  2026-10-13); projects that set their own value keep it"
 description: >
-  Operator 2026-10-13: 'update the project configuration. It needs to move from 3 to 800k'. Interpreted as the registry default (lib/config.sh:214 CONTEXT_WINDOW|300000; fallbacks in agents/context/budget-gate.sh:185 and checkpoint.sh:38; comment examples), which every project without its own CONTEXT_WINDOW uses; this project keeps its explicit 975,000 in .framework.yaml. Update the default in all three places, the comment arithmetic, CLAUDE.md's 'registry default 300,000' mentions, and the tests that pin 300000 as the DEFAULT (not those that set it explicitly as a fixture). Risk to state in the task: a session on a model with a smaller real window than 800K would reach the model's limit before the budget gate warns; the model-based follow-up inception addresses that.
+  Operator 2026-10-13: 'update the project configuration. It needs to move from 3
+  to 800k'. Interpreted as the registry default (lib/config.sh:214 CONTEXT_WINDOW|300000;
+  fallbacks in agents/context/budget-gate.sh:185 and checkpoint.sh:38; comment examples),
+  which every project without its own CONTEXT_WINDOW uses; this project keeps its
+  explicit 975,000 in .framework.yaml. Update the default in all three places, the
+  comment arithmetic, CLAUDE.md's 'registry default 300,000' mentions, and the tests
+  that pin 300000 as the DEFAULT (not those that set it explicitly as a fixture).
+  Risk to state in the task: a session on a model with a smaller real window than
+  800K would reach the model's limit before the budget gate warns; the model-based
+  follow-up inception addresses that.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T13:43:05Z
-last_update: 2026-10-13T13:43:05Z
-date_finished: null
+last_update: 2026-10-13T14:03:33Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +60,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-13T13:45:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-13T13:45:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4147: Raise the CONTEXT_WINDOW registry default from 300,000 to 800,000 tokens (operator 2026-10-13); projects that set their own value keep it
@@ -62,8 +100,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/config.sh` registry declares `CONTEXT_WINDOW|800000` (and the header comment example uses 800000); `BASH_TIMEOUT|300000` untouched
+- [x] Hard fallbacks in `agents/context/budget-gate.sh` and `agents/context/checkpoint.sh` (and any other code fallback for CONTEXT_WINDOW) are 800000, band comments read 600K / 680K / 760K at 800K
+- [x] CLAUDE.md states the registry default as 800,000 (this project's 975,000 unchanged); Watchtower /config default updated if it shows one
+- [x] Tests that pin 300000 as the DEFAULT are updated to 800000; fixture tests that set CONTEXT_WINDOW explicitly unchanged; changed tests + `tests/lint/config-registry-parity.bats` pass
+
+**Risk:** a session on a model whose real window is smaller than 800K reaches the model's own limit before the budget gate warns, in any project without its own CONTEXT_WINDOW. The model-based follow-up inception (T-4148) addresses that.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -226,6 +268,11 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+grep -q '"CONTEXT_WINDOW|800000|' lib/config.sh
+grep -q 'fw_config_int "CONTEXT_WINDOW" 800000' agents/context/budget-gate.sh && grep -q 'fw_config_int "CONTEXT_WINDOW" 800000' agents/context/checkpoint.sh
+grep -q '"BASH_TIMEOUT|300000|' lib/config.sh
+timeout 300 bats tests/lint/config-registry-parity.bats > /tmp/.t4147-parity.out 2>&1 && ! grep -q "^not ok" /tmp/.t4147-parity.out
+bin/fw vendor self --check
 
 ## RCA
 
@@ -242,6 +289,10 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** none. This is a config change the operator directed on 2026-10-13, not a bug.
+**Root cause:** n/a.
+**Why structurally allowed:** n/a.
+**Prevention:** `lib_config.bats` now greps the registry line directly. Before, the test only passed the default as fw_config_int's own fallback argument, so it could not see what the registry said.
 
 ## Evolution
 
@@ -323,3 +374,11 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4147-raise-the-contextwindow-registry-default.md
 - **Context:** Initial task creation
+
+### 2026-10-13 — default raised to 800,000 [worker t4147-fix]
+- **Changed:** `lib/config.sh` (registry + header example), fallbacks in `agents/context/budget-gate.sh`, `agents/context/checkpoint.sh`, `bin/fw` (doctor range check), `web/blueprints/config.py` (Watchtower /config default), `lib/context_tokens.py` docstring, `lib/templates/claude-project.md` (consumer CLAUDE.md bands 600K/680K/760K), `CLAUDE.md` (4 mentions; historical "274K at 300K" anecdote left as history). Band comments recomputed to 600K/680K/760K.
+- **Tests:** default-pinning tests updated: `lib_config.bats` (now also greps the registry line), `t3204_budget_cap_legibility.bats` (fallback pin), `playwright/test_api_config.py`; `t2885` comment only. Fixture tests that pass `FW_CONTEXT_WINDOW=300000` explicitly left unchanged.
+- **Pre-change pin:** `lib_config.bats` and `t3204` asserted 300000 and were the tests that had to move.
+- **Run:** 13 files, 129 tests: 128 ok, 0 skip, 1 not ok — `continuous_loop_critical_signal.bats` "T-2363 directive-fold: directive present" fails identically with HEAD's checkpoint.sh (pre-existing, unrelated; the test sets the window explicitly). `config-registry-parity.bats` 3/3 ok. `fw test lint` FAILs only in files this task did not touch.
+### 2026-10-13T13:46:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

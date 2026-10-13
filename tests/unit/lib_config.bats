@@ -126,14 +126,15 @@ setup() {
 
 # --- Real settings ---
 
-@test "CONTEXT_WINDOW default is 300000" {
+@test "CONTEXT_WINDOW default is 800000 (T-4147; was 300000)" {
     unset FW_CONTEXT_WINDOW
     # Hermetic: the registry default, not this repo's .framework.yaml override
     # (set since 8193dfaa8/T-3455; 975000 at the time of writing).
     local empty; empty="$(mktemp -d)"
-    result=$(PROJECT_ROOT="$empty" fw_config_int "CONTEXT_WINDOW" 300000)
+    result=$(PROJECT_ROOT="$empty" fw_config_int "CONTEXT_WINDOW" 800000)
     rm -rf "$empty"
-    [ "$result" = "300000" ]
+    [ "$result" = "800000" ]
+    grep -q '"CONTEXT_WINDOW|800000|' "$FRAMEWORK_ROOT/lib/config.sh"
 }
 
 @test "DISPATCH_LIMIT default is 0 (T-3910: harness sub-agents off; TermLink workers instead)" {
