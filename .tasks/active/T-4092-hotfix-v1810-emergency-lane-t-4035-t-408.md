@@ -351,6 +351,12 @@ git merge-base --is-ancestor b82294243 hotfix/v1.8.10
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-13 — stop review rounds after codex round 4
+- **Chose:** ship candidate 704c9988f with codex round 4's MEDIUM residual stated as a known limitation (operator: "Agree, stop the rounds, proceed as suggested", 2026-10-13).
+- **Residual:** if the task file disappears concurrently in the instant before `git commit --only`, the follow-up commit fails visibly; the decision stays committed; nothing is reverted or lost.
+- **Why:** rounds 2-4 each found a narrower edge; this one is visible and lossless; the emergency lane is meant to stay small.
+- **Rejected:** round 5 with a bounded pathspec revalidation/retry (can go to bleeding-edge later as its own task).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
