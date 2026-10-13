@@ -84,29 +84,29 @@ cost_estimate_proposed:
 -->
 
 - **IW-1: Content — which kinds of knowledge belong in the estate store, from which sources, and which never?**
-  confidence: 1
-  disposition:
-  rationale: dimitri-mint-dev's pilot offer lists learnings, decisions, patterns, episodic and task summaries; stakeholder answers pending
+  confidence: 2
+  disposition: answered
+  rationale: R-1..R-5, R-33, R-37 in the requirements doc; operator 2026-10-13: feed from each project's local index; which categories is the operator's pick (numbered list sent)
 - **IW-2: Curation — how are items pruned, collapsed and combined across projects, and who decides each act?**
-  confidence: 0
-  disposition:
-  rationale: only per-project tools exist today (fw consolidate / promote / harvest)
+  confidence: 2
+  disposition: deferred
+  rationale: operator 2026-10-13 "start feeding, later see if we need to aggregate or rationalize"; R-6..R-11, R-39 drafted and all three external models agree (owner decides, no auto-collapse, §6.1.a) — built after the pilot
 - **IW-3: Retrieval — how does an agent ask, what comes back (scope, ranking, provenance, trust), and how is quality measured?**
-  confidence: 0
-  disposition:
-  rationale: operator raised it 2026-10-12; arc-001 C4/C12 relevant
+  confidence: 2
+  disposition: answered
+  rationale: R-12..R-17, R-33..R-36 (provenance, scope, two ranking modes, fixed question set, degradation, trust tier)
 - **IW-4: Fabric — can component fabric cards serve as a cross-project solution finder, and what must a card carry for that?**
-  confidence: 0
-  disposition:
-  rationale: operator's example: "I'm working with X and Y — who already has a solution?"
+  confidence: 2
+  disposition: answered
+  rationale: yes at module level, not per component (operator 2026-10-13); card fields from three stakeholders (R-18); quality work split out as inception T-4142
 - **IW-5: Model selection — default plus configurable from what Ollama offers; where does embedding happen and how is mixing prevented?**
-  confidence: 1
-  disposition:
-  rationale: web/config.py:64 env-only today; arc-001 C3 manifest; server- vs client-side still open
+  confidence: 2
+  disposition: answered
+  rationale: R-19..R-21; operator 2026-10-13: recompute vectors centrally for the pilot (also allows different tagging); per-project embedding deferred
 - **IW-6: Error resolution — how are error classes, their resolutions (or lack of one) and occurrence counts shared across projects, and what stays with healing patterns, the host error service and telemetry?**
-  confidence: 0
-  disposition:
-  rationale: operator added 2026-10-12; proposed split: occurrences = telemetry, error class + resolution + count = knowledge
+  confidence: 2
+  disposition: deferred
+  rationale: R-22..R-24, R-40 drafted (occurrences stay local, the class goes to the store); not in the first pilot's categories — added after the pilot runs
 
 ## Exploration Plan
 
