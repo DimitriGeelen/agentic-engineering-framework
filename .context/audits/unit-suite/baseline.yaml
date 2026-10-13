@@ -910,3 +910,49 @@ entries:
   added: '2026-10-12'
   expires: '2026-10-19'
   added_by: human
+- leg: bats
+  name: 't3511_parked_merge_guard.bats: CONTROL: clean merge of a LIVE task''s branch succeeds'
+  file: t3511_parked_merge_guard.bats
+  owner: T-4138
+  added: '2026-10-13'
+  expires: '2026-10-27'
+  added_by: human
+- leg: bats
+  name: 't3511_parked_merge_guard.bats: FW_ALLOW_PARKED_MERGE=1 permits the merge and says so'
+  file: t3511_parked_merge_guard.bats
+  owner: T-4138
+  added: '2026-10-13'
+  expires: '2026-10-27'
+  added_by: human
+- leg: bats
+  name: 't4119_terminator_handover_git_extension.bats: T-4119: git still running at the limit is NOT cut
+    there — handover completes'
+  file: t4119_terminator_handover_git_extension.bats
+  owner: T-4138
+  added: '2026-10-13'
+  expires: '2026-10-27'
+  added_by: human
+- leg: bats
+  name: 't4119_terminator_handover_git_extension.bats: T-4119: no git in flight at the limit — a hang
+    is still cut at the limit'
+  file: t4119_terminator_handover_git_extension.bats
+  owner: T-4138
+  added: '2026-10-13'
+  expires: '2026-10-27'
+  added_by: human
+- leg: bats
+  name: 't4119_terminator_handover_git_extension.bats: T-4119: a git process outside the project root
+    does not extend the limit'
+  file: t4119_terminator_handover_git_extension.bats
+  owner: T-4138
+  added: '2026-10-13'
+  expires: '2026-10-27'
+  added_by: human
+- leg: bats
+  name: 'test_doctor_litellm_ollama.bats: fw doctor exits cleanly on this project (litellm/ollama checks
+    don''t FAIL)'
+  file: test_doctor_litellm_ollama.bats
+  owner: T-4138
+  added: '2026-10-13'
+  expires: '2026-10-27'
+  added_by: human
