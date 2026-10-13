@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4158: Standing operator delegation as a Human-tick provenance kind (scope, grantor, date, revocable; ticks inside scope cite a green verdict) — or route such criteria through the existing reviewer verdict path (ring20-manager request, arc-008 role-chain step approvals)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-13T15:30:37Z
+# ============================================================================
+
+task_id: T-4158
+task_name: "Standing operator delegation as a Human-tick provenance kind (scope, grantor, date, revocable; ticks inside scope cite a green verdict) — or route such criteria through the existing reviewer verdict path (ring20-manager request, arc-008 role-chain step approvals)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-13T15:13:47Z
+completed: 2026-10-13T15:29:53Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-13T17:14:08+02:00
+last_commit: 2026-10-13T17:29:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file inception — standing delegation provenance vs existing reviewer-verdict route (ring20-manager). recommendation GO — dry-run shows the approval criterion is a sovereignty carve-out the verdict path cannot reach; narrow operator-recorded standing delegation. wording — use they for the operator. inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4158-standing-operator-delegation-as-a-human-.md'
+  - '.tasks/completed/T-4158-standing-operator-delegation-as-a-human-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-13T17:14:08'
+    action: 'T-4158: file inception — standing delegation provenance vs existing reviewer-verdict route (ring20-manager)'
+  - time: '2026-10-13T17:18:59'
+    action: 'T-4158: recommendation GO — dry-run shows the approval criterion is a sovereignty carve-out the verdict path cannot reach; narrow operator-recorded standing delegation'
+  - time: '2026-10-13T17:19:13'
+    action: 'T-4158: wording — use they for the operator'
+  - time: '2026-10-13T17:29:56'
+    action: 'T-4158: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 16 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 16
+  commits: 4
+  files_changed: 2
+  lines_added: 235
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4158-standing-operator-delegation-as-a-human-.md
+generated_by: context-agent-hybrid
