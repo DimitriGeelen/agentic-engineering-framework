@@ -1,10 +1,22 @@
 ---
 id: T-4150
-name: "SECURITY: budget-gate classifier (lib/cmd_classify.py) admits executable text at critical budget via process substitution, an unquoted heredoc carrying $(…), or a '#' comment that hides a heredoc opener — parser differential vs bash"
+name: "SECURITY: budget-gate classifier (lib/cmd_classify.py) admits executable text
+  at critical budget via process substitution, an unquoted heredoc carrying $(…),
+  or a '#' comment that hides a heredoc opener — parser differential vs bash"
 description: >
-  Verified 2026-10-13 with classify(cmd, cwd, framework_root, project_root) (repro: .context/scratch/t4125-repro.py): plain 'touch /etc/X' refused, but ADMITTED: 'git status > >(touch /etc/X)'; 'git status <<EOF\n$(touch /etc/X)\nEOF' (unquoted heredoc: bash runs the command substitution); 'git status # <<EOF\ntouch /etc/X\nEOF' (bash treats <<EOF as a comment, so the next line runs as a command while strip_heredocs drops it as heredoc data). Found by the codex parser review for ring20-dashboard's hint (finding 2). Fix: refuse process substitution (<( >( ); treat an unquoted heredoc body containing $( or backticks as executable (refuse at critical); run strip_comments' notion of comments before heredoc detection consistently with bash (a heredoc opener inside a comment is not an opener). Tests: each case fails on HEAD; existing T-2923/T-4125 tests stay green.
+  Verified 2026-10-13 with classify(cmd, cwd, framework_root, project_root) (repro:
+  .context/scratch/t4125-repro.py): plain 'touch /etc/X' refused, but ADMITTED: 'git
+  status > >(touch /etc/X)'; 'git status <<EOF\n$(touch /etc/X)\nEOF' (unquoted heredoc:
+  bash runs the command substitution); 'git status # <<EOF\ntouch /etc/X\nEOF' (bash
+  treats <<EOF as a comment, so the next line runs as a command while strip_heredocs
+  drops it as heredoc data). Found by the codex parser review for ring20-dashboard's
+  hint (finding 2). Fix: refuse process substitution (<( >( ); treat an unquoted heredoc
+  body containing $( or backticks as executable (refuse at critical); run strip_comments'
+  notion of comments before heredoc detection consistently with bash (a heredoc opener
+  inside a comment is not an opener). Tests: each case fails on HEAD; existing T-2923/T-4125
+  tests stay green.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T13:45:31Z
-last_update: 2026-10-13T13:45:31Z
-date_finished: null
+last_update: 2026-10-13T14:06:48Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +62,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-13T13:46:43Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-13T14:00:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=278,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4150: SECURITY: budget-gate classifier (lib/cmd_classify.py) admits executable text at critical budget via process substitution, an unquoted heredoc carrying $(…), or a '#' comment that hides a heredoc opener — parser differential vs bash
@@ -62,8 +102,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Regression tests exist for all three verified cases (process substitution `>(`/`<(`, unquoted heredoc body carrying `$(`/backtick, `#` comment hiding a heredoc opener) and each FAILS on HEAD's `lib/cmd_classify.py`
+- [x] `classify()` refuses all three at critical; the tokeniser follows bash for comments-vs-heredoc-openers, quoted vs unquoted heredoc delimiters, and process substitution
+- [x] Controls stay admitted: quoted heredoc commit messages (`<<'EOF'` containing `$(` text), ordinary read-only commands, `#` inside quotes, existing T-2923/T-4125 test suites green
+- [x] Uncertain input is refused (fail closed): unterminated quote, ANSI-C `$'…'`, nested quoting in `${…}`, `$[…]`, odd heredoc delimiters; an unterminated heredoc keeps T-2923's behaviour (remainder judged as commands) and is refused when unquoted and carrying `$(`/backtick
+- [x] `bin/fw vendor self --check` clean for the touched files; `bin/fw test lint` reports nothing on the new/changed files
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +140,11 @@ date_finished: null
 -->
 
 ## Verification
+
+timeout 300 bats tests/unit/t4150_cmd_classify_parser_differential.bats > /tmp/.t4150a 2>&1 && ! grep -q "^not ok" /tmp/.t4150a
+test "$(grep -c '# skip' /tmp/.t4150a)" -eq 0
+timeout 300 bats tests/unit/t2923_cmd_classify_heredoc.bats tests/unit/t2919_budget_gate_command_classify.bats tests/unit/t4125_cmd_classify_launcher.bats tests/lint/prescribed-commands-are-allowed.bats > /tmp/.t4150b 2>&1 && ! grep -q "^not ok" /tmp/.t4150b
+cmp -s lib/cmd_classify.py .agentic-framework/lib/cmd_classify.py
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -243,6 +291,14 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** at critical budget `classify()` admitted `git status > >(touch X)`, `git status <<EOF / $(touch X) / EOF` and `git status # <<EOF / touch X / EOF` — bash runs `touch X` in all three (verified with echo-only probes; a fourth, `git status "${x:-"<<'EOF'"}" / touch X / EOF`, found during the fix, is the same class).
+
+**Root cause:** three independent re-readers of the same text (`strip_heredocs`, `strip_comments`, `split_segments`), each with its own partial notion of shell syntax. `strip_heredocs` knew quotes but not comments, so a commented `<<EOF` opened a phantom body; it blanked every body regardless of delimiter quoting, though bash expands `$(…)` in an unquoted body; nobody looked for `<(`/`>(`; and a flat quote tracker cannot follow bash's nested quoting inside `${…}`.
+
+**Why structurally allowed:** T-2923 fixed a false BLOCK (commit message lines judged as commands) and its tests pinned that direction plus the obvious false allows (a quoted `<<EOF` mention, commands after the terminator). It deliberately ran heredoc-stripping before comment-stripping — correct for bodies, but it meant the heredoc stripper saw comments as live text, and no test put an opener inside a comment. T-4114/T-4126 hardened the boundary hook and T-4125 the launcher identity, both on the verb/path axis; none of them tested the tokenisation itself against bash, so the parser differential was never an axis anyone probed until the codex parser review.
+
+**Prevention:** one tokeniser (`_scan`) now owns where comments, quotes and heredocs are, and `strip_heredocs`/`strip_comments` both take its reading, so they cannot disagree. Anything it cannot read with certainty is refused. `tests/unit/t4150_cmd_classify_parser_differential.bats` pins each differential (13 legs red on HEAD) plus 10 controls and the hook end-to-end. Sibling: `lib/shell_write_scan.py` carries its own `_HEREDOC_RE` line scanner of the same shape — left to the boundary-hook task (T-4149), not changed here.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -307,6 +363,13 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-13 — tokeniser instead of three more regexes
+- **Chose:** a single character-level scanner (`_scan`) following bash's rules for single/double quotes, backslash and line continuation, `#` at a word start (after a blank or `;&|()<>`), heredoc delimiters (quote removal; any quoting = quoted heredoc; `<<-` tab stripping; exact terminator match), `<<<`. `strip_heredocs` and `strip_comments` keep their names and the T-2923 order but both take `_scan`'s reading; `classify()` asks `shell_syntax_refusal()` first.
+- **Why:** each bypass was a place where two strippers read the text differently. Patching each case leaves the next differential; one reader removes the class for the shapes it covers.
+- **Rejected:** `shlex` (does not know heredocs or bash comments rules after metacharacters); calling `bash -n` (parses but does not expose its reading, and spawns a shell inside a gate).
+- **Guarantees now:** within the text of the command, every place bash would run a command is either an ordinary segment judged on its verb or refused — process substitution, `$(…)`/backticks (anywhere outside comments and quoted heredoc bodies), an expansion in an unquoted heredoc body (terminated or not), and any text whose reading is uncertain (unterminated quote, `$'…'`, `${…}` holding a quote/backtick/`$(`, `$[…]`, a heredoc delimiter with `$`/backtick or none).
+- **Does NOT guarantee:** anything inside a script or file the command runs, or a command built at run time from pieces the text does not contain — the same scope boundary as Tier 0 (CLAUDE.md T-2742). Variables already in the environment are not modelled (an unquoted-body `$VAR` is admitted). The wrap-up verbs themselves (`git commit` hooks, `fw` subcommands) run code by design.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -323,3 +386,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4150-security-budget-gate-classifier-libcmdcl.md
 - **Context:** Initial task creation
+
+### 2026-10-13T13:46:43Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-13 — pre-fix failure recorded [t4150-fix worker]
+- New suite run against `git show HEAD:lib/cmd_classify.py`: 18 of 27 legs `not ok` — all 13 differential legs, all 3 hook end-to-end refusals, and 2 controls that HEAD falsely blocked (`<<E"O"F`, `<<'END-MSG'`). With the fix: 27/27 ok; t2923 (11), t2919 (22), t4125 and the prescribed-commands lint all green. `.context/scratch/t4125-repro.py` budget section: all three now `refused`.
