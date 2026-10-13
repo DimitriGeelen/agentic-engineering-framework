@@ -384,3 +384,9 @@ bin/fw watchtower current
 
 ### 2026-10-12T22:24:57Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-13 — round 2 (ring20 profile: 43.7 s / 1,199 git after round 1) [agent]
+- **Changes (lib/verdict_ledger.py):** (1) `_task_history_fms`: ONE `git log --full-history --name-only .tasks/` per HEAD, indexed by task id (`_task_file_index`), instead of one full-history walk per task; (2) `_git_components` and `producers_checked`: ONE `git log --all --name-only` per refs state, indexed by every T-id a message mentions (`_all_commit_index`), then each caller applies its own exact message filter; (3) `_git_state_token`: refs tree fingerprinted by directory stat (listing rescanned only when a directory mtime moved), plain `os.stat` instead of Path objects: 1023 → 175 µs/call; bulk outputs > 256 KB are not kept in the memo a second time.
+- **Safety:** indexes are keyed by (repo, HEAD) / (repo, refs token), so another state's data is never served; a failing batched walk returns None and the caller runs the original per-task walk (which raises HistoryUnreadable exactly as before). Task ids not shaped `T-<digits>` always use the per-task walk.
+- **Measured, synthetic 150-task repo (task_required_strength + producers_checked per task):** old 13.55 s / 751 git (450 `log`) → new 1.82 s / 303 git (2 `log`); results byte-identical. This repo's real active-task sweep: 21 git before and after (few tasks reach the ledger path here), task_review_state JSON byte-identical over 824 files.
+- **Tests:** tests/web/test_t4133_readiness_perf.py extended (batched == per-task walks; log-walk count constant in task count; new HEAD not served from the old index; ref create/delete moves the state token). t3580_round8 `test_git_failure_refuses` now also fails the batched `--all` walk. t3580 judge/panel failures (15 across rounds 2-9, +1 in judge_cli) are identical on HEAD without this change.

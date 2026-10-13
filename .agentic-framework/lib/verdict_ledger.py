@@ -1830,27 +1830,38 @@ def producers_checked(root: Path, task_id: str, task_text: str = "") -> tuple[se
     `error` is non-empty when git could not answer — callers treat that as REFUSE, never
     as "no producers" (T-3581: an empty set is not evidence of independence)."""
     found: set[str] = set()
-    try:
-        cp = subprocess.run(
-            ["git", "log", "--all", f"--grep={task_id}", "--name-only",
-             "--format=%x1e%an%x1f%ae%x1f%cn%x1f%ce%x1f%B%x1d"],
-            cwd=str(root), capture_output=True, text=True, timeout=60)
-    except (OSError, subprocess.SubprocessError) as e:
-        return set(), f"git failed: {e}"
-    if cp.returncode != 0:
-        return set(), f"git log failed (rc={cp.returncode}): {cp.stderr.strip()[:120]}"
     ref = re.compile(rf"(?<![A-Za-z0-9-]){re.escape(task_id)}(?![0-9])")
-    for rec in cp.stdout.split("\x1e"):
-        if "\x1d" not in rec:
+    commits: list[tuple[list[str], str, list[str]]] | None = None
+    try:
+        idx = _all_commit_index(root) if _TASK_ID_RE.match(task_id) else None
+        if idx is not None:
+            commits = [([r[1], r[2], r[3], r[4]], r[6], r[7]) for r in idx.get(task_id, [])]
+    except (OSError, subprocess.SubprocessError):
+        idx = None
+    if commits is None:
+        try:
+            cp = subprocess.run(
+                ["git", "log", "--all", f"--grep={task_id}", "--name-only",
+                 "--format=%x1e%an%x1f%ae%x1f%cn%x1f%ce%x1f%B%x1d"],
+                cwd=str(root), capture_output=True, text=True, timeout=60)
+        except (OSError, subprocess.SubprocessError) as e:
+            return set(), f"git failed: {e}"
+        if cp.returncode != 0:
+            return set(), f"git log failed (rc={cp.returncode}): {cp.stderr.strip()[:120]}"
+        commits = []
+        for rec in cp.stdout.split("\x1e"):
+            if "\x1d" not in rec:
+                continue
+            head, files = rec.split("\x1d", 1)
+            parts = head.split("\x1f")
+            if len(parts) >= 5:
+                commits.append((parts[:4], parts[4], [f for f in files.splitlines() if f.strip()]))
+    for who, msg, paths in commits:
+        if not ref.search(msg):
             continue
-        head, files = rec.split("\x1d", 1)
-        parts = head.split("\x1f")
-        if len(parts) < 5 or not ref.search(parts[4]):
-            continue
-        paths = [f for f in files.splitlines() if f.strip()]
         if paths and all(f.startswith(_REVIEW_DIR) for f in paths):
             continue
-        found |= _identities(parts[:4], parts[4])
+        found |= _identities(who, msg)
     fm = frontmatter(task_text) if task_text else {}
     for key in ("producer", "producers"):
         v = fm.get(key)
@@ -1927,6 +1938,8 @@ class Ledger:
 _GIT_MEMO_CMDS = frozenset({"show", "ls-tree", "cat-file", "log", "rev-parse", "merge-base"})
 _GIT_MEMO: dict[str, tuple[tuple, dict]] = {}
 _GIT_MEMO_MAX = 4096
+_GIT_MEMO_MAX_OUT = 1 << 18     # a bulk walk is indexed by its caller, not kept a second time
+_REF_DIRS: dict[str, tuple] = {}
 
 
 def _git_state_token(root: Path) -> tuple | None:
@@ -1934,26 +1947,36 @@ def _git_state_token(root: Path) -> tuple | None:
     commit, amend, checkout and reset), packed-refs, every loose ref, shallow/replace/alternates.
     None when it cannot be taken (worktree `.git` file, unreadable) - the caller then does not
     memoise. A new HEAD or any moved ref changes the token, so history is never served stale."""
-    gd = root / ".git"
+    gd = os.path.join(str(root), ".git")
     try:
-        if not gd.is_dir():
+        if not os.path.isdir(gd):
             return None
         parts: list = []
         for rel in ("HEAD", "logs/HEAD", "packed-refs", "shallow", "objects/info/alternates"):
             try:
-                st = (gd / rel).stat()
+                st = os.stat(gd + "/" + rel)
                 parts.append((rel, st.st_mtime_ns, st.st_size, st.st_ino))
             except OSError:
                 parts.append((rel, 0, 0, 0))
-        stack = [gd / "refs"]
+        # T-4133 r2: git moves a ref by lockfile + rename, which changes its directory's mtime, so
+        # the refs tree is fingerprinted by directory stats; the directory listing is rescanned
+        # only when a directory's mtime moved. Cost is one stat per directory, not per ref.
+        stack = [gd + "/refs"]
         while stack:
-            with os.scandir(stack.pop()) as it:
-                for e in it:
-                    if e.is_dir(follow_symlinks=False):
-                        stack.append(Path(e.path))
-                    else:
-                        st = e.stat(follow_symlinks=False)
-                        parts.append((e.path, st.st_mtime_ns, st.st_size, st.st_ino))
+            d = stack.pop()
+            st = os.stat(d)
+            ent = _REF_DIRS.get(d)
+            if ent is None or ent[0] != (st.st_mtime_ns, st.st_ino):
+                subs, nfiles = [], 0
+                with os.scandir(d) as it:
+                    for e in it:
+                        if e.is_dir(follow_symlinks=False):
+                            subs.append(e.path)
+                        else:
+                            nfiles += 1
+                ent = _REF_DIRS[d] = ((st.st_mtime_ns, st.st_ino), subs, nfiles)
+            parts.append((d, st.st_mtime_ns, st.st_ino, ent[2]))
+            stack.extend(ent[1])
         return tuple(sorted(parts))
     except OSError:
         return None
@@ -1971,7 +1994,8 @@ def _git_out(root: Path, *args: str) -> tuple[int, str]:
                 return hit
     cp = subprocess.run(["git", *args], cwd=str(root), capture_output=True, text=True, timeout=60)
     res = (cp.returncode, cp.stdout)
-    if tok is not None and cp.returncode == 0 and _git_state_token(root) == tok:
+    if tok is not None and cp.returncode == 0 and len(cp.stdout) <= _GIT_MEMO_MAX_OUT \
+            and _git_state_token(root) == tok:
         held = _GIT_MEMO.get(key)
         if held is None or held[0] != tok or len(held[1]) >= _GIT_MEMO_MAX:
             held = _GIT_MEMO[key] = (tok, {})
@@ -2441,6 +2465,73 @@ def _task_text_at(root: Path, rev: str, task_id: str) -> str:
     return blob
 
 
+_TASK_ID_RE = re.compile(r"^T-\d+$")
+_TASK_FILE_RE = re.compile(r"^\.tasks/[^/]+/(T-\d+)(?:-[^/]*)?\.md$")
+_TASK_FILE_INDEX: dict = {}
+
+
+def _task_file_index(root: Path, head: str) -> dict[str, list[tuple[str, str]]] | None:
+    """T-4133 r2: ONE `git log` over .tasks per HEAD, indexed by task id -> [(sha, path)] in the
+    order the per-task pathspec walk listed them (log order, tree order within a commit); the
+    per-task walk was a full-history scan per task. Keyed by (repo, HEAD): another HEAD's index is
+    never served. None when git cannot answer - the caller then runs the per-task walk, which
+    raises exactly as before."""
+    key = (str(root), head)
+    hit = _TASK_FILE_INDEX.get(key)
+    if hit is not None:
+        return hit
+    rc, out = _git_out(root, "log", "--full-history", "--format=%x1e%H", "--name-only",
+                       "--diff-filter=d", "HEAD", "--", ".tasks/")
+    if rc != 0:
+        return None
+    idx: dict[str, list[tuple[str, str]]] = {}
+    for rec in out.split("\x1e"):
+        lines = [ln.strip() for ln in rec.splitlines() if ln.strip()]
+        for name in lines[1:]:
+            m = _TASK_FILE_RE.match(name)
+            if m:
+                idx.setdefault(m.group(1), []).append((lines[0], name))
+    _TASK_FILE_INDEX.clear()
+    _TASK_FILE_INDEX[key] = idx
+    return idx
+
+
+_ALL_COMMITS: dict = {}
+_ALL_FMT = "%x1e%H%x1f%an%x1f%ae%x1f%cn%x1f%ce%x1f%s%x1f%B%x1d"
+_TID_FIND = re.compile(r"T-\d+")
+
+
+def _all_commit_index(root: Path):
+    """T-4133 r2: ONE `git log --all --name-only` per repo state (refs fingerprint), indexed by
+    every task id a commit message mentions -> [(sha, an, ae, cn, ce, subject, message, paths)].
+    Callers apply their own exact message filter to these candidates, so the result equals the
+    per-task `--grep` walk. None when the state cannot be fingerprinted or git cannot answer -
+    callers then run the per-task walk."""
+    tok = _git_state_token(root)
+    if tok is None:
+        return None
+    key = str(root)
+    held = _ALL_COMMITS.get(key)
+    if held is not None and held[0] == tok:
+        return held[1]
+    rc, out = _git_out(root, "log", "--all", "--name-only", f"--format={_ALL_FMT}")
+    if rc != 0 or _git_state_token(root) != tok:
+        return None
+    idx: dict[str, list[tuple]] = {}
+    for rec in out.split("\x1e"):
+        if "\x1d" not in rec:
+            continue
+        head, files = rec.split("\x1d", 1)
+        parts = head.split("\x1f", 6)
+        if len(parts) < 7:
+            continue
+        row = (*parts, [f for f in files.splitlines() if f.strip()])
+        for tid in set(_TID_FIND.findall(parts[6])):
+            idx.setdefault(tid, []).append(row)
+    _ALL_COMMITS[key] = (tok, idx)
+    return idx
+
+
 _HISTORY_FM: dict = {}
 
 
@@ -2463,25 +2554,29 @@ def _task_history_fms(root: Path, task_id: str) -> list[tuple[str, dict]]:
         return _HISTORY_FM[key]
     out: list[tuple[str, dict]] = []
     if head:
-        # Round 8 (Claude N5): --full-history, so a version committed on a side branch that was
-        # merged TREESAME (e.g. `-s ours`) is not pruned from the walk by history simplification.
-        rc, log = _git_out(root, "log", "--full-history", "--format=%x1e%H", "--name-only",
-                           "--diff-filter=d", "HEAD",
-                           "--", f":(glob).tasks/*/{task_id}-*.md", f":(glob).tasks/*/{task_id}.md")
-        if rc != 0:
-            raise HistoryUnreadable(f"could not read the committed history of {task_id} (git log "
-                                    f"rc={rc}) — the review strength it requires cannot be established")
-        for rec in log.split("\x1e"):
-            lines = [ln.strip() for ln in rec.splitlines() if ln.strip()]
-            if not lines:
-                continue
-            sha = lines[0]
-            for name in lines[1:]:
-                rc2, blob = _git_out(root, "show", f"{sha}:{name}")
-                if rc2 != 0:
-                    raise HistoryUnreadable(f"could not read {name} at {sha[:9]} (git show rc={rc2}) "
-                                            f"— a committed version of {task_id} is unreadable")
-                out.append((sha, frontmatter(blob)))
+        idx = _task_file_index(root, head) if _TASK_ID_RE.match(task_id) else None
+        versions: list[tuple[str, str]] = []
+        if idx is not None:
+            versions = idx.get(task_id, [])
+        else:
+            # Round 8 (Claude N5): --full-history, so a version committed on a side branch that was
+            # merged TREESAME (e.g. `-s ours`) is not pruned from the walk by history simplification.
+            rc, log = _git_out(root, "log", "--full-history", "--format=%x1e%H", "--name-only",
+                               "--diff-filter=d", "HEAD",
+                               "--", f":(glob).tasks/*/{task_id}-*.md", f":(glob).tasks/*/{task_id}.md")
+            if rc != 0:
+                raise HistoryUnreadable(f"could not read the committed history of {task_id} (git log "
+                                        f"rc={rc}) — the review strength it requires cannot be established")
+            for rec in log.split("\x1e"):
+                lines = [ln.strip() for ln in rec.splitlines() if ln.strip()]
+                if lines:
+                    versions.extend((lines[0], name) for name in lines[1:])
+        for sha, name in versions:
+            rc2, blob = _git_out(root, "show", f"{sha}:{name}")
+            if rc2 != 0:
+                raise HistoryUnreadable(f"could not read {name} at {sha[:9]} (git show rc={rc2}) "
+                                        f"— a committed version of {task_id} is unreadable")
+            out.append((sha, frontmatter(blob)))
     _HISTORY_FM.clear() if len(_HISTORY_FM) > 64 else None
     _HISTORY_FM[key] = out
     return out
@@ -2586,19 +2681,27 @@ def _git_components(root: Path, task_id: str) -> list[str]:
         return _GIT_COMPONENTS[key]
     if not head:
         return []
-    rc, out = _git_out(root, "log", "--all", "-E", f"--grep={re.escape(task_id)}([^0-9]|$)",
-                       "--name-only", "--format=%x1e%H%x1f%s")
-    if rc != 0:
-        raise HistoryUnreadable(f"could not list the files {task_id}'s commits changed (git log "
-                                f"rc={rc}) — its component count cannot be established")
-    at_head = _cards_at(root, head) if "\x1e" in out else {}
+    commits: list[tuple[str, str, list[str]]] | None = None
+    idx = _all_commit_index(root) if _TASK_ID_RE.match(task_id) else None
+    if idx is not None:
+        grep = re.compile(rf"{re.escape(task_id)}([^0-9]|$)", re.M)
+        commits = [(r[0], r[5], r[7]) for r in idx.get(task_id, []) if grep.search(r[6])]
+    else:
+        rc, out = _git_out(root, "log", "--all", "-E", f"--grep={re.escape(task_id)}([^0-9]|$)",
+                           "--name-only", "--format=%x1e%H%x1f%s")
+        if rc != 0:
+            raise HistoryUnreadable(f"could not list the files {task_id}'s commits changed (git log "
+                                    f"rc={rc}) — its component count cannot be established")
+        commits = []
+        for rec in out.split("\x1e"):
+            lines = [ln for ln in rec.splitlines() if ln.strip()]
+            if lines and "\x1f" in lines[0]:
+                sha, subject = lines[0].split("\x1f", 1)
+                commits.append((sha, subject, lines[1:]))
+    at_head = _cards_at(root, head) if commits else {}
     comps: set[str] = set()
-    for rec in out.split("\x1e"):
-        lines = [ln for ln in rec.splitlines() if ln.strip()]
-        if not lines or "\x1f" not in lines[0]:
-            continue
-        sha, subject = lines[0].split("\x1f", 1)
-        paths = [p.strip() for p in lines[1:] if not p.strip().startswith(_NOT_COMPONENT)]
+    for sha, subject, raw in commits:
+        paths = [p.strip() for p in raw if not p.strip().startswith(_NOT_COMPONENT)]
         if not paths or not _owns(subject, task_id):
             continue
         then = _cards_at(root, sha.strip())

@@ -524,7 +524,8 @@ class TestComponentsFromGit:
         _mk_task(repo, TASTE)
         _produce(repo)
         real = vl._git_out
-        monkeypatch.setattr(vl, "_git_out", lambda r, *a: (128, "") if "--grep" in " ".join(a)
+        # T-4133 r2: the per-task --grep walk and the batched --all walk are both git-log reads.
+        monkeypatch.setattr(vl, "_git_out", lambda r, *a: (128, "") if ("--grep" in " ".join(a) or "--all" in a)
                             and "--name-only" in a else real(r, *a))
         with pytest.raises(vl.HistoryUnreadable):
             self._need(repo)
