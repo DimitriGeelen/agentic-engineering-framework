@@ -520,3 +520,7 @@ Verbatim in `docs/reports/T-4123-inputs/00-brief-as-sent.txt`; `{TO}` and `{SPEC
   digest must match and a checker is needed — or the centre re-embeds the chunk text; (4) a capability card per
   module/subsystem (purpose, capabilities, problem solved as a searchable symptom, technology tags, entry points,
   status, owner) with a quality bar, as the unit of the "do we already have this capability?" query.
+- **2026-10-13, operator:** recompute vectors centrally for the pilot — "not only for tampering, but maybe a
+  different tagging, etcetera". Module capability descriptions: a separate task with high priority, start with
+  what exists and improve, raise priority as value shows. → Agent filed inception T-4142 (capability cards,
+  horizon now, recommendation GO); asked the operator to pick the categories to feed by number.
