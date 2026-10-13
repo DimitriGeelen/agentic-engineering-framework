@@ -1465,9 +1465,19 @@ half-finished refactor.
 `bleeding-edge` is what gets deployed for testing (the Ring20 test state); `master` is
 production and receives a release only when every fix in it is verified working —
 live, where a live check exists, not merely unit-green. Before cutting, list any fix
-whose live check is still open, and ask the release as an explicit question
-("Release vX.Y.Z to master now? yes/no") with the `--dry-run` output shown. A general
-"go" or "proceed" is not a release approval.
+whose live check is still open.
+
+**Positive field tests are the release approval (operator ruling 2026-10-13, standing,
+T-4146 — amends T-4020).** When every fix in the release has a positive field test from
+another agent (a project that ran it and reported it working, recorded in the release's
+field-evidence report), the agent releases without asking the operator yes/no — provided
+the release's own gates are green (full-suite comparison against the base release shows
+no failure attributed to the release diff; `fw release … --dry-run` clean). The operator
+gets the result with the dry-run output afterwards. When any fix lacks a positive field
+test, or a field test is negative or ambiguous, fall back to the explicit question
+("Release vX.Y.Z to master now? yes/no") with the `--dry-run` output shown; a general
+"go" or "proceed" is still not a release approval in that case. A gate that blocks the
+release (a pre-push red, a baseline addition, Tier 0) is still the operator's call.
 
 **Why this DISSOLVES T-100201 rather than resolving it.** T-100201 was filed
 because T-100196's "session commits straight to master" collided with the T-2394

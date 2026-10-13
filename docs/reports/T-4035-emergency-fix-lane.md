@@ -45,7 +45,7 @@ the next normal release is a fast-forward as before)
    - the suites around the changed files, run on the hotfix branch itself;
    - one independent review (codex or another vendor);
    - field confirmation by the reporting project where possible. They run the hotfix and report that the failure is gone. If the reporter cannot confirm quickly, the operator decides whether to ship on review alone, and that choice is written on the task.
-4. **The release question** is explicit, with the dry run shown: "Release vX.Y.Z+1 (hotfix: T-NNNN only) to master now? yes/no".
+4. **The release question** is explicit, with the dry run shown: "Release vX.Y.Z+1 (hotfix: T-NNNN only) to master now? yes/no". **Exception (operator standing rule 2026-10-13, T-4146):** when the fix has a positive field test from another agent and the full-suite comparison and dry run are green, the agent releases without the question and reports the result with the dry run afterwards.
 5. **Merge-back** happens immediately after the release. Master is merged into bleeding-edge, so the invariant "bleeding-edge contains master" holds and `fw release tag-and-release` keeps working.
 6. **Announcement** to every consumer: what it fixes, the tag, and the upgrade line. The reporter is told first.
 
