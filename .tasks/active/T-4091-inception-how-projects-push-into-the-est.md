@@ -1,13 +1,19 @@
 ---
 id: T-4091
-name: "Inception: how projects push into the estate knowledge platform (T-090 Qdrant on ring20) — push vs pull, server- vs client-side embedding, deletion propagation, model manifest fit"
+name: "Inception: how projects push into the estate knowledge platform (T-090 Qdrant
+  on ring20) — push vs pull, server- vs client-side embedding, deletion propagation,
+  model manifest fit"
 description: >
-  Split out of T-4017 (one inception, one question). Inputs: ring20's T-2325 platform draft, dimitri-mint-dev's T-090, arc-001 A9.6–A9.8. Per-project index stays authoritative; the platform is fed from projects.
+  Split out of T-4017 (one inception, one question). Inputs: ring20's T-2325 platform
+  draft, dimitri-mint-dev's T-090, arc-001 A9.6–A9.8. Per-project index stays authoritative;
+  the platform is fed from projects.
 
-status: captured
-workflow_type: build
+status: started-work
+workflow_type: inception
+target_blast_radius: 3
+voi_score: 0.5
 owner: agent
-horizon: later
+horizon: now
 tags: [arc-001, T-4017]
 components: []
 related_tasks: [T-4017]
@@ -39,8 +45,8 @@ origin: {kind: "operator", source: "T-4017-GO"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T10:21:16Z
-last_update: 2026-10-12T10:21:16Z
-date_finished: null
+last_update: 2026-10-13T14:51:18Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,20 +57,106 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-12T10:30:51Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-12T10:32:00Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4091: Inception: how projects push into the estate knowledge platform (T-090 Qdrant on ring20) — push vs pull, server- vs client-side embedding, deletion propagation, model manifest fit
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Research artefact: `docs/reports/T-4091-estate-push-pipe.md`. Unblocked by T-4123 (GO 2026-10-13), which settled
+what goes in, that vectors are recomputed centrally, raw layer only, and a one-writer/one-reader pilot.
+
+## Problem Statement
+
+Each project already keeps a local vector index (chunks, categories, per-file content hashes). The estate store on
+ring20 exists and is empty. Nothing moves knowledge from the first to the second. Vectors must be recomputed
+centrally, but the store itself never calls Ollama (ring20 P.5), so a central embedder sits between projects and
+store. How do chunks get from a project to that embedder and into the store — safely (redacted, scoped tokens,
+audited), exactly (changes and deletions propagate) and freshly (≤ 24 h)?
+
+## Hypothesis
+
+A per-cycle `fw estate push` that diffs the local index against the store and hands new/changed chunks (text +
+payload, never vectors) to one central ingest worker — via a per-project staging collection (option A) — meets the
+T-4123 requirements without a new network service, and can move to an HTTP ingest service later if many projects
+write.
+
+## Open Questions
+
+<!-- T-2190: every IW-N needs confidence / disposition / rationale before close. -->
+
+- **IW-1: Transport — staging collection (A), ingest service (B) or file batches (C)?**
+  confidence: 1
+  disposition:
+  rationale: artefact §3 leans A for the pilot; needs a spike on payload-only/dummy-vector points in Qdrant and the operator's view
+- **IW-2: Central embedder — where does it run, who operates it, how is it pinned to one model + digest?**
+  confidence: 1
+  disposition:
+  rationale: needs the shared GPU host's Ollama; one process, one pin (R-19, R-21)
+- **IW-3: Identity and change — chunk id scheme so edits and deletions propagate exactly?**
+  confidence: 2
+  disposition:
+  rationale: local file_state already has a per-file content_hash (web/embeddings.py:368)
+- **IW-4: Redaction — which secret-pattern set, and where does the hostname→role map live?**
+  confidence: 1
+  disposition:
+  rationale: R-2 value patterns at write time; CF-7 roles (all three external models)
+- **IW-5: Read side — what does fw recall --scope estate return and how does it rank against local hits?**
+  confidence: 1
+  disposition:
+  rationale: R-12..R-16 define fields, scopes, ranking modes, degradation
+- **IW-6: Pilot proof — which checks prove the pilot works?**
+  confidence: 2
+  disposition:
+  rationale: dimitri-mint-dev's pilot list in T-4123 (counts, exact-title top-1, deletion in one cycle, secret scan 0, foreign token refused)
+
+## Exploration Plan
+
+1. Spike (≤ 1 h): can the store hold staging points without real vectors (payload-only / dummy vector), and can a
+   project token be scoped to its staging collection only? Ask ring20-manager (they operate it).
+2. Dialogue with the operator on IW-1/IW-2 using the artefact's option table.
+3. Draft the push cycle and the ingest worker contract; pilot checks from IW-6.
+
+## Go/No-Go Criteria
+
+- GO when IW-1 and IW-2 are answered and the spike shows option A (or the chosen option) works with the platform's
+  token model.
+- NO-GO if the store cannot scope a project token to its own staging collection and no ingest service can be run.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Research artefact `docs/reports/T-4091-estate-push-pipe.md` states what T-4123 settled, the local index facts, the transport options and the push cycle
+- [ ] Every IW-N has a disposition and rationale
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -297,6 +389,18 @@ date_finished: null
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** DEFER
+
+**Rationale:**
+
+Evidence gap: the transport choice (IW-1) depends on a spike the platform operator must answer — whether the store
+can hold staging points without real vectors and scope a project token to its staging collection — and on where the
+central embedder runs (IW-2). Everything else is settled by T-4123. Expected to move to GO within a day.
+
+**Evidence:**
+
+- `docs/reports/T-4091-estate-push-pipe.md` §1 (settled), §2 (local index facts), §3 (options), §4 (push cycle).
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -324,3 +428,11 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4091-inception-how-projects-push-into-the-est.md
 - **Context:** Initial task creation
+
+### 2026-10-13T14:51:00Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: later → now (auto-sync)
+
+### 2026-10-13T14:51:18Z — status-update [task-update-agent]
+- **Change:** workflow_type: build → inception
+- **Change:** horizon: now → now
