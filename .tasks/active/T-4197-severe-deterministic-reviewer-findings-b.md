@@ -1,10 +1,20 @@
 ---
 id: T-4197
-name: "Severe deterministic reviewer findings BLOCK --status work-completed (operator ruling 2026-10-13, 2b), with a logged override — today the reviewer step at close is non-blocking (832 OBS-454, their T-1150)"
+name: "Severe deterministic reviewer findings BLOCK --status work-completed (operator
+  ruling 2026-10-13, 2b), with a logged override — today the reviewer step at close
+  is non-blocking (832 OBS-454, their T-1150)"
 description: >
-  Operator ruling on 832 OBS-454: block completion when the static reviewer reports a severe finding (lib/reviewer/static_scan.py:2681-2691 computes FAIL on severe; agents/task-create/update-task.sh:2323-2328 runs it 'non-blocking' with || true). Block only on severe, deterministic findings; non-severe stay advisory. Override: --skip-reviewer-severe "reason" / FW_SKIP_REVIEWER_SEVERE=1, logged Tier-2, operator-only under CLAUDECODE like the other criterion bypasses (T-3586). The block message names the finding, the file:line and the override. Tests: severe finding blocks; non-severe passes; override logs; reviewer crash fails open audibly (or closed — state the choice).
+  Operator ruling on 832 OBS-454: block completion when the static reviewer reports
+  a severe finding (lib/reviewer/static_scan.py:2681-2691 computes FAIL on severe;
+  agents/task-create/update-task.sh:2323-2328 runs it 'non-blocking' with || true).
+  Block only on severe, deterministic findings; non-severe stay advisory. Override:
+  --skip-reviewer-severe "reason" / FW_SKIP_REVIEWER_SEVERE=1, logged Tier-2, operator-only
+  under CLAUDECODE like the other criterion bypasses (T-3586). The block message names
+  the finding, the file:line and the override. Tests: severe finding blocks; non-severe
+  passes; override logs; reviewer crash fails open audibly (or closed — state the
+  choice).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T19:22:06Z
-last_update: 2026-10-13T19:22:06Z
-date_finished: null
+last_update: 2026-10-13T19:37:53Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +60,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-13T19:23:17Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-13T19:30:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=306,acs=8)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4197: Severe deterministic reviewer findings BLOCK --status work-completed (operator ruling 2026-10-13, 2b), with a logged override — today the reviewer step at close is non-blocking (832 OBS-454, their T-1150)
@@ -62,8 +100,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `python3 -m lib.reviewer.static_scan T-XXX --severe-gate` lists every finding whose severity is FAIL-level (severe/complete) AND detection_confidence=deterministic as `pattern<TAB>file:line<TAB>evidence`, writes nothing, exits 0 when none and 5 when any
+- [x] `update-task.sh --status work-completed` refuses when the gate reports a finding; the block names the pattern, the task file:line and both overrides; the task stays in active/
+- [x] Non-severe or heuristic findings stay advisory (close proceeds)
+- [x] `--skip-reviewer-severe "reason"` / `FW_SKIP_REVIEWER_SEVERE=1` lets the close through and logs Tier-2 to `.gate-bypass-log.yaml`; the flag needs a reason; both forms are refused under CLAUDECODE=1 without `--i-am-human`
+- [x] A reviewer that crashes (exit not 0/5) fails OPEN with a WARNING line on the close output; `FW_REVIEWER_DISABLED=1` disables only the measurement pass, not the gate
+- [x] `tests/unit/t4197_reviewer_severe_blocks_close.bats` covers all of the above and its blocking tests fail on HEAD's update-task.sh
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -226,6 +268,11 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/t4197_reviewer_severe_blocks_close.bats > /tmp/.t4197.out 2>&1 && ! grep -q "^not ok" /tmp/.t4197.out
+test "$(grep -c '# skip' /tmp/.t4197.out)" -eq 0
+python3 -m pytest tests/unit/test_t4197_severe_gate.py tests/unit/test_reviewer_static_scan.py -q > /tmp/.t4197py.out 2>&1 && grep -q passed /tmp/.t4197py.out
+bash -n agents/task-create/update-task.sh
+bin/fw vendor self --check
 
 ## RCA
 
@@ -242,6 +289,11 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** a task whose Verification was a tautology (`true`) closed with a FAIL reviewer verdict written into its own body (832 OBS-454, their T-1150).
+**Root cause:** `update-task.sh` ran `static_scan` as a v1.0 "measurement only" pass and discarded its exit with `|| true`; the plan to make it blocking (v1.2+, per its own comment) never landed, so FAIL was computed and never consumed.
+**Why structurally allowed:** the scanner's exit code was documented as "informational", and no test asserted that a FAIL-level finding stops a close — a red verdict looked like a gate to readers of the task file.
+**Prevention:** `check_reviewer_severe` + `tests/unit/t4197_reviewer_severe_blocks_close.bats` (a severe tautology blocks; non-severe passes; overrides logged; crash fails open audibly). The bypass is operator-only under CLAUDECODE, so an agent cannot quietly re-open the hole.
 
 ## Evolution
 
@@ -307,6 +359,20 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-13 — reviewer crash: fail open, audibly
+- **Chose:** exit codes other than 0/5 from `--severe-gate` (or no python) print a WARNING naming the exit and let the close proceed.
+- **Why:** the reviewer was advisory for its whole life; a scanner bug that froze every close in every consumer would be a worse failure than one unenforced close, and the WARNING keeps it observable. The exit 5 (not 1) for "blocking findings" keeps a Python traceback (exit 1) from being read as a finding.
+- **Rejected:** fail closed — one regression in `static_scan.py` would block all completions estate-wide.
+
+### 2026-10-13 — FW_REVIEWER_DISABLED does not reach the gate
+- **Chose:** `FW_REVIEWER_DISABLED=1` skips only the measurement pass; the severe gate still runs.
+- **Why:** otherwise it is an unlogged bypass beside the logged one.
+- **Rejected:** honouring it — `FW_SKIP_REVIEWER_SEVERE=1` is the sanctioned, logged env form.
+
+### 2026-10-13 — env-var form is agent-refused too
+- **Chose:** `FW_SKIP_REVIEWER_SEVERE=1` is refused under CLAUDECODE=1 without `--i-am-human`, same as the flag; it needs no reason (env has no reason surface, T-3586 note).
+- **Why:** the ruling says operator-only; an env var the agent can prefix would make the flag's refusal decorative.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -323,3 +389,9 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4197-severe-deterministic-reviewer-findings-b.md
 - **Context:** Initial task creation
+
+### 2026-10-13T19:23:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-13 — pre-fix evidence [t4197-build]
+- New bats suite against HEAD's update-task.sh: 10 of 12 `not ok` (every blocking/override/crash test); the two controls (clean verification, non-severe CONCERN) `ok`. After the change: 12/12 ok.

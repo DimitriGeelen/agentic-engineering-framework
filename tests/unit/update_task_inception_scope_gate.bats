@@ -319,6 +319,8 @@ EOF
     PROJECT="$(create_test_project)"
     TASK="$(create_test_task "$PROJECT" T-996 normal-build)"
     sed -i 's/- \[ \] Test criterion/- [x] Test criterion/' "$TASK"
+    # T-4197: the helper's `echo "ok"` is a severe tautology that now blocks close
+    sed -i 's/^echo "ok"$/test -d ./' "$TASK"
     PROJECT_ROOT="$PROJECT" run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-996 --status work-completed
     [ "$status" -eq 0 ]
     [[ "$output" != *"INCEPTION-SCOPE-TRACE"* ]]

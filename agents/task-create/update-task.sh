@@ -94,8 +94,8 @@ _print_move_next_hint() {
 # (--skip-render-review under T-3557 until T-3580 lands) or whose gate guards an
 # artefact's shape rather than a criterion or ownership. Table: T-3586 task file.
 # Env-var bypasses (FW_*) are unchanged: they have no reason surface.
-_BYPASS_AGENT_REFUSED=" --skip-acceptance-criteria --skip-verification --skip-sovereignty --skip-human-ownership --skip-rca --skip-recommendation --skip-inception-decision --skip-self-deferral "
-_BYPASS_REASON_REQUIRED=" --skip-acceptance-criteria --skip-verification --skip-sovereignty --skip-human-ownership --skip-rca --skip-recommendation --skip-inception-decision --skip-render-review --skip-evolution --skip-disposition-gate --skip-inception-scope-trace --skip-register-requirements --skip-self-deferral "
+_BYPASS_AGENT_REFUSED=" --skip-acceptance-criteria --skip-verification --skip-sovereignty --skip-human-ownership --skip-rca --skip-recommendation --skip-inception-decision --skip-self-deferral --skip-reviewer-severe "
+_BYPASS_REASON_REQUIRED=" --skip-acceptance-criteria --skip-verification --skip-sovereignty --skip-human-ownership --skip-rca --skip-recommendation --skip-inception-decision --skip-render-review --skip-evolution --skip-disposition-gate --skip-inception-scope-trace --skip-register-requirements --skip-self-deferral --skip-reviewer-severe "
 enforce_bypass_policy() {
     local flag="$1" reason="$2"
     case "$_BYPASS_REASON_REQUIRED" in *" $flag "*) ;; *) return 0 ;; esac
@@ -1033,6 +1033,72 @@ check_self_deferral() {
     exit 1
 }
 
+# Severe-reviewer-finding gate (T-4197, 832 OBS-454 — operator ruling 2026-10-13, 2b)
+# A finding that is FAIL-level by severity AND deterministic blocks the close;
+# heuristic or lower-severity findings stay advisory (the measurement pass above).
+# Predicate: lib/reviewer/static_scan.py --severe-gate (exit 0 none, 5 blocking).
+# Any other exit means the reviewer itself failed: the gate fails OPEN, audibly —
+# a reviewer bug must not freeze every close in every project; the WARNING names it.
+# FW_REVIEWER_DISABLED=1 does not reach this gate (it would be an unlogged bypass).
+# Bypass: --skip-reviewer-severe "reason" or FW_SKIP_REVIEWER_SEVERE=1, logged Tier-2;
+# both refused under CLAUDECODE=1 without --i-am-human (T-3586).
+check_reviewer_severe() {
+    [ "$NEW_STATUS" = "work-completed" ] || return 0
+    local py="${FW_REVIEWER_PYTHON:-python3}"
+    if ! command -v "$py" >/dev/null 2>&1 || [ ! -f "$FRAMEWORK_ROOT/lib/reviewer/static_scan.py" ]; then
+        echo -e "${YELLOW}WARNING: reviewer severe-finding gate could not run (no $py or static_scan.py) — not enforced on this close (T-4197)${NC}" >&2
+        return 0
+    fi
+    local found rc=0 _tid
+    _tid=$(basename "$TASK_FILE" | grep -oE '^T-[0-9]+')
+    found=$(cd "$FRAMEWORK_ROOT" && PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
+        "$py" -m lib.reviewer.static_scan "$_tid" --severe-gate 2>&1) || rc=$?
+    if [ "$rc" -eq 0 ]; then
+        return 0
+    fi
+    if [ "$rc" -ne 5 ]; then
+        echo -e "${YELLOW}WARNING: reviewer severe-finding gate could not run (exit $rc) — not enforced on this close (T-4197)${NC}" >&2
+        printf '%s\n' "$found" | head -5 | sed 's/^/  /' >&2
+        return 0
+    fi
+    local _env_skip=false
+    [ "${FW_SKIP_REVIEWER_SEVERE:-0}" = "1" ] && _env_skip=true
+    if [ "$SKIP_REVIEWER_SEVERE" = true ]; then
+        echo -e "${YELLOW}WARNING: severe reviewer finding(s) waived (--skip-reviewer-severe bypass)${NC}"
+        log_gate_bypass "--skip-reviewer-severe" "check_reviewer_severe"
+        return 0
+    fi
+    if [ "$_env_skip" = true ]; then
+        if [ "${CLAUDECODE:-}" = "1" ] && [ "$I_AM_HUMAN" != true ]; then
+            echo -e "${RED}ERROR: FW_SKIP_REVIEWER_SEVERE=1 is refused in an agent session (CLAUDECODE=1) — T-3586, T-4197${NC}" >&2
+            echo "  A severe deterministic reviewer finding is a criterion an agent does not waive." >&2
+            echo "  Fix the finding, or stop and report it; the operator can override from their own terminal." >&2
+            exit 1
+        fi
+        echo -e "${YELLOW}WARNING: severe reviewer finding(s) waived (FW_SKIP_REVIEWER_SEVERE=1 bypass)${NC}"
+        log_gate_bypass "FW_SKIP_REVIEWER_SEVERE" "check_reviewer_severe"
+        return 0
+    fi
+    echo -e "${RED}ERROR: Cannot complete — the reviewer found a severe, deterministic problem.${NC}" >&2
+    echo "" >&2
+    echo "T-4197 (832 OBS-454): severe + deterministic reviewer findings block work-completed." >&2
+    echo "" >&2
+    local _pat _loc _ev
+    while IFS=$'\t' read -r _pat _loc _ev; do
+        [ -n "$_pat" ] || continue
+        echo "  - $_pat at $_loc" >&2
+        [ -n "$_ev" ] && echo "      $_ev" >&2
+    done <<< "$found"
+    echo "" >&2
+    echo "To resolve: fix the line named above (e.g. make the Verification command assert" >&2
+    echo "something), or suppress a false positive: bin/fw reviewer override add $_tid --pattern <id> --reason '...'" >&2
+    echo "" >&2
+    echo "Operator override (Tier-2 logged, refused under CLAUDECODE=1 without --i-am-human):" >&2
+    echo "  --skip-reviewer-severe \"reason\"   (direct fw task update)" >&2
+    echo "  FW_SKIP_REVIEWER_SEVERE=1 <cmd>     (env-var for git hooks / wrappers)" >&2
+    exit 1
+}
+
 # Disposition-completeness gate (T-2190, T-2186 Slice 4)
 # Inception tasks must dispose every declared question in the ## Open Questions
 # body section. Each question gets answered / dissolved / deferred with cited
@@ -1693,6 +1759,8 @@ if [ "${FW_SKIP_REGISTER_REQUIREMENTS:-0}" = "1" ]; then
     SKIP_REGISTER_REQUIREMENTS=true
 fi
 SKIP_SELF_DEFERRAL=false  # T-3694: flag only, no env-var form
+# T-4197: severe-reviewer-finding gate (--skip-reviewer-severe "reason" / FW_SKIP_REVIEWER_SEVERE=1)
+SKIP_REVIEWER_SEVERE=false
 # T-2190: disposition-completeness gate (--skip-disposition-gate / FW_SKIP_DISPOSITION_GATE=1)
 SKIP_DISPOSITION_GATE=false
 if [ "${FW_SKIP_DISPOSITION_GATE:-0}" = "1" ]; then
@@ -1729,6 +1797,13 @@ while [[ $# -gt 0 ]]; do
         --skip-evolution) SKIP_EVOLUTION=true; shift ;;
         --skip-register-requirements) SKIP_REGISTER_REQUIREMENTS=true; shift ;;
         --skip-self-deferral) SKIP_SELF_DEFERRAL=true; shift ;;
+        --skip-reviewer-severe)
+            SKIP_REVIEWER_SEVERE=true
+            if [ -n "${2:-}" ] && [[ "${2:-}" != --* ]] && [[ "${2:-}" != T-* ]]; then
+                REASON="${REASON:-$2}"
+                shift
+            fi
+            shift ;;
         --skip-disposition-gate)
             SKIP_DISPOSITION_GATE=true
             if [ -n "${2:-}" ] && [[ "${2:-}" != --* ]]; then
@@ -1770,12 +1845,13 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-evolution             Bypass Evolution-log gate for arc-tagged builds (T-1718)" >&2
             echo "  --skip-register-requirements \"...\"  Bypass design-conformance register gate (T-3691)" >&2
             echo "  --skip-self-deferral         Bypass self-deferral gate (T-3694; operator only, needs --reason)" >&2
+            echo "  --skip-reviewer-severe \"...\" Bypass severe reviewer-finding gate (T-4197; operator only)" >&2
             echo "  --skip-inception-decision    Bypass inception decision gate (T-1626, G-052)" >&2
             echo "  --skip-inception-scope-trace \"...\"  Bypass GO-scope trace gate (T-1984, G-066)" >&2
             echo "  --skip-render-review \"...\" Bypass render-surface Human AC gate (T-1766)" >&2
             echo "  --scope-reduction-acknowledged \"...\"   Bypass task-pair §ACD gate (P-012, T-1762, G-066)" >&2
             echo "  --skip-human-ownership       Bypass human ownership reassignment" >&2
-            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true; SKIP_RCA=true; SKIP_EVOLUTION=true; SKIP_REGISTER_REQUIREMENTS=true; SKIP_SELF_DEFERRAL=true; SKIP_INCEPTION_DECISION=true; SKIP_INCEPTION_SCOPE_TRACE=true; SKIP_RENDER_REVIEW=true; SKIP_RENDER_REVIEW_REASON="--force bypass"; SCOPE_REDUCTION_ACK="--force bypass"
+            FORCE=true; SKIP_SOVEREIGNTY=true; SKIP_AC=true; SKIP_VERIFICATION=true; SKIP_HUMAN_OWNERSHIP=true; SKIP_RECOMMENDATION=true; SKIP_RCA=true; SKIP_EVOLUTION=true; SKIP_REGISTER_REQUIREMENTS=true; SKIP_SELF_DEFERRAL=true; SKIP_REVIEWER_SEVERE=true; SKIP_INCEPTION_DECISION=true; SKIP_INCEPTION_SCOPE_TRACE=true; SKIP_RENDER_REVIEW=true; SKIP_RENDER_REVIEW_REASON="--force bypass"; SCOPE_REDUCTION_ACK="--force bypass"
             shift ;;
         -h|--help)
             echo "Usage: update-task.sh T-XXX [options]"
@@ -1798,6 +1874,7 @@ while [[ $# -gt 0 ]]; do
             echo "  --skip-recommendation        Bypass recommendation gate (T-679)"
             echo "  --skip-rca                   Bypass RCA gate for bug-class (T-1550, G-019)"
             echo "  --skip-evolution             Bypass Evolution-log gate for arc-tagged builds (T-1718)"
+            echo "  --skip-reviewer-severe \"...\" Bypass severe+deterministic reviewer-finding gate (T-4197; operator only)"
             echo "  --skip-inception-decision    Bypass inception decision gate (T-1626, G-052)"
             echo "  --skip-inception-scope-trace \"...\"  Bypass GO-scope trace gate (T-1984, G-066)"
             echo "  --scope-reduction-acknowledged \"...\"   Bypass task-pair §ACD gate (P-012, T-1762, G-066)"
@@ -2327,6 +2404,12 @@ PY
                     PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
                     python3 -m lib.reviewer.static_scan "$_task_id_short" 2>&1 | sed 's/^/  /' ) || true
             fi
+        fi
+
+        # === Severe Reviewer-Finding Gate (T-4197, 832 OBS-454) ===
+        # Blocking leg of the pass above: severe + deterministic findings only.
+        if [ "$NEW_STATUS" = "work-completed" ]; then
+            check_reviewer_severe
         fi
 
         _sed_i "s/^status:.*/status: $NEW_STATUS/" "$TASK_FILE"
