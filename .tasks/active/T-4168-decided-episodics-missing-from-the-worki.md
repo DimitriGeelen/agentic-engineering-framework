@@ -20,7 +20,7 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-13T15:50:47Z
-last_update: 2026-10-13T15:57:47Z
+last_update: '2026-10-13T16:00:22Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -46,6 +46,16 @@ bvp_scores_proposed:
     rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
       (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
       (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-13T16:00:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=139,acs=4)
     rubric_sha: e4a00f38e801
 ---
 
@@ -97,9 +107,9 @@ their session transcripts after 2026-10-11 14:16Z for `git stash`, and `.git/log
   disposition:
   rationale: three hypotheses tested in a scratch repro (.context/scratch/t4168-stash-repro.sh, scratch-index decide, stale real index) — `stash` + `pop`, `stash` + `pop --index`, `stash push -u` + `pop` (pop fails "could not restore untracked files", entry kept): the episodic stays on disk in all three. Disproved; per the 3-hypothesis rule, wait for ring20's captured mtime/ctime/process list on recurrence
 - **IW-2: Does any AEF framework code path do it?**
-  confidence: 1
+  confidence: 2
   disposition:
-  rationale: grep of agents/, lib/, bin/, web/ finds no stash/clean/rm/checkout-index/read-tree -u on these paths
+  rationale: grep of agents/, lib/, bin/, web/ finds no stash/clean/rm/checkout-index/read-tree -u on these paths, and no retention/prune of .context/approvals/resolved-* (only reader: web/blueprints/approvals.py:196); the only age-based deletion under .context is the audit cron prune of .context/audits/cron/*.yaml older than 7 days (agents/audit/audit.sh:127). ring20 (msg 4f6643d3): 15 missing .context/working/T-* files are their own weekly pruner (fixed there); 101 dispatch logs show no stash/clean/restore/rm against .context; the stale staged entries were already present 2026-10-10 11:48Z (T-2250) and 2026-10-11 20:49Z (all four); 17 tracked resolved-*.yaml from 09-25..09-28 are also gone while untracked ones from 10-06 survive — same unknown hand, age-like
 
 ## Exploration Plan
 
