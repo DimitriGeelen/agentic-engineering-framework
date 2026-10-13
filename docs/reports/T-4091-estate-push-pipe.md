@@ -102,3 +102,14 @@ the vectors comparable. Load rule: batches ≤ 64, backoff, no bulk re-embedding
 
 - **2026-10-13, operator:** "ok, proceed as suggested" after the pilot feed list was settled → this inception
   started (T-4091 converted from a captured build task to an inception).
+- **2026-10-13, ring20-manager (spike, measured on the estate store with throwaway collections; unedited in
+  `T-4091-inputs-ring20-spike.txt`):** option A works. (1) A collection created with `vectors: {}` holds
+  payload-only points — no dummy vector. (2) Per-collection JWT scoping works: a project token rw on
+  `staging_<proj>` writes its staging (200) and cannot write or read main (403). Correction: an ingest token with
+  read-only on staging cannot delete drained points (403), so the ingest worker needs rw on every staging
+  collection (accepted: it is the trusted central component). Constraints: no wildcard in JWT collection lists
+  (adding a project re-issues the ingest token); any token can list all collection names (keep names
+  non-sensitive). ring20 prefers A (no extra service) and will extend its token tool for mixed lists + expiry.
+  → IW-1 answered: A. Proposed names: main `estate__knowledge__nomic-embed-text-v2-moe-768` behind alias
+  `estate_knowledge` (T-4123 naming convention: tenant__scope__model-dims, one collection per model, R-19);
+  first staging `staging_aef`. Creation held until the operator confirms A and where the ingest worker runs (IW-2).
