@@ -41,7 +41,7 @@ import subprocess
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
-from . import adapter, lifecycle, receiver
+from . import adapter, lifecycle, receiver, seen
 
 REINJECT_AFTER_S = 120   # an inject that never produced a hand-over may be retried
 
@@ -579,6 +579,34 @@ def _deliver_locked(trigger: str, runner) -> dict:
     else:
         report["reason"] = f"termlink pty inject failed: {err}"
     return report
+
+
+def held_unsurfaced(threshold_hours: float = 24, now: datetime | None = None) -> list[dict]:
+    """T-4207: peer mail held (stored, not handed over) for longer than
+    `threshold_hours` that no session has ever been shown. Answered or
+    dropped mail is not held; mail shown once is a finalizer matter (the hook
+    did its part), so only never-shown mail is a delivery failure.
+
+    The fact `fw doctor` and `fw audit` WARN on. An age that cannot be read is
+    reported with age_hours None: still owed work, never silently dropped."""
+    now = now or datetime.now(timezone.utc)
+    rows = []
+    for mid in receiver.awaiting_handover():
+        msg = receiver.read_message(mid) or {}
+        if seen.withheld([mid]) or seen.times_shown(seen.keys_for(mid, msg)) > 0:
+            continue
+        try:
+            stored = datetime.fromisoformat(str(msg["_stored_at"]))
+            if stored.tzinfo is None:
+                stored = stored.replace(tzinfo=timezone.utc)
+            age = round((now - stored).total_seconds() / 3600, 1)
+        except (KeyError, TypeError, ValueError):
+            age = None
+        if age is not None and age < threshold_hours:
+            continue
+        rows.append({"msg_id": mid, "age_hours": age,
+                     "from": str(msg.get("from") or "unknown")})
+    return rows
 
 
 if __name__ == "__main__":

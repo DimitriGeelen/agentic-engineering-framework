@@ -288,7 +288,12 @@ def prompt(hook_input: dict, out=sys.stdout, spawn=True) -> list[str]:
     # Never when no decision is on record, never in a headless `claude -p`
     # session (a dispatched worker), and never where an injectable session
     # exists (the 055 case: fleet agent + operator terminal).
-    if inject.injector_found_no_session() and not me.get("headless"):
+    # T-4207: a receiver started with --no-inject never writes an injector
+    # decision, so "injection off" is itself the decision that no injector will
+    # ever claim mail. Without this, the 050 receiver held 58 messages for 51 h
+    # with no delivery path at all. The same rule applies: headless never takes.
+    no_injector = inject.injector_found_no_session() or not lifecycle.inject_enabled()
+    if no_injector and not me.get("headless"):
         for i in waiting:
             if i not in ids and inject.read_claim(i) is None:
                 inject.claim_for(i, me)

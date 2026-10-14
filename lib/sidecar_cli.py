@@ -604,6 +604,20 @@ def cmd_dm_stale(args) -> int:
     return 0
 
 
+def cmd_held_unsurfaced(args) -> int:
+    """T-4207: receiver mail held past --threshold-hours that no session was
+    ever shown. Exit 0 always (a backlog is a finding); the fact function is
+    local, so there is no rc 2 path here."""
+    rows = inject.held_unsurfaced(threshold_hours=args.threshold_hours)
+    if args.json:
+        print(json.dumps(rows, indent=2))
+        return 0
+    for row in rows:
+        age = "unknown" if row["age_hours"] is None else row["age_hours"]
+        print(f"{_meta(row['msg_id'])}\t{age}\t{_who(row['from'])}")
+    return 0
+
+
 def cmd_inbox_stale(args) -> int:
     """Consult-inbox topics holding an unread consult older than
     `--threshold-hours` — the fact both `fw doctor` and `fw audit`'s
@@ -1174,6 +1188,13 @@ def build_parser() -> argparse.ArgumentParser:
     ibs.add_argument("--threshold-hours", type=float, default=24.0)
     ibs.add_argument("--json", action="store_true")
     ibs.set_defaults(func=cmd_inbox_stale)
+
+    hu = sub.add_parser("held-unsurfaced", help="peer mail held longer than "
+                        "--threshold-hours that no session was ever shown (T-4207, "
+                        "fw doctor / fw audit fact source)")
+    hu.add_argument("--threshold-hours", type=float, default=24.0)
+    hu.add_argument("--json", action="store_true")
+    hu.set_defaults(func=cmd_held_unsurfaced)
 
     # T-3693: receiver start/stop/status — the per-agent receiving sidecar
     recv = sub.add_parser("receiver", help="manage this agent's receiver sidecar (HTTP)")

@@ -3734,6 +3734,21 @@ sys.exit(0 if '$_tl_topic' in names else 1)
                     warnings=$((warnings + 1))
                 done <<< "$_ib_rows"
             fi
+            # T-4207: peer mail held past SIDECAR_HELD_WARN_HOURS that no session
+            # was ever shown. With injection off the prompt hook is the only
+            # delivery path; nothing else would notice the backlog. Same fact
+            # function as fw audit's check_sidecar_held_unsurfaced.
+            local _hu_rows _hu_rc _hu_n
+            _hu_rows=$(fw_sidecar_held_unsurfaced_facts "$PROJECT_ROOT" "$(fw_config SIDECAR_HELD_WARN_HOURS)") && _hu_rc=0 || _hu_rc=$?  # T-3837: set -e
+            if [ "$_hu_rc" -eq 2 ]; then
+                _doctor_warn_host "Held-mail check could not run (fw sidecar held-unsurfaced --json produced no readable output)"
+            elif [ "$_hu_rc" -eq 0 ] && [ -n "$_hu_rows" ]; then
+                local _hu_id _hu_age _hu_from
+                _hu_n=$(printf '%s\n' "$_hu_rows" | grep -c .)
+                echo -e "  ${YELLOW}WARN${NC}  $_hu_n peer message(s) held past $(fw_config SIDECAR_HELD_WARN_HOURS)h and never shown to any session"
+                echo "         Nothing is delivering them (injection off or no interactive session). Run: fw sidecar held-unsurfaced; then fw sidecar inbox --peek"
+                warnings=$((warnings + 1))
+            fi
         fi
         fi  # T-2452/F6-style --quick guard
     else

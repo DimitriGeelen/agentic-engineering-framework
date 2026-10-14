@@ -1,10 +1,18 @@
 ---
 id: T-4207
-name: "Sidecar receiver started with --no-inject leaves peer mail with no delivery path: the prompt hook never surfaces it either (050 held 58 messages up to 51 h, 010 report)"
+name: "Sidecar receiver started with --no-inject leaves peer mail with no delivery
+  path: the prompt hook never surfaces it either (050 held 58 messages up to 51 h,
+  010 report)"
 description: >
-  010 msg 841358e8 (2026-10-15): 050-email-archive receiver runs with inject disabled (config inject:false / --no-inject). inject.deliver_pending returns before recording an injectable decision, so injector_found_no_session() stays False and the UserPromptSubmit hook does not take the mail either: 58 inbound messages held up to 51 h, silently. Fix: with injection off, the prompt hook must still surface pending mail (and doctor/audit WARN on held-and-unsurfaced mail older than N). Verify in lib/sidecar/inject.py + hooks.py; test both paths.
+  010 msg 841358e8 (2026-10-15): 050-email-archive receiver runs with inject disabled
+  (config inject:false / --no-inject). inject.deliver_pending returns before recording
+  an injectable decision, so injector_found_no_session() stays False and the UserPromptSubmit
+  hook does not take the mail either: 58 inbound messages held up to 51 h, silently.
+  Fix: with injection off, the prompt hook must still surface pending mail (and doctor/audit
+  WARN on held-and-unsurfaced mail older than N). Verify in lib/sidecar/inject.py
+  + hooks.py; test both paths.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-14T22:39:48Z
-last_update: 2026-10-14T22:39:48Z
-date_finished: null
+last_update: '2026-10-14T22:45:30Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-14T22:44:35Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-14T22:45:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=275,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4207: Sidecar receiver started with --no-inject leaves peer mail with no delivery path: the prompt hook never surfaces it either (050 held 58 messages up to 51 h, 010 report)
@@ -62,8 +98,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] With injection off (`receiver/config.json` inject:false), the UserPromptSubmit prompt hook surfaces held, unclaimed peer mail for an interactive session (tests/unit/test_t4207_inject_off_surfaces.py)
+- [x] With injection ON and no injector decision on record, the prompt hook still surfaces nothing (T-3745 unchanged; same test file)
+- [x] `inject.held_unsurfaced()` reports mail held longer than the threshold and never shown, silent once shown (same test file)
+- [ ] `fw doctor` and `fw audit` WARN on held-and-unsurfaced mail older than `SIDECAR_HELD_WARN_HOURS` (new registry key, default 24), read from the same fact `bin/fw sidecar held-unsurfaced --json`
+- [ ] Every existing suite that references the inject / no-inject / deliver_pending path stays green (run list in Updates)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -100,6 +139,9 @@ date_finished: null
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
+python3 -m pytest -q tests/unit/test_t4207_inject_off_surfaces.py
+python3 -m pytest -q tests/unit/test_sidecar_withheld_t3872.py tests/unit/test_sidecar_session_ready_t3745.py
+bin/fw test lint
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 # Build/refactor/decommission tasks with NO command here are refused. If nothing can be
 # run, add the line `# verification: none — <why nothing can be run>`; it is serviced
@@ -243,6 +285,14 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** 050-email-archive ran its receiver with injection off (`--no-inject`); 58 peer messages sat up to 51 h, no session ever surfaced them, and nothing warned.
+
+**Root cause:** `inject.injector_found_no_session()` is the only signal the UserPromptSubmit hook has that "no injector will ever claim this mail", and it reads `injectable.json`, which only `_choose_termlink` writes. With `--no-inject`, `_deliver_locked` returns at `inject_enabled()` before any target is chosen, so no decision is ever recorded. The hook therefore saw "no decision on record" (the T-3745 safe default: nothing taken by whichever session prompts) and surfaced nothing. The one definitive signal, "injection is off", was never consulted by the hook.
+
+**Why structurally allowed:** the T-3745 rule ("no decision → take nothing") was written for the injection-on case and applied unchanged to injection-off. No test drove the injection-off path through the prompt hook, and no doctor/audit check counted mail held without delivery, so a silent backlog had no surface.
+
+**Prevention:** (1) `hooks.prompt` treats injection-off as "no injector", pinned by `tests/unit/test_t4207_inject_off_surfaces.py`; the T-3745 case (injection on, no decision → take nothing) is pinned by the same file. (2) `inject.held_unsurfaced()` and `fw sidecar held-unsurfaced --json` are the fact; `fw doctor` and `fw audit` (`check_sidecar_held_unsurfaced`) WARN past `SIDECAR_HELD_WARN_HOURS` (registry key, default 24).
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -323,3 +373,10 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4207-sidecar-receiver-started-with---no-injec.md
 - **Context:** Initial task creation
+
+### 2026-10-14T22:44:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-15 — pre-fix failure reproduced (worker t4208-receivers)
+- `python3 -m pytest -q tests/unit/test_t4207_inject_off_surfaces.py` before the fix: 3 failed, 1 passed. `test_inject_off_prompt_hook_surfaces_held_mail` got `[]` (the bug); `held_unsurfaced` AttributeError (missing capability).
+- After the fix: 4 passed. Existing suites run green: test_sidecar_{session_ready_t3745,withheld_t3872,seen_ledger_t3840,delivery,inbox,watcher_t3684,receiver_t3693,waiting_t3782,sweep}.py, test_inject_next_directive.py, test_sidecar_cli_peer_frame.py (249 passed); bats sidecar_audit_rail.bats + sidecar_inbox_hook.bats (25 ok).
