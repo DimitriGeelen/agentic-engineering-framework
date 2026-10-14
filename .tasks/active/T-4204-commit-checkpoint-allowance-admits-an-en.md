@@ -1,10 +1,15 @@
 ---
 id: T-4204
-name: "Commit-checkpoint allowance admits an env-prefixed launcher (PROJECT_ROOT=/x fw git commit) that the budget classifier refuses (055 follow-up)"
+name: "Commit-checkpoint allowance admits an env-prefixed launcher (PROJECT_ROOT=/x
+  fw git commit) that the budget classifier refuses (055 follow-up)"
 description: >
-  055 reviewer, pre-existing upstream at e63ffd423: safe-commands.sh is_commit_checkpoint_command strips a leading env assignment and judges the launcher against the hook's real roots, while at run time fw gets the overridden PROJECT_ROOT. cmd_classify refuses the same command. Make the allowance refuse assignment prefixes that steer fw, matching the classifier. Peer msg e6485b5d.
+  055 reviewer, pre-existing upstream at e63ffd423: safe-commands.sh is_commit_checkpoint_command
+  strips a leading env assignment and judges the launcher against the hook's real
+  roots, while at run time fw gets the overridden PROJECT_ROOT. cmd_classify refuses
+  the same command. Make the allowance refuse assignment prefixes that steer fw, matching
+  the classifier. Peer msg e6485b5d.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-14T20:17:46Z
-last_update: 2026-10-14T20:17:46Z
-date_finished: null
+last_update: 2026-10-14T20:52:25Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +55,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-14T20:30:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-14T20:31:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4204: Commit-checkpoint allowance admits an env-prefixed launcher (PROJECT_ROOT=/x fw git commit) that the budget classifier refuses (055 follow-up)
@@ -62,8 +95,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Pre-fix admit reproduced on HEAD and recorded in Updates: `is_commit_checkpoint_command "PROJECT_ROOT=/tmp/x .agentic-framework/bin/fw git commit -m x"` returns admit, while `cmd_classify.classify` refuses the same command
+- [x] The commit allowance refuses any leading assignment that is not on a four-name allow-list (`FW_SWITCH_FOCUS`, `FW_ALLOW_STALE_INDEX`, `FW_ALLOW_MASTER_COMMIT`, `FW_ALLOW_WORKTREE_CORPUS_COMMIT`, each exactly `=1`); `PROJECT_ROOT`, `FRAMEWORK_ROOT`, `PATH`, `FW_*` other than the four, and an allow-listed name with another value are all refused, including when mixed with an allow-listed prefix and when preceded by `time`
+- [x] The four documented commit-time bypass prefixes still admit as before, in the shell predicate and through the null-focus hook (`check-active-task.sh`); `FW_SWITCH_FOCUS=1 git commit` keeps its T-3454 contract
+- [x] Shell allowance and classifier agree on the steering case (`PROJECT_ROOT=`) and the budget gate refuses it; for unlisted non-steering `FW_*` prefixes the shell is now stricter than the classifier, which still admits them — recorded in Decisions as a follow-up, not closed here
+- [x] New bats file `tests/unit/t4204_commit_allowance_env_prefix.bats` green; existing suites for the commit allowance (t3454, t3814, t3221, t3245, t4125, t4203, t2919, t2923, t4150, prescribed-commands lint) still green
+- [ ] `bin/fw test lint` shows no new failure and `bin/fw audit --section structure` introduces none; `bin/fw vendor self --check` clean after `bin/fw vendor self`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +134,10 @@ date_finished: null
 -->
 
 ## Verification
+
+out=$(bats tests/unit/t4204_commit_allowance_env_prefix.bats 2>&1); echo "$out" | grep -q '^ok ' && ! echo "$out" | grep -q '^not ok' && ! echo "$out" | grep -q '# skip'
+out=$(bats tests/unit/t3454_gate_contract_collision.bats tests/unit/t3814_fw_git_commit_checkpoint.bats tests/unit/t3221_commit_exemption_clause.bats tests/unit/t3245_trailer_quote_strip.bats tests/unit/t4125_cmd_classify_launcher.bats tests/unit/t4203_own_shim_launcher.bats tests/unit/t2919_budget_gate_command_classify.bats tests/unit/t2923_cmd_classify_heredoc.bats tests/unit/t4150_cmd_classify_parser_differential.bats tests/lint/prescribed-commands-are-allowed.bats 2>&1); echo "$out" | grep -q '^ok ' && ! echo "$out" | grep -q '^not ok'
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -243,6 +284,16 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** At null focus or on a partial-complete task, `PROJECT_ROOT=/tmp/x .agentic-framework/bin/fw git commit -m x` was admitted by the commit-checkpoint allowance. The budget classifier refused the same command, so the two surfaces disagreed about one line and the looser one won at the hook.
+
+**Root cause:** `_fw_is_git_commit_clause` stripped every leading `NAME=VALUE` that the T-3374 denylist does not name. `PROJECT_ROOT` is not on that denylist, so it vanished, the remainder was judged against the hook's own roots, and the launcher passed. At run time fw receives the overridden `PROJECT_ROOT`. The denylist was built for names that redirect what a bare word resolves to; `PROJECT_ROOT` redirects what the launcher *is*, and that class was never listed.
+
+**Why structurally allowed:** Two predicates judged the same command by different rules, and nothing compared them. The classifier was written with an explicit steering list (`_DANGEROUS_ENV`), the shell predicate with a denylist of a different shape, so each was internally consistent and the disagreement surfaced only as a field report.
+
+**Prevention:** `tests/unit/t4204_commit_allowance_env_prefix.bats` drives the shipped predicate, the classifier, the budget gate and the null-focus hook on the same steering command and asserts all four refuse it; it also pins the four documented bypass prefixes so the fix cannot be closed by refusing everything. The allow-list is the structural change: a commit may lead only with names that are read by hooks, not by fw's root resolution, so a new steering name is refused by default rather than admitted by omission.
+
+**Pre-fix reproduction (HEAD, recorded 2026-10-14):** `is_commit_checkpoint_command "PROJECT_ROOT=/tmp/x .agentic-framework/bin/fw git commit -m x"` → ADMIT (probe run against the shipped `safe-commands.sh`); `cmd_classify.classify` on the same string → refused. Against HEAD sources the new file fails 6 of 13 tests: the shell-predicate and hook refusals, the mixed-prefix and `time`-prefixed refusals, and the unlisted `FW_`/`FOO=` prefixes, which the old stripper also admitted. The classifier-parity and budget-gate refusals already held on HEAD (they are the reference the fix aligns to).
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -298,6 +349,12 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-14 — env allow-list for the commit allowance
+- **Chosen:** refuse any leading assignment except exactly `FW_SWITCH_FOCUS=1`, `FW_ALLOW_STALE_INDEX=1`, `FW_ALLOW_MASTER_COMMIT=1`, `FW_ALLOW_WORKTREE_CORPUS_COMMIT=1`. Each is a documented `… git commit` prefix read by a hook or gate (focus-drift in check-active-task.sh, hooks.sh, master-guard.sh, worktree-corpus-guard.sh), not by fw's root resolution. `time` and `-p` remain tolerated.
+- **Alternative rejected:** refuse every assignment prefix. That would have broken the four documented remedies at null focus, which is the T-3454 deadlock class (a focus-drift block names `FW_SWITCH_FOCUS=1 git commit` as its only remedy, and a prefix that breaks the allowance removes it).
+- **Alternative rejected:** keep the denylist and add `PROJECT_ROOT`/`FRAMEWORK_ROOT`. A denylist is exactly what missed this name; the allow-list fails closed on the next steering name nobody has thought of.
+- **Left as is (out of scope):** `_fw_is_task_metadata_update_clause` also strips env prefixes, and the classifier admits any non-dangerous `FW_*` prefix for non-commit verbs. Both are the same class and should get the same treatment in a follow-up; not changed here to keep this task to the commit allowance.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -319,7 +376,16 @@ date_finished: null
 
 ## Updates
 
+### 2026-10-14 — implementation and verification (TermLink worker t4203-launcher)
+- **Pre-fix (HEAD):** the new file failed 6 of 13 tests — `PROJECT_ROOT=/tmp/x .agentic-framework/bin/fw git commit -m x` ADMIT in the shell predicate and the null-focus hook; `FRAMEWORK_ROOT=`, `FW_ALLOW_X=`, `FOO=`, `PATH=`-mixed and `time`-prefixed steering cases likewise admitted.
+- **Post-fix:** `tests/unit/t4204_commit_allowance_env_prefix.bats` 13 of 13 ok. Related suites (t3454, t3814, t3221, t3245, t4125, t4203, t2919, t2923, t4150, prescribed-commands lint, plus check_active_task_switch_focus, t3110, t3593): 162 + 46 ok, 0 not ok, 0 skip across the two runs.
+- **Lint:** `bin/fw test lint` exit 1 from ShellCheck FAILs on untracked scratch files (`.context/working/t4088/*`) and on `agents/sessions/{antigravity,claude-code}/list.sh` (both pre-existing, not touched here). `safe-commands.sh` shows only the pre-existing SC2221 at line 806.
+- **Vendor:** `bin/fw vendor self` synced `.agentic-framework/agents/context/lib/safe-commands.sh`; `--check` clean.
+
 ### 2026-10-14T20:17:46Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4204-commit-checkpoint-allowance-admits-an-en.md
 - **Context:** Initial task creation
+
+### 2026-10-14T20:36:48Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

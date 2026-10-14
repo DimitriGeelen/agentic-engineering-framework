@@ -1340,10 +1340,28 @@ _fw_segment_may_change_dir() {
 }
 
 _fw_is_git_commit_clause() {
-    local seg
+    local seg _lead _tok
+    local -a _toks=()
     seg="$(_fw_strip_quoted "$1")" || return 1
     seg="${seg#"${seg%%[![:space:]]*}"}"
-    _fw_strip_env_prefixes "$seg"; seg="$_FW_ENV_STRIPPED"
+    # T-4204: judge the prefix BEFORE it is stripped. The stripper below removes
+    # any NAME=VALUE it does not deny, so `PROJECT_ROOT=/x .agentic-framework/bin/fw
+    # git commit` reduced to the bare project launcher and was admitted, while
+    # fw ran with the overridden root. cmd_classify.py refuses the same command.
+    # Only the four documented commit-time bypass prefixes may lead a commit:
+    # they are read by the git hooks and the focus-drift gate, not by fw's root
+    # resolution. `time` (a keyword that changes nothing) is still tolerated.
+    _fw_strip_env_prefixes "$seg"
+    _lead="${seg:0:${#seg}-${#_FW_ENV_STRIPPED}}"
+    read -r -a _toks <<< "$_lead"
+    for _tok in "${_toks[@]}"; do
+        case "$_tok" in
+            time|-p) ;;
+            FW_SWITCH_FOCUS=1|FW_ALLOW_STALE_INDEX=1|FW_ALLOW_MASTER_COMMIT=1|FW_ALLOW_WORKTREE_CORPUS_COMMIT=1) ;;
+            *) return 1 ;;
+        esac
+    done
+    seg="$_FW_ENV_STRIPPED"
     # T-3814 (010 H1): the framework's own documented, secret-scanned spellings
     # are a commit too. The launcher must be exactly `fw`, `[./]bin/fw`,
     # `[./].agentic-framework/bin/fw`, or an absolute path ending in one of the
