@@ -363,11 +363,20 @@ def test_is_daytime_bounds():
 
 
 def test_ingest_token_reads_its_own_infisical_name(tmp_path, monkeypatch):
+    import yaml
     monkeypatch.delenv("FW_QDRANT_ESTATE_INGEST_AEF_API_KEY", raising=False)
     sys.path.insert(0, str(ROOT))
     import web.secrets_store as ss
     monkeypatch.setattr(ss, "get_api_key", lambda name: None)
-    cli = tmp_path / "fake_infisical.py"
-    cli.write_text("import sys\nassert sys.argv[1:] == ['get', 'prod', 'QDRANT_ESTATE_TOKEN_INGEST_AEF']\nprint('ingest-tok')\n")
-    monkeypatch.setenv("FW_ESTATE_INFISICAL_CLI", str(cli))
+    f = tmp_path / "creds.yaml"
+    f.write_text(yaml.safe_dump({"credentials": {"infisical_ua": {
+        "client_id": "c", "client_secret": "s", "url": "https://i", "project_id": "p"}}}))
+    monkeypatch.setenv("FW_ESTATE_CREDS_FILE", str(f))
+    seen = []
+
+    def http(method, url, body=None, headers=None):
+        seen.append(url)
+        return {"accessToken": "a"} if "login" in url else {"secret": {"secretValue": "ingest-tok"}}
+    monkeypatch.setattr(ei.ep, "_http_json", http)
     assert ei._token() == "ingest-tok"
+    assert "/secrets/raw/QDRANT_ESTATE_TOKEN_INGEST_AEF?" in seen[1]

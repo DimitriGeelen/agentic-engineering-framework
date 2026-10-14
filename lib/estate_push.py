@@ -215,29 +215,82 @@ def _apply_ledger(ledger: dict, plan: Plan) -> dict:
 
 
 INFISICAL_TOKEN_NAME = "QDRANT_ESTATE_TOKEN_STAGING_AEF"
-INFISICAL_ENV = "prod"
-INFISICAL_CLI_DEFAULT = "/opt/150-skills-manager/skills/infisical/infisical_client.py"
+INFISICAL_ENV = os.environ.get("FW_ESTATE_INFISICAL_ENV", "prod")
+CREDS_FILE_DEFAULT = "~/.claude-creds.yaml"  # host credential file; holds Universal Auth client settings
+_INFISICAL_MISS: list[str] = []  # why the last lookup missed (status / reason only, never a value)
+
+
+def _http_json(method: str, url: str, body: dict | None = None, headers: dict | None = None) -> dict:
+    data = json.dumps(body).encode() if body is not None else None
+    req = urllib.request.Request(url, data=data, method=method,
+                                 headers={"Content-Type": "application/json", **(headers or {})})
+    with urllib.request.urlopen(req, timeout=30) as r:
+        return json.loads(r.read().decode() or "{}")
+
+
+def _ua_settings() -> dict | None:
+    """Universal Auth client settings from the host credential file (FW_ESTATE_CREDS_FILE)."""
+    import yaml
+    path = Path(os.path.expanduser(os.environ.get("FW_ESTATE_CREDS_FILE", CREDS_FILE_DEFAULT)))
+    if not path.is_file():
+        _INFISICAL_MISS.append(f"credential file not found: {path}")
+        return None
+    try:
+        ua = ((yaml.safe_load(path.read_text()) or {}).get("credentials") or {}).get("infisical_ua") or {}
+    except (OSError, yaml.YAMLError) as e:
+        _INFISICAL_MISS.append(f"credential file unreadable: {type(e).__name__}")
+        return None
+    missing = [k for k in ("client_id", "client_secret", "url", "project_id") if not ua.get(k)]
+    if missing:
+        _INFISICAL_MISS.append(f"credential file lacks infisical_ua.{'/'.join(missing)}")
+        return None
+    return ua
 
 
 def _infisical_secret(name: str) -> str | None:
     """Read one secret by name from Infisical at run time (operator 2026-10-13, option 1).
 
-    The value is captured from the client's stdout and kept in memory: never
-    printed, logged or written. The client path is FW_ESTATE_INFISICAL_CLI
-    (default: the host's skills-manager client); a missing client is a miss.
+    Universal Auth login with the host's client settings, then one raw-secret read.
+    The value stays in memory: never printed, logged or written. Errors carry the
+    HTTP status and Infisical's message only.
     """
-    import subprocess
-    cli = os.environ.get("FW_ESTATE_INFISICAL_CLI", INFISICAL_CLI_DEFAULT)
-    if not cli or not Path(cli).is_file():
+    import urllib.error
+    import urllib.parse
+    _INFISICAL_MISS.clear()
+    ua = _ua_settings()
+    if ua is None:
         return None
+    base = str(ua["url"]).rstrip("/")
+    step = "login"
     try:
-        r = subprocess.run([sys.executable, cli, "get", INFISICAL_ENV, name],
-                           capture_output=True, text=True, timeout=60)
-    except (OSError, subprocess.TimeoutExpired):
+        login = _http_json("POST", f"{base}/api/v1/auth/universal-auth/login",
+                           {"clientId": ua["client_id"], "clientSecret": ua["client_secret"]})
+        access = login.get("accessToken")
+        if not access:
+            _INFISICAL_MISS.append("login returned no access token")
+            return None
+        step = "read"
+        # The estate tokens may live in another project/folder than the identity's default.
+        q = urllib.parse.urlencode({
+            "workspaceId": os.environ.get("FW_ESTATE_INFISICAL_PROJECT_ID") or ua["project_id"],
+            "environment": INFISICAL_ENV,
+            "secretPath": os.environ.get("FW_ESTATE_INFISICAL_PATH") or ua.get("secret_path") or "/"})
+        got = _http_json("GET", f"{base}/api/v3/secrets/raw/{urllib.parse.quote(name)}?{q}",
+                         headers={"Authorization": f"Bearer {access}"})
+    except urllib.error.HTTPError as e:
+        try:
+            msg = str(json.loads(e.read().decode() or "{}").get("message", ""))[:200]
+        except Exception:
+            msg = ""
+        _INFISICAL_MISS.append(f"{step} HTTP {e.code}{': ' + msg if msg else ''}")
         return None
-    if r.returncode != 0:
+    except (OSError, ValueError) as e:
+        _INFISICAL_MISS.append(f"{step} failed: {type(e).__name__}")
         return None
-    return r.stdout.strip() or None
+    value = ((got.get("secret") or {}).get("secretValue") or "").strip()
+    if not value:
+        _INFISICAL_MISS.append("secret has an empty value")
+    return value or None
 
 
 def resolve_token(local_name: str, infisical_name: str, verb: str) -> str:
@@ -247,7 +300,8 @@ def resolve_token(local_name: str, infisical_name: str, verb: str) -> str:
     tok = get_api_key(local_name) or _infisical_secret(infisical_name)
     if not tok:
         sys.exit(f"estate {verb}: no token: not in env FW_{local_name.upper()}_API_KEY, the key store, "
-                 f"or Infisical ({INFISICAL_ENV}) as '{infisical_name}'")
+                 f"or Infisical ({INFISICAL_ENV}) as '{infisical_name}'"
+                 + (f" — Infisical: {_INFISICAL_MISS[0]}" if _INFISICAL_MISS else ""))
     return tok
 
 

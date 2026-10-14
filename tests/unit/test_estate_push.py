@@ -264,49 +264,96 @@ def test_tombstones_count_towards_the_cap():
 
 # --- token delivery: Infisical by name at run time (operator 2026-10-13, option 1) ---
 
-def _fake_cli(tmp_path, body):
-    cli = tmp_path / "fake_infisical.py"
-    cli.write_text("import sys\n" + body)
-    return cli
+def _creds(tmp_path, monkeypatch, **over):
+    ua = {"client_id": "cid", "client_secret": "csec", "url": "https://inf.example", "project_id": "pid",
+          "secret_path": "/"}
+    ua.update(over)
+    f = tmp_path / "creds.yaml"
+    import yaml
+    f.write_text(yaml.safe_dump({"credentials": {"infisical_ua": ua}}))
+    monkeypatch.setenv("FW_ESTATE_CREDS_FILE", str(f))
 
 
-def _no_local_token(monkeypatch):
-    monkeypatch.delenv("FW_QDRANT_ESTATE_STAGING_AEF_API_KEY", raising=False)
+def _no_local_token(monkeypatch, var="FW_QDRANT_ESTATE_STAGING_AEF_API_KEY"):
+    monkeypatch.delenv(var, raising=False)
     sys.path.insert(0, str(ROOT))
     import web.secrets_store as ss
     monkeypatch.setattr(ss, "get_api_key", lambda name: None)
 
 
+def _fake_http(monkeypatch, calls, value="tok-from-infisical"):
+    def http(method, url, body=None, headers=None):
+        calls.append((method, url, body, headers))
+        if url.endswith("/api/v1/auth/universal-auth/login"):
+            assert body == {"clientId": "cid", "clientSecret": "csec"}
+            return {"accessToken": "acc"}
+        assert headers == {"Authorization": "Bearer acc"}
+        return {"secret": {"secretValue": value}}
+    monkeypatch.setattr(ep, "_http_json", http)
+
+
 def test_token_read_from_infisical_by_name_and_never_printed(tmp_path, monkeypatch, capsys):
     _no_local_token(monkeypatch)
-    cli = _fake_cli(tmp_path, "assert sys.argv[1:] == ['get', 'prod', 'QDRANT_ESTATE_TOKEN_STAGING_AEF']\n"
-                              "print('tok-from-infisical')\n")
-    monkeypatch.setenv("FW_ESTATE_INFISICAL_CLI", str(cli))
+    _creds(tmp_path, monkeypatch)
+    calls = []
+    _fake_http(monkeypatch, calls)
     assert ep._token() == "tok-from-infisical"
+    read = calls[1][1]
+    assert "/api/v3/secrets/raw/QDRANT_ESTATE_TOKEN_STAGING_AEF?" in read
+    assert "workspaceId=pid" in read and "environment=prod" in read
     out = capsys.readouterr()
     assert "tok-from-infisical" not in out.out + out.err
 
 
 def test_env_token_wins_over_infisical(tmp_path, monkeypatch):
     monkeypatch.setenv("FW_QDRANT_ESTATE_STAGING_AEF_API_KEY", "env-tok")
-    monkeypatch.setenv("FW_ESTATE_INFISICAL_CLI", str(_fake_cli(tmp_path, "print('other')\n")))
+    monkeypatch.setattr(ep, "_http_json", lambda *a, **k: (_ for _ in ()).throw(AssertionError("no network")))
     assert ep._token() == "env-tok"
 
 
-def test_infisical_failure_refuses_without_leaking(tmp_path, monkeypatch, capsys):
+def test_infisical_http_error_refuses_with_status_only(tmp_path, monkeypatch):
+    import io
+    import urllib.error
     import pytest
     _no_local_token(monkeypatch)
-    cli = _fake_cli(tmp_path, "print('partial-secret'); sys.exit(1)\n")
-    monkeypatch.setenv("FW_ESTATE_INFISICAL_CLI", str(cli))
+    _creds(tmp_path, monkeypatch)
+
+    def http(method, url, body=None, headers=None):
+        if "login" in url:
+            return {"accessToken": "acc"}
+        raise urllib.error.HTTPError(url, 404, "nf", {}, io.BytesIO(b'{"message": "Secret not found"}'))
+    monkeypatch.setattr(ep, "_http_json", http)
     with pytest.raises(SystemExit) as e:
         ep._token()
     assert "QDRANT_ESTATE_TOKEN_STAGING_AEF" in str(e.value)
-    assert "partial-secret" not in str(e.value) + capsys.readouterr().out
+    assert "read HTTP 404: Secret not found" in str(e.value)
+    assert "csec" not in str(e.value) and "acc" not in str(e.value).replace("access", "")
 
 
-def test_missing_infisical_client_is_a_miss(tmp_path, monkeypatch):
+def test_missing_credential_file_is_a_named_miss(tmp_path, monkeypatch):
     import pytest
     _no_local_token(monkeypatch)
-    monkeypatch.setenv("FW_ESTATE_INFISICAL_CLI", str(tmp_path / "absent.py"))
-    with pytest.raises(SystemExit):
+    monkeypatch.setenv("FW_ESTATE_CREDS_FILE", str(tmp_path / "absent.yaml"))
+    with pytest.raises(SystemExit) as e:
         ep._token()
+    assert "credential file not found" in str(e.value)
+
+
+def test_incomplete_ua_settings_name_the_missing_keys(tmp_path, monkeypatch):
+    import pytest
+    _no_local_token(monkeypatch)
+    _creds(tmp_path, monkeypatch, client_secret="")
+    with pytest.raises(SystemExit) as e:
+        ep._token()
+    assert "infisical_ua.client_secret" in str(e.value)
+
+
+def test_project_and_folder_overrides(tmp_path, monkeypatch):
+    _no_local_token(monkeypatch)
+    _creds(tmp_path, monkeypatch)
+    monkeypatch.setenv("FW_ESTATE_INFISICAL_PROJECT_ID", "ring20proj")
+    monkeypatch.setenv("FW_ESTATE_INFISICAL_PATH", "/estate")
+    calls = []
+    _fake_http(monkeypatch, calls)
+    ep._token()
+    assert "workspaceId=ring20proj" in calls[1][1] and "secretPath=%2Festate" in calls[1][1]
