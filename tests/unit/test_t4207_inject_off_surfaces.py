@@ -85,3 +85,18 @@ def test_held_unsurfaced_silent_once_shown(proj):
     _store("m-old-2", stored_at=old)
     seen.mark_shown([("m-old-2", receiver.read_message("m-old-2"))], by="hook")
     assert inject.held_unsurfaced(threshold_hours=24) == []
+
+
+def test_shell_fact_behind_doctor_and_audit_lists_old_unshown_mail(proj):
+    """The fact `fw doctor` and `fw audit` read: one TAB row per held message."""
+    import subprocess
+    old = datetime.now(timezone.utc) - timedelta(hours=30)
+    _store("m-shell-1", stored_at=old)
+    res = subprocess.run(
+        ["bash", "-c", 'source lib/sidecar-audit.sh; fw_sidecar_held_unsurfaced_facts "$PROJECT_ROOT" 24'],
+        cwd=FW_ROOT, env={**__import__("os").environ, "PROJECT_ROOT": str(proj)},
+        capture_output=True, text=True, timeout=60)
+    assert res.returncode == 0, res.stderr
+    fields = res.stdout.strip().split("\t")
+    assert fields[0] == "m-shell-1" and float(fields[1]) >= 29, res.stdout
+    assert fields[2] == "050-email-archive"
