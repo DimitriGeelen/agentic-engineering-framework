@@ -360,3 +360,14 @@ def test_is_daytime_bounds():
     assert ei.is_daytime(dt.datetime(2026, 10, 13, ei.DAY_START, 0))
     assert not ei.is_daytime(dt.datetime(2026, 10, 13, ei.DAY_END, 0))
     assert not ei.is_daytime(NIGHT)
+
+
+def test_ingest_token_reads_its_own_infisical_name(tmp_path, monkeypatch):
+    monkeypatch.delenv("FW_QDRANT_ESTATE_INGEST_AEF_API_KEY", raising=False)
+    sys.path.insert(0, str(ROOT))
+    import web.secrets_store as ss
+    monkeypatch.setattr(ss, "get_api_key", lambda name: None)
+    cli = tmp_path / "fake_infisical.py"
+    cli.write_text("import sys\nassert sys.argv[1:] == ['get', 'prod', 'QDRANT_ESTATE_TOKEN_INGEST_AEF']\nprint('ingest-tok')\n")
+    monkeypatch.setenv("FW_ESTATE_INFISICAL_CLI", str(cli))
+    assert ei._token() == "ingest-tok"

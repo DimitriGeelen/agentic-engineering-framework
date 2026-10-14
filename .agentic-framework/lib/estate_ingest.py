@@ -261,12 +261,7 @@ def drain(project, *, store, token, embedder, digest, staging, patterns, now, ap
 
 
 def _token() -> str:
-    sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
-    from web.secrets_store import get_api_key  # lazy: the guards above stay dependency-free
-    tok = get_api_key(INGEST_TOKEN)
-    if not tok:
-        sys.exit(f"estate ingest: no token named '{INGEST_TOKEN}' (env FW_{INGEST_TOKEN.upper()}_API_KEY or the key store)")
-    return tok
+    return ep.resolve_token(INGEST_TOKEN, "QDRANT_ESTATE_TOKEN_INGEST_AEF", "ingest")
 
 
 def main(argv=None) -> int:

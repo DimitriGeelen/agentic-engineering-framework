@@ -260,3 +260,53 @@ def test_tombstones_count_towards_the_cap():
     assert [u["payload"]["chunk_key"] for u in batch.upserts] == ["u0", "u1"]
     assert [d["payload"]["chunk_key"] for d in batch.deletes] == ["d0", "d1"]
     assert remaining == 3
+
+
+# --- token delivery: Infisical by name at run time (operator 2026-10-13, option 1) ---
+
+def _fake_cli(tmp_path, body):
+    cli = tmp_path / "fake_infisical.py"
+    cli.write_text("import sys\n" + body)
+    return cli
+
+
+def _no_local_token(monkeypatch):
+    monkeypatch.delenv("FW_QDRANT_ESTATE_STAGING_AEF_API_KEY", raising=False)
+    sys.path.insert(0, str(ROOT))
+    import web.secrets_store as ss
+    monkeypatch.setattr(ss, "get_api_key", lambda name: None)
+
+
+def test_token_read_from_infisical_by_name_and_never_printed(tmp_path, monkeypatch, capsys):
+    _no_local_token(monkeypatch)
+    cli = _fake_cli(tmp_path, "assert sys.argv[1:] == ['get', 'prod', 'QDRANT_ESTATE_TOKEN_STAGING_AEF']\n"
+                              "print('tok-from-infisical')\n")
+    monkeypatch.setenv("FW_ESTATE_INFISICAL_CLI", str(cli))
+    assert ep._token() == "tok-from-infisical"
+    out = capsys.readouterr()
+    assert "tok-from-infisical" not in out.out + out.err
+
+
+def test_env_token_wins_over_infisical(tmp_path, monkeypatch):
+    monkeypatch.setenv("FW_QDRANT_ESTATE_STAGING_AEF_API_KEY", "env-tok")
+    monkeypatch.setenv("FW_ESTATE_INFISICAL_CLI", str(_fake_cli(tmp_path, "print('other')\n")))
+    assert ep._token() == "env-tok"
+
+
+def test_infisical_failure_refuses_without_leaking(tmp_path, monkeypatch, capsys):
+    import pytest
+    _no_local_token(monkeypatch)
+    cli = _fake_cli(tmp_path, "print('partial-secret'); sys.exit(1)\n")
+    monkeypatch.setenv("FW_ESTATE_INFISICAL_CLI", str(cli))
+    with pytest.raises(SystemExit) as e:
+        ep._token()
+    assert "QDRANT_ESTATE_TOKEN_STAGING_AEF" in str(e.value)
+    assert "partial-secret" not in str(e.value) + capsys.readouterr().out
+
+
+def test_missing_infisical_client_is_a_miss(tmp_path, monkeypatch):
+    import pytest
+    _no_local_token(monkeypatch)
+    monkeypatch.setenv("FW_ESTATE_INFISICAL_CLI", str(tmp_path / "absent.py"))
+    with pytest.raises(SystemExit):
+        ep._token()

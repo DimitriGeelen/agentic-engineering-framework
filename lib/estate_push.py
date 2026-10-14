@@ -214,13 +214,45 @@ def _apply_ledger(ledger: dict, plan: Plan) -> dict:
     return ledger
 
 
-def _token() -> str:
+INFISICAL_TOKEN_NAME = "QDRANT_ESTATE_TOKEN_STAGING_AEF"
+INFISICAL_ENV = "prod"
+INFISICAL_CLI_DEFAULT = "/opt/150-skills-manager/skills/infisical/infisical_client.py"
+
+
+def _infisical_secret(name: str) -> str | None:
+    """Read one secret by name from Infisical at run time (operator 2026-10-13, option 1).
+
+    The value is captured from the client's stdout and kept in memory: never
+    printed, logged or written. The client path is FW_ESTATE_INFISICAL_CLI
+    (default: the host's skills-manager client); a missing client is a miss.
+    """
+    import subprocess
+    cli = os.environ.get("FW_ESTATE_INFISICAL_CLI", INFISICAL_CLI_DEFAULT)
+    if not cli or not Path(cli).is_file():
+        return None
+    try:
+        r = subprocess.run([sys.executable, cli, "get", INFISICAL_ENV, name],
+                           capture_output=True, text=True, timeout=60)
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if r.returncode != 0:
+        return None
+    return r.stdout.strip() or None
+
+
+def resolve_token(local_name: str, infisical_name: str, verb: str) -> str:
+    """Env / key store first (explicit operator override), then Infisical by name."""
     sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
     from web.secrets_store import get_api_key  # lazy: keeps the planner dependency-free
-    tok = get_api_key(TOKEN_NAME)
+    tok = get_api_key(local_name) or _infisical_secret(infisical_name)
     if not tok:
-        sys.exit(f"estate push: no token named '{TOKEN_NAME}' (env FW_{TOKEN_NAME.upper()}_API_KEY or the key store)")
+        sys.exit(f"estate {verb}: no token: not in env FW_{local_name.upper()}_API_KEY, the key store, "
+                 f"or Infisical ({INFISICAL_ENV}) as '{infisical_name}'")
     return tok
+
+
+def _token() -> str:
+    return resolve_token(TOKEN_NAME, INFISICAL_TOKEN_NAME, "push")
 
 
 def main(argv=None) -> int:
