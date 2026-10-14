@@ -15,6 +15,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from lib.reviewer import judge_cli  # noqa: E402
 import _review_runtime as rt  # noqa: E402
+from _review_runtime import hermetic_review_env  # noqa: E402,F401  (T-4205: autouse)
 from t3580_judge_cli_test import NOCAP, TASTE, TID, _mk_task, _produce, repo  # noqa: E402,F401
 
 

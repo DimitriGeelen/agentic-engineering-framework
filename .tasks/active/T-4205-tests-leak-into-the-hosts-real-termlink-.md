@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-14T21:49:04Z
-last_update: 2026-10-14T22:46:46Z
+last_update: 2026-10-14T23:31:47Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -106,7 +106,7 @@ cost_estimate_proposed:
 - [x] Every affected test file (sidecar receipt/watcher/session-ready tests T-3684/T-3745, learning-post tests add_learning_id_allocator.bats and context_learning.bats) runs through the shared isolation and no longer reaches ~/.termlink
 - [x] Tripwire: a test that would call the real termlink transport fails loudly (fake binary records the call and the suite-wide guard asserts no un-isolated call happened)
 - [x] Regression test proves the old test shape now hits the fake/tmp runtime, not the host runtime
-- [ ] Every test file that references termlink still passes (grep tests/ -rl termlink, run them all); ~/.termlink/outbound.sqlite mtime/size unchanged across the affected suites — NOT MET: 20 t3580_* judge tests (other worker's files) now fail on the tripwire; all other termlink-referencing bats (374 ok, 0 not ok) and pytest (1034 passed) files pass; outbound.sqlite unchanged (mtime 2026-10-14 23:42:50, size 102400) across all runs
+- [x] Every test file that references termlink still passes (grep tests/ -rl termlink, run them all); ~/.termlink/outbound.sqlite mtime/size unchanged across the affected suites — the 20 t3580_* reds were made hermetic by the follow-up (see Updates 2026-10-15): t3580_*, t3986, t4010, t3852, t3582, t3949, test_t3579, test_t3581_round4 and the tripwire regression: 544 passed both inside a dispatched worker and with its env unset; outbound.sqlite unchanged (102400 bytes, mtime 1792014170)
 - [x] G-115 in .context/project/concerns.yaml names the structural fix and this task
 
 ### Human
@@ -415,6 +415,11 @@ open for the operator to close.
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-15 — making the t3580 judge suites hermetic
+- **Chose:** one autouse fixture `hermetic_review_env` in `tests/unit/_review_runtime.py` (the runtime double every review-ledger suite already imports), imported by each of its 16 user files. It unsets `FW_SIDECAR_AGENT_ID` / `FW_REVIEW_WORKER` / `FW_DISPATCHED_WORKER`, pins `FW_SIDECAR_HUB_ID`, and replaces `verdict_ledger._consult_reader` (an existing seam) with an empty reader. No production change and no new seam: `FW_SIDECAR_HUB_ID` and `_consult_reader` already existed.
+- **Why:** the 20 reds had two causes, not one. 17 were the host worker's `FW_SIDECAR_AGENT_ID` leaking in (rows attributed to `reviewer-t4205b-t3580`, so `unknown` instead of `green`). With that env unset only 3 failed, and those were the hub/consult reads. One fixture covers both, wherever the suite runs.
+- **Rejected:** the global `tests/unit/conftest.py` (would also pin the hub for the sidecar suites another worker owns, some of which test the unpinned path); weakening the tripwire or skipping tests (forbidden by the brief).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -450,3 +455,9 @@ open for the operator to close.
 - Termlink-referencing bats (61 files) 374 ok, 0 not ok. Termlink-referencing pytest (68 files, minus `t3580_*`) 1034 passed, 2 skipped.
 - `bin/fw test lint`: 6 FAIL, none in files this task touched (`.context/working/t4088/*.sh`, `agents/sessions/{antigravity,claude-code}/list.sh` and their vendored copies; SC1071 / SC2148). `bin/fw audit --section structure`: FAIL on "every test file is tracked by git" until this commit lands (the new test files), then also the untracked `tests/unit/t3852_unavailable_seat_test.py` (another worker's file, not staged here).
 - Run and red: `t3580_*` judge suites (20 failed, see RCA open red). Not run: `tests/integration` live e2e (needs claude and a live hub on purpose).
+
+### 2026-10-15 — follow-up: t3580 judge suites made hermetic (worker t4205b-t3580)
+- Pre-fix, inside a dispatched worker: t3580_* + t3986/t4010/t3852 + tripwire regression 20 failed, 404 passed. With the worker env unset (`env -u FW_SIDECAR_AGENT_ID …`): 3 failed, 396 passed (round8 consult-traffic x2: "hub fingerprint unreadable"; inbox-hook control leg). So 17 of the 20 were the host's `FW_SIDECAR_AGENT_ID` leaking into the suite, and 3 were the hub/consult reads. The RCA's "open red" attribution of all 20 to the tripwire was only partly right.
+- Fix: `hermetic_review_env` autouse fixture in `tests/unit/_review_runtime.py`, imported by its 16 users; round8 inbox-hook control names its own `FW_SIDECAR_AGENT_ID`. Tests only: no lib/ change, tripwire untouched, no skips.
+- After: the same set plus t3582, t3949, test_t3579, test_t3581_round4: 544 passed in the worker env and 544 passed with it unset. `~/.termlink/outbound.sqlite` 102400 bytes, mtime 1792014170, before and after.
+- `bin/fw test lint`: the same 6 pre-existing FAILs, none in these files. `bin/fw audit --section structure`: one FAIL, self-vendor drift on a `web/` file this follow-up did not touch (another worker's); no vendor sync run because no vendored path changed here.

@@ -10,7 +10,32 @@ import os
 from contextlib import contextmanager
 from pathlib import Path
 
+import pytest
+
 from lib import verdict_ledger as vl
+
+#: T-4205: a fixed hub id for every test that completes a review dispatch.
+FAKE_HUB_ID = "0000feedface0000"
+
+
+@pytest.fixture(autouse=True)
+def hermetic_review_env(monkeypatch):
+    """T-4205: keep review-runtime tests off the host's session and TermLink hub.
+
+    Import it into a test module (`from _review_runtime import hermetic_review_env`) to make it
+    autouse there. Three host leaks, each of which failed tests only on some hosts:
+    - `FW_SIDECAR_AGENT_ID`: a test run inside a dispatched worker inherits the worker's id, which
+      the ledger reads as "this process is that dispatch's worker" and fake workers expand into
+      the reviewer identity, so rows were attributed to the host worker, not the fixture's.
+    - the hub fingerprint: `complete` resolves consult topics through `termlink hub fingerprint`;
+      pinned here so it never reads the live hub (the T-4205 tripwire refuses it).
+    - the consult reader: `complete` drains the worker's inbox topics with `termlink channel
+      subscribe`; replaced by an empty reader. A test that needs traffic patches its own.
+    """
+    for var in (vl._WORKER_ENV, "FW_REVIEW_WORKER", "FW_DISPATCHED_WORKER"):
+        monkeypatch.delenv(var, raising=False)
+    monkeypatch.setenv("FW_SIDECAR_HUB_ID", FAKE_HUB_ID)
+    monkeypatch.setattr(vl, "_consult_reader", lambda topic, cursor, limit: [])
 
 
 def wdir_for(root: Path, did: str) -> Path:

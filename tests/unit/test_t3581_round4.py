@@ -16,6 +16,7 @@ from test_t3581_ledger_integrity import _rewrite  # noqa: E402
 from lib import verdict_ledger as vl  # noqa: E402
 from lib.delegation import human_criteria  # noqa: E402
 import _review_runtime as rt  # noqa: E402
+from _review_runtime import hermetic_review_env  # noqa: E402,F401  (T-4205: autouse)
 
 ROOT = Path(__file__).resolve().parents[2]
 

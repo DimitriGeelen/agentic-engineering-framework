@@ -194,6 +194,7 @@ from lib import verdict_ledger as vl  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import _review_runtime as rt  # noqa: E402
+from _review_runtime import hermetic_review_env  # noqa: E402,F401  (T-4205: autouse)
 
 TID = "T-9200"
 TASTE = ("- [ ] [REVIEW] The summary paragraph reads clearly\n"

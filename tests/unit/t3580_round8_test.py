@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib import review_policy as rp  # noqa: E402
 from lib import verdict_ledger as vl  # noqa: E402
 import _review_runtime as rt  # noqa: E402
+from _review_runtime import hermetic_review_env  # noqa: E402,F401  (T-4205: autouse)
 from t3580_judge_cli_test import TASTE, TID, _mk_task, _produce, repo  # noqa: E402,F401
 from t3580_round2_test import _commit_as  # noqa: E402
 from t3580_round3_test import HI, _record, _run_worker, rtrepo  # noqa: E402,F401
@@ -95,7 +96,10 @@ class TestNoChannelToTheReviewer:
         stub.mkdir()
         (stub / "termlink").write_text("#!/bin/sh\nexit 0\n")
         (stub / "termlink").chmod(0o755)
-        env = {**os.environ, "FW_BIN": str(fw), "PATH": f"{stub}:{os.environ['PATH']}"}
+        # T-4205: an addressable session names itself; without an id the hook's control leg
+        # depended on whether the host running pytest was itself a dispatched worker.
+        env = {**os.environ, "FW_BIN": str(fw), "PATH": f"{stub}:{os.environ['PATH']}",
+               "FW_SIDECAR_AGENT_ID": "builder-under-test"}
         env.pop("FW_REVIEW_WORKER", None)
         run = lambda e: subprocess.run(["bash", str(SIDECAR_HOOK)], input="{}", env=e,  # noqa: E731
                                        capture_output=True, text=True, timeout=30).stdout

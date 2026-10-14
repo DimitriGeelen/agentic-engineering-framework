@@ -19,6 +19,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib import review_policy as rp  # noqa: E402
 from lib import verdict_ledger as vl  # noqa: E402
 import _review_runtime as rt  # noqa: E402
+from _review_runtime import hermetic_review_env  # noqa: E402,F401  (T-4205: autouse)
 import t3580_round3_test as r3  # noqa: E402
 from t3580_judge_cli_test import TASTE, TID, _mk_task, _produce, repo  # noqa: E402,F401
 from t3580_round3_test import _run_worker, rtrepo  # noqa: E402,F401

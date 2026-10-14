@@ -21,6 +21,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 from lib import verdict_ledger as vl  # noqa: E402
 from lib.reviewer import judge_cli  # noqa: E402
 import _review_runtime as rt  # noqa: E402
+from _review_runtime import hermetic_review_env  # noqa: E402,F401  (T-4205: autouse)
 import t3582_harness_kinds_test as hk  # noqa: E402
 from t3580_judge_cli_test import NOCAP, TID, FakeWorker, repo  # noqa: E402,F401
 
