@@ -58,6 +58,7 @@ _HERE = Path(__file__).resolve().parent.parent
 if str(_HERE.parent) not in sys.path:
     sys.path.insert(0, str(_HERE.parent))
 
+from lib import dispatch_tokens  # noqa: E402
 from lib import review_policy  # noqa: E402
 from lib import verdict_ledger as vl  # noqa: E402
 from lib.delegation import (  # noqa: E402
@@ -85,6 +86,10 @@ _CLEARS = (vl.GREEN, vl.NOT_EVALUATED)
 #: How many times the judge reassigns a not-evaluated criterion to other seat kinds before it
 #: hands it to the operator (operator ruling 2026-10-07: fix → upstream → reassign → operator).
 MAX_REASSIGN = 2
+#: T-3852: an unavailable seat stops the panel at once, so each reassignment excludes one more kind.
+#: The bound is the registry's seat kinds, not this number: a kind already excluded is never
+#: seated again, so the loop also ends when a re-run excludes nothing new.
+MAX_UNAVAILABLE_REASSIGN = 8
 COST_PURPOSE = review_policy.SPEND_PURPOSE
 
 
@@ -661,12 +666,41 @@ def _parse_printed(output: str, criteria: list[dict]) -> dict[int, str]:
             for c in criteria}
 
 
+def _unavailable_reason(dispatch_id: str) -> str:
+    """Why a dispatched seat left no ledger row, read from its worker dir (T-3852): the exit
+    status and, when the worker's own stream or stderr names one, a usage or rate limit. Short by
+    design — a reason for the operator's message, never a raw log. '' is never returned."""
+    w = dispatch_tokens.dispatch_dir() / dispatch_id
+    try:
+        code = (w / "exit_code").read_text().strip()
+    except OSError:
+        code = ""
+    text = ""
+    for name in ("result.jsonl", "stderr.log"):
+        try:
+            text += (w / name).read_text(errors="replace").lower()
+        except OSError:
+            pass
+    limit = ("usage limit" if "usage limit" in text else
+             "rate limit" if ("rate limit" in text or "429" in text) else "")
+    if limit and code:
+        return f"{limit} (exit {code})"
+    if limit:
+        return limit
+    if code:
+        return f"exit {code}"
+    return "no completion"
+
+
 def _collect(root: Path, task_id: str, dispatch_id: str, criteria: list[dict],
              printed: dict[int, str] | None = None) -> list[dict]:
     """One result per criterion, read from the ledger and validated by the ledger's own
     validator (`vl._fault`) for EVERY outcome: a row that is not a valid, attributable record
     for this criterion is `unknown` whatever it says, so a malformed amber cannot be reported as
-    amber and a green the ledger would refuse cannot be reported as green."""
+    amber and a green the ledger would refuse cannot be reported as green.
+
+    T-3852: a seat with a dispatch id and NO ledger row at all for it is UNAVAILABLE — it could
+    not reach a verdict — and carries `unavailable: <reason>`. A seat that left any row is not."""
     printed = printed or {}
     path, _sub = vl._find_task(root, task_id)
     if path is None:
@@ -676,11 +710,14 @@ def _collect(root: Path, task_id: str, dispatch_id: str, criteria: list[dict],
     led = ctx.ledger
     rows = [(r, i) for r, i in led.entries()
             if r.get("task") == task_id and r.get("dispatch_id") == dispatch_id]
+    unavailable = "" if (rows or led.faults) else (_unavailable_reason(dispatch_id) or "no completion")
     out = []
     for c in criteria:
         mine = [(r, i) for r, i in rows if r.get("ac") == c["ac_index"]]
         res = {"ac": c["ac_index"], "outcome": UNKNOWN, "source": "no-ledger-row",
                "printed": printed.get(c["index"], UNKNOWN), "verdict_id": ""}
+        if unavailable:
+            res["unavailable"] = unavailable
         if led.faults:
             res.update(source="ledger-integrity", why=led.faults[0])
         elif mine:
@@ -725,6 +762,8 @@ def _final(root: Path, task_id: str, judged: list[dict], dispatches: list[dict])
             outcomes[c["ac_index"]] = last["outcome"]
             if last.get("why"):
                 whys[c["ac_index"]] = last["why"]
+            elif last.get("unavailable"):
+                whys[c["ac_index"]] = f"unavailable: {last['unavailable']}"
     return outcomes, whys
 
 
@@ -929,27 +968,46 @@ def _not_evaluated_kinds(res: dict, ac: int) -> set[str]:
             if r["ac"] == ac and r["outcome"] == vl.NOT_EVALUATED and d.get("kind")}
 
 
+def _unavailable(res: dict, ac: int) -> dict[str, str]:
+    """{worker kind: reason} for the seats in `res` that were unavailable for Human AC#`ac` (T-3852):
+    dispatched, and left no ledger row at all."""
+    return {d["kind"]: r["unavailable"] for d in res.get("dispatches") or []
+            for r in d.get("results") or [] if r["ac"] == ac and r.get("unavailable") and d.get("kind")}
+
+
+def _recorded(res: dict) -> bool:
+    """Did any seat in `res` leave a ledger row for a criterion (a verdict, of any outcome)?"""
+    return any(r.get("source") == "ledger" or str(r.get("source", "")).startswith("ledger-")
+               for d in res.get("dispatches") or [] for r in d.get("results") or [])
+
+
 def judge_with_reassign(task_id: str, root: Path, **kw) -> dict:
-    """`judge`, then the operator's ladder for a criterion no seat could evaluate (T-3986):
-    reassign it — a new run, per criterion, that seats no worker kind which could not evaluate
-    it — up to MAX_REASSIGN times; whatever is still not-evaluated after that is the operator's,
-    with the reasons. A not-evaluated seat never becomes amber or red on the way."""
+    """`judge`, then the operator's ladder for a criterion no seat could evaluate (T-3986, T-3852):
+    reassign it — a new run, per criterion, that seats no worker kind which could not evaluate it
+    (not-evaluated) or could not reach a verdict at all (unavailable: a usage limit, a crash, no
+    ledger row) — up to MAX_REASSIGN times. Whatever is still not evaluated after that is the
+    operator's, with the reasons. A not-evaluated or unavailable seat never becomes amber or red
+    on the way; a seat that left a ledger row is a verdict and is never reassigned here."""
     res = judge(task_id, root, **kw)
     if kw.get("dry_run") or res.get("error") or not res.get("outcomes"):
         return res
     res["reassigned"] = []
     for ac, outcome in list(res["outcomes"].items()):
-        if outcome != vl.NOT_EVALUATED:
+        if outcome != vl.NOT_EVALUATED and not _unavailable(res, ac):
             continue
-        excluded = _not_evaluated_kinds(res, ac)
-        # No kind of THIS run said not-evaluated (the ledger's not-evaluated came from an older
-        # run): an identical re-run would learn nothing, so it is not reassigned blind.
-        for _ in range(MAX_REASSIGN if excluded else 0):
+        excluded = _not_evaluated_kinds(res, ac) | set(_unavailable(res, ac))
+        unavailable = _unavailable(res, ac)
+        # No kind of THIS run said not-evaluated or unavailable (the ledger's not-evaluated came
+        # from an older run): an identical re-run would learn nothing, so it is not reassigned blind.
+        for _ in range((MAX_UNAVAILABLE_REASSIGN if unavailable else MAX_REASSIGN) if excluded else 0):
             sub = judge(task_id, root, **{**kw, "criterion_n": ac, "exclude_kinds": set(excluded)})
             step = {"ac": ac, "excluded": sorted(excluded), "run_id": sub.get("run_id", ""),
                     "outcome": (sub.get("outcomes") or {}).get(ac, UNKNOWN),
-                    "why": sub.get("error") or (sub.get("why") or {}).get(ac, "")}
+                    "why": sub.get("error") or (sub.get("why") or {}).get(ac, ""),
+                    # the kinds that made this run necessary, and any this run lost too
+                    "unavailable": {**unavailable, **_unavailable(sub, ac)}}
             res["reassigned"].append(step)
+            unavailable.update(step["unavailable"])
             res.setdefault("dispatches", []).extend(sub.get("dispatches") or [])
             if sub.get("error"):
                 break
@@ -958,9 +1016,9 @@ def judge_with_reassign(task_id: str, root: Path, **kw) -> dict:
                 res.setdefault("why", {})[ac] = step["why"]
             else:
                 (res.get("why") or {}).pop(ac, None)
-            if step["outcome"] != vl.NOT_EVALUATED:
+            if step["outcome"] not in (vl.NOT_EVALUATED, UNKNOWN):
                 break
-            new = _not_evaluated_kinds(sub, ac) - excluded
+            new = (_not_evaluated_kinds(sub, ac) | set(step["unavailable"])) - excluded
             if not new:
                 break
             excluded |= new
@@ -968,10 +1026,25 @@ def judge_with_reassign(task_id: str, root: Path, **kw) -> dict:
         # of the ladder. An evaluating amber/red from a reassigned seat is a real verdict and
         # takes the normal path instead.
         if res["outcomes"][ac] in (vl.NOT_EVALUATED, UNKNOWN):
+            names = ", ".join(f"{k} ({v})" for k, v in sorted(unavailable.items()))
+            prior = res.get("why", {}).get(ac, "")
+            if prior.startswith("unavailable:"):   # already named above, from the last seat
+                prior = ""
             res.setdefault("why", {})[ac] = (
                 f"OPERATOR: no seat kind could evaluate this criterion (reassigned excluding "
-                f"{', '.join(sorted(excluded)) or 'nothing'}) — "
-                f"{res.get('why', {}).get(ac, '') or 'no evaluating verdict'}")
+                f"{', '.join(sorted(excluded)) or 'nothing'})"
+                + (f"; unavailable: {names}" if names else "")
+                + f" — {prior or 'no evaluating verdict'}")
+    # T-4010 holds when nothing was recorded at all; a reassigned seat that recorded a verdict
+    # means the panel did reach one, so the refusal no longer applies.
+    if res.get("no_seat_recorded") and _recorded(res):
+        res.pop("no_seat_recorded")
+        res["code"] = 0
+    elif res.get("no_seat_recorded") and res["reassigned"]:
+        names = {k: v for st in res["reassigned"] for k, v in st["unavailable"].items()}
+        if names:
+            res["no_seat_recorded"] += "; unavailable: " + ", ".join(
+                f"{k} ({v})" for k, v in sorted(names.items()))
     return res
 
 
@@ -1004,10 +1077,13 @@ def _print_result(res: dict) -> None:
               + (f" FAILED: {d['error']}" if d.get("error") else "")
               + (f" [{d['status']}]" if d.get("status") else ""))
         for r in d["results"]:
-            print(f"  AC#{r['ac']}: {r['outcome']} ({r['source']}){' ' + r['flag'] if r.get('flag') else ''}")
+            print(f"  AC#{r['ac']}: {r['outcome']} ({r['source']}){' ' + r['flag'] if r.get('flag') else ''}"
+                  + (f" unavailable: {r['unavailable']}" if r.get("unavailable") else ""))
     for st in res.get("reassigned") or []:
+        unav = ", ".join(f"{k} ({v})" for k, v in sorted((st.get("unavailable") or {}).items()))
         print(f"  reassigned AC#{st['ac']} (excluding {', '.join(st['excluded']) or 'none'}): "
-              f"{st['outcome']}{' - ' + st['why'] if st['why'] else ''}")
+              f"{st['outcome']}{' - ' + st['why'] if st['why'] else ''}"
+              + (f" [unavailable: {unav}]" if unav else ""))
     for ac, why in sorted((res.get("why") or {}).items()):
         print(f"  final AC#{ac}: {res['outcomes'][ac]} - {why}")
     if res.get("no_seat_recorded"):

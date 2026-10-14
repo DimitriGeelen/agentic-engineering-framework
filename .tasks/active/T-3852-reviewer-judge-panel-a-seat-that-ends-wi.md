@@ -10,7 +10,7 @@ description: >
   at rung 5, _plan_seats takes the first three seat backends with no fallback, ring20
   committed a temporary registry reorder to use the Antigravity spare.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T07:11:30Z
-last_update: '2026-10-05T07:15:47Z'
+last_update: 2026-10-14T22:15:32Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -101,8 +101,12 @@ not-evaluated for reassignment, so the panel completes with the next registry se
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A seat with a dispatch id and zero ledger rows is recorded as unavailable with a short reason read from its worker dir (exit status / usage limit / rate limit / no completion)
+- [x] Reassignment re-runs a criterion with unavailable kinds excluded (same path as not-evaluated); the next registry seat fills the panel and a green panel completes
+- [x] A seat that left any ledger row (amber/red/green/not-evaluated) is never marked unavailable and keeps the normal path (no reassignment)
+- [x] When every kind is unavailable, the operator message names each unavailable seat and its reason; T-4010 exit code 3 holds when nothing recorded and no reassignment succeeded
+- [x] Printed result (`_print_result`) and `res["reassigned"]` steps carry the `unavailable` {kind: reason} field
+- [ ] Regression tests (a)-(d) pass; pre-fix failure of (a) recorded in Updates; `bin/fw test lint` and `bin/fw audit --section structure` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -136,6 +140,8 @@ not-evaluated for reassignment, so the panel completes with the next registry se
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/t3852_unavailable_seat_test.py tests/unit/t3986_not_evaluated_test.py tests/unit/t3580_judge_cli_test.py tests/unit/t4010_judge_no_seat_test.py -q > .context/scratch/t3852-pytest.out 2>&1 && grep -q passed .context/scratch/t3852-pytest.out && ! grep -q failed .context/scratch/t3852-pytest.out
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -279,6 +285,44 @@ not-evaluated for reassignment, so the panel completes with the next registry se
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** rung-5 review, seat codex hit its vendor usage limit (result.jsonl `turn.failed`,
+exit 1, no ledger row). The judge printed `unknown (no-ledger-row)`, the panel stopped at codex,
+and the spare seat (antigravity) never ran. Reported by ring20 (T-2197, 2026-10-14).
+
+**Root cause:** the judge had two ways for a seat to end without a verdict and the ladder only
+knew one. `_not_evaluated_kinds` reassigns a criterion only when a seat *returned* not-evaluated.
+A seat that could not run at all (usage limit, rate limit, crash, missing binary) records no ledger
+row, so `_collect` gave it `UNKNOWN` / `no-ledger-row` with no reason and no reassignment; the
+sequential panel loop stopped at it.
+
+**Why structurally allowed:** the not-evaluated ladder (T-3986) was built for a seat that *speaks*
+and says "I could not see it". Nothing distinguished "no row because the seat was unable to speak"
+from "no row because nothing was looked at", so the most common availability failure fell into the
+same unnamed `unknown` bucket as a bug. The T-4010 guard only caught the all-silent case (code 3),
+not the one-seat-died-and-the-spare-was-never-tried case.
+
+**Prevention:** (1) `_collect` marks a seat with a dispatch id and zero ledger rows for it as
+`unavailable: <reason>`, reason read from its worker dir (`exit_code`, `result.jsonl`, `stderr.log`:
+usage limit / rate limit / exit N / no completion). A seat that left any row is never unavailable.
+(2) `judge_with_reassign` treats unavailable kinds exactly like not-evaluated kinds: the criterion is
+re-run excluding them, so `_plan_seats` seats the next registry kind. (3) The operator message names
+each unavailable seat and its reason. Tests: `tests/unit/t3852_unavailable_seat_test.py` (nine tests,
+including the field case (a), a control that an amber seat is not reassigned, the all-unavailable
+operator message, T-4010 code 3, and reason extraction). The test file's module docstring is the
+pointer for the next reader.
+
+## Updates
+
+### 2026-10-14 — pre-fix failure of the field case (test a)
+- **Test:** `tests/unit/t3852_unavailable_seat_test.py::...test_a_seat_that_exits_with_no_row_is_reassigned_and_the_panel_completes_green`, run against the unfixed `lib/reviewer/judge_cli.py` (HEAD).
+- **Result:** FAILED — the panel stopped at the dead codex seat. Seats dispatched: `claude`, `codex`; the spare `antigravity` never ran (`AssertionError: 'antigravity' in ['claude', 'codex']`).
+- **Note:** the other new tests failed on the missing `_unavailable_reason` reader, as expected.
+
+### 2026-10-14 — fix
+- **Changed:** `lib/reviewer/judge_cli.py` — `_unavailable_reason`, unavailable marking in `_collect`, `_final` reason, `_unavailable` / `_recorded` helpers, `judge_with_reassign` ladder (unavailable kinds excluded, `MAX_UNAVAILABLE_REASSIGN`), `_print_result`.
+- **Test fixture note:** the spare seat (antigravity) cannot run through `run.sh` here (its launch is `sudo -n -u dimitri-mint-dev`), so test (a) routes that one seat through the t3580 `FakeWorker` and pins the stub binary the fixture registry commits. Live seats still go through the real `run.sh`.
+- **Pre-existing, not caused by this change:** `tests/unit/t3580_judge_cli_test.py::TestWorkerWritesItsOwnRow::test_end_to_end_row_passes_apply_and_audit`, `::TestSpendCeiling::test_due_rung_5_is_a_panel_of_three_when_under_ceiling`, `::TestSpendCeiling::test_panel_stops_at_first_non_green_seat` also fail on HEAD `judge_cli.py` (18 tests from the wider judge/ledger run: the three above plus 15 in t3580_round2/3/4/6/8; checked by swapping the HEAD file in and restoring). Not caused by this change.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -359,3 +403,6 @@ not-evaluated for reassignment, so the panel completes with the next registry se
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3852-reviewer-judge-panel-a-seat-that-ends-wi.md
 - **Context:** Initial task creation
+
+### 2026-10-14T21:40:32Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
