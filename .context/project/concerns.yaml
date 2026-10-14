@@ -5476,3 +5476,19 @@ concerns:
   what_remains: T-4081 fixes the index refresh; recovery of the 22 decisions is operator-gated (ticks need
     operator provenance). Close after the fix ships, the 22 are restored, and a detector (Watchtower decision
     no longer at HEAD) exists.
+- id: G-115
+  type: gap
+  title: Unit tests can reach the host's real TermLink queue and hub, so test traffic is published to peers and fleet channels
+  description: 'Tests for sidecar receipts (T-3684, T-3745) and a learning-post test (PL-235, "test learning")
+    ran against the real TermLink runtime. 11 receipts to test-only inboxes were dead-lettered in a peer''s real
+    outbound queue and fired its canary for a week (2026-10-07); a test learning was queued for the real fleet
+    channel:learnings (2026-10-13) and stopped only because the peer could not deserialize it.'
+  severity: high
+  status: open
+  detected_in: T-4205
+  observed: '2026-10-14'
+  reported_by: 010-termlink (msg 967ce2aa)
+  blast_radius: every TermLink peer on the hub; fleet-wide learnings channel
+  detection_gap: nothing isolates TERMLINK runtime/HOME in tests or fails a test that touches the host transport;
+    the leak was visible only on the receiving host
+  what_remains: T-4205 isolates the transport in tests and adds a guard that fails a test touching the host queue.
