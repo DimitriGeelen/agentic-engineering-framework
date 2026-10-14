@@ -956,3 +956,11 @@ entries:
   added: '2026-10-13'
   expires: '2026-10-27'
   added_by: human
+- leg: bats
+  name: 't3593_round6_literal_keys.bats: rm -rf link and rm -rf link/ are different keys (link -> dir:
+    the slash deletes the target)'
+  file: t3593_round6_literal_keys.bats
+  owner: T-4138
+  added: '2026-10-14'
+  expires: '2026-10-28'
+  added_by: human
