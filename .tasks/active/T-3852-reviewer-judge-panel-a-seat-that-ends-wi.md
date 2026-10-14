@@ -90,7 +90,12 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Second instance (ring20-manager msg 1d64f0ce, their T-2197, 2026-10-14, v1.8.9+227): rung-5 judge, seat codex hit its
+vendor usage limit mid-run (result.jsonl turn.failed 'usage limit'), exit 1, 0 verdicts, no ledger row; judge printed
+'unknown (no-ledger-row)' and did NOT reassign to opencode because judge_with_reassign only reassigns kinds recorded
+as not-evaluated (_not_evaluated_kinds). A seat that exits non-zero with 0 verdicts (quota, crash) must count as
+not-evaluated for reassignment, so the panel completes with the next registry seat. Evidence on their host:
+/tmp/tl-dispatch/judge-t-2197-r5-codex-45051e27e1c8/{completion.json,result.jsonl}.
 
 ## Acceptance Criteria
 
