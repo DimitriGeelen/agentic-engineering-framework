@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-14T20:17:27Z
-last_update: 2026-10-14T20:36:13Z
+last_update: 2026-10-14T20:56:44Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,12 +98,12 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Pre-fix refusal reproduced on HEAD and recorded in Updates: a project whose tracked `bin/fw` is a regular-file shim execing `.agentic-framework/bin/fw` has `bin/fw git commit -m x` refused by the shell allowance (`is_commit_checkpoint_command`) and by the budget classifier (`lib/cmd_classify.py`)
-- [ ] Rule implemented in BOTH `_fw_is_own_launcher` (safe-commands.sh) and `_Ctx` (cmd_classify.py): `PROJECT_ROOT/bin/fw` is own only when it is a regular file whose realpath lies under realpath(PROJECT_ROOT); a launcher token is own when its realpath equals that file (or the existing framework/vendored launcher paths)
-- [ ] Positive cases admitted in both: `bin/fw git commit` and `bin/fw handover --commit` with the project shim (regular file, and a symlink resolving inside the project to `.agentic-framework/bin/fw`) at critical budget (budget-gate exit 0) and null focus (hook admits)
-- [ ] Refusals kept in both: planted absolute launcher outside the project; shim symlink escaping the project; shim that is a directory; payload cwd elsewhere; no payload cwd; an earlier `cd` to a planted directory in the same command
-- [ ] New bats file `tests/unit/t4203_own_shim_launcher.bats` green; existing suites that reference the launcher predicates (t4125, t3814, t3221, t3245, t3454, t2919, t2923, t4150, prescribed-commands-are-allowed lint) still green
-- [ ] `bin/fw test lint` and `bin/fw audit --section structure` introduce no new failure; `bin/fw vendor self --check` clean after `bin/fw vendor self`
+- [x] Pre-fix refusal reproduced on HEAD and recorded in Updates: a project whose tracked `bin/fw` is a regular-file shim execing `.agentic-framework/bin/fw` has `bin/fw git commit -m x` refused by the shell allowance (`is_commit_checkpoint_command`) and by the budget classifier (`lib/cmd_classify.py`)
+- [x] Rule implemented in BOTH `_fw_is_own_launcher` (safe-commands.sh) and `_Ctx` (cmd_classify.py): `PROJECT_ROOT/bin/fw` is own only when it is a regular file whose realpath lies under realpath(PROJECT_ROOT); a launcher token is own when its realpath equals that file (or the existing framework/vendored launcher paths)
+- [x] Positive cases admitted in both: `bin/fw git commit` and `bin/fw handover --commit` with the project shim (regular file, and a symlink resolving inside the project to `.agentic-framework/bin/fw`) at critical budget (budget-gate exit 0) and null focus (hook admits)
+- [x] Refusals kept in both: planted absolute launcher outside the project; shim symlink escaping the project; shim that is a directory; payload cwd elsewhere; no payload cwd; an earlier `cd` to a planted directory in the same command
+- [x] New bats file `tests/unit/t4203_own_shim_launcher.bats` green; existing suites that reference the launcher predicates (t4125, t3814, t3221, t3245, t3454, t2919, t2923, t4150, prescribed-commands-are-allowed lint) still green
+- [x] `bin/fw test lint` and `bin/fw audit --section structure` introduce no new failure; `bin/fw vendor self --check` clean after `bin/fw vendor self`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

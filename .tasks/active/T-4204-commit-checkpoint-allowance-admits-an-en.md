@@ -100,7 +100,7 @@ bvp_scores_proposed:
 - [x] The four documented commit-time bypass prefixes still admit as before, in the shell predicate and through the null-focus hook (`check-active-task.sh`); `FW_SWITCH_FOCUS=1 git commit` keeps its T-3454 contract
 - [x] Shell allowance and classifier agree on the steering case (`PROJECT_ROOT=`) and the budget gate refuses it; for unlisted non-steering `FW_*` prefixes the shell is now stricter than the classifier, which still admits them — recorded in Decisions as a follow-up, not closed here
 - [x] New bats file `tests/unit/t4204_commit_allowance_env_prefix.bats` green; existing suites for the commit allowance (t3454, t3814, t3221, t3245, t4125, t4203, t2919, t2923, t4150, prescribed-commands lint) still green
-- [ ] `bin/fw test lint` shows no new failure and `bin/fw audit --section structure` introduces none; `bin/fw vendor self --check` clean after `bin/fw vendor self`
+- [x] `bin/fw test lint` shows no new failure and `bin/fw audit --section structure` introduces none; `bin/fw vendor self --check` clean after `bin/fw vendor self`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
