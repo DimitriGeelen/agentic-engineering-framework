@@ -58,6 +58,15 @@ date_finished: null
 
 <!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
+**Starter found (010 msg d1c8d88d, verified here):** AEF's own host cron (`sidecar-ensure-boot` @reboot + 30 s,
+`sidecar-ensure-1m` every minute) runs `fw sidecar ensure --all`. `lib/sidecar/watcher.py:ensure_all()` (≈line 982)
+starts every enabled project through `sidecar_cli.py` resolved from **AEF's** tree (`os.path.abspath(__file__)`),
+not the project's own vendored launcher. Host booted 2026-10-13 ~14:36:30; receivers started 14:37:01–:19.
+Consequences: consumers run AEF bleeding-edge receiver code; 055 got a second receiver beside its vendored one; 050's
+config.json likely became `{"inject": false}` at 14:37:13 from the same run (see T-4207).
+**Fix direction:** ensure_all invokes each project's OWN launcher (`<root>/.agentic-framework/bin/fw sidecar ensure`,
+or `<root>/bin/fw` in a framework repo); plus a per-agent single-instance lock that a different code path also honours.
+
 ## Acceptance Criteria
 
 ### Agent
