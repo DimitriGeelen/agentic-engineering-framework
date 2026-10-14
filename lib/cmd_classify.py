@@ -499,6 +499,22 @@ _DANGEROUS_ENV = {"PATH", "BASH_ENV", "ENV", "CDPATH", "FRAMEWORK_ROOT",
 _CD_ARG_RE = re.compile(r"^[\w.\-/+@%:,=]+$")
 
 
+def _project_shim_real(pr):
+    """T-4203: the project's own tracked `bin/fw`, resolved, or None.
+
+    A consumer may track a `bin/fw` shim that execs `.agentic-framework/bin/fw`.
+    It is the project's own launcher only when it is a REGULAR FILE and its
+    realpath lies under realpath(PROJECT_ROOT). A symlink escaping the project,
+    a directory, or a missing file is not admitted. Mirrors `_fw_project_shim_real`
+    in agents/context/lib/safe-commands.sh; the two must agree.
+    """
+    root = os.path.realpath(pr)
+    shim = os.path.realpath(os.path.join(pr, "bin", "fw"))
+    if os.path.isfile(shim) and shim.startswith(root + os.sep):
+        return shim
+    return None
+
+
 class _Ctx:
     """Where the command runs and which installs are 'ours'."""
 
@@ -512,6 +528,9 @@ class _Ctx:
         if pr:
             self.fw_paths.add(os.path.realpath(os.path.join(pr, ".agentic-framework", "bin", "fw")))
             self.roots.append(os.path.realpath(os.path.join(pr, ".agentic-framework")))
+            shim = _project_shim_real(pr)
+            if shim:
+                self.fw_paths.add(shim)
 
     def launcher_ok(self, token):
         """Is path-qualified-or-bare `token` this install's own launcher?"""

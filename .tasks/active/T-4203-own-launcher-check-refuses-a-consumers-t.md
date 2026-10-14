@@ -1,10 +1,18 @@
 ---
 id: T-4203
-name: "Own-launcher check refuses a consumer's tracked bin/fw shim: wrap-up commits blocked at critical budget (055 field report item 7)"
+name: "Own-launcher check refuses a consumer's tracked bin/fw shim: wrap-up commits
+  blocked at critical budget (055 field report item 7)"
 description: >
-  055 (vendored, tracked bin/fw shim that execs .agentic-framework/bin/fw, as CLAUDE.md prescribes bin/fw): _fw_is_own_launcher (safe-commands.sh) and cmd_classify._Ctx count only FRAMEWORK_ROOT/bin/fw and PROJECT_ROOT/.agentic-framework/bin/fw. From the project cwd the no-focus/partial-complete commit allowance refuses 'bin/fw git commit', and at critical budget the classifier refuses 'bin/fw handover --commit' (T-4125 message). 055 local fix (their T-531): also count realpath(PROJECT_ROOT/bin/fw) when it resolves to the project's own launcher; refusals kept (cwd elsewhere, no cwd, earlier cd, planted absolute launcher). Peer msg 913410c4.
+  055 (vendored, tracked bin/fw shim that execs .agentic-framework/bin/fw, as CLAUDE.md
+  prescribes bin/fw): _fw_is_own_launcher (safe-commands.sh) and cmd_classify._Ctx
+  count only FRAMEWORK_ROOT/bin/fw and PROJECT_ROOT/.agentic-framework/bin/fw. From
+  the project cwd the no-focus/partial-complete commit allowance refuses 'bin/fw git
+  commit', and at critical budget the classifier refuses 'bin/fw handover --commit'
+  (T-4125 message). 055 local fix (their T-531): also count realpath(PROJECT_ROOT/bin/fw)
+  when it resolves to the project's own launcher; refusals kept (cwd elsewhere, no
+  cwd, earlier cd, planted absolute launcher). Peer msg 913410c4.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-14T20:17:27Z
-last_update: 2026-10-14T20:17:27Z
-date_finished: null
+last_update: 2026-10-14T20:36:07Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-14T20:19:57Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-14T20:30:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=302,acs=8)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4203: Own-launcher check refuses a consumer's tracked bin/fw shim: wrap-up commits blocked at critical budget (055 field report item 7)
@@ -62,8 +98,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Pre-fix refusal reproduced on HEAD and recorded in Updates: a project whose tracked `bin/fw` is a regular-file shim execing `.agentic-framework/bin/fw` has `bin/fw git commit -m x` refused by the shell allowance (`is_commit_checkpoint_command`) and by the budget classifier (`lib/cmd_classify.py`)
+- [ ] Rule implemented in BOTH `_fw_is_own_launcher` (safe-commands.sh) and `_Ctx` (cmd_classify.py): `PROJECT_ROOT/bin/fw` is own only when it is a regular file whose realpath lies under realpath(PROJECT_ROOT); a launcher token is own when its realpath equals that file (or the existing framework/vendored launcher paths)
+- [ ] Positive cases admitted in both: `bin/fw git commit` and `bin/fw handover --commit` with the project shim (regular file, and a symlink resolving inside the project to `.agentic-framework/bin/fw`) at critical budget (budget-gate exit 0) and null focus (hook admits)
+- [ ] Refusals kept in both: planted absolute launcher outside the project; shim symlink escaping the project; shim that is a directory; payload cwd elsewhere; no payload cwd; an earlier `cd` to a planted directory in the same command
+- [ ] New bats file `tests/unit/t4203_own_shim_launcher.bats` green; existing suites that reference the launcher predicates (t4125, t3814, t3221, t3245, t3454, t2919, t2923, t4150, prescribed-commands-are-allowed lint) still green
+- [ ] `bin/fw test lint` and `bin/fw audit --section structure` introduce no new failure; `bin/fw vendor self --check` clean after `bin/fw vendor self`
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +137,10 @@ date_finished: null
 -->
 
 ## Verification
+
+out=$(bats tests/unit/t4203_own_shim_launcher.bats 2>&1); echo "$out" | grep -q '^ok ' && ! echo "$out" | grep -q '^not ok' && ! echo "$out" | grep -q '# skip'
+out=$(bats tests/unit/t4125_cmd_classify_launcher.bats tests/unit/t3814_fw_git_commit_checkpoint.bats tests/unit/t3221_commit_exemption_clause.bats tests/unit/t3245_trailer_quote_strip.bats tests/unit/t3454_gate_contract_collision.bats tests/unit/t2919_budget_gate_command_classify.bats tests/unit/t2923_cmd_classify_heredoc.bats tests/unit/t4150_cmd_classify_parser_differential.bats 2>&1); echo "$out" | grep -q '^ok ' && ! echo "$out" | grep -q '^not ok'
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -243,6 +287,20 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** In a consumer whose tracked `bin/fw` is a shim that execs `.agentic-framework/bin/fw` (the path CLAUDE.md tells consumer agents to type), `bin/fw git commit` is refused by the null-focus commit allowance and `bin/fw handover --commit` / `bin/fw git commit` are refused at critical budget ("launcher is not this project's own (T-4125)").
+
+**Root cause:** The own-launcher predicate knows two paths only: `FRAMEWORK_ROOT/bin/fw` and `PROJECT_ROOT/.agentic-framework/bin/fw` (`_fw_is_own_launcher` in safe-commands.sh, `_Ctx.fw_paths` in cmd_classify.py). A project's own tracked `PROJECT_ROOT/bin/fw` shim is neither, so it reads as a planted launcher.
+
+**Why structurally allowed:** The T-4108/T-4125 fix enumerated the launcher paths the framework itself installs and treated every other `bin/fw` as hostile. Nothing tested the consumer layout where the project's own tracked shim is the spelling the agent is told to use, so the refusal was a silent false block, not a visible test failure.
+
+**Prevention:** `tests/unit/t4203_own_shim_launcher.bats` pins both sides in the shell predicate, the classifier, the budget gate and the hook: the regular-file shim (and an in-project symlink to the vendored launcher) is admitted, and every refusal the old rule enforced (escaping symlink, directory, planted absolute, wrong payload cwd, no cwd, earlier `cd`) stays refused. The rule is mirrored in two languages; the bats file runs both against the same cases so they cannot drift silently.
+
+**Pre-fix reproduction (HEAD, recorded 2026-10-14):** fixture = project with regular-file `bin/fw` shim execing `.agentic-framework/bin/fw`, critical budget, payload cwd = project root.
+- `budget-gate.sh` with `bin/fw git commit -m x` → exit 2; with `bin/fw handover --commit` → exit 2
+- `cmd_classify.classify('bin/fw git commit -m x', cwd=project)` → `(False, "launcher is not this project's own (T-4125) ...")`
+- shell `is_commit_checkpoint_command 'bin/fw git commit -m x'` → refused
+- Against HEAD sources the new file fails 5 of 20 tests (the 5 positive shim cases, incl. the hook); the remaining 15 refusal/regression guards pass on HEAD as they must.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -298,6 +356,11 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-14 — the exact own-shim rule
+- **Chosen:** `PROJECT_ROOT/bin/fw` is own iff it is a regular file (`-f` after realpath) whose realpath lies under realpath(PROJECT_ROOT) (trailing `/`); a launcher token is admitted when its realpath equals that file. Unset PROJECT_ROOT, a directory, or any escaping symlink admits nothing.
+- **Alternative rejected:** accept any `bin/fw` under PROJECT_ROOT, or accept the shim by inspecting its content for an `exec .agentic-framework/bin/fw` line. Content inspection would make the admission depend on text an agent can rewrite in the same checkout; the path/file rule is what the existing T-4108 family already checks.
+- **Residual, not claimed away:** the shim's content is not verified, so a same-user process that rewrites the tracked `bin/fw` in-project is admitted. That is the same residual the T-3581 notes name for the rest of the checkout; no new trust is granted beyond the tracked file the project ships.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -323,3 +386,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4203-own-launcher-check-refuses-a-consumers-t.md
 - **Context:** Initial task creation
+
+### 2026-10-14T20:19:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

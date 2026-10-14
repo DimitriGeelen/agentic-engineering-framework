@@ -1297,13 +1297,30 @@ _fw_find_has_action_predicate() {
 # `PATH=/tmp git commit` still fails this match (the strip stops at the denied
 # name, the residue does not look like a commit clause) and is refused. Fails
 # closed, and there is one copy of the denylist rather than two.
+# T-4203: the project's OWN tracked `bin/fw` shim, resolved. A consumer may track
+# a `bin/fw` shim that execs `.agentic-framework/bin/fw` (CLAUDE.md tells the
+# consumer's agent to type `bin/fw`), so that path is its own launcher too. Rule:
+# PROJECT_ROOT/bin/fw counts only when it is a REGULAR FILE and its realpath lies
+# under realpath(PROJECT_ROOT). A symlink escaping the project, a directory, or
+# an unset PROJECT_ROOT prints nothing and admits nothing. The shim's content is
+# not inspected: it is the tracked file the project itself ships.
+_fw_project_shim_real() {
+    [ -n "${PROJECT_ROOT:-}" ] || return 1
+    local _pr _s
+    _pr="$(realpath -e -- "$PROJECT_ROOT" 2>/dev/null)" || return 1
+    _s="$(realpath -e -- "$PROJECT_ROOT/bin/fw" 2>/dev/null)" || return 1
+    [ -f "$_s" ] || return 1
+    case "$_s" in "$_pr"/*) printf '%s' "$_s" ;; *) return 1 ;; esac
+}
+
 # T-4108: does this launcher path resolve to THIS project's own fw?
 _fw_is_own_launcher() {
-    local _l _a _b
+    local _l _a _b _c
     _l="$(realpath -m -- "$1" 2>/dev/null)" || return 1
     _a="$(realpath -m -- "${FRAMEWORK_ROOT:-/nonexistent}/bin/fw" 2>/dev/null)"
     _b="$(realpath -m -- "${PROJECT_ROOT:-/nonexistent}/.agentic-framework/bin/fw" 2>/dev/null)"
-    [ -n "$_l" ] && { [ "$_l" = "$_a" ] || [ "$_l" = "$_b" ]; }
+    _c="$(_fw_project_shim_real)" || _c=""
+    [ -n "$_l" ] && { [ "$_l" = "$_a" ] || [ "$_l" = "$_b" ] || { [ -n "$_c" ] && [ "$_l" = "$_c" ]; }; }
 }
 
 # T-4108 round 2: can this (already safe-judged) segment change the shell's
