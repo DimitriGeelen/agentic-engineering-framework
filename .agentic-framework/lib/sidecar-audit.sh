@@ -206,3 +206,81 @@ except Exception:
 ' || return 2
     return 0
 }
+
+# fw_sidecar_held_unsurfaced_facts <project_root> [threshold_hours]
+#
+#   T-4207: peer mail the receiver holds that no session was ever shown. With
+#   injection off (--no-inject) the prompt hook is the only delivery path; when
+#   no interactive session prompts, mail waits silently (050-email-archive: 58
+#   messages, 51 h). Local — reads the receiver store through
+#   `sidecar_cli.py held-unsurfaced`; no hub call, no termlink needed.
+#
+#     stdout : one line per message, TAB-separated:
+#              MSG_ID<TAB>AGE_HOURS<TAB>FROM   (AGE_HOURS may be `unknown`)
+#     rc 0   : facts printed (possibly empty — nothing is held past threshold)
+#     rc 1   : the receiver has never run under <project_root> — caller stays silent
+#     rc 2   : sidecar_cli.py is missing, or the held-unsurfaced call failed
+fw_sidecar_held_unsurfaced_facts() {
+    local root="${1:?fw_sidecar_held_unsurfaced_facts: project root required}"
+    local threshold_hours="${2:-24}"
+    [ -d "$root/.context/sidecar/receiver" ] || return 1
+
+    local lib_dir
+    lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    [ -f "$lib_dir/sidecar_cli.py" ] || return 2
+
+    local rows
+    rows=$(PROJECT_ROOT="$root" timeout 60 python3 "$lib_dir/sidecar_cli.py" \
+           held-unsurfaced --threshold-hours "$threshold_hours" --json 2>/dev/null) || return 2
+    [ -n "$rows" ] || return 2
+
+    printf '%s' "$rows" | python3 -c '
+import json, sys
+try:
+    rows = json.load(sys.stdin)
+    for r in rows:
+        age = r.get("age_hours")
+        print("\t".join((
+            str(r["msg_id"]),
+            "unknown" if age is None else str(age),
+            str(r.get("from") or "unknown"))))
+except Exception:
+    sys.exit(2)
+' || return 2
+    return 0
+}
+
+# fw_sidecar_receiver_duplicates_facts
+#
+#   T-4208: agent ids with more than one live receiver on this host, whichever
+#   framework copy started each (055 ran its vendored receiver beside one
+#   started from AEF's tree). Host-wide by design: the agent id is the inbox,
+#   and the host registry is keyed by it. Reads the process table through
+#   `sidecar_cli.py receiver-census`; no hub call.
+#
+#     stdout : one line per duplicated agent, TAB-separated:
+#              AGENT<TAB>COUNT<TAB>PID,PID,...   (empty when none)
+#     rc 0   : facts printed (possibly empty)
+#     rc 2   : sidecar_cli.py is missing, or the census call produced no JSON
+fw_sidecar_receiver_duplicates_facts() {
+    local lib_dir
+    lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    [ -f "$lib_dir/sidecar_cli.py" ] || return 2
+
+    local rows
+    rows=$(timeout 30 python3 "$lib_dir/sidecar_cli.py" receiver-census --json 2>/dev/null) || return 2
+    [ -n "$rows" ] || return 2
+
+    printf '%s' "$rows" | python3 -c '
+import json, sys
+try:
+    census = json.load(sys.stdin)
+    for agent in sorted(census):
+        pids = census[agent]
+        if len(pids) > 1:
+            print("\t".join((agent, str(len(pids)), ",".join(str(p) for p in pids))))
+except Exception:
+    sys.exit(2)
+' || return 2
+    return 0
+}

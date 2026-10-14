@@ -4166,6 +4166,33 @@ check_sidecar_watcher() {
 }
 check_sidecar_watcher
 
+# T-4207 (arc-011 sidecar): peer mail held past SIDECAR_HELD_WARN_HOURS that no
+# session was ever shown. Fact: lib/sidecar-audit.sh:fw_sidecar_held_unsurfaced_facts.
+# Silent when the receiver never ran here (rc 1). rc 2 is "the check could not run".
+check_sidecar_held_unsurfaced() {
+    [ -f "$FRAMEWORK_ROOT/lib/sidecar-audit.sh" ] || return 0
+    # shellcheck source=/dev/null
+    source "$FRAMEWORK_ROOT/lib/sidecar-audit.sh"
+    local _hu _hu_rc _hu_n
+    _hu=$(fw_sidecar_held_unsurfaced_facts "$PROJECT_ROOT" "$(fw_config SIDECAR_HELD_WARN_HOURS)"); _hu_rc=$?
+    case "$_hu_rc" in
+        1) return 0 ;;
+        2) warn "Held-mail check could not run" \
+               "fw sidecar held-unsurfaced --json produced no readable output" \
+               "Run: bin/fw sidecar held-unsurfaced --json — an unreadable check is the same silent-failure shape as an unreadable ledger (T-4207)" ;;
+        *)
+            _hu_n=$(printf '%s\n' "$_hu" | grep -c .)
+            if [ "$_hu_n" -gt 0 ] 2>/dev/null; then
+                warn "$_hu_n peer message(s) held past $(fw_config SIDECAR_HELD_WARN_HOURS)h, never shown to any session" \
+                     "$(printf '%s' "$_hu" | head -3 | tr '\n' ';')" \
+                     "Nothing is delivering them (injection off or no interactive session). Run: bin/fw sidecar held-unsurfaced --json (T-4207)"
+            else
+                pass "No peer mail held unsurfaced past $(fw_config SIDECAR_HELD_WARN_HOURS)h"
+            fi ;;
+    esac
+}
+check_sidecar_held_unsurfaced
+
 # T-3428 (OBS-463 leg 3, arc-006). A value driver that the estimator cannot
 # score is only a NAME. T-3427 stopped it distorting the ranking (an unscorable
 # driver is omitted from the scores map and so left out of the normalisation

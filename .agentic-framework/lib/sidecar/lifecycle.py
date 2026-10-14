@@ -266,3 +266,50 @@ def lookup(agent: str) -> dict | None:
         return None
     entry["live"] = pid_alive(entry.get("pid")) and health(entry.get("url", ""))
     return entry
+
+
+# ── one live receiver per agent id (T-4208) ─────────────────────────────────
+#
+# 055 ran two receivers for one agent id: its vendored copy, and one started
+# from AEF's tree by AEF's own cron. The triple file is per project and
+# overwritten by whichever started last, so no file-based check saw the other.
+# The guard therefore reads the process table: any framework copy's
+# http_server.py, old or new, counts, because the other copy never has to
+# cooperate. Linux /proc only; elsewhere the guard sees nothing.
+
+def _receiver_argv_agent(args: list[str]) -> str | None:
+    """The agent id a receiver argv serves (`--agent X`), or None."""
+    for i, a in enumerate(args[:-1]):
+        if a == "--agent":
+            return args[i + 1]
+    return None
+
+
+def receiver_processes(proc_root: Path = Path("/proc")) -> list[tuple[int, str]]:
+    """(pid, agent) for every live http_server.py process on this host, from any
+    framework copy. Zombies and our own process are skipped."""
+    me = os.getpid()
+    out: list[tuple[int, str]] = []
+    try:
+        entries = list(proc_root.iterdir())
+    except OSError:
+        return out
+    for d in entries:
+        if not d.name.isdigit() or int(d.name) == me:
+            continue
+        try:
+            raw = (d / "cmdline").read_bytes()
+        except OSError:
+            continue
+        args = [x.decode("utf-8", "replace") for x in raw.split(b"\0") if x]
+        if not any(Path(a).name == "http_server.py" for a in args):
+            continue
+        agent = _receiver_argv_agent(args)
+        if agent:
+            out.append((int(d.name), agent))
+    return out
+
+
+def live_receiver_pids(agent: str) -> list[int]:
+    """Pids of live receivers (any framework copy) already serving `agent`."""
+    return sorted(pid for pid, a in receiver_processes() if a == agent)

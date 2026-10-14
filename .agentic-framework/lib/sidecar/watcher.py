@@ -964,10 +964,27 @@ def stop_all(timeout: float = 10.0) -> dict:
     return stop_processes(timeout)
 
 
+def project_launcher(root: Path) -> list[str] | None:
+    """T-4208: the `fw` a project itself runs its sidecar through. A vendored
+    consumer runs its own copy at `.agentic-framework/bin/fw`; a framework repo
+    runs `bin/fw` at its root. A project with neither gets None: it is reported,
+    never started with some other copy's code."""
+    vendored = root / ".agentic-framework" / "bin" / "fw"
+    if vendored.is_file():
+        return [str(vendored)]
+    own = root / "bin" / "fw"
+    if own.is_file() and (root / "FRAMEWORK.md").is_file():
+        return [str(own)]
+    return None
+
+
 def ensure_all() -> list[dict]:
     """Cron / @reboot entry: for every project on this host whose sidecar is
-    enabled, (re)start its supervisor if it is not running. Projects whose root
-    is gone are dropped from the host registry."""
+    enabled, (re)start its supervisor if it is not running. Each project is
+    started by ITS OWN launcher (project_launcher), never by this copy's
+    sidecar_cli.py: before T-4208 every project ran AEF's code, and a second
+    receiver for an inbox was started beside the project's vendored one.
+    Projects whose root is gone are dropped from the host registry."""
     out = []
     for f in sorted(host_enabled_dir().glob("*.json")):
         try:
@@ -979,10 +996,18 @@ def ensure_all() -> list[dict]:
             f.unlink(missing_ok=True)
             out.append({"project_root": str(root), "action": "dropped (project gone)"})
             continue
-        cli = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "sidecar_cli.py")
-        proc = subprocess.run([sys.executable, cli, "ensure", "--json"], cwd=str(root),
-                              env=dict(os.environ, PROJECT_ROOT=str(root)),
-                              capture_output=True, text=True, timeout=120)
+        launcher = project_launcher(root)
+        if launcher is None:
+            out.append({"project_root": str(root),
+                        "action": "not started: no framework launcher in this project "
+                                  "(.agentic-framework/bin/fw or bin/fw)"})
+            continue
+        # The child must not inherit this copy's framework location: the project's
+        # own launcher resolves its own tree from its own location.
+        env = {k: v for k, v in os.environ.items() if k != "FRAMEWORK_ROOT"}
+        env["PROJECT_ROOT"] = str(root)
+        proc = subprocess.run([*launcher, "sidecar", "ensure", "--json"], cwd=str(root),
+                              env=env, capture_output=True, text=True, timeout=120)
         try:
             row = json.loads(proc.stdout.strip().splitlines()[-1])
         except (IndexError, json.JSONDecodeError):
