@@ -37,6 +37,7 @@ setup() {
 
 teardown() {
     [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
+    tripwire_assert
 }
 
 # --- Error handling ---

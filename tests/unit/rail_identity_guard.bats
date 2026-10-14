@@ -20,6 +20,10 @@
 
 load ../test_helper
 
+# T-4205: leg (f) asserts the HOST's fingerprint resolves, so this file must reach the real
+# binary for read-only probes. Calls stay refused by the tripwire (see tests/test_helper.bash).
+export TERMLINK_TRIPWIRE_PASS_PROBES=1
+
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR

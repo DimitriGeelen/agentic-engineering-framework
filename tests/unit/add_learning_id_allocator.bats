@@ -28,6 +28,7 @@ EOF
 
 teardown() {
     [ -d "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
+    tripwire_assert
 }
 
 _seed_legacy_learnings() {

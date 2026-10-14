@@ -18,6 +18,14 @@ from pathlib import Path
 import pytest
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+
+
+@pytest.fixture(autouse=True)
+def _real_termlink_for_read_only_list(monkeypatch):
+    """T-4205: this file pins the schema of the REAL `termlink list --json` (a read-only
+    listing). The tripwire fake would otherwise refuse it, and the test would skip rather
+    than check anything. Calls other than read-only probes stay refused."""
+    monkeypatch.setenv("TERMLINK_TRIPWIRE_PASS_PROBES", "1")
 SCHEMA_PATH = REPO_ROOT / "tests" / "fixtures" / "termlink-list-schema.json"
 
 

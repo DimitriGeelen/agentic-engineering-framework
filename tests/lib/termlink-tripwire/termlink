@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+# T-4205 tripwire: a stand-in `termlink` for the test suite. The unit conftest and
+# tests/test_helper.bash put this directory first on PATH, so a test that reaches
+# `termlink` by name never reaches the host's hub or outbound queue. It records the
+# call and refuses (exit 97). Read-only probes (hub fingerprint, discover, --help, ...)
+# are recorded as `probe`; anything else is recorded as `call`, and the suite fixture
+# fails the test that made it. Classification lives here, once, for pytest and bats.
+log="${TERMLINK_TRIPWIRE_LOG:-${BATS_TEST_TMPDIR:-${TMPDIR:-/tmp}}/termlink-tripwire.log}"
+
+kind=call
+words=()
+for arg in "$@"; do
+    case "$arg" in
+        --help|-h|--version|-V) kind=probe ;;
+        -*) ;;
+        *) words+=("$arg") ;;
+    esac
+done
+verb="${words[0]:-}"
+sub="${words[1]:-}"
+case "$verb $sub" in
+    "hub fingerprint"|"hub probe"|"channel list"|"remote ping"|"fleet doctor"|"agent identity") kind=probe ;;
+esac
+case "$verb" in
+    ""|discover|whoami|version|help|info|list) kind=probe ;;
+esac
+
+printf '%s %s\n' "$kind" "$*" >> "$log"
+# A file whose point is the host's identity (rail-identity: fingerprint non-vacuity) may opt
+# in to read-only probes reaching the real binary. Calls are refused regardless.
+if [ "$kind" = probe ] && [ "${TERMLINK_TRIPWIRE_PASS_PROBES:-}" = 1 ]; then
+    self_dir="$(cd "$(dirname "$0")" && pwd)"
+    real_path="$(printf '%s' "$PATH" | tr ':' '\n' | grep -vxF "$self_dir" | paste -sd: -)"
+    real="$(PATH="$real_path" command -v termlink || true)"
+    [ -n "$real" ] && exec "$real" "$@"
+fi
+echo "TERMLINK TRIPWIRE (T-4205): refused 'termlink $*'. Tests must not reach a TermLink transport; inject a runner or a fake." >&2
+exit 97

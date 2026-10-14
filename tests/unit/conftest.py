@@ -41,6 +41,7 @@ See `docs/reports/T-3362-pytest-triage.md` for the measurement.
 
 from __future__ import annotations
 
+import os
 import sys
 from pathlib import Path
 
@@ -187,3 +188,56 @@ def _sidecar_tests_cannot_reach_the_live_hub(request, monkeypatch, tmp_path):
     # in the real registry (cron would try to resurrect a deleted tmp project).
     monkeypatch.setenv("FW_SIDECAR_ENABLED_DIR", str(tmp_path / "sidecar-enabled"))
     monkeypatch.setenv("FW_SIDECAR_REGISTRY_DIR", str(tmp_path / "sidecar-registry"))
+
+
+# ---------------------------------------------------------------------------
+# T-4205: the TermLink tripwire. Test traffic reached the host's real outbound
+# queue and fleet channel (G-115): `termlink` resolved to the host binary, and
+# the binary publishes to whatever hub the host is on. Every unit test now runs
+# with `tests/lib/termlink-tripwire/termlink` first on PATH. That fake refuses
+# and records each call; a test whose record holds a non-probe call fails at
+# teardown. The bats side is `tripwire_assert` in tests/test_helper.bash.
+# ---------------------------------------------------------------------------
+
+_TERMLINK_TRIPWIRE_DIR = _REPO / "tests" / "lib" / "termlink-tripwire"
+
+
+class TermlinkTripwire:
+    """What the tripwire recorded for one test (T-4205)."""
+
+    def __init__(self, log: Path):
+        self.log = log
+
+    def calls(self) -> list[str]:
+        """Every recorded line, `probe <argv>` or `call <argv>`, in order."""
+        return self.log.read_text().splitlines() if self.log.exists() else []
+
+    def forgive(self) -> None:
+        """Clear the record. Only for a test whose point is that a call was refused."""
+        self.log.unlink(missing_ok=True)
+
+
+@pytest.fixture(autouse=True)
+def termlink_tripwire(monkeypatch, tmp_path):
+    """Refuse every `termlink` call a unit test makes; fail the test that makes one.
+
+    PATH-first shadowing is the enforcement: `shutil.which("termlink")` and the
+    sidecar's `_binary()` both resolve to the fake for the whole test. Read-only
+    probes are allowed through to the fake (it answers them with a refusal, which
+    the callers already treat as "no hub"); any other verb is a failure.
+    HOME is deliberately not redirected: git and `~/.claude` read it.
+    """
+    log = tmp_path / "termlink-tripwire.log"
+    monkeypatch.setenv("PATH", f"{_TERMLINK_TRIPWIRE_DIR}{os.pathsep}{os.environ.get('PATH', '')}")
+    monkeypatch.setenv("TERMLINK_TRIPWIRE_LOG", str(log))
+    monkeypatch.setenv("TERMLINK_RUNTIME_DIR", str(tmp_path / "no-live-hub"))
+    tripwire = TermlinkTripwire(log)
+    yield tripwire
+    refused = [line for line in tripwire.calls() if line.startswith("call ")]
+    if refused:
+        pytest.fail(
+            "T-4205 tripwire: this test reached TermLink with a non-probe call (it would "
+            "publish to the host's hub or outbound queue). Inject a runner or a fake "
+            "instead. Refused: " + " | ".join(refused[:5]),
+            pytrace=False,
+        )

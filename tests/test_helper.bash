@@ -17,6 +17,22 @@ export FRAMEWORK_ROOT="$(_find_framework_root)"
 # Ensure fw is on PATH
 export PATH="$FRAMEWORK_ROOT/bin:$PATH"
 
+# T-4205: TermLink tripwire. A `termlink` call from a test resolves to the recording fake
+# first, so it refuses instead of reaching the host hub or outbound queue (G-115). The
+# fake's record is checked by tripwire_assert; call it from a file's teardown to fail the
+# test that made a non-probe call.
+export PATH="$FRAMEWORK_ROOT/tests/lib/termlink-tripwire:$PATH"
+
+tripwire_assert() {
+    local log="${TERMLINK_TRIPWIRE_LOG:-${BATS_TEST_TMPDIR:-${TMPDIR:-/tmp}}/termlink-tripwire.log}"
+    if [ -s "$log" ] && grep -q '^call ' "$log"; then
+        echo "TERMLINK TRIPWIRE (T-4205): ${BATS_TEST_NAME:-test} reached TermLink with a non-probe call (it would publish to the host):" >&2
+        grep '^call ' "$log" | head -5 >&2
+        return 1
+    fi
+    return 0
+}
+
 # Git discovery must not escape a fixture into a repo above the temp dir (T-3610)
 # shellcheck source=tests/git_fence.bash
 source "$(dirname "${BASH_SOURCE[0]}")/git_fence.bash"

@@ -5492,3 +5492,8 @@ concerns:
   detection_gap: nothing isolates TERMLINK runtime/HOME in tests or fails a test that touches the host transport;
     the leak was visible only on the receiving host
   what_remains: T-4205 isolates the transport in tests and adds a guard that fails a test touching the host queue.
+  mitigation: 'T-4205: tests/lib/termlink-tripwire/termlink (PATH-first fake, refuses calls, classifies read-only probes)
+    + tests/unit/conftest.py termlink_tripwire (autouse, fails the test on a non-probe call) + tests/test_helper.bash
+    tripwire_assert (wired into the learning-post bats). Open residual, not fixed by T-4205: the t3580_* judge tests
+    read the live hub fingerprint and subscribe to fleet inbox topics, so the tripwire now fails them; the fix belongs
+    to their owner (inject runner / pin hub), and the operator decides on any baseline. Gap stays open until closed.'
