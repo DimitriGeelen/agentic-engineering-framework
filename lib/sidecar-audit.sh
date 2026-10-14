@@ -249,3 +249,38 @@ except Exception:
 ' || return 2
     return 0
 }
+
+# fw_sidecar_receiver_duplicates_facts
+#
+#   T-4208: agent ids with more than one live receiver on this host, whichever
+#   framework copy started each (055 ran its vendored receiver beside one
+#   started from AEF's tree). Host-wide by design: the agent id is the inbox,
+#   and the host registry is keyed by it. Reads the process table through
+#   `sidecar_cli.py receiver-census`; no hub call.
+#
+#     stdout : one line per duplicated agent, TAB-separated:
+#              AGENT<TAB>COUNT<TAB>PID,PID,...   (empty when none)
+#     rc 0   : facts printed (possibly empty)
+#     rc 2   : sidecar_cli.py is missing, or the census call produced no JSON
+fw_sidecar_receiver_duplicates_facts() {
+    local lib_dir
+    lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    [ -f "$lib_dir/sidecar_cli.py" ] || return 2
+
+    local rows
+    rows=$(timeout 30 python3 "$lib_dir/sidecar_cli.py" receiver-census --json 2>/dev/null) || return 2
+    [ -n "$rows" ] || return 2
+
+    printf '%s' "$rows" | python3 -c '
+import json, sys
+try:
+    census = json.load(sys.stdin)
+    for agent in sorted(census):
+        pids = census[agent]
+        if len(pids) > 1:
+            print("\t".join((agent, str(len(pids)), ",".join(str(p) for p in pids))))
+except Exception:
+    sys.exit(2)
+' || return 2
+    return 0
+}

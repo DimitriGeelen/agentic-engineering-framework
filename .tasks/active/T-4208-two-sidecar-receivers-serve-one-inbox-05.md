@@ -1,10 +1,19 @@
 ---
 id: T-4208
-name: "Two sidecar receivers serve one inbox (055: vendored pid from 2026-10-13 00:21 plus one started from AEF lib/sidecar at 14:37); unknown starter launched receivers for 10 projects from AEF's tree in one minute"
+name: "Two sidecar receivers serve one inbox (055: vendored pid from 2026-10-13 00:21
+  plus one started from AEF lib/sidecar at 14:37); unknown starter launched receivers
+  for 10 projects from AEF's tree in one minute"
 description: >
-  010 msg 841358e8: on this host 10 receivers (050, 055, 010, 1409, 0235, 0506, dimitri-mint-dev, rules-extract, AEF, ...) were started 2026-10-13 14:37:01-19 from /opt/999-Agentic-Engineering-Framework/lib/sidecar/http_server.py; 055 also keeps its own vendored receiver (pid started 00:21). Not our runme t4124-restart-055-receiver (never ran), not the per-project 5-min sweep cron (uses each project's vendored fw), not TermLink's sidecar-supervise.sh. Want: (1) find the starter; (2) the receiver refuses to start when a live receiver already holds that agent's inbox (single-instance lock per agent id); (3) doctor WARN when two receivers serve one agent. Process cleanup on other projects is their operator's call.
+  010 msg 841358e8: on this host 10 receivers (050, 055, 010, 1409, 0235, 0506, dimitri-mint-dev,
+  rules-extract, AEF, ...) were started 2026-10-13 14:37:01-19 from /opt/999-Agentic-Engineering-Framework/lib/sidecar/http_server.py;
+  055 also keeps its own vendored receiver (pid started 00:21). Not our runme t4124-restart-055-receiver
+  (never ran), not the per-project 5-min sweep cron (uses each project's vendored
+  fw), not TermLink's sidecar-supervise.sh. Want: (1) find the starter; (2) the receiver
+  refuses to start when a live receiver already holds that agent's inbox (single-instance
+  lock per agent id); (3) doctor WARN when two receivers serve one agent. Process
+  cleanup on other projects is their operator's call.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-14T22:40:08Z
-last_update: 2026-10-14T22:40:08Z
-date_finished: null
+last_update: '2026-10-14T22:45:30Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-14T22:44:15Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-14T22:45:30Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=284,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4208: Two sidecar receivers serve one inbox (055: vendored pid from 2026-10-13 00:21 plus one started from AEF lib/sidecar at 14:37); unknown starter launched receivers for 10 projects from AEF's tree in one minute
@@ -71,8 +108,10 @@ or `<root>/bin/fw` in a framework repo); plus a per-agent single-instance lock t
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `ensure_all()` starts each enabled project through that project's OWN launcher (`<root>/.agentic-framework/bin/fw` for a vendored consumer, `<root>/bin/fw` for a framework repo); a project with neither launcher is reported and not started with AEF code (tests/unit/test_t4208_receiver_single_instance.py)
+- [x] A receiver refuses to start (exit 3, no port bound) while a live receiver already serves that agent id, including one started from a different framework copy (process-table guard in lib/sidecar/lifecycle.py; test starts a foreign-copy fake receiver process)
+- [x] `ensure` never flips an existing project's inject setting: with `.context/sidecar/receiver/config.json` = `{"inject": false}`, an ensure run whose enabled file says inject true leaves the config at false (test)
+- [x] `fw doctor` WARNs when two live receivers serve one agent id, and is silent for one receiver per agent (`bin/fw sidecar receiver-census --json` fact, test + doctor line)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -108,6 +147,10 @@ or `<root>/bin/fw` in a framework repo); plus a per-agent single-instance lock t
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
+python3 -m pytest -q tests/unit/test_t4208_receiver_single_instance.py
+python3 -m pytest -q tests/unit/test_sidecar_watcher_t3684.py
+python3 -m pytest -q tests/unit/test_sidecar_receiver_t3693.py
+bin/fw test lint
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 # Build/refactor/decommission tasks with NO command here are refused. If nothing can be
@@ -252,6 +295,14 @@ or `<root>/bin/fw` in a framework repo); plus a per-agent single-instance lock t
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** on one host, 10 receivers were started 2026-10-13 14:37 from AEF's `lib/sidecar/http_server.py` for projects that vendor their own framework. 055 ran two receivers for one inbox (its vendored one, and one from AEF). Inbox state and delivery were split between them.
+
+**Root cause:** `watcher.ensure_all()` (run by AEF's host cron `sidecar-ensure-*`) started every enabled project through `sidecar_cli.py` resolved from AEF's own tree (`os.path.abspath(__file__)`). So every consumer ran AEF's code, not its vendored copy, and nothing checked whether a receiver for that agent id already existed, because the only check (the per-project triple file) cannot see a process from another copy that was never recorded there.
+
+**Why structurally allowed:** the code path that starts receivers for other projects had no test that uses a project's own launcher. The single-instance check only read per-project files, so the only thing that could see both processes was a process table, and nothing read it. `fw doctor` had no check for two receivers serving one agent id.
+
+**Prevention:** (1) `ensure_all` runs each project's own launcher and reports a project with none (`tests/unit/test_t4208_receiver_single_instance.py`, 4 tests). (2) `lifecycle.live_receiver_pids` is the process-table guard in `http_server.serve` and `_start_receiver` (tests: a foreign-copy fake receiver is seen; the real server refuses with exit 3 and binds nothing). (3) `_ensure_no_inject` keeps an existing config's inject value (test). (4) `fw sidecar receiver-census --json` plus a doctor WARN on any agent id with more than one live receiver (census tests). The host's current duplicate for 055 is reported by the doctor check; it is not stopped by this change (operator's call).
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -316,6 +367,20 @@ or `<root>/bin/fw` in a framework repo); plus a per-agent single-instance lock t
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-15 — single-instance guard: process table, not a lock file
+- **Chose:** `lifecycle.live_receiver_pids(agent)` reads `/proc/*/cmdline` for live `http_server.py --agent <id>` processes from ANY framework copy. `http_server.serve`, `_start_receiver` and the `receiver start` path all refuse while one exists (exit 3 / rc 1).
+- **Why:** the 055 duplicate was a vendored copy (old code) plus AEF's copy. An old copy cannot be made to honour a new lock file, but its process is always visible. The triple file is per project and was overwritten by whichever started last, so it could not see the other either.
+- **Rejected:** `flock` on a lock file under the project `.context/sidecar` (the old copy ignores it); the host registry `<agent>.json` (stale after a crash, and written only by a receiver that got past bind); killing the other process (process cleanup on other projects is the operator's call, per the task).
+- **Known limit:** two starts that race can both see each other and both refuse. That fails closed (no duplicate); the next ensure cron succeeds. Linux `/proc` only.
+
+### 2026-10-15 — launcher rule: vendored first, then own bin/fw with FRAMEWORK.md
+- **Chose:** `watcher.project_launcher(root)`: `<root>/.agentic-framework/bin/fw` if present, else `<root>/bin/fw` when `FRAMEWORK.md` is also present, else None. None is reported ("not started"), never started with AEF code. The child env drops `FRAMEWORK_ROOT`.
+- **Rejected:** keep running AEF's `sidecar_cli.py` with `PROJECT_ROOT` set (the bug itself: AEF code ran in every project).
+
+### 2026-10-15 — ensure keeps the receiver config's inject value
+- **Chose:** `_ensure_no_inject(cfg)`: when `receiver/config.json` exists it is the setting in force; the enabled file's flag decides only when no config exists yet.
+- **Rejected:** rewriting config from the enabled file (what ensure did): any enabled-file value that disagrees with the operator's `--no-inject` flips it. I could not reproduce how 050's config became `inject:false` from code reading alone; the test pins that ensure does not change it.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -332,3 +397,15 @@ or `<root>/bin/fw` in a framework repo); plus a per-agent single-instance lock t
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4208-two-sidecar-receivers-serve-one-inbox-05.md
 - **Context:** Initial task creation
+
+### 2026-10-14T22:44:14Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-15 — pre-fix failure reproduced (worker t4208-receivers)
+- `python3 -m pytest -q tests/unit/test_t4208_receiver_single_instance.py` before the fix: 10 failed (ensure_all started AEF's `sidecar_cli.py` for a bare project: a real supervisor came up in the temp root; the guard, census and inject-keep tests all red).
+- After the fix: 10 passed. Also `tests/unit/test_sidecar_watcher_t3684.py::test_start_supervises_restarts_and_ensure_recovers` updated: its fixture is a vendored consumer now (`.agentic-framework/bin/fw` symlink), since a project with no launcher is correctly reported, not started.
+- Regression run: 296 passed + the updated t3684 test passes; bats sidecar_audit_rail / sidecar_inbox_hook / t3559 / t3673: 36 ok.
+- `bin/fw doctor` on this host now WARNs `2 live receivers serve agent 055-agentic-fleet-cockpit (pids 78177,865556)`: the duplicate the task describes, reported, not stopped (operator's call).
+- `bin/fw test lint`: 6 FAILs, all outside this change (`.context/working/t4088/sc*.sh`, `agents/sessions/*/list.sh` shellcheck SC1071/SC2148, also under `.agentic-framework/`). Not fixed here.
+- Structure audit: `bin/fw audit --section structure` exited 75 ("another audit is already running") on every attempt while another worker ran one; see Updates for the final run if it completes.
+- Shared-checkout note: `.context/working/focus.yaml` was reset to T-4162 by another session several times during this work; re-set focus before each edit.

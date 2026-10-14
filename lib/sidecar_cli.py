@@ -618,6 +618,23 @@ def cmd_held_unsurfaced(args) -> int:
     return 0
 
 
+def cmd_receiver_census(args) -> int:
+    """T-4208: every agent id with live receiver processes on this host, from any
+    framework copy: {agent: [pid, ...]}. `fw doctor` WARNs on an agent with more
+    than one. Exit 0 always; it is a fact, not a failure."""
+    census: dict[str, list[int]] = {}
+    for pid, agent in lifecycle.receiver_processes():
+        census.setdefault(agent, []).append(pid)
+    for pids in census.values():
+        pids.sort()
+    if args.json:
+        print(json.dumps(census, indent=2, sort_keys=True))
+        return 0
+    for agent in sorted(census):
+        print(f"{_meta(agent)}\t{len(census[agent])}\t{','.join(map(str, census[agent]))}")
+    return 0
+
+
 def cmd_inbox_stale(args) -> int:
     """Consult-inbox topics holding an unread consult older than
     `--threshold-hours` — the fact both `fw doctor` and `fw audit`'s
@@ -681,6 +698,16 @@ def _start_receiver(agent: str, port, no_inject: bool, quiet: bool) -> tuple[int
             os.kill(int(info["pid"]), _sig.SIGKILL)
     if info:
         lifecycle.clear_triple_file()
+
+    # T-4208: a live receiver for this agent id may run from ANOTHER framework
+    # copy (055: vendored + AEF's), with no triple file of ours pointing at it.
+    # Starting a second one is the duplicate this guard exists to prevent.
+    rivals = lifecycle.live_receiver_pids(agent)
+    if rivals:
+        if not quiet:
+            print(f"receiver already served by pid {', '.join(map(str, rivals))} for agent "
+                  f"{agent!r} (another framework copy, T-4208) — not starting a second one")
+        return 1, None
 
     try:
         lifecycle.write_token()
@@ -806,6 +833,16 @@ def cmd_stop(args) -> int:
     return cmd_receiver_stop(args)
 
 
+def _ensure_no_inject(cfg: dict) -> bool:
+    """T-4208: ensure never flips a project's inject setting. The receiver config
+    already on disk is the setting in force (the operator's --no-inject, or its
+    absence); the enabled file's flag decides only when no config exists yet.
+    A cron run from another framework copy must not turn injection off or on."""
+    if lifecycle.config_path().is_file():
+        return not lifecycle.inject_enabled()
+    return not cfg.get("inject", True)
+
+
 def cmd_ensure(args) -> int:
     """Cron / @reboot / claude-fw entry. Here: if this project's sidecar is
     enabled and its supervisor is not running, start it (and the receiver).
@@ -835,7 +872,7 @@ def cmd_ensure(args) -> int:
                          else "not enabled (fw sidecar start enables it)")
     else:
         rc, _ = _start_receiver(str(cfg.get("agent") or _agent_or_none() or ""), None,
-                                not cfg.get("inject", True), True)
+                                _ensure_no_inject(cfg), True)
         row["receiver"] = {0: "restarted", 1: "running", 2: "FAILED"}[rc]
         if watcher.is_stale(watcher.read_pid("supervisor")) or watcher.is_stale(watcher.read_pid("watcher")):
             watcher.stop_processes()
@@ -1188,6 +1225,11 @@ def build_parser() -> argparse.ArgumentParser:
     ibs.add_argument("--threshold-hours", type=float, default=24.0)
     ibs.add_argument("--json", action="store_true")
     ibs.set_defaults(func=cmd_inbox_stale)
+
+    rc_census = sub.add_parser("receiver-census", help="agent ids with live receiver "
+                               "processes from any framework copy (T-4208, fw doctor fact)")
+    rc_census.add_argument("--json", action="store_true")
+    rc_census.set_defaults(func=cmd_receiver_census)
 
     hu = sub.add_parser("held-unsurfaced", help="peer mail held longer than "
                         "--threshold-hours that no session was ever shown (T-4207, "

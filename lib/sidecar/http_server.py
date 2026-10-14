@@ -173,6 +173,14 @@ def _watch_project(root, shutdown, interval: float | None = None) -> threading.T
 
 def serve(port: int, agent: str) -> int:
     """Foreground entry point used by `fw sidecar receiver start`."""
+    # T-4208: one live receiver per agent id, whichever framework copy started
+    # it. Checked before the token and before any port, so a refusal leaves no
+    # triple-file or registry entry behind to mislead the live one.
+    rivals = lifecycle.live_receiver_pids(agent)
+    if rivals:
+        print(f"receiver: refusing to start — live receiver(s) already serve agent "
+              f"{agent!r}: pid {', '.join(map(str, rivals))} (T-4208)", file=sys.stderr)
+        return 3
     token = lifecycle.read_token()
     if not token:
         print("receiver: no token at "

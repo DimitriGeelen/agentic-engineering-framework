@@ -292,6 +292,12 @@ def test_start_supervises_restarts_and_ensure_recovers(proj):
     assert _wait(lambda: watcher.liveness_verdict()["state"] == "not-live", timeout=15)
     enabled_dir = Path(os.environ["FW_SIDECAR_ENABLED_DIR"])
     assert len(list(enabled_dir.glob("*.json"))) == 1
+    # T-4208: `ensure --all` starts each project through ITS OWN launcher, and a
+    # project with none is reported, not started. This fixture is a vendored
+    # consumer: its launcher is the framework's bin/fw.
+    vendored = proj / ".agentic-framework" / "bin"
+    vendored.mkdir(parents=True)
+    (vendored / "fw").symlink_to(FW_ROOT / "bin" / "fw")
     ens = _cli(proj, "ensure", "--all", "--json", path=NO_TERMLINK_PATH)
     assert "supervisor restarted" in ens.stdout, ens.stdout + ens.stderr
     assert _wait(lambda: watcher.liveness_verdict()["state"] == "live", timeout=15)
