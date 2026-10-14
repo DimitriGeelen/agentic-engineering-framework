@@ -1,10 +1,24 @@
 ---
 id: T-4200
-name: "Two new pre-push reds blocking bleeding-edge: t3837 (fw doctor no longer prints the termlink version line when every termlink call fails — regression from a 2026-10-13 commit) and learning_application_birth test 4 (live-corpus anchor: newest learning PL-018 was appended by TermLink's fleet doctor with an application key)"
+name: "Two new pre-push reds blocking bleeding-edge: t3837 (fw doctor no longer prints
+  the termlink version line when every termlink call fails — regression from a 2026-10-13
+  commit) and learning_application_birth test 4 (live-corpus anchor: newest learning
+  PL-018 was appended by TermLink's fleet doctor with an application key)"
 description: >
-  Nightly unit run 2026-10-14 03:50Z: (1) tests/unit/t3837_doctor_errexit_captures.bats test 1 fails deterministically: output lacks 'termlink 0.0.0-stub' — doctor stops or skips the termlink section when termlink is installed but every call fails; passed in the 2026-10-13 15:03Z run, so a commit between then and now (candidates: T-4166 doctor reconcile block in bin/fw, T-4152 termlink.sh, T-4171, T-4153) broke it — bisect, fix the cause, keep the test. (2) tests/unit/learning_application_birth.bats test 4 reads the LIVE learnings.yaml's last entry; the last entry PL-018 was written by TermLink's fleet doctor ('Fleet doctor observed auth-mismatch on hub …', context 'fleet-doctor auto-registered', with an application key and a host IP). Fix the test (T-3326: pin the generator, not the live corpus — e.g. check the newest learning written by learning.sh, or a fixture) and file separately that an external tool appends PL-* learnings into AEF's project memory (with an IP).
+  Nightly unit run 2026-10-14 03:50Z: (1) tests/unit/t3837_doctor_errexit_captures.bats
+  test 1 fails deterministically: output lacks 'termlink 0.0.0-stub' — doctor stops
+  or skips the termlink section when termlink is installed but every call fails; passed
+  in the 2026-10-13 15:03Z run, so a commit between then and now (candidates: T-4166
+  doctor reconcile block in bin/fw, T-4152 termlink.sh, T-4171, T-4153) broke it —
+  bisect, fix the cause, keep the test. (2) tests/unit/learning_application_birth.bats
+  test 4 reads the LIVE learnings.yaml's last entry; the last entry PL-018 was written
+  by TermLink's fleet doctor ('Fleet doctor observed auth-mismatch on hub …', context
+  'fleet-doctor auto-registered', with an application key and a host IP). Fix the
+  test (T-3326: pin the generator, not the live corpus — e.g. check the newest learning
+  written by learning.sh, or a fixture) and file separately that an external tool
+  appends PL-* learnings into AEF's project memory (with an IP).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +52,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-14T06:28:38Z
-last_update: 2026-10-14T06:28:38Z
-date_finished: null
+last_update: 2026-10-14T06:35:16Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +64,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-14T06:29:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-14T06:30:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=276,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4200: Two new pre-push reds blocking bleeding-edge: t3837 (fw doctor no longer prints the termlink version line when every termlink call fails — regression from a 2026-10-13 commit) and learning_application_birth test 4 (live-corpus anchor: newest learning PL-018 was appended by TermLink's fleet doctor with an application key)
@@ -62,8 +104,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Cause of the t3837 test-1 regression bisected to a specific commit and fixed at the cause (test unchanged); `bats tests/unit/t3837_doctor_errexit_captures.bats` green
+- [x] learning_application_birth.bats test 4 pins the generator (learning.sh run against a fixture), not the live corpus's last entry; suite green, and the new leg goes red when learning.sh emits an application key
+- [x] External-tool-appends-PL-learnings issue filed separately (concern or task) with the evidence (PL-018, fleet doctor, host IP) — T-4201
+- [x] The T-3837 static guard also catches the two-line `x=$(cmd)` / `rc=$?` form (red on HEAD with 3 offenders, green after), with a planted-offender control leg
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +141,11 @@ date_finished: null
 -->
 
 ## Verification
+
+timeout 600 bats tests/unit/t3837_doctor_errexit_captures.bats > /tmp/.t4200a 2>&1 && ! grep -q "^not ok" /tmp/.t4200a && test "$(grep -c '# skip' /tmp/.t4200a)" -eq 0
+timeout 300 bats tests/unit/learning_application_birth.bats > /tmp/.t4200b 2>&1 && ! grep -q "^not ok" /tmp/.t4200b && test "$(grep -c '# skip' /tmp/.t4200b)" -eq 0
+bash -n bin/fw && bash -n lib/bvp.sh && bash -n lib/push-resolve.sh
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -243,6 +292,14 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** (1) t3837 test 1: `fw doctor` in a fresh consumer repo stopped right after "No .claude/settings.json" — never printed the TermLink line or the summary. (2) learning_application_birth test 4 red with learning.sh unchanged.
+
+**Root cause:** (1) The T-4166/G-114 index-reconcile doctor block (landed in 6ff64ae88, 2026-10-13 18:50, under a T-4156 subject) captured `_ir_out=$(python3 … index_reconcile.py …)` and read `_ir_rc=$?` on the NEXT line. bin/fw runs `set -euo pipefail`, so any non-zero exit kills doctor at the assignment. In an unborn-HEAD repo (the test's fixture, and any just-`git init`ed consumer) the probe exits 3 ("bad revision 'HEAD'") — measured — and doctor died. Exit 2 (armed stale entries, the case the block exists to report) would have killed it too, in every repo. (2) Test 4 asserted on the LIVE corpus's last entry, so whoever wrote last decided the verdict: TermLink's fleet doctor appended PL-018 with an `application:` key.
+
+**Why structurally allowed:** (1) T-3837's static guard greps only the one-line `x=$(cmd); rc=$?` form; the two-line spelling of the same dead capture passed it. Two older instances of the two-line form (lib/bvp.sh `driver --propose`, lib/push-resolve.sh ls-remote) were equally invisible. (2) The test deliberately anchored to live data (T-3326 class) — it measured the corpus, not the generator.
+
+**Prevention:** (1) New guard leg in tests/unit/t3837_doctor_errexit_captures.bats scans bin/fw + lib/*.sh for the two-line form (red on HEAD: 3 offenders; green after), with a planted-offender control leg. (2) Test 4 now runs `do_add_learning` against a fixture corpus; proven to go red when learning.sh emits an application key. The external-writer problem is filed as T-4201.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -307,6 +364,15 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-14 — scope of the errexit fix
+- **Chose:** fix all three two-line captures (bin/fw index-reconcile, lib/bvp.sh, lib/push-resolve.sh) and widen the static guard.
+- **Why:** the regression was the two-line spelling of the class T-3837 already guards; a guard that tolerates it would let the next one ship the same way, and the widened guard is red until the two older instances are fixed too. Same one-line fix shape as T-3837 (`x=$(cmd) && rc=0 || rc=$?`).
+- **Rejected:** fixing only bin/fw (leaves the guard blind); `set +e` around the block (wider than needed).
+
+### 2026-10-14 — how to pin learning test 4
+- **Chose:** run `do_add_learning` against a fixture corpus with FRAMEWORK_ROOT pointed at the fixture (no bus publish).
+- **Rejected:** "newest entry whose context is 'Added via context agent'" in the live file — still live-corpus, and empty when no learning was added recently.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -323,3 +389,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4200-two-new-pre-push-reds-blocking-bleeding-.md
 - **Context:** Initial task creation
+
+### 2026-10-14T06:29:32Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

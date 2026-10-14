@@ -112,15 +112,36 @@ PY
     ! grep -q 'print "  application' "$FRAMEWORK_ROOT/agents/context/lib/learning.sh"
 }
 
-@test "application: the newest learning on file carries no application key" {
-    # Live evidence that the birth path is actually clean, not just the source.
+@test "application: a learning born through learning.sh carries no application key" {
+    # Behavioural evidence that the birth path is clean, not just the source.
+    # T-4200: this used to read the LIVE learnings.yaml's last entry, which proves
+    # nothing about our generator — the last entry is whatever wrote last. TermLink's
+    # fleet doctor appended PL-018 with an application key and the test went red
+    # with learning.sh untouched (T-3326: pin the generator, never the live corpus).
+    # So: run do_add_learning itself against a fixture corpus. FRAMEWORK_ROOT points
+    # at the fixture so the bus publisher (lib/publish-learning-to-bus.sh) is absent.
+    local ctx="$BATS_TEST_TMPDIR/ctx"
+    mkdir -p "$ctx/project"
+    printf 'learnings:\n- id: L-001\n  learning: "seed"\n  source: P-001\n  task: T-1\n  date: 2026-01-01\n\ncandidates: []\n' \
+        > "$ctx/project/learnings.yaml"
+    run bash -c '
+        source "$1/lib/corpus-id.sh"
+        source "$1/agents/context/lib/learning.sh"
+        ensure_context_dirs() { :; }
+        _sed_i() { sed -i "$@"; }
+        RED= GREEN= NC=
+        CONTEXT_DIR="$2" PROJECT_ROOT="$3" FRAMEWORK_ROOT="$3"
+        do_add_learning "fixture learning" --task T-4200 --source P-001
+    ' _ "$FRAMEWORK_ROOT" "$ctx" "$BATS_TEST_TMPDIR"
+    [ "$status" -eq 0 ] || { echo "$output"; false; }
     run python3 -c "
-import os, yaml, sys
-p = os.path.join(os.environ['FRAMEWORK_ROOT'], '.context','project','learnings.yaml')
-ls = (yaml.safe_load(open(p)) or {}).get('learnings', [])
-sys.exit(0 if 'application' not in ls[-1] else 1)
-"
-    [ "$status" -eq 0 ]
+import sys, yaml
+ls = yaml.safe_load(open(sys.argv[1]))['learnings']
+new = [l for l in ls if l.get('learning') == 'fixture learning']
+assert len(new) == 1, ls
+sys.exit(0 if 'application' not in new[0] else 1)
+" "$ctx/project/learnings.yaml"
+    [ "$status" -eq 0 ] || { echo "$output"; false; }
 }
 
 # --- (c) the leg that survives the next site ---------------------------------

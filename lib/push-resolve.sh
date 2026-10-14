@@ -83,8 +83,7 @@ fw_push_resolve_killed() {
         return 0
     fi
 
-    ls_out=$(timeout "$tmo" git -C "$root" ls-remote "$remote" "refs/heads/$branch" 2>/dev/null)
-    ls_rc=$?
+    ls_out=$(timeout "$tmo" git -C "$root" ls-remote "$remote" "refs/heads/$branch" 2>/dev/null) && ls_rc=0 || ls_rc=$?  # T-4200: set -e
 
     # Non-zero: the remote did not answer (network, auth, or `timeout` killing
     # this too). We learned nothing, and must not pretend otherwise.

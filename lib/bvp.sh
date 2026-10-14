@@ -2313,8 +2313,7 @@ EOF
         for _a in "$@"; do [ "$_a" = "--propose" ] && _has_propose=1; done
         if [ "$_has_propose" -eq 1 ]; then
             local _out _rc
-            _out=$(_bvp_python_engine "$@")
-            _rc=$?
+            _out=$(_bvp_python_engine "$@") && _rc=0 || _rc=$?  # T-4200: set -e
             [ -n "$_out" ] && printf '%s\n' "$_out"
             if [ "$_rc" -eq 0 ]; then
                 if ! type fw_notify >/dev/null 2>&1 && [ -f "$FRAMEWORK_ROOT/lib/notify.sh" ]; then

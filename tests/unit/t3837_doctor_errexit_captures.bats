@@ -55,3 +55,27 @@ SH
     offenders=$(printf '%s\n' "$output" | grep -vE '^[^:]+:[0-9]+:[[:space:]]*#' | grep . || true)
     [ -z "$offenders" ] || { echo "$offenders"; false; }
 }
+
+@test "T-4200: no two-line 'x=\$(cmd)' NEWLINE 'rc=\$?' capture remains in bin/fw or lib/" {
+    # Same dead capture as above, split over two lines. The one-line grep cannot
+    # see it, which is how T-4166's index-reconcile block (bin/fw) shipped and
+    # stopped `fw doctor` dead in any repo where the reconcile probe exited non-zero.
+    local f offenders=""
+    for f in "$FRAMEWORK_ROOT/bin/fw" "$FRAMEWORK_ROOT"/lib/*.sh; do
+        offenders+=$(awk -v F="$f" '
+            prev ~ /^[[:space:]]*(local[[:space:]]+)?[A-Za-z_][A-Za-z0-9_]*=\$\(.*\)[[:space:]]*$/ &&
+            $0 ~ /^[[:space:]]*(local[[:space:]]+)?[A-Za-z_][A-Za-z0-9_]*=\$\?/ { print F ":" NR ": " $0 }
+            { prev = $0 }' "$f")
+    done
+    [ -z "$offenders" ] || { echo "$offenders"; false; }
+}
+
+@test "T-4200: the two-line guard DOES fire on a planted offender" {
+    local planted="$BATS_TEST_TMPDIR/planted.sh"
+    printf 'x=$(false)\nrc=$?\n' > "$planted"
+    run awk '
+        prev ~ /^[[:space:]]*(local[[:space:]]+)?[A-Za-z_][A-Za-z0-9_]*=\$\(.*\)[[:space:]]*$/ &&
+        $0 ~ /^[[:space:]]*(local[[:space:]]+)?[A-Za-z_][A-Za-z0-9_]*=\$\?/ { print NR }
+        { prev = $0 }' "$planted"
+    [ "$output" = "2" ]
+}
