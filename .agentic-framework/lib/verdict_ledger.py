@@ -1692,7 +1692,7 @@ def register_run(run_id: str, task_id: str, *, acs: list[int], rung: str, seats:
                  required_vendors: int = 1, pages: dict | None = None, captures: list | None = None,
                  inputs: dict | None = None, reason: str = "", degraded: str = "",
                  rung_due: int | None = None, brief_sha256: str = "", revision: str = "",
-                 root: Path | None = None) -> dict:
+                 visual: dict | None = None, root: Path | None = None) -> dict:
     """(judge, before dispatching) record a review run: the seats it requires, how many distinct
     vendors it demands, and for render criteria the pages that must have been seen with the
     capture result of each. Signed; a partial capture failure is kept, never discarded.
@@ -1707,7 +1707,12 @@ def register_run(run_id: str, task_id: str, *, acs: list[int], rung: str, seats:
 
     The run also pins ONE reviewed `revision` (default HEAD now) and the registry blob committed at
     it (`registry`: where + sha256). Every seat's dispatch must be registered at that revision, and
-    the panel's vendors are derived once, from that blob (round 7, codex MEDIUM-4 / Claude F3)."""
+    the panel's vendors are derived once, from that blob (round 7, codex MEDIUM-4 / Claude F3).
+
+    `visual` (T-4214) is the T-4202 evidence a render criterion needs: {widths, problems, shots:
+    [{state, width, path, sha256}]} — every checklist state at every configured width, and the
+    Visual Verification checklist's own problems. A run registered without it cannot back a
+    render green, and neither can one whose checklist has problems or whose shots are missing."""
     root = root or _root()
     if any(r.get("kind") == "run" and r.get("run_id") == run_id for r in _read(RUNS, root)):
         raise ValueError(f"run {run_id!r} is already registered")
@@ -1723,6 +1728,12 @@ def register_run(run_id: str, task_id: str, *, acs: list[int], rung: str, seats:
            "pages": {str(k): list(v) for k, v in (pages or {}).items()},
            "captures": [dict(c) for c in (captures or [])], "inputs": inputs or {},
            "reason": reason, "degraded": degraded, "ts": _now()}
+    if visual is not None:
+        row["visual"] = {"widths": [int(w) for w in visual.get("widths") or []],
+                         "problems": [str(p) for p in visual.get("problems") or []],
+                         "shots": [{"state": str(x.get("state", "")), "width": int(x.get("width", 0)),
+                                    "path": str(x.get("path", "")), "sha256": str(x.get("sha256") or "")}
+                                   for x in visual.get("shots") or []]}
     row["revision"] = (revision or "").strip() or _head_sha(root)
     row["registry"] = registry_pin(root, row["revision"])
     if rung_due is not None:
@@ -2416,6 +2427,24 @@ def _run_fault(ctx: "_Ctx", row: dict, crit, recording: bool) -> tuple[str, str]
                 return "unseen-page", f"required page {p!r} has no verified screenshot ({why})"
             if c["sha256"] not in cited:
                 return "unseen-page", f"the screenshot of {p!r} is not cited as evidence"
+        # T-4214: the T-4202 evidence. Every checklist state at every configured width must have a
+        # verified shot, the Visual Verification checklist must pass, and each shot must be cited.
+        vis = run.get("visual")
+        if vis is None:
+            return "visual-needs-run", ("a render criterion needs the multi-width screenshots and the "
+                                        "Visual Verification checklist recorded in its review run; "
+                                        "this run recorded neither (fw ux shots, then fw reviewer judge)")
+        if vis.get("problems"):
+            return "visual-missing", ("the Visual Verification checklist does not pass: "
+                                      + "; ".join(vis["problems"][:3]))
+        shots = vis.get("shots") or []
+        if not shots:
+            return "visual-missing", "no screenshot is recorded for the checklist states"
+        for sh in shots:
+            if not sh.get("sha256"):
+                return "visual-missing", f"no screenshot at {sh.get('path')!r} ({sh.get('state')} @ {sh.get('width')}px)"
+            if sh["sha256"] not in cited:
+                return "visual-uncited", f"the screenshot {sh.get('path')!r} is not cited as evidence"
     return None
 
 
