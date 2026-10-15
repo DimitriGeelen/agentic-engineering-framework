@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4137: Open-task recall now fires for 50% of active tasks (413/818), crossing T-3056's hazard bound (strict minority): decide whether recall precision degraded with corpus growth or the live-corpus test needs a committed fixture (t3056 A3 red at pre-push 2026-10-13)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T16:45:43Z
+# ============================================================================
+
+task_id: T-4137
+task_name: "Open-task recall now fires for 50% of active tasks (413/818), crossing T-3056's hazard bound (strict minority): decide whether recall precision degraded with corpus growth or the live-corpus test needs a committed fixture (t3056 A3 red at pre-push 2026-10-13)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-13T10:41:48Z
+completed: 2026-10-15T16:44:53Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-10-13T12:42:44+02:00
+last_commit: 2026-10-13T13:18:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — open-task recall at 50% crosses T-3056 hazard bound; T-4138: two load-flaky unit tests. open-task recall precision — IDF-weighted, length-normalised score floor (OPEN_TASK_MIN_SCORE) on top of the 4-word floor; precision 12/30 -> 24/30 (fresh sample), live hit rate 51% -> 31%; t3056 A3 pinned on committed fixture tests/fixtures/t4137_recall_precision.yaml (labeled pairs, mutation leg proves old filter fails it), live fraction informational only. vendor memory-recall.py; tick verification AC
+
+# Key outcomes
+outcomes:
+  - 'Question answered in this file BEFORE code changes: 30 live hits sampled with a fixed seed, each judged related/unrelated with a one-line reason, precision reported, and concentration (generic tasks / common words) checked'
+  - 'If precision is poor, search_open_tasks ranking/threshold fixed so precision rises on the same sample; before/after precision and hit fraction recorded'
+  - 'Live-corpus A3 assertion replaced by a COMMITTED fixture corpus under tests/ encoding related and unrelated pairs; test asserts every related pair hits and no unrelated query gets a hit; live fraction is an informational print only (no assertion)'
+  - 'tests/unit/t3056_recall_open_tasks.bats and tests/unit/test_t3789_recall_hit_mapping.py green; bin/fw vendor self --check clean for memory-recall.py'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'open-task recall precision — IDF-weighted, length-normalised score floor (OPEN_TASK_MIN_SCORE) on top of the 4-word floor; precision 12/30 -> 24/30 (fresh sample), live hit rate 51% -> 31%; t3056 A3 pinned on committed fixture tests/fixtures/t4137_recall_precision.yaml (labeled pairs, mutation leg proves old filter fails it), live fraction informational only'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/memory-recall.py'
+  - 'agents/context/lib/memory-recall.py'
+  - '.tasks/active/T-4137-open-task-recall-now-fires-for-50-of-act.md'
+  - '.tasks/active/T-4138-flaky-under-load-escalationscanv05bats-a.md'
+  - '.tasks/completed/T-4136-three-repo-wide-defined-exactly-once-tes.md'
+  - 'tests/fixtures/t4137_recall_precision.yaml'
+  - 'tests/unit/t3056_recall_open_tasks.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-13T12:42:44'
+    action: 'T-4137: file — open-task recall at 50% crosses T-3056 hazard bound; T-4138: two load-flaky unit tests'
+  - time: '2026-10-13T13:18:26'
+    action: 'T-4137: open-task recall precision — IDF-weighted, length-normalised score floor (OPEN_TASK_MIN_SCORE) on top of the 4-word floor; precision 12/30 -> 24/30 (fresh sample), live hit rate 51% -> 31%; t3056 A3 pinned on committed fixture tests/fixtures/t4137_recall_precision.yaml (labeled pairs, mutation leg proves old filter fails it), live fraction informational only'
+  - time: '2026-10-13T13:18:56'
+    action: 'T-4137: vendor memory-recall.py; tick verification AC'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 3243 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3243
+  commits: 3
+  files_changed: 7
+  lines_added: 1931
+  lines_removed: 54
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4137-open-task-recall-now-fires-for-50-of-act.md
+generated_by: context-agent-hybrid
