@@ -109,6 +109,10 @@ _secret_scan_run_patterns() {
             echo "Strict mode: set FW_SECRET_SCAN_STRICT=1 to make this block commits."
             echo ""
         } >&2
+        # T-4211: drain stdin before returning. An unread pipe kills the writer
+        # (`echo "$diff_stream" |`) with SIGPIPE once the diff outgrows the pipe
+        # buffer or loses the race, and under pipefail that reads as a hit.
+        cat >/dev/null
         if [ "${FW_SECRET_SCAN_STRICT:-0}" = "1" ]; then
             echo "ERROR: Commit blocked — FW_SECRET_SCAN_STRICT=1 and patterns catalogue missing." >&2
             return 1
