@@ -275,7 +275,9 @@ python3 -m pytest -q -p no:cacheprovider tests/unit/test_t4205_termlink_tripwire
 bats tests/unit/add_learning_id_allocator.bats tests/unit/context_learning.bats tests/unit/sidecar_inbox_hook.bats
 python3 -m pytest -q -p no:cacheprovider tests/unit/test_sidecar_receipts_t3684.py tests/unit/test_sidecar_session_ready_t3745.py tests/unit/test_sidecar_watcher_t3684.py tests/unit/test_sidecar_receiver_t3693.py
 bin/fw test lint
-bin/fw audit --section structure
+# structure audit exits 1 on WARN-only; the gate is "no FAIL"
+for i in $(seq 1 30); do bin/fw audit --section structure > .context/scratch/t4205-audit.out 2>&1; [ $? -ne 75 ] && break; sleep 20; done; grep -q "^Fail: 0" .context/scratch/t4205-audit.out
+python3 -m pytest -q -p no:cacheprovider tests/unit/t3580_judge_cli_test.py tests/unit/t3580_round8_test.py
 
 ## RCA
 

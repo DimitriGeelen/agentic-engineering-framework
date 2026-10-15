@@ -12,12 +12,12 @@ description: >
   WARN on held-and-unsurfaced mail older than N). Verify in lib/sidecar/inject.py
   + hooks.py; test both paths.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/audit/audit.sh, bin/fw, lib/config.sh, lib/sidecar-audit.sh, lib/sidecar_cli.py, lib/sidecar/hooks.py, lib/sidecar/inject.py, web/blueprints/config.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-14T22:39:48Z
-last_update: '2026-10-14T22:45:30Z'
-date_finished:
+last_update: 2026-10-15T05:39:40Z
+date_finished: 2026-10-15T05:39:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -101,10 +101,16 @@ cost_estimate_proposed:
 - [x] With injection off (`receiver/config.json` inject:false), the UserPromptSubmit prompt hook surfaces held, unclaimed peer mail for an interactive session (tests/unit/test_t4207_inject_off_surfaces.py)
 - [x] With injection ON and no injector decision on record, the prompt hook still surfaces nothing (T-3745 unchanged; same test file)
 - [x] `inject.held_unsurfaced()` reports mail held longer than the threshold and never shown, silent once shown (same test file)
-- [ ] `fw doctor` and `fw audit` WARN on held-and-unsurfaced mail older than `SIDECAR_HELD_WARN_HOURS` (new registry key, default 24), read from the same fact `bin/fw sidecar held-unsurfaced --json`
-- [ ] Every existing suite that references the inject / no-inject / deliver_pending path stays green (run list in Updates)
+- [x] `fw doctor` and `fw audit` WARN on held-and-unsurfaced mail older than `SIDECAR_HELD_WARN_HOURS` (new registry key, default 24), read from the same fact `bin/fw sidecar held-unsurfaced --json`
+- [x] Every existing suite that references the inject / no-inject / deliver_pending path stays green (run list in Updates)
 
 ### Human
+- [ ] [REVIEW] Watchtower /config shows the new SIDECAR_HELD_WARN_HOURS setting readably beside the other sidecar settings
+  **Steps:**
+  1. Open http://192.168.10.107:3000/config
+  2. Find SIDECAR_HELD_WARN_HOURS (search the page for "HELD")
+  **Expected:** one row with value 24 (default) and a one-line description about peer mail held and never shown; layout matches the neighbouring rows
+  **If not:** note what looks wrong (missing row, broken layout, unclear description)
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -319,6 +325,14 @@ bin/fw test lint
 
 ## Recommendation
 
+**Recommendation:** GO
+**Rationale:** The bug is fixed and proven end to end: with injection off, the prompt hook now surfaces held mail, and doctor plus audit warn on mail held past SIDECAR_HELD_WARN_HOURS. The only open criterion is the one new row on Watchtower /config, which is a render check.
+**Evidence:**
+- tests/unit/test_t4207_inject_off_surfaces.py: 3 red before the fix, 5 green after
+- Fixture with one 30 h old unshown message: `fw doctor` and `fw audit --section structure` both print the held-mail WARN (Updates, 2026-10-15)
+- 13 related sidecar test files: 241 passed
+- /config contains SIDECAR_HELD_WARN_HOURS (curl check after the Watchtower restart)
+
 <!-- T-2945: same shape as inception.md's block — the gate that reads it
      (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
      shape is copied rather than reinvented.
@@ -380,3 +394,26 @@ bin/fw test lint
 ### 2026-10-15 — pre-fix failure reproduced (worker t4208-receivers)
 - `python3 -m pytest -q tests/unit/test_t4207_inject_off_surfaces.py` before the fix: 3 failed, 1 passed. `test_inject_off_prompt_hook_surfaces_held_mail` got `[]` (the bug); `held_unsurfaced` AttributeError (missing capability).
 - After the fix: 4 passed. Existing suites run green: test_sidecar_{session_ready_t3745,withheld_t3872,seen_ledger_t3840,delivery,inbox,watcher_t3684,receiver_t3693,waiting_t3782,sweep}.py, test_inject_next_directive.py, test_sidecar_cli_peer_frame.py (249 passed); bats sidecar_audit_rail.bats + sidecar_inbox_hook.bats (25 ok).
+
+### 2026-10-15 — positive WARN run, end to end (orchestrator)
+- Fixture project in `.context/scratch/t4207-e2e/proj` with one message stored 30 h ago, never shown.
+- `PROJECT_ROOT=<fixture> bin/fw doctor` → `WARN  1 peer message(s) held past 24h and never shown to any session`.
+- `PROJECT_ROOT=<fixture> bin/fw audit --section structure` → `[WARN] 1 peer message(s) held past 24h, never shown to any session`, Evidence `m-e2e-1	30.0	050-email-archive`.
+- Re-ran every tests/unit *.py that references deliver_pending / no-inject / injector_found_no_session / inject (13 files): 241 passed.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-cec6de53
+- **Timestamp:** 2026-10-15T05:44:24Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — With injection off (`receiver/config.json` inject:false), the UserPromptSubmit prompt hook surfaces held, unclaimed peer mail for an interactive session (tests/unit/test_t4207_inject_off_surfaces.py)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=receiver/config.json in: With injection off (`receiver/config.json` inject:false), the UserPromptSubmit prompt hook surfaces held, unclaimed peer mail for an interactive sessi`
+
+### 2026-10-15T05:39:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
