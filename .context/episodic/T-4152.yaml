@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4152: fw termlink dispatch leaks its TermLink endpoint forever: the worker is typed into a persistent interactive shell (pty inject 'bash run.sh' --enter), so the shell outlives run.sh and cleanup never deregisters it (ring20-manager report, their T-2359; 106 'ready' sessions here)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T16:59:17Z
+# ============================================================================
+
+task_id: T-4152
+task_name: "fw termlink dispatch leaks its TermLink endpoint forever: the worker is typed into a persistent interactive shell (pty inject 'bash run.sh' --enter), so the shell outlives run.sh and cleanup never deregisters it (ring20-manager report, their T-2359; 106 'ready' sessions here)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-13T14:18:00Z
+completed: 2026-10-15T16:57:41Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-10-13T16:18:16+02:00
+last_commit: 2026-10-13T16:27:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — dispatch leaks TermLink endpoints (ring20-manager; 106 ready sessions here). dispatch execs run.sh so the worker's TermLink session ends with it; cleanup stops endpoints finished workers leaked; record-outcome stdin /dev/null. vendor sync — termlink.sh
+
+# Key outcomes
+outcomes:
+  - '`cmd_dispatch` injects the worker command so the session''s shell ends when run.sh ends (`exec`), for every worker kind and the review path'
+  - 'run.sh finalises (exit_code written; review workers finalised per `_worker_done`) BEFORE it exits, so ending the shell never loses finalisation — pinned by a test'
+  - '`fw termlink result|status|wait` read results from $wdir and still work once the session is gone'
+  - '`fw termlink cleanup` lists and (with consent, T-3651) stops/deregisters endpoints whose dispatch worker is finalised; never a running/unfinalised worker, never a non-dispatch session (claude-master-*, fleet-*)'
+  - 'bats tests: injected command uses exec; cleanup --dry-run lists finalised leaked endpoints and never running ones or foreign sessions'
+  - 'Existing termlink dispatch/cleanup tests green; `bin/fw vendor self --check` clean for touched files'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - 'agents/termlink/termlink.sh'
+  - '.tasks/active/T-4152-fw-termlink-dispatch-leaks-its-termlink-.md'
+  - 'tests/unit/t4152_dispatch_endpoint_leak.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-13T16:18:16'
+    action: 'T-4152: file — dispatch leaks TermLink endpoints (ring20-manager; 106 ready sessions here)'
+  - time: '2026-10-13T16:25:31'
+    action: 'T-4152: dispatch execs run.sh so the worker''s TermLink session ends with it; cleanup stops endpoints finished workers leaked; record-outcome stdin /dev/null'
+  - time: '2026-10-13T16:27:04'
+    action: 'T-4152: vendor sync — termlink.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 3039 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3039
+  commits: 3
+  files_changed: 4
+  lines_added: 701
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4152-fw-termlink-dispatch-leaks-its-termlink-.md
+generated_by: context-agent-hybrid

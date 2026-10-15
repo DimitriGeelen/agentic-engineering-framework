@@ -17,12 +17,12 @@ description: >
   is finalised. Test: a dispatched trivial worker's session is gone after it finishes;
   a review worker's session ends only after finalisation.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/termlink/termlink.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -51,8 +51,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T14:18:00Z
-last_update: '2026-10-13T14:30:16Z'
-date_finished:
+last_update: 2026-10-15T16:57:41Z
+date_finished: 2026-10-15T16:57:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -81,6 +81,23 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-14T14:31:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-10-13T14:30:16Z'
     estimator: bvp-estimator-v1-heuristic
@@ -108,7 +125,7 @@ cost_estimate_proposed:
 - [x] `fw termlink result|status|wait` read results from $wdir and still work once the session is gone
 - [x] `fw termlink cleanup` lists and (with consent, T-3651) stops/deregisters endpoints whose dispatch worker is finalised; never a running/unfinalised worker, never a non-dispatch session (claude-master-*, fleet-*)
 - [x] bats tests: injected command uses exec; cleanup --dry-run lists finalised leaked endpoints and never running ones or foreign sessions
-- [ ] Existing termlink dispatch/cleanup tests green; `bin/fw vendor self --check` clean for touched files
+- [x] Existing termlink dispatch/cleanup tests green; `bin/fw vendor self --check` clean for touched files
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -388,3 +405,15 @@ bin/fw vendor self --check
 - Pre-fix (HEAD termlink.sh under the new suite): 6/8 not ok — exec pin, build session still alive, review session still alive, record-outcome stdin pin, cleanup dry-run/--yes plan nothing. Ok as expected: the leak control and the no-tty consent refusal.
 - Probe on this host: an `exec`'d injected command ends a `termlink spawn --shell` session, which deregisters entirely. `termlink signal <id> TERM` does NOT end an idle interactive shell (bash ignores it); `HUP` does, and the session deregisters.
 - Live `fw termlink cleanup --dry-run` (not executed): 55 leaked endpoints planned out of 92 finished wdirs. The other 37 are 1409-sprind workers whose run.sh is still blocked in `fw termlink record-outcome` on the PTY, so cleanup correctly does not touch them; this change adds `< /dev/null` to that call for future workers.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fa3c8818
+- **Timestamp:** 2026-10-15T16:59:02Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-15T16:57:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
