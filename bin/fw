@@ -1475,6 +1475,7 @@ show_help() {
     echo -e "${BOLD}Utility:${NC}"
     echo -e "  ${GREEN}plugin-audit${NC}          Audit plugins for task-system awareness"
     echo -e "  ${GREEN}ux-review${NC} <url>       Browser-driving UX review of an interactive render surface"
+    echo -e "  ${GREEN}ux shots${NC} <T-ID> <state=URL>...  Screenshot each state at every UX_SHOT_WIDTHS width into .context/visual/ (T-4212)"
     echo -e "  ${GREEN}review${NC} cost|propose|approve|backend  Review/dispatch cost ledger and paid-backend approvals (T-3583, T-3586)"
     echo -e "  ${GREEN}gpu${NC} <cmd>             GPU coordination (recover)"
     echo -e "  ${GREEN}whoami${NC} ${CYAN}[--register]${NC} Which project this is (id, name, root) and which instance you are"
@@ -6300,6 +6301,24 @@ case "$cmd" in
         exec env PROJECT_ROOT="$PROJECT_ROOT" FRAMEWORK_ROOT="$FRAMEWORK_ROOT" \
             PYTHONPATH="$FRAMEWORK_ROOT" \
             python3 -m lib.reviewer.static_scan "$@"
+        ;;
+    ux)
+        # T-4212: `fw ux shots` — screenshot each state at every configured width
+        # into .context/visual/<task>/ (T-4202 render-surface evidence convention).
+        case "${1:-}" in
+            shots)
+                shift
+                # Width list comes from the UX_SHOT_WIDTHS registry key; FW_UX_SHOT_WIDTHS env overrides it.
+                _ux_widths="$(source "$FRAMEWORK_ROOT/lib/config.sh" && PROJECT_ROOT="$PROJECT_ROOT" fw_config UX_SHOT_WIDTHS)"
+                exec env PROJECT_ROOT="$PROJECT_ROOT" FW_UX_SHOT_WIDTHS="${FW_UX_SHOT_WIDTHS:-$_ux_widths}" \
+                    python3 "$AGENTS_DIR/ux-review/ux_shots.py" "$@"
+                ;;
+            *)
+                echo "Usage: fw ux shots <task-id> <state=URL>... [--widths 1024,1440,1920] [--plan-only]" >&2
+                echo "       (ux-review, the palette/theme engine, is a separate verb: fw ux-review)" >&2
+                exit 2
+                ;;
+        esac
         ;;
     ux-review)
         # T-2002: UX-review capture engine (approach C of inception T-2000) —

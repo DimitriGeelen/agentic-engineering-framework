@@ -1,10 +1,16 @@
 ---
 id: T-4212
-name: "T-4202 leg A: fw ux shots captures every touched state at three or more widths (1024/1440/1920) for a render-surface change"
+name: "T-4202 leg A: fw ux shots captures every touched state at three or more widths
+  (1024/1440/1920) for a render-surface change"
 description: >
-  T-4202 GO (832 T-1172: toolbar cut off at one width, read by the author only). Capture tool: one command screenshots given URLs/states at each configured width. Convention (T-4202 GO): screenshots at .context/visual/<task>/<state>@<width>.png, widths 1024/1440/1920 (configurable list, at least 3); ## Visual Verification holds a checklist table: state | control | 1024 | 1440 | 1920, each cell one of ok / clipped / hidden / overlap / unreachable.
+  T-4202 GO (832 T-1172: toolbar cut off at one width, read by the author only). Capture
+  tool: one command screenshots given URLs/states at each configured width. Convention
+  (T-4202 GO): screenshots at .context/visual/<task>/<state>@<width>.png, widths 1024/1440/1920
+  (configurable list, at least 3); ## Visual Verification holds a checklist table:
+  state | control | 1024 | 1440 | 1920, each cell one of ok / clipped / hidden / overlap
+  / unreachable.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-15T17:18:31Z
-last_update: 2026-10-15T17:18:31Z
-date_finished: null
+last_update: '2026-10-15T17:30:39Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-15T17:20:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-15T17:30:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=295,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4212: T-4202 leg A: fw ux shots captures every touched state at three or more widths (1024/1440/1920) for a render-surface change
@@ -62,8 +96,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw ux shots` plans one capture per (URL/state × width) using the convention path `.context/visual/<task>/<state>@<width>.png`, with widths from the `UX_SHOT_WIDTHS` config key (default 1024,1440,1920; at least 3 entries, validated)
+- [x] `fw ux shots` refuses with a clear NOT CHECKED message (non-zero exit, no PNG written) when Playwright is unavailable, and never reports a pass for an uncaptured shot
+- [x] Browser capture is exercised end-to-end against a local static HTML file served from a temp dir (test skips with a named reason when Playwright is not installed)
+- [x] Path and width planning is unit-tested without a browser (naming, width validation, minimum-3 refusal, task-id resolution)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -227,6 +263,10 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest -q tests/unit/test_ux_shots.py
+bats tests/unit/t4212_ux_shots.bats
+bin/fw ux shots --help | grep -q "UX_SHOT_WIDTHS"
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -307,6 +347,20 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-15 — Capture verb: new `fw ux shots`, not a flag on `ux-review`
+- **Chose:** a new verb `fw ux shots <T-ID> state=URL…` backed by `agents/ux-review/ux_shots.py`.
+- **Why:** `ux-review.py` is a palette/theme engine (picker pages, guide-coherence, gallery and report writers under `web/static`). Its capture functions are coupled to that flow. This verb answers one question — what every width looks like — and its planning half is pure, so it is tested without a browser.
+- **Rejected:** a `--widths` flag on `ux-review` (drags theme-picker assumptions into a generic capture; would write into `web/static`).
+
+### 2026-10-15 — Screenshots are git-ignored (`.context/visual/`)
+- **Chose:** ignore `.context/visual/` (line added to `.gitignore`). The committed record is the `## Visual Verification` checklist in each task.
+- **Why:** full-page PNGs at three widths per state are large binary files regenerated on every run; the checklist carries the per-control reading. Leg C's brief binds the reviewer to the file digests on disk, not to git history.
+- **Rejected:** committing PNGs (repo bloat, churn on every re-shoot).
+
+### 2026-10-15 — Width list is the `UX_SHOT_WIDTHS` registry key
+- **Chose:** `UX_SHOT_WIDTHS` default `1024,1440,1920`, validated (integers, 320–7680, no duplicates, ≥3 entries) at capture and by the gate in leg B.
+- **Rejected:** a hard-coded list (the operator cannot widen it per project).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -323,3 +377,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4212-t-4202-leg-a-fw-ux-shots-captures-every-.md
 - **Context:** Initial task creation
+
+### 2026-10-15T17:20:32Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

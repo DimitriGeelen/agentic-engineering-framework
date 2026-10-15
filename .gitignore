@@ -159,3 +159,7 @@ docs/reports/T-3239-continuous-loop-demo/.livefire-run-copy.sh
 
 # Scratch clones/output that must survive a reboot (/tmp is wiped) and stay inside the project boundary (T-4112)
 .context/scratch/
+
+# T-4212 (T-4202 leg A): per-width UX screenshots. Regenerated per run; the
+# checklist in the task file is the committed record. Large binary evidence.
+.context/visual/
