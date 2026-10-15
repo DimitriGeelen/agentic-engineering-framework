@@ -16,12 +16,12 @@ description: >
   one pass; invalidate per task file; compute off the request path. Must not weaken
   the ledger's validation (T-3579/T-3581 provenance checks).
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [lib/verdict_ledger.py, web/shared.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -50,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T22:23:33Z
-last_update: 2026-10-13T12:18:31Z
-date_finished:
+last_update: 2026-10-15T16:43:47Z
+date_finished: 2026-10-15T16:43:47Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -140,6 +140,14 @@ cost_estimate_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+
+- [ ] [REVIEW] /tasks and /review pages still render the same readiness badges and respond quickly after a commit (render surface web/shared.py touched)
+  **Steps:**
+  1. Open the Watchtower `/tasks` page (URL from `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url`)
+  2. Note a few tasks' readiness/review badges; make any commit touching a task file elsewhere, reload `/tasks`
+  3. Open `/review/T-4133` and confirm the Human AC card and Recommendation render
+  **Expected:** badges match what they showed before the change; reload after a commit is fast (seconds, not 60+ s); no stale badge for a task whose file changed
+  **If not:** note the task id and badge that is wrong or stale and the reload time
 
 ## Verification
 
@@ -352,6 +360,14 @@ bin/fw watchtower current
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** The cause (task_review_state re-walking git history per task and per verdict row, and a readiness stamp that any commit invalidated) is removed with a bounded, proof-backed design: git reads are memoised per refs state and batched into one log walk, and ledger-free entries are keyed on the task file alone. Output is byte-identical to before and the only remaining step is a human look at the rendered pages.
+**Evidence:**
+- `task_review_state` JSON byte-identical before/after over 824 active task files (Updates, round 2)
+- Synthetic 150-task repo: 13.55 s / 751 git calls → 1.82 s / 303 git calls, results identical
+- tests/web/test_t4133_readiness_perf.py covers batched == per-task walks and invalidation on a new commit; verification lines (parse, vendor self --check, watchtower current) pass
+- 15+ t3580 failures are identical on HEAD without this change (pre-existing, recorded in Updates)
+
 ## Decisions
 
 ### 2026-10-13 — git memo key and readiness stamp
@@ -390,3 +406,15 @@ bin/fw watchtower current
 - **Safety:** indexes are keyed by (repo, HEAD) / (repo, refs token), so another state's data is never served; a failing batched walk returns None and the caller runs the original per-task walk (which raises HistoryUnreadable exactly as before). Task ids not shaped `T-<digits>` always use the per-task walk.
 - **Measured, synthetic 150-task repo (task_required_strength + producers_checked per task):** old 13.55 s / 751 git (450 `log`) → new 1.82 s / 303 git (2 `log`); results byte-identical. This repo's real active-task sweep: 21 git before and after (few tasks reach the ledger path here), task_review_state JSON byte-identical over 824 files.
 - **Tests:** tests/web/test_t4133_readiness_perf.py extended (batched == per-task walks; log-walk count constant in task count; new HEAD not served from the old index; ref create/delete moves the state token). t3580_round8 `test_git_failure_refuses` now also fails the batched `--all` walk. t3580 judge/panel failures (15 across rounds 2-9, +1 in judge_cli) are identical on HEAD without this change.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-2ec3e847
+- **Timestamp:** 2026-10-15T16:43:57Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-15T16:43:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
