@@ -1,0 +1,97 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4167: Pre-commit guard against reverting committed task/episodic state: refuse a commit whose staged .tasks/** or .context/episodic/** blob is an OLDER committed version of that path (GIT_INDEX_FILE-aware, override env), catching any writer that leaves the index stale — absorb ring20's reference implementation
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T17:05:20Z
+# ============================================================================
+
+task_id: T-4167
+task_name: "Pre-commit guard against reverting committed task/episodic state: refuse a commit whose staged .tasks/** or .context/episodic/** blob is an OLDER committed version of that path (GIT_INDEX_FILE-aware, override env), catching any writer that leaves the index stale — absorb ring20's reference implementation"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-13T15:50:28Z
+completed: 2026-10-15T17:04:51Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-10-13T22:07:29+02:00
+last_commit: 2026-10-13T22:07:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pre-commit stale-index guard — refuse a staged .tasks/** or .context/episodic/** blob that is an older committed version (GIT_INDEX_FILE-aware, FW_ALLOW_STALE_INDEX=1 Tier-2). vendored copies of stale-index guard + pre-commit hook
+
+# Key outcomes
+outcomes:
+  - 'A guard (`agents/git/lib/stale-index-guard.py`) refuses a commit when any staged `.tasks/**` or `.context/episodic/**` blob equals an OLDER committed version of that path (in HEAD''s history) but differs from HEAD''s version; reads the index git is actually committing (honours `GIT_INDEX_FILE`); exits 0 when nothing qualifies'
+  - 'The guard is wired into the framework-installed pre-commit hook (`fw git install-hooks`), so it survives reinstall rather than living in a hand-edited block'
+  - 'Override `FW_ALLOW_STALE_INDEX=1` lets the commit through and appends a Tier-2 entry to `.context/working/.gate-bypass-log.yaml`; the refusal message names the path, the older commit it matches, and the override'
+  - 'Bats suite (fixture repos in BATS_TEST_TMPDIR) covers: revert-to-older refused; fresh edit allowed; new file allowed; deletion allowed; non-governed path ignored; GIT_INDEX_FILE scratch-index path refused; `git mv` rename to older blob refused; override allows + logs — and fails against HEAD (no guard)'
+  - 'Cost on a large commit measured and recorded in Decisions (staged-path count, wall time)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-13 — re-derived, not ported'
+    chose: 'wrote the guard from the spec in ring20''s message (msg 05d50237, quoted in `.context/sidecar/outbox/09b9e409…json`). I could not read ring20''s `scripts/stale-index-guard.py` (e5496a678) because the project-boundary hook (T-559) blocks reads of other repos. The fixture cases cover their stated repro (`git mv` plus a scratch index).'
+    rationale: 'the task says to treat the reference as untrusted input and re-derive it anyway. Reading it would have been a cross-check, not a source.'
+    alternatives_rejected: ['dispatching into ring20 to read it. The cost is out of proportion when the spec is already unambiguous.']
+  - decision: '2026-10-13 — history walk strategy (cost)'
+    chose: '`git log --raw` limited to exact pathspecs when there are ≤16 governed candidates. Above 16, one walk over the `.tasks` and `.context/episodic` prefixes, filtered in Python. - **Why (measured on this repo, 11,420 commits, scratch index):** 1 / 5 / 16 changed governed paths took 0.75s / 0.69s / 0.63s. 2000 paths took 3.39s, and 300 real stale entries took 4.67s (all refused). The first version passed every path as a pathspec: with 2000 paths it did not finish in 4 minutes and was killed. Commits that touch no governed path pay one `diff-index` (~0.1s).'
+    alternatives_rejected: ['a depth cap on history. It would bound the cost but miss reverts to old versions.']
+  - decision: '2026-10-13 — pairing moves without -M'
+    chose: 'an added governed path is also checked against governed paths deleted in the same commit that have the same file name.'
+    rationale: '`-M` did not pair small or heavily changed files. The `git mv` stale-entry test failed until this was added, because the change showed up as D+A.'
+  - decision: '2026-10-13 — merge resolution'
+    chose: 'a staged blob equal to `MERGE_HEAD:<path>` is not flagged, because taking the other side is a deliberate resolution. This is not covered by a test.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/hooks.sh'
+  - '.agentic-framework/agents/git/lib/stale-index-guard.py'
+  - 'agents/git/lib/hooks.sh'
+  - 'agents/git/lib/stale-index-guard.py'
+  - '.fabric/components/agents-git-lib-stale-index-guard.yaml'
+  - '.tasks/active/T-4167-pre-commit-guard-against-reverting-commi.md'
+  - 'tests/unit/t4167_stale_index_guard.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-13T22:07:29'
+    action: 'T-4167: pre-commit stale-index guard — refuse a staged .tasks/** or .context/episodic/** blob that is an older committed version (GIT_INDEX_FILE-aware, FW_ALLOW_STALE_INDEX=1 Tier-2)'
+  - time: '2026-10-13T22:07:44'
+    action: 'T-4167: vendored copies of stale-index guard + pre-commit hook'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2954 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2954
+  commits: 2
+  files_changed: 7
+  lines_added: 653
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4167-pre-commit-guard-against-reverting-commi.md
+generated_by: context-agent-hybrid
