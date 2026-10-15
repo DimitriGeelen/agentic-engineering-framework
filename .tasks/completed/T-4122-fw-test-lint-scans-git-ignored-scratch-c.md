@@ -7,12 +7,12 @@ description: >
   clone (.context/scratch/hotfix/proof/...). Lint should skip git-ignored paths (git
   ls-files based, or honour .gitignore).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, lint]
-components: []
+components: [bin/fw, tools/bats-silent-skip-lint.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,8 +41,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T18:08:54Z
-last_update: 2026-10-13T14:09:54Z
-date_finished:
+last_update: 2026-10-15T16:36:19Z
+date_finished: 2026-10-15T16:36:19Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -380,3 +380,20 @@ bin/fw vendor self --check
 ### 2026-10-13T13:51:08Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: later → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4c5e9ac9
+- **Timestamp:** 2026-10-15T16:39:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Silent-Skip pass (`tools/bats-silent-skip-lint.py`) skips git-ignored paths when walking a directory
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tools/bats-silent-skip-lint.py in: Silent-Skip pass (`tools/bats-silent-skip-lint.py`) skips git-ignored paths when walking a directory`
+
+### 2026-10-15T16:36:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

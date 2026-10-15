@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4122: fw test lint scans git-ignored scratch clones (.context/scratch/**) and reports their shellcheck findings as FAILs
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T16:39:28Z
+# ============================================================================
+
+task_id: T-4122
+task_name: "fw test lint scans git-ignored scratch clones (.context/scratch/**) and reports their shellcheck findings as FAILs"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-12T18:08:54Z
+completed: 2026-10-15T16:36:19Z
+duration_days: 3
+updates_count: 3
+first_commit: 2026-10-12T20:09:18+02:00
+last_commit: 2026-10-13T16:09:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — lint scans git-ignored scratch clones. fw test lint enumerates via git ls-files — skips git-ignored .context/scratch clones (810s+ → 87s). vendor self — sync bin/fw lint enumeration
+
+# Key outcomes
+outcomes:
+  - 'ShellCheck pass of `fw test lint` enumerates `*.sh` via `git ls-files -co --exclude-standard` (git-ignored paths such as `.context/scratch/` are skipped), falling back to `find` (with `.context/scratch` pruned) when FRAMEWORK_ROOT is not in a git work tree'
+  - 'Silent-Skip pass (`tools/bats-silent-skip-lint.py`) skips git-ignored paths when walking a directory'
+  - 'Regression test: a planted `.sh` with a shellcheck error under `.context/scratch/` of a temp git copy is NOT reported, while the same file at a tracked path IS reported'
+  - '`bin/fw test lint` wall time measured before/after with scratch clones present; after-run prints the Silent-Skip section and finishes well under 600 s'
+  - '`tests/lint/bats-silent-skip.bats` passes'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.tasks/active/T-4122-fw-test-lint-scans-git-ignored-scratch-c.md'
+  - 'tests/lint/lint-skips-git-ignored.bats'
+  - 'tools/bats-silent-skip-lint.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-12T20:09:18'
+    action: 'T-4122: file — lint scans git-ignored scratch clones'
+  - time: '2026-10-13T16:09:39'
+    action: 'T-4122: fw test lint enumerates via git ls-files — skips git-ignored .context/scratch clones (810s+ → 87s)'
+  - time: '2026-10-13T16:09:54'
+    action: 'T-4122: vendor self — sync bin/fw lint enumeration'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 4227 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, lint]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4227
+  commits: 3
+  files_changed: 5
+  lines_added: 542
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4122-fw-test-lint-scans-git-ignored-scratch-c.md
+generated_by: context-agent-hybrid
