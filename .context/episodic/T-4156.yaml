@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4156: Apply the standing review rulings (D-626, T-3557, T-3580 risk-graded reviewer ladder) to READY TO CLOSE tasks: owner: agenthuman, zero Human criteria, all Agent ACs ticked, verification green → fw reviewer judge at the task's due rung; green closes with verdict provenance (owner unchanged), not green → remediate, carve-outs escalate (16 here, 832 T-1127)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T17:03:00Z
+# ============================================================================
+
+task_id: T-4156
+task_name: "Apply the standing review rulings (D-626, T-3557, T-3580 risk-graded reviewer ladder) to READY TO CLOSE tasks: owner: agenthuman, zero Human criteria, all Agent ACs ticked, verification green → fw reviewer judge at the task's due rung; green closes with verdict provenance (owner unchanged), not green → remediate, carve-outs escalate (16 here, 832 T-1127)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-13T15:01:32Z
+completed: 2026-10-15T17:02:38Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-10-13T17:01:57+02:00
+last_commit: 2026-10-13T18:50:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — apply D-626/T-3557/T-3580 reviewer ladder to READY TO CLOSE tasks (operator: already ruled, not applied); T-4157: update-task edits completed tasks. context — READY TO CLOSE hint prints a command R-033 refuses (832). route READY TO CLOSE tasks to the reviewer ladder (delegate adds reviewer-judged close-readiness criterion; review-queue drops R-033 dead-end command)
+
+# Key outcomes
+outcomes:
+  - '`fw task delegate T-XXX` on a READY TO CLOSE task (owner human, zero Human criteria, Agent ACs ticked) adds one reviewer-judged close-readiness criterion (owner unchanged, ledger line written) and names `fw reviewer judge` as the next step; `--dry-run` writes nothing'
+  - 'Carve-out classes (tier-0/bypass, sovereignty, act-in-the-world) and inception tasks are not delegated: output points to `fw task review`'
+  - '`fw review-queue` READY TO CLOSE section no longer prints the R-033 dead-end `task update --status work-completed` command; it prints the delegate route'
+  - 'Tests in tests/unit/test_t4156_ready_to_close_route.py fail on HEAD and pass now; test_unclosable_misfiled.py stays green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-13 — how a zero-Human-criteria task reaches the reviewer ledger'
+    chose: '`fw task delegate` adds one reviewer-judged `[REVIEW]` close-readiness Human criterion (owner untouched); `fw reviewer judge` + the existing verdict ledger do the rest. Carve-outs and inceptions are refused and point to `fw task review`.'
+    rationale: 'the ledger is criterion-keyed; a synthetic criterion reuses T-3579/T-3580 provenance and rung policy without a second close path.'
+    alternatives_rejected: ['a new close-only verdict kind in verdict_ledger (large, signed-provenance surface); flipping owner (sovereignty field, T-4155 rejected it).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/delegation_cli.py'
+  - '.agentic-framework/lib/unclosable_misfiled.py'
+  - 'bin/fw'
+  - 'lib/delegation_cli.py'
+  - 'lib/unclosable_misfiled.py'
+  - '.tasks/active/T-4156-apply-the-standing-review-rulings-d-626-.md'
+  - '.tasks/active/T-4157-fw-task-update---type-on-a-completed-tas.md'
+  - 'tests/unit/test_t4156_ready_to_close_route.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-13T17:01:57'
+    action: 'T-4156: file — apply D-626/T-3557/T-3580 reviewer ladder to READY TO CLOSE tasks (operator: already ruled, not applied); T-4157: update-task edits completed tasks'
+  - time: '2026-10-13T17:03:57'
+    action: 'T-4156: context — READY TO CLOSE hint prints a command R-033 refuses (832)'
+  - time: '2026-10-13T18:50:00'
+    action: 'T-4156: route READY TO CLOSE tasks to the reviewer ladder (delegate adds reviewer-judged close-readiness criterion; review-queue drops R-033 dead-end command)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 3001 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3001
+  commits: 3
+  files_changed: 8
+  lines_added: 1075
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4156-apply-the-standing-review-rulings-d-626-.md
+generated_by: context-agent-hybrid

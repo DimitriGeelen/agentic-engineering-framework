@@ -19,12 +19,12 @@ description: >
   stops presenting them as operator work. Inception T-4155 GO (2026-10-13) is the
   design record; this applies it.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner:
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/delegation_cli.py, lib/unclosable_misfiled.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -53,8 +53,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T15:01:32Z
-last_update: 2026-10-13T16:50:01Z
-date_finished:
+last_update: 2026-10-15T17:02:38Z
+date_finished: 2026-10-15T17:02:38Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -373,3 +373,15 @@ bin/fw vendor self --check
 
 ### 2026-10-13T16:43:22Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b2618c43
+- **Timestamp:** 2026-10-15T17:02:45Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-15T17:02:38Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
