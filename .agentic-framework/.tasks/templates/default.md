@@ -95,6 +95,21 @@ date_finished: null
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
+<!--
+  Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
+  web/app.py …) add a section headed "Visual Verification" (level-2 heading) after
+  Verification, with one checklist table — the check-visual-verification gate reads it
+  at commit time (T-4213; T-4202 GO):
+
+    | state | control | 1024 | 1440 | 1920 | note |
+    |-------|---------|------|------|------|------|
+    | toolbar | Load | ok | ok | ok | |
+
+  Cells: ok / clipped / hidden / overlap / unreachable (non-ok needs a note). Each
+  listed state needs screenshots at every UX_SHOT_WIDTHS width:
+  fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
+-->
+
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
