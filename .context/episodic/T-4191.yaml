@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4191: handover: emit [TODO] not None for narrative sections; mark commit-derived Where We Are as unverified (832 OBS-452, their T-1150)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T19:37:09Z
+# ============================================================================
+
+task_id: T-4191
+task_name: "handover: emit [TODO] not None for narrative sections; mark commit-derived Where We Are as unverified (832 OBS-452, their T-1150)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-13T19:10:26Z
+completed: 2026-10-15T19:29:03Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-10-13T21:37:24+02:00
+last_commit: 2026-10-13T21:48:28+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  handover emits [TODO] for unfilled narrative sections and marks commit-mined Where We Are AUTO-MINED/VERIFY (832 OBS-452). vendored copy of agents/handover/handover.sh. tick suites-green AC (10 handover suites, lint and structure audit introduce nothing new)
+
+# Key outcomes
+outcomes:
+  - 'A generated handover writes `[TODO]` (not a bare `None`) under `## Decisions Made This Session`, `## Things Tried That Failed` and `## Open Questions / Blockers` (new bats test, fails on HEAD)'
+  - 'In full (non-digest) mode, per-task `Next step` / `Blockers` lines emit `[TODO]` instead of the constant `See task file` / `None` (test, fails on HEAD)'
+  - 'The commit-derived `## Where We Are` summary carries an `AUTO-MINED from commit subjects — VERIFY` marker (test, fails on HEAD)'
+  - 'Existing handover/resume/audit suites that reference these sections stay green; `bin/fw test lint` and `bin/fw audit --section structure` introduce no new failure'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-13 — partially reverse T-395''s zero-TODO generator'
+    chose: '`[TODO]` in the three narrative sections (digest mode: exactly 3, so audit D8 WARNs and the post-commit "HANDOVER STALE" hint (>3) stays quiet); per-task `[TODO]` only in opt-in full mode (HANDOVER_DIGEST=0); Where We Are prefixed `AUTO-MINED from commit subjects — VERIFY:`.'
+    rationale: 'an unfilled handover must look unfilled (832''s fix); keeping default output at the D8 WARN threshold makes it visible without turning every auto-handover into an audit FAIL — the rot T-395 fixed.'
+    alternatives_rejected: ['per-task `[TODO]` in digest mode too (would push every handover past D8 FAIL >3); dropping the per-task fields in full mode (breaks the digest-off reversibility the T-3028 suite pins).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/handover/handover.sh'
+  - 'agents/handover/handover.sh'
+  - '.tasks/active/T-4191-handover-emit-todo-not-none-for-narrativ.md'
+  - 'tests/unit/handover_digest.bats'
+  - 'tests/unit/t4191_handover_todo_markers.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-13T21:37:24'
+    action: 'T-4191: handover emits [TODO] for unfilled narrative sections and marks commit-mined Where We Are AUTO-MINED/VERIFY (832 OBS-452)'
+  - time: '2026-10-13T21:37:35'
+    action: 'T-4191: vendored copy of agents/handover/handover.sh'
+  - time: '2026-10-13T21:48:28'
+    action: 'T-4191: tick suites-green AC (10 handover suites, lint and structure audit introduce nothing new)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2898 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2898
+  commits: 3
+  files_changed: 5
+  lines_added: 177
+  lines_removed: 38
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4191-handover-emit-todo-not-none-for-narrativ.md
+generated_by: context-agent-hybrid
