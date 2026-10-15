@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4150: SECURITY: budget-gate classifier (lib/cmd_classify.py) admits executable text at critical budget via process substitution, an unquoted heredoc carrying $(…), or a '#' comment that hides a heredoc opener — parser differential vs bash
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T16:55:38Z
+# ============================================================================
+
+task_id: T-4150
+task_name: "SECURITY: budget-gate classifier (lib/cmd_classify.py) admits executable text at critical budget via process substitution, an unquoted heredoc carrying $(…), or a '#' comment that hides a heredoc opener — parser differential vs bash"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-13T13:45:31Z
+completed: 2026-10-15T16:53:27Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-10-13T16:06:48+02:00
+last_commit: 2026-10-13T16:06:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  budget-gate classifier reads commands through one bash-faithful tokeniser. vendor lib/cmd_classify.py
+
+# Key outcomes
+outcomes:
+  - 'Regression tests exist for all three verified cases (process substitution `>(`/`<(`, unquoted heredoc body carrying `$(`/backtick, `#` comment hiding a heredoc opener) and each FAILS on HEAD''s `lib/cmd_classify.py`'
+  - '`classify()` refuses all three at critical; the tokeniser follows bash for comments-vs-heredoc-openers, quoted vs unquoted heredoc delimiters, and process substitution'
+  - 'Controls stay admitted: quoted heredoc commit messages (`<<''EOF''` containing `$(` text), ordinary read-only commands, `#` inside quotes, existing T-2923/T-4125 test suites green'
+  - 'Uncertain input is refused (fail closed): unterminated quote, ANSI-C `$''…''`, nested quoting in `${…}`, `$[…]`, odd heredoc delimiters; an unterminated heredoc keeps T-2923''s behaviour (remainder judged as commands) and is refused when unquoted and carrying `$(`/backtick'
+  - '`bin/fw vendor self --check` clean for the touched files; `bin/fw test lint` reports nothing on the new/changed files'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-13 — tokeniser instead of three more regexes'
+    chose: 'a single character-level scanner (`_scan`) following bash''s rules for single/double quotes, backslash and line continuation, `#` at a word start (after a blank or `;&|()<>`), heredoc delimiters (quote removal; any quoting = quoted heredoc; `<<-` tab stripping; exact terminator match), `<<<`. `strip_heredocs` and `strip_comments` keep their names and the T-2923 order but both take `_scan`''s reading; `classify()` asks `shell_syntax_refusal()` first.'
+    rationale: 'each bypass was a place where two strippers read the text differently. Patching each case leaves the next differential; one reader removes the class for the shapes it covers.'
+    alternatives_rejected: ['`shlex` (does not know heredocs or bash comments rules after metacharacters); calling `bash -n` (parses but does not expose its reading, and spawns a shell inside a gate). - **Guarantees now:** within the text of the command, every place bash would run a command is either an ordinary segment judged on its verb or refused — process substitution, `$(…)`/backticks (anywhere outside comments and quoted heredoc bodies), an expansion in an unquoted heredoc body (terminated or not), and any text whose reading is uncertain (unterminated quote, `$''…''`, `${…}` holding a quote/backtick/`$(`, `$[…]`, a heredoc delimiter with `$`/backtick or none). - **Does NOT guarantee:** anything inside a script or file the command runs, or a command built at run time from pieces the text does not contain — the same scope boundary as Tier 0 (CLAUDE.md T-2742). Variables already in the environment are not modelled (an unquoted-body `$VAR` is admitted). The wrap-up verbs themselves (`git commit` hooks, `fw` subcommands) run code by design.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/cmd_classify.py'
+  - 'lib/cmd_classify.py'
+  - '.tasks/active/T-4150-security-budget-gate-classifier-libcmdcl.md'
+  - 'tests/unit/t4150_cmd_classify_parser_differential.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-13T16:06:48'
+    action: 'T-4150: budget-gate classifier reads commands through one bash-faithful tokeniser'
+  - time: '2026-10-13T16:06:48'
+    action: 'T-4150: vendor lib/cmd_classify.py'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 3067 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3067
+  commits: 3
+  files_changed: 5
+  lines_added: 1445
+  lines_removed: 206
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4150-security-budget-gate-classifier-libcmdcl.md
+generated_by: context-agent-hybrid

@@ -16,12 +16,12 @@ description: >
   inside a comment is not an opener). Tests: each case fails on HEAD; existing T-2923/T-4125
   tests stay green.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/cmd_classify.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -50,8 +50,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T13:45:31Z
-last_update: 2026-10-13T14:06:48Z
-date_finished:
+last_update: 2026-10-15T16:53:27Z
+date_finished: 2026-10-15T16:53:27Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -392,3 +392,15 @@ cmp -s lib/cmd_classify.py .agentic-framework/lib/cmd_classify.py
 
 ### 2026-10-13 — pre-fix failure recorded [t4150-fix worker]
 - New suite run against `git show HEAD:lib/cmd_classify.py`: 18 of 27 legs `not ok` — all 13 differential legs, all 3 hook end-to-end refusals, and 2 controls that HEAD falsely blocked (`<<E"O"F`, `<<'END-MSG'`). With the fix: 27/27 ok; t2923 (11), t2919 (22), t4125 and the prescribed-commands lint all green. `.context/scratch/t4125-repro.py` budget section: all three now `refused`.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e7487e51
+- **Timestamp:** 2026-10-15T16:55:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-15T16:53:27Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
