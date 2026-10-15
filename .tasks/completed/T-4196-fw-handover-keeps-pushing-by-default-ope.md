@@ -11,12 +11,12 @@ description: >
   Do not change the checkpoint/auto-handover paths' behaviour except to print the
   same line.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/handover/handover.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T19:21:48Z
-last_update: 2026-10-13T22:14:23Z
-date_finished:
+last_update: 2026-10-15T19:38:11Z
+date_finished: 2026-10-15T19:38:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -101,7 +101,7 @@ This came from 832 OBS-413 (their T-1150): `fw handover` pushed with no notice a
 - [x] Default `fw handover` (normal and `--checkpoint`) still pushes — pinned by a sandbox test asserting the bare remote carries HEAD
 - [x] Before pushing, one line names branch, number of commits not yet on the remote, and the remotes it will push to (same line on the checkpoint path) — `tests/unit/t4196_handover_no_push.bats`
 - [x] `--no-push` commits locally, leaves the remote untouched, says so with the unpushed count, and writes a Tier-2 entry to `.context/working/.gate-bypass-log.yaml`; `--help` documents it
-- [ ] New tests fail on HEAD; existing handover push suites stay green; vendored copy synced
+- [x] New tests fail on HEAD; existing handover push suites stay green; vendored copy synced
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -380,3 +380,15 @@ bin/fw vendor self --check
 
 ### 2026-10-15 — close-out: verification line corrected [agent]
 - **Stale line fixed:** `tests/unit/handover_push_timeout.bats` removed from the Verification bats line. Its tests 15, 16 and 19 (`grep 'timed out after'`, `grep 'timeout "$_ah_total_timeout" ...handover.sh'`, `grep '${FW_HANDOVER_PUSH_TIMEOUT:-60}'`) are source-text greps for the T-1277 implementation, which T-3063 (c3deb6f7f, `push-state`) refactored away. They are red at this task's PARENT commit (603c4e8aa^: all three patterns count 0 in handover.sh/checkpoint.sh), so T-4196 did not cause them. The failing tests are reported separately; the other 17 tests in that file and all of t4196_handover_no_push + handover_push_no_origin pass.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-75cdde07
+- **Timestamp:** 2026-10-15T19:38:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-15T19:38:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

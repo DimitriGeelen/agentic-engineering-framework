@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4196: fw handover keeps pushing by default (operator ruling 2026-10-13, 1a) but gains --no-push and announces what it pushes (branch, commit count, remotes) before pushing (832 OBS-413, their T-1150)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T19:38:35Z
+# ============================================================================
+
+task_id: T-4196
+task_name: "fw handover keeps pushing by default (operator ruling 2026-10-13, 1a) but gains --no-push and announces what it pushes (branch, commit count, remotes) before pushing (832 OBS-413, their T-1150)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-13T19:21:48Z
+completed: 2026-10-15T19:38:11Z
+duration_days: 2
+updates_count: 4
+first_commit: 2026-10-14T00:14:13+02:00
+last_commit: 2026-10-15T19:55:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw handover --no-push (logged Tier-2) + announce branch/commit count/remotes before pushing; push stays default. vendored copy of handover.sh. close-out pass leftovers — T-4196 verification line correction (documented), T-4133/T-4147 estimator metadata
+
+# Key outcomes
+outcomes:
+  - 'Default `fw handover` (normal and `--checkpoint`) still pushes — pinned by a sandbox test asserting the bare remote carries HEAD'
+  - 'Before pushing, one line names branch, number of commits not yet on the remote, and the remotes it will push to (same line on the checkpoint path) — `tests/unit/t4196_handover_no_push.bats`'
+  - '`--no-push` commits locally, leaves the remote untouched, says so with the unpushed count, and writes a Tier-2 entry to `.context/working/.gate-bypass-log.yaml`; `--help` documents it'
+  - 'New tests fail on HEAD; existing handover push suites stay green; vendored copy synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/handover/handover.sh'
+  - 'agents/handover/handover.sh'
+  - '.tasks/active/T-4133-watchtower-tasks-takes-60-145-s-after-an.md'
+  - '.tasks/active/T-4147-raise-the-contextwindow-registry-default.md'
+  - '.tasks/active/T-4196-fw-handover-keeps-pushing-by-default-ope.md'
+  - 'tests/unit/t4196_handover_no_push.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-14T00:14:13'
+    action: 'T-4196: fw handover --no-push (logged Tier-2) + announce branch/commit count/remotes before pushing; push stays default'
+  - time: '2026-10-14T00:14:22'
+    action: 'T-4196: vendored copy of handover.sh'
+  - time: '2026-10-15T19:55:54'
+    action: 'T-4196: close-out pass leftovers — T-4196 verification line correction (documented), T-4133/T-4147 estimator metadata'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2896 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2896
+  commits: 3
+  files_changed: 6
+  lines_added: 224
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4196-fw-handover-keeps-pushing-by-default-ope.md
+generated_by: context-agent-hybrid
