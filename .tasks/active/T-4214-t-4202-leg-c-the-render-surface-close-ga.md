@@ -1,10 +1,17 @@
 ---
 id: T-4214
-name: "T-4202 leg C: the render-surface close gate needs an independent reviewer verdict that judged the multi-width screenshots and checklist"
+name: "T-4202 leg C: the render-surface close gate needs an independent reviewer verdict
+  that judged the multi-width screenshots and checklist"
 description: >
-  T-4202 GO. fw reviewer judge for a render criterion: the brief carries the leg-A screenshots (all widths) and the leg-B checklist; a green verdict without them is refused; the P-013 close gate requires that green verdict (or the operator's own tick). Author reading is never enough. Convention (T-4202 GO): screenshots at .context/visual/<task>/<state>@<width>.png, widths 1024/1440/1920 (configurable list, at least 3); ## Visual Verification holds a checklist table: state | control | 1024 | 1440 | 1920, each cell one of ok / clipped / hidden / overlap / unreachable.
+  T-4202 GO. fw reviewer judge for a render criterion: the brief carries the leg-A
+  screenshots (all widths) and the leg-B checklist; a green verdict without them is
+  refused; the P-013 close gate requires that green verdict (or the operator's own
+  tick). Author reading is never enough. Convention (T-4202 GO): screenshots at .context/visual/<task>/<state>@<width>.png,
+  widths 1024/1440/1920 (configurable list, at least 3); ## Visual Verification holds
+  a checklist table: state | control | 1024 | 1440 | 1920, each cell one of ok / clipped
+  / hidden / overlap / unreachable.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-15T17:19:07Z
-last_update: 2026-10-15T17:19:07Z
-date_finished: null
+last_update: 2026-10-15T18:24:49Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +57,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-15T17:30:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-15T17:31:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4214: T-4202 leg C: the render-surface close gate needs an independent reviewer verdict that judged the multi-width screenshots and checklist
@@ -62,8 +97,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw reviewer judge` puts the leg-A screenshots (every checklist state at every UX_SHOT_WIDTHS width) and the leg-B checklist verdict into the brief of a render criterion, with each shot's path listed for citation
+- [x] The judge's brief forbids green for a render criterion when a shot is missing or the checklist does not pass
+- [x] The ledger refuses a render green whose run recorded no visual evidence, a failing checklist, a missing shot, or an uncited shot (`visual-needs-run` / `visual-missing` / `visual-uncited`)
+- [x] Existing verdict-ledger provenance checks (producer, worker identity, append-only, signing) are unchanged; the render fixtures that now need visual evidence were given it, not exempted
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +134,9 @@ date_finished: null
 -->
 
 ## Verification
+
+python3 -m pytest -q tests/unit/t4214_visual_evidence_test.py
+python3 -m pytest -q tests/unit/t3580_round2_test.py tests/unit/t3580_round3_test.py tests/unit/test_t3579_verdict_ledger.py
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -298,6 +338,17 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-15 — Missing visual evidence refuses the GREEN, not the dispatch
+- **Chose:** `fw reviewer judge` still dispatches a render criterion whose visual evidence is missing; the brief says `not-evaluated` (or forbids green), and the ledger refuses any green at record. The run registration carries the `visual` record, and `_run_fault` checks it.
+- **Why:** the requirement is "refuse to record green". Refusing the dispatch would hide the reason from the reviewer's evidence report and leave the operator without a reviewed answer; the ledger is the only place a green is written, so it is the right gate.
+- **Rejected:** an early `judge` refusal when shots are missing (it bypasses the reviewer's own not-evaluated path).
+
+### 2026-10-15 — Existing render fixtures now carry visual evidence
+- **Chose:** the render-green fixtures in `test_t3579_verdict_ledger.py`, `t3580_round2_test.py`, `t3580_round3_test.py` register runs with a passing `visual` record and cite its shots (shared helper `tests/unit/_visual_evidence.py`).
+- **Why:** those fixtures modelled a render green with no visual evidence, which is the state this task makes illegal. The provenance assertions themselves are untouched.
+- **Consequence:** any render green recorded before this change, whose run has no `visual` record, no longer satisfies `check-render` on re-validation. That is the intended outcome; `fw audit` shows the withdrawn ticks.
+
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -323,3 +374,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4214-t-4202-leg-c-the-render-surface-close-ga.md
 - **Context:** Initial task creation
+
+### 2026-10-15T18:24:49Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

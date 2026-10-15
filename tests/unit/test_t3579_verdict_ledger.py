@@ -15,7 +15,8 @@ from lib import verdict_ledger as vl  # noqa: E402
 from lib.delegation import frontmatter, human_criteria  # noqa: E402
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-import _review_runtime as rt  # noqa: E402
+import _review_runtime as rt
+from _visual_evidence import run_visual, write_shots  # noqa: E402  (T-4214)  # noqa: E402
 from _review_runtime import hermetic_review_env  # noqa: E402,F401  (T-4205: autouse)
 
 TASK = "T-9100"
@@ -158,10 +159,13 @@ def _render_run(root, ac, did, evidence, pages=("/review",), ok=True, render=Tru
         shots.append(f.name)
         caps.append({"page": pg, "ok": ok, "sha256": vl._hash_path(f) if ok else "",
                      "error": "" if ok else "browser down"})
+    # T-4214: a render run also carries the T-4202 evidence — every checklist state at every width.
+    vis = write_shots(root, f"vis-{did}") if render else []
     rt.register_run(f"run-{did}", TASK, acs=[ac], rung=rung,
                     seats=[{"seat": "claude", "vendor": "claude"}], required_vendors=1,
-                    pages={str(ac): list(pages)} if render else {}, captures=caps, root=root)
-    return {"run_id": f"run-{did}", "evidence": list(evidence) + shots}
+                    pages={str(ac): list(pages)} if render else {}, captures=caps,
+                    visual=run_visual(vis) if render else None, root=root)
+    return {"run_id": f"run-{did}", "evidence": list(evidence) + shots + [v["path"] for v in vis]}
 
 
 def _lines(root, rel):

@@ -20,7 +20,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from lib import verdict_ledger as vl  # noqa: E402
 from lib.reviewer import judge_cli  # noqa: E402
-import _review_runtime as rt  # noqa: E402
+import _review_runtime as rt
+from _visual_evidence import add_checklist, run_visual, write_shots  # noqa: E402  (T-4214)
 from _review_runtime import hermetic_review_env  # noqa: E402,F401  (T-4205: autouse)
 from t3580_judge_cli_test import (  # noqa: E402,F401
     ALL_KINDS, NOCAP, _all_kinds, RENDER, TASTE, TID, FakeWorker, _cli, _git, _ident, _judge, _mk_task, _produce, repo,
@@ -305,10 +306,12 @@ def _render_green(root, mp, *, pages, caps, cite, did="rv-1", bypass=True):
     captures = [{"page": p, "ok": bool(ok), "sha256": vl._hash_path(files[p]) if ok else "",
                  "error": "" if ok else "HTTP 500"} for p, ok in caps.items()]
     # Round 6: the fixture criterion names web/blueprints/review.py — IW-7 medium, so rung 3.
+    # T-4214: the render run also carries the T-4202 evidence, and each of its shots is cited.
+    vis = write_shots(root, f"vis-{did}")
     rt.register_run(f"run-{did}", TID, acs=[1], rung="rung-3-termlink-single-reviewer",
                     seats=[{"seat": "claude", "vendor": "claude"}], required_vendors=1,
-                    pages={"1": list(pages)}, captures=captures, root=root)
-    cited = [files[p].name for p in cite]
+                    pages={"1": list(pages)}, captures=captures, visual=run_visual(vis), root=root)
+    cited = [files[p].name for p in cite] + [v["path"] for v in vis]
     with mp.context() as m:
         if bypass:
             m.setattr(vl, "_run_fault", lambda *a, **k: None)
@@ -396,6 +399,7 @@ class TestUnseenPages:
                 p.write_bytes(pg.encode())
                 ps.append(p)
             return ps, ""
+        add_checklist(next((rprod / ".tasks" / "active").glob(f"{TID}-*.md")), rprod, TID)  # T-4214
         res = _judge(rprod, dispatcher=FakeWorker("green"), capture=cap)
         assert res["outcomes"] == {1: "green"}
         assert [t["ac"] for t in vl.apply(TID, rprod)["ticked"]] == [1]

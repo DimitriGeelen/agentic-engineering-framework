@@ -23,7 +23,8 @@ sys.path.insert(0, str(Path(__file__).resolve().parent))
 
 from lib import verdict_ledger as vl  # noqa: E402
 from lib.reviewer import judge_cli  # noqa: E402
-import _review_runtime as rt  # noqa: E402
+import _review_runtime as rt
+from _visual_evidence import add_checklist  # noqa: E402  (T-4214)  # noqa: E402
 from _review_runtime import hermetic_review_env  # noqa: E402,F401  (T-4205: autouse)
 from t3580_judge_cli_test import (  # noqa: E402,F401
     ALL_KINDS, NOCAP, _all_kinds, TASTE, TID, FakeWorker, _git, _ident, _judge, _mk_task, _produce, repo,
@@ -591,6 +592,7 @@ class TestSevenPages:
         (repo / "web/blueprints").mkdir(parents=True)
         (repo / "web/blueprints/dash.py").write_text("x = 1\n")
         _mk_task(repo, crit, extra_fm="components:\n  - web/blueprints/dash.py\n")
+        add_checklist(next((repo / ".tasks" / "active").glob(f"{TID}-*.md")), repo, TID)  # T-4214
         _produce(repo)
         res = _judge(repo, dispatcher=FakeWorker("green"), capture=_capture_all)
         run = next(r for r in vl._read(vl.RUNS, repo) if r.get("kind") == "run")

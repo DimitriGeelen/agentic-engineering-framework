@@ -67,6 +67,13 @@ from lib.delegation import (  # noqa: E402
     human_criteria,
 )
 
+# T-4214: the T-4202 visual evidence (shot naming, width validation, checklist) is owned by the
+# capture verb and the commit gate; the judge reads the same helpers, so the three cannot drift.
+sys.path.insert(0, str(_HERE.parent / "agents" / "ux-review"))
+sys.path.insert(0, str(_HERE.parent / "agents" / "context"))
+import ux_shots  # noqa: E402
+import visual_checklist  # noqa: E402
+
 COST_LEDGER = review_policy.COST_LEDGER
 EVIDENCE_DIR = Path(".context/working/judge-evidence")
 REPORT_DIR = ".context/reviews/evidence"
@@ -366,6 +373,44 @@ def _capture_playwright(base_url: str, pages: list[str], outdir: Path) -> tuple[
 Capturer = Callable[[str, list[str], Path], "tuple[list[Path], str]"]
 
 
+_FRAMEWORK_ROOT = Path(__file__).resolve().parents[2]
+VISUAL_DIR = ".context/visual"   # T-4212 convention: <state>@<width>.png per task
+
+
+def _ux_widths(root: Path) -> list[int]:
+    """UX_SHOT_WIDTHS, resolved the way `fw_config` resolves it (env > .framework.yaml > registry).
+    Raises PlanError when the value is not a valid width list, so a bad config is a refusal."""
+    raw = os.environ.get("FW_UX_SHOT_WIDTHS", "")
+    if not raw:
+        fw_root = os.environ.get("FRAMEWORK_ROOT") or str(_FRAMEWORK_ROOT)
+        raw = subprocess.run(
+            ["bash", "-c", 'source "$1/lib/config.sh" && PROJECT_ROOT="$2" fw_config UX_SHOT_WIDTHS',
+             "_", fw_root, str(root)], capture_output=True, text=True, timeout=30).stdout.strip()
+    return ux_shots.parse_widths(raw)
+
+
+def _gather_visual(root: Path, task_id: str, task_data: dict) -> dict:
+    """T-4214: the T-4202 evidence a render criterion is judged on. Every state of the task's
+    Visual Verification checklist at every configured width ({state, width, path, sha256}; sha256
+    empty when the shot is missing), and the checklist's own problems (`visual_checklist.check`:
+    widths, blank or invalid cells, unnoted non-ok cells, fewer than 3 shots per state)."""
+    try:
+        widths = _ux_widths(root)
+    except Exception as e:  # noqa: BLE001 - an unreadable width config refuses the evidence
+        return {"widths": [], "shots": [], "problems": [f"UX_SHOT_WIDTHS unreadable: {e}"]}
+    header, rows = visual_checklist.parse_table(
+        visual_checklist.section_body(task_data["text"]) or "")
+    states = list(dict.fromkeys(cells[0] for cells in rows if cells and cells[0]))
+    shots = []
+    for st in states:
+        for w in widths:
+            f = root / VISUAL_DIR / task_id / f"{st}@{w}.png"
+            shots.append({"state": st, "width": w, "path": f"{VISUAL_DIR}/{task_id}/{st}@{w}.png",
+                          "sha256": vl._hash_path(f) if f.is_file() else ""})
+    problems = visual_checklist.check(task_data["path"], root, task_id, widths)
+    return {"widths": widths, "shots": shots, "problems": problems}
+
+
 def _gather_evidence(root: Path, task_id: str, task_data: dict, criteria: list[dict],
                      capture: Capturer, *, dry_run: bool) -> dict:
     """{'needed', 'pages', 'shots', 'error', 'captures', 'partial'}.
@@ -378,6 +423,7 @@ def _gather_evidence(root: Path, task_id: str, task_data: dict, criteria: list[d
     if not needed:
         return ev
     ev["pages"] = _pages_for(root, task_id, task_data["text"], [c for c in criteria if c["render"]])
+    ev["visual"] = _gather_visual(root, task_id, task_data)
     if dry_run:
         return ev
     shoot = ev["pages"][:MAX_CAPTURE_PAGES]
@@ -495,6 +541,20 @@ def _build_brief(task_id: str, criteria: list[dict], *, rung: int = 1, rung_reas
             ]
         if ev["pages"]:
             lines.append("Pages: " + ", ".join(f"`{p}`" for p in ev["pages"]))
+        vis = ev.get("visual") or {}
+        if vis:
+            # T-4214: the T-4202 evidence — every checklist state at every width, and the checklist.
+            lines += ["", "### Visual evidence (every checklist state at every configured width)", ""]
+            shots = vis.get("shots") or []
+            lines += [f"- `{s['path']}`" if s["sha256"] else f"- MISSING: `{s['path']}`" for s in shots]
+            if vis.get("problems") or any(not s["sha256"] for s in shots):
+                why = "; ".join(vis.get("problems") or ["a screenshot is missing"])
+                lines.append(f"**The Visual Verification evidence does NOT pass: {why}.** You MUST NOT "
+                             "return green for a render criterion; return `not-evaluated` naming these.")
+            else:
+                lines.append("Read EVERY screenshot above and judge it against the task's Visual "
+                             "Verification checklist, control by control, at every width (visible, "
+                             "reachable, unclipped, no overlap). Cite EVERY screenshot as --evidence.")
         lines.append("")
 
     if kind in vl.HARNESS_KINDS:
@@ -883,7 +943,7 @@ def judge(task_id: str, root: Path, *, criterion_n: int | None = None, dry_run: 
                     "brief_sha256": vl.brief_digest(briefs[s["seat"]])} for s in seats],
             required_vendors=required,
             pages={str(c["ac_index"]): evidence["pages"] for c in judged if c["render"]},
-            captures=evidence["captures"],
+            captures=evidence["captures"], visual=evidence.get("visual"),
             inputs=imp["inputs"], reason=reason + (f"; {note}" if note else ""),
             degraded=degraded, rung_due=due, revision=revision, root=root)
     except Exception as e:  # noqa: BLE001
