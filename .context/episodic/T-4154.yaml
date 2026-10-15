@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4154: T-4142 leg 2: write capability cards for AEF's 27 modules (18 declared + 9 auto-discovered), agent-drafted from the code, to the leg-1 bar
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T17:01:53Z
+# ============================================================================
+
+task_id: T-4154
+task_name: "T-4142 leg 2: write capability cards for AEF's 27 modules (18 declared + 9 auto-discovered), agent-drafted from the code, to the leg-1 bar"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-13T14:52:44Z
+completed: 2026-10-15T17:01:25Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-10-13T21:40:18+02:00
+last_commit: 2026-10-13T21:40:18+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capability cards for all 27 AEF subsystems (18 declared + 9 auto-discovered declared)
+
+# Key outcomes
+outcomes:
+  - 'The 9 auto-discovered subsystems (named by component cards but absent from `.fabric/subsystems.yaml`: testing, orchestrator-arc, capture, upgrade, task-system, learnings-bus, hook-enforcement, cli-entrypoints, agents) are declared with a name and purpose drafted from their components'
+  - 'All 27 subsystems carry a `capability_card:` drafted from their code; `cardlint.py --strict` (no uncarded subsystem, no failing card) passes on the real file'
+  - 'A bats test pins both invariants (every subsystem a component card names is declared; strict lint passes on the real registry) and fails on HEAD'
+  - 'Routing unchanged: no `paths:` added to the newly declared entries, existing T-4153 lint suite still green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-13 — overlapping auto-discovered labels (testing, task-system, hook-enforcement, cli-entrypoints, agents)'
+    chose: 'declare each as its own entry with a card whose `limits:` names the overlap and the subsystem its components should migrate to; no `paths:` added.'
+    rationale: 'the task asks for a name + purpose for all 9; relabelling component cards is a separate change with routing/fabric-graph effects, out of this task''s scope.'
+    alternatives_rejected: ['re-pointing those component cards to the canonical ids now (wider write-set, changes counts other tests/pages read); marking them `retired` (the code is live).']
+  - decision: '2026-10-13 — orchestrator-arc ownership'
+    chose: 'owner = termlink (/opt/termlink, crates/termlink-hub); limits say reuse through TermLink.'
+    rationale: 'the 6 components are Rust files in the TermLink repo; AEF only holds the cards for dependency tracing (gap homing, T-1333).'
+  - decision: '2026-10-13 — placeholder rule vs `T-XXX`'
+    chose: 'write `<task-id>` in entry points; the leg-1 lint refuses `XXX` as placeholder text, which caught 3 drafts.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.fabric/subsystems.yaml'
+  - '.tasks/active/T-4154-t-4142-leg-2-write-capability-cards-for-.md'
+  - 'tests/unit/t4154_capability_cards_complete.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-13T21:40:18'
+    action: 'T-4154: capability cards for all 27 AEF subsystems (18 declared + 9 auto-discovered declared)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3008 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3008
+  commits: 2
+  files_changed: 4
+  lines_added: 1059
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4154-t-4142-leg-2-write-capability-cards-for-.md
+generated_by: context-agent-hybrid
