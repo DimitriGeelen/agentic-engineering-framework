@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4171: Budget warn (75%) and urgent (85%) never reach the operator: at urgent the agent must tell the operator a restart is coming and propose a planned handover at a natural break (dimitri-mint-dev P-009, their T-106)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T17:13:09Z
+# ============================================================================
+
+task_id: T-4171
+task_name: "Budget warn (75%) and urgent (85%) never reach the operator: at urgent the agent must tell the operator a restart is coming and propose a planned handover at a natural break (dimitri-mint-dev P-009, their T-106)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-13T16:38:48Z
+completed: 2026-10-15T17:08:56Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-10-13T21:47:13+02:00
+last_commit: 2026-10-13T21:47:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  budget warn/urgent reach the operator — once-per-session hook systemMessage + agent additionalContext (restart coming, propose planned handover), urgent ntfy push. vendored copy of agents/context/budget-gate.sh
+
+# Key outcomes
+outcomes:
+  - 'On the first gate call of a Claude session at `urgent`, budget-gate.sh prints hook JSON on stdout with a `systemMessage` (operator-visible) saying a restart is coming at the cap''s 95% band, and `hookSpecificOutput.additionalContext` (agent-visible) requiring the agent to tell the operator and propose a planned handover at the next natural break — on both the fast (cached) and slow (transcript) paths'
+  - 'On the first call at `warn`, the same channel carries a lighter operator message (gauge %, restart at 95%) and agent context'
+  - 'Announcement is once per Claude session per band (marker file keyed by claude session id); later calls in the same band emit no stdout JSON; a different session id is announced again'
+  - 'At urgent, one `fw_notify` push is sent (once per session), with its stdout/stderr kept off the hook''s stdout'
+  - 'Exit codes unchanged (warn/urgent exit 0; critical still exit 2); new bats file fails on HEAD and passes after; existing budget-gate suites gain no new reds (tests/integration/budget_gate.bats "T-2403: signal folds .next-directive.yaml" is red on HEAD too — pre-existing, not this change)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-13 — channel for the operator-visible message'
+    chose: 'hook JSON on stdout (`systemMessage` + `additionalContext`), once per Claude session per band, keyed in `.context/working/.budget-band-announced`; plus one `fw_notify` push at urgent (no-op unless ntfy is enabled).'
+    rationale: '`systemMessage` is the harness''s own user-visible channel and needs no agent cooperation; `additionalContext` puts the "tell the operator + propose a planned handover at a natural break" instruction where the model reads it. Once-per-band keeps it from becoming per-call noise that gets tuned out.'
+    alternatives_rejected: ['exit 2 at urgent (would block work — that is T-3994''s proposed gate, a governance change, not this task); repeating the JSON every call (noise); a status-line gauge (the description says "consider" — the status line is user-level Claude config this repo does not own; left to T-3994).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/budget-gate.sh'
+  - 'agents/context/budget-gate.sh'
+  - 'docs/context-compaction.md'
+  - '.gitignore'
+  - '.tasks/active/T-4171-budget-warn-75-and-urgent-85-never-reach.md'
+  - 'tests/unit/t4171_budget_band_operator_visible.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-13T21:47:13'
+    action: 'T-4171: budget warn/urgent reach the operator — once-per-session hook systemMessage + agent additionalContext (restart coming, propose planned handover), urgent ntfy push'
+  - time: '2026-10-13T21:47:19'
+    action: 'T-4171: vendored copy of agents/context/budget-gate.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 2910 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2910
+  commits: 2
+  files_changed: 6
+  lines_added: 258
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4171-budget-warn-75-and-urgent-85-never-reach.md
+generated_by: context-agent-hybrid

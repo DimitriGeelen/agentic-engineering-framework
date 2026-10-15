@@ -10,12 +10,12 @@ description: >
   warning) and a required proposal for a planned handover at a natural break; consider
   surfacing the gauge in the status line.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [C-007]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T16:38:48Z
-last_update: 2026-10-13T19:47:19Z
-date_finished:
+last_update: 2026-10-15T17:08:56Z
+date_finished: 2026-10-15T17:08:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -83,6 +83,23 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-14T17:01:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
@@ -389,3 +406,25 @@ bin/fw vendor self --check
 
 ### 2026-10-13T19:23:09Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c0946d19
+- **Timestamp:** 2026-10-15T17:12:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#5 (Agent)** — Exit codes unchanged (warn/urgent exit 0; critical still exit 2); new bats file fails on HEAD and passes after; existing budget-gate suites gain no new reds (tests/integration/budget_gate.bats "T-2403
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/integration/budget_gate.bats in: Exit codes unchanged (warn/urgent exit 0; critical still exit 2); new bats file fails on HEAD and passes after; existing budget-gate suites gain no ne`
+
+**Verification-level findings:**
+
+  1. **mock-only-integration** (partial, heuristic) @ AC vs Verification cross-check
+     - evidence: `timeout 300 bats tests/unit/t4171_budget_band_operator_visible.bats > /tmp/.t4171.out 2>&1 && ! grep -q "^not ok" /tmp/.t4171.out`
+
+### 2026-10-15T17:08:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
