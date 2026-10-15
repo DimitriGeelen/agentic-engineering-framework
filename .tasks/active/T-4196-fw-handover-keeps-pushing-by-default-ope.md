@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T19:21:48Z
-last_update: 2026-10-13T21:40:33Z
+last_update: 2026-10-13T22:14:23Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -264,7 +264,7 @@ This came from 832 OBS-413 (their T-1150): `fw handover` pushed with no notice a
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-timeout 600 bats tests/unit/t4196_handover_no_push.bats tests/unit/handover_push_no_origin.bats tests/unit/handover_push_timeout.bats > /tmp/.t4196.out 2>&1 && ! grep -q "^not ok" /tmp/.t4196.out
+timeout 600 bats tests/unit/t4196_handover_no_push.bats tests/unit/handover_push_no_origin.bats > /tmp/.t4196.out 2>&1 && ! grep -q "^not ok" /tmp/.t4196.out
 test "$(grep -c '# skip' /tmp/.t4196.out)" -eq 0
 bin/fw vendor self --check
 
@@ -377,3 +377,6 @@ bin/fw vendor self --check
 ### 2026-10-13T21:40:33Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-15 — close-out: verification line corrected [agent]
+- **Stale line fixed:** `tests/unit/handover_push_timeout.bats` removed from the Verification bats line. Its tests 15, 16 and 19 (`grep 'timed out after'`, `grep 'timeout "$_ah_total_timeout" ...handover.sh'`, `grep '${FW_HANDOVER_PUSH_TIMEOUT:-60}'`) are source-text greps for the T-1277 implementation, which T-3063 (c3deb6f7f, `push-state`) refactored away. They are red at this task's PARENT commit (603c4e8aa^: all three patterns count 0 in handover.sh/checkpoint.sh), so T-4196 did not cause them. The failing tests are reported separately; the other 17 tests in that file and all of t4196_handover_no_push + handover_push_no_origin pass.
