@@ -71,7 +71,15 @@ STAGED=$(git -C "$PROJECT_ROOT" diff --cached --name-only 2>/dev/null)
 
 # Filter for visual files
 VISUAL_FILES=$(echo "$STAGED" | grep -E '\.(css|html)$' || true)
-[ -n "$VISUAL_FILES" ] || exit 0
+
+# T-4213: render-surface files (RENDER_SURFACE_PATTERNS, lib/render_surface.sh) need
+# the checklist gate too, even when no css/html is staged (e.g. web/blueprints/*.py).
+source "$FRAMEWORK_ROOT/lib/render_surface.sh"
+RENDER_STAGED=""
+while IFS= read -r staged_path; do
+    [ -n "$staged_path" ] && _render_surface_path_matches "$staged_path" && RENDER_STAGED="$RENDER_STAGED$staged_path"$'\n'
+done <<< "$STAGED"
+[ -n "$VISUAL_FILES" ] || [ -n "$RENDER_STAGED" ] || exit 0
 
 # Find active task
 FOCUS_FILE="$PROJECT_ROOT/.context/working/focus.yaml"
@@ -87,6 +95,8 @@ TASK_ID=$(grep -E '^(current_task|task_id):' "$FOCUS_FILE" 2>/dev/null | head -1
 TASK_FILE=$(find "$PROJECT_ROOT/.tasks/active" "$PROJECT_ROOT/.tasks/completed" -maxdepth 1 -name "${TASK_ID}-*.md" 2>/dev/null | head -1)
 [ -f "$TASK_FILE" ] || exit 0
 
+# Checks 1-2 (css/html commits only; a render-only commit goes straight to check 3).
+if [ -n "$VISUAL_FILES" ]; then
 # Check 1: `## Visual Verification` section present?
 if ! grep -qE '^## Visual Verification' "$TASK_FILE"; then
   cat >&2 <<EOF
@@ -146,6 +156,40 @@ See CLAUDE.md > "Visual Verification for UI Changes".
 Genuine exception: 'git commit --no-verify' (logged).
 EOF
   exit 2
+fi
+fi
+
+# Check 3 (T-4213): a render-surface commit needs the checklist, and screenshots at
+# every configured width for each listed state. Validator: visual_checklist.py.
+if [ -n "$RENDER_STAGED" ]; then
+  WIDTHS=$(source "$FRAMEWORK_ROOT/lib/config.sh" && PROJECT_ROOT="$PROJECT_ROOT" fw_config UX_SHOT_WIDTHS 2>/dev/null)
+  CHECK_OUT=$(python3 -I "$FRAMEWORK_ROOT/agents/context/visual_checklist.py" \
+      --task-file "$TASK_FILE" --root "$PROJECT_ROOT" --task "$TASK_ID" --widths "$WIDTHS" 2>&1)
+  CHECK_RC=$?
+  if [ "$CHECK_RC" -ne 0 ]; then
+    cat >&2 <<EOF
+BLOCKED: render-surface commit fails the Visual Verification checklist (T-4213).
+
+Render-surface files staged:
+$(echo "$RENDER_STAGED" | sed '/^$/d; s/^/  /')
+
+Active task: $TASK_ID
+Task file:   $TASK_FILE
+
+Problems:
+$CHECK_OUT
+
+Each listed state needs screenshots at every width in UX_SHOT_WIDTHS (default
+1024,1440,1920), taken with \`fw ux shots $TASK_ID <state>=<URL>\`, and a
+\`## Visual Verification\` checklist table
+  | state | control | 1024 | 1440 | 1920 | note |
+where each width cell is ok / clipped / hidden / overlap / unreachable, and any
+non-ok cell has a note. Read every shot, control by control, before committing.
+
+Genuine exception: 'git commit --no-verify' (logged).
+EOF
+    exit 2
+  fi
 fi
 
 exit 0

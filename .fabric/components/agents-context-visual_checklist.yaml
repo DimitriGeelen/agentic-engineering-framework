@@ -1,0 +1,21 @@
+id: agents/context/visual_checklist.py
+name: visual_checklist
+type: script
+subsystem: context-fabric
+location: agents/context/visual_checklist.py
+tags: []
+
+purpose: "Validate a task's `## Visual Verification` checklist for a render-surface commit (T-4213)."
+purpose_source: docstring
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-15
+created_by: unknown

@@ -1,10 +1,16 @@
 ---
 id: T-4213
-name: "T-4202 leg B: ## Visual Verification carries a per-control reachability checklist at every width; check-visual-verification enforces widths and checklist"
+name: "T-4202 leg B: ## Visual Verification carries a per-control reachability checklist
+  at every width; check-visual-verification enforces widths and checklist"
 description: >
-  T-4202 GO. Template section + agents/context/check-visual-verification.sh: a render-surface task must have screenshots at >=3 widths per touched state and a filled checklist (no cell left blank; any non-ok cell named). Convention (T-4202 GO): screenshots at .context/visual/<task>/<state>@<width>.png, widths 1024/1440/1920 (configurable list, at least 3); ## Visual Verification holds a checklist table: state | control | 1024 | 1440 | 1920, each cell one of ok / clipped / hidden / overlap / unreachable.
+  T-4202 GO. Template section + agents/context/check-visual-verification.sh: a render-surface
+  task must have screenshots at >=3 widths per touched state and a filled checklist
+  (no cell left blank; any non-ok cell named). Convention (T-4202 GO): screenshots
+  at .context/visual/<task>/<state>@<width>.png, widths 1024/1440/1920 (configurable
+  list, at least 3); ## Visual Verification holds a checklist table: state | control
+  | 1024 | 1440 | 1920, each cell one of ok / clipped / hidden / overlap / unreachable.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-15T17:18:48Z
-last_update: 2026-10-15T17:18:48Z
-date_finished: null
+last_update: 2026-10-15T17:39:27Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-15T17:30:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-15T17:31:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4213: T-4202 leg B: ## Visual Verification carries a per-control reachability checklist at every width; check-visual-verification enforces widths and checklist
@@ -62,8 +96,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Task template carries the `## Visual Verification` checklist shape (`| state | control | 1024 | 1440 | 1920 |`, cells ok/clipped/hidden/overlap/unreachable) for render-touching build tasks, as an inert example that does not satisfy the gate
+- [x] The check-visual-verification gate refuses a render-surface commit when a listed state has fewer than 3 widths of screenshots in `.context/visual/<task>/<state>@<width>.png`
+- [x] The gate refuses a render-surface commit when a checklist cell is blank or not one of ok/clipped/hidden/overlap/unreachable
+- [x] The gate refuses a non-ok cell that has no note
+- [x] The gate's width minimum and width columns come from the `UX_SHOT_WIDTHS` key (the same validator as `fw ux shots`)
+- [x] Non-render commits and the existing css/html checks behave exactly as before (existing behaviour preserved)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +135,10 @@ date_finished: null
 -->
 
 ## Verification
+
+bats tests/unit/t4213_visual_checklist.bats
+bats tests/unit/t4212_ux_shots.bats
+bats tests/lint/config-registry-parity.bats tests/lint/help-router-parity.bats
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -307,6 +349,15 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-15 — Gate trigger: render-surface files, not css/html alone
+- **Chose:** checks 1–2 (existing) still fire on staged css/html; the new checklist check fires on any staged file matching `RENDER_SURFACE_PATTERNS` (lib/render_surface.sh), so `web/blueprints/*.py` commits are gated too.
+- **Why:** the render-surface predicate is the framework's single source for "what a human sees" (P-013). Gating only css/html would let a blueprint change that alters the page through no css/html pass.
+- **Rejected:** widening the existing css/html trigger (changes behaviour for non-render css/html, which the task forbids).
+
+### 2026-10-15 — Checklist widths must equal UX_SHOT_WIDTHS
+- **Chose:** the table's width columns must equal the configured set, and the screenshot minimum is 3 widths per listed state.
+- **Why:** a checklist that reads 1024/1440/1920 while the project's configured widths are different does not cover what the project says it renders at.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -323,3 +374,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4213-t-4202-leg-b--visual-verification-carrie.md
 - **Context:** Initial task creation
+
+### 2026-10-15T17:39:27Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
