@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4200: Two new pre-push reds blocking bleeding-edge: t3837 (fw doctor no longer prints the termlink version line when every termlink call fails — regression from a 2026-10-13 commit) and learning_application_birth test 4 (live-corpus anchor: newest learning PL-018 was appended by TermLink's fleet doctor with an application key)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T19:43:03Z
+# ============================================================================
+
+task_id: T-4200
+task_name: "Two new pre-push reds blocking bleeding-edge: t3837 (fw doctor no longer prints the termlink version line when every termlink call fails — regression from a 2026-10-13 commit) and learning_application_birth test 4 (live-corpus anchor: newest learning PL-018 was appended by TermLink's fleet doctor with an application key)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-14T06:28:38Z
+completed: 2026-10-15T19:42:23Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-10-14T08:28:59+02:00
+last_commit: 2026-10-14T08:51:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — two new pre-push reds (t3837 doctor regression; learning test anchored to the live corpus). fw doctor died at the T-4166 index-reconcile capture (two-line x=$(cmd)/rc=$? under set -e); fix it + 2 older instances, widen the T-3837 guard to the two-line form; learning birth test pinned to the generator via fixture, not the live corpus. file follow-up — TermLink fleet doctor appends PL-* learnings (with host IP) into AEF project memory. vendored copies of bin/fw, lib/bvp.sh, lib/push-resolve.sh. record pre/post-fix evidence
+
+# Key outcomes
+outcomes:
+  - 'Cause of the t3837 test-1 regression bisected to a specific commit and fixed at the cause (test unchanged); `bats tests/unit/t3837_doctor_errexit_captures.bats` green'
+  - 'learning_application_birth.bats test 4 pins the generator (learning.sh run against a fixture), not the live corpus''s last entry; suite green, and the new leg goes red when learning.sh emits an application key'
+  - 'External-tool-appends-PL-learnings issue filed separately (concern or task) with the evidence (PL-018, fleet doctor, host IP) — T-4201'
+  - 'The T-3837 static guard also catches the two-line `x=$(cmd)` / `rc=$?` form (red on HEAD with 3 offenders, green after), with a planted-offender control leg'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'record pre/post-fix evidence'
+    source: git-mined
+  - description: 'fw doctor died at the T-4166 index-reconcile capture (two-line x=$(cmd)/rc=$? under set -e); fix it + 2 older instances, widen the T-3837 guard to the two-line form; learning birth test pinned to the generator via fixture, not the live corpus'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-14 — scope of the errexit fix'
+    chose: 'fix all three two-line captures (bin/fw index-reconcile, lib/bvp.sh, lib/push-resolve.sh) and widen the static guard.'
+    rationale: 'the regression was the two-line spelling of the class T-3837 already guards; a guard that tolerates it would let the next one ship the same way, and the widened guard is red until the two older instances are fixed too. Same one-line fix shape as T-3837 (`x=$(cmd) && rc=0 || rc=$?`).'
+    alternatives_rejected: ['fixing only bin/fw (leaves the guard blind); `set +e` around the block (wider than needed).']
+  - decision: '2026-10-14 — how to pin learning test 4'
+    chose: 'run `do_add_learning` against a fixture corpus with FRAMEWORK_ROOT pointed at the fixture (no bus publish).'
+    alternatives_rejected: ['"newest entry whose context is ''Added via context agent''" in the live file — still live-corpus, and empty when no learning was added recently.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/bvp.sh'
+  - '.agentic-framework/lib/push-resolve.sh'
+  - 'bin/fw'
+  - 'lib/bvp.sh'
+  - 'lib/push-resolve.sh'
+  - '.tasks/active/T-4200-two-new-pre-push-reds-blocking-bleeding-.md'
+  - '.tasks/active/T-4201-external-tool-termlink-fleet-doctor-t-10.md'
+  - 'tests/unit/learning_application_birth.bats'
+  - 'tests/unit/t3837_doctor_errexit_captures.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-14T08:28:59'
+    action: 'T-4200: file — two new pre-push reds (t3837 doctor regression; learning test anchored to the live corpus)'
+  - time: '2026-10-14T08:35:16'
+    action: 'T-4200: fw doctor died at the T-4166 index-reconcile capture (two-line x=$(cmd)/rc=$? under set -e); fix it + 2 older instances, widen the T-3837 guard to the two-line form; learning birth test pinned to the generator via fixture, not the live corpus'
+  - time: '2026-10-14T08:35:31'
+    action: 'T-4200: file follow-up — TermLink fleet doctor appends PL-* learnings (with host IP) into AEF project memory'
+  - time: '2026-10-14T08:35:43'
+    action: 'T-4200: vendored copies of bin/fw, lib/bvp.sh, lib/push-resolve.sh'
+  - time: '2026-10-14T08:51:19'
+    action: 'T-4200: record pre/post-fix evidence'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 5 commit(s), 2233 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2233
+  commits: 5
+  files_changed: 10
+  lines_added: 606
+  lines_removed: 31
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4200-two-new-pre-push-reds-blocking-bleeding-.md
+generated_by: context-agent-hybrid

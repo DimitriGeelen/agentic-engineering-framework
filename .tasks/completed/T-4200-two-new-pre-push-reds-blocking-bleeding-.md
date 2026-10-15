@@ -18,12 +18,12 @@ description: >
   written by learning.sh, or a fixture) and file separately that an external tool
   appends PL-* learnings into AEF's project memory (with an IP).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/bvp.sh, lib/push-resolve.sh, tests/unit/learning_application_birth.bats, tests/unit/t3837_doctor_errexit_captures.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -52,8 +52,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-14T06:28:38Z
-last_update: 2026-10-14T06:51:19Z
-date_finished:
+last_update: 2026-10-15T19:42:23Z
+date_finished: 2026-10-15T19:42:23Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -397,3 +397,15 @@ bin/fw vendor self --check
 - On HEAD 7c0635ab7: t3837 test 1 `not ok` — doctor output ends at "No .claude/settings.json" (errexit at `_ir_out=$(…index_reconcile.py…)`; probe rc=3 "bad revision 'HEAD'" in an unborn repo). New two-line guard leg `not ok` with 3 offenders: bin/fw:3536, lib/bvp.sh:2317, lib/push-resolve.sh:87.
 - After fix (4ef74f53b): t3837 4/4 ok, learning_application_birth 6/6 ok; new test 4 goes `not ok` with an `application:` print planted in learning.sh (restored after). t4166_reconcile_index 7/7, t3550_killed_push_resolution 16/16, t2331_driver_propose 9/9.
 - `fw audit --section structure`: only FAIL is the unit-suite ratchet listing exactly these two reds from the 01:03Z nightly run (pre-fix); clears on the next run. `fw test lint` rc=1 from files not touched here (bvp.sh SC warnings unchanged 12→12).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ffb1caed
+- **Timestamp:** 2026-10-15T19:42:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-15T19:42:23Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
