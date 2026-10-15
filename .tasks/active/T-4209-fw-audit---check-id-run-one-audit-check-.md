@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-14T23:10:04Z
-last_update: 2026-10-15T16:36:12Z
+last_update: 2026-10-15T16:46:52Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -363,6 +363,11 @@ bin/fw vendor self --check
      legacy tasks lacking this section. -->
 
 ## Updates
+
+### 2026-10-15 — measurements (T-4209 build)
+- `fw audit --check fabric-coverage` on this repo: 13.7 s (≈1 s startup + ≈12 s the check itself: 1459 cards, expander + 3 python passes). Cheap checks: `--check stale-drafts` 0.95 s, `--check fabric-underpopulated` 3.8 s.
+- `fw audit --section structure` same repo, same hour: 7 min 36 s (host loaded by parallel workers; 832's figure is ~54 s on their tree). Fail: 0 after vendoring. `fw test lint` clean; 102 audit bats green.
+- First structure run before vendor sync correctly FAILed self-vendor-drift + invariant-suite for the then-unvendored/untracked files.
 
 ### 2026-10-14T23:10:04Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
