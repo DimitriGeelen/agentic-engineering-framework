@@ -10910,8 +10910,17 @@ PYPREDICT
                 _lint_fail=0
                 _lint_pass=0
                 _lint_warn=0
+                _lint_skip=0
                 for f in "${_lint_files[@]}"; do
                     _rel="${f#"$FRAMEWORK_ROOT"/}"
+                    # A .sh name with a non-shell shebang (python adapters such as
+                    # agents/sessions/*/list.sh) is not shell: ShellCheck can only
+                    # refuse it (SC1071), which reads as a lint failure of ours.
+                    _shebang=$(head -n 1 "$f" 2>/dev/null)
+                    case "$_shebang" in
+                        '#!'*python*|'#!'*node*|'#!'*perl*|'#!'*ruby*)
+                            _lint_skip=$((_lint_skip + 1)); continue ;;
+                    esac
                     if _sc_output=$(shellcheck -S warning "$f" 2>&1); then
                         _lint_pass=$((_lint_pass + 1))
                     else
@@ -10928,7 +10937,7 @@ PYPREDICT
                     fi
                 done
                 echo ""
-                echo -e "${BOLD}Lint:${NC} ${_lint_pass} pass, ${_lint_warn} warn, ${_lint_fail} fail (${#_lint_files[@]} files)"
+                echo -e "${BOLD}Lint:${NC} ${_lint_pass} pass, ${_lint_warn} warn, ${_lint_fail} fail, ${_lint_skip} skipped non-shell shebang (${#_lint_files[@]} files)"
                 [ "$_lint_fail" -gt 0 ] && _test_exit=1
 
                 # T-3217: a skipped bats test emits `ok N ... # skip`, which the
