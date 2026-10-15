@@ -163,6 +163,11 @@ def pid_alive(pid) -> bool:
     try:
         os.kill(pid, 0)
         return True
+    except PermissionError:
+        # T-4216 (055 T-509): EPERM means the process EXISTS under another user.
+        # Reading it as dead let a desktop-user session start a second receiver
+        # beside root's and rewrite the shared token.
+        return True
     except OSError:
         return False
 
