@@ -18,12 +18,12 @@ description: >
   to it still carry armed entries, so the next ordinary commit reverts — decide whether
   v1.8.10 needs this before release.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/bvp.sh, lib/push-resolve.sh, lib/upgrade.sh, tests/unit/learning_application_birth.bats, tests/unit/t3837_doctor_errexit_captures.bats]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -52,8 +52,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T15:50:09Z
-last_update: 2026-10-13T16:42:15Z
-date_finished:
+last_update: 2026-10-15T17:03:45Z
+date_finished: 2026-10-15T17:03:45Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -379,3 +379,15 @@ bin/fw vendor self --check
 
 ### 2026-10-13T16:42:15Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-4629a8d1
+- **Timestamp:** 2026-10-15T17:03:53Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-15T17:03:45Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

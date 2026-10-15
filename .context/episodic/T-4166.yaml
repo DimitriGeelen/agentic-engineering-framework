@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4166: G-114 armed entries survive the fix: one-time reconcile on upgrade and in doctor — reset to HEAD (index only) any staged .tasks/** or .context/episodic/** entry whose blob is an older committed version of that path, and any staged deletion of an episodic present in HEAD (ring20: 4 operator GOs armed for silent revert after T-4081 was vendored)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T17:04:08Z
+# ============================================================================
+
+task_id: T-4166
+task_name: "G-114 armed entries survive the fix: one-time reconcile on upgrade and in doctor — reset to HEAD (index only) any staged .tasks/** or .context/episodic/** entry whose blob is an older committed version of that path, and any staged deletion of an episodic present in HEAD (ring20: 4 operator GOs armed for silent revert after T-4081 was vendored)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-13T15:50:09Z
+completed: 2026-10-15T17:03:45Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-10-13T19:10:12+02:00
+last_commit: 2026-10-13T19:10:12+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  upgrade reconcile must never abort the upgrade (set -e guard); task ACs + RCA
+
+# Key outcomes
+outcomes:
+  - 'lib/index_reconcile.py detects armed staged entries (.tasks/**, .context/episodic/**: staged blob equals an earlier committed blob of the path or its active<->completed twin; staged deletion of an episodic present in HEAD) and, with apply, resets ONLY those index entries to HEAD, never the worktree'
+  - '`fw git reconcile-index [--dry-run|--apply]` exists (dry-run default); `fw doctor` and `fw audit` WARN with paths + fix command; `fw upgrade` applies the reconcile and prints the reset list'
+  - 'tests/unit/t4166_reconcile_index.bats (real git temp repos) covers: armed decision + rename + episodic detected, apply resets, following commit keeps decision, user''s genuinely new staged edit untouched, worktree hashes unchanged, staged episodic deletion restored'
+  - 'upgrade_fresh_machine_simulation.bats shows no new failure vs pristine HEAD (6 live-upgrade tests are red at pristine HEAD fa88bbc2c too: exit 3 after step 10, unrelated), bats lint and structure audit introduce nothing; vendored copies synced'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4166-g-114-armed-entries-survive-the-fix-one-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-13T19:10:12'
+    action: 'T-4166: upgrade reconcile must never abort the upgrade (set -e guard); task ACs + RCA'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2953 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2953
+  commits: 1
+  files_changed: 3
+  lines_added: 68
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4166-g-114-armed-entries-survive-the-fix-one-.md
+generated_by: context-agent-hybrid
