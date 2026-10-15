@@ -14,12 +14,12 @@ description: >
   800K would reach the model's limit before the budget gate warns; the model-based
   follow-up inception addresses that.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [C-007, agents/context/checkpoint.sh, bin/fw, lib/config.sh, lib/context_tokens.py, tests/playwright/test_api_config.py, tests/unit/lib_config.bats, web/blueprints/config.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -48,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T13:43:05Z
-last_update: 2026-10-13T14:03:33Z
-date_finished:
+last_update: 2026-10-15T16:48:42Z
+date_finished: 2026-10-15T16:48:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -85,6 +85,23 @@ bvp_scores_proposed:
       F2: 0
     rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-14T13:46:04Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 3
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=3 (body:portability-abstraction); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
@@ -137,6 +154,13 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+
+- [ ] [REVIEW] Watchtower /config shows the new CONTEXT_WINDOW default (web/blueprints/config.py touched; needs a Watchtower restart to be live)
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower restart && bin/fw watchtower url`
+  2. Open `<url>/config` and find the CONTEXT_WINDOW row
+  **Expected:** default column reads 800000; this project's configured value 975000 still shown as the effective value; layout unchanged
+  **If not:** note what the row shows and whether the server was restarted
 
 ## Verification
 
@@ -347,6 +371,13 @@ bin/fw vendor self --check
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+**Rationale:** Operator ruled 2026-10-13 that the registry default rises to 800,000; every code fallback, doc, template and default-pinning test now agrees, and projects that set their own value (this one: 975,000) are unchanged. Only the Watchtower /config default string needs a visual confirmation after a restart.
+**Evidence:**
+- All five Verification lines pass (registry line, budget-gate/checkpoint fallbacks, BASH_TIMEOUT untouched, config-registry-parity bats, vendor self --check)
+- Commit 920303ba0 changes registry, fallbacks, web/blueprints/config.py, CLAUDE.md and consumer template together
+- Watchtower restart still pending (web/ touched) — covered by the Human AC steps
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -382,3 +413,15 @@ bin/fw vendor self --check
 - **Run:** 13 files, 129 tests: 128 ok, 0 skip, 1 not ok — `continuous_loop_critical_signal.bats` "T-2363 directive-fold: directive present" fails identically with HEAD's checkpoint.sh (pre-existing, unrelated; the test sets the window explicitly). `config-registry-parity.bats` 3/3 ok. `fw test lint` FAILs only in files this task did not touch.
 ### 2026-10-13T13:46:49Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-73d46a71
+- **Timestamp:** 2026-10-15T16:48:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-15T16:48:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

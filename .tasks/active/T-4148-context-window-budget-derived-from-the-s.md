@@ -66,6 +66,8 @@ bvp_scores_proposed:
 
 <!-- What problem are we exploring? For whom? Why now? -->
 
+Follow-up to T-4147, which raised the fixed CONTEXT_WINDOW registry default from 300,000 to 800,000 and deferred the model-based derivation of the window to this inception.
+
 ## Assumptions
 
 <!-- Key assumptions to test. Register with: fw assumption add "Statement" --task T-XXX -->
