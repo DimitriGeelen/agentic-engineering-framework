@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4153: T-4142 leg 1: capability-card schema on fabric subsystems + a lint that enforces the quality bar
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T17:00:36Z
+# ============================================================================
+
+task_id: T-4153
+task_name: "T-4142 leg 1: capability-card schema on fabric subsystems + a lint that enforces the quality bar"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-13T14:52:35Z
+completed: 2026-10-15T17:00:01Z
+duration_days: 2
+updates_count: 2
+first_commit: 2026-10-13T18:53:20+02:00
+last_commit: 2026-10-13T18:53:42+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  capability-card schema on fabric subsystems + fw fabric lint. vendor cardlint.py + fabric.sh
+
+# Key outcomes
+outcomes:
+  - '`.fabric/subsystems.yaml` entries accept a `capability_card:` block (capabilities, problem_solved, tags, entry_points, status, owner, limits); schema documented in the file header'
+  - '`fw fabric lint` refuses cards missing problem_solved/capabilities/tags, with placeholder text, or with a bad status (exit non-zero), and lists subsystems with no card'
+  - 'A bats test covers pass, each refusal class, placeholder text and uncarded-subsystem listing, and fails on HEAD'
+  - 'At least one real subsystem carries a card that passes the lint; `fw fabric lint` is wired to `fw fabric help`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-13 — Lint severity for uncarded subsystems'
+    chose: 'Invalid card = exit 1; subsystem without a card = listed, exit 0; `--strict` makes it exit 1.'
+    rationale: '17 of 18 subsystems have no card yet (cards are drafted in later legs); failing now would make the lint unusable in audit.'
+    alternatives_rejected: ['Always fail on uncarded (red on day one); a separate cards file (T-4142 says extend subsystems.yaml in place).']
+  - decision: '2026-10-13 — Placeholder detection'
+    chose: 'Regex on TODO/FIXME/TBD/XXX/placeholder/lorem ipsum and bare n/a/none/... values, per field.'
+    rationale: 'Same spirit as describe.is_placeholder_purpose, but cards are hand/agent-written free text, so a few more tokens.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/fabric/fabric.sh'
+  - '.agentic-framework/agents/fabric/lib/cardlint.py'
+  - 'agents/fabric/fabric.sh'
+  - 'agents/fabric/lib/cardlint.py'
+  - '.fabric/subsystems.yaml'
+  - '.tasks/active/T-4153-t-4142-leg-1-capability-card-schema-on-f.md'
+  - 'tests/unit/t4153_capability_card_lint.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-13T18:53:20'
+    action: 'T-4153: capability-card schema on fabric subsystems + fw fabric lint'
+  - time: '2026-10-13T18:53:42'
+    action: 'T-4153: vendor cardlint.py + fabric.sh'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3007 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3007
+  commits: 2
+  files_changed: 7
+  lines_added: 332
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4153-t-4142-leg-1-capability-card-schema-on-f.md
+generated_by: context-agent-hybrid
