@@ -1,0 +1,84 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3852: Reviewer judge panel: a seat that ends without a verdict for an availability reason (vendor usage limit, rate limit, outage, missing binary) should fall through to the next registry seat whose vendor is not yet on the panel, recording why, while still requiring the rung's distinct-vendor count; a seat that returned a non-green verdict is never skipped (ring20 T-2194, operator: 'standing approach')
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-14T23:41:33Z
+# ============================================================================
+
+task_id: T-3852
+task_name: "Reviewer judge panel: a seat that ends without a verdict for an availability reason (vendor usage limit, rate limit, outage, missing binary) should fall through to the next registry seat whose vendor is not yet on the panel, recording why, while still requiring the rung's distinct-vendor count; a seat that returned a non-green verdict is never skipped (ring20 T-2194, operator: 'standing approach')"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-05T07:11:30Z
+completed: 2026-10-14T23:39:47Z
+duration_days: 9
+updates_count: 4
+first_commit: 2026-10-14T08:11:21+02:00
+last_commit: 2026-10-15T00:15:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  second instance from ring20 — a crashed/quota-limited seat with 0 verdicts is not reassigned. reassign a review seat that ends with no ledger row (usage limit, crash, missing binary)
+
+# Key outcomes
+outcomes:
+  - 'A seat with a dispatch id and zero ledger rows is recorded as unavailable with a short reason read from its worker dir (exit status / usage limit / rate limit / no completion)'
+  - 'Reassignment re-runs a criterion with unavailable kinds excluded (same path as not-evaluated); the next registry seat fills the panel and a green panel completes'
+  - 'A seat that left any ledger row (amber/red/green/not-evaluated) is never marked unavailable and keeps the normal path (no reassignment)'
+  - 'When every kind is unavailable, the operator message names each unavailable seat and its reason; T-4010 exit code 3 holds when nothing recorded and no reassignment succeeded'
+  - 'Printed result (`_print_result`) and `res["reassigned"]` steps carry the `unavailable` {kind: reason} field'
+  - 'Regression tests (a)-(d) pass; pre-fix failure of (a) recorded in Updates; `bin/fw audit --section structure` clean (42 pass / 0 fail, 2026-10-15); `bin/fw test lint` has no finding in this change''s files (its 6 FAILs are pre-existing: .context/working/t4088 scratch scripts and vendored agents/sessions/*/list.sh)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - 'lib/reviewer/judge_cli.py'
+  - '.tasks/active/T-3852-reviewer-judge-panel-a-seat-that-ends-wi.md'
+  - 'tests/unit/t3852_unavailable_seat_test.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-14T08:11:21'
+    action: 'T-3852: second instance from ring20 — a crashed/quota-limited seat with 0 verdicts is not reassigned'
+  - time: '2026-10-15T00:15:32'
+    action: 'T-3852: reassign a review seat that ends with no ledger row (usage limit, crash, missing binary)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 13948 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 13948
+  commits: 2
+  files_changed: 4
+  lines_added: 409
+  lines_removed: 39
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3852-reviewer-judge-panel-a-seat-that-ends-wi.md
+generated_by: context-agent-hybrid

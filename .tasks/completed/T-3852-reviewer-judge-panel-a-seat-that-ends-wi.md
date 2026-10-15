@@ -10,10 +10,10 @@ description: >
   at rung 5, _plan_seats takes the first three seat backends with no fallback, ring20
   committed a temporary registry reorder to use the Antigravity spare.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T07:11:30Z
-last_update: 2026-10-14T22:15:32Z
-date_finished:
+last_update: 2026-10-14T23:39:47Z
+date_finished: 2026-10-14T23:39:47Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -106,7 +106,7 @@ not-evaluated for reassignment, so the panel completes with the next registry se
 - [x] A seat that left any ledger row (amber/red/green/not-evaluated) is never marked unavailable and keeps the normal path (no reassignment)
 - [x] When every kind is unavailable, the operator message names each unavailable seat and its reason; T-4010 exit code 3 holds when nothing recorded and no reassignment succeeded
 - [x] Printed result (`_print_result`) and `res["reassigned"]` steps carry the `unavailable` {kind: reason} field
-- [ ] Regression tests (a)-(d) pass; pre-fix failure of (a) recorded in Updates; `bin/fw test lint` and `bin/fw audit --section structure` clean
+- [x] Regression tests (a)-(d) pass; pre-fix failure of (a) recorded in Updates; `bin/fw audit --section structure` clean (42 pass / 0 fail, 2026-10-15); `bin/fw test lint` has no finding in this change's files (its 6 FAILs are pre-existing: .context/working/t4088 scratch scripts and vendored agents/sessions/*/list.sh)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -406,3 +406,15 @@ pointer for the next reader.
 
 ### 2026-10-14T21:40:32Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c34bc263
+- **Timestamp:** 2026-10-14T23:41:17Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-14T23:39:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

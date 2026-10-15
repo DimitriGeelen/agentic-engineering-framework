@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4203: Own-launcher check refuses a consumer's tracked bin/fw shim: wrap-up commits blocked at critical budget (055 field report item 7)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-14T22:24:35Z
+# ============================================================================
+
+task_id: T-4203
+task_name: "Own-launcher check refuses a consumer's tracked bin/fw shim: wrap-up commits blocked at critical budget (055 field report item 7)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-14T20:17:27Z
+completed: 2026-10-14T22:20:18Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-14T22:18:24+02:00
+last_commit: 2026-10-14T22:36:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  v1.8.11 field evidence (055 report) + file 055 findings T-4203/T-4204. accept a project's own tracked bin/fw shim as its launcher. vendor own-shim launcher rule into .agentic-framework
+
+# Key outcomes
+outcomes:
+  - 'Pre-fix refusal reproduced on HEAD and recorded in Updates: a project whose tracked `bin/fw` is a regular-file shim execing `.agentic-framework/bin/fw` has `bin/fw git commit -m x` refused by the shell allowance (`is_commit_checkpoint_command`) and by the budget classifier (`lib/cmd_classify.py`)'
+  - 'Rule implemented in BOTH `_fw_is_own_launcher` (safe-commands.sh) and `_Ctx` (cmd_classify.py): `PROJECT_ROOT/bin/fw` is own only when it is a regular file whose realpath lies under realpath(PROJECT_ROOT); a launcher token is own when its realpath equals that file (or the existing framework/vendored launcher paths)'
+  - 'Positive cases admitted in both: `bin/fw git commit` and `bin/fw handover --commit` with the project shim (regular file, and a symlink resolving inside the project to `.agentic-framework/bin/fw`) at critical budget (budget-gate exit 0) and null focus (hook admits)'
+  - 'Refusals kept in both: planted absolute launcher outside the project; shim symlink escaping the project; shim that is a directory; payload cwd elsewhere; no payload cwd; an earlier `cd` to a planted directory in the same command'
+  - 'New bats file `tests/unit/t4203_own_shim_launcher.bats` green; existing suites that reference the launcher predicates (t4125, t3814, t3221, t3245, t3454, t2919, t2923, t4150, prescribed-commands-are-allowed lint) still green'
+  - '`bin/fw test lint` and `bin/fw audit --section structure` introduce no new failure; `bin/fw vendor self --check` clean after `bin/fw vendor self`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-14 — the exact own-shim rule'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - '.agentic-framework/lib/cmd_classify.py'
+  - 'agents/context/lib/safe-commands.sh'
+  - 'docs/reports/field-test-v1.8.11-results.md'
+  - 'lib/cmd_classify.py'
+  - '.tasks/active/T-4203-own-launcher-check-refuses-a-consumers-t.md'
+  - '.tasks/active/T-4204-commit-checkpoint-allowance-admits-an-en.md'
+  - 'tests/unit/t4203_own_shim_launcher.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-14T22:18:24'
+    action: 'T-4203: v1.8.11 field evidence (055 report) + file 055 findings T-4203/T-4204'
+  - time: '2026-10-14T22:36:07'
+    action: 'T-4203: accept a project''s own tracked bin/fw shim as its launcher'
+  - time: '2026-10-14T22:36:13'
+    action: 'T-4203: vendor own-shim launcher rule into .agentic-framework'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 122 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 122
+  commits: 3
+  files_changed: 8
+  lines_added: 1015
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4203-own-launcher-check-refuses-a-consumers-t.md
+generated_by: context-agent-hybrid

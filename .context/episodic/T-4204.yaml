@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4204: Commit-checkpoint allowance admits an env-prefixed launcher (PROJECT_ROOT=/x fw git commit) that the budget classifier refuses (055 follow-up)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-14T22:28:31Z
+# ============================================================================
+
+task_id: T-4204
+task_name: "Commit-checkpoint allowance admits an env-prefixed launcher (PROJECT_ROOT=/x fw git commit) that the budget classifier refuses (055 follow-up)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-14T20:17:46Z
+completed: 2026-10-14T22:24:38Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-14T22:52:25+02:00
+last_commit: 2026-10-14T22:52:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  refuse steering env prefixes on the commit-checkpoint allowance. vendor commit-allowance env-prefix refusal into .agentic-framework
+
+# Key outcomes
+outcomes:
+  - 'Pre-fix admit reproduced on HEAD and recorded in Updates: `is_commit_checkpoint_command "PROJECT_ROOT=/tmp/x .agentic-framework/bin/fw git commit -m x"` returns admit, while `cmd_classify.classify` refuses the same command'
+  - 'The commit allowance refuses any leading assignment that is not on a four-name allow-list (`FW_SWITCH_FOCUS`, `FW_ALLOW_STALE_INDEX`, `FW_ALLOW_MASTER_COMMIT`, `FW_ALLOW_WORKTREE_CORPUS_COMMIT`, each exactly `=1`); `PROJECT_ROOT`, `FRAMEWORK_ROOT`, `PATH`, `FW_*` other than the four, and an allow-listed name with another value are all refused, including when mixed with an allow-listed prefix and when preceded by `time`'
+  - 'The four documented commit-time bypass prefixes still admit as before, in the shell predicate and through the null-focus hook (`check-active-task.sh`); `FW_SWITCH_FOCUS=1 git commit` keeps its T-3454 contract'
+  - 'Shell allowance and classifier agree on the steering case (`PROJECT_ROOT=`) and the budget gate refuses it; for unlisted non-steering `FW_*` prefixes the shell is now stricter than the classifier, which still admits them — recorded in Decisions as a follow-up, not closed here'
+  - 'New bats file `tests/unit/t4204_commit_allowance_env_prefix.bats` green; existing suites for the commit allowance (t3454, t3814, t3221, t3245, t4125, t4203, t2919, t2923, t4150, prescribed-commands lint) still green'
+  - '`bin/fw test lint` shows no new failure and `bin/fw audit --section structure` introduces none; `bin/fw vendor self --check` clean after `bin/fw vendor self`'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'vendor commit-allowance env-prefix refusal into .agentic-framework'
+    source: git-mined
+  - description: 'refuse steering env prefixes on the commit-checkpoint allowance'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-14 — env allow-list for the commit allowance'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.tasks/active/T-4204-commit-checkpoint-allowance-admits-an-en.md'
+  - 'tests/unit/t4204_commit_allowance_env_prefix.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-14T22:52:25'
+    action: 'T-4204: refuse steering env prefixes on the commit-checkpoint allowance'
+  - time: '2026-10-14T22:52:36'
+    action: 'T-4204: vendor commit-allowance env-prefix refusal into .agentic-framework'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 126 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 126
+  commits: 3
+  files_changed: 5
+  lines_added: 266
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4204-commit-checkpoint-allowance-admits-an-en.md
+generated_by: context-agent-hybrid

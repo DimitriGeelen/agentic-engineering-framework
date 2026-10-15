@@ -15,12 +15,12 @@ description: >
   and the learning-post test. Register in concerns.yaml (structural: tests can publish
   fleet-wide).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [tests/unit/add_learning_id_allocator.bats, tests/unit/context_learning.bats, tests/unit/rail_identity_guard.bats, tests/unit/test_t3579_verdict_ledger.py, tests/unit/test_termlink_list_contract.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -49,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-14T21:49:04Z
-last_update: '2026-10-15T07:20:08Z'
-date_finished:
+last_update: 2026-10-15T09:12:56Z
+date_finished: 2026-10-15T09:12:56Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -480,3 +480,24 @@ open for the operator to close.
 - Fix: `hermetic_review_env` autouse fixture in `tests/unit/_review_runtime.py`, imported by its 16 users; round8 inbox-hook control names its own `FW_SIDECAR_AGENT_ID`. Tests only: no lib/ change, tripwire untouched, no skips.
 - After: the same set plus t3582, t3949, test_t3579, test_t3581_round4: 544 passed in the worker env and 544 passed with it unset. `~/.termlink/outbound.sqlite` 102400 bytes, mtime 1792014170, before and after.
 - `bin/fw test lint`: the same 6 pre-existing FAILs, none in these files. `bin/fw audit --section structure`: one FAIL, self-vendor drift on a `web/` file this follow-up did not touch (another worker's); no vendor sync run because no vendored path changed here.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ad39485a
+- **Timestamp:** 2026-10-15T09:27:52Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Shared isolation mechanism: one pytest autouse fixture in tests/unit/conftest.py and one bats helper (tests/test_helper.bash), both putting the recording fake tests/lib/termlink-tripwire/termlink firs
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=tests/test_helper.bash in: Shared isolation mechanism: one pytest autouse fixture in tests/unit/conftest.py and one bats helper (tests/test_helper.bash), both putting the record`
+- **AC#6 (Agent)** — Every test file that references termlink still passes (grep tests/ -rl termlink, run them all); ~/.termlink/outbound.sqlite mtime/size unchanged across the affected suites — the 20 t3580_* reds were m
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=termlink/outbound.sqlite in: Every test file that references termlink still passes (grep tests/ -rl termlink, run them all); ~/.termlink/outbound.sqlite mtime/size unchanged acros`
+- **AC#7 (Agent)** — G-115 in .context/project/concerns.yaml names the structural fix and this task
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/project/concerns.yaml in: G-115 in .context/project/concerns.yaml names the structural fix and this task`
+
+### 2026-10-15T09:12:56Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

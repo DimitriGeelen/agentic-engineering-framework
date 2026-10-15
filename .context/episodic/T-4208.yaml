@@ -1,0 +1,108 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4208: Two sidecar receivers serve one inbox (055: vendored pid from 2026-10-13 00:21 plus one started from AEF lib/sidecar at 14:37); unknown starter launched receivers for 10 projects from AEF's tree in one minute
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T05:21:11Z
+# ============================================================================
+
+task_id: T-4208
+task_name: "Two sidecar receivers serve one inbox (055: vendored pid from 2026-10-13 00:21 plus one started from AEF lib/sidecar at 14:37); unknown starter launched receivers for 10 projects from AEF's tree in one minute"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-14T22:40:08Z
+completed: 2026-10-15T05:16:14Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-10-15T00:42:14+02:00
+last_commit: 2026-10-15T01:13:21+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  record root cause — AEF's ensure --all cron starts every project's receiver from AEF's tree (010 finding, verified). one live receiver per agent id; ensure starts each project with its own launcher. vendored copies of the receiver guard, ensure launcher rule and T-4207 held-mail WARN
+
+# Key outcomes
+outcomes:
+  - '`ensure_all()` starts each enabled project through that project''s OWN launcher (`<root>/.agentic-framework/bin/fw` for a vendored consumer, `<root>/bin/fw` for a framework repo); a project with neither launcher is reported and not started with AEF code (tests/unit/test_t4208_receiver_single_instance.py)'
+  - 'A receiver refuses to start (exit 3, no port bound) while a live receiver already serves that agent id, including one started from a different framework copy (process-table guard in lib/sidecar/lifecycle.py; test starts a foreign-copy fake receiver process)'
+  - '`ensure` never flips an existing project''s inject setting: with `.context/sidecar/receiver/config.json` = `{"inject": false}`, an ensure run whose enabled file says inject true leaves the config at false (test)'
+  - '`fw doctor` WARNs when two live receivers serve one agent id, and is silent for one receiver per agent (`bin/fw sidecar receiver-census --json` fact, test + doctor line)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-15 — single-instance guard: process table, not a lock file'
+    chose: '`lifecycle.live_receiver_pids(agent)` reads `/proc/*/cmdline` for live `http_server.py --agent <id>` processes from ANY framework copy. `http_server.serve`, `_start_receiver` and the `receiver start` path all refuse while one exists (exit 3 / rc 1).'
+    rationale: 'the 055 duplicate was a vendored copy (old code) plus AEF''s copy. An old copy cannot be made to honour a new lock file, but its process is always visible. The triple file is per project and was overwritten by whichever started last, so it could not see the other either.'
+    alternatives_rejected: ['`flock` on a lock file under the project `.context/sidecar` (the old copy ignores it); the host registry `<agent>.json` (stale after a crash, and written only by a receiver that got past bind); killing the other process (process cleanup on other projects is the operator''s call, per the task). - **Known limit:** two starts that race can both see each other and both refuse. That fails closed (no duplicate); the next ensure cron succeeds. Linux `/proc` only.']
+  - decision: '2026-10-15 — launcher rule: vendored first, then own bin/fw with FRAMEWORK.md'
+    chose: '`watcher.project_launcher(root)`: `<root>/.agentic-framework/bin/fw` if present, else `<root>/bin/fw` when `FRAMEWORK.md` is also present, else None. None is reported ("not started"), never started with AEF code. The child env drops `FRAMEWORK_ROOT`.'
+    alternatives_rejected: ['keep running AEF''s `sidecar_cli.py` with `PROJECT_ROOT` set (the bug itself: AEF code ran in every project).']
+  - decision: '2026-10-15 — ensure keeps the receiver config''s inject value'
+    chose: '`_ensure_no_inject(cfg)`: when `receiver/config.json` exists it is the setting in force; the enabled file''s flag decides only when no config exists yet.'
+    alternatives_rejected: ['rewriting config from the enabled file (what ensure did): any enabled-file value that disagrees with the operator''s `--no-inject` flips it. I could not reproduce how 050''s config became `inject:false` from code reading alone; the test pins that ensure does not change it.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/config.sh'
+  - '.agentic-framework/lib/sidecar-audit.sh'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/hooks.py'
+  - '.agentic-framework/lib/sidecar/http_server.py'
+  - '.agentic-framework/lib/sidecar/inject.py'
+  - '.agentic-framework/lib/sidecar/lifecycle.py'
+  - '.agentic-framework/lib/sidecar/watcher.py'
+  - 'bin/fw'
+  - 'lib/sidecar-audit.sh'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/http_server.py'
+  - 'lib/sidecar/lifecycle.py'
+  - 'lib/sidecar/watcher.py'
+  - '.tasks/active/T-4208-two-sidecar-receivers-serve-one-inbox-05.md'
+  - 'tests/unit/test_sidecar_watcher_t3684.py'
+  - 'tests/unit/test_t4208_receiver_single_instance.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-15T00:42:14'
+    action: 'T-4208: record root cause — AEF''s ensure --all cron starts every project''s receiver from AEF''s tree (010 finding, verified)'
+  - time: '2026-10-15T01:12:51'
+    action: 'T-4208: one live receiver per agent id; ensure starts each project with its own launcher'
+  - time: '2026-10-15T01:13:21'
+    action: 'T-4208: vendored copies of the receiver guard, ensure launcher rule and T-4207 held-mail WARN'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 396 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 396
+  commits: 3
+  files_changed: 19
+  lines_added: 849
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4208-two-sidecar-receivers-serve-one-inbox-05.md
+generated_by: context-agent-hybrid

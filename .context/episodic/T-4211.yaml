@@ -1,0 +1,79 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4211: Secret scan without a pattern catalogue intermittently blocks commits: early return leaves stdin unread, producer dies of SIGPIPE under pipefail, hook reports 'detected matches' with none (flaky t3511/t3110 reds)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T07:00:34Z
+# ============================================================================
+
+task_id: T-4211
+task_name: "Secret scan without a pattern catalogue intermittently blocks commits: early return leaves stdin unread, producer dies of SIGPIPE under pipefail, hook reports 'detected matches' with none (flaky t3511/t3110 reds)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-15T06:49:59Z
+completed: 2026-10-15T06:59:26Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-15T08:59:25+02:00
+last_commit: 2026-10-15T08:59:25+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  secret scan without a catalogue drains stdin, so a large staged diff no longer dies of SIGPIPE and blocks as 'detected matches'
+
+# Key outcomes
+outcomes:
+  - 'With no patterns catalogue, `secret-scan.sh scan-staged` returns 0 (fail-open with its WARNING) for a staged diff larger than a pipe buffer, every time; a regression test fails on the pre-fix code'
+  - 'The no-patterns branch of `_secret_scan_run_patterns` drains stdin before returning, so a producer never dies of SIGPIPE under `set -o pipefail`; STRICT mode still blocks'
+  - 'The existing secret-scan suites and tests/unit/t3511_parked_merge_guard.bats + t3110_worktree_corpus_commit_guard.bats pass'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/git/lib/secret-scan.sh'
+  - 'agents/git/lib/secret-scan.sh'
+  - '.tasks/active/T-4211-secret-scan-without-a-pattern-catalogue-.md'
+  - 'tests/unit/t4211_secret_scan_no_catalogue_sigpipe.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-15T08:59:25'
+    action: 'T-4211: secret scan without a catalogue drains stdin, so a large staged diff no longer dies of SIGPIPE and blocks as ''detected matches'''
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 9 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 9
+  commits: 1
+  files_changed: 4
+  lines_added: 397
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4211-secret-scan-without-a-pattern-catalogue-.md
+generated_by: context-agent-hybrid

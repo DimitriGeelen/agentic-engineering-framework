@@ -13,12 +13,12 @@ description: >
   lock per agent id); (3) doctor WARN when two receivers serve one agent. Process
   cleanup on other projects is their operator's call.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/sidecar-audit.sh, lib/sidecar_cli.py, lib/sidecar/http_server.py, lib/sidecar/lifecycle.py, lib/sidecar/watcher.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -47,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-14T22:40:08Z
-last_update: '2026-10-14T22:45:30Z'
-date_finished:
+last_update: 2026-10-15T05:16:14Z
+date_finished: 2026-10-15T05:16:14Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -409,3 +409,22 @@ bin/fw test lint
 - `bin/fw test lint`: 6 FAILs, all outside this change (`.context/working/t4088/sc*.sh`, `agents/sessions/*/list.sh` shellcheck SC1071/SC2148, also under `.agentic-framework/`). Not fixed here.
 - Structure audit: `bin/fw audit --section structure` exited 75 ("another audit is already running") on every attempt while another worker ran one; see Updates for the final run if it completes.
 - Shared-checkout note: `.context/working/focus.yaml` was reset to T-4162 by another session several times during this work; re-set focus before each edit.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3890a103
+- **Timestamp:** 2026-10-15T05:20:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — A receiver refuses to start (exit 3, no port bound) while a live receiver already serves that agent id, including one started from a different framework copy (process-table guard in lib/sidecar/lifecy
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/sidecar/lifecycle.py in: A receiver refuses to start (exit 3, no port bound) while a live receiver already serves that agent id, including one started from a different framewo`
+- **AC#3 (Agent)** — `ensure` never flips an existing project's inject setting: with `.context/sidecar/receiver/config.json` = `{"inject": false}`, an ensure run whose enabled file says inject true leaves the config at fa
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/sidecar/receiver/config.json in: `ensure` never flips an existing project's inject setting: with `.context/sidecar/receiver/config.json` = `{"inject": false}`, an ensure run whose ena`
+
+### 2026-10-15T05:16:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

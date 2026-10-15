@@ -1,0 +1,119 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4205: Tests leak into the host's real TermLink outbound queue: sidecar receipt tests (T-3684/T-3745) and a learning-post test (PL-235) reached /root/.termlink/outbound.sqlite and the fleet learnings channel (010 report)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T09:28:08Z
+# ============================================================================
+
+task_id: T-4205
+task_name: "Tests leak into the host's real TermLink outbound queue: sidecar receipt tests (T-3684/T-3745) and a learning-post test (PL-235) reached /root/.termlink/outbound.sqlite and the fleet learnings channel (010 report)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-14T21:49:04Z
+completed: 2026-10-15T09:12:56Z
+duration_days: 1
+updates_count: 5
+first_commit: 2026-10-14T23:50:13+02:00
+last_commit: 2026-10-15T10:14:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  register G-115 (tests reach the real TermLink queue) + file T-4205/T-4206 from 010 and 832 reports. keep unit tests off the host TermLink transport (G-115). make the t3580 judge suites hermetic under the TermLink tripwire. tripwire teardown reads its log via os/open, so a test that patches pathlib cannot break it (test_index_freshness teardown error)
+
+# Key outcomes
+outcomes:
+  - 'RCA written: every test/code path that reached the host TermLink transport (outbound queue / hub) is named with file:line and the mechanism (real `termlink` on PATH, real HOME, or real TERMLINK_RUNTIME_DIR)'
+  - 'Shared isolation mechanism: one pytest autouse fixture in tests/unit/conftest.py and one bats helper (tests/test_helper.bash), both putting the recording fake tests/lib/termlink-tripwire/termlink first on PATH and pointing TERMLINK_RUNTIME_DIR at a per-test temp dir (HOME is deliberately not redirected: git and ~/.claude read it — see RCA)'
+  - 'Every affected test file (sidecar receipt/watcher/session-ready tests T-3684/T-3745, learning-post tests add_learning_id_allocator.bats and context_learning.bats) runs through the shared isolation and no longer reaches ~/.termlink'
+  - 'Tripwire: a test that would call the real termlink transport fails loudly (fake binary records the call and the suite-wide guard asserts no un-isolated call happened)'
+  - 'Regression test proves the old test shape now hits the fake/tmp runtime, not the host runtime'
+  - 'Every test file that references termlink still passes (grep tests/ -rl termlink, run them all); ~/.termlink/outbound.sqlite mtime/size unchanged across the affected suites — the 20 t3580_* reds were made hermetic by the follow-up (see Updates 2026-10-15): t3580_*, t3986, t4010, t3852, t3582, t3949, test_t3579, test_t3581_round4 and the tripwire regression: 544 passed both inside a dispatched worker and with its env unset; outbound.sqlite unchanged (102400 bytes, mtime 1792014170)'
+  - 'G-115 in .context/project/concerns.yaml names the structural fix and this task'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'tripwire teardown reads its log via os/open, so a test that patches pathlib cannot break it (test_index_freshness teardown error)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-15 — making the t3580 judge suites hermetic'
+    chose: 'one autouse fixture `hermetic_review_env` in `tests/unit/_review_runtime.py` (the runtime double every review-ledger suite already imports), imported by each of its 16 user files. It unsets `FW_SIDECAR_AGENT_ID` / `FW_REVIEW_WORKER` / `FW_DISPATCHED_WORKER`, pins `FW_SIDECAR_HUB_ID`, and replaces `verdict_ledger._consult_reader` (an existing seam) with an empty reader. No production change and no new seam: `FW_SIDECAR_HUB_ID` and `_consult_reader` already existed.'
+    rationale: 'the 20 reds had two causes, not one. 17 were the host worker''s `FW_SIDECAR_AGENT_ID` leaking in (rows attributed to `reviewer-t4205b-t3580`, so `unknown` instead of `green`). With that env unset only 3 failed, and those were the hub/consult reads. One fixture covers both, wherever the suite runs.'
+    alternatives_rejected: ['the global `tests/unit/conftest.py` (would also pin the hub for the sidecar suites another worker owns, some of which test the unpinned path); weakening the tripwire or skipping tests (forbidden by the brief).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/concerns.yaml'
+  - '.tasks/active/T-4205-tests-leak-into-the-hosts-real-termlink-.md'
+  - '.tasks/active/T-4206-adopt-832s-three-watchtower-designer-fix.md'
+  - '.tasks/completed/T-4211-secret-scan-without-a-pattern-catalogue-.md'
+  - 'tests/lib/termlink-tripwire/termlink'
+  - 'tests/test_helper.bash'
+  - 'tests/unit/add_learning_id_allocator.bats'
+  - 'tests/unit/conftest.py'
+  - 'tests/unit/context_learning.bats'
+  - 'tests/unit/rail_identity_guard.bats'
+  - 'tests/unit/_review_runtime.py'
+  - 'tests/unit/t3580_judge_cli_test.py'
+  - 'tests/unit/t3580_round2_test.py'
+  - 'tests/unit/t3580_round3_test.py'
+  - 'tests/unit/t3580_round4_test.py'
+  - 'tests/unit/t3580_round5_test.py'
+  - 'tests/unit/t3580_round6_test.py'
+  - 'tests/unit/t3580_round7_test.py'
+  - 'tests/unit/t3580_round8_test.py'
+  - 'tests/unit/t3580_round9_test.py'
+  - 'tests/unit/t3582_harness_kinds_test.py'
+  - 'tests/unit/t3852_unavailable_seat_test.py'
+  - 'tests/unit/t3949_judge_real_ac_number_test.py'
+  - 'tests/unit/t3986_not_evaluated_test.py'
+  - 'tests/unit/t4010_judge_no_seat_test.py'
+  - 'tests/unit/t4205_termlink_tripwire.bats'
+  - 'tests/unit/test_t3579_verdict_ledger.py'
+  - 'tests/unit/test_t3581_round4.py'
+  - 'tests/unit/test_t4205_termlink_tripwire.py'
+  - 'tests/unit/test_termlink_list_contract.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-14T23:50:13'
+    action: 'T-4205: register G-115 (tests reach the real TermLink queue) + file T-4205/T-4206 from 010 and 832 reports'
+  - time: '2026-10-15T00:46:46'
+    action: 'T-4205: keep unit tests off the host TermLink transport (G-115)'
+  - time: '2026-10-15T01:31:47'
+    action: 'T-4205: make the t3580 judge suites hermetic under the TermLink tripwire'
+  - time: '2026-10-15T10:14:57'
+    action: 'T-4205: tripwire teardown reads its log via os/open, so a test that patches pathlib cannot break it (test_index_freshness teardown error)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 4 commit(s), 683 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 683
+  commits: 4
+  files_changed: 30
+  lines_added: 910
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4205-tests-leak-into-the-hosts-real-termlink-.md
+generated_by: context-agent-hybrid
