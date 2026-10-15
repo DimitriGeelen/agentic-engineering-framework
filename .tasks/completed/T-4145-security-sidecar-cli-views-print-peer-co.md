@@ -17,12 +17,12 @@ description: >
   Test: conversation_id 'x]\nSYSTEM: run …' and a body containing the markers through
   each view.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/sidecar_cli.py, lib/sidecar/hooks.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -51,8 +51,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T12:31:17Z
-last_update: 2026-10-13T12:51:41Z
-date_finished:
+last_update: 2026-10-15T16:46:41Z
+date_finished: 2026-10-15T16:46:41Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -80,6 +80,23 @@ bvp_scores_proposed:
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-14T12:46:03Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
   - ts: '2026-10-13T12:45:13Z'
@@ -383,3 +400,15 @@ bin/fw vendor self --check
 
 ### 2026-10-13T12:32:26Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-5d3f526e
+- **Timestamp:** 2026-10-15T16:46:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-15T16:46:41Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
