@@ -11,12 +11,12 @@ description: >
   by 'fw audit --list-checks'; exit codes as today. Also note the structure section's
   growing cost as a separate observation.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/audit.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-14T23:10:04Z
-last_update: 2026-10-15T16:46:52Z
-date_finished:
+last_update: 2026-10-15T19:44:10Z
+date_finished: 2026-10-15T19:44:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -97,12 +97,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw audit --list-checks` prints one stable id per line (`<id>  <section>`), derived from the `check_*` functions in audit.sh, and includes `fabric-coverage`; exits 0 without taking the audit lock
-- [ ] `fw audit --check <id>[,<id>…]` runs only the named checks, prints the usual [PASS]/[WARN]/[FAIL] lines + SUMMARY + AUDIT-SCOPE, and exits 0/1/2 as a normal audit; lines of other checks are absent
-- [ ] An unknown id exits 2 and prints the list of valid ids
-- [ ] A single-check run does not take the audit lock (read-only probe) and does not overwrite the dated audit YAML; the choice is recorded in Decisions
-- [ ] `--check fabric-coverage` finishes in seconds versus the ~minute `--section structure`; both timings recorded in Updates
-- [ ] Full/structure runs still run the fabric block in its original position (no behaviour change); bats test covers list, single run, unknown id, exit codes; existing audit section tests still pass; vendored copy in sync
+- [x] `fw audit --list-checks` prints one stable id per line (`<id>  <section>`), derived from the `check_*` functions in audit.sh, and includes `fabric-coverage`; exits 0 without taking the audit lock
+- [x] `fw audit --check <id>[,<id>…]` runs only the named checks, prints the usual [PASS]/[WARN]/[FAIL] lines + SUMMARY + AUDIT-SCOPE, and exits 0/1/2 as a normal audit; lines of other checks are absent
+- [x] An unknown id exits 2 and prints the list of valid ids
+- [x] A single-check run does not take the audit lock (read-only probe) and does not overwrite the dated audit YAML; the choice is recorded in Decisions
+- [x] `--check fabric-coverage` finishes in seconds versus the ~minute `--section structure`; both timings recorded in Updates
+- [x] Full/structure runs still run the fabric block in its original position (no behaviour change); bats test covers list, single run, unknown id, exit codes; existing audit section tests still pass; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -377,3 +377,15 @@ bin/fw vendor self --check
 ### 2026-10-15T16:25:41Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d345fe7a
+- **Timestamp:** 2026-10-15T19:44:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-15T19:44:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

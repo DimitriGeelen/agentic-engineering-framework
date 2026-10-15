@@ -1,0 +1,94 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4209: fw audit --check <id>: run one audit check instead of a whole section (832 probes pay ~54 s per structure audit to read one check)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T19:44:49Z
+# ============================================================================
+
+task_id: T-4209
+task_name: "fw audit --check <id>: run one audit check instead of a whole section (832 probes pay ~54 s per structure audit to read one check)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-14T23:10:04Z
+completed: 2026-10-15T19:44:10Z
+duration_days: 1
+updates_count: 3
+first_commit: 2026-10-15T01:10:27+02:00
+last_commit: 2026-10-15T18:46:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file audit single-check selector (832 request). fw audit --list-checks / --check <id> runs one audit check; fabric coverage lifted into check_fabric_coverage. record measurements in task Updates
+
+# Key outcomes
+outcomes:
+  - '`fw audit --list-checks` prints one stable id per line (`<id>  <section>`), derived from the `check_*` functions in audit.sh, and includes `fabric-coverage`; exits 0 without taking the audit lock'
+  - '`fw audit --check <id>[,<id>…]` runs only the named checks, prints the usual [PASS]/[WARN]/[FAIL] lines + SUMMARY + AUDIT-SCOPE, and exits 0/1/2 as a normal audit; lines of other checks are absent'
+  - 'An unknown id exits 2 and prints the list of valid ids'
+  - 'A single-check run does not take the audit lock (read-only probe) and does not overwrite the dated audit YAML; the choice is recorded in Decisions'
+  - '`--check fabric-coverage` finishes in seconds versus the ~minute `--section structure`; both timings recorded in Updates'
+  - 'Full/structure runs still run the fabric block in its original position (no behaviour change); bats test covers list, single run, unknown id, exit codes; existing audit section tests still pass; vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-15 — single-check run takes no audit lock'
+    chose: '`--check` skips the flock/watchdog, writes no dated audit YAML, history or notification, and exits straight after SUMMARY/AUDIT-SCOPE.'
+    rationale: 'it is a read-only probe of one function; blocking on (or blocking) a running full audit gains nothing. Exit 75 is therefore never returned by `--check`.'
+    alternatives_rejected: ['taking the lock (probes would collide with the 30-min cron and pre-push); a checks-only-if-lock-free mode (same collision, more code). Caveat: a check function that itself writes state (e.g. unit-suite-report) does so unlocked.']
+  - decision: '2026-10-15 — ids derived from check_* functions, not a table'
+    chose: 'id = `check_<name>` minus prefix, `_`→`-`; section = last `if should_run_section` above it; functions are extracted from audit.sh by awk and eval''d so no section runs.'
+    rationale: 'nothing to drift; a new check_* function is selectable on arrival; works unchanged in the vendored copy.'
+    alternatives_rejected: ['explicit id table (drifts); wrapping every inline block in `if check_selected` (3000-line diff). Inline blocks stay non-selectable until lifted into a function; `check_fabric_coverage` is the first lift (the 832 probe).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - 'agents/audit/audit.sh'
+  - '.tasks/active/T-4209-fw-audit---check-id-run-one-audit-check-.md'
+  - '.tasks/completed/T-4145-security-sidecar-cli-views-print-peer-co.md'
+  - 'tests/unit/t4209_audit_check_selector.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-15T01:10:27'
+    action: 'T-4209: file audit single-check selector (832 request)'
+  - time: '2026-10-15T18:36:12'
+    action: 'T-4209: fw audit --list-checks / --check <id> runs one audit check; fabric coverage lifted into check_fabric_coverage'
+  - time: '2026-10-15T18:46:52'
+    action: 'T-4209: record measurements in task Updates'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 1234 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1234
+  commits: 3
+  files_changed: 5
+  lines_added: 672
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4209-fw-audit---check-id-run-one-audit-check-.md
+generated_by: context-agent-hybrid
