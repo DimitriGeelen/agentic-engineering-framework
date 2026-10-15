@@ -137,6 +137,7 @@ bvp_scores_proposed:
 
 python3 -m pytest -q tests/unit/t4214_visual_evidence_test.py
 python3 -m pytest -q tests/unit/t3580_round2_test.py tests/unit/t3580_round3_test.py tests/unit/test_t3579_verdict_ledger.py
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.

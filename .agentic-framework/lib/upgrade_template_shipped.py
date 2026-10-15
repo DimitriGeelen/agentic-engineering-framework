@@ -4,6 +4,7 @@ Every version of each task template the framework ever shipped, as sha256 hashes
 SHIPPED = {
  ".tasks/templates/default.md": [
   "01b55d3ab5748e8d592fb87deff72a7e2bf229a0b39412797be638d20f10ed2b",
+  "057c22cecd5cc1077892825943f45919783312afff11b42aa2f6abef4f8251e5",
   "0ea0d1be1ad01f82ca20a12e09baede2745e6e0c2bd26fa15fb7c37737f1ac23",
   "10a981f01cab282f6254976bdcdd9da3005855a93a0d5097d842c608413c633a",
   "1b4dbe15fc6a8a5144879a0a96e3805d897eea81c1d37d980f3b13e9749d799c",

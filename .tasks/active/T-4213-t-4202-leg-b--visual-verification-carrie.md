@@ -139,6 +139,7 @@ bvp_scores_proposed:
 bats tests/unit/t4213_visual_checklist.bats
 bats tests/unit/t4212_ux_shots.bats
 bats tests/lint/config-registry-parity.bats tests/lint/help-router-parity.bats
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.

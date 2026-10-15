@@ -266,6 +266,7 @@ cost_estimate_proposed:
 python3 -m pytest -q tests/unit/test_ux_shots.py
 bats tests/unit/t4212_ux_shots.bats
 bin/fw ux shots --help | grep -q "UX_SHOT_WIDTHS"
+bin/fw vendor self --check
 
 ## RCA
 
