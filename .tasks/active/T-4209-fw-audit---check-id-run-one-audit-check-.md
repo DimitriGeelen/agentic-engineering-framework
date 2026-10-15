@@ -1,13 +1,20 @@
 ---
 id: T-4209
-name: "fw audit --check <id>: run one audit check instead of a whole section (832 probes pay ~54 s per structure audit to read one check)"
+name: "fw audit --check <id>: run one audit check instead of a whole section (832
+  probes pay ~54 s per structure audit to read one check)"
 description: >
-  832 msg 684349da (their T-1051, T-1182): four 832 teeth each run a full 'fw audit --sections structure' to read a single check (fabric coverage). One structure audit of 832 costs ~54 s (AEF full-audit-timing.yaml ~58 s; was 16.9 s at 832 T-549, 22 s on 1.8.3); a 20-file fixture went ~1.5 s -> 5 s. Want: a selector (fw audit --check <id> or a section per check) so a probe runs in seconds; stable check ids listed by 'fw audit --list-checks'; exit codes as today. Also note the structure section's growing cost as a separate observation.
+  832 msg 684349da (their T-1051, T-1182): four 832 teeth each run a full 'fw audit
+  --sections structure' to read a single check (fabric coverage). One structure audit
+  of 832 costs ~54 s (AEF full-audit-timing.yaml ~58 s; was 16.9 s at 832 T-549, 22
+  s on 1.8.3); a 20-file fixture went ~1.5 s -> 5 s. Want: a selector (fw audit --check
+  <id> or a section per check) so a probe runs in seconds; stable check ids listed
+  by 'fw audit --list-checks'; exit codes as today. Also note the structure section's
+  growing cost as a separate observation.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-14T23:10:04Z
-last_update: 2026-10-14T23:10:04Z
-date_finished: null
+last_update: 2026-10-15T16:36:12Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,20 +57,52 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-14T23:15:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-14T23:16:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4209: fw audit --check <id>: run one audit check instead of a whole section (832 probes pay ~54 s per structure audit to read one check)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+832 probes pay a full ~54 s `--section structure` audit to read one check (fabric coverage). Add `--list-checks` / `--check <id>` so one check runs in seconds.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `fw audit --list-checks` prints one stable id per line (`<id>  <section>`), derived from the `check_*` functions in audit.sh, and includes `fabric-coverage`; exits 0 without taking the audit lock
+- [ ] `fw audit --check <id>[,<id>…]` runs only the named checks, prints the usual [PASS]/[WARN]/[FAIL] lines + SUMMARY + AUDIT-SCOPE, and exits 0/1/2 as a normal audit; lines of other checks are absent
+- [ ] An unknown id exits 2 and prints the list of valid ids
+- [ ] A single-check run does not take the audit lock (read-only probe) and does not overwrite the dated audit YAML; the choice is recorded in Decisions
+- [ ] `--check fabric-coverage` finishes in seconds versus the ~minute `--section structure`; both timings recorded in Updates
+- [ ] Full/structure runs still run the fabric block in its original position (no behaviour change); bats test covers list, single run, unknown id, exit codes; existing audit section tests still pass; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -97,6 +136,11 @@ date_finished: null
 -->
 
 ## Verification
+
+bash -n agents/audit/audit.sh
+bin/fw audit --list-checks > /tmp/.t4209-list 2>&1 && grep -q '^fabric-coverage' /tmp/.t4209-list
+timeout 300 bats tests/unit/t4209_audit_check_selector.bats > /tmp/.t4209-bats 2>&1 && ! grep -q '^not ok' /tmp/.t4209-bats
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -298,14 +342,15 @@ date_finished: null
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-10-15 — single-check run takes no audit lock
+- **Chose:** `--check` skips the flock/watchdog, writes no dated audit YAML, history or notification, and exits straight after SUMMARY/AUDIT-SCOPE.
+- **Why:** it is a read-only probe of one function; blocking on (or blocking) a running full audit gains nothing. Exit 75 is therefore never returned by `--check`.
+- **Rejected:** taking the lock (probes would collide with the 30-min cron and pre-push); a checks-only-if-lock-free mode (same collision, more code). Caveat: a check function that itself writes state (e.g. unit-suite-report) does so unlocked.
+
+### 2026-10-15 — ids derived from check_* functions, not a table
+- **Chose:** id = `check_<name>` minus prefix, `_`→`-`; section = last `if should_run_section` above it; functions are extracted from audit.sh by awk and eval'd so no section runs.
+- **Why:** nothing to drift; a new check_* function is selectable on arrival; works unchanged in the vendored copy.
+- **Rejected:** explicit id table (drifts); wrapping every inline block in `if check_selected` (3000-line diff). Inline blocks stay non-selectable until lifted into a function; `check_fabric_coverage` is the first lift (the 832 probe).
 
 ## Decision
 
@@ -323,3 +368,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4209-fw-audit---check-id-run-one-audit-check-.md
 - **Context:** Initial task creation
+
+### 2026-10-15T16:25:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

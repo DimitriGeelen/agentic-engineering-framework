@@ -300,10 +300,14 @@ fi
 SECTIONS=""       # Comma-separated section names (empty = all)
 OUTPUT_DIR=""     # Custom output directory (empty = default AUDITS_DIR)
 QUIET=false       # Suppress terminal output
+CHECK_IDS=""      # T-4209: comma-separated check ids (empty = not a single-check run)
+LIST_CHECKS=false # T-4209: print the check ids and exit
 
 while [[ $# -gt 0 ]]; do
     case $1 in
         --section|--sections) SECTIONS="$2"; shift 2 ;;
+        --check) CHECK_IDS="${2:-}"; shift $(( $# > 1 ? 2 : 1 )) ;;
+        --list-checks) LIST_CHECKS=true; shift ;;
         --output) OUTPUT_DIR="$2"; shift 2 ;;
         --quiet) QUIET=true; shift ;;
         --cron) OUTPUT_DIR="$CONTEXT_DIR/audits/cron"; QUIET=true; shift ;;
@@ -312,6 +316,8 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "Options:"
             echo "  --section NAMES   Comma-separated sections to run (default: all)"
+            echo "  --check IDS       Run only these checks (comma-separated ids; see --list-checks)"
+            echo "  --list-checks     Print the available check ids and their section"
             echo "  --output DIR      Write YAML report to custom directory"
             echo "  --quiet           Suppress terminal output (for cron)"
             echo "  --cron            Shorthand for --output .context/audits/cron --quiet"
@@ -330,6 +336,39 @@ while [[ $# -gt 0 ]]; do
         *) shift ;;
     esac
 done
+
+# --- Single-check selector (T-4209) ---
+# A check is a top-level `check_<name>() {` function in this file; its id is the
+# name with `check_` stripped and `_` shown as `-`. The section is the last
+# `if should_run_section "<x>"` above it. Enumerating from the file itself means
+# there is no id table to drift: a new check_* function is selectable on arrival.
+# Logic that is still an inline block of a section is not selectable until it is
+# lifted into a function (check_fabric_coverage was the first).
+_audit_enumerate_checks() {
+    awk '
+        /^if should_run_section "[a-z0-9-]+"/ { match($0, /"[a-z0-9-]+"/); sec = substr($0, RSTART+1, RLENGTH-2) }
+        /^check_[a-z0-9_]+\(\) \{/ { n = $1; sub(/\(\).*/, "", n); sub(/^check_/, "", n); gsub(/_/, "-", n); print n "  " (sec == "" ? "-" : sec) }
+    ' "${BASH_SOURCE[0]}"
+}
+
+if [ "$LIST_CHECKS" = true ]; then
+    _audit_enumerate_checks
+    exit 0
+fi
+
+# Define the top-level functions of this file without running any section (they
+# sit inside the structure block, which a single-check run skips). Errors are
+# silenced here; the requested check's function is re-evaluated loudly by the caller.
+_audit_load_functions() {
+    local _blk
+    while IFS= read -r -d $'\f' _blk; do
+        eval "$_blk" 2>/dev/null || true
+    done < <(awk '
+        /^[A-Za-z_][A-Za-z0-9_]*\(\) \{/ { infn = 1 }
+        infn { print }
+        infn && /^\}$/ { infn = 0; printf "\f" }
+    ' "${BASH_SOURCE[0]}")
+}
 
 # T-1162/T-866/T-1464: flock guard + timeout — prevent zombie accumulation in cron AND
 # foreground races. Cron-mode (QUIET=true) stays silent on collision; foreground prints
@@ -563,7 +602,13 @@ _audit_record_section_run() {
 # holder dies, whatever the file's age. The mtime-based stale sweep and the
 # rm-on-exit both live only in the fallback arm below, where unlink IS the
 # release mechanism.
-if command -v flock >/dev/null 2>&1; then
+if [ -n "$CHECK_IDS" ]; then
+    # T-4209: a single-check run is a read-only probe. It takes no lock, so it
+    # neither waits for nor blocks a running full audit; and it starts no
+    # watchdog or section ledger, because it runs no section. It also writes
+    # neither the dated audit YAML nor history (see the dispatch after the header).
+    :
+elif command -v flock >/dev/null 2>&1; then
     exec 200>"$AUDIT_LOCK_FILE"
     if ! flock -n 200; then
         # Another audit is running. Cron mode (QUIET=true) stays silent; foreground
@@ -895,6 +940,52 @@ echo "Timestamp: $(date -Iseconds)"
 echo "Project: $PROJECT_ROOT"
 [ -n "$SECTIONS" ] && echo "Sections: $SECTIONS"
 echo ""
+
+# T-4209: single-check run. Validate the ids, run exactly those check functions,
+# print the same SUMMARY / AUDIT-SCOPE lines and use the normal exit codes, then
+# stop: no section runs, and no dated YAML, history or notification is written.
+if [ -n "$CHECK_IDS" ]; then
+    _valid_ids=$(_audit_enumerate_checks | awk '{print $1}')
+    _bad_ids=""
+    _run_fns=()
+    IFS=',' read -r -a _req_ids <<< "$CHECK_IDS"
+    for _id in "${_req_ids[@]}"; do
+        _id="${_id//_/-}"
+        [ -z "$_id" ] && continue
+        if echo "$_valid_ids" | grep -qx -- "$_id"; then
+            _run_fns+=("check_${_id//-/_}")
+        else
+            _bad_ids="$_bad_ids $_id"
+        fi
+    done
+    if [ -n "$_bad_ids" ] || [ ${#_run_fns[@]} -eq 0 ]; then
+        echo "Unknown audit check id(s):${_bad_ids:- (none given)}" >&2
+        echo "Valid ids (fw audit --list-checks):" >&2
+        echo "$_valid_ids" | sed 's/^/  /' >&2
+        exit 2
+    fi
+    _audit_load_functions
+    echo "Checks: ${_req_ids[*]}"
+    echo ""
+    for _fn in "${_run_fns[@]}"; do
+        if ! declare -F "$_fn" >/dev/null 2>&1; then
+            fail "Check function $_fn could not be loaded" \
+                 "audit.sh defines it but extracting it from the script failed" \
+                 "Run: bash -n $(basename "${BASH_SOURCE[0]}") and re-run"
+            continue
+        fi
+        "$_fn"
+    done
+    echo ""
+    echo "=== SUMMARY ==="
+    echo -e "${GREEN}Pass:${NC} $PASS_COUNT"
+    echo -e "${YELLOW}Warn:${NC} $WARN_COUNT"
+    echo -e "${RED}Fail:${NC} $FAIL_COUNT"
+    echo ""
+    echo "AUDIT-SCOPE: fails=$FAIL_COUNT ref=$FAIL_REF_COUNT worktree=$FAIL_WORKTREE_COUNT"
+    echo "=== END AUDIT ==="
+    if [ $FAIL_COUNT -gt 0 ]; then exit 2; elif [ $WARN_COUNT -gt 0 ]; then exit 1; else exit 0; fi
+fi
 
 # --- Task File Scans (T-955) ---
 # Single-pass Python scans replace 8 separate bash loops over task files.
@@ -2516,6 +2607,10 @@ fi
 # end GO-scope-not-propagated scan (T-3099)
 
 # Fabric drift detection (T-212 — component topology integrity)
+# T-4209: lifted into a function so `fw audit --check fabric-coverage` can run it
+# alone; a full/structure run calls it at the end of this block, same position,
+# so its output is unchanged.
+check_fabric_coverage() {
 if [ -d "$PROJECT_ROOT/.fabric/components" ]; then
     fabric_cards=$(find "$PROJECT_ROOT/.fabric/components/" -maxdepth 1 -name '*.yaml' -type f 2>/dev/null | wc -l)
     if [ "$fabric_cards" -gt 0 ]; then
@@ -2718,6 +2813,8 @@ DRIFTEOF
              "Widen .fabric/watch-patterns.yaml, or remove the cards if they are not components"
     fi
 fi
+}
+check_fabric_coverage
 
 # T-1771 (T-1768 GO follow-up): cron drift check.
 # Mirrors `bin/fw doctor` cron-drift logic so the registry → generated →
