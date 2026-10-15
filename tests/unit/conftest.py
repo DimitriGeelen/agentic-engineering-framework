@@ -209,8 +209,16 @@ class TermlinkTripwire:
         self.log = log
 
     def calls(self) -> list[str]:
-        """Every recorded line, `probe <argv>` or `call <argv>`, in order."""
-        return self.log.read_text().splitlines() if self.log.exists() else []
+        """Every recorded line, `probe <argv>` or `call <argv>`, in order.
+
+        Plain os/open, not Path methods: this runs at teardown, while a test's own
+        monkeypatch of pathlib (e.g. a Path.stat that raises) can still be active.
+        """
+        p = os.fspath(self.log)
+        if not os.path.exists(p):
+            return []
+        with open(p, encoding="utf-8") as fh:
+            return fh.read().splitlines()
 
     def forgive(self) -> None:
         """Clear the record. Only for a test whose point is that a call was refused."""
