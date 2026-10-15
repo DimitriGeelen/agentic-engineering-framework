@@ -1,0 +1,98 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4197: Severe deterministic reviewer findings BLOCK --status work-completed (operator ruling 2026-10-13, 2b), with a logged override — today the reviewer step at close is non-blocking (832 OBS-454, their T-1150)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T19:41:26Z
+# ============================================================================
+
+task_id: T-4197
+task_name: "Severe deterministic reviewer findings BLOCK --status work-completed (operator ruling 2026-10-13, 2b), with a logged override — today the reviewer step at close is non-blocking (832 OBS-454, their T-1150)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-13T19:22:06Z
+completed: 2026-10-15T19:40:09Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-10-13T21:37:53+02:00
+last_commit: 2026-10-13T21:38:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  severe deterministic reviewer findings block work-completed. vendored copies of update-task.sh and static_scan.py
+
+# Key outcomes
+outcomes:
+  - '`python3 -m lib.reviewer.static_scan T-XXX --severe-gate` lists every finding whose severity is FAIL-level (severe/complete) AND detection_confidence=deterministic as `pattern<TAB>file:line<TAB>evidence`, writes nothing, exits 0 when none and 5 when any'
+  - '`update-task.sh --status work-completed` refuses when the gate reports a finding; the block names the pattern, the task file:line and both overrides; the task stays in active/'
+  - 'Non-severe or heuristic findings stay advisory (close proceeds)'
+  - '`--skip-reviewer-severe "reason"` / `FW_SKIP_REVIEWER_SEVERE=1` lets the close through and logs Tier-2 to `.gate-bypass-log.yaml`; the flag needs a reason; both forms are refused under CLAUDECODE=1 without `--i-am-human`'
+  - 'A reviewer that crashes (exit not 0/5) fails OPEN with a WARNING line on the close output; `FW_REVIEWER_DISABLED=1` disables only the measurement pass, not the gate'
+  - '`tests/unit/t4197_reviewer_severe_blocks_close.bats` covers all of the above and its blocking tests fail on HEAD''s update-task.sh'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-13 — reviewer crash: fail open, audibly'
+    chose: 'exit codes other than 0/5 from `--severe-gate` (or no python) print a WARNING naming the exit and let the close proceed.'
+    rationale: 'the reviewer was advisory for its whole life; a scanner bug that froze every close in every consumer would be a worse failure than one unenforced close, and the WARNING keeps it observable. The exit 5 (not 1) for "blocking findings" keeps a Python traceback (exit 1) from being read as a finding.'
+    alternatives_rejected: ['fail closed — one regression in `static_scan.py` would block all completions estate-wide.']
+  - decision: '2026-10-13 — FW_REVIEWER_DISABLED does not reach the gate'
+    chose: '`FW_REVIEWER_DISABLED=1` skips only the measurement pass; the severe gate still runs.'
+    rationale: 'otherwise it is an unlogged bypass beside the logged one.'
+    alternatives_rejected: ['honouring it — `FW_SKIP_REVIEWER_SEVERE=1` is the sanctioned, logged env form.']
+  - decision: '2026-10-13 — env-var form is agent-refused too'
+    chose: '`FW_SKIP_REVIEWER_SEVERE=1` is refused under CLAUDECODE=1 without `--i-am-human`, same as the flag; it needs no reason (env has no reason surface, T-3586 note).'
+    rationale: 'the ruling says operator-only; an env var the agent can prefix would make the flag''s refusal decorative.'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/lib/reviewer/static_scan.py'
+  - 'agents/task-create/update-task.sh'
+  - 'lib/reviewer/static_scan.py'
+  - '.tasks/active/T-4197-severe-deterministic-reviewer-findings-b.md'
+  - 'tests/unit/t4197_reviewer_severe_blocks_close.bats'
+  - 'tests/unit/test_t4197_severe_gate.py'
+  - 'tests/unit/update_task_inception_scope_gate.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-13T21:37:53'
+    action: 'T-4197: severe deterministic reviewer findings block work-completed'
+  - time: '2026-10-13T21:38:10'
+    action: 'T-4197: vendored copies of update-task.sh and static_scan.py'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 2898 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2898
+  commits: 3
+  files_changed: 9
+  lines_added: 1227
+  lines_removed: 21
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4197-severe-deterministic-reviewer-findings-b.md
+generated_by: context-agent-hybrid
