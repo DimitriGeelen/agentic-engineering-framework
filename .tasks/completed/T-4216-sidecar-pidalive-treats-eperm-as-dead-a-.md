@@ -6,12 +6,12 @@ description: >
   sidecar pid_alive treats EPERM as dead: a session running as another user starts
   a second receiver and rewrites the shared token (055 T-509)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/sidecar/lifecycle.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-15T17:25:39Z
-last_update: '2026-10-15T17:31:39Z'
-date_finished:
+last_update: 2026-10-15T19:47:14Z
+date_finished: 2026-10-15T19:47:14Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -368,3 +368,20 @@ rerun passed 506/506 and the file passes alone.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4216-sidecar-pidalive-treats-eperm-as-dead-a-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-081d5469
+- **Timestamp:** 2026-10-15T19:47:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — `lib/sidecar/lifecycle.py:pid_alive` returns True when `os.kill(pid, 0)` raises PermissionError (the process exists, owned by another user); ProcessLookupError and other OSErrors stay False
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=lib/sidecar/lifecycle.py in: `lib/sidecar/lifecycle.py:pid_alive` returns True when `os.kill(pid, 0)` raises PermissionError (the process exists, owned by another user); ProcessLo`
+
+### 2026-10-15T19:47:14Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

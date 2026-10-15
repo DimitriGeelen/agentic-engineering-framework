@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4216: sidecar pid_alive treats EPERM as dead: a session running as another user starts a second receiver and rewrites the shared token (055 T-509)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T19:47:35Z
+# ============================================================================
+
+task_id: T-4216
+task_name: "sidecar pid_alive treats EPERM as dead: a session running as another user starts a second receiver and rewrites the shared token (055 T-509)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-15T17:25:39Z
+completed: 2026-10-15T19:47:14Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-15T19:34:36+02:00
+last_commit: 2026-10-15T19:34:36+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  sidecar pid_alive treats EPERM as alive (process exists under another user); stops a second receiver and token rewrite (055 T-509)
+
+# Key outcomes
+outcomes:
+  - '`lib/sidecar/lifecycle.py:pid_alive` returns True when `os.kill(pid, 0)` raises PermissionError (the process exists, owned by another user); ProcessLookupError and other OSErrors stay False'
+  - 'Regression test fails on the pre-fix code and passes after; existing sidecar lifecycle suites stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/lifecycle.py'
+  - 'lib/sidecar/lifecycle.py'
+  - '.tasks/active/T-4216-sidecar-pidalive-treats-eperm-as-dead-a-.md'
+  - 'tests/unit/test_t4216_pid_alive_eperm.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-15T19:34:36'
+    action: 'T-4216: sidecar pid_alive treats EPERM as alive (process exists under another user); stops a second receiver and token rewrite (055 T-509)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 141 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 141
+  commits: 1
+  files_changed: 4
+  lines_added: 429
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4216-sidecar-pidalive-treats-eperm-as-dead-a-.md
+generated_by: context-agent-hybrid
