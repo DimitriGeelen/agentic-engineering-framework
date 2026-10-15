@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4132: Watchtower currency check false-passes in vendored consumers: lib/watchtower-staleness.sh scans $PROJECT_ROOT/web, which a consumer lacks (code lives in .agentic-framework/web); and nothing says 'restart Watchtower' after fw upgrade (832 field finding, their T-1139)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T16:42:33Z
+# ============================================================================
+
+task_id: T-4132
+task_name: "Watchtower currency check false-passes in vendored consumers: lib/watchtower-staleness.sh scans $PROJECT_ROOT/web, which a consumer lacks (code lives in .agentic-framework/web); and nothing says 'restart Watchtower' after fw upgrade (832 field finding, their T-1139)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-12T21:31:54Z
+completed: 2026-10-15T16:42:09Z
+duration_days: 3
+updates_count: 3
+first_commit: 2026-10-12T23:32:20+02:00
+last_commit: 2026-10-13T00:52:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — Watchtower currency check blind in vendored consumers (832 field finding A). Watchtower currency scans the web dir the server serves from; missing dir = cannot tell; fw upgrade prints restart notice
+
+# Key outcomes
+outcomes:
+  - '`watchtower_stale_sources` defaults to the web dir Watchtower serves from ($FRAMEWORK_ROOT/web; bin/watchtower.sh cd''s to FRAMEWORK_ROOT before `python3 -m web.app`), and `fw watchtower current`, `fw doctor` and `fw audit` pass that dir, so a vendored consumer scans .agentic-framework/web'
+  - 'A missing web dir while a Watchtower is running yields rc 2 ("cannot tell") and a WARN in current/doctor/audit, never "current"'
+  - '`fw upgrade` (consumer path) prints a one-line `fw watchtower restart` notice when vendored web/ files changed and a Watchtower is running for the project (notice only, no auto-restart)'
+  - 'Regression tests: synthetic vendored consumer stale detected; framework-repo layout unchanged; no Watchtower running exits 0; existing staleness/current bats and upgrade_fresh_machine_simulation.bats green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/bin/watchtower.sh'
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.agentic-framework/lib/watchtower-staleness.sh'
+  - 'agents/audit/audit.sh'
+  - 'bin/fw'
+  - 'bin/watchtower.sh'
+  - 'lib/upgrade.sh'
+  - 'lib/watchtower-staleness.sh'
+  - '.tasks/active/T-4132-watchtower-currency-check-false-passes-i.md'
+  - '.tasks/active/T-4133-watchtower-tasks-takes-60-145-s-after-an.md'
+  - 'tests/unit/t3282_watchtower_current.bats'
+  - 'tests/unit/t4132_watchtower_currency_vendored.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-12T23:32:20'
+    action: 'T-4132: file — Watchtower currency check blind in vendored consumers (832 field finding A)'
+  - time: '2026-10-13T00:52:22'
+    action: 'T-4132: Watchtower currency scans the web dir the server serves from; missing dir = cannot tell; fw upgrade prints restart notice'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 4030 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4030
+  commits: 2
+  files_changed: 14
+  lines_added: 606
+  lines_removed: 29
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4132-watchtower-currency-check-false-passes-i.md
+generated_by: context-agent-hybrid
