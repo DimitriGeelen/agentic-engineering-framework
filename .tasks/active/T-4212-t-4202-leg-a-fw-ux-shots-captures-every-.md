@@ -10,12 +10,12 @@ description: >
   state | control | 1024 | 1440 | 1920, each cell one of ok / clipped / hidden / overlap
   / unreachable.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [agents/ux-review/ux_shots.py, bin/fw, lib/config.sh, lib/upgrade_template_shipped.py, web/blueprints/config.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-15T17:18:31Z
-last_update: '2026-10-15T17:30:39Z'
-date_finished:
+last_update: 2026-10-15T19:49:35Z
+date_finished: 2026-10-15T19:49:02Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -131,6 +131,13 @@ cost_estimate_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] The new `UX_SHOT_WIDTHS` row renders correctly on the Watchtower /config page
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower restart` (the running server predates the `web/blueprints/config.py` change)
+  2. Open `$(cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url)/config` in a browser
+  3. Find the `UX_SHOT_WIDTHS` row
+  **Expected:** Row shows default `1024,1440,1920` and its description fits the table without breaking the layout
+  **If not:** Note the row/layout problem and reopen T-4212 for follow-up
 
 ## Verification
 
@@ -336,6 +343,14 @@ bin/fw vendor self --check
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+**Recommendation:** GO
+**Rationale:** All four Agent ACs are met by tests and the verification block passes. The only Human AC covers the one `web/` touch, a settings row for `UX_SHOT_WIDTHS` on /config. It was added at close because the render-surface gate (P-013) requires it.
+**Evidence:**
+- `tests/unit/test_ux_shots.py`: 35 passed, covering width validation, the minimum-3 refusal, path naming and the browser capture
+- `tests/unit/t4212_ux_shots.bats`: 5/5 ok; `fw ux shots --help` documents `UX_SHOT_WIDTHS`
+- `bin/fw vendor self --check`: in sync
+- Commits f8709f8ac (feature) and 11afb2366 (vendored copy)
+- Watchtower needs `bin/fw watchtower restart` before the /config row is live; that was not done in this pass
 
 ## Decisions
 
@@ -381,3 +396,20 @@ bin/fw vendor self --check
 
 ### 2026-10-15T17:20:32Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-02715f77
+- **Timestamp:** 2026-10-15T19:49:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 132
+     - evidence: `bin/fw ux shots --help | grep -q "UX_SHOT_WIDTHS"`
+
+### 2026-10-15T19:49:02Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
