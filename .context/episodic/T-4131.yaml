@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4131: Sidecar prompt hook truncates peer messages at 4000 chars with no way to read the rest: point to a full-body read verb, and warn the sender when a body exceeds the cap
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T16:41:01Z
+# ============================================================================
+
+task_id: T-4131
+task_name: "Sidecar prompt hook truncates peer messages at 4000 chars with no way to read the rest: point to a full-body read verb, and warn the sender when a body exceeds the cap"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-12T21:18:41Z
+completed: 2026-10-15T16:40:37Z
+duration_days: 3
+updates_count: 2
+first_commit: 2026-10-12T23:19:03+02:00
+last_commit: 2026-10-13T00:26:22+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file — sidecar prompt hook truncates at 4000 chars with no read-the-rest path (1409 resend). context — full body is stored by the receiver; marker only needs to point at it (second instance: 832's answer). truncation marker names 'fw sidecar inbox --show <id>'; send warns on bodies over BODY_CAP
+
+# Key outcomes
+outcomes:
+  - 'The prompt hook''s truncation marker names a read-only command (`<fw> sidecar inbox --show <msg-id>`) that prints the full stored body'
+  - '`fw sidecar inbox --show <msg-id>` prints the full stored body inside the PEER-DATA framing, never executes anything, and exits non-zero with a reason for an unknown id'
+  - '`fw sidecar send` prints one warning line when the body exceeds BODY_CAP, and still sends'
+  - 'Unit tests cover marker text, the show verb (known/unknown id) and the send warning; existing sidecar tests stay green'
+  - 'BODY_CAP and the PEER-DATA framing are unchanged'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/hooks.py'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/hooks.py'
+  - '.tasks/active/T-4131-sidecar-prompt-hook-truncates-peer-messa.md'
+  - 'tests/unit/test_sidecar_truncation_t4131.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-12T23:19:03'
+    action: 'T-4131: file — sidecar prompt hook truncates at 4000 chars with no read-the-rest path (1409 resend)'
+  - time: '2026-10-12T23:52:17'
+    action: 'T-4131: context — full body is stored by the receiver; marker only needs to point at it (second instance: 832''s answer)'
+  - time: '2026-10-13T00:26:22'
+    action: 'T-4131: truncation marker names ''fw sidecar inbox --show <id>''; send warns on bodies over BODY_CAP'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 4041 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 4041
+  commits: 3
+  files_changed: 6
+  lines_added: 551
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4131-sidecar-prompt-hook-truncates-peer-messa.md
+generated_by: context-agent-hybrid
