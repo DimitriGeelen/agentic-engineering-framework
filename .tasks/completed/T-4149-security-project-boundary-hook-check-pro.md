@@ -17,12 +17,12 @@ description: >
   anywhere in a simple command, accept -i<suffix>; tests: each case above must fail
   on HEAD; controls for in-project writes stay allowed.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/context/check-project-boundary.sh, lib/shell_write_scan.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -51,8 +51,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-13T13:45:20Z
-last_update: 2026-10-13T14:16:10Z
-date_finished:
+last_update: 2026-10-15T16:49:34Z
+date_finished: 2026-10-15T16:49:34Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -475,3 +475,25 @@ check to rerun for any future lexer change.
 - `tests/governance/test_pretooluse_gates.bats` test 5 (check-active-task, a hook not
   touched here) failed once in a shared-checkout run; it rewrites the live focus.yaml, so
   it was not re-run.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-43893994
+- **Timestamp:** 2026-10-15T16:52:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — Every existing test file referencing the boundary hook or `shell_write_scan` passes (T-3695 guard behaviour unchanged or stricter) — except `tests/integration/check_project_boundary.bats` "Bash redire
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=etc/cron.d in: Every existing test file referencing the boundary hook or `shell_write_scan` passes (T-3695 guard behaviour unchanged or stricter) — except `tests/int`
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 133
+     - evidence: `timeout 600 bats tests/integration/check_project_boundary.bats > /tmp/.t4149d 2>&1; grep -q '^ok ' /tmp/.t4149d && test "$(grep -c '^not ok' /tmp/.t4149d)" -le 1 && ! grep '^not ok' /tmp/.t4149d | gre`
+
+### 2026-10-15T16:49:34Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

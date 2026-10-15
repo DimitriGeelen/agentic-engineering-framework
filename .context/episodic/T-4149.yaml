@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4149: SECURITY: project-boundary hook (check-project-boundary.sh Pattern 3) misses outside writes spelled with a quoted target, a quote-split verb, a .. traversal, a leading redirection, or a bundled sed -i suffix — parser differential vs bash
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-15T16:52:40Z
+# ============================================================================
+
+task_id: T-4149
+task_name: "SECURITY: project-boundary hook (check-project-boundary.sh Pattern 3) misses outside writes spelled with a quoted target, a quote-split verb, a .. traversal, a leading redirection, or a bundled sed -i suffix — parser differential vs bash"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-13T13:45:20Z
+completed: 2026-10-15T16:49:34Z
+duration_days: 2
+updates_count: 3
+first_commit: 2026-10-13T16:16:00+02:00
+last_commit: 2026-10-13T16:16:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  boundary hook reads write targets as bash does — Pattern 5 runs lib/shell_write_scan.py (boundary mode) on the raw command. vendor sync — check-project-boundary.sh, shell_write_scan.py
+
+# Key outcomes
+outcomes:
+  - '`tests/unit/t4149_boundary_parser_differential.bats` has one test per verified case (quoted target, quote-split verb, `..` traversal, leading redirection, `sed -i<suffix>`), each built at run time, and each FAILS against HEAD''s hook (recorded in Updates)'
+  - 'Same file pins the further same-class spellings the tokeniser closes (double-quoted `$(...)` body, unquoted heredoc body substitution, fake `<<EOF` in a comment/quote, brace expansion, `~`, quoted cd target) and the fail-closed case (unterminated quote naming an outside path)'
+  - 'Controls stay allowed: in-project writes (quoted, relative, `..` inside the project), `/tmp` writes, `2>/dev/null`/`>/dev/stderr`, commit messages / quoted heredoc bodies that MENTION outside writes, `echo ''$(touch …)''`'
+  - 'Every existing test file referencing the boundary hook or `shell_write_scan` passes (T-3695 guard behaviour unchanged or stricter) — except `tests/integration/check_project_boundary.bats` "Bash redirect to /etc: blocked", which is red on HEAD too (it expects `> /etc/cron.d/…` blocked; `/etc/cron.d` is a sanctioned write zone since T-603/T-1191); not changed here'
+  - '`## Decisions` states what the parser guarantees and what it does not (script files, run-time-built paths, inline interpreter code)'
+  - '`bin/fw vendor self --check` clean for the touched files; `bin/fw test lint` introduces nothing'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-13 — tokeniser: reuse lib/shell_write_scan.py, not a third parser'
+    chose: 'a boundary mode of `lib/shell_write_scan.py` (`scan_boundary(command, cwd, guarded, cd_ok)`), called from the hook as Pattern 5 on the RAW command. Patterns 1-4 are kept unchanged, so Pattern 5 only ever adds refusals.'
+    rationale: 'T-3695''s scanner already does bash quote removal, redirection stripping anywhere in a simple command, wrapper unwrapping, GNU option clusters (`sed -i<SUF>`), cwd tracking through `cd`, glob + realpath/normpath resolution, and it has three review rounds behind it. A second tokeniser in the hook would be one more reading to diverge.'
+    alternatives_rejected: ['`shlex` (no operators, no heredocs, no substitution bodies, no `$''..''`); the tier0_action grammar approach (a whitelist grammar suits APPROVAL keys, but a boundary gate must read arbitrary commands, and importing tier0_action is itself Tier 0).']
+  - decision: '2026-10-13 — what Pattern 5 guarantees, and what it does not'
+  - decision: '2026-10-13 — shared-scanner changes and T-3695'
+    chose: 'boundary-only behaviour is gated by `ctx.boundary`; the T-3695 `scan()` keeps its old reading and ADDS the lexer''s reading when the command mentions a guarded path (union — only more refusals). Two fixes apply to both modes because both readings were wrong: `$''\cX''` consumes X (a quote included), and a perl cluster `-MFile::Find` is a module, not `-i` (it surfaced as a boundary false block in tests/unit/t4126…:89).'
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-project-boundary.sh'
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - 'agents/context/check-project-boundary.sh'
+  - 'lib/shell_write_scan.py'
+  - '.tasks/active/T-4149-security-project-boundary-hook-check-pro.md'
+  - 'tests/unit/t4149_boundary_parser_differential.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-13T16:16:00'
+    action: 'T-4149: boundary hook reads write targets as bash does — Pattern 5 runs lib/shell_write_scan.py (boundary mode) on the raw command'
+  - time: '2026-10-13T16:16:10'
+    action: 'T-4149: vendor sync — check-project-boundary.sh, shell_write_scan.py'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 3064 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3064
+  commits: 2
+  files_changed: 6
+  lines_added: 1655
+  lines_removed: 55
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4149-security-project-boundary-hook-check-pro.md
+generated_by: context-agent-hybrid
