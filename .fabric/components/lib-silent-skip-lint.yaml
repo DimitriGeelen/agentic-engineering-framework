@@ -1,0 +1,21 @@
+id: lib/silent-skip-lint.sh
+name: silent-skip-lint
+type: script
+subsystem: framework-core
+location: lib/silent-skip-lint.sh
+tags: []
+
+purpose: "T-4219: the Silent-Skip lint step of `fw test lint` (T-3217)."
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-16
+created_by: unknown

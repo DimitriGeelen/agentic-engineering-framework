@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4219: fw test lint exits 1 in every consumer: the Silent-Skip lint reads .agentic-framework/tests/, which a vendored consumer does not have, and reports 'no skip call sites found ... this is not a pass' (832 v1.8.11 field report)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-16T23:53:31Z
+# ============================================================================
+
+task_id: T-4219
+task_name: "fw test lint exits 1 in every consumer: the Silent-Skip lint reads .agentic-framework/tests/, which a vendored consumer does not have, and reports 'no skip call sites found ... this is not a pass' (832 v1.8.11 field report)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-16T21:12:55Z
+completed: 2026-10-16T23:53:10Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-16T23:13:33+02:00
+last_commit: 2026-10-17T01:53:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  v1.8.11 field round 2 from 832 + file consumer lint exit-1 bug. fw test lint no longer fails in a vendored consumer — Silent-Skip lint is NOT APPLICABLE without tests/
+
+# Key outcomes
+outcomes:
+  - 'With no `tests/` in the framework copy (a vendored consumer), the Silent-Skip lint prints a NOT APPLICABLE line and does not fail `fw test lint`'
+  - 'With `tests/` present (the framework repo), behaviour is unchanged: silent skips or an empty/unreadable scan still fail'
+  - 'The decision lives in a sourced function with a bats test covering both cases (red on the pre-fix logic for the missing-dir case)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'v1.8.11 field round 2 from 832 + file consumer lint exit-1 bug'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/silent-skip-lint.sh'
+  - 'bin/fw'
+  - 'docs/reports/field-test-v1.8.11-results.md'
+  - 'lib/silent-skip-lint.sh'
+  - '.tasks/active/T-4219-fw-test-lint-exits-1-in-every-consumer-t.md'
+  - 'tests/unit/t4219_silent_skip_lint_consumer.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-16T23:13:33'
+    action: 'T-4219: v1.8.11 field round 2 from 832 + file consumer lint exit-1 bug'
+  - time: '2026-10-17T01:53:09'
+    action: 'T-4219: fw test lint no longer fails in a vendored consumer — Silent-Skip lint is NOT APPLICABLE without tests/'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 160 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 160
+  commits: 2
+  files_changed: 7
+  lines_added: 554
+  lines_removed: 34
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4219-fw-test-lint-exits-1-in-every-consumer-t.md
+generated_by: context-agent-hybrid
