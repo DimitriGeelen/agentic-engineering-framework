@@ -5497,3 +5497,21 @@ concerns:
     tripwire_assert (wired into the learning-post bats). Open residual, not fixed by T-4205: the t3580_* judge tests
     read the live hub fingerprint and subscribe to fleet inbox topics, so the tripwire now fails them; the fix belongs
     to their owner (inject runner / pin hub), and the operator decides on any baseline. Gap stays open until closed.'
+- id: G-116
+  type: gap
+  title: A shared tmux server carries one project's PROJECT_ROOT/FRAMEWORK_ROOT into every agent session started on it, and fw obeys the inherited paths
+  description: 'On 2026-10-16 01:40 a 055 review dispatch started the host''s default tmux server through fw termlink
+    dispatch with 055''s environment, which became the server''s global env. The claude-fw master sessions of AEF, 050,
+    1023, 832 and termlink, started 01:41-01:49, inherited 055''s paths; their fw commands and PreToolUse hooks acted on
+    055''s project (1023 created two tasks there). AEF noticed only because a verb was missing and reply paths pointed at
+    055; AEF stopped writing and recovered by restarting from a clean server.'
+  severity: high
+  status: open
+  detected_in: T-4217
+  observed: '2026-10-16'
+  reported_by: agent (AEF) and 055-agentic-fleet-cockpit (their T-536)
+  blast_radius: every project whose agent session starts on a shared tmux server after another project's dispatch
+  detection_gap: fw and the hooks trust PROJECT_ROOT/FRAMEWORK_ROOT from the environment; nothing compares them with
+    the launcher's own project or CLAUDE_PROJECT_DIR, so a session operating on another project looks normal
+  what_remains: T-4217 strips the paths from the dispatch spawn; T-4218 makes claude-fw set them explicitly and fw refuse
+    a foreign inherited PROJECT_ROOT. Close when both land and a polluted-server test shows a clean session.
