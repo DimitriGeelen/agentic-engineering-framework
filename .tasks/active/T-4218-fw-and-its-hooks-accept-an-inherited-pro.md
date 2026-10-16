@@ -1,10 +1,21 @@
 ---
 id: T-4218
-name: "fw and its hooks accept an inherited PROJECT_ROOT/FRAMEWORK_ROOT of another project: claude-fw should set the session's paths explicitly and fw should refuse a PROJECT_ROOT that is not the project of its own launcher/cwd"
+name: "fw and its hooks accept an inherited PROJECT_ROOT/FRAMEWORK_ROOT of another
+  project: claude-fw should set the session's paths explicitly and fw should refuse
+  a PROJECT_ROOT that is not the project of its own launcher/cwd"
 description: >
-  Second barrier for the 2026-10-16 env leak (see the dispatch task): AEF's session ran with PROJECT_ROOT=/opt/055-... inherited from a polluted tmux server; bin/fw honoured it, so 'fw sidecar send' would have gone out as 055 and PreToolUse hooks (${CLAUDE_PROJECT_DIR}/bin/fw hook ...) evaluated 055's focus/tasks. Fix: (1) claude-fw / termlink master session sets PROJECT_ROOT and FRAMEWORK_ROOT explicitly from the project it launches in; (2) bin/fw, when invoked via a project's own launcher, refuses (or overrides with a loud warning) an inherited PROJECT_ROOT that is not that launcher's project; hooks resolve from CLAUDE_PROJECT_DIR. Keep legitimate cross-project uses (fw upgrade <dir>, explicit PROJECT_ROOT=... prefixes in tests) working; decide and document the rule.
+  Second barrier for the 2026-10-16 env leak (see the dispatch task): AEF's session
+  ran with PROJECT_ROOT=/opt/055-... inherited from a polluted tmux server; bin/fw
+  honoured it, so 'fw sidecar send' would have gone out as 055 and PreToolUse hooks
+  (${CLAUDE_PROJECT_DIR}/bin/fw hook ...) evaluated 055's focus/tasks. Fix: (1) claude-fw
+  / termlink master session sets PROJECT_ROOT and FRAMEWORK_ROOT explicitly from the
+  project it launches in; (2) bin/fw, when invoked via a project's own launcher, refuses
+  (or overrides with a loud warning) an inherited PROJECT_ROOT that is not that launcher's
+  project; hooks resolve from CLAUDE_PROJECT_DIR. Keep legitimate cross-project uses
+  (fw upgrade <dir>, explicit PROJECT_ROOT=... prefixes in tests) working; decide
+  and document the rule.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-16T21:02:49Z
-last_update: 2026-10-16T21:02:49Z
-date_finished: null
+last_update: 2026-10-16T22:58:04Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-16T21:09:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-16T21:15:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=311,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4218: fw and its hooks accept an inherited PROJECT_ROOT/FRAMEWORK_ROOT of another project: claude-fw should set the session's paths explicitly and fw should refuse a PROJECT_ROOT that is not the project of its own launcher/cwd
@@ -62,8 +101,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] claude-fw sets PROJECT_ROOT and FRAMEWORK_ROOT for the session it starts from the project it is launched in, replacing any inherited values; a test starts it with foreign inherited values and sees its own project (red on HEAD)
+- [x] bin/fw: a leaked PROJECT_ROOT (one carrying the fw-machinery sentinel _FW_PATHS_DERIVED_BY) that is not the caller's project is replaced by the caller's project with a loud stderr warning; an explicit `PROJECT_ROOT=/x fw …` prefix (no sentinel) is still honoured. Tests for both (red on HEAD)
+- [x] Hooks: with CLAUDE_PROJECT_DIR set to a project and the cwd outside any project, a leaked foreign PROJECT_ROOT loses to CLAUDE_PROJECT_DIR; test (red on HEAD)
+- [ ] The Decisions section records the rule chosen (override + warning, not refuse) and the suites that pin PROJECT_ROOT= prefixes are listed in Updates and pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -242,7 +283,20 @@ date_finished: null
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bats tests/unit/t4218_inherited_project_root.bats
+bats tests/unit/t3285_nested_fw_cross_project.bats tests/unit/t2289_paths_env_leak.bats tests/unit/t2446_project_root_cwd_consistency.bats tests/unit/t2465_reanchor_from_cwd.bats tests/unit/t4003_claude_fw_tmux_wrap.bats
+bin/fw test lint
+bin/fw vendor self --check
+
 ## RCA
+
+**Symptom:** a session started in one project (a claude-fw master, or a hook of it) acted on another project whose PROJECT_ROOT/FRAMEWORK_ROOT it inherited from a polluted tmux server: fw commands wrote tasks into the foreign project, and hook focus/task checks evaluated it (G-116, 1023 created two tasks in 055).
+
+**Root cause:** bin/fw treated a non-stale inherited PROJECT_ROOT as authoritative ("env wins"), and claude-fw's own project tag (`_fw_project_tag`) read the same inherited value. The existing T-3285 guard already redirected a leaked (sentinel-bearing) root to the cwd's project, but only when the cwd was in a project; in a hook whose cwd is in no project (the Claude Code hook case) the leaked root stood, and it did so silently.
+
+**Why structurally allowed:** no session-start step established the session's own paths; claude-fw inherited them. The T-3285 redirect was silent, so a correct correction was still invisible to the operator. The tests pinned the redirect for a project cwd and the "env wins" contract for an explicit prefix, but not the hook case.
+
+**Prevention:** (1) claude-fw pins PROJECT_ROOT/FRAMEWORK_ROOT to its launch project before it starts the session or the tmux wrap, and warns when it replaces a different inherited value. (2) bin/fw's leaked-root guard uses the cwd's project, else a valid CLAUDE_PROJECT_DIR, and warns on stderr when it replaces the root. (3) `t4218_inherited_project_root.bats` pins all three cases, and the explicit-prefix control. Red on HEAD for claude-fw, the cwd-less hook case and the warning; the explicit-prefix control is green on both.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -322,6 +376,12 @@ date_finished: null
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-16 — the rule for an inherited foreign PROJECT_ROOT
+- **Chose:** override with a loud stderr warning, not refuse. In bin/fw a leaked root (one carrying `_FW_PATHS_DERIVED_BY`, which only fw process trees export) is replaced by the caller's project: the cwd's project if it has one, else a valid `CLAUDE_PROJECT_DIR`. In claude-fw the session's project is always its launch project, and a different inherited value is replaced with a warning.
+- **Why:** refusing would break Claude Code hooks, which run with an unrelated cwd, and would turn a recoverable misdirection into a hard stop for every agent on the host. An override is only safe if it is visible, so the warning names both values. The caller's project is a fact the framework can determine; refusing would not improve on that.
+- **Rejected:** refuse outright (breaks hooks; no authority for the replacement). A new opt-in `FW_PROJECT_ROOT_OVERRIDE` (unneeded: an explicit `PROJECT_ROOT=… fw` prefix carries no sentinel and is never touched; the explicit cross-project tests and `fw upgrade <dir>` keep working).
+- **Residual, not fixed here:** a leaked `FRAMEWORK_ROOT` with no leaked root and a cwd in no project is still honoured by bin/fw; claude-fw covers it for sessions it starts. The sentinel is a provenance marker, not forgery-proof (same residual as T-3285).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -338,3 +398,12 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4218-fw-and-its-hooks-accept-an-inherited-pro.md
 - **Context:** Initial task creation
+
+### 2026-10-16 — dispatch worker (t4217-envleak) — evidence
+- Red on HEAD: `t4218_inherited_project_root.bats` tests a (claude-fw), b (bin/fw warning) and c (hook, cwd in no project) fail; d (explicit prefix control) passes on both.
+- Green with the fix: all four; adjacent `t3285`, `t2289`, `t2446`, `t2465`, `t4003` green (28 tests across the set).
+- Suites that pin PROJECT_ROOT / sentinel / CLAUDE_PROJECT_DIR behaviour were run per file (257 bats files touch these names; list in `.context/scratch/t4218-bats.txt`). Each red seen was compared against an exported HEAD copy with the inherited environment cleared: `test_pretooluse_gates` and the claude-fw restart/terminator tests fail on HEAD too (shared-focus and timing dependent). The full comparison outcome is in the dispatch result file.
+- `bin/fw test lint`: 0 fail. Dead-negation: four inert `!` assertions in this task's test file rewritten.
+
+### 2026-10-16T21:09:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
