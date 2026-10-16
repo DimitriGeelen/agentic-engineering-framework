@@ -309,15 +309,28 @@ if [ -n "${PROJECT_ROOT:-}" ] && [ -n "${_FW_PATHS_DERIVED_BY:-}" ]; then
     _t3285_pr=$(cd "$PROJECT_ROOT" 2>/dev/null && pwd -P) || _t3285_pr="$PROJECT_ROOT"
     _t3285_der=$(cd "$_FW_PATHS_DERIVED_BY" 2>/dev/null && pwd -P) || _t3285_der="$_FW_PATHS_DERIVED_BY"
     if [ "$_t3285_pr" = "$_t3285_der" ]; then
+        # T-4218: the caller's own project is the cwd's project, else a valid CLAUDE_PROJECT_DIR
+        # (a Claude Code hook whose cwd is in no project, e.g. $HOME or a worker's /tmp). The cwd
+        # wins when it is a real project, as T-2446 ranks them. A non-project cwd with no
+        # CLAUDE_PROJECT_DIR keeps the leaked root (the T-3285 contract, unchanged).
         _t3285_cwd_root=$(find_project_root) || _t3285_cwd_root=""
+        _t3285_auth=""
         if [ -n "$_t3285_cwd_root" ] && ! _project_root_is_stale "$_t3285_cwd_root"; then
-            _t3285_cwd_canon=$(cd "$_t3285_cwd_root" 2>/dev/null && pwd -P) || _t3285_cwd_canon="$_t3285_cwd_root"
-            if [ "$_t3285_cwd_canon" != "$_t3285_pr" ]; then
-                PROJECT_ROOT="$_t3285_cwd_root"
+            _t3285_auth="$_t3285_cwd_root"
+        elif [ -n "${CLAUDE_PROJECT_DIR:-}" ] && \
+             { [ -f "$CLAUDE_PROJECT_DIR/.framework.yaml" ] || [ -d "$CLAUDE_PROJECT_DIR/.tasks" ]; }; then
+            _t3285_auth="$CLAUDE_PROJECT_DIR"
+        fi
+        if [ -n "$_t3285_auth" ]; then
+            _t3285_auth_canon=$(cd "$_t3285_auth" 2>/dev/null && pwd -P) || _t3285_auth_canon="$_t3285_auth"
+            if [ "$_t3285_auth_canon" != "$_t3285_pr" ]; then
+                # Loud, not silent (Reliability): the leaked value is named, and so is its replacement.
+                echo "fw: inherited PROJECT_ROOT=$PROJECT_ROOT is another project's (fw-leaked: _FW_PATHS_DERIVED_BY=$_FW_PATHS_DERIVED_BY); using $_t3285_auth_canon. Set PROJECT_ROOT on the command line to override." >&2
+                PROJECT_ROOT="$_t3285_auth_canon"
                 unset TASKS_DIR CONTEXT_DIR _FW_PATHS_DERIVED_BY
             fi
         fi
-        unset _t3285_cwd_root _t3285_cwd_canon
+        unset _t3285_cwd_root _t3285_auth _t3285_auth_canon
     fi
     unset _t3285_pr _t3285_der
 fi

@@ -32,6 +32,30 @@ CLAUDE_ARGS=()
 # writing a .restart-requested signal nobody consumes (the 300K→350K overrun bug).
 export FW_CLAUDE_FW_SUPERVISED=1
 
+# T-4218 (G-116): the session's project is the one claude-fw is launched in. A PROJECT_ROOT or
+# FRAMEWORK_ROOT inherited from elsewhere (a tmux server polluted by another project's dispatch,
+# a shell of another project) is replaced, with a stderr warning, so every fw call and hook in
+# this session acts on its own project. Runs before the tmux wrap below, which carries the
+# environment into the session. Outside any project the environment is left as it is.
+_cfw_pin_project() {
+    local d="$PWD" fwr=""
+    while [ "$d" != "/" ]; do
+        if [ -f "$d/.framework.yaml" ] || { [ -f "$d/FRAMEWORK.md" ] && [ -f "$d/bin/fw" ]; }; then break; fi
+        d=$(dirname "$d")
+    done
+    [ "$d" = "/" ] && return 0
+    d=$(cd "$d" && pwd -P)
+    if [ -n "${PROJECT_ROOT:-}" ] && [ "$PROJECT_ROOT" != "$d" ]; then
+        echo "claude-fw: WARNING: inherited PROJECT_ROOT=$PROJECT_ROOT is not this project; this session uses $d (T-4218)" >&2
+    fi
+    if [ -f "$d/.agentic-framework/bin/fw" ]; then fwr="$d/.agentic-framework"
+    elif [ -f "$d/FRAMEWORK.md" ] && [ -x "$d/bin/fw" ]; then fwr="$d"; fi
+    export PROJECT_ROOT="$d"
+    if [ -n "$fwr" ]; then export FRAMEWORK_ROOT="$fwr"; else unset FRAMEWORK_ROOT; fi
+    unset TASKS_DIR CONTEXT_DIR _FW_PATHS_DERIVED_BY
+}
+_cfw_pin_project
+
 # T-3247: remember whether the ORIGINAL invocation was headless. A restart hands
 # the resumed session no prompt (CLAUDE_ARGS=() below, T-3166), which is right for
 # an interactive terminal — SessionStart seeds it and the operator's session takes
