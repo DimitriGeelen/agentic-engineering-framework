@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4217: fw termlink dispatch leaks PROJECT_ROOT/FRAMEWORK_ROOT into the host's default tmux server: the first spawn starts the server with fw's env, and every agent later started there inherits another project's paths (055 T-536)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-16T23:44:14Z
+# ============================================================================
+
+task_id: T-4217
+task_name: "fw termlink dispatch leaks PROJECT_ROOT/FRAMEWORK_ROOT into the host's default tmux server: the first spawn starts the server with fw's env, and every agent later started there inherits another project's paths (055 T-536)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-16T21:02:30Z
+completed: 2026-10-16T23:43:28Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-16T23:03:32+02:00
+last_commit: 2026-10-16T23:09:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  register G-116 (shared tmux server carries one project's paths into others' sessions) + file T-4217/T-4218. strip fw path env from tmux server starts (spawn + claude-fw wrap); pin t3277 tmux to a private socket (G-116). vendored copies of termlink.sh and claude-fw (vendor self)
+
+# Key outcomes
+outcomes:
+  - 'Every path that starts `termlink spawn` / a tmux session for a dispatch runs without PROJECT_ROOT, FRAMEWORK_ROOT, _FW_PATHS_DERIVED_BY and FW_ROUTED_FROM, so none of them can become a tmux server''s global env; the worker still runs in its own project (run.sh exports its paths)'
+  - 'A test on a PRIVATE tmux socket (never the host default) shows none of the four variables in `show-environment -g` after a spawn; it fails on the pre-fix code'
+  - 'Tests that use tmux are listed in Updates; none can reach the host''s default socket (no `kill-server` without `-S`, no TMUX_TMPDIR-only isolation)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/bin/claude-fw'
+  - 'agents/termlink/termlink.sh'
+  - 'bin/claude-fw'
+  - '.context/project/concerns.yaml'
+  - '.tasks/active/T-4217-fw-termlink-dispatch-leaks-projectrootfr.md'
+  - '.tasks/active/T-4218-fw-and-its-hooks-accept-an-inherited-pro.md'
+  - 'tests/unit/t3277_transport_leg.bats'
+  - 'tests/unit/t4217_spawn_env_isolation.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-16T23:03:32'
+    action: 'T-4217: register G-116 (shared tmux server carries one project''s paths into others'' sessions) + file T-4217/T-4218'
+  - time: '2026-10-16T23:09:15'
+    action: 'T-4217: strip fw path env from tmux server starts (spawn + claude-fw wrap); pin t3277 tmux to a private socket (G-116)'
+  - time: '2026-10-16T23:09:32'
+    action: 'T-4217: vendored copies of termlink.sh and claude-fw (vendor self)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 160 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 160
+  commits: 3
+  files_changed: 9
+  lines_added: 855
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4217-fw-termlink-dispatch-leaks-projectrootfr.md
+generated_by: context-agent-hybrid

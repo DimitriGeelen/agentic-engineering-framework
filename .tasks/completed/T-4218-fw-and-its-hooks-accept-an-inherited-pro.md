@@ -1,26 +1,26 @@
 ---
-id: T-4217
-name: "fw termlink dispatch leaks PROJECT_ROOT/FRAMEWORK_ROOT into the host's default
-  tmux server: the first spawn starts the server with fw's env, and every agent later
-  started there inherits another project's paths (055 T-536)"
+id: T-4218
+name: "fw and its hooks accept an inherited PROJECT_ROOT/FRAMEWORK_ROOT of another
+  project: claude-fw should set the session's paths explicitly and fw should refuse
+  a PROJECT_ROOT that is not the project of its own launcher/cwd"
 description: >
-  055 msg 881655be (verified cause on their side, 2026-10-16): agents/termlink/termlink.sh
-  cmd_spawn runs 'termlink spawn ... --shell' with fw's full env; termlink runs 'tmux
-  new-session -d' on the DEFAULT socket; when no server runs, that starts it and PROJECT_ROOT/FRAMEWORK_ROOT/_FW_PATHS_DERIVED_BY/FW_ROUTED_FROM
-  become the server's GLOBAL env. On 2026-10-16 01:40 a 055 review dispatch did this;
-  AEF's, 050's, 1023's, 832's and termlink's claude-fw master sessions (01:41-01:49)
-  inherited 055's paths, so their fw commands acted on 055's project (1023 created
-  two tasks there). Fix: run the spawn under env -u PROJECT_ROOT -u FRAMEWORK_ROOT
-  -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM (the worker's run.sh exports its own paths).
-  055's vendored fix + tests/test_dispatch_spawn_env.py (red->green) as reference.
-  Test on a private tmux socket (-S/-L), never the host's default server.
+  Second barrier for the 2026-10-16 env leak (see the dispatch task): AEF's session
+  ran with PROJECT_ROOT=/opt/055-... inherited from a polluted tmux server; bin/fw
+  honoured it, so 'fw sidecar send' would have gone out as 055 and PreToolUse hooks
+  (${CLAUDE_PROJECT_DIR}/bin/fw hook ...) evaluated 055's focus/tasks. Fix: (1) claude-fw
+  / termlink master session sets PROJECT_ROOT and FRAMEWORK_ROOT explicitly from the
+  project it launches in; (2) bin/fw, when invoked via a project's own launcher, refuses
+  (or overrides with a loud warning) an inherited PROJECT_ROOT that is not that launcher's
+  project; hooks resolve from CLAUDE_PROJECT_DIR. Keep legitimate cross-project uses
+  (fw upgrade <dir>, explicit PROJECT_ROOT=... prefixes in tests) working; decide
+  and document the rule.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/claude-fw, bin/fw]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -48,9 +48,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-16T21:02:30Z
-last_update: 2026-10-16T21:09:32Z
-date_finished:
+created: 2026-10-16T21:02:49Z
+last_update: 2026-10-16T23:44:17Z
+date_finished: 2026-10-16T23:44:17Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -62,7 +62,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-16T21:04:06Z'
+  - ts: '2026-10-16T21:09:58Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -79,9 +79,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-16T21:15:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=311,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4217: fw termlink dispatch leaks PROJECT_ROOT/FRAMEWORK_ROOT into the host's default tmux server: the first spawn starts the server with fw's env, and every agent later started there inherits another project's paths (055 T-536)
+# T-4218: fw and its hooks accept an inherited PROJECT_ROOT/FRAMEWORK_ROOT of another project: claude-fw should set the session's paths explicitly and fw should refuse a PROJECT_ROOT that is not the project of its own launcher/cwd
 
 ## Context
 
@@ -91,9 +101,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Every path that starts `termlink spawn` / a tmux session for a dispatch runs without PROJECT_ROOT, FRAMEWORK_ROOT, _FW_PATHS_DERIVED_BY and FW_ROUTED_FROM, so none of them can become a tmux server's global env; the worker still runs in its own project (run.sh exports its paths)
-- [x] A test on a PRIVATE tmux socket (never the host default) shows none of the four variables in `show-environment -g` after a spawn; it fails on the pre-fix code
-- [x] Tests that use tmux are listed in Updates; none can reach the host's default socket (no `kill-server` without `-S`, no TMUX_TMPDIR-only isolation)
+- [x] claude-fw sets PROJECT_ROOT and FRAMEWORK_ROOT for the session it starts from the project it is launched in, replacing any inherited values; a test starts it with foreign inherited values and sees its own project (red on HEAD)
+- [x] bin/fw: a leaked PROJECT_ROOT (one carrying the fw-machinery sentinel _FW_PATHS_DERIVED_BY) that is not the caller's project is replaced by the caller's project with a loud stderr warning; an explicit `PROJECT_ROOT=/x fw …` prefix (no sentinel) is still honoured. Tests for both (red on HEAD)
+- [x] Hooks: with CLAUDE_PROJECT_DIR set to a project and the cwd outside any project, a leaked foreign PROJECT_ROOT loses to CLAUDE_PROJECT_DIR; test (red on HEAD)
+- [x] The Decisions section records the rule chosen (override + warning, not refuse) and the suites that pin PROJECT_ROOT= prefixes are listed in Updates and pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -271,27 +282,21 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-bats tests/unit/t4217_spawn_env_isolation.bats
-bats tests/unit/termlink.bats tests/unit/t4003_claude_fw_tmux_wrap.bats tests/unit/t4152_dispatch_endpoint_leak.bats tests/unit/t3277_transport_leg.bats
+
+bats tests/unit/t4218_inherited_project_root.bats
+bats tests/unit/t3285_nested_fw_cross_project.bats tests/unit/t2289_paths_env_leak.bats tests/unit/t2446_project_root_cwd_consistency.bats tests/unit/t2465_reanchor_from_cwd.bats tests/unit/t4003_claude_fw_tmux_wrap.bats
+bin/fw test lint
 bin/fw vendor self --check
 
 ## RCA
 
-**Symptom:** after one 055 review dispatch started the host's default tmux server, every claude-fw session started on that server (AEF, 050, 1023, 832, termlink) ran with 055's PROJECT_ROOT/FRAMEWORK_ROOT; fw commands and hooks acted on 055's project (G-116).
+**Symptom:** a session started in one project (a claude-fw master, or a hook of it) acted on another project whose PROJECT_ROOT/FRAMEWORK_ROOT it inherited from a polluted tmux server: fw commands wrote tasks into the foreign project, and hook focus/task checks evaluated it (G-116, 1023 created two tasks in 055).
 
-**Root cause:** a tmux server takes its GLOBAL environment from the process that starts it. `cmd_spawn` ran `termlink spawn` with fw's full env, and termlink's `tmux new-session -d` on the default socket started the server with those paths. The claude-fw tmux wrap (`tmux -L fw-agents new-session`) had the same shape: the server it starts inherited the caller's paths.
+**Root cause:** bin/fw treated a non-stale inherited PROJECT_ROOT as authoritative ("env wins"), and claude-fw's own project tag (`_fw_project_tag`) read the same inherited value. The existing T-3285 guard already redirected a leaked (sentinel-bearing) root to the cwd's project, but only when the cwd was in a project; in a hook whose cwd is in no project (the Claude Code hook case) the leaked root stood, and it did so silently.
 
-**Why structurally allowed:** nothing checked what environment a tmux server was started with, and the existing tmux tests fake tmux (argv recording), so none observed a server's global env. The one real-tmux test (t3277) used bare `tmux` and so could reach the host's default server without anything noticing.
+**Why structurally allowed:** no session-start step established the session's own paths; claude-fw inherited them. The T-3285 redirect was silent, so a correct correction was still invisible to the operator. The tests pinned the redirect for a project cwd and the "env wins" contract for an explicit prefix, but not the hook case.
 
-**Prevention:** the spawn and the wrap strip the four variables for the process that starts a server (the session still gets what it needs via `-e` or the worker's own run.sh). `tests/unit/t4217_spawn_env_isolation.bats` runs real tmux on a private `-S` socket and asserts `show-environment -g` is clean; it is red on HEAD. t3277 is pinned to a private socket through a PATH shim, so no test in the tree reaches the default socket.
-
-## Updates
-
-### 2026-10-16 — dispatch worker (t4217-envleak) — pre-fix evidence
-- Red on HEAD: `t4217_spawn_env_isolation.bats` tests 1 (spawn) and 2 (claude-fw wrap) both fail with the path variables in the captured env.
-- Green with the fix: both pass; t3277 (7/7), termlink.bats, t3346, t3651, t4067, t4152, t3647, t4003, t3779, t3096, t4205, t3076 green in the same run (118 tests across the set).
-- Tmux usage audit (`grep kill-server|TMUX_TMPDIR|bare tmux` over tests/): `kill-server` appears only in t4217 (pinned `-S`). No file isolates by TMUX_TMPDIR alone. Bare-`tmux` callers: `t3277_transport_leg.bats` (real tmux, pinned by this task via shim; the continuous-driver it runs also inherits the shim). `t4003_claude_fw_tmux_wrap.bats`, `test_sidecar_tmux_route_t4003.py`, `t3593_round5_grammar.bats` use a fake tmux or a string only, not a live server.
-- Not run: the unpinned t3277 (it would have used the host default server).
+**Prevention:** (1) claude-fw pins PROJECT_ROOT/FRAMEWORK_ROOT to its launch project before it starts the session or the tmux wrap, and warns when it replaces a different inherited value. (2) bin/fw's leaked-root guard uses the cwd's project, else a valid CLAUDE_PROJECT_DIR, and warns on stderr when it replaces the root. (3) `t4218_inherited_project_root.bats` pins all three cases, and the explicit-prefix control. Red on HEAD for claude-fw, the cwd-less hook case and the warning; the explicit-prefix control is green on both.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -371,6 +376,12 @@ bin/fw vendor self --check
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-16 — the rule for an inherited foreign PROJECT_ROOT
+- **Chose:** override with a loud stderr warning, not refuse. In bin/fw a leaked root (one carrying `_FW_PATHS_DERIVED_BY`, which only fw process trees export) is replaced by the caller's project: the cwd's project if it has one, else a valid `CLAUDE_PROJECT_DIR`. In claude-fw the session's project is always its launch project, and a different inherited value is replaced with a warning.
+- **Why:** refusing would break Claude Code hooks, which run with an unrelated cwd, and would turn a recoverable misdirection into a hard stop for every agent on the host. An override is only safe if it is visible, so the warning names both values. The caller's project is a fact the framework can determine; refusing would not improve on that.
+- **Rejected:** refuse outright (breaks hooks; no authority for the replacement). A new opt-in `FW_PROJECT_ROOT_OVERRIDE` (unneeded: an explicit `PROJECT_ROOT=… fw` prefix carries no sentinel and is never touched; the explicit cross-project tests and `fw upgrade <dir>` keep working).
+- **Residual, not fixed here:** a leaked `FRAMEWORK_ROOT` with no leaked root and a cwd in no project is still honoured by bin/fw; claude-fw covers it for sessions it starts. The sentinel is a provenance marker, not forgery-proof (same residual as T-3285).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -383,10 +394,39 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-16T21:02:30Z — task-created [task-create-agent]
+### 2026-10-16T21:02:49Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4217-fw-termlink-dispatch-leaks-projectrootfr.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4218-fw-and-its-hooks-accept-an-inherited-pro.md
 - **Context:** Initial task creation
 
-### 2026-10-16T21:04:05Z — status-update [task-update-agent]
+### 2026-10-16 — dispatch worker (t4217-envleak) — evidence
+- Red on HEAD: `t4218_inherited_project_root.bats` tests a (claude-fw), b (bin/fw warning) and c (hook, cwd in no project) fail; d (explicit prefix control) passes on both.
+- Green with the fix: all four; adjacent `t3285`, `t2289`, `t2446`, `t2465`, `t4003` green (28 tests across the set).
+- Suites that pin PROJECT_ROOT / sentinel / CLAUDE_PROJECT_DIR behaviour were run per file (257 bats files touch these names; list in `.context/scratch/t4218-bats.txt`). Each red seen was compared against an exported HEAD copy with the inherited environment cleared: `test_pretooluse_gates` and the claude-fw restart/terminator tests fail on HEAD too (shared-focus and timing dependent). The full comparison outcome is in the dispatch result file.
+- `bin/fw test lint`: 0 fail. Dead-negation: four inert `!` assertions in this task's test file rewritten.
+
+### 2026-10-16T21:09:57Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-17 — explicit PROJECT_ROOT= prefix suites still green (orchestrator)
+- Suites with the most `PROJECT_ROOT=` prefixes: t2230_bvp_driver_init, t4204_commit_allowance_env_prefix,
+  t3233_arm_bounds, t3225_continuous_arm, fw_pending, verification_unjudged_test_run, observe, master_guard;
+  plus t4218_inherited_project_root and upgrade_fresh_machine_simulation (consumer, env -i).
+- Run together: 1..123, 0 not ok.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-ec9f1ddc
+- **Timestamp:** 2026-10-16T23:47:10Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-16T23:44:17Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

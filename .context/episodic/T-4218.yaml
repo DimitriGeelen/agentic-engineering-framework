@@ -1,0 +1,87 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4218: fw and its hooks accept an inherited PROJECT_ROOT/FRAMEWORK_ROOT of another project: claude-fw should set the session's paths explicitly and fw should refuse a PROJECT_ROOT that is not the project of its own launcher/cwd
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-16T23:47:25Z
+# ============================================================================
+
+task_id: T-4218
+task_name: "fw and its hooks accept an inherited PROJECT_ROOT/FRAMEWORK_ROOT of another project: claude-fw should set the session's paths explicitly and fw should refuse a PROJECT_ROOT that is not the project of its own launcher/cwd"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-16T21:02:49Z
+completed: 2026-10-16T23:44:17Z
+duration_days: 0
+updates_count: 4
+first_commit: 2026-10-17T00:58:04+02:00
+last_commit: 2026-10-17T00:58:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  claude-fw pins its launch project; bin/fw replaces a leaked foreign PROJECT_ROOT with a warning (cwd, else CLAUDE_PROJECT_DIR). vendored copies of bin/fw and claude-fw (vendor self)
+
+# Key outcomes
+outcomes:
+  - 'claude-fw sets PROJECT_ROOT and FRAMEWORK_ROOT for the session it starts from the project it is launched in, replacing any inherited values; a test starts it with foreign inherited values and sees its own project (red on HEAD)'
+  - 'bin/fw: a leaked PROJECT_ROOT (one carrying the fw-machinery sentinel _FW_PATHS_DERIVED_BY) that is not the caller''s project is replaced by the caller''s project with a loud stderr warning; an explicit `PROJECT_ROOT=/x fw …` prefix (no sentinel) is still honoured. Tests for both (red on HEAD)'
+  - 'Hooks: with CLAUDE_PROJECT_DIR set to a project and the cwd outside any project, a leaked foreign PROJECT_ROOT loses to CLAUDE_PROJECT_DIR; test (red on HEAD)'
+  - 'The Decisions section records the rule chosen (override + warning, not refuse) and the suites that pin PROJECT_ROOT= prefixes are listed in Updates and pass'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-16 — the rule for an inherited foreign PROJECT_ROOT'
+    chose: 'override with a loud stderr warning, not refuse. In bin/fw a leaked root (one carrying `_FW_PATHS_DERIVED_BY`, which only fw process trees export) is replaced by the caller''s project: the cwd''s project if it has one, else a valid `CLAUDE_PROJECT_DIR`. In claude-fw the session''s project is always its launch project, and a different inherited value is replaced with a warning.'
+    rationale: 'refusing would break Claude Code hooks, which run with an unrelated cwd, and would turn a recoverable misdirection into a hard stop for every agent on the host. An override is only safe if it is visible, so the warning names both values. The caller''s project is a fact the framework can determine; refusing would not improve on that.'
+    alternatives_rejected: ['refuse outright (breaks hooks; no authority for the replacement). A new opt-in `FW_PROJECT_ROOT_OVERRIDE` (unneeded: an explicit `PROJECT_ROOT=… fw` prefix carries no sentinel and is never touched; the explicit cross-project tests and `fw upgrade <dir>` keep working). - **Residual, not fixed here:** a leaked `FRAMEWORK_ROOT` with no leaked root and a cwd in no project is still honoured by bin/fw; claude-fw covers it for sessions it starts. The sentinel is a provenance marker, not forgery-proof (same residual as T-3285).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - '.agentic-framework/bin/fw'
+  - 'bin/claude-fw'
+  - 'bin/fw'
+  - '.tasks/active/T-4218-fw-and-its-hooks-accept-an-inherited-pro.md'
+  - 'tests/unit/t4218_inherited_project_root.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T00:58:04'
+    action: 'T-4218: claude-fw pins its launch project; bin/fw replaces a leaked foreign PROJECT_ROOT with a warning (cwd, else CLAUDE_PROJECT_DIR)'
+  - time: '2026-10-17T00:58:05'
+    action: 'T-4218: vendored copies of bin/fw and claude-fw (vendor self)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 161 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 161
+  commits: 2
+  files_changed: 6
+  lines_added: 244
+  lines_removed: 17
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4218-fw-and-its-hooks-accept-an-inherited-pro.md
+generated_by: context-agent-hybrid
