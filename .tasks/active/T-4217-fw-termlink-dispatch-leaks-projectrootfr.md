@@ -1,10 +1,21 @@
 ---
 id: T-4217
-name: "fw termlink dispatch leaks PROJECT_ROOT/FRAMEWORK_ROOT into the host's default tmux server: the first spawn starts the server with fw's env, and every agent later started there inherits another project's paths (055 T-536)"
+name: "fw termlink dispatch leaks PROJECT_ROOT/FRAMEWORK_ROOT into the host's default
+  tmux server: the first spawn starts the server with fw's env, and every agent later
+  started there inherits another project's paths (055 T-536)"
 description: >
-  055 msg 881655be (verified cause on their side, 2026-10-16): agents/termlink/termlink.sh cmd_spawn runs 'termlink spawn ... --shell' with fw's full env; termlink runs 'tmux new-session -d' on the DEFAULT socket; when no server runs, that starts it and PROJECT_ROOT/FRAMEWORK_ROOT/_FW_PATHS_DERIVED_BY/FW_ROUTED_FROM become the server's GLOBAL env. On 2026-10-16 01:40 a 055 review dispatch did this; AEF's, 050's, 1023's, 832's and termlink's claude-fw master sessions (01:41-01:49) inherited 055's paths, so their fw commands acted on 055's project (1023 created two tasks there). Fix: run the spawn under env -u PROJECT_ROOT -u FRAMEWORK_ROOT -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM (the worker's run.sh exports its own paths). 055's vendored fix + tests/test_dispatch_spawn_env.py (red->green) as reference. Test on a private tmux socket (-S/-L), never the host's default server.
+  055 msg 881655be (verified cause on their side, 2026-10-16): agents/termlink/termlink.sh
+  cmd_spawn runs 'termlink spawn ... --shell' with fw's full env; termlink runs 'tmux
+  new-session -d' on the DEFAULT socket; when no server runs, that starts it and PROJECT_ROOT/FRAMEWORK_ROOT/_FW_PATHS_DERIVED_BY/FW_ROUTED_FROM
+  become the server's GLOBAL env. On 2026-10-16 01:40 a 055 review dispatch did this;
+  AEF's, 050's, 1023's, 832's and termlink's claude-fw master sessions (01:41-01:49)
+  inherited 055's paths, so their fw commands acted on 055's project (1023 created
+  two tasks there). Fix: run the spawn under env -u PROJECT_ROOT -u FRAMEWORK_ROOT
+  -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM (the worker's run.sh exports its own paths).
+  055's vendored fix + tests/test_dispatch_spawn_env.py (red->green) as reference.
+  Test on a private tmux socket (-S/-L), never the host's default server.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-16T21:02:30Z
-last_update: 2026-10-16T21:02:30Z
-date_finished: null
+last_update: 2026-10-16T21:09:15Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-16T21:04:06Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4217: fw termlink dispatch leaks PROJECT_ROOT/FRAMEWORK_ROOT into the host's default tmux server: the first spawn starts the server with fw's env, and every agent later started there inherits another project's paths (055 T-536)
@@ -62,8 +91,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Every path that starts `termlink spawn` / a tmux session for a dispatch runs without PROJECT_ROOT, FRAMEWORK_ROOT, _FW_PATHS_DERIVED_BY and FW_ROUTED_FROM, so none of them can become a tmux server's global env; the worker still runs in its own project (run.sh exports its paths)
+- [x] A test on a PRIVATE tmux socket (never the host default) shows none of the four variables in `show-environment -g` after a spawn; it fails on the pre-fix code
+- [x] Tests that use tmux are listed in Updates; none can reach the host's default socket (no `kill-server` without `-S`, no TMUX_TMPDIR-only isolation)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -241,8 +271,27 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bats tests/unit/t4217_spawn_env_isolation.bats
+bats tests/unit/termlink.bats tests/unit/t4003_claude_fw_tmux_wrap.bats tests/unit/t4152_dispatch_endpoint_leak.bats tests/unit/t3277_transport_leg.bats
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** after one 055 review dispatch started the host's default tmux server, every claude-fw session started on that server (AEF, 050, 1023, 832, termlink) ran with 055's PROJECT_ROOT/FRAMEWORK_ROOT; fw commands and hooks acted on 055's project (G-116).
+
+**Root cause:** a tmux server takes its GLOBAL environment from the process that starts it. `cmd_spawn` ran `termlink spawn` with fw's full env, and termlink's `tmux new-session -d` on the default socket started the server with those paths. The claude-fw tmux wrap (`tmux -L fw-agents new-session`) had the same shape: the server it starts inherited the caller's paths.
+
+**Why structurally allowed:** nothing checked what environment a tmux server was started with, and the existing tmux tests fake tmux (argv recording), so none observed a server's global env. The one real-tmux test (t3277) used bare `tmux` and so could reach the host's default server without anything noticing.
+
+**Prevention:** the spawn and the wrap strip the four variables for the process that starts a server (the session still gets what it needs via `-e` or the worker's own run.sh). `tests/unit/t4217_spawn_env_isolation.bats` runs real tmux on a private `-S` socket and asserts `show-environment -g` is clean; it is red on HEAD. t3277 is pinned to a private socket through a PATH shim, so no test in the tree reaches the default socket.
+
+## Updates
+
+### 2026-10-16 — dispatch worker (t4217-envleak) — pre-fix evidence
+- Red on HEAD: `t4217_spawn_env_isolation.bats` tests 1 (spawn) and 2 (claude-fw wrap) both fail with the path variables in the captured env.
+- Green with the fix: both pass; t3277 (7/7), termlink.bats, t3346, t3651, t4067, t4152, t3647, t4003, t3779, t3096, t4205, t3076 green in the same run (118 tests across the set).
+- Tmux usage audit (`grep kill-server|TMUX_TMPDIR|bare tmux` over tests/): `kill-server` appears only in t4217 (pinned `-S`). No file isolates by TMUX_TMPDIR alone. Bare-`tmux` callers: `t3277_transport_leg.bats` (real tmux, pinned by this task via shim; the continuous-driver it runs also inherits the shim). `t4003_claude_fw_tmux_wrap.bats`, `test_sidecar_tmux_route_t4003.py`, `t3593_round5_grammar.bats` use a fake tmux or a string only, not a live server.
+- Not run: the unpinned t3277 (it would have used the host default server).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -338,3 +387,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4217-fw-termlink-dispatch-leaks-projectrootfr.md
 - **Context:** Initial task creation
+
+### 2026-10-16T21:04:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

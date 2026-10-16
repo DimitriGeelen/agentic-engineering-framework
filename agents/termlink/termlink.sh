@@ -381,7 +381,12 @@ cmd_spawn() {
     [ -n "$tags" ] && spawn_args+=(--tags "$tags")
     spawn_args+=(--shell)
 
-    termlink spawn "${spawn_args[@]}"
+    # T-4217 (G-116): `termlink spawn` starts the host's default tmux server when none runs, and
+    # that server's GLOBAL env is the env it was started with. Strip fw's path variables so a
+    # first spawn cannot make another project's PROJECT_ROOT/FRAMEWORK_ROOT the server's global
+    # env. The worker's run.sh exports its own paths (see the RUNEOF heredoc in cmd_dispatch).
+    env -u PROJECT_ROOT -u FRAMEWORK_ROOT -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM \
+        termlink spawn "${spawn_args[@]}"
     echo -e "${GREEN}OK${NC}  Session '$name' registered"
     # T-4067: `if`, not `[ ] && echo` — as the function's last statement a false
     # test became its return status and aborted `fw termlink dispatch` under set -e.

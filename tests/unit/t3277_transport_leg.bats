@@ -34,6 +34,16 @@ export CLAUDE_FW_NO_SIDECAR=1
 
 setup() {
     command -v tmux >/dev/null 2>&1 || skip "tmux not installed"
+    # T-4217: a bare `tmux` reaches the host's DEFAULT server (the fleet's). Every tmux call in
+    # this file, the test's and the driver's (it inherits PATH), goes through a shim pinned to a
+    # private socket. The socket directory is short (unix socket paths are capped near 108 bytes).
+    REAL_TMUX="$(command -v tmux)"
+    TSOCKDIR="$(mktemp -d /tmp/t3277.XXXXXX)"
+    TSOCK="$TSOCKDIR/sock"
+    mkdir -p "$TSOCKDIR/bin"
+    printf '#!/bin/bash\nexec %q -S %q "$@"\n' "$REAL_TMUX" "$TSOCK" > "$TSOCKDIR/bin/tmux"
+    chmod +x "$TSOCKDIR/bin/tmux"
+    export PATH="$TSOCKDIR/bin:$PATH"
     REPO="$(cd "${BATS_TEST_DIRNAME}/../.." && pwd)"
     DRIVER="$REPO/agents/context/continuous-driver.sh"
     SB="$BATS_TEST_TMPDIR/sandbox"
@@ -70,6 +80,9 @@ Y
 
 teardown() {
     [ -n "${PANE:-}" ] && tmux kill-session -t "$PANE" 2>/dev/null
+    # The private server goes first; its directory only after it is gone.
+    [ -n "${TSOCKDIR:-}" ] && [ -S "$TSOCK" ] && "$REAL_TMUX" -S "$TSOCK" kill-server 2>/dev/null
+    [ -n "${TSOCKDIR:-}" ] && rm -rf "$TSOCKDIR"
     true
 }
 
