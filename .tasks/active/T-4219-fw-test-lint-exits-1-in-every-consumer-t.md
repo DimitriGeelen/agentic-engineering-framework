@@ -1,10 +1,19 @@
 ---
 id: T-4219
-name: "fw test lint exits 1 in every consumer: the Silent-Skip lint reads .agentic-framework/tests/, which a vendored consumer does not have, and reports 'no skip call sites found ... this is not a pass' (832 v1.8.11 field report)"
+name: "fw test lint exits 1 in every consumer: the Silent-Skip lint reads .agentic-framework/tests/,
+  which a vendored consumer does not have, and reports 'no skip call sites found ...
+  this is not a pass' (832 v1.8.11 field report)"
 description: >
-  832 msg 5196b215 (bleeding-edge 495901b5d, 2026-10-16): fw test lint: 266 files, 0 ShellCheck fail, but exit 1 because the Silent-Skip lint (T-3217 area, bin/fw test lint) reads $FRAMEWORK_ROOT/tests, absent in a vendored consumer: 'cannot read: No such file or directory ... no skip call sites found ... this is not a pass'. Fix: in a consumer, scope that lint to the PROJECT's own tests dir (or skip it with an explicit 'not applicable: no framework tests in a vendored copy' line, exit 0); keep it failing closed in the framework repo when tests/ is unreadable. Test with a synthetic vendored consumer (see upgrade_fresh_machine_simulation.bats pattern).
+  832 msg 5196b215 (bleeding-edge 495901b5d, 2026-10-16): fw test lint: 266 files,
+  0 ShellCheck fail, but exit 1 because the Silent-Skip lint (T-3217 area, bin/fw
+  test lint) reads $FRAMEWORK_ROOT/tests, absent in a vendored consumer: 'cannot read:
+  No such file or directory ... no skip call sites found ... this is not a pass'.
+  Fix: in a consumer, scope that lint to the PROJECT's own tests dir (or skip it with
+  an explicit 'not applicable: no framework tests in a vendored copy' line, exit 0);
+  keep it failing closed in the framework repo when tests/ is unreadable. Test with
+  a synthetic vendored consumer (see upgrade_fresh_machine_simulation.bats pattern).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-16T21:12:55Z
-last_update: 2026-10-16T21:12:55Z
-date_finished: null
+last_update: 2026-10-16T23:48:20Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-16T21:15:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-16T21:16:18Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4219: fw test lint exits 1 in every consumer: the Silent-Skip lint reads .agentic-framework/tests/, which a vendored consumer does not have, and reports 'no skip call sites found ... this is not a pass' (832 v1.8.11 field report)
@@ -62,8 +99,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] With no `tests/` in the framework copy (a vendored consumer), the Silent-Skip lint prints a NOT APPLICABLE line and does not fail `fw test lint`
+- [x] With `tests/` present (the framework repo), behaviour is unchanged: silent skips or an empty/unreadable scan still fail
+- [x] The decision lives in a sourced function with a bats test covering both cases (red on the pre-fix logic for the missing-dir case)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -113,6 +151,8 @@ date_finished: null
 
 ## Verification
 
+out=$(bats tests/unit/t4219_silent_skip_lint_consumer.bats 2>&1); echo "$out" | grep -q "^ok" && ! echo "$out" | grep -q "^not ok"
+bin/fw vendor self --check
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -258,6 +298,17 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** 832 (v1.8.11 field round 2) — `fw test lint` exits 1 in a vendored consumer with 0 ShellCheck
+failures: "cannot read: No such file or directory ... no skip call sites found ... this is not a pass".
+**Root cause:** the T-3217 Silent-Skip step in `bin/fw test lint` always scanned `$FRAMEWORK_ROOT/tests/`. A vendored
+copy (.agentic-framework/) ships tools/ but no tests/, so the linter examined nothing and returned 2, which the
+step treats as a failure (correctly, in the framework repo).
+**Why structurally allowed:** the step was only ever run in the framework repo; nothing ran `fw test lint` from a
+synthetic consumer, so "framework root" and "a tree that has tests" were never told apart.
+**Prevention:** the decision moved to `lib/silent-skip-lint.sh:fw_silent_skip_lint`: missing tests/ → NOT
+APPLICABLE (rc 0); present → unchanged (silent skip or an empty scan still fails). `t4219_silent_skip_lint_consumer.bats`
+covers both (the old call returns rc 2 on a tests-less root — reproduced). The real lint run here is unchanged.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -338,3 +389,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4219-fw-test-lint-exits-1-in-every-consumer-t.md
 - **Context:** Initial task creation
+
+### 2026-10-16T23:48:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

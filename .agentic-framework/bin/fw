@@ -10977,18 +10977,11 @@ PYPREDICT
                 # tell apart from a test that ran. Static shapes only here (no
                 # bats runs), so it stays cheap enough to live on the lint pass.
                 # Empirical mode is `--tap`, fed from a real run.
-                if [ -f "$FRAMEWORK_ROOT/tools/bats-silent-skip-lint.py" ]; then
-                    echo ""
-                    echo -e "${BOLD}=== Silent-Skip Lint ===${NC}"
-                    if python3 "$FRAMEWORK_ROOT/tools/bats-silent-skip-lint.py" \
-                            "$FRAMEWORK_ROOT/tests/"; then
-                        echo -e "  ${GREEN}OK${NC}  no silent skips"
-                    else
-                        # exit 2 means the scan examined nothing — a different
-                        # failure from "found silent skips", and not a pass.
-                        _test_exit=1
-                    fi
-                fi
+                # T-4219: decision lives in lib/silent-skip-lint.sh (vendored
+                # copies ship no tests/ — NOT APPLICABLE there, not a failure).
+                # shellcheck source=/dev/null
+                source "$FRAMEWORK_ROOT/lib/silent-skip-lint.sh"
+                fw_silent_skip_lint "$FRAMEWORK_ROOT" || _test_exit=1
                 ;;
             --unit|unit)
                 # Bats + Pytest unit tests (T-2745: wire pytest tests/unit/)
