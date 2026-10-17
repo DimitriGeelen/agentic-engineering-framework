@@ -53,7 +53,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T14:24:55Z
-last_update: 2026-10-17T21:25:01Z
+last_update: 2026-10-17T22:01:01Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -107,7 +107,7 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] bin/fw re-resolves an inherited FRAMEWORK_ROOT that lacks lib/ or agents/ (warning on stderr), and still honours one that has both
 - [x] install.sh runs its `fw init` call under `env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u TASKS_DIR -u CONTEXT_DIR -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM`
-- [ ] install.sh exits non-zero and prints FAILED when `fw init` exits non-zero or its output contains a `[x]` step (code in place; no test exercises this path yet)
+- [x] install.sh exits non-zero and prints FAILED when `fw init` exits non-zero or its output contains a `[x]` step (tests/unit/t4248_install_init_failure.bats: rc case, [x] case, and a passing control)
 - [x] install.sh copies an existing ~/.local/bin/fw or claude-fw to a timestamped backup and announces it before replacing it
 - [x] Regression bats test under tests/unit/ fails on the pre-fix code and passes after the fix (polluted-env case)
 - [x] `bin/fw vendor self --check` is clean; tests/unit/upgrade_fresh_machine_simulation.bats not-ok count reported in Updates
@@ -291,6 +291,8 @@ bvp_scores_proposed:
 
 out=$(bats tests/unit/t4248_install_inherited_env.bats 2>&1); echo "$out" | grep -q "^ok" && ! echo "$out" | grep -q "^not ok"
 bin/fw vendor self --check
+timeout 900 bats tests/unit/t4248_install_init_failure.bats > /tmp/.t4248-init.out 2>&1 && ! grep -q "^not ok" /tmp/.t4248-init.out && grep -q '^ok 3 ' /tmp/.t4248-init.out
+test "$(grep -c '# skip' /tmp/.t4248-init.out)" -eq 0
 
 ## RCA
 
