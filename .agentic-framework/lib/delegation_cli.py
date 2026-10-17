@@ -63,6 +63,15 @@ def _project_root() -> Path:
     return Path(os.environ.get("PROJECT_ROOT") or os.getcwd())
 
 
+def _fw() -> str:
+    """Project-relative fw path: `bin/fw` in the framework repo, else the
+    vendored `.agentic-framework/bin/fw` (T-4250; same split as T-1257)."""
+    root = _project_root()
+    if (root / "bin" / "fw").exists() or not (root / ".agentic-framework" / "bin" / "fw").exists():
+        return "bin/fw"
+    return ".agentic-framework/bin/fw"
+
+
 def _framework_root() -> Path:
     return Path(os.environ.get("FRAMEWORK_ROOT") or _HERE.parent)
 
@@ -193,7 +202,7 @@ def verification_line(task_id: str) -> str:
     """
     out = f"/tmp/.fw-reviewer-{task_id}.out"
     return (
-        f'bin/fw reviewer {task_id} > {out} 2>&1 && '
+        f'{_fw()} reviewer {task_id} > {out} 2>&1 && '
         f'grep -q "Overall:.*PASS" {out}'
     )
 
@@ -238,7 +247,7 @@ def _update_entry(task_id: str, converted: list[dict], refused: list[dict]) -> l
         f"- **Converted to [REVIEWER] Agent criteria:** {conv}",
         f"- **Left under ### Human:** {ref} (reviewer-judgeable ones are reported, "
         f"not converted — T-3557; nothing closes without an independent verdict)",
-        f"- **Close path:** `bin/fw reviewer {task_id}` PASS auto-ticks the converted "
+        f"- **Close path:** `{_fw()} reviewer {task_id}` PASS auto-ticks the converted "
         f"criteria (T-1985); the normal close gates do the rest.",
     ]
 
@@ -249,7 +258,7 @@ def _update_entry_ready(task_id: str) -> list[str]:
         f"### {_now()} — delegate ready-to-close [fw-task-delegate]",
         "- **Ruling:** D-626 / T-3557 / T-4156 — no Human criteria, Agent criteria done: "
         "one reviewer-judged close-readiness criterion added; owner unchanged.",
-        f"- **Close path:** `bin/fw reviewer judge {task_id}`; a green verdict ticks it, "
+        f"- **Close path:** `{_fw()} reviewer judge {task_id}`; a green verdict ticks it, "
         "red/amber returns findings to remediate.",
     ]
 
@@ -433,7 +442,7 @@ def _close_readiness_block(task_id: str) -> list[str]:
         "- [ ] [REVIEW] Close-readiness: the work meets its Agent criteria and the "
         f"Verification section passes ({task_id}, reviewer-judged, T-4156)",
         "  **Steps:**",
-        f"  1. Run `cd {_project_root()} && bin/fw reviewer judge {task_id}`",
+        f"  1. Run `cd {_project_root()} && {_fw()} reviewer judge {task_id}`",
         "  **Expected:** an independent reviewer records a green verdict for this "
         "criterion's current text",
         "  **If not:** remediate the findings the reviewer lists, then re-run the judge",
@@ -457,7 +466,7 @@ def _delegate_ready_to_close(task_id, path, text, meta, args, carve) -> int:
         else:
             print(f"{BOLD}Delegation scan — {task_id}{NC}: ready-to-close, but "
                   f"{YELLOW}stays with the operator{NC}\n  {carve}")
-            print(f"  next: bin/fw task review {task_id}")
+            print(f"  next: {_fw()} task review {task_id}")
         return 0
     if args.dry_run:
         if args.json:
@@ -501,7 +510,7 @@ def _delegate_ready_to_close(task_id, path, text, meta, args, carve) -> int:
     else:
         print(f"  {GREEN}wrote{NC} {path}\n  {GREEN}ledger{NC} {LEDGER}")
         print(f"  owner: {owner} (unchanged; the verdict ledger decides at close)")
-        print(f"  next: bin/fw reviewer judge {task_id}")
+        print(f"  next: {_fw()} reviewer judge {task_id}")
     return 0
 
 
@@ -511,11 +520,11 @@ def _print_outcome(converted, refused, owner, new_owner, task_id, remaining_huma
           f"left human {len(refused) - judged}")
     if new_owner != owner:
         print(f"  owner: {owner} → {new_owner}")
-        print(f"  next: bin/fw reviewer {task_id}   (PASS auto-ticks the converted criteria)")
+        print(f"  next: {_fw()} reviewer {task_id}   (PASS auto-ticks the converted criteria)")
     elif remaining_human:
         print(f"  owner: {owner} (unchanged — {remaining_human} Human criterion/criteria "
               f"remain, so the task stays the operator's)")
-        print(f"  next: bin/fw task review {task_id}")
+        print(f"  next: {_fw()} task review {task_id}")
     else:
         print(f"  owner: {owner} (unchanged)")
 
@@ -567,7 +576,7 @@ def cmd_surface(args) -> int:
         shown = report["delegable_tasks"][:10]
         more = len(report["delegable_tasks"]) - len(shown)
         print(f"  delegable now: {', '.join(shown)}" + (f" (+{more} more)" if more > 0 else ""))
-        print(f"  Run: bin/fw task delegate <id> --dry-run")
+        print(f"  Run: {_fw()} task delegate <id> --dry-run")
     return 0
 
 

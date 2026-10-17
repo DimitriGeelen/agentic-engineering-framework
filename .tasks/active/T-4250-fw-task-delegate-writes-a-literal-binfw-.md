@@ -11,10 +11,10 @@ description: >
   repo, .agentic-framework/bin/fw in a consumer), same class as T-1257/G-030; regression
   test in a synthetic vendored consumer.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:00:50Z
-last_update: '2026-10-17T15:16:15Z'
+last_update: 2026-10-17T16:55:00Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,8 +97,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] lib/delegation_cli.py resolves the project-relative fw path (bin/fw if present, else .agentic-framework/bin/fw) and uses it in the generated Verification line, Close-path text, and next-step hints instead of a literal `bin/fw`
+- [x] In a synthetic vendored consumer (only .agentic-framework/bin/fw), no generated delegation output contains a bare `bin/fw` outside `.agentic-framework/`; in the framework layout the output is unchanged
+- [x] Regression test tests/unit/test_delegation_fw_path.py passes and fails without the fix
+- [ ] `bin/fw vendor self --check` is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -277,7 +279,15 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+python3 -m pytest tests/unit/test_delegation_fw_path.py -q > /tmp/.t4250.out 2>&1 && grep -q passed /tmp/.t4250.out
+bin/fw vendor self --check
+
 ## RCA
+
+**Symptom:** After `fw task delegate`, vendored consumers (ring20) fail P-011: the generated verification line `bin/fw reviewer T-XXX ...` exits 127 (no bin/fw). 9 of 11 delegated closes refused.
+**Root cause:** lib/delegation_cli.py hard-codes the literal `bin/fw` in the verification line (:196), close-path text (:241) and next-step hints (:436-:570); it never resolves the project's fw path.
+**Why structurally allowed:** only ever exercised in the framework repo, where `bin/fw` exists; no test used a vendored-consumer layout (same class as T-1257/G-030).
+**Prevention:** tests/unit/test_delegation_fw_path.py builds a vendored layout and asserts no bare `bin/fw` is emitted.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -373,3 +383,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4250-fw-task-delegate-writes-a-literal-binfw-.md
 - **Context:** Initial task creation
+
+### 2026-10-17T16:52:42Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
