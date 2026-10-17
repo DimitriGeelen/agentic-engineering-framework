@@ -149,7 +149,7 @@ bvp_scores_proposed:
 
 **Recommendation:** GO
 
-**Rationale:** dimitri-mint-dev reviewed the operator's greenfield install prompt against fw v1.8.10 (20 claims, 4 blockers fixed in v2) and asks to publish v2 in the AEF README. The prompt turns every new install into a falsification run with structured findings, which is exactly the field evidence the release rule (T-4146) needs. Adopt after AEF checks v2's claims against the current head and the fixes it depends on (doctor dependency check, safe Watchtower bind, init restart banner); README wording and placement are ours.
+**Rationale (updated 2026-10-17, after v2.1):** publish v2.1 in the README now, its workaround sections marked "until AEF T-4248 / T-4251 / T-4239 / T-4252 ship", and replace it with v2.2 after a clean re-run on the fixed master. All four operator criteria are met with real-run evidence (3 live runs, 49 findings, a change per finding, ~19.5 min onboarding; docs/reports/T-4237-inputs/). Anyone installing from master today hits exactly those defects, and each workaround (env -u, git init when the target is not its own repo top-level, inbox --peek, local bind) stays harmless after the fix ships, so waiting protects no one. Earlier text, kept for the record: dimitri-mint-dev reviewed the operator's greenfield install prompt against fw v1.8.10 (20 claims, 4 blockers fixed in v2) and asks to publish v2 in the AEF README. The prompt turns every new install into a falsification run with structured findings, which is exactly the field evidence the release rule (T-4146) needs. Adopt after AEF checks v2's claims against the current head and the fixes it depends on (doctor dependency check, safe Watchtower bind, init restart banner); README wording and placement are ours.
 
 ## Decisions
 
