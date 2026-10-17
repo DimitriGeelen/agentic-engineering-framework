@@ -425,20 +425,22 @@ def _drop_termlink_segments(cmd, root):
     costs a false block; the inverse would silently disable the gate.
     """
     try:
-        mask = _strip_quoted(cmd)
+        spans = _termlink_spans(cmd, root)
         out = list(cmd)
-        hit = False
-        for s, e in _split_segments(mask):
-            if s >= e:
-                continue
-            if _segment_invokes_termlink(mask[s:e], root):
-                hit = True
-                for k in range(s, e):
-                    if out[k] != '\n':
-                        out[k] = ' '
-        return ''.join(out) if hit else cmd
+        for s, e in spans:
+            for k in range(s, e):
+                if out[k] != '\n':
+                    out[k] = ' '
+        return ''.join(out) if spans else cmd
     except Exception:
         return cmd
+
+
+def _termlink_spans(cmd, root):
+    """[(start, end)] of the segments of `cmd` that invoke TermLink (may raise)."""
+    mask = _strip_quoted(cmd)
+    return [(s, e) for s, e in _split_segments(mask)
+            if s < e and _segment_invokes_termlink(mask[s:e], root)]
 
 
 # T-3766: the sanctioned credential path. A segment whose first word is this
@@ -765,25 +767,29 @@ def _tok_iter(cmd):
         if tok.startswith('/'):
             yield tok
 
-for tok in _tok_iter(command):
+_READ_ROOTS = {project_root, os.path.realpath(project_root)}
+
+
+def _read_outside(cand):
+    """True when the absolute path `cand` is outside the read-side allowlist."""
     # Only check what looks like a real path: at least one slash after the
     # leading one, OR a top-level dir we recognise (e.g. /etc).
-    if tok in READ_ALLOWED_EXACT:
-        continue
-    # Strip glob characters off the end so /var/log/* is checked as /var/log/
-    cand = tok
+    if cand in READ_ALLOWED_EXACT:
+        return False
+    if any(cand == r or cand.startswith(r + '/') for r in _READ_ROOTS):
+        return False
     if _in_sibling_worktree(cand):   # F-25
-        continue
+        return False
     # Allow paths with leading prefix in the explicit list.
     if any(cand == a.rstrip('/') or cand.startswith(a) for a in READ_ALLOWED_PREFIXES):
         # Special-case /opt/: only allow exactly /opt or /opt/<this-project>.
         # /opt/other-project must still block.
         if cand == '/opt' or cand.startswith('/opt/'):
             if cand == '/opt' or cand.startswith(project_root + '/') or cand == project_root:
-                continue
+                return False
             # /opt/<something-else> — fall through to BLOCK
         else:
-            continue
+            return False
     # Tokens that don't look like paths (single slash, e.g. regex `/foo`):
     # only block when they look filesystem-y. Heuristic: must contain at least
     # 2 slashes OR start with a known top-level dir.
@@ -791,9 +797,55 @@ for tok in _tok_iter(command):
     KNOWN_TOPS = ('opt', 'root', 'home', 'srv', 'mnt', 'media',
                   'usr', 'etc', 'var', 'tmp', 'proc', 'sys', 'dev',
                   'bin', 'sbin', 'lib', 'lib64', 'boot', 'run')
-    if top not in KNOWN_TOPS:
-        continue  # not a recognisable filesystem path; skip rather than FP
-    print(f'BLOCKED|Outside-path argument {cand} (not in read-side allowlist)')
+    return top in KNOWN_TOPS   # not a recognisable filesystem path: skip rather than FP
+
+
+for tok in _tok_iter(command):
+    if _read_outside(tok):
+        print(f'BLOCKED|Outside-path argument {tok} (not in read-side allowlist)')
+        sys.exit(0)
+
+# Pattern 4b (T-3768): the same read-side predicate, over the words as BASH reads them.
+#
+# Pattern 4 scans the quote-BLANKED copy, so a quoted (`cat "/root/x"`), escaped
+# (`/roo\t/x`), relative (`../../root/x`) or substituted (`<<< "$(cat /root/x)"`) path
+# never reached it (codex round 4 on T-3766, docs/reports/T-3766-review-codex-r4.md).
+# This pass hands the RAW command to lib/shell_write_scan.py's tokeniser (the one
+# Pattern 5 uses for writes) in read mode: quote/escape removal, `..` resolved against
+# the cd-tracked cwd, `~`/`$HOME`, brace expansion, and the bodies of $(...), backticks,
+# here-strings, unquoted heredocs and static `sh -c`/`eval`. Prose stays safe because a
+# quoted message is ONE word (`-m "fix /root/x"` does not start with `/`); a word that
+# IS a path, quoted or not, is judged as one. Only ever adds refusals.
+#
+# Exemptions are applied to the raw text by blanking, never by skipping the pass: the
+# TermLink segments (T-3076, whole segment) and the registered credential token of the
+# sanctioned resolver form (T-3766).
+def _read_scan_text(raw, root):
+    chars = list(raw)
+    try:
+        spans = list(_termlink_spans(_strip_heredocs(raw), root))
+    except Exception:
+        spans = []
+    for s_, e_ in spans + list(_CRED_SPANS):
+        for k in range(s_, min(e_, len(chars))):
+            if chars[k] != '\n':
+                chars[k] = ' '
+    return ''.join(chars)
+
+
+try:
+    sys.path.insert(0, os.environ.get('_BOUNDARY_FW_LIB', ''))
+    import shell_write_scan
+    _rhits = shell_write_scan.scan_boundary_reads(
+        _read_scan_text(os.environ.get('_BOUNDARY_CMD', ''), project_root),
+        os.environ.get('_BOUNDARY_CWD', '') or project_root, _read_outside)
+except Exception as e:   # fail closed, as Pattern 5 does
+    _rhits = [type('H', (), {'reason': f'boundary read tokeniser unavailable ({type(e).__name__})',
+                             'target': ''})()]
+if _rhits:
+    h = _rhits[0]
+    tgt = f' {h.target}' if h.target else ''
+    print(f'BLOCKED|{h.reason}{tgt} (not in read-side allowlist)')
     sys.exit(0)
 
 # Pattern 5 (T-4149): the write targets and cd destinations as BASH reads them.

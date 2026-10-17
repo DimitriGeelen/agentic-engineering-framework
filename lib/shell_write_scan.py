@@ -101,6 +101,8 @@ class _Ctx:
     boundary: bool = False
     cd_ok: Optional[Callable[[str], bool]] = None
     depth: int = 0
+    # T-3768 read mode (scan_boundary_reads): every path-shaped WORD is judged.
+    read_outside: Optional[Callable[[str], bool]] = None
 
 
 # T-4149: bash's `\cX` (control-X) consumes the character after `c` — a quote included —
@@ -1154,6 +1156,8 @@ def _scan_boundary_text(text: str, ctx: _Ctx) -> None:
                 else:
                     words.append(tok)
             for seg in _segments(words):
+                if ctx.read_outside is not None:
+                    _read_words(seg, ctx)
                 _segment(seg, ctx)
         if len(pieces) == 1:
             cwd_after_top = ctx.cwd
@@ -1175,6 +1179,56 @@ def scan_boundary(command: str, cwd: str | None, guarded, cd_ok) -> list[Hit]:
     except Exception as e:  # noqa: BLE001 — a scanner bug must not open the gate
         ctx.hits.append(Hit(f"boundary scanner error ({type(e).__name__}); refused rather than guessed"))
     return ctx.hits
+
+
+_READ_REASON = "Outside-path argument"
+_HOME_VAR = re.compile(r"^(?:\$HOME|\$\{HOME\})(?=/|$)")
+
+
+def _read_words(seg: list[str], ctx: _Ctx) -> None:
+    """T-3768: judge every path-shaped word of one segment, AFTER quote removal.
+
+    Path-shaped = absolute, `~`/`$HOME`-led, the value of an `--opt=VALUE` option, or a
+    relative word with a `..` component (resolved against the segment's cwd). A relative
+    word with no `..` stays under the cwd and is not judged, so sed scripts and regexes
+    (`s/a/b/`) cost nothing. normpath, not realpath: a read is judged by the name it
+    spells, the same as Pattern 4 always did. Prose (`-m "fix /x"`) is one word that does
+    not start with `/`, so it is never a path."""
+    outside = ctx.read_outside
+    if outside is None:
+        return
+    for w in seg:
+        if not w or w.startswith("\x00") or w in _OPSET or w == UNRESOLVED:
+            continue
+        if w.startswith("-") and "=" in w:
+            w = w.split("=", 1)[1]
+        w = _HOME_VAR.sub("~", w)
+        if w.startswith("~"):
+            w = os.path.expanduser(w)
+        if not w.startswith("/"):
+            if ".." not in w.split("/") or ctx.cwd is None:
+                continue
+            w = os.path.join(ctx.cwd, w)
+        p = os.path.normpath(w)
+        if p.startswith("//"):
+            p = "/" + p.lstrip("/")
+        if outside(p):
+            ctx.hits.append(Hit(_READ_REASON, p))
+
+
+def scan_boundary_reads(command: str, cwd: str | None, read_outside) -> list[Hit]:
+    """T-3768: every word that names a path `read_outside(path)` rejects, read as bash
+    reads it — quotes and escapes removed, `..` resolved against the cwd (cd-tracked),
+    `~`/`$HOME` expanded, brace expansion, and the bodies of $(...)/`...`/<(...),
+    here-strings, unquoted heredocs and static `sh -c`/`eval` scripts. Parse failures are
+    left to scan_boundary (which refuses them); only read hits are returned."""
+    ctx = _Ctx(cwd=cwd, mentions=False, guarded=lambda _p: False, boundary=True,
+               cd_ok=lambda _p: True, read_outside=read_outside)
+    try:
+        _scan_boundary_text(command, ctx)
+    except Exception as e:  # noqa: BLE001 — a scanner bug must not open the gate
+        return [Hit(f"boundary read scanner error ({type(e).__name__}); refused rather than guessed")]
+    return [h for h in ctx.hits if h.reason == _READ_REASON]
 
 
 def _substitutions(command: str) -> list[str]:
