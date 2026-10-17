@@ -1,15 +1,19 @@
 ---
 id: T-3732
-name: "CLAUDE.md and fw bvp help still describe BVP confirm as a human sovereignty boundary, contradicting the 2026-09-27 operator ruling (D-661/D-662: agents may confirm, judge agent, sticky operator overrides)"
+name: "CLAUDE.md and fw bvp help still describe BVP confirm as a human sovereignty
+  boundary, contradicting the 2026-09-27 operator ruling (D-661/D-662: agents may
+  confirm, judge agent, sticky operator overrides)"
 description: >
-  CLAUDE.md and fw bvp help still describe BVP confirm as a human sovereignty boundary, contradicting the 2026-09-27 operator ruling (D-661/D-662: agents may confirm, judge agent, sticky operator overrides)
+  CLAUDE.md and fw bvp help still describe BVP confirm as a human sovereignty boundary,
+  contradicting the 2026-09-27 operator ruling (D-661/D-662: agents may confirm, judge
+  agent, sticky operator overrides)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/bvp.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T15:08:43Z
-last_update: 2026-10-02T15:08:43Z
-date_finished: null
+last_update: 2026-10-02T18:47:48Z
+date_finished: 2026-10-02T18:47:48Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-02T15:15:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=280,acs=5)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-02T15:15:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3732: CLAUDE.md and fw bvp help still describe BVP confirm as a human sovereignty boundary, contradicting the 2026-09-27 operator ruling (D-661/D-662: agents may confirm, judge agent, sticky operator overrides)
@@ -331,3 +363,20 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3732-claudemd-and-fw-bvp-help-still-describe-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-06a052df
+- **Timestamp:** 2026-10-02T18:48:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `bin/fw bvp --help 2>&1 | grep -q "agents may confirm"`
+
+### 2026-10-02T18:47:48Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

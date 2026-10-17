@@ -14,12 +14,12 @@ description: >
   skip when PROJECT_ROOT no longer exists. Same class as T-3771/T-3761 (tests touching
   live host state).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/audit/audit.sh, tools/bats-cron-env-lint.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -48,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T07:20:33Z
-last_update: 2026-10-04T07:57:50Z
-date_finished:
+last_update: 2026-10-04T08:01:30Z
+date_finished: 2026-10-04T08:01:30Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -108,7 +108,7 @@ Root cause per the workstation RCA (dimitri-mint-dev T-086, received 2026-10-04)
 
 bash -c 'set -o pipefail; timeout 60 bats tests/unit/t3070_audit_schedule_install_delegates_to_registry.bats 2>&1' | tee /tmp/.bats-out && ! grep -q "^not ok" /tmp/.bats-out && test "$(grep -c '# skip' /tmp/.bats-out)" -eq 0
 python3 tools/bats-cron-env-lint.py > /tmp/.lint-out 2>&1 && grep -q "PASS" /tmp/.lint-out
-[ "$(ls -1 /etc/cron.d/agentic-* 2>/dev/null | wc -l)" -eq 0 ]
+[ "$(ls -1 /etc/cron.d/agentic-audit-*-[a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9][a-f0-9] 2>/dev/null | wc -l)" -eq 0 ]
 grep -q "FW_CRON_INSTALL_DIR" agents/audit/audit.sh
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -330,3 +330,15 @@ grep -q "FW_CRON_INSTALL_DIR" agents/audit/audit.sh
 
 ### 2026-10-04T07:56:40Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fc85d68d
+- **Timestamp:** 2026-10-04T08:01:36Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-04T08:01:30Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

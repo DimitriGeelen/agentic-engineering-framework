@@ -1,8 +1,16 @@
 ---
 id: T-4221
-name: "Triage the long-lived baselined unit reds: 28 tests in 16 files expired 2026-10-15 (4 files untriaged) plus the load-sensitive t1719 latency budget"
+name: "Triage the long-lived baselined unit reds: 28 tests in 16 files expired 2026-10-15
+  (4 files untriaged) plus the load-sensitive t1719 latency budget"
 description: >
-  After T-4220 the pre-push ratchet still blocks on 28 baselined reds past expiry (16 files, owners T-3556/T-3604/T-3605/T-3609/T-3611/T-3612/T-3614/T-3615/T-2787; untriaged: context_safe_commands, fabric_coverage_single_source, test_bin_fw_no_heredoc_cmd_sub, test_cron_registry_generated_drift) and the new load-sensitive red t1719_index_one_post_write ('stays under the 5s budget', passes alone, fails under the 6-job suite). The operator extends them 14 days (runme t4221-extend-baseline); this task owns the untriaged ones and the per-file plan: fix, re-own to a live task, or delete a test that no longer measures anything. Results per file from T-4220: .context/scratch/t4220-expired-results.tsv.
+  After T-4220 the pre-push ratchet still blocks on 28 baselined reds past expiry
+  (16 files, owners T-3556/T-3604/T-3605/T-3609/T-3611/T-3612/T-3614/T-3615/T-2787;
+  untriaged: context_safe_commands, fabric_coverage_single_source, test_bin_fw_no_heredoc_cmd_sub,
+  test_cron_registry_generated_drift) and the new load-sensitive red t1719_index_one_post_write
+  ('stays under the 5s budget', passes alone, fails under the 6-job suite). The operator
+  extends them 14 days (runme t4221-extend-baseline); this task owns the untriaged
+  ones and the per-file plan: fix, re-own to a live task, or delete a test that no
+  longer measures anything. Results per file from T-4220: .context/scratch/t4220-expired-results.tsv.
 
 status: captured
 workflow_type: build
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T03:04:20Z
-last_update: 2026-10-17T03:04:20Z
-date_finished: null
+last_update: '2026-10-17T03:16:07Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-17T03:15:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-17T03:16:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4221: Triage the long-lived baselined unit reds: 28 tests in 16 files expired 2026-10-15 (4 files untriaged) plus the load-sensitive t1719 latency budget

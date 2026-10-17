@@ -1,13 +1,20 @@
 ---
 id: T-4093
-name: "lib/issues.py trips the arc-membership canonical-import audit (T-3516): the MikeEchoVoid route's arc_id is written without the canonical helper — blocks the bleeding-edge push"
+name: "lib/issues.py trips the arc-membership canonical-import audit (T-3516): the
+  MikeEchoVoid route's arc_id is written without the canonical helper — blocks the
+  bleeding-edge push"
 description: >
-  Pre-push 2026-10-12: '[FAIL] Found 1 Python arc-membership derivation site(s) not importing the canonical helper — lib/issues.py:425~387'. The file iterates task files (duplicate search) and its ROUTES table (T-4078, MikeEchoVoid -> arc mikeechovoid-requests) names arc_id within the audit's 60-line window. Fix: normalise the route value through lib.arc_membership.parse_arc_id_value (the canonical import), keeping behaviour; audit structure section clean for this check; t4077/t4078/t4088 tests green.
+  Pre-push 2026-10-12: '[FAIL] Found 1 Python arc-membership derivation site(s) not
+  importing the canonical helper — lib/issues.py:425~387'. The file iterates task
+  files (duplicate search) and its ROUTES table (T-4078, MikeEchoVoid -> arc mikeechovoid-requests)
+  names arc_id within the audit's 60-line window. Fix: normalise the route value through
+  lib.arc_membership.parse_arc_id_value (the canonical import), keeping behaviour;
+  audit structure section clean for this check; t4077/t4078/t4088 tests green.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, audit, issues]
 components: []
 related_tasks: [T-4078]
@@ -39,8 +46,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-12T11:23:46Z
-last_update: 2026-10-12T11:26:20Z
-date_finished: null
+last_update: 2026-10-12T11:34:59Z
+date_finished: 2026-10-12T11:34:59Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-12T11:30:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=282,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-12T11:31:34Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4093: lib/issues.py trips the arc-membership canonical-import audit (T-3516): the MikeEchoVoid route's arc_id is written without the canonical helper — blocks the bleeding-edge push
@@ -64,7 +99,7 @@ date_finished: null
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] `lib/issues.py` imports the canonical `parse_arc_id_value` (lib.arc_membership, with the `python3 lib/issues.py` fallback) and passes the route's arc id through it; behaviour unchanged.
-- [ ] The structure audit's arc-membership canonical-import check no longer lists lib/issues.py; t4077, t4078 and t4088 issue tests stay green; `python3 lib/issues.py --help` works.
+- [x] The structure audit's arc-membership canonical-import check no longer lists lib/issues.py; t4077, t4078 and t4088 issue tests stay green; `python3 lib/issues.py --help` works.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -334,3 +369,15 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4093-libissuespy-trips-the-arc-membership-can.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fb03812b
+- **Timestamp:** 2026-10-12T11:35:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-12T11:34:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,8 +1,21 @@
 ---
 id: T-4249
-name: "claude-fw --termlink does not restart Claude after the critical auto-handover: it types exit into its TermLink shell, returns 0 and the pane closes, so the session is lost until something else relaunches it (0506 16:23, 1409 15:00:36, 2026-10-17)"
+name: "claude-fw --termlink does not restart Claude after the critical auto-handover:
+  it types exit into its TermLink shell, returns 0 and the pane closes, so the session
+  is lost until something else relaunches it (0506 16:23, 1409 15:00:36, 2026-10-17)"
 description: >
-  055 msg 478fdee0 (read-only evidence from transcripts/process traces): 0506-Voxtype-extention under 'claude-fw --termlink' (autorestart on). Budget gate warned 16:22:38 (~93% of 300K), 16:23:00 'Session wrapping up ... AUTO-HANDOVER: Triggering handover'; Claude ended; claude-fw did NOT restart claude in place — it typed exit into its TermLink shell and returned 0; tmux pane CLD_EXITED status 0; 055's pane healer resumed it ~55 s later. Operator saw 1409 at 15:00:36 the same way. Operator: 'this keeps damaging their sessions'. Fix: in --termlink mode the restart loop must honour .restart-requested exactly like the direct mode (restart claude -c inside the same TermLink session/pane), never exit the pane on a requested restart; announce the restart (T-4170 banner). Reproduce with a fake claude that exits after writing the restart signal, under a PRIVATE tmux socket. Also check: T-4032 (v1.8.9) covers the mid-turn kill but not this exit path?
+  055 msg 478fdee0 (read-only evidence from transcripts/process traces): 0506-Voxtype-extention
+  under 'claude-fw --termlink' (autorestart on). Budget gate warned 16:22:38 (~93%
+  of 300K), 16:23:00 'Session wrapping up ... AUTO-HANDOVER: Triggering handover';
+  Claude ended; claude-fw did NOT restart claude in place — it typed exit into its
+  TermLink shell and returned 0; tmux pane CLD_EXITED status 0; 055's pane healer
+  resumed it ~55 s later. Operator saw 1409 at 15:00:36 the same way. Operator: 'this
+  keeps damaging their sessions'. Fix: in --termlink mode the restart loop must honour
+  .restart-requested exactly like the direct mode (restart claude -c inside the same
+  TermLink session/pane), never exit the pane on a requested restart; announce the
+  restart (T-4170 banner). Reproduce with a fake claude that exits after writing the
+  restart signal, under a PRIVATE tmux socket. Also check: T-4032 (v1.8.9) covers
+  the mid-turn kill but not this exit path?
 
 status: captured
 workflow_type: build
@@ -38,8 +51,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T14:27:02Z
-last_update: 2026-10-17T14:27:02Z
-date_finished: null
+last_update: '2026-10-17T14:31:32Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +63,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-17T14:30:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-17T14:31:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4249: claude-fw --termlink does not restart Claude after the critical auto-handover: it types exit into its TermLink shell, returns 0 and the pane closes, so the session is lost until something else relaunches it (0506 16:23, 1409 15:00:36, 2026-10-17)

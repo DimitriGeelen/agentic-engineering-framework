@@ -1,8 +1,16 @@
 ---
 id: T-4215
-name: "Unit-suite runner leaks temp dirs into /tmp when it kills a timed-out test file (bats-run-*, mktemp dirs whose teardown never runs) — dimitri-mint-dev P-015"
+name: "Unit-suite runner leaks temp dirs into /tmp when it kills a timed-out test
+  file (bats-run-*, mktemp dirs whose teardown never runs) — dimitri-mint-dev P-015"
 description: >
-  dimitri-mint-dev P-015 (their T-115, 2026-10-15): /tmp on the shared workstation held 12,962 folders / 9.1 GB after 2 days; Thunar pegged a core. AEF share (to verify): agents/audit/unit-suite.sh kills test files at the per-file timeout (~7 per run), so bats-run-* (104 seen) and mktemp -d dirs created by tests (teardown never runs) stay behind. Fix: the runner gives each file its own TMPDIR/BATS_TMPDIR under one per-run directory and removes it at the end even after a kill; also check pytest basetemp. Other prefixes (t450-sources, t464-fleet, t1068-corpus, agent-outside-opt, org.chromium.*) are not in AEF code — routed to 055/832.
+  dimitri-mint-dev P-015 (their T-115, 2026-10-15): /tmp on the shared workstation
+  held 12,962 folders / 9.1 GB after 2 days; Thunar pegged a core. AEF share (to verify):
+  agents/audit/unit-suite.sh kills test files at the per-file timeout (~7 per run),
+  so bats-run-* (104 seen) and mktemp -d dirs created by tests (teardown never runs)
+  stay behind. Fix: the runner gives each file its own TMPDIR/BATS_TMPDIR under one
+  per-run directory and removes it at the end even after a kill; also check pytest
+  basetemp. Other prefixes (t450-sources, t464-fleet, t1068-corpus, agent-outside-opt,
+  org.chromium.*) are not in AEF code — routed to 055/832.
 
 status: captured
 workflow_type: build
@@ -38,8 +46,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-15T17:24:36Z
-last_update: 2026-10-15T17:24:36Z
-date_finished: null
+last_update: '2026-10-15T17:31:38Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-15T17:30:39Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=272,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-15T17:31:38Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4215: Unit-suite runner leaks temp dirs into /tmp when it kills a timed-out test file (bats-run-*, mktemp dirs whose teardown never runs) — dimitri-mint-dev P-015

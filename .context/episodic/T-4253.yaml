@@ -1,0 +1,102 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4253: Triage greenfield run aef-install-20261017T144241Z (48 findings, 0909 P-001): map each finding to an existing task/concern or propose a new one
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T15:31:11Z
+# ============================================================================
+
+task_id: T-4253
+task_name: "Triage greenfield run aef-install-20261017T144241Z (48 findings, 0909 P-001): map each finding to an existing task/concern or propose a new one"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T15:06:53Z
+completed: 2026-10-17T15:30:50Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-17T17:07:50+02:00
+last_commit: 2026-10-17T17:30:48+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file triage of the 48 greenfield run findings (0909 P-001). greenfield run triage report. file the 21 proposed tasks from the greenfield triage (T-4254..T-4274)
+
+# Key outcomes
+outcomes:
+  - 'docs/reports/T-4253-greenfield-run-triage.md has one row for each of F-01..F-48 (id, severity, verdict, owner task or PROPOSED-NEW, priority)'
+  - 'Every framework-defect/blocker/degraded row has a verdict checked against current bleeding-edge source (file:line), not copied from the finding'
+  - 'PROPOSED-NEW rows are grouped one-bug-one-task, each with a one-line scope the parent can file as is'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-4253-greenfield-run-triage.md'
+  - '.tasks/active/T-4253-triage-greenfield-run-aef-install-202610.md'
+  - '.tasks/active/T-4254-fw-init-classifies-a-target-as-existing-.md'
+  - '.tasks/active/T-4255-installer-next-steps-and-fw-help-disagre.md'
+  - '.tasks/active/T-4256-vector-index-doctor-check-warns-inside-i.md'
+  - '.tasks/active/T-4257-fw-doctor-reports-host-wide-dm-rail-back.md'
+  - '.tasks/active/T-4258-initinstall-neither-start-nor-mention-th.md'
+  - '.tasks/active/T-4259-fw-init-seeds-a-cron-registry-but-leaves.md'
+  - '.tasks/active/T-4260-untracked-task-doctor-check-miscounts-di.md'
+  - '.tasks/active/T-4261-installsh-reports-fw-doctor-passes--whil.md'
+  - '.tasks/active/T-4262-task-template-ships-framework-repo-corpu.md'
+  - '.tasks/active/T-4263-installer-gives-no-restart-instruction-t.md'
+  - '.tasks/active/T-4264-read-only-allowlist-misses-git--c-dir-re.md'
+  - '.tasks/active/T-4265-onboarding-gate-advertises-fw-onboarding.md'
+  - '.tasks/active/T-4266-initshs-t-000-bootstrap-recovery-commit-.md'
+  - '.tasks/active/T-4267-first-full-commit-of-a-vendored-project-.md'
+  - '.tasks/active/T-4268-fw-git-install-hooks-reports-content-dif.md'
+  - '.tasks/active/T-4269-approvals-shows-continuous-run-is-runnin.md'
+  - '.tasks/active/T-4270-quality-renders-a-never-run-audit-as-pas.md'
+  - '.tasks/active/T-4271-seeded-framework-knowledge-appears-as-th.md'
+  - '.tasks/active/T-4272-c-001-artifact-first-and-the-g-067-open-.md'
+  - '.tasks/active/T-4273-inception-templates-human-ac-ships-the-p.md'
+  - '.tasks/active/T-4274-pickup-envelopes-named-by-per-project-p-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T17:07:50'
+    action: 'T-4253: file triage of the 48 greenfield run findings (0909 P-001)'
+  - time: '2026-10-17T17:23:12'
+    action: 'T-4253: greenfield run triage report'
+  - time: '2026-10-17T17:30:48'
+    action: 'T-4253: file the 21 proposed tasks from the greenfield triage (T-4254..T-4274)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 23 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 23
+  commits: 3
+  files_changed: 23
+  lines_added: 7910
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4253-triage-greenfield-run-aef-install-202610.md
+generated_by: context-agent-hybrid

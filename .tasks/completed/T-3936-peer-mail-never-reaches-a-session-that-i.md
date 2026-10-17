@@ -14,12 +14,12 @@ description: >
   agent session has no TermLink registration while peer mail is flowing; (3) INJECT_BLOCKED
   reason visible in fw sidecar status. Register: G-111.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/sidecar/inject.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -48,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-06T10:24:21Z
-last_update: 2026-10-06T13:54:42Z
-date_finished:
+last_update: 2026-10-06T13:54:49Z
+date_finished: 2026-10-06T13:54:49Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -405,3 +405,20 @@ operator), and mid-turn surfacing T-3951 (operator decision on hook wiring).
   --termlink is unstable with the fleet cockpit; delivery must not depend on TermLink injection.
 - Remediation offered: runme refresh-claude-fw (rm+cp both copies). A duplicate-session helper
   drafted here was dropped — lib/conversation-holder.sh already is that predicate (G-108).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-78a1cfcc
+- **Timestamp:** 2026-10-06T13:55:13Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Agent)** — Mid-turn surfacing (PostToolUse) split to T-3951: it needs new hook wiring in .claude/settings.json, which is the operator's decision (B-005)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/settings.json in: Mid-turn surfacing (PostToolUse) split to T-3951: it needs new hook wiring in .claude/settings.json, which is the operator's decision (B-005)`
+
+### 2026-10-06T13:54:49Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

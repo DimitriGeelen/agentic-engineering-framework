@@ -10,12 +10,12 @@ description: >
   as something that comes as a pickup request.' Today origin lives only in prose (T-3659:
   pasted external proposal P-01; T-3752: 010/832; T-3501: cross-agent proposals).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [approvals, provenance, peer]
-components: []
+components: [agents/task-create/create-task.sh, lib/inception.sh, lib/render_surface.sh, lib/task_origin.py, tests/unit/t3897_create_task_origin.bats, tests/web/test_t3897_task_origin.py, web/blueprints/approvals.py, web/templates/_approvals_content.html, web/templates/_origin_badge.html]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-05T19:01:43Z
-last_update: 2026-10-05T21:25:32Z
-date_finished:
+last_update: 2026-10-05T22:32:02Z
+date_finished: 2026-10-05T22:31:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -117,7 +117,7 @@ Prior art: Tier 0 cards already carry `origin: {kind}` (T-3078). A card without 
   - T-3899, T-3900 and T-3901, filed today from peer mail: peer.
 
 ### Human
-- [ ] [REVIEW] The origin badge answers "is this mine?" at a glance on /approvals
+- [x] [REVIEW] The origin badge answers "is this mine?" at a glance on /approvals
   **Steps:**
   1. Open http://192.168.10.107:3000/approvals
   2. In "Inception decisions", find T-3659 and T-3752. Each card starts with an amber badge: "external proposal: P-01 …" and "peer request: 010-termlink + 832-Workflow-designer".
@@ -414,3 +414,16 @@ The recorded `origin:` field is the source of truth, and it is set when a task i
 
 ### 2026-10-05T20:47:39Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9c7a3ba9
+- **Timestamp:** 2026-10-05T22:31:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-05T22:31:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Completed via Watchtower UI (human action)

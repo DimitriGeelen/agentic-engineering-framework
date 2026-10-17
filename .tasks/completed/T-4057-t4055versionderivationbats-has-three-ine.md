@@ -9,10 +9,10 @@ description: >
   and the invariant suite FAIL at pre-push. Rewrite as 'if cmd; then false; fi' and
   confirm each assertion bites.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, tests]
 components: []
 related_tasks: [T-4055]
@@ -44,8 +44,8 @@ origin: {kind: "agent"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-11T16:28:47Z
-last_update: 2026-10-11T16:33:53Z
-date_finished:
+last_update: 2026-10-11T16:33:57Z
+date_finished: 2026-10-11T16:33:57Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -369,3 +369,15 @@ test "$(grep -c '# skip' .context/working/t4057-verify.out)" -eq 0
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4057-t4055versionderivationbats-has-three-ine.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-219b39ad
+- **Timestamp:** 2026-10-11T16:34:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-11T16:33:57Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
