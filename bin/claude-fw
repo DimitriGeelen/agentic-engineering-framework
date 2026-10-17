@@ -170,8 +170,8 @@ if _cfw_should_wrap_tmux; then
     # destroyed every detached session a wrapped agent created (fw termlink dispatch workers).
     # T-4217 (G-116): a tmux server takes its GLOBAL env from the process that starts it. The
     # session's own paths travel via -e below, so the server itself must not inherit the
-    # caller's PROJECT_ROOT/FRAMEWORK_ROOT (another project's, if the server is shared).
-    exec env -u PROJECT_ROOT -u FRAMEWORK_ROOT -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM \
+    # caller's PROJECT_ROOT/FRAMEWORK_ROOT (another project's, if the server is shared).  T-4222: also TASKS_DIR/CONTEXT_DIR.
+    exec env -u PROJECT_ROOT -u FRAMEWORK_ROOT -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM -u TASKS_DIR -u CONTEXT_DIR \
         tmux -L fw-agents -f /dev/null new-session -s "$_cfw_name" -c "$PWD" "${_cfw_env[@]}" -- "$_cfw_self" "$@" \; \
         set-option -s escape-time 0 \; \
         set-option -g prefix None \; \

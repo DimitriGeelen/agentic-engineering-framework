@@ -65,6 +65,25 @@ if [[ -n "${_FW_PATHS_DERIVED_BY:-}" ]] && [[ "$_FW_PATHS_DERIVED_BY" != "$PROJE
     unset TASKS_DIR CONTEXT_DIR
 fi
 
+# T-4222 (G-116, second source): with the sentinel absent (unset by a polluted session, or never
+# set) an inherited TASKS_DIR/CONTEXT_DIR still survived the `:-` below and steered writes into
+# another project. Rule: an inherited value is re-derived (with a stderr warning) when it lies
+# outside PROJECT_ROOT AND is itself a project's own dir — basename .tasks/.context whose parent
+# carries .framework.yaml. Plain test fixtures (tmp dirs without .framework.yaml) and
+# FW_TASKS_DIR_OVERRIDE=1 are honoured unchanged.
+if [[ "${FW_TASKS_DIR_OVERRIDE:-0}" != "1" ]]; then
+    for _fw_dv in TASKS_DIR:.tasks CONTEXT_DIR:.context; do
+        _fw_dn="${_fw_dv%%:*}"; _fw_db="${_fw_dv##*:}"; _fw_dval="${!_fw_dn:-}"
+        if [[ -n "$_fw_dval" && "$(basename "$_fw_dval")" == "$_fw_db" \
+              && "$(dirname "$_fw_dval")" != "$PROJECT_ROOT" \
+              && -f "$(dirname "$_fw_dval")/.framework.yaml" ]]; then
+            echo "fw: inherited $_fw_dn=$_fw_dval is outside project $PROJECT_ROOT; using $PROJECT_ROOT/$_fw_db (set FW_TASKS_DIR_OVERRIDE=1 to keep it)" >&2
+            unset "$_fw_dn"
+        fi
+    done
+    unset _fw_dv _fw_dn _fw_db _fw_dval
+fi
+
 # Common directories
 TASKS_DIR="${TASKS_DIR:-$PROJECT_ROOT/.tasks}"
 CONTEXT_DIR="${CONTEXT_DIR:-$PROJECT_ROOT/.context}"

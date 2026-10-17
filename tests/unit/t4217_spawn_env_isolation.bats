@@ -25,17 +25,18 @@ teardown() {
     [ -n "${D:-}" ] && rm -rf "$D"
 }
 
-@test "T-4217: a spawn's private tmux server gets none of the four fw path variables in its global env" {
+@test "T-4217: a spawn's private tmux server gets none of the six fw path variables (T-4222: + TASKS_DIR, CONTEXT_DIR) in its global env" {
     run env PATH="$D/bin:$PATH" \
         PROJECT_ROOT=/some/other/project FRAMEWORK_ROOT=/some/other/project/.agentic-framework \
         _FW_PATHS_DERIVED_BY=test FW_ROUTED_FROM=/some/other/project \
+        TASKS_DIR=/some/other/project/.tasks CONTEXT_DIR=/some/other/project/.context \
         FW_DISPATCH_DIR="$D/dispatch" \
         bash "$ROOT/agents/termlink/termlink.sh" spawn --name t4217-w --task T-4217
     [ "$status" -eq 0 ]
     [ -S "$SOCK" ]
     run tmux -S "$SOCK" show-environment -g
     [ "$status" -eq 0 ]
-    if echo "$output" | grep -qE '^(PROJECT_ROOT|FRAMEWORK_ROOT|_FW_PATHS_DERIVED_BY|FW_ROUTED_FROM)='; then
+    if echo "$output" | grep -qE '^(PROJECT_ROOT|FRAMEWORK_ROOT|_FW_PATHS_DERIVED_BY|FW_ROUTED_FROM|TASKS_DIR|CONTEXT_DIR)='; then
         echo "leaked into tmux global env:"; echo "$output"; false
     fi
 }
@@ -52,9 +53,10 @@ teardown() {
     run env -u TMUX -u FW_CLAUDE_FW_IN_TMUX -u FW_DISPATCHED_WORKER -u TL_CLAUDE_ENABLED \
         PATH="$W/bin:$PATH" PROJECT_ROOT=/some/other/project FRAMEWORK_ROOT=/some/other/project/.agentic-framework \
         _FW_PATHS_DERIVED_BY=test FW_ROUTED_FROM=/some/other/project \
+        TASKS_DIR=/some/other/project/.tasks CONTEXT_DIR=/some/other/project/.context \
         script -qec "cd '$W' && timeout 10 bash '$ROOT/bin/claude-fw' -c" /dev/null
     [ -s "$W/tmux.env" ]
-    if grep -qE '^(PROJECT_ROOT|FRAMEWORK_ROOT|_FW_PATHS_DERIVED_BY|FW_ROUTED_FROM)=' "$W/tmux.env"; then
+    if grep -qE '^(PROJECT_ROOT|FRAMEWORK_ROOT|_FW_PATHS_DERIVED_BY|FW_ROUTED_FROM|TASKS_DIR|CONTEXT_DIR)=' "$W/tmux.env"; then
         rm -rf "$W"; false
     fi
     rm -rf "$W"
