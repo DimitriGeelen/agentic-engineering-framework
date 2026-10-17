@@ -12,16 +12,16 @@ description: >
   so the prompt does not hit known defects? Publishing to the public README is the
   operator's decision.
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: null
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-17T13:42:08Z
-last_update: '2026-10-17T13:46:22Z'
-date_finished:
+last_update: 2026-10-17T16:06:00Z
+date_finished: 2026-10-17T16:06:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -107,15 +107,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -164,7 +164,11 @@ bvp_scores_proposed:
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: publish v2.1 in the README now, its workaround sections marked "until AEF T-4248 / T-4251 / T-4239 / T-4252 ship", and replace it with v2.2 after a clean re-run on the fixed master. All four operator criteria are met with real-run evidence (3 live runs, 49 findings, a change per finding, ~19.5 min onboarding; docs/reports/T-4237-inputs/). Anyone installing from master today hits exactly those defects, and each workaround (env -u, git init when the target is not its own repo top-level, inbox --peek, local bind) stays harmless after the fix ships, so waiting protects no one. Earlier text, kept for the record: dimitri-mint-dev reviewed the operator's greenfield install prompt against fw v1.8.10 (20 claims, 4 blockers fixed in v2) and asks to publish v2 in the AEF README. The prompt turns every new install into a falsification run with structured findings, which is exactly the field evidence the release rule (T-4146) needs. Adopt after AEF checks v2's claims against the current head and the fixes it depends on (doctor dependency check, safe Watchtower bind, init restart banner); README wording and placement are ours.
+
+**Date**: 2026-10-17T16:05:57Z
 
 ## Updates
 
@@ -197,3 +201,41 @@ bvp_scores_proposed:
   T-4239 ship", then v2.2 after a clean re-run on the fixed master.
 - Their onboarding ranking puts F-28 (onboarding gate blocks its own skip remedy) at 5 and says AEF has not filed
   it; T-4253's triage will propose it.
+
+### 2026-10-17T16:05:57Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** publish v2.1 in the README now, its workaround sections marked "until AEF T-4248 / T-4251 / T-4239 / T-4252 ship", and replace it with v2.2 after a clean re-run on the fixed master. All four operator criteria are met with real-run evidence (3 live runs, 49 findings, a change per finding, ~19.5 min onboarding; docs/reports/T-4237-inputs/). Anyone installing from master today hits exactly those defects, and each workaround (env -u, git init when the target is not its own repo top-level, inbox --peek, local bind) stays harmless after the fix ships, so waiting protects no one. Earlier text, kept for the record: dimitri-mint-dev reviewed the operator's greenfield install prompt against fw v1.8.10 (20 claims, 4 blockers fixed in v2) and asks to publish v2 in the AEF README. The prompt turns every new install into a falsification run with structured findings, which is exactly the field evidence the release rule (T-4146) needs. Adopt after AEF checks v2's claims against the current head and the fixes it depends on (doctor dependency check, safe Watchtower bind, init restart banner); README wording and placement are ours.
+
+### 2026-10-17T16:05:58Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-8263ab58
+- **Timestamp:** 2026-10-17T16:06:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-db8320e4
+- **Timestamp:** 2026-10-17T16:06:03Z
+- **Overall:** CONFIRMED
+- **Claims:** 5
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-4248` | task | ✓ pass |
+| `T-4251` | task | ✓ pass |
+| `T-4239` | task | ✓ pass |
+| `T-4252` | task | ✓ pass |
+| `T-4146` | task | ✓ pass |
+
+### 2026-10-17T16:06:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
