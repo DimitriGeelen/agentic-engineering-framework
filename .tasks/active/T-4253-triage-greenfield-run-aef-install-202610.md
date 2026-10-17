@@ -1,10 +1,16 @@
 ---
 id: T-4253
-name: "Triage greenfield run aef-install-20261017T144241Z (48 findings, 0909 P-001): map each finding to an existing task/concern or propose a new one"
+name: "Triage greenfield run aef-install-20261017T144241Z (48 findings, 0909 P-001):
+  map each finding to an existing task/concern or propose a new one"
 description: >
-  dimitri-mint-dev / 0909 run on unchanged master 704c9988: 48 findings (framework-defect 25, blocker 2, degraded 13). Deliverable: docs/reports/<id>-greenfield-run-triage.md with one row per finding: id, our verdict (confirmed against current bleeding-edge / not reproducible / prompt-side / environment), owning task (existing T-4248, T-4251, T-4252, T-4239, T-4238 etc. or PROPOSED-NEW with one-line scope), priority. The triage edits no task or source files; the parent files new tasks serially.
+  dimitri-mint-dev / 0909 run on unchanged master 704c9988: 48 findings (framework-defect
+  25, blocker 2, degraded 13). Deliverable: docs/reports/<id>-greenfield-run-triage.md
+  with one row per finding: id, our verdict (confirmed against current bleeding-edge
+  / not reproducible / prompt-side / environment), owning task (existing T-4248, T-4251,
+  T-4252, T-4239, T-4238 etc. or PROPOSED-NEW with one-line scope), priority. The
+  triage edits no task or source files; the parent files new tasks serially.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:06:53Z
-last_update: 2026-10-17T15:06:53Z
-date_finished: null
+last_update: '2026-10-17T15:15:32Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-17T15:07:52Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-17T15:15:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=291,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4253: Triage greenfield run aef-install-20261017T144241Z (48 findings, 0909 P-001): map each finding to an existing task/concern or propose a new one
@@ -61,9 +95,9 @@ Pickup P-001 from 0909 (dimitri-mint-dev run). Record: /opt/0909-boot-into-times
 ## Acceptance Criteria
 
 ### Agent
-- [ ] docs/reports/T-4253-greenfield-run-triage.md has one row for each of F-01..F-48 (id, severity, verdict, owner task or PROPOSED-NEW, priority)
-- [ ] Every framework-defect/blocker/degraded row has a verdict checked against current bleeding-edge source (file:line), not copied from the finding
-- [ ] PROPOSED-NEW rows are grouped one-bug-one-task, each with a one-line scope the parent can file as is
+- [x] docs/reports/T-4253-greenfield-run-triage.md has one row for each of F-01..F-48 (id, severity, verdict, owner task or PROPOSED-NEW, priority)
+- [x] Every framework-defect/blocker/degraded row has a verdict checked against current bleeding-edge source (file:line), not copied from the finding
+- [x] PROPOSED-NEW rows are grouped one-bug-one-task, each with a one-line scope the parent can file as is
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -339,3 +373,6 @@ test "$(grep -cE '^\| *F-[0-9]{2} ' docs/reports/T-4253-greenfield-run-triage.md
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4253-triage-greenfield-run-aef-install-202610.md
 - **Context:** Initial task creation
+
+### 2026-10-17T15:07:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
