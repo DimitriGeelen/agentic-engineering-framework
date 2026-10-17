@@ -696,8 +696,16 @@ PYEOF
         return 1
     else
         echo -e "Pushing to ${BOLD}$remote${NC} (session ${BOLD}$session${NC}) via termlink..."
-        local push_rc=0
-        termlink remote push "$remote" "$session" "$filepath" 2>&1 || push_rc=$?
+        # T-4274: the host-shared inbox files by basename, and every project numbers
+        # its own envelopes from P-001 — so the bare name collides across projects.
+        # Push a copy that also carries the source project. The `P-NNN-` prefix is
+        # kept so `P-*.yaml` readers still match; the local name is unchanged.
+        local push_dir push_path push_rc=0
+        push_dir=$(mktemp -d "$PICKUP_DIR/push.XXXXXX")
+        push_path="$push_dir/${pickup_id}-${pickup_type}.${source_project//[^A-Za-z0-9._-]/_}.yaml"
+        cp "$filepath" "$push_path"
+        termlink remote push "$remote" "$session" "$push_path" 2>&1 || push_rc=$?
+        rm -rf "$push_dir"
         if [ "$push_rc" -ne 0 ]; then
             echo -e "${RED}NOT delivered:${NC} termlink remote push exited $push_rc — envelope left in $PICKUP_INBOX" >&2
             echo "$filepath"

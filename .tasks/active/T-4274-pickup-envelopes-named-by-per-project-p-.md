@@ -8,7 +8,7 @@ description: >
   F-49 (second half; first half is T-3763). Triage: docs/reports/T-4253-greenfield-run-triage.md
   PROPOSED-NEW-21.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:30:15Z
-last_update: '2026-10-17T15:46:07Z'
+last_update: 2026-10-17T18:41:18Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw pickup send` pushes a copy whose host-inbox basename carries the source project (lib/pickup.sh push branch, `termlink remote push` call ~:700), so two projects' P-001 pushes get different basenames
+- [x] The pushed basename still starts with `P-NNN-` (so `P-*.yaml` globs and the `sed 's/^\(P-[0-9]*\).*/'` id derivation in tests/unit/t3052_pickup_id_collision.bats keep working)
+- [x] Local envelope filename, pickup_id and sent/ archive naming are unchanged; no existing file in /tmp/termlink-inbox or .context/pickup is renamed or deleted
+- [x] Regression test tests/unit/t4274_pickup_inbox_filename.bats exists and fails on the pre-fix code (red) and passes after the fix (green)
+- [x] Existing pickup suites (tests/unit/lib_pickup.bats, lib_pickup_triple_dedup.bats, t3052_pickup_id_collision.bats) stay green
+- [x] `bin/fw vendor self --check` is clean after the vendor sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -144,6 +148,11 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+out=$(bats tests/unit/t4274_pickup_inbox_filename.bats 2>&1); echo "$out" | grep -q '^ok ' && ! echo "$out" | grep -q '^not ok' && test "$(echo "$out" | grep -c '# skip')" -eq 0
+out=$(bats tests/unit/lib_pickup.bats 2>&1); echo "$out" | grep -q '^ok ' && ! echo "$out" | grep -q '^not ok' && test "$(echo "$out" | grep -c '# skip')" -eq 0
+out=$(bats tests/unit/lib_pickup_triple_dedup.bats 2>&1); echo "$out" | grep -q '^ok ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t3052_pickup_id_collision.bats 2>&1); echo "$out" | grep -q '^ok ' && ! echo "$out" | grep -q '^not ok'
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -276,6 +285,14 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** A host-shared TermLink inbox (/tmp/termlink-inbox) holds one `P-001-*.yaml` file, and a second project's `P-001` envelope overwrote or was confused with this project's own `P-001`. Observed in the 0909 run (F-49).
+
+**Root cause:** `pickup_next_id` (lib/pickup.sh:~340-367) issues P-NNN from a per-project counter, and `do_pickup` (lib/pickup.sh:~610-698) names the envelope `${pickup_id}-${type}.yaml`. The send branch hands that exact local path to `termlink remote push` (~:700), so the receiving host stores it under its bare basename. Two projects' basenames are identical, so the receiver's copy is overwritten. Hypothesis to confirm with a test: the pushed basename carries no project identity.
+
+**Why structurally allowed:** The tests check local collision (`pickup_move_preserving`, t3052) and local id derivation, never the basename of the file pushed to a shared inbox. Nothing asserts that a remote filename is unique across projects.
+
+**Prevention:** Regression test pins the pushed basename to include the source project while keeping the `P-NNN-` prefix, and a `termlink remote push` shim records the argument so the test runs without a live hub.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -370,3 +387,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4274-pickup-envelopes-named-by-per-project-p-.md
 - **Context:** Initial task creation
+
+### 2026-10-17T18:41:18Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
