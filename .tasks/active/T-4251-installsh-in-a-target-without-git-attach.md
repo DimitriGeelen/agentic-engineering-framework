@@ -11,10 +11,10 @@ description: >
   a repo top-level (toplevel != target), and fail the verification summary on a failed
   bootstrap commit. Record F-01..F-24 in the target's .context/install-findings/.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:01:58Z
-last_update: '2026-10-17T15:16:15Z'
+last_update: 2026-10-17T19:36:11Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,8 +97,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw init <dir>` where <dir> is a subdirectory of an enclosing git repo (no .git of its own) creates a git repo at <dir>: `git -C <dir> rev-parse --show-toplevel` equals <dir>
+- [x] The enclosing repo is left untouched: no hook is written to its .git/hooks and its HEAD does not move
+- [ ] `install.sh` verify() fails (non-zero, `[x]`) when the target is not its own git top-level, instead of passing on the enclosing repo's HEAD (code in place; no test drives the failure path yet)
+- [x] Regression bats test under tests/unit/ fails on the pre-fix code and passes after the fix (enclosing-repo case)
+- [ ] `bin/fw vendor self --check` is clean; tests/unit/upgrade_fresh_machine_simulation.bats not-ok count reported in Updates
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -277,7 +280,18 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(bats tests/unit/t4251_init_own_git_repo.bats 2>&1); echo "$out" | grep -q "^ok" && ! echo "$out" | grep -q "^not ok"
+bin/fw vendor self --check
+
 ## RCA
+
+**Symptom:** a greenfield target with no `.git`, inside an enclosing repo at `/`, got no `git init`; hooks went to `/.git/hooks`, task ids continued from `/.tasks`, the bootstrap commit failed on a stale `/.git/index.lock`, and the installer still printed "All verification steps passed".
+
+**Root cause:** `lib/init.sh:186` tested `git -C "$target_dir" rev-parse --is-inside-work-tree`, which is true for any enclosing repo, so `git init` was skipped (`lib/init.sh:188`). `install.sh` verify() (`install.sh` HEAD check) resolved `HEAD` through the same enclosing repo, so it passed.
+
+**Why structurally allowed:** the only "is it a repo" test asked whether the path is inside a work tree, not whether the work tree's top-level IS the target. The fresh-machine simulation always built the target as its own repo, so no test ever put a target inside an enclosing one.
+
+**Prevention:** `tests/unit/t4251_init_own_git_repo.bats` builds an enclosing repo and runs `fw init` into a subdirectory of it. Its assertions are that the target's top-level equals the target and the enclosing repo is untouched. The fix uses the top-level comparison, and verify() asserts the same.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -373,3 +387,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4251-installsh-in-a-target-without-git-attach.md
 - **Context:** Initial task creation
+
+### 2026-10-17T19:36:11Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

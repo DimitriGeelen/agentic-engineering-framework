@@ -1,15 +1,17 @@
 ---
 id: T-4279
-name: "Re-pin workflow designer 0.21.0 -> 0.22.0 (832 T-1196: skip leading G-/OBS-/L- ids in slugs)"
+name: "Re-pin workflow designer 0.21.0 -> 0.22.0 (832 T-1196: skip leading G-/OBS-/L-
+  ids in slugs)"
 description: >
-  Re-pin workflow designer 0.21.0 -> 0.22.0 (832 T-1196: skip leading G-/OBS-/L- ids in slugs)
+  Re-pin workflow designer 0.21.0 -> 0.22.0 (832 T-1196: skip leading G-/OBS-/L- ids
+  in slugs)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [policy/designer-pin.yaml]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -38,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T21:11:41Z
-last_update: 2026-10-17T21:11:41Z
-date_finished: null
+last_update: 2026-10-17T21:15:24Z
+date_finished: 2026-10-17T21:15:24Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +52,16 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-17T21:15:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=295,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4279: Re-pin workflow designer 0.21.0 -> 0.22.0 (832 T-1196: skip leading G-/OBS-/L- ids in slugs)
@@ -346,3 +358,29 @@ bin/fw vendor self --check
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4279-re-pin-workflow-designer-0210---0220-832.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-34ef00d0
+- **Timestamp:** 2026-10-17T21:15:34Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 4
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 6
+     - evidence: `curl -sf "$(bin/fw watchtower url)/designer/app" | grep -c '0\.22\.0' >/dev/null`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `bin/fw designer status 2>&1 | grep -q 'PRESENT ✓ (sha256 matches pin)'`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 4
+     - evidence: `bin/fw corpus lint 2>&1 | grep -q CLEAN`
+
+### 2026-10-17T21:15:24Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

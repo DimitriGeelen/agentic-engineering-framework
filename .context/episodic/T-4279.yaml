@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4279: Re-pin workflow designer 0.21.0 -> 0.22.0 (832 T-1196: skip leading G-/OBS-/L- ids in slugs)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T21:15:50Z
+# ============================================================================
+
+task_id: T-4279
+task_name: "Re-pin workflow designer 0.21.0 -> 0.22.0 (832 T-1196: skip leading G-/OBS-/L- ids in slugs)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T21:11:41Z
+completed: 2026-10-17T21:15:24Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-17T23:15:19+02:00
+last_commit: 2026-10-17T23:15:19+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  re-pin designer 0.21.0 -> 0.22.0 (832 T-1196: skip leading G-/OBS-/L- ids in slugs)
+
+# Key outcomes
+outcomes:
+  - 'policy/designer-pin.yaml pins 0.22.0 via `fw designer sync --from-tag designer-v0.22.0`; sha256 b311d4852e7a524adc2edbc806472cb7c0331051fdc8a1e3fa47dd4c3abdb4dd and 1171433 bytes verified against the MANIFEST at the tag (832 announce 1af206e9)'
+  - 'No code or test references the 8 draft-node ids that rename on next save (fwk_4_062, fw_7_020); corpus lint clean; designer id tests still pass'
+  - 'Watchtower restarted; /designer/app serves 0.22.0; vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/designer-pin.yaml'
+  - '.agentic-framework/vendor/designer/aef-workflow-designer-0.22.0.html'
+  - 'policy/designer-pin.yaml'
+  - '.tasks/active/T-4279-re-pin-workflow-designer-0210---0220-832.md'
+  - 'vendor/designer/aef-workflow-designer-0.22.0.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T23:15:19'
+    action: 'T-4279: re-pin designer 0.21.0 -> 0.22.0 (832 T-1196: skip leading G-/OBS-/L- ids in slugs)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 5
+  lines_added: 14374
+  lines_removed: 37
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4279-re-pin-workflow-designer-0210---0220-832.md
+generated_by: context-agent-hybrid
