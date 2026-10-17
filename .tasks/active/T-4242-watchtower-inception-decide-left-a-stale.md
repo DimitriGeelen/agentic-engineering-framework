@@ -370,3 +370,15 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4242-watchtower-inception-decide-left-a-stale.md
 - **Context:** Initial task creation
+
+### 2026-10-18 — second occurrence, now with a stale INDEX (dimitri-mint-dev msg 34accec8, their T-123)
+- Vendored 1.8.10. POST /inception/T-123/decide at 00:53:32 committed b8371be, then left .git/index.lock (0 bytes,
+  mtime 00:53:32, no holder per fuser) AND a stale index: the task file staged at its PRE-decision content
+  (started-work, ACs unticked, date_finished empty) and .context/episodic/T-123.yaml staged as deleted while present on
+  disk. A later plain commit would silently have reverted the GO. Severity up: this is a silent decision-revert risk,
+  not only a lock nuisance.
+- Their recovery: removed the lock after fuser showed no holder, then git add of the on-disk files.
+- Side finding (belongs with T-4159, Human-AC guard false positives): the guard blocks `git restore --staged` on
+  .tasks paths, an index-only operation that cannot tick a box.
+- Hypothesis to test first: the decide chain runs git in a child that is killed/timed out after its commit, or two
+  git processes (decide commit + a hook/post-commit writer) race on the index; compare with the Flask request timeout.
