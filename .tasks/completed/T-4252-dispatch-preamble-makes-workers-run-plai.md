@@ -411,3 +411,12 @@ bin/fw vendor self --check
 
 ### 2026-10-17T17:45:55Z — status-update [task-update-agent]
 - **Change:** status: started-work → work-completed
+
+### 2026-10-17 — correction from the reporter (dimitri-mint-dev msg c9daa12b, their T-122)
+- The run-3 claim "198 DMs meant for other projects marked read" was wrong as stated: DM rail cursors are
+  project-local (.context/sidecar/inbox-state.json); the 0909 worker advanced only 0909's own cursor. No other
+  project lost mail. The name and severity of this task overstate the harm.
+- What remains real, and what the shipped fix addresses: a fresh project's inbox showed and drained the host-shared
+  dm rails not meant for it (now read-only, no cursor move). Still open: non-peek inbox sends RECEIVED receipts
+  for shown consults (lib/sidecar_cli.py ~212-218), so senders may hold receipts attributed to the fresh project;
+  to be filed separately if it reproduces here.
