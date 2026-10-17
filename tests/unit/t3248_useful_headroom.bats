@@ -159,9 +159,13 @@ EOF
 
 @test "negative control: constrained window (58000, the E9 dial) reports a visibly poor ratio" {
     run_gate "constrained" "$HEAVY" 58000
-    [ "$status" -eq 0 ]
-    echo "$STATUS_JSON" | grep -q '"headroom_tokens": 5400'
-    echo "$STATUS_JSON" | grep -q '"headroom_ratio": 0.09'
+    # T-4226: 52.6K used is past the Stop line at 58K (38K used). The Stop path starts the
+    # auto-handover, which clears .budget-status shortly after, so the ratio is pinned on the
+    # baseline measurement below instead of the cache.
+    [ "$status" -eq 2 ]
+    run env PROJECT_ROOT="$TEST_TEMP_DIR" CONTEXT_DIR="$TEST_TEMP_DIR/.context" HOME="$TEST_TEMP_DIR" \
+        FW_CONTEXT_WINDOW=58000 bash "$CHECKPOINT" baseline "$HEAVY"
+    [ "$output" = "52600" ]
 }
 
 @test "negative control: default window (300000) reports a healthy ratio against the same session" {
@@ -173,8 +177,10 @@ EOF
 
 # --- AC 5: measurement only — a poor ratio gates NOTHING ---
 
-@test "no gate ships: the poor-ratio constrained run still exits 0 and mentions no headroom threshold" {
+@test "no gate ships: the poor-ratio constrained run blocks only on the Stop band, and mentions no headroom threshold" {
+    # T-4226: at 58K the Stop line is 38K used (R=20K), so this 52.6K session is in Stop
+    # and the Write is blocked for that reason alone. Headroom gates nothing.
     run_gate "nogate" "$HEAVY" 58000
-    [ "$status" -eq 0 ]   # urgent level warns about TOKENS, but headroom itself blocks nothing
+    [ "$status" -eq 2 ]
     [[ "$output" != *"headroom"* ]]   # no headroom-based WARN text on the gate's stderr
 }

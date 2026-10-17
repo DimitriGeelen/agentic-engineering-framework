@@ -142,11 +142,10 @@ EOF
     [ "$output" = "1" ]
 }
 
-@test "the 75/85/95 ladder ratios are UNCHANGED in both gauges" {
+@test "T-4226: both gauges read the one ladder (lib/budget_ladder.py), not fixed percentages" {
     for f in agents/context/checkpoint.sh agents/context/budget-gate.sh; do
-        grep -q 'TOKEN_WARN=$((CONTEXT_WINDOW \* 75 / 100))' "$REPO_ROOT/$f"
-        grep -q 'TOKEN_URGENT=$((CONTEXT_WINDOW \* 85 / 100))' "$REPO_ROOT/$f"
-        grep -q 'TOKEN_CRITICAL=$((CONTEXT_WINDOW \* 95 / 100))' "$REPO_ROOT/$f"
+        grep -q 'lib/budget_ladder.py' "$REPO_ROOT/$f"
+        ! grep -qE 'CONTEXT_WINDOW \* (75|85|95) / 100' "$REPO_ROOT/$f"
     done
 }
 
