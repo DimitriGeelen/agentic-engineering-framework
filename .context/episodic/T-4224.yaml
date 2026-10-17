@@ -1,0 +1,148 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4224: Re-pin the workflow designer 0.14.0 -> 0.20.0 (832 T-1187): fw designer sync --from-tag designer-v0.20.0, then handle 0.20.0's one-time node-id renumbering for every stored node id (corpus maps, instance positions, current_node, overlays)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T19:02:27Z
+# ============================================================================
+
+task_id: T-4224
+task_name: "Re-pin the workflow designer 0.14.0 -> 0.20.0 (832 T-1187): fw designer sync --from-tag designer-v0.20.0, then handle 0.20.0's one-time node-id renumbering for every stored node id (corpus maps, instance positions, current_node, overlays)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T08:47:51Z
+completed: 2026-10-17T19:02:01Z
+duration_days: 0
+updates_count: 5
+first_commit: 2026-10-17T10:49:12+02:00
+last_commit: 2026-10-17T20:14:54+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file designer re-pin 0.20.0 (832 T-1187); T-4225: record the operator's absolute spawn reserve. acceptance criteria for the designer re-pin. re-pin workflow designer 0.14.0 -> 0.20.0 (sync --from-tag designer-v0.20.0, sha256 verified) + inventory of stored node ids. vendor the 0.20.0 designer pin into .agentic-framework (self-vendor, superseded 0.14.0 removed). operator chose (c) for the node-id slug; proposed to 832 (fallback a). 832 accepted (c) (their T-1194, ships in 0.21.0); 0.20.0 table not to be applied. re-pin designer 0.20.0 -> 0.21.0 (832 T-1194 option c) and apply 832's uid-paired id renumbering to our 47 maps
+
+# Key outcomes
+outcomes:
+  - 'Inventory in Updates: every place AEF stores a designer node id (corpus maps, instance state/current_node, overlays, map-conformance rail, ghost registry, tests/fixtures), each with how it is affected by the one-time renumbering'
+  - 'policy/designer-pin.yaml pins 0.21.0 via `fw designer sync --from-tag designer-v0.21.0`, sha256 da1619714dfcb46f265c989d08a2c5129fb0134c40f726826a86fff93294b505 and 1164928 bytes verified against the MANIFEST at the tag'
+  - 'Stored node ids are migrated with 832''s uid-paired map for 0.21.0 (docs/reports/T-4224-inputs/, patch sha256 e096d561… verified) before any re-save; tests prove migrated references resolve (t2974, t2979, test_corpus_spec_roundtrip, t2984)'
+  - 'Map conformance, designer currency and designer pin-drift checks green; Watchtower restarted; /designer and /designer/app return 200 and serve 0.21.0'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/policy/designer-pin.yaml'
+  - '.agentic-framework/vendor/designer/aef-workflow-designer-0.20.0.html'
+  - '.agentic-framework/vendor/designer/aef-workflow-designer-0.21.0.html'
+  - '.context/designer/projects/aef-audit-cron/v1.bpmn'
+  - '.context/designer/projects/aef-dispatch-loop/v1.bpmn'
+  - '.context/designer/projects/aef-dispatch-loop/v2.bpmn'
+  - '.context/designer/projects/aef-dispatch-loop/v3.bpmn'
+  - '.context/designer/projects/aef-existing-project-onboarding/v1.bpmn'
+  - '.context/designer/projects/aef-greenfield-onboarding/v1.bpmn'
+  - '.context/designer/projects/aef-greenfield-onboarding/v2.bpmn'
+  - '.context/designer/projects/aef-inception-flow/v1.bpmn'
+  - '.context/designer/projects/aef-session-lifecycle/v1.bpmn'
+  - '.context/designer/projects/aef-task-lifecycle/v1.bpmn'
+  - '.context/designer/projects/aef-task-lifecycle/v2.bpmn'
+  - '.context/designer/projects/aef-task-lifecycle/v3.bpmn'
+  - '.context/designer/projects/aef-tier0-escalation/v1.bpmn'
+  - '.context/designer/projects/draft-arc-lifecycle/v1.bpmn'
+  - '.context/designer/projects/draft-arc-lifecycle/v2.bpmn'
+  - '.context/designer/projects/draft-arc-lifecycle/v3.bpmn'
+  - '.context/designer/projects/draft-arc-lifecycle/v4.bpmn'
+  - '.context/designer/projects/draft-continuous-run-loop/v1.bpmn'
+  - '.context/designer/projects/draft-continuous-run-loop/v2.bpmn'
+  - '.context/designer/projects/draft-continuous-run-loop/v3.bpmn'
+  - '.context/designer/projects/draft-continuous-run-loop/v4.bpmn'
+  - '.context/designer/projects/draft-continuous-run-loop/v5.bpmn'
+  - '.context/designer/projects/draft-exception-handling/v1.bpmn'
+  - '.context/designer/projects/draft-exception-handling/v2.bpmn'
+  - '.context/designer/projects/draft-exception-handling/v3.bpmn'
+  - '.context/designer/projects/draft-inception-readiness/v1.bpmn'
+  - '.context/designer/projects/draft-inception-readiness/v2.bpmn'
+  - '.context/designer/projects/draft-knowledge-leveling/v1.bpmn'
+  - '.context/designer/projects/draft-knowledge-leveling/v2.bpmn'
+  - '.context/designer/projects/draft-knowledge-leveling/v3.bpmn'
+  - '.context/designer/projects/draft-knowledge-leveling/v4.bpmn'
+  - '.context/designer/projects/draft-knowledge-leveling/v5.bpmn'
+  - '.context/designer/projects/draft-knowledge-leveling/v6.bpmn'
+  - '.context/designer/projects/draft-knowledge-leveling/v7.bpmn'
+  - '.context/designer/projects/draft-knowledge-leveling/v8.bpmn'
+  - '.context/designer/projects/draft-t2584-scratch/v1.bpmn'
+  - '.context/designer/projects/draft-task-creation/v1.bpmn'
+  - '.context/designer/projects/draft-task-creation/v2.bpmn'
+  - '.context/designer/projects/draft-task-creation/v3.bpmn'
+  - '.context/designer/projects/draft-task-creation/v4.bpmn'
+  - '.context/designer/projects/draft-task-creation/v5.bpmn'
+  - '.context/designer/projects/draft-trigger-handling/v1.bpmn'
+  - '.context/designer/projects/draft-trigger-handling/v2.bpmn'
+  - '.context/designer/projects/draft-trigger-handling/v3.bpmn'
+  - '.context/designer/projects/draft-trigger-handling/v4.bpmn'
+  - '.context/designer/projects/draft-trigger-handling/v5.bpmn'
+  - '.context/designer/projects/draft-trigger-handling/v6.bpmn'
+  - 'docs/reports/T-4224-inputs/T-1189-aef-node-id-map-0.21.0.md'
+  - 'docs/reports/T-4224-inputs/table.json'
+  - 'policy/designer-pin.yaml'
+  - '.tasks/active/T-4224-re-pin-the-workflow-designer-0140---0200.md'
+  - '.tasks/active/T-4225-record-the-operators-spawn-rule-replace-.md'
+  - 'tests/unit/t2974_greenfield_operator_prose.py'
+  - 'tests/unit/t2979_existing_project_onboarding_map.py'
+  - 'tests/unit/test_corpus_spec_roundtrip.py'
+  - 'vendor/designer/aef-workflow-designer-0.20.0.html'
+  - 'vendor/designer/aef-workflow-designer-0.21.0.html'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T10:49:12'
+    action: 'T-4224: file designer re-pin 0.20.0 (832 T-1187); T-4225: record the operator''s absolute spawn reserve'
+  - time: '2026-10-17T15:00:10'
+    action: 'T-4224: acceptance criteria for the designer re-pin'
+  - time: '2026-10-17T15:10:22'
+    action: 'T-4224: re-pin workflow designer 0.14.0 -> 0.20.0 (sync --from-tag designer-v0.20.0, sha256 verified) + inventory of stored node ids'
+  - time: '2026-10-17T15:22:02'
+    action: 'T-4224: vendor the 0.20.0 designer pin into .agentic-framework (self-vendor, superseded 0.14.0 removed)'
+  - time: '2026-10-17T18:29:22'
+    action: 'T-4224: operator chose (c) for the node-id slug; proposed to 832 (fallback a)'
+  - time: '2026-10-17T19:08:55'
+    action: 'T-4224: 832 accepted (c) (their T-1194, ships in 0.21.0); 0.20.0 table not to be applied'
+  - time: '2026-10-17T20:14:54'
+    action: 'T-4224: re-pin designer 0.20.0 -> 0.21.0 (832 T-1194 option c) and apply 832''s uid-paired id renumbering to our 47 maps'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 7 commit(s), 614 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 614
+  commits: 7
+  files_changed: 60
+  lines_added: 34079
+  lines_removed: 1980
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4224-re-pin-the-workflow-designer-0140---0200.md
+generated_by: context-agent-hybrid

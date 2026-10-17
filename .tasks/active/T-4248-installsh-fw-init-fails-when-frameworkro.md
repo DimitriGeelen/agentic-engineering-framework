@@ -19,7 +19,7 @@ description: >
   FAILED when any step reported [x]; back up and announce any replaced ~/.local/bin
   entry. Test in the fresh-machine simulation with a polluted env.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -53,7 +53,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T14:24:55Z
-last_update: '2026-10-17T14:31:32Z'
+last_update: 2026-10-17T18:41:05Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -105,8 +105,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] bin/fw re-resolves an inherited FRAMEWORK_ROOT that lacks lib/ or agents/ (warning on stderr), and still honours one that has both
+- [ ] install.sh runs its `fw init` call under `env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u TASKS_DIR -u CONTEXT_DIR -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM`
+- [ ] install.sh exits non-zero and prints FAILED when `fw init` exits non-zero or its output contains a `[x]` step
+- [ ] install.sh copies an existing ~/.local/bin/fw or claude-fw to a timestamped backup and announces it before replacing it
+- [ ] Regression bats test under tests/unit/ fails on the pre-fix code and passes after the fix (polluted-env case)
+- [ ] `bin/fw vendor self --check` is clean and tests/unit/upgrade_fresh_machine_simulation.bats not-ok count is reported
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -285,7 +289,19 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(bats tests/unit/t4248_install_inherited_env.bats 2>&1); echo "$out" | grep -q "^ok" && ! echo "$out" | grep -q "^not ok"
+bin/fw vendor self --check
+bats tests/unit/upgrade_fresh_machine_simulation.bats > .context/working/t4248-sim.out 2>&1; grep -c "^not ok" .context/working/t4248-sim.out | grep -qE "^[0-9]+$"
+
 ## RCA
+
+**Symptom:** `install.sh` with an inherited FRAMEWORK_ROOT (plus PROJECT_ROOT) made `fw init` source `<target>/lib/init.sh` ("No such file"), and the installer still printed "Installation complete!" with exit 0.
+
+**Root cause:** pending localisation (see Updates).
+
+**Why structurally allowed:** pending.
+
+**Prevention:** pending.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -400,3 +416,6 @@ bvp_scores_proposed:
 - Two independent defects filed separately (one bug = one task): install.sh in a target without .git, inside an
   enclosing repo at / (T-4251); dispatch preamble's plain `fw sidecar inbox` marks other projects' DMs read (T-4252).
 - Record: /opt/0909-boot-into-timeshift-snapshots/.context/install-findings/ (F-01..F-24).
+
+### 2026-10-17T18:41:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

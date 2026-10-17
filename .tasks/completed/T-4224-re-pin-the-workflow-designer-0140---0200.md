@@ -18,12 +18,12 @@ description: >
   or prove nothing stores them; (4) map conformance + designer currency checks green;
   (5) Watchtower restart + /designer smoke; tell 832 the commit.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [policy/designer-pin.yaml, tests/unit/t2974_greenfield_operator_prose.py, tests/unit/t2979_existing_project_onboarding_map.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -52,8 +52,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T08:47:51Z
-last_update: 2026-10-17T13:22:02Z
-date_finished:
+last_update: 2026-10-17T19:02:01Z
+date_finished: 2026-10-17T19:02:01Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -104,10 +104,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Inventory in Updates: every place AEF stores a designer node id (corpus maps, instance state/current_node, overlays, map-conformance rail, ghost registry, tests/fixtures), each with how it is affected by 0.20.0's one-time renumbering
-- [ ] policy/designer-pin.yaml pins 0.20.0 via `fw designer sync --from-tag designer-v0.20.0`, sha256 51931b8a40ece180eb5981f57ab4a41f4c956e0d4cea877c5905ea89b65f6f3c and 1159393 bytes verified against the MANIFEST at the tag
-- [ ] Stored node ids are migrated with 832's uid-paired map (docs/reports/T-1168-node-id-map.md at the tag) before any re-save, or the inventory shows nothing stores them; a test proves a migrated reference still resolves
-- [ ] Map conformance, designer currency and designer pin-drift checks green; Watchtower restarted; /designer and /designer/app return 200 and serve 0.20.0
+<!-- Retargeted 0.20.0 -> 0.21.0 on 2026-10-17: the operator chose option (c), shipped by 832 in 0.21.0; the 0.20.0 table was withdrawn by 832. -->
+- [x] Inventory in Updates: every place AEF stores a designer node id (corpus maps, instance state/current_node, overlays, map-conformance rail, ghost registry, tests/fixtures), each with how it is affected by the one-time renumbering
+- [x] policy/designer-pin.yaml pins 0.21.0 via `fw designer sync --from-tag designer-v0.21.0`, sha256 da1619714dfcb46f265c989d08a2c5129fb0134c40f726826a86fff93294b505 and 1164928 bytes verified against the MANIFEST at the tag
+- [x] Stored node ids are migrated with 832's uid-paired map for 0.21.0 (docs/reports/T-4224-inputs/, patch sha256 e096d561… verified) before any re-save; tests prove migrated references resolve (t2974, t2979, test_corpus_spec_roundtrip, t2984)
+- [x] Map conformance, designer currency and designer pin-drift checks green; Watchtower restarted; /designer and /designer/app return 200 and serve 0.21.0
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -168,6 +169,15 @@ bvp_scores_proposed:
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+# The doctor-running bats (doctor_designer_pin_drift, t3119/t3158 currency) time out at 900 s in the
+# nightly run too (one fw doctor took ~7 min under load; T-3083), so pin and currency are checked directly.
+bin/fw designer status 2>&1 | grep -q 'PRESENT ✓ (sha256 matches pin)'
+grep -q '^version: "0.21.0"' policy/designer-pin.yaml && test -f vendor/designer/aef-workflow-designer-0.21.0.html
+bin/fw corpus lint 2>&1 | grep -q CLEAN
+python3 -m pytest -q tests/unit/t2974_greenfield_operator_prose.py tests/unit/t2979_existing_project_onboarding_map.py tests/unit/test_corpus_spec_roundtrip.py tests/unit/t2984_session_lifecycle_lane_geometry.py
+timeout 60 bats tests/unit/designer_sync_sha256.bats
+curl -sf "$(bin/fw watchtower url)/designer/app" | grep -c '0\.21\.0' >/dev/null
+bin/fw vendor self --check
 #
 # ── Mutable-corpus anchor (T-3326) ────────────────────────────────────────────
 # Do NOT anchor a verification line (or a unit test it runs) to MUTABLE corpus
@@ -418,3 +428,29 @@ Method: `git ls-files` (excl. .tasks/, docs/reports/, .agentic-framework/, episo
 - 832 operator: YES to (c), their T-1194. Ships in designer 0.21.0 (with sticky lane labels and a display-only
   pool-border fix). Next: re-pin to 0.21.0 when tagged (version/tag/sha256/bytes from 832), then 832 re-runs the
   uid-paired table for our 47 maps and sends patch + table by TermLink. **Do NOT apply the 0.20.0 table.**
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-98d797a0
+- **Timestamp:** 2026-10-17T19:02:11Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 4
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+**Verification-level findings:**
+
+  1. **empty-output-success** (partial, heuristic) @ Verification:line 19
+     - evidence: `curl -sf "$(bin/fw watchtower url)/designer/app" | grep -c '0\.21\.0' >/dev/null`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 14
+     - evidence: `bin/fw designer status 2>&1 | grep -q 'PRESENT ✓ (sha256 matches pin)'`
+  3. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 16
+     - evidence: `bin/fw corpus lint 2>&1 | grep -q CLEAN`
+
+### 2026-10-17T19:02:01Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
