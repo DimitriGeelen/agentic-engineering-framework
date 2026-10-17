@@ -18,10 +18,10 @@ description: >
   or prove nothing stores them; (4) map conformance + designer currency checks green;
   (5) Watchtower restart + /designer smoke; tell 832 the commit.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -52,7 +52,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T08:47:51Z
-last_update: '2026-10-17T09:01:24Z'
+last_update: 2026-10-17T13:10:22Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -382,3 +382,28 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4224-re-pin-the-workflow-designer-0140---0200.md
 - **Context:** Initial task creation
+
+### 2026-10-17T13:00:11Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-17 — inventory of stored designer node ids (step 1, before re-pin; evidence = grep of tracked files)
+Method: `git ls-files` (excl. .tasks/, docs/reports/, .agentic-framework/, episodic, handovers) grepped for every old id of the 256-row table at the tag (`docs/reports/T-1168-node-id-map.md`), plus `current_node|positions|agt_N_|frw_N_|hum_N_` across web/ lib/ agents/ bin/ tools/ tests/ policy/ .context/designer .context/working .fabric.
+
+| Where AEF stores a node id | What id | Affected by 0.20.0 re-save? |
+|---|---|---|
+| `.context/designer/projects/*/v*.bpmn` (79 files, 33 maps: aef-*, draft-*, t101-review-*, t293-retest-harvest, audit-process) | own `<lane>_<n>_<slug>` ids, `aef:uid` per node | **Yes, on each map's next save.** Not covered by the uid-paired table: the table maps 832's `examples/aef-processes/rendered` maps (task-lifecycle, audit-process…), which are not in this tree, and the AEF map names/ids differ (e.g. `agt_1_work`). Bare-name hits (e.g. `agt_2_create` in aef-task-lifecycle v3) are coincidental: different map. **Not migrated — no published old→new pairing exists for these maps.** |
+| `.context/designer/registry.yaml` `ghosts[].referenced_by[].node` = `hum_1_handoff` (draft-t2584-scratch) | node id | Self-heals: `web/designer_registry.py:sync_project_refs` rebuilds `referenced_by` from the just-saved BPMN (replace semantics). The node is an `aef:link` intermediateThrowEvent, so the 0.20 id will be `hum_link_handoff` (type word `link`, per release notes). No migration. |
+| `tests/fixtures/bpmn/resume-status-canonical.bpmn` (7 ids: `agt_1_fw`, `frw_4_handover`…`frw_9_state`) | exact 832 map `resume-status` in the table (7 renames) | Fixture is a **byte-exact copy of 832's delivery**, guarded by sha256 (`test_bpmn_to_tasks.py:test_resume_status_negative_byte_guard`). **Not edited** — editing it breaks the guard by design; a re-fetch from the 832 rail is the operator's call. `test_bpmn_to_tasks.py` `frw_7_gather` refs stay correct for the fixture as delivered. |
+| `tests/unit/t2974_greenfield_operator_prose.py`, `t2979_existing_project_onboarding_map.py` (hard-coded `agt_1_orientation`, `agt_7_objectives`…) | AEF map ids | Unchanged unless those maps are re-saved; a re-save of `aef-greenfield-onboarding` / `aef-existing-project-onboarding` would break these tests. Flagged. |
+| `tests/fixtures/aef-bpmn/task-lifecycle-with-workflowref.bpmn`, `tests/fixtures/bpmn/plain-composite-sample.bpmn`, `tests/fixtures/832-outbound/t406-*.bpmn`, `tests/fixtures/bpmn/*` | AEF/fixture maps | Not 832 table maps by process id (`Process_aef-*`, `proc_1`, …); bare-name hits coincidental. No change. |
+| `tools/corpus_conformance.py` (map-conformance rail, T-2621/T-2654) | carriers keyed by node id **within one map**; vocabulary-set keys by gateway *name* | No cross-map id store; renumbering does not change verdicts for the same topology. No change. |
+| Watchtower overlays (`tools/corpus_overlay.py`, `aef:annotate`) | keyed by `aef:uid`, filtered against live uids | Renumber-proof. No change. |
+| Instance state (`current_node`, positions) | none stored in repo: 0 hits in web/, lib/, agents/ | No change. |
+
+**Net:** nothing AEF owns can be migrated with the published uid-paired table. The 0.20.0 renumber lands when AEF's own maps are next saved; the only dangling-by-design reference (`hum_1_handoff`) self-heals on that save; `resume-status-canonical.bpmn` stays byte-exact.
+
+### 2026-10-17 — re-pin 0.14.0 → 0.20.0 (step 2)
+- `bin/fw designer sync --from-tag designer-v0.20.0 --dry-run` then real sync: MANIFEST anchor self-consistent at the tag (`dist/aef-workflow-designer-0.20.0.html`, 1159393 B); computed sha256 `51931b8a40ece180eb5981f57ab4a41f4c956e0d4cea877c5905ea89b65f6f3c` = MANIFEST = pin = task value; bytes 1159393.
+- Pin edited by hand first (the sync refuses a sha that does not match the pin): `version`, `sha256`, `bytes`, `source_artifact`, `source_tag`, `vendored_path` → 0.20.0. Installed read-only at `vendor/designer/aef-workflow-designer-0.20.0.html`.
+- `fw designer status`: PRESENT ✓ (sha256 matches pin).
