@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3730: fw upgrade's CLAUDE.md governance refresh silently deletes project-written sections inside the regenerated region, while reporting project-owned sections kept
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T21:26:18Z
+# ============================================================================
+
+task_id: T-3730
+task_name: "fw upgrade's CLAUDE.md governance refresh silently deletes project-written sections inside the regenerated region, while reporting project-owned sections kept"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-02T14:53:59Z
+completed: 2026-10-17T21:24:50Z
+duration_days: 15
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  055 @71 2026-10-02 (upgrade to 1.7.740): two project ### sections (Operator Commands Go In run-me.sh; Functional Verification for Interactive UI) vanished with no warning; next day their agent handed the operator a raw command. Fix: any line removed that was not in the previous framework template is printed as REMOVED PROJECT TEXT and saved to a file, or the refresh refuses without explicit consent.
+
+# Key outcomes
+outcomes:
+  - 'Duplicate of T-4232 (closed 2026-10-17, fix efcaedf8f), which fixed the same class reported by 1409 (G-117): consumer text inside a regenerated governance section makes the CLAUDE.md refresh refuse the rewrite, keep the file and name the lines at risk, instead of deleting silently. 055''s case here (two project ### sections vanished) is that case.'
+  - 'T-4232''s regression tests pass (consumer line refuses the rewrite and keeps the file; real run writes nothing; stock copy still upgrades)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 21990 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, upgrade, consumer, 055-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 21990
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3730-fw-upgrades-claudemd-governance-refresh-.md
+generated_by: context-agent-hybrid

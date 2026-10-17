@@ -9,10 +9,10 @@ description: >
   was not in the previous framework template is printed as REMOVED PROJECT TEXT and
   saved to a file, or the refresh refuses without explicit consent.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: [bug, upgrade, consumer, 055-report]
 components: []
 related_tasks: []
@@ -43,8 +43,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T14:53:59Z
-last_update: '2026-10-02T15:00:41Z'
-date_finished:
+last_update: 2026-10-17T21:24:50Z
+date_finished: 2026-10-17T21:24:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -95,8 +95,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Duplicate of T-4232 (closed 2026-10-17, fix efcaedf8f), which fixed the same class reported by 1409 (G-117): consumer text inside a regenerated governance section makes the CLAUDE.md refresh refuse the rewrite, keep the file and name the lines at risk, instead of deleting silently. 055's case here (two project ### sections vanished) is that case.
+- [x] T-4232's regression tests pass (consumer line refuses the rewrite and keeps the file; real run writes nothing; stock copy still upgrades)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -130,6 +130,7 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+out=$(bats tests/unit/t4232_claudemd_governance_consumer_edits.bats 2>&1); echo "$out" | grep -q '^ok ' && ! echo "$out" | grep -q '^not ok'
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -259,6 +260,8 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Duplicate — the RCA lives in T-4232.** Same defect, reported twice: 055 here (2026-10-02, two project ### sections lost at upgrade to 1.7.740) and 1409 as G-117 (2026-10-17). **Root cause:** `lib/upgrade.sh` step 1 rewrote everything from `## Core Principle` on from the template, so any consumer line outside a project-owned region was overwritten; the only detector (G-055 lost-lines scan) ran after the write and only printed. **Fix and prevention:** T-4232 (efcaedf8f) refuses the rewrite when the governance section holds lines the new template lacks and the section is not the stock copy, and pins it with tests/unit/t4232_claudemd_governance_consumer_edits.bats. **Why two reports:** this task sat captured for 15 days with placeholder criteria, so the second report filed a new task instead of finding it.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -353,3 +356,18 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3730-fw-upgrades-claudemd-governance-refresh-.md
 - **Context:** Initial task creation
+
+### 2026-10-17T21:23:08Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9225080f
+- **Timestamp:** 2026-10-17T21:25:47Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-17T21:24:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
