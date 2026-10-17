@@ -1,8 +1,19 @@
 ---
 id: T-4223
-name: "Watchtower /gaps over the 5 s smoke limit: lib/gaps.gauge_state re-parses the whole concerns register once per watching gap, and the gauges run sequentially (832 T-1186: 16 s on 832)"
+name: "Watchtower /gaps over the 5 s smoke limit: lib/gaps.gauge_state re-parses the
+  whole concerns register once per watching gap, and the gauges run sequentially (832
+  T-1186: 16 s on 832)"
 description: >
-  832 msg aadaa9aa (profile on 495901b5d): web/blueprints/discovery.py gaps() -> lib/gaps.py gauge_state() x9 (one per watching gap with a closure gauge); each call runs load_concerns_yaml() (yaml.safe_load of the whole register: 9 x 0.775 s = 7 s on 832's 256 KB file); gauges run sequentially (~1.5 s each). fw doctor's smoke test (web/smoke_test.py:122, 5 s) then reads /gaps as a failed endpoint and 5 more pages time out under its load. Suggestions from 832: (1) parse the register once per request and pass it to gauge_state (verified here: gauge_state calls load_concerns_yaml itself); (2) yaml.CSafeLoader when available (13x faster on their files; check every YAML loader in the hot path, same verdicts); (3) run gauges concurrently or cache verdicts with a short TTL. Measure before/after on this repo and with a register the size of 832's.
+  832 msg aadaa9aa (profile on 495901b5d): web/blueprints/discovery.py gaps() -> lib/gaps.py
+  gauge_state() x9 (one per watching gap with a closure gauge); each call runs load_concerns_yaml()
+  (yaml.safe_load of the whole register: 9 x 0.775 s = 7 s on 832's 256 KB file);
+  gauges run sequentially (~1.5 s each). fw doctor's smoke test (web/smoke_test.py:122,
+  5 s) then reads /gaps as a failed endpoint and 5 more pages time out under its load.
+  Suggestions from 832: (1) parse the register once per request and pass it to gauge_state
+  (verified here: gauge_state calls load_concerns_yaml itself); (2) yaml.CSafeLoader
+  when available (13x faster on their files; check every YAML loader in the hot path,
+  same verdicts); (3) run gauges concurrently or cache verdicts with a short TTL.
+  Measure before/after on this repo and with a register the size of 832's.
 
 status: captured
 workflow_type: build
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T08:35:45Z
-last_update: 2026-10-17T08:35:45Z
-date_finished: null
+last_update: '2026-10-17T08:46:14Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-17T08:45:31Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-17T08:46:14Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4223: Watchtower /gaps over the 5 s smoke limit: lib/gaps.gauge_state re-parses the whole concerns register once per watching gap, and the gauges run sequentially (832 T-1186: 16 s on 832)
@@ -62,8 +101,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] /gaps parses the concerns register once per request; gauge_state accepts the parsed data (no per-gauge re-parse)
+- [ ] YAML loading in the /gaps hot path uses CSafeLoader when available, with identical verdicts to SafeLoader on this repo's register and a fixture the size of 832's (~256 KB)
+- [ ] Gauges run concurrently or are cached with a short TTL; before/after timings for /gaps recorded in Updates, and /gaps stays under the 5 s smoke limit on this repo
+- [ ] Watchtower restarted after the change; `bin/fw watchtower current` passes
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
