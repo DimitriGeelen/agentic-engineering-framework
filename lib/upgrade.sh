@@ -988,6 +988,20 @@ _fw_project_owned_count() {
     grep -c '^[[:space:]]*<!-- project-owned: begin -->[[:space:]]*$' "$1" 2>/dev/null || true
 }
 
+# T-4232: governance lines of $1 that rebuilding CLAUDE.md onto $2 (the new governance
+# tail) would delete. A line counts when it sits in the governance section (from
+# `## Core Principle`), is not blank, and appears nowhere in $2. Project-owned regions
+# are part of $2, so they never count. Prints one line per deleted line.
+_fw_governance_at_risk() {
+    local tail_file
+    tail_file=$(mktemp) || return 0
+    printf '%s\n' "$2" > "$tail_file"
+    sed -n '/^## Core Principle$/,$ p' "$1" \
+        | grep -Fxv -f "$tail_file" \
+        | grep -vE '^[[:space:]]*$' || true
+    rm -f "$tail_file"
+}
+
 # Print the $2'th (1-based) project-owned region of $1, marker lines included.
 # One region per call rather than an array — `mapfile -d ''` needs bash 4.4 and
 # this file still has to run under macOS's bash 3.2 (same reason _sed_i exists).
@@ -1653,6 +1667,42 @@ $project_owned"
         # Compare current governance with template
         local current_governance
         current_governance=$(sed -n '/^## Core Principle$/,$ p' "$project_claude")
+
+        # T-4232: the rebuild below replaces the whole governance section. A line the
+        # consumer added or edited inside it is deleted with no trace (the .bak is the
+        # only copy, and the post-write detector is skipped by dry-run). Refuse before
+        # writing unless the section is the stock copy of the template this project was
+        # last upgraded from: the vendored copy, still pre-upgrade at this step (step
+        # 4b syncs it later). A stock copy only loses framework text the template dropped.
+        local _gv_at_risk="" _gv_base="$target_dir/.agentic-framework/lib/templates/claude-project.md"
+        if [ "$current_governance" != "$governance_tail" ]; then
+            _gv_at_risk=$(_fw_governance_at_risk "$project_claude" "$governance_tail")
+        fi
+        if [ -n "$_gv_at_risk" ]; then
+            local _gv_stock=false
+            if [ -f "$_gv_base" ]; then
+                local _gv_base_tail
+                _gv_base_tail=$(sed -n '/^## Core Principle$/,$ p' "$_gv_base")
+                if [ -n "$project_owned" ]; then
+                    _gv_base_tail="$_gv_base_tail
+$project_owned"
+                fi
+                [ "$current_governance" = "$_gv_base_tail" ] && _gv_stock=true
+            fi
+            if [ "$_gv_stock" != true ]; then
+                local _gv_n
+                _gv_n=$(printf '%s\n' "$_gv_at_risk" | wc -l | tr -d ' ')
+                echo -e "  ${RED}REFUSED${NC}  $_gv_n line(s) in the CLAUDE.md governance section would be deleted" >&2
+                printf '%s\n' "$_gv_at_risk" | head -8 | sed 's/^/        /' >&2
+                [ "$_gv_n" -gt 8 ] && echo "        ... ($((_gv_n - 8)) more)" >&2
+                echo -e "        These are not in the framework template and not inside a project-owned region." >&2
+                echo -e "        Move them into a region below the governance section, between" >&2
+                echo -e "        \`<!-- project-owned: begin -->\` and \`<!-- project-owned: end -->\`, then re-run \`fw upgrade\`." >&2
+                echo -e "        Or remove them if the framework now carries the rule." >&2
+                echo -e "        CLAUDE.md was NOT rewritten — no other upgrade step ran." >&2
+                return 1
+            fi
+        fi
 
         if [ "$current_governance" = "$governance_tail" ]; then
             echo -e "  ${GREEN}OK${NC}  Already up to date"

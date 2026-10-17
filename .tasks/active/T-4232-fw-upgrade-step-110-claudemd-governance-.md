@@ -11,7 +11,7 @@ description: >
   it would remove; never delete silently. Test in the fresh-machine simulation with
   a consumer-edited section. Register a gap (silent governance loss).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:28:07Z
-last_update: '2026-10-17T13:31:28Z'
+last_update: 2026-10-17T19:01:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,8 +97,13 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Step [1/10] refuses (exit 1, CLAUDE.md byte-identical) when a consumer-added line inside the governance section is absent from the framework template and not inside a project-owned region
+- [x] Refusal output names each line that would be removed, and the way out (project-owned markers, then re-run)
+- [x] A stock consumer (governance equal to the vendored shipped template) still upgrades: governance refreshed, no refusal
+- [x] Consumer lines wrapped in project-owned markers survive the upgrade verbatim
+- [x] Regression test in tests/unit/ fails before the fix and passes after
+- [x] tests/unit/upgrade_fresh_machine_simulation.bats not-ok count reported (no new failures)
+- [x] Concern registered in .context/project/concerns.yaml (silent governance loss)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -147,6 +152,9 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bin/fw vendor self --check
+bats tests/unit/t4232_claudemd_governance_consumer_edits.bats > /tmp/t4232.out 2>&1 && ! grep -q "^not ok" /tmp/t4232.out
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -279,6 +287,16 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** `fw upgrade` step [1/10] rebuilt a consumer's CLAUDE.md from the template with no warning. 1409 (upgrade 1.8.3 -> 1.8.10) lost its zero-subagent, review-route and runme rules (889 -> 865 lines). Restored from git by the consumer.
+
+**Root cause:** `lib/upgrade.sh` step 1 writes `header + governance_tail` where the tail is everything from `## Core Principle` onward taken from the template, plus project-owned regions (T-3150). Any consumer line inside that governance section that is not in a project-owned region is overwritten (`printf '%s\n%s\n' ... > "$project_claude"`). Nothing compared the consumer's governance section with the template before the overwrite.
+
+**Why structurally allowed:** The only detector, the G-055 lost-lines scan (`grep -Fxv -f CLAUDE.md CLAUDE.md.bak`), runs after the write and only prints. It is skipped under `--dry-run`, and it only reports, so the operator sees a warning on a file that is already rewritten. The vendor step has a local-patch check; the CLAUDE.md step had none. The T-3150 project-owned contract is opt-in, so a consumer who never learned the markers was exposed.
+
+**Fix:** Before writing, `_fw_governance_at_risk` lists governance lines absent from the new tail. If there are any and the section is not the stock copy of the vendored shipped template (step 1 runs before step 4b, so the vendored copy is still the previous release), step 1 refuses with rc 1: it prints the lines, the project-owned-region remedy, and "CLAUDE.md was NOT rewritten". A stock copy still upgrades.
+
+**Prevention:** `tests/unit/t4232_claudemd_governance_consumer_edits.bats` pins the refusal (dry-run and real run, no backup, file byte-identical), the stock-copy pass-through, the project-owned survival, and the helper. Tests 1, 2 and 5 were verified red on the unfixed `lib/upgrade.sh`. G-117 is registered as the standing gap.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -373,3 +391,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4232-fw-upgrade-step-110-claudemd-governance-.md
 - **Context:** Initial task creation
+
+### 2026-10-17T18:41:11Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
