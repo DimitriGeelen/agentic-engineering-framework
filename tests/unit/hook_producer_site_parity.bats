@@ -47,7 +47,10 @@ _in_allowlist() {
     for entry in "${FRAMEWORK_ONLY_HOOKS[@]:-}"; do
         [ "${entry%%:*}" = "$needle" ] && return 0
     done
-    return 1
+    # T-4220: documented opt-in hooks (lib/hook_parity.py OPT_IN_HOOKS — the one list) are
+    # legitimately absent from the template: a project enables them itself, per its agent doc.
+    python3 -c "import sys; sys.path.insert(0, sys.argv[1]); from hook_parity import OPT_IN_HOOKS; sys.exit(0 if sys.argv[2] in OPT_IN_HOOKS else 1)" \
+        "$FRAMEWORK_ROOT/lib" "$needle"
 }
 
 # Hook names registered in a real settings.json file, one per line, deduped+sorted.
