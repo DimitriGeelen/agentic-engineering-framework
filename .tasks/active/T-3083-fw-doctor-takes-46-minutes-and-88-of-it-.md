@@ -14,7 +14,7 @@ description: >
   and in this run it does not appear above 2s at all. Profiling method: bash -x does
   not work because bin/fw re-execs; timestamping stdout per line does.
 
-status: captured
+status: started-work
 workflow_type: refactor
 owner: agent
 horizon: now
@@ -32,7 +32,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-18T18:58:26Z
-last_update: '2026-08-18T19:00:19Z'
+last_update: '2026-10-17T22:00:26Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -72,6 +72,23 @@ bvp_scores_proposed:
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-17T22:00:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3083: fw doctor takes 4.6 minutes and 88% of it is three checks
@@ -84,8 +101,13 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Fresh per-check profile of `fw doctor` on this host written to `docs/reports/T-3083-doctor-profile.md` (total, top offenders with seconds, load average at time of run)
+- [x] Each top offender diagnosed with a file:line root cause in `## RCA` (the TermLink check's ~74 s explained, not just shortened)
+- [x] Top offenders fixed without dropping any check's verdict (every check still emits its line; the port3000 ratchet still WARNs, and its counts now cover only files git can see, which is a correctness fix recorded in the RCA)
+- [x] Regression test under `tests/unit/` pins the fix and fails without it (`test_port3000_hygiene.py::test_git_repo_scan_skips_gitignored…`, `test_t3083_held_unsurfaced_batched.py`)
+- [ ] Doctor-related bats (`tests/unit/*doctor*.bats`) run; pass/fail counts reported, no new failures vs. before the change
+- [ ] `tests/unit/doctor_designer_pin_drift.bats` run and its wall-clock time recorded in the profile report
+- [ ] `fw doctor` wall-clock re-measured after the fix and recorded in the profile report (target < 60 s idle)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -178,6 +200,11 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+test -s docs/reports/T-3083-doctor-profile.md
+python3 -m pytest tests/unit/test_port3000_hygiene.py tests/unit/test_t3083_held_unsurfaced_batched.py tests/unit/test_t4207_inject_off_surfaces.py -q > /tmp/.t3083-py.out 2>&1 && grep -q passed /tmp/.t3083-py.out
+timeout 120 python3 tools/port3000_hygiene.py doctor-line --root . --baseline .context/audits/port3000-baseline.json > /tmp/.t3083-p3k.out 2>&1; grep -qE '^(OK|WARN)\|port3000 hygiene' /tmp/.t3083-p3k.out
+PROJECT_ROOT=$PWD timeout 60 python3 lib/sidecar_cli.py held-unsurfaced --threshold-hours 24 --json > /tmp/.t3083-hu.out 2>&1 && python3 -c "import json;json.load(open('/tmp/.t3083-hu.out'))"
+bin/fw vendor self --check
 
 ## RCA
 
@@ -194,6 +221,17 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw doctor` did not finish within 600 s on 2026-10-17 (load ~19). The port3000 line alone took 425.8 s and reported `6642 new since baseline`.
+
+**Root cause (by offender; profile in docs/reports/T-3083-doctor-profile.md):**
+1. *port3000 hygiene ratchet* — `tools/port3000_hygiene.py:iter_scan_files` (was `os.walk`, line ~132) walked every file on disk, gitignored ones included. `.context/scratch/` (gitignored, `.gitignore:161`) had grown to 140,853 files / 7.5 GB. That cost the time, and scratch copies of repo files became thousands of "new" carriers that the 812-entry baseline never held. The WARN was mostly noise. Secondary: `scan_file` ran a regex per line over every file and tokenized every `.py` file, even with no `:3000` in it.
+2. *TermLink phase (45 s)* — `lib/sidecar/inject.py:held_unsurfaced` called `seen.withheld([mid])` per held message. Each call re-parses the whole sent-receipts ledger (`seen.py:119 answered_ids` → `receipts.read_sent`): 90 messages × ~36k rows = 3.24M `json.loads`, 30.7 s.
+3. *August's 74 s TermLink* — no longer reproduces: `termlink --version` 0.015 s, `channel list` 0.10 s. It was a hub-side timeout that day, not a doctor defect. August's other two offenders (test-infra count, large-file gate) had already been fixed by T-3324 and the batched `large-file-scan.sh`.
+
+**Why structurally allowed:** both costs grow with data, not with code. The port3000 test fixtures were tmp dirs with a handful of files, never a git repo with an ignored directory. The held-unsurfaced tests used 1–2 messages and an empty receipts ledger. Each check was fast when written and degraded silently as scratch output and receipts accumulated. T-3452's phase summary shows *that* a phase is slow, but nothing compares it against an expected bound.
+
+**Prevention:** `test_port3000_hygiene.py::test_git_repo_scan_skips_gitignored_but_keeps_untracked_and_vendored_exclusion` pins the git-visible scan set (fails on the old walk). `test_t3083_held_unsurfaced_batched.py` pins one ledger read per call, not per message (old code: 6 reads for 6 messages → fails).
 
 ## Evolution
 
@@ -275,3 +313,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3083-fw-doctor-takes-46-minutes-and-88-of-it-.md
 - **Context:** Initial task creation
+
+### 2026-10-17T21:57:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -591,9 +591,15 @@ def held_unsurfaced(threshold_hours: float = 24, now: datetime | None = None) ->
     reported with age_hours None: still owed work, never silently dropped."""
     now = now or datetime.now(timezone.utc)
     rows = []
-    for mid in receiver.awaiting_handover():
+    # T-3083: one withheld()/shown() read for the whole set, not one per
+    # message — each call re-parses the full sent-receipts ledger, and per-id
+    # calls made this 30-48 s of `fw doctor` at 90 held messages.
+    held = list(receiver.awaiting_handover())
+    withheld = seen.withheld(held)
+    table = seen.shown()
+    for mid in held:
         msg = receiver.read_message(mid) or {}
-        if seen.withheld([mid]) or seen.times_shown(seen.keys_for(mid, msg)) > 0:
+        if mid in withheld or seen.times_shown(seen.keys_for(mid, msg), table) > 0:
             continue
         try:
             stored = datetime.fromisoformat(str(msg["_stored_at"]))

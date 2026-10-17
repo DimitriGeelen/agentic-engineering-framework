@@ -276,3 +276,36 @@ def test_baseline_round_trips_through_disk(tmp_path):
 def test_load_baseline_missing_file_returns_empty_structure(tmp_path):
     baseline = load_baseline(tmp_path / "does-not-exist.json")
     assert baseline == {"version": 1, "entries": {}}
+
+
+# ------------------------------------------------------------------- T-3083
+
+
+def test_git_repo_scan_skips_gitignored_but_keeps_untracked_and_vendored_exclusion(tmp_path):
+    """T-3083: in a git work tree the scan follows what git sees. A carrier
+    under a gitignored dir (.context/scratch/ was 140k files / 7.5 GB and
+    ~425 s of `fw doctor`) is not counted; a carrier in an untracked,
+    not-ignored file still is; the vendored mirror stays pruned."""
+    import shutil
+    import subprocess
+
+    import pytest
+
+    if shutil.which("git") is None:
+        pytest.skip("git not installed")
+    repo = tmp_path / "repo"
+    repo.mkdir()
+    subprocess.run(["git", "init", "-q", str(repo)], check=True)
+    line = "curl -sf http://localhost:3000/x\n"
+    (repo / ".gitignore").write_text("scratch/\n", encoding="utf-8")
+    (repo / "scratch").mkdir()
+    (repo / "scratch" / "copy.sh").write_text(line, encoding="utf-8")
+    (repo / "tracked.sh").write_text(line, encoding="utf-8")
+    (repo / "untracked.sh").write_text(line, encoding="utf-8")
+    (repo / ".agentic-framework").mkdir()
+    (repo / ".agentic-framework" / "vendored.sh").write_text(line, encoding="utf-8")
+    subprocess.run(["git", "-C", str(repo), "add", "tracked.sh", ".gitignore",
+                    ".agentic-framework/vendored.sh"], check=True)
+
+    carriers, _ = _hits_by_category(scan_repo(repo))
+    assert sorted(h.path for h in carriers) == ["tracked.sh", "untracked.sh"]

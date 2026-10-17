@@ -129,7 +129,47 @@ def _is_excluded_dir(relparts: tuple) -> bool:
     return relparts[-1] in EXCLUDE_DIR_NAMES
 
 
+def _git_listed_files(root: Path) -> Optional[list]:
+    """Relpaths git would ever see under `root` — tracked plus untracked-but-
+    not-ignored (`ls-files -co --exclude-standard`). None when `root` is not a
+    git work tree (or git is absent), so the caller falls back to os.walk.
+
+    T-3083: walking the disk scanned gitignored throwaway output too —
+    .context/scratch/ alone was 140,853 files / 7.5 GB — which cost ~425 s of
+    `fw doctor` and turned scratch copies into thousands of "new" carriers.
+    Untracked-not-ignored stays in: a carrier in a file not yet `git add`ed is
+    exactly what the ratchet must catch before it lands."""
+    import subprocess
+    try:
+        top = subprocess.run(
+            ["git", "-C", str(root), "rev-parse", "--show-toplevel"],
+            capture_output=True, text=True, timeout=30,
+        )
+        if top.returncode != 0 or Path(top.stdout.strip()).resolve() != root.resolve():
+            return None
+        out = subprocess.run(
+            ["git", "-C", str(root), "ls-files", "-z", "-co", "--exclude-standard"],
+            capture_output=True, timeout=120,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    if out.returncode != 0:
+        return None
+    return sorted({p for p in out.stdout.decode("utf-8", "replace").split("\0") if p})
+
+
 def iter_scan_files(root: Path) -> Iterable[Path]:
+    listed = _git_listed_files(root)
+    if listed is not None:
+        for rel in listed:
+            relpath = Path(rel)
+            parts = relpath.parts
+            if any(_is_excluded_dir(parts[: i + 1]) for i in range(len(parts) - 1)):
+                continue
+            p = root / relpath
+            if p.suffix in SCAN_EXTENSIONS and p.is_file():
+                yield p
+        return
     for dirpath, dirnames, filenames in os.walk(root):
         rel_dir = Path(dirpath).relative_to(root)
         relparts = () if str(rel_dir) == "." else rel_dir.parts
@@ -223,11 +263,15 @@ def scan_file(path: Path, root: Path) -> list:
     is_claude_md = basename == "CLAUDE.md"
     section_lines = find_claude_watchtower_section(lines) if is_claude_md else set()
     is_code = path.suffix in CODE_EXTENSIONS
+    # Every HIT_RE match contains ":3000"; the substring test is exact and
+    # ~100x cheaper than the regex over a whole file (T-3083).
+    if ":3000" not in text or not HIT_RE.search(text):
+        return []
     docstring_lines = python_docstring_lines(path) if path.suffix == ".py" else set()
 
     hits = []
     for idx, line in enumerate(lines):
-        if not HIT_RE.search(line):
+        if ":3000" not in line or not HIT_RE.search(line):
             continue
         line_no = idx + 1
         lookback_text = None
