@@ -11,12 +11,12 @@ description: >
   it would remove; never delete silently. Test in the fresh-machine simulation with
   a consumer-edited section. Register a gap (silent governance loss).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/upgrade.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -45,8 +45,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:28:07Z
-last_update: 2026-10-17T19:07:32Z
-date_finished:
+last_update: 2026-10-17T21:17:35Z
+date_finished: 2026-10-17T21:17:35Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -394,3 +394,22 @@ bats tests/unit/t4232_claudemd_governance_consumer_edits.bats > /tmp/t4232.out 2
 
 ### 2026-10-17T18:41:11Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a82a5504
+- **Timestamp:** 2026-10-17T21:18:14Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#7 (Agent)** — Concern registered in .context/project/concerns.yaml (silent governance loss)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=context/project/concerns.yaml in: Concern registered in .context/project/concerns.yaml (silent governance loss)`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-17T21:17:35Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4232: fw upgrade step [1/10] 'CLAUDE.md governance sections' silently deletes project-local text inside governance sections (1409 lost its zero-subagent, review-route and runme rules, 889 -> 865 lines, no warning, no preserve option)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T21:18:33Z
+# ============================================================================
+
+task_id: T-4232
+task_name: "fw upgrade step [1/10] 'CLAUDE.md governance sections' silently deletes project-local text inside governance sections (1409 lost its zero-subagent, review-route and runme rules, 889 -> 865 lines, no warning, no preserve option)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T13:28:07Z
+completed: 2026-10-17T21:17:35Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-17T15:29:50+02:00
+last_commit: 2026-10-17T21:07:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  register G-117 (upgrade silently deletes consumer rules in CLAUDE.md governance sections) + file 1409's upgrade findings T-4232..T-4235. refuse fw upgrade step 1 when consumer edits sit in CLAUDE.md governance section. refresh task timestamp after re-focus
+
+# Key outcomes
+outcomes:
+  - 'Step [1/10] refuses (exit 1, CLAUDE.md byte-identical) when a consumer-added line inside the governance section is absent from the framework template and not inside a project-owned region'
+  - 'Refusal output names each line that would be removed, and the way out (project-owned markers, then re-run)'
+  - 'A stock consumer (governance equal to the vendored shipped template) still upgrades: governance refreshed, no refusal'
+  - 'Consumer lines wrapped in project-owned markers survive the upgrade verbatim'
+  - 'Regression test in tests/unit/ fails before the fix and passes after'
+  - 'tests/unit/upgrade_fresh_machine_simulation.bats not-ok count reported (no new failures)'
+  - 'Concern registered in .context/project/concerns.yaml (silent governance loss)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - '.context/project/concerns.yaml'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4232-fw-upgrade-step-110-claudemd-governance-.md'
+  - '.tasks/active/T-4233-fw-upgrade-built-in-3-way-merge-for-loca.md'
+  - '.tasks/active/T-4234-consumer-fw-upgrade---dry-run-only-print.md'
+  - '.tasks/active/T-4235-fw-upgrade-from-a-shallow-clone-refuses-.md'
+  - 'tests/unit/t4232_claudemd_governance_consumer_edits.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T15:29:50'
+    action: 'T-4232: register G-117 (upgrade silently deletes consumer rules in CLAUDE.md governance sections) + file 1409''s upgrade findings T-4232..T-4235'
+  - time: '2026-10-17T21:01:40'
+    action: 'T-4232: refuse fw upgrade step 1 when consumer edits sit in CLAUDE.md governance section'
+  - time: '2026-10-17T21:07:32'
+    action: 'T-4232: refresh task timestamp after re-focus'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 469 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 469
+  commits: 3
+  files_changed: 8
+  lines_added: 1622
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4232-fw-upgrade-step-110-claudemd-governance-.md
+generated_by: context-agent-hybrid

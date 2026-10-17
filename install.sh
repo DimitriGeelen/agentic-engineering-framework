@@ -428,6 +428,13 @@ link_fw() {
 do_project_init() {
     mkdir -p "$TARGET_DIR"
     echo ""
+    # T-4248: a re-run against an initialised target is a no-op, not a failure.
+    # fw init refuses there (lib/init.sh: "already initialized", rc=1) without
+    # --force, which is the wrong thing to count as a failed step.
+    if [[ -f "$TARGET_DIR/.framework.yaml" ]]; then
+        info "Project already initialised: ${TARGET_DIR} — left untouched (fw init is not --force)"
+        return 0
+    fi
     info "Initialising project at ${TARGET_DIR}..."
     # T-4248: fw init runs under env -u of the inherited framework/project
     # variables. A leaked FRAMEWORK_ROOT or PROJECT_ROOT (from another install)

@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4274: Pickup envelopes named by per-project P-NNN collide in the host-shared TermLink inbox.
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T21:20:06Z
+# ============================================================================
+
+task_id: T-4274
+task_name: "Pickup envelopes named by per-project P-NNN collide in the host-shared TermLink inbox."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T15:30:15Z
+completed: 2026-10-17T21:19:17Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-17T20:45:13+02:00
+last_commit: 2026-10-17T20:45:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  qualify pushed pickup envelope basename with source project
+
+# Key outcomes
+outcomes:
+  - '`fw pickup send` pushes a copy whose host-inbox basename carries the source project (lib/pickup.sh push branch, `termlink remote push` call ~:700), so two projects'' P-001 pushes get different basenames'
+  - 'The pushed basename still starts with `P-NNN-` (so `P-*.yaml` globs and the `sed ''s/^\(P-[0-9]*\).*/''` id derivation in tests/unit/t3052_pickup_id_collision.bats keep working)'
+  - 'Local envelope filename, pickup_id and sent/ archive naming are unchanged; no existing file in /tmp/termlink-inbox or .context/pickup is renamed or deleted'
+  - 'Regression test tests/unit/t4274_pickup_inbox_filename.bats exists and fails on the pre-fix code (red) and passes after the fix (green)'
+  - 'Existing pickup suites (tests/unit/lib_pickup.bats, lib_pickup_triple_dedup.bats, t3052_pickup_id_collision.bats) stay green'
+  - '`bin/fw vendor self --check` is clean after the vendor sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'lib/pickup.sh'
+  - '.tasks/active/T-4274-pickup-envelopes-named-by-per-project-p-.md'
+  - 'tests/unit/t4274_pickup_inbox_filename.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T20:45:13'
+    action: 'T-4274: qualify pushed pickup envelope basename with source project'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 349 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 349
+  commits: 1
+  files_changed: 3
+  lines_added: 97
+  lines_removed: 6
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4274-pickup-envelopes-named-by-per-project-p-.md
+generated_by: context-agent-hybrid

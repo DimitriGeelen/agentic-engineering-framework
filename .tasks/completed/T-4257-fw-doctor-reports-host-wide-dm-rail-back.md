@@ -1,19 +1,18 @@
 ---
-id: T-4274
-name: "Pickup envelopes named by per-project P-NNN collide in the host-shared TermLink
-  inbox."
+id: T-4257
+name: "fw doctor reports host-wide DM-rail backlog as per-project warnings."
 description: >
-  lib/pickup.sh:340-367/610 — prefix inbox filenames with the source project (or content
-  hash) so two projects' P-001 cannot overwrite. Findings (0909 run aef-install-20261017T144241Z):
-  F-49 (second half; first half is T-3763). Triage: docs/reports/T-4253-greenfield-run-triage.md
-  PROPOSED-NEW-21.
+  bin/fw:3721 — fold DM rails into one host-scoped summary line, not counted as project
+  WARNs, no drain advice. Findings (0909 run aef-install-20261017T144241Z): F-11 (13
+  of 31 fresh-install warnings). Triage: docs/reports/T-4253-greenfield-run-triage.md
+  PROPOSED-NEW-4.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/sidecar-audit.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,9 +40,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-17T15:30:15Z
-last_update: 2026-10-17T18:41:18Z
-date_finished:
+created: 2026-10-17T15:25:28Z
+last_update: 2026-10-17T21:18:39Z
+date_finished: 2026-10-17T21:18:39Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -55,7 +54,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-17T15:45:26Z'
+  - ts: '2026-10-17T15:30:33Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -65,7 +64,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-17T15:46:07Z'
+  - ts: '2026-10-17T15:31:17Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -84,7 +83,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4274: Pickup envelopes named by per-project P-NNN collide in the host-shared TermLink inbox.
+# T-4257: fw doctor reports host-wide DM-rail backlog as per-project warnings.
 
 ## Context
 
@@ -94,12 +93,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `fw pickup send` pushes a copy whose host-inbox basename carries the source project (lib/pickup.sh push branch, `termlink remote push` call ~:700), so two projects' P-001 pushes get different basenames
-- [x] The pushed basename still starts with `P-NNN-` (so `P-*.yaml` globs and the `sed 's/^\(P-[0-9]*\).*/'` id derivation in tests/unit/t3052_pickup_id_collision.bats keep working)
-- [x] Local envelope filename, pickup_id and sent/ archive naming are unchanged; no existing file in /tmp/termlink-inbox or .context/pickup is renamed or deleted
-- [x] Regression test tests/unit/t4274_pickup_inbox_filename.bats exists and fails on the pre-fix code (red) and passes after the fix (green)
-- [x] Existing pickup suites (tests/unit/lib_pickup.bats, lib_pickup_triple_dedup.bats, t3052_pickup_id_collision.bats) stay green
-- [x] `bin/fw vendor self --check` is clean after the vendor sync
+- [x] `fw doctor` no longer emits one per-rail `WARN DM rail dm:...` line for a host-shared identity: DM rails under the host-default identity are folded into a single host-scoped summary line that uses `_doctor_warn_host` (or an info line) and does not increment the project warning count
+- [x] The host-scoped DM summary gives no drain advice (no `fw sidecar inbox` / "drain" wording on that line)
+- [x] A project with its own identity (`identity_is_host_shared()` false) still gets per-rail project WARNs with drain advice unchanged
+- [x] A regression bats test under tests/unit/ fails on the pre-fix bin/fw and passes after the fix
+- [x] `bin/fw vendor self --check` is clean after the fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -148,10 +146,9 @@ bvp_scores_proposed:
 -->
 
 ## Verification
-out=$(bats tests/unit/t4274_pickup_inbox_filename.bats 2>&1); echo "$out" | grep -q '^ok ' && ! echo "$out" | grep -q '^not ok' && test "$(echo "$out" | grep -c '# skip')" -eq 0
-out=$(bats tests/unit/lib_pickup.bats 2>&1); echo "$out" | grep -q '^ok ' && ! echo "$out" | grep -q '^not ok' && test "$(echo "$out" | grep -c '# skip')" -eq 0
-out=$(bats tests/unit/lib_pickup_triple_dedup.bats 2>&1); echo "$out" | grep -q '^ok ' && ! echo "$out" | grep -q '^not ok'
-out=$(bats tests/unit/t3052_pickup_id_collision.bats 2>&1); echo "$out" | grep -q '^ok ' && ! echo "$out" | grep -q '^not ok'
+
+bats tests/unit/t4257_doctor_dm_host_summary.bats > .context/working/t4257.out 2>&1 && ! grep -q "^not ok" .context/working/t4257.out
+test "$(grep -c '# skip' .context/working/t4257.out)" -eq 0
 bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -285,13 +282,15 @@ bin/fw vendor self --check
 
 ## RCA
 
-**Symptom:** A host-shared TermLink inbox (/tmp/termlink-inbox) holds one `P-001-*.yaml` file, and a second project's `P-001` envelope overwrote or was confused with this project's own `P-001`. Observed in the 0909 run (F-49).
+**Symptom:** On a minutes-old project with no identity of its own, `fw doctor` printed one `WARN DM rail dm:... has N unread post(s)` line per rail (13 of 31 warnings, 0909 run F-11) and advised running `fw sidecar inbox` to drain them. The rails belong to the host-default TermLink identity, shared by every project on the machine.
 
-**Root cause:** `pickup_next_id` (lib/pickup.sh:~340-367) issues P-NNN from a per-project counter, and `do_pickup` (lib/pickup.sh:~610-698) names the envelope `${pickup_id}-${type}.yaml`. The send branch hands that exact local path to `termlink remote push` (~:700), so the receiving host stores it under its bare basename. Two projects' basenames are identical, so the receiver's copy is overwritten. Hypothesis to confirm with a test: the pushed basename carries no project identity.
+**Root cause:** `bin/fw:3713-3723` (the DM-rail block) fed every row from `fw_sidecar_dm_stale_facts` into a per-rail WARN loop with no check of whether the identity is host-shared. The probe that answers that question, `lib/sidecar/dm.py:identity_is_host_shared()` (T-4252), existed but doctor never called it.
 
-**Why structurally allowed:** The tests check local collision (`pickup_move_preserving`, t3052) and local id derivation, never the basename of the file pushed to a shared inbox. Nothing asserts that a remote filename is unique across projects.
+**Why structurally allowed:** The T-3442 WARN was written for a project's own rails, and nothing tested the shared-identity case. The fixture-level tests covered only the rail-count and drain wording, so the per-rail WARN with drain advice looked correct for every input.
 
-**Prevention:** Regression test pins the pushed basename to include the source project while keeping the `P-NNN-` prefix, and a `termlink remote push` shim records the argument so the test runs without a live hub.
+**Prevention:** `tests/unit/t4257_doctor_dm_host_summary.bats` pins the host-shared probe, the one-line summary (totals, no drain advice, no WARN), the empty-rows case, and a source-level pin that doctor calls both helpers before the per-rail loop. The fix is one `&&` on the existing `elif` plus a summary helper in `lib/sidecar-audit.sh`, so the per-rail path still serves a project with its own identity.
+
+## RCA (original template note)
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -383,10 +382,27 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-17T15:30:15Z — task-created [task-create-agent]
+### 2026-10-17T15:25:28Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4274-pickup-envelopes-named-by-per-project-p-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4257-fw-doctor-reports-host-wide-dm-rail-back.md
 - **Context:** Initial task creation
 
-### 2026-10-17T18:41:18Z — status-update [task-update-agent]
+### 2026-10-17T18:41:15Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b82a7ca6
+- **Timestamp:** 2026-10-17T21:18:50Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-17T21:18:39Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

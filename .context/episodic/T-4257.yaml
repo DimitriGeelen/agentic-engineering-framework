@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4257: fw doctor reports host-wide DM-rail backlog as per-project warnings.
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T21:19:12Z
+# ============================================================================
+
+task_id: T-4257
+task_name: "fw doctor reports host-wide DM-rail backlog as per-project warnings."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T15:25:28Z
+completed: 2026-10-17T21:18:39Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-17T20:58:20+02:00
+last_commit: 2026-10-17T20:58:20+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fold host-shared DM rails into one doctor INFO line, not per-rail WARNs
+
+# Key outcomes
+outcomes:
+  - '`fw doctor` no longer emits one per-rail `WARN DM rail dm:...` line for a host-shared identity: DM rails under the host-default identity are folded into a single host-scoped summary line that uses `_doctor_warn_host` (or an info line) and does not increment the project warning count'
+  - 'The host-scoped DM summary gives no drain advice (no `fw sidecar inbox` / "drain" wording on that line)'
+  - 'A project with its own identity (`identity_is_host_shared()` false) still gets per-rail project WARNs with drain advice unchanged'
+  - 'A regression bats test under tests/unit/ fails on the pre-fix bin/fw and passes after the fix'
+  - '`bin/fw vendor self --check` is clean after the fix'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'bin/fw'
+  - 'lib/sidecar-audit.sh'
+  - '.tasks/active/T-4257-fw-doctor-reports-host-wide-dm-rail-back.md'
+  - 'tests/unit/t4257_doctor_dm_host_summary.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T20:58:20'
+    action: 'T-4257: fold host-shared DM rails into one doctor INFO line, not per-rail WARNs'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 353 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 353
+  commits: 1
+  files_changed: 4
+  lines_added: 160
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4257-fw-doctor-reports-host-wide-dm-rail-back.md
+generated_by: context-agent-hybrid
