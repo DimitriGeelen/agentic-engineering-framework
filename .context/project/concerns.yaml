@@ -5515,3 +5515,19 @@ concerns:
     the launcher's own project or CLAUDE_PROJECT_DIR, so a session operating on another project looks normal
   what_remains: T-4217 strips the paths from the dispatch spawn; T-4218 makes claude-fw set them explicitly and fw refuse
     a foreign inherited PROJECT_ROOT. Close when both land and a polluted-server test shows a clean session.
+- id: G-117
+  type: gap
+  title: fw upgrade silently deletes a consumer's own rules inside CLAUDE.md governance sections
+  description: 'Upgrading 1409 from 1.8.3 to 1.8.10 (2026-10-17), step [1/10] "CLAUDE.md governance sections" replaced
+    the managed sections wholesale and removed project-local text inside them: the zero-subagent rule, the
+    review-release route, the runme rule and a vendored-path line (889 -> 865 lines). No warning, no preserve
+    option; 1409 noticed and restored from git. The vendor step detects local patches; the CLAUDE.md step does not.'
+  severity: high
+  status: open
+  detected_in: T-4232
+  observed: '2026-10-17'
+  reported_by: 1409-sprind (msg eb27d14e)
+  blast_radius: every consumer that has added its own rules inside framework-managed CLAUDE.md sections
+  detection_gap: the governance-section sync compares nothing with the consumer's text; upgrade reports success
+  what_remains: T-4232 makes the sync detect consumer edits and refuse or merge them. Close when an upgrade of a
+    consumer-edited section in the fresh-machine simulation keeps the edit or stops with a clear message.
