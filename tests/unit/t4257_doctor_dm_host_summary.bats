@@ -64,8 +64,8 @@ teardown() {
     rows=$(printf 'dm:aaaa:hostfp\t5\t30.5\n')
     run fw_sidecar_dm_host_summary "$rows"
     [ "$status" -eq 0 ]
-    ! echo "$output" | grep -qi "drain"
-    ! echo "$output" | grep -q "fw sidecar"
+    ! echo "$output" | grep -qi "drain" || false
+    ! echo "$output" | grep -q "fw sidecar" || false
     ! echo "$output" | grep -q "WARN"
 }
 

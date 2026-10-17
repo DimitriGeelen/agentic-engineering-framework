@@ -1,4 +1,5 @@
 #!/usr/bin/env bats
+load ../git_fence  # T-3610: git discovery must not escape a fixture into a repo above the temp dir
 # T-4248: install.sh and bin/fw under a polluted inherited environment.
 #
 # Live symptom (dimitri-mint-dev, 2026-10-17): with FRAMEWORK_ROOT and PROJECT_ROOT
