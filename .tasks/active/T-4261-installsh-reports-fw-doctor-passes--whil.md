@@ -8,7 +8,7 @@ description: >
   (0909 run aef-install-20261017T144241Z): F-17 (F-07 overlap with T-4251 on the HEAD
   leg). Triage: docs/reports/T-4253-greenfield-run-triage.md PROPOSED-NEW-8.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:26:35Z
-last_update: '2026-10-17T15:31:18Z'
+last_update: 2026-10-17T17:37:18Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] install.sh verify() Step 3 no longer says "fw doctor passes" while hiding WARNs: it prints the doctor WARN count and the first few WARN lines
+- [ ] install.sh verify() checks the target project resolves HEAD (`git rev-parse --verify HEAD`); when the bootstrap commit did not land it prints an error, does NOT print "All verification steps passed", and install.sh exits non-zero
+- [ ] Regression bats tests/unit/t4261_install_verify_head_and_warns.bats fails on the pre-fix install.sh and passes after; install_target_project, install_verify_no_cwd_init and upgrade_fresh_machine_simulation stay green
+- [ ] git-init behaviour untouched (scope fence: T-4251)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -273,8 +275,16 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n install.sh
+grep -q 'rev-parse --verify HEAD' install.sh
+out=$(bats tests/unit/t4261_install_verify_head_and_warns.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok' && ! echo "$out" | grep -q '# skip'
 
 ## RCA
+
+**Symptom:** install.sh printed `Step 3/3: fw doctor passes ✓` on a fresh install with 31 doctor WARNs, and ended `All verification steps passed` / exit 0 even when the bootstrap commit failed (no HEAD).
+**Root cause:** install.sh verify() Step 3 (~line 448) ran `fw doctor &>/dev/null` and judged only the exit code (WARN exits 0), discarding all output; verify() had no HEAD check, and main() ignored verify's result and always ended "Installation complete!" with exit 0.
+**Why structurally allowed:** the verification asserted "doctor exited 0", not "project is healthy"; no test exercised a failed bootstrap commit.
+**Prevention:** verify() prints WARN count + first lines, checks HEAD, returns non-zero propagated by main(); bats t4261 pins both with a git shim that fails `git commit`.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -370,3 +380,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4261-installsh-reports-fw-doctor-passes--whil.md
 - **Context:** Initial task creation
+
+### 2026-10-17T16:52:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

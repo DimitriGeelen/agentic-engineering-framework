@@ -20,6 +20,8 @@ INSTALL="$FRAMEWORK_ROOT/install.sh"
 setup() {
     TEST_HOME=$(mktemp -d)
     TEST_TARGET=$(mktemp -d)
+    # T-4261: own repo, so an enclosing repo cannot stand in for the project's HEAD.
+    git init -q "$TEST_TARGET"
     # mktemp already creates the dir; do_init refuses on a non-empty dir only
     # via the .framework.yaml check, so an empty dir here is fine to reuse.
     CURRENT_BRANCH="$(git -C "$FRAMEWORK_ROOT" rev-parse --abbrev-ref HEAD)"
@@ -30,7 +32,11 @@ teardown() {
 }
 
 run_install() {
+    # T-4261: identity supplied so the bootstrap commit lands; without it
+    # install.sh's verify() now (correctly) fails on the missing HEAD.
     env -i HOME="$TEST_HOME" \
+        GIT_AUTHOR_NAME=t GIT_AUTHOR_EMAIL=t@example.com \
+        GIT_COMMITTER_NAME=t GIT_COMMITTER_EMAIL=t@example.com \
         PATH="/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin" \
         bash "$INSTALL" "$TEST_TARGET" --local "$FRAMEWORK_ROOT" --branch "$CURRENT_BRANCH" --no-scan
 }

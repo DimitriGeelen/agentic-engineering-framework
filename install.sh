@@ -445,12 +445,38 @@ verify() {
         fi
 
         local target_fw="$TARGET_DIR/.agentic-framework/bin/fw"
-        if [[ -x "$target_fw" ]] && (cd "$TARGET_DIR" && "$target_fw" doctor) &>/dev/null; then
-            info "Step 3/3: fw doctor passes ✓"
+        # T-4261: capture doctor's output instead of discarding it — exit 0
+        # only means "no FAIL"; a fresh install carried 31 WARNs behind a
+        # green checkmark. Report the WARN count and the first few lines.
+        local doctor_out="" doctor_rc=0 warn_lines="" warn_count=0
+        if [[ -x "$target_fw" ]]; then
+            doctor_out=$(cd "$TARGET_DIR" && "$target_fw" doctor 2>&1) || doctor_rc=$?
+            warn_lines=$(printf '%s\n' "$doctor_out" | sed 's/\x1b\[[0-9;]*m//g' | grep -E '(^|[^A-Za-z])WARN' || true)
+            [[ -n "$warn_lines" ]] && warn_count=$(printf '%s\n' "$warn_lines" | wc -l | tr -d ' ')
         else
-            warn "Step 3/3: fw doctor has warnings (non-fatal)"
+            doctor_rc=127
+        fi
+        if [[ "$doctor_rc" -eq 0 && "$warn_count" -eq 0 ]]; then
+            info "Step 3/3: fw doctor passes with no warnings ✓"
+        elif [[ "$doctor_rc" -eq 0 ]]; then
+            warn "Step 3/3: fw doctor passes with ${warn_count} warning(s) (non-fatal). First few:"
+            printf '%s\n' "$warn_lines" | head -5 | sed 's/^/    /'
+            echo "  To see all:"
+            echo "    cd $TARGET_DIR && $target_fw doctor"
+        else
+            warn "Step 3/3: fw doctor reported failures (exit ${doctor_rc}; ${warn_count} warning(s), non-fatal to install)"
             echo "  To see details:"
             echo "    cd $TARGET_DIR && $target_fw doctor"
+        fi
+
+        # T-4261: a project without HEAD means the bootstrap commit did not
+        # land; everything above can still look green. Fail the summary.
+        if git -C "$TARGET_DIR" rev-parse --verify HEAD &>/dev/null; then
+            info "Bootstrap commit present (HEAD resolves) ✓"
+        else
+            error "Project has no HEAD — the bootstrap commit did not land in ${TARGET_DIR}"
+            error "  Check: cd $TARGET_DIR && git status && git log -1"
+            ok=false
         fi
     else
         # T-2799/T-2809: no target given — PATH tooling only. Nothing was
@@ -479,6 +505,7 @@ verify() {
         info "All verification steps passed"
     else
         error "Some verification steps failed — see above"
+        return 1
     fi
 }
 
@@ -507,10 +534,16 @@ main() {
         echo ""
     fi
 
-    verify
+    local verify_rc=0
+    verify || verify_rc=$?
     echo ""
 
     cleanup_fetch
+
+    if [[ "$verify_rc" -ne 0 ]]; then
+        error "Installation finished with failed verification (exit ${verify_rc})"
+        exit "$verify_rc"
+    fi
 
     echo -e "${GREEN}${BOLD}Installation complete!${NC}"
     echo ""
