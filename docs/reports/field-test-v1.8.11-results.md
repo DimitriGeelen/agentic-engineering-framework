@@ -46,7 +46,7 @@ Upgraded via re-vendor (38 local fixes re-applied, 0 conflicts; their 101-script
 | Fix | 832 result |
 |---|---|
 | T-4219 fw test lint in a consumer | WORKS — exit 0 (211 pass, 54 warn, 0 fail; Silent-Skip NOT APPLICABLE), was exit 1 |
-| T-4223 /gaps register parse once + concurrent gauges | WORKS — real register 10-11 s → 3.8-4.1 s (5 runs, load 13); remainder is 832's own slowest gauge. Follow-up T-4247: skip gauges of resolved gaps |
+| T-4223 /gaps register parse once + concurrent gauges | WORKS — real register 10-11 s → 3.8-4.1 s (5 runs, load 13); remainder is 832's own slowest gauge. (A suggested follow-up, T-4247, was closed as not needed: gauges already run only for watching gaps.) |
 
 Other field results since round 2: 1409 upgraded 1.8.3 → 1.8.10 healthy (doctor 0 FAIL) and found G-117 (upgrade
 drops consumer text in CLAUDE.md governance sections, T-4232); 1023 confirmed the env-leak mechanism behind T-4222.
