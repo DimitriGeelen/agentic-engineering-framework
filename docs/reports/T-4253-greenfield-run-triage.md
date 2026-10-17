@@ -127,6 +127,11 @@ One bug per task. All `workflow_type: build` unless stated. Horizon: `now` for P
 21. **PROPOSED-NEW-21** — *Pickup envelopes named by per-project P-NNN collide in the host-shared TermLink inbox.*
     Scope: lib/pickup.sh:340-367/610 — prefix inbox filenames with the source project (or content hash) so two projects' P-001 cannot overwrite. Findings: F-49 (second half; first half is T-3763). build, `now`.
 
+## Filed as (parent, 2026-10-17)
+
+PROPOSED-NEW-1..21 → T-4254..T-4274 in order (now: T-4257, T-4261, T-4265, T-4274; next: T-4254, T-4258, T-4259,
+T-4260, T-4263, T-4264, T-4266, T-4269, T-4272; later: T-4255, T-4256, T-4262, T-4267, T-4268, T-4270, T-4271, T-4273).
+
 ## Top priorities (P1)
 
 F-31/F-22/F-05/F-07 (T-4251), F-14/F-01 (T-4248), F-20 (T-4252), F-28 (PROPOSED-NEW-12), F-41 (T-4239, verify /terminal).
