@@ -286,7 +286,11 @@ EOF
 # ── the wiring is asserted, not assumed ──────────────────────────────────────
 
 @test "fw test lint invokes the silent-skip detector" {
-    grep -q 'bats-silent-skip-lint.py' "$ROOT/bin/fw"
+    # T-4219: bin/fw delegates to lib/silent-skip-lint.sh (NOT APPLICABLE in a
+    # vendored copy without tests/); the wiring is bin/fw -> function -> detector.
+    grep -q 'fw_silent_skip_lint "\$FRAMEWORK_ROOT"' "$ROOT/bin/fw"
+    grep -q 'lib/silent-skip-lint.sh' "$ROOT/bin/fw"
+    grep -q 'bats-silent-skip-lint.py' "$ROOT/lib/silent-skip-lint.sh"
 }
 
 @test "fw test lint actually reports a silent-skip section" {
