@@ -10,10 +10,10 @@ description: >
   file presence: the placeholder returns 200, so a presence-only or status-only check
   is vacuous here — that is the exact false-green shape L-538 covers.
 
-status: captured
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -28,8 +28,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T15:31:09Z
-last_update: '2026-08-17T12:36:09Z'
-date_finished:
+last_update: 2026-10-17T21:28:28Z
+date_finished: 2026-10-17T21:28:28Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -89,8 +89,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Superseded by T-3064 (2026-10-17 check): `fw vendor` ships exactly the one build the pin names, read from `vendored_path:` in policy/designer-pin.yaml (bin/fw ~:770, "T-3064: also not in includes[] — one file out of vendor/designer/"), not a blanket vendor/designer include
+- [x] The vendored copy holds only the pinned build (.agentic-framework/vendor/designer/ = aef-workflow-designer-0.22.0.html, the current pin)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -124,6 +124,8 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+p=$(grep -E '^vendored_path:' policy/designer-pin.yaml | sed 's/.*"\(.*\)"/\1/'); test -f ".agentic-framework/$p" && cmp -s "$p" ".agentic-framework/$p"
+test "$(ls .agentic-framework/vendor/designer/ | wc -l)" -eq 1
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -257,3 +259,18 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2767-vendor-the-pinned-designer-bundle-t-2757.md
 - **Context:** Initial task creation
+
+### 2026-10-17T21:28:26Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-26f84c50
+- **Timestamp:** 2026-10-17T21:28:33Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-17T21:28:28Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

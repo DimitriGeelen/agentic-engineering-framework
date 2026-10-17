@@ -1,0 +1,72 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2767: vendor the pinned designer bundle (T-2757 GO slice 1)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T21:28:50Z
+# ============================================================================
+
+task_id: T-2767
+task_name: "vendor the pinned designer bundle (T-2757 GO slice 1)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-03T15:31:09Z
+completed: 2026-10-17T21:28:28Z
+duration_days: 75
+updates_count: 2
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  T-2757 GO slice 1. fw vendor does not ship the artifact the designer pin names, so a vendored consumer serves the placeholder. Add the pinned artifact to the vendor payload filtered to vendored_path FROM THE PIN, not a blanket vendor/designer include (bin/fw includes array, ~line 332 — the T-2656 and T-2674 comments inside it document two prior omitted-payload defects). Guard test must assert on SERVED BYTES, not file presence: the placeholder returns 200, so a presence-only or status-only check is vacuous here — that is the exact false-green shape L-538 covers.
+
+# Key outcomes
+outcomes:
+  - 'Superseded by T-3064 (2026-10-17 check): `fw vendor` ships exactly the one build the pin names, read from `vendored_path:` in policy/designer-pin.yaml (bin/fw ~:770, "T-3064: also not in includes[] — one file out of vendor/designer/"), not a blanket vendor/designer include'
+  - 'The vendored copy holds only the pinned build (.agentic-framework/vendor/designer/ = aef-workflow-designer-0.22.0.html, the current pin)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  # No artifacts found in git
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  # No git timeline available
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 0 commit(s), 108357 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 108357
+  commits: 0
+  files_changed: 0
+  lines_added: 0
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2767-vendor-the-pinned-designer-bundle-t-2757.md
+generated_by: context-agent-hybrid

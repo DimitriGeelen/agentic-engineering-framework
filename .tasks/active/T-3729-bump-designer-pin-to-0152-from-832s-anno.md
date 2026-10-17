@@ -1,9 +1,15 @@
 ---
 id: T-3729
-name: "Bump designer pin to 0.15.2 from 832's announce (independent anchor), and fix
-  fw designer check-currency advice: it says sync --from-tag re-pins, but sync refuses
-  until the pin is updated from the rail announce"
+name: "fw designer check-currency advice says 'sync --from-tag' re-pins, but sync refuses
+  until the pin is first updated by hand from 832's announce"
 description: >
+  2026-10-17: the pin bump half is superseded (re-pinned 0.14.0 -> 0.20.0 -> 0.21.0 -> 0.22.0
+  under T-4224 / T-4279, each from 832's announce). What remains: agents/designer/designer.sh:360
+  prints 'Run: fw designer sync --from-tag (re-pin + sha256-verify at the tag)', but the sync
+  refuses a sha that does not match the pin, so the real order is: update the pin from the
+  rail announce (version, sha256, bytes, artifact, tag, vendored_path), then sync. Reproduced
+  in this session at both re-pins. Fix the advice (name both steps), or add a verb that writes
+  the pin from an announce. Original report:
   055 @72 2026-10-02: 832 released designer 0.15.2 (tag designer-v0.15.2, MANIFEST
   sha256 68454742196d2a53da2c6fed7dc7cb945c60995690d9224e6ab5e4f72d2f4394, 1063551
   B). Pin is 0.14.0. The pin must come from 832's announce on the rail, not the tag's
