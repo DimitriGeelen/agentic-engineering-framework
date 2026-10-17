@@ -1,10 +1,21 @@
 ---
 id: T-4220
-name: "Pre-push blocked: 9 new unit reds after T-4214 and the visual-hook enable (t3579_verdict_close_path, t3881/t3906 hook parity, test_doctor_scope_tags, t3684 stale-code)"
+name: "Pre-push blocked: 9 new unit reds after T-4214 and the visual-hook enable (t3579_verdict_close_path,
+  t3881/t3906 hook parity, test_doctor_scope_tags, t3684 stale-code)"
 description: >
-  Unit-suite run 2026-10-16 01:03-01:49Z, pre-push FAIL 2026-10-17. NEW reds: t3579_verdict_close_path.bats (5 tests: render green closes/edited criterion/T-3581 revalidation rounds) — likely T-4214 (render greens now need T-4202 visual evidence) without updating these bats fixtures; t3881_template_hook_parity.bats ('every hook the framework registers is one the consumer template writes') and t3906_upgrade_project_hooks_not_a_gap.bats — likely the operator-approved opt-in check-visual-verification hook now in AEF's .claude/settings.json (77397d453): the parity rule must treat documented opt-in hooks as allowed, NOT force them into every consumer; test_doctor_scope_tags.bats ('fw doctor exits cleanly on this project') — cause unknown; test_sidecar_watcher_t3684.py::test_start_replaces_a_receiver_and_watcher_running_stale_code — mtime-sensitive flake seen before. Also 28 baselined reds are past expiry: list them; extending is operator-only.
+  Unit-suite run 2026-10-16 01:03-01:49Z, pre-push FAIL 2026-10-17. NEW reds: t3579_verdict_close_path.bats
+  (5 tests: render green closes/edited criterion/T-3581 revalidation rounds) — likely
+  T-4214 (render greens now need T-4202 visual evidence) without updating these bats
+  fixtures; t3881_template_hook_parity.bats ('every hook the framework registers is
+  one the consumer template writes') and t3906_upgrade_project_hooks_not_a_gap.bats
+  — likely the operator-approved opt-in check-visual-verification hook now in AEF's
+  .claude/settings.json (77397d453): the parity rule must treat documented opt-in
+  hooks as allowed, NOT force them into every consumer; test_doctor_scope_tags.bats
+  ('fw doctor exits cleanly on this project') — cause unknown; test_sidecar_watcher_t3684.py::test_start_replaces_a_receiver_and_watcher_running_stale_code
+  — mtime-sensitive flake seen before. Also 28 baselined reds are past expiry: list
+  them; extending is operator-only.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +49,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T00:09:04Z
-last_update: 2026-10-17T00:09:04Z
-date_finished: null
+last_update: 2026-10-17T00:22:42Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +61,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-17T00:09:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-17T00:15:27Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=292,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4220: Pre-push blocked: 9 new unit reds after T-4214 and the visual-hook enable (t3579_verdict_close_path, t3881/t3906 hook parity, test_doctor_scope_tags, t3684 stale-code)
@@ -62,8 +101,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] t3579_verdict_close_path.bats green without weakening the T-4214 visual-evidence rule (fixtures supply the evidence)
+- [ ] t3881_template_hook_parity.bats and t3906_upgrade_project_hooks_not_a_gap.bats green: documented opt-in hooks are allowed in the framework's own settings without a template entry, and `fw upgrade` neither adds them to consumers nor reports a gap
+- [ ] test_doctor_scope_tags.bats green with its real cause recorded; test_sidecar_watcher_t3684 stale-code test either made deterministic or shown stable alone with evidence
+- [ ] The baselined reds past expiry are listed in Updates with a current green/red result each; the baseline itself is not touched
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -338,3 +379,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4220-pre-push-blocked-9-new-unit-reds-after-t.md
 - **Context:** Initial task creation
+
+### 2026-10-17T00:09:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

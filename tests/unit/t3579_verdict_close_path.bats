@@ -15,6 +15,10 @@ UPDATE_TASK="$BATS_TEST_DIRNAME/../../agents/task-create/update-task.sh"
 setup() {
     TEST_TEMP_DIR="$(mktemp -d)"
     export TEST_TEMP_DIR
+    # T-4220: a session launched as a sidecar agent exports FW_SIDECAR_AGENT_ID, which makes
+    # `verdict record` commit the row itself as reviewer-<that id> (T-3940). This suite commits
+    # every row as its own reviewer identity via _as, so the ambient id must not leak in.
+    unset FW_SIDECAR_AGENT_ID FW_REVIEW_WORKER FW_DISPATCHED_WORKER
     export PROJECT_ROOT="$TEST_TEMP_DIR"
     guard_project_root
     mkdir -p "$PROJECT_ROOT/.tasks/active" "$PROJECT_ROOT/.tasks/completed" \
@@ -142,25 +146,35 @@ _record() {
         # T-3580 round 6: the run is registered first, at the rung IW-7 requires (the shared
         # policy), and the dispatch is bound to it AT REGISTRATION — before the worker runs.
         printf 'png' > "$PROJECT_ROOT/shot-rv-1.png"
-        rung=$(PYTHONPATH="$BATS_TEST_DIRNAME/../.." PROJECT_ROOT="$PROJECT_ROOT" python3 - <<'PY'
+        # T-4214: a render green's run also carries the T-4202 visual record — every checklist state
+        # at every width, each shot cited as evidence (tests/unit/_visual_evidence.py).
+        local out
+        out=$(PYTHONPATH="$BATS_TEST_DIRNAME/../..:$BATS_TEST_DIRNAME" PROJECT_ROOT="$PROJECT_ROOT" python3 - <<'PY'
 import os
 from pathlib import Path
 from lib import review_policy, verdict_ledger as vl
+from _visual_evidence import run_visual, write_shots
 root = Path(os.environ["PROJECT_ROOT"])
 ctx = vl._task_ctx(root, "T-9200")
 crit = next(c for c in vl.human_criteria(ctx.text) if c.index == 1)
 label = review_policy.rung_label(vl.required_strength(ctx, crit)[0])
+vis = write_shots(root, "vis-rv-1")
 vl.register_run("run-rv-1", "T-9200", acs=[1], rung=label,
                 seats=[{"seat": "claude", "vendor": "claude",
                         "brief_sha256": vl.brief_digest("fixture review brief")}], required_vendors=1,
                 pages={"1": ["/review"]},
                 captures=[{"page": "/review", "ok": True, "sha256": vl._hash_path(root / "shot-rv-1.png"), "error": ""}],
-                root=root)
+                visual=run_visual(vis), root=root)
 print(label)
+for s in vis:
+    print(s["path"])
 PY
 )
+        rung=$(head -n 1 <<<"$out")
+        local shots=(); mapfile -t shots < <(tail -n +2 <<<"$out")
         _dispatch rv-1 --run-id run-rv-1 --seat claude
         extra=(--run-id run-rv-1 --evidence shot-rv-1.png)
+        local s; for s in "${shots[@]}"; do extra+=(--evidence "$s"); done
     else
         _dispatch rv-1
     fi
