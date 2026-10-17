@@ -255,6 +255,30 @@ entries:
   added: '2026-10-17'
   expires: '2026-10-31'
   added_by: human
+- leg: bats
+  name: 'check_render_surface_human_ac_sigpipe.bats: T-1900: pre-fix pattern (head -3) DID die with SIGPIPE
+    — regression sentinel'
+  file: check_render_surface_human_ac_sigpipe.bats
+  owner: T-4221
+  added: '2026-10-17'
+  expires: '2026-10-31'
+  added_by: human
+- leg: bats
+  name: 't3662_watchtower_port_allocation.bats: allocation skips a foreign holder of the base port and
+    leaves it alive'
+  file: t3662_watchtower_port_allocation.bats
+  owner: T-4221
+  added: '2026-10-17'
+  expires: '2026-10-31'
+  added_by: human
+- leg: bats
+  name: 't4119_terminator_handover_git_extension.bats: T-4119: git still running at the limit is NOT cut
+    there — handover completes'
+  file: t4119_terminator_handover_git_extension.bats
+  owner: T-4221
+  added: '2026-10-17'
+  expires: '2026-10-31'
+  added_by: human
 last_regenerated:
   at: '2026-10-17'
   report: /opt/999-Agentic-Engineering-Framework/.context/audits/unit-suite/LATEST.yaml
