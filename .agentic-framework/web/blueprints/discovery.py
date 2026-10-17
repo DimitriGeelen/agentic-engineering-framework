@@ -120,19 +120,25 @@ def gaps():
     # T-2185: surface gauge state for each gap so the template can render
     # the Close button enabled/disabled based on closure_check_command verdict.
     # Bounded — only run gauges for status:watching gaps with a command set.
+    # T-4223: the register is already parsed by load_concerns() above; hand
+    # that data to the gauges (no per-gauge re-parse) and run them concurrently.
     try:
-        from lib.gaps import gauge_state as _gauge_state
+        from lib.gaps import gauge_states as _gauge_states
     except ImportError:
-        _gauge_state = None
+        _gauge_states = None
 
     gauge_by_id = {}
-    if _gauge_state:
-        for g in gaps_list:
-            if g.get("status") == "watching" and g.get("closure_check_command"):
-                try:
-                    gauge_by_id[g["id"]] = _gauge_state(g["id"], project_root=PROJECT_ROOT)
-                except Exception as e:
-                    log.warning("gauge_state failed for %s: %s", g.get("id"), e)
+    if _gauge_states:
+        ids = [
+            g["id"] for g in gaps_list
+            if g.get("status") == "watching" and g.get("closure_check_command")
+        ]
+        try:
+            gauge_by_id = _gauge_states(
+                ids, project_root=PROJECT_ROOT, data={"concerns": gaps_list}
+            )
+        except Exception as e:
+            log.warning("gauge_states failed: %s", e)
 
     return render_page(
         "gaps.html",

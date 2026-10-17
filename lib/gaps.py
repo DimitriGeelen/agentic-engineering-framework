@@ -135,8 +135,11 @@ def load_concerns_yaml(project_root: Optional[Path] = None) -> Dict[str, Any]:
     path = _concerns_path(project_root)
     if not path.exists():
         return {"concerns": []}
+    # T-4223: CSafeLoader (libyaml) is ~13x faster than the pure-Python
+    # SafeLoader on a 256 KB register; same construction rules, same data.
+    loader = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
     with path.open() as f:
-        data = yaml.safe_load(f) or {}
+        data = yaml.load(f, Loader=loader) or {}
     # T-397 schema: concerns is canonical, gaps is legacy fallback.
     if "concerns" not in data and "gaps" in data:
         data["concerns"] = data["gaps"]
@@ -430,14 +433,20 @@ def close_gap(
 def gauge_state(
     gap_id: str,
     project_root: Optional[Path] = None,
+    data: Optional[Dict[str, Any]] = None,
 ) -> Dict[str, Any]:
     """Return current gauge state for a gap. Used by /gaps render + fw doctor.
+
+    `data` (T-4223): the already-parsed register (`{"concerns": [...]}`). When
+    omitted the register is parsed here, as before. Callers evaluating many
+    gaps pass it so the file is parsed once, not once per gauge.
 
     Returns:
       {"gap_id": ..., "has_gauge": bool, "command": str|None,
        "verdict": "READY"|"NOT_READY"|"UNKNOWN"|None, "raw": str}
     """
-    data = load_concerns_yaml(project_root)
+    if data is None:
+        data = load_concerns_yaml(project_root)
     gap = find_gap(data, gap_id)
     if gap is None:
         return {"gap_id": gap_id, "has_gauge": False, "command": None, "verdict": None, "raw": ""}
@@ -452,6 +461,38 @@ def gauge_state(
         "verdict": verdict,
         "raw": raw[:500],  # bounded for embedding into HTML/JSON
     }
+
+
+def gauge_states(
+    gap_ids: List[str],
+    project_root: Optional[Path] = None,
+    data: Optional[Dict[str, Any]] = None,
+    max_workers: int = 8,
+) -> Dict[str, Dict[str, Any]]:
+    """Evaluate gauges for `gap_ids` concurrently (T-4223).
+
+    Gauges are independent subprocesses, so a bounded thread pool turns
+    N x ~1.5 s into ~max(gauge). The register is parsed once (or taken from
+    `data`). A gauge that raises is omitted from the result, as the old
+    sequential /gaps loop did; order of the returned dict follows `gap_ids`.
+    """
+    from concurrent.futures import ThreadPoolExecutor
+
+    if not gap_ids:
+        return {}
+    if data is None:
+        data = load_concerns_yaml(project_root)
+
+    def _one(gid: str) -> Optional[Dict[str, Any]]:
+        try:
+            return gauge_state(gid, project_root=project_root, data=data)
+        except Exception:
+            return None
+
+    workers = max(1, min(max_workers, len(gap_ids)))
+    with ThreadPoolExecutor(max_workers=workers) as pool:
+        results = list(pool.map(_one, gap_ids))
+    return {gid: r for gid, r in zip(gap_ids, results) if r is not None}
 
 
 def stale_ready_gaps(

@@ -15,10 +15,10 @@ description: >
   same verdicts); (3) run gauges concurrently or cache verdicts with a short TTL.
   Measure before/after on this repo and with a register the size of 832's.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T08:35:45Z
-last_update: '2026-10-17T08:46:14Z'
+last_update: 2026-10-17T08:50:36Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -101,9 +101,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] /gaps parses the concerns register once per request; gauge_state accepts the parsed data (no per-gauge re-parse)
-- [ ] YAML loading in the /gaps hot path uses CSafeLoader when available, with identical verdicts to SafeLoader on this repo's register and a fixture the size of 832's (~256 KB)
-- [ ] Gauges run concurrently or are cached with a short TTL; before/after timings for /gaps recorded in Updates, and /gaps stays under the 5 s smoke limit on this repo
+- [x] /gaps parses the concerns register once per request; gauge_state accepts the parsed data (no per-gauge re-parse)
+- [x] YAML loading in the /gaps hot path uses CSafeLoader when available, with identical verdicts to SafeLoader on this repo's register and a fixture the size of 832's (~256 KB)
+- [x] Gauges run concurrently or are cached with a short TTL; before/after timings for /gaps recorded in Updates, and /gaps stays under the 5 s smoke limit on this repo
 - [ ] Watchtower restarted after the change; `bin/fw watchtower current` passes
 
 ### Human
@@ -153,6 +153,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+python3 -m pytest tests/unit/test_t4223_gaps_perf.py -q > /tmp/.t4223.out 2>&1 && grep -q passed /tmp/.t4223.out
+bin/fw vendor self --check
+bin/fw watchtower current
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -285,6 +289,11 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** /gaps took 16 s on 832 (13.7 s on an 832-sized fixture), failing fw doctor's 5 s smoke check and starving other pages.
+**Root cause:** `gauge_state` re-parsed the whole register with pure-Python `yaml.safe_load` once per watching gap, and the gauges ran sequentially.
+**Why structurally allowed:** no performance budget test on /gaps with a realistic register; this repo's own register has 3 fast gauges, so smoke passed here (0.09 s).
+**Prevention:** `tests/unit/test_t4223_gaps_perf.py` pins single parse per request, concurrency, and CSafeLoader parity on a multi-gauge fixture.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -354,14 +363,10 @@ bvp_scores_proposed:
 
 ## Decisions
 
-<!-- Record decisions ONLY when choosing between alternatives.
-     Skip for tasks with no meaningful choices.
-     Format:
-     ### [date] — [topic]
-     - **Chose:** [what was decided]
-     - **Why:** [rationale]
-     - **Rejected:** [alternatives and why not]
--->
+### 2026-10-17 — concurrency vs TTL cache for the gauges
+- **Chose:** bounded thread pool (`lib/gaps.gauge_states`, max 8 workers) over the subprocess gauges.
+- **Why:** gauges are independent subprocesses, so threads give real parallelism with no staleness; the close button's enabled/disabled state is a verdict the operator acts on, and a TTL cache could show READY after the world changed.
+- **Rejected:** short-TTL verdict cache — adds invalidation state and stale-verdict risk, and does nothing for the first request after expiry (the one the smoke test hits).
 
 ## Decision
 
@@ -379,3 +384,14 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4223-watchtower-gaps-over-the-5-s-smoke-limit.md
 - **Context:** Initial task creation
+
+### 2026-10-17T08:49:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-17 — profile and fix [worker]
+- **Before** (Flask test client, GET /gaps, warm): this repo (3 fast gauges) 0.09 s; synthetic 832-sized register (61 entries, 414 KB, 9 watching gauges at 1.0 s each) **13.7-14.0 s**.
+- Root cause confirmed: `gauge_state` called `load_concerns_yaml` (pure-Python `yaml.safe_load`) once per gauge, and the gauges ran one after another. `web/shared.load_yaml` already used CSafeLoader, so the page's own load was cheap.
+- **After:** `gauge_state(..., data=)` (old call shape kept), `load_concerns_yaml` uses CSafeLoader (fallback SafeLoader), new `gauge_states()` runs gauges in a thread pool; `discovery.gaps()` passes the already-parsed list. This repo 0.07 s; fixture **2.2 s** (9 gauges x 1.0 s over 8 workers = two waves; dominated by the fixture gauge's own sleep).
+- Tests: `tests/unit/test_t4223_gaps_perf.py` (5: CSafeLoader parity on fixture and this repo's register, no re-parse with data=, concurrent == sequential, failing gauge dropped, route parses once). Also green: tests/web (2 files), tests/unit/test_breadcrumb.py, t4061, gaps_close/gaps_partition/closure_check/missing_title/g065/g066/fw_gaps bats, t3453/t3933 smoke bats. tests/playwright gaps tests need a live server — not run.
+- **Watchtower restart needed** (web/ changed; I did not restart it). The running server predates this change, and an HTTP-mode `run_smoke_tests()` against it timed out on 10 pages (95 s) — that run measures the stale process, not this fix. AC 4 (restart + `fw watchtower current`) is left for the parent.
