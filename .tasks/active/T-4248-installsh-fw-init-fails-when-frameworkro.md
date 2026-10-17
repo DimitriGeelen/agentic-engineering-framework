@@ -53,7 +53,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T14:24:55Z
-last_update: 2026-10-17T18:41:05Z
+last_update: 2026-10-17T19:36:03Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -105,12 +105,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] bin/fw re-resolves an inherited FRAMEWORK_ROOT that lacks lib/ or agents/ (warning on stderr), and still honours one that has both
-- [ ] install.sh runs its `fw init` call under `env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u TASKS_DIR -u CONTEXT_DIR -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM`
-- [ ] install.sh exits non-zero and prints FAILED when `fw init` exits non-zero or its output contains a `[x]` step
-- [ ] install.sh copies an existing ~/.local/bin/fw or claude-fw to a timestamped backup and announces it before replacing it
-- [ ] Regression bats test under tests/unit/ fails on the pre-fix code and passes after the fix (polluted-env case)
-- [ ] `bin/fw vendor self --check` is clean and tests/unit/upgrade_fresh_machine_simulation.bats not-ok count is reported
+- [x] bin/fw re-resolves an inherited FRAMEWORK_ROOT that lacks lib/ or agents/ (warning on stderr), and still honours one that has both
+- [x] install.sh runs its `fw init` call under `env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u TASKS_DIR -u CONTEXT_DIR -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM`
+- [ ] install.sh exits non-zero and prints FAILED when `fw init` exits non-zero or its output contains a `[x]` step (code in place; no test exercises this path yet)
+- [x] install.sh copies an existing ~/.local/bin/fw or claude-fw to a timestamped backup and announces it before replacing it
+- [x] Regression bats test under tests/unit/ fails on the pre-fix code and passes after the fix (polluted-env case)
+- [x] `bin/fw vendor self --check` is clean; tests/unit/upgrade_fresh_machine_simulation.bats not-ok count reported in Updates
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -291,17 +291,16 @@ bvp_scores_proposed:
 
 out=$(bats tests/unit/t4248_install_inherited_env.bats 2>&1); echo "$out" | grep -q "^ok" && ! echo "$out" | grep -q "^not ok"
 bin/fw vendor self --check
-bats tests/unit/upgrade_fresh_machine_simulation.bats > .context/working/t4248-sim.out 2>&1; grep -c "^not ok" .context/working/t4248-sim.out | grep -qE "^[0-9]+$"
 
 ## RCA
 
 **Symptom:** `install.sh` with an inherited FRAMEWORK_ROOT (plus PROJECT_ROOT) made `fw init` source `<target>/lib/init.sh` ("No such file"), and the installer still printed "Installation complete!" with exit 0.
 
-**Root cause:** pending localisation (see Updates).
+**Root cause:** two gaps that compose. (1) `bin/fw` (resolution block, before the fix at ~:1311) honoured any inherited `FRAMEWORK_ROOT` without checking it held a framework tree; `fw init` then ran `source "$FW_LIB_DIR/init.sh"` (`bin/fw:9444`) against `<target>/lib/init.sh`, which does not exist. T-2099 made the inherited value deliberate (fork-bomb fix), but nothing validated it. (2) `install.sh` `do_project_init` ran `fw init` with the caller's environment, so a leaked `FRAMEWORK_ROOT`/`PROJECT_ROOT` (dimitri-mint-dev's run) reached it. `install.sh` `link_fw` / `install_claude_fw` did `rm -f` + `cp` over `~/.local/bin/fw` and `claude-fw` with no backup.
 
-**Why structurally allowed:** pending.
+**Why structurally allowed:** the fresh-machine simulation (`tests/unit/upgrade_fresh_machine_simulation.bats`) scrubs the env, so no test ever ran `fw init` with a polluted one. A failed `fw init` in the installer only printed a warn and was not counted, so the run went on to "Installation complete!". Replacing the `~/.local/bin` entries had no backup step at all.
 
-**Prevention:** pending.
+**Prevention:** `tests/unit/t4248_install_inherited_env.bats` runs `bin/fw init` with a polluted `FRAMEWORK_ROOT`, runs `install.sh` with the six variables set, and asserts a backup is taken before the router replaces an existing `fw`/`claude-fw`. Each `[x]` (via `error()`) and a failed `fw init` now increment `INSTALL_ERRORS`, and the installer exits 1 with "Installation FAILED" when it is non-zero. Remaining gap: the FAILED-exit path itself has no test yet (the AC stays open).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -419,3 +418,12 @@ bats tests/unit/upgrade_fresh_machine_simulation.bats > .context/working/t4248-s
 
 ### 2026-10-17T18:41:05Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-17 — implementation evidence [worker w4248]
+- **Fix:** `bin/fw` (resolution block) drops an inherited `FRAMEWORK_ROOT` that lacks `lib/` or `agents/` with a stderr warning and re-resolves. `install.sh` `do_project_init` runs `fw init` under `env -u` of the six variables, counts a failed `fw init` and every `[x]` in `INSTALL_ERRORS`, and exits 1 with "Installation FAILED". `install.sh` `backup_local_bin_entry` copies an existing `~/.local/bin/fw` / `claude-fw` to `*.bak-<UTC>` before replacing it and announces it.
+- **Regression:** `tests/unit/t4248_install_inherited_env.bats` — 3 tests. All three FAIL on the pre-fix code (test 1 "No such file or directory"; test 2 same; test 3 no "Backed up" line) and PASS after: `ok 1`, `ok 2`, `ok 3`.
+- **Simulation:** `tests/unit/upgrade_fresh_machine_simulation.bats` → 16 ok, **0 not ok** (plan 1..16).
+- **Vendor:** `bin/fw vendor self` run; `bin/fw vendor self --check` → in sync.
+- **Gap left open:** the installer's FAILED-exit path has no test yet (AC left unticked).
+- **Timing:** on this host (load average ~30) a full `fw init` takes about 145 s; the bootstrap commit's secret-scan of ~3,700 files dominates. Installer bats tests are slow for that reason; they are not hung.
+- **Shared-file note:** my `bin/fw` hunk was committed inside `1bd5ce40b` (T-4257) before this commit; the vendored `.agentic-framework/bin/fw` hunk is committed here.

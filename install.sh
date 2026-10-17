@@ -43,9 +43,12 @@ YELLOW='\033[1;33m'
 BOLD='\033[1m'
 NC='\033[0m'
 
+# T-4248: every [x] step is counted; any count fails the install (see main).
+INSTALL_ERRORS=0
+
 info()  { echo -e "${GREEN}[+]${NC} $*"; }
 warn()  { echo -e "${YELLOW}[!]${NC} $*"; }
-error() { echo -e "${RED}[x]${NC} $*" >&2; }
+error() { INSTALL_ERRORS=$((INSTALL_ERRORS + 1)); echo -e "${RED}[x]${NC} $*" >&2; }
 fatal() { error "$@"; exit 1; }
 
 # --- Argument Parsing ---
@@ -256,6 +259,21 @@ scan_vendored_consumers() {
     echo ""
 }
 
+# --- Back up an existing ~/.local/bin entry before it is replaced (T-4248) ---
+# fw and claude-fw were overwritten with no backup and no notice (a 69,580 B
+# framework CLI became a 3,707 B router). Keep the previous file beside it and
+# say so. An identical file is not backed up again, so reruns stay quiet.
+backup_local_bin_entry() {
+    local path="$1" src="$2"
+    [[ -e "$path" || -L "$path" ]] || return 0
+    if [[ -f "$path" && ! -L "$path" && -f "$src" ]] && cmp -s "$path" "$src"; then
+        return 0
+    fi
+    local bak="${path}.bak-$(date -u +%Y%m%dT%H%M%SZ)"
+    cp -P "$path" "$bak"
+    info "Backed up existing $(basename "$path") → ${bak}"
+}
+
 # --- Install claude-fw onto PATH by COPY (T-2807) ---
 #
 # It used to be `ln -sf "$INSTALL_DIR/bin/claude-fw"`, with the comment "claude-fw
@@ -285,6 +303,7 @@ scan_vendored_consumers() {
 install_claude_fw() {
     local src="$1" local_bin="$2"
     [[ -f "$src" ]] || return 0
+    backup_local_bin_entry "$local_bin/claude-fw" "$src"
     rm -f "$local_bin/claude-fw"
     cp "$src" "$local_bin/claude-fw"
     chmod +x "$local_bin/claude-fw"
@@ -324,6 +343,7 @@ link_fw() {
             fatal "bin/fw not found in ${INSTALL_DIR} — clone may be corrupted"
         fi
         mkdir -p "$local_bin"
+        backup_local_bin_entry "$local_bin/fw" "$fw_path"
         ln -sf "$fw_path" "$local_bin/fw"
         install_claude_fw "$claude_fw_src" "$local_bin"
         info "Linked fw → ${local_bin}/fw (legacy — upgrade for project-local routing)"
@@ -341,6 +361,7 @@ link_fw() {
         # lib/upgrade.sh step 4c has carried this guard since T-1278; install.sh
         # never got it. The install path is the one that MOST often meets a
         # pre-existing symlink, because that symlink is what it exists to replace.
+        backup_local_bin_entry "$local_bin/fw" "$shim_src"
         rm -f "$local_bin/fw"
         cp "$shim_src" "$local_bin/fw"
         chmod +x "$local_bin/fw"
@@ -408,12 +429,24 @@ do_project_init() {
     mkdir -p "$TARGET_DIR"
     echo ""
     info "Initialising project at ${TARGET_DIR}..."
-    if (cd "$INSTALL_DIR" && "$INSTALL_DIR/bin/fw" init "$TARGET_DIR" --provider "$PROVIDER"); then
+    # T-4248: fw init runs under env -u of the inherited framework/project
+    # variables. A leaked FRAMEWORK_ROOT or PROJECT_ROOT (from another install)
+    # made it source <target>/lib/init.sh, so the run must not inherit them.
+    # Its output is kept so a [x] step inside it counts against this install.
+    local init_log init_rc=0
+    init_log=$(mktemp -t agentic-fw-init-XXXXXX)
+    (cd "$INSTALL_DIR" && env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u TASKS_DIR -u CONTEXT_DIR \
+        -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM \
+        "$INSTALL_DIR/bin/fw" init "$TARGET_DIR" --provider "$PROVIDER") > "$init_log" 2>&1 || init_rc=$?
+    cat "$init_log"
+    if [[ "$init_rc" -eq 0 ]] && ! grep -q '\[x\]' "$init_log"; then
         info "Project initialised: ${TARGET_DIR}"
     else
         warn "fw init reported an issue (see above)."
-        warn "If ${TARGET_DIR} was already initialised, it was left untouched — this is expected (fw init is not --force by default)."
+        warn "fw init leaves an already-initialised target untouched and is not --force by default; if ${TARGET_DIR} was initialised before, this is not a fresh install."
+        INSTALL_ERRORS=$((INSTALL_ERRORS + 1))
     fi
+    rm -f "$init_log"
 }
 
 # --- Verify ---
@@ -540,9 +573,11 @@ main() {
 
     cleanup_fetch
 
-    if [[ "$verify_rc" -ne 0 ]]; then
-        error "Installation finished with failed verification (exit ${verify_rc})"
-        exit "$verify_rc"
+    # T-4248: a [x] anywhere (verify or fw init) is a failed install, never
+    # "complete" with exit 0.
+    if [[ "$verify_rc" -ne 0 || "$INSTALL_ERRORS" -ne 0 ]]; then
+        error "Installation FAILED: ${INSTALL_ERRORS} step(s) reported [x] (verification exit ${verify_rc})"
+        exit 1
     fi
 
     echo -e "${GREEN}${BOLD}Installation complete!${NC}"

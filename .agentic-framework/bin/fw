@@ -1308,6 +1308,13 @@ fi
 # re-resolves back to the CONSUMER's vendored copy (T-498 preference) → infinite
 # recursion → fork bomb. lib/upgrade.sh now passes env-scoped FRAMEWORK_ROOT to
 # the handoff; this branch lets the cloned fw honour it.
+# T-4248: an inherited FRAMEWORK_ROOT is only honoured when it is a real framework
+# tree (lib/ and agents/ present). A leaked value pointing at a target project
+# (dimitri-mint-dev, 2026-10-17) made `fw init` source <target>/lib/init.sh.
+if [ -n "${FRAMEWORK_ROOT:-}" ] && { [ ! -d "$FRAMEWORK_ROOT/lib" ] || [ ! -d "$FRAMEWORK_ROOT/agents" ]; }; then
+    echo "fw: inherited FRAMEWORK_ROOT=$FRAMEWORK_ROOT has no lib/ or agents/ — re-resolving" >&2
+    FRAMEWORK_ROOT=""
+fi
 if [ -z "${FRAMEWORK_ROOT:-}" ]; then
     FRAMEWORK_ROOT=$(resolve_framework) || true
 fi
