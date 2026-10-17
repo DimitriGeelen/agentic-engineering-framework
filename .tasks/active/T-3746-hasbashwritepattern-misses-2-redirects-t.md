@@ -9,7 +9,7 @@ description: >
   write forms write; 2>&1, 2>/dev/null, sort, sed -n, git log stay reads). Reproduce,
   adopt with tests.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -43,7 +43,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T19:57:27Z
-last_update: '2026-10-02T20:00:44Z'
+last_update: 2026-10-17T21:26:27Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `has_bash_write_pattern` classifies as WRITE: `ls 2>err.log`, `ls 2>>err.log`, `ls &>out.log`, `ls &>>out.log`, `sed 's/a/b/w out.txt' f`, `sed -n '/x/w out.txt' f`, `sort -o out.txt f`, `sort --output=out.txt f`
+- [x] Still READ (no regression): `ls 2>&1`, `ls 2>/dev/null`, `ls &>/dev/null`, `sort f`, `sed -n '1,5p' f`, `git log --oneline -5`
+- [x] Regression bats `tests/unit/t3746_write_pattern_fd_redirects.bats` fails without the fix and passes with it
+- [x] Existing safe-commands / check-active-task bats files: no new failures (only the pre-existing T-2888 git-verb red, red at HEAD before this change)
+- [ ] Vendored copy synced (`bin/fw vendor self --check` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -250,6 +253,12 @@ bvp_scores_proposed:
 #
 # The rule of thumb: put the assertion LAST, and make sure it is an assertion.
 #
+timeout 300 bats tests/unit/t3746_write_pattern_fd_redirects.bats > /tmp/.t3746.out 2>&1 && ! grep -q "^not ok" /tmp/.t3746.out
+test "$(grep -c '# skip' /tmp/.t3746.out)" -eq 0
+# context_safe_commands.bats carries a PRE-EXISTING red (T-2888 test: unclassified git verbs check-attr/check-ref-format/diff-index), red at HEAD before this change; tolerate exactly that one.
+timeout 600 bats tests/unit/context_safe_commands.bats tests/unit/safe_commands_chain.bats tests/unit/safe_commands_env_prefix.bats tests/unit/t3096_safe_commands_wrappers.bats tests/unit/test_safe_commands_git_commit.bats tests/unit/check_active_task_fp_fix.bats > /tmp/.t3746b.out 2>&1; grep -q "^ok 1 " /tmp/.t3746b.out && ! grep "^not ok" /tmp/.t3746b.out | grep -qv "T-2888"
+bin/fw vendor self --check
+#
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
 # Verification block. Otherwise the canonical hash diverges and `fw doctor`
@@ -272,6 +281,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** With no active task, `ls 2>err.log`, `ls &>out.log`, `sed -n '/x/w out' f`, `sed 's/a/b/w out' f`, `sort -o out f` and `sort --output=out f` passed `check-active-task` as reads — reproduced in-tree before the fix (`2>>`/`&>>` were already caught by the `>>` arm).
+
+**Root cause:** `agents/context/lib/safe-commands.sh` `has_bash_write_pattern` (redirect arm, `[^2>&]>[^>&]`): to exempt fd duplication (`2>&1`) it excluded *every* `>` preceded by `2` or `&`, so `2>FILE` and `&>FILE` never matched. The scan also had no arm at all for the two file-writing forms that need no redirect: sed's `w` command / `s///w` flag, and `sort -o`/`--output`.
+
+**Why structurally allowed:** The tests pinned only the read side of the exemption (`2>&1`, `2>/dev/null` stay reads) with no write-side counter-case, so over-broadening was invisible. 832 found and fixed it locally (their T-1005, 6fc8e737), but the fix never went upstream and was lost at their 1.7.68 re-vendor. A local fix to vendored code leaves no trace upstream.
+
+**Prevention:** `tests/unit/t3746_write_pattern_fd_redirects.bats` pins both directions: 8+ write forms must be writes, fd-dup, /dev/null, plain sort, sed -n and git log must stay reads. It fails 4/6 against the pre-fix code. Upstreaming the fix means the next consumer re-vendor carries it instead of erasing it.
 
 ## Evolution
 
@@ -353,3 +370,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3746-hasbashwritepattern-misses-2-redirects-t.md
 - **Context:** Initial task creation
+
+### 2026-10-17T21:18:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

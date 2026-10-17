@@ -1082,8 +1082,30 @@ has_bash_write_pattern() {
         return 0
     fi
 
+    # T-3746 (832 T-1005): the exemption above excludes `2>` and `&>` wholesale,
+    # but only the fd-duplication form (`2>&1`, `&>&2`) writes nothing. `2>err.log`
+    # and `&>out.log` redirect to a FILE and must count. /dev/null targets were
+    # already stripped from _scan, so `2>/dev/null` stays a read.
+    if echo "$_scan" | grep -qE '(2|&)>[^>&]'; then
+        return 0
+    fi
+
     # In-place sed
     if echo "$cmd" | grep -qE '\bsed\b.*-i'; then
+        return 0
+    fi
+
+    # T-3746: sed writes files with no redirect — the `w FILE` command
+    # (`sed -n '/x/w out'`) and the `s///w FILE` flag. A `w`/`W` right after a
+    # delimiter, quote, `;`, `$` or line number (optionally after s-flags) and
+    # followed by a filename. Conservative: replacement text ending `/w x/`
+    # also matches, which errs toward the task gate.
+    if echo "$cmd" | grep -qE "\\bsed\\b.*[/;'\"\$0-9][gpIiMme0-9]*[wW][[:space:]]+[^[:space:]]"; then
+        return 0
+    fi
+
+    # T-3746: `sort -o FILE` / `sort --output[=]FILE` write the output file.
+    if echo "$cmd" | grep -qE '\bsort\b[^|;&]*[[:space:]](-[a-zA-Z]*o|--output)'; then
         return 0
     fi
 
