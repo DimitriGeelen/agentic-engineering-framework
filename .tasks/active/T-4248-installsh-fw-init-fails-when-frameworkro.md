@@ -1,8 +1,23 @@
 ---
 id: T-4248
-name: "install.sh: fw init fails when FRAMEWORK_ROOT/PROJECT_ROOT are inherited (bin/fw honours an env FRAMEWORK_ROOT unchecked) and the installer still prints 'Installation complete!' with exit 0; it also overwrites ~/.local/bin/fw and claude-fw without backup or notice"
+name: "install.sh: fw init fails when FRAMEWORK_ROOT/PROJECT_ROOT are inherited (bin/fw
+  honours an env FRAMEWORK_ROOT unchecked) and the installer still prints 'Installation
+  complete!' with exit 0; it also overwrites ~/.local/bin/fw and claude-fw without
+  backup or notice"
 description: >
-  dimitri-mint-dev P-019 (live greenfield v2 run, install.sh master/v1.8.10, 2026-10-17): F-01 fw init sourced <target>/lib/init.sh ('No such file'): bin/fw line ~1286 keeps an inherited FRAMEWORK_ROOT unchecked, so FW_LIB_DIR=$FRAMEWORK_ROOT/lib points at the target (hypothesis: their run env carried FRAMEWORK_ROOT/PROJECT_ROOT, G-116 class; T-4218's residual note says a leaked FRAMEWORK_ROOT is still honoured). F-02 the installer then reports '[x] .framework.yaml not found', '[x] vendor incomplete', yet 'Installation complete!' and exit 0. F-03 it overwrote ~/.local/bin/fw and claude-fw (69,580 B -> 3,707 B router) without backup or notice. Fix: install.sh runs fw init under env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u TASKS_DIR -u CONTEXT_DIR -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM; bin/fw validates an env FRAMEWORK_ROOT (must contain lib/ and agents/, else re-resolve with a warning); the installer exits non-zero and says FAILED when any step reported [x]; back up and announce any replaced ~/.local/bin entry. Test in the fresh-machine simulation with a polluted env.
+  dimitri-mint-dev P-019 (live greenfield v2 run, install.sh master/v1.8.10, 2026-10-17):
+  F-01 fw init sourced <target>/lib/init.sh ('No such file'): bin/fw line ~1286 keeps
+  an inherited FRAMEWORK_ROOT unchecked, so FW_LIB_DIR=$FRAMEWORK_ROOT/lib points
+  at the target (hypothesis: their run env carried FRAMEWORK_ROOT/PROJECT_ROOT, G-116
+  class; T-4218's residual note says a leaked FRAMEWORK_ROOT is still honoured). F-02
+  the installer then reports '[x] .framework.yaml not found', '[x] vendor incomplete',
+  yet 'Installation complete!' and exit 0. F-03 it overwrote ~/.local/bin/fw and claude-fw
+  (69,580 B -> 3,707 B router) without backup or notice. Fix: install.sh runs fw init
+  under env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u TASKS_DIR -u CONTEXT_DIR -u _FW_PATHS_DERIVED_BY
+  -u FW_ROUTED_FROM; bin/fw validates an env FRAMEWORK_ROOT (must contain lib/ and
+  agents/, else re-resolve with a warning); the installer exits non-zero and says
+  FAILED when any step reported [x]; back up and announce any replaced ~/.local/bin
+  entry. Test in the fresh-machine simulation with a polluted env.
 
 status: captured
 workflow_type: build
@@ -38,8 +53,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T14:24:55Z
-last_update: 2026-10-17T14:24:55Z
-date_finished: null
+last_update: '2026-10-17T14:31:32Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +65,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-17T14:30:36Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-17T14:31:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4248: install.sh: fw init fails when FRAMEWORK_ROOT/PROJECT_ROOT are inherited (bin/fw honours an env FRAMEWORK_ROOT unchecked) and the installer still prints 'Installation complete!' with exit 0; it also overwrites ~/.local/bin/fw and claude-fw without backup or notice
@@ -338,3 +381,12 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4248-installsh-fw-init-fails-when-frameworkro.md
 - **Context:** Initial task creation
+
+### 2026-10-17 — hypothesis confirmed (dimitri-mint-dev msg 5c2e549a, their run 2)
+- The worker that ran install.sh had FRAMEWORK_ROOT, PROJECT_ROOT, _FW_PATHS_DERIVED_BY and FW_ROUTED_FROM ALL set
+  to/for the target (TASKS_DIR/CONTEXT_DIR unset) → bin/fw kept the inherited FRAMEWORK_ROOT → <target>/lib/init.sh.
+  Their run 3 re-runs unchanged master under env -u (result pending) — tells whether master works with a clean env.
+- New, same family: the TermLink dispatch writes `.context/dispatch-results/<name>.md` INTO the target project after
+  each run (agents/termlink/termlink.sh, project_dir), so a greenfield target is never empty after a dispatched
+  attempt. Decide: results belong in the dispatcher's project, not the target — or in a temp dir when the target
+  has no framework yet.
