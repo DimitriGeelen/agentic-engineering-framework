@@ -463,5 +463,8 @@ def test_start_replaces_a_receiver_and_watcher_running_stale_code(proj, monkeypa
                           "quiet": True, "json": False})()
     monkeypatch.setenv("PATH", NO_TERMLINK_PATH)
     sidecar_cli.cmd_start(args)
-    assert not lifecycle.pid_alive(old_recv) and lifecycle.read_triple_file()["pid"] != old_recv
+    assert not lifecycle.pid_alive(old_recv)
+    # T-4220: the replacement receiver writes its triple file after it is up; under
+    # suite load cmd_start returns before that (read_triple_file() was None once).
+    assert _wait(lambda: (lifecycle.read_triple_file() or {}).get("pid") not in (None, old_recv))
     assert _wait(lambda: watcher.read_pid("supervisor") not in (None, old_sup) and watcher.supervisor_alive())
