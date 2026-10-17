@@ -470,20 +470,21 @@ Each component has a YAML card in `.fabric/components/` with: id, name, type, su
 
 ### Work Proposal Rule
 - **Before proposing the next unit of work, check context budget** (`checkpoint.sh status`)
-- Below 75% of `FW_CONTEXT_WINDOW`: proceed normally
-- 75-85%: propose only small, bounded tasks; commit first
-- Above 85%: propose only wrap-up actions (commit, learnings, handover)
-- Above 95%: handover immediately, no new work
-- The percentages are the contract. Absolute token counts move with `FW_CONTEXT_WINDOW`
-  (800K default → 600K / 680K / 760K) and must not be written down as if fixed.
+- **Before proposing the next unit of work, check context budget** (`checkpoint.sh budget`: band and free tokens)
+- Green: proceed normally; spawn workers
+- Amber: propose only small, bounded tasks and small workers; commit first
+- Red: propose only wrap-up actions (commit, learnings, handover); spawn none
+- Stop: handover immediately, no new work
+- The bands are one ladder from the spawn reserve R, not fixed percentages: at the 800K default they sit at 650K / 700K / 750K used (Amber / Red / Stop); at 975K, 825K / 875K / 925K. Absolute token counts move with `FW_CONTEXT_WINDOW` and must not be written down as if fixed.
 - **This applies especially in autonomous mode** — without a human to catch the mistake, proposing work that can't complete in remaining context risks losing all uncommitted work
 
 ### Automated Monitoring (Claude Code)
 - **Primary enforcement:** A PreToolUse hook runs `budget-gate.sh` which reads **actual token usage** from the session JSONL transcript and **blocks** Write/Edit/Bash at critical level (exit code 2)
 - **Fallback:** A PostToolUse hook runs `checkpoint.sh` for warnings and auto-handover (T-136)
-- Escalation ladder, as percentages of `FW_CONTEXT_WINDOW` (source of truth:
-  `agents/context/budget-gate.sh`): **75%** ok→warn (note), **85%** warn→urgent
-  (warning), **95%** urgent→critical (**BLOCK**). At the 800K default: 600K / 680K / 760K.
+- Escalation ladder, from one spawn reserve R (source of truth: `lib/budget_ladder.py`, read by
+  `agents/context/budget-gate.sh` and `checkpoint.sh`): **Amber** (warn, note), **Red** (urgent,
+  warning), **Stop** (critical, **BLOCK**). Free tokens: Stop at free ≤ R, Red at free ≤ (1.5 + 0.5f)·R,
+  Amber at free ≤ (2 + f)·R. At the 800K default: 650K / 700K / 750K used. At 975K: 825K / 875K / 925K.
 - At critical, allowed: git commit/add, fw handover/task, reading files, Write/Edit to `.context/` `.tasks/` `.claude/` (wrap-up paths). Blocked: Write/Edit to source files, general Bash
 - Status cached in `.context/working/.budget-status` (JSON: level, tokens, timestamp)
 - Check current usage: `./agents/context/checkpoint.sh status`
@@ -521,7 +522,7 @@ When using Claude Code's Task tool to dispatch sub-agents (Explore, Plan, Code, 
 | Factor | Rule |
 |--------|------|
 | Max parallel agents | **5** |
-| Token headroom | Keep the **spawn reserve** free before dispatching: `min(50K, max(20K, 20K + 5% × (CONTEXT_WINDOW − 200K)))` — 20K at 200K, 35K at 500K, 50K at 800K+ (covers result ingestion) |
+| Token headroom | Keep the **spawn reserve** free before dispatching: `min(50K, max(20K, 20K + 5% × (CONTEXT_WINDOW − 200K)))` — 20K at 200K, 35K at 500K, 50K at 800K+ (covers result ingestion). Spawn by band: Green workers; Amber small bounded workers only; Red and Stop none |
 | When parallel | Tasks are independent, no shared files, no sequential dependency |
 | When sequential | Tasks depend on prior results, or editing same files |
 | Background agents | Use `run_in_background: true` for agents >2K tokens expected output |
@@ -619,7 +620,7 @@ Human ACs represent real verification steps. Unvalidated deliverables carry down
 ### Commit Cadence and Check-In
 After **every commit**, briefly report what was done and ask if the user wants to continue. Do not chain multiple commits without user interaction.
 
-**Structural enforcement (T-139):** The `budget-gate.sh` PreToolUse hook reads actual token usage from the session transcript and **blocks** Write/Edit/Bash tool calls when context reaches critical level (>=95% of `FW_CONTEXT_WINDOW` — 760K at the 800K default). At critical, only git commit, fw handover, and read operations are allowed. The hook writes `.context/working/.budget-status` with current level (ok/warn/urgent/critical) for fast caching. PostToolUse `checkpoint.sh` remains as fallback for warnings and auto-handover.
+**Structural enforcement (T-139):** The `budget-gate.sh` PreToolUse hook reads actual token usage from the session transcript and **blocks** Write/Edit/Bash tool calls when context reaches critical level (the Stop band: 750K used at the 800K default; the bands are one ladder from the spawn reserve). At critical, only git commit, fw handover, and read operations are allowed. The hook writes `.context/working/.budget-status` with current level (ok/warn/urgent/critical) for fast caching. PostToolUse `checkpoint.sh` remains as fallback for warnings and auto-handover.
 
 ### Operator Commands Ship as ONE `runme.sh` Line — standing directive (T-3675)
 

@@ -139,11 +139,7 @@ session.
   operator's call**: when more parallelism would genuinely help, ask the operator
   which cap (10, 15, 20 …) — then `FW_TERMLINK_MAX_WORKERS=N` for that run, or
   `fw config set TERMLINK_MAX_WORKERS N` if they want it kept. Never raise it yourself.
-- **Spawn reserve (operator ruling 2026-10-17, T-4225):** dispatch only while free tokens
-  (`CONTEXT_WINDOW` minus used, from `checkpoint.sh budget`) are at least
-  `min(50K, max(20K, 20K + 5% × (CONTEXT_WINDOW − 200K)))` — 20K at a 200K window, 35K at 500K,
-  50K at 800K and above (this project: 50K). The reserve covers result ingestion. It replaces the old
-  "do not spawn above 60%" and fixed "40K headroom" rules; the 75/85/95% budget bands are unchanged.
+- **Spawn reserve (operator rulings 2026-10-17, T-4225 and T-4226):** the reserve R is `min(50K, max(20K, 20K + 5% × (CONTEXT_WINDOW − 200K)))` — 20K at a 200K window, 35K at 500K, 50K at 800K and above (this project: 50K). It covers result ingestion. Spawn by band (free tokens from `checkpoint.sh budget`): **Green** — spawn workers; **Amber** — small, bounded workers only; **Red and Stop** — spawn none. The bands are §Context Budget Management's ladder. It replaces the old "do not spawn above 60%" and fixed "40K headroom" rules.
 - **Worktrees are OPT-IN ONLY — never the default.** See §Worktree Policy below.
   Parallel work that edits files is serialised in the main checkout unless the
   operator has explicitly instructed a worktree.
@@ -681,19 +677,20 @@ Watchtower `/fabric` surfaces the subsystem overview, filterable component table
 - Prefer `git log --oneline -5` over `git log -5`
 
 ### Work Proposal Rule
-- **Before proposing the next unit of work, check context budget** (`checkpoint.sh status`)
-- Below 75%: proceed normally
-- 75-85%: propose only small, bounded tasks; commit first
-- Above 85%: propose only wrap-up actions (commit, learnings, handover)
-- Above 95%: handover immediately, no new work
+- **Before proposing the next unit of work, check context budget** (`checkpoint.sh budget`: band and free tokens)
+- Green: proceed normally; spawn workers
+- Amber: propose only small, bounded tasks and small workers; commit first
+- Red: propose only wrap-up actions (commit, learnings, handover); spawn none
+- Stop: handover immediately, no new work
 
-**The bands are percentages of `CONTEXT_WINDOW`, never fixed token counts.** Both
-consumers (`agents/context/checkpoint.sh`, `agents/context/budget-gate.sh`) derive
-`TOKEN_WARN/URGENT/CRITICAL` as `CONTEXT_WINDOW * 75|85|95 / 100`, so the ladder moves with
-the cap and no literal needs editing. **This project is set to 975,000** (operator ruling,
-2026-09-30 — `fw config set CONTEXT_WINDOW 975000`, persisted in `.framework.yaml`; was 900,000 from
-2026-09-28), which puts the bands at **731K / 829K / 926K**. The registry default is 800,000 (operator 2026-10-13, T-4147; was 300,000) for projects
-that do not set it.
+**The bands are one ladder, computed from the spawn reserve R, not fixed percentages** (operator ruling 2026-10-17, T-4226). `lib/budget_ladder.py` is the single computation; `checkpoint.sh` and `budget-gate.sh` both read it. With W = `CONTEXT_WINDOW`, R = min(50K, max(20K, 20K + 5% × (W − 200K))), f = clamp((W − 200K)/600K, 0, 1) and free = W − used: **Stop** (critical) when free ≤ R; **Red** (urgent) when free ≤ (1.5 + 0.5f)·R; **Amber** (warn) when free ≤ (2 + f)·R; **Green** (ok) otherwise. Worked values in used tokens: 200K → Amber 160K / Red 170K / Stop 180K; 500K → 412.5K / 438.75K / 465K; 800K → 650K / 700K / 750K; 975K → 825K / 875K / 925K. The level names in machine output stay ok / warn / urgent / critical.
+**This project is set to 975,000** (operator ruling, 2026-09-30 — `fw config set CONTEXT_WINDOW 975000`, persisted in `.framework.yaml`), so the bands sit at **825K / 875K / 925K** used. The registry default is 800,000 (operator 2026-10-13, T-4147) for projects that do not set it.
+
+Quote the band and its free tokens, not a bare percentage, when reasoning about budget — and read the
+live figure from `checkpoint.sh budget` (it prints `band` and `free_tokens`) rather than assuming the default. A session on a
+1M-context model was reported as "91.5% full, wrap-up only" at 274K because the 300K
+default was being used as the denominator; the same measurement against the real cap was
+~30%. **A budget band is a claim about a ratio, and half of that ratio is configuration.**
 
 Quote the *percentage*, not the token figure, when reasoning about budget — and read the
 live number from `checkpoint.sh budget` rather than assuming the default. A session on a
@@ -705,7 +702,7 @@ default was being used as the denominator; the same measurement against the real
 ### Automated Monitoring and Critical Protocol
 
 - **Primary enforcement:** PreToolUse `budget-gate.sh` reads actual token usage from the session JSONL and blocks Write/Edit/Bash at critical (exit code 2). Fallback: PostToolUse `checkpoint.sh` (warnings + auto-handover, T-136).
-- **Escalation ladder:** 75% ok→warn, 85% warn→urgent, 95% urgent→critical (BLOCK) — all percentages of `FW_CONTEXT_WINDOW`, whose registry default is 800K (T-4147; was 300K). **This project is set to 975K**, so the ladder sits at 731K / 829K / 926K. Read the live figure from `checkpoint.sh budget`; do not assume the default.
+- **Escalation ladder:** Amber (warn) → Red (urgent) → Stop (critical, BLOCK) — free-token thresholds from one spawn reserve R (T-4226; §Context Budget Management). **This project is set to 975K**, so the bands sit at 825K / 875K / 925K used. Read the live figure from `checkpoint.sh budget`; do not assume the default.
 - **At critical (or if you see a SESSION WRAPPING UP block):** only wrap-up is allowed. Allowed: git commit/add, `fw handover`, `fw task update`, reading files, Write/Edit to `.context/` `.tasks/` `.claude/`. Blocked: Write/Edit to source files, general Bash.
 - Status cached in `.context/working/.budget-status` (JSON: level, tokens, timestamp). Check via `./agents/context/checkpoint.sh status`. If no transcript available, fails open (PostToolUse fallback handles it).
 - Wrap up calmly — task files already carry all essential state from continuous capture.
@@ -920,7 +917,7 @@ Why the verb exists rather than the judgement call: the delegation the operator 
 ### Commit Cadence and Check-In
 After **every commit**, briefly report what was done and ask if the user wants to continue. Do not chain multiple commits without user interaction.
 
-**Structural enforcement (T-139, T-478, T-596):** The `budget-gate.sh` PreToolUse hook reads actual token usage from the session transcript and **blocks** Write/Edit/Bash tool calls when context reaches critical level (95% of `CONTEXT_WINDOW` — 760K at the 800K registry default, 926K at this project's 975K). At critical, only git commit, fw handover, and read operations are allowed. The hook writes `.context/working/.budget-status` with current level (ok/warn/urgent/critical) for fast caching. PostToolUse `checkpoint.sh` remains as fallback for warnings and auto-handover. Context window size is configurable via `FW_CONTEXT_WINDOW` env var (registry default: 800K).
+**Structural enforcement (T-139, T-478, T-596):** The `budget-gate.sh` PreToolUse hook reads actual token usage from the session transcript and **blocks** Write/Edit/Bash tool calls when context reaches critical level (the Stop band: 750K used at the 800K registry default, 925K at this project's 975K — §Context Budget Management, T-4226). At critical, only git commit, fw handover, and read operations are allowed. The hook writes `.context/working/.budget-status` with current level (ok/warn/urgent/critical) for fast caching. PostToolUse `checkpoint.sh` remains as fallback for warnings and auto-handover. Context window size is configurable via `FW_CONTEXT_WINDOW` env var (registry default: 800K).
 
 ### Operator Commands Ship as ONE `runme.sh` Line — standing directive (T-3675)
 
@@ -1730,7 +1727,7 @@ When communicating with agents on other machines via TermLink remote, choose the
 
 ### Budget Rules
 
-- **Spawn only while the spawn reserve is free** (20K at a 200K window … 50K at 800K+, §Parallelism limits, T-4225) — spawning is expensive, respect budget
+- **Spawn by band** — Green: workers; Amber: small bounded workers only; Red and Stop: none (§Parallelism limits, T-4226) — spawning is expensive, respect budget
 - **Always cleanup before session end** — `fw termlink cleanup --dry-run`, then `--yes` only when no uncollected result is listed (T-3651)
 - **Max 5 parallel workers** — same limit as sub-agent dispatch protocol
 - **The spawn reserve includes result ingestion** — no separate fixed headroom (T-4225)
