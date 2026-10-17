@@ -390,3 +390,13 @@ bvp_scores_proposed:
   each run (agents/termlink/termlink.sh, project_dir), so a greenfield target is never empty after a dispatched
   attempt. Decide: results belong in the dispatcher's project, not the target — or in a temp dir when the target
   has no framework yet.
+
+### 2026-10-17 — run 3 result (dimitri-mint-dev msg e3c20734, aef-install-20261017T144241Z-dimitrimintdev)
+- Unchanged GitHub master 704c9988 under `env -u` for the six vars INSTALLS (fw v1.8.10 vendored, doctor exit 0,
+  31 WARN, 0 FAIL). So the init failure is the inherited env, not master: this task's fix is to make bin/fw / install.sh
+  refuse or ignore an inherited FRAMEWORK_ROOT that does not contain lib/init.sh (G-116 class), not a master defect.
+- Hooks loaded mid-session in the worker and every gate crashed missing-hook (fail-open) — likely the same inherited
+  FRAMEWORK_ROOT reaching the hooks. Same root, kept here.
+- Two independent defects filed separately (one bug = one task): install.sh in a target without .git, inside an
+  enclosing repo at / (T-4251); dispatch preamble's plain `fw sidecar inbox` marks other projects' DMs read (T-4252).
+- Record: /opt/0909-boot-into-timeshift-snapshots/.context/install-findings/ (F-01..F-24).
