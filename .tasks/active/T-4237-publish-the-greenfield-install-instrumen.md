@@ -1,8 +1,16 @@
 ---
 id: T-4237
-name: "Publish the Greenfield Install (Instrumented Run) prompt v2 in the AEF README, and act on the onboarding review behind it (dimitri-mint-dev P-016/P-017, their T-118)"
+name: "Publish the Greenfield Install (Instrumented Run) prompt v2 in the AEF README,
+  and act on the onboarding review behind it (dimitri-mint-dev P-016/P-017, their
+  T-118)"
 description: >
-  Pickups P-016 (prompt v2, verbatim) and P-017 (review: 20 claims vs fw v1.8.10, blockers B1 findings root vs project boundary, B2 ungoverned pre-restart session, B3 PEP 668 Watchtower deps, B4 inception start flags; 8 onboarding proposals). Inputs saved verbatim: docs/reports/T-XXXX-inputs/ (see Updates). Question: does AEF publish v2 (as is, edited, or as a linked doc) and which framework fixes must land first so the prompt does not hit known defects? Publishing to the public README is the operator's decision.
+  Pickups P-016 (prompt v2, verbatim) and P-017 (review: 20 claims vs fw v1.8.10,
+  blockers B1 findings root vs project boundary, B2 ungoverned pre-restart session,
+  B3 PEP 668 Watchtower deps, B4 inception start flags; 8 onboarding proposals). Inputs
+  saved verbatim: docs/reports/T-XXXX-inputs/ (see Updates). Question: does AEF publish
+  v2 (as is, edited, or as a linked doc) and which framework fixes must land first
+  so the prompt does not hit known defects? Publishing to the public README is the
+  operator's decision.
 
 status: captured
 workflow_type: inception
@@ -12,8 +20,8 @@ tags: []
 components: []
 related_tasks: []
 created: 2026-10-17T13:42:08Z
-last_update: 2026-10-17T13:42:08Z
-date_finished: null
+last_update: '2026-10-17T13:46:22Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -22,6 +30,33 @@ target_blast_radius: 3            # int 0..9. Anticipated component count of the
                                   # Guide: 0=docs only, 1=single file, 3=small subsystem (S), 5=cross-subsystem (M), 7=multi-arc (L), 9=framework-wide (XL).
 voi_score: 0.5                    # float 0..1. Value of Information — expected value of resolving this question,
                                   # independent of build cost. Higher when answer affects many tasks or unblocks a strategic decision. Required.
+cost_estimate_proposed:
+  - ts: '2026-10-17T13:45:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 4
+      effort: 6
+    rationale: blast_radius=3 (target_blast_radius:inception-T-2189); tier=4 
+      (workflow:inception); effort=6 (lines=112,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-17T13:46:22Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 2
+      D2: 2
+      D3: 2
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 2
+      F3: 2
+      F1: 2
+      F2: 2
+    rationale: D1=2 (no-signal); D2=2 (no-signal); D3=2 (no-signal); D4=2 
+      (no-signal); F-RECALL=2 (no-signal); F-AUTONOMY=2 (no-signal); F3=2 
+      (no-signal); F1=2 (no-signal); F2=2 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4237: Publish the Greenfield Install (Instrumented Run) prompt v2 in the AEF README, and act on the onboarding review behind it (dimitri-mint-dev P-016/P-017, their T-118)
@@ -135,3 +170,12 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-10-17 — Dialogue Log (operator, in this session)
+- Operator: "in principle we're okay to publish", but v2 was revised from review only ("thinking up that something
+  would be better without actually doing it"). Wait for the version refined by real runs (dimitri-mint-dev's live
+  run in /opt/0909-boot-into-timeshift-snapshots and any further runs).
+- Asked dimitri-mint-dev for: the tested prompt (v2.1+), the run evidence (run ids, findings per step/surface/class/
+  severity), the change made per finding (and what was left out and why), and test feedback incl. onboarding time.
+- Then: update the GitHub README from that version. The GO decision is recorded by the operator in Watchtower
+  (/inception/T-4237) when the tested version is in; this task stays open until then.
