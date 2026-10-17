@@ -15,7 +15,7 @@ description: >
   config and symbolic-ref), so they need argument inspection or removal from the verb-only
   allowlist.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -33,7 +33,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-09T10:40:43Z
-last_update: '2026-08-17T12:36:10Z'
+last_update: '2026-10-17T22:30:19Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -63,6 +63,15 @@ cost_estimate_proposed:
       effort: 7
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=7 (lines=179,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-17T22:30:19Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=196,acs=7)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-09T10:45:12Z'
@@ -94,8 +103,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `is_bash_safe_command` gates the write forms: bare `git stash` and `git stash push|pop|apply|drop|clear`; `git branch -d|-D|-m|-M|-c|-C|--delete|--move|--copy x` and `git branch <newname>`; `git tag -d|--delete x` and `git tag <name>` (create)
+- [x] The read forms stay SAFE: `git stash list|show`, `git branch`, `git branch -a|-r|-v|--list p|--merged m|--contains c|--show-current`, `git tag`, `git tag -l|--list p`, `git tag --contains c`
+- [x] Regression bats `tests/unit/t2889_git_refverb_args.bats` fails against the pre-fix safe-commands.sh and passes after
+- [x] Existing `context_safe_commands.bats`, `safe_commands_*.bats`, `t3096_safe_commands_wrappers.bats`, `test_safe_commands_git_commit.bats` and `check_active_task_*.bats` show no new failures (only the known pre-existing T-2888 test 42; `stash` added to its mutating denylist so its residue is unchanged)
+- [ ] T-3746's `has_bash_write_pattern` changes are untouched; `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -194,6 +206,9 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+out=$(bats tests/unit/t2889_git_refverb_args.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bash -c 'source agents/context/lib/safe-commands.sh; ! is_bash_safe_command "git stash" && ! is_bash_safe_command "git branch -d x" && ! is_bash_safe_command "git tag -d x" && is_bash_safe_command "git stash list" && is_bash_safe_command "git branch" && is_bash_safe_command "git tag -l"'
+bin/fw vendor self --check
 
 ## RCA
 
@@ -210,6 +225,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** with no active task, `git stash`, `git branch -d x` and `git tag -d x` pass the task gate's Bash fast path (`check-active-task.sh:269`, `is_bash_safe_command` → exit 0), yet each writes: stash rewrites the working tree and refs/stash, the other two delete refs.
+
+**Root cause:** `agents/context/lib/safe-commands.sh:521` allowlisted `branch`, `tag` and `stash` on the git sub-verb alone (`awk '{print $2}'`). All three are dual-mode verbs whose read and write forms differ only by arguments — the same class the file already excludes `config` and `symbolic-ref` for — and `has_bash_write_pattern` has no git-argument rules, so nothing downstream caught the write forms.
+
+**Why structurally allowed:** the allowlist grew one verb per deadlock incident (T-2052/T-2054/T-2462/T-2878/T-2888), each driven by a *false-block* report. False-permits produce no symptom — the command just runs — so the dangerous direction (safe-commands.sh:82) had no feedback loop, and no test asserted any git write form is gated. Risk scope: Tier 0 (`check-tier0.sh`) still independently catches `git branch -D` (and other forced deletions it maps), so the real exposure was `git stash` (working-tree mutation, recoverable but silent), `git branch -d/-m/-c`, branch/tag creation, and `git tag -d`.
+
+**Prevention:** the three verbs are now decided by argument inspection (`_fw_git_refverb_is_read`), defaulting to GATED for anything not a recognised read form; `tests/unit/t2889_git_refverb_args.bats` pins both directions (write forms gated, read forms safe) per verb, so a future verb-only re-widening fails a test.
 
 ## Evolution
 
@@ -262,3 +285,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2889-git-stash-classifies-safe-but-writes-the.md
 - **Context:** Initial task creation
+
+### 2026-10-17T22:24:51Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

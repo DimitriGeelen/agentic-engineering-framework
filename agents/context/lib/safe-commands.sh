@@ -520,8 +520,16 @@ _fw_single_command_is_safe() {
                 # residue: `git symbolic-ref HEAD refs/heads/x` writes. Same
                 # reason `config` stays out — a verb whose read and write forms
                 # differ only by an argument cannot be decided on the verb alone.
-                status|log|diff|show|branch|remote|describe|rev-parse|tag|stash|shortlog|blame|ls-files|ls-tree|cat-file|name-rev|reflog)
+                status|log|diff|show|remote|describe|rev-parse|shortlog|blame|ls-files|ls-tree|cat-file|name-rev|reflog)
                     return 0
+                    ;;
+                # T-2889: branch, tag and stash are the same class as config —
+                # read and write forms differ only by arguments (`git stash`
+                # stashes the working tree, `git branch -d x` / `git tag -d x`
+                # delete refs). Decided on the arguments, gated when unsure.
+                branch|tag|stash)
+                    _fw_git_refverb_is_read "$git_sub" "$cmd" && return 0
+                    return 1
                     ;;
                 rev-list|ls-remote|merge-base|grep|for-each-ref|count-objects|check-ignore|verify-commit|var|whatchanged|cherry|diff-tree|show-ref|help)
                     return 0
@@ -1272,6 +1280,75 @@ _fw_fetch_writes_file() {
         return 0
     fi
     return 1
+}
+
+# T-2889: is this `git branch|tag|stash` clause a READ form?
+#
+# The three verbs list on their own and write with arguments, so the verb alone
+# cannot decide them (the reason `config` and `symbolic-ref` are absent from the
+# git allowlist). Words are split plainly, NOT through _fw_strip_quoted: that
+# drops quoted words, which would turn `git branch "new"` (a create) into a bare
+# listing. Plain splitting can only ADD positional words, and an unexpected
+# positional reads as a write — the failure direction is toward the task gate.
+#
+#   stash   read only as `stash list` / `stash show`; bare stash and every other
+#           sub-verb (push, pop, apply, drop, clear, save, create, store, branch)
+#           write the working tree or refs/stash.
+#   branch  write on any of -d -D -m -M -c -C -f -u -t (alone or in a short-flag
+#           cluster) or --delete/--move/--copy/--force/--track/--no-track/
+#           --set-upstream-to/--unset-upstream/--edit-description/--create-reflog.
+#           A positional word is a branch to create unless a list-mode option
+#           (-l/--list or --contains/--no-contains/--merged/--no-merged/
+#           --points-at, which imply --list) is present.
+#   tag     write on any of -d -a -s -u -f -m -F -e (alone or clustered) or
+#           --delete/--annotate/--sign/--local-user/--force/--message/--file/
+#           --edit. A positional word is a tag to create unless a list-mode
+#           option (-l/--list/-n*/--contains/--no-contains/--merged/--no-merged/
+#           --points-at) or -v/--verify is present.
+_fw_git_refverb_is_read() {
+    local verb="$1" cmd="$2"
+    local -a words
+    read -ra words <<< "$cmd"
+    # words[0]=git, words[1]=verb; arguments start at index 2.
+    local args=("${words[@]:2}")
+
+    if [ "$verb" = "stash" ]; then
+        case "${args[0]:-}" in list|show) return 0 ;; esac
+        return 1
+    fi
+
+    local w_short w_long listing=0 positional=0 endopts=0 tok
+    if [ "$verb" = "branch" ]; then
+        w_short='dDmMcCfut'
+        w_long='^--(delete|move|copy|force|track(=.*)?|no-track|set-upstream-to(=.*)?|unset-upstream|edit-description|create-reflog)$'
+    else
+        w_short='dasufmFe'
+        w_long='^--(delete|annotate|sign|local-user(=.*)?|force|message(=.*)?|file(=.*)?|edit)$'
+    fi
+    for tok in "${args[@]}"; do
+        if [ "$endopts" -eq 1 ]; then positional=1; continue; fi
+        case "$tok" in
+            --) endopts=1 ;;
+            -l|--list|--contains|--contains=*|--no-contains|--no-contains=*|\
+            --merged|--merged=*|--no-merged|--no-merged=*|--points-at|--points-at=*)
+                listing=1 ;;
+            --*)
+                [[ "$tok" =~ $w_long ]] && return 1
+                [ "$verb" = "tag" ] && [ "$tok" = "--verify" ] && listing=1
+                ;;
+            -?*)
+                [[ "${tok:1}" == *["$w_short"]* ]] && return 1
+                if [ "$verb" = "tag" ]; then
+                    [[ "$tok" == -n* || "${tok:1}" == *[lv]* ]] && listing=1
+                else
+                    [[ "${tok:1}" == *l* ]] && listing=1
+                fi
+                ;;
+            *) positional=1 ;;
+        esac
+    done
+    [ "$positional" -eq 1 ] && [ "$listing" -eq 0 ] && return 1
+    return 0
 }
 
 # T-3238: does this SINGLE find clause carry an action/mutation predicate?
