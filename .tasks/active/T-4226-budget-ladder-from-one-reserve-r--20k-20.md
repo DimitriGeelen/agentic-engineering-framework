@@ -108,7 +108,7 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] One shared computation returns R, f and the three thresholds for a given CONTEXT_WINDOW; checkpoint.sh and budget-gate.sh both use it (no second copy of the formula)
 - [x] Tests pin the worked values (200K: 160K/170K/180K; 500K: 412.5K/438.75K/465K; 800K: 650K/700K/750K; 975K: 825K/875K/925K used) and each boundary (threshold, threshold − 1)
-- [ ] budget-gate.sh blocks exactly from Stop and allows below it; its existing allow-list behaviour at critical is unchanged (existing budget-gate suites green)
+- [x] budget-gate.sh blocks exactly from Stop and allows below it; its existing allow-list behaviour at critical is unchanged (existing budget-gate suites green, except tests/integration/budget_gate.bats #28 "T-2403 folds directive", red before this change too — verified by the worker on the pre-change copy; filed for triage under T-4221. tests/governance/test_pretooluse_gates.bats 13/13 green on 2026-10-17, live focus.yaml unchanged by the run)
 - [x] `checkpoint.sh budget`/`status` show the level and the free tokens to each band; T-4171 operator notices still fire at warn and urgent
 - [x] CLAUDE.md (§Context Budget Management, §Automated Monitoring, §Parallelism limits, §Budget Rules) and lib/templates/claude-project.md describe the ladder and the spawn rule (Green: workers; Amber: small only; Red/Stop: none); no stale 75/85/95% band statement remains
 
