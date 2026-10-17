@@ -450,6 +450,11 @@ def test_start_replaces_a_receiver_and_watcher_running_stale_code(proj, monkeypa
     assert _wait(lambda: watcher.supervisor_alive())
     old_recv = lifecycle.read_triple_file()["pid"]
     old_sup = watcher.read_pid("supervisor")
+    # T-4220: code_mtime() is the newest mtime of the REAL lib/sidecar/*.py on disk, so this first
+    # assert depends on the checkout's mtimes: any write to those files after the receiver started
+    # makes a fresh process look stale. One run in five failed here (fast, 7s), not reproduced on
+    # demand. Pin "code older than the process" so the assert tests the mechanism alone.
+    monkeypatch.setattr(watcher, "code_mtime", lambda: 0.0)
     assert not watcher.is_stale(old_recv)
     monkeypatch.setattr(watcher, "code_mtime", lambda: time.time() + 3600)   # code "changed"
     assert watcher.is_stale(old_recv) and watcher.is_stale(old_sup)
