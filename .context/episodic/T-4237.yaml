@@ -1,0 +1,103 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4237: Publish the Greenfield Install (Instrumented Run) prompt v2 in the AEF README, and act on the onboarding review behind it (dimitri-mint-dev P-016/P-017, their T-118)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T16:06:17Z
+# ============================================================================
+
+task_id: T-4237
+task_name: "Publish the Greenfield Install (Instrumented Run) prompt v2 in the AEF README, and act on the onboarding review behind it (dimitri-mint-dev P-016/P-017, their T-118)"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T13:42:08Z
+completed: 2026-10-17T16:06:00Z
+duration_days: 0
+updates_count: 5
+first_commit: 2026-10-17T15:45:04+02:00
+last_commit: 2026-10-17T18:06:04+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file greenfield prompt inception (P-016/P-017 inputs saved verbatim) + 7 framework findings T-4238..T-4244. operator dialogue — publish in principle, but only the version refined by real greenfield runs. save greenfield prompt v2.1 verbatim (dimitri-mint-dev P-020, tested in 3 live runs). save the v2.1 evidence package verbatim (P-021: runs, change per finding, test feedback, onboarding time). recommendation updated for v2.1 (publish now with marked workarounds, v2.2 after the fixes). inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'recommendation updated for v2.1 (publish now with marked workarounds, v2.2 after the fixes)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'docs/reports/T-4237-inputs/aef-greenfield-install-prompt-v2.1.md'
+  - 'docs/reports/T-4237-inputs/P-016-feature-proposal.yaml'
+  - 'docs/reports/T-4237-inputs/P-017-feature-proposal.yaml'
+  - 'docs/reports/T-4237-inputs/P-020-feature-proposal.yaml'
+  - 'docs/reports/T-4237-inputs/P-021-feature-proposal.yaml'
+  - 'docs/reports/T-4237-inputs/T-121-greenfield-v2.1-changes-and-onboarding-evaluation.md'
+  - '.tasks/active/T-4237-publish-the-greenfield-install-instrumen.md'
+  - '.tasks/active/T-4238-installer-and-fw-doctor-do-not-check-pyy.md'
+  - '.tasks/active/T-4239-watchtower-binds-0000-with-no-authentica.md'
+  - '.tasks/active/T-4240-fw-init---provider-claude-prints-no-rest.md'
+  - '.tasks/active/T-4241-fw-work-on---help-treats---help-as-a-tas.md'
+  - '.tasks/active/T-4242-watchtower-inception-decide-left-a-stale.md'
+  - '.tasks/active/T-4243-fw-pickup-send-to-a-termlink-session-tha.md'
+  - '.tasks/active/T-4244-consumer-claudemd-template-says-use-binf.md'
+  - '.tasks/completed/T-4236-v1811-release-notes-upgrade-checklist-cl.md'
+  - '.tasks/completed/T-4237-publish-the-greenfield-install-instrumen.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T15:45:04'
+    action: 'T-4237: file greenfield prompt inception (P-016/P-017 inputs saved verbatim) + 7 framework findings T-4238..T-4244'
+  - time: '2026-10-17T16:21:18'
+    action: 'T-4237: operator dialogue — publish in principle, but only the version refined by real greenfield runs'
+  - time: '2026-10-17T17:14:05'
+    action: 'T-4237: save greenfield prompt v2.1 verbatim (dimitri-mint-dev P-020, tested in 3 live runs)'
+  - time: '2026-10-17T17:14:39'
+    action: 'T-4237: save the v2.1 evidence package verbatim (P-021: runs, change per finding, test feedback, onboarding time)'
+  - time: '2026-10-17T17:14:56'
+    action: 'T-4237: recommendation updated for v2.1 (publish now with marked workarounds, v2.2 after the fixes)'
+  - time: '2026-10-17T18:06:04'
+    action: 'T-4237: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 143 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 143
+  commits: 6
+  files_changed: 15
+  lines_added: 4074
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4237-publish-the-greenfield-install-instrumen.md
+generated_by: context-agent-hybrid
