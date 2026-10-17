@@ -145,7 +145,8 @@ EOF
 @test "T-4226: both gauges read the one ladder (lib/budget_ladder.py), not fixed percentages" {
     for f in agents/context/checkpoint.sh agents/context/budget-gate.sh; do
         grep -q 'lib/budget_ladder.py' "$REPO_ROOT/$f"
-        ! grep -qE 'CONTEXT_WINDOW \* (75|85|95) / 100' "$REPO_ROOT/$f"
+        run grep -qE 'CONTEXT_WINDOW \* (75|85|95) / 100' "$REPO_ROOT/$f"
+        [ "$status" -ne 0 ]
     done
 }
 

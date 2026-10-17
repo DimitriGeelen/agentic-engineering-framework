@@ -366,6 +366,13 @@ _budget_band() {
     fi
 }
 
+# T-4226: tokens still to add before a band's threshold is reached (0 once reached).
+_tokens_to_go() {
+    local to_go=$(( $1 - $2 ))
+    [ "$to_go" -lt 0 ] && to_go=0
+    echo "$to_go"
+}
+
 warn_by_tokens() {
     local tokens="$1"
     local pct=$((tokens * 100 / CONTEXT_WINDOW))
@@ -635,6 +642,7 @@ except Exception: print('')
                 pct=$((tokens * 100 / CONTEXT_WINDOW))
                 echo "Context tokens: ${tokens} (~${pct}% of the ${CONTEXT_WINDOW}-token budget cap)"
                 echo "Band: $(_budget_band "$tokens") — free $((CONTEXT_WINDOW - tokens)) tokens; spawn reserve R=${BUDGET_RESERVE} (Green spawns, Amber small only, Red and Stop none)"
+                echo "To each band: Amber at ${TOKEN_WARN} used (+$(_tokens_to_go "$TOKEN_WARN" "$tokens")), Red at ${TOKEN_URGENT} (+$(_tokens_to_go "$TOKEN_URGENT" "$tokens")), Stop at ${TOKEN_CRITICAL} (+$(_tokens_to_go "$TOKEN_CRITICAL" "$tokens"))"
                 echo "Model: ${model:-unknown} — the cap is a configured dial, not this model's window."
                 echo "  Raise or lower it with: $(_fw_cmd) config set CONTEXT_WINDOW <tokens>"
             else
