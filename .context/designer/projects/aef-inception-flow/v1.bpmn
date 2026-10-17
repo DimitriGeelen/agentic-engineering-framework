@@ -26,25 +26,25 @@
         <bpmn:extensionElements>
           <aef:laneMeta abbr="agt" authority="initiative" height="220"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>agt_0_question</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_start_question</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>agt_1_file</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_2_artifact</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_gw_outcome</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_4_children</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_8_handoff_tl</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_5_archive</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_6_go</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_7_closed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_create</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_gw_decision</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_file</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_link_handoff</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_archive</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_end_build</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_end_question</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="human" name="Human · Sovereignty">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="hum" authority="sovereignty" height="180"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>hum_3_inception</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_1_explore</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
 
-    <bpmn:startEvent id="agt_0_question" name="question identified">
+    <bpmn:startEvent id="agt_start_question" name="question identified">
       <bpmn:extensionElements>
         <aef:uid value="if_question"/>
         <aef:position x="120.0" y="120.0"/>
@@ -63,7 +63,7 @@
       <bpmn:outgoing>if_f2</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_2_artifact" name="create research artifact FIRST (C-001) — docs/reports/T-XXX, dialogue log, incremental commits">
+    <bpmn:serviceTask id="agt_2_create" name="create research artifact FIRST (C-001) — docs/reports/T-XXX, dialogue log, incremental commits">
       <bpmn:extensionElements>
         <aef:uid value="if_artifact"/>
         <aef:position x="440.0" y="120.0"/>
@@ -73,7 +73,7 @@
       <bpmn:outgoing>if_f3</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:subProcess id="hum_3_inception" name="explore the question — go/no-go">
+    <bpmn:subProcess id="hum_1_explore" name="explore the question — go/no-go">
       <bpmn:extensionElements>
         <aef:uid value="if_inception"/>
         <aef:position x="620.0" y="340.0"/>
@@ -88,7 +88,7 @@
       <bpmn:outgoing>if_f4</bpmn:outgoing>
     </bpmn:subProcess>
 
-    <bpmn:exclusiveGateway id="agt_gw_outcome" name="decision?">
+    <bpmn:exclusiveGateway id="agt_gw_decision" name="decision?">
       <bpmn:extensionElements>
         <aef:uid value="if_gw_outcome"/>
         <aef:position x="800.0" y="120.0"/>
@@ -98,7 +98,7 @@
       <bpmn:outgoing>if_f6</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:serviceTask id="agt_4_children" name="file build children (GO-scope traceability: inception_decisions / unlocks_inception_decision, T-1984)">
+    <bpmn:serviceTask id="agt_4_file" name="file build children (GO-scope traceability: inception_decisions / unlocks_inception_decision, T-1984)">
       <bpmn:extensionElements>
         <aef:uid value="if_children"/>
         <aef:position x="960.0" y="60.0"/>
@@ -109,7 +109,7 @@
       <bpmn:outgoing>if_f9</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:intermediateThrowEvent id="agt_8_handoff_tl" name="Handoff → task lifecycle">
+    <bpmn:intermediateThrowEvent id="agt_link_handoff" name="Handoff → task lifecycle">
       <bpmn:extensionElements>
         <aef:uid value="if_handoff_tl"/>
         <aef:position x="1260.0" y="140.0"/>
@@ -119,7 +119,7 @@
       <bpmn:incoming>if_f9</bpmn:incoming>
     </bpmn:intermediateThrowEvent>
 
-    <bpmn:serviceTask id="agt_5_archive" name="archive: completed/ + episodic; on DEFER set revisit_at + revisit_evidence_needed (T-1451)">
+    <bpmn:serviceTask id="agt_3_archive" name="archive: completed/ + episodic; on DEFER set revisit_at + revisit_evidence_needed (T-1451)">
       <bpmn:extensionElements>
         <aef:uid value="if_archive"/>
         <aef:position x="960.0" y="200.0"/>
@@ -129,7 +129,7 @@
       <bpmn:outgoing>if_f8</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:endEvent id="agt_6_go" name="build slices live">
+    <bpmn:endEvent id="agt_end_build" name="build slices live">
       <bpmn:extensionElements>
         <aef:uid value="if_done_go"/>
         <aef:position x="1120.0" y="60.0"/>
@@ -138,7 +138,7 @@
       <bpmn:incoming>if_f7</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:endEvent id="agt_7_closed" name="question closed (revisit condition may re-open)">
+    <bpmn:endEvent id="agt_end_question" name="question closed (revisit condition may re-open)">
       <bpmn:extensionElements>
         <aef:uid value="if_done_closed"/>
         <aef:position x="1120.0" y="200.0"/>
@@ -147,31 +147,31 @@
       <bpmn:incoming>if_f8</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:sequenceFlow id="if_f1" sourceRef="agt_0_question" targetRef="agt_1_file">
+    <bpmn:sequenceFlow id="if_f1" sourceRef="agt_start_question" targetRef="agt_1_file">
       <bpmn:extensionElements><aef:uid value="if_e1"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="if_f2" sourceRef="agt_1_file" targetRef="agt_2_artifact">
+    <bpmn:sequenceFlow id="if_f2" sourceRef="agt_1_file" targetRef="agt_2_create">
       <bpmn:extensionElements><aef:uid value="if_e2"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="if_f3" sourceRef="agt_2_artifact" targetRef="hum_3_inception">
+    <bpmn:sequenceFlow id="if_f3" sourceRef="agt_2_create" targetRef="hum_1_explore">
       <bpmn:extensionElements><aef:uid value="if_e3"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="if_f4" sourceRef="hum_3_inception" targetRef="agt_gw_outcome">
+    <bpmn:sequenceFlow id="if_f4" sourceRef="hum_1_explore" targetRef="agt_gw_decision">
       <bpmn:extensionElements><aef:uid value="if_e4"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="if_f5" name="GO" sourceRef="agt_gw_outcome" targetRef="agt_4_children">
+    <bpmn:sequenceFlow id="if_f5" name="GO" sourceRef="agt_gw_decision" targetRef="agt_4_file">
       <bpmn:extensionElements><aef:uid value="if_e5"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="if_f6" name="NO-GO / DEFER" sourceRef="agt_gw_outcome" targetRef="agt_5_archive">
+    <bpmn:sequenceFlow id="if_f6" name="NO-GO / DEFER" sourceRef="agt_gw_decision" targetRef="agt_3_archive">
       <bpmn:extensionElements><aef:uid value="if_e6"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="if_f7" sourceRef="agt_4_children" targetRef="agt_6_go">
+    <bpmn:sequenceFlow id="if_f7" sourceRef="agt_4_file" targetRef="agt_end_build">
       <bpmn:extensionElements><aef:uid value="if_e7"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="if_f8" sourceRef="agt_5_archive" targetRef="agt_7_closed">
+    <bpmn:sequenceFlow id="if_f8" sourceRef="agt_3_archive" targetRef="agt_end_question">
       <bpmn:extensionElements><aef:uid value="if_e8"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="if_f9" name="build children enter task lifecycle" sourceRef="agt_4_children" targetRef="agt_8_handoff_tl">
+    <bpmn:sequenceFlow id="if_f9" name="build children enter task lifecycle" sourceRef="agt_4_file" targetRef="agt_link_handoff">
       <bpmn:extensionElements><aef:uid value="if_e9"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
   </bpmn:process>

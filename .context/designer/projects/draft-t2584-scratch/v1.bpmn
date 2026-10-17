@@ -20,7 +20,7 @@
         <bpmn:extensionElements>
           <aef:laneMeta abbr="hum" authority="sovereignty" height="130"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>hum_1_handoff</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_link_handoff</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="framework" name="Framework · Authority">
         <bpmn:extensionElements>
@@ -34,7 +34,7 @@
       </bpmn:lane>
     </bpmn:laneSet>
 
-    <bpmn:intermediateThrowEvent id="hum_1_handoff" name="Handoff →">
+    <bpmn:intermediateThrowEvent id="hum_link_handoff" name="Handoff →">
       <bpmn:extensionElements>
         <aef:uid value="n_44ecc63a"/>
         <aef:position x="778.8" y="1095.6"/>

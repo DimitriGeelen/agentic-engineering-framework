@@ -69,35 +69,35 @@
         <bpmn:extensionElements>
           <aef:laneMeta abbr="hum" authority="sovereignty" height="180"/>
         </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_start_operator</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_end_run</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>hum_1_operator</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>hum_3_run</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>hum_2_operator</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="framework" name="Framework · Authority">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="fw" authority="authority" height="200"/>
         </bpmn:extensionElements>
         <bpmn:flowNodeRef>fw_1_supervisor</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_5_handover</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_6_cross</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_2_budget</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_3_stop</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_4_run</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_7_sessionstart</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_2_handover</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_3_cross</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_gw_budget</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_gw_stop</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_gw_run</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_gw_sessionstart</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="agent" name="Agent · Initiative">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="agt" authority="initiative" height="351"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>agt_3_run</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_5_run</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_end_run</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_end_run_2</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>agt_1_session</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>agt_2_work</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_4_let</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_let</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
 
-    <bpmn:startEvent id="hum_1_operator" name="operator arms the run — arc + run cap">
+    <bpmn:startEvent id="hum_start_operator" name="operator arms the run — arc + run cap">
       <bpmn:extensionElements>
         <aef:uid value="crl_arm"/>
         <aef:position x="121.7" y="133.7"/>
@@ -106,7 +106,7 @@
       <bpmn:outgoing>flow_1</bpmn:outgoing>
     </bpmn:startEvent>
 
-    <bpmn:endEvent id="agt_3_run" name="run complete — arc drained">
+    <bpmn:endEvent id="agt_end_run" name="run complete — arc drained">
       <bpmn:extensionElements>
         <aef:uid value="crl_done_arc"/>
         <aef:position x="1009.4" y="534.0"/>
@@ -115,7 +115,7 @@
       <bpmn:incoming>flow_13</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:endEvent id="agt_5_run" name="run complete — cap reached">
+    <bpmn:endEvent id="agt_end_run_2" name="run complete — cap reached">
       <bpmn:extensionElements>
         <aef:uid value="crl_done_cap"/>
         <aef:position x="2054.2" y="555.6"/>
@@ -124,7 +124,7 @@
       <bpmn:incoming>flow_14</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:endEvent id="hum_3_run" name="run halted — operator kill switch">
+    <bpmn:endEvent id="hum_end_run" name="run halted — operator kill switch">
       <bpmn:extensionElements>
         <aef:uid value="crl_done_halt"/>
         <aef:position x="2066.0" y="133.7"/>
@@ -170,7 +170,7 @@
       <bpmn:outgoing>flow_4</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_4_let" name="let the current task or prompt COMPLETE">
+    <bpmn:serviceTask id="agt_3_let" name="let the current task or prompt COMPLETE">
       <bpmn:extensionElements>
         <aef:uid value="crl_finish"/>
         <aef:position x="1176.9" y="520.0"/>
@@ -180,7 +180,7 @@
       <bpmn:outgoing>flow_15</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="fw_5_handover" name="handover protocol — precompact routine, compaction-grade">
+    <bpmn:serviceTask id="fw_2_handover" name="handover protocol — precompact routine, compaction-grade">
       <bpmn:extensionElements>
         <aef:uid value="crl_handover"/>
         <aef:position x="1347.1" y="292.0"/>
@@ -190,7 +190,7 @@
       <bpmn:outgoing>flow_16</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="fw_6_cross" name="cross the boundary — /clear, or respawn">
+    <bpmn:serviceTask id="fw_3_cross" name="cross the boundary — /clear, or respawn">
       <bpmn:extensionElements>
         <aef:uid value="crl_boundary"/>
         <aef:position x="1530.2" y="292.0"/>
@@ -200,7 +200,7 @@
       <bpmn:outgoing>flow_17</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:userTask id="hum_2_operator" name="operator rules on the blocking gate">
+    <bpmn:userTask id="hum_1_operator" name="operator rules on the blocking gate">
       <bpmn:extensionElements>
         <aef:uid value="crl_gate"/>
         <aef:position x="789.1" y="119.7"/>
@@ -210,7 +210,7 @@
       <bpmn:outgoing>flow_11</bpmn:outgoing>
     </bpmn:userTask>
 
-    <bpmn:exclusiveGateway id="fw_2_budget" name="budget level?">
+    <bpmn:exclusiveGateway id="fw_gw_budget" name="budget level?">
       <bpmn:extensionElements>
         <aef:uid value="crl_gw_budget"/>
         <aef:position x="448.3" y="308.0"/>
@@ -221,7 +221,7 @@
       <bpmn:outgoing>flow_6</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:exclusiveGateway id="fw_3_stop" name="Stop hook — continue this session?">
+    <bpmn:exclusiveGateway id="fw_gw_stop" name="Stop hook — continue this session?">
       <bpmn:extensionElements>
         <aef:uid value="crl_gw_stop"/>
         <aef:position x="645.2" y="308.0"/>
@@ -234,7 +234,7 @@
       <bpmn:outgoing>flow_10</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:exclusiveGateway id="fw_4_run" name="run cap / arc drained?">
+    <bpmn:exclusiveGateway id="fw_gw_run" name="run cap / arc drained?">
       <bpmn:extensionElements>
         <aef:uid value="crl_gw_run"/>
         <aef:position x="1003.4" y="308.0"/>
@@ -246,7 +246,7 @@
       <bpmn:outgoing>flow_14</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:exclusiveGateway id="fw_7_sessionstart" name="SessionStart source?">
+    <bpmn:exclusiveGateway id="fw_gw_sessionstart" name="SessionStart source?">
       <bpmn:extensionElements>
         <aef:uid value="crl_gw_source"/>
         <aef:position x="1721.3" y="308.0"/>
@@ -259,7 +259,7 @@
       <bpmn:outgoing>flow_21</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:sequenceFlow id="flow_1" sourceRef="hum_1_operator" targetRef="fw_1_supervisor">
+    <bpmn:sequenceFlow id="flow_1" sourceRef="hum_start_operator" targetRef="fw_1_supervisor">
       <bpmn:extensionElements>
         <aef:uid value="crl_e1"/>
         <aef:anchors sourcePort="S" targetPort="W"/>
@@ -279,20 +279,20 @@
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_4" sourceRef="agt_2_work" targetRef="fw_2_budget">
+    <bpmn:sequenceFlow id="flow_4" sourceRef="agt_2_work" targetRef="fw_gw_budget">
       <bpmn:extensionElements>
         <aef:uid value="crl_e4"/>
         <aef:anchors sourcePort="N" targetPort="SE"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_5" name="ok / warn / urgent — below 95%" sourceRef="fw_2_budget" targetRef="fw_3_stop">
+    <bpmn:sequenceFlow id="flow_5" name="ok / warn / urgent — below 95%" sourceRef="fw_gw_budget" targetRef="fw_gw_stop">
       <bpmn:extensionElements>
         <aef:uid value="crl_e5"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_6" name="critical — cross the boundary" sourceRef="fw_2_budget" targetRef="agt_4_let">
+    <bpmn:sequenceFlow id="flow_6" name="critical — cross the boundary" sourceRef="fw_gw_budget" targetRef="agt_3_let">
       <bpmn:extensionElements>
         <aef:uid value="crl_e6"/>
         <aef:anchors sourcePort="E" targetPort="W"/>
@@ -301,27 +301,27 @@
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_7" name="continue — work remains in this unit" sourceRef="fw_3_stop" targetRef="agt_2_work">
+    <bpmn:sequenceFlow id="flow_7" name="continue — work remains in this unit" sourceRef="fw_gw_stop" targetRef="agt_2_work">
       <bpmn:extensionElements>
         <aef:uid value="crl_e7"/>
         <aef:anchors sourcePort="SE" targetPort="E"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_8" name="blocked — human gate reached" sourceRef="fw_3_stop" targetRef="hum_2_operator">
+    <bpmn:sequenceFlow id="flow_8" name="blocked — human gate reached" sourceRef="fw_gw_stop" targetRef="hum_1_operator">
       <bpmn:extensionElements>
         <aef:uid value="crl_e8"/>
         <aef:anchors sourcePort="N" targetPort="W"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_9" name="unit done — check run state" sourceRef="fw_3_stop" targetRef="fw_4_run">
+    <bpmn:sequenceFlow id="flow_9" name="unit done — check run state" sourceRef="fw_gw_stop" targetRef="fw_gw_run">
       <bpmn:extensionElements>
         <aef:uid value="crl_e9"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_10" name="halt requested — kill switch set" sourceRef="fw_3_stop" targetRef="hum_3_run">
+    <bpmn:sequenceFlow id="flow_10" name="halt requested — kill switch set" sourceRef="fw_gw_stop" targetRef="hum_end_run">
       <bpmn:extensionElements>
         <aef:uid value="crl_e10"/>
         <aef:anchors targetPort="W"/>
@@ -329,14 +329,14 @@
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_11" name="operator unblocks — resume the run" sourceRef="hum_2_operator" targetRef="agt_2_work">
+    <bpmn:sequenceFlow id="flow_11" name="operator unblocks — resume the run" sourceRef="hum_1_operator" targetRef="agt_2_work">
       <bpmn:extensionElements>
         <aef:uid value="crl_e11"/>
         <aef:anchors sourcePort="S" targetPort="E"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_12" name="work remains — next task in the arc" sourceRef="fw_4_run" targetRef="agt_2_work">
+    <bpmn:sequenceFlow id="flow_12" name="work remains — next task in the arc" sourceRef="fw_gw_run" targetRef="agt_2_work">
       <bpmn:extensionElements>
         <aef:uid value="crl_e12"/>
         <aef:anchors targetPort="E"/>
@@ -344,7 +344,7 @@
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_13" name="arc drained" sourceRef="fw_4_run" targetRef="agt_3_run">
+    <bpmn:sequenceFlow id="flow_13" name="arc drained" sourceRef="fw_gw_run" targetRef="agt_end_run">
       <bpmn:extensionElements>
         <aef:uid value="crl_e13"/>
         <aef:anchors sourcePort="SE" targetPort="N"/>
@@ -352,7 +352,7 @@
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_14" name="run cap reached" sourceRef="fw_4_run" targetRef="agt_5_run">
+    <bpmn:sequenceFlow id="flow_14" name="run cap reached" sourceRef="fw_gw_run" targetRef="agt_end_run_2">
       <bpmn:extensionElements>
         <aef:uid value="crl_e14"/>
         <aef:anchors sourcePort="N" targetPort="N"/>
@@ -362,33 +362,33 @@
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_15" sourceRef="agt_4_let" targetRef="fw_5_handover">
+    <bpmn:sequenceFlow id="flow_15" sourceRef="agt_3_let" targetRef="fw_2_handover">
       <bpmn:extensionElements>
         <aef:uid value="crl_e15"/>
         <aef:anchors sourcePort="E" targetPort="S"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_16" sourceRef="fw_5_handover" targetRef="fw_6_cross">
+    <bpmn:sequenceFlow id="flow_16" sourceRef="fw_2_handover" targetRef="fw_3_cross">
       <bpmn:extensionElements>
         <aef:uid value="crl_e16"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_17" sourceRef="fw_6_cross" targetRef="fw_7_sessionstart">
+    <bpmn:sequenceFlow id="flow_17" sourceRef="fw_3_cross" targetRef="fw_gw_sessionstart">
       <bpmn:extensionElements>
         <aef:uid value="crl_e17"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_18" name="startup — cold, sentinel consumed" sourceRef="fw_7_sessionstart" targetRef="agt_1_session">
+    <bpmn:sequenceFlow id="flow_18" name="startup — cold, sentinel consumed" sourceRef="fw_gw_sessionstart" targetRef="agt_1_session">
       <bpmn:extensionElements>
         <aef:uid value="crl_e18"/>
         <aef:anchors sourcePort="SE" targetPort="S"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_19" name="resume — transcript restored" sourceRef="fw_7_sessionstart" targetRef="agt_1_session">
+    <bpmn:sequenceFlow id="flow_19" name="resume — transcript restored" sourceRef="fw_gw_sessionstart" targetRef="agt_1_session">
       <bpmn:extensionElements>
         <aef:uid value="crl_e19"/>
         <aef:anchors sourcePort="SE" targetPort="S"/>
@@ -396,7 +396,7 @@
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_20" name="clear — handover is the whole memory" sourceRef="fw_7_sessionstart" targetRef="agt_1_session">
+    <bpmn:sequenceFlow id="flow_20" name="clear — handover is the whole memory" sourceRef="fw_gw_sessionstart" targetRef="agt_1_session">
       <bpmn:extensionElements>
         <aef:uid value="crl_e20"/>
         <aef:anchors sourcePort="SE" targetPort="S"/>
@@ -404,7 +404,7 @@
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_21" name="compact — summary injected" sourceRef="fw_7_sessionstart" targetRef="agt_1_session">
+    <bpmn:sequenceFlow id="flow_21" name="compact — summary injected" sourceRef="fw_gw_sessionstart" targetRef="agt_1_session">
       <bpmn:extensionElements>
         <aef:uid value="crl_e21"/>
         <aef:anchors sourcePort="SE" targetPort="S"/>

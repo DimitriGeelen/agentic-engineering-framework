@@ -609,6 +609,9 @@ font-family: 'Outfit';
   .lane-header { cursor: pointer; }
   .lane-header:hover .lane-label { fill: var(--text); }
   .lane-header.selected .lane-label { font-weight: 600; }
+  /* T-1091: the pinned copies sit over the diagram, so they are edged and shadowed to read as a frozen column */
+  #g-sticky-lanes .lane-header > rect:first-child { stroke: var(--border); stroke-width: 1; }
+  #g-sticky-lanes { filter: drop-shadow(3px 0 3px rgba(0, 0, 0, 0.35)); }
   .pool-label {
     fill: var(--text-dim);
     font-family: var(--sans);
@@ -1647,6 +1650,9 @@ font-family: 'Outfit';
         <g id="g-edges"></g>
         <g id="g-nodes"></g>
         <g id="g-badges-top" pointer-events="none"></g>
+        <!-- T-1091: zoomed and scrolled right, a copy of each lane header pinned at the visible left edge, above
+             nodes and edges so the lane names stay readable. Empty while the pool's left edge is in view. -->
+        <g id="g-sticky-lanes"></g>
         <!-- T-293: the selected edge's reconnect chrome (endpoint grab halos/dots,
              port indicators) must paint AND hit-test above node bodies — endpoints
              anchor on the node border (T-168), so inside #g-edges half of every
@@ -1871,6 +1877,11 @@ font-family: 'Outfit';
             <span>Show lane names</span>
           </label>
           <label class="settings-row">
+            <input type="checkbox" id="set-sticky-lanes">
+            <span>Sticky lane labels</span>
+            <span class="settings-hint">keep lane names at the left edge when zoomed in and scrolled right</span>
+          </label>
+          <label class="settings-row">
             <input type="checkbox" id="set-show-ids">
             <span>Show node id badges</span>
           </label>
@@ -2092,9 +2103,13 @@ function generateUid(prefix) {
 
 // Derive a short slug from a display name. First "significant" word (>1 char),
 // lowercased, stripped of non-alphanum. Falls back to 'node' if nothing usable.
+// T-1194: a leading task id ("T-001: Orientation", "T-001 - Orientation", "T-001 Orientation") names the task, not
+// the step, and made every such slug its digits (agt_1_001). It is skipped; a name that is ONLY a task id keeps it.
+const LEADING_TASK_ID = /^\s*T-\d+(?:\s*[:\-–—]\s*|\s+)/i;
 function deriveSlug(displayName) {
   if (!displayName) return 'node';
-  const words = displayName
+  const rest = displayName.replace(LEADING_TASK_ID, '');
+  const words = (rest.trim() ? rest : displayName)
     .toLowerCase()
     .replace(/[^a-z0-9\s\-]/g, ' ')
     .split(/[\s\-]+/)
@@ -3052,11 +3067,11 @@ function setSnapPref(key, value) {
 
 // Lane-label fit ladder (T-084) — editor-local (localStorage), same seam
 // discipline as routingPrefs/snapPrefs: render-only, never in the document.
-let labelPrefs = { laneFit: true, wrapNames: true, showLane: true, showIds: true, showEdge: true, showPool: true, showAuthority: true, size: 'm' };
+let labelPrefs = { laneFit: true, wrapNames: true, showLane: true, showIds: true, showEdge: true, showPool: true, showAuthority: true, stickyLanes: true, size: 'm' };
 try {
   const _storedLabel = JSON.parse(localStorage.getItem('aefLabelPrefs') || '{}');
   if (typeof _storedLabel.laneFit === 'boolean') labelPrefs.laneFit = _storedLabel.laneFit;
-  for (const k of ['wrapNames', 'showLane', 'showIds', 'showEdge', 'showPool', 'showAuthority'])
+  for (const k of ['wrapNames', 'showLane', 'showIds', 'showEdge', 'showPool', 'showAuthority', 'stickyLanes'])
     if (typeof _storedLabel[k] === 'boolean') labelPrefs[k] = _storedLabel[k];
   if (['s', 'm', 'l'].includes(_storedLabel.size)) labelPrefs.size = _storedLabel.size;
 } catch (e) { aefRecordFault('prefs-restore:label', e); }
@@ -3265,6 +3280,7 @@ function applyCanvasZoom() {
   const zf = $('btn-zoom-fit');
   if (zf) zf.setAttribute('aria-pressed', String(zoomFactor == null));
   syncOverlayPin();
+  syncStickyLanes();   // T-1091
 }
 // Keep the svg point under (anchorX, anchorY) stationary across the zoom change —
 // Ctrl+wheel anchors at the cursor; buttons anchor at the viewport centre.
@@ -3293,6 +3309,33 @@ function syncOverlayPin() {
   for (const id of ['clean-nudge', 'lane-fix-notice', 'authority-summary']) {   // T-310: advisories pin (T-1092: three)
     const n = $(id);
     if (n) n.style.transform = (dx || dy) ? `translate(calc(-50% + ${dx}px), ${dy}px)` : '';
+  }
+}
+// T-1091: sticky lane labels. Zoomed in and scrolled right, the lane header strip (in #g-pool, under the nodes)
+// leaves the view; a copy of each rendered header is pinned at the visible left edge in #g-sticky-lanes, above
+// nodes and edges. Drawn only while the view's left edge is past the pool's left edge, so an unscrolled canvas is
+// unchanged; never past the pool's right edge. View state only: rebuilt on every scroll, zoom and render, and
+// stripped from thumbnails. Geometry is read from what renderPool drew, not recomputed.
+function syncStickyLanes() {
+  const g = $('g-sticky-lanes');
+  if (!g) return;
+  g.replaceChildren();
+  if (!labelPrefs.stickyLanes || !labelPrefs.showLane || zoomFactor == null) return;
+  const ctm = svg.getScreenCTM(), pb = svg.querySelector('#g-pool > .pool-border');
+  if (!ctm || !pb) return;
+  const wr = canvasWrap.getBoundingClientRect();
+  const left = (wr.left + canvasWrap.clientLeft - ctm.e) / ctm.a;   // the visible left edge, in SVG units
+  const px = +pb.getAttribute('x'), pw = +pb.getAttribute('width');
+  const shift = Math.min(left - px, pw - LANE_HEADER);
+  if (!(shift > 0.5)) return;
+  const lanes = getLanes();
+  for (const h of svg.querySelectorAll('#g-pool > .lane-header')) {
+    const c = h.cloneNode(true);
+    c.setAttribute('transform', `translate(${shift} 0)`);
+    c.classList.add('sticky');
+    const lane = lanes.find(l => l.id === h.getAttribute('data-lane-id'));
+    if (lane) c.addEventListener('click', ev => { ev.stopPropagation(); onLaneClick(lane); });
+    g.appendChild(c);
   }
 }
 // Drag-to-pan: middle-mouse always, or left-drag while Space is held. CAPTURE
@@ -3362,7 +3405,7 @@ canvasWrap.addEventListener('wheel', e => {
   const step = e.deltaY < 0 ? 1.12 : 1 / 1.12;
   setZoom(effectiveZoom() * step, e.clientX, e.clientY);
 }, { passive: false });
-canvasWrap.addEventListener('scroll', syncOverlayPin);
+canvasWrap.addEventListener('scroll', () => { syncOverlayPin(); syncStickyLanes(); });   // T-1091
 
 function el(tag, attrs = {}, children = []) {
   const e = document.createElementNS(SVG_NS, tag);
@@ -3384,7 +3427,7 @@ function renderAll() {
   syncBoundaryPositions();
   renderPool();
   renderEdges();
-  renderNodes();
+  renderNodes();       // ends with fitPoolToLabels() (T-1154)
   renderProperties();
   syncCanvasSize();
   updateStatus();
@@ -3650,6 +3693,7 @@ function syncCanvasSize() {
   // renderNodes()/renderEdges() run before this in renderAll(), so the <text>
   // glyphs are already in the DOM; getBBox measures their true extent. The pool
   // rect stays node-box-driven (renderPool) — labels may sit outside the pool.
+  $('g-sticky-lanes')?.replaceChildren();   // T-1091: view-state copies never size the document (applyCanvasZoom redraws them)
   try {
     const bb = svg.getBBox();
     if (bb && bb.width > 0 && bb.height > 0) {
@@ -3728,12 +3772,38 @@ function fitLaneLabel(headerG, lane, cx, cy, laneH, isSelected) {
   headerG.appendChild(el('title', {}, [text(lane.name)]));
 }
 
+// T-1154 (OBS-314): contentRightEdge() encloses node BOXES, and it must: it feeds the BPMN export, which may not
+// depend on text measurement (bytes would vary with the machine's fonts). So a label or id badge centred under the
+// right-most node could hang past the drawn pool. After the nodes are drawn, fitPoolToLabels() widens the DRAWN pool
+// alone by poolLabelPad to the rendered labels and badges plus a margin. View only: export, label placement (T-601
+// scores against the box edge, so the pad cannot feed back into it) and the page-width drag keep the box edge.
+// The bottom works the same way with its own pad (id badges under bottom-lane nodes reached up to 6 px past it):
+// the LAST lane is drawn taller by poolLabelPadBottom; lane.height, which is saved, does not change.
+let poolLabelPad = 0, poolLabelPadBottom = 0;
+const POOL_LABEL_MARGIN = 12, POOL_LABEL_MARGIN_BOTTOM = 4;
+function fitPoolToLabels() {
+  const edge = contentRightEdge(), floor = POOL_Y + poolHeight();
+  let right = edge, bottom = floor;
+  for (const t of svg.querySelectorAll('#g-nodes .node-label, #g-badges text, #g-badges-top text')) {
+    let b; try { b = t.getBBox(); } catch (_) { continue; }
+    if (!b.width) continue;
+    right = Math.max(right, b.x + b.width + POOL_LABEL_MARGIN);
+    bottom = Math.max(bottom, b.y + b.height + POOL_LABEL_MARGIN_BOTTOM);
+  }
+  const pad = Math.ceil(right - edge), padB = getLanes().length ? Math.ceil(bottom - floor) : 0;
+  if (pad !== poolLabelPad || padB !== poolLabelPadBottom) {
+    poolLabelPad = pad; poolLabelPadBottom = padB;
+    renderPool();
+    syncCanvasSize();   // the drawn pool changed size; outside renderAll nothing else would refit the view
+  }
+}
+
 function renderPool() {
   gPool.innerHTML = '';
   // pool outline
   const px = POOL_X, py = POOL_Y;
-  const pw = contentRightEdge() - POOL_X; // content-aware: encloses right-most node (T-043)
-  const ph = poolHeight();
+  const pw = contentRightEdge() - POOL_X + poolLabelPad; // encloses the right-most node (T-043) and its label (T-1154)
+  const ph = poolHeight() + poolLabelPadBottom;           // T-1154: drawn only; the last lane below carries the pad
 
   // pool header strip
   gPool.appendChild(el('rect', { x: px, y: py, width: pw, height: POOL_HEADER, fill: 'var(--surface-2)' }));
@@ -3744,7 +3814,7 @@ function renderPool() {
   const lanesArr = getLanes();
   for (let li = 0; li < lanesArr.length; li++) {
     const lane = lanesArr[li];
-    const lh = lane.height;
+    const lh = lane.height + (li === lanesArr.length - 1 ? poolLabelPadBottom : 0);   // T-1154: drawn height only
     const isSelected = selection?.kind === 'lane' && selection.id === lane.id;
 
     // Lane body background — tinted by authority
@@ -4174,6 +4244,7 @@ function renderNodes() {
   adjustEdgeLabelPlacements();
   addIdBadgeHalos();
   layerIdBadges();
+  fitPoolToLabels();   // T-1154: last, after every label and badge is placed; most renderNodes() calls bypass renderAll
 }
 
 // Overlong below-label wrap (T-600): gateway/event names render on a single line
@@ -4392,8 +4463,10 @@ function adjustLabelPlacements() {
   // the lane header strip, hanging outside the pool, or reaching over a lane
   // divider scored a clean 0 and was kept. The divider case is the one that
   // matters most: a lane encodes WHO acts, so a label drawn over the next lane
-  // attributes the step to the wrong actor. Geometry mirrors renderPool() exactly
-  // — same px/pw/ph, same band stacking from POOL_Y + POOL_HEADER.
+  // attributes the step to the wrong actor. Geometry mirrors renderPool() — same
+  // px/pw/ph, same band stacking from POOL_Y + POOL_HEADER — except the drawn pool's
+  // label pad (T-1154): it is derived FROM label placement, so scoring against it
+  // would feed back; the box edge is the bound here.
   const px = POOL_X, py = POOL_Y;
   const pw = contentRightEdge() - POOL_X;
   const ph = poolHeight();
@@ -8113,6 +8186,7 @@ function syncSettingsUI() {
   renderFieldDefaultsUI();   // T-1128
   $('set-label-size').value = labelPrefs.size;
   $('set-show-lane').checked = labelPrefs.showLane;
+  $('set-sticky-lanes').checked = labelPrefs.stickyLanes;
   $('set-show-ids').checked = labelPrefs.showIds;
   $('set-show-edge').checked = labelPrefs.showEdge;
   $('set-show-pool').checked = labelPrefs.showPool;
@@ -8240,6 +8314,7 @@ $('btn-fd-cancel').onclick = () => { _fdDraft[_fdScope()] = null; _fdMsg = { tex
 $('btn-apply-clean').onclick = applyViewClean;
 $('set-label-size').addEventListener('change', e => setLabelPref('size', e.target.value));
 $('set-show-lane').addEventListener('change', e => setLabelPref('showLane', e.target.checked));
+$('set-sticky-lanes').addEventListener('change', e => setLabelPref('stickyLanes', e.target.checked));
 $('set-show-ids').addEventListener('change', e => setLabelPref('showIds', e.target.checked));
 $('set-show-edge').addEventListener('change', e => setLabelPref('showEdge', e.target.checked));
 $('set-show-pool').addEventListener('change', e => setLabelPref('showPool', e.target.checked));
@@ -8267,6 +8342,7 @@ $('btn-settings-reset').onclick = () => {
   setViewPref('showAllFields', false);   // T-1124
   setLabelPref('size', 'm');
   setLabelPref('showLane', true);
+  setLabelPref('stickyLanes', true);
   setLabelPref('showIds', true);
   setLabelPref('showEdge', true);
   setLabelPref('showPool', true);
@@ -10752,6 +10828,7 @@ function captureThumbnail() {
       // T-258: annotation badges are a live-state overlay, not document content —
       // thumbnails must stay annotation-free (and byte-stable across parent feeds).
       _stripAnnotationLayer(clone);
+      clone.querySelector('#g-sticky-lanes')?.replaceChildren();   // T-1091: sticky lane copies are view state
       _inlineComputedStyles(svg, clone);
       clone.setAttribute('viewBox', `${vbX} ${vbY} ${vbW} ${vbH}`);
       clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
@@ -12161,7 +12238,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.20.0';
+const APP_VERSION = '0.21.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's

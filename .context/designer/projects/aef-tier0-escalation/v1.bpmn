@@ -35,35 +35,35 @@
           <aef:laneMeta abbr="fw" authority="authority" height="260"/>
         </bpmn:extensionElements>
         <bpmn:flowNodeRef>fw_1_scan</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_gw_trigger</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_end_allow</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_gw_destructive</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_command</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>fw_2_dedupe</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_gw_preauth</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_gw_valid</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>fw_3_consume</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_6_audit</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_end_executed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_5_write</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_command_2</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>fw_4_halt</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_5_notify</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_6_human</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="agent" name="Agent · Initiative">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="agt" authority="initiative" height="140"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>agt_0_command</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_start_agent</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>agt_1_retry</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="human" name="Human · Sovereignty">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="hum" authority="sovereignty" height="180"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>hum_1_disposition</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_1_review</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>hum_gw_disposition</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>hum_2_reject</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>hum_end_abandoned</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_2_write</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_end_command</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
 
-    <bpmn:startEvent id="agt_0_command" name="agent issues Bash command">
+    <bpmn:startEvent id="agt_start_agent" name="agent issues Bash command">
       <bpmn:extensionElements>
         <aef:uid value="te_command"/>
         <aef:position x="120.0" y="340.0"/>
@@ -83,7 +83,7 @@
       <bpmn:outgoing>te_f2</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:exclusiveGateway id="fw_gw_trigger" name="destructive pattern matched?">
+    <bpmn:exclusiveGateway id="fw_gw_destructive" name="destructive pattern matched?">
       <bpmn:extensionElements>
         <aef:uid value="te_gw_trigger"/>
         <aef:position x="420.0" y="120.0"/>
@@ -93,7 +93,7 @@
       <bpmn:outgoing>te_f4</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:endEvent id="fw_end_allow" name="command executes — no escalation">
+    <bpmn:endEvent id="fw_end_command" name="command executes — no escalation">
       <bpmn:extensionElements>
         <aef:uid value="te_done_allow"/>
         <aef:position x="580.0" y="40.0"/>
@@ -112,7 +112,7 @@
       <bpmn:outgoing>te_f5</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:exclusiveGateway id="fw_gw_preauth" name="valid approval already on file?">
+    <bpmn:exclusiveGateway id="fw_gw_valid" name="valid approval already on file?">
       <bpmn:extensionElements>
         <aef:uid value="te_gw_preauth"/>
         <aef:position x="740.0" y="120.0"/>
@@ -132,7 +132,7 @@
       <bpmn:outgoing>te_f8</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="fw_6_audit" name="write bypass-log.yaml entry — audit trail">
+    <bpmn:serviceTask id="fw_5_write" name="write bypass-log.yaml entry — audit trail">
       <bpmn:extensionElements>
         <aef:uid value="te_audit"/>
         <aef:position x="1060.0" y="60.0"/>
@@ -142,7 +142,7 @@
       <bpmn:outgoing>te_f9</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:endEvent id="fw_end_executed" name="command executes — approved &amp; audited">
+    <bpmn:endEvent id="fw_end_command_2" name="command executes — approved &amp; audited">
       <bpmn:extensionElements>
         <aef:uid value="te_done_executed"/>
         <aef:position x="1220.0" y="60.0"/>
@@ -161,7 +161,7 @@
       <bpmn:outgoing>te_f10</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="fw_5_notify" name="human notification — push + Watchtower surface">
+    <bpmn:serviceTask id="fw_6_human" name="human notification — push + Watchtower surface">
       <bpmn:extensionElements>
         <aef:uid value="te_notify"/>
         <aef:position x="1060.0" y="200.0"/>
@@ -171,7 +171,7 @@
       <bpmn:outgoing>te_f11</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:userTask id="hum_1_disposition" name="review pending Tier 0 request">
+    <bpmn:userTask id="hum_1_review" name="review pending Tier 0 request">
       <bpmn:extensionElements>
         <aef:uid value="te_hum_review"/>
         <aef:position x="1060.0" y="480.0"/>
@@ -191,17 +191,17 @@
       <bpmn:outgoing>te_f14</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:serviceTask id="hum_2_reject" name="write resolved(rejected) + feedback">
+    <bpmn:serviceTask id="hum_2_write" name="write resolved(rejected) + feedback">
       <bpmn:extensionElements>
         <aef:uid value="te_reject"/>
         <aef:position x="1380.0" y="560.0"/>
-        <aef:meta note="feedback surfaces on the agent's NEXT attempt at the same command hash (T-641); no bypass-log entry is written — see fw_6_audit asymmetry note"/>
+        <aef:meta note="feedback surfaces on the agent's NEXT attempt at the same command hash (T-641); no bypass-log entry is written — see fw_5_write asymmetry note"/>
       </bpmn:extensionElements>
       <bpmn:incoming>te_f14</bpmn:incoming>
       <bpmn:outgoing>te_f15</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:endEvent id="hum_end_abandoned" name="command abandoned">
+    <bpmn:endEvent id="hum_end_command" name="command abandoned">
       <bpmn:extensionElements>
         <aef:uid value="te_done_abandoned"/>
         <aef:position x="1540.0" y="560.0"/>
@@ -214,55 +214,55 @@
       <bpmn:extensionElements>
         <aef:uid value="te_retry"/>
         <aef:position x="1380.0" y="340.0"/>
-        <aef:meta note="fresh PreToolUse invocation of the SAME command re-enters the scan from the top; the now-valid approval short-circuits it at fw_gw_preauth"/>
+        <aef:meta note="fresh PreToolUse invocation of the SAME command re-enters the scan from the top; the now-valid approval short-circuits it at fw_gw_valid"/>
       </bpmn:extensionElements>
       <bpmn:incoming>te_f13</bpmn:incoming>
       <bpmn:outgoing>te_f16</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:sequenceFlow id="te_f1" sourceRef="agt_0_command" targetRef="fw_1_scan">
+    <bpmn:sequenceFlow id="te_f1" sourceRef="agt_start_agent" targetRef="fw_1_scan">
       <bpmn:extensionElements><aef:uid value="te_e1"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="te_f2" sourceRef="fw_1_scan" targetRef="fw_gw_trigger">
+    <bpmn:sequenceFlow id="te_f2" sourceRef="fw_1_scan" targetRef="fw_gw_destructive">
       <bpmn:extensionElements><aef:uid value="te_e2"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="te_f3" name="no" sourceRef="fw_gw_trigger" targetRef="fw_end_allow">
+    <bpmn:sequenceFlow id="te_f3" name="no" sourceRef="fw_gw_destructive" targetRef="fw_end_command">
       <bpmn:extensionElements><aef:uid value="te_e3"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="te_f4" name="yes" sourceRef="fw_gw_trigger" targetRef="fw_2_dedupe">
+    <bpmn:sequenceFlow id="te_f4" name="yes" sourceRef="fw_gw_destructive" targetRef="fw_2_dedupe">
       <bpmn:extensionElements><aef:uid value="te_e4"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="te_f5" sourceRef="fw_2_dedupe" targetRef="fw_gw_preauth">
+    <bpmn:sequenceFlow id="te_f5" sourceRef="fw_2_dedupe" targetRef="fw_gw_valid">
       <bpmn:extensionElements><aef:uid value="te_e5"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="te_f6" name="yes" sourceRef="fw_gw_preauth" targetRef="fw_3_consume">
+    <bpmn:sequenceFlow id="te_f6" name="yes" sourceRef="fw_gw_valid" targetRef="fw_3_consume">
       <bpmn:extensionElements><aef:uid value="te_e6"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="te_f7" name="no" sourceRef="fw_gw_preauth" targetRef="fw_4_halt">
+    <bpmn:sequenceFlow id="te_f7" name="no" sourceRef="fw_gw_valid" targetRef="fw_4_halt">
       <bpmn:extensionElements><aef:uid value="te_e7"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="te_f8" sourceRef="fw_3_consume" targetRef="fw_6_audit">
+    <bpmn:sequenceFlow id="te_f8" sourceRef="fw_3_consume" targetRef="fw_5_write">
       <bpmn:extensionElements><aef:uid value="te_e8"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="te_f9" sourceRef="fw_6_audit" targetRef="fw_end_executed">
+    <bpmn:sequenceFlow id="te_f9" sourceRef="fw_5_write" targetRef="fw_end_command_2">
       <bpmn:extensionElements><aef:uid value="te_e9"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="te_f10" sourceRef="fw_4_halt" targetRef="fw_5_notify">
+    <bpmn:sequenceFlow id="te_f10" sourceRef="fw_4_halt" targetRef="fw_6_human">
       <bpmn:extensionElements><aef:uid value="te_e10"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="te_f11" sourceRef="fw_5_notify" targetRef="hum_1_disposition">
+    <bpmn:sequenceFlow id="te_f11" sourceRef="fw_6_human" targetRef="hum_1_review">
       <bpmn:extensionElements><aef:uid value="te_e11"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="te_f12" sourceRef="hum_1_disposition" targetRef="hum_gw_disposition">
+    <bpmn:sequenceFlow id="te_f12" sourceRef="hum_1_review" targetRef="hum_gw_disposition">
       <bpmn:extensionElements><aef:uid value="te_e12"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="te_f13" name="approved" sourceRef="hum_gw_disposition" targetRef="agt_1_retry">
       <bpmn:extensionElements><aef:uid value="te_e13"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="te_f14" name="rejected" sourceRef="hum_gw_disposition" targetRef="hum_2_reject">
+    <bpmn:sequenceFlow id="te_f14" name="rejected" sourceRef="hum_gw_disposition" targetRef="hum_2_write">
       <bpmn:extensionElements><aef:uid value="te_e14"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="te_f15" sourceRef="hum_2_reject" targetRef="hum_end_abandoned">
+    <bpmn:sequenceFlow id="te_f15" sourceRef="hum_2_write" targetRef="hum_end_command">
       <bpmn:extensionElements><aef:uid value="te_e15"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="te_f16" name="resume — re-enter scan" sourceRef="agt_1_retry" targetRef="fw_1_scan">

@@ -29,27 +29,27 @@
         <bpmn:extensionElements>
           <aef:laneMeta abbr="hum" authority="sovereignty" height="160"/>
         </bpmn:extensionElements>
+        <bpmn:flowNodeRef>hum_start_operator</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>hum_1_operator</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>hum_2_operator</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="agent" name="Agent · Initiative">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="agt" authority="initiative" height="260"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>agt_10_session</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_9_session</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_end_session_2</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_end_session</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>agt_1_session</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>agt_2_work</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_4_session</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_5_fw</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_6_push</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_3_budget</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_7_restart</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_8_wrapper</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_session</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_fw</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_5_push</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_gw_budget</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_gw_restart</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_timer_wrapper</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
 
-    <bpmn:startEvent id="hum_1_operator" name="operator launches session (claude-fw)">
+    <bpmn:startEvent id="hum_start_operator" name="operator launches session (claude-fw)">
       <bpmn:extensionElements>
         <aef:uid value="sl_launch"/>
         <aef:position x="120.0" y="100.0"/>
@@ -58,7 +58,7 @@
       <bpmn:outgoing>flow_1</bpmn:outgoing>
     </bpmn:startEvent>
 
-    <bpmn:endEvent id="agt_10_session" name="session auto-restarts (claude -c)">
+    <bpmn:endEvent id="agt_end_session_2" name="session auto-restarts (claude -c)">
       <bpmn:extensionElements>
         <aef:uid value="sl_done_restarted"/>
         <aef:position x="1580.0" y="240.0"/>
@@ -67,7 +67,7 @@
       <bpmn:incoming>flow_11</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:endEvent id="agt_9_session" name="session closed — next launch resumes from LATEST.md">
+    <bpmn:endEvent id="agt_end_session" name="session closed — next launch resumes from LATEST.md">
       <bpmn:extensionElements>
         <aef:uid value="sl_done_closed"/>
         <aef:position x="1580.0" y="380.0"/>
@@ -97,7 +97,7 @@
       <bpmn:outgoing>flow_4</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_4_session" name="session capture — uncaptured work → tasks, decisions/learnings recorded (agents/session-capture)">
+    <bpmn:serviceTask id="agt_3_session" name="session capture — uncaptured work → tasks, decisions/learnings recorded (agents/session-capture)">
       <bpmn:extensionElements>
         <aef:uid value="sl_capture"/>
         <aef:position x="780.0" y="300.0"/>
@@ -106,7 +106,7 @@
       <bpmn:outgoing>flow_6</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_5_fw" name="fw handover --commit — generate + auto-commit + push to all remotes (T-1144)">
+    <bpmn:serviceTask id="agt_4_fw" name="fw handover --commit — generate + auto-commit + push to all remotes (T-1144)">
       <bpmn:extensionElements>
         <aef:uid value="sl_handover"/>
         <aef:position x="960.0" y="300.0"/>
@@ -116,7 +116,7 @@
       <bpmn:outgoing>flow_7</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_6_push" name="push-verify — git fetch + rev-list left-right must be 0 0 (T-1277 slow-push); FF-land branch:master">
+    <bpmn:serviceTask id="agt_5_push" name="push-verify — git fetch + rev-list left-right must be 0 0 (T-1277 slow-push); FF-land branch:master">
       <bpmn:extensionElements>
         <aef:uid value="sl_verify"/>
         <aef:position x="1140.0" y="300.0"/>
@@ -126,7 +126,7 @@
       <bpmn:outgoing>flow_8</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:userTask id="hum_2_operator" name="operator processes review queue — fw task review URLs from the handover">
+    <bpmn:userTask id="hum_1_operator" name="operator processes review queue — fw task review URLs from the handover">
       <bpmn:extensionElements>
         <aef:uid value="sl_review"/>
         <aef:position x="1440.0" y="100.0"/>
@@ -136,7 +136,7 @@
       <bpmn:outgoing>flow_12</bpmn:outgoing>
     </bpmn:userTask>
 
-    <bpmn:exclusiveGateway id="agt_3_budget" name="budget critical?">
+    <bpmn:exclusiveGateway id="agt_gw_budget" name="budget critical?">
       <bpmn:extensionElements>
         <aef:uid value="sl_gw_budget"/>
         <aef:position x="620.0" y="300.0"/>
@@ -147,7 +147,7 @@
       <bpmn:outgoing>flow_5</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:exclusiveGateway id="agt_7_restart" name="restart requested?">
+    <bpmn:exclusiveGateway id="agt_gw_restart" name="restart requested?">
       <bpmn:extensionElements>
         <aef:uid value="sl_gw_restart"/>
         <aef:position x="1300.0" y="300.0"/>
@@ -158,7 +158,7 @@
       <bpmn:outgoing>flow_10</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:intermediateCatchEvent id="agt_8_wrapper" name="wrapper cancel window">
+    <bpmn:intermediateCatchEvent id="agt_timer_wrapper" name="wrapper cancel window">
       <bpmn:extensionElements>
         <aef:uid value="sl_tmr_restart"/>
         <aef:position x="1440.0" y="240.0"/>
@@ -169,40 +169,40 @@
       <bpmn:outgoing>flow_11</bpmn:outgoing>
     </bpmn:intermediateCatchEvent>
 
-    <bpmn:sequenceFlow id="flow_1" sourceRef="hum_1_operator" targetRef="agt_1_session">
+    <bpmn:sequenceFlow id="flow_1" sourceRef="hum_start_operator" targetRef="agt_1_session">
       <bpmn:extensionElements><aef:uid value="sl_e1"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
     <bpmn:sequenceFlow id="flow_2" sourceRef="agt_1_session" targetRef="agt_2_work">
       <bpmn:extensionElements><aef:uid value="sl_e2"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="flow_3" name="no — below critical, keep committing" sourceRef="agt_3_budget" targetRef="agt_2_work">
+    <bpmn:sequenceFlow id="flow_3" name="no — below critical, keep committing" sourceRef="agt_gw_budget" targetRef="agt_2_work">
       <bpmn:extensionElements><aef:uid value="sl_e3"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="flow_4" sourceRef="agt_2_work" targetRef="agt_3_budget">
+    <bpmn:sequenceFlow id="flow_4" sourceRef="agt_2_work" targetRef="agt_gw_budget">
       <bpmn:extensionElements><aef:uid value="sl_e4"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="flow_5" name="yes — ≥285K, wrap-up only" sourceRef="agt_3_budget" targetRef="agt_4_session">
+    <bpmn:sequenceFlow id="flow_5" name="yes — ≥285K, wrap-up only" sourceRef="agt_gw_budget" targetRef="agt_3_session">
       <bpmn:extensionElements><aef:uid value="sl_e5"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="flow_6" sourceRef="agt_4_session" targetRef="agt_5_fw">
+    <bpmn:sequenceFlow id="flow_6" sourceRef="agt_3_session" targetRef="agt_4_fw">
       <bpmn:extensionElements><aef:uid value="sl_e6"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="flow_7" sourceRef="agt_5_fw" targetRef="agt_6_push">
+    <bpmn:sequenceFlow id="flow_7" sourceRef="agt_4_fw" targetRef="agt_5_push">
       <bpmn:extensionElements><aef:uid value="sl_e7"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="flow_8" sourceRef="agt_6_push" targetRef="agt_7_restart">
+    <bpmn:sequenceFlow id="flow_8" sourceRef="agt_5_push" targetRef="agt_gw_restart">
       <bpmn:extensionElements><aef:uid value="sl_e8"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="flow_9" name="yes — signal file present" sourceRef="agt_7_restart" targetRef="agt_8_wrapper">
+    <bpmn:sequenceFlow id="flow_9" name="yes — signal file present" sourceRef="agt_gw_restart" targetRef="agt_timer_wrapper">
       <bpmn:extensionElements><aef:uid value="sl_e9"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="flow_10" name="no — clean end" sourceRef="agt_7_restart" targetRef="hum_2_operator">
+    <bpmn:sequenceFlow id="flow_10" name="no — clean end" sourceRef="agt_gw_restart" targetRef="hum_1_operator">
       <bpmn:extensionElements><aef:uid value="sl_e10"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="flow_11" sourceRef="agt_8_wrapper" targetRef="agt_10_session">
+    <bpmn:sequenceFlow id="flow_11" sourceRef="agt_timer_wrapper" targetRef="agt_end_session_2">
       <bpmn:extensionElements><aef:uid value="sl_e11"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="flow_12" sourceRef="hum_2_operator" targetRef="agt_9_session">
+    <bpmn:sequenceFlow id="flow_12" sourceRef="hum_1_operator" targetRef="agt_end_session">
       <bpmn:extensionElements><aef:uid value="sl_e12"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
   </bpmn:process>

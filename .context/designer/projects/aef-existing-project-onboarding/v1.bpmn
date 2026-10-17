@@ -29,7 +29,7 @@
           arrived. Every step here is agent-owned.
 
        2. The human lane therefore holds ONE node that is deliberately NOT on the sequence chain
-          (`hum_alongside` has no incoming or outgoing flows). This is not an authoring mistake
+          (`hum_1_you` has no incoming or outgoing flows). This is not an authoring mistake
           and not a dropped edge — it is the honest shape of the thing. Six of the seven seeded
           tasks end by inviting the operator to look and push back ("tell it", "worth judging",
           "say so"), and none of them wait for an answer. That is arc-017's headline mechanic
@@ -54,26 +54,26 @@
         <bpmn:extensionElements>
           <aef:laneMeta abbr="agt" authority="initiative" height="260"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>agt_0_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_start_you</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>agt_1_orientation</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_2_first_commit</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_3_fabric</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_4_lifecycle</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_5_handover</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_6_learning</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_7_objectives</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_7_released</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_your</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_register</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_walk</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_5_generate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_6_record</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_7_write</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_end_prologue</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="human" name="Human · Sovereignty (Alongside the whole way — nothing here blocks the agent)">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="hum" authority="sovereignty" height="200"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>hum_alongside</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_1_you</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
 
     <!-- START: fw init completes on a repo that already has code -->
-    <bpmn:startEvent id="agt_0_start" name="You just ran: fw init (in an existing repo)">
+    <bpmn:startEvent id="agt_start_you" name="You just ran: fw init (in an existing repo)">
       <bpmn:extensionElements>
         <aef:uid value="epo_start"/>
         <aef:position x="120.0" y="130.0"/>
@@ -94,10 +94,10 @@
     </bpmn:serviceTask>
 
     <bpmn:sequenceFlow id="flow_start_t001" name="seeds are on disk; agent picks up T-001"
-                       sourceRef="agt_0_start" targetRef="agt_1_orientation"/>
+                       sourceRef="agt_start_you" targetRef="agt_1_orientation"/>
 
     <!-- T-002: FIRST GOVERNED COMMIT -->
-    <bpmn:serviceTask id="agt_2_first_commit" name="T-002: Your First Governed Commit">
+    <bpmn:serviceTask id="agt_2_your" name="T-002: Your First Governed Commit">
       <bpmn:extensionElements>
         <aef:uid value="epo_t002"/>
         <aef:position x="400.0" y="100.0"/>
@@ -108,10 +108,10 @@
     </bpmn:serviceTask>
 
     <bpmn:sequenceFlow id="flow_t001_t002" name="baseline recorded — path not yet exercised"
-                       sourceRef="agt_1_orientation" targetRef="agt_2_first_commit"/>
+                       sourceRef="agt_1_orientation" targetRef="agt_2_your"/>
 
     <!-- T-003: REGISTER KEY COMPONENTS (existing-project only) -->
-    <bpmn:serviceTask id="agt_3_fabric" name="T-003: Register Key Components in the Fabric">
+    <bpmn:serviceTask id="agt_3_register" name="T-003: Register Key Components in the Fabric">
       <bpmn:extensionElements>
         <aef:uid value="epo_t003"/>
         <aef:position x="580.0" y="100.0"/>
@@ -122,10 +122,10 @@
     </bpmn:serviceTask>
 
     <bpmn:sequenceFlow id="flow_t002_t003" name="history now has two eras — map the older one"
-                       sourceRef="agt_2_first_commit" targetRef="agt_3_fabric"/>
+                       sourceRef="agt_2_your" targetRef="agt_3_register"/>
 
     <!-- T-004: COMPLETE TASK LIFECYCLE -->
-    <bpmn:serviceTask id="agt_4_lifecycle" name="T-004: Walk One Task All the Way Round">
+    <bpmn:serviceTask id="agt_4_walk" name="T-004: Walk One Task All the Way Round">
       <bpmn:extensionElements>
         <aef:uid value="epo_t004"/>
         <aef:position x="760.0" y="100.0"/>
@@ -136,10 +136,10 @@
     </bpmn:serviceTask>
 
     <bpmn:sequenceFlow id="flow_t003_t004" name="the map exists — now exercise the loop"
-                       sourceRef="agt_3_fabric" targetRef="agt_4_lifecycle"/>
+                       sourceRef="agt_3_register" targetRef="agt_4_walk"/>
 
     <!-- T-005: HANDOVER -->
-    <bpmn:serviceTask id="agt_5_handover" name="T-005: Generate Your First Handover">
+    <bpmn:serviceTask id="agt_5_generate" name="T-005: Generate Your First Handover">
       <bpmn:extensionElements>
         <aef:uid value="epo_t005"/>
         <aef:position x="940.0" y="100.0"/>
@@ -150,10 +150,10 @@
     </bpmn:serviceTask>
 
     <bpmn:sequenceFlow id="flow_t004_t005" name="loop exercised — now make it survive the session"
-                       sourceRef="agt_4_lifecycle" targetRef="agt_5_handover"/>
+                       sourceRef="agt_4_walk" targetRef="agt_5_generate"/>
 
     <!-- T-006: FIRST LEARNING -->
-    <bpmn:serviceTask id="agt_6_learning" name="T-006: Record Your First Project Learning">
+    <bpmn:serviceTask id="agt_6_record" name="T-006: Record Your First Project Learning">
       <bpmn:extensionElements>
         <aef:uid value="epo_t006"/>
         <aef:position x="1120.0" y="100.0"/>
@@ -164,10 +164,10 @@
     </bpmn:serviceTask>
 
     <bpmn:sequenceFlow id="flow_t005_t006" name="state survives the window — capture what was learned"
-                       sourceRef="agt_5_handover" targetRef="agt_6_learning"/>
+                       sourceRef="agt_5_generate" targetRef="agt_6_record"/>
 
     <!-- T-007: PROJECT OBJECTIVES (final prologue step, T-3636 / T-3535 IW-3) -->
-    <bpmn:serviceTask id="agt_7_objectives" name="T-007: Write Down the Project's Objectives">
+    <bpmn:serviceTask id="agt_7_write" name="T-007: Write Down the Project's Objectives">
       <bpmn:extensionElements>
         <aef:uid value="epo_t007"/>
         <aef:position x="1300.0" y="100.0"/>
@@ -178,10 +178,10 @@
     </bpmn:serviceTask>
 
     <bpmn:sequenceFlow id="flow_t006_t007" name="the code is known — now write down what it is for"
-                       sourceRef="agt_6_learning" targetRef="agt_7_objectives"/>
+                       sourceRef="agt_6_record" targetRef="agt_7_write"/>
 
     <!-- END: onboarding gate lifts -->
-    <bpmn:endEvent id="agt_7_released" name="Prologue over — the onboarding gate lifts">
+    <bpmn:endEvent id="agt_end_prologue" name="Prologue over — the onboarding gate lifts">
       <bpmn:extensionElements>
         <aef:uid value="epo_released"/>
         <aef:position x="1500.0" y="130.0"/>
@@ -191,12 +191,12 @@
     </bpmn:endEvent>
 
     <bpmn:sequenceFlow id="flow_t007_end" name="seven of seven closed — onboarding set is clear"
-                       sourceRef="agt_7_objectives" targetRef="agt_7_released"/>
+                       sourceRef="agt_7_write" targetRef="agt_end_prologue"/>
 
     <!-- HUMAN LANE: deliberately NOT wired into the sequence chain. See the doc comment
          at the top of this file, point 2 — this is the arc-017 invariant drawn as geometry,
          not a dropped edge. -->
-    <bpmn:userTask id="hum_alongside" name="You: reading alongside, correcting when it matters (never blocking)">
+    <bpmn:userTask id="hum_1_you" name="You: reading alongside, correcting when it matters (never blocking)">
       <bpmn:extensionElements>
         <aef:uid value="epo_human_alongside"/>
         <aef:position x="400.0" y="360.0"/>
@@ -223,7 +223,7 @@
       </bpmndi:BPMNShape>
 
       <!-- Start event -->
-      <bpmndi:BPMNShape id="start_shape" bpmnElement="agt_0_start">
+      <bpmndi:BPMNShape id="start_shape" bpmnElement="agt_start_you">
         <dc:Bounds x="120" y="130" width="36" height="36"/>
       </bpmndi:BPMNShape>
 
@@ -231,32 +231,32 @@
       <bpmndi:BPMNShape id="t001_shape" bpmnElement="agt_1_orientation">
         <dc:Bounds x="220" y="100" width="120" height="80"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="t002_shape" bpmnElement="agt_2_first_commit">
+      <bpmndi:BPMNShape id="t002_shape" bpmnElement="agt_2_your">
         <dc:Bounds x="400" y="100" width="120" height="80"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="t003_shape" bpmnElement="agt_3_fabric">
+      <bpmndi:BPMNShape id="t003_shape" bpmnElement="agt_3_register">
         <dc:Bounds x="580" y="100" width="120" height="80"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="t004_shape" bpmnElement="agt_4_lifecycle">
+      <bpmndi:BPMNShape id="t004_shape" bpmnElement="agt_4_walk">
         <dc:Bounds x="760" y="100" width="120" height="80"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="t005_shape" bpmnElement="agt_5_handover">
+      <bpmndi:BPMNShape id="t005_shape" bpmnElement="agt_5_generate">
         <dc:Bounds x="940" y="100" width="120" height="80"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="t006_shape" bpmnElement="agt_6_learning">
+      <bpmndi:BPMNShape id="t006_shape" bpmnElement="agt_6_record">
         <dc:Bounds x="1120" y="100" width="120" height="80"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="t007_shape" bpmnElement="agt_7_objectives">
+      <bpmndi:BPMNShape id="t007_shape" bpmnElement="agt_7_write">
         <dc:Bounds x="1300" y="100" width="120" height="80"/>
       </bpmndi:BPMNShape>
 
       <!-- End event -->
-      <bpmndi:BPMNShape id="released_shape" bpmnElement="agt_7_released">
+      <bpmndi:BPMNShape id="released_shape" bpmnElement="agt_end_prologue">
         <dc:Bounds x="1500" y="130" width="36" height="36"/>
       </bpmndi:BPMNShape>
 
       <!-- Human advisory band (unwired by design) -->
-      <bpmndi:BPMNShape id="human_alongside_shape" bpmnElement="hum_alongside">
+      <bpmndi:BPMNShape id="human_alongside_shape" bpmnElement="hum_1_you">
         <dc:Bounds x="400" y="360" width="700" height="100"/>
       </bpmndi:BPMNShape>
 

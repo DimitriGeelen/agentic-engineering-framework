@@ -20,15 +20,15 @@
         <bpmn:extensionElements>
           <aef:laneMeta abbr="agt" authority="initiative" height="260"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>agt_1_task</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_8_loop</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_2_fw</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_3_spawn</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_7_re</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_6_fw</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_5_worker</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_9_handoff</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_4_worker</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_start_task</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_end_loop</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_fw</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_spawn</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_re</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_fw</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_gw_worker</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_link_handoff</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_message_worker</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="human" name="Human · Sovereignty">
         <bpmn:extensionElements>
@@ -38,7 +38,7 @@
       </bpmn:lane>
     </bpmn:laneSet>
 
-    <bpmn:startEvent id="agt_1_task" name="task selected for dispatch">
+    <bpmn:startEvent id="agt_start_task" name="task selected for dispatch">
       <bpmn:extensionElements>
         <aef:uid value="dl_start"/>
         <aef:position x="122.0" y="134.0"/>
@@ -47,7 +47,7 @@
       <bpmn:outgoing>flow_1</bpmn:outgoing>
     </bpmn:startEvent>
 
-    <bpmn:endEvent id="agt_8_loop" name="loop closed — dispatch + outcome queryable">
+    <bpmn:endEvent id="agt_end_loop" name="loop closed — dispatch + outcome queryable">
       <bpmn:extensionElements>
         <aef:uid value="dl_done"/>
         <aef:position x="1282.0" y="87.3"/>
@@ -56,7 +56,7 @@
       <bpmn:incoming>flow_9</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:serviceTask id="agt_2_fw" name="fw resolver dispatch — match workflow, assemble envelope, telemetry to dispatches.jsonl">
+    <bpmn:serviceTask id="agt_1_fw" name="fw resolver dispatch — match workflow, assemble envelope, telemetry to dispatches.jsonl">
       <bpmn:extensionElements>
         <aef:uid value="dl_resolve"/>
         <aef:position x="260.0" y="120.0"/>
@@ -66,7 +66,7 @@
       <bpmn:outgoing>flow_2</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_3_spawn" name="spawn isolated worker — fw termlink dispatch (task-tagged, kill watchdog T-577)">
+    <bpmn:serviceTask id="agt_2_spawn" name="spawn isolated worker — fw termlink dispatch (task-tagged, kill watchdog T-577)">
       <bpmn:extensionElements>
         <aef:uid value="dl_spawn"/>
         <aef:position x="440.0" y="120.0"/>
@@ -77,7 +77,7 @@
       <bpmn:outgoing>flow_3</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_7_re" name="re-dispatch retry envelope — linked via retry_of_dispatch_id">
+    <bpmn:serviceTask id="agt_4_re" name="re-dispatch retry envelope — linked via retry_of_dispatch_id">
       <bpmn:extensionElements>
         <aef:uid value="dl_retry"/>
         <aef:position x="985.0" y="208.0"/>
@@ -87,7 +87,7 @@
       <bpmn:outgoing>flow_8</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_6_fw" name="fw outcome evaluate + backprop — outcome rows joined to dispatch rows (dispatch-outcomes.jsonl)">
+    <bpmn:serviceTask id="agt_3_fw" name="fw outcome evaluate + backprop — outcome rows joined to dispatch rows (dispatch-outcomes.jsonl)">
       <bpmn:extensionElements>
         <aef:uid value="dl_outcome"/>
         <aef:position x="985.0" y="112.0"/>
@@ -108,7 +108,7 @@
       <bpmn:outgoing>flow_7</bpmn:outgoing>
     </bpmn:userTask>
 
-    <bpmn:exclusiveGateway id="agt_5_worker" name="worker paused?">
+    <bpmn:exclusiveGateway id="agt_gw_worker" name="worker paused?">
       <bpmn:extensionElements>
         <aef:uid value="dl_gw_paused"/>
         <aef:position x="780.0" y="120.0"/>
@@ -119,7 +119,7 @@
       <bpmn:outgoing>flow_6</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:intermediateThrowEvent id="agt_9_handoff" name="Handoff → task lifecycle">
+    <bpmn:intermediateThrowEvent id="agt_link_handoff" name="Handoff → task lifecycle">
       <bpmn:extensionElements>
         <aef:uid value="dl_handoff_back"/>
         <aef:position x="1282.0" y="162.0"/>
@@ -129,7 +129,7 @@
       <bpmn:incoming>flow_10</bpmn:incoming>
     </bpmn:intermediateThrowEvent>
 
-    <bpmn:intermediateCatchEvent id="agt_4_worker" name="worker result on bus">
+    <bpmn:intermediateCatchEvent id="agt_message_worker" name="worker result on bus">
       <bpmn:extensionElements>
         <aef:uid value="dl_msg_result"/>
         <aef:position x="620.0" y="120.0"/>
@@ -140,51 +140,51 @@
       <bpmn:outgoing>flow_4</bpmn:outgoing>
     </bpmn:intermediateCatchEvent>
 
-    <bpmn:sequenceFlow id="flow_1" sourceRef="agt_1_task" targetRef="agt_2_fw">
+    <bpmn:sequenceFlow id="flow_1" sourceRef="agt_start_task" targetRef="agt_1_fw">
       <bpmn:extensionElements>
         <aef:uid value="dl_e1"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_2" sourceRef="agt_2_fw" targetRef="agt_3_spawn">
+    <bpmn:sequenceFlow id="flow_2" sourceRef="agt_1_fw" targetRef="agt_2_spawn">
       <bpmn:extensionElements>
         <aef:uid value="dl_e2"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_3" sourceRef="agt_3_spawn" targetRef="agt_4_worker">
+    <bpmn:sequenceFlow id="flow_3" sourceRef="agt_2_spawn" targetRef="agt_message_worker">
       <bpmn:extensionElements>
         <aef:uid value="dl_e3"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_4" sourceRef="agt_4_worker" targetRef="agt_5_worker">
+    <bpmn:sequenceFlow id="flow_4" sourceRef="agt_message_worker" targetRef="agt_gw_worker">
       <bpmn:extensionElements>
         <aef:uid value="dl_e4"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_5" name="yes — paused" sourceRef="agt_5_worker" targetRef="hum_1_operator">
+    <bpmn:sequenceFlow id="flow_5" name="yes — paused" sourceRef="agt_gw_worker" targetRef="hum_1_operator">
       <bpmn:extensionElements>
         <aef:uid value="dl_e5"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_6" name="no — success / error" sourceRef="agt_5_worker" targetRef="agt_6_fw">
+    <bpmn:sequenceFlow id="flow_6" name="no — success / error" sourceRef="agt_gw_worker" targetRef="agt_3_fw">
       <bpmn:extensionElements>
         <aef:uid value="dl_e6"/>
         <aef:anchors sourcePort="E" targetPort="S"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_7" sourceRef="hum_1_operator" targetRef="agt_7_re">
+    <bpmn:sequenceFlow id="flow_7" sourceRef="hum_1_operator" targetRef="agt_4_re">
       <bpmn:extensionElements>
         <aef:uid value="dl_e7"/>
         <aef:anchors sourcePort="E" targetPort="S"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_8" name="retry envelope" sourceRef="agt_7_re" targetRef="agt_3_spawn">
+    <bpmn:sequenceFlow id="flow_8" name="retry envelope" sourceRef="agt_4_re" targetRef="agt_2_spawn">
       <bpmn:extensionElements>
         <aef:uid value="dl_e8"/>
         <aef:anchors sourcePort="W" targetPort="S"/>
@@ -192,14 +192,14 @@
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_9" sourceRef="agt_6_fw" targetRef="agt_8_loop">
+    <bpmn:sequenceFlow id="flow_9" sourceRef="agt_3_fw" targetRef="agt_end_loop">
       <bpmn:extensionElements>
         <aef:uid value="dl_e9"/>
         <aef:anchors sourcePort="NE"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_10" name="outcome → owning task" sourceRef="agt_6_fw" targetRef="agt_9_handoff">
+    <bpmn:sequenceFlow id="flow_10" name="outcome → owning task" sourceRef="agt_3_fw" targetRef="agt_link_handoff">
       <bpmn:extensionElements>
         <aef:uid value="dl_e10"/>
         <aef:anchors sourcePort="SE"/>

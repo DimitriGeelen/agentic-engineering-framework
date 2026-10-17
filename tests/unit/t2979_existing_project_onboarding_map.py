@@ -11,7 +11,7 @@ and would otherwise rot silently:
    (an operator walking a step the diagram does not know about) is exactly the kind nobody
    notices, because a diagram that is merely *incomplete* still renders perfectly.
 
-2. **The unwired human node is deliberate.** ``hum_alongside`` has no incoming or outgoing
+2. **The unwired human node is deliberate.** ``hum_1_you`` (``hum_alongside`` before designer 0.21.0) has no incoming or outgoing
    sequence flows, because this path has no blocking human gate — the operator reads
    alongside and pushes back, and nothing waits for them. That is arc-017's headline
    mechanic drawn as geometry. It looks exactly like a bug (a disconnected node), so it is
@@ -53,15 +53,16 @@ SECTIONS = (
 #: which SEED has no node rather than which node id is absent — the former is actionable.
 SEED_TO_NODE = {
     "T-001": "agt_1_orientation",
-    "T-002": "agt_2_first_commit",
-    "T-003": "agt_3_fabric",
-    "T-004": "agt_4_lifecycle",
-    "T-005": "agt_5_handover",
-    "T-006": "agt_6_learning",
-    "T-007": "agt_7_objectives",  # T-3636: objectives authoring step (T-3535 IW-3)
+    # T-4224: ids as designer 0.21.0 derives them (832 T-1189 uid-paired table).
+    "T-002": "agt_2_your",
+    "T-003": "agt_3_register",
+    "T-004": "agt_4_walk",
+    "T-005": "agt_5_generate",
+    "T-006": "agt_6_record",
+    "T-007": "agt_7_write",  # T-3636: objectives authoring step (T-3535 IW-3)
 }
 
-HUMAN_NODE = "hum_alongside"
+HUMAN_NODE = "hum_1_you"  # T-4224: was hum_alongside before designer 0.21.0 (832 T-1189 table)
 
 
 def _spec():

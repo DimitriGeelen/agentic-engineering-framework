@@ -20,20 +20,20 @@
         <bpmn:extensionElements>
           <aef:laneMeta abbr="agt" authority="initiative" height="324.4744827586207"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>agt_1_work</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_14_task</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_2_create</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_4_parked</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_5_start</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_6_do</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_8_healing</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_10_completion</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_13_archive</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_3_ready</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_9_issues</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_11_gates</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_12_unchecked</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_7_handoff</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_start_work</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_end_task</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_create</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_parked</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_do</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_5_healing</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_6_completion</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_7_archive</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_gw_ready</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_gw_issues</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_gw_gates</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_gw_unchecked</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_link_handoff</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="human" name="Human · Sovereignty">
         <bpmn:extensionElements>
@@ -43,7 +43,7 @@
       </bpmn:lane>
     </bpmn:laneSet>
 
-    <bpmn:startEvent id="agt_1_work" name="work identified">
+    <bpmn:startEvent id="agt_start_work" name="work identified">
       <bpmn:extensionElements>
         <aef:uid value="tl_capture"/>
         <aef:position x="102.0" y="128.5"/>
@@ -52,7 +52,7 @@
       <bpmn:outgoing>flow_1</bpmn:outgoing>
     </bpmn:startEvent>
 
-    <bpmn:endEvent id="agt_14_task" name="task archived">
+    <bpmn:endEvent id="agt_end_task" name="task archived">
       <bpmn:extensionElements>
         <aef:uid value="tl_done"/>
         <aef:position x="1682.0" y="128.5"/>
@@ -61,7 +61,7 @@
       <bpmn:incoming>flow_17</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:serviceTask id="agt_2_create" name="create task — fw work-on (status: captured)">
+    <bpmn:serviceTask id="agt_1_create" name="create task — fw work-on (status: captured)">
       <bpmn:extensionElements>
         <aef:uid value="tl_create"/>
         <aef:position x="185.0" y="114.5"/>
@@ -71,7 +71,7 @@
       <bpmn:outgoing>flow_2</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_4_parked" name="parked in backlog (horizon: next/later)">
+    <bpmn:serviceTask id="agt_2_parked" name="parked in backlog (horizon: next/later)">
       <bpmn:extensionElements>
         <aef:uid value="tl_parked"/>
         <aef:position x="420.0" y="268.0"/>
@@ -82,7 +82,7 @@
       <bpmn:outgoing>flow_5</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_5_start" name="start work (status: started-work, focus set)">
+    <bpmn:serviceTask id="agt_3_start" name="start work (status: started-work, focus set)">
       <bpmn:extensionElements>
         <aef:uid value="tl_start"/>
         <aef:position x="420.0" y="114.5"/>
@@ -93,7 +93,7 @@
       <bpmn:outgoing>flow_6</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_6_do" name="do the work; tick Agent ACs progressively">
+    <bpmn:serviceTask id="agt_4_do" name="do the work; tick Agent ACs progressively">
       <bpmn:extensionElements>
         <aef:uid value="tl_work"/>
         <aef:position x="600.0" y="114.5"/>
@@ -107,7 +107,7 @@
       <bpmn:outgoing>flow_19</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_8_healing" name="healing loop (status: issues → diagnose → resolve)">
+    <bpmn:serviceTask id="agt_5_healing" name="healing loop (status: issues → diagnose → resolve)">
       <bpmn:extensionElements>
         <aef:uid value="tl_heal"/>
         <aef:position x="805.0" y="268.0"/>
@@ -118,7 +118,7 @@
       <bpmn:outgoing>flow_20</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_10_completion" name="completion gates: Agent ACs (P-010) + ## Verification commands (P-011)">
+    <bpmn:serviceTask id="agt_6_completion" name="completion gates: Agent ACs (P-010) + ## Verification commands (P-011)">
       <bpmn:extensionElements>
         <aef:uid value="tl_verify"/>
         <aef:position x="965.0" y="114.5"/>
@@ -129,7 +129,7 @@
       <bpmn:outgoing>flow_11</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_13_archive" name="archive: move to completed/, generate episodic memory">
+    <bpmn:serviceTask id="agt_7_archive" name="archive: move to completed/, generate episodic memory">
       <bpmn:extensionElements>
         <aef:uid value="tl_archive"/>
         <aef:position x="1520.0" y="114.5"/>
@@ -150,7 +150,7 @@
       <bpmn:outgoing>flow_16</bpmn:outgoing>
     </bpmn:userTask>
 
-    <bpmn:exclusiveGateway id="agt_3_ready" name="ready to start now?">
+    <bpmn:exclusiveGateway id="agt_gw_ready" name="ready to start now?">
       <bpmn:extensionElements>
         <aef:uid value="tl_gw_ready"/>
         <aef:position x="330.0" y="122.5"/>
@@ -160,7 +160,7 @@
       <bpmn:outgoing>flow_4</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:exclusiveGateway id="agt_9_issues" name="issues encountered?">
+    <bpmn:exclusiveGateway id="agt_gw_issues" name="issues encountered?">
       <bpmn:extensionElements>
         <aef:uid value="tl_gw_issues"/>
         <aef:position x="836.0" y="122.5"/>
@@ -170,7 +170,7 @@
       <bpmn:outgoing>flow_10</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:exclusiveGateway id="agt_11_gates" name="gates pass?">
+    <bpmn:exclusiveGateway id="agt_gw_gates" name="gates pass?">
       <bpmn:extensionElements>
         <aef:uid value="tl_gw_gates"/>
         <aef:position x="1176.0" y="122.5"/>
@@ -180,7 +180,7 @@
       <bpmn:outgoing>flow_13</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:exclusiveGateway id="agt_12_unchecked" name="unchecked Human ACs?">
+    <bpmn:exclusiveGateway id="agt_gw_unchecked" name="unchecked Human ACs?">
       <bpmn:extensionElements>
         <aef:uid value="tl_gw_human"/>
         <aef:position x="1336.0" y="116.5"/>
@@ -190,7 +190,7 @@
       <bpmn:outgoing>flow_15</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:intermediateThrowEvent id="agt_7_handoff" name="Handoff → dispatch loop">
+    <bpmn:intermediateThrowEvent id="agt_link_handoff" name="Handoff → dispatch loop">
       <bpmn:extensionElements>
         <aef:uid value="tl_handoff_dispatch"/>
         <aef:position x="637.0" y="282.0"/>
@@ -200,128 +200,128 @@
       <bpmn:incoming>flow_18</bpmn:incoming>
     </bpmn:intermediateThrowEvent>
 
-    <bpmn:sequenceFlow id="flow_1" sourceRef="agt_1_work" targetRef="agt_2_create">
+    <bpmn:sequenceFlow id="flow_1" sourceRef="agt_start_work" targetRef="agt_1_create">
       <bpmn:extensionElements>
         <aef:uid value="tl_e1"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_2" sourceRef="agt_2_create" targetRef="agt_3_ready">
+    <bpmn:sequenceFlow id="flow_2" sourceRef="agt_1_create" targetRef="agt_gw_ready">
       <bpmn:extensionElements>
         <aef:uid value="tl_e2"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_3" name="now" sourceRef="agt_3_ready" targetRef="agt_5_start">
+    <bpmn:sequenceFlow id="flow_3" name="now" sourceRef="agt_gw_ready" targetRef="agt_3_start">
       <bpmn:extensionElements>
         <aef:uid value="tl_e14"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_4" name="next/later — backlog" sourceRef="agt_3_ready" targetRef="agt_4_parked">
+    <bpmn:sequenceFlow id="flow_4" name="next/later — backlog" sourceRef="agt_gw_ready" targetRef="agt_2_parked">
       <bpmn:extensionElements>
         <aef:uid value="tl_e15"/>
         <aef:anchors sourcePort="SE" targetPort="W"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_5" name="promoted — fw work-on T-XXX" sourceRef="agt_4_parked" targetRef="agt_5_start">
+    <bpmn:sequenceFlow id="flow_5" name="promoted — fw work-on T-XXX" sourceRef="agt_2_parked" targetRef="agt_3_start">
       <bpmn:extensionElements>
         <aef:uid value="tl_e16"/>
         <aef:anchors sourcePort="N" targetPort="S"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_6" sourceRef="agt_5_start" targetRef="agt_6_do">
+    <bpmn:sequenceFlow id="flow_6" sourceRef="agt_3_start" targetRef="agt_4_do">
       <bpmn:extensionElements>
         <aef:uid value="tl_e3"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_7" sourceRef="agt_6_do" targetRef="agt_9_issues">
+    <bpmn:sequenceFlow id="flow_7" sourceRef="agt_4_do" targetRef="agt_gw_issues">
       <bpmn:extensionElements>
         <aef:uid value="tl_e4"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_8" name="yes — status: issues" sourceRef="agt_9_issues" targetRef="agt_8_healing">
+    <bpmn:sequenceFlow id="flow_8" name="yes — status: issues" sourceRef="agt_gw_issues" targetRef="agt_5_healing">
       <bpmn:extensionElements>
         <aef:uid value="tl_e5"/>
         <aef:anchors targetPort="N"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_9" name="resolved — back to work" sourceRef="agt_8_healing" targetRef="agt_6_do">
+    <bpmn:sequenceFlow id="flow_9" name="resolved — back to work" sourceRef="agt_5_healing" targetRef="agt_4_do">
       <bpmn:extensionElements>
         <aef:uid value="tl_e6"/>
         <aef:anchors sourcePort="W"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_10" name="no" sourceRef="agt_9_issues" targetRef="agt_10_completion">
+    <bpmn:sequenceFlow id="flow_10" name="no" sourceRef="agt_gw_issues" targetRef="agt_6_completion">
       <bpmn:extensionElements>
         <aef:uid value="tl_e7"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_11" sourceRef="agt_10_completion" targetRef="agt_11_gates">
+    <bpmn:sequenceFlow id="flow_11" sourceRef="agt_6_completion" targetRef="agt_gw_gates">
       <bpmn:extensionElements>
         <aef:uid value="tl_e8"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_12" name="pass" sourceRef="agt_11_gates" targetRef="agt_12_unchecked">
+    <bpmn:sequenceFlow id="flow_12" name="pass" sourceRef="agt_gw_gates" targetRef="agt_gw_unchecked">
       <bpmn:extensionElements>
         <aef:uid value="tl_e17"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_13" name="blocked — unchecked AC / non-zero Verification; fix and retry" sourceRef="agt_11_gates" targetRef="agt_6_do">
+    <bpmn:sequenceFlow id="flow_13" name="blocked — unchecked AC / non-zero Verification; fix and retry" sourceRef="agt_gw_gates" targetRef="agt_4_do">
       <bpmn:extensionElements>
         <aef:uid value="tl_e18"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_14" name="yes — partial-complete (owner: human)" sourceRef="agt_12_unchecked" targetRef="hum_1_partial">
+    <bpmn:sequenceFlow id="flow_14" name="yes — partial-complete (owner: human)" sourceRef="agt_gw_unchecked" targetRef="hum_1_partial">
       <bpmn:extensionElements>
         <aef:uid value="tl_e9"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_15" name="no — all ACs agent-verifiable" sourceRef="agt_12_unchecked" targetRef="agt_13_archive">
+    <bpmn:sequenceFlow id="flow_15" name="no — all ACs agent-verifiable" sourceRef="agt_gw_unchecked" targetRef="agt_7_archive">
       <bpmn:extensionElements>
         <aef:uid value="tl_e10"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_16" sourceRef="hum_1_partial" targetRef="agt_13_archive">
+    <bpmn:sequenceFlow id="flow_16" sourceRef="hum_1_partial" targetRef="agt_7_archive">
       <bpmn:extensionElements>
         <aef:uid value="tl_e11"/>
         <aef:anchors sourcePort="E" targetPort="S"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_17" sourceRef="agt_13_archive" targetRef="agt_14_task">
+    <bpmn:sequenceFlow id="flow_17" sourceRef="agt_7_archive" targetRef="agt_end_task">
       <bpmn:extensionElements>
         <aef:uid value="tl_e12"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_18" name="heavy sub-work → dispatch" sourceRef="agt_6_do" targetRef="agt_7_handoff">
+    <bpmn:sequenceFlow id="flow_18" name="heavy sub-work → dispatch" sourceRef="agt_4_do" targetRef="agt_link_handoff">
       <bpmn:extensionElements>
         <aef:uid value="tl_e13"/>
         <aef:anchors sourcePort="S"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_19" name="shelved — horizon next/later auto-demotes to captured (T-1068)" sourceRef="agt_6_do" targetRef="agt_4_parked">
+    <bpmn:sequenceFlow id="flow_19" name="shelved — horizon next/later auto-demotes to captured (T-1068)" sourceRef="agt_4_do" targetRef="agt_2_parked">
       <bpmn:extensionElements>
         <aef:uid value="tl_e19"/>
         <aef:anchors sourcePort="SW" targetPort="E"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_20" name="resolved at gate — complete directly (issues → work-completed)" sourceRef="agt_8_healing" targetRef="agt_10_completion">
+    <bpmn:sequenceFlow id="flow_20" name="resolved at gate — complete directly (issues → work-completed)" sourceRef="agt_5_healing" targetRef="agt_6_completion">
       <bpmn:extensionElements>
         <aef:uid value="tl_e20"/>
         <aef:anchors sourcePort="E" targetPort="S"/>

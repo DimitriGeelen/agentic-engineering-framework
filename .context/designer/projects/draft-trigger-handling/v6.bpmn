@@ -20,39 +20,39 @@
         <bpmn:extensionElements>
           <aef:laneMeta abbr="fwk" authority="authority" height="200"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>fwk_1_observation</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fwk_6_quiet</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fwk_2_collect</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fwk_3_evaluate</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fwk_4_any</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fwk_5_emit</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fwk_start_observation</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fwk_end_quiet</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fwk_1_collect</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fwk_2_evaluate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fwk_gw_any</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fwk_link_emit</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="agent" name="Agent · Initiative">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="agt" authority="initiative" height="220"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>agt_2_diagnose</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_5_propose</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_4_propose</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_3_diagnosis</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_6_handoff</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_1_trigger</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_diagnose</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_propose</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_propose</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_gw_diagnosis</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_link_handoff</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_message_trigger</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="human" name="Human · Sovereignty">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="hum" authority="sovereignty" height="323"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>hum_5_acted</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>hum_7_parked</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>hum_6_dismissed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_end_acted</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_end_parked</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_end_dismissed</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>hum_1_operator</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>hum_3_act</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>hum_4_dismiss</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>hum_2_triage</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_2_act</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_3_dismiss</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_gw_triage</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
 
-    <bpmn:startEvent id="fwk_1_observation" name="observation cycle fires (overlay refresh)">
+    <bpmn:startEvent id="fwk_start_observation" name="observation cycle fires (overlay refresh)">
       <bpmn:extensionElements>
         <aef:uid value="th_obs_fire"/>
         <aef:position x="117.7" y="126.0"/>
@@ -62,7 +62,7 @@
       <bpmn:outgoing>flow_1</bpmn:outgoing>
     </bpmn:startEvent>
 
-    <bpmn:endEvent id="fwk_6_quiet" name="quiet — overlay badges refreshed only">
+    <bpmn:endEvent id="fwk_end_quiet" name="quiet — overlay badges refreshed only">
       <bpmn:extensionElements>
         <aef:uid value="th_done_quiet"/>
         <aef:position x="1885.8" y="113.8"/>
@@ -71,7 +71,7 @@
       <bpmn:incoming>flow_4</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:endEvent id="hum_5_acted" name="acted — work or redesign underway">
+    <bpmn:endEvent id="hum_end_acted" name="acted — work or redesign underway">
       <bpmn:extensionElements>
         <aef:uid value="th_done_acted"/>
         <aef:position x="1885.8" y="491.8"/>
@@ -80,7 +80,7 @@
       <bpmn:incoming>flow_16</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:endEvent id="hum_7_parked" name="parked — task rests at horizon later, resurfaces via stale-scan">
+    <bpmn:endEvent id="hum_end_parked" name="parked — task rests at horizon later, resurfaces via stale-scan">
       <bpmn:extensionElements>
         <aef:uid value="th_done_parked"/>
         <aef:position x="1885.8" y="586.8"/>
@@ -89,7 +89,7 @@
       <bpmn:incoming>flow_17</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:endEvent id="hum_6_dismissed" name="dismissed — threshold feedback recorded">
+    <bpmn:endEvent id="hum_end_dismissed" name="dismissed — threshold feedback recorded">
       <bpmn:extensionElements>
         <aef:uid value="th_done_dismissed"/>
         <aef:position x="1885.8" y="681.8"/>
@@ -98,7 +98,7 @@
       <bpmn:incoming>flow_19</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:serviceTask id="fwk_2_collect" name="collect observations — .tasks/active, focus, dispatches, gate events, keyed by map uid">
+    <bpmn:serviceTask id="fwk_1_collect" name="collect observations — .tasks/active, focus, dispatches, gate events, keyed by map uid">
       <bpmn:extensionElements>
         <aef:uid value="th_snapshot"/>
         <aef:position x="181.3" y="112.0"/>
@@ -108,7 +108,7 @@
       <bpmn:outgoing>flow_2</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="fwk_3_evaluate" name="evaluate thresholds — stuck-N-days per stage, gate-refused-M/wk, WIP-over-limit">
+    <bpmn:serviceTask id="fwk_2_evaluate" name="evaluate thresholds — stuck-N-days per stage, gate-refused-M/wk, WIP-over-limit">
       <bpmn:extensionElements>
         <aef:uid value="th_eval"/>
         <aef:position x="350.4" y="111.2"/>
@@ -119,7 +119,7 @@
       <bpmn:outgoing>flow_3</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_2_diagnose" name="diagnose — drill into generalized sub-workflow, gather evidence">
+    <bpmn:serviceTask id="agt_1_diagnose" name="diagnose — drill into generalized sub-workflow, gather evidence">
       <bpmn:extensionElements>
         <aef:uid value="th_diagnose"/>
         <aef:position x="746.7" y="285.0"/>
@@ -129,7 +129,7 @@
       <bpmn:outgoing>flow_8</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_5_propose" name="propose action — file task (captured, never steals focus)">
+    <bpmn:serviceTask id="agt_3_propose" name="propose action — file task (captured, never steals focus)">
       <bpmn:extensionElements>
         <aef:uid value="th_propose_task"/>
         <aef:position x="1088.6" y="276.5"/>
@@ -140,7 +140,7 @@
       <bpmn:outgoing>flow_12</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_4_propose" name="propose process redesign — open a draft-mode session on the affected map">
+    <bpmn:serviceTask id="agt_2_propose" name="propose process redesign — open a draft-mode session on the affected map">
       <bpmn:extensionElements>
         <aef:uid value="th_propose_redesign"/>
         <aef:position x="1088.6" y="370.0"/>
@@ -161,7 +161,7 @@
       <bpmn:outgoing>flow_14</bpmn:outgoing>
     </bpmn:userTask>
 
-    <bpmn:userTask id="hum_3_act" name="act — promote task to now / start redesign session">
+    <bpmn:userTask id="hum_2_act" name="act — promote task to now / start redesign session">
       <bpmn:extensionElements>
         <aef:uid value="th_act"/>
         <aef:position x="1591.3" y="480.0"/>
@@ -170,7 +170,7 @@
       <bpmn:outgoing>flow_16</bpmn:outgoing>
     </bpmn:userTask>
 
-    <bpmn:userTask id="hum_4_dismiss" name="dismiss with rationale">
+    <bpmn:userTask id="hum_3_dismiss" name="dismiss with rationale">
       <bpmn:extensionElements>
         <aef:uid value="th_dismiss"/>
         <aef:position x="1591.3" y="680.0"/>
@@ -181,7 +181,7 @@
       <bpmn:outgoing>flow_20</bpmn:outgoing>
     </bpmn:userTask>
 
-    <bpmn:exclusiveGateway id="fwk_4_any" name="any threshold breached?">
+    <bpmn:exclusiveGateway id="fwk_gw_any" name="any threshold breached?">
       <bpmn:extensionElements>
         <aef:uid value="th_gw_breach"/>
         <aef:position x="516.0" y="120.0"/>
@@ -191,7 +191,7 @@
       <bpmn:outgoing>flow_5</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:exclusiveGateway id="agt_3_diagnosis" name="diagnosis outcome?">
+    <bpmn:exclusiveGateway id="agt_gw_diagnosis" name="diagnosis outcome?">
       <bpmn:extensionElements>
         <aef:uid value="th_gw_diag"/>
         <aef:position x="893.9" y="293.0"/>
@@ -201,7 +201,7 @@
       <bpmn:outgoing>flow_10</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:exclusiveGateway id="hum_2_triage" name="triage decision?">
+    <bpmn:exclusiveGateway id="hum_gw_triage" name="triage decision?">
       <bpmn:extensionElements>
         <aef:uid value="th_gw_triage"/>
         <aef:position x="1459.3" y="578.0"/>
@@ -212,7 +212,7 @@
       <bpmn:outgoing>flow_18</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:intermediateThrowEvent id="fwk_5_emit" name="emit trigger signal">
+    <bpmn:intermediateThrowEvent id="fwk_link_emit" name="emit trigger signal">
       <bpmn:extensionElements>
         <aef:uid value="th_signal"/>
         <aef:position x="602.0" y="194.0"/>
@@ -223,7 +223,7 @@
       <bpmn:outgoing>flow_6</bpmn:outgoing>
     </bpmn:intermediateThrowEvent>
 
-    <bpmn:intermediateThrowEvent id="agt_6_handoff" name="Handoff → task lifecycle">
+    <bpmn:intermediateThrowEvent id="agt_link_handoff" name="Handoff → task lifecycle">
       <bpmn:extensionElements>
         <aef:uid value="th_handoff_lifecycle"/>
         <aef:position x="1882.0" y="290.5"/>
@@ -233,139 +233,139 @@
       <bpmn:incoming>flow_11</bpmn:incoming>
     </bpmn:intermediateThrowEvent>
 
-    <bpmn:intermediateCatchEvent id="agt_1_trigger" name="trigger received">
+    <bpmn:intermediateCatchEvent id="agt_message_trigger" name="trigger received">
       <bpmn:extensionElements>
         <aef:uid value="th_pickup"/>
         <aef:position x="671.2" y="299.0"/>
         <aef:eventDef kind="message" binding="note:inbox"/>
-        <aef:meta note="catch side of note:inbox binding (see fwk_5_emit for rationale): agent-side pickup = fw note list / fw note count surfacing pending OBS-NNN entries at session start or cron"/>
+        <aef:meta note="catch side of note:inbox binding (see fwk_link_emit for rationale): agent-side pickup = fw note list / fw note count surfacing pending OBS-NNN entries at session start or cron"/>
       </bpmn:extensionElements>
       <bpmn:incoming>flow_6</bpmn:incoming>
       <bpmn:outgoing>flow_7</bpmn:outgoing>
     </bpmn:intermediateCatchEvent>
 
-    <bpmn:sequenceFlow id="flow_1" sourceRef="fwk_1_observation" targetRef="fwk_2_collect">
+    <bpmn:sequenceFlow id="flow_1" sourceRef="fwk_start_observation" targetRef="fwk_1_collect">
       <bpmn:extensionElements>
         <aef:uid value="th_e1"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_2" sourceRef="fwk_2_collect" targetRef="fwk_3_evaluate">
+    <bpmn:sequenceFlow id="flow_2" sourceRef="fwk_1_collect" targetRef="fwk_2_evaluate">
       <bpmn:extensionElements>
         <aef:uid value="th_e2"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_3" sourceRef="fwk_3_evaluate" targetRef="fwk_4_any">
+    <bpmn:sequenceFlow id="flow_3" sourceRef="fwk_2_evaluate" targetRef="fwk_gw_any">
       <bpmn:extensionElements>
         <aef:uid value="th_e3"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_4" name="no — quiet" sourceRef="fwk_4_any" targetRef="fwk_6_quiet">
+    <bpmn:sequenceFlow id="flow_4" name="no — quiet" sourceRef="fwk_gw_any" targetRef="fwk_end_quiet">
       <bpmn:extensionElements>
         <aef:uid value="th_e4"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_5" name="yes — breach" sourceRef="fwk_4_any" targetRef="fwk_5_emit">
+    <bpmn:sequenceFlow id="flow_5" name="yes — breach" sourceRef="fwk_gw_any" targetRef="fwk_link_emit">
       <bpmn:extensionElements>
         <aef:uid value="th_e5"/>
         <aef:anchors sourcePort="SE"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_6" name="signal delivered" sourceRef="fwk_5_emit" targetRef="agt_1_trigger">
+    <bpmn:sequenceFlow id="flow_6" name="signal delivered" sourceRef="fwk_link_emit" targetRef="agt_message_trigger">
       <bpmn:extensionElements>
         <aef:uid value="th_e6"/>
         <aef:anchors sourcePort="E" targetPort="N"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_7" sourceRef="agt_1_trigger" targetRef="agt_2_diagnose">
+    <bpmn:sequenceFlow id="flow_7" sourceRef="agt_message_trigger" targetRef="agt_1_diagnose">
       <bpmn:extensionElements>
         <aef:uid value="th_e7"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_8" sourceRef="agt_2_diagnose" targetRef="agt_3_diagnosis">
+    <bpmn:sequenceFlow id="flow_8" sourceRef="agt_1_diagnose" targetRef="agt_gw_diagnosis">
       <bpmn:extensionElements>
         <aef:uid value="th_e8"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_9" name="actionable work" sourceRef="agt_3_diagnosis" targetRef="agt_5_propose">
+    <bpmn:sequenceFlow id="flow_9" name="actionable work" sourceRef="agt_gw_diagnosis" targetRef="agt_3_propose">
       <bpmn:extensionElements>
         <aef:uid value="th_e9"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_10" name="process smell" sourceRef="agt_3_diagnosis" targetRef="agt_4_propose">
+    <bpmn:sequenceFlow id="flow_10" name="process smell" sourceRef="agt_gw_diagnosis" targetRef="agt_2_propose">
       <bpmn:extensionElements>
         <aef:uid value="th_e10"/>
         <aef:anchors sourcePort="SE"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_11" name="filed captured/later" sourceRef="agt_5_propose" targetRef="agt_6_handoff">
+    <bpmn:sequenceFlow id="flow_11" name="filed captured/later" sourceRef="agt_3_propose" targetRef="agt_link_handoff">
       <bpmn:extensionElements>
         <aef:uid value="th_e11"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_12" sourceRef="agt_5_propose" targetRef="hum_1_operator">
+    <bpmn:sequenceFlow id="flow_12" sourceRef="agt_3_propose" targetRef="hum_1_operator">
       <bpmn:extensionElements>
         <aef:uid value="th_e12"/>
         <aef:routingHint role="seg_mid" offset="100.6"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_13" sourceRef="agt_4_propose" targetRef="hum_1_operator">
+    <bpmn:sequenceFlow id="flow_13" sourceRef="agt_2_propose" targetRef="hum_1_operator">
       <bpmn:extensionElements>
         <aef:uid value="th_e13"/>
         <aef:anchors targetPort="W"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_14" sourceRef="hum_1_operator" targetRef="hum_2_triage">
+    <bpmn:sequenceFlow id="flow_14" sourceRef="hum_1_operator" targetRef="hum_gw_triage">
       <bpmn:extensionElements>
         <aef:uid value="th_e14"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_15" name="act now" sourceRef="hum_2_triage" targetRef="hum_3_act">
+    <bpmn:sequenceFlow id="flow_15" name="act now" sourceRef="hum_gw_triage" targetRef="hum_2_act">
       <bpmn:extensionElements>
         <aef:uid value="th_e15"/>
         <aef:anchors sourcePort="N"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_16" sourceRef="hum_3_act" targetRef="hum_5_acted">
+    <bpmn:sequenceFlow id="flow_16" sourceRef="hum_2_act" targetRef="hum_end_acted">
       <bpmn:extensionElements>
         <aef:uid value="th_e16"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_17" name="park" sourceRef="hum_2_triage" targetRef="hum_7_parked">
+    <bpmn:sequenceFlow id="flow_17" name="park" sourceRef="hum_gw_triage" targetRef="hum_end_parked">
       <bpmn:extensionElements>
         <aef:uid value="th_e17"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_18" name="dismiss" sourceRef="hum_2_triage" targetRef="hum_4_dismiss">
+    <bpmn:sequenceFlow id="flow_18" name="dismiss" sourceRef="hum_gw_triage" targetRef="hum_3_dismiss">
       <bpmn:extensionElements>
         <aef:uid value="th_e18"/>
         <aef:anchors sourcePort="SE" targetPort="W"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_19" sourceRef="hum_4_dismiss" targetRef="hum_6_dismissed">
+    <bpmn:sequenceFlow id="flow_19" sourceRef="hum_3_dismiss" targetRef="hum_end_dismissed">
       <bpmn:extensionElements>
         <aef:uid value="th_e19"/>
       </bpmn:extensionElements>
     </bpmn:sequenceFlow>
 
-    <bpmn:sequenceFlow id="flow_20" name="threshold tuning feedback" sourceRef="hum_4_dismiss" targetRef="fwk_3_evaluate">
+    <bpmn:sequenceFlow id="flow_20" name="threshold tuning feedback" sourceRef="hum_3_dismiss" targetRef="fwk_2_evaluate">
       <bpmn:extensionElements>
         <aef:uid value="th_e20"/>
         <aef:anchors sourcePort="S" targetPort="S"/>

@@ -45,31 +45,31 @@
         <bpmn:extensionElements>
           <aef:laneMeta abbr="agt" authority="initiative" height="220"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>agt_0_insight</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_1_capture</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_0_promote</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_0_harvest</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_0_consolidate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_start_learning</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_fw</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_start_fw_3</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_start_fw_2</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_start_fw</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="framework" name="Framework · Authority">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="fw" authority="authority" height="380"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>fw_1_write</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_end_captured</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_4_write</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_learning</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>fw_2_count</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_gw_ready</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_end_already</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_3_practice</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_end_active</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_4_harvest</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_end_harvest</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_5_consolidate</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_end_consolidate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_gw_promotion</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_refused</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_5_write</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_practice</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_3_harvest</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_framework</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_1_cluster</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_consolidation</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
 
-    <bpmn:startEvent id="agt_0_insight" name="learning-worthy moment during task work">
+    <bpmn:startEvent id="agt_start_learning" name="learning-worthy moment during task work">
       <bpmn:extensionElements>
         <aef:uid value="kl_insight"/>
         <aef:position x="120.0" y="440.0"/>
@@ -78,7 +78,7 @@
       <bpmn:outgoing>kl_f1</bpmn:outgoing>
     </bpmn:startEvent>
 
-    <bpmn:serviceTask id="agt_1_capture" name="fw context add-learning / fw fix-learned T-XXX">
+    <bpmn:serviceTask id="agt_1_fw" name="fw context add-learning / fw fix-learned T-XXX">
       <bpmn:extensionElements>
         <aef:uid value="kl_capture"/>
         <aef:position x="280.0" y="440.0"/>
@@ -88,7 +88,7 @@
       <bpmn:outgoing>kl_f2</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="fw_1_write" name="write L-/PL- entry to learnings.yaml">
+    <bpmn:serviceTask id="fw_4_write" name="write L-/PL- entry to learnings.yaml">
       <bpmn:extensionElements>
         <aef:uid value="kl_write"/>
         <aef:position x="440.0" y="100.0"/>
@@ -98,7 +98,7 @@
       <bpmn:outgoing>kl_f3</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:endEvent id="fw_end_captured" name="learning stored — awaits applications">
+    <bpmn:endEvent id="fw_end_learning" name="learning stored — awaits applications">
       <bpmn:extensionElements>
         <aef:uid value="kl_done_captured"/>
         <aef:position x="600.0" y="100.0"/>
@@ -107,7 +107,7 @@
       <bpmn:incoming>kl_f3</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:startEvent id="agt_0_promote" name="fw promote L-XXX invoked (manual)">
+    <bpmn:startEvent id="agt_start_fw_3" name="fw promote L-XXX invoked (manual)">
       <bpmn:extensionElements>
         <aef:uid value="kl_promote_entry"/>
         <aef:position x="120.0" y="560.0"/>
@@ -126,7 +126,7 @@
       <bpmn:outgoing>kl_f5</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:exclusiveGateway id="fw_gw_ready" name="promotion readiness?">
+    <bpmn:exclusiveGateway id="fw_gw_promotion" name="promotion readiness?">
       <bpmn:extensionElements>
         <aef:uid value="kl_gw_ready"/>
         <aef:position x="600.0" y="220.0"/>
@@ -139,7 +139,7 @@
       <bpmn:outgoing>kl_f9</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:endEvent id="fw_end_already" name="refused — already promoted">
+    <bpmn:endEvent id="fw_end_refused" name="refused — already promoted">
       <bpmn:extensionElements>
         <aef:uid value="kl_done_already"/>
         <aef:position x="760.0" y="100.0"/>
@@ -148,7 +148,7 @@
       <bpmn:incoming>kl_f6</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:serviceTask id="fw_3_practice" name="write practice P-/PP- to practices.yaml — status: active immediately">
+    <bpmn:serviceTask id="fw_5_write" name="write practice P-/PP- to practices.yaml — status: active immediately">
       <bpmn:extensionElements>
         <aef:uid value="kl_practice"/>
         <aef:position x="760.0" y="220.0"/>
@@ -160,7 +160,7 @@
       <bpmn:outgoing>kl_f10</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:endEvent id="fw_end_active" name="practice active — surfaces in fw practices">
+    <bpmn:endEvent id="fw_end_practice" name="practice active — surfaces in fw practices">
       <bpmn:extensionElements>
         <aef:uid value="kl_done_active"/>
         <aef:position x="920.0" y="220.0"/>
@@ -169,7 +169,7 @@
       <bpmn:incoming>kl_f10</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:startEvent id="agt_0_harvest" name="fw harvest invoked (project &#8594; framework)">
+    <bpmn:startEvent id="agt_start_fw_2" name="fw harvest invoked (project &#8594; framework)">
       <bpmn:extensionElements>
         <aef:uid value="kl_harvest_entry"/>
         <aef:position x="120.0" y="680.0"/>
@@ -178,7 +178,7 @@
       <bpmn:outgoing>kl_f11</bpmn:outgoing>
     </bpmn:startEvent>
 
-    <bpmn:serviceTask id="fw_4_harvest" name="harvest patterns/learnings/decisions/practices/episodics — NEW/DUP/SKIP dispositions">
+    <bpmn:serviceTask id="fw_3_harvest" name="harvest patterns/learnings/decisions/practices/episodics — NEW/DUP/SKIP dispositions">
       <bpmn:extensionElements>
         <aef:uid value="kl_harvest"/>
         <aef:position x="440.0" y="340.0"/>
@@ -188,7 +188,7 @@
       <bpmn:outgoing>kl_f12</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:endEvent id="fw_end_harvest" name="framework candidates appended">
+    <bpmn:endEvent id="fw_end_framework" name="framework candidates appended">
       <bpmn:extensionElements>
         <aef:uid value="kl_done_harvest"/>
         <aef:position x="600.0" y="340.0"/>
@@ -197,7 +197,7 @@
       <bpmn:incoming>kl_f12</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:startEvent id="agt_0_consolidate" name="fw consolidate scan/apply invoked (manual)">
+    <bpmn:startEvent id="agt_start_fw" name="fw consolidate scan/apply invoked (manual)">
       <bpmn:extensionElements>
         <aef:uid value="kl_consolidate_entry"/>
         <aef:position x="120.0" y="800.0"/>
@@ -206,7 +206,7 @@
       <bpmn:outgoing>kl_f13</bpmn:outgoing>
     </bpmn:startEvent>
 
-    <bpmn:serviceTask id="fw_5_consolidate" name="cluster duplicates (Jaccard 0.35) — merge / enrich_or_prune recommendations">
+    <bpmn:serviceTask id="fw_1_cluster" name="cluster duplicates (Jaccard 0.35) — merge / enrich_or_prune recommendations">
       <bpmn:extensionElements>
         <aef:uid value="kl_consolidate"/>
         <aef:position x="440.0" y="460.0"/>
@@ -216,7 +216,7 @@
       <bpmn:outgoing>kl_f14</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:endEvent id="fw_end_consolidate" name="consolidation report / applied merges">
+    <bpmn:endEvent id="fw_end_consolidation" name="consolidation report / applied merges">
       <bpmn:extensionElements>
         <aef:uid value="kl_done_consolidate"/>
         <aef:position x="600.0" y="460.0"/>
@@ -225,46 +225,46 @@
       <bpmn:incoming>kl_f14</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:sequenceFlow id="kl_f1" sourceRef="agt_0_insight" targetRef="agt_1_capture">
+    <bpmn:sequenceFlow id="kl_f1" sourceRef="agt_start_learning" targetRef="agt_1_fw">
       <bpmn:extensionElements><aef:uid value="kl_e1"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f2" sourceRef="agt_1_capture" targetRef="fw_1_write">
+    <bpmn:sequenceFlow id="kl_f2" sourceRef="agt_1_fw" targetRef="fw_4_write">
       <bpmn:extensionElements><aef:uid value="kl_e2"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f3" sourceRef="fw_1_write" targetRef="fw_end_captured">
+    <bpmn:sequenceFlow id="kl_f3" sourceRef="fw_4_write" targetRef="fw_end_learning">
       <bpmn:extensionElements><aef:uid value="kl_e3"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f4" sourceRef="agt_0_promote" targetRef="fw_2_count">
+    <bpmn:sequenceFlow id="kl_f4" sourceRef="agt_start_fw_3" targetRef="fw_2_count">
       <bpmn:extensionElements><aef:uid value="kl_e4"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f5" sourceRef="fw_2_count" targetRef="fw_gw_ready">
+    <bpmn:sequenceFlow id="kl_f5" sourceRef="fw_2_count" targetRef="fw_gw_promotion">
       <bpmn:extensionElements><aef:uid value="kl_e5"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f6" name="promoted" sourceRef="fw_gw_ready" targetRef="fw_end_already">
+    <bpmn:sequenceFlow id="kl_f6" name="promoted" sourceRef="fw_gw_promotion" targetRef="fw_end_refused">
       <bpmn:extensionElements><aef:uid value="kl_e6"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f7" name="ready" sourceRef="fw_gw_ready" targetRef="fw_3_practice">
+    <bpmn:sequenceFlow id="kl_f7" name="ready" sourceRef="fw_gw_promotion" targetRef="fw_5_write">
       <bpmn:extensionElements><aef:uid value="kl_e7"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f8" name="almost" sourceRef="fw_gw_ready" targetRef="fw_3_practice">
+    <bpmn:sequenceFlow id="kl_f8" name="almost" sourceRef="fw_gw_promotion" targetRef="fw_5_write">
       <bpmn:extensionElements><aef:uid value="kl_e8"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f9" name="building" sourceRef="fw_gw_ready" targetRef="fw_3_practice">
+    <bpmn:sequenceFlow id="kl_f9" name="building" sourceRef="fw_gw_promotion" targetRef="fw_5_write">
       <bpmn:extensionElements><aef:uid value="kl_e9"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f10" sourceRef="fw_3_practice" targetRef="fw_end_active">
+    <bpmn:sequenceFlow id="kl_f10" sourceRef="fw_5_write" targetRef="fw_end_practice">
       <bpmn:extensionElements><aef:uid value="kl_e10"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f11" sourceRef="agt_0_harvest" targetRef="fw_4_harvest">
+    <bpmn:sequenceFlow id="kl_f11" sourceRef="agt_start_fw_2" targetRef="fw_3_harvest">
       <bpmn:extensionElements><aef:uid value="kl_e11"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f12" sourceRef="fw_4_harvest" targetRef="fw_end_harvest">
+    <bpmn:sequenceFlow id="kl_f12" sourceRef="fw_3_harvest" targetRef="fw_end_framework">
       <bpmn:extensionElements><aef:uid value="kl_e12"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f13" sourceRef="agt_0_consolidate" targetRef="fw_5_consolidate">
+    <bpmn:sequenceFlow id="kl_f13" sourceRef="agt_start_fw" targetRef="fw_1_cluster">
       <bpmn:extensionElements><aef:uid value="kl_e13"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f14" sourceRef="fw_5_consolidate" targetRef="fw_end_consolidate">
+    <bpmn:sequenceFlow id="kl_f14" sourceRef="fw_1_cluster" targetRef="fw_end_consolidation">
       <bpmn:extensionElements><aef:uid value="kl_e14"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
   </bpmn:process>

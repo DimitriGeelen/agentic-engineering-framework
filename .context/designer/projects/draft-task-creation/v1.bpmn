@@ -24,9 +24,9 @@ production id pays the full ceremony (T-2623). -->
         <bpmn:extensionElements>
           <aef:laneMeta abbr="agt" authority="initiative" height="220"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>d_start</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>d_sketch</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>d_end</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_start_session</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_sketch</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_end_settled</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="human" name="Human · Sovereignty">
         <bpmn:extensionElements>
@@ -35,35 +35,35 @@ production id pays the full ceremony (T-2623). -->
       </bpmn:lane>
     </bpmn:laneSet>
 
-    <bpmn:startEvent id="d_start" name="session opens">
+    <bpmn:startEvent id="agt_start_session" name="session opens">
       <bpmn:extensionElements>
-        <aef:uid value="d_start"/>
+        <aef:uid value="agt_start_session"/>
         <aef:position x="160.0" y="100.0"/>
       </bpmn:extensionElements>
       <bpmn:outgoing>d_f1</bpmn:outgoing>
     </bpmn:startEvent>
 
-    <bpmn:serviceTask id="d_sketch" name="sketch the flow here — every node/flow is a proposal">
+    <bpmn:serviceTask id="agt_1_sketch" name="sketch the flow here — every node/flow is a proposal">
       <bpmn:extensionElements>
-        <aef:uid value="d_sketch"/>
+        <aef:uid value="agt_1_sketch"/>
         <aef:position x="320.0" y="100.0"/>
       </bpmn:extensionElements>
       <bpmn:incoming>d_f1</bpmn:incoming>
       <bpmn:outgoing>d_f2</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:endEvent id="d_end" name="settled — ready for promotion ceremony">
+    <bpmn:endEvent id="agt_end_settled" name="settled — ready for promotion ceremony">
       <bpmn:extensionElements>
-        <aef:uid value="d_end"/>
+        <aef:uid value="agt_end_settled"/>
         <aef:position x="560.0" y="100.0"/>
       </bpmn:extensionElements>
       <bpmn:incoming>d_f2</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:sequenceFlow id="d_f1" sourceRef="d_start" targetRef="d_sketch">
+    <bpmn:sequenceFlow id="d_f1" sourceRef="agt_start_session" targetRef="agt_1_sketch">
       <bpmn:extensionElements><aef:uid value="d_f1"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="d_f2" sourceRef="d_sketch" targetRef="d_end">
+    <bpmn:sequenceFlow id="d_f2" sourceRef="agt_1_sketch" targetRef="agt_end_settled">
       <bpmn:extensionElements><aef:uid value="d_f2"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
   </bpmn:process>

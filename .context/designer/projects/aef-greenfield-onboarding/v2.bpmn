@@ -36,23 +36,23 @@
         <bpmn:extensionElements>
           <aef:laneMeta abbr="agt" authority="initiative" height="260"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>agt_0_start</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_start_you</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>agt_1_orientation</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_3_first_commit</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_4_lifecycle</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_5_handover</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_6_ready</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_your</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_walk</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_generate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_end_ready</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="human" name="Human · Sovereignty (You decide this one)">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="hum" authority="sovereignty" height="200"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>hum_2_goals</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_1_define</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
 
     <!-- START: fw init completes -->
-    <bpmn:startEvent id="agt_0_start" name="You just ran: fw init">
+    <bpmn:startEvent id="agt_start_you" name="You just ran: fw init">
       <bpmn:extensionElements>
         <aef:uid value="gfo_start"/>
         <aef:position x="120.0" y="130.0"/>
@@ -73,13 +73,13 @@
     </bpmn:serviceTask>
 
     <bpmn:sequenceFlow id="flow_start_t001" name="seeds are on disk; agent picks up T-001"
-                       sourceRef="agt_0_start" targetRef="agt_1_orientation"/>
+                       sourceRef="agt_start_you" targetRef="agt_1_orientation"/>
 
     <bpmn:sequenceFlow id="flow_t001_t002" name="install is healthy — the project question is now yours"
-                       sourceRef="agt_1_orientation" targetRef="hum_2_goals"/>
+                       sourceRef="agt_1_orientation" targetRef="hum_1_define"/>
 
     <!-- T-002: DEFINE PROJECT GOALS (INCEPTION - HUMAN DECISION) -->
-    <bpmn:subProcess id="hum_2_goals" name="T-002: Define Your Project Goals (You decide: GO / NO-GO / DEFER)">
+    <bpmn:subProcess id="hum_1_define" name="T-002: Define Your Project Goals (You decide: GO / NO-GO / DEFER)">
       <bpmn:extensionElements>
         <aef:uid value="gfo_t002"/>
         <aef:position x="400.0" y="320.0"/>
@@ -90,10 +90,10 @@
     </bpmn:subProcess>
 
     <bpmn:sequenceFlow id="flow_t002_t003" name="GO recorded — agent resumes the tour"
-                       sourceRef="hum_2_goals" targetRef="agt_3_first_commit"/>
+                       sourceRef="hum_1_define" targetRef="agt_2_your"/>
 
     <!-- T-003: FIRST GOVERNED COMMIT -->
-    <bpmn:serviceTask id="agt_3_first_commit" name="T-003: Your First Governed Commit">
+    <bpmn:serviceTask id="agt_2_your" name="T-003: Your First Governed Commit">
       <bpmn:extensionElements>
         <aef:uid value="gfo_t003"/>
         <aef:position x="600.0" y="100.0"/>
@@ -104,7 +104,7 @@
     </bpmn:serviceTask>
 
     <!-- T-004: COMPLETE TASK LIFECYCLE -->
-    <bpmn:serviceTask id="agt_4_lifecycle" name="T-004: Walk Through Task States and Gates">
+    <bpmn:serviceTask id="agt_3_walk" name="T-004: Walk Through Task States and Gates">
       <bpmn:extensionElements>
         <aef:uid value="gfo_t004"/>
         <aef:position x="780.0" y="100.0"/>
@@ -115,7 +115,7 @@
     </bpmn:serviceTask>
 
     <!-- T-005: HANDOVER -->
-    <bpmn:serviceTask id="agt_5_handover" name="T-005: Generate Your First Handover (Session End Protocol)">
+    <bpmn:serviceTask id="agt_4_generate" name="T-005: Generate Your First Handover (Session End Protocol)">
       <bpmn:extensionElements>
         <aef:uid value="gfo_t005"/>
         <aef:position x="960.0" y="100.0"/>
@@ -126,7 +126,7 @@
     </bpmn:serviceTask>
 
     <!-- END: Ready for Real Work -->
-    <bpmn:endEvent id="agt_6_ready" name="✓ Ready to build your project">
+    <bpmn:endEvent id="agt_end_ready" name="✓ Ready to build your project">
       <bpmn:extensionElements>
         <aef:uid value="gfo_ready"/>
         <aef:position x="1140.0" y="130.0"/>
@@ -135,9 +135,9 @@
       <bpmn:incoming>flow_t005_ready</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:sequenceFlow id="flow_t003_t004" sourceRef="agt_3_first_commit" targetRef="agt_4_lifecycle"/>
-    <bpmn:sequenceFlow id="flow_t004_t005" sourceRef="agt_4_lifecycle" targetRef="agt_5_handover"/>
-    <bpmn:sequenceFlow id="flow_t005_ready" sourceRef="agt_5_handover" targetRef="agt_6_ready"/>
+    <bpmn:sequenceFlow id="flow_t003_t004" sourceRef="agt_2_your" targetRef="agt_3_walk"/>
+    <bpmn:sequenceFlow id="flow_t004_t005" sourceRef="agt_3_walk" targetRef="agt_4_generate"/>
+    <bpmn:sequenceFlow id="flow_t005_ready" sourceRef="agt_4_generate" targetRef="agt_end_ready"/>
 
   </bpmn:process>
 
@@ -159,7 +159,7 @@
       </bpmndi:BPMNShape>
 
       <!-- Start event -->
-      <bpmndi:BPMNShape id="start_shape" bpmnElement="agt_0_start">
+      <bpmndi:BPMNShape id="start_shape" bpmnElement="agt_start_you">
         <dc:Bounds x="120" y="130" width="36" height="36"/>
       </bpmndi:BPMNShape>
 
@@ -167,23 +167,23 @@
       <bpmndi:BPMNShape id="t001_shape" bpmnElement="agt_1_orientation">
         <dc:Bounds x="240" y="100" width="120" height="80"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="t003_shape" bpmnElement="agt_3_first_commit">
+      <bpmndi:BPMNShape id="t003_shape" bpmnElement="agt_2_your">
         <dc:Bounds x="600" y="100" width="120" height="80"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="t004_shape" bpmnElement="agt_4_lifecycle">
+      <bpmndi:BPMNShape id="t004_shape" bpmnElement="agt_3_walk">
         <dc:Bounds x="780" y="100" width="120" height="80"/>
       </bpmndi:BPMNShape>
-      <bpmndi:BPMNShape id="t005_shape" bpmnElement="agt_5_handover">
+      <bpmndi:BPMNShape id="t005_shape" bpmnElement="agt_4_generate">
         <dc:Bounds x="960" y="100" width="120" height="80"/>
       </bpmndi:BPMNShape>
 
       <!-- Human inception -->
-      <bpmndi:BPMNShape id="t002_shape" bpmnElement="hum_2_goals">
+      <bpmndi:BPMNShape id="t002_shape" bpmnElement="hum_1_define">
         <dc:Bounds x="400" y="340" width="140" height="120"/>
       </bpmndi:BPMNShape>
 
       <!-- End event -->
-      <bpmndi:BPMNShape id="ready_shape" bpmnElement="agt_6_ready">
+      <bpmndi:BPMNShape id="ready_shape" bpmnElement="agt_end_ready">
         <dc:Bounds x="1140" y="130" width="36" height="36"/>
       </bpmndi:BPMNShape>
 

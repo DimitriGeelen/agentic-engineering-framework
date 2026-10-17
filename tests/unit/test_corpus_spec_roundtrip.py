@@ -138,7 +138,9 @@ def test_live_inception_flow_carries_the_restored_subprocess():
     xml = (d / f"v{latest}.bpmn").read_text()
     spec = corpus_spec.parse_map(xml)
     ids = {n["id"] for n in spec["nodes"]}
-    assert "hum_3_inception" in ids
+    # T-4224: hum_3_inception before designer 0.21.0 (832 T-1189 uid-paired table)
+    assert "hum_1_explore" in ids
+    assert next(n for n in spec["nodes"] if n["id"] == "hum_1_explore")["type"] == "subprocess"
     for f in spec["flows"]:
         assert f["from"] in ids and f["to"] in ids, f"dangling flow {f['id']}"
 

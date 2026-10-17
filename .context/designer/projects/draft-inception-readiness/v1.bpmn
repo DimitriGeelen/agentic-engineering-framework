@@ -35,37 +35,37 @@
         <bpmn:extensionElements>
           <aef:laneMeta abbr="fw" authority="authority" height="320"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>fw_2_filing_gate</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_6_readiness</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_8_putforward</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_10_record</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_1_filing</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_gw_proposed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_2_put</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_3_record</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="agent" name="Agent · Initiative">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="agt" authority="initiative" height="200"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>agt_0_question</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_start_question</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>agt_1_file</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_3_artifact</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_4_explore</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_5_evaluate</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_11_gw_outcome</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_12_children</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_13_archive</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_14_go</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_15_closed</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_16_handoff_tl</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_create</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_explore</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_proposed</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_gw_decision</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_6_file</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_5_archive</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_end_build</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_end_question</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_link_handoff</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="human" name="Human · Sovereignty">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="hum" authority="sovereignty" height="140"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>hum_7_dialogue</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>hum_9_decide</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_1_operator</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_2_operator</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
 
-    <bpmn:startEvent id="agt_0_question" name="question identified">
+    <bpmn:startEvent id="agt_start_question" name="question identified">
       <bpmn:extensionElements>
         <aef:uid value="ir_question"/>
         <aef:position x="120.0" y="380.0"/>
@@ -84,7 +84,7 @@
       <bpmn:outgoing>ir_f2</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="fw_2_filing_gate" name="T-2204 filing gate — refuses filing without GO/NO-GO/DEFER (recorded as PRIOR, not finding)">
+    <bpmn:serviceTask id="fw_1_filing" name="T-2204 filing gate — refuses filing without GO/NO-GO/DEFER (recorded as PRIOR, not finding)">
       <bpmn:extensionElements>
         <aef:uid value="ir_filing_gate"/>
         <aef:position x="260.0" y="40.0"/>
@@ -94,7 +94,7 @@
       <bpmn:outgoing>ir_f3</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_3_artifact" name="create research artifact FIRST (C-001) — docs/reports/T-XXX, dialogue log, incremental commits">
+    <bpmn:serviceTask id="agt_2_create" name="create research artifact FIRST (C-001) — docs/reports/T-XXX, dialogue log, incremental commits">
       <bpmn:extensionElements>
         <aef:uid value="ir_artifact"/>
         <aef:position x="440.0" y="380.0"/>
@@ -104,7 +104,7 @@
       <bpmn:outgoing>ir_f4</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:subProcess id="agt_4_explore" name="explore — research · testing · dialogue">
+    <bpmn:subProcess id="agt_3_explore" name="explore — research · testing · dialogue">
       <bpmn:extensionElements>
         <aef:uid value="ir_explore"/>
         <aef:position x="620.0" y="380.0"/>
@@ -121,7 +121,7 @@
       <bpmn:outgoing>ir_f5</bpmn:outgoing>
     </bpmn:subProcess>
 
-    <bpmn:serviceTask id="agt_5_evaluate" name="PROPOSED — evaluate readiness: is there enough clarity to recommend a direction?">
+    <bpmn:serviceTask id="agt_4_proposed" name="PROPOSED — evaluate readiness: is there enough clarity to recommend a direction?">
       <bpmn:extensionElements>
         <aef:uid value="ir_evaluate"/>
         <aef:position x="800.0" y="380.0"/>
@@ -131,7 +131,7 @@
       <bpmn:outgoing>ir_f6</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:exclusiveGateway id="fw_6_readiness" name='PROPOSED — readiness floor: does the record support "ready"?'>
+    <bpmn:exclusiveGateway id="fw_gw_proposed" name='PROPOSED — readiness floor: does the record support "ready"?'>
       <bpmn:extensionElements>
         <aef:uid value="ir_gw_readiness"/>
         <aef:position x="820.0" y="140.0"/>
@@ -143,7 +143,7 @@
       <bpmn:outgoing>ir_f9</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:userTask id="hum_7_dialogue" name="operator answers the blocking direction question">
+    <bpmn:userTask id="hum_1_operator" name="operator answers the blocking direction question">
       <bpmn:extensionElements>
         <aef:uid value="ir_dialogue"/>
         <aef:position x="640.0" y="620.0"/>
@@ -153,7 +153,7 @@
       <bpmn:outgoing>ir_f10</bpmn:outgoing>
     </bpmn:userTask>
 
-    <bpmn:serviceTask id="fw_8_putforward" name="put forward for approval — fw task review (emit_review writes .reviewed-T-XXX)">
+    <bpmn:serviceTask id="fw_2_put" name="put forward for approval — fw task review (emit_review writes .reviewed-T-XXX)">
       <bpmn:extensionElements>
         <aef:uid value="ir_putforward"/>
         <aef:position x="1000.0" y="240.0"/>
@@ -163,7 +163,7 @@
       <bpmn:outgoing>ir_f11</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:userTask id="hum_9_decide" name="operator decides — GO / NO-GO / DEFER via Watchtower /inception/T-XXX">
+    <bpmn:userTask id="hum_2_operator" name="operator decides — GO / NO-GO / DEFER via Watchtower /inception/T-XXX">
       <bpmn:extensionElements>
         <aef:uid value="ir_decide"/>
         <aef:position x="1180.0" y="620.0"/>
@@ -173,7 +173,7 @@
       <bpmn:outgoing>ir_f12</bpmn:outgoing>
     </bpmn:userTask>
 
-    <bpmn:serviceTask id="fw_10_record" name="record decision; tick the approval AC only on a human-authenticated channel">
+    <bpmn:serviceTask id="fw_3_record" name="record decision; tick the approval AC only on a human-authenticated channel">
       <bpmn:extensionElements>
         <aef:uid value="ir_record"/>
         <aef:position x="1340.0" y="40.0"/>
@@ -183,7 +183,7 @@
       <bpmn:outgoing>ir_f13</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:exclusiveGateway id="agt_11_gw_outcome" name="decision?">
+    <bpmn:exclusiveGateway id="agt_gw_decision" name="decision?">
       <bpmn:extensionElements>
         <aef:uid value="ir_gw_outcome"/>
         <aef:position x="1360.0" y="380.0"/>
@@ -193,7 +193,7 @@
       <bpmn:outgoing>ir_f15</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:serviceTask id="agt_12_children" name="file build children (GO-scope traceability: inception_decisions / unlocks_inception_decision, T-1984)">
+    <bpmn:serviceTask id="agt_6_file" name="file build children (GO-scope traceability: inception_decisions / unlocks_inception_decision, T-1984)">
       <bpmn:extensionElements>
         <aef:uid value="ir_children"/>
         <aef:position x="1520.0" y="380.0"/>
@@ -204,7 +204,7 @@
       <bpmn:outgoing>ir_f18</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_13_archive" name="archive: completed/ + episodic; on DEFER set revisit_at + revisit_evidence_needed (T-1451)">
+    <bpmn:serviceTask id="agt_5_archive" name="archive: completed/ + episodic; on DEFER set revisit_at + revisit_evidence_needed (T-1451)">
       <bpmn:extensionElements>
         <aef:uid value="ir_archive"/>
         <aef:position x="1520.0" y="480.0"/>
@@ -214,7 +214,7 @@
       <bpmn:outgoing>ir_f17</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:endEvent id="agt_14_go" name="build slices live">
+    <bpmn:endEvent id="agt_end_build" name="build slices live">
       <bpmn:extensionElements>
         <aef:uid value="ir_done_go"/>
         <aef:position x="1700.0" y="380.0"/>
@@ -223,7 +223,7 @@
       <bpmn:incoming>ir_f16</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:endEvent id="agt_15_closed" name="question closed (revisit condition may re-open)">
+    <bpmn:endEvent id="agt_end_question" name="question closed (revisit condition may re-open)">
       <bpmn:extensionElements>
         <aef:uid value="ir_done_closed"/>
         <aef:position x="1700.0" y="480.0"/>
@@ -232,7 +232,7 @@
       <bpmn:incoming>ir_f17</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:intermediateThrowEvent id="agt_16_handoff_tl" name="Handoff → task lifecycle">
+    <bpmn:intermediateThrowEvent id="agt_link_handoff" name="Handoff → task lifecycle">
       <bpmn:extensionElements>
         <aef:uid value="ir_handoff_tl"/>
         <aef:position x="1860.0" y="380.0"/>
@@ -242,58 +242,58 @@
       <bpmn:incoming>ir_f18</bpmn:incoming>
     </bpmn:intermediateThrowEvent>
 
-    <bpmn:sequenceFlow id="ir_f1" sourceRef="agt_0_question" targetRef="agt_1_file">
+    <bpmn:sequenceFlow id="ir_f1" sourceRef="agt_start_question" targetRef="agt_1_file">
       <bpmn:extensionElements><aef:uid value="ir_e1"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="ir_f2" name="prior required at filing" sourceRef="agt_1_file" targetRef="fw_2_filing_gate">
+    <bpmn:sequenceFlow id="ir_f2" name="prior required at filing" sourceRef="agt_1_file" targetRef="fw_1_filing">
       <bpmn:extensionElements><aef:uid value="ir_e2"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="ir_f3" sourceRef="fw_2_filing_gate" targetRef="agt_3_artifact">
+    <bpmn:sequenceFlow id="ir_f3" sourceRef="fw_1_filing" targetRef="agt_2_create">
       <bpmn:extensionElements><aef:uid value="ir_e3"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="ir_f4" sourceRef="agt_3_artifact" targetRef="agt_4_explore">
+    <bpmn:sequenceFlow id="ir_f4" sourceRef="agt_2_create" targetRef="agt_3_explore">
       <bpmn:extensionElements><aef:uid value="ir_e4"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="ir_f5" sourceRef="agt_4_explore" targetRef="agt_5_evaluate">
+    <bpmn:sequenceFlow id="ir_f5" sourceRef="agt_3_explore" targetRef="agt_4_proposed">
       <bpmn:extensionElements><aef:uid value="ir_e5"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="ir_f6" name="agent proposes approval" sourceRef="agt_5_evaluate" targetRef="fw_6_readiness">
+    <bpmn:sequenceFlow id="ir_f6" name="agent proposes approval" sourceRef="agt_4_proposed" targetRef="fw_gw_proposed">
       <bpmn:extensionElements><aef:uid value="ir_e6"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="ir_f7" name="not ready — research / testing owed" sourceRef="fw_6_readiness" targetRef="agt_4_explore">
+    <bpmn:sequenceFlow id="ir_f7" name="not ready — research / testing owed" sourceRef="fw_gw_proposed" targetRef="agt_3_explore">
       <bpmn:extensionElements><aef:uid value="ir_e7"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="ir_f8" name="not ready — dialogue owed (blocking IW is a direction call)" sourceRef="fw_6_readiness" targetRef="hum_7_dialogue">
+    <bpmn:sequenceFlow id="ir_f8" name="not ready — dialogue owed (blocking IW is a direction call)" sourceRef="fw_gw_proposed" targetRef="hum_1_operator">
       <bpmn:extensionElements><aef:uid value="ir_e8"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="ir_f9" name="ready — no blocking IW unanswered, evidence present, dialogue logged" sourceRef="fw_6_readiness" targetRef="fw_8_putforward">
+    <bpmn:sequenceFlow id="ir_f9" name="ready — no blocking IW unanswered, evidence present, dialogue logged" sourceRef="fw_gw_proposed" targetRef="fw_2_put">
       <bpmn:extensionElements><aef:uid value="ir_e9"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="ir_f10" name="answer folds back into the artifact" sourceRef="hum_7_dialogue" targetRef="agt_4_explore">
+    <bpmn:sequenceFlow id="ir_f10" name="answer folds back into the artifact" sourceRef="hum_1_operator" targetRef="agt_3_explore">
       <bpmn:extensionElements><aef:uid value="ir_e10"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="ir_f11" sourceRef="fw_8_putforward" targetRef="hum_9_decide">
+    <bpmn:sequenceFlow id="ir_f11" sourceRef="fw_2_put" targetRef="hum_2_operator">
       <bpmn:extensionElements><aef:uid value="ir_e11"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="ir_f12" sourceRef="hum_9_decide" targetRef="fw_10_record">
+    <bpmn:sequenceFlow id="ir_f12" sourceRef="hum_2_operator" targetRef="fw_3_record">
       <bpmn:extensionElements><aef:uid value="ir_e12"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="ir_f13" sourceRef="fw_10_record" targetRef="agt_11_gw_outcome">
+    <bpmn:sequenceFlow id="ir_f13" sourceRef="fw_3_record" targetRef="agt_gw_decision">
       <bpmn:extensionElements><aef:uid value="ir_e13"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="ir_f14" name="GO" sourceRef="agt_11_gw_outcome" targetRef="agt_12_children">
+    <bpmn:sequenceFlow id="ir_f14" name="GO" sourceRef="agt_gw_decision" targetRef="agt_6_file">
       <bpmn:extensionElements><aef:uid value="ir_e14"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="ir_f15" name="NO-GO / DEFER" sourceRef="agt_11_gw_outcome" targetRef="agt_13_archive">
+    <bpmn:sequenceFlow id="ir_f15" name="NO-GO / DEFER" sourceRef="agt_gw_decision" targetRef="agt_5_archive">
       <bpmn:extensionElements><aef:uid value="ir_e15"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="ir_f16" sourceRef="agt_12_children" targetRef="agt_14_go">
+    <bpmn:sequenceFlow id="ir_f16" sourceRef="agt_6_file" targetRef="agt_end_build">
       <bpmn:extensionElements><aef:uid value="ir_e16"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="ir_f17" sourceRef="agt_13_archive" targetRef="agt_15_closed">
+    <bpmn:sequenceFlow id="ir_f17" sourceRef="agt_5_archive" targetRef="agt_end_question">
       <bpmn:extensionElements><aef:uid value="ir_e17"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="ir_f18" name="build children enter task lifecycle" sourceRef="agt_12_children" targetRef="agt_16_handoff_tl">
+    <bpmn:sequenceFlow id="ir_f18" name="build children enter task lifecycle" sourceRef="agt_6_file" targetRef="agt_link_handoff">
       <bpmn:extensionElements><aef:uid value="ir_e18"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
   </bpmn:process>

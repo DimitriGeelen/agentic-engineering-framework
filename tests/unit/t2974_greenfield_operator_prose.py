@@ -44,11 +44,12 @@ SECTIONS = (
 #: Curriculum task nodes — the start/end events carry prose too, but are not held
 #: to the five-section shape (they frame the sequence rather than teach a step).
 TASK_NODES = (
+    # T-4224: ids as designer 0.21.0 derives them (832 T-1189 uid-paired table).
     "agt_1_orientation",
-    "hum_2_goals",
-    "agt_3_first_commit",
-    "agt_4_lifecycle",
-    "agt_5_handover",
+    "hum_1_define",
+    "agt_2_your",
+    "agt_3_walk",
+    "agt_4_generate",
 )
 
 
@@ -121,8 +122,12 @@ def test_topology_unchanged_from_v1():
     d = REPO_ROOT / ".context/designer/projects" / MAP_ID
     v1 = corpus_spec.parse_map((d / "v1.bpmn").read_text())
     v2 = corpus_spec.parse_map((d / "v2.bpmn").read_text())
-    assert {n["id"] for n in v1["nodes"]} == {n["id"] for n in v2["nodes"]}
-    assert {(f["from"], f["to"]) for f in v1["flows"]} == \
-           {(f["from"], f["to"]) for f in v2["flows"]}
+    # T-4224: since designer 0.21.0 a node id is derived from its NAME, and v2 renamed
+    # nodes, so ids differ between versions by design. Compare by the stable aef:uid.
+    uid1 = {n["id"]: n["uid"] for n in v1["nodes"]}
+    uid2 = {n["id"]: n["uid"] for n in v2["nodes"]}
+    assert set(uid1.values()) == set(uid2.values())
+    assert {(uid1[f["from"]], uid1[f["to"]]) for f in v1["flows"]} == \
+           {(uid2[f["from"]], uid2[f["to"]]) for f in v2["flows"]}
     assert {(l["id"], l["authority"]) for l in v1["lanes"]} == \
            {(l["id"], l["authority"]) for l in v2["lanes"]}

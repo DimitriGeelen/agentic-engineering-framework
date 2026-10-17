@@ -19,7 +19,7 @@
        -> promotion initiated -> readiness gateway (the conformance-rail anchor,
        unchanged) -> practice-active / already-promoted error terminal.
        Harvest and consolidate act on a DIFFERENT token (the whole store) and
-       are out of this map's scope — see the pointer note on fw_end_active;
+       are out of this map's scope — see the pointer note on fw_end_practice;
        they are candidates for separate small maps if the operator wants them
        mapped. Sources of truth unchanged: agents/context/lib/learning.sh,
        agents/healing/lib/resolve.sh (second writer), bin/fw fix-learned,
@@ -43,27 +43,27 @@
         <bpmn:extensionElements>
           <aef:laneMeta abbr="agt" authority="initiative" height="260"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>agt_0_insight</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_0_bugfix</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_0_healing</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_1_capture</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_2_fixlearned</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_start_organic</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_start_bugfix</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_start_healing</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_fw</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_fw</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="framework" name="Framework · Authority">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="fw" authority="authority" height="380"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>fw_1_write</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_wait_dormant</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_1_append</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_link_dormant</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>fw_2_count</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_gw_ready</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_end_already</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_3_practice</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_end_active</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_gw_promotion</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_refused</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_3_write</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_practice</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
 
-    <bpmn:startEvent id="agt_0_insight" name="organic insight during task work">
+    <bpmn:startEvent id="agt_start_organic" name="organic insight during task work">
       <bpmn:extensionElements>
         <aef:uid value="kl_insight"/>
         <aef:position x="120.0" y="440.0"/>
@@ -72,7 +72,7 @@
       <bpmn:outgoing>kl_f1</bpmn:outgoing>
     </bpmn:startEvent>
 
-    <bpmn:startEvent id="agt_0_bugfix" name="bugfix completion — learning prompt (G-016)">
+    <bpmn:startEvent id="agt_start_bugfix" name="bugfix completion — learning prompt (G-016)">
       <bpmn:extensionElements>
         <aef:uid value="kl_bugfix"/>
         <aef:position x="120.0" y="520.0"/>
@@ -81,7 +81,7 @@
       <bpmn:outgoing>kl_f2</bpmn:outgoing>
     </bpmn:startEvent>
 
-    <bpmn:startEvent id="agt_0_healing" name="healing resolve records the resolution">
+    <bpmn:startEvent id="agt_start_healing" name="healing resolve records the resolution">
       <bpmn:extensionElements>
         <aef:uid value="kl_healing"/>
         <aef:position x="120.0" y="600.0"/>
@@ -90,7 +90,7 @@
       <bpmn:outgoing>kl_f3</bpmn:outgoing>
     </bpmn:startEvent>
 
-    <bpmn:serviceTask id="agt_1_capture" name="fw context add-learning">
+    <bpmn:serviceTask id="agt_1_fw" name="fw context add-learning">
       <bpmn:extensionElements>
         <aef:uid value="kl_capture"/>
         <aef:position x="280.0" y="440.0"/>
@@ -100,7 +100,7 @@
       <bpmn:outgoing>kl_f4</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_2_fixlearned" name="fw fix-learned T-XXX">
+    <bpmn:serviceTask id="agt_2_fw" name="fw fix-learned T-XXX">
       <bpmn:extensionElements>
         <aef:uid value="kl_fixlearned"/>
         <aef:position x="280.0" y="520.0"/>
@@ -110,7 +110,7 @@
       <bpmn:outgoing>kl_f5</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="fw_1_write" name="append L-/PL- entry to learnings.yaml">
+    <bpmn:serviceTask id="fw_1_append" name="append L-/PL- entry to learnings.yaml">
       <bpmn:extensionElements>
         <aef:uid value="kl_write"/>
         <aef:position x="440.0" y="140.0"/>
@@ -122,7 +122,7 @@
       <bpmn:outgoing>kl_f6</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:intermediateCatchEvent id="fw_wait_dormant" name="dormant — applications accumulate">
+    <bpmn:intermediateCatchEvent id="fw_link_dormant" name="dormant — applications accumulate">
       <bpmn:extensionElements>
         <aef:uid value="kl_dormant"/>
         <aef:position x="600.0" y="140.0"/>
@@ -142,7 +142,7 @@
       <bpmn:outgoing>kl_f8</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:exclusiveGateway id="fw_gw_ready" name="promotion readiness?">
+    <bpmn:exclusiveGateway id="fw_gw_promotion" name="promotion readiness?">
       <bpmn:extensionElements>
         <aef:uid value="kl_gw_ready"/>
         <aef:position x="920.0" y="140.0"/>
@@ -155,7 +155,7 @@
       <bpmn:outgoing>kl_f12</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:endEvent id="fw_end_already" name="refused — already promoted">
+    <bpmn:endEvent id="fw_end_refused" name="refused — already promoted">
       <bpmn:extensionElements>
         <aef:uid value="kl_done_already"/>
         <aef:position x="1080.0" y="60.0"/>
@@ -164,7 +164,7 @@
       <bpmn:incoming>kl_f9</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:serviceTask id="fw_3_practice" name="write practice P-/PP- to practices.yaml — status: active immediately">
+    <bpmn:serviceTask id="fw_3_write" name="write practice P-/PP- to practices.yaml — status: active immediately">
       <bpmn:extensionElements>
         <aef:uid value="kl_practice"/>
         <aef:position x="1080.0" y="240.0"/>
@@ -176,7 +176,7 @@
       <bpmn:outgoing>kl_f13</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:endEvent id="fw_end_active" name="practice active — surfaces in fw practices">
+    <bpmn:endEvent id="fw_end_practice" name="practice active — surfaces in fw practices">
       <bpmn:extensionElements>
         <aef:uid value="kl_done_active"/>
         <aef:position x="1240.0" y="240.0"/>
@@ -185,43 +185,43 @@
       <bpmn:incoming>kl_f13</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:sequenceFlow id="kl_f1" sourceRef="agt_0_insight" targetRef="agt_1_capture">
+    <bpmn:sequenceFlow id="kl_f1" sourceRef="agt_start_organic" targetRef="agt_1_fw">
       <bpmn:extensionElements><aef:uid value="kl_e1"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f2" sourceRef="agt_0_bugfix" targetRef="agt_2_fixlearned">
+    <bpmn:sequenceFlow id="kl_f2" sourceRef="agt_start_bugfix" targetRef="agt_2_fw">
       <bpmn:extensionElements><aef:uid value="kl_e2"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f3" sourceRef="agt_0_healing" targetRef="fw_1_write">
+    <bpmn:sequenceFlow id="kl_f3" sourceRef="agt_start_healing" targetRef="fw_1_append">
       <bpmn:extensionElements><aef:uid value="kl_e3"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f4" sourceRef="agt_1_capture" targetRef="fw_1_write">
+    <bpmn:sequenceFlow id="kl_f4" sourceRef="agt_1_fw" targetRef="fw_1_append">
       <bpmn:extensionElements><aef:uid value="kl_e4"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f5" sourceRef="agt_2_fixlearned" targetRef="fw_1_write">
+    <bpmn:sequenceFlow id="kl_f5" sourceRef="agt_2_fw" targetRef="fw_1_append">
       <bpmn:extensionElements><aef:uid value="kl_e5"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f6" sourceRef="fw_1_write" targetRef="fw_wait_dormant">
+    <bpmn:sequenceFlow id="kl_f6" sourceRef="fw_1_append" targetRef="fw_link_dormant">
       <bpmn:extensionElements><aef:uid value="kl_e6"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f7" name="fw promote L-XXX invoked" sourceRef="fw_wait_dormant" targetRef="fw_2_count">
+    <bpmn:sequenceFlow id="kl_f7" name="fw promote L-XXX invoked" sourceRef="fw_link_dormant" targetRef="fw_2_count">
       <bpmn:extensionElements><aef:uid value="kl_e7"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f8" sourceRef="fw_2_count" targetRef="fw_gw_ready">
+    <bpmn:sequenceFlow id="kl_f8" sourceRef="fw_2_count" targetRef="fw_gw_promotion">
       <bpmn:extensionElements><aef:uid value="kl_e8"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f9" name="promoted" sourceRef="fw_gw_ready" targetRef="fw_end_already">
+    <bpmn:sequenceFlow id="kl_f9" name="promoted" sourceRef="fw_gw_promotion" targetRef="fw_end_refused">
       <bpmn:extensionElements><aef:uid value="kl_e9"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f10" name="ready" sourceRef="fw_gw_ready" targetRef="fw_3_practice">
+    <bpmn:sequenceFlow id="kl_f10" name="ready" sourceRef="fw_gw_promotion" targetRef="fw_3_write">
       <bpmn:extensionElements><aef:uid value="kl_e10"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f11" name="almost" sourceRef="fw_gw_ready" targetRef="fw_3_practice">
+    <bpmn:sequenceFlow id="kl_f11" name="almost" sourceRef="fw_gw_promotion" targetRef="fw_3_write">
       <bpmn:extensionElements><aef:uid value="kl_e11"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f12" name="building" sourceRef="fw_gw_ready" targetRef="fw_3_practice">
+    <bpmn:sequenceFlow id="kl_f12" name="building" sourceRef="fw_gw_promotion" targetRef="fw_3_write">
       <bpmn:extensionElements><aef:uid value="kl_e12"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="kl_f13" sourceRef="fw_3_practice" targetRef="fw_end_active">
+    <bpmn:sequenceFlow id="kl_f13" sourceRef="fw_3_write" targetRef="fw_end_practice">
       <bpmn:extensionElements><aef:uid value="kl_e13"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
   </bpmn:process>

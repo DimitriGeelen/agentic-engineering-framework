@@ -40,27 +40,27 @@
         <bpmn:extensionElements>
           <aef:laneMeta abbr="fw" authority="authority" height="300"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>fw_1_diagnose</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_1_healing</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>fw_2_classify</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_gw_type</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_gw_failure</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>fw_3_lookup</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_4_suggest</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_4_emit</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>fw_5_record</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_end_learned</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_resolved</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="agent" name="Agent · Initiative">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="agt" authority="initiative" height="220"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>agt_0_error</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_1_flag</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_2_fix</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_3_resume</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_4_resolve</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_start_error</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_set</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_apply</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_3_status</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_4_fw</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
 
-    <bpmn:startEvent id="agt_0_error" name="error / unexpected behavior during task work">
+    <bpmn:startEvent id="agt_start_error" name="error / unexpected behavior during task work">
       <bpmn:extensionElements>
         <aef:uid value="eh_error"/>
         <aef:position x="120.0" y="380.0"/>
@@ -69,7 +69,7 @@
       <bpmn:outgoing>eh_f1</bpmn:outgoing>
     </bpmn:startEvent>
 
-    <bpmn:serviceTask id="agt_1_flag" name="set status: issues — fw task update T-XXX --status issues">
+    <bpmn:serviceTask id="agt_1_set" name="set status: issues — fw task update T-XXX --status issues">
       <bpmn:extensionElements>
         <aef:uid value="eh_flag"/>
         <aef:position x="280.0" y="380.0"/>
@@ -79,7 +79,7 @@
       <bpmn:outgoing>eh_f2</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="fw_1_diagnose" name="healing diagnose — auto-triggered">
+    <bpmn:serviceTask id="fw_1_healing" name="healing diagnose — auto-triggered">
       <bpmn:extensionElements>
         <aef:uid value="eh_diagnose"/>
         <aef:position x="440.0" y="140.0"/>
@@ -99,7 +99,7 @@
       <bpmn:outgoing>eh_f4</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:exclusiveGateway id="fw_gw_type" name="failure type?">
+    <bpmn:exclusiveGateway id="fw_gw_failure" name="failure type?">
       <bpmn:extensionElements>
         <aef:uid value="eh_gw_type"/>
         <aef:position x="760.0" y="140.0"/>
@@ -128,7 +128,7 @@
       <bpmn:outgoing>eh_f12</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="fw_4_suggest" name="emit recovery suggestions — Error Escalation Ladder A&#8594;D">
+    <bpmn:serviceTask id="fw_4_emit" name="emit recovery suggestions — Error Escalation Ladder A&#8594;D">
       <bpmn:extensionElements>
         <aef:uid value="eh_suggest"/>
         <aef:position x="1240.0" y="140.0"/>
@@ -138,7 +138,7 @@
       <bpmn:outgoing>eh_f13</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_2_fix" name="apply fix per suggestions">
+    <bpmn:serviceTask id="agt_2_apply" name="apply fix per suggestions">
       <bpmn:extensionElements>
         <aef:uid value="eh_fix"/>
         <aef:position x="1240.0" y="380.0"/>
@@ -148,7 +148,7 @@
       <bpmn:outgoing>eh_f14</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_3_resume" name="status back to started-work">
+    <bpmn:serviceTask id="agt_3_status" name="status back to started-work">
       <bpmn:extensionElements>
         <aef:uid value="eh_resume"/>
         <aef:position x="1400.0" y="380.0"/>
@@ -158,7 +158,7 @@
       <bpmn:outgoing>eh_f15</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_4_resolve" name="fw healing resolve T-XXX --mitigation '…'">
+    <bpmn:serviceTask id="agt_4_fw" name="fw healing resolve T-XXX --mitigation '…'">
       <bpmn:extensionElements>
         <aef:uid value="eh_resolve"/>
         <aef:position x="1560.0" y="380.0"/>
@@ -178,7 +178,7 @@
       <bpmn:outgoing>eh_f17</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:endEvent id="fw_end_learned" name="resolved — pattern available for future diagnosis">
+    <bpmn:endEvent id="fw_end_resolved" name="resolved — pattern available for future diagnosis">
       <bpmn:extensionElements>
         <aef:uid value="eh_done_learned"/>
         <aef:position x="1880.0" y="140.0"/>
@@ -187,52 +187,52 @@
       <bpmn:incoming>eh_f17</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:sequenceFlow id="eh_f1" sourceRef="agt_0_error" targetRef="agt_1_flag">
+    <bpmn:sequenceFlow id="eh_f1" sourceRef="agt_start_error" targetRef="agt_1_set">
       <bpmn:extensionElements><aef:uid value="eh_e1"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="eh_f2" sourceRef="agt_1_flag" targetRef="fw_1_diagnose">
+    <bpmn:sequenceFlow id="eh_f2" sourceRef="agt_1_set" targetRef="fw_1_healing">
       <bpmn:extensionElements><aef:uid value="eh_e2"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="eh_f3" sourceRef="fw_1_diagnose" targetRef="fw_2_classify">
+    <bpmn:sequenceFlow id="eh_f3" sourceRef="fw_1_healing" targetRef="fw_2_classify">
       <bpmn:extensionElements><aef:uid value="eh_e3"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="eh_f4" sourceRef="fw_2_classify" targetRef="fw_gw_type">
+    <bpmn:sequenceFlow id="eh_f4" sourceRef="fw_2_classify" targetRef="fw_gw_failure">
       <bpmn:extensionElements><aef:uid value="eh_e4"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="eh_f5" name="dependency" sourceRef="fw_gw_type" targetRef="fw_3_lookup">
+    <bpmn:sequenceFlow id="eh_f5" name="dependency" sourceRef="fw_gw_failure" targetRef="fw_3_lookup">
       <bpmn:extensionElements><aef:uid value="eh_e5"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="eh_f6" name="external" sourceRef="fw_gw_type" targetRef="fw_3_lookup">
+    <bpmn:sequenceFlow id="eh_f6" name="external" sourceRef="fw_gw_failure" targetRef="fw_3_lookup">
       <bpmn:extensionElements><aef:uid value="eh_e6"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="eh_f7" name="environment" sourceRef="fw_gw_type" targetRef="fw_3_lookup">
+    <bpmn:sequenceFlow id="eh_f7" name="environment" sourceRef="fw_gw_failure" targetRef="fw_3_lookup">
       <bpmn:extensionElements><aef:uid value="eh_e7"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="eh_f8" name="design" sourceRef="fw_gw_type" targetRef="fw_3_lookup">
+    <bpmn:sequenceFlow id="eh_f8" name="design" sourceRef="fw_gw_failure" targetRef="fw_3_lookup">
       <bpmn:extensionElements><aef:uid value="eh_e8"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="eh_f9" name="code" sourceRef="fw_gw_type" targetRef="fw_3_lookup">
+    <bpmn:sequenceFlow id="eh_f9" name="code" sourceRef="fw_gw_failure" targetRef="fw_3_lookup">
       <bpmn:extensionElements><aef:uid value="eh_e9"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="eh_f10" name="unknown" sourceRef="fw_gw_type" targetRef="fw_3_lookup">
+    <bpmn:sequenceFlow id="eh_f10" name="unknown" sourceRef="fw_gw_failure" targetRef="fw_3_lookup">
       <bpmn:extensionElements><aef:uid value="eh_e10"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="eh_f12" sourceRef="fw_3_lookup" targetRef="fw_4_suggest">
+    <bpmn:sequenceFlow id="eh_f12" sourceRef="fw_3_lookup" targetRef="fw_4_emit">
       <bpmn:extensionElements><aef:uid value="eh_e12"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="eh_f13" sourceRef="fw_4_suggest" targetRef="agt_2_fix">
+    <bpmn:sequenceFlow id="eh_f13" sourceRef="fw_4_emit" targetRef="agt_2_apply">
       <bpmn:extensionElements><aef:uid value="eh_e13"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="eh_f14" sourceRef="agt_2_fix" targetRef="agt_3_resume">
+    <bpmn:sequenceFlow id="eh_f14" sourceRef="agt_2_apply" targetRef="agt_3_status">
       <bpmn:extensionElements><aef:uid value="eh_e14"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="eh_f15" sourceRef="agt_3_resume" targetRef="agt_4_resolve">
+    <bpmn:sequenceFlow id="eh_f15" sourceRef="agt_3_status" targetRef="agt_4_fw">
       <bpmn:extensionElements><aef:uid value="eh_e15"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="eh_f16" sourceRef="agt_4_resolve" targetRef="fw_5_record">
+    <bpmn:sequenceFlow id="eh_f16" sourceRef="agt_4_fw" targetRef="fw_5_record">
       <bpmn:extensionElements><aef:uid value="eh_e16"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="eh_f17" sourceRef="fw_5_record" targetRef="fw_end_learned">
+    <bpmn:sequenceFlow id="eh_f17" sourceRef="fw_5_record" targetRef="fw_end_resolved">
       <bpmn:extensionElements><aef:uid value="eh_e17"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
   </bpmn:process>

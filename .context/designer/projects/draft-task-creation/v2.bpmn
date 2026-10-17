@@ -41,34 +41,34 @@
         <bpmn:extensionElements>
           <aef:laneMeta abbr="agt" authority="initiative" height="200"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>agt_0_intent</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_1_workon</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>agt_2_acs</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_start_work</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_1_fw</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>agt_2_author</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="framework" name="Framework · Authority">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="fw" authority="authority" height="320"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>fw_gw_exists</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_1_create</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_2_id</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_gw_type</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_3_recgate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_gw_existing</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_1_instantiate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_2_allocate</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_gw_workflow</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_3_inception</bpmn:flowNodeRef>
         <bpmn:flowNodeRef>fw_4_write</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_5_focus</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_6_estimator</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_7_g020</bpmn:flowNodeRef>
-        <bpmn:flowNodeRef>fw_end_ready</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_5_set</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_6_bvp</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_7_020</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>fw_end_task</bpmn:flowNodeRef>
       </bpmn:lane>
       <bpmn:lane id="human" name="Human · Sovereignty">
         <bpmn:extensionElements>
           <aef:laneMeta abbr="hum" authority="sovereignty" height="140"/>
         </bpmn:extensionElements>
-        <bpmn:flowNodeRef>hum_0_form</bpmn:flowNodeRef>
+        <bpmn:flowNodeRef>hum_start_operator</bpmn:flowNodeRef>
       </bpmn:lane>
     </bpmn:laneSet>
 
-    <bpmn:startEvent id="agt_0_intent" name="work intent — nothing gets done without a task">
+    <bpmn:startEvent id="agt_start_work" name="work intent — nothing gets done without a task">
       <bpmn:extensionElements>
         <aef:uid value="tc_intent"/>
         <aef:position x="120.0" y="320.0"/>
@@ -77,7 +77,7 @@
       <bpmn:outgoing>tc_f1</bpmn:outgoing>
     </bpmn:startEvent>
 
-    <bpmn:serviceTask id="agt_1_workon" name="fw work-on &lt;name|T-XXX&gt;">
+    <bpmn:serviceTask id="agt_1_fw" name="fw work-on &lt;name|T-XXX&gt;">
       <bpmn:extensionElements>
         <aef:uid value="tc_workon"/>
         <aef:position x="280.0" y="320.0"/>
@@ -87,7 +87,7 @@
       <bpmn:outgoing>tc_f2</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:startEvent id="hum_0_form" name="operator files task via Watchtower form">
+    <bpmn:startEvent id="hum_start_operator" name="operator files task via Watchtower form">
       <bpmn:extensionElements>
         <aef:uid value="tc_form"/>
         <aef:position x="280.0" y="640.0"/>
@@ -96,7 +96,7 @@
       <bpmn:outgoing>tc_f5</bpmn:outgoing>
     </bpmn:startEvent>
 
-    <bpmn:exclusiveGateway id="fw_gw_exists" name="existing task?">
+    <bpmn:exclusiveGateway id="fw_gw_existing" name="existing task?">
       <bpmn:extensionElements>
         <aef:uid value="tc_gw_exists"/>
         <aef:position x="440.0" y="140.0"/>
@@ -106,7 +106,7 @@
       <bpmn:outgoing>tc_f4</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:serviceTask id="fw_1_create" name="instantiate template + validate name">
+    <bpmn:serviceTask id="fw_1_instantiate" name="instantiate template + validate name">
       <bpmn:extensionElements>
         <aef:uid value="tc_create"/>
         <aef:position x="600.0" y="140.0"/>
@@ -117,7 +117,7 @@
       <bpmn:outgoing>tc_f6</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="fw_2_id" name="allocate task ID — keylock + union scan">
+    <bpmn:serviceTask id="fw_2_allocate" name="allocate task ID — keylock + union scan">
       <bpmn:extensionElements>
         <aef:uid value="tc_id"/>
         <aef:position x="760.0" y="140.0"/>
@@ -127,7 +127,7 @@
       <bpmn:outgoing>tc_f7</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:exclusiveGateway id="fw_gw_type" name="workflow type?">
+    <bpmn:exclusiveGateway id="fw_gw_workflow" name="workflow type?">
       <bpmn:extensionElements>
         <aef:uid value="tc_gw_type"/>
         <aef:position x="920.0" y="140.0"/>
@@ -142,7 +142,7 @@
       <bpmn:outgoing>tc_f14</bpmn:outgoing>
     </bpmn:exclusiveGateway>
 
-    <bpmn:serviceTask id="fw_3_recgate" name="inception recommendation-completeness gate">
+    <bpmn:serviceTask id="fw_3_inception" name="inception recommendation-completeness gate">
       <bpmn:extensionElements>
         <aef:uid value="tc_recgate"/>
         <aef:position x="1080.0" y="240.0"/>
@@ -168,7 +168,7 @@
       <bpmn:outgoing>tc_f16</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="fw_5_focus" name="set focus + status started-work">
+    <bpmn:serviceTask id="fw_5_set" name="set focus + status started-work">
       <bpmn:extensionElements>
         <aef:uid value="tc_focus"/>
         <aef:position x="1400.0" y="140.0"/>
@@ -179,7 +179,7 @@
       <bpmn:outgoing>tc_f17</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="fw_6_estimator" name="BVP estimator worker proposes scores (async)">
+    <bpmn:serviceTask id="fw_6_bvp" name="BVP estimator worker proposes scores (async)">
       <bpmn:extensionElements>
         <aef:uid value="tc_estimator"/>
         <aef:position x="1560.0" y="140.0"/>
@@ -189,7 +189,7 @@
       <bpmn:outgoing>tc_f18</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="fw_7_g020" name="G-020 build-readiness gate armed">
+    <bpmn:serviceTask id="fw_7_020" name="G-020 build-readiness gate armed">
       <bpmn:extensionElements>
         <aef:uid value="tc_g020"/>
         <aef:position x="1720.0" y="140.0"/>
@@ -199,7 +199,7 @@
       <bpmn:outgoing>tc_f19</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:serviceTask id="agt_2_acs" name="author real ACs — replace template placeholders">
+    <bpmn:serviceTask id="agt_2_author" name="author real ACs — replace template placeholders">
       <bpmn:extensionElements>
         <aef:uid value="tc_acs"/>
         <aef:position x="1720.0" y="320.0"/>
@@ -209,7 +209,7 @@
       <bpmn:outgoing>tc_f20</bpmn:outgoing>
     </bpmn:serviceTask>
 
-    <bpmn:endEvent id="fw_end_ready" name="task active — work may begin">
+    <bpmn:endEvent id="fw_end_task" name="task active — work may begin">
       <bpmn:extensionElements>
         <aef:uid value="tc_done_ready"/>
         <aef:position x="1880.0" y="140.0"/>
@@ -218,64 +218,64 @@
       <bpmn:incoming>tc_f20</bpmn:incoming>
     </bpmn:endEvent>
 
-    <bpmn:sequenceFlow id="tc_f1" sourceRef="agt_0_intent" targetRef="agt_1_workon">
+    <bpmn:sequenceFlow id="tc_f1" sourceRef="agt_start_work" targetRef="agt_1_fw">
       <bpmn:extensionElements><aef:uid value="tc_e1"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="tc_f2" sourceRef="agt_1_workon" targetRef="fw_gw_exists">
+    <bpmn:sequenceFlow id="tc_f2" sourceRef="agt_1_fw" targetRef="fw_gw_existing">
       <bpmn:extensionElements><aef:uid value="tc_e2"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="tc_f3" name="resume — T-XXX" sourceRef="fw_gw_exists" targetRef="fw_5_focus">
+    <bpmn:sequenceFlow id="tc_f3" name="resume — T-XXX" sourceRef="fw_gw_existing" targetRef="fw_5_set">
       <bpmn:extensionElements><aef:uid value="tc_e3"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="tc_f4" name="new" sourceRef="fw_gw_exists" targetRef="fw_1_create">
+    <bpmn:sequenceFlow id="tc_f4" name="new" sourceRef="fw_gw_existing" targetRef="fw_1_instantiate">
       <bpmn:extensionElements><aef:uid value="tc_e4"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="tc_f5" sourceRef="hum_0_form" targetRef="fw_1_create">
+    <bpmn:sequenceFlow id="tc_f5" sourceRef="hum_start_operator" targetRef="fw_1_instantiate">
       <bpmn:extensionElements><aef:uid value="tc_e5"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="tc_f6" sourceRef="fw_1_create" targetRef="fw_2_id">
+    <bpmn:sequenceFlow id="tc_f6" sourceRef="fw_1_instantiate" targetRef="fw_2_allocate">
       <bpmn:extensionElements><aef:uid value="tc_e6"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="tc_f7" sourceRef="fw_2_id" targetRef="fw_gw_type">
+    <bpmn:sequenceFlow id="tc_f7" sourceRef="fw_2_allocate" targetRef="fw_gw_workflow">
       <bpmn:extensionElements><aef:uid value="tc_e7"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="tc_f8" name="specification" sourceRef="fw_gw_type" targetRef="fw_4_write">
+    <bpmn:sequenceFlow id="tc_f8" name="specification" sourceRef="fw_gw_workflow" targetRef="fw_4_write">
       <bpmn:extensionElements><aef:uid value="tc_e8"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="tc_f9" name="design" sourceRef="fw_gw_type" targetRef="fw_4_write">
+    <bpmn:sequenceFlow id="tc_f9" name="design" sourceRef="fw_gw_workflow" targetRef="fw_4_write">
       <bpmn:extensionElements><aef:uid value="tc_e9"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="tc_f10" name="build" sourceRef="fw_gw_type" targetRef="fw_4_write">
+    <bpmn:sequenceFlow id="tc_f10" name="build" sourceRef="fw_gw_workflow" targetRef="fw_4_write">
       <bpmn:extensionElements><aef:uid value="tc_e10"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="tc_f11" name="test" sourceRef="fw_gw_type" targetRef="fw_4_write">
+    <bpmn:sequenceFlow id="tc_f11" name="test" sourceRef="fw_gw_workflow" targetRef="fw_4_write">
       <bpmn:extensionElements><aef:uid value="tc_e11"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="tc_f12" name="refactor" sourceRef="fw_gw_type" targetRef="fw_4_write">
+    <bpmn:sequenceFlow id="tc_f12" name="refactor" sourceRef="fw_gw_workflow" targetRef="fw_4_write">
       <bpmn:extensionElements><aef:uid value="tc_e12"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="tc_f13" name="decommission" sourceRef="fw_gw_type" targetRef="fw_4_write">
+    <bpmn:sequenceFlow id="tc_f13" name="decommission" sourceRef="fw_gw_workflow" targetRef="fw_4_write">
       <bpmn:extensionElements><aef:uid value="tc_e13"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="tc_f14" name="inception" sourceRef="fw_gw_type" targetRef="fw_3_recgate">
+    <bpmn:sequenceFlow id="tc_f14" name="inception" sourceRef="fw_gw_workflow" targetRef="fw_3_inception">
       <bpmn:extensionElements><aef:uid value="tc_e14"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="tc_f15" sourceRef="fw_3_recgate" targetRef="fw_4_write">
+    <bpmn:sequenceFlow id="tc_f15" sourceRef="fw_3_inception" targetRef="fw_4_write">
       <bpmn:extensionElements><aef:uid value="tc_e15"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="tc_f16" sourceRef="fw_4_write" targetRef="fw_5_focus">
+    <bpmn:sequenceFlow id="tc_f16" sourceRef="fw_4_write" targetRef="fw_5_set">
       <bpmn:extensionElements><aef:uid value="tc_e16"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="tc_f17" sourceRef="fw_5_focus" targetRef="fw_6_estimator">
+    <bpmn:sequenceFlow id="tc_f17" sourceRef="fw_5_set" targetRef="fw_6_bvp">
       <bpmn:extensionElements><aef:uid value="tc_e17"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="tc_f18" sourceRef="fw_6_estimator" targetRef="fw_7_g020">
+    <bpmn:sequenceFlow id="tc_f18" sourceRef="fw_6_bvp" targetRef="fw_7_020">
       <bpmn:extensionElements><aef:uid value="tc_e18"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="tc_f19" sourceRef="fw_7_g020" targetRef="agt_2_acs">
+    <bpmn:sequenceFlow id="tc_f19" sourceRef="fw_7_020" targetRef="agt_2_author">
       <bpmn:extensionElements><aef:uid value="tc_e19"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
-    <bpmn:sequenceFlow id="tc_f20" sourceRef="agt_2_acs" targetRef="fw_end_ready">
+    <bpmn:sequenceFlow id="tc_f20" sourceRef="agt_2_author" targetRef="fw_end_task">
       <bpmn:extensionElements><aef:uid value="tc_e20"/></bpmn:extensionElements>
     </bpmn:sequenceFlow>
   </bpmn:process>
