@@ -37,10 +37,19 @@ BASELINE_FILE="$CONTEXT_DIR/working/.session-baseline"
 # two license opposite actions.
 CONTEXT_WINDOW=$(fw_config_int "CONTEXT_WINDOW" 800000)
 
-# Token thresholds (autoCompact disabled — D-027)
-TOKEN_WARN=$((CONTEXT_WINDOW * 75 / 100))        # ~75% (600K at 800K) — informational
-TOKEN_URGENT=$((CONTEXT_WINDOW * 85 / 100))      # ~85% (680K at 800K) — commit + checkpoint
-TOKEN_CRITICAL=$((CONTEXT_WINDOW * 95 / 100))    # ~95% (760K at 800K) — handover NOW
+# Token thresholds (autoCompact disabled — D-027). T-4226: one ladder, computed by
+# lib/budget_ladder.py from the spawn reserve R (the same table budget-gate.sh reads).
+# Amber = warn (informational), Red = urgent (commit + checkpoint), Stop = critical (handover NOW).
+# An unreadable ladder leaves every threshold above the cap: no band fires (fail open).
+_LADDER=$(python3 -I "$FRAMEWORK_ROOT/lib/budget_ladder.py" "$CONTEXT_WINDOW" 2>/dev/null) || _LADDER=""
+_ladder_get() { printf '%s\n' "$_LADDER" | sed -n "s/^$1=//p"; }
+TOKEN_WARN=$(_ladder_get TOKEN_WARN)
+TOKEN_URGENT=$(_ladder_get TOKEN_URGENT)
+TOKEN_CRITICAL=$(_ladder_get TOKEN_CRITICAL)
+BUDGET_RESERVE=$(_ladder_get BUDGET_RESERVE)
+TOKEN_WARN=${TOKEN_WARN:-$((CONTEXT_WINDOW + 1))}
+TOKEN_URGENT=${TOKEN_URGENT:-$((CONTEXT_WINDOW + 1))}
+TOKEN_CRITICAL=${TOKEN_CRITICAL:-$((CONTEXT_WINDOW + 1))}
 
 # Check tokens every N tool calls (balance: accuracy vs performance)
 TOKEN_CHECK_INTERVAL=$(fw_config_int "TOKEN_CHECK_INTERVAL" 5)
@@ -347,6 +356,16 @@ SIGNAL_EOF
     fi
 }
 
+# T-4226: the band name for a used count, read off the ladder thresholds above.
+_budget_band() {
+    local tokens="$1"
+    if [ "$tokens" -ge "$TOKEN_CRITICAL" ]; then echo "Stop"
+    elif [ "$tokens" -ge "$TOKEN_URGENT" ]; then echo "Red"
+    elif [ "$tokens" -ge "$TOKEN_WARN" ]; then echo "Amber"
+    else echo "Green"
+    fi
+}
+
 warn_by_tokens() {
     local tokens="$1"
     local pct=$((tokens * 100 / CONTEXT_WINDOW))
@@ -354,7 +373,7 @@ warn_by_tokens() {
     if [ "$tokens" -ge "$TOKEN_CRITICAL" ]; then
         echo "" >&2
         echo "===========================================" >&2
-        echo "Session wrapping up: ${tokens} tokens (~${pct}% of the ${CONTEXT_WINDOW}-token budget cap)." >&2
+        echo "Session wrapping up: ${tokens} tokens (~${pct}% of the ${CONTEXT_WINDOW}-token budget cap; Stop band)." >&2
         echo "Task files have all essential state. Commit and handover." >&2
         echo "Details: docs/context-compaction.md (budget ladder, what handover/compact capture)" >&2
         echo "===========================================" >&2
@@ -363,7 +382,7 @@ warn_by_tokens() {
         _auto_handover_at_critical "$tokens"
     elif [ "$tokens" -ge "$TOKEN_URGENT" ]; then
         echo "" >&2
-        echo "WARNING: Context at ${tokens} tokens (~${pct}% of the ${CONTEXT_WINDOW}-token budget cap)." >&2
+        echo "WARNING: Context at ${tokens} tokens (~${pct}% of the ${CONTEXT_WINDOW}-token budget cap; Red band)." >&2
         echo "BUDGET: Do not start new implementation work. Commit and handover." >&2
         echo "ACTION: Commit work, then '$(_fw_cmd) handover --checkpoint'" >&2
         echo "Details: docs/context-compaction.md (budget ladder, what to do at each level)" >&2
@@ -615,6 +634,7 @@ except Exception: print('')
             if [ "${tokens:-0}" -gt 0 ]; then
                 pct=$((tokens * 100 / CONTEXT_WINDOW))
                 echo "Context tokens: ${tokens} (~${pct}% of the ${CONTEXT_WINDOW}-token budget cap)"
+                echo "Band: $(_budget_band "$tokens") — free $((CONTEXT_WINDOW - tokens)) tokens; spawn reserve R=${BUDGET_RESERVE} (Green spawns, Amber small only, Red and Stop none)"
                 echo "Model: ${model:-unknown} — the cap is a configured dial, not this model's window."
                 echo "  Raise or lower it with: $(_fw_cmd) config set CONTEXT_WINDOW <tokens>"
             else
@@ -676,7 +696,7 @@ except Exception: print('')
         if [ -z "$MY_CLAUDE_SID" ] && [ -n "${FW_TRANSCRIPT_PATH:-}" ]; then
             MY_CLAUDE_SID=$(basename "$FW_TRANSCRIPT_PATH" .jsonl)
         fi
-        BUDGET_FILE="$BUDGET_FILE" MY_SESSION_ID="$MY_SESSION_ID" MY_CLAUDE_SID="$MY_CLAUDE_SID" STATUS_MAX_AGE="$(fw_config_int "BUDGET_STATUS_MAX_AGE" 90)" python3 -c "
+        BUDGET_FILE="$BUDGET_FILE" MY_SESSION_ID="$MY_SESSION_ID" MY_CLAUDE_SID="$MY_CLAUDE_SID" CONTEXT_WINDOW="$CONTEXT_WINDOW" STATUS_MAX_AGE="$(fw_config_int "BUDGET_STATUS_MAX_AGE" 90)" python3 -c "
 import json, os, time, sys
 
 budget_file = os.environ['BUDGET_FILE']
@@ -719,6 +739,13 @@ else:
     print(f'level: {level}')
     print(f'tokens: {tokens}')
     print(f'age_seconds: {age}')
+    # T-4226: free tokens against the configured cap, and the band they name.
+    # The level line above keeps the machine names (ok/warn/urgent/critical).
+    if isinstance(tokens, int):
+        band = {'ok': 'Green', 'warn': 'Amber', 'urgent': 'Red', 'critical': 'Stop'}.get(level, 'unknown')
+        window = int(os.environ['CONTEXT_WINDOW'])
+        print(f'free_tokens: {window - tokens}')
+        print(f'band: {band}')
     # T-3248: pass the useful-headroom fields through when the writer measured
     # them (budget-gate rides them along in the same cache write). Absent or
     # null fields print nothing — measurement only, never a fabricated number.
