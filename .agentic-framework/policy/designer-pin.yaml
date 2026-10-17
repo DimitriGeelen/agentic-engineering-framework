@@ -16,13 +16,13 @@
 # frozen annotated tag = published frozen bytes — 832's working tree stays
 # off-limits.
 
-version: "0.21.0"
-sha256: "da1619714dfcb46f265c989d08a2c5129fb0134c40f726826a86fff93294b505"
-bytes: 1164928
+version: "0.22.0"
+sha256: "b311d4852e7a524adc2edbc806472cb7c0331051fdc8a1e3fa47dd4c3abdb4dd"
+bytes: 1171433
 
 source_repo: "832-Workflow-designer"
-source_artifact: "dist/aef-workflow-designer-0.21.0.html"
-source_tag: "designer-v0.21.0"
+source_artifact: "dist/aef-workflow-designer-0.22.0.html"
+source_tag: "designer-v0.22.0"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
 # Read-only LAN origin for pull-at-tag intake (T-247/D-335, tooling T-2616).
 # `fw designer sync --from-tag` fetches artifact + MANIFEST at the annotated tag
@@ -153,7 +153,10 @@ protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha25
 # T-4224 (2026-10-17): re-pinned 0.20.0 -> 0.21.0 (832 announce e40ceacc). 0.21.0 carries 832 T-1194
 #   (operator-chosen option c): a leading task id in a node name is skipped when deriving the slug, so
 #   "T-001: Orientation" keeps agt_1_orientation. Also T-1091 sticky lane labels, T-1154 pool border (drawing only).
-vendored_path: "vendor/designer/aef-workflow-designer-0.21.0.html"
+# T-4279 (2026-10-17): re-pinned 0.21.0 -> 0.22.0 (832 announce 1af206e9). 0.22.0 carries 832 T-1196 (operator
+#   request): leading G-/OBS-/L- ids are skipped in slugs like T- ids (8 draft nodes rename on next save);
+#   T-1193 read-only Slug field; T-1164 lane validator findings marked on the lane.
+vendored_path: "vendor/designer/aef-workflow-designer-0.22.0.html"
 
 # Offline-hardened (832 T-176): web fonts are embedded as base64 woff2 — ZERO network
 # on load (no fonts.googleapis.com / gstatic fetch). Fully self-contained for

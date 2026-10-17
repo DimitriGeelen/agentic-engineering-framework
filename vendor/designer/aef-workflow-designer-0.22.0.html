@@ -717,6 +717,16 @@ font-family: 'Outfit';
   .node[data-finding="WARN"]  .node-finding-badge { fill: var(--orange); }
   .node[data-finding="ERROR"] .node-finding-pill  { stroke: var(--red); }
   .node[data-finding="WARN"]  .node-finding-pill  { stroke: var(--orange); }
+  /* T-1164: a lane-anchored finding marks the lane's header strip the same way (pill + glyph), and edges the strip in
+     the severity colour. The pinned copies (T-1091, #g-sticky-lanes) are named too, or their own edge rule would win. */
+  .lane-header[data-finding="ERROR"] .node-finding-badge { fill: var(--red); }
+  .lane-header[data-finding="WARN"]  .node-finding-badge { fill: var(--orange); }
+  .lane-header[data-finding="ERROR"] .node-finding-pill  { stroke: var(--red); }
+  .lane-header[data-finding="WARN"]  .node-finding-pill  { stroke: var(--orange); }
+  .lane-header[data-finding="ERROR"] > rect:first-child,
+  #g-sticky-lanes .lane-header[data-finding="ERROR"] > rect:first-child { stroke: var(--red); stroke-width: 1.5; }
+  .lane-header[data-finding="WARN"] > rect:first-child,
+  #g-sticky-lanes .lane-header[data-finding="WARN"] > rect:first-child { stroke: var(--orange); stroke-width: 1.5; }
 
   /* The findings drawer DOCKS along the bottom of the canvas column, rather than floating
      over the middle of the diagram. Read off the first screenshot, not reasoned about: the
@@ -734,6 +744,9 @@ font-family: 'Outfit';
   /* Focus mode deliberately strips chrome to the diagram; a findings dock is chrome. */
   body.vc-focus      #findings-drawer { display: none !important; }
   #findings-drawer[data-open="1"] { display: flex; }
+  /* T-1164: the app toast (showToast, bottom:18px inline) sat on the dock's rows, e.g. "Restored your unsaved work" over a
+     finding. While the dock is open the toast rises above the dock's tallest extent (max-height 30vh). */
+  body:has(#findings-drawer[data-open="1"]) #app-toast { bottom: calc(30vh + 12px) !important; }
   .findings-head { display: flex; align-items: center; gap: 8px; padding: 6px 10px; border-bottom: 1px solid var(--border); }
   .findings-title { font-weight: 600; font-size: 12px; }
   /* The state line is the load-bearing part of this panel: "not yet checked",
@@ -2105,7 +2118,8 @@ function generateUid(prefix) {
 // lowercased, stripped of non-alphanum. Falls back to 'node' if nothing usable.
 // T-1194: a leading task id ("T-001: Orientation", "T-001 - Orientation", "T-001 Orientation") names the task, not
 // the step, and made every such slug its digits (agt_1_001). It is skipped; a name that is ONLY a task id keeps it.
-const LEADING_TASK_ID = /^\s*T-\d+(?:\s*[:\-–—]\s*|\s+)/i;
+// T-1196: also the framework's gap, observation and learning ids (G-062, OBS-314, L-417), at AEF's request.
+const LEADING_TASK_ID = /^\s*(?:T|G|OBS|L)-\d+(?:\s*[:\-–—]\s*|\s+)/i;
 function deriveSlug(displayName) {
   if (!displayName) return 'node';
   const rest = displayName.replace(LEADING_TASK_ID, '');
@@ -3328,11 +3342,35 @@ function syncStickyLanes() {
   const px = +pb.getAttribute('x'), pw = +pb.getAttribute('width');
   const shift = Math.min(left - px, pw - LANE_HEADER);
   if (!(shift > 0.5)) return;
+  // The visible band, in SVG units: the wrap, minus the findings dock where it overlays the canvas bottom (T-962). A
+  // pinned name is centred in the VISIBLE part of its lane, so a lane taller than the view, or one running under the
+  // dock, keeps its name in sight (T-1164 review: "RAMEWORK" cut by the dock at 1024).
+  let visBottom = wr.bottom;
+  const dock = $('findings-drawer');
+  if (dock && dock.getAttribute('data-open') === '1') { const dr = dock.getBoundingClientRect(); if (dr.height && dr.top < visBottom) visBottom = dr.top; }
+  const vTop = (wr.top + canvasWrap.clientTop - ctm.f) / ctm.d, vBot = (visBottom - ctm.f) / ctm.d;
   const lanes = getLanes();
   for (const h of svg.querySelectorAll('#g-pool > .lane-header')) {
     const c = h.cloneNode(true);
     c.setAttribute('transform', `translate(${shift} 0)`);
     c.classList.add('sticky');
+    // Re-centred only when the whole name fits the visible room. When it does not, it keeps its lane-centred place:
+    // pinning it to the room's top showed the END of the words (the text runs bottom-to-top), and centring it in a
+    // short room pushed it up into the lane above. Either way it never leaves its own lane.
+    const r = c.querySelector('rect'), y0 = +r.getAttribute('y'), y1 = y0 + +r.getAttribute('height');
+    const labels = Array.from(c.querySelectorAll('.lane-label'));
+    const rot = labels.length ? /rotate\(-90 [-\d.]+ ([-\d.]+)\)/.exec(labels[0].getAttribute('transform') || '') : null;
+    if (rot) {
+      let len = 0;
+      for (const t of h.querySelectorAll('.lane-label')) { try { len = Math.max(len, t.getBBox().width); } catch (_) {} }
+      const pillRoom = c.querySelector('.node-finding-pill') ? 18 : 0;   // a marked lane's ✖/⚠ pill sits at its top
+      const lc = +rot[1], roomTop = Math.max(y0 + pillRoom, vTop) + 4, roomBot = Math.min(y1, vBot) - 4;
+      if (len && len <= roomBot - roomTop && (lc - len / 2 < roomTop || lc + len / 2 > roomBot)) {
+        const c2 = (roomTop + roomBot) / 2;   // inside the room, hence inside the lane
+        const dy = c2 - lc;
+        if (Math.abs(dy) > 0.5) for (const t of labels) t.setAttribute('transform', `translate(0 ${dy}) ${t.getAttribute('transform') || ''}`);
+      }
+    }
     const lane = lanes.find(l => l.id === h.getAttribute('data-lane-id'));
     if (lane) c.addEventListener('click', ev => { ev.stopPropagation(); onLaneClick(lane); });
     g.appendChild(c);
@@ -3787,8 +3825,10 @@ function fitPoolToLabels() {
   for (const t of svg.querySelectorAll('#g-nodes .node-label, #g-badges text, #g-badges-top text')) {
     let b; try { b = t.getBBox(); } catch (_) { continue; }
     if (!b.width) continue;
-    right = Math.max(right, b.x + b.width + POOL_LABEL_MARGIN);
-    bottom = Math.max(bottom, b.y + b.height + POOL_LABEL_MARGIN_BOTTOM);
+    // Only text that STARTS inside the pool may stretch it (T-1164): a node dragged out below every lane band is the
+    // picture-disagrees-with-the-file case LANE-GEOMETRY reports, and widening the drawn lane around it would hide it.
+    if (b.x < edge) right = Math.max(right, b.x + b.width + POOL_LABEL_MARGIN);
+    if (b.y < floor) bottom = Math.max(bottom, b.y + b.height + POOL_LABEL_MARGIN_BOTTOM);
   }
   const pad = Math.ceil(right - edge), padB = getLanes().length ? Math.ceil(bottom - floor) : 0;
   if (pad !== poolLabelPad || padB !== poolLabelPadBottom) {
@@ -3835,7 +3875,20 @@ function renderPool() {
     // Append BEFORE fitting the label — the fit ladder measures rendered text
     // (getComputedTextLength needs the element in the live DOM).
     gPool.appendChild(headerG);
-    if (labelPrefs.showLane) fitLaneLabel(headerG, lane, cx, cy, lh, isSelected);
+    // T-1164: a lane-anchored validator finding marks the header strip — severity on the strip's edge and a ✖/⚠ pill
+    // at its top, the node marker's pill and glyph. Read from findingsView only (replaced on every check), so a mark
+    // cannot outlive the check that made it. A marked lane's label is fitted below the pill.
+    const laneFnd = findingsView.byLane && findingsView.byLane.get(lane.id);
+    const PILL_ROOM = laneFnd ? 18 : 0;
+    if (laneFnd) {
+      const sev = laneFnd.severity === 'ERROR' ? 'ERROR' : 'WARN';
+      headerG.setAttribute('data-finding', sev);
+      const fw = 13, fx = px + LANE_HEADER / 2 - fw / 2 + 2, fy = yCursor + 15;
+      headerG.appendChild(el('rect', { x: fx, y: fy - 9, width: fw, height: 11.5, rx: 3, class: 'node-finding-pill', 'data-finding-pill': sev }));
+      headerG.appendChild(el('text', { x: fx + fw / 2, y: fy, class: 'node-finding-badge', 'text-anchor': 'middle', 'data-finding-badge': laneFnd.rule },
+                             [text(sev === 'ERROR' ? '✖' : '⚠')]));
+    }
+    if (labelPrefs.showLane) fitLaneLabel(headerG, lane, cx, cy + PILL_ROOM / 2, lh - PILL_ROOM, isSelected);
 
     // Divider at top edge (skip for first lane — that's the pool header line)
     if (li > 0) {
@@ -7386,19 +7439,22 @@ function _renderPropsInto(props, details) {
   const sBpmn = section('BPMN');
   sBpmn.appendChild(field('Name', n.name, v => {
     n.name = v;
-    // Slug auto-tracks the name unless the user has overridden it.
-    if (!n.slugManual) n.slug = deriveUniqueSlug(n, v);
+    // The slug follows the name (T-1193: it is no longer editable).
+    n.slug = deriveUniqueSlug(n, v);
     refreshDisplayIds();
     renderNodes();
     renderProperties();
   }));
-  sBpmn.appendChild(field('Slug', n.slug || '', v => {
-    n.slug = (v || '').toLowerCase().replace(/[^a-z0-9\-]/g, '').slice(0, 16);
-    n.slugManual = true; // mark as user-overridden so name changes don't clobber it
-    refreshDisplayIds();
-    renderNodes();
-    renderProperties();
-  }, { mono: true, hint: 'short id descriptor · derived from name unless overridden' }));
+  // T-1193: the slug is SHOWN, not edited. It follows the name. A slug typed here was never saved (the export writes no
+  // slug; the importer derives every slug from the name), so it reverted on reload and the next save changed the id
+  // unasked. Rename the step to change it.
+  {
+    const f = field('Slug', n.slug || '', () => {}, { mono: true, hint: 'follows the name · rename to change' });
+    const inp = f.querySelector('input');
+    if (inp) { inp.readOnly = true; inp.tabIndex = -1; inp.setAttribute('aria-readonly', 'true'); inp.dataset.testid = 'slug-readonly';
+               inp.style.cssText = 'background: var(--surface); color: var(--text-faint); user-select: text;'; }   // as UID/Owner
+    sBpmn.appendChild(f);
+  }
   // Read-only displayId preview
   const displayPreview = document.createElement('div');
   displayPreview.className = 'field';
@@ -10633,7 +10689,7 @@ async function validateCurrentWorkflow() {
 // panel: T-961 made "could not look" structurally different from "found nothing" at the
 // function boundary, and that distinction dies here if an unchecked map renders the same
 // as a clean one. Hence four states, each with its own line in the header.
-let findingsView = { state: 'unchecked', rows: [], byNode: new Map(), reason: null };
+let findingsView = { state: 'unchecked', rows: [], byNode: new Map(), byLane: new Map(), reason: null };
 
 // WHICH RULES GET A MARKER ON THE CANVAS. A DENYLIST: everything marks except what is
 // named here. T-964 inverted this from an allowlist, and the reason is the whole lesson.
@@ -10695,6 +10751,17 @@ function findingNodeId(location) {
   return hit ? hit.id : null;
 }
 
+// T-1164 (OBS-465): four rules report a LANE, not a node — W-XML-LANE-CAPACITY, W-XML-LANE-GEOMETRY, E-XML-ABBR-DUP,
+// E-XML-LANE-AUTHORING-DEFAULT — as "lane '<id>'", or "lane 'A' -> lane 'B'" about A. They resolved to no node and
+// reached the dock as "not on the map"; the lane band is drawn, so they mark it. The id is the exported one, which
+// the export writes as lane.id. Consulted only when the location named no node.
+function findingLaneId(location) {
+  const m = /\blane \x27([^\x27]+)\x27/.exec(String(location || ''));
+  if (!m) return null;
+  const lane = getLanes().find(l => l.id === m[1]);
+  return lane ? lane.id : null;
+}
+
 function renderFindingsPanel() {
   const drawer = $('findings-drawer');
   const stateEl = $('findings-state');
@@ -10702,7 +10769,7 @@ function renderFindingsPanel() {
   if (!drawer || !stateEl || !list) return;
 
   const v = findingsView;
-  const marked = v.byNode.size;
+  const marked = v.byNode.size + (v.byLane ? v.byLane.size : 0);   // T-1164: marked lanes are on the map too
   let label;
   if (v.state === 'unchecked') { label = 'not yet checked'; }
   else if (v.state === 'unavailable') { label = 'could not check — ' + (v.reason || 'reason unknown'); }
@@ -10725,11 +10792,13 @@ function renderFindingsPanel() {
   list.innerHTML = '';
   for (const r of v.rows) {
     const nodeId = findingNodeId(r.location);
+    const laneId = nodeId ? null : findingLaneId(r.location);   // T-1164
     const row = document.createElement('div');
     row.className = 'finding-row';
     row.setAttribute('data-sev', r.severity || 'WARN');
     row.setAttribute('data-rule', r.rule || '');
-    row.setAttribute('data-anchored', nodeId ? '1' : '0');
+    row.setAttribute('data-anchored', (nodeId || laneId) ? '1' : '0');
+    if (laneId) row.setAttribute('data-lane', laneId);
     const left = document.createElement('div');
     const sev = document.createElement('div');
     sev.className = 'finding-sev';
@@ -10756,6 +10825,14 @@ function renderFindingsPanel() {
         renderAll();
         if (typeof renderProps === 'function') renderProps();
       });
+    } else if (laneId) {
+      // T-1164: a lane finding takes you to the lane, as clicking its header does.
+      row.addEventListener('click', () => {
+        if (!findLane(laneId)) return;
+        selection = { kind: 'lane', id: laneId };
+        multiSelect.clear();
+        renderAll();
+      });
     }
     list.appendChild(row);
   }
@@ -10771,18 +10848,21 @@ async function runCheck() {
     if (!res.ok) {
       // NOT an empty findings list. The panel says it could not look, and the map keeps
       // no markers from a previous run that would now be describing a different document.
-      findingsView = { state: 'unavailable', rows: [], byNode: new Map(), reason: res.reason };
+      findingsView = { state: 'unavailable', rows: [], byNode: new Map(), byLane: new Map(), reason: res.reason };
     } else {
-      const byNode = new Map();
+      const byNode = new Map(), byLane = new Map();
       for (const r of res.findings) {
         if (FINDING_MARKER_EXCLUDED.has(r.rule)) continue;
-        const id = findingNodeId(r.location);
-        if (!id) continue;
+        const nodeId = findingNodeId(r.location);
+        const laneId = nodeId ? null : findingLaneId(r.location);   // T-1164
+        const into = nodeId ? byNode : laneId ? byLane : null;
+        if (!into) continue;
+        const id = nodeId || laneId;
         // Worst severity wins the marker: a node with an error and a warning reads ERROR.
-        const prev = byNode.get(id);
-        if (!prev || (prev.severity !== 'ERROR' && r.severity === 'ERROR')) byNode.set(id, r);
+        const prev = into.get(id);
+        if (!prev || (prev.severity !== 'ERROR' && r.severity === 'ERROR')) into.set(id, r);
       }
-      findingsView = { state: 'checked', rows: res.findings.slice(), byNode, reason: null };
+      findingsView = { state: 'checked', rows: res.findings.slice(), byNode, byLane, reason: null };
     }
   } finally {
     if (btn) { btn.disabled = false; btn.textContent = label || '✓ Check'; }
@@ -11862,7 +11942,7 @@ $('btn-check').onclick = runCheck;                   // T-962 (T-309 slice 3)
 // panel whose findings stay painted on the map. A marker with no visible explanation is
 // worse than no marker.
 $('findings-close').onclick = () => {
-  findingsView = { state: 'unchecked', rows: [], byNode: new Map(), reason: null };
+  findingsView = { state: 'unchecked', rows: [], byNode: new Map(), byLane: new Map(), reason: null };
   $('findings-drawer').setAttribute('data-open', '0');
   renderFindingsPanel_close();
 };
@@ -12238,7 +12318,7 @@ const BPMN_EXPORTER = 'aef-workflow-designer';
 //
 // KEEP IN STEP WITH ./VERSION. Not by remembering — tools/_t808-version-parity.sh is
 // wired into release-designer.sh ahead of every write to dist/.
-const APP_VERSION = '0.21.0';
+const APP_VERSION = '0.22.0';
 
 // A comment is the document's doc block only if it LEADS the document — appears
 // before any element child — and is not our own trailer. Position is the rule AEF's
