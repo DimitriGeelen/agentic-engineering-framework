@@ -16,13 +16,13 @@
 # frozen annotated tag = published frozen bytes — 832's working tree stays
 # off-limits.
 
-version: "0.14.0"
-sha256: "0b5ae3a7f9b519c78b76a0784278ca4d68279fece220cc041d947a25b3d8e6f2"
-bytes: 1043238
+version: "0.20.0"
+sha256: "51931b8a40ece180eb5981f57ab4a41f4c956e0d4cea877c5905ea89b65f6f3c"
+bytes: 1159393
 
 source_repo: "832-Workflow-designer"
-source_artifact: "dist/aef-workflow-designer-0.14.0.html"
-source_tag: "designer-v0.14.0"
+source_artifact: "dist/aef-workflow-designer-0.20.0.html"
+source_tag: "designer-v0.20.0"
 source_manifest: "dist/MANIFEST.yaml"                 # 832 side
 # Read-only LAN origin for pull-at-tag intake (T-247/D-335, tooling T-2616).
 # `fw designer sync --from-tag` fetches artifact + MANIFEST at the annotated tag
@@ -146,7 +146,11 @@ protocol: "docs/aef-designer-integration-protocol.md" # 832 side (pull → sha25
 #   New in 0.14.0 (832): aefMeta.authority first-class; lane authoring defaults; diagram-kind
 #   marker; instance overlay via an OPTIONAL /api/instances probe. Served statically here, that
 #   probe 404s once in the console by design (absence is a state, not a fault).
-vendored_path: "vendor/designer/aef-workflow-designer-0.14.0.html"
+# T-4224 (2026-10-17): re-pinned 0.14.0 -> 0.20.0 via `fw designer sync --from-tag designer-v0.20.0`
+#   (832 T-1187). Sha256+bytes match the MANIFEST at the tag. 0.20.0 renumbers node ids (activities
+#   count only; events/gateways take a type word) on each map's NEXT SAVE — see the Updates of T-4224
+#   for the corpus inventory and what was and was not migrated.
+vendored_path: "vendor/designer/aef-workflow-designer-0.20.0.html"
 
 # Offline-hardened (832 T-176): web fonts are embedded as base64 woff2 — ZERO network
 # on load (no fonts.googleapis.com / gstatic fetch). Fully self-contained for
