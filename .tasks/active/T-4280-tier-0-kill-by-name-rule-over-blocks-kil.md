@@ -100,7 +100,7 @@ cost_estimate_proposed:
 - [x] Signal-name options pass the -f/-r rules: `killall -TERM foo`, `killall -term foo`, `pkill -HUP foo`, `pkill -sigprof foo`, `pkill -PROF foo`, `killall -s TERM foo`, `pkill --signal=TERM foo` exit 0 from check-tier0.sh
 - [x] Every T-3640 block case still blocks: pkill -9/-KILL/-SIGKILL/-s 9/--signal=KILL, pkill -f/--full/-ef, killall -r/--regexp, killall -KILL (tests/unit/t3640_tier0_kill_by_name.bats green)
 - [x] Regression test `tests/unit/t4280_tier0_kill_signal_names.bats` fails without the fix and passes with it
-- [ ] Nearest Tier 0 suites still green; vendored copy in sync (`bin/fw vendor self --check` clean)
+- [x] Nearest Tier 0 suites still green; vendored copy in sync (`bin/fw vendor self --check` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
