@@ -113,16 +113,19 @@ case "\$1" in
     pty)
         case "\$2" in
             inject)
+                # T-4249: the exit marker carries a per-run token taken from this line.
+                printf '%s\\n' "\$4" > "$STATE/inject.last"
                 exit 0
                 ;;
             output)
                 n=\$(cat "$STATE/poll_count")
                 n=\$((n + 1))
                 echo "\$n" > "$STATE/poll_count"
+                tok=\$(sed -E 's/.*__CLAUDE_FW_EXIT_([A-Za-z0-9]+)_%s__.*/\\1/' "$STATE/inject.last" 2>/dev/null)
                 if [ "\$n" -lt 2 ]; then
                     printf 'root@fleet-host:/opt/repo# \n'
                 else
-                    printf '…claude ran…\n__CLAUDE_FW_EXIT_0__\nroot@fleet-host:/opt/repo# \n'
+                    printf '…claude ran…\n__CLAUDE_FW_EXIT_%s_0__\nroot@fleet-host:/opt/repo# \n' "\$tok"
                 fi
                 exit 0
                 ;;

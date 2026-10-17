@@ -17,7 +17,7 @@ description: >
   restart signal, under a PRIVATE tmux socket. Also check: T-4032 (v1.8.9) covers
   the mid-turn kill but not this exit path?
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -51,7 +51,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T14:27:02Z
-last_update: '2026-10-17T14:31:32Z'
+last_update: 2026-10-17T17:13:31Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -103,8 +103,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Regression bats test tests/unit/t4249_termlink_restart_on_exit.bats exists, drives bin/claude-fw --termlink with a fake claude on PATH under a private tmux socket, and fails on the pre-fix wrapper
+- [x] In --termlink mode a fresh .restart-requested written during the run makes the wrapper relaunch claude in the same TermLink session (second fake-claude run observed) instead of exiting
+- [x] The restart is announced with the T-4170 banner (Auto-restart #N, Reason, Handover lines)
+- [x] Existing neighbouring claude-fw tests (t3346, t3358, t3648, restart_mode, t4118) still pass
+- [x] RCA names the root cause with file:line and states whether T-4032 covered this path
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -154,6 +157,8 @@ bvp_scores_proposed:
 
 ## Verification
 
+out=$(bats tests/unit/t4249_termlink_restart_on_exit.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+bin/fw vendor self --check
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -285,6 +290,14 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** under `claude-fw --termlink`, after the budget-critical auto-handover wrote `.restart-requested` and claude ended, the wrapper did not keep the session going: it exited 0, its EXIT trap typed `exit` into the TermLink shell, the pane closed (055 0506 16:23, 1409 15:00:36).
+
+**Root cause:** `bin/claude-fw` exit detection (`_tl_claude_exit_code`, ~line 334, and its poll ~line 1307) matched the bare marker `__CLAUDE_FW_EXIT_<n>__` in the last 10 PTY lines. On a restart the next `claude` line is injected into the SAME shell, so the previous run's marker is still on screen: the new run reads as already exited (code 0). The signal was consumed by the restart, so the no-signal branch (`exit "$exit_code"`, ~line 1620) ends the wrapper and `termlink_cleanup` types `exit` into the live session. Reproduced with a fake claude under a private tmux server: run 2 alive, wrapper gone within one poll.
+
+**Why structurally allowed:** every test fed the detector a single-run screen (t3346/t3358/t3648 stubs) or a fake claude that exits at once, so a second run was never alive while an old marker was visible. T-4032 (terminator waits for end of turn) covers the mid-turn kill, not this path: the restart branch itself works, as the direct-mode and TermLink tests show.
+
+**Prevention:** the marker now carries a per-run token (`__CLAUDE_FW_EXIT_<token>_<n>__`, token = restart count, pid, epoch), so only this run's printf can match. `tests/unit/t4249_termlink_restart_on_exit.bats` keeps run 2 alive and asserts the wrapper survives several polls; it fails on the old wrapper. The t3358/t3648 stubs now echo the token from the injected line.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -379,3 +392,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4249-claude-fw---termlink-does-not-restart-cl.md
 - **Context:** Initial task creation
+
+### 2026-10-17T16:52:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

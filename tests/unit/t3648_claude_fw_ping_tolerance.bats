@@ -36,11 +36,14 @@ case "\$1" in
         [ "\$verdict" = "fail" ] && exit 1
         exit 0 ;;
     pty)
+        # T-4249: the exit marker carries a per-run token taken from the injected line.
+        [ "\$2" = "inject" ] && printf '%s\\n' "\$4" > "$STATE/inject.last"
         if [ "\$2" = "output" ]; then
             p=\$(cat "$STATE/polls"); p=\$((p + 1)); echo "\$p" > "$STATE/polls"
             at=\$(cat "$STATE/marker_at")
             if [ "\$at" -gt 0 ] && [ "\$p" -ge "\$at" ]; then
-                printf '__CLAUDE_FW_EXIT_0__\n'
+                tok=\$(sed -E 's/.*__CLAUDE_FW_EXIT_([A-Za-z0-9]+)_%s__.*/\\1/' "$STATE/inject.last" 2>/dev/null)
+                printf '__CLAUDE_FW_EXIT_%s_0__\n' "\$tok"
             fi
         fi
         exit 0 ;;

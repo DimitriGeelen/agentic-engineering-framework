@@ -332,10 +332,14 @@ _tl_session_gone() {
 # echo of the injection can never match. Prints claude's exit code and returns 0
 # when the marker is present; returns 1 while claude is still running.
 _tl_claude_exit_code() {
-    local text="$1" m
-    m=$(printf '%s\n' "$text" | grep -oE '__CLAUDE_FW_EXIT_[0-9]+__' | tail -1)
+    local text="$1" token="${2:-}" m
+    # T-4249: the marker carries a per-run token. Without one, the previous run's marker
+    # is still in the PTY's last lines when a restart injects the next `claude`, so the
+    # new run read as already exited (code 0, no signal): the wrapper quit and its
+    # cleanup typed `exit` into the live TermLink shell. No token = the old bare form.
+    m=$(printf '%s\n' "$text" | grep -oE "__CLAUDE_FW_EXIT_${token:+${token}_}[0-9]+__" | tail -1)
     [ -n "$m" ] || return 1
-    printf '%s\n' "$m" | sed -E 's/__CLAUDE_FW_EXIT_([0-9]+)__/\1/'
+    printf '%s\n' "$m" | sed -E 's/^.*_([0-9]+)__$/\1/'
 }
 
 # T-3647 (port of 055 P-009, framework:pickup offset 241): PIDs of the
@@ -1227,7 +1231,8 @@ while true; do
         # one '' — skipped so a bare relaunch stays `claude`.
         _tl_args=""
         [ "${#CLAUDE_ARGS[@]}" -gt 0 ] && _tl_args=$(printf ' %q' "${CLAUDE_ARGS[@]}")
-        termlink_inject "claude${_tl_args}; printf '__CLAUDE_FW_EXIT_%s__\n' \"\$?\""
+        _tl_tok="r${restart_count}p$$e$(date +%s)"   # T-4249: this run's marker token
+        termlink_inject "claude${_tl_args}; printf '__CLAUDE_FW_EXIT_${_tl_tok}_%s__\n' \"\$?\""
         _TL_PING_FAILS=0 # T-3648: each run starts with a clean failure count
         # Wait for claude to exit by polling the PTY for shell prompt
         # We check if claude process is still running inside the session
@@ -1299,7 +1304,7 @@ while true; do
             # old `^❯` match was Claude's own TUI caret and fired while claude
             # was alive, so the wrapper tore down its own live session).
             local_output=$(termlink pty output "$TERMLINK_SESSION" --lines 10 --strip-ansi 2>/dev/null) || true
-            if marker_code=$(_tl_claude_exit_code "$local_output"); then
+            if marker_code=$(_tl_claude_exit_code "$local_output" "$_tl_tok"); then
                 exit_code=$marker_code
                 break
             fi
