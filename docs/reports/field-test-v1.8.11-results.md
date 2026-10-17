@@ -63,6 +63,26 @@ Side findings from the same upgrade: (a) step [1/10] rewrote CLAUDE.md governanc
 T-3850 refusal, leaving CLAUDE.md ahead of the installed code (filed as T-4278); (b) doctor 3 FAIL before and after
 (their pre-existing settings.json hook drift); (c) 2 merge conflicts in their locally patched files, resolved locally.
 
+## Round 5 — ring20-dashboard on bleeding-edge a75c25472 (2026-10-17/18, msg 49af751f)
+
+Installed a75c25472 (1.8.10+454) plus their 37 local patches, zero fuzz; upgrade ALL OK; doctor 0 FAIL before and
+after; fast lane 16734 passed before, after 6 order-dependent failures in test_t1831 (pass alone; known class there).
+
+| Fix | ring20-dashboard result |
+|---|---|
+| T-4132 Watchtower restart notice after upgrade | WORKS — "NOTE Watchtower (pid 161) predates the upgraded web/ files - restart it" |
+| T-4171 budget warn/urgent reach the operator | WORKS — "BUDGET URGENT (T-4171): context ~91% of 900000 … restart at 95%" |
+| T-4208 receiver census | WORKS — one receiver |
+| T-4147 CONTEXT_WINDOW | their explicit 900000 honoured; the default itself not exercised |
+| T-4122/T-4210, T-4167, T-4170, T-4196, T-4197, T-4156, T-4131, T-4207, T-4211, T-4203/T-4204 | NOT EXERCISED (no shellcheck; no restart yet; no --commit handover; etc.) |
+
+Security findings from a review they ran on our code:
+- **A — CONFIRMED, release blocker: T-4286.** lib/estate_push.py refuses a private key only by catalogue pattern
+  NAME, and redact() leaves the key body; a missing or broken catalogue redacts nothing. Not live anywhere yet.
+- **B — not reproduced:** shell_write_scan.py depth cap (ctx.depth < 4); a task-file truncate inside 0..6 levels of
+  `bash -c` was still reported. Second look at what is skipped past depth 4 is optional.
+- Docs suggestion: pin the full 40-char sha in upgrade docs.
+
 ## Findings
 
 - **T-4203** (055 item 7): `_fw_is_own_launcher` / `cmd_classify._Ctx` refuse a consumer's tracked
