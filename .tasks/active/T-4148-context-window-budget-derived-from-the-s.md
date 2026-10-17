@@ -13,15 +13,15 @@ description: >
   what (explicit project value vs model-derived), and how a model switch mid-session
   is handled.
 
-status: captured
+status: started-work
 workflow_type: inception
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
 created: 2026-10-13T13:43:13Z
-last_update: '2026-10-13T13:45:32Z'
+last_update: 2026-10-17T12:32:39Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -110,15 +110,15 @@ Follow-up to T-4147, which raised the fixed CONTEXT_WINDOW registry default from
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -167,9 +167,27 @@ Follow-up to T-4147, which raised the fixed CONTEXT_WINDOW registry default from
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale: The need is concrete (one fixed number cannot be right for models of different sizes; the 300K→800K change today makes small-window models unsafe), the inputs are available (the session transcript already records the model id per message; t2885_context_tokens_model_scope.bats shows model-scoped token reading exists), and the change is contained to the two budget consumers plus config. GO for: a model→window table, derive the window from the transcript's current model, explicit CONTEXT_WINDOW stays an override.
+
+**Date**: 2026-10-17T12:32:38Z
 
 ## Updates
 
 <!-- Auto-populated by git mining at task completion.
      Manual entries optional during execution. -->
+
+### 2026-10-17T12:32:38Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale: The need is concrete (one fixed number cannot be right for models of different sizes; the 300K→800K change today makes small-window models unsafe), the inputs are available (the session transcript already records the model id per message; t2885_context_tokens_model_scope.bats shows model-scoped token reading exists), and the change is contained to the two budget consumers plus config. GO for: a model→window table, derive the window from the transcript's current model, explicit CONTEXT_WINDOW stays an override.
+
+### 2026-10-17T12:32:39Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+- **Reason:** Inception decision in progress
