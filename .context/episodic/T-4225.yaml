@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4225: Record the operator's spawn rule: replace 'do not spawn above 60% context' with an absolute reserve of 20K (200K window) up to 50K (800K+ window); keep percentage budget bands
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T09:53:57Z
+# ============================================================================
+
+task_id: T-4225
+task_name: "Record the operator's spawn rule: replace 'do not spawn above 60% context' with an absolute reserve of 20K (200K window) up to 50K (800K+ window); keep percentage budget bands"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-17T08:48:55Z
+completed: 2026-10-17T09:53:36Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-17T11:03:41+02:00
+last_commit: 2026-10-17T11:03:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  spawn rule is an absolute reserve, linear 20K (200K window) to 50K (800K+); replaces 'no spawn above 60%' and fixed 40K headroom (operator ruling 2026-10-17)
+
+# Key outcomes
+outcomes:
+  - 'CLAUDE.md states the spawn rule as an absolute reserve: free tokens (CONTEXT_WINDOW minus used) must be at least min(50K, max(20K, 20K + 5% of (CONTEXT_WINDOW − 200K))); no "60%" or fixed "40K headroom" spawn rule remains anywhere in CLAUDE.md'
+  - 'The consumer template (lib/templates/claude-project.md) says the same'
+  - 'The operator ruling is recorded in ## Decisions with the worked values (200K→20K, 500K→35K, 800K+→50K)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'spawn rule is an absolute reserve, linear 20K (200K window) to 50K (800K+); replaces ''no spawn above 60%'' and fixed 40K headroom (operator ruling 2026-10-17)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-17 — spawn rule: absolute reserve, linear (operator ruling)'
+    chose: 'spawning/dispatching is allowed while free tokens (CONTEXT_WINDOW − used) ≥ reserve, with reserve = min(50K, max(20K, 20K + 0.05 × (CONTEXT_WINDOW − 200K))). Worked: 200K→20K, 500K→35K, 800K→50K, 975K→50K (cap). The percentage budget bands (75/85/95) stay as they are.'
+    rationale: 'operator, verbatim intent: "we would still have the percentages, but then on a bandwidth of 20 to 50,000 … 20 with 200,000, 50 with 800,000, being the upper limit"; option 1 (linear) chosen over a two-step rule.'
+    alternatives_rejected: ['"do not spawn above 60%" (wastes ~300K usable tokens on a 975K window); two steps (20K ≤200K, 50K above).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/templates/claude-project.md'
+  - 'CLAUDE.md'
+  - 'lib/templates/claude-project.md'
+  - '.tasks/active/T-4225-record-the-operators-spawn-rule-replace-.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T11:03:41'
+    action: 'T-4225: spawn rule is an absolute reserve, linear 20K (200K window) to 50K (800K+); replaces ''no spawn above 60%'' and fixed 40K headroom (operator ruling 2026-10-17)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 64 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 64
+  commits: 2
+  files_changed: 5
+  lines_added: 753
+  lines_removed: 15
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4225-record-the-operators-spawn-rule-replace-.md
+generated_by: context-agent-hybrid

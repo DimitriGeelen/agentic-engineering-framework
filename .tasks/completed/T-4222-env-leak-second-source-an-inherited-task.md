@@ -1,25 +1,28 @@
 ---
-id: T-4225
-name: "Record the operator's spawn rule: replace 'do not spawn above 60% context'
-  with an absolute reserve of 20K (200K window) up to 50K (800K+ window); keep percentage
-  budget bands"
+id: T-4222
+name: "Env leak, second source: an inherited TASKS_DIR/CONTEXT_DIR still steers fw
+  writes to another project when the _FW_PATHS_DERIVED_BY sentinel is absent; the
+  dispatch spawn does not strip them (1023 measurement via 055)"
 description: >
-  Operator 2026-10-17 (in session): the 60% spawn cut-off was meant to be replaced;
-  percentages stay for the budget bands, but the dispatch/spawn limit is an absolute
-  headroom reserve scaling from 20K at a 200K window to an upper limit of 50K at 800K
-  and above. Nothing records it today: CLAUDE.md §Execution Model / §Budget Rules
-  / §Dispatch Guidelines still say 'Do not spawn when context > 60%' and '40K tokens
-  headroom'; no code gate enforces either. Do: confirm the exact formula with the
-  operator (linear between 200K and 800K? cap 50K above), update CLAUDE.md (all places)
-  and lib/templates/claude-project.md for consumers, optionally make fw termlink dispatch
-  print/warn on it from checkpoint.sh budget, and add a decision record.
+  1023 (via 055 msg 8c33b217): in a polluted session, unsetting PROJECT_ROOT, FRAMEWORK_ROOT,
+  _FW_PATHS_DERIVED_BY and FW_ROUTED_FROM fixed 'fw version' but 'fw work-on' still
+  wrote into /opt/055. Cause (read here): lib/paths.sh:403 exports TASKS_DIR and CONTEXT_DIR;
+  line 64 re-derives them only when the sentinel exists and differs; with the sentinel
+  unset, line 69's ':-' keeps the inherited /opt/055/.tasks. agents/termlink/termlink.sh:388
+  (T-4217) strips 4 vars but not TASKS_DIR/CONTEXT_DIR, so they also reach a tmux
+  server's global env (claude-fw:55 does unset them). Fix: (1) add TASKS_DIR and CONTEXT_DIR
+  to the dispatch spawn strip list; (2) lib/paths.sh: an inherited TASKS_DIR/CONTEXT_DIR
+  that lies outside the resolved PROJECT_ROOT and has no sentinel is re-derived from
+  PROJECT_ROOT with a stderr warning — keep tests that set TASKS_DIR deliberately
+  (tests/unit/create_task.bats:18 and others: grep) working; decide and document the
+  rule. Reproduce first with a failing test.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/termlink/termlink.sh, bin/claude-fw, lib/paths.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -47,9 +50,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-17T08:48:55Z
-last_update: '2026-10-17T09:00:37Z'
-date_finished:
+created: 2026-10-17T08:15:04Z
+last_update: 2026-10-17T09:54:37Z
+date_finished: 2026-10-17T09:54:37Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -61,7 +64,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 bvp_scores_proposed:
-  - ts: '2026-10-17T08:53:20Z'
+  - ts: '2026-10-17T08:15:45Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -79,18 +82,18 @@ bvp_scores_proposed:
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 cost_estimate_proposed:
-  - ts: '2026-10-17T09:00:37Z'
+  - ts: '2026-10-17T08:30:31Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=299,acs=5)
+      (workflow:build); effort=8 (lines=301,acs=5)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4225: Record the operator's spawn rule: replace 'do not spawn above 60% context' with an absolute reserve of 20K (200K window) up to 50K (800K+ window); keep percentage budget bands
+# T-4222: Env leak, second source: an inherited TASKS_DIR/CONTEXT_DIR still steers fw writes to another project when the _FW_PATHS_DERIVED_BY sentinel is absent; the dispatch spawn does not strip them (1023 measurement via 055)
 
 ## Context
 
@@ -100,9 +103,9 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] CLAUDE.md states the spawn rule as an absolute reserve: free tokens (CONTEXT_WINDOW minus used) must be at least min(50K, max(20K, 20K + 5% of (CONTEXT_WINDOW − 200K))); no "60%" or fixed "40K headroom" spawn rule remains anywhere in CLAUDE.md
-- [x] The consumer template (lib/templates/claude-project.md) says the same
-- [x] The operator ruling is recorded in ## Decisions with the worked values (200K→20K, 500K→35K, 800K+→50K)
+- [x] The dispatch spawn also strips TASKS_DIR and CONTEXT_DIR; a private-socket test shows none of the six reach `show-environment -g`
+- [x] With PROJECT_ROOT, FRAMEWORK_ROOT, _FW_PATHS_DERIVED_BY and FW_ROUTED_FROM unset but TASKS_DIR/CONTEXT_DIR inherited from another project, `fw work-on`/`fw task create` in project B write into B (with a stderr warning); the test fails on the pre-fix code
+- [x] Tests that set TASKS_DIR deliberately (create_task.bats and every other grep hit) stay green; the rule is recorded in Decisions
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -152,10 +155,8 @@ cost_estimate_proposed:
 
 ## Verification
 
-grep -q "Spawn reserve (operator ruling 2026-10-17, T-4225)" CLAUDE.md
-! grep -q "Do not spawn when context > 60%" CLAUDE.md
-! grep -q "Leave \*\*40K tokens\*\* free" CLAUDE.md lib/templates/claude-project.md
-grep -q "spawn reserve" lib/templates/claude-project.md
+out=$(bats tests/unit/t4222_inherited_env_dirs.bats tests/unit/t4217_spawn_env_isolation.bats 2>&1); echo "$out" | grep -q "^ok" && ! echo "$out" | grep -q "^not ok"
+out=$(bats tests/unit/create_task.bats 2>&1); echo "$out" | grep -q "^ok" && ! echo "$out" | grep -q "^not ok"
 bin/fw vendor self --check
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -302,6 +303,11 @@ bin/fw vendor self --check
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** In project B with PROJECT_ROOT/FRAMEWORK_ROOT/_FW_PATHS_DERIVED_BY/FW_ROUTED_FROM unset but TASKS_DIR/CONTEXT_DIR inherited from project A, `fw task create`/`work-on` wrote into A (1023 measurement via 055).
+**Root cause:** lib/paths.sh only re-derived the dirs when the sentinel was present and different; with it absent the `${TASKS_DIR:-…}` default kept the inherited foreign value. The dispatch spawn (termlink.sh) and claude-fw's tmux exec also did not strip the two variables, so they reached a tmux server's global env.
+**Why structurally allowed:** T-4217/T-4218 closed the PROJECT_ROOT/FRAMEWORK_ROOT leak and the sentinel-present case only; the sentinel-absent case was reasoned about for test fixtures (create_task.bats) but never tested against a foreign project.
+**Prevention:** tests/unit/t4222_inherited_env_dirs.bats (fails pre-fix) plus the t4217 six-variable assertion on the spawn and the claude-fw wrap.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -357,14 +363,6 @@ bin/fw vendor self --check
 
 ## Decisions
 
-### 2026-10-17 — spawn rule: absolute reserve, linear (operator ruling)
-- **Chose:** spawning/dispatching is allowed while free tokens (CONTEXT_WINDOW − used) ≥ reserve, with
-  reserve = min(50K, max(20K, 20K + 0.05 × (CONTEXT_WINDOW − 200K))). Worked: 200K→20K, 500K→35K, 800K→50K,
-  975K→50K (cap). The percentage budget bands (75/85/95) stay as they are.
-- **Why:** operator, verbatim intent: "we would still have the percentages, but then on a bandwidth of 20 to
-  50,000 … 20 with 200,000, 50 with 800,000, being the upper limit"; option 1 (linear) chosen over a two-step rule.
-- **Rejected:** "do not spawn above 60%" (wastes ~300K usable tokens on a 975K window); two steps (20K ≤200K, 50K above).
-
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -373,6 +371,11 @@ bin/fw vendor self --check
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-17 — rule for inherited TASKS_DIR/CONTEXT_DIR without a sentinel
+- **Chose:** re-derive from PROJECT_ROOT (stderr warning naming both) when the inherited value lies outside PROJECT_ROOT AND is itself a project's own dir (basename .tasks/.context, parent has .framework.yaml). `FW_TASKS_DIR_OVERRIDE=1` keeps a deliberate outside value.
+- **Why:** the env alone cannot tell a leaked A/.tasks from a fixture's tmp dir; but fixtures are plain tmp dirs without .framework.yaml (grep of the 90+ hits in tests/ found none that point at a real project), while a leaked one always names a real project.
+- **Rejected:** "any outside value is re-derived" (breaks create_task.bats and ~30 fixtures that run the real bin/fw with a tmp TASKS_DIR); "same-shell only" rule (cannot be detected without the sentinel).
 
 ## Decision
 
@@ -386,10 +389,27 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-17T08:48:55Z — task-created [task-create-agent]
+### 2026-10-17T08:15:04Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4225-record-the-operators-spawn-rule-replace-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4222-env-leak-second-source-an-inherited-task.md
 - **Context:** Initial task creation
 
-### 2026-10-17T08:53:19Z — status-update [task-update-agent]
+### 2026-10-17T08:15:44Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-e08d6760
+- **Timestamp:** 2026-10-17T09:55:27Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-17T09:54:37Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

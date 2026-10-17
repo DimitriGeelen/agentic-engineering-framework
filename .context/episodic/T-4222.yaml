@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4222: Env leak, second source: an inherited TASKS_DIR/CONTEXT_DIR still steers fw writes to another project when the _FW_PATHS_DERIVED_BY sentinel is absent; the dispatch spawn does not strip them (1023 measurement via 055)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T09:55:42Z
+# ============================================================================
+
+task_id: T-4222
+task_name: "Env leak, second source: an inherited TASKS_DIR/CONTEXT_DIR still steers fw writes to another project when the _FW_PATHS_DERIVED_BY sentinel is absent; the dispatch spawn does not strip them (1023 measurement via 055)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-17T08:15:04Z
+completed: 2026-10-17T09:54:37Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-17T10:15:43+02:00
+last_commit: 2026-10-17T10:57:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file env-leak second source (inherited TASKS_DIR/CONTEXT_DIR) from 1023's measurement. inherited foreign TASKS_DIR/CONTEXT_DIR re-derived (paths.sh); dispatch spawn + claude-fw wrap strip them
+
+# Key outcomes
+outcomes:
+  - 'The dispatch spawn also strips TASKS_DIR and CONTEXT_DIR; a private-socket test shows none of the six reach `show-environment -g`'
+  - 'With PROJECT_ROOT, FRAMEWORK_ROOT, _FW_PATHS_DERIVED_BY and FW_ROUTED_FROM unset but TASKS_DIR/CONTEXT_DIR inherited from another project, `fw work-on`/`fw task create` in project B write into B (with a stderr warning); the test fails on the pre-fix code'
+  - 'Tests that set TASKS_DIR deliberately (create_task.bats and every other grep hit) stay green; the rule is recorded in Decisions'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-17 — rule for inherited TASKS_DIR/CONTEXT_DIR without a sentinel'
+    chose: 're-derive from PROJECT_ROOT (stderr warning naming both) when the inherited value lies outside PROJECT_ROOT AND is itself a project''s own dir (basename .tasks/.context, parent has .framework.yaml). `FW_TASKS_DIR_OVERRIDE=1` keeps a deliberate outside value.'
+    rationale: 'the env alone cannot tell a leaked A/.tasks from a fixture''s tmp dir; but fixtures are plain tmp dirs without .framework.yaml (grep of the 90+ hits in tests/ found none that point at a real project), while a leaked one always names a real project.'
+    alternatives_rejected: ['"any outside value is re-derived" (breaks create_task.bats and ~30 fixtures that run the real bin/fw with a tmp TASKS_DIR); "same-shell only" rule (cannot be detected without the sentinel).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/bin/claude-fw'
+  - '.agentic-framework/lib/paths.sh'
+  - 'agents/termlink/termlink.sh'
+  - 'bin/claude-fw'
+  - 'lib/paths.sh'
+  - '.tasks/active/T-4222-env-leak-second-source-an-inherited-task.md'
+  - 'tests/unit/t4217_spawn_env_isolation.bats'
+  - 'tests/unit/t4222_inherited_env_dirs.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T10:15:43'
+    action: 'T-4222: file env-leak second source (inherited TASKS_DIR/CONTEXT_DIR) from 1023''s measurement'
+  - time: '2026-10-17T10:57:57'
+    action: 'T-4222: inherited foreign TASKS_DIR/CONTEXT_DIR re-derived (paths.sh); dispatch spawn + claude-fw wrap strip them'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 99 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 99
+  commits: 2
+  files_changed: 9
+  lines_added: 502
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4222-env-leak-second-source-an-inherited-task.md
+generated_by: context-agent-hybrid
