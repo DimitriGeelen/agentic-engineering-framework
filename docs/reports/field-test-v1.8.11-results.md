@@ -39,6 +39,18 @@ Not yet field-tested by anyone after round 2: T-4122 (speed), T-4137, T-4152, T-
 T-4162/T-4163 (estate pilot not yet live), T-4170, T-4171, T-4191, T-4197, T-4203/T-4204, T-4208,
 T-4211, T-4216; partly: T-4147 (default), T-4196 (announcement), T-4207 (WARN).
 
+## Round 3 — 832-Workflow-designer on bleeding-edge 956f05f36 (2026-10-17, msg 26c3e3cf)
+
+Upgraded via re-vendor (38 local fixes re-applied, 0 conflicts; their 101-script sweep green).
+
+| Fix | 832 result |
+|---|---|
+| T-4219 fw test lint in a consumer | WORKS — exit 0 (211 pass, 54 warn, 0 fail; Silent-Skip NOT APPLICABLE), was exit 1 |
+| T-4223 /gaps register parse once + concurrent gauges | WORKS — real register 10-11 s → 3.8-4.1 s (5 runs, load 13); remainder is 832's own slowest gauge. Follow-up T-4247: skip gauges of resolved gaps |
+
+Other field results since round 2: 1409 upgraded 1.8.3 → 1.8.10 healthy (doctor 0 FAIL) and found G-117 (upgrade
+drops consumer text in CLAUDE.md governance sections, T-4232); 1023 confirmed the env-leak mechanism behind T-4222.
+
 ## Findings
 
 - **T-4203** (055 item 7): `_fw_is_own_launcher` / `cmd_classify._Ctx` refuse a consumer's tracked
