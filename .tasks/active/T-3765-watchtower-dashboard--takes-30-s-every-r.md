@@ -10,7 +10,7 @@ description: >
   reported No Watchtower reachable because its probe hits /. Fix the cache (signature
   on dir mtimes, or background refresh) and probe a cheap endpoint.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T23:25:13Z
-last_update: '2026-10-02T23:30:49Z'
+last_update: 2026-10-17T22:53:15Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,8 +96,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Warm `/` dashboard request completes in under 2 s on the Flask test client (timed before and after, both numbers in Updates)
+- [x] Warm `/` dashboard request completes in under 2 s against the live server at `bin/fw watchtower url` (timed before and after, both numbers in Updates)
+- [x] Arc-membership index is not rebuilt on a request when no task file changed (regression test fails on the pre-fix code)
+- [x] `fw task review-batch` reachability probe targets `/api/_identity`, not `/` (regression test)
+- [x] `bin/fw vendor self --check` is clean and `bin/fw watchtower current` exits 0 after restart
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -129,6 +132,13 @@ bvp_scores_proposed:
        Conversion: this AC should be moved to ### Agent and
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
+- [ ] [REVIEW] Watchtower dashboard renders and behaves as before
+  **Steps:**
+  1. Run `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower restart && bin/fw watchtower url` and open the printed URL in a browser
+  2. Load `/` twice and confirm the page appears within about 2 seconds the second time
+  3. Check the arc cards (in-flight arcs with task counts) and the cockpit sections look the same as before the change
+  **Expected:** the page renders with no layout or content change; arc task counts match `fw arc list`; no error banner
+  **If not:** note which section differs (screenshot) and the arc slug; reopen T-3765 and fix the cache-driven value that changed
 
 ## Verification
 
@@ -258,6 +268,11 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bin/fw vendor self --check
+bin/fw watchtower current
+out=$(python3 -m pytest tests/web/test_t3765_dashboard_cache.py -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
+out=$(bats tests/unit/t3765_review_batch_probe.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -273,6 +288,31 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `/` takes 10–15 s on the live server after a task file changes, and 49–85 s
+in-process on a cold start (measured with the Flask test client, see Updates). `fw task
+review-batch` reported "No Watchtower reachable" when the server was busy.
+
+**Root cause:** (1) `web/blueprints/core.py:206` caches the arc-membership index under the
+whole task-directory signature (`_task_files_signature`, `web/shared.py:1862`). Any change to
+any one of ~3,600 task files (109 tasks are in started-work and write concurrently) misses the
+cache, and `lib/arc_membership.py:162` re-reads the frontmatter of every task on the request
+thread (~0.5–0.7 s measured). The signature cache is correct; the miss granularity is the
+whole corpus. (2) The cold path has other uncached whole-corpus parses that the arc fix does
+not reach: `_get_token_usage` (`web/blueprints/core.py:379`, `costs._load_all_sessions`),
+`approvals._load_pending_go_decisions` and `cockpit._human_verify_for`. Those are the ~49–85 s
+cold cost; they are NOT arc membership and are NOT fixed here (see Open). (3) The review-batch
+probe is NOT the `/` probe the description names: `emit_review_batch` resolves the URL through
+`_watchtower_url` → `_watchtower_identity_matches` (`lib/watchtower.sh:67`), which already
+calls `/api/_identity` (`tests/unit` curl spy: one call, 0.47 s total). Not reproduced.
+
+**Why structurally allowed:** no test pins the cost of a single-file change to the arc index,
+and `/` has no latency assertion — the page's own correctness tests run cold and warm in-process
+without counting file reads, so a whole-corpus re-read per change passed every gate.
+
+**Prevention:** a per-file memo inside the arc scan (a change re-reads only the changed files),
+and `tests/web/test_t3765_dashboard_cache.py` which fails if one touched task file triggers a
+full re-read.
 
 ## Evolution
 
@@ -354,3 +394,15 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3765-watchtower-dashboard--takes-30-s-every-r.md
 - **Context:** Initial task creation
+
+### 2026-10-17T22:53:15Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-18 — measurements and fix [worker w3765]
+- **Fix:** `lib/arc_membership.py` `scan_tasks_by_arc_membership(file_memo=...)` — per-file (mtime_ns, size) memo; `web/blueprints/core.py` `_arc_membership_index` passes a module-level memo. A signature miss now re-reads only changed task files. Vendored via `bin/fw vendor self`.
+- **Before (pre-fix, in-process Flask test client, warm steady state):** `GET /` 0.78 / 1.04 s; one task-file change then `GET /`: 2.0 s, arc scan 0.65 s. Arc index with one touched file: full re-read, 40/40 files (pytest `test_dashboard_index_uses_memo_across_signature_change`: `40 == 1`).
+- **After (in-process):** warm `GET /` 0.73–0.80 s; arc index after one touched file 0.075 s (full uncached scan reference 0.449 s); `GET /` right after one touched file 0.93 s.
+- **Before (live, stale server pid 3927311, `bin/fw watchtower url`):** 10.0 s, 14.8 s, 2.07 s, then 7.4 s, 1.38 s, 1.44 s (curl `time_total`).
+- **After (live, restarted pid 479788):** 0.97 s, 0.90 s, 0.79 s, 1.09 s.
+- **Not fixed (open):** cold request is 48–85 s in-process — dominated by uncached whole-corpus parses outside arc membership: `_get_token_usage` (costs `_load_all_sessions`, ~19 s), `approvals._load_pending_go_decisions` (~19 s), `cockpit._human_verify_for` (~28 s), `shared.get_all_task_metadata` (~9 s). Arc membership is ~0.45 s of that cold cost. Needs its own task.
+- **review-batch probe:** already `/api/_identity` (`lib/watchtower.sh:67` via `_watchtower_url`; curl spy shows one identity call; 0.47 s). The `/` probe the description names is `lib/verify-acs.sh:80` — not changed here. The review-batch bats test passes before the fix too; it pins existing behaviour rather than proving a fix.

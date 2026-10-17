@@ -159,8 +159,29 @@ def _iter_task_files(project_root: Path):
             yield md
 
 
+def _membership_of(md: Path) -> tuple[str, str | None, list[str]] | None:
+    """(task_id, arc_id or None, legacy arc slugs) for one task file, or None."""
+    head = _read_head(md)
+    if not head:
+        return None
+    id_m = _ID_LINE_RE.search(head)
+    if id_m is None:
+        return None
+    tid = id_m.group(1).strip()
+    aid = None
+    aid_m = _ARC_ID_LINE_RE.search(head)
+    if aid_m is not None:
+        aid = parse_arc_id_value(aid_m.group(1)) or None
+    slugs: list[str] = []
+    tags_m = _TAGS_LINE_RE.search(head)
+    if tags_m is not None:
+        slugs = _TAG_ARC_RE.findall(tags_m.group(1))
+    return tid, aid, slugs
+
+
 def scan_tasks_by_arc_membership(
     project_root: Path | str,
+    file_memo: dict | None = None,
 ) -> tuple[dict[str, list[str]], dict[str, list[str]]]:
     """One pass over all task files producing two indices.
 
@@ -170,27 +191,37 @@ def scan_tasks_by_arc_membership(
 
     Frontmatter-only, read to the closing `---` (T-3502). Avoids the 5×N
     yaml.safe_load pattern that made /arcs render in 10s+ pre-T-1855.
+
+    `file_memo` (T-3765) is a caller-owned dict, path -> ((mtime_ns, size), entry).
+    A file whose stat is unchanged is not re-read, so a caller that rebuilds after
+    one task changed pays for that file alone, not the whole corpus. Omit it for a
+    plain uncached scan.
     """
     root = Path(project_root)
     by_arc_id: dict[str, list[str]] = {}
     by_tag: dict[str, list[str]] = {}
     for md in _iter_task_files(root):
-        head = _read_head(md)
-        if not head:
+        if file_memo is None:
+            entry = _membership_of(md)
+        else:
+            try:
+                st = md.stat()
+            except OSError:
+                continue
+            key = (st.st_mtime_ns, st.st_size)
+            hit = file_memo.get(str(md))
+            if hit is not None and hit[0] == key:
+                entry = hit[1]
+            else:
+                entry = _membership_of(md)
+                file_memo[str(md)] = (key, entry)
+        if entry is None:
             continue
-        id_m = _ID_LINE_RE.search(head)
-        if id_m is None:
-            continue
-        tid = id_m.group(1).strip()
-        aid_m = _ARC_ID_LINE_RE.search(head)
-        if aid_m is not None:
-            aid = parse_arc_id_value(aid_m.group(1))
-            if aid:
-                by_arc_id.setdefault(aid, []).append(tid)
-        tags_m = _TAGS_LINE_RE.search(head)
-        if tags_m is not None:
-            for arc_slug in _TAG_ARC_RE.findall(tags_m.group(1)):
-                by_tag.setdefault(f"arc:{arc_slug}", []).append(tid)
+        tid, aid, slugs = entry
+        if aid:
+            by_arc_id.setdefault(aid, []).append(tid)
+        for arc_slug in slugs:
+            by_tag.setdefault(f"arc:{arc_slug}", []).append(tid)
     return by_arc_id, by_tag
 
 

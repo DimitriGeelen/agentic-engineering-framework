@@ -195,16 +195,24 @@ def _get_focus_task():
     return {"id": task_id, "name": ""}
 
 
+_ARC_MEMBERSHIP_FILE_MEMO: dict = {}  # T-3765: path -> ((mtime_ns, size), entry)
+
+
 def _arc_membership_index():
     """`scan_tasks_by_arc_membership`, cached until a task file changes (T-3627).
 
     The dashboard re-read the frontmatter of every task file (~3,600) on every
     request to count arc members — the same whole-corpus-per-request class as the
     /graduation wedge.
+
+    T-3765: the signature cache misses on ANY task change, and with ~100 tasks
+    writing concurrently that was most requests. The per-file memo makes a miss
+    re-read only the files that changed.
     """
     from web.shared import _task_files_signature, signature_cached
-    return signature_cached("dashboard-arc-membership", _task_files_signature(),
-                            lambda: scan_tasks_by_arc_membership(PROJECT_ROOT))
+    return signature_cached(
+        "dashboard-arc-membership", _task_files_signature(),
+        lambda: scan_tasks_by_arc_membership(PROJECT_ROOT, file_memo=_ARC_MEMBERSHIP_FILE_MEMO))
 
 
 def _episodic_display_name(f):
