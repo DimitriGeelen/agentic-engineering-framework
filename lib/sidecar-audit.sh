@@ -113,6 +113,47 @@ except Exception:
     return 0
 }
 
+# fw_sidecar_dm_host_shared
+#
+#   T-4257 (0909 run F-11): rc 0 when this project resolves to the host-default
+#   TermLink identity, i.e. it has no identity of its own. The probe is dm.py's
+#   identity_is_host_shared() (T-4252), not a second copy of the logic. Under that
+#   identity every dm:* rail on the machine is addressed to every project, so the
+#   rails are host-scoped, not this project's. rc 1 otherwise, including when the
+#   probe cannot run: no key means no rails, so there is nothing to report here.
+fw_sidecar_dm_host_shared() {
+    local lib_dir fw_root
+    lib_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    fw_root="$(cd "$lib_dir/.." && pwd)"
+    [ -f "$lib_dir/sidecar/dm.py" ] || return 1
+    python3 -c '
+import sys
+sys.path.insert(0, sys.argv[1])
+from lib.sidecar import dm
+sys.exit(0 if dm.identity_is_host_shared() else 1)
+' "$fw_root" 2>/dev/null
+}
+
+# fw_sidecar_dm_host_summary <rows>
+#
+#   T-4257: the one host-scoped line that replaces the per-rail WARNs when the
+#   identity is host-shared. <rows> is fw_sidecar_dm_stale_facts output (TOPIC TAB
+#   UNREAD TAB AGE_HOURS). Prints the message body only; the caller owns the label.
+#   It deliberately carries no drain advice and is never counted as a project WARN:
+#   the backlog belongs to every project on the host, so this project has no action.
+#   Prints nothing for empty rows.
+fw_sidecar_dm_host_summary() {
+    local rows="${1:-}"
+    [ -n "$rows" ] || return 0
+    printf '%s\n' "$rows" | awk -F'\t' '
+        NF >= 3 { n++; u += $2; if ($3 + 0 > a) a = $3 + 0 }
+        END {
+            if (n == 0) exit
+            if (a >= 48) age = sprintf("%.1fd", a / 24); else age = sprintf("%.0fh", a)
+            printf "%d DM rail(s) on the host-default TermLink identity hold %d unread post(s), oldest %s; shared by every project on this host, not this project'"'"'s to act on", n, u, age
+        }'
+}
+
 # fw_sidecar_inbox_stale_facts <project_root> [threshold_hours]
 #
 #   T-3544 / OBS-567: the INBOUND consult backlog. Third sibling to the two

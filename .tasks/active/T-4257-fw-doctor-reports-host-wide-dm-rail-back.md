@@ -7,7 +7,7 @@ description: >
   of 31 fresh-install warnings). Triage: docs/reports/T-4253-greenfield-run-triage.md
   PROPOSED-NEW-4.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:25:28Z
-last_update: '2026-10-17T15:31:17Z'
+last_update: 2026-10-17T18:58:20Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,8 +93,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw doctor` no longer emits one per-rail `WARN DM rail dm:...` line for a host-shared identity: DM rails under the host-default identity are folded into a single host-scoped summary line that uses `_doctor_warn_host` (or an info line) and does not increment the project warning count
+- [x] The host-scoped DM summary gives no drain advice (no `fw sidecar inbox` / "drain" wording on that line)
+- [x] A project with its own identity (`identity_is_host_shared()` false) still gets per-rail project WARNs with drain advice unchanged
+- [x] A regression bats test under tests/unit/ fails on the pre-fix bin/fw and passes after the fix
+- [x] `bin/fw vendor self --check` is clean after the fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -143,6 +146,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bats tests/unit/t4257_doctor_dm_host_summary.bats > .context/working/t4257.out 2>&1 && ! grep -q "^not ok" .context/working/t4257.out
+test "$(grep -c '# skip' .context/working/t4257.out)" -eq 0
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -275,6 +282,16 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** On a minutes-old project with no identity of its own, `fw doctor` printed one `WARN DM rail dm:... has N unread post(s)` line per rail (13 of 31 warnings, 0909 run F-11) and advised running `fw sidecar inbox` to drain them. The rails belong to the host-default TermLink identity, shared by every project on the machine.
+
+**Root cause:** `bin/fw:3713-3723` (the DM-rail block) fed every row from `fw_sidecar_dm_stale_facts` into a per-rail WARN loop with no check of whether the identity is host-shared. The probe that answers that question, `lib/sidecar/dm.py:identity_is_host_shared()` (T-4252), existed but doctor never called it.
+
+**Why structurally allowed:** The T-3442 WARN was written for a project's own rails, and nothing tested the shared-identity case. The fixture-level tests covered only the rail-count and drain wording, so the per-rail WARN with drain advice looked correct for every input.
+
+**Prevention:** `tests/unit/t4257_doctor_dm_host_summary.bats` pins the host-shared probe, the one-line summary (totals, no drain advice, no WARN), the empty-rows case, and a source-level pin that doctor calls both helpers before the per-rail loop. The fix is one `&&` on the existing `elif` plus a summary helper in `lib/sidecar-audit.sh`, so the per-rail path still serves a project with its own identity.
+
+## RCA (original template note)
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -369,3 +386,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4257-fw-doctor-reports-host-wide-dm-rail-back.md
 - **Context:** Initial task creation
+
+### 2026-10-17T18:41:15Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

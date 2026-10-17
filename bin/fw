@@ -1308,6 +1308,13 @@ fi
 # re-resolves back to the CONSUMER's vendored copy (T-498 preference) → infinite
 # recursion → fork bomb. lib/upgrade.sh now passes env-scoped FRAMEWORK_ROOT to
 # the handoff; this branch lets the cloned fw honour it.
+# T-4248: an inherited FRAMEWORK_ROOT is only honoured when it is a real framework
+# tree (lib/ and agents/ present). A leaked value pointing at a target project
+# (dimitri-mint-dev, 2026-10-17) made `fw init` source <target>/lib/init.sh.
+if [ -n "${FRAMEWORK_ROOT:-}" ] && { [ ! -d "$FRAMEWORK_ROOT/lib" ] || [ ! -d "$FRAMEWORK_ROOT/agents" ]; }; then
+    echo "fw: inherited FRAMEWORK_ROOT=$FRAMEWORK_ROOT has no lib/ or agents/ — re-resolving" >&2
+    FRAMEWORK_ROOT=""
+fi
 if [ -z "${FRAMEWORK_ROOT:-}" ]; then
     FRAMEWORK_ROOT=$(resolve_framework) || true
 fi
@@ -3713,6 +3720,10 @@ sys.exit(0 if '$_tl_topic' in names else 1)
             _dm_rows=$(fw_sidecar_dm_stale_facts "$PROJECT_ROOT" 24) && _dm_rc=0 || _dm_rc=$?  # T-3837: set -e
             if [ "$_dm_rc" -eq 2 ]; then
                 _doctor_warn_host "DM-rail staleness check could not run (fw sidecar dm-stale --json produced no readable output)"
+            elif [ "$_dm_rc" -eq 0 ] && [ -n "$_dm_rows" ] && fw_sidecar_dm_host_shared; then
+                # T-4257 (F-11): host-default identity — these rails are every project's,
+                # not ours. One INFO line, no WARN count, no drain advice.
+                echo -e "  ${CYAN}INFO${NC}  [host] $(fw_sidecar_dm_host_summary "$_dm_rows")"
             elif [ "$_dm_rc" -eq 0 ] && [ -n "$_dm_rows" ]; then
                 local _dm_topic _dm_unread _dm_age _dm_age_disp
                 while IFS=$'\t' read -r _dm_topic _dm_unread _dm_age; do
