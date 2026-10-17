@@ -412,7 +412,14 @@ dated = os.path.join(
     report_dir, datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%d") + ".yaml")
 latest = os.path.join(report_dir, "LATEST.yaml")
 text = yaml.safe_dump(report, sort_keys=False, default_flow_style=False)
-for path in (dated, latest):
+paths = [dated, latest]
+# T-3794: keep the last COMPLETE run beside LATEST. An interrupted run still
+# overwrites LATEST (and today's dated report); the pre-push ratchet grades
+# this file instead of a run that measured only part of the corpus. The audit
+# re-checks completeness itself; this is the runner's conservative half.
+if not report["interrupted"] and not timed_out and not B["not_run"] and not P["not_run"]:
+    paths.append(os.path.join(report_dir, "LAST-COMPLETE.yaml"))
+for path in paths:
     tmp = path + ".tmp"
     with open(tmp, "w") as fh:
         fh.write(text)

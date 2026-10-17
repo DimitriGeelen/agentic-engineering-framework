@@ -13,7 +13,7 @@ description: >
   an incomplete run grades FAIL at pre-push (or falls back to the last complete run);
   test with a fixture report.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T09:06:07Z
-last_update: '2026-10-04T09:15:44Z'
+last_update: 2026-10-17T21:28:32Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,8 +99,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] At pre-push scope (`--section structure`), a LATEST report that is grossly incomplete (interrupted, run ceiling hit, files never reached, files unaccounted for, or per-file timeouts above max(10, 5% of files)) is NOT graded on its own: the check grades the last COMPLETE run instead (LAST-COMPLETE.yaml, else the newest complete dated sibling) and names that run in the line
+- [x] Reds RECORDED by the incomplete LATEST are still graded (unioned with the fallback's reds) — a recorded `not ok` stays a verdict (T-3602)
+- [x] At pre-push, an incomplete LATEST with no complete run on record FAILs "COULD NOT DETERMINE" (blocks the push), instead of the old non-blocking WARN
+- [x] A complete run with a few per-file timeouts (the known T-3801/T-3083 condition, within the threshold) is graded as before — no fallback, no new FAIL
+- [x] `agents/audit/unit-suite.sh` writes `LAST-COMPLETE.yaml` beside LATEST.yaml when its run was not interrupted, did not hit the run ceiling, and reached every file
+- [x] Regression bats `tests/unit/t3794_unit_suite_incomplete_prepush.bats` with fixture reports (complete, interrupted, partially timed-out, no fallback) passes; it fails against the pre-fix audit.sh; existing t3621/t3602/t3302/t3650/t4058 suites still pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,8 +264,21 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/t3794_unit_suite_incomplete_prepush.bats > /tmp/.t3794.out 2>&1 && ! grep -q "^not ok" /tmp/.t3794.out
+test "$(grep -c '# skip' /tmp/.t3794.out)" -eq 0
+timeout 900 bats tests/unit/t3621_unit_suite_ratchet.bats tests/unit/t3602_unit_suite_partial_run.bats tests/unit/t3650_unit_suite_label_suite_dir.bats > /tmp/.t3794b.out 2>&1 && ! grep -q "^not ok" /tmp/.t3794b.out
+bash -n agents/audit/audit.sh && bash -n agents/audit/unit-suite.sh
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** 2026-10-04 08:18Z, `git push origin bleeding-edge` (~60 commits) passed the pre-push unit-suite ratchet while LATEST.yaml held a run interrupted after 2 of 730 bats files; the previous complete run had 18 NEW reds. The audit evidence even said "not determined, not green", yet nothing blocked.
+
+**Root cause:** `agents/audit/audit.sh` `check_unit_suite_report` (the ratchet branch, ~line 3860-3885, and the no-red partial branch ~3897) grades whatever LATEST.yaml holds. For an incomplete run it grades only the reds in the files that ran: 0 new → WARN ("BASELINED red(s)" or "COULD NOT DETERMINE"). WARN does not block pre-push, so an incomplete report was, in effect, a PASS. The runner (`agents/audit/unit-suite.sh` `_finish`, signal trap) correctly writes the partial report over LATEST — and nothing kept the last complete one to grade instead.
+
+**Why structurally allowed:** T-3602 designed the partial-run grade for the nightly report, where WARN is an honest "unknown". T-3621 then made the same check a blocking gate at pre-push, but kept WARN for "unknown" — and at a gate, WARN is a pass. Tests covered partial runs with reds (T-3602) and the ratchet on complete runs (T-3621), never an interrupted run at pre-push scope.
+
+**Prevention:** at pre-push an incomplete LATEST falls back to the last complete run (runner now writes LAST-COMPLETE.yaml) and FAILs when none exists; pinned by `tests/unit/t3794_unit_suite_incomplete_prepush.bats` (interrupted, ceiling, not-reached, per-file-timeout-within-threshold, no-fallback fixtures).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -341,6 +358,16 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-17 — incomplete LATEST at pre-push: fall back, else FAIL
+- **Chose:** grade the last complete run (LAST-COMPLETE.yaml, else newest complete dated sibling), union in the reds the incomplete LATEST did record, and name the graded run; FAIL "could not determine" only when no complete run exists. Pre-push scope only; other scopes keep T-3602 grading (they already FAIL on any red and are not push gates).
+- **Why:** a FAIL on every interrupted run would block pushes for the day a dispatched worker kills a run by hand; the last complete run is real evidence and the reds LATEST recorded are verdicts (T-3602). Unioning keeps a fresh red from hiding behind an older green.
+- **Rejected:** FAIL-only (blocks for reasons unrelated to the push); grading LATEST's reds only (the bug).
+
+### 2026-10-17 — what counts as "incomplete"
+- **Chose:** incomplete = `interrupted`, or `timed_out` (run ceiling), or `files_not_run > 0`, or files unaccounted for (`files_completed` + per-file timeouts < `files`), or per-file timeouts > max(10, 5% of the leg's files).
+- **Why:** per-file 900 s timeouts are a known, standing condition (T-3801/T-3083): 8 of 814 bats files on 2026-10-17 (~1%). They are named in every grade already and must not turn every push red. A floor of 10 keeps small corpora from tripping on one slow file; 5% is ~5x today's count, so it only trips on a systemic slowdown (host overload), where the run genuinely measured little.
+- **Rejected:** zero tolerance (every nightly run would fall back/FAIL); a ratio alone (one slow file in a 12-file fixture corpus = 8%).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -357,3 +384,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3794-pre-push-unit-suite-ratchet-passes-on-an.md
 - **Context:** Initial task creation
+
+### 2026-10-17T21:18:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

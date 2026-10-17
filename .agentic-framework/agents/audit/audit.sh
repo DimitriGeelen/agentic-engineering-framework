@@ -3721,10 +3721,75 @@ check_unit_suite_report() {
     # ran", the per-file timeouts by name, and 1 when anything was left
     # undetermined (run ceiling hit, a file killed, or files never reached).
     local _parsed
-    _parsed=$(python3 - "$_report" "$_baseline" "${PROJECT_ROOT:-}" <<'PYEOF' 2>/dev/null
-import sys, os, yaml, datetime
+    # T-3794: argv[4]=1 at the pre-push scope, where an INCOMPLETE run is not
+    # graded on its own (fields 19-21: fallback state, graded-run label, note).
+    local _us_prepush=0
+    _audit_is_prepush_scope && _us_prepush=1
+    _parsed=$(python3 - "$_report" "$_baseline" "${PROJECT_ROOT:-}" "$_us_prepush" <<'PYEOF' 2>/dev/null
+import sys, os, glob, yaml, datetime
+def _incomplete(r):
+    # T-3794: why a run is no basis for a pre-push grade ("" = complete enough).
+    # Per-file timeouts (T-3801/T-3083) are tolerated up to max(10, 5% of the
+    # leg's files); ceiling-tagged entries "(...)" are the run being cut off.
+    why = []
+    if r.get("interrupted"):
+        why.append("interrupted")
+    if r.get("timed_out"):
+        why.append("run ceiling hit")
+    for leg in ("bats", "pytest"):
+        l = (r.get("legs") or {}).get(leg) or {}
+        if "files_completed" not in l:
+            continue
+        nf = int(l.get("files") or 0)
+        done = int(l.get("files_completed") or 0)
+        nr = int(l.get("files_not_run") or 0)
+        ft = len([f for f in (l.get("files_timed_out") or []) if not str(f).endswith(")")])
+        if nr:
+            why.append("%s: %d of %d file(s) never reached" % (leg, nr, nf))
+        elif done + ft < nf:
+            why.append("%s: only %d of %d file(s) finished" % (leg, done, nf))
+        if ft > max(10, nf * 0.05):
+            why.append("%s: %d per-file timeout(s), over max(10, 5%% of %d)" % (leg, ft, nf))
+    return "; ".join(why)
 try:
     d = yaml.safe_load(open(sys.argv[1])) or {}
+    # T-3794: at pre-push, grade the last COMPLETE run instead of an incomplete
+    # LATEST (interrupted after 2 of 730 files graded 0 new reds → WARN → push).
+    # Reds the incomplete run DID record still count (a recorded red is a verdict).
+    fb_state, fb_label, fb_note = "none", "", ""
+    why = _incomplete(d) if (len(sys.argv) > 4 and sys.argv[4] == "1") else ""
+    if why:
+        fb_state = "missing"
+        fb_note = "LATEST (started %s) is INCOMPLETE: %s" % (d.get("started"), why)
+        rdir = os.path.dirname(os.path.abspath(sys.argv[1]))
+        cands = [os.environ.get("FW_UNIT_SUITE_LAST_COMPLETE") or os.path.join(rdir, "LAST-COMPLETE.yaml")]
+        cands += sorted(glob.glob(os.path.join(rdir, "[0-9][0-9][0-9][0-9]-[0-9][0-9]-[0-9][0-9].yaml")), reverse=True)[:14]
+        for c in cands:
+            try:
+                f = yaml.safe_load(open(c))
+            except Exception:
+                continue
+            fl = (f.get("legs") or {}) if isinstance(f, dict) else {}
+            if not fl or any("files_completed" not in (fl.get(g) or {}) for g in ("bats", "pytest")) \
+                    or _incomplete(f):
+                continue
+            for g in ("bats", "pytest"):
+                fg = fl.get(g) or {}
+                got = list(fg.get("failed") or [])
+                for n in ((d.get("legs") or {}).get(g) or {}).get("failed") or []:
+                    if n not in got:
+                        got.append(n)
+                fg["failed"], fg["failed_count"] = got, len(got)
+                if got and not f.get("runner_exit"):
+                    f["runner_exit"] = 1
+            fb_state = "used"
+            fb_label = "graded last COMPLETE run started %s; LATEST incomplete" % f.get("started")
+            fb_note = "Graded the last COMPLETE run (%s, started %s) instead; reds LATEST did record are included. %s. " % (
+                os.path.basename(c), f.get("started"), fb_note)
+            d = f
+            break
+        if fb_state == "missing":
+            fb_note += "; no complete run on record (LAST-COMPLETE.yaml or a dated report in %s)" % rdir
     legs = d.get("legs") or {}
     total = failed = 0
     names = []
@@ -3816,12 +3881,13 @@ try:
         fd = os.path.join(os.path.dirname(sys.argv[1]), fd)
         if root and fd.startswith(root + "/"):
             fd = fd[len(root) + 1:]
-    print("%d|%d|%d|%d|%d|%d|%s|%s|%s|%d|%s|%d|%d|%d|%s|%s|%s|%s" % (
+    print("%d|%d|%d|%d|%d|%d|%s|%s|%s|%d|%s|%d|%d|%d|%s|%s|%s|%s|%s|%s|%s" % (
         total, failed, rc, age_h, to, tos,
         "; ".join(shown).replace("|", "/"), ran,
         ", ".join(ftimed).replace("|", "/"), partial,
         bl_state, n_base, len(new), len(expired), _bound(new), _bound(expired),
-        sd.replace("|", "/"), fd.replace("|", "/")))
+        sd.replace("|", "/"), fd.replace("|", "/"),
+        fb_state, fb_label.replace("|", "/"), fb_note.replace("|", "/")))
 except Exception:
     pass
 PYEOF
@@ -3837,9 +3903,24 @@ PYEOF
     local _us_total _us_failed _us_rc _us_age _us_timedout _us_timeout_s _us_names
     local _us_ran _us_ftimed _us_partial
     local _us_bl _us_nbase _us_nnew _us_nexp _us_new _us_exp _us_dir _us_fdir
+    local _us_fb _us_fblabel _us_fbnote
     IFS='|' read -r _us_total _us_failed _us_rc _us_age _us_timedout _us_timeout_s _us_names \
-        _us_ran _us_ftimed _us_partial _us_bl _us_nbase _us_nnew _us_nexp _us_new _us_exp _us_dir _us_fdir <<< "$_parsed"
+        _us_ran _us_ftimed _us_partial _us_bl _us_nbase _us_nnew _us_nexp _us_new _us_exp _us_dir _us_fdir \
+        _us_fb _us_fblabel _us_fbnote <<< "$_parsed"
     local _us_label="Unit suite${_us_dir:+ ($_us_dir)}"
+
+    # T-3794: pre-push, incomplete LATEST, nothing complete to grade instead.
+    # WARN would let the push through on a run that measured almost nothing.
+    if [ "${_us_fb:-none}" = "missing" ]; then
+        fail "$_us_label COULD NOT DETERMINE — the latest run is INCOMPLETE and no complete run is on record — pre-push ratchet (T-3794)" \
+             "${_us_fbnote}. Grading only the files that ran would read the unmeasured rest as green" \
+             "Run the suite to completion and do not interrupt it: agents/audit/unit-suite.sh (a complete run writes LAST-COMPLETE.yaml; nightly cron: unit-suite-nightly)"
+        return 0
+    fi
+    # T-3794: the fallback names the run it graded, on every line it emits.
+    if [ "${_us_fb:-none}" = "used" ]; then
+        _us_label="$_us_label [$_us_fblabel]"
+    fi
     # T-4058: a red names the kept failure output, so the assertion text is reachable.
     local _us_kept=""
     [ -n "$_us_fdir" ] && _us_kept="Failure output (assertion text, T-4058) kept at $_us_fdir/. "
@@ -3847,8 +3928,9 @@ PYEOF
     local _us_ceiling_txt="its timeout ceiling"
     [ "${_us_timeout_s:-0}" -gt 0 ] && _us_ceiling_txt="its ${_us_timeout_s}s ceiling"
     local _us_incomplete=""
+    [ "${_us_fb:-none}" = "used" ] && _us_incomplete="$_us_fbnote"
     if [ "${_us_partial:-0}" -eq 1 ]; then
-        _us_incomplete="Run INCOMPLETE: $_us_ran"
+        _us_incomplete="${_us_incomplete}Run INCOMPLETE: $_us_ran"
         [ "${_us_timedout:-0}" -eq 1 ] && _us_incomplete="$_us_incomplete; run hit $_us_ceiling_txt"
         [ -n "$_us_ftimed" ] && _us_incomplete="$_us_incomplete; per-file timeout: $_us_ftimed"
         _us_incomplete="$_us_incomplete. Tests in files that did not finish are not determined, not green. "
