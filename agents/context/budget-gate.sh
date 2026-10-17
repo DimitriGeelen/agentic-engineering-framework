@@ -137,11 +137,11 @@ _announce_band() {
         local left=$(( TOKEN_CRITICAL > tokens ? TOKEN_CRITICAL - tokens : 0 ))
         local op agent
         if [ "$level" = "urgent" ]; then
-            op="Context budget URGENT: ~${pct}% of the ${CONTEXT_WINDOW}-token cap. A session restart is coming at 95% (~${left} tokens away). The agent will propose a planned handover at the next natural break."
-            agent="BUDGET URGENT (T-4171): context is at ~${pct}% of the ${CONTEXT_WINDOW}-token cap; the session is cut and restarted at 95% (~${left} tokens away). In your NEXT reply, tell the operator plainly that a restart is coming, and propose a planned handover at the next natural break: finish or commit the current unit, then run '$(_fw_cmd) handover'. Do not start new implementation work."
+            op="Context budget URGENT: ~${pct}% of the ${CONTEXT_WINDOW}-token cap. A session restart is coming at the Stop line (${TOKEN_CRITICAL} used, ~${left} tokens away). The agent will propose a planned handover at the next natural break."
+            agent="BUDGET URGENT (T-4171): context is at ~${pct}% of the ${CONTEXT_WINDOW}-token cap; the session is cut and restarted at the Stop line (${TOKEN_CRITICAL} used, ~${left} tokens away). In your NEXT reply, tell the operator plainly that a restart is coming, and propose a planned handover at the next natural break: finish or commit the current unit, then run '$(_fw_cmd) handover'. Do not start new implementation work."
         else
-            op="Context budget at ~${pct}% of the ${CONTEXT_WINDOW}-token cap (warn band, 75%). The session will be restarted at 95% (~${left} tokens away)."
-            agent="BUDGET WARN (T-4171): context is at ~${pct}% of the ${CONTEXT_WINDOW}-token cap; the session is restarted at 95% (~${left} tokens away). Mention this to the operator in your next reply, propose only small, bounded work, and commit before starting anything new."
+            op="Context budget at ~${pct}% of the ${CONTEXT_WINDOW}-token cap (Amber band). The session will be restarted at the Stop line (${TOKEN_CRITICAL} used, ~${left} tokens away)."
+            agent="BUDGET WARN (T-4171): context is at ~${pct}% of the ${CONTEXT_WINDOW}-token cap; the session is restarted at the Stop line (${TOKEN_CRITICAL} used, ~${left} tokens away). Mention this to the operator in your next reply, propose only small, bounded work, and commit before starting anything new."
         fi
         OP="$op" AGENT="$agent" python3 -c '
 import json, os
@@ -221,10 +221,16 @@ _budget_parser_dead_gate() {
 # two license opposite actions.
 CONTEXT_WINDOW=$(fw_config_int "CONTEXT_WINDOW" 800000)
 
-# Token thresholds (autoCompact disabled — D-027)
-TOKEN_WARN=$((CONTEXT_WINDOW * 75 / 100))        # ~75% (600K at 800K)
-TOKEN_URGENT=$((CONTEXT_WINDOW * 85 / 100))      # ~85% (680K at 800K)
-TOKEN_CRITICAL=$((CONTEXT_WINDOW * 95 / 100))    # ~95% (760K at 800K)
+# Token thresholds (autoCompact disabled — D-027). T-4226: one ladder, computed by
+# lib/budget_ladder.py from the spawn reserve R. Amber/Red/Stop map to warn/urgent/critical.
+# If python3 yields nothing, every threshold sits above the cap: the gate fails open.
+_LADDER=$(python3 -I "$FRAMEWORK_ROOT/lib/budget_ladder.py" "$CONTEXT_WINDOW" 2>/dev/null) || _LADDER=""
+TOKEN_WARN=$(printf '%s\n' "$_LADDER" | sed -n 's/^TOKEN_WARN=//p')
+TOKEN_URGENT=$(printf '%s\n' "$_LADDER" | sed -n 's/^TOKEN_URGENT=//p')
+TOKEN_CRITICAL=$(printf '%s\n' "$_LADDER" | sed -n 's/^TOKEN_CRITICAL=//p')
+TOKEN_WARN=${TOKEN_WARN:-$((CONTEXT_WINDOW + 1))}
+TOKEN_URGENT=${TOKEN_URGENT:-$((CONTEXT_WINDOW + 1))}
+TOKEN_CRITICAL=${TOKEN_CRITICAL:-$((CONTEXT_WINDOW + 1))}
 
 # How often to re-read the transcript (every Nth tool call)
 RECHECK_INTERVAL=$(fw_config_int "BUDGET_RECHECK_INTERVAL" 5)

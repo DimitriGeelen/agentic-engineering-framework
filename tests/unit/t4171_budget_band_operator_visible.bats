@@ -58,11 +58,11 @@ _json() {  # _json EXPR — evaluate a python expression over the hook's stdout 
 }
 
 @test "urgent (fast path): first call emits operator systemMessage + agent additionalContext, exit 0" {
-    _cache urgent 260000 "$ME"
+    _cache urgent 265000 "$ME"
     _gate "$ME"
     [ "$(cat "$TEST_TEMP_DIR/rc")" -eq 0 ]
     _json "d['systemMessage']" | grep -qi "restart"
-    _json "d['systemMessage']" | grep -q "86%"
+    _json "d['systemMessage']" | grep -q "88%"
     [ "$(_json "d['hookSpecificOutput']['hookEventName']")" = "PreToolUse" ]
     _json "d['hookSpecificOutput']['additionalContext']" | grep -qi "tell the operator"
     _json "d['hookSpecificOutput']['additionalContext']" | grep -qi "natural break"
@@ -70,7 +70,7 @@ _json() {  # _json EXPR — evaluate a python expression over the hook's stdout 
 }
 
 @test "urgent (slow path, transcript read): first call announces too" {
-    _transcript "$TEST_TEMP_DIR/$ME.jsonl" 260000
+    _transcript "$TEST_TEMP_DIR/$ME.jsonl" 265000
     rm -f "$PROJ/.context/working/.budget-status"
     _gate "$ME" "$TEST_TEMP_DIR/$ME.jsonl" 0   # counter 0 -> this call re-reads
     [ "$(cat "$TEST_TEMP_DIR/rc")" -eq 0 ]
@@ -79,31 +79,31 @@ _json() {  # _json EXPR — evaluate a python expression over the hook's stdout 
 }
 
 @test "urgent: announced once per session; a second call is stdout-silent; another session is announced" {
-    _cache urgent 260000 "$ME"
+    _cache urgent 265000 "$ME"
     _gate "$ME"
     [ -s "$TEST_TEMP_DIR/out" ]
     _gate "$ME"
     [ ! -s "$TEST_TEMP_DIR/out" ]
     # stderr note still present for the transcript
     grep -q "WARNING: Context" "$TEST_TEMP_DIR/err"
-    _cache urgent 260000 "$OTHER"
+    _cache urgent 265000 "$OTHER"
     _gate "$OTHER"
     [ -s "$TEST_TEMP_DIR/out" ]
 }
 
 @test "warn: first call emits a lighter operator message; urgent is still announced after warn" {
-    _cache warn 230000 "$ME"
+    _cache warn 250000 "$ME"
     _gate "$ME"
     [ "$(cat "$TEST_TEMP_DIR/rc")" -eq 0 ]
-    _json "d['systemMessage']" | grep -q "76%"
-    _json "d['systemMessage']" | grep -q "95%"
-    _cache urgent 260000 "$ME"
+    _json "d['systemMessage']" | grep -q "83%"
+    _json "d['systemMessage']" | grep -q "Stop line"
+    _cache urgent 265000 "$ME"
     _gate "$ME"
     _json "d['systemMessage']" | grep -qi "restart"
 }
 
 @test "urgent: one fw_notify push, and dispatcher stdout does not leak into the hook JSON" {
-    _cache urgent 260000 "$ME"
+    _cache urgent 265000 "$ME"
     _gate "$ME"
     _json "d['systemMessage']" >/dev/null   # stdout parses as JSON
     for _ in 1 2 3 4 5 6 7 8 9 10; do [ -s "$DISPATCH_LOG" ] && break; sleep 0.2; done
@@ -115,7 +115,7 @@ _json() {  # _json EXPR — evaluate a python expression over the hook's stdout 
 }
 
 @test "warn: no push (urgent only)" {
-    _cache warn 230000 "$ME"
+    _cache warn 250000 "$ME"
     _gate "$ME"
     sleep 0.5
     [ ! -s "$DISPATCH_LOG" ]
