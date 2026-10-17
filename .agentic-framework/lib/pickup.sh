@@ -606,6 +606,20 @@ do_pickup_send() {
 
     pickup_ensure_dirs
 
+    # T-3059: pickup_next_id reads the high-water mark and the envelope write
+    # below is what raises it — with nothing held between them, concurrent sends
+    # read the same max and issue the same id. Hold one exclusive per-project lock
+    # from allocation until the envelope is on disk; released before any remote
+    # push, which can be slow. Without flock (rare; keylock.sh needs it too) the
+    # old unlocked behaviour stands and T-3052's dup-N landing is the backstop.
+    local lock_fd=""
+    if command -v flock >/dev/null 2>&1; then
+        exec {lock_fd}>"$PICKUP_DIR/.id-allocation.lock"
+        flock -x "$lock_fd"
+    else
+        echo -e "${YELLOW}WARN${NC}    flock not found — pickup id allocation is not serialised" >&2
+    fi
+
     local pickup_id
     pickup_id=$(pickup_next_id)
 
@@ -641,7 +655,7 @@ do_pickup_send() {
     PAYLOAD_PRIORITY="$priority" \
     PAYLOAD_TAGS_CSV="${tags:-}" \
     OUT_PATH="$filepath" \
-    python3 - <<'PYEOF' || { echo -e "${RED}Envelope emit failed${NC}" >&2; return 1; }
+    python3 - <<'PYEOF' || { [ -n "$lock_fd" ] && exec {lock_fd}>&-; echo -e "${RED}Envelope emit failed${NC}" >&2; return 1; }
 import os, sys, yaml
 
 tags_csv = os.environ.get("PAYLOAD_TAGS_CSV", "").strip()
@@ -680,6 +694,7 @@ assert parsed["pickup_id"] == envelope["pickup_id"], "round-trip mismatch on pic
 assert parsed["payload"]["summary"] == envelope["payload"]["summary"], "round-trip mismatch on summary"
 assert parsed["payload"]["detail"] == envelope["payload"]["detail"], "round-trip mismatch on detail"
 PYEOF
+    [ -n "$lock_fd" ] && exec {lock_fd}>&-
 
     echo -e "${GREEN}Created${NC} $filename"
 
@@ -696,8 +711,16 @@ PYEOF
         return 1
     else
         echo -e "Pushing to ${BOLD}$remote${NC} (session ${BOLD}$session${NC}) via termlink..."
-        local push_rc=0
-        termlink remote push "$remote" "$session" "$filepath" 2>&1 || push_rc=$?
+        # T-4274: the host-shared inbox files by basename, and every project numbers
+        # its own envelopes from P-001 — so the bare name collides across projects.
+        # Push a copy that also carries the source project. The `P-NNN-` prefix is
+        # kept so `P-*.yaml` readers still match; the local name is unchanged.
+        local push_dir push_path push_rc=0
+        push_dir=$(mktemp -d "$PICKUP_DIR/push.XXXXXX")
+        push_path="$push_dir/${pickup_id}-${pickup_type}.${source_project//[^A-Za-z0-9._-]/_}.yaml"
+        cp "$filepath" "$push_path"
+        termlink remote push "$remote" "$session" "$push_path" 2>&1 || push_rc=$?
+        rm -rf "$push_dir"
         if [ "$push_rc" -ne 0 ]; then
             echo -e "${RED}NOT delivered:${NC} termlink remote push exited $push_rc — envelope left in $PICKUP_INBOX" >&2
             echo "$filepath"

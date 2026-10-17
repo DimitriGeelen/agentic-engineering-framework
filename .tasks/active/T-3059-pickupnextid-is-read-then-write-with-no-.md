@@ -12,7 +12,7 @@ description: >
   a losing failure — but the id is still not unique. Likely fix: lib/keylock.sh exclusive()
   around read-allocate-write, same treatment OBS-308 proposes for audit.sh.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -30,7 +30,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-17T06:23:38Z
-last_update: '2026-08-17T12:36:11Z'
+last_update: 2026-10-17T22:24:53Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -91,8 +91,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `pickup_send` holds an exclusive per-project lock across `pickup_next_id` + envelope write, so id allocation and the write are one critical section
+- [x] Regression test: N concurrent `pickup_send` calls in one project yield N distinct P-NNN ids and N envelope files (fails without the lock)
+- [x] Neighbouring pickup bats (lib_pickup, lib_pickup_triple_dedup, t3052_pickup_id_collision, t4274_pickup_inbox_filename) stay green; T-4274 push-side filename unchanged
+- [x] Vendored copy synced (`bin/fw vendor self --check` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -185,8 +187,17 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+out=$(bats tests/unit/t3059_pickup_send_concurrent_ids.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/lib_pickup.bats tests/unit/lib_pickup_triple_dedup.bats tests/unit/t3052_pickup_id_collision.bats tests/unit/t4274_pickup_inbox_filename.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+grep -qF 'flock -x "$lock_fd"' lib/pickup.sh
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** two concurrent `fw pickup send` calls in one project issued the same P-NNN id and aimed at the same inbox path; since T-3052 the second envelope lands as `*.dup-N.yaml` with a WARN, so the id stops being unique. Reproduced 3/3 runs by the new bats (12 concurrent sends → fewer than 12 distinct ids).
+**Root cause:** `do_pickup_send` (lib/pickup.sh, `pickup_id=$(pickup_next_id)` then the python envelope write) is read-allocate-write with no lock. `pickup_next_id` (lib/pickup.sh:340) derives the next id from the envelopes on disk, and the only thing that raises that mark is the write that comes later, so every send in the gap reads the same max.
+**Why structurally allowed:** every pickup test ran sends one after another, and T-3052 fixed the *consequence* (no silent clobber), which hid the remaining non-uniqueness behind a WARN. No test exercised concurrency.
+**Prevention:** `tests/unit/t3059_pickup_send_concurrent_ids.bats` runs 12 sends at once and asserts 12 distinct ids and files; it fails against the unlocked code.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -266,6 +277,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-18 — lock primitive
+- **Chose:** a direct `flock -x` on `.context/pickup/.id-allocation.lock` via a bash-allocated fd, held from allocation until the envelope is on disk and released before the remote push.
+- **Why:** the lock sits next to the data it guards. It adds no new source dependency (keylock.sh pulls in config.sh, and its `KEYLOCK_DIR` is fixed from `PROJECT_ROOT` at source time). Pickup has a single critical section, so a key/fd registry buys nothing.
+- **Rejected:** `keylock_acquire` — it would work, but it couples pickup.sh to keylock's source-time globals for no gain.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -282,3 +298,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3059-pickupnextid-is-read-then-write-with-no-.md
 - **Context:** Initial task creation
+
+### 2026-10-17T22:24:53Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

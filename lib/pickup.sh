@@ -606,6 +606,20 @@ do_pickup_send() {
 
     pickup_ensure_dirs
 
+    # T-3059: pickup_next_id reads the high-water mark and the envelope write
+    # below is what raises it — with nothing held between them, concurrent sends
+    # read the same max and issue the same id. Hold one exclusive per-project lock
+    # from allocation until the envelope is on disk; released before any remote
+    # push, which can be slow. Without flock (rare; keylock.sh needs it too) the
+    # old unlocked behaviour stands and T-3052's dup-N landing is the backstop.
+    local lock_fd=""
+    if command -v flock >/dev/null 2>&1; then
+        exec {lock_fd}>"$PICKUP_DIR/.id-allocation.lock"
+        flock -x "$lock_fd"
+    else
+        echo -e "${YELLOW}WARN${NC}    flock not found — pickup id allocation is not serialised" >&2
+    fi
+
     local pickup_id
     pickup_id=$(pickup_next_id)
 
@@ -641,7 +655,7 @@ do_pickup_send() {
     PAYLOAD_PRIORITY="$priority" \
     PAYLOAD_TAGS_CSV="${tags:-}" \
     OUT_PATH="$filepath" \
-    python3 - <<'PYEOF' || { echo -e "${RED}Envelope emit failed${NC}" >&2; return 1; }
+    python3 - <<'PYEOF' || { [ -n "$lock_fd" ] && exec {lock_fd}>&-; echo -e "${RED}Envelope emit failed${NC}" >&2; return 1; }
 import os, sys, yaml
 
 tags_csv = os.environ.get("PAYLOAD_TAGS_CSV", "").strip()
@@ -680,6 +694,7 @@ assert parsed["pickup_id"] == envelope["pickup_id"], "round-trip mismatch on pic
 assert parsed["payload"]["summary"] == envelope["payload"]["summary"], "round-trip mismatch on summary"
 assert parsed["payload"]["detail"] == envelope["payload"]["detail"], "round-trip mismatch on detail"
 PYEOF
+    [ -n "$lock_fd" ] && exec {lock_fd}>&-
 
     echo -e "${GREEN}Created${NC} $filename"
 
