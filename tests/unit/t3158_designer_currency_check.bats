@@ -98,6 +98,26 @@ _line() {
     [[ "$output" == *"fw designer sync --from-tag"* ]]
 }
 
+@test "T-3729: behind-origin advice names the pin edit BEFORE the sync, and never claims sync re-pins" {
+    # sync --from-tag refuses a sha that does not match the pin, so the advice must
+    # name updating policy/designer-pin.yaml from the rail announce as step 1.
+    _pin 0.9.0 "$ORIGIN"
+    run "$FRAMEWORK_ROOT/agents/designer/designer.sh" check-currency
+    [ "$status" -eq 0 ]
+    local plain pin_ln sync_ln
+    plain=$(printf '%s\n' "$output" | sed 's/\x1b\[[0-9;]*m//g')
+    pin_ln=$(printf '%s\n' "$plain" | grep -n "policy/designer-pin.yaml" | head -1 | cut -d: -f1)
+    sync_ln=$(printf '%s\n' "$plain" | grep -n "fw designer sync --from-tag" | head -1 | cut -d: -f1)
+    [ -n "$pin_ln" ]
+    [ -n "$sync_ln" ]
+    [ "$pin_ln" -lt "$sync_ln" ]
+    [[ "$plain" == *"rail announce"* ]]
+    for field in version sha256 bytes source_artifact source_tag vendored_path; do
+        [[ "$plain" == *"$field"* ]]
+    done
+    [[ "$plain" != *"re-pin"* ]]
+}
+
 @test "leg 3: origin unreachable -> SKIP with its own distinct line, never crash, exits 0" {
     _pin 0.9.0 "$BATS_TEST_TMPDIR/no-such-origin.git"
     run "$FRAMEWORK_ROOT/agents/designer/designer.sh" check-currency

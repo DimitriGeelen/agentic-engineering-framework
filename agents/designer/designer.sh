@@ -280,7 +280,8 @@ do_sync_from_tag() {
         echo "${_c_red}sha256 MISMATCH vs pin — refusing to vendor an unpinned build${_c_off}" >&2
         echo "  expected (pin): $expected" >&2
         echo "  actual  (tag):  $actual" >&2
-        echo "  → update policy/designer-pin.yaml from the rail announce first, then re-run." >&2
+        echo "  → update policy/designer-pin.yaml from 832's rail announce first (version, sha256, bytes," >&2
+        echo "    source_artifact, source_tag, vendored_path), then re-run." >&2
         return 1
     fi
     echo "  ${_c_grn}✓${_c_off} pin anchor: sha matches pin ($(_pin_get version))"
@@ -357,7 +358,12 @@ do_check_currency() {
         elif [ "$latest" != "$ver" ] && _version_gt "$latest" "$ver"; then
             echo -e "${_c_yel}WARN${_c_off}  designer pin is behind its origin — pinned $ver, newest released $latest"
             echo -e "         tag designer-v$latest at $origin"
-            echo -e "         Run: fw designer sync --from-tag   (re-pin + sha256-verify at the tag)"
+            # T-3729: two steps, in this order. `sync --from-tag` does NOT re-pin —
+            # it refuses any sha that does not match the pin (do_sync_from_tag), so
+            # the pin must be updated from 832's rail announce first.
+            echo -e "         1. Edit policy/designer-pin.yaml from 832's rail announce for $latest"
+            echo -e "            (version, sha256, bytes, source_artifact, source_tag, vendored_path)"
+            echo -e "         2. Then run: fw designer sync --from-tag   (sha256-verify at the tag + install)"
         else
             echo -e "${_c_grn}OK${_c_off}  designer pin current with origin (newest released $latest)"
         fi

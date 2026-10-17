@@ -1,14 +1,19 @@
 ---
 id: T-3729
-name: "fw designer check-currency advice says 'sync --from-tag' re-pins, but sync refuses
-  until the pin is first updated by hand from 832's announce"
+name: "fw designer check-currency advice says 'sync --from-tag' re-pins, but sync
+  refuses until the pin is first updated by hand from 832's announce"
 description: >
-  2026-10-17: the pin bump half is superseded (re-pinned 0.14.0 -> 0.20.0 -> 0.21.0 -> 0.22.0
+  2026-10-17: the pin bump half is superseded (re-pinned 0.14.0 -> 0.20.0 -> 0.21.0
+  -> 0.22.0
   under T-4224 / T-4279, each from 832's announce). What remains: agents/designer/designer.sh:360
-  prints 'Run: fw designer sync --from-tag (re-pin + sha256-verify at the tag)', but the sync
-  refuses a sha that does not match the pin, so the real order is: update the pin from the
-  rail announce (version, sha256, bytes, artifact, tag, vendored_path), then sync. Reproduced
-  in this session at both re-pins. Fix the advice (name both steps), or add a verb that writes
+  prints 'Run: fw designer sync --from-tag (re-pin + sha256-verify at the tag)', but
+  the sync
+  refuses a sha that does not match the pin, so the real order is: update the pin
+  from the
+  rail announce (version, sha256, bytes, artifact, tag, vendored_path), then sync.
+  Reproduced
+  in this session at both re-pins. Fix the advice (name both steps), or add a verb
+  that writes
   the pin from an announce. Original report:
   055 @72 2026-10-02: 832 released designer 0.15.2 (tag designer-v0.15.2, MANIFEST
   sha256 68454742196d2a53da2c6fed7dc7cb945c60995690d9224e6ab5e4f72d2f4394, 1063551
@@ -16,7 +21,7 @@ description: >
   own MANIFEST (independent anchor). Obtain or verify the announce from 832 before
   writing policy/designer-pin.yaml.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -50,7 +55,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T14:53:17Z
-last_update: '2026-10-02T15:00:41Z'
+last_update: '2026-10-17T22:15:48Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -90,6 +95,23 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-17T22:15:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3729: Bump designer pin to 0.15.2 from 832's announce (independent anchor), and fix fw designer check-currency advice: it says sync --from-tag re-pins, but sync refuses until the pin is updated from the rail announce
@@ -102,8 +124,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Every advice line that tells the operator to run `fw designer sync --from-tag` after a pin/version mismatch (agents/designer/designer.sh, bin/fw) names the pin edit of `policy/designer-pin.yaml` from 832's rail announce as step 1, before the sync
+- [x] No advice line claims that `sync --from-tag` re-pins
+- [x] Regression test under tests/unit/ asserts the advice text names the pin edit before the sync, and fails against the pre-fix text
+- [x] `bin/fw vendor self --check` is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -263,8 +287,20 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+! grep -rn "re-pin + sha256" agents/designer bin/fw lib
+timeout 600 bats tests/unit/t3158_designer_currency_check.bats > /tmp/.t3729.out 2>&1 && ! grep -q "^not ok" /tmp/.t3729.out && grep -q "^ok .* T-3729" /tmp/.t3729.out
+test "$(grep -c '# skip' /tmp/.t3729.out)" -eq 0
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** `fw designer check-currency` (and `fw doctor`, which calls it) printed `Run: fw designer sync --from-tag (re-pin + sha256-verify at the tag)` when the pin was behind origin. Following it failed every time: sync refused with `sha256 MISMATCH vs pin`. Reproduced at each re-pin under T-4224/T-4279.
+
+**Root cause:** `agents/designer/designer.sh:360` (pre-fix) described `sync --from-tag` as re-pinning, but `do_sync_from_tag` (designer.sh:279-285) only verifies against the existing pin and never writes it, by design: the pin must come from 832's rail announce, an anchor independent of the tag's own MANIFEST. The advice described a verb that does not exist.
+
+**Why structurally allowed:** the T-3158 suite (leg 2) asserted only that the WARN output *contains* `fw designer sync --from-tag`. It never checked that following the advice would work, so it pinned the wrong text in place. The other `sync --from-tag` hints (designer.sh:196, bin/fw:901, bin/fw:2850) fire when the pin already names the wanted build, so they are correct and unchanged.
+
+**Prevention:** new bats case `T-3729: behind-origin advice names the pin edit BEFORE the sync…` in tests/unit/t3158_designer_currency_check.bats. It asserts that the `policy/designer-pin.yaml` line comes before the sync line, that all six pin fields are named, and that the text never says "re-pin". It fails against the pre-fix text (verified by stashing the fix). The sync refusal message (designer.sh:283) now names the same fields, so both surfaces give the same instruction.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -360,3 +396,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3729-bump-designer-pin-to-0152-from-832s-anno.md
 - **Context:** Initial task creation
+
+### 2026-10-17T21:57:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
