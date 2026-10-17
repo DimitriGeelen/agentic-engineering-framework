@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4275: Publish greenfield instrumented-run prompt v2.1 in the README (T-4237 GO)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T16:19:48Z
+# ============================================================================
+
+task_id: T-4275
+task_name: "Publish greenfield instrumented-run prompt v2.1 in the README (T-4237 GO)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T16:17:27Z
+completed: 2026-10-17T16:19:28Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-17T18:19:26+02:00
+last_commit: 2026-10-17T18:19:26+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  README — publish greenfield instrumented-run prompt v2.1 (A+), and harden prompt A with the own-repo pre-check and installer-output check (T-4237 GO)
+
+# Key outcomes
+outcomes:
+  - 'README §Get started has a third entry "A+ — Greenfield, instrumented run (v2.1)" whose collapsed block holds the v2.1 prompt byte-for-byte'
+  - 'The entry says what the instrumented run is for and that its workaround sections are temporary (names T-4248, T-4251, T-4239, T-4252)'
+  - 'Prompt A keeps working on v1.8.10 master: it gains the two cheapest guards from the runs (own git repo pre-check, do not trust the installer''s last line)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'README.md'
+  - '.tasks/active/T-4275-publish-greenfield-instrumented-run-prom.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T18:19:26'
+    action: 'T-4275: README — publish greenfield instrumented-run prompt v2.1 (A+), and harden prompt A with the own-repo pre-check and installer-output check (T-4237 GO)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 2 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 2
+  commits: 1
+  files_changed: 2
+  lines_added: 736
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4275-publish-greenfield-instrumented-run-prom.md
+generated_by: context-agent-hybrid
