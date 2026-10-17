@@ -7,7 +7,7 @@ description: >
   055 @115 2026-10-02 after upgrading to 1.7.825; each has tests in 055's repo. Reproduce,
   then adopt or decline with reason.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T19:58:48Z
-last_update: '2026-10-02T20:00:44Z'
+last_update: 2026-10-17T21:40:41Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -87,14 +87,24 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+055 reported two local patches (pickup @115, 2026-10-02, after upgrading to 1.7.825). Each was reproduced against bleeding-edge HEAD and adopted or declined; the outcome is below. Triage source: docs/reports/T-3639-055-fix-triage.md rows 1 and 2. 055's own repo was not read directly: the project-boundary hook (T-559) refuses paths under /opt/055-agentic-fleet-cockpit, so each patch was reproduced from the pickup description and tested against our code.
+
+### Patch outcomes
+
+| 055 id | Patch | Reproduced at HEAD? | Outcome | Where |
+|---|---|---|---|---|
+| T-346 | Tier 0 hook blocks kill-by-name: any SIGKILL spelling for pkill/killall, pkill -f/--full, killall -r/--regexp | **Yes.** Before fd8bb60da, `pkill -KILL -f 'sleep\|trap'`, `pkill -f x`, `killall -9 x` and `killall -r x` all exited 0 through agents/context/check-tier0.sh (its only kill rule was `\bpkill\s+-9\b`). | **ADOPTED** (ported and tested, not copied) | T-3640, commit fd8bb60da; tests/unit/t3640_tier0_kill_by_name.bats (10 tests: every spelling blocked, plus allowed controls) |
+| T-367 | safe-commands `_fw_is_git_commit_clause` admits the framework's own `fw git commit` launcher paths (partial-complete commit allowance) | **No.** Probe at HEAD (`source agents/context/lib/safe-commands.sh; _FW_PAYLOAD_CWD=$PWD is_commit_checkpoint_command …`): `git commit`, `fw git commit`, `bin/fw git commit`, `./bin/fw git commit` and `/opt/999-…/bin/fw git commit` are all ADMITTED; `/tmp/x/bin/fw git commit` and `notfw git commit` are refused. | **DECLINED: already fixed upstream, more strictly** | T-3814 added the launcher allowance (safe-commands.sh:1386-1413). T-4108 resolves a relative launcher against the payload cwd and admits an absolute one only if it is this project's own fw. T-4203 covers the own shim, and T-4204 refuses a NAME=VALUE prefix such as PROJECT_ROOT=… in front of the launcher. A plain path admit like 055's would reopen the planted-launcher hole T-4108 closed. Already pinned by tests/unit/t3814_fw_git_commit_checkpoint.bats, t4203_own_shim_launcher.bats and t4204_commit_allowance_env_prefix.bats, so no new test is needed. |
+
+Note for the parent: T-3305 (captured) is the same defect as 055 T-367 (triage row 2). With the HEAD probe above it looks already resolved by T-3814; it was not edited here because it is out of scope.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] 055 T-346 (kill-by-name) reproduced at HEAD and adopted, with regression tests (T-3640, fd8bb60da, tests/unit/t3640_tier0_kill_by_name.bats green)
+- [x] 055 T-367 (fw git commit launcher allowance) reproduced at HEAD; declined with reason: already admitted by T-3814/T-4108/T-4203/T-4204, which are stricter than the 055 patch and already have tests
+- [x] Each outcome is recorded with its reason in the Patch outcomes table above
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -254,6 +264,9 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t3640_tier0_kill_by_name.bats > /tmp/.t3748a.out 2>&1 && ! grep -q "^not ok" /tmp/.t3748a.out
+timeout 300 bats tests/unit/t3814_fw_git_commit_checkpoint.bats tests/unit/t4204_commit_allowance_env_prefix.bats > /tmp/.t3748b.out 2>&1 && ! grep -q "^not ok" /tmp/.t3748b.out
+bash -c 'source agents/context/lib/safe-commands.sh; _FW_PAYLOAD_CWD=$PWD; is_commit_checkpoint_command "bin/fw git commit -m x" && ! is_commit_checkpoint_command "/tmp/x/bin/fw git commit -m x"'
 
 ## RCA
 
@@ -351,3 +364,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3748-upstream-055s-local-patches-the-tier-0-h.md
 - **Context:** Initial task creation
+
+### 2026-10-17T21:36:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
