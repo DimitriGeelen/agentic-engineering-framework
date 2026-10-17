@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:01:58Z
-last_update: 2026-10-17T21:36:17Z
+last_update: 2026-10-17T21:51:30Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,12 +97,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `fw init <dir>` creates <dir>'s own git repo when <dir> is not inside any work tree: `git -C <dir> rev-parse --show-toplevel` equals <dir>
-- [ ] `fw init <dir>` creates <dir>'s own repo when the enclosing repo's top-level is `/` or `$HOME` (HOME stand-in test); the enclosing repo's HEAD does not move and no hook lands in its .git/hooks
-- [ ] `fw init <dir>` inside a genuine enclosing project repo (top-level neither `/` nor `$HOME`, not greenfield) attaches to it, does NOT nest a repo, and prints one notice naming the enclosing top-level and `git init <dir>` as the way to get a separate repo
-- [ ] `install.sh` creating a NEW target directory itself passes the greenfield signal, so fw init creates the target's own repo even under a genuine enclosing repo; verify() requires the own-top-level only in the own-repo cases
-- [ ] Regression bats tests (tests/unit/t4251_init_own_git_repo.bats) cover all four cases plus the T-4248 install.sh re-run no-op, and pass
-- [ ] `bin/fw vendor self --check` is clean; tests/unit/upgrade_fresh_machine_simulation.bats not-ok count reported in Updates
+- [x] `fw init <dir>` creates <dir>'s own git repo when <dir> is not inside any work tree: `git -C <dir> rev-parse --show-toplevel` equals <dir>
+- [x] `fw init <dir>` creates <dir>'s own repo when the enclosing repo's top-level is `/` or `$HOME` (HOME stand-in test); the enclosing repo's HEAD does not move and no hook lands in its .git/hooks
+- [x] `fw init <dir>` inside a genuine enclosing project repo (top-level neither `/` nor `$HOME`, not greenfield) attaches to it, does NOT nest a repo, and prints one notice naming the enclosing top-level and `git init <dir>` as the way to get a separate repo
+- [x] `install.sh` creating a NEW target directory itself passes the greenfield signal, so fw init creates the target's own repo even under a genuine enclosing repo; verify() requires the own-top-level only in the own-repo cases
+- [x] Regression bats tests (tests/unit/t4251_init_own_git_repo.bats) cover all four cases plus the T-4248 install.sh re-run no-op, and pass
+- [x] `bin/fw vendor self --check` is clean; tests/unit/upgrade_fresh_machine_simulation.bats not-ok count reported in Updates
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -293,7 +293,7 @@ bin/fw vendor self --check
 
 **Why structurally allowed:** the only "is it a repo" test asked whether the path is inside a work tree, not whether the work tree's top-level IS the target. The fresh-machine simulation always built the target as its own repo, so no test ever put a target inside an enclosing one.
 
-**Prevention:** `tests/unit/t4251_init_own_git_repo.bats` builds an enclosing repo and runs `fw init` into a subdirectory of it. Its assertions are that the target's top-level equals the target and the enclosing repo is untouched. The fix uses the top-level comparison, and verify() asserts the same.
+**Prevention:** the rule is now explicit (`lib/init.sh` git-init block): own repo when the target is in no work tree, when the enclosing top-level is `/` or `$HOME`, or when install.sh created the directory (`FW_INIT_OWN_REPO=1`); a genuine enclosing project repo (monorepo package) is attached to with a notice, so no repo is nested silently. `install.sh` verify() requires the own top-level exactly in those cases (`TARGET_OWN_REPO`). `tests/unit/t4251_init_own_git_repo.bats` pins all four cases (no repo, `$HOME` stand-in, enclosing project repo, install.sh greenfield + T-4248 re-run no-op), with `GIT_CEILING_DIRECTORIES` so a host repo at `/` (present on this host) cannot leak in. Note: `install.sh --local` clones the committed branch, so the install case tests committed `lib/init.sh`, not the working tree.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -393,3 +393,8 @@ bin/fw vendor self --check
 ### 2026-10-17T19:36:11Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-17 — narrowed rule landed (w4251)
+- **Commit:** c723d0a36 (lib/init.sh, install.sh, vendored init.sh, tests/unit/t4251_init_own_git_repo.bats)
+- **Tests:** t4251_init_own_git_repo.bats 4/4 ok; upgrade_fresh_machine_simulation.bats 16 tests, **0 not-ok**; install_target_project.bats re-run test ok
+- **T-4248 part:** the install.sh re-run no-op hunk was swept into concurrent commit 72f4e927d from the shared index; ownership recorded by empty commit bddd0a35a (T-4248)
