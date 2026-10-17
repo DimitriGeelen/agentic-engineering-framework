@@ -20,7 +20,7 @@ description: >
   'kill by PID, never by name'. Triage: T-3639 (docs/reports/T-3639-055-fix-triage.md).
   Ships to 055 only at the next release cut.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -54,7 +54,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-01T13:18:43Z
-last_update: '2026-10-01T13:30:36Z'
+last_update: 2026-10-17T21:36:14Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,20 +94,43 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-17T21:30:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-3640: PRIORITY Tier 0: check-tier0.sh blocks only 'pkill -9' — every other SIGKILL spelling and pkill -f/killall -r pass (055 P-006)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Port 055's kill-by-name Tier 0 fix (pickup P-006) into agents/context/check-tier0.sh, with tests here. Triage: docs/reports/T-3639-055-fix-triage.md.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] The hook blocks (exit 2) every SIGKILL spelling for pkill and killall: -9, -KILL, -SIGKILL (any case), -s 9|KILL|SIGKILL, -s9, --signal[= ]9|KILL|SIGKILL (abbreviations of --signal included)
+- [x] The hook blocks any pkill -f / --full, clustered (-ef, -fx) included, whatever the signal; and killall -r / --regexp, clustered included
+- [x] killall reaches the detailed match (the fast-path prefilter names it)
+- [x] Each of the three rules has its own block message naming what it matched and the safe alternative (kill the PID / process group you started)
+- [x] Still allowed (exit 0): kill <pid>, kill -9 <pid>, kill -TERM -<pgid>, pkill <name>, pkill -TERM <name>, pgrep -f <pat>, killall <name>, grep -rn pkill <dir>, the words inside quoted text
+- [x] Regression test tests/unit/t3640_tier0_kill_by_name.bats runs the real hook with PROJECT_ROOT in a tempdir; its block cases fail on the pre-fix hook
+- [x] Existing Tier 0 hook suites still pass; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -267,6 +290,10 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 300 bats tests/unit/t3640_tier0_kill_by_name.bats > /tmp/.t3640.out 2>&1 && ! grep -q "^not ok" /tmp/.t3640.out
+test "$(grep -c '# skip' /tmp/.t3640.out)" -eq 0
+timeout 600 bats tests/unit/check_tier0_comment_stripping.bats tests/unit/tier0_scope_boundary.bats tests/unit/tier0_idempotency.bats > /tmp/.t3640b.out 2>&1 && ! grep -q "^not ok" /tmp/.t3640b.out
+bin/fw vendor self --check
 
 ## RCA
 
@@ -283,6 +310,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** In 055 a dispatched worker ran `pkill -KILL -f 'sleep|trap'`. The Tier 0 hook let it through, and it SIGKILLed every process on the host whose command line matched sleep or trap, a live fleet agent's session among them.
+
+**Root cause:** agents/context/check-tier0.sh had one kill rule, `r'\bpkill\s+-9\b'` (check-tier0.sh:319 before the fix, in the "Destructive file operations" block). It matched one spelling of one signal for one tool. Every other SIGKILL spelling (-KILL, -SIGKILL, -s 9, --signal=KILL) got through, and so did pkill -f, which is the real blast-radius multiplier: it matches the full command line of every process, so any signal hits unrelated processes. killall was absent from the fast-path prefilter (check-tier0.sh:134), so killall -r never reached the Python match at all.
+
+**Why structurally allowed:** Tier 0 is a denylist of command shapes, and this entry was written as one literal command (`pkill -9`) instead of the property behind it (kill by name with SIGKILL, or kill by pattern match). No test exercised a kill command, so the gap was invisible: every Tier 0 block on record came from a typed git/rm command (CLAUDE.md §Enforcement Tiers, T-2742 note).
+
+**Prevention:** tests/unit/t3640_tier0_kill_by_name.bats pins each SIGKILL spelling, -f/--full (clustered too) and killall -r/--regexp as blocks, plus the controls that must stay allowed (kill <pid>, kill -9 <pid>, plain pkill <name>, pgrep -f, a grep for the word). Each rule is written against the option property, not one spelling.
 
 ## Evolution
 
@@ -364,3 +399,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3640-priority-tier-0-check-tier0sh-blocks-onl.md
 - **Context:** Initial task creation
+
+### 2026-10-17T21:18:20Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
