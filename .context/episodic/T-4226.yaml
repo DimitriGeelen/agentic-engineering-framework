@@ -1,0 +1,115 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4226: Budget ladder from one reserve: R = 20K (200K window) .. 50K (800K+); Amber/Red/Stop at (2+f)R / (1.5+0.5f)R / R free tokens, f = clamp((W-200K)/600K, 0, 1); spawning in Green, small in Amber, none from Red (operator ruling 2026-10-17)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T14:17:59Z
+# ============================================================================
+
+task_id: T-4226
+task_name: "Budget ladder from one reserve: R = 20K (200K window) .. 50K (800K+); Amber/Red/Stop at (2+f)R / (1.5+0.5f)R / R free tokens, f = clamp((W-200K)/600K, 0, 1); spawning in Green, small in Amber, none from Red (operator ruling 2026-10-17)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-17T09:25:05Z
+completed: 2026-10-17T14:17:14Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-17T11:25:33+02:00
+last_commit: 2026-10-17T16:16:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file the reserve-driven budget ladder (operator ruling 2026-10-17). shared budget ladder from one spawn reserve (lib/budget_ladder.py) + pinned tests. budget-gate reads the shared ladder (Stop/Red/Amber from one spawn reserve). checkpoint.sh reads the shared ladder; budget/status show band and free tokens. CLAUDE.md and consumer template describe the ladder and the spawn rule by band. vendor the shared ladder into the consumer surface; fabric card for lib/budget_ladder.py. status shows tokens still to go to each band; t3204 dead-negation fix. vendor checkpoint.sh with per-band tokens-to-go. task ACs ticked (four of five) and inclusive-boundary decision recorded. last AC with evidence (integration T-2403 red pre-existing; governance gates 13/13)
+
+# Key outcomes
+outcomes:
+  - 'One shared computation returns R, f and the three thresholds for a given CONTEXT_WINDOW; checkpoint.sh and budget-gate.sh both use it (no second copy of the formula)'
+  - 'Tests pin the worked values (200K: 160K/170K/180K; 500K: 412.5K/438.75K/465K; 800K: 650K/700K/750K; 975K: 825K/875K/925K used) and each boundary (threshold, threshold − 1)'
+  - 'budget-gate.sh blocks exactly from Stop and allows below it; its existing allow-list behaviour at critical is unchanged (existing budget-gate suites green, except tests/integration/budget_gate.bats #28 "T-2403 folds directive", red before this change too — verified by the worker on the pre-change copy; filed for triage under T-4221. tests/governance/test_pretooluse_gates.bats 13/13 green on 2026-10-17, live focus.yaml unchanged by the run)'
+  - '`checkpoint.sh budget`/`status` show the level and the free tokens to each band; T-4171 operator notices still fire at warn and urgent'
+  - 'CLAUDE.md (§Context Budget Management, §Automated Monitoring, §Parallelism limits, §Budget Rules) and lib/templates/claude-project.md describe the ladder and the spawn rule (Green: workers; Amber: small only; Red/Stop: none); no stale 75/85/95% band statement remains'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'status shows tokens still to go to each band; t3204 dead-negation fix'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-17 — inclusive boundaries, one module'
+    chose: 'a reading exactly at a threshold is in the higher band (`used >= threshold`), so the operator''s worked values (Amber 160K at 200K, Stop 750K at 800K, ...) are the first used-token counts in their band. Thresholds are floored to whole tokens. The ladder lives in `lib/budget_ladder.py`; both gauges call it and keep no formula of their own.'
+    rationale: 'the worked values are used-token figures the operator wrote down; the inclusive reading reproduces them exactly. The literal `free < X` form would move each boundary by one token (e.g. Stop at 180,001 used at 200K). Tests pin both sides of every boundary.'
+    alternatives_rejected: ['keeping the arithmetic inline in each script (two copies drift — that is the T-2885 class). A strict `free < X` reading (one token off the worked values). - **Fail-open:** if python3 yields no ladder, every threshold sits above the cap so no band fires; the gate''s unknown-level path is unchanged.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/budget-gate.sh'
+  - '.agentic-framework/agents/context/checkpoint.sh'
+  - '.agentic-framework/lib/budget_ladder.py'
+  - '.agentic-framework/lib/templates/claude-project.md'
+  - 'agents/context/budget-gate.sh'
+  - 'agents/context/checkpoint.sh'
+  - 'CLAUDE.md'
+  - '.fabric/components/lib-budget_ladder.yaml'
+  - 'lib/budget_ladder.py'
+  - 'lib/templates/claude-project.md'
+  - '.tasks/active/T-4226-budget-ladder-from-one-reserve-r--20k-20.md'
+  - 'tests/unit/t3204_budget_cap_legibility.bats'
+  - 'tests/unit/t3248_useful_headroom.bats'
+  - 'tests/unit/t4171_budget_band_operator_visible.bats'
+  - 'tests/unit/t4226_budget_ladder.bats'
+  - 'tests/unit/template_budget_parity.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T11:25:33'
+    action: 'T-4226: file the reserve-driven budget ladder (operator ruling 2026-10-17)'
+  - time: '2026-10-17T15:02:41'
+    action: 'T-4226: shared budget ladder from one spawn reserve (lib/budget_ladder.py) + pinned tests'
+  - time: '2026-10-17T15:35:51'
+    action: 'T-4226: budget-gate reads the shared ladder (Stop/Red/Amber from one spawn reserve)'
+  - time: '2026-10-17T15:35:52'
+    action: 'T-4226: checkpoint.sh reads the shared ladder; budget/status show band and free tokens'
+  - time: '2026-10-17T15:35:54'
+    action: 'T-4226: CLAUDE.md and consumer template describe the ladder and the spawn rule by band'
+  - time: '2026-10-17T15:36:28'
+    action: 'T-4226: vendor the shared ladder into the consumer surface; fabric card for lib/budget_ladder.py'
+  - time: '2026-10-17T16:00:49'
+    action: 'T-4226: status shows tokens still to go to each band; t3204 dead-negation fix'
+  - time: '2026-10-17T16:01:15'
+    action: 'T-4226: vendor checkpoint.sh with per-band tokens-to-go'
+  - time: '2026-10-17T16:07:29'
+    action: 'T-4226: task ACs ticked (four of five) and inclusive-boundary decision recorded'
+  - time: '2026-10-17T16:16:44'
+    action: 'T-4226: last AC with evidence (integration T-2403 red pre-existing; governance gates 13/13)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 10 commit(s), 292 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 292
+  commits: 10
+  files_changed: 16
+  lines_added: 948
+  lines_removed: 152
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4226-budget-ladder-from-one-reserve-r--20k-20.md
+generated_by: context-agent-hybrid
