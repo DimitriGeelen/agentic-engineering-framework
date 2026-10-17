@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4250: fw task delegate writes a literal bin/fw verification line; vendored consumers (no bin/fw) fail every delegated close with exit 127 (ring20 G-235)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T17:52:54Z
+# ============================================================================
+
+task_id: T-4250
+task_name: "fw task delegate writes a literal bin/fw verification line; vendored consumers (no bin/fw) fail every delegated close with exit 127 (ring20 G-235)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T15:00:50Z
+completed: 2026-10-17T17:52:29Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-17T17:01:24+02:00
+last_commit: 2026-10-17T18:55:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file delegate's literal bin/fw verification line (ring20 G-235: vendored closes exit 127). fw task delegate emits project-correct fw path (vendored consumers no longer exit 127)
+
+# Key outcomes
+outcomes:
+  - 'lib/delegation_cli.py resolves the project-relative fw path (bin/fw if present, else .agentic-framework/bin/fw) and uses it in the generated Verification line, Close-path text, and next-step hints instead of a literal `bin/fw`'
+  - 'In a synthetic vendored consumer (only .agentic-framework/bin/fw), no generated delegation output contains a bare `bin/fw` outside `.agentic-framework/`; in the framework layout the output is unchanged'
+  - 'Regression test tests/unit/test_delegation_fw_path.py passes and fails without the fix'
+  - '`bin/fw vendor self --check` is clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/delegation_cli.py'
+  - 'lib/delegation_cli.py'
+  - '.tasks/active/T-4250-fw-task-delegate-writes-a-literal-binfw-.md'
+  - 'tests/unit/test_delegation_fw_path.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T17:01:24'
+    action: 'T-4250: file delegate''s literal bin/fw verification line (ring20 G-235: vendored closes exit 127)'
+  - time: '2026-10-17T18:55:00'
+    action: 'T-4250: fw task delegate emits project-correct fw path (vendored consumers no longer exit 127)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 171 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 171
+  commits: 2
+  files_changed: 4
+  lines_added: 437
+  lines_removed: 23
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4250-fw-task-delegate-writes-a-literal-binfw-.md
+generated_by: context-agent-hybrid

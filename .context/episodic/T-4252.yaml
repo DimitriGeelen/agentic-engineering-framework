@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4252: Dispatch preamble makes workers run plain 'fw sidecar inbox': in a fresh project it resolves to the host-shared identity and marks other projects' DMs read (198 lost, dimitri-mint-dev run 3)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T17:46:18Z
+# ============================================================================
+
+task_id: T-4252
+task_name: "Dispatch preamble makes workers run plain 'fw sidecar inbox': in a fresh project it resolves to the host-shared identity and marks other projects' DMs read (198 lost, dimitri-mint-dev run 3)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T15:02:18Z
+completed: 2026-10-17T17:45:55Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-17T18:58:34+02:00
+last_commit: 2026-10-17T18:58:34+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  sidecar inbox no longer drains host-shared dm rails; preamble documents it
+
+# Key outcomes
+outcomes:
+  - '`dm.pending(advance=True)` returns nothing and moves no cursor when the resolved identity is the host-shared one (new `dm.identity_is_host_shared`); `fw sidecar inbox` (non-peek) then shows the DM rails as read-only summaries with a message saying why'
+  - 'With a project-own identity (resolved fingerprint differs from the host default) DM draining is unchanged'
+  - 'Regression test `tests/unit/test_sidecar_dm_host_shared_t4252.py` fails without the fix and passes with it (fresh project dir, shared identity, unread DMs stay unread)'
+  - '`agents/dispatch/preamble.md` and the stanza in `agents/termlink/termlink.sh` state what the plain call drains and what it leaves alone'
+  - 'Vendored copies in sync (`bin/fw vendor self --check` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/dispatch/preamble.md'
+  - '.agentic-framework/agents/termlink/termlink.sh'
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/dm.py'
+  - 'agents/dispatch/preamble.md'
+  - 'agents/termlink/termlink.sh'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/dm.py'
+  - '.tasks/active/T-4252-dispatch-preamble-makes-workers-run-plai.md'
+  - 'tests/unit/test_sidecar_dm_host_shared_t4252.py'
+  - 'tests/unit/test_sidecar_dm_scope_t3966.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T18:58:34'
+    action: 'T-4252: sidecar inbox no longer drains host-shared dm rails; preamble documents it'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 163 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 163
+  commits: 1
+  files_changed: 11
+  lines_added: 253
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4252-dispatch-preamble-makes-workers-run-plai.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4249: claude-fw --termlink does not restart Claude after the critical auto-handover: it types exit into its TermLink shell, returns 0 and the pane closes, so the session is lost until something else relaunches it (0506 16:23, 1409 15:00:36, 2026-10-17)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T17:47:59Z
+# ============================================================================
+
+task_id: T-4249
+task_name: "claude-fw --termlink does not restart Claude after the critical auto-handover: it types exit into its TermLink shell, returns 0 and the pane closes, so the session is lost until something else relaunches it (0506 16:23, 1409 15:00:36, 2026-10-17)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T14:27:02Z
+completed: 2026-10-17T17:47:01Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-17T16:27:33+02:00
+last_commit: 2026-10-17T19:13:31+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file claude-fw --termlink exits instead of restarting after the critical auto-handover (055 evidence). claude-fw --termlink exit marker carries a per-run token, so a restart no longer reads the previous run's marker as the new run exiting
+
+# Key outcomes
+outcomes:
+  - 'Regression bats test tests/unit/t4249_termlink_restart_on_exit.bats exists, drives bin/claude-fw --termlink with a fake claude on PATH under a private tmux socket, and fails on the pre-fix wrapper'
+  - 'In --termlink mode a fresh .restart-requested written during the run makes the wrapper relaunch claude in the same TermLink session (second fake-claude run observed) instead of exiting'
+  - 'The restart is announced with the T-4170 banner (Auto-restart #N, Reason, Handover lines)'
+  - 'Existing neighbouring claude-fw tests (t3346, t3358, t3648, restart_mode, t4118) still pass'
+  - 'RCA names the root cause with file:line and states whether T-4032 covered this path'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/claude-fw'
+  - 'bin/claude-fw'
+  - '.tasks/active/T-4249-claude-fw---termlink-does-not-restart-cl.md'
+  - 'tests/unit/t3358_claude_fw_exit_detection.bats'
+  - 'tests/unit/t3648_claude_fw_ping_tolerance.bats'
+  - 'tests/unit/t4249_termlink_restart_on_exit.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T16:27:33'
+    action: 'T-4249: file claude-fw --termlink exits instead of restarting after the critical auto-handover (055 evidence)'
+  - time: '2026-10-17T19:13:31'
+    action: 'T-4249: claude-fw --termlink exit marker carries a per-run token, so a restart no longer reads the previous run''s marker as the new run exiting'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 199 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 199
+  commits: 2
+  files_changed: 6
+  lines_added: 458
+  lines_removed: 16
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4249-claude-fw---termlink-does-not-restart-cl.md
+generated_by: context-agent-hybrid

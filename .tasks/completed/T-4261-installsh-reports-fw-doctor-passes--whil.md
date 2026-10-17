@@ -1,20 +1,17 @@
 ---
-id: T-4250
-name: "fw task delegate writes a literal bin/fw verification line; vendored consumers
-  (no bin/fw) fail every delegated close with exit 127 (ring20 G-235)"
+id: T-4261
+name: "install.sh reports \"fw doctor passes ✓\" while hiding every doctor WARN, and
+  never checks HEAD."
 description: >
-  lib/delegation_cli.py:196 emits 'bin/fw reviewer T-XXX ... && grep -q Overall:.*PASS'
-  into ## Verification; also :241, :436 and the next-hints (:460-:570). Vendored consumers
-  run .agentic-framework/bin/fw, so the line exits 127 and P-011 refuses every delegated
-  close even after a reviewer PASS. ring20 measured 32 delegations, 16 PASS, 9 of
-  11 closes refused. Fix: emit the project-correct fw path (bin/fw in the framework
-  repo, .agentic-framework/bin/fw in a consumer), same class as T-1257/G-030; regression
-  test in a synthetic vendored consumer.
+  install.sh:448 — print WARN count + first lines; add an unresolved-HEAD check to
+  post-install verification so F-07 cannot exit "All verification steps passed". Findings
+  (0909 run aef-install-20261017T144241Z): F-17 (F-07 overlap with T-4251 on the HEAD
+  leg). Triage: docs/reports/T-4253-greenfield-run-triage.md PROPOSED-NEW-8.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -44,9 +41,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-17T15:00:50Z
-last_update: 2026-10-17T16:55:00Z
-date_finished:
+created: 2026-10-17T15:26:35Z
+last_update: 2026-10-17T17:48:10Z
+date_finished: 2026-10-17T17:48:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,7 +55,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-17T15:15:32Z'
+  - ts: '2026-10-17T15:30:33Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -68,7 +65,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-17T15:16:15Z'
+  - ts: '2026-10-17T15:31:18Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -87,7 +84,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4250: fw task delegate writes a literal bin/fw verification line; vendored consumers (no bin/fw) fail every delegated close with exit 127 (ring20 G-235)
+# T-4261: install.sh reports "fw doctor passes ✓" while hiding every doctor WARN, and never checks HEAD.
 
 ## Context
 
@@ -97,10 +94,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] lib/delegation_cli.py resolves the project-relative fw path (bin/fw if present, else .agentic-framework/bin/fw) and uses it in the generated Verification line, Close-path text, and next-step hints instead of a literal `bin/fw`
-- [x] In a synthetic vendored consumer (only .agentic-framework/bin/fw), no generated delegation output contains a bare `bin/fw` outside `.agentic-framework/`; in the framework layout the output is unchanged
-- [x] Regression test tests/unit/test_delegation_fw_path.py passes and fails without the fix
-- [ ] `bin/fw vendor self --check` is clean
+- [x] install.sh verify() Step 3 no longer says "fw doctor passes" while hiding WARNs: it prints the doctor WARN count and the first few WARN lines
+- [x] install.sh verify() checks the target project resolves HEAD (`git rev-parse --verify HEAD`); when the bootstrap commit did not land it prints an error, does NOT print "All verification steps passed", and install.sh exits non-zero
+- [x] Regression bats tests/unit/t4261_install_verify_head_and_warns.bats fails on the pre-fix install.sh and passes after; install_target_project, install_verify_no_cwd_init and upgrade_fresh_machine_simulation stay green
+- [x] git-init behaviour untouched (scope fence: T-4251)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -278,16 +275,16 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-
-python3 -m pytest tests/unit/test_delegation_fw_path.py -q > /tmp/.t4250.out 2>&1 && grep -q passed /tmp/.t4250.out
-bin/fw vendor self --check
+bash -n install.sh
+grep -q 'rev-parse --verify HEAD' install.sh
+out=$(bats tests/unit/t4261_install_verify_head_and_warns.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok' && ! echo "$out" | grep -q '# skip'
 
 ## RCA
 
-**Symptom:** After `fw task delegate`, vendored consumers (ring20) fail P-011: the generated verification line `bin/fw reviewer T-XXX ...` exits 127 (no bin/fw). 9 of 11 delegated closes refused.
-**Root cause:** lib/delegation_cli.py hard-codes the literal `bin/fw` in the verification line (:196), close-path text (:241) and next-step hints (:436-:570); it never resolves the project's fw path.
-**Why structurally allowed:** only ever exercised in the framework repo, where `bin/fw` exists; no test used a vendored-consumer layout (same class as T-1257/G-030).
-**Prevention:** tests/unit/test_delegation_fw_path.py builds a vendored layout and asserts no bare `bin/fw` is emitted.
+**Symptom:** install.sh printed `Step 3/3: fw doctor passes ✓` on a fresh install with 31 doctor WARNs, and ended `All verification steps passed` / exit 0 even when the bootstrap commit failed (no HEAD).
+**Root cause:** install.sh verify() Step 3 (~line 448) ran `fw doctor &>/dev/null` and judged only the exit code (WARN exits 0), discarding all output; verify() had no HEAD check, and main() ignored verify's result and always ended "Installation complete!" with exit 0.
+**Why structurally allowed:** the verification asserted "doctor exited 0", not "project is healthy"; no test exercised a failed bootstrap commit.
+**Prevention:** verify() prints WARN count + first lines, checks HEAD, returns non-zero propagated by main(); bats t4261 pins both with a git shim that fails `git commit`.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -379,11 +376,27 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-17T15:00:50Z — task-created [task-create-agent]
+### 2026-10-17T15:26:35Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4250-fw-task-delegate-writes-a-literal-binfw-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4261-installsh-reports-fw-doctor-passes--whil.md
 - **Context:** Initial task creation
 
-### 2026-10-17T16:52:42Z — status-update [task-update-agent]
+### 2026-10-17T16:52:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-3dc504cd
+- **Timestamp:** 2026-10-17T17:51:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-17T17:48:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

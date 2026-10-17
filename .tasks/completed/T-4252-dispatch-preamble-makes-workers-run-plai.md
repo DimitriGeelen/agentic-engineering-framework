@@ -1,19 +1,23 @@
 ---
-id: T-4265
-name: "Onboarding gate advertises `fw onboarding skip` but its own bootstrap exemption
-  refuses it."
+id: T-4252
+name: "Dispatch preamble makes workers run plain 'fw sidecar inbox': in a fresh project
+  it resolves to the host-shared identity and marks other projects' DMs read (198
+  lost, dimitri-mint-dev run 3)"
 description: >
-  agents/context/check-active-task.sh:258/291/333 add `onboarding (skip|status)`;
-  add a test that every remedy a gate's block message prints passes that gate. Findings
-  (0909 run aef-install-20261017T144241Z): F-28 (+F-27 framework half). Triage: docs/reports/T-4253-greenfield-run-triage.md
-  PROPOSED-NEW-12.
+  The dispatch preamble tells workers to check 'fw sidecar inbox'. In a project without
+  its own sidecar identity the verb fell back to the host-shared identity and marked
+  198 DMs addressed to other projects as read — silent mail loss (same family as the
+  2026-10-03 auto-ack watermark incident). Fix: the inbox verb refuses (or reads without
+  marking) when the project has no own identity; the preamble names the project-scoped
+  call. Regression test: fresh project, shared identity with unread DMs, inbox leaves
+  them unread.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [agents/dispatch/preamble.md, agents/termlink/termlink.sh, lib/sidecar_cli.py, lib/sidecar/dm.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -41,9 +45,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-17T15:27:42Z
-last_update: 2026-10-17T16:54:51Z
-date_finished:
+created: 2026-10-17T15:02:18Z
+last_update: 2026-10-17T17:45:55Z
+date_finished: 2026-10-17T17:45:55Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -55,7 +59,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-17T15:30:33Z'
+  - ts: '2026-10-17T15:15:32Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -65,7 +69,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-17T15:31:18Z'
+  - ts: '2026-10-17T15:16:15Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -84,7 +88,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4265: Onboarding gate advertises `fw onboarding skip` but its own bootstrap exemption refuses it.
+# T-4252: Dispatch preamble makes workers run plain 'fw sidecar inbox': in a fresh project it resolves to the host-shared identity and marks other projects' DMs read (198 lost, dimitri-mint-dev run 3)
 
 ## Context
 
@@ -94,10 +98,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] check-active-task.sh bootstrap exemption (all 3 regex sites) admits `fw onboarding skip` and `fw onboarding status` under bin/fw, .agentic-framework/bin/fw and bare fw spellings
-- [x] Regression test tests/unit/t4265_onboarding_remedy_passes_gate.bats fails before the fix and passes after
-- [x] Test asserts every remedy command printed in the onboarding block message passes the same gate (no active task)
-- [x] A redirected form (`fw onboarding skip > f`) stays blocked (exemption not widened)
+- [x] `dm.pending(advance=True)` returns nothing and moves no cursor when the resolved identity is the host-shared one (new `dm.identity_is_host_shared`); `fw sidecar inbox` (non-peek) then shows the DM rails as read-only summaries with a message saying why
+- [x] With a project-own identity (resolved fingerprint differs from the host default) DM draining is unchanged
+- [x] Regression test `tests/unit/test_sidecar_dm_host_shared_t4252.py` fails without the fix and passes with it (fresh project dir, shared identity, unread DMs stay unread)
+- [x] `agents/dispatch/preamble.md` and the stanza in `agents/termlink/termlink.sh` state what the plain call drains and what it leaves alone
+- [x] Vendored copies in sync (`bin/fw vendor self --check` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -147,10 +152,10 @@ bvp_scores_proposed:
 
 ## Verification
 
-bats tests/unit/t4265_onboarding_remedy_passes_gate.bats > /tmp/.t4265.out 2>&1 && ! grep -q "^not ok" /tmp/.t4265.out
-bats tests/unit/onboarding_gate_owner_human_exempt.bats tests/unit/check_onboarding_gate.bats tests/unit/onboarding_gate_arc_tag_fp.bats > /tmp/.t4265b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4265b.out
+python3 -m pytest tests/unit/test_sidecar_dm_host_shared_t4252.py tests/unit/test_sidecar_dm.py tests/unit/test_sidecar_dm_scope_t3966.py -q > /tmp/.t4252.out 2>&1 && grep -q passed /tmp/.t4252.out && ! grep -q failed /tmp/.t4252.out
+grep -q "identity_is_host_shared" lib/sidecar_cli.py
+grep -q "host-shared" agents/dispatch/preamble.md
 bin/fw vendor self --check
-
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -282,10 +287,13 @@ bin/fw vendor self --check
 
 ## RCA
 
-**Symptom:** A first-time user blocked by the T-532 onboarding gate is told to run `fw onboarding skip`; running it is refused by the same gate (0909 run F-28/F-27).
-**Root cause:** The task-bootstrap exemption regex (check-active-task.sh:258, :291, and the hint guard :333) lists only work-on|task create|context focus|inception; `onboarding skip|status` is absent, so the command falls through to the active-task / onboarding block.
-**Why structurally allowed:** Block messages and the exemption list were maintained separately; no test ran the printed remedies back through the gate (L-597).
-**Prevention:** t4265 bats extracts every remedy command from the block message and feeds it back through the gate, so a newly advertised remedy the gate refuses fails the suite.
+**Symptom:** a dispatched worker in a project with no sidecar identity of its own ran the preamble's `fw sidecar inbox`; 198 DMs addressed to other projects were marked read (0909 greenfield run, F-20/F-21).
+
+**Root cause:** DM rails are keyed by the TermLink identity fingerprint, which is host-wide when the project has no identity of its own (`lib/sidecar/dm.py:rails_for_key` via `identity_fingerprint`). `cmd_inbox` non-peek calls `dm.pending(advance=True)` (`lib/sidecar_cli.py:313-314`), which drains and advances the cursor on every rail touching that shared fingerprint, whoever the DM was for. Nothing distinguished "own" from "host-shared" identity before draining.
+
+**Why structurally allowed:** T-3966 only added a NOTE saying dm rails are host-wide; it kept the drain. The preamble (`agents/dispatch/preamble.md:265`, stanza `agents/termlink/termlink.sh:1047`) prescribes the plain draining form to every worker, including ones in fresh projects.
+
+**Prevention:** `dm.identity_is_host_shared()` gates the drain (read-only summaries instead); regression test `tests/unit/test_sidecar_dm_host_shared_t4252.py`; preamble documents the behaviour.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -377,10 +385,29 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-17T15:27:42Z — task-created [task-create-agent]
+### 2026-10-17T15:02:18Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4265-onboarding-gate-advertises-fw-onboarding.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4252-dispatch-preamble-makes-workers-run-plai.md
 - **Context:** Initial task creation
 
-### 2026-10-17T16:52:23Z — status-update [task-update-agent]
+### 2026-10-17T16:52:24Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-93f43162
+- **Timestamp:** 2026-10-17T17:46:03Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#4 (Agent)** — `agents/dispatch/preamble.md` and the stanza in `agents/termlink/termlink.sh` state what the plain call drains and what it leaves alone
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=agents/termlink/termlink.sh in: `agents/dispatch/preamble.md` and the stanza in `agents/termlink/termlink.sh` state what the plain call drains and what it leaves alone`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-17T17:45:55Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

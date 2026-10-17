@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4265: Onboarding gate advertises `fw onboarding skip` but its own bootstrap exemption refuses it.
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T17:46:59Z
+# ============================================================================
+
+task_id: T-4265
+task_name: "Onboarding gate advertises `fw onboarding skip` but its own bootstrap exemption refuses it."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T15:27:42Z
+completed: 2026-10-17T17:46:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-17T18:54:51+02:00
+last_commit: 2026-10-17T18:54:51+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  onboarding gate bootstrap exemption admits 'fw onboarding skip|status' (the remedy its own block message prints); regression test runs every printed remedy back through the gate
+
+# Key outcomes
+outcomes:
+  - 'check-active-task.sh bootstrap exemption (all 3 regex sites) admits `fw onboarding skip` and `fw onboarding status` under bin/fw, .agentic-framework/bin/fw and bare fw spellings'
+  - 'Regression test tests/unit/t4265_onboarding_remedy_passes_gate.bats fails before the fix and passes after'
+  - 'Test asserts every remedy command printed in the onboarding block message passes the same gate (no active task)'
+  - 'A redirected form (`fw onboarding skip > f`) stays blocked (exemption not widened)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-active-task.sh'
+  - 'agents/context/check-active-task.sh'
+  - '.tasks/active/T-4265-onboarding-gate-advertises-fw-onboarding.md'
+  - 'tests/unit/t4265_onboarding_remedy_passes_gate.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T18:54:51'
+    action: 'T-4265: onboarding gate bootstrap exemption admits ''fw onboarding skip|status'' (the remedy its own block message prints); regression test runs every printed remedy back through the gate'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 138 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 138
+  commits: 1
+  files_changed: 4
+  lines_added: 106
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4265-onboarding-gate-advertises-fw-onboarding.md
+generated_by: context-agent-hybrid

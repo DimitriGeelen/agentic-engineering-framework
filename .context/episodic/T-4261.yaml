@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4261: install.sh reports \"fw doctor passes ✓\" while hiding every doctor WARN, and never checks HEAD.
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T17:51:44Z
+# ============================================================================
+
+task_id: T-4261
+task_name: "install.sh reports \"fw doctor passes ✓\" while hiding every doctor WARN, and never checks HEAD."
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T15:26:35Z
+completed: 2026-10-17T17:48:10Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-17T19:37:18+02:00
+last_commit: 2026-10-17T19:38:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  install.sh verify reports doctor WARNs and fails on unresolved HEAD. tick agent ACs
+
+# Key outcomes
+outcomes:
+  - 'install.sh verify() Step 3 no longer says "fw doctor passes" while hiding WARNs: it prints the doctor WARN count and the first few WARN lines'
+  - 'install.sh verify() checks the target project resolves HEAD (`git rev-parse --verify HEAD`); when the bootstrap commit did not land it prints an error, does NOT print "All verification steps passed", and install.sh exits non-zero'
+  - 'Regression bats tests/unit/t4261_install_verify_head_and_warns.bats fails on the pre-fix install.sh and passes after; install_target_project, install_verify_no_cwd_init and upgrade_fresh_machine_simulation stay green'
+  - 'git-init behaviour untouched (scope fence: T-4251)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - 'install.sh'
+  - '.tasks/active/T-4261-installsh-reports-fw-doctor-passes--whil.md'
+  - 'tests/unit/install_target_project.bats'
+  - 'tests/unit/t4261_install_verify_head_and_warns.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T19:37:18'
+    action: 'T-4261: install.sh verify reports doctor WARNs and fails on unresolved HEAD'
+  - time: '2026-10-17T19:38:14'
+    action: 'T-4261: tick agent ACs'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 141 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 141
+  commits: 2
+  files_changed: 4
+  lines_added: 130
+  lines_removed: 13
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4261-installsh-reports-fw-doctor-passes--whil.md
+generated_by: context-agent-hybrid
