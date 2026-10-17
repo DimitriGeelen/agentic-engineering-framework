@@ -415,3 +415,6 @@ Method: `git ls-files` (excl. .tasks/, docs/reports/, .agentic-framework/, episo
 - Operator chose (c) (in session, after a pro/contra table). Proposed to 832 (msg 0d104767); it is their designer
   and their operator's call. Fallback if they decline: (a). The uid-paired migration waits for their answer; our maps
   only renumber on save, so nothing degrades meanwhile. This means one more re-pin (0.20.x) before T-4224 closes.
+- 832 operator: YES to (c), their T-1194. Ships in designer 0.21.0 (with sticky lane labels and a display-only
+  pool-border fix). Next: re-pin to 0.21.0 when tagged (version/tag/sha256/bytes from 832), then 832 re-runs the
+  uid-paired table for our 47 maps and sends patch + table by TermLink. **Do NOT apply the 0.20.0 table.**
