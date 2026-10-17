@@ -318,3 +318,13 @@ def receiver_processes(proc_root: Path = Path("/proc")) -> list[tuple[int, str]]
 def live_receiver_pids(agent: str) -> list[int]:
     """Pids of live receivers (any framework copy) already serving `agent`."""
     return sorted(pid for pid, a in receiver_processes() if a == agent)
+
+
+def process_cwd(pid: int) -> Path | None:
+    """The working directory of `pid`, or None when it cannot be read (gone, or
+    another user's process). T-4283: `_start_receiver` starts every receiver with
+    cwd = its project root, so the cwd says which project a receiver belongs to."""
+    try:
+        return Path(os.readlink(f"/proc/{pid}/cwd")).resolve()
+    except OSError:
+        return None

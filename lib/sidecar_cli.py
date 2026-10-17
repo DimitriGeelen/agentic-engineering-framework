@@ -687,6 +687,43 @@ def _agent_or_none():
         return None
 
 
+# T-4283: a receiver binds within `_start_receiver`'s 10 s wait and then writes its
+# triple file, so anything younger than this is booting, not orphaned.
+ORPHAN_MIN_AGE_S = 30.0
+
+
+def _reclaim_orphan_receivers(agent: str, root, quiet: bool) -> list[int]:
+    """T-4283: stop the live receivers for `agent` that run in THIS project's root.
+    The caller has already established that no triple-file receiver is alive, so
+    these are orphans: alive but unreachable (their pid/port/url were cleared), and
+    the T-4208 rival guard would refuse every restart while they live. Receivers
+    started from another copy (a different cwd) are left alone and still block.
+    A receiver younger than ORPHAN_MIN_AGE_S is not an orphan: it is still booting
+    (it writes its triple file only once bound), and a concurrent start must not
+    stop it. Returns the rivals that remain."""
+    import signal
+    import time
+
+    left = []
+    for pid in lifecycle.live_receiver_pids(agent):
+        started = watcher.process_started_at(pid)
+        young = started is None or time.time() - started < ORPHAN_MIN_AGE_S
+        if young or lifecycle.process_cwd(pid) != root:
+            left.append(pid)
+            continue
+        if not quiet:
+            print(f"receiver: stopping orphan pid={pid} for agent {agent!r} "
+                  f"(alive, no triple file, runs in {root})")
+        os.kill(pid, signal.SIGTERM)
+        deadline = time.time() + 5
+        while time.time() < deadline and lifecycle.pid_alive(pid):
+            time.sleep(0.1)
+        if lifecycle.pid_alive(pid):
+            os.kill(pid, signal.SIGKILL)
+        watcher.record_event("ORPHAN_RECEIVER_RECLAIMED", pid=pid, agent=agent)
+    return left
+
+
 def _start_receiver(agent: str, port, no_inject: bool, quiet: bool) -> tuple[int, dict | None]:
     """Start the receiver process. (rc, triple-file info): rc 0 started,
     1 already running, 2 refused/failed."""
@@ -718,7 +755,7 @@ def _start_receiver(agent: str, port, no_inject: bool, quiet: bool) -> tuple[int
     # T-4208: a live receiver for this agent id may run from ANOTHER framework
     # copy (055: vendored + AEF's), with no triple file of ours pointing at it.
     # Starting a second one is the duplicate this guard exists to prevent.
-    rivals = lifecycle.live_receiver_pids(agent)
+    rivals = _reclaim_orphan_receivers(agent, receiver._root().resolve(), quiet)
     if rivals:
         if not quiet:
             print(f"receiver already served by pid {', '.join(map(str, rivals))} for agent "
