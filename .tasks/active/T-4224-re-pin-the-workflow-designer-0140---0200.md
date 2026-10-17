@@ -407,3 +407,11 @@ Method: `git ls-files` (excl. .tasks/, docs/reports/, .agentic-framework/, episo
 - `bin/fw designer sync --from-tag designer-v0.20.0 --dry-run` then real sync: MANIFEST anchor self-consistent at the tag (`dist/aef-workflow-designer-0.20.0.html`, 1159393 B); computed sha256 `51931b8a40ece180eb5981f57ab4a41f4c956e0d4cea877c5905ea89b65f6f3c` = MANIFEST = pin = task value; bytes 1159393.
 - Pin edited by hand first (the sync refuses a sha that does not match the pin): `version`, `sha256`, `bytes`, `source_artifact`, `source_tag`, `vendored_path` → 0.20.0. Installed read-only at `vendor/designer/aef-workflow-designer-0.20.0.html`.
 - `fw designer status`: PRESENT ✓ (sha256 matches pin).
+
+### 2026-10-17 — node-id slug: operator chose (c)
+- 832 found that deriveSlug takes the first word of a node's name; ours are named "T-001: Orientation…", so any
+  designer save yields `agt_1_001` instead of `agt_1_orientation` (same in 0.14.0). Options: (a) apply as is,
+  (b) rename our nodes, (c) 832 makes deriveSlug skip a leading task id.
+- Operator chose (c) (in session, after a pro/contra table). Proposed to 832 (msg 0d104767); it is their designer
+  and their operator's call. Fallback if they decline: (a). The uid-paired migration waits for their answer; our maps
+  only renumber on save, so nothing degrades meanwhile. This means one more re-pin (0.20.x) before T-4224 closes.
