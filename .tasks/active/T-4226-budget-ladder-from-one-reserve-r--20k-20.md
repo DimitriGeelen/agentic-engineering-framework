@@ -1,10 +1,26 @@
 ---
 id: T-4226
-name: "Budget ladder from one reserve: R = 20K (200K window) .. 50K (800K+); Amber/Red/Stop at (2+f)R / (1.5+0.5f)R / R free tokens, f = clamp((W-200K)/600K, 0, 1); spawning in Green, small in Amber, none from Red (operator ruling 2026-10-17)"
+name: "Budget ladder from one reserve: R = 20K (200K window) .. 50K (800K+); Amber/Red/Stop
+  at (2+f)R / (1.5+0.5f)R / R free tokens, f = clamp((W-200K)/600K, 0, 1); spawning
+  in Green, small in Amber, none from Red (operator ruling 2026-10-17)"
 description: >
-  Operator ruling 2026-10-17 (in session, after T-4225): replace the flat 75/85/95% bands with one ladder driven by the spawn reserve R = min(50K, max(20K, 20K + 5% x (W - 200K))) and progressive multipliers: f = clamp((W - 200K)/600K, 0, 1); level by FREE tokens (W - used): Stop (critical) free < R; Red (urgent) free < (1.5 + 0.5f)R; Amber (warn) free < (2 + f)R; else Green. Worked values: 200K -> Amber 160K/Red 170K/Stop 180K used; 500K -> 412.5K/438.75K/465K; 800K -> 650K/700K/750K; 975K -> 825K/875K/925K. Spawn rule: workers in Green; small bounded workers in Amber; none from Red. Change agents/context/checkpoint.sh (TOKEN_WARN/URGENT/CRITICAL) and agents/context/budget-gate.sh to one shared computation (one source of truth, e.g. lib/context_tokens.py), keep checkpoint.sh budget/status output showing the level and the free tokens per band, keep T-4171 operator notices at warn/urgent; update CLAUDE.md §Context Budget Management, §Automated Monitoring, §Parallelism limits (T-4225 text) and the consumer template; tests pin the four worked windows and the boundaries (free = threshold, threshold - 1), and that budget-gate blocks at Stop exactly. Budget gate is a guard: test carefully, no regression in its block/allow behaviour except the thresholds.
+  Operator ruling 2026-10-17 (in session, after T-4225): replace the flat 75/85/95%
+  bands with one ladder driven by the spawn reserve R = min(50K, max(20K, 20K + 5%
+  x (W - 200K))) and progressive multipliers: f = clamp((W - 200K)/600K, 0, 1); level
+  by FREE tokens (W - used): Stop (critical) free < R; Red (urgent) free < (1.5 +
+  0.5f)R; Amber (warn) free < (2 + f)R; else Green. Worked values: 200K -> Amber 160K/Red
+  170K/Stop 180K used; 500K -> 412.5K/438.75K/465K; 800K -> 650K/700K/750K; 975K ->
+  825K/875K/925K. Spawn rule: workers in Green; small bounded workers in Amber; none
+  from Red. Change agents/context/checkpoint.sh (TOKEN_WARN/URGENT/CRITICAL) and agents/context/budget-gate.sh
+  to one shared computation (one source of truth, e.g. lib/context_tokens.py), keep
+  checkpoint.sh budget/status output showing the level and the free tokens per band,
+  keep T-4171 operator notices at warn/urgent; update CLAUDE.md §Context Budget Management,
+  §Automated Monitoring, §Parallelism limits (T-4225 text) and the consumer template;
+  tests pin the four worked windows and the boundaries (free = threshold, threshold
+  - 1), and that budget-gate blocks at Stop exactly. Budget gate is a guard: test
+  carefully, no regression in its block/allow behaviour except the thresholds.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +54,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T09:25:05Z
-last_update: 2026-10-17T09:25:05Z
-date_finished: null
+last_update: 2026-10-17T13:01:27Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +66,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-17T09:30:29Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=290,acs=7)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-17T09:31:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4226: Budget ladder from one reserve: R = 20K (200K window) .. 50K (800K+); Amber/Red/Stop at (2+f)R / (1.5+0.5f)R / R free tokens, f = clamp((W-200K)/600K, 0, 1); spawning in Green, small in Amber, none from Red (operator ruling 2026-10-17)
@@ -62,11 +106,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] One shared computation returns R, f and the three thresholds for a given CONTEXT_WINDOW; checkpoint.sh and budget-gate.sh both use it (no second copy of the formula)
-- [ ] Tests pin the worked values (200K: 160K/170K/180K; 500K: 412.5K/438.75K/465K; 800K: 650K/700K/750K; 975K: 825K/875K/925K used) and each boundary (threshold, threshold − 1)
+- [x] One shared computation returns R, f and the three thresholds for a given CONTEXT_WINDOW; checkpoint.sh and budget-gate.sh both use it (no second copy of the formula)
+- [x] Tests pin the worked values (200K: 160K/170K/180K; 500K: 412.5K/438.75K/465K; 800K: 650K/700K/750K; 975K: 825K/875K/925K used) and each boundary (threshold, threshold − 1)
 - [ ] budget-gate.sh blocks exactly from Stop and allows below it; its existing allow-list behaviour at critical is unchanged (existing budget-gate suites green)
-- [ ] `checkpoint.sh budget`/`status` show the level and the free tokens to each band; T-4171 operator notices still fire at warn and urgent
-- [ ] CLAUDE.md (§Context Budget Management, §Automated Monitoring, §Parallelism limits, §Budget Rules) and lib/templates/claude-project.md describe the ladder and the spawn rule (Green: workers; Amber: small only; Red/Stop: none); no stale 75/85/95% band statement remains
+- [x] `checkpoint.sh budget`/`status` show the level and the free tokens to each band; T-4171 operator notices still fire at warn and urgent
+- [x] CLAUDE.md (§Context Budget Management, §Automated Monitoring, §Parallelism limits, §Budget Rules) and lib/templates/claude-project.md describe the ladder and the spawn rule (Green: workers; Amber: small only; Red/Stop: none); no stale 75/85/95% band statement remains
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -316,6 +360,12 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-17 — inclusive boundaries, one module
+- **Chose:** a reading exactly at a threshold is in the higher band (`used >= threshold`), so the operator's worked values (Amber 160K at 200K, Stop 750K at 800K, ...) are the first used-token counts in their band. Thresholds are floored to whole tokens. The ladder lives in `lib/budget_ladder.py`; both gauges call it and keep no formula of their own.
+- **Why:** the worked values are used-token figures the operator wrote down; the inclusive reading reproduces them exactly. The literal `free < X` form would move each boundary by one token (e.g. Stop at 180,001 used at 200K). Tests pin both sides of every boundary.
+- **Rejected:** keeping the arithmetic inline in each script (two copies drift — that is the T-2885 class). A strict `free < X` reading (one token off the worked values).
+- **Fail-open:** if python3 yields no ladder, every threshold sits above the cap so no band fires; the gate's unknown-level path is unchanged.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -341,3 +391,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4226-budget-ladder-from-one-reserve-r--20k-20.md
 - **Context:** Initial task creation
+
+### 2026-10-17T13:00:34Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
