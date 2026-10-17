@@ -51,7 +51,7 @@ setup() {
     git commit -qm "T-9003: genuinely edit a blueprint"
 
     # --- commit D: T-9004 appears ONLY in a body, never in a subject --------
-    # Exercises the retained whole-message fallback.
+    # T-3189: must NOT be attributed (no whole-message fallback any more).
     echo "four" > web/templates/fallback.html
     git add -A
     git commit -qm "chore: no task prefix on this subject" -m "Relates to T-9004."
@@ -121,15 +121,31 @@ EOF
     echo "$output" | grep -q "web/blueprints/genuine.py"
 }
 
-# ---- The retained fallback ----------------------------------------------
+# ---- No mention fallback (T-3189) ---------------------------------------
 
-@test "T-3198/fallback: body-only reference still resolves when no subject claims the task" {
-    # Nothing carries "T-9004:" in a subject, so the broad whole-message grep
-    # is reached and behaves exactly as it did before this change. This is what
-    # makes the fix strictly false-positive-reducing rather than a trade.
+@test "T-3189: a body-only reference does NOT attribute, even when no subject claims the task" {
+    # T-3198 kept a whole-message fallback for this case; it is what still
+    # donated a referencing commit's files (T-3179 <- d998545b8 "Ref: T-3179").
+    # A task no subject claims has no git evidence; the gate then reads the
+    # task body instead (_render_surface_body_candidates).
     run touched T-9004
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q "web/templates/fallback.html"
+    [[ "$output" != *"web/templates/fallback.html"* ]]
+}
+
+@test "T-3189: a 'Ref: T-XXX' trailer does not attribute; a listed-id subject does" {
+    echo "eight" > web/templates/ref-donor.html
+    git add -A
+    git commit -qm "T-9008: render edit" -m "Ref: T-9009 (landing thread)"
+    echo "nine" > web/blueprints/listed.py
+    git add -A
+    git commit -qm "T-9010, T-9011: close both"
+    run touched T-9009
+    [[ "$output" != *"web/templates/ref-donor.html"* ]]
+    run touched T-9011
+    echo "$output" | grep -q "web/blueprints/listed.py"
+    run touched T-9010
+    echo "$output" | grep -q "web/blueprints/listed.py"
 }
 
 # ---- Prefix collision ----------------------------------------------------
@@ -180,11 +196,11 @@ subject_donor_commit() {
     echo "$output" | grep -q "web/templates/subject-donor.html"
 }
 
-@test "T-3904/fallback: a task named only mid-subject still resolves" {
+@test "T-3904/T-3189: a task named only mid-subject is NOT attributed" {
     echo "seven" > web/templates/mid-only.html
     git add -A
     git commit -qm "chore: tidy, see T-9007"
     run touched T-9007
     [ "$status" -eq 0 ]
-    echo "$output" | grep -q "web/templates/mid-only.html"
+    [[ "$output" != *"web/templates/mid-only.html"* ]]
 }

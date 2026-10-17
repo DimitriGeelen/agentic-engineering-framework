@@ -1420,18 +1420,20 @@ _t4024_ledger_append() {
     local ledger="$PROJECT_ROOT/.context/audits/verification-servicing.jsonl"
     mkdir -p "$(dirname "$ledger")" 2>/dev/null || true
     T4024_TASK="$TASK_ID" T4024_SRC="$source" T4024_REASON="$reason" T4024_WF="$wf" \
-    T4024_LEDGER="$ledger" T4024_ROOT="$PROJECT_ROOT" python3 -c '
-import json, os, subprocess, datetime
+    T4024_LEDGER="$ledger" T4024_ROOT="$PROJECT_ROOT" T4024_FW="$FRAMEWORK_ROOT" python3 -c '
+import json, os, sys, datetime
 t = os.environ["T4024_TASK"]
 try:
-    out = subprocess.run(["git", "-C", os.environ["T4024_ROOT"], "log", "--format=", "--name-only", "--grep", "^" + t + "[: ]"],
-                         capture_output=True, text=True, timeout=30).stdout
+    # T-3189: commits that BELONG to the task (subject prefix); git anchors "^" per message line.
+    sys.path.insert(0, os.environ["T4024_FW"])
+    from lib import task_commits
+    files = []
+    for _, _, paths in task_commits.owned_commits(os.environ["T4024_ROOT"], t, all_refs=False, timeout=30):
+        for l in paths:
+            if l not in files:
+                files.append(l)
 except Exception:
-    out = ""
-files = []
-for l in out.splitlines():
-    if l and l not in files:
-        files.append(l)
+    files = []
 row = {"task": t, "source": os.environ["T4024_SRC"], "reason": os.environ["T4024_REASON"],
        "workflow_type": os.environ["T4024_WF"], "files": files[:200],
        "ts": datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"), "state": "open"}
@@ -2811,13 +2813,14 @@ if [ -n "$NEW_STATUS" ] && [ "$NEW_STATUS" = "work-completed" ] && [ "$OLD_STATU
             fi
         done
 
-        # Get all files changed in commits for this task
-        TASK_COMMITS=$(git log --all --oneline --grep="$TASK_ID" 2>/dev/null | awk '{print $1}')
+        # Get all files changed in commits that BELONG to this task (T-3189): the
+        # subject opens with its id. A commit that only cites it ("Ref: T-XXX",
+        # "unblocks T-XXX") is another task's work — and `--grep="$TASK_ID"` also
+        # let T-318 collect T-3186's commits. lib/task_commits.py is the one
+        # definition, shared with the render gate and the review-rung count.
         RESOLVED_COMPONENTS=""
-        if [ -n "$TASK_COMMITS" ]; then
-            # T-1374: `|| true` — root commits have no parent; `git diff ${c}~1` exits 128,
-            # and under pipefail+set -e that kills the script before the Episodic block.
-            ALL_PATHS=$(for c in $TASK_COMMITS; do git diff --name-only "${c}~1" "$c" 2>/dev/null || true; done | sort -u)
+        ALL_PATHS=$(python3 "$FRAMEWORK_ROOT/lib/task_commits.py" files "$TASK_ID" --root "$PROJECT_ROOT" 2>/dev/null || true)
+        if [ -n "$ALL_PATHS" ]; then
             for path in $ALL_PATHS; do
                 # Skip metadata paths
                 case "$path" in

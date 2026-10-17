@@ -77,81 +77,27 @@ _render_surface_extract_task_id() {
     echo "$tid"
 }
 
-_render_surface_subject_shas() {
-    # Echo (one per line) the sha of every commit whose SUBJECT line references
-    # the given task id. The subject is where this repo records authorship
-    # (P-002's convention is a leading "T-XXX:"); the body is where it records
-    # cross-references — "unblocks T-3186", "origin: T-2837". Reading the body
-    # as authorship is what T-2840/T-3198 fixed.
-    #
-    # The id must not be followed by another digit, so T-318 does not match a
-    # T-3186 commit. That prefix collision was live in the whole-message form
-    # too and is fixed here for both paths.
-    #
-    # T-3904: a subject can MENTION another task too ("T-3897: … T-3899 filed"),
-    # which donated T-3897's web/ edits to T-3899 and blocked its close. The
-    # subject that OPENS with the id is the author's claim (P-002), so those
-    # commits win whenever any exists; a mid-subject mention is used only for a
-    # task no subject opens with — this can remove false positives, never
-    # evidence.
-    local task_id="$1"
-    git log --all --pretty=format:'%H %s' --grep "$task_id" -- . 2>/dev/null \
-        | awk -v tid="$task_id" '
-            {
-                sha = $1
-                subj = substr($0, length(sha) + 2)
-                if (subj ~ "^" tid "([^0-9]|$)") owned[++no] = sha
-                else if (subj ~ tid "([^0-9]|$)") mentioned[++nm] = sha
-            }
-            END {
-                if (no) { for (i = 1; i <= no; i++) print owned[i] }
-                else    { for (i = 1; i <= nm; i++) print mentioned[i] }
-            }
-        '
-}
+# Directory of this lib, captured at source time: the ownership helper lives
+# beside it (lib/task_commits.py), in the framework repo and in a vendored copy.
+_RENDER_SURFACE_LIB_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 _render_surface_git_touched_paths() {
-    # Echo (one per line) every file touched by any commit that ATTRIBUTES
-    # itself to the given task id in its subject line. Searches all
-    # branches/reflog so we don't miss commits made on side branches before
-    # merge. Returns empty when:
-    #   - $1 is empty
-    #   - git is unavailable or cwd is not a git tree
-    #   - no commits reference the task id (brand-new task, first-close case)
+    # Echo (one per line) every file touched by a commit that BELONGS to the
+    # given task id. Returns empty when $1 is empty, git cannot answer, or no
+    # commit belongs to the task (brand-new task, first-close case — the
+    # caller then falls back to the task body).
     #
-    # Two-stage by design (T-3198). The narrow stage asks "whose commit is
-    # this?" and is the correct question. The broad stage is retained as a
-    # FALLBACK for commits predating the subject-prefix convention, so this
-    # change can only remove false positives and never introduce a false
-    # negative: any task the old form found evidence for still gets evidence.
+    # Ownership is lib/task_commits.py's single definition (T-3189): the
+    # SUBJECT opens with a task-id list naming the task ("T-XXX: ...",
+    # "T-1, T-2: close"). A body "Ref: T-XXX" or a mid-subject mention is a
+    # cross-reference, not authorship. T-3198/T-3904 narrowed this path to
+    # subject-prefixed commits but kept mention fallbacks for tasks with no
+    # prefixed commit; those fallbacks are what still donated a referencing
+    # commit's files, so they are gone rather than narrowed again.
     local task_id="$1"
     [[ -z "$task_id" ]] && return 0
-
-    local shas
-    shas=$(_render_surface_subject_shas "$task_id")
-
-    if [[ -n "$shas" ]]; then
-        # --no-walk: show exactly these commits, not their ancestry.
-        # shellcheck disable=SC2086  # deliberate word-split over the sha list
-        git log --no-walk --pretty=format: --name-only $shas -- . 2>/dev/null \
-            | awk 'NF' | sort -u
-        return 0
-    fi
-
-    # Fallback: whole-message match, for commits predating the subject-prefix
-    # convention. Reached only when no commit claims the task in its subject.
-    #
-    # The same non-digit boundary applies here. Without it the fallback
-    # re-opens the prefix collision the narrow path closes (T-900 inheriting
-    # T-9001's footprint) — caught by this task's own regression test, which
-    # is the reason the boundary is in both paths and not just the one that
-    # was being looked at.
-    #
-    # --all sweeps every ref; --pretty=format: suppresses commit headers so
-    # only file names print; -- . scopes to tracked paths.
-    git log --all -E --pretty=format: --name-only \
-        --grep "${task_id}([^0-9]|\$)" -- . 2>/dev/null \
-        | awk 'NF' | sort -u
+    python3 "$_RENDER_SURFACE_LIB_DIR/task_commits.py" files "$task_id" \
+        --root "$(git rev-parse --show-toplevel 2>/dev/null || pwd)" 2>/dev/null || true
 }
 
 _render_surface_body_candidates() {

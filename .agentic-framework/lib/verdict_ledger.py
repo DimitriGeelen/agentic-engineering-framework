@@ -121,6 +121,7 @@ if str(_HERE.parent) not in sys.path:
 from lib import judge_verdict  # noqa: E402
 from lib import review_cost  # noqa: E402
 from lib import review_policy  # noqa: E402
+from lib import task_commits  # noqa: E402
 from lib.delegation import (  # noqa: E402
     REVIEWER_JUDGES,
     classify,
@@ -2620,12 +2621,9 @@ _CARD_BLOBS: dict[str, tuple[str, str]] = {}
 _CARD_MAPS: dict[tuple[str, str], dict[str, str]] = {}
 #: Round 9 (Claude R8-2 note): a commit is the task's OWN when its subject opens with a task-id
 #: list naming it ("T-3580: ...", "T-3598, T-3601: ..."), not when it merely mentions the id.
-_OWN_SUBJECT_RE = re.compile(r"^\s*(T-\d+(?:\s*(?:,|&|/|\+|and)\s*T-\d+)*)\s*:")
-
-
-def _owns(subject: str, task_id: str) -> bool:
-    m = _OWN_SUBJECT_RE.match(subject or "")
-    return bool(m) and task_id in re.findall(r"T-\d+", m.group(1))
+#: T-3189: the definition lives in lib/task_commits.py, shared with every other task->files gate.
+_OWN_SUBJECT_RE = task_commits.OWN_SUBJECT_RE
+_owns = task_commits.owns
 
 
 def _card_fields(text: str) -> tuple[str, str]:

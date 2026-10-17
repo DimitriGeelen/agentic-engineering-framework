@@ -60,6 +60,7 @@ if str(_HERE.parent) not in sys.path:
 
 from lib import dispatch_tokens  # noqa: E402
 from lib import review_policy  # noqa: E402
+from lib import task_commits  # noqa: E402
 from lib import verdict_ledger as vl  # noqa: E402
 from lib.delegation import (  # noqa: E402
     OPERATOR_ONLY,
@@ -291,10 +292,9 @@ _URL_TOKEN_RE = re.compile(r"`(/[a-z][\w/.-]*)`")
 def _changed_web_files(root: Path, task_id: str, text: str) -> list[str]:
     files = set(re.findall(r"\b(web/(?:templates|blueprints|static)/[\w./-]+|web/(?:shared|app)\.py)", text))
     try:
-        out = subprocess.run(["git", "log", "--all", f"--grep={task_id}[^0-9]", "--name-only",
-                              "--pretty=format:"], cwd=root, capture_output=True, text=True,
-                             timeout=30).stdout
-        files |= {f for f in out.split() if f.startswith("web/")}
+        # T-3189: only commits that BELONG to the task (subject prefix), not ones that cite it.
+        files |= {f for f in task_commits.owned_files(root, task_id, timeout=30)
+                  if f.startswith("web/")}
     except Exception:
         pass
     return sorted(files)

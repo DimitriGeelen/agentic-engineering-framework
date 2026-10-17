@@ -14,7 +14,7 @@ description: >
   work. Fix direction: attribute by subject-line prefix (^T-XXX:) rather than message-wide
   grep, or by trailer.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -32,7 +32,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-26T22:48:50Z
-last_update: '2026-08-26T23:00:19Z'
+last_update: 2026-10-17T22:24:52Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -84,8 +84,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] One helper `lib/task_commits.py` defines ownership: a commit belongs to T-XXX only when its SUBJECT opens with a task-id list naming it (`T-X: …`, `T-1, T-2: …`, `T-1/T-2: …`); `verdict_ledger._owns` reuses it (one definition, not two)
+- [x] The render-surface gate (`lib/render_surface.sh`) resolves touched paths through the helper only — a commit that names the task in its body (`Ref: T-XXX`) or mid-subject is NOT attributed, with or without the task having its own commits
+- [x] The close-time component resolution (`update-task.sh`), the T-4024 servicing-ledger file list (`update-task.sh`) and the judge's changed-web-files (`lib/reviewer/judge_cli.py`) route through the same helper
+- [x] Regression tests with a fixture repo: Ref-only commit not attributed; subject-prefixed (single and listed ids) attributed; T-318 does not match T-3186; existing T-3198 render tests updated to the new semantics and green
+- [x] `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -178,6 +181,12 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_task_commits.py -q > /tmp/.t3189-py 2>&1 && grep -q passed /tmp/.t3189-py
+out=$(bats tests/unit/t3198_render_surface_attribution.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/test_render_surface_gate.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+! grep -nE -- '--grep' lib/render_surface.sh
+grep -q "task_commits" agents/task-create/update-task.sh && grep -q "task_commits" lib/reviewer/judge_cli.py && grep -q "task_commits" lib/verdict_ledger.py
+bin/fw vendor self --check
 
 ## RCA
 
@@ -194,6 +203,32 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** T-3179's close fired the P-013 render-surface gate although T-3179 touched no render
+surface: d998545b8 (a T-3180 commit whose body says `Ref: T-3179`) donated `web/blueprints/inception.py`.
+
+**Root cause:** every task→files resolver answered "which commits MENTION T-XXX" with its own
+`git log --grep` and called that ownership. `lib/render_surface.sh` (T-3198/T-3904 narrowed the
+primary path to subject-prefixed commits but kept two fallbacks — mid-subject mention, then the
+whole-message `--grep "${task_id}([^0-9]|$)"` at `_render_surface_git_touched_paths`) still
+attributed a body `Ref:` whenever the task had no prefixed commit; `agents/task-create/update-task.sh`
+component resolution (`git log --all --oneline --grep="$TASK_ID"`, unbounded — also a T-318/T-3186
+prefix collision); the T-4024 servicing ledger (`--grep "^T[: ]"`, which git anchors at ANY line of
+the message, body included); and `lib/reviewer/judge_cli.py:_changed_web_files`
+(`--grep={task_id}[^0-9]`). Meanwhile `lib/verdict_ledger.py:_owns` already had the correct
+definition (subject opens with a task-id list) and nobody else used it — five resolvers, four
+definitions.
+
+**Why structurally allowed:** no shared definition of "a task's commits"; each gate re-derived it
+from `git log --grep`, whose anchors apply per line, not per subject. Tests pinned each resolver
+in isolation, and the T-3198 fallback test asserted the body-mention attribution as desired.
+
+**Prevention:** `lib/task_commits.py` is the single definition (`owns`, `owned_commits`,
+`owned_files`, CLI `files|shas`); every gate above routes through it and `verdict_ledger._owns`
+is an alias of it. `tests/unit/test_task_commits.py` pins Ref-only/mid-subject/prefix-collision
+negatives and single/listed-id positives in a fixture repo; the T-3198 bats now asserts the
+Ref-only case is not attributed, and Verification greps that `lib/render_surface.sh` carries no
+`--grep` of its own.
 
 ## Evolution
 
@@ -275,3 +310,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3189-gates-attribute-files-from-commits-that-.md
 - **Context:** Initial task creation
+
+### 2026-10-17T22:24:52Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
