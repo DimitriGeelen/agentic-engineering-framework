@@ -10,18 +10,18 @@ description: >
   refused as 'edited locally'), report what applied and what conflicted, and let AEF
   learn which patches should come upstream
 
-status: captured
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 origin: {kind: "operator", ref: "2026-10-06 decision 4 on T-3922 (ring20-dashboard
     53155c47)"}
 created: 2026-10-06T09:11:07Z
-last_update: '2026-10-06T09:15:49Z'
-date_finished:
+last_update: 2026-10-17T12:33:43Z
+date_finished: 2026-10-17T12:33:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -107,15 +107,15 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -172,7 +172,17 @@ Operator 2026-10-06 (decision 4, T-3922) overruled my 'not now': consumers alrea
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+Operator 2026-10-06 (decision 4, T-3922) overruled my 'not now': consumers already do this by hand — 832 re-applies 36 fixes, ring20-dashboard 38 patches after every upgrade — and each re-invents it. A first-class series keeps each project's unique features across upgrades and turns the patches into a signal for what AEF should absorb. Builds on T-3850's .fwvendor-preserve.yaml.
+
+Evidence:
+
+**Date**: 2026-10-17T12:33:40Z
 
 ## Updates
 
@@ -182,3 +192,43 @@ Operator 2026-10-06 (decision 4, T-3922) overruled my 'not now': consumers alrea
 ### 2026-10-06T19:40Z — field evidence [agent]
 - ring20-manager (5f6ec23f, their T-2262, upgrade 1.8.3 → 1.8.5): a three-way merge per colliding file — base = previous tag, ours = the patched vendored file, theirs = the new tag — kept their in-file patches. 18 of 38 patches collided; 7 of 8 files merged clean; approvals.py had 2 additive conflicts next to T-3897's origin code. This is a concrete candidate mechanism for the patch series (it needs the previous tag's bytes, i.e. a stamp or the upstream tag).
 - Related shipped today: T-3955 (fw upgrade steps 7/7b keep customised project files + .upstream), T-3850's vendor stamp/manifest.
+
+### 2026-10-17T12:33:40Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+Operator 2026-10-06 (decision 4, T-3922) overruled my 'not now': consumers already do this by hand — 832 re-applies 36 fixes, ring20-dashboard 38 patches after every upgrade — and each re-invents it. A first-class series keeps each project's unique features across upgrades and turns the patches into a signal for what AEF should absorb. Builds on T-3850's .fwvendor-preserve.yaml.
+
+Evidence:
+
+### 2026-10-17T12:33:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Reason:** Inception decision in progress
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-15d14b85
+- **Timestamp:** 2026-10-17T12:33:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-4e580c24
+- **Timestamp:** 2026-10-17T12:33:46Z
+- **Overall:** CONFIRMED
+- **Claims:** 2
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `T-3922` | task | ✓ pass |
+| `T-3850` | task | ✓ pass |
+
+### 2026-10-17T12:33:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
