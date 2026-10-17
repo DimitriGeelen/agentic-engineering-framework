@@ -521,7 +521,7 @@ When using Claude Code's Task tool to dispatch sub-agents (Explore, Plan, Code, 
 | Factor | Rule |
 |--------|------|
 | Max parallel agents | **5** |
-| Token headroom | Leave **40K tokens** free for result ingestion before dispatching |
+| Token headroom | Keep the **spawn reserve** free before dispatching: `min(50K, max(20K, 20K + 5% × (CONTEXT_WINDOW − 200K)))` — 20K at 200K, 35K at 500K, 50K at 800K+ (covers result ingestion) |
 | When parallel | Tasks are independent, no shared files, no sequential dependency |
 | When sequential | Tasks depend on prior results, or editing same files |
 | Background agents | Use `run_in_background: true` for agents >2K tokens expected output |

@@ -1,10 +1,20 @@
 ---
 id: T-4225
-name: "Record the operator's spawn rule: replace 'do not spawn above 60% context' with an absolute reserve of 20K (200K window) up to 50K (800K+ window); keep percentage budget bands"
+name: "Record the operator's spawn rule: replace 'do not spawn above 60% context'
+  with an absolute reserve of 20K (200K window) up to 50K (800K+ window); keep percentage
+  budget bands"
 description: >
-  Operator 2026-10-17 (in session): the 60% spawn cut-off was meant to be replaced; percentages stay for the budget bands, but the dispatch/spawn limit is an absolute headroom reserve scaling from 20K at a 200K window to an upper limit of 50K at 800K and above. Nothing records it today: CLAUDE.md §Execution Model / §Budget Rules / §Dispatch Guidelines still say 'Do not spawn when context > 60%' and '40K tokens headroom'; no code gate enforces either. Do: confirm the exact formula with the operator (linear between 200K and 800K? cap 50K above), update CLAUDE.md (all places) and lib/templates/claude-project.md for consumers, optionally make fw termlink dispatch print/warn on it from checkpoint.sh budget, and add a decision record.
+  Operator 2026-10-17 (in session): the 60% spawn cut-off was meant to be replaced;
+  percentages stay for the budget bands, but the dispatch/spawn limit is an absolute
+  headroom reserve scaling from 20K at a 200K window to an upper limit of 50K at 800K
+  and above. Nothing records it today: CLAUDE.md §Execution Model / §Budget Rules
+  / §Dispatch Guidelines still say 'Do not spawn when context > 60%' and '40K tokens
+  headroom'; no code gate enforces either. Do: confirm the exact formula with the
+  operator (linear between 200K and 800K? cap 50K above), update CLAUDE.md (all places)
+  and lib/templates/claude-project.md for consumers, optionally make fw termlink dispatch
+  print/warn on it from checkpoint.sh budget, and add a decision record.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +48,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T08:48:55Z
-last_update: 2026-10-17T08:48:55Z
-date_finished: null
+last_update: '2026-10-17T09:00:37Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +60,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-17T08:53:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-17T09:00:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=299,acs=5)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4225: Record the operator's spawn rule: replace 'do not spawn above 60% context' with an absolute reserve of 20K (200K window) up to 50K (800K+ window); keep percentage budget bands
@@ -62,8 +100,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] CLAUDE.md states the spawn rule as an absolute reserve: free tokens (CONTEXT_WINDOW minus used) must be at least min(50K, max(20K, 20K + 5% of (CONTEXT_WINDOW − 200K))); no "60%" or fixed "40K headroom" spawn rule remains anywhere in CLAUDE.md
+- [x] The consumer template (lib/templates/claude-project.md) says the same
+- [x] The operator ruling is recorded in ## Decisions with the worked values (200K→20K, 500K→35K, 800K+→50K)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -113,6 +152,11 @@ date_finished: null
 
 ## Verification
 
+grep -q "Spawn reserve (operator ruling 2026-10-17, T-4225)" CLAUDE.md
+! grep -q "Do not spawn when context > 60%" CLAUDE.md
+! grep -q "Leave \*\*40K tokens\*\* free" CLAUDE.md lib/templates/claude-project.md
+grep -q "spawn reserve" lib/templates/claude-project.md
+bin/fw vendor self --check
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -313,6 +357,14 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-17 — spawn rule: absolute reserve, linear (operator ruling)
+- **Chose:** spawning/dispatching is allowed while free tokens (CONTEXT_WINDOW − used) ≥ reserve, with
+  reserve = min(50K, max(20K, 20K + 0.05 × (CONTEXT_WINDOW − 200K))). Worked: 200K→20K, 500K→35K, 800K→50K,
+  975K→50K (cap). The percentage budget bands (75/85/95) stay as they are.
+- **Why:** operator, verbatim intent: "we would still have the percentages, but then on a bandwidth of 20 to
+  50,000 … 20 with 200,000, 50 with 800,000, being the upper limit"; option 1 (linear) chosen over a two-step rule.
+- **Rejected:** "do not spawn above 60%" (wastes ~300K usable tokens on a 975K window); two steps (20K ≤200K, 50K above).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -338,3 +390,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4225-record-the-operators-spawn-rule-replace-.md
 - **Context:** Initial task creation
+
+### 2026-10-17T08:53:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

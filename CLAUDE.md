@@ -139,8 +139,11 @@ session.
   operator's call**: when more parallelism would genuinely help, ask the operator
   which cap (10, 15, 20 …) — then `FW_TERMLINK_MAX_WORKERS=N` for that run, or
   `fw config set TERMLINK_MAX_WORKERS N` if they want it kept. Never raise it yourself.
-- **40K tokens headroom** before dispatching, for result ingestion.
-- **Do not spawn when context > 60%.**
+- **Spawn reserve (operator ruling 2026-10-17, T-4225):** dispatch only while free tokens
+  (`CONTEXT_WINDOW` minus used, from `checkpoint.sh budget`) are at least
+  `min(50K, max(20K, 20K + 5% × (CONTEXT_WINDOW − 200K)))` — 20K at a 200K window, 35K at 500K,
+  50K at 800K and above (this project: 50K). The reserve covers result ingestion. It replaces the old
+  "do not spawn above 60%" and fixed "40K headroom" rules; the 75/85/95% budget bands are unchanged.
 - **Worktrees are OPT-IN ONLY — never the default.** See §Worktree Policy below.
   Parallel work that edits files is serialised in the main checkout unless the
   operator has explicitly instructed a worktree.
@@ -760,7 +763,7 @@ When using Claude Code's Task tool to dispatch sub-agents (Explore, Plan, Code, 
 | Factor | Rule |
 |--------|------|
 | Max parallel agents | **5** (T-073 used 9 → context explosion; T-061 used 4, T-086 used 5 → fine) |
-| Token headroom | Leave **40K tokens** free for result ingestion before dispatching |
+| Token headroom | Keep the **spawn reserve** free before dispatching: 20K at a 200K window, rising 5% of the window above 200K, capped at 50K (§Parallelism limits, T-4225) |
 | When parallel | Tasks are independent, no shared files, no sequential dependency |
 | When sequential | Tasks depend on prior results, or editing same files |
 | Background agents | Use `run_in_background: true` for agents >2K tokens expected output |
@@ -1727,10 +1730,10 @@ When communicating with agents on other machines via TermLink remote, choose the
 
 ### Budget Rules
 
-- **Do not spawn new sessions when context > 60%** — spawning is expensive, respect budget
+- **Spawn only while the spawn reserve is free** (20K at a 200K window … 50K at 800K+, §Parallelism limits, T-4225) — spawning is expensive, respect budget
 - **Always cleanup before session end** — `fw termlink cleanup --dry-run`, then `--yes` only when no uncollected result is listed (T-3651)
 - **Max 5 parallel workers** — same limit as sub-agent dispatch protocol
-- **Leave 40K tokens headroom** before dispatching workers
+- **The spawn reserve includes result ingestion** — no separate fixed headroom (T-4225)
 
 ## Review and Dispatch Cost Ruling (T-3583, T-3586)
 
