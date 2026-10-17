@@ -129,9 +129,17 @@ fw_wm_fence() {
 fw_wm_write_allowed() {
     local file_path="${1:-}" root="${2:-${PROJECT_ROOT:-}}"
     [ -z "$file_path" ] && return 0   # not a Write/Edit; the caller gates Bash separately
+    # T-4281: a `..` segment can make a scratchpad-shaped prefix resolve into the
+    # repo, so refuse traversal before any allowlist match.
+    case "$file_path" in
+        */../*|*/..) return 1 ;;
+    esac
     case "$file_path" in
         "$root"/.context/*|"$root"/.tasks/*|"$root"/.claude/*|"$root"/.git/*) return 0 ;;
         */.claude/projects/*/memory/*|*/.gemini/antigravity-cli/brain/*) return 0 ;;
+        # T-4281: the harness session scratchpad is outside the repo and is not
+        # source. Temporary files for selection and close-out belong here.
+        /tmp/claude-*/*/*/scratchpad/*) return 0 ;;
     esac
     return 1
 }
