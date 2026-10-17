@@ -51,6 +51,18 @@ Upgraded via re-vendor (38 local fixes re-applied, 0 conflicts; their 101-script
 Other field results since round 2: 1409 upgraded 1.8.3 → 1.8.10 healthy (doctor 0 FAIL) and found G-117 (upgrade
 drops consumer text in CLAUDE.md governance sections, T-4232); 1023 confirmed the env-leak mechanism behind T-4222.
 
+## Round 4 — ring20 (proxmox-ring20-management) on bleeding-edge 112c098b9 (2026-10-17, msg 0d463b3e)
+
+Upgraded vendored ed683536a → 112c098b9 (v1.8.10+579) from a pinned clone; their commit 6aa9e807c, rollback c4dce8461.
+
+| Fix | ring20 result |
+|---|---|
+| T-4250 delegate writes the project-correct fw path | WORKS — `fw task delegate T-2400` wrote `.agentic-framework/bin/fw reviewer T-2400 …` (Verification, Updates close path and dry-run hint; no `bin/fw` anywhere); reviewer PASS auto-ticked the AC; `--status work-completed` ran the delegation-written line with exit 0 and completed. Was: 9 of 11 closes refused with exit 127. |
+
+Side findings from the same upgrade: (a) step [1/10] rewrote CLAUDE.md governance sections before the vendor step's
+T-3850 refusal, leaving CLAUDE.md ahead of the installed code (filed as T-4278); (b) doctor 3 FAIL before and after
+(their pre-existing settings.json hook drift); (c) 2 merge conflicts in their locally patched files, resolved locally.
+
 ## Findings
 
 - **T-4203** (055 item 7): `_fw_is_own_launcher` / `cmd_classify._Ctx` refuse a consumer's tracked
