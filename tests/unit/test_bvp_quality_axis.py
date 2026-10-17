@@ -153,3 +153,15 @@ def test_an_explicit_quality_argument_still_wins(repo):
     _stream(repo, _event("override_applied", "T-41"))
     row = bo.record_realised("T-41", ts="t", quality={"hand": "written"}, root=repo)
     assert row["quality"] == {"hand": "written"}
+
+
+# ── T-4276: a keyword inside a hyphenated compound is not a defect word ─────
+
+@pytest.mark.parametrize("title", ["auth-fail display", "auth-fix panel", "error-free boot"])
+def test_a_defect_word_inside_a_hyphenated_compound_is_not_bug_class(title):
+    assert bo._BUG_RE.search(title) is None
+
+
+@pytest.mark.parametrize("title", ["fix auth fail", "Fix: crash on start", "Fail: login"])
+def test_a_defect_word_at_a_word_edge_is_bug_class(title):
+    assert bo._BUG_RE.search(title) is not None

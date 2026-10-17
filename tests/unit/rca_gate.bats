@@ -238,3 +238,38 @@ EOF
     grep -q "T-9006" "$CONTEXT_DIR/working/.gate-bypass-log.yaml"
     grep -q "skip-rca" "$CONTEXT_DIR/working/.gate-bypass-log.yaml"
 }
+
+# --- T-4276: a keyword inside a hyphenated compound is not a defect word ---
+
+@test "title 'auth-fail display' build task without RCA → PASSES (hyphenated compound, not bug-class)" {
+    cd "$PROJECT_ROOT"
+    local body
+    body="$(_body_minimal)"
+    _make_task "T-9020" "auth-fail display" "build" "[]" "$body" >/dev/null
+    run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9020 \
+        --status work-completed --skip-acceptance-criteria --reason "T-3586 fixture: operator bypass"
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"## RCA section is"* ]]
+}
+
+@test "title 'fix auth fail' build task without RCA → BLOCKED (bug-class)" {
+    cd "$PROJECT_ROOT"
+    local body
+    body="$(_body_minimal)"
+    _make_task "T-9021" "fix auth fail" "build" "[]" "$body" >/dev/null
+    run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9021 \
+        --status work-completed --skip-acceptance-criteria --reason "T-3586 fixture: operator bypass"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"## RCA section is missing"* ]]
+}
+
+@test "title 'Fix: crash on start' build task without RCA → BLOCKED (bug-class)" {
+    cd "$PROJECT_ROOT"
+    local body
+    body="$(_body_minimal)"
+    _make_task "T-9022" "Fix: crash on start" "build" "[]" "$body" >/dev/null
+    run "$FRAMEWORK_ROOT/agents/task-create/update-task.sh" T-9022 \
+        --status work-completed --skip-acceptance-criteria --reason "T-3586 fixture: operator bypass"
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"## RCA section is missing"* ]]
+}

@@ -121,8 +121,10 @@ AUTOTICK_KINDS = ("auto_tick",)
 
 #: Title/tag vocabulary that makes a task bug-class, mirroring the T-1550 RCA
 #: gate's own trigger set so "defect" means the same thing in both places.
+#: T-4276: no match inside a hyphenated compound ("auth-fail display"); \b would
+#: treat '-' as a boundary, so the edges are word chars and '-' only.
 _BUG_RE = re.compile(
-    r"\b(bug|fix|error|regression|broken|crash|hotfix|defect|fail(?:ure|ing)?)\b", re.I)
+    r"(?<![\w-])(bug|fix|error|regression|broken|crash|hotfix|defect|fail(?:ure|ing)?)(?![\w-])", re.I)
 
 
 def quality_for_task(task_id: str, root=None) -> dict:

@@ -529,7 +529,9 @@ check_rca_for_bugfix() {
     is_bug=false
     if echo "$task_tags" | grep -qiE '\b(bug|bugfix|hotfix|rca|incident)\b'; then
         is_bug=true
-    elif echo "$title_for_classify" | grep -qiE '\b(fix|bug|rca|broken|crash|error|regression|fail|hotfix)\b'; then
+    # T-4276: a keyword inside a hyphenated compound ("auth-fail display") is not
+    # a defect word. \b treats '-' as a boundary, so match on explicit non-[alnum_-] edges.
+    elif echo "$title_for_classify" | grep -qiE '(^|[^[:alnum:]_-])(fix|bug|rca|broken|crash|error|regression|fail|hotfix)([^[:alnum:]_-]|$)'; then
         is_bug=true
     fi
     [ "$is_bug" = true ] || return 0

@@ -11,10 +11,10 @@ description: >
   lib/bvp_outcomes.py:125 consistent. Test: 'auth-fail display' not bug-class; 'fix
   auth fail' bug-class.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T16:53:16Z
-last_update: '2026-10-17T17:01:24Z'
+last_update: 2026-10-17T18:48:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,8 +97,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Localised: the shell bug-class detector (update-task.sh check_rca_for_bugfix) and the Python _BUG_RE (lib/bvp_outcomes.py) both classify "auth-fail display" as bug-class today (confirmed by a repro, recorded in RCA)
+- [x] Shell detector no longer matches keywords inside hyphenated compounds: "auth-fail display" is NOT bug-class; "fix auth fail" and "Fix: crash on start" ARE bug-class
+- [x] Python detector in lib/bvp_outcomes.py uses the same boundary rule: "auth-fail display" does not match, "fix auth fail" and "Fix: crash on start" do
+- [x] Regression tests added in tests/unit/rca_gate.bats (shell) and a pytest/bats case for bvp_outcomes covering the three titles; they fail before the fix and pass after
+- [x] Existing RCA gate tests (tests/unit/rca_gate.bats) still pass; bvp outcomes tests still pass
+- [x] bin/fw vendor self --check is clean after the edits to agents/ and lib/
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -147,6 +151,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+out=$(bats tests/unit/rca_gate.bats 2>&1); echo "$out" | grep -q '^ok ' && ! echo "$out" | grep -q '^not ok' && ! echo "$out" | grep -q '# skip'
+bin/fw vendor self --check
+out=$(python3 -m pytest tests/unit/test_bvp_quality_axis.py tests/unit/test_bvp_outcomes_ledger.py -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -279,6 +287,14 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** A feature task titled "auth-fail display" (a state the feature displays, not a defect) is classified bug-class, so `--status work-completed` demands a substantive `## RCA` section. 055 (T-552) had to write an honest "this is not a bug" RCA rather than use `--skip-rca`.
+
+**Root cause:** The keyword classifier in `agents/task-create/update-task.sh:532` (`grep -qiE '\b(fix|bug|rca|broken|crash|error|regression|fail|hotfix)\b'`) relies on `\b`, which treats `-` as a word boundary. So `fail` in `auth-fail` matches. The same flaw is in the Python mirror `lib/bvp_outcomes.py:124` (`_BUG_RE`, `\b(...|fail(?:ure|ing)?)\b`), which counts bug-class related tasks for BVP quality. Both sites must agree on the "defect" vocabulary, so both carry the defect.
+
+**Why structurally allowed:** The T-1550 RCA gate's tests (`tests/unit/rca_gate.bats`) only cover space-separated titles ("Fix the broken widget", "Upstream fix request"). No fixture put a keyword inside a hyphenated compound, so the boundary assumption was never exercised. The override paths (`feature`/`request` tags, `workflow_type` override) exist but a feature with no tag gets no help and no warning.
+
+**Prevention:** Boundary-aware keyword match at both sites: a keyword must not be preceded or followed by a letter, digit, underscore or hyphen (`(^|[^[:alnum:]_-])kw([^[:alnum:]_-]|$)` in ERE; `(?<![\w-])kw(?![\w-])` in Python). Regression cases for "auth-fail display" (not bug-class), "fix auth fail" and "Fix: crash on start" (bug-class) are pinned in `tests/unit/rca_gate.bats` and the bvp tests so the boundary cannot regress silently.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -373,3 +389,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4276-bug-class-title-detector-matches-hyphena.md
 - **Context:** Initial task creation
+
+### 2026-10-17T18:41:19Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
