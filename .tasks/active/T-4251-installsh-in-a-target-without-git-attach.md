@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:01:58Z
-last_update: 2026-10-17T19:36:11Z
+last_update: 2026-10-17T21:36:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -97,10 +97,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `fw init <dir>` where <dir> is a subdirectory of an enclosing git repo (no .git of its own) creates a git repo at <dir>: `git -C <dir> rev-parse --show-toplevel` equals <dir>
-- [x] The enclosing repo is left untouched: no hook is written to its .git/hooks and its HEAD does not move
-- [ ] `install.sh` verify() fails (non-zero, `[x]`) when the target is not its own git top-level, instead of passing on the enclosing repo's HEAD (code in place; no test drives the failure path yet)
-- [x] Regression bats test under tests/unit/ fails on the pre-fix code and passes after the fix (enclosing-repo case)
+- [ ] `fw init <dir>` creates <dir>'s own git repo when <dir> is not inside any work tree: `git -C <dir> rev-parse --show-toplevel` equals <dir>
+- [ ] `fw init <dir>` creates <dir>'s own repo when the enclosing repo's top-level is `/` or `$HOME` (HOME stand-in test); the enclosing repo's HEAD does not move and no hook lands in its .git/hooks
+- [ ] `fw init <dir>` inside a genuine enclosing project repo (top-level neither `/` nor `$HOME`, not greenfield) attaches to it, does NOT nest a repo, and prints one notice naming the enclosing top-level and `git init <dir>` as the way to get a separate repo
+- [ ] `install.sh` creating a NEW target directory itself passes the greenfield signal, so fw init creates the target's own repo even under a genuine enclosing repo; verify() requires the own-top-level only in the own-repo cases
+- [ ] Regression bats tests (tests/unit/t4251_init_own_git_repo.bats) cover all four cases plus the T-4248 install.sh re-run no-op, and pass
 - [ ] `bin/fw vendor self --check` is clean; tests/unit/upgrade_fresh_machine_simulation.bats not-ok count reported in Updates
 
 ### Human
@@ -281,6 +282,7 @@ bvp_scores_proposed:
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 out=$(bats tests/unit/t4251_init_own_git_repo.bats 2>&1); echo "$out" | grep -q "^ok" && ! echo "$out" | grep -q "^not ok"
+grep -q 'FW_INIT_OWN_REPO' lib/init.sh && grep -q 'FW_INIT_OWN_REPO' install.sh
 bin/fw vendor self --check
 
 ## RCA

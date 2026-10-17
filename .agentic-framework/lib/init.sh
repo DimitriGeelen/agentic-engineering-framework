@@ -183,9 +183,25 @@ do_init() {
     fi
 
     # --- Git init if needed (T-521: hooks and traceability require git) ---
-    if ! git -C "$target_dir" rev-parse --is-inside-work-tree >/dev/null 2>&1; then
+    # T-4251: "inside a work tree" is true for ANY enclosing repo, so a target under
+    # a repo rooted at / got no git init, and hooks, task ids and the bootstrap
+    # commit landed in the parent. The target gets its own repo when it is in no
+    # work tree, when the enclosing top-level is / or $HOME (an accidental repo,
+    # not a project), or when the caller created the directory itself
+    # (FW_INIT_OWN_REPO=1, install.sh greenfield). A genuine enclosing project repo
+    # (a monorepo package) is still attached to, with a notice.
+    local _target_top _target_real _home_real=""
+    _target_top=$(git -C "$target_dir" rev-parse --show-toplevel 2>/dev/null) || _target_top=""
+    _target_real=$(cd "$target_dir" && pwd -P)
+    [ -n "$_target_top" ] && _target_top=$(cd "$_target_top" && pwd -P)
+    [ -n "${HOME:-}" ] && _home_real=$(cd "$HOME" 2>/dev/null && pwd -P)
+    if [ -z "$_target_top" ] || { [ "$_target_top" != "$_target_real" ] && \
+        { [ "$_target_top" = "/" ] || [ "$_target_top" = "$_home_real" ] || [ "${FW_INIT_OWN_REPO:-0}" = "1" ]; }; }; then
         echo -e "  ${GREEN}✓${NC}  Initializing git repository"
         git init -q "$target_dir"
+    elif [ "$_target_top" != "$_target_real" ]; then
+        echo -e "  ${YELLOW}⚠${NC}   Attaching to the enclosing git repository at $_target_top (target has no .git of its own)"
+        echo "     For a separate repo, run 'git init $target_dir' first, then re-run fw init."
     fi
 
     # --- Git identity inheritance (T-880/F4: inherit from global if not set) ---

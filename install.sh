@@ -45,6 +45,9 @@ NC='\033[0m'
 
 # T-4248: every [x] step is counted; any count fails the install (see main).
 INSTALL_ERRORS=0
+# T-4251: 1 when the target must end up as its own git top-level (set by
+# do_project_init; verify() checks the own-top-level only then).
+TARGET_OWN_REPO=0
 
 info()  { echo -e "${GREEN}[+]${NC} $*"; }
 warn()  { echo -e "${YELLOW}[!]${NC} $*"; }
@@ -426,6 +429,10 @@ link_fw() {
 # Running from inside $INSTALL_DIR itself removes the ambiguity: candidate ==
 # PROJECT_ROOT == FRAMEWORK_ROOT == the fetch.
 do_project_init() {
+    # T-4251: a directory this run creates is greenfield — it gets its own repo
+    # even under an enclosing project repo (FW_INIT_OWN_REPO=1 to fw init).
+    local own_repo_env=0
+    [[ -d "$TARGET_DIR" ]] || own_repo_env=1
     mkdir -p "$TARGET_DIR"
     echo ""
     # T-4248: a re-run against an initialised target is a no-op, not a failure.
@@ -436,6 +443,16 @@ do_project_init() {
         return 0
     fi
     info "Initialising project at ${TARGET_DIR}..."
+    # Same rule as lib/init.sh: own repo when in no work tree, when the enclosing
+    # top-level is / or $HOME, or when greenfield; otherwise fw init attaches.
+    local encl_top home_real=""
+    encl_top=$(git -C "$TARGET_DIR" rev-parse --show-toplevel 2>/dev/null || true)
+    [[ -n "$encl_top" ]] && encl_top=$(cd "$encl_top" && pwd -P)
+    [[ -n "${HOME:-}" ]] && home_real=$(cd "$HOME" 2>/dev/null && pwd -P || true)
+    if [[ -z "$encl_top" || "$encl_top" == "/" || "$encl_top" == "$home_real" \
+          || "$encl_top" == "$(cd "$TARGET_DIR" && pwd -P)" || "$own_repo_env" == "1" ]]; then
+        TARGET_OWN_REPO=1
+    fi
     # T-4248: fw init runs under env -u of the inherited framework/project
     # variables. A leaked FRAMEWORK_ROOT or PROJECT_ROOT (from another install)
     # made it source <target>/lib/init.sh, so the run must not inherit them.
@@ -443,7 +460,7 @@ do_project_init() {
     local init_log init_rc=0
     init_log=$(mktemp -t agentic-fw-init-XXXXXX)
     (cd "$INSTALL_DIR" && env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u TASKS_DIR -u CONTEXT_DIR \
-        -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM \
+        -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM FW_INIT_OWN_REPO="$own_repo_env" \
         "$INSTALL_DIR/bin/fw" init "$TARGET_DIR" --provider "$PROVIDER") > "$init_log" 2>&1 || init_rc=$?
     cat "$init_log"
     if [[ "$init_rc" -eq 0 ]] && ! grep -q '\[x\]' "$init_log"; then
@@ -511,11 +528,26 @@ verify() {
 
         # T-4261: a project without HEAD means the bootstrap commit did not
         # land; everything above can still look green. Fail the summary.
-        if git -C "$TARGET_DIR" rev-parse --verify HEAD &>/dev/null; then
+        # T-4251: `rev-parse HEAD` resolves through an enclosing repo too, so a
+        # target that should have got its own repo passed here on the parent's
+        # HEAD. Where it should (TARGET_OWN_REPO=1), it must be its own top-level
+        # before its HEAD counts; a target attached to a project repo is not.
+        local target_top own_top_ok=true
+        target_top=$(git -C "$TARGET_DIR" rev-parse --show-toplevel 2>/dev/null || true)
+        if [[ "$TARGET_OWN_REPO" == "1" ]] && \
+            [[ -z "$target_top" || "$(cd "$target_top" && pwd -P)" != "$(cd "$TARGET_DIR" && pwd -P)" ]]; then
+            own_top_ok=false
+        fi
+        if $own_top_ok && git -C "$TARGET_DIR" rev-parse --verify HEAD &>/dev/null; then
             info "Bootstrap commit present (HEAD resolves) ✓"
         else
-            error "Project has no HEAD — the bootstrap commit did not land in ${TARGET_DIR}"
-            error "  Check: cd $TARGET_DIR && git status && git log -1"
+            if ! $own_top_ok; then
+                error "Target ${TARGET_DIR} is not its own git repository (git top-level: ${target_top:-none}) — git init did not run"
+                error "  Check: cd $TARGET_DIR && git rev-parse --show-toplevel"
+            else
+                error "Project has no HEAD — the bootstrap commit did not land in ${TARGET_DIR}"
+                error "  Check: cd $TARGET_DIR && git status && git log -1"
+            fi
             ok=false
         fi
     else
