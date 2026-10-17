@@ -8,7 +8,7 @@ description: >
   to 1.7.740, their T-413). Peer data: reproduce before fixing. Their check-messages
   hook (UserPromptSubmit + SessionStart) vanished.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T11:19:38Z
-last_update: '2026-10-02T11:30:38Z'
+last_update: 2026-10-17T22:38:21Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,9 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced against the current tree (f8a63c605+): consumer with a `fw hook-enable --script` hook on UserPromptSubmit + SessionStart (055's check-messages shape), live `fw upgrade` through both step-5 branches (regenerate, then merge) — **not reproducible**: first upgrade prints `KEPT  UserPromptSubmit …/check-messages.sh` and `KEPT  SessionStart …`, settings.json keeps both; second upgrade reports `2 project hook(s) of your own kept as-is` and both remain
+- [x] Hooks survive: close-out evidence, RCA names T-3833 as the fix; regression test `tests/unit/t3711_upgrade_keeps_hook_enable_script_hooks.bats` pins the hook-enable / UserPromptSubmit+SessionStart shape through both branches (T-3833's test covers only a PreToolUse matcher hook) — 1/1 ok
+- [x] Not needed (hooks survive): no source fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -255,8 +256,18 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 900 bats tests/unit/t3711_upgrade_keeps_hook_enable_script_hooks.bats > /tmp/.t3711.out 2>&1 && ! grep -q "^not ok" /tmp/.t3711.out
+test "$(grep -c '# skip' /tmp/.t3711.out)" -eq 0
 
 ## RCA
+
+**Symptom:** 055 (upgrade to 1.7.740, their T-413): after `fw upgrade`, its check-messages hook (UserPromptSubmit + SessionStart, registered with `fw hook-enable --script`) was gone from `.claude/settings.json`, although hook-enable promises project hooks survive regeneration.
+
+**Root cause:** step 5's regenerate branch rebuilt settings.json from the framework hook set and folded back only framework hooks (T-677 dropped every other entry), and the upgrade discarded the merge's report — fixed by **T-3833** (e34a32a75, vendored 82b00557e, closed 1885b1897): `lib/settings_merge.py` now carries project hooks (`KEPT  <event>  <command>`, line 171) and names every entry not carried (`REMOVED`), and `lib/upgrade.sh` step 5 surfaces those lines. 055 upgraded to 1.7.740, before T-3833.
+
+**Why structurally allowed:** no test exercised step 5 with a non-framework hook until T-3833; that test pins one shape (PreToolUse, matcher `Bash`, `${CLAUDE_PROJECT_DIR}` path).
+
+**Prevention:** `tests/unit/t3711_upgrade_keeps_hook_enable_script_hooks.bats` pins the reported shape — hook-enable --script, absolute path, matcher "", two non-tool events — through the regenerate branch and the merge branch (second upgrade). Reproduced green on the current tree; no source change.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -352,3 +363,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3711-fw-upgrade-step-5-regenerates-claudesett.md
 - **Context:** Initial task creation
+
+### 2026-10-17T22:38:21Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
