@@ -1,24 +1,20 @@
 ---
-id: T-3768
-name: "Project-boundary gate bypassed by quoted, escaped, relative or substituted
-  paths (cat \"/root/x\", /roo\t/x, ../../root/x, here-string) — reads and writes
-  classified SAFE"
+id: T-3746
+name: "has_bash_write_pattern misses 2>/&> redirects to files, sed w flag/command,
+  and sort -o/--output: check-active-task lets these writes through with no active
+  task"
 description: >
-  Found by codex round 4 on T-3766 (docs/reports/T-3766-review-codex-r4.md), probing
-  HEAD's classifier: the quote stripper (agents/context/check-project-boundary.sh:190)
-  removes quoted arguments before read and write detection, and escaped/relative paths
-  are not normalised. Pre-existing, general (any outside path, not only credentials).
-  Same text-gate boundary as Tier 0 (T-2742), but these spellings are trivial. Fix:
-  interpret quoted/escaped args, resolve relative paths against cwd, treat command
-  substitution / here-strings conservatively; regression cases for every probe in
-  the report plus the sanctioned resolver control.
+  832 @112 2026-10-02 (their T-1005, fixed locally 6fc8e737, lost at a 1.7.68 re-vendor):
+  agents/context/lib/safe-commands.sh; their additions and probes in the message (7
+  write forms write; 2>&1, 2>/dev/null, sort, sed -n, git log stay reads). Reproduce,
+  adopt with tests.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: []
-components: []
+horizon: null
+tags: [bug, security, gates, 832-report]
+components: [agents/context/lib/safe-commands.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,9 +42,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-03T12:31:38Z
-last_update: 2026-10-17T21:32:00Z
-date_finished:
+created: 2026-10-02T19:57:27Z
+last_update: 2026-10-17T22:17:50Z
+date_finished: 2026-10-17T22:17:50Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -60,7 +56,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-03T12:45:20Z'
+  - ts: '2026-10-02T20:00:25Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -70,7 +66,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-03T12:45:40Z'
+  - ts: '2026-10-02T20:00:44Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -89,21 +85,21 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3768: Project-boundary gate bypassed by quoted, escaped, relative or substituted paths (cat "/root/x", /roo\t/x, ../../root/x, here-string) — reads and writes classified SAFE
+# T-3746: has_bash_write_pattern misses 2>/&> redirects to files, sed w flag/command, and sort -o/--output: check-active-task lets these writes through with no active task
 
 ## Context
 
-Probes and evidence: docs/reports/T-3766-review-codex-r4.md (codex round 4 on T-3766).
+<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Read-side outside-path detection sees bash's reading of each word: `cat "/root/x"`, `cat '/root/x'`, `cat /roo\t/x`, `cat ../../root/x` (relative, resolved against the hook's cwd), `cat <<< "$(cat /root/x)"`, and `<resolver> && cat "/root/x"` are all BLOCKED
-- [x] Write-side: `printf x > "/root/x"` is BLOCKED
-- [x] Controls stay SAFE: a quoted commit message / echo argument mentioning an outside path, in-project relative and absolute paths, `/tmp`, `~/.claude` (`/root/.claude`), read-side allowlist (`/etc`, `/usr`), the sanctioned `fw termlink dispatch --project /opt/other` route, and the absolute-path `fw review credential <id> --source <registered file>` resolver form
-- [x] Regression bats `tests/unit/t3768_boundary_quoted_read_paths.bats` covers every probe in docs/reports/T-3766-review-codex-r4.md plus the controls, fails without the fix and passes with it; neighbouring boundary suites stay green
-- [x] `bin/fw vendor self --check` clean
+- [x] `has_bash_write_pattern` classifies as WRITE: `ls 2>err.log`, `ls 2>>err.log`, `ls &>out.log`, `ls &>>out.log`, `sed 's/a/b/w out.txt' f`, `sed -n '/x/w out.txt' f`, `sort -o out.txt f`, `sort --output=out.txt f`
+- [x] Still READ (no regression): `ls 2>&1`, `ls 2>/dev/null`, `ls &>/dev/null`, `sort f`, `sed -n '1,5p' f`, `git log --oneline -5`
+- [x] Regression bats `tests/unit/t3746_write_pattern_fd_redirects.bats` fails without the fix and passes with it
+- [x] Existing safe-commands / check-active-task bats files: no new failures (only the pre-existing T-2888 git-verb red, red at HEAD before this change)
+- [x] Vendored copy synced (`bin/fw vendor self --check` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -257,6 +253,12 @@ Probes and evidence: docs/reports/T-3766-review-codex-r4.md (codex round 4 on T-
 #
 # The rule of thumb: put the assertion LAST, and make sure it is an assertion.
 #
+timeout 300 bats tests/unit/t3746_write_pattern_fd_redirects.bats > /tmp/.t3746.out 2>&1 && ! grep -q "^not ok" /tmp/.t3746.out
+test "$(grep -c '# skip' /tmp/.t3746.out)" -eq 0
+# context_safe_commands.bats carries a PRE-EXISTING red (T-2888 test: unclassified git verbs check-attr/check-ref-format/diff-index), red at HEAD before this change; tolerate exactly that one.
+timeout 600 bats tests/unit/context_safe_commands.bats tests/unit/safe_commands_chain.bats tests/unit/safe_commands_env_prefix.bats tests/unit/t3096_safe_commands_wrappers.bats tests/unit/test_safe_commands_git_commit.bats tests/unit/check_active_task_fp_fix.bats > /tmp/.t3746b.out 2>&1; grep -q "^ok 1 " /tmp/.t3746b.out && ! grep "^not ok" /tmp/.t3746b.out | grep -qv "T-2888"
+bin/fw vendor self --check
+#
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
 # Verification block. Otherwise the canonical hash diverges and `fw doctor`
@@ -264,10 +266,29 @@ Probes and evidence: docs/reports/T-3766-review-codex-r4.md (codex round 4 on T-
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-timeout 600 bats tests/unit/t3768_boundary_quoted_read_paths.bats > /tmp/.t3768-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t3768-a.out
-test "$(grep -c '# skip' /tmp/.t3768-a.out)" -eq 0
-timeout 900 bats tests/unit/check_project_boundary.bats tests/unit/t2920_boundary_heredoc_strip_order.bats tests/unit/t3076_boundary_termlink_segment_scope.bats tests/unit/t4114_boundary_tee_options.bats tests/unit/t4126_boundary_write_verbs.bats tests/unit/t4149_boundary_parser_differential.bats tests/unit/test_boundary_hook_arguments.bats tests/unit/t3766_review_credential.bats > /tmp/.t3768-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t3768-b.out
-bin/fw vendor self --check
+## RCA
+
+<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
+     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
+     Non-bug-class tasks may leave this section empty or remove it.
+
+     For bug-class, fill in:
+       **Symptom:** what was observed (the user-facing manifestation).
+       **Root cause:** the specific structural/logical gap — not "the code was wrong".
+       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
+       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
+
+     The completion gate (T-1550, G-019) blocks --status work-completed when
+     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
+-->
+
+**Symptom:** With no active task, `ls 2>err.log`, `ls &>out.log`, `sed -n '/x/w out' f`, `sed 's/a/b/w out' f`, `sort -o out f` and `sort --output=out f` passed `check-active-task` as reads — reproduced in-tree before the fix (`2>>`/`&>>` were already caught by the `>>` arm).
+
+**Root cause:** `agents/context/lib/safe-commands.sh` `has_bash_write_pattern` (redirect arm, `[^2>&]>[^>&]`): to exempt fd duplication (`2>&1`) it excluded *every* `>` preceded by `2` or `&`, so `2>FILE` and `&>FILE` never matched. The scan also had no arm at all for the two file-writing forms that need no redirect: sed's `w` command / `s///w` flag, and `sort -o`/`--output`.
+
+**Why structurally allowed:** The tests pinned only the read side of the exemption (`2>&1`, `2>/dev/null` stay reads) with no write-side counter-case, so over-broadening was invisible. 832 found and fixed it locally (their T-1005, 6fc8e737), but the fix never went upstream and was lost at their 1.7.68 re-vendor. A local fix to vendored code leaves no trace upstream.
+
+**Prevention:** `tests/unit/t3746_write_pattern_fd_redirects.bats` pins both directions: 8+ write forms must be writes, fd-dup, /dev/null, plain sort, sed -n and git log must stay reads. It fails 4/6 against the pre-fix code. Upstreaming the fix means the next consumer re-vendor carries it instead of erasing it.
 
 ## Evolution
 
@@ -292,22 +313,6 @@ bin/fw vendor self --check
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
-
-## RCA
-
-**Symptom:** The project-boundary hook said SAFE for outside-path reads spelled in any way other than one bare token. Examples: `cat "/root/x"`, `cat '/root/x'`, `cat /roo\t/x`, `cat ../../root/x`, `cat <<< "$(cat /root/x)"`, `true && cat "/root/x"`, `cat ~/x`, `cat "$HOME/x"`. Plain `cat /root/x` was blocked. Codex round 4 on T-3766 found this (docs/reports/T-3766-review-codex-r4.md). Reproduced on 2026-10-17 with .context/scratch/t3768-probe.sh. The write probe `printf x > "/root/x"` was already blocked by T-4149's Pattern 5.
-
-**Root cause:** Pattern 4, the read-side check (`agents/context/check-project-boundary.sh`, `_tok_iter` and the loop that follows it), runs on the output of `_strip_quoted` (:190). That function blanks every quoted word on purpose, so commit messages don't false-positive (T-1361). Pattern 4 then splits on whitespace and tests the raw token for a leading `/`. As a result:
-- a quoted path is never seen;
-- an escaped path keeps its backslash;
-- a relative `..` path never starts with `/`, and no cwd is applied;
-- a `$(...)` inside a quoted here-string is blanked along with the quotes.
-
-T-4149 had already moved the WRITE side onto a bash-style tokeniser (`lib/shell_write_scan.py`, Pattern 5), but the READ side was left on the quote-blanked view.
-
-**Why structurally allowed:** Two concerns share one view of the command. Quote-blanking is the right view for "is this a prose mention?" and the wrong one for "which file does this word name?". Every boundary test drove the bare spelling, or a quoted one only in the false-positive direction. Nothing compared the read classifier's reading with bash's reading. That is the same parser-differential class T-4149 closed for writes.
-
-**Prevention:** Pattern 4b runs Pattern 4's predicate (now `_read_outside`) over `shell_write_scan.scan_boundary_reads`. That scanner removes quotes and escapes, resolves `..` against the cd-tracked cwd, expands `~`/`$HOME` and braces, and reads the bodies of `$(...)`/backticks/here-strings/unquoted heredocs/`sh -c`. The TermLink and credential exemptions are applied by blanking the raw text, never by skipping the pass. tests/unit/t3768_boundary_quoted_read_paths.bats pins every round-4 probe plus the controls. It fails 8/14 at HEAD and passes 14/14 with the fix.
 
 ## Recommendation
 
@@ -349,11 +354,6 @@ T-4149 had already moved the WRITE side onto a bash-style tokeniser (`lib/shell_
      - **Rejected:** [alternatives and why not]
 -->
 
-### 2026-10-17 — which words the read pass judges
-- **Chose:** Judge a dequoted word as a path only when it is absolute, `~`/`$HOME`-led, the value of an `--opt=VALUE` option, or relative with a `..` component (resolved against the cd-tracked cwd). Use normpath, not realpath.
-- **Why:** A quoted message is one word that does not start with `/`, so commit messages and echo prose stay SAFE. A relative word with no `..` stays under the cwd, so sed scripts and regexes cost nothing. normpath keeps Pattern 4's name-based judgement and does not newly block in-project symlinks that point outside.
-- **Rejected:** (a) Dropping `_strip_quoted` from Pattern 4. That would re-open every T-1361 false positive on prose. (b) Blocking any command that contains a `$(...)`. The bodies are scanned as commands instead, which is just as conservative for paths and far less noisy. Accepted cost: a word that IS an outside path now blocks even when quoted as data (`echo "/root/x"`), the same as its unquoted spelling always did.
-
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -366,10 +366,27 @@ T-4149 had already moved the WRITE side onto a bash-style tokeniser (`lib/shell_
 
 ## Updates
 
-### 2026-10-03T12:31:38Z — task-created [task-create-agent]
+### 2026-10-02T19:57:27Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3768-project-boundary-gate-bypassed-by-quoted.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3746-hasbashwritepattern-misses-2-redirects-t.md
 - **Context:** Initial task creation
 
-### 2026-10-17T21:18:18Z — status-update [task-update-agent]
+### 2026-10-17T21:18:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c28aba7e
+- **Timestamp:** 2026-10-17T22:18:57Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 123
+     - evidence: `timeout 600 bats tests/unit/context_safe_commands.bats tests/unit/safe_commands_chain.bats tests/unit/safe_commands_env_prefix.bats tests/unit/t3096_safe_commands_wrappers.bats tests/unit/test_safe_co`
+
+### 2026-10-17T22:17:50Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

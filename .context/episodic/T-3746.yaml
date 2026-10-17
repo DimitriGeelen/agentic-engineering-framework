@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3746: has_bash_write_pattern misses 2>/&> redirects to files, sed w flag/command, and sort -o/--output: check-active-task lets these writes through with no active task
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T22:19:15Z
+# ============================================================================
+
+task_id: T-3746
+task_name: "has_bash_write_pattern misses 2>/&> redirects to files, sed w flag/command, and sort -o/--output: check-active-task lets these writes through with no active task"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-02T19:57:27Z
+completed: 2026-10-17T22:17:50Z
+duration_days: 15
+updates_count: 2
+first_commit: 2026-10-17T23:26:27+02:00
+last_commit: 2026-10-17T23:26:27+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  has_bash_write_pattern catches 2>FILE, &>FILE, sed w, sort -o/--output
+
+# Key outcomes
+outcomes:
+  - '`has_bash_write_pattern` classifies as WRITE: `ls 2>err.log`, `ls 2>>err.log`, `ls &>out.log`, `ls &>>out.log`, `sed ''s/a/b/w out.txt'' f`, `sed -n ''/x/w out.txt'' f`, `sort -o out.txt f`, `sort --output=out.txt f`'
+  - 'Still READ (no regression): `ls 2>&1`, `ls 2>/dev/null`, `ls &>/dev/null`, `sort f`, `sed -n ''1,5p'' f`, `git log --oneline -5`'
+  - 'Regression bats `tests/unit/t3746_write_pattern_fd_redirects.bats` fails without the fix and passes with it'
+  - 'Existing safe-commands / check-active-task bats files: no new failures (only the pre-existing T-2888 git-verb red, red at HEAD before this change)'
+  - 'Vendored copy synced (`bin/fw vendor self --check` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.tasks/active/T-3746-hasbashwritepattern-misses-2-redirects-t.md'
+  - '.tasks/completed/T-3730-fw-upgrades-claudemd-governance-refresh-.md'
+  - 'tests/unit/t3746_write_pattern_fd_redirects.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T23:26:27'
+    action: 'T-3746: has_bash_write_pattern catches 2>FILE, &>FILE, sed w, sort -o/--output'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 21740 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, security, gates, 832-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 21740
+  commits: 1
+  files_changed: 5
+  lines_added: 134
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3746-hasbashwritepattern-misses-2-redirects-t.md
+generated_by: context-agent-hybrid

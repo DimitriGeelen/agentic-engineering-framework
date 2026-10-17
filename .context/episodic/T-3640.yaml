@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3640: PRIORITY Tier 0: check-tier0.sh blocks only 'pkill -9' — every other SIGKILL spelling and pkill -f/killall -r pass (055 P-006)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T22:09:07Z
+# ============================================================================
+
+task_id: T-3640
+task_name: "PRIORITY Tier 0: check-tier0.sh blocks only 'pkill -9' — every other SIGKILL spelling and pkill -f/killall -r pass (055 P-006)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T13:18:43Z
+completed: 2026-10-17T22:04:52Z
+duration_days: 16
+updates_count: 2
+first_commit: 2026-10-17T23:36:14+02:00
+last_commit: 2026-10-17T23:36:14+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Tier 0 blocks kill-by-name — any SIGKILL spelling for pkill/killall, pkill -f/--full, killall -r/--regexp (055 P-006)
+
+# Key outcomes
+outcomes:
+  - 'The hook blocks (exit 2) every SIGKILL spelling for pkill and killall: -9, -KILL, -SIGKILL (any case), -s 9|KILL|SIGKILL, -s9, --signal[= ]9|KILL|SIGKILL (abbreviations of --signal included)'
+  - 'The hook blocks any pkill -f / --full, clustered (-ef, -fx) included, whatever the signal; and killall -r / --regexp, clustered included'
+  - 'killall reaches the detailed match (the fast-path prefilter names it)'
+  - 'Each of the three rules has its own block message naming what it matched and the safe alternative (kill the PID / process group you started)'
+  - 'Still allowed (exit 0): kill <pid>, kill -9 <pid>, kill -TERM -<pgid>, pkill <name>, pkill -TERM <name>, pgrep -f <pat>, killall <name>, grep -rn pkill <dir>, the words inside quoted text'
+  - 'Regression test tests/unit/t3640_tier0_kill_by_name.bats runs the real hook with PROJECT_ROOT in a tempdir; its block cases fail on the pre-fix hook'
+  - 'Existing Tier 0 hook suites still pass; vendored copy in sync'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-tier0.sh'
+  - 'agents/context/check-tier0.sh'
+  - '.tasks/active/T-3640-priority-tier-0-check-tier0sh-blocks-onl.md'
+  - 'tests/unit/t3640_tier0_kill_by_name.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T23:36:14'
+    action: 'T-3640: Tier 0 blocks kill-by-name — any SIGKILL spelling for pkill/killall, pkill -f/--full, killall -r/--regexp (055 P-006)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 23566 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, 055, upstream]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 23566
+  commits: 1
+  files_changed: 4
+  lines_added: 193
+  lines_removed: 11
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3640-priority-tier-0-check-tier0sh-blocks-onl.md
+generated_by: context-agent-hybrid

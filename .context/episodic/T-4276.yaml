@@ -1,0 +1,90 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4276: Bug-class title detector matches hyphenated compounds (auth-fail -> fail), forcing an RCA on feature tasks (055 T-552)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T21:57:00Z
+# ============================================================================
+
+task_id: T-4276
+task_name: "Bug-class title detector matches hyphenated compounds (auth-fail -> fail), forcing an RCA on feature tasks (055 T-552)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T16:53:16Z
+completed: 2026-10-17T21:56:05Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-17T18:54:03+02:00
+last_commit: 2026-10-17T20:48:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file bug-class title false positive on hyphenated compounds (055 T-552). bug-class title detector ignores keywords inside hyphenated compounds
+
+# Key outcomes
+outcomes:
+  - 'Localised: the shell bug-class detector (update-task.sh check_rca_for_bugfix) and the Python _BUG_RE (lib/bvp_outcomes.py) both classify "auth-fail display" as bug-class today (confirmed by a repro, recorded in RCA)'
+  - 'Shell detector no longer matches keywords inside hyphenated compounds: "auth-fail display" is NOT bug-class; "fix auth fail" and "Fix: crash on start" ARE bug-class'
+  - 'Python detector in lib/bvp_outcomes.py uses the same boundary rule: "auth-fail display" does not match, "fix auth fail" and "Fix: crash on start" do'
+  - 'Regression tests added in tests/unit/rca_gate.bats (shell) and a pytest/bats case for bvp_outcomes covering the three titles; they fail before the fix and pass after'
+  - 'Existing RCA gate tests (tests/unit/rca_gate.bats) still pass; bvp outcomes tests still pass'
+  - 'bin/fw vendor self --check is clean after the edits to agents/ and lib/'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'bug-class title detector ignores keywords inside hyphenated compounds'
+    source: git-mined
+  - description: 'file bug-class title false positive on hyphenated compounds (055 T-552)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/lib/bvp_outcomes.py'
+  - 'agents/task-create/update-task.sh'
+  - 'lib/bvp_outcomes.py'
+  - '.tasks/active/T-4276-bug-class-title-detector-matches-hyphena.md'
+  - 'tests/unit/rca_gate.bats'
+  - 'tests/unit/test_bvp_quality_axis.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T18:54:03'
+    action: 'T-4276: file bug-class title false positive on hyphenated compounds (055 T-552)'
+  - time: '2026-10-17T20:48:17'
+    action: 'T-4276: bug-class title detector ignores keywords inside hyphenated compounds'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 302 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 302
+  commits: 2
+  files_changed: 7
+  lines_added: 424
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4276-bug-class-title-detector-matches-hyphena.md
+generated_by: context-agent-hybrid

@@ -1,20 +1,24 @@
 ---
-id: T-3746
-name: "has_bash_write_pattern misses 2>/&> redirects to files, sed w flag/command,
-  and sort -o/--output: check-active-task lets these writes through with no active
-  task"
+id: T-3794
+name: "Pre-push unit-suite ratchet passes on an INCOMPLETE run: an interrupted run
+  (2 of 993 files) let ~60 commits push at 08:18Z with 18 known reds undetermined
+  — an incomplete run must FAIL the ratchet (could-not-determine), not grade only
+  the files that ran"
 description: >
-  832 @112 2026-10-02 (their T-1005, fixed locally 6fc8e737, lost at a 1.7.68 re-vendor):
-  agents/context/lib/safe-commands.sh; their additions and probes in the message (7
-  write forms write; 2>&1, 2>/dev/null, sort, sed -n, git log stay reads). Reproduce,
-  adopt with tests.
+  2026-10-04: a dispatched worker started agents/audit/unit-suite.sh and it was interrupted
+  after 2 of 730 bats files; LATEST.yaml then held that run. The pre-push ratchet
+  graded only the reds in files that ran (0 new) and git push origin bleeding-edge
+  succeeded at 10:18 local, while the previous complete run had 18 NEW reds. The audit
+  Evidence line even says 'not determined, not green' yet the grade was PASS. Fix:
+  an incomplete run grades FAIL at pre-push (or falls back to the last complete run);
+  test with a fixture report.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, security, gates, 832-report]
-components: []
+horizon: null
+tags: []
+components: [agents/audit/audit.sh, agents/audit/unit-suite.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,9 +46,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-02T19:57:27Z
-last_update: 2026-10-17T21:26:27Z
-date_finished:
+created: 2026-10-04T09:06:07Z
+last_update: 2026-10-17T22:16:43Z
+date_finished: 2026-10-17T22:16:43Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -56,7 +60,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-02T20:00:25Z'
+  - ts: '2026-10-04T09:15:22Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -66,7 +70,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-02T20:00:44Z'
+  - ts: '2026-10-04T09:15:44Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -85,7 +89,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-3746: has_bash_write_pattern misses 2>/&> redirects to files, sed w flag/command, and sort -o/--output: check-active-task lets these writes through with no active task
+# T-3794: Pre-push unit-suite ratchet passes on an INCOMPLETE run: an interrupted run (2 of 993 files) let ~60 commits push at 08:18Z with 18 known reds undetermined — an incomplete run must FAIL the ratchet (could-not-determine), not grade only the files that ran
 
 ## Context
 
@@ -95,11 +99,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `has_bash_write_pattern` classifies as WRITE: `ls 2>err.log`, `ls 2>>err.log`, `ls &>out.log`, `ls &>>out.log`, `sed 's/a/b/w out.txt' f`, `sed -n '/x/w out.txt' f`, `sort -o out.txt f`, `sort --output=out.txt f`
-- [x] Still READ (no regression): `ls 2>&1`, `ls 2>/dev/null`, `ls &>/dev/null`, `sort f`, `sed -n '1,5p' f`, `git log --oneline -5`
-- [x] Regression bats `tests/unit/t3746_write_pattern_fd_redirects.bats` fails without the fix and passes with it
-- [x] Existing safe-commands / check-active-task bats files: no new failures (only the pre-existing T-2888 git-verb red, red at HEAD before this change)
-- [ ] Vendored copy synced (`bin/fw vendor self --check` clean)
+- [x] At pre-push scope (`--section structure`), a LATEST report that is grossly incomplete (interrupted, run ceiling hit, files never reached, files unaccounted for, or per-file timeouts above max(10, 5% of files)) is NOT graded on its own: the check grades the last COMPLETE run instead (LAST-COMPLETE.yaml, else the newest complete dated sibling) and names that run in the line
+- [x] Reds RECORDED by the incomplete LATEST are still graded (unioned with the fallback's reds) — a recorded `not ok` stays a verdict (T-3602)
+- [x] At pre-push, an incomplete LATEST with no complete run on record FAILs "COULD NOT DETERMINE" (blocks the push), instead of the old non-blocking WARN
+- [x] A complete run with a few per-file timeouts (the known T-3801/T-3083 condition, within the threshold) is graded as before — no fallback, no new FAIL
+- [x] `agents/audit/unit-suite.sh` writes `LAST-COMPLETE.yaml` beside LATEST.yaml when its run was not interrupted, did not hit the run ceiling, and reached every file
+- [x] Regression bats `tests/unit/t3794_unit_suite_incomplete_prepush.bats` with fixture reports (complete, interrupted, partially timed-out, no fallback) passes; it fails against the pre-fix audit.sh; existing t3621/t3602/t3302/t3650/t4058 suites still pass
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -253,20 +258,27 @@ bvp_scores_proposed:
 #
 # The rule of thumb: put the assertion LAST, and make sure it is an assertion.
 #
-timeout 300 bats tests/unit/t3746_write_pattern_fd_redirects.bats > /tmp/.t3746.out 2>&1 && ! grep -q "^not ok" /tmp/.t3746.out
-test "$(grep -c '# skip' /tmp/.t3746.out)" -eq 0
-# context_safe_commands.bats carries a PRE-EXISTING red (T-2888 test: unclassified git verbs check-attr/check-ref-format/diff-index), red at HEAD before this change; tolerate exactly that one.
-timeout 600 bats tests/unit/context_safe_commands.bats tests/unit/safe_commands_chain.bats tests/unit/safe_commands_env_prefix.bats tests/unit/t3096_safe_commands_wrappers.bats tests/unit/test_safe_commands_git_commit.bats tests/unit/check_active_task_fp_fix.bats > /tmp/.t3746b.out 2>&1; grep -q "^ok 1 " /tmp/.t3746b.out && ! grep "^not ok" /tmp/.t3746b.out | grep -qv "T-2888"
-bin/fw vendor self --check
-#
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
 # Verification block. Otherwise the canonical hash diverges and `fw doctor`
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 600 bats tests/unit/t3794_unit_suite_incomplete_prepush.bats > /tmp/.t3794.out 2>&1 && ! grep -q "^not ok" /tmp/.t3794.out
+test "$(grep -c '# skip' /tmp/.t3794.out)" -eq 0
+timeout 900 bats tests/unit/t3621_unit_suite_ratchet.bats tests/unit/t3602_unit_suite_partial_run.bats tests/unit/t3650_unit_suite_label_suite_dir.bats > /tmp/.t3794b.out 2>&1 && ! grep -q "^not ok" /tmp/.t3794b.out
+bash -n agents/audit/audit.sh && bash -n agents/audit/unit-suite.sh
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** 2026-10-04 08:18Z, `git push origin bleeding-edge` (~60 commits) passed the pre-push unit-suite ratchet while LATEST.yaml held a run interrupted after 2 of 730 bats files; the previous complete run had 18 NEW reds. The audit evidence even said "not determined, not green", yet nothing blocked.
+
+**Root cause:** `agents/audit/audit.sh` `check_unit_suite_report` (the ratchet branch, ~line 3860-3885, and the no-red partial branch ~3897) grades whatever LATEST.yaml holds. For an incomplete run it grades only the reds in the files that ran: 0 new → WARN ("BASELINED red(s)" or "COULD NOT DETERMINE"). WARN does not block pre-push, so an incomplete report was, in effect, a PASS. The runner (`agents/audit/unit-suite.sh` `_finish`, signal trap) correctly writes the partial report over LATEST — and nothing kept the last complete one to grade instead.
+
+**Why structurally allowed:** T-3602 designed the partial-run grade for the nightly report, where WARN is an honest "unknown". T-3621 then made the same check a blocking gate at pre-push, but kept WARN for "unknown" — and at a gate, WARN is a pass. Tests covered partial runs with reds (T-3602) and the ratchet on complete runs (T-3621), never an interrupted run at pre-push scope.
+
+**Prevention:** at pre-push an incomplete LATEST falls back to the last complete run (runner now writes LAST-COMPLETE.yaml) and FAILs when none exists; pinned by `tests/unit/t3794_unit_suite_incomplete_prepush.bats` (interrupted, ceiling, not-reached, per-file-timeout-within-threshold, no-fallback fixtures).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -281,14 +293,6 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** With no active task, `ls 2>err.log`, `ls &>out.log`, `sed -n '/x/w out' f`, `sed 's/a/b/w out' f`, `sort -o out f` and `sort --output=out f` passed `check-active-task` as reads — reproduced in-tree before the fix (`2>>`/`&>>` were already caught by the `>>` arm).
-
-**Root cause:** `agents/context/lib/safe-commands.sh` `has_bash_write_pattern` (redirect arm, `[^2>&]>[^>&]`): to exempt fd duplication (`2>&1`) it excluded *every* `>` preceded by `2` or `&`, so `2>FILE` and `&>FILE` never matched. The scan also had no arm at all for the two file-writing forms that need no redirect: sed's `w` command / `s///w` flag, and `sort -o`/`--output`.
-
-**Why structurally allowed:** The tests pinned only the read side of the exemption (`2>&1`, `2>/dev/null` stay reads) with no write-side counter-case, so over-broadening was invisible. 832 found and fixed it locally (their T-1005, 6fc8e737), but the fix never went upstream and was lost at their 1.7.68 re-vendor. A local fix to vendored code leaves no trace upstream.
-
-**Prevention:** `tests/unit/t3746_write_pattern_fd_redirects.bats` pins both directions: 8+ write forms must be writes, fd-dup, /dev/null, plain sort, sed -n and git log must stay reads. It fails 4/6 against the pre-fix code. Upstreaming the fix means the next consumer re-vendor carries it instead of erasing it.
 
 ## Evolution
 
@@ -354,6 +358,16 @@ bin/fw vendor self --check
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-17 — incomplete LATEST at pre-push: fall back, else FAIL
+- **Chose:** grade the last complete run (LAST-COMPLETE.yaml, else newest complete dated sibling), union in the reds the incomplete LATEST did record, and name the graded run; FAIL "could not determine" only when no complete run exists. Pre-push scope only; other scopes keep T-3602 grading (they already FAIL on any red and are not push gates).
+- **Why:** a FAIL on every interrupted run would block pushes for the day a dispatched worker kills a run by hand; the last complete run is real evidence and the reds LATEST recorded are verdicts (T-3602). Unioning keeps a fresh red from hiding behind an older green.
+- **Rejected:** FAIL-only (blocks for reasons unrelated to the push); grading LATEST's reds only (the bug).
+
+### 2026-10-17 — what counts as "incomplete"
+- **Chose:** incomplete = `interrupted`, or `timed_out` (run ceiling), or `files_not_run > 0`, or files unaccounted for (`files_completed` + per-file timeouts < `files`), or per-file timeouts > max(10, 5% of the leg's files).
+- **Why:** per-file 900 s timeouts are a known, standing condition (T-3801/T-3083): 8 of 814 bats files on 2026-10-17 (~1%). They are named in every grade already and must not turn every push red. A floor of 10 keeps small corpora from tripping on one slow file; 5% is ~5x today's count, so it only trips on a systemic slowdown (host overload), where the run genuinely measured little.
+- **Rejected:** zero tolerance (every nightly run would fall back/FAIL); a ratio alone (one slow file in a 12-file fixture corpus = 8%).
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -366,10 +380,22 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-02T19:57:27Z — task-created [task-create-agent]
+### 2026-10-04T09:06:07Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3746-hasbashwritepattern-misses-2-redirects-t.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3794-pre-push-unit-suite-ratchet-passes-on-an.md
 - **Context:** Initial task creation
 
 ### 2026-10-17T21:18:25Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-69898e8d
+- **Timestamp:** 2026-10-17T22:17:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-17T22:16:43Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

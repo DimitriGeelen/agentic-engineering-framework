@@ -1,0 +1,92 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3794: Pre-push unit-suite ratchet passes on an INCOMPLETE run: an interrupted run (2 of 993 files) let ~60 commits push at 08:18Z with 18 known reds undetermined — an incomplete run must FAIL the ratchet (could-not-determine), not grade only the files that ran
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T22:17:47Z
+# ============================================================================
+
+task_id: T-3794
+task_name: "Pre-push unit-suite ratchet passes on an INCOMPLETE run: an interrupted run (2 of 993 files) let ~60 commits push at 08:18Z with 18 known reds undetermined — an incomplete run must FAIL the ratchet (could-not-determine), not grade only the files that ran"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-04T09:06:07Z
+completed: 2026-10-17T22:16:43Z
+duration_days: 13
+updates_count: 2
+first_commit: 2026-10-17T23:28:32+02:00
+last_commit: 2026-10-17T23:28:32+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  pre-push unit-suite ratchet grades the last COMPLETE run when LATEST is incomplete, FAILs when none exists
+
+# Key outcomes
+outcomes:
+  - 'At pre-push scope (`--section structure`), a LATEST report that is grossly incomplete (interrupted, run ceiling hit, files never reached, files unaccounted for, or per-file timeouts above max(10, 5% of files)) is NOT graded on its own: the check grades the last COMPLETE run instead (LAST-COMPLETE.yaml, else the newest complete dated sibling) and names that run in the line'
+  - 'Reds RECORDED by the incomplete LATEST are still graded (unioned with the fallback''s reds) — a recorded `not ok` stays a verdict (T-3602)'
+  - 'At pre-push, an incomplete LATEST with no complete run on record FAILs "COULD NOT DETERMINE" (blocks the push), instead of the old non-blocking WARN'
+  - 'A complete run with a few per-file timeouts (the known T-3801/T-3083 condition, within the threshold) is graded as before — no fallback, no new FAIL'
+  - '`agents/audit/unit-suite.sh` writes `LAST-COMPLETE.yaml` beside LATEST.yaml when its run was not interrupted, did not hit the run ceiling, and reached every file'
+  - 'Regression bats `tests/unit/t3794_unit_suite_incomplete_prepush.bats` with fixture reports (complete, interrupted, partially timed-out, no fallback) passes; it fails against the pre-fix audit.sh; existing t3621/t3602/t3302/t3650/t4058 suites still pass'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-17 — incomplete LATEST at pre-push: fall back, else FAIL'
+    chose: 'grade the last complete run (LAST-COMPLETE.yaml, else newest complete dated sibling), union in the reds the incomplete LATEST did record, and name the graded run; FAIL "could not determine" only when no complete run exists. Pre-push scope only; other scopes keep T-3602 grading (they already FAIL on any red and are not push gates).'
+    rationale: 'a FAIL on every interrupted run would block pushes for the day a dispatched worker kills a run by hand; the last complete run is real evidence and the reds LATEST recorded are verdicts (T-3602). Unioning keeps a fresh red from hiding behind an older green.'
+    alternatives_rejected: ['FAIL-only (blocks for reasons unrelated to the push); grading LATEST''s reds only (the bug).']
+  - decision: '2026-10-17 — what counts as "incomplete"'
+    chose: 'incomplete = `interrupted`, or `timed_out` (run ceiling), or `files_not_run > 0`, or files unaccounted for (`files_completed` + per-file timeouts < `files`), or per-file timeouts > max(10, 5% of the leg''s files).'
+    rationale: 'per-file 900 s timeouts are a known, standing condition (T-3801/T-3083): 8 of 814 bats files on 2026-10-17 (~1%). They are named in every grade already and must not turn every push red. A floor of 10 keeps small corpora from tripping on one slow file; 5% is ~5x today''s count, so it only trips on a systemic slowdown (host overload), where the run genuinely measured little.'
+    alternatives_rejected: ['zero tolerance (every nightly run would fall back/FAIL); a ratio alone (one slow file in a 12-file fixture corpus = 8%).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/audit/audit.sh'
+  - '.agentic-framework/agents/audit/unit-suite.sh'
+  - 'agents/audit/audit.sh'
+  - 'agents/audit/unit-suite.sh'
+  - '.context/audits/unit-suite/LAST-COMPLETE.yaml'
+  - '.tasks/active/T-3794-pre-push-unit-suite-ratchet-passes-on-an.md'
+  - 'tests/unit/t3794_unit_suite_incomplete_prepush.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T23:28:32'
+    action: 'T-3794: pre-push unit-suite ratchet grades the last COMPLETE run when LATEST is incomplete, FAILs when none exists'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 19510 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 19510
+  commits: 1
+  files_changed: 7
+  lines_added: 1643
+  lines_removed: 18
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3794-pre-push-unit-suite-ratchet-passes-on-an.md
+generated_by: context-agent-hybrid

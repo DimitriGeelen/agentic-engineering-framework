@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3768: Project-boundary gate bypassed by quoted, escaped, relative or substituted paths (cat \"/root/x\", /roo\t/x, ../../root/x, here-string) — reads and writes classified SAFE
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T22:16:39Z
+# ============================================================================
+
+task_id: T-3768
+task_name: "Project-boundary gate bypassed by quoted, escaped, relative or substituted paths (cat \"/root/x\", /roo\t/x, ../../root/x, here-string) — reads and writes classified SAFE"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-03T12:31:38Z
+completed: 2026-10-17T22:13:31Z
+duration_days: 14
+updates_count: 2
+first_commit: 2026-10-17T23:32:00+02:00
+last_commit: 2026-10-17T23:32:00+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  boundary gate reads read-side paths as bash does (quoted, escaped, relative, substituted)
+
+# Key outcomes
+outcomes:
+  - 'Read-side outside-path detection sees bash''s reading of each word: `cat "/root/x"`, `cat ''/root/x''`, `cat /roo\t/x`, `cat ../../root/x` (relative, resolved against the hook''s cwd), `cat <<< "$(cat /root/x)"`, and `<resolver> && cat "/root/x"` are all BLOCKED'
+  - 'Write-side: `printf x > "/root/x"` is BLOCKED'
+  - 'Controls stay SAFE: a quoted commit message / echo argument mentioning an outside path, in-project relative and absolute paths, `/tmp`, `~/.claude` (`/root/.claude`), read-side allowlist (`/etc`, `/usr`), the sanctioned `fw termlink dispatch --project /opt/other` route, and the absolute-path `fw review credential <id> --source <registered file>` resolver form'
+  - 'Regression bats `tests/unit/t3768_boundary_quoted_read_paths.bats` covers every probe in docs/reports/T-3766-review-codex-r4.md plus the controls, fails without the fix and passes with it; neighbouring boundary suites stay green'
+  - '`bin/fw vendor self --check` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-17 — which words the read pass judges'
+    chose: 'Judge a dequoted word as a path only when it is absolute, `~`/`$HOME`-led, the value of an `--opt=VALUE` option, or relative with a `..` component (resolved against the cd-tracked cwd). Use normpath, not realpath.'
+    rationale: 'A quoted message is one word that does not start with `/`, so commit messages and echo prose stay SAFE. A relative word with no `..` stays under the cwd, so sed scripts and regexes cost nothing. normpath keeps Pattern 4''s name-based judgement and does not newly block in-project symlinks that point outside.'
+    alternatives_rejected: ['(a) Dropping `_strip_quoted` from Pattern 4. That would re-open every T-1361 false positive on prose. (b) Blocking any command that contains a `$(...)`. The bodies are scanned as commands instead, which is just as conservative for paths and far less noisy. Accepted cost: a word that IS an outside path now blocks even when quoted as data (`echo "/root/x"`), the same as its unquoted spelling always did.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-project-boundary.sh'
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - 'agents/context/check-project-boundary.sh'
+  - 'lib/shell_write_scan.py'
+  - '.tasks/active/T-3768-project-boundary-gate-bypassed-by-quoted.md'
+  - 'tests/unit/t3768_boundary_quoted_read_paths.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T23:32:00'
+    action: 'T-3768: boundary gate reads read-side paths as bash does (quoted, escaped, relative, substituted)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 20741 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 20741
+  commits: 1
+  files_changed: 6
+  lines_added: 430
+  lines_removed: 64
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3768-project-boundary-gate-bypassed-by-quoted.md
+generated_by: context-agent-hybrid

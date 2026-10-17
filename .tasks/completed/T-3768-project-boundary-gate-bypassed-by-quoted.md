@@ -1,31 +1,24 @@
 ---
-id: T-3640
-name: "PRIORITY Tier 0: check-tier0.sh blocks only 'pkill -9' — every other SIGKILL
-  spelling and pkill -f/killall -r pass (055 P-006)"
+id: T-3768
+name: "Project-boundary gate bypassed by quoted, escaped, relative or substituted
+  paths (cat \"/root/x\", /roo\t/x, ../../root/x, here-string) — reads and writes
+  classified SAFE"
 description: >
-  PRIORITY — Tier 0 hole, port first. Source: 055-agentic-fleet-cockpit pickup P-006,
-  framework:pickup offset 237 (055 task 346). A dispatched worker ran `pkill -KILL
-  -f 'sleep|trap'`; agents/context/check-tier0.sh let it through because the only
-  kill rule is r'\bpkill\s+-9\b' (still the only rule at bleeding-edge HEAD, check-tier0.sh:301;
-  same at v1.7.0:174). It SIGKILLed every host process matching sleep/trap, including
-  a live fleet agent's session. 055's vendored fix (not ours to copy blind, port and
-  test here): prefilter gains killall; replace the pkill -9 rule with (1) any SIGKILL
-  spelling for pkill/killall (-9, -KILL, -SIGKILL, -s 9|KILL|SIGKILL, --signal[= ]...),
-  (2) any pkill -f/--full incl. clustered (-ef), (3) killall -r/--regexp; each message
-  names the safe alternative (kill the PID/pgid you started). Must stay allowed: kill
-  <pid>, kill -9 <pid>, kill -TERM -<pgid>, plain pkill <name>, pgrep, words inside
-  quoted text. strip_quotes runs before matching, so judge the command SHAPE, not
-  the -f pattern. Tests must run the real hook with PROJECT_ROOT in a tempdir (every
-  block writes .tier0-approval.pending). Related suggestion: dispatch preamble line
-  'kill by PID, never by name'. Triage: T-3639 (docs/reports/T-3639-055-fix-triage.md).
-  Ships to 055 only at the next release cut.
+  Found by codex round 4 on T-3766 (docs/reports/T-3766-review-codex-r4.md), probing
+  HEAD's classifier: the quote stripper (agents/context/check-project-boundary.sh:190)
+  removes quoted arguments before read and write detection, and escaped/relative paths
+  are not normalised. Pre-existing, general (any outside path, not only credentials).
+  Same text-gate boundary as Tier 0 (T-2742), but these spellings are trivial. Fix:
+  interpret quoted/escaped args, resolve relative paths against cwd, treat command
+  substitution / here-strings conservatively; regression cases for every probe in
+  the report plus the sanctioned resolver control.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, 055, upstream]
-components: []
+horizon: null
+tags: []
+components: [agents/context/check-project-boundary.sh, lib/shell_write_scan.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -53,9 +46,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-01T13:18:43Z
-last_update: 2026-10-17T21:36:14Z
-date_finished:
+created: 2026-10-03T12:31:38Z
+last_update: 2026-10-17T22:13:31Z
+date_finished: 2026-10-17T22:13:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -67,7 +60,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-01T13:30:22Z'
+  - ts: '2026-10-03T12:45:20Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -77,7 +70,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-01T13:30:36Z'
+  - ts: '2026-10-03T12:45:40Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -94,43 +87,23 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-  - ts: '2026-10-17T21:30:37Z'
-    estimator: bvp-estimator-v1-heuristic
-    scores:
-      D1: 4
-      D2: 4
-      D3: 3
-      D4: 2
-      F-RECALL: 2
-      F-AUTONOMY: 0
-      F3: 0
-      F1: 0
-      F2: 1
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
-      (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
-      (no-signal); F1=0 (no-signal); F2=1 
-      (body/components:component-fabric-incidental)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-3640: PRIORITY Tier 0: check-tier0.sh blocks only 'pkill -9' — every other SIGKILL spelling and pkill -f/killall -r pass (055 P-006)
+# T-3768: Project-boundary gate bypassed by quoted, escaped, relative or substituted paths (cat "/root/x", /roo\t/x, ../../root/x, here-string) — reads and writes classified SAFE
 
 ## Context
 
-Port 055's kill-by-name Tier 0 fix (pickup P-006) into agents/context/check-tier0.sh, with tests here. Triage: docs/reports/T-3639-055-fix-triage.md.
+Probes and evidence: docs/reports/T-3766-review-codex-r4.md (codex round 4 on T-3766).
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] The hook blocks (exit 2) every SIGKILL spelling for pkill and killall: -9, -KILL, -SIGKILL (any case), -s 9|KILL|SIGKILL, -s9, --signal[= ]9|KILL|SIGKILL (abbreviations of --signal included)
-- [x] The hook blocks any pkill -f / --full, clustered (-ef, -fx) included, whatever the signal; and killall -r / --regexp, clustered included
-- [x] killall reaches the detailed match (the fast-path prefilter names it)
-- [x] Each of the three rules has its own block message naming what it matched and the safe alternative (kill the PID / process group you started)
-- [x] Still allowed (exit 0): kill <pid>, kill -9 <pid>, kill -TERM -<pgid>, pkill <name>, pkill -TERM <name>, pgrep -f <pat>, killall <name>, grep -rn pkill <dir>, the words inside quoted text
-- [x] Regression test tests/unit/t3640_tier0_kill_by_name.bats runs the real hook with PROJECT_ROOT in a tempdir; its block cases fail on the pre-fix hook
-- [x] Existing Tier 0 hook suites still pass; vendored copy in sync
+- [x] Read-side outside-path detection sees bash's reading of each word: `cat "/root/x"`, `cat '/root/x'`, `cat /roo\t/x`, `cat ../../root/x` (relative, resolved against the hook's cwd), `cat <<< "$(cat /root/x)"`, and `<resolver> && cat "/root/x"` are all BLOCKED
+- [x] Write-side: `printf x > "/root/x"` is BLOCKED
+- [x] Controls stay SAFE: a quoted commit message / echo argument mentioning an outside path, in-project relative and absolute paths, `/tmp`, `~/.claude` (`/root/.claude`), read-side allowlist (`/etc`, `/usr`), the sanctioned `fw termlink dispatch --project /opt/other` route, and the absolute-path `fw review credential <id> --source <registered file>` resolver form
+- [x] Regression bats `tests/unit/t3768_boundary_quoted_read_paths.bats` covers every probe in docs/reports/T-3766-review-codex-r4.md plus the controls, fails without the fix and passes with it; neighbouring boundary suites stay green
+- [x] `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,34 +263,11 @@ Port 055's kill-by-name Tier 0 fix (pickup P-006) into agents/context/check-tier
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-timeout 300 bats tests/unit/t3640_tier0_kill_by_name.bats > /tmp/.t3640.out 2>&1 && ! grep -q "^not ok" /tmp/.t3640.out
-test "$(grep -c '# skip' /tmp/.t3640.out)" -eq 0
-timeout 600 bats tests/unit/check_tier0_comment_stripping.bats tests/unit/tier0_scope_boundary.bats tests/unit/tier0_idempotency.bats > /tmp/.t3640b.out 2>&1 && ! grep -q "^not ok" /tmp/.t3640b.out
+
+timeout 600 bats tests/unit/t3768_boundary_quoted_read_paths.bats > /tmp/.t3768-a.out 2>&1 && ! grep -q "^not ok" /tmp/.t3768-a.out
+test "$(grep -c '# skip' /tmp/.t3768-a.out)" -eq 0
+timeout 900 bats tests/unit/check_project_boundary.bats tests/unit/t2920_boundary_heredoc_strip_order.bats tests/unit/t3076_boundary_termlink_segment_scope.bats tests/unit/t4114_boundary_tee_options.bats tests/unit/t4126_boundary_write_verbs.bats tests/unit/t4149_boundary_parser_differential.bats tests/unit/test_boundary_hook_arguments.bats tests/unit/t3766_review_credential.bats > /tmp/.t3768-b.out 2>&1 && ! grep -q "^not ok" /tmp/.t3768-b.out
 bin/fw vendor self --check
-
-## RCA
-
-<!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
-     fix/bug/rca/broken/crash/error/regression/fail/hotfix).
-     Non-bug-class tasks may leave this section empty or remove it.
-
-     For bug-class, fill in:
-       **Symptom:** what was observed (the user-facing manifestation).
-       **Root cause:** the specific structural/logical gap — not "the code was wrong".
-       **Why structurally allowed:** what in the framework/code/tooling let this go undetected.
-       **Prevention:** what catches the next instance (test/lint/gate/doc/learning) — distinct from the fix itself.
-
-     The completion gate (T-1550, G-019) blocks --status work-completed when
-     bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
--->
-
-**Symptom:** In 055 a dispatched worker ran `pkill -KILL -f 'sleep|trap'`. The Tier 0 hook let it through, and it SIGKILLed every process on the host whose command line matched sleep or trap, a live fleet agent's session among them.
-
-**Root cause:** agents/context/check-tier0.sh had one kill rule, `r'\bpkill\s+-9\b'` (check-tier0.sh:319 before the fix, in the "Destructive file operations" block). It matched one spelling of one signal for one tool. Every other SIGKILL spelling (-KILL, -SIGKILL, -s 9, --signal=KILL) got through, and so did pkill -f, which is the real blast-radius multiplier: it matches the full command line of every process, so any signal hits unrelated processes. killall was absent from the fast-path prefilter (check-tier0.sh:134), so killall -r never reached the Python match at all.
-
-**Why structurally allowed:** Tier 0 is a denylist of command shapes, and this entry was written as one literal command (`pkill -9`) instead of the property behind it (kill by name with SIGKILL, or kill by pattern match). No test exercised a kill command, so the gap was invisible: every Tier 0 block on record came from a typed git/rm command (CLAUDE.md §Enforcement Tiers, T-2742 note).
-
-**Prevention:** tests/unit/t3640_tier0_kill_by_name.bats pins each SIGKILL spelling, -f/--full (clustered too) and killall -r/--regexp as blocks, plus the controls that must stay allowed (kill <pid>, kill -9 <pid>, plain pkill <name>, pgrep -f, a grep for the word). Each rule is written against the option property, not one spelling.
 
 ## Evolution
 
@@ -342,6 +292,22 @@ bin/fw vendor self --check
      section exists but is empty/template-only. Use --skip-evolution to bypass
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
+
+## RCA
+
+**Symptom:** The project-boundary hook said SAFE for outside-path reads spelled in any way other than one bare token. Examples: `cat "/root/x"`, `cat '/root/x'`, `cat /roo\t/x`, `cat ../../root/x`, `cat <<< "$(cat /root/x)"`, `true && cat "/root/x"`, `cat ~/x`, `cat "$HOME/x"`. Plain `cat /root/x` was blocked. Codex round 4 on T-3766 found this (docs/reports/T-3766-review-codex-r4.md). Reproduced on 2026-10-17 with .context/scratch/t3768-probe.sh. The write probe `printf x > "/root/x"` was already blocked by T-4149's Pattern 5.
+
+**Root cause:** Pattern 4, the read-side check (`agents/context/check-project-boundary.sh`, `_tok_iter` and the loop that follows it), runs on the output of `_strip_quoted` (:190). That function blanks every quoted word on purpose, so commit messages don't false-positive (T-1361). Pattern 4 then splits on whitespace and tests the raw token for a leading `/`. As a result:
+- a quoted path is never seen;
+- an escaped path keeps its backslash;
+- a relative `..` path never starts with `/`, and no cwd is applied;
+- a `$(...)` inside a quoted here-string is blanked along with the quotes.
+
+T-4149 had already moved the WRITE side onto a bash-style tokeniser (`lib/shell_write_scan.py`, Pattern 5), but the READ side was left on the quote-blanked view.
+
+**Why structurally allowed:** Two concerns share one view of the command. Quote-blanking is the right view for "is this a prose mention?" and the wrong one for "which file does this word name?". Every boundary test drove the bare spelling, or a quoted one only in the false-positive direction. Nothing compared the read classifier's reading with bash's reading. That is the same parser-differential class T-4149 closed for writes.
+
+**Prevention:** Pattern 4b runs Pattern 4's predicate (now `_read_outside`) over `shell_write_scan.scan_boundary_reads`. That scanner removes quotes and escapes, resolves `..` against the cd-tracked cwd, expands `~`/`$HOME` and braces, and reads the bodies of `$(...)`/backticks/here-strings/unquoted heredocs/`sh -c`. The TermLink and credential exemptions are applied by blanking the raw text, never by skipping the pass. tests/unit/t3768_boundary_quoted_read_paths.bats pins every round-4 probe plus the controls. It fails 8/14 at HEAD and passes 14/14 with the fix.
 
 ## Recommendation
 
@@ -383,6 +349,11 @@ bin/fw vendor self --check
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-17 — which words the read pass judges
+- **Chose:** Judge a dequoted word as a path only when it is absolute, `~`/`$HOME`-led, the value of an `--opt=VALUE` option, or relative with a `..` component (resolved against the cd-tracked cwd). Use normpath, not realpath.
+- **Why:** A quoted message is one word that does not start with `/`, so commit messages and echo prose stay SAFE. A relative word with no `..` stays under the cwd, so sed scripts and regexes cost nothing. normpath keeps Pattern 4's name-based judgement and does not newly block in-project symlinks that point outside.
+- **Rejected:** (a) Dropping `_strip_quoted` from Pattern 4. That would re-open every T-1361 false positive on prose. (b) Blocking any command that contains a `$(...)`. The bodies are scanned as commands instead, which is just as conservative for paths and far less noisy. Accepted cost: a word that IS an outside path now blocks even when quoted as data (`echo "/root/x"`), the same as its unquoted spelling always did.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -395,10 +366,22 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-01T13:18:43Z — task-created [task-create-agent]
+### 2026-10-03T12:31:38Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3640-priority-tier-0-check-tier0sh-blocks-onl.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3768-project-boundary-gate-bypassed-by-quoted.md
 - **Context:** Initial task creation
 
-### 2026-10-17T21:18:20Z — status-update [task-update-agent]
+### 2026-10-17T21:18:18Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6bd70f59
+- **Timestamp:** 2026-10-17T22:16:20Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-17T22:13:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

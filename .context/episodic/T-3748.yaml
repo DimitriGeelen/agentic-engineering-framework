@@ -1,0 +1,76 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3748: Upstream 055's local patches: the Tier 0 hook blocks kill-by-name (pkill -f, any SIGKILL spelling, killall -r) (055 T-346); safe-commands _fw_is_git_commit_clause admits the framework's own fw git commit launcher paths (055 T-367)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T22:13:26Z
+# ============================================================================
+
+task_id: T-3748
+task_name: "Upstream 055's local patches: the Tier 0 hook blocks kill-by-name (pkill -f, any SIGKILL spelling, killall -r) (055 T-346); safe-commands _fw_is_git_commit_clause admits the framework's own fw git commit launcher paths (055 T-367)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-02T19:58:48Z
+completed: 2026-10-17T22:09:12Z
+duration_days: 15
+updates_count: 2
+first_commit: 2026-10-17T23:40:41+02:00
+last_commit: 2026-10-17T23:40:41+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  record 055 patch outcomes — T-346 adopted via T-3640 (fd8bb60da); T-367 declined, already admitted more strictly by T-3814/T-4108/T-4204
+
+# Key outcomes
+outcomes:
+  - '055 T-346 (kill-by-name) reproduced at HEAD and adopted, with regression tests (T-3640, fd8bb60da, tests/unit/t3640_tier0_kill_by_name.bats green)'
+  - '055 T-367 (fw git commit launcher allowance) reproduced at HEAD; declined with reason: already admitted by T-3814/T-4108/T-4203/T-4204, which are stricter than the 055 patch and already have tests'
+  - 'Each outcome is recorded with its reason in the Patch outcomes table above'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3748-upstream-055s-local-patches-the-tier-0-h.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T23:40:41'
+    action: 'T-3748: record 055 patch outcomes — T-346 adopted via T-3640 (fd8bb60da); T-367 declined, already admitted more strictly by T-3814/T-4108/T-4204'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 21730 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [gates, 055-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 21730
+  commits: 1
+  files_changed: 1
+  lines_added: 21
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3748-upstream-055s-local-patches-the-tier-0-h.md
+generated_by: context-agent-hybrid

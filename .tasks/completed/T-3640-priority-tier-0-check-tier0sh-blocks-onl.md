@@ -1,24 +1,31 @@
 ---
-id: T-3794
-name: "Pre-push unit-suite ratchet passes on an INCOMPLETE run: an interrupted run
-  (2 of 993 files) let ~60 commits push at 08:18Z with 18 known reds undetermined
-  — an incomplete run must FAIL the ratchet (could-not-determine), not grade only
-  the files that ran"
+id: T-3640
+name: "PRIORITY Tier 0: check-tier0.sh blocks only 'pkill -9' — every other SIGKILL
+  spelling and pkill -f/killall -r pass (055 P-006)"
 description: >
-  2026-10-04: a dispatched worker started agents/audit/unit-suite.sh and it was interrupted
-  after 2 of 730 bats files; LATEST.yaml then held that run. The pre-push ratchet
-  graded only the reds in files that ran (0 new) and git push origin bleeding-edge
-  succeeded at 10:18 local, while the previous complete run had 18 NEW reds. The audit
-  Evidence line even says 'not determined, not green' yet the grade was PASS. Fix:
-  an incomplete run grades FAIL at pre-push (or falls back to the last complete run);
-  test with a fixture report.
+  PRIORITY — Tier 0 hole, port first. Source: 055-agentic-fleet-cockpit pickup P-006,
+  framework:pickup offset 237 (055 task 346). A dispatched worker ran `pkill -KILL
+  -f 'sleep|trap'`; agents/context/check-tier0.sh let it through because the only
+  kill rule is r'\bpkill\s+-9\b' (still the only rule at bleeding-edge HEAD, check-tier0.sh:301;
+  same at v1.7.0:174). It SIGKILLed every host process matching sleep/trap, including
+  a live fleet agent's session. 055's vendored fix (not ours to copy blind, port and
+  test here): prefilter gains killall; replace the pkill -9 rule with (1) any SIGKILL
+  spelling for pkill/killall (-9, -KILL, -SIGKILL, -s 9|KILL|SIGKILL, --signal[= ]...),
+  (2) any pkill -f/--full incl. clustered (-ef), (3) killall -r/--regexp; each message
+  names the safe alternative (kill the PID/pgid you started). Must stay allowed: kill
+  <pid>, kill -9 <pid>, kill -TERM -<pgid>, plain pkill <name>, pgrep, words inside
+  quoted text. strip_quotes runs before matching, so judge the command SHAPE, not
+  the -f pattern. Tests must run the real hook with PROJECT_ROOT in a tempdir (every
+  block writes .tier0-approval.pending). Related suggestion: dispatch preamble line
+  'kill by PID, never by name'. Triage: T-3639 (docs/reports/T-3639-055-fix-triage.md).
+  Ships to 055 only at the next release cut.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: []
-components: []
+horizon: null
+tags: [bug, 055, upstream]
+components: [agents/context/check-tier0.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -46,9 +53,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-04T09:06:07Z
-last_update: 2026-10-17T21:28:32Z
-date_finished:
+created: 2026-10-01T13:18:43Z
+last_update: 2026-10-17T22:04:52Z
+date_finished: 2026-10-17T22:04:52Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -60,7 +67,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-04T09:15:22Z'
+  - ts: '2026-10-01T13:30:22Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -70,7 +77,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-04T09:15:44Z'
+  - ts: '2026-10-01T13:30:36Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -87,24 +94,43 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-17T21:30:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 1
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=1 
+      (body/components:component-fabric-incidental)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-3794: Pre-push unit-suite ratchet passes on an INCOMPLETE run: an interrupted run (2 of 993 files) let ~60 commits push at 08:18Z with 18 known reds undetermined — an incomplete run must FAIL the ratchet (could-not-determine), not grade only the files that ran
+# T-3640: PRIORITY Tier 0: check-tier0.sh blocks only 'pkill -9' — every other SIGKILL spelling and pkill -f/killall -r pass (055 P-006)
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Port 055's kill-by-name Tier 0 fix (pickup P-006) into agents/context/check-tier0.sh, with tests here. Triage: docs/reports/T-3639-055-fix-triage.md.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] At pre-push scope (`--section structure`), a LATEST report that is grossly incomplete (interrupted, run ceiling hit, files never reached, files unaccounted for, or per-file timeouts above max(10, 5% of files)) is NOT graded on its own: the check grades the last COMPLETE run instead (LAST-COMPLETE.yaml, else the newest complete dated sibling) and names that run in the line
-- [x] Reds RECORDED by the incomplete LATEST are still graded (unioned with the fallback's reds) — a recorded `not ok` stays a verdict (T-3602)
-- [x] At pre-push, an incomplete LATEST with no complete run on record FAILs "COULD NOT DETERMINE" (blocks the push), instead of the old non-blocking WARN
-- [x] A complete run with a few per-file timeouts (the known T-3801/T-3083 condition, within the threshold) is graded as before — no fallback, no new FAIL
-- [x] `agents/audit/unit-suite.sh` writes `LAST-COMPLETE.yaml` beside LATEST.yaml when its run was not interrupted, did not hit the run ceiling, and reached every file
-- [x] Regression bats `tests/unit/t3794_unit_suite_incomplete_prepush.bats` with fixture reports (complete, interrupted, partially timed-out, no fallback) passes; it fails against the pre-fix audit.sh; existing t3621/t3602/t3302/t3650/t4058 suites still pass
+- [x] The hook blocks (exit 2) every SIGKILL spelling for pkill and killall: -9, -KILL, -SIGKILL (any case), -s 9|KILL|SIGKILL, -s9, --signal[= ]9|KILL|SIGKILL (abbreviations of --signal included)
+- [x] The hook blocks any pkill -f / --full, clustered (-ef, -fx) included, whatever the signal; and killall -r / --regexp, clustered included
+- [x] killall reaches the detailed match (the fast-path prefilter names it)
+- [x] Each of the three rules has its own block message naming what it matched and the safe alternative (kill the PID / process group you started)
+- [x] Still allowed (exit 0): kill <pid>, kill -9 <pid>, kill -TERM -<pgid>, pkill <name>, pkill -TERM <name>, pgrep -f <pat>, killall <name>, grep -rn pkill <dir>, the words inside quoted text
+- [x] Regression test tests/unit/t3640_tier0_kill_by_name.bats runs the real hook with PROJECT_ROOT in a tempdir; its block cases fail on the pre-fix hook
+- [x] Existing Tier 0 hook suites still pass; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -264,21 +290,12 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-timeout 600 bats tests/unit/t3794_unit_suite_incomplete_prepush.bats > /tmp/.t3794.out 2>&1 && ! grep -q "^not ok" /tmp/.t3794.out
-test "$(grep -c '# skip' /tmp/.t3794.out)" -eq 0
-timeout 900 bats tests/unit/t3621_unit_suite_ratchet.bats tests/unit/t3602_unit_suite_partial_run.bats tests/unit/t3650_unit_suite_label_suite_dir.bats > /tmp/.t3794b.out 2>&1 && ! grep -q "^not ok" /tmp/.t3794b.out
-bash -n agents/audit/audit.sh && bash -n agents/audit/unit-suite.sh
+timeout 300 bats tests/unit/t3640_tier0_kill_by_name.bats > /tmp/.t3640.out 2>&1 && ! grep -q "^not ok" /tmp/.t3640.out
+test "$(grep -c '# skip' /tmp/.t3640.out)" -eq 0
+timeout 600 bats tests/unit/check_tier0_comment_stripping.bats tests/unit/tier0_scope_boundary.bats tests/unit/tier0_idempotency.bats > /tmp/.t3640b.out 2>&1 && ! grep -q "^not ok" /tmp/.t3640b.out
 bin/fw vendor self --check
 
 ## RCA
-
-**Symptom:** 2026-10-04 08:18Z, `git push origin bleeding-edge` (~60 commits) passed the pre-push unit-suite ratchet while LATEST.yaml held a run interrupted after 2 of 730 bats files; the previous complete run had 18 NEW reds. The audit evidence even said "not determined, not green", yet nothing blocked.
-
-**Root cause:** `agents/audit/audit.sh` `check_unit_suite_report` (the ratchet branch, ~line 3860-3885, and the no-red partial branch ~3897) grades whatever LATEST.yaml holds. For an incomplete run it grades only the reds in the files that ran: 0 new → WARN ("BASELINED red(s)" or "COULD NOT DETERMINE"). WARN does not block pre-push, so an incomplete report was, in effect, a PASS. The runner (`agents/audit/unit-suite.sh` `_finish`, signal trap) correctly writes the partial report over LATEST — and nothing kept the last complete one to grade instead.
-
-**Why structurally allowed:** T-3602 designed the partial-run grade for the nightly report, where WARN is an honest "unknown". T-3621 then made the same check a blocking gate at pre-push, but kept WARN for "unknown" — and at a gate, WARN is a pass. Tests covered partial runs with reds (T-3602) and the ratchet on complete runs (T-3621), never an interrupted run at pre-push scope.
-
-**Prevention:** at pre-push an incomplete LATEST falls back to the last complete run (runner now writes LAST-COMPLETE.yaml) and FAILs when none exists; pinned by `tests/unit/t3794_unit_suite_incomplete_prepush.bats` (interrupted, ceiling, not-reached, per-file-timeout-within-threshold, no-fallback fixtures).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -293,6 +310,14 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** In 055 a dispatched worker ran `pkill -KILL -f 'sleep|trap'`. The Tier 0 hook let it through, and it SIGKILLed every process on the host whose command line matched sleep or trap, a live fleet agent's session among them.
+
+**Root cause:** agents/context/check-tier0.sh had one kill rule, `r'\bpkill\s+-9\b'` (check-tier0.sh:319 before the fix, in the "Destructive file operations" block). It matched one spelling of one signal for one tool. Every other SIGKILL spelling (-KILL, -SIGKILL, -s 9, --signal=KILL) got through, and so did pkill -f, which is the real blast-radius multiplier: it matches the full command line of every process, so any signal hits unrelated processes. killall was absent from the fast-path prefilter (check-tier0.sh:134), so killall -r never reached the Python match at all.
+
+**Why structurally allowed:** Tier 0 is a denylist of command shapes, and this entry was written as one literal command (`pkill -9`) instead of the property behind it (kill by name with SIGKILL, or kill by pattern match). No test exercised a kill command, so the gap was invisible: every Tier 0 block on record came from a typed git/rm command (CLAUDE.md §Enforcement Tiers, T-2742 note).
+
+**Prevention:** tests/unit/t3640_tier0_kill_by_name.bats pins each SIGKILL spelling, -f/--full (clustered too) and killall -r/--regexp as blocks, plus the controls that must stay allowed (kill <pid>, kill -9 <pid>, plain pkill <name>, pgrep -f, a grep for the word). Each rule is written against the option property, not one spelling.
 
 ## Evolution
 
@@ -358,16 +383,6 @@ bin/fw vendor self --check
      - **Rejected:** [alternatives and why not]
 -->
 
-### 2026-10-17 — incomplete LATEST at pre-push: fall back, else FAIL
-- **Chose:** grade the last complete run (LAST-COMPLETE.yaml, else newest complete dated sibling), union in the reds the incomplete LATEST did record, and name the graded run; FAIL "could not determine" only when no complete run exists. Pre-push scope only; other scopes keep T-3602 grading (they already FAIL on any red and are not push gates).
-- **Why:** a FAIL on every interrupted run would block pushes for the day a dispatched worker kills a run by hand; the last complete run is real evidence and the reds LATEST recorded are verdicts (T-3602). Unioning keeps a fresh red from hiding behind an older green.
-- **Rejected:** FAIL-only (blocks for reasons unrelated to the push); grading LATEST's reds only (the bug).
-
-### 2026-10-17 — what counts as "incomplete"
-- **Chose:** incomplete = `interrupted`, or `timed_out` (run ceiling), or `files_not_run > 0`, or files unaccounted for (`files_completed` + per-file timeouts < `files`), or per-file timeouts > max(10, 5% of the leg's files).
-- **Why:** per-file 900 s timeouts are a known, standing condition (T-3801/T-3083): 8 of 814 bats files on 2026-10-17 (~1%). They are named in every grade already and must not turn every push red. A floor of 10 keeps small corpora from tripping on one slow file; 5% is ~5x today's count, so it only trips on a systemic slowdown (host overload), where the run genuinely measured little.
-- **Rejected:** zero tolerance (every nightly run would fall back/FAIL); a ratio alone (one slow file in a 12-file fixture corpus = 8%).
-
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -380,10 +395,22 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-04T09:06:07Z — task-created [task-create-agent]
+### 2026-10-01T13:18:43Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3794-pre-push-unit-suite-ratchet-passes-on-an.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3640-priority-tier-0-check-tier0sh-blocks-onl.md
 - **Context:** Initial task creation
 
-### 2026-10-17T21:18:25Z — status-update [task-update-agent]
+### 2026-10-17T21:18:20Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d17ee816
+- **Timestamp:** 2026-10-17T22:08:41Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-17T22:04:52Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
