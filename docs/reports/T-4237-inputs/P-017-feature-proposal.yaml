@@ -1,0 +1,147 @@
+pickup_id: P-017
+version: 1
+type: feature-proposal
+source:
+  project: dimitri-mint-dev
+  task_id: T-118
+  agent: claude-code
+  timestamp: '2026-10-17T13:40:25Z'
+payload:
+  summary: 'Greenfield onboarding review: 20 claims checked vs fw v1.8.10, 4 blockers
+    (boundary vs findings root, ungoverned pre-restart session, PEP 668 Watchtower
+    deps, inception start flags) + 8 onboarding proposals'
+  detail: "Companion to P-016 (v2 prompt). Full review report follows verbatim. Includes\
+    \ framework-side findings for you (proposals, unratified): installer/doctor do\
+    \ not check PyYAML or the Watchtower stack and the pip hint fails under PEP 668;\
+    \ Watchtower binds 0.0.0.0 without auth by default; no restart banner after fw\
+    \ init --provider claude; fw work-on --help treats --help as a task name; CLAUDE.md\
+    \ says bin/fw but vendored consumers have .agentic-framework/bin/fw; Watchtower\
+    \ inception decide left a stale .git/index.lock in dimitri-mint-dev on 2026-10-17\
+    \ 15:16:49 (decide commit 6c50ae7 completed at 15:17:42, lock remained, no holder;\
+    \ we removed it). NOTE: our earlier pickup to your old session id tl-zalfqzng\
+    \ failed because that session is gone; fw pickup send then left the envelope in\
+    \ OUR inbox again (the T-113 / P-013 trap, second occurrence).\n=====BEGIN T-118-greenfield-prompt-review.md=====\n\
+    # T-118 — Review of \"AEF Greenfield Install — Instrumented Run\" (operator prompt,\
+    \ 2026-10-17)\n\n**Method:**\n- Every command and claim in the prompt was checked\
+    \ against the vendored `fw v1.8.10` on dimitri-mint-dev (Linux Mint\n  22.3, Python\
+    \ 3.12.3).\n- `install.sh` was fetched read-only from the URL the prompt uses\
+    \ (master, 22,252 bytes, 2026-10-17).\n- Today's real gate encounters in this\
+    \ project are evidence of what a first-time agent will hit.\n- Not run: an actual\
+    \ greenfield install. Items marked *unverified* need that run.\n\n**Corrected\
+    \ prompt:** `docs/proposals/aef-greenfield-install-prompt-v2.md`.\n\n## Verdict\n\
+    \nA strong prompt. Things to keep exactly:\n- the two mandates;\n- the observation-before-interpretation\
+    \ field order;\n- \"the workaround is the finding\";\n- producer-not-judge;\n\
+    - local-first records with transport separate;\n- verify-after-publish.\n\nIts\
+    \ weakness: **it never meets the framework it installs.** The moment `fw init`\
+    \ lands, the framework's own gates\n(project boundary, task gate, inception and\
+    \ AC gates) apply to the agent running the prompt. Several steps as written\n\
+    are blocked by them. On a stock Ubuntu 24.04 / Mint 22 host, Watchtower cannot\
+    \ start without an undocumented\ndependency step.\n\n## Claims checked\n\n| #\
+    \ | Prompt claim / command | Result | Evidence |\n|---|---|---|---|\n| 1 | `curl\
+    \ … install.sh \\| bash -s -- <dir> --provider <choice>` | **verified** | install.sh:\
+    \ `[target-dir]`, `--provider claude\\|cursor\\|generic` |\n| 2 | Default provider\
+    \ | prompt silent; **default is `generic`** | install.sh `PROVIDER=\"${PROVIDER:-generic}\"\
+    ` — forgetting `--provider claude` silently gives no hooks |\n| 3 | Nothing in\
+    \ `$HOME` beyond `fw`, `claude-fw` | **verified (by design)** | install.sh header\
+    \ D-377: only `$HOME/.local/bin/{fw,claude-fw}` |\n| 4 | Installer touches only\
+    \ `<dir>` | **mostly**: also *reads* `/opt` (vendored-consumer scan, list only)\
+    \ | `FW_CONSUMER_SCAN_DIRS=/opt`, `--no-scan` to skip |\n| 5 | Prereqs bash 4.4\
+    \ / git 2.20 / python3 3.8 | **verified**, the installer checks these itself |\
+    \ install.sh lines 136-161 |\n| 6 | Python libraries | **missing from prompt and\
+    \ installer** | `import yaml` in 100 framework files; Watchtower needs Flask,\
+    \ gunicorn, ruamel.yaml, markdown2, bleach, … (`web/requirements.txt`) |\n| 7\
+    \ | `fw --version` | **verified** | prints `fw v1.8.10` |\n| 8 | `fw git install-hooks\
+    \ --force` | **verified** | `-f, --force` |\n| 9 | `fw serve &` then `fw watchtower\
+    \ url` | **works but is the wrong verb** | `fw watchtower start` manages the pid/port/url\
+    \ triple and `status`; `&` in an agent shell is fragile |\n| 10 | Watchtower \"\
+    does not auto-start\" | consistent with `fw watchtower` | — |\n| 11 | Watchtower\
+    \ exposure | **prompt silent** | binds `FW_HOST` default **0.0.0.0** (all interfaces),\
+    \ no authentication (this project T-095) |\n| 12 | `fw inception start \"<x>\"\
+    ` | **fails as written under Claude Code** | refused: \"--recommendation and --rationale\
+    \ required when filing under $CLAUDECODE=1\" (hit today, T-116) |\n| 13 | Inception,\
+    \ first edit | **blocked until an IW-N open question exists** | G-067 gate (hit\
+    \ today, T-116) |\n| 14 | `fw work-on \"<first task>\" --type build` | works,\
+    \ then **first edit blocked** | creates placeholder ACs, so the G-020 gate refuses\
+    \ source edits until real ACs exist (hit today, T-104) |\n| 15 | \"every destructive\
+    \ command waits for my approval\" | **overclaim** | Tier 0 covers a listed set\
+    \ (force push, hard reset, `rm -rf /`, DROP TABLE), not every destructive command\
+    \ |\n| 16 | TermLink publishing | **not installed by the installer** | install.sh\
+    \ has 0 mentions of termlink; hub address and topic syntax unspecified |\n| 17\
+    \ | Findings root `~/.aef-findings/$RUN/` | **blocked after install** | project-boundary\
+    \ hook (T-559) allows writes only to the project, `/tmp/**` and `/root/.claude/**`\
+    \ (hit today repeatedly) |\n| 18 | Agent picks up the framework mid-session |\
+    \ **unverified, likely false** | Claude Code reads CLAUDE.md and hook settings\
+    \ at session start; a session started before `fw init` runs ungoverned until restarted\
+    \ |\n| 19 | \"fw\" on PATH in later commands | fragile | agent Bash calls do not\
+    \ keep shell state; use an absolute path (`<dir>/.agentic-framework/bin/fw`) |\n\
+    | 20 | \"discover verbs with `fw <area> --help`\" | **fails for `work-on`** |\
+    \ `fw work-on --help` treats `--help` as a task name (\"Missing required flag(s):\
+    \ --type\"); no task was created. Flags (from source): `--name --description --type\
+    \ --owner --start --status --recommendation --rationale --switch-focus --i-am-human`.\
+    \ Framework finding for AEF |\n\n## Defects (fixed in v2)\n\n**Blockers**\n- **B1\
+    \ — Findings root vs project boundary** (#17). After STEP 2 the agent cannot write\
+    \ `~/.aef-findings`. The task\n  gate also blocks in-project writes until a task\
+    \ is active.\n  *v2:* stage in `/tmp/aef-findings/$RUN/` (allowed zone, survives\
+    \ a failed install); after init, create an\n  onboarding task and move the record\
+    \ into `<dir>/.context/install-findings/$RUN/`.\n- **B2 — Ungoverned session**\
+    \ (#18). Hooks and CLAUDE.md load at session start.\n  *v2:* new STEP 3b, a restart\
+    \ in `<dir>` with `claude-fw`, resumed from the on-disk record. The restart itself\
+    \ is\n  observed as a finding.\n- **B3 — Python dependencies** (#6). On Ubuntu\
+    \ 24.04 / Mint 22 / Debian 12 the Watchtower hint\n  `pip install flask pyyaml\
+    \ …` fails with *externally-managed-environment* (PEP 668).\n  *v2:* STEP 1 checks\
+    \ `import yaml` and `import flask`, and asks before installing (apt packages or\
+    \ a venv). Any\n  path needed is a finding.\n- **B4 — \"Explore first\" command**\
+    \ (#12, #13). *v2:* full form with `--recommendation`/`--rationale`, plus the\
+    \ IW-N\n  question.\n\n**Degraded / friction**\n- **D1 — `fw work-on` placeholder\
+    \ ACs** (#14). *v2:* write real ACs + Verification before the first edit.\n- **D2\
+    \ — Watchtower verb and exposure** (#9, #11). *v2:* `fw watchtower start`; [ASK]\
+    \ bind\n  `FW_HOST=127.0.0.1` vs LAN.\n- **D3 — TermLink assumed** (#16). *v2:*\
+    \ STEP 6 starts with \"is `termlink` installed and is a hub configured?\";\n \
+    \ the degraded path is first-class.\n- **D4 — Provider default** (#2). *v2:* states\
+    \ that the default is `generic`.\n- **D5 — `fw` not on PATH between calls** (#19).\
+    \ *v2:* absolute path throughout.\n- **D6 — Transcript of every command's full\
+    \ output.** Impractical for an LLM agent (context cost, discipline), and\n  Claude\
+    \ Code already keeps a full JSONL transcript. *v2:* log `command · exit · output\
+    \ file` per command; record the\n  session transcript path in `run.yaml`.\n- **D7\
+    \ — Context budget.** A long instrumented run can hit the budget restart (today's\
+    \ incident, T-104). *v2:*\n  commit or flush the record after each step; resume\
+    \ from files.\n- **D8 — Missing handover.** The framework requires `fw handover`\
+    \ at session end. *v2:* STEP 7.\n- **D9 — Fingerprint has no recipe.** *v2:* normalisation\
+    \ rule.\n- **D10 — \"Never work around a gate\" vs \"self-heal\".** *v2:* defines\
+    \ a gate (framework enforcement) vs an\n  environment fix.\n- **D11 — No starting\
+    \ directory given.** *v2:* starts in the parent of `<dir>`.\n- **D12 — Overclaim\
+    \ on approvals** (#15). *v2:* reworded.\n- **D13 — Owner of onboarding tasks.**\
+    \ A human-owned task with 0 Human ACs cannot be closed by the agent, and its\n\
+    \  review page has no button (AEF T-4199). *v2:* create onboarding tasks with\
+    \ `--owner agent`.\n- **D14 — macOS bash.** `curl … | bash` resolves `bash` via\
+    \ PATH; with Homebrew bash installed but `/bin` first,\n  bash 3.2 runs the installer\
+    \ and it aborts. *v2:* pipe to the confirmed bash (`| \"$BASH4\" -s --`).\n\n\
+    ## Onboarding improvements (framework side, proposals for AEF)\n\n1. **Dependency\
+    \ check and install path.** The installer and `fw doctor` should check PyYAML\
+    \ (hard) and the Watchtower\n   stack (soft), with a hint that works under PEP\
+    \ 668 (apt names or a project venv that `fw` then uses).\n   Highest impact: Watchtower\
+    \ is the first thing a new user is told to open.\n2. **Safe Watchtower default.**\
+    \ Bind 127.0.0.1 on first run, or ask; LAN exposure without auth should be an\n\
+    \   explicit choice (cf. T-095).\n3. **Restart banner after `fw init --provider\
+    \ claude`:** \"Restart Claude Code in `<dir>` with `claude-fw` —\n   governance\
+    \ is not active in this session.\"\n4. **Gate messages that carry the full next\
+    \ command.** Example: the inception `$CLAUDECODE` refusal prints a\n   ready-to-fill\
+    \ command; `fw work-on` warns up front that ACs must be real before edits.\n5.\
+    \ **An onboarding task template** (e.g. `fw work-on --onboarding`) with real ACs,\
+    \ so a newcomer's first gate\n   encounter is guided.\n6. **Doc consistency:**\
+    \ CLAUDE.md says \"use `bin/fw`\", but in a vendored consumer the path is\n  \
+    \ `.agentic-framework/bin/fw` (no `bin/fw` exists here).\n7. **First-run defects\
+    \ a greenfield user will meet** (all hit in this project in the last days):\n\
+    \   - silent local `fw pickup send` (T-113);\n   - review page with no control\
+    \ (T-114 / AEF T-4199);\n   - stale `.git/index.lock` after a Watchtower decide\
+    \ (T-117, 2026-10-17, unreported);\n   - budget restart without warning (T-105/T-106);\n\
+    \   - text-gate false positives on backticks and inline python.\n8. **TermLink:**\
+    \ document it as optional, with an install pointer, or ship `fw` with a non-TermLink\
+    \ transport for\n   findings (`fw upstream report` already exists for GitHub).\n\
+    =====END T-118-greenfield-prompt-review.md====="
+  priority: medium
+  tags:
+  - onboarding
+  - greenfield
+  - review
+  - install
