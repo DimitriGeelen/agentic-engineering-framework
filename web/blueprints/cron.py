@@ -134,6 +134,17 @@ import time as _time_mod
 _run_info_cache = {"data": None, "count": 0, "ts": 0}
 _RUN_INFO_CACHE_TTL = 60  # seconds
 
+# T-3799: per-file parse memo keyed on (mtime_ns, size) — the same fix as
+# lib/design_register.py (T-3920). The TTL cache above only short-circuits within
+# 60 s; past that every request used to re-parse all ~800 audit files (13-37 s).
+_SAFE_LOADER = getattr(yaml, "CSafeLoader", yaml.SafeLoader)
+_audit_memo: dict = {}  # Path -> ((mtime_ns, size), parsed document)
+
+
+def _read_audit_file(f: Path):
+    """Parse one cron audit file with the C loader when available."""
+    return yaml.load(f.read_text(), Loader=_SAFE_LOADER)
+
 
 def _last_run_info() -> dict:
     """Get last run info from cron audit output files.
@@ -158,10 +169,20 @@ def _last_run_info() -> dict:
             and (now - _run_info_cache["ts"]) < _RUN_INFO_CACHE_TTL):
         return _run_info_cache["data"]
 
+    live = set(files)
+    for stale in [p for p in _audit_memo if p not in live]:
+        del _audit_memo[stale]
+
     info = {}
     for f in files[:800]:
         try:
-            data = yaml.safe_load(f.read_text())
+            st = f.stat()
+            key = (st.st_mtime_ns, st.st_size)
+            hit = _audit_memo.get(f)
+            if hit is None or hit[0] != key:
+                hit = (key, _read_audit_file(f))
+                _audit_memo[f] = hit
+            data = hit[1]
             if not data:
                 continue
             sections = data.get("sections", "")

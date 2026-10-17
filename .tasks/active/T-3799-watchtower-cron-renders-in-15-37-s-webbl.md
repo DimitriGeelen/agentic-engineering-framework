@@ -12,7 +12,7 @@ description: >
   (4d1b4a80e: CSafeLoader, 22 s → 3.2 s, identical output). Fix: CSafeLoader when
   available, and/or read only the latest run per job instead of every audit file.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-04T09:27:51Z
-last_update: '2026-10-04T09:30:56Z'
+last_update: 2026-10-17T22:53:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,8 +98,21 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `_last_run_info` in `web/blueprints/cron.py` parses each `.context/audits/cron/*.yaml` at most once per (mtime_ns, size): a regression test calls it twice on a fixture dir and asserts the second call performs zero `yaml` loads
+- [x] A changed or new audit file is re-parsed on the next call (the memo is keyed on stat, not on file count), pinned by the same test file
+- [x] `_last_run_info` returns the same dict as the pre-fix implementation on the live corpus (one-off comparison against HEAD's cron.py, recorded in Updates; the regression test pins the output shape and newest-wins rule, not equality with HEAD)
+- [x] Flask test-client `GET /cron` with a warm memo takes under 2 s (measured before and after; both numbers in the task Updates)
+- [x] Live Watchtower `/cron` (URL from `bin/fw watchtower url`) warm takes under 2 s (measured before and after; both numbers in the task Updates)
+- [x] The new regression test fails against the pre-fix code and passes after the fix
+
+### Human
+- [ ] [REVIEW] /cron page renders with the same layout, job rows and last-run columns as before the change
+  **Steps:**
+  1. Run `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` and open the printed URL followed by `/cron` in a browser
+  2. Reload the page twice and confirm it appears within about 2 seconds
+  3. Compare the job table (names, schedules, last-run timestamps and pass/warn/fail counts) with a sample from before the change
+  **Expected:** The page looks and behaves as it did before: same layout, same rows, last-run info populated for jobs that have audit output, and loads quickly on reload
+  **If not:** Note the job row or column that differs and the load time, then reopen the task; the change will be reverted or adjusted
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -260,7 +273,19 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+out=$(python3 -m pytest tests/unit/test_cron_run_info_memo.py -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
+bin/fw vendor self --check
+bin/fw watchtower current
+
 ## RCA
+
+**Symptom:** Watchtower `/cron` takes 13-37 s per render (Flask test client 37.7 s, live server 13-15 s). `fw doctor`'s web smoke test times out on it.
+
+**Root cause:** `web/blueprints/cron.py:138` `_last_run_info` globs every `.context/audits/cron/20*.yaml` (838 files) and runs `yaml.safe_load` on up to 800 of them per call (805 loads, 24 s under the profiler). Its only cache is keyed on file count with a 60 s TTL (`_run_info_cache`), so every minute the next request re-parses the whole set, and it uses the pure-Python loader. Same class as `lib/design_register.py` (fixed by a per-file memo keyed on `(mtime_ns, size)` and CSafeLoader).
+
+**Why structurally allowed:** No test or gate measures render time of a web page. The file-count cache looked like caching but invalidates on every new audit file and on a timer, so the warm path is not warm. The fw doctor smoke test has a 5 s timeout that only surfaced the symptom.
+
+**Prevention:** Regression test `tests/unit/test_cron_run_info_memo.py` pins that a second call parses zero files and that a changed file is re-parsed (fails on the pre-fix code). The `bin/fw watchtower current` verification ensures the running server serves the fix; the timing numbers in Updates record before/after.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -356,3 +381,13 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3799-watchtower-cron-renders-in-15-37-s-webbl.md
 - **Context:** Initial task creation
+
+### 2026-10-17T22:53:17Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-18 — fix + measurements [worker w3799]
+- **Fix:** `web/blueprints/cron.py` `_last_run_info` keeps a per-file memo keyed on `(mtime_ns, size)` and parses with CSafeLoader; only new or changed audit files are re-parsed. Output identical to HEAD on the real corpus (`identical=True`).
+- **Before:** Flask test client `GET /cron` cold 17.13 s, warm (inside 60 s TTL) 0.15 s; `_last_run_info` cold 16.57 s, 800 `yaml.safe_load` calls. Live `/cron`: cold 18.8 s, warm 0.58 s.
+- **After:** Flask test client cold 2.48 s, warm 0.17 s, past TTL 0.22 s. `_last_run_info` cold 1.28 s, past TTL 0.014 s. Live `/cron` after restart: cold 3.09 s, warm 0.24 s, past 60 s TTL 0.27 s.
+- **Test:** `tests/unit/test_cron_run_info_memo.py` (3 tests). Against HEAD's cron.py: 2 failed (100 loads, expected 50 on cold and 1 on a changed file); with the fix: 3 passed.
+- **Open:** `bin/fw watchtower current` exits 1 because another worker's uncommitted `web/blueprints/core.py` postdates the restart. Needs `bin/fw watchtower restart` once that work lands.
