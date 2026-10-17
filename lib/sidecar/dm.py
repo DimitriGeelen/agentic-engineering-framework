@@ -88,6 +88,41 @@ def identity_fingerprint(*, runner=subprocess.run, timeout: int = 15) -> str | N
     return (data.get("session") or {}).get("identity_fingerprint")
 
 
+#: Env vars termlink consults, in precedence order, to pick a signing identity
+#: other than the host default (lib/rail-identity.sh, termlink PL-236).
+_IDENTITY_ENV = ("TERMLINK_IDENTITY_FILE", "TERMLINK_AGENT_ID", "TERMLINK_IDENTITY_DIR")
+
+
+def identity_is_host_shared(*, runner=subprocess.run, timeout: int = 15) -> bool:
+    """True when our resolved identity IS the host default, i.e. this project
+    has no identity of its own (T-4252).
+
+    DM rails are keyed by that fingerprint, so under the host default every
+    project on the machine reads the same rails: draining them marks other
+    projects' DMs read (198 lost in the 0909 greenfield run). The host default
+    is measured, not hard-coded: the fingerprint termlink reports with the
+    identity-selecting env stripped, compared with the one it reports as-is
+    (same idea as `lib/rail-identity.sh rail_identity_status`).
+
+    `FW_SIDECAR_IDENTITY_FP` is an explicit key, so it counts as our own.
+    Unresolvable returns False: no key means no rails, so there is nothing to
+    drain and nothing to protect.
+    """
+    if os.environ.get("FW_SIDECAR_IDENTITY_FP"):
+        return False
+    ours = identity_fingerprint(runner=runner, timeout=timeout)
+    if not ours:
+        return False
+    if not any(os.environ.get(k) for k in _IDENTITY_ENV):
+        return True
+    saved = {k: os.environ.pop(k) for k in _IDENTITY_ENV if k in os.environ}
+    try:
+        host = identity_fingerprint(runner=runner, timeout=timeout)
+    finally:
+        os.environ.update(saved)
+    return host == ours
+
+
 def default_lister(*, binary: str | None = None, timeout: int = 20) -> list[dict]:
     """Every `dm:*` topic on the hub: `{name, count, latest_offset, ...}`
     straight from `termlink channel list --prefix dm: --json` — one call
@@ -176,6 +211,9 @@ def pending(key: str | None = None, *, reader=inbox.default_reader,
     excluded from the returned list, matching what `termlink channel
     unread` itself counts as a post.
     """
+    if advance and key is None and identity_is_host_shared():
+        # T-4252: never consume rails every project on the host can see.
+        return []
     state = inbox.load_state()
     fresh = []
     for topic in rails_for_key(key, lister=lister):

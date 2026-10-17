@@ -1047,7 +1047,9 @@ while you work. At each yield point (before a Write/Edit, and before you
 finish), run:  fw sidecar inbox
 If it prints a consult, answer it with:
   fw sidecar send --to <from> --conversation <conversation_id> --body '<answer>'
-then continue your task. An empty inbox costs nothing; do not poll in a loop."
+then continue your task. An empty inbox costs nothing; do not poll in a loop.
+(Plain inbox drains only your own consults; dm rails are left unread unless this
+project has its own identity. To look without consuming: fw sidecar inbox --peek)"
     prompt="$_consult_stanza
 
 $prompt"

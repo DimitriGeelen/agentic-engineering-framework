@@ -21,6 +21,7 @@ RAIL = {"topic": "dm:aaaa:bbbb", "count": 4, "cursor": 3, "unread": 1}
 def _run(monkeypatch, capsys, *, peek, json_out, rails=(), posts=()):
     monkeypatch.setattr(sidecar_cli.dm, "summary", lambda *a, **k: list(rails))
     monkeypatch.setattr(sidecar_cli.dm, "pending", lambda *a, **k: list(posts))
+    monkeypatch.setattr(sidecar_cli.dm, "identity_is_host_shared", lambda *a, **k: False)
     monkeypatch.setattr(sidecar_cli.inbox, "inbox_topic", lambda *a, **k: "inbox:x")
     rc = sidecar_cli._print_inbox(Namespace(peek=peek, json=json_out), [])
     assert rc == 0

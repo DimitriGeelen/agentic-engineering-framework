@@ -267,6 +267,12 @@ If it prints a consult, answer it with
 `fw sidecar send --to <from> --conversation <conversation_id> --body '<answer>'`
 and continue. An empty inbox is one cheap command; do not poll in a loop.
 
+What the plain call drains (T-4252): your own consult topic, and the `dm:` rails only
+when the project has an identity of its own. In a project signing as the host-shared
+identity the dm rails belong to every project on the host, so `fw sidecar inbox`
+prints them as read-only summaries and moves no cursor (it says so on stderr). If you
+only want to look, `fw sidecar inbox --peek` never consumes anything.
+
 **How a consult reaches an interactive session.** Interactive sessions run hooks;
 workers (`--bare`) do not. A `UserPromptSubmit` hook (`fw hook sidecar-inbox`)
 *peeks* the inbox at the start of each human turn and surfaces pending consults as

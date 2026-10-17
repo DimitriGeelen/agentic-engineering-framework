@@ -304,18 +304,34 @@ DM_SCOPE_NOTE = ("dm rails are keyed by this host's TermLink identity, which eve
                  "on this host shares — a dm below may be meant for another project. Check the "
                  "sender and the conversation before acting on it.")
 
+#: T-4252: why a plain `fw sidecar inbox` showed dm rails as summaries instead of draining them.
+DM_SHARED_NOTE = ("this project has no TermLink identity of its own, so it is signing as the "
+                  "host-shared one and its dm rails are shared with every project on this host. "
+                  "Draining them would mark other projects' DMs read, so they are shown as "
+                  "summaries only and no cursor moved. Consults on this agent's own inbox topic "
+                  "are drained as usual.")
+
 
 def _print_inbox(args, messages) -> int:
     # T-3442: `--peek` shows DM rail SUMMARIES (count/cursor/unread, no hub
     # drain of content) — the same shape `fw sidecar status` prints. A
     # non-peek call actually drains unread DM posts (like the consult inbox
     # above) and advances each rail's cursor.
-    dm_rows = dm.summary() if args.peek else []
-    dm_posts = [] if args.peek else dm.pending(advance=True)
+    # T-4252: ...unless our identity is the host-shared one. Every project on
+    # the host sees those rails, so draining marks other projects' DMs read
+    # (198 lost). Read-only summaries, the same shape --peek already uses.
+    shared = False if args.peek else dm.identity_is_host_shared()
+    readonly = args.peek or shared
+    dm_rows = dm.summary() if readonly else []
+    dm_posts = [] if readonly else dm.pending(advance=True)
+    if shared and not args.json:
+        print(f"NOTE: {DM_SHARED_NOTE}", file=sys.stderr)
 
     if args.json:
         payload = {"consults": messages}
-        if args.peek:
+        if shared:
+            payload["dm_drain_refused"] = DM_SHARED_NOTE
+        if readonly:
             payload["dm_rails"] = dm_rows
         else:
             payload["dm_posts"] = dm_posts
@@ -337,7 +353,7 @@ def _print_inbox(args, messages) -> int:
     if dm_rows or dm_posts:
         print(f"NOTE: {DM_SCOPE_NOTE}")
         print()
-    if args.peek:
+    if readonly:
         for row in dm_rows:
             print(f"dm rail {_meta(row['topic'])}: count={row['count']} "
                   f"cursor={row['cursor']} unread={row['unread']}")

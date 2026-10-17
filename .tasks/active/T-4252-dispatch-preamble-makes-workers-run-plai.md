@@ -12,7 +12,7 @@ description: >
   call. Regression test: fresh project, shared identity with unread DMs, inbox leaves
   them unread.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:02:18Z
-last_update: '2026-10-17T15:16:15Z'
+last_update: 2026-10-17T16:52:24Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -98,8 +98,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `dm.pending(advance=True)` returns nothing and moves no cursor when the resolved identity is the host-shared one (new `dm.identity_is_host_shared`); `fw sidecar inbox` (non-peek) then shows the DM rails as read-only summaries with a message saying why
+- [x] With a project-own identity (resolved fingerprint differs from the host default) DM draining is unchanged
+- [x] Regression test `tests/unit/test_sidecar_dm_host_shared_t4252.py` fails without the fix and passes with it (fresh project dir, shared identity, unread DMs stay unread)
+- [x] `agents/dispatch/preamble.md` and the stanza in `agents/termlink/termlink.sh` state what the plain call drains and what it leaves alone
+- [x] Vendored copies in sync (`bin/fw vendor self --check` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -149,6 +152,10 @@ bvp_scores_proposed:
 
 ## Verification
 
+python3 -m pytest tests/unit/test_sidecar_dm_host_shared_t4252.py tests/unit/test_sidecar_dm.py tests/unit/test_sidecar_dm_scope_t3966.py -q > /tmp/.t4252.out 2>&1 && grep -q passed /tmp/.t4252.out && ! grep -q failed /tmp/.t4252.out
+grep -q "identity_is_host_shared" lib/sidecar_cli.py
+grep -q "host-shared" agents/dispatch/preamble.md
+bin/fw vendor self --check
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -280,6 +287,14 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** a dispatched worker in a project with no sidecar identity of its own ran the preamble's `fw sidecar inbox`; 198 DMs addressed to other projects were marked read (0909 greenfield run, F-20/F-21).
+
+**Root cause:** DM rails are keyed by the TermLink identity fingerprint, which is host-wide when the project has no identity of its own (`lib/sidecar/dm.py:rails_for_key` via `identity_fingerprint`). `cmd_inbox` non-peek calls `dm.pending(advance=True)` (`lib/sidecar_cli.py:313-314`), which drains and advances the cursor on every rail touching that shared fingerprint, whoever the DM was for. Nothing distinguished "own" from "host-shared" identity before draining.
+
+**Why structurally allowed:** T-3966 only added a NOTE saying dm rails are host-wide; it kept the drain. The preamble (`agents/dispatch/preamble.md:265`, stanza `agents/termlink/termlink.sh:1047`) prescribes the plain draining form to every worker, including ones in fresh projects.
+
+**Prevention:** `dm.identity_is_host_shared()` gates the drain (read-only summaries instead); regression test `tests/unit/test_sidecar_dm_host_shared_t4252.py`; preamble documents the behaviour.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -374,3 +389,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4252-dispatch-preamble-makes-workers-run-plai.md
 - **Context:** Initial task creation
+
+### 2026-10-17T16:52:24Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
