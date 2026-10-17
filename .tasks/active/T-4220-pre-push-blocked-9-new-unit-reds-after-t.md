@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T00:09:04Z
-last_update: 2026-10-17T01:35:38Z
+last_update: 2026-10-17T01:54:17Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -387,3 +387,15 @@ out=$(python3 -m pytest -q tests/unit/test_sidecar_watcher_t3684.py::test_start_
 
 ### 2026-10-17T00:09:36Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-17 — diagnosis and fixes (dispatch t4220-reds)
+- **t3579_verdict_close_path.bats** (was 5 red, now 11/11 green). Two causes, both fixtures/test-harness, rule untouched: (a) T-4214 requires a render green's run to carry the `visual` record; `_record` registered the run without it → `visual-needs-run`. Fixed by writing the shots via tests/unit/_visual_evidence.py and citing each. (b) `verdict record` auto-commits as `reviewer-$FW_SIDECAR_AGENT_ID` (T-3940) and this session exports that id, so the row was attributed to the sidecar agent, not `reviewer-rv-1` → `introduced-by-other`. Fixed by unsetting the ambient reviewer ids in `setup()`.
+- **t3881 / t3906 hook parity** (4 + 3 tests). Cause: `check-visual-verification` (opt-in, 77397d453) is in AEF's settings.json and not in the template; `extract_hooks` treated every registered hook as required. Fix: `OPT_IN_HOOKS` in lib/hook_parity.py, dropped from the parity set on both sides — one list for doctor, worktree parity and `fw upgrade` step 5. Consumers that enable the hook keep it. t3906 needed the commit first (its upstream is HEAD). Same root cause also reds `hook_producer_site_parity.bats` test 3 (in the expired list below); its allowlist now consults `OPT_IN_HOOKS` → 6/6 green.
+- **test_doctor_scope_tags.bats "fw doctor exits cleanly"** — NOT FIXED, operator-blocked. Doctor exits 2 from one FAIL: `Enforcement baseline CHANGED`. `.context/project/enforcement-baseline.sha256` predates 77397d453, which added the opt-in hook to settings.json. The remedy is `fw enforcement baseline` after the operator reviews that change; that is a sovereignty action, so it was not run. A one-line runme is prepared at `.context/runme/t4220-rebaseline/runme.sh`. Doctor's other 51 WARN and 0 other FAIL are unrelated.
+- **test_sidecar_watcher_t3684 stale-code test** — 1 failure in 5 solo runs (fast, 7s, against ~19s on pass). Mechanism: `code_mtime()` is the newest mtime of the real lib/sidecar/*.py, so the first `assert not is_stale(receiver)` depends on the checkout's mtimes. The failing run was not reproduced on demand. Fix: pin `code_mtime` to 0.0 for that assert. Post-fix 5/5 solo passes, and 1/1 for the file.
+
+**Baselined reds past expiry (expires < 2026-10-17)** — the task said 28; `show` reports 115 expired entries over 52 files. Each file was run once, sequentially (300 s cap, solo), before the fixes above unless noted:
+- GREEN (34): audit_corpus_lint_findings, create_task, cron_flock_parity, designer_sync_from_tag, designer_sync_sha256, doctor_hook_exercise, fabric_coverage_single_source, fw_doctor_vendored_drift, hook_telemetry, and 25 more (full list in the dispatch result file)
+- RED (15): approvals_close_ready_arcs, atomic_yaml_write_lint, audit_inception_recommendation, audit_split_root_asset_lint, context_safe_commands, doctor_hook_counters, handover_push_timeout, hook_producer_site_parity (now green, see above), lib_review, no_root_framework_markers, review_pipefail, t2298_audit_structure_no_perfile_fork, test_bin_fw_no_heredoc_cmd_sub, test_cron_registry_generated_drift, test_operator_facing_stderr.py
+- TIMEOUT (3, no verdict): t2244_audit_self_vendor_drift, test_doctor_litellm_ollama, test_index_doctor_rail
+- Baseline not touched. Red causes for the 15 were not investigated (out of scope).
