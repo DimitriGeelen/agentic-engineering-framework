@@ -1,8 +1,22 @@
 ---
 id: T-4224
-name: "Re-pin the workflow designer 0.14.0 -> 0.20.0 (832 T-1187): fw designer sync --from-tag designer-v0.20.0, then handle 0.20.0's one-time node-id renumbering for every stored node id (corpus maps, instance positions, current_node, overlays)"
+name: "Re-pin the workflow designer 0.14.0 -> 0.20.0 (832 T-1187): fw designer sync
+  --from-tag designer-v0.20.0, then handle 0.20.0's one-time node-id renumbering for
+  every stored node id (corpus maps, instance positions, current_node, overlays)"
 description: >
-  832 msg 47e480b2 (operator direction: AEF is the designer's main consumer; 832 counts a release done only when AEF serves it). Source: tag designer-v0.20.0 in the workflow-designer repo on the local OneDev host (URL in the peer message); artefact dist/aef-workflow-designer-0.20.0.html, sha256 51931b8a40ece180eb5981f57ab4a41f4c956e0d4cea877c5905ea89b65f6f3c, 1159393 bytes (MANIFEST at the tag agrees). Changes 0.15-0.20 per docs/releases/RELEASE-NOTES-<version>.md at the tag; 0.19.0 fixes process data lost on save. CARE: 0.20.0 renumbers node ids by activities only, applied on a map's next save; old->new list for the 24 corpus maps in docs/reports/T-1168-node-id-map.md at the tag (paired by uid). Plan: (1) inventory every place AEF stores a node id (designer corpus, instance state, overlays, conformance rail T-2621, ghost registry); (2) re-pin with fw designer sync --from-tag and verify sha256; (3) migrate stored ids with the uid-paired map before any re-save, or prove nothing stores them; (4) map conformance + designer currency checks green; (5) Watchtower restart + /designer smoke; tell 832 the commit.
+  832 msg 47e480b2 (operator direction: AEF is the designer's main consumer; 832 counts
+  a release done only when AEF serves it). Source: tag designer-v0.20.0 in the workflow-designer
+  repo on the local OneDev host (URL in the peer message); artefact dist/aef-workflow-designer-0.20.0.html,
+  sha256 51931b8a40ece180eb5981f57ab4a41f4c956e0d4cea877c5905ea89b65f6f3c, 1159393
+  bytes (MANIFEST at the tag agrees). Changes 0.15-0.20 per docs/releases/RELEASE-NOTES-<version>.md
+  at the tag; 0.19.0 fixes process data lost on save. CARE: 0.20.0 renumbers node
+  ids by activities only, applied on a map's next save; old->new list for the 24 corpus
+  maps in docs/reports/T-1168-node-id-map.md at the tag (paired by uid). Plan: (1)
+  inventory every place AEF stores a node id (designer corpus, instance state, overlays,
+  conformance rail T-2621, ghost registry); (2) re-pin with fw designer sync --from-tag
+  and verify sha256; (3) migrate stored ids with the uid-paired map before any re-save,
+  or prove nothing stores them; (4) map conformance + designer currency checks green;
+  (5) Watchtower restart + /designer smoke; tell 832 the commit.
 
 status: captured
 workflow_type: build
@@ -38,8 +52,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T08:47:51Z
-last_update: 2026-10-17T08:47:51Z
-date_finished: null
+last_update: '2026-10-17T09:01:24Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +64,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-17T09:00:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-17T09:01:24Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4224: Re-pin the workflow designer 0.14.0 -> 0.20.0 (832 T-1187): fw designer sync --from-tag designer-v0.20.0, then handle 0.20.0's one-time node-id renumbering for every stored node id (corpus maps, instance positions, current_node, overlays)
@@ -62,8 +104,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] Inventory in Updates: every place AEF stores a designer node id (corpus maps, instance state/current_node, overlays, map-conformance rail, ghost registry, tests/fixtures), each with how it is affected by 0.20.0's one-time renumbering
+- [ ] policy/designer-pin.yaml pins 0.20.0 via `fw designer sync --from-tag designer-v0.20.0`, sha256 51931b8a40ece180eb5981f57ab4a41f4c956e0d4cea877c5905ea89b65f6f3c and 1159393 bytes verified against the MANIFEST at the tag
+- [ ] Stored node ids are migrated with 832's uid-paired map (docs/reports/T-1168-node-id-map.md at the tag) before any re-save, or the inventory shows nothing stores them; a test proves a migrated reference still resolves
+- [ ] Map conformance, designer currency and designer pin-drift checks green; Watchtower restarted; /designer and /designer/app return 200 and serve 0.20.0
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
