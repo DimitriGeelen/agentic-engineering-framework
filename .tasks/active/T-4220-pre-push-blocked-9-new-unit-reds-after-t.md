@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T00:09:04Z
-last_update: 2026-10-17T00:45:59Z
+last_update: 2026-10-17T00:48:46Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -101,8 +101,8 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] t3579_verdict_close_path.bats green without weakening the T-4214 visual-evidence rule (fixtures supply the evidence)
-- [ ] t3881_template_hook_parity.bats and t3906_upgrade_project_hooks_not_a_gap.bats green: documented opt-in hooks are allowed in the framework's own settings without a template entry, and `fw upgrade` neither adds them to consumers nor reports a gap
+- [x] t3579_verdict_close_path.bats green without weakening the T-4214 visual-evidence rule (fixtures supply the evidence)
+- [x] t3881_template_hook_parity.bats and t3906_upgrade_project_hooks_not_a_gap.bats green: documented opt-in hooks are allowed in the framework's own settings without a template entry, and `fw upgrade` neither adds them to consumers nor reports a gap
 - [ ] test_doctor_scope_tags.bats green with its real cause recorded; test_sidecar_watcher_t3684 stale-code test either made deterministic or shown stable alone with evidence
 - [ ] The baselined reds past expiry are listed in Updates with a current green/red result each; the baseline itself is not touched
 
@@ -282,6 +282,11 @@ cost_estimate_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+
+out=$(bats tests/unit/t3579_verdict_close_path.bats 2>&1); echo "$out" | grep -q '^ok 11 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t3881_template_hook_parity.bats 2>&1); echo "$out" | grep -q '^ok 4 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t3906_upgrade_project_hooks_not_a_gap.bats 2>&1); echo "$out" | grep -q '^ok 3 ' && ! echo "$out" | grep -q '^not ok'
+out=$(python3 -m pytest -q tests/unit/test_sidecar_watcher_t3684.py::test_start_replaces_a_receiver_and_watcher_running_stale_code 2>&1); echo "$out" | grep -q "1 passed" && ! echo "$out" | grep -q failed
 
 ## RCA
 

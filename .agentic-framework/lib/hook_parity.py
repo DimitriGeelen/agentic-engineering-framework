@@ -39,6 +39,16 @@ the flag exists rather than a single "obvious" policy.
 import json
 import sys
 
+# T-4220: hooks an operator may enable per project but the framework does not require of every
+# project. This list is the ONE source: `extract_hooks` drops them from BOTH sides, so the
+# framework's own settings.json may register one without the consumer template writing it, and
+# `fw upgrade` (step 5) and `fw doctor` neither add it to a consumer nor report a gap. A project
+# that enables one keeps it: nothing here removes it from the file. Each entry must be documented
+# as opt-in by its agent doc (agents/context/<name>.AGENT.md, "How to enable").
+OPT_IN_HOOKS = frozenset({
+    'check-visual-verification',   # agents/context/check-visual-verification.AGENT.md
+})
+
 
 def extract_hooks(path, strict=False):
     """Return the set of (event, hook_name) pairs declared in a settings.json.
@@ -48,6 +58,8 @@ def extract_hooks(path, strict=False):
     and a replica be compared across different absolute checkout paths — the
     same hook invoked as `$CLAUDE_PROJECT_DIR/bin/fw hook check-active-task` and
     as `/opt/x/.agentic-framework/bin/fw hook check-active-task` is one hook.
+
+    Opt-in hooks (OPT_IN_HOOKS) are not part of the set: they are optional by design.
 
     Returns None on parse failure when strict=True, else an empty set.
     """
@@ -70,6 +82,8 @@ def extract_hooks(path, strict=False):
                         # upgrade reported a missing hook it could not supply.
                         if '/agents/context/' in cmd and name.endswith('.sh'):
                             name = name[:-3]
+                    if name in OPT_IN_HOOKS:
+                        continue
                     hooks.add((event, name))
     except (json.JSONDecodeError, FileNotFoundError, AttributeError, TypeError):
         if strict:
