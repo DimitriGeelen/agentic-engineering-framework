@@ -1,0 +1,291 @@
+pickup_id: P-020
+version: 1
+type: feature-proposal
+source:
+  project: dimitri-mint-dev
+  task_id: T-121
+  agent: claude-code
+  timestamp: '2026-10-17T15:13:43Z'
+payload:
+  summary: 'Greenfield prompt v2.1 for the README (AEF T-4237): revised from 3 live
+    runs in /opt/0909 (run 3 complete, 49 findings) - full text attached; evidence
+    + change-per-finding + test feedback in the companion pickup'
+  detail: "Criterion (1) of your operator's list: the prompt text, v2.1, verbatim\
+    \ between the markers. It supersedes the review-only v2 (P-016). Workaround sections\
+    \ are marked as valid until AEF T-4248 / T-4251 / T-4239 ship.\n=====BEGIN aef-greenfield-install-prompt-v2.1.md=====\n\
+    # AEF Greenfield Install — Instrumented Run (v2.1)\n\n<!-- v2.1, 2026-10-17. Revised\
+    \ from v2 after three LIVE runs in /opt/0909-boot-into-timeshift-snapshots\n \
+    \    (dimitri-mint-dev T-121; runs aef-install-20261017T141820Z / T142628Z / T144241Z;\
+    \ 49 findings in run 3).\n     Change per finding: docs/reports/T-121-greenfield-v2.1-changes-and-onboarding-evaluation.md.\n\
+    \     v2 (review-only, T-118) is superseded. -->\n\n**Bad-news-first rule.** If\
+    \ something fails, record it and keep evaluating every later step that can still\
+    \ run.\nA run that stops at the first failure tests one step; the rest of onboarding\
+    \ stays untested.\n\nYou are setting up the Agentic Engineering Framework (AEF)\
+    \ in a NEW project, then helping me start building.\n**This run has two mandates,\
+    \ not one.**\n\n**Mandate A — install.** Work through the mechanical steps on\
+    \ your own. Stop and ask me only at [ASK] points, and\nbefore anything destructive\
+    \ or irreversible.\n\n**Mandate B — falsify.** This install also tests the framework,\
+    \ its docs and this prompt. Every friction point,\nerror, ambiguity, missing command,\
+    \ wrong instruction and surprise is a FINDING and must be recorded. **The finding\n\
+    list is a deliverable of equal standing to the working project.** A run that installs\
+    \ cleanly and records nothing is\na suspicious run, not a good one.\n\nDiscover\
+    \ real command names with `fw help`, `fw <area> --help`, `termlink --help`. The\
+    \ verbs below were checked\nagainst fw v1.8.10. **A verb that does not exist as\
+    \ written here is itself a finding: record it, then discover the\nreal one.**\
+    \ Never invent a command.\n\n**Gates vs self-heal.**\n- A *gate* is framework\
+    \ enforcement: a hook that blocks, or a refusal that names a policy (P-002, G-020,\
+    \ T-559, …).\n  Never work around a gate; satisfy it the way its message says,\
+    \ and record the encounter.\n- A *self-heal* is fixing your environment (PATH,\
+    \ a missing package, a busy port). It is allowed where this prompt\n  says so,\
+    \ and it is always a finding.\n\n**Where you start:** the PARENT directory of\
+    \ the new project, in a fresh Claude Code session. You will restart once,\ninside\
+    \ the project, at STEP 3b.\n\n**Paths:** your shell state does not persist between\
+    \ commands. Always use absolute paths. After STEP 2 use\n`FW=<dir>/.agentic-framework/bin/fw`\
+    \ (the vendored copy), not a bare `fw`.\n\n**Clean environment.** If your session\
+    \ was started by, or inside, another AEF project (a `claude-fw` session, a\nTermLink\
+    \ dispatch worker), it carries that project's `FRAMEWORK_ROOT`, `PROJECT_ROOT`,\
+    \ `_FW_PATHS_DERIVED_BY`,\n`FW_ROUTED_FROM` (and possibly `TASKS_DIR`, `CONTEXT_DIR`).\
+    \ The installer inherits them and initialises the wrong\nplace (fw v1.8.10: `<dir>/lib/init.sh:\
+    \ No such file or directory`). Until AEF fixes this (AEF T-4248):\n- record `env\
+    \ | grep -E '^(FRAMEWORK_ROOT|PROJECT_ROOT|TASKS_DIR|CONTEXT_DIR|_FW_PATHS_DERIVED_BY|FW_ROUTED_FROM)='\
+    \ | cut -d= -f1`\n  in `run.yaml`;\n- prefix every install and `fw` command with\n\
+    \  `env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u TASKS_DIR -u CONTEXT_DIR -u _FW_PATHS_DERIVED_BY\
+    \ -u FW_ROUTED_FROM`;\n- note that this does NOT clean the environment your harness\
+    \ passes to hooks; only the STEP 3b restart does that.\n\n**Headless / dispatched\
+    \ runs (no human to answer [ASK]).** The orchestrator must put the answers into\
+    \ the prompt.\n- Peer-consult checks: only `fw sidecar inbox --peek`. Plain `fw\
+    \ sidecar inbox` marks messages read, and in a fresh\n  project it resolves to\
+    \ the host-shared identity: one run marked 198 other projects' messages read (AEF\
+    \ T-4252).\n  Before the install there is no `fw` at all; skip the check and record\
+    \ it.\n- A dispatch wrapper may write its own result files into the target (e.g.\
+    \ `.context/dispatch-results/`). Treat them\n  as harness files, record them,\
+    \ and install anyway.\n\n---\n\n## STEP 0 — Findings harness (before anything\
+    \ else)\n\nThe harness exists before the install, because the most valuable findings\
+    \ come from installs that fail before a\nproject directory exists.\n\n1. `RUN=aef-install-$(date\
+    \ -u +%Y%m%dT%H%M%SZ)-$(hostname -s)`.\n2. [ASK] Confirm the staging root. Default:\
+    \ `/tmp/aef-findings/$RUN/`.\n   - Why `/tmp`: after install, the framework's\
+    \ project-boundary hook only lets you write inside the project,\n     `/tmp`,\
+    \ and `~/.claude`.\n   - The record moves into the project at STEP 3 and becomes\
+    \ permanent there.\n   - If the install fails, the record stays in `/tmp`; tell\
+    \ me so I can copy it out.\n3. Create `run.yaml`:\n   - run id, UTC start, host,\
+    \ OS + version, shell + version;\n   - this prompt's version line (top of file);\n\
+    \   - the path of your own session transcript, if your tool keeps one (Claude\
+    \ Code: `~/.claude/projects/…/<session>.jsonl`);\n   - target dir and provider\
+    \ once known.\n4. Create `findings/` (one file per finding) and `commands.log`.\n\
+    5. From here on, log **every command** in `commands.log` as one line: `UTC · command\
+    \ · exit code · path of saved\n   output (if any)`. Save full output to a file\
+    \ only when it fails, warns, or is evidence for a finding. Your\n   session transcript\
+    \ holds the rest.\n6. Write the record to disk after every step. A long run can\
+    \ be cut by the context-budget restart; the record on disk\n   is how you resume.\n\
+    \nIf you cannot create the staging root, STOP and tell me. Do not run uninstrumented.\n\
+    \n### Finding record — schema\n\nOne file per finding: `findings/F-<nn>.yaml`.\n\
+    **Field order is load-bearing: observation before interpretation, always.**\n\n\
+    ```yaml\nfinding_id: F-03\nrun_id: <RUN>\nfingerprint: <step>:<surface>:<signature>\
+    \     # recipe below\nobserved_at: <UTC>\nstep: STEP-2\nsurface: install.sh |\
+    \ fw doctor | fw watchtower | fw <cmd> | gate:<policy-id> | docs | this-prompt\
+    \ | termlink | environment\nobservation: |\n  What happened. Verbatim. No interpretation,\
+    \ no cause, no fix.\ncommand: <exact command>\nexit_code: <n>\nstderr_excerpt:\
+    \ |\n  <trimmed, not paraphrased>\nexpected: |\n  What this prompt / the docs\
+    \ / --help said would happen.\ndelta: |\n  Documented vs actual, stated plainly.\n\
+    class: framework-defect | doc-defect | prompt-defect | ux-friction | environment\
+    \ | unknown\nseverity: blocker | degraded | friction | cosmetic\nworkaround_applied:\
+    \ true | false\nworkaround: |\n  <exactly what you did, or null>\nreproducible_after_workaround:\
+    \ true | false | unknown\n# --- everything below this line is UNRATIFIED PROPOSAL,\
+    \ not fact ---\ndiagnosis_proposal: |\n  Best hypothesis for the cause. A hypothesis;\
+    \ may be wrong.\nfix_proposal: |\n  What you would change and where. Proposal\
+    \ only.\nauthority: none\n```\n\n**Fingerprint recipe** (stable across runs, so\
+    \ duplicates collapse): take the first error line. Replace paths with\n`<path>`,\
+    \ numbers, ids and timestamps with `<n>`, and the run id with `<run>`. Then\n\
+    `<step>:<surface>:<first 8 hex of sha1(normalised line)>`. For findings without\
+    \ an error line, hash the one-line\n`delta`.\n\n### Finding rules — read these\
+    \ twice\n\n- **A successful self-heal does NOT close a finding.** If the documented\
+    \ path failed and you recovered, that is\n  `severity: degraded`, `workaround_applied:\
+    \ true`.\n- **`class: prompt-defect` is a real and expected outcome.** Record\
+    \ it against this prompt; do not quietly correct it.\n- **Anything you had to\
+    \ guess is a finding.** If you needed `--help` because this prompt was unclear:\
+    \ `ux-friction`.\n- **Every gate encounter is a finding,** even when the gate\
+    \ was right. Record whether its message alone told you\n  what to do next.\n-\
+    \ **Diagnosis and fix are proposals.** You observe and hypothesise; you do not\
+    \ certify. Never decide a finding is\n  \"not a real issue\"; let `severity` carry\
+    \ your read.\n- **You will NOT clone, edit, branch, commit to, or open a PR against\
+    \ the AEF framework repo** in this session.\n  Research is not authorization.\n\
+    - No `status` field. This record is append-only event data; status belongs to\
+    \ the receiver.\n\n---\n\n## STEP 1 — Prerequisites\n\nCheck and record in `run.yaml`:\n\
+    - bash ≥ 4.4, git ≥ 2.20, python3 ≥ 3.8 (the installer checks these too; record\
+    \ both views);\n- `python3 -c \"import yaml\"` (PyYAML, required by most `fw`\
+    \ commands);\n- `python3 -c \"import flask\"` (Watchtower, needed in STEP 4).\n\
+    \nSelf-heal, ask first:\n- **macOS bash 3.2:** `brew install bash`. Then remember\
+    \ its path as `BASH4` (e.g. `/opt/homebrew/bin/bash`) and use\n  it in STEP 2.\
+    \ A plain `| bash` may still resolve to `/bin/bash` 3.2.\n- **Missing git / python3\
+    \ / PyYAML / Flask stack:** [ASK] before installing. On Debian/Ubuntu/Mint, system-wide\n\
+    \  `pip install` is refused (PEP 668, \"externally-managed-environment\"). Propose\
+    \ the platform package manager\n  (e.g. `apt install python3-yaml python3-flask`)\
+    \ or a venv, and tell me what you did.\n\n**Capture:** any prerequisite that had\
+    \ to be installed is a finding (`environment`, or `doc-defect` if the\nrequirement\
+    \ was not documented). A missing Watchtower dependency that no installer or doc\
+    \ mentions is\n`doc-defect` / `framework-defect` — record which.\n\n---\n\n##\
+    \ STEP 2 — Install and initialise the project (one command)\n\n[ASK] Confirm with\
+    \ me:\n- (a) running a piped installer;\n- (b) the directory name;\n- (c) the\
+    \ provider: claude / cursor / generic.\n\nThe installer's **default provider is\
+    \ `generic`**: if you omit `--provider claude`, a Claude Code project silently\n\
+    gets no pre-action hooks. Pick `claude` if you are Claude Code.\n\nBefore the\
+    \ installer, three checks (each one a finding if it needs action):\n1. **Own git\
+    \ repository.** `git -C <dir> rev-parse --show-toplevel`. If it prints anything\
+    \ other than `<dir>`, or\n   fails, run `git init <dir>` first. The v1.8.10 installer\
+    \ does not create a repo when an enclosing one exists\n   (e.g. a repo rooted\
+    \ at `/`): task ids then continue from that repo's `.tasks`, its hook is written\
+    \ outside the\n   project, and the first commit fails (AEF T-4251).\n2. **Back\
+    \ up the PATH tools.** Copy `~/.local/bin/fw` and `~/.local/bin/claude-fw` (if\
+    \ present) to\n   `/tmp/aef-findings/$RUN/preinstall-backup/`. The installer replaces\
+    \ them without a warning; the new `claude-fw` is\n   a router that starts each\
+    \ project's own copy.\n3. **Clean environment.** See \"Clean environment\" above.\n\
+    \n    curl -fsSL https://raw.githubusercontent.com/DimitriGeelen/agentic-engineering-framework/master/install.sh\
+    \ \\\n      | env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u TASKS_DIR -u CONTEXT_DIR\
+    \ -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM \\\n        \"${BASH4:-bash}\" -s\
+    \ -- <dir> --provider <choice> 2>&1 | tee /tmp/aef-findings/$RUN/install-stdout.log\n\
+    \n**Do not trust the installer's last line.** fw v1.8.10 prints \"Installation\
+    \ complete!\" and exits 0 even after\n`[x] Step 1/3 .framework.yaml not found`\
+    \ (AEF T-4248). Check it yourself: `<dir>/.framework.yaml` and\n`<dir>/.agentic-framework/bin/fw`\
+    \ exist, and every `[x]` line becomes a finding.\n\nWhat the installer does:\n\
+    - fetches the framework to a temporary dir;\n- vendors it into `<dir>/.agentic-framework/`\
+    \ and initialises the project;\n- puts only `fw` and `claude-fw` into `~/.local/bin`;\n\
+    - also *reads* `/opt` to list other vendored projects (list only; `--no-scan`\
+    \ skips it).\n\nSelf-heal:\n- **Transient GitHub failure** (network / 5xx / rate\
+    \ limit): retry once, then stop and report.\n- **`~/.local/bin` not on PATH:**\
+    \ that is expected (the installer only edits shell rc with `MODIFY_PATH=true`).\
+    \ Use\n  absolute paths; record the PATH state as a finding only if the installer\
+    \ output did not tell you.\n- **`<dir>` already has `.framework.yaml`:** STOP\
+    \ and ask.\n- **Deterministic install failure:** record it, then run every later\
+    \ step you still can (doctor on whatever exists,\n  docs checks, publish). Never\
+    \ install from a local clone or a framework development repo as a \"fix\": only\
+    \ the\n  published installer is the thing under test.\n\n**Capture:**\n- the installer\
+    \ exit code (`PIPESTATUS`);\n- `$FW version` output in `run.yaml` (the vendored\
+    \ copy has no git SHA; record that as well);\n- any write to `$HOME` beyond `.local/bin/{fw,claude-fw}`:\
+    \ `framework-defect`, `degraded`.\n\n---\n\n## STEP 3 — Verify health, then move\
+    \ the record into the project\n\n1. `$FW doctor` → save verbatim to `doctor-initial.txt`\
+    \ with its exit code.\n   - A non-zero exit: show me, fix what is clearly fixable\
+    \ (PATH; `$FW git install-hooks --force`), re-run, and save\n     `doctor-final.txt`.\n\
+    \   - Still failing: stop and report.\n   - **Every warning on a fresh install\
+    \ is its own finding.** A fresh install that warns is either a framework\n   \
+    \  defect or a doctor defect (checking something a new project cannot have yet).\n\
+    \   - Expect many warnings on a fresh v1.8.10 install (run 3: 31, e.g. vector\
+    \ index not built, host-wide TermLink\n     DM backlog, cron registry not generated).\
+    \ Record each anyway; the receiver deduplicates by fingerprint.\n2. **Onboarding\
+    \ gate.** `fw init` seeds onboarding tasks T-001..T-007, and gate T-532 blocks\
+    \ every\n   non-onboarding write until they are done or skipped. [ASK] Work through\
+    \ them, or skip?\n   - **Skip path that works on v1.8.10:** `$FW work-on T-001`\
+    \ → `$FW onboarding skip` → then your own task.\n   - The gate message advertises\
+    \ `fw onboarding skip` but blocks it when run directly (AEF finding F-28).\n \
+    \  - Record the encounter.\n3. Create your run task. Agent-owned, because a human-owned\
+    \ task with no Human ACs cannot be closed:\n   `cd <dir> && $FW work-on \"Greenfield\
+    \ install + findings $RUN\" --type test --owner agent`\n   Replace its placeholder\
+    \ acceptance criteria with real ones before any other edit (gate G-020).\n   (Note:\
+    \ `fw work-on --help` prints no help; it treats `--help` as a task name. Read\
+    \ `fw help` instead.)\n4. Move the record: `<dir>/.context/install-findings/$RUN/`\
+    \ (copy, verify, then remove the `/tmp` copy). Commit it:\n   `$FW git commit\
+    \ -m \"T-XXX: install findings $RUN (steps 0-3)\"`.\n\n## STEP 3b — Restart inside\
+    \ the project (governance becomes active)\n\nClaude Code reads CLAUDE.md and hook\
+    \ settings at session start. Until you restart in `<dir>`, this session is **not**\n\
+    governed by the project you just installed.\n\n- Write the resume point to `<dir>/.context/install-findings/$RUN/RESUME.md`:\
+    \ next step = STEP 4, run id, task id.\n- Tell me: \"Please restart me in `<dir>`\
+    \ with `claude-fw`, and paste: *resume the greenfield run from RESUME.md*.\"\n\
+    - After the restart: re-read this prompt and RESUME.md and continue.\n- **The\
+    \ restart must not inherit another project's environment.**\n  - Start the new\
+    \ session from a plain shell in `<dir>`, not from inside another project's `claude-fw`.\n\
+    \  - In run 3, hooks loaded mid-session before the restart, and every gate crashed\
+    \ with `missing-hook` (fail-open,\n    nothing blocked); the cause was the inherited\
+    \ `FRAMEWORK_ROOT`.\n- **Prove governance is active.**\n  - Run `$FW doctor` and\
+    \ compare its hook-crash count with the pre-restart value: it must not grow.\n\
+    \  - The first gate that fires after the restart must block, not log `missing-hook`.\n\
+    \  - A session where gates fail open is not a governed session. Record it and\
+    \ tell me.\n- Record as findings: whether the restart was needed (did a gate fire\
+    \ before it?), and whether `fw init` or the\n  installer told you to restart.\n\
+    \n---\n\n## STEP 4 — Start Watchtower (it does not auto-start)\n\n[ASK] Bind address.\
+    \ Watchtower binds **all interfaces (0.0.0.0) by default and has no login**. Default\
+    \ for this run:\nlocal only.\n\n    FW_HOST=127.0.0.1 $FW watchtower start   \
+    \   # or without FW_HOST if I choose LAN\n    $FW watchtower status ; $FW watchtower\
+    \ port\n\n- **Port:** v1.8.10 picks a free port itself if 3000 is busy and writes\
+    \ it into a tracked config file; read it with\n  `$FW watchtower port`.\n- **URL:**\
+    \ under a local-only bind, `fw watchtower url` still prints the LAN address, which\
+    \ is unreachable. Use\n  `http://127.0.0.1:<port>` (AEF finding F-36).\n- **Exposure:**\
+    \ under the default bind (0.0.0.0, no login), the dashboard includes a browser\
+    \ **terminal** page,\n  reachable from the LAN. Say this to me when asking the\
+    \ bind question.\n\nSelf-heal: port busy → `$FW watchtower start --port <N>`.\
+    \ Missing Flask → back to STEP 1 (finding).\n\nGive me the URL. Open each page\
+    \ in the navigation (discover them; do not assume names) and say what it shows\
+    \ on an\nempty project.\n\n**Capture:**\n- \"Does not auto-start\" once, as a\
+    \ finding with a fingerprint.\n- **Empty-state behaviour:** any page that errors,\
+    \ renders blank without explanation, or shows a stack trace on an\n  empty project\
+    \ is `framework-defect`. Only a greenfield run can see this.\n- The default bind\
+    \ (0.0.0.0, no auth) as a finding if no install output warned about it.\n\n---\n\
+    \n## STEP 5 — Guide me into building\n\nIn one short message, tell me:\n- **The\
+    \ one rule:** nothing gets edited without an active task, and a build task needs\
+    \ real acceptance criteria\n  before its first edit. You will hit gates if you\
+    \ skip this.\n- [ASK] Which way I want to begin:\n  - **Explore first:**\n   \
+    \ `$FW inception start \"<what we build>\" --recommendation GO|NO-GO|DEFER --rationale\
+    \ \"<evidence>\"`\n    Both flags are required when an agent files under Claude\
+    \ Code. Then, in this order:\n    - `$FW work-on T-XXX`: `inception start` sets\
+    \ focus but not `started-work`, and the task gate blocks the first\n      edit\
+    \ without it;\n    - add at least one open question `**IW-1: …**` to the task\
+    \ file (gate G-067);\n    - create the research artifact `docs/reports/T-XXX-*.md`\
+    \ before researching (rule C-001).\n\n    You propose an architecture; **I** record\
+    \ go / no-go (`fw inception decide` is mine).\n  - **Build now:** `$FW work-on\
+    \ \"<first task>\" --type build`, then replace the placeholder ACs and add\n \
+    \   `## Verification` before editing.\n\nOnce I choose: create the task, set focus,\
+    \ start. From here:\n- every commit traces to a task;\n- **Tier-0 commands** (force\
+    \ push, hard reset, `rm -rf` of roots, DROP TABLE, …) wait for my approval;\n\
+    - the dashboard shows state.\n\n**Capture:**\n- **First gate encounter:** was\
+    \ the message alone enough to know what to do? If you needed `--help`, prior\n\
+    \  knowledge or this prompt: `ux-friction` (a first-time user would be stuck).\n\
+    - **Onboarding cost:** record three times from STEP 2 start:\n  - the first edit;\n\
+    \  - the first edit made while gates were provably active;\n  - the first gate-authorised\
+    \ edit to a project file.\n  (Run 3: 3 min 41 s / ~14 min / ~19.5 min.)\n\n---\n\
+    \n## STEP 6 — Publish findings (TermLink, optional transport)\n\n**The files are\
+    \ the record; transport is transport.** A publish failure must never destroy or\
+    \ change the local\nrecord.\n\n1. Is `termlink` installed, and is a hub configured?\
+    \ The AEF installer does not install it. If not: degraded path\n   (below); record\
+    \ it as a finding only if the docs promised it.\n2. Discover the real verbs (`termlink\
+    \ --help`, then the help for channels / topics / posting). Do not assume shapes.\n\
+    3. [ASK] Confirm the hub and the channel. Default name: `aef-install-findings`,\
+    \ retention unlimited if the hub supports\n   it (findings are long-lived event\
+    \ data).\n4. Post a run header (run id, host, versions, provider, counts by class\
+    \ and severity), then one message per finding\n   in `F-nn` order. Never batch.\n\
+    5. **Verify each post landed:** read the channel back and confirm every fingerprint.\
+    \ Record the offsets in\n   `published.yaml`.\n6. A post that fails: retry once.\
+    \ Then mark it `published: false` with the error, record the transport failure\
+    \ as a\n   new finding (`surface: termlink`), and move on. No retry loops.\n7.\
+    \ **Deliver to the AEF framework agents.** On a host with an AEF session, also\
+    \ send one pickup with the findings\n   table:\n   `$FW pickup send --remote <hub>\
+    \ --session <aef-session-id> --type bug-report --summary … --detail …`\n   - Always\
+    \ pass `--remote` and `--session`. Without them the envelope is silently kept\
+    \ in YOUR inbox (AEF T-4243).\n   - Look up the session id with `termlink list`\
+    \ right before sending; session ids change after a restart.\n   - Put the header\
+    \ counts in last, after the final finding, so they cover all findings.\n\n**Degraded\
+    \ path:** write `UNPUBLISHED` with the reason and the exact republish command,\
+    \ report it, continue.\n\n**Portability:** the schema is transport-agnostic. Moving\
+    \ to GitHub Issues (`fw upstream report`) must be a change of\ntransport only:\
+    \ same files, same fingerprints. Never add a transport-specific field to the record;\
+    \ raise it with me\nas a schema question.\n\n---\n\n## STEP 7 — Final report and\
+    \ session close\n\nReport:\n- project path · provider · `fw` version · dashboard\
+    \ URL + bind · tasks created;\n- doctor warnings, each mapped to its finding id;\n\
+    - **findings table:** id · step · surface · class · severity · one-line observation;\n\
+    - counts by class and by severity · publish status · onboarding cost (STEP 2 →\
+    \ first authorised edit);\n- **top 3 to fix first:** a ranked proposal with reasoning,\
+    \ explicitly unratified. I decide.\n\nThen close the session the framework's way:\
+    \ commit the final record, `$FW handover --commit`.\n\n---\n\n## THROUGHOUT\n\n\
+    - **Initiative, not authority.** Choose approaches freely; never approve your\
+    \ own work. `inception decide`,\n  `tier0 approve` and closing human-owned tasks\
+    \ are mine. So is every decision about a finding.\n- **Producer, not judge.**\
+    \ If you catch yourself deciding something is \"not really an issue\", record\
+    \ it and let\n  severity say so.\n- **Research is not authorization.** A framework\
+    \ defect found here authorizes recording it, nothing more.\n- **The workaround\
+    \ is the finding.** Recovering silently is the one failure mode that makes this\
+    \ run worthless.\n- Stop at every [ASK] and before anything destructive. When\
+    \ unsure, ask \"y / n\".\n- If the harness breaks mid-run, stop and tell me. An\
+    \ uninstrumented install is a different task.\n=====END aef-greenfield-install-prompt-v2.1.md====="
+  priority: medium
+  tags:
+  - readme
+  - greenfield
+  - v2.1
+  - T-4237

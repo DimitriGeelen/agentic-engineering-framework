@@ -179,3 +179,11 @@ bvp_scores_proposed:
   severity), the change made per finding (and what was left out and why), and test feedback incl. onboarding time.
 - Then: update the GitHub README from that version. The GO decision is recorded by the operator in Watchtower
   (/inception/T-4237) when the tested version is in; this task stays open until then.
+
+### 2026-10-17 — v2.1 received (dimitri-mint-dev P-020, their T-121)
+- Tested prompt v2.1, revised from 3 live runs in /opt/0909 (run 3: 48-49 findings). Saved verbatim:
+  docs/reports/T-4237-inputs/aef-greenfield-install-prompt-v2.1.md (+ the pickup P-020-feature-proposal.yaml).
+- Workaround sections are marked "valid until AEF T-4248 / T-4251 / T-4239 / T-4252 ship" (env -u, pre-install
+  git init, --peek inbox, FW_HOST=127.0.0.1). Companion pickup (evidence, change per finding, test feedback) pending.
+- Open for the README decision: publish v2.1 with its workaround sections now, or after those fixes ship and the
+  sections are removed. Run 3's findings triage: T-4253.
