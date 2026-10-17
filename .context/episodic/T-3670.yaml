@@ -1,0 +1,121 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3670: Core-module language: move established, security-critical core (Tier 0, task/focus/budget gates, verdict ledger, close gates) from bash to a typed strict language (lean: Go with mvdan.cc/sh parser); pilot = Tier 0 classifier on a real bash AST
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T12:32:13Z
+# ============================================================================
+
+task_id: T-3670
+task_name: "Core-module language: move established, security-critical core (Tier 0, task/focus/budget gates, verdict ledger, close gates) from bash to a typed strict language (lean: Go with mvdan.cc/sh parser); pilot = Tier 0 classifier on a real bash AST"
+workflow_type: inception
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-01T17:36:53Z
+completed: 2026-10-17T12:31:54Z
+duration_days: 16
+updates_count: 2
+first_commit: 2026-10-01T19:38:37+02:00
+last_commit: 2026-10-17T14:31:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  core-module language inception (operator question; lean Go + mvdan.cc/sh; pilot Tier 0 classifier on a real AST) with IW-1..5 and artifact. stage 1 — review question v1 (decision-framed, anti-bias, fixed response structure) + question-review brief. question v2 from 3-model question review (4 decisions, threat model, blind round 1, verdict block, gate+weighted table, frozen pack). context pack for the 7-model architectural review. question v2 — operator: threat model is BOTH (mistakes and determined adversary), as strong as possible; layered guardrail + isolation design; vendor-only gaps listed as an evidenced feature request. operator ruling — agents will run non-root; D5 elevation path (least privilege, auditable, fail-closed, no self-approval, prompt-free low-risk, one-tap risky, Linux/macOS/WSL) added to question v2; rulings recorded. context pack v2 (sections match question v2). question v3 — harness-independent governance is the primary decision; T-2428 payload mediation (GO) and T-586 TypeScript (GO) must be weighed; polyglot allowed; TS added to comparisons. reflection after reading back T-2428 (payload mediation) and T-586 (TypeScript) — the question was too narrow; harness independence is primary. context pack §13 prior decisions, §14 harness landscape. file T-3672 (inception: agent asks the operator for facts the framework already encodes — recall skipped; paid-backend hook over-match) after operator rebuke 2026-10-01. round-1 blind answers from internal seats (openai/codex, zai/opencode, anthropic/claude). round-1 synthesis — 3/3 consensus on layered boundary (non-root uid + root-owned enforcement + aef-govd broker + server-side protection), broker elevation, Tier 0 broker pilot, fail-closed signed delivery; D2 language split (TS vs Go-polyglot x2). dispose IW-1..5 from the round-1 review (IW-2/4/5 answered, IW-1/3 deferred to the pilot), state what a GO adopts, evidence — decision-ready (T-3896). inception decision GO (via Watchtower)
+
+# Key outcomes
+outcomes:
+  - 'Problem statement validated'
+  - 'Assumptions tested'
+  - 'Recommendation written with rationale'
+  - '[REVIEW] Review exploration findings and approve go/no-go decision'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'stage 1 — review question v1 (decision-framed, anti-bias, fixed response structure) + question-review brief'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/project/learnings.yaml'
+  - 'docs/reports/T-3670-context-pack.md'
+  - 'docs/reports/T-3670-core-language.md'
+  - 'docs/reports/T-3670-qreview-claude-code.md'
+  - 'docs/reports/T-3670-qreview-codex.md'
+  - 'docs/reports/T-3670-qreview-opencode.md'
+  - 'docs/reports/T-3670-question-review-brief.md'
+  - 'docs/reports/T-3670-question-v1.md'
+  - 'docs/reports/T-3670-question-v2.md'
+  - 'docs/reports/T-3670-r1-anthropic.md'
+  - 'docs/reports/T-3670-r1-openai.md'
+  - 'docs/reports/T-3670-r1-synthesis.md'
+  - 'docs/reports/T-3670-r1-zai.md'
+  - '.tasks/active/T-3670-core-module-language-move-established-se.md'
+  - '.tasks/active/T-3672-agent-asks-the-operator-for-facts-the-fr.md'
+  - '.tasks/completed/T-3670-core-module-language-move-established-se.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-01T19:38:37'
+    action: 'T-3670: core-module language inception (operator question; lean Go + mvdan.cc/sh; pilot Tier 0 classifier on a real AST) with IW-1..5 and artifact'
+  - time: '2026-10-01T19:41:24'
+    action: 'T-3670: stage 1 — review question v1 (decision-framed, anti-bias, fixed response structure) + question-review brief'
+  - time: '2026-10-01T19:43:28'
+    action: 'T-3670: question v2 from 3-model question review (4 decisions, threat model, blind round 1, verdict block, gate+weighted table, frozen pack)'
+  - time: '2026-10-01T19:50:18'
+    action: 'T-3670: context pack for the 7-model architectural review'
+  - time: '2026-10-01T20:16:40'
+    action: 'T-3670: question v2 — operator: threat model is BOTH (mistakes and determined adversary), as strong as possible; layered guardrail + isolation design; vendor-only gaps listed as an evidenced feature request'
+  - time: '2026-10-01T20:17:28'
+    action: 'T-3670: operator ruling — agents will run non-root; D5 elevation path (least privilege, auditable, fail-closed, no self-approval, prompt-free low-risk, one-tap risky, Linux/macOS/WSL) added to question v2; rulings recorded'
+  - time: '2026-10-01T20:32:48'
+    action: 'T-3670: context pack v2 (sections match question v2)'
+  - time: '2026-10-01T20:44:21'
+    action: 'T-3670: question v3 — harness-independent governance is the primary decision; T-2428 payload mediation (GO) and T-586 TypeScript (GO) must be weighed; polyglot allowed; TS added to comparisons'
+  - time: '2026-10-01T20:45:05'
+    action: 'T-3670: reflection after reading back T-2428 (payload mediation) and T-586 (TypeScript) — the question was too narrow; harness independence is primary'
+  - time: '2026-10-01T20:47:21'
+    action: 'T-3670: context pack §13 prior decisions, §14 harness landscape'
+  - time: '2026-10-01T21:01:50'
+    action: 'T-3670: file T-3672 (inception: agent asks the operator for facts the framework already encodes — recall skipped; paid-backend hook over-match) after operator rebuke 2026-10-01'
+  - time: '2026-10-01T21:03:40'
+    action: 'T-3670: round-1 blind answers from internal seats (openai/codex, zai/opencode, anthropic/claude)'
+  - time: '2026-10-01T21:04:46'
+    action: 'T-3670: round-1 synthesis — 3/3 consensus on layered boundary (non-root uid + root-owned enforcement + aef-govd broker + server-side protection), broker elevation, Tier 0 broker pilot, fail-closed signed delivery; D2 language split (TS vs Go-polyglot x2)'
+  - time: '2026-10-05T22:10:10'
+    action: 'T-3670: dispose IW-1..5 from the round-1 review (IW-2/4/5 answered, IW-1/3 deferred to the pilot), state what a GO adopts, evidence — decision-ready (T-3896)'
+  - time: '2026-10-17T14:31:58'
+    action: 'T-3670: inception decision GO (via Watchtower)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 15 commit(s), 22735 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 22735
+  commits: 15
+  files_changed: 16
+  lines_added: 2472
+  lines_removed: 467
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3670-core-module-language-move-established-se.md
+generated_by: context-agent-hybrid
