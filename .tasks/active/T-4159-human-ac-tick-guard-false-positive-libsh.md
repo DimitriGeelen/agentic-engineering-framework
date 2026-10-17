@@ -364,3 +364,10 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4159-human-ac-tick-guard-false-positive-libsh.md
 - **Context:** Initial task creation
+
+### 2026-10-17 — more instances of the same class
+- AEF session 2026-10-15..17: the guard refused read-only commands and scratch helpers whose argument merely
+  NAMED a `T-NNNN-*.md` path or `.context/project/concerns.yaml` next to inline python (yaml validation, a
+  message-store helper, a `glob` print). Workaround each time: rename the output file or split the command.
+- 1023 (msg cc1a5259, item 7, their T-119): the focus-drift gate and check-human-ac-tick match command TEXT, so
+  they refuse commands aimed at a scratch clone outside the repo whose paths look like task files.
