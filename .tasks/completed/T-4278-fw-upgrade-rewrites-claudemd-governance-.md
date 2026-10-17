@@ -1,15 +1,24 @@
 ---
-id: T-4282
-name: "Test hygiene from the 2026-10-17 worker batches: 2 dead negations in t4257, missing git-discovery fence in t4248_install_inherited_env (pre-push invariants red)"
+id: T-4278
+name: "fw upgrade rewrites CLAUDE.md governance sections (step 1/10) before the vendor
+  step can refuse; a T-3850 refusal leaves CLAUDE.md ahead of the installed code (ring20)"
 description: >
-  Test hygiene from the 2026-10-17 worker batches: 2 dead negations in t4257, missing git-discovery fence in t4248_install_inherited_env (pre-push invariants red)
+  ring20 msg 0d463b3e (upgrade ed683536a -> 112c098b9): the first fw upgrade run was
+  refused by T-3850 (2 locals not in .fwvendor-preserve.yaml) and the vendor step
+  wrote nothing, but step [1/10] had already rewritten CLAUDE.md governance sections,
+  so CLAUDE.md described the new budget ladder while the old code stayed installed.
+  Fix: run the refusal preconditions (T-3850 local-file check and any other refusing
+  check) before step 1, or stage step 1 and roll it back when a later step refuses;
+  an upgrade that refuses must leave the consumer byte-identical. Related: T-4232
+  (step 1 deletes consumer text). Test: a consumer with an unpreserved local file;
+  upgrade refuses; CLAUDE.md unchanged.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw, lib/upgrade.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -37,9 +46,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-17T22:39:49Z
-last_update: 2026-10-17T22:39:49Z
-date_finished: null
+created: 2026-10-17T19:03:51Z
+last_update: 2026-10-17T23:23:10Z
+date_finished: 2026-10-17T23:23:10Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,9 +59,37 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-17T19:15:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-17T19:16:20Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4282: Test hygiene from the 2026-10-17 worker batches: 2 dead negations in t4257, missing git-discovery fence in t4248_install_inherited_env (pre-push invariants red)
+# T-4278: fw upgrade rewrites CLAUDE.md governance sections (step 1/10) before the vendor step can refuse; a T-3850 refusal leaves CLAUDE.md ahead of the installed code (ring20)
 
 ## Context
 
@@ -62,8 +99,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] tools/bats-dead-negation-lint.py reports 0 dead negations under tests/ (t4257 lines 67-68 made live)
-- [x] tests/unit/t4248_install_inherited_env.bats loads ../git_fence; tests/lint invariant suite has no red
+- [x] `fw upgrade` runs the vendor step's T-3850 local-file check (no writes) before step [0]/[1], and refuses the whole upgrade (rc 1, `REFUSED`) when it would refuse
+- [x] Regression test: consumer with an unpreserved local file under `.agentic-framework/` and stale CLAUDE.md governance -> `fw upgrade` refuses and the consumer tree (CLAUDE.md, .claude/settings.json, every file) hashes identical before/after; the test fails without the fix
+- [x] `--allow-delete-locals` still lets the upgrade proceed past the precheck (flag forwarded)
+- [x] T-3850, T-4232 and upgrade_fresh_machine_simulation.bats stay green
+- [x] `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -112,10 +152,6 @@ date_finished: null
 -->
 
 ## Verification
-python3 tools/bats-dead-negation-lint.py tests 2>&1 | grep -q '| dead 0 '
-grep -q '^load ../git_fence' tests/unit/t4248_install_inherited_env.bats
-out=$(bats tests/lint 2>&1); ! echo "$out" | grep -q '^not ok'
-out=$(bats tests/unit/t4257_doctor_dm_host_summary.bats 2>&1); echo "$out" | grep -q '^ok' && ! echo "$out" | grep -q '^not ok'
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -245,8 +281,22 @@ out=$(bats tests/unit/t4257_doctor_dm_host_summary.bats 2>&1); echo "$out" | gre
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 900 bats tests/unit/t4278_upgrade_refusal_atomic.bats > /tmp/.t4278.out 2>&1 && ! grep -q "^not ok" /tmp/.t4278.out
+test "$(grep -c '# skip' /tmp/.t4278.out)" -eq 0
+timeout 600 bats tests/unit/t3850_vendor_preserve_locals.bats tests/unit/t4232_claudemd_governance_consumer_edits.bats > /tmp/.t4278b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4278b.out
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** ring20 (ed683536a -> 112c098b9): `fw upgrade` was refused by T-3850 (2 locals not in `.fwvendor-preserve.yaml`), the vendor step wrote nothing, yet CLAUDE.md already carried the new governance (new budget ladder) over the old installed code.
+
+**Root cause:** the T-3850 check lives only inside `do_vendor` (`bin/fw`, the `vendor_preserve.py pre` call near line 703), first reached at step [4b/9] (`lib/upgrade.sh` ~2055). Steps 0-4 (skeleton, CLAUDE.md rewrite at step [1/10] `lib/upgrade.sh:1571`, templates, seeds, git hooks) had already written before the refusal aborted the run (bin/fw's errexit+pipefail ends it at the step-4b pipeline).
+
+**Fix:** `do_vendor --precheck` (bin/fw) runs only the `vendor_preserve.py pre --dry-run` check and returns its verdict (the T-3907 `REAL RUN WOULD REFUSE` line, so an older helper copy found beside bin/fw still answers — a new python flag broke 4 fresh-machine tests through that skew). do_upgrade calls it before step 0 with the same flags as step 4b and refuses with nothing written.
+
+**Why structurally allowed:** each refusal is a local guard inside the step that owns it; nothing asserted the cross-step invariant "a refusing upgrade writes nothing". T-1912 (version) and T-3150/T-4232 (CLAUDE.md) refuse before their own writes, but the vendor refusal sits four steps later. Tests exercised `do_vendor` alone (t3850) or step 1 alone (t4232), never an upgrade that refuses late.
+
+**Prevention:** `tests/unit/t4278_upgrade_refusal_atomic.bats` hashes the whole consumer tree around a refusing upgrade, so a refusing check that lands after a writing step fails it.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -338,7 +388,29 @@ out=$(bats tests/unit/t4257_doctor_dm_host_summary.bats 2>&1); echo "$out" | gre
 
 ## Updates
 
-### 2026-10-17T22:39:49Z — task-created [task-create-agent]
+### 2026-10-17T19:03:51Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4282-test-hygiene-from-the-2026-10-17-worker-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4278-fw-upgrade-rewrites-claudemd-governance-.md
 - **Context:** Initial task creation
+
+### 2026-10-17T21:57:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1c9a7129
+- **Timestamp:** 2026-10-17T23:26:46Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#2 (Agent)** — Regression test: consumer with an unpreserved local file under `.agentic-framework/` and stale CLAUDE.md governance -> `fw upgrade` refuses and the consumer tree (CLAUDE.md, .claude/settings.json, eve
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=claude/settings.json in: Regression test: consumer with an unpreserved local file under `.agentic-framework/` and stale CLAUDE.md governance -> `fw upgrade` refuses and the co`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-17T23:23:10Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

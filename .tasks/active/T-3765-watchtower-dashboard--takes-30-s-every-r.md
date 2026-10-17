@@ -10,12 +10,12 @@ description: >
   reported No Watchtower reachable because its probe hits /. Fix the cache (signature
   on dir mtimes, or background refresh) and probe a cheap endpoint.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [lib/arc_membership.py, web/blueprints/core.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-02T23:25:13Z
-last_update: 2026-10-17T22:53:15Z
-date_finished:
+last_update: '2026-10-17T23:45:21Z'
+date_finished: 2026-10-17T23:44:19Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -65,6 +65,15 @@ cost_estimate_proposed:
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=8 (lines=269,acs=4)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-17T23:45:21Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius: 3
+      tier: 2
+      effort: 8
+    rationale: blast_radius=3 (2-components); tier=2 (workflow:build); effort=8 
+      (lines=342,acs=8)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-10-02T23:30:49Z'
@@ -367,6 +376,15 @@ full re-read.
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** The arc-membership index on / is now cached per task file instead of re-reading all task files after any change, which is what made / take 10-15 s on the live server after an edit. Live / after the fix: 0.79-1.09 s (before: 10.0 s, 14.8 s, 7.4 s spikes). Content is unchanged by design; whether the page still looks right is the open Human check. Not fixed here and filed separately: the first request after a server start is still 48-85 s, from four other uncached whole-corpus readers.
+
+**Evidence:**
+- Live `bin/fw watchtower url` /: before 10.0 / 14.8 / 2.07 / 7.4 / 1.38 / 1.44 s; after 0.97 / 0.90 / 0.79 / 1.09 s
+- In-process: arc index after one touched file 0.075 s (full re-scan 0.449 s); warm / 0.73-0.80 s
+- Server restarted 2026-10-18, `bin/fw watchtower current` exits 0
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -406,3 +424,15 @@ full re-read.
 - **After (live, restarted pid 479788):** 0.97 s, 0.90 s, 0.79 s, 1.09 s.
 - **Not fixed (open):** cold request is 48–85 s in-process — dominated by uncached whole-corpus parses outside arc membership: `_get_token_usage` (costs `_load_all_sessions`, ~19 s), `approvals._load_pending_go_decisions` (~19 s), `cockpit._human_verify_for` (~28 s), `shared.get_all_task_metadata` (~9 s). Arc membership is ~0.45 s of that cold cost. Needs its own task.
 - **review-batch probe:** already `/api/_identity` (`lib/watchtower.sh:67` via `_watchtower_url`; curl spy shows one identity call; 0.47 s). The `/` probe the description names is `lib/verify-acs.sh:80` — not changed here. The review-batch bats test passes before the fix too; it pins existing behaviour rather than proving a fix.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-b5d440bf
+- **Timestamp:** 2026-10-17T23:44:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-17T23:44:19Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

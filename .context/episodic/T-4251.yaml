@@ -1,0 +1,85 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4251: install.sh in a target without .git attaches to an enclosing repo (here rooted at /): hooks written outside the target, task ids continue from the parent, bootstrap commit fails, yet 'All verification steps passed' (dimitri-mint-dev run 3)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T22:38:57Z
+# ============================================================================
+
+task_id: T-4251
+task_name: "install.sh in a target without .git attaches to an enclosing repo (here rooted at /): hooks written outside the target, task ids continue from the parent, bootstrap commit fails, yet 'All verification steps passed' (dimitri-mint-dev run 3)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T15:01:58Z
+completed: 2026-10-17T22:31:20Z
+duration_days: 0
+updates_count: 3
+first_commit: 2026-10-17T23:36:21+02:00
+last_commit: 2026-10-17T23:51:33+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw init gives the target its own repo only where no real project encloses it. tick Agent ACs, RCA prevention, record test results
+
+# Key outcomes
+outcomes:
+  - '`fw init <dir>` creates <dir>''s own git repo when <dir> is not inside any work tree: `git -C <dir> rev-parse --show-toplevel` equals <dir>'
+  - '`fw init <dir>` creates <dir>''s own repo when the enclosing repo''s top-level is `/` or `$HOME` (HOME stand-in test); the enclosing repo''s HEAD does not move and no hook lands in its .git/hooks'
+  - '`fw init <dir>` inside a genuine enclosing project repo (top-level neither `/` nor `$HOME`, not greenfield) attaches to it, does NOT nest a repo, and prints one notice naming the enclosing top-level and `git init <dir>` as the way to get a separate repo'
+  - '`install.sh` creating a NEW target directory itself passes the greenfield signal, so fw init creates the target''s own repo even under a genuine enclosing repo; verify() requires the own-top-level only in the own-repo cases'
+  - 'Regression bats tests (tests/unit/t4251_init_own_git_repo.bats) cover all four cases plus the T-4248 install.sh re-run no-op, and pass'
+  - '`bin/fw vendor self --check` is clean; tests/unit/upgrade_fresh_machine_simulation.bats not-ok count reported in Updates'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/init.sh'
+  - 'install.sh'
+  - 'lib/init.sh'
+  - '.tasks/active/T-4251-installsh-in-a-target-without-git-attach.md'
+  - 'tests/unit/t4251_init_own_git_repo.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T23:36:21'
+    action: 'T-4251: fw init gives the target its own repo only where no real project encloses it'
+  - time: '2026-10-17T23:51:33'
+    action: 'T-4251: tick Agent ACs, RCA prevention, record test results'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 449 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 449
+  commits: 2
+  files_changed: 5
+  lines_added: 210
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4251-installsh-in-a-target-without-git-attach.md
+generated_by: context-agent-hybrid

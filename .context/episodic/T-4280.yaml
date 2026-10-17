@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4280: Tier 0 kill-by-name rule over-blocks: killall -TERM <name> and lowercase signal names containing f/r match the -f/-r clusters (T-3640 follow-up)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T23:23:07Z
+# ============================================================================
+
+task_id: T-4280
+task_name: "Tier 0 kill-by-name rule over-blocks: killall -TERM <name> and lowercase signal names containing f/r match the -f/-r clusters (T-3640 follow-up)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T21:56:16Z
+completed: 2026-10-17T23:19:22Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-18T00:14:46+02:00
+last_commit: 2026-10-18T00:21:56+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Tier 0 kill-by-name rules read a signal name (-term, -sigprof) as the signal, not an -r/-f cluster. tick final Agent AC — nearest Tier 0 suites green, vendor in sync
+
+# Key outcomes
+outcomes:
+  - 'Signal-name options pass the -f/-r rules: `killall -TERM foo`, `killall -term foo`, `pkill -HUP foo`, `pkill -sigprof foo`, `pkill -PROF foo`, `killall -s TERM foo`, `pkill --signal=TERM foo` exit 0 from check-tier0.sh'
+  - 'Every T-3640 block case still blocks: pkill -9/-KILL/-SIGKILL/-s 9/--signal=KILL, pkill -f/--full/-ef, killall -r/--regexp, killall -KILL (tests/unit/t3640_tier0_kill_by_name.bats green)'
+  - 'Regression test `tests/unit/t4280_tier0_kill_signal_names.bats` fails without the fix and passes with it'
+  - 'Nearest Tier 0 suites still green; vendored copy in sync (`bin/fw vendor self --check` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-tier0.sh'
+  - 'agents/context/check-tier0.sh'
+  - '.tasks/active/T-4280-tier-0-kill-by-name-rule-over-blocks-kil.md'
+  - 'tests/unit/t4280_tier0_kill_signal_names.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T00:14:46'
+    action: 'T-4280: Tier 0 kill-by-name rules read a signal name (-term, -sigprof) as the signal, not an -r/-f cluster'
+  - time: '2026-10-18T00:21:56'
+    action: 'T-4280: tick final Agent AC — nearest Tier 0 suites green, vendor in sync'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 83 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 83
+  commits: 2
+  files_changed: 4
+  lines_added: 473
+  lines_removed: 5
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4280-tier-0-kill-by-name-rule-over-blocks-kil.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4282: Test hygiene from the 2026-10-17 worker batches: 2 dead negations in t4257, missing git-discovery fence in t4248_install_inherited_env (pre-push invariants red)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T23:49:35Z
+# ============================================================================
+
+task_id: T-4282
+task_name: "Test hygiene from the 2026-10-17 worker batches: 2 dead negations in t4257, missing git-discovery fence in t4248_install_inherited_env (pre-push invariants red)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T22:39:49Z
+completed: 2026-10-17T23:45:12Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-18T00:45:17+02:00
+last_commit: 2026-10-18T00:45:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  make t4257's two negated asserts live and fence git discovery in t4248_install_inherited_env (pre-push invariants red)
+
+# Key outcomes
+outcomes:
+  - 'tools/bats-dead-negation-lint.py reports 0 dead negations under tests/ (t4257 lines 67-68 made live)'
+  - 'tests/unit/t4248_install_inherited_env.bats loads ../git_fence; tests/lint invariant suite has no red'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4282-test-hygiene-from-the-2026-10-17-worker-.md'
+  - 'tests/unit/t4248_install_inherited_env.bats'
+  - 'tests/unit/t4257_doctor_dm_host_summary.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T00:45:17'
+    action: 'T-4282: make t4257''s two negated asserts live and fence git discovery in t4248_install_inherited_env (pre-push invariants red)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 65 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 65
+  commits: 1
+  files_changed: 3
+  lines_added: 347
+  lines_removed: 2
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4282-test-hygiene-from-the-2026-10-17-worker-.md
+generated_by: context-agent-hybrid

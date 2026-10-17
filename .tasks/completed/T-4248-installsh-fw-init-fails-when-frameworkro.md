@@ -1,20 +1,28 @@
 ---
-id: T-4251
-name: "install.sh in a target without .git attaches to an enclosing repo (here rooted
-  at /): hooks written outside the target, task ids continue from the parent, bootstrap
-  commit fails, yet 'All verification steps passed' (dimitri-mint-dev run 3)"
+id: T-4248
+name: "install.sh: fw init fails when FRAMEWORK_ROOT/PROJECT_ROOT are inherited (bin/fw
+  honours an env FRAMEWORK_ROOT unchecked) and the installer still prints 'Installation
+  complete!' with exit 0; it also overwrites ~/.local/bin/fw and claude-fw without
+  backup or notice"
 description: >
-  Run aef-install-20261017T144241Z-dimitrimintdev: target /opt/0909-... had no .git;
-  git rev-parse resolved to a repo at /, so install.sh skipped git init, wrote /.git/hooks/pre-commit,
-  continued task ids from /.tasks (T-997), bootstrap commit failed on a stale /.git/index.lock,
-  and the installer still reported success. Fix: git init when the target is not itself
-  a repo top-level (toplevel != target), and fail the verification summary on a failed
-  bootstrap commit. Record F-01..F-24 in the target's .context/install-findings/.
+  dimitri-mint-dev P-019 (live greenfield v2 run, install.sh master/v1.8.10, 2026-10-17):
+  F-01 fw init sourced <target>/lib/init.sh ('No such file'): bin/fw line ~1286 keeps
+  an inherited FRAMEWORK_ROOT unchecked, so FW_LIB_DIR=$FRAMEWORK_ROOT/lib points
+  at the target (hypothesis: their run env carried FRAMEWORK_ROOT/PROJECT_ROOT, G-116
+  class; T-4218's residual note says a leaked FRAMEWORK_ROOT is still honoured). F-02
+  the installer then reports '[x] .framework.yaml not found', '[x] vendor incomplete',
+  yet 'Installation complete!' and exit 0. F-03 it overwrote ~/.local/bin/fw and claude-fw
+  (69,580 B -> 3,707 B router) without backup or notice. Fix: install.sh runs fw init
+  under env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u TASKS_DIR -u CONTEXT_DIR -u _FW_PATHS_DERIVED_BY
+  -u FW_ROUTED_FROM; bin/fw validates an env FRAMEWORK_ROOT (must contain lib/ and
+  agents/, else re-resolve with a warning); the installer exits non-zero and says
+  FAILED when any step reported [x]; back up and announce any replaced ~/.local/bin
+  entry. Test in the fresh-machine simulation with a polluted env.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -44,9 +52,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-17T15:01:58Z
-last_update: 2026-10-17T21:51:30Z
-date_finished:
+created: 2026-10-17T14:24:55Z
+last_update: 2026-10-17T23:29:51Z
+date_finished: 2026-10-17T23:29:51Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,7 +66,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-17T15:15:32Z'
+  - ts: '2026-10-17T14:30:36Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -68,7 +76,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-17T15:16:15Z'
+  - ts: '2026-10-17T14:31:32Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -87,7 +95,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4251: install.sh in a target without .git attaches to an enclosing repo (here rooted at /): hooks written outside the target, task ids continue from the parent, bootstrap commit fails, yet 'All verification steps passed' (dimitri-mint-dev run 3)
+# T-4248: install.sh: fw init fails when FRAMEWORK_ROOT/PROJECT_ROOT are inherited (bin/fw honours an env FRAMEWORK_ROOT unchecked) and the installer still prints 'Installation complete!' with exit 0; it also overwrites ~/.local/bin/fw and claude-fw without backup or notice
 
 ## Context
 
@@ -97,11 +105,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `fw init <dir>` creates <dir>'s own git repo when <dir> is not inside any work tree: `git -C <dir> rev-parse --show-toplevel` equals <dir>
-- [x] `fw init <dir>` creates <dir>'s own repo when the enclosing repo's top-level is `/` or `$HOME` (HOME stand-in test); the enclosing repo's HEAD does not move and no hook lands in its .git/hooks
-- [x] `fw init <dir>` inside a genuine enclosing project repo (top-level neither `/` nor `$HOME`, not greenfield) attaches to it, does NOT nest a repo, and prints one notice naming the enclosing top-level and `git init <dir>` as the way to get a separate repo
-- [x] `install.sh` creating a NEW target directory itself passes the greenfield signal, so fw init creates the target's own repo even under a genuine enclosing repo; verify() requires the own-top-level only in the own-repo cases
-- [x] Regression bats tests (tests/unit/t4251_init_own_git_repo.bats) cover all four cases plus the T-4248 install.sh re-run no-op, and pass
+- [x] bin/fw re-resolves an inherited FRAMEWORK_ROOT that lacks lib/ or agents/ (warning on stderr), and still honours one that has both
+- [x] install.sh runs its `fw init` call under `env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u TASKS_DIR -u CONTEXT_DIR -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM`
+- [x] install.sh exits non-zero and prints FAILED when `fw init` exits non-zero or its output contains a `[x]` step (tests/unit/t4248_install_init_failure.bats: rc case, [x] case, and a passing control)
+- [x] install.sh copies an existing ~/.local/bin/fw or claude-fw to a timestamped backup and announces it before replacing it
+- [x] Regression bats test under tests/unit/ fails on the pre-fix code and passes after the fix (polluted-env case)
 - [x] `bin/fw vendor self --check` is clean; tests/unit/upgrade_fresh_machine_simulation.bats not-ok count reported in Updates
 
 ### Human
@@ -281,19 +289,20 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-out=$(bats tests/unit/t4251_init_own_git_repo.bats 2>&1); echo "$out" | grep -q "^ok" && ! echo "$out" | grep -q "^not ok"
-grep -q 'FW_INIT_OWN_REPO' lib/init.sh && grep -q 'FW_INIT_OWN_REPO' install.sh
+out=$(bats tests/unit/t4248_install_inherited_env.bats 2>&1); echo "$out" | grep -q "^ok" && ! echo "$out" | grep -q "^not ok"
 bin/fw vendor self --check
+timeout 900 bats tests/unit/t4248_install_init_failure.bats > /tmp/.t4248-init.out 2>&1 && ! grep -q "^not ok" /tmp/.t4248-init.out && grep -q '^ok 3 ' /tmp/.t4248-init.out
+test "$(grep -c '# skip' /tmp/.t4248-init.out)" -eq 0
 
 ## RCA
 
-**Symptom:** a greenfield target with no `.git`, inside an enclosing repo at `/`, got no `git init`; hooks went to `/.git/hooks`, task ids continued from `/.tasks`, the bootstrap commit failed on a stale `/.git/index.lock`, and the installer still printed "All verification steps passed".
+**Symptom:** `install.sh` with an inherited FRAMEWORK_ROOT (plus PROJECT_ROOT) made `fw init` source `<target>/lib/init.sh` ("No such file"), and the installer still printed "Installation complete!" with exit 0.
 
-**Root cause:** `lib/init.sh:186` tested `git -C "$target_dir" rev-parse --is-inside-work-tree`, which is true for any enclosing repo, so `git init` was skipped (`lib/init.sh:188`). `install.sh` verify() (`install.sh` HEAD check) resolved `HEAD` through the same enclosing repo, so it passed.
+**Root cause:** two gaps that compose. (1) `bin/fw` (resolution block, before the fix at ~:1311) honoured any inherited `FRAMEWORK_ROOT` without checking it held a framework tree; `fw init` then ran `source "$FW_LIB_DIR/init.sh"` (`bin/fw:9444`) against `<target>/lib/init.sh`, which does not exist. T-2099 made the inherited value deliberate (fork-bomb fix), but nothing validated it. (2) `install.sh` `do_project_init` ran `fw init` with the caller's environment, so a leaked `FRAMEWORK_ROOT`/`PROJECT_ROOT` (dimitri-mint-dev's run) reached it. `install.sh` `link_fw` / `install_claude_fw` did `rm -f` + `cp` over `~/.local/bin/fw` and `claude-fw` with no backup.
 
-**Why structurally allowed:** the only "is it a repo" test asked whether the path is inside a work tree, not whether the work tree's top-level IS the target. The fresh-machine simulation always built the target as its own repo, so no test ever put a target inside an enclosing one.
+**Why structurally allowed:** the fresh-machine simulation (`tests/unit/upgrade_fresh_machine_simulation.bats`) scrubs the env, so no test ever ran `fw init` with a polluted one. A failed `fw init` in the installer only printed a warn and was not counted, so the run went on to "Installation complete!". Replacing the `~/.local/bin` entries had no backup step at all.
 
-**Prevention:** the rule is now explicit (`lib/init.sh` git-init block): own repo when the target is in no work tree, when the enclosing top-level is `/` or `$HOME`, or when install.sh created the directory (`FW_INIT_OWN_REPO=1`); a genuine enclosing project repo (monorepo package) is attached to with a notice, so no repo is nested silently. `install.sh` verify() requires the own top-level exactly in those cases (`TARGET_OWN_REPO`). `tests/unit/t4251_init_own_git_repo.bats` pins all four cases (no repo, `$HOME` stand-in, enclosing project repo, install.sh greenfield + T-4248 re-run no-op), with `GIT_CEILING_DIRECTORIES` so a host repo at `/` (present on this host) cannot leak in. Note: `install.sh --local` clones the committed branch, so the install case tests committed `lib/init.sh`, not the working tree.
+**Prevention:** `tests/unit/t4248_install_inherited_env.bats` runs `bin/fw init` with a polluted `FRAMEWORK_ROOT`, runs `install.sh` with the six variables set, and asserts a backup is taken before the router replaces an existing `fw`/`claude-fw`. Each `[x]` (via `error()`) and a failed `fw init` now increment `INSTALL_ERRORS`, and the installer exits 1 with "Installation FAILED" when it is non-zero. Remaining gap: the FAILED-exit path itself has no test yet (the AC stays open).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -385,16 +394,55 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-17T15:01:58Z — task-created [task-create-agent]
+### 2026-10-17T14:24:55Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4251-installsh-in-a-target-without-git-attach.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4248-installsh-fw-init-fails-when-frameworkro.md
 - **Context:** Initial task creation
 
-### 2026-10-17T19:36:11Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
+### 2026-10-17 — hypothesis confirmed (dimitri-mint-dev msg 5c2e549a, their run 2)
+- The worker that ran install.sh had FRAMEWORK_ROOT, PROJECT_ROOT, _FW_PATHS_DERIVED_BY and FW_ROUTED_FROM ALL set
+  to/for the target (TASKS_DIR/CONTEXT_DIR unset) → bin/fw kept the inherited FRAMEWORK_ROOT → <target>/lib/init.sh.
+  Their run 3 re-runs unchanged master under env -u (result pending) — tells whether master works with a clean env.
+- New, same family: the TermLink dispatch writes `.context/dispatch-results/<name>.md` INTO the target project after
+  each run (agents/termlink/termlink.sh, project_dir), so a greenfield target is never empty after a dispatched
+  attempt. Decide: results belong in the dispatcher's project, not the target — or in a temp dir when the target
+  has no framework yet.
 
-### 2026-10-17 — narrowed rule landed (w4251)
-- **Commit:** c723d0a36 (lib/init.sh, install.sh, vendored init.sh, tests/unit/t4251_init_own_git_repo.bats)
-- **Tests:** t4251_init_own_git_repo.bats 4/4 ok; upgrade_fresh_machine_simulation.bats 16 tests, **0 not-ok**; install_target_project.bats re-run test ok
-- **T-4248 part:** the install.sh re-run no-op hunk was swept into concurrent commit 72f4e927d from the shared index; ownership recorded by empty commit bddd0a35a (T-4248)
+### 2026-10-17 — run 3 result (dimitri-mint-dev msg e3c20734, aef-install-20261017T144241Z-dimitrimintdev)
+- Unchanged GitHub master 704c9988 under `env -u` for the six vars INSTALLS (fw v1.8.10 vendored, doctor exit 0,
+  31 WARN, 0 FAIL). So the init failure is the inherited env, not master: this task's fix is to make bin/fw / install.sh
+  refuse or ignore an inherited FRAMEWORK_ROOT that does not contain lib/init.sh (G-116 class), not a master defect.
+- Hooks loaded mid-session in the worker and every gate crashed missing-hook (fail-open) — likely the same inherited
+  FRAMEWORK_ROOT reaching the hooks. Same root, kept here.
+- Two independent defects filed separately (one bug = one task): install.sh in a target without .git, inside an
+  enclosing repo at / (T-4251); dispatch preamble's plain `fw sidecar inbox` marks other projects' DMs read (T-4252).
+- Record: /opt/0909-boot-into-timeshift-snapshots/.context/install-findings/ (F-01..F-24).
+
+### 2026-10-17T18:41:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+
+### 2026-10-17 — implementation evidence [worker w4248]
+- **Fix:** `bin/fw` (resolution block) drops an inherited `FRAMEWORK_ROOT` that lacks `lib/` or `agents/` with a stderr warning and re-resolves. `install.sh` `do_project_init` runs `fw init` under `env -u` of the six variables, counts a failed `fw init` and every `[x]` in `INSTALL_ERRORS`, and exits 1 with "Installation FAILED". `install.sh` `backup_local_bin_entry` copies an existing `~/.local/bin/fw` / `claude-fw` to `*.bak-<UTC>` before replacing it and announces it.
+- **Regression:** `tests/unit/t4248_install_inherited_env.bats` — 3 tests. All three FAIL on the pre-fix code (test 1 "No such file or directory"; test 2 same; test 3 no "Backed up" line) and PASS after: `ok 1`, `ok 2`, `ok 3`.
+- **Simulation:** `tests/unit/upgrade_fresh_machine_simulation.bats` → 16 ok, **0 not ok** (plan 1..16).
+- **Vendor:** `bin/fw vendor self` run; `bin/fw vendor self --check` → in sync.
+- **Gap left open:** the installer's FAILED-exit path has no test yet (AC left unticked).
+- **Timing:** on this host (load average ~30) a full `fw init` takes about 145 s; the bootstrap commit's secret-scan of ~3,700 files dominates. Installer bats tests are slow for that reason; they are not hung.
+- **Shared-file note:** my `bin/fw` hunk was committed inside `1bd5ce40b` (T-4257) before this commit; the vendored `.agentic-framework/bin/fw` hunk is committed here.
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-1884a9a0
+- **Timestamp:** 2026-10-17T23:43:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-17T23:29:51Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,30 +1,32 @@
 ---
-id: T-4248
-name: "install.sh: fw init fails when FRAMEWORK_ROOT/PROJECT_ROOT are inherited (bin/fw
-  honours an env FRAMEWORK_ROOT unchecked) and the installer still prints 'Installation
-  complete!' with exit 0; it also overwrites ~/.local/bin/fw and claude-fw without
-  backup or notice"
+id: T-3729
+name: "fw designer check-currency advice says 'sync --from-tag' re-pins, but sync
+  refuses until the pin is first updated by hand from 832's announce"
 description: >
-  dimitri-mint-dev P-019 (live greenfield v2 run, install.sh master/v1.8.10, 2026-10-17):
-  F-01 fw init sourced <target>/lib/init.sh ('No such file'): bin/fw line ~1286 keeps
-  an inherited FRAMEWORK_ROOT unchecked, so FW_LIB_DIR=$FRAMEWORK_ROOT/lib points
-  at the target (hypothesis: their run env carried FRAMEWORK_ROOT/PROJECT_ROOT, G-116
-  class; T-4218's residual note says a leaked FRAMEWORK_ROOT is still honoured). F-02
-  the installer then reports '[x] .framework.yaml not found', '[x] vendor incomplete',
-  yet 'Installation complete!' and exit 0. F-03 it overwrote ~/.local/bin/fw and claude-fw
-  (69,580 B -> 3,707 B router) without backup or notice. Fix: install.sh runs fw init
-  under env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u TASKS_DIR -u CONTEXT_DIR -u _FW_PATHS_DERIVED_BY
-  -u FW_ROUTED_FROM; bin/fw validates an env FRAMEWORK_ROOT (must contain lib/ and
-  agents/, else re-resolve with a warning); the installer exits non-zero and says
-  FAILED when any step reported [x]; back up and announce any replaced ~/.local/bin
-  entry. Test in the fresh-machine simulation with a polluted env.
+  2026-10-17: the pin bump half is superseded (re-pinned 0.14.0 -> 0.20.0 -> 0.21.0
+  -> 0.22.0
+  under T-4224 / T-4279, each from 832's announce). What remains: agents/designer/designer.sh:360
+  prints 'Run: fw designer sync --from-tag (re-pin + sha256-verify at the tag)', but
+  the sync
+  refuses a sha that does not match the pin, so the real order is: update the pin
+  from the
+  rail announce (version, sha256, bytes, artifact, tag, vendored_path), then sync.
+  Reproduced
+  in this session at both re-pins. Fix the advice (name both steps), or add a verb
+  that writes
+  the pin from an announce. Original report:
+  055 @72 2026-10-02: 832 released designer 0.15.2 (tag designer-v0.15.2, MANIFEST
+  sha256 68454742196d2a53da2c6fed7dc7cb945c60995690d9224e6ab5e4f72d2f4394, 1063551
+  B). Pin is 0.14.0. The pin must come from 832's announce on the rail, not the tag's
+  own MANIFEST (independent anchor). Obtain or verify the announce from 832 before
+  writing policy/designer-pin.yaml.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: []
-components: []
+horizon: null
+tags: [designer, 055-report, consumer]
+components: [agents/designer/designer.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -52,9 +54,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-17T14:24:55Z
-last_update: 2026-10-17T22:01:01Z
-date_finished:
+created: 2026-10-02T14:53:17Z
+last_update: 2026-10-17T22:24:11Z
+date_finished: 2026-10-17T22:24:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -66,17 +68,17 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-17T14:30:36Z'
+  - ts: '2026-10-02T15:00:23Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=287,acs=4)
+      (workflow:build); effort=8 (lines=269,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-17T14:31:32Z'
+  - ts: '2026-10-02T15:00:41Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -93,9 +95,26 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-17T22:15:48Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4248: install.sh: fw init fails when FRAMEWORK_ROOT/PROJECT_ROOT are inherited (bin/fw honours an env FRAMEWORK_ROOT unchecked) and the installer still prints 'Installation complete!' with exit 0; it also overwrites ~/.local/bin/fw and claude-fw without backup or notice
+# T-3729: Bump designer pin to 0.15.2 from 832's announce (independent anchor), and fix fw designer check-currency advice: it says sync --from-tag re-pins, but sync refuses until the pin is updated from the rail announce
 
 ## Context
 
@@ -105,12 +124,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] bin/fw re-resolves an inherited FRAMEWORK_ROOT that lacks lib/ or agents/ (warning on stderr), and still honours one that has both
-- [x] install.sh runs its `fw init` call under `env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u TASKS_DIR -u CONTEXT_DIR -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM`
-- [x] install.sh exits non-zero and prints FAILED when `fw init` exits non-zero or its output contains a `[x]` step (tests/unit/t4248_install_init_failure.bats: rc case, [x] case, and a passing control)
-- [x] install.sh copies an existing ~/.local/bin/fw or claude-fw to a timestamped backup and announces it before replacing it
-- [x] Regression bats test under tests/unit/ fails on the pre-fix code and passes after the fix (polluted-env case)
-- [x] `bin/fw vendor self --check` is clean; tests/unit/upgrade_fresh_machine_simulation.bats not-ok count reported in Updates
+- [x] Every advice line that tells the operator to run `fw designer sync --from-tag` after a pin/version mismatch (agents/designer/designer.sh, bin/fw) names the pin edit of `policy/designer-pin.yaml` from 832's rail announce as step 1, before the sync
+- [x] No advice line claims that `sync --from-tag` re-pins
+- [x] Regression test under tests/unit/ asserts the advice text names the pin edit before the sync, and fails against the pre-fix text
+- [x] `bin/fw vendor self --check` is clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -143,29 +160,11 @@ bvp_scores_proposed:
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
-<!--
-  Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
-  web/app.py …) add a section headed "Visual Verification" (level-2 heading) after
-  Verification, with one checklist table — the check-visual-verification gate reads it
-  at commit time (T-4213; T-4202 GO):
-
-    | state | control | 1024 | 1440 | 1920 | note |
-    |-------|---------|------|------|------|------|
-    | toolbar | Load | ok | ok | ok | |
-
-  Cells: ok / clipped / hidden / overlap / unreachable (non-ok needs a note). Each
-  listed state needs screenshots at every UX_SHOT_WIDTHS width:
-  fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
--->
-
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
-# Build/refactor/decommission tasks with NO command here are refused. If nothing can be
-# run, add the line `# verification: none — <why nothing can be run>`; it is serviced
-# (queued for review: add a check / other evidence / accept). See docs/reports/T-4024-servicing-loop.md.
 #
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
@@ -288,21 +287,20 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-
-out=$(bats tests/unit/t4248_install_inherited_env.bats 2>&1); echo "$out" | grep -q "^ok" && ! echo "$out" | grep -q "^not ok"
+! grep -rn "re-pin + sha256" agents/designer bin/fw lib
+timeout 600 bats tests/unit/t3158_designer_currency_check.bats > /tmp/.t3729.out 2>&1 && ! grep -q "^not ok" /tmp/.t3729.out && grep -q "^ok .* T-3729" /tmp/.t3729.out
+test "$(grep -c '# skip' /tmp/.t3729.out)" -eq 0
 bin/fw vendor self --check
-timeout 900 bats tests/unit/t4248_install_init_failure.bats > /tmp/.t4248-init.out 2>&1 && ! grep -q "^not ok" /tmp/.t4248-init.out && grep -q '^ok 3 ' /tmp/.t4248-init.out
-test "$(grep -c '# skip' /tmp/.t4248-init.out)" -eq 0
 
 ## RCA
 
-**Symptom:** `install.sh` with an inherited FRAMEWORK_ROOT (plus PROJECT_ROOT) made `fw init` source `<target>/lib/init.sh` ("No such file"), and the installer still printed "Installation complete!" with exit 0.
+**Symptom:** `fw designer check-currency` (and `fw doctor`, which calls it) printed `Run: fw designer sync --from-tag (re-pin + sha256-verify at the tag)` when the pin was behind origin. Following it failed every time: sync refused with `sha256 MISMATCH vs pin`. Reproduced at each re-pin under T-4224/T-4279.
 
-**Root cause:** two gaps that compose. (1) `bin/fw` (resolution block, before the fix at ~:1311) honoured any inherited `FRAMEWORK_ROOT` without checking it held a framework tree; `fw init` then ran `source "$FW_LIB_DIR/init.sh"` (`bin/fw:9444`) against `<target>/lib/init.sh`, which does not exist. T-2099 made the inherited value deliberate (fork-bomb fix), but nothing validated it. (2) `install.sh` `do_project_init` ran `fw init` with the caller's environment, so a leaked `FRAMEWORK_ROOT`/`PROJECT_ROOT` (dimitri-mint-dev's run) reached it. `install.sh` `link_fw` / `install_claude_fw` did `rm -f` + `cp` over `~/.local/bin/fw` and `claude-fw` with no backup.
+**Root cause:** `agents/designer/designer.sh:360` (pre-fix) described `sync --from-tag` as re-pinning, but `do_sync_from_tag` (designer.sh:279-285) only verifies against the existing pin and never writes it, by design: the pin must come from 832's rail announce, an anchor independent of the tag's own MANIFEST. The advice described a verb that does not exist.
 
-**Why structurally allowed:** the fresh-machine simulation (`tests/unit/upgrade_fresh_machine_simulation.bats`) scrubs the env, so no test ever ran `fw init` with a polluted one. A failed `fw init` in the installer only printed a warn and was not counted, so the run went on to "Installation complete!". Replacing the `~/.local/bin` entries had no backup step at all.
+**Why structurally allowed:** the T-3158 suite (leg 2) asserted only that the WARN output *contains* `fw designer sync --from-tag`. It never checked that following the advice would work, so it pinned the wrong text in place. The other `sync --from-tag` hints (designer.sh:196, bin/fw:901, bin/fw:2850) fire when the pin already names the wanted build, so they are correct and unchanged.
 
-**Prevention:** `tests/unit/t4248_install_inherited_env.bats` runs `bin/fw init` with a polluted `FRAMEWORK_ROOT`, runs `install.sh` with the six variables set, and asserts a backup is taken before the router replaces an existing `fw`/`claude-fw`. Each `[x]` (via `error()`) and a failed `fw init` now increment `INSTALL_ERRORS`, and the installer exits 1 with "Installation FAILED" when it is non-zero. Remaining gap: the FAILED-exit path itself has no test yet (the AC stays open).
+**Prevention:** new bats case `T-3729: behind-origin advice names the pin edit BEFORE the sync…` in tests/unit/t3158_designer_currency_check.bats. It asserts that the `policy/designer-pin.yaml` line comes before the sync line, that all six pin fields are named, and that the text never says "re-pin". It fails against the pre-fix text (verified by stashing the fix). The sync refusal message (designer.sh:283) now names the same fields, so both surfaces give the same instruction.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -394,38 +392,27 @@ test "$(grep -c '# skip' /tmp/.t4248-init.out)" -eq 0
 
 ## Updates
 
-### 2026-10-17T14:24:55Z — task-created [task-create-agent]
+### 2026-10-02T14:53:17Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4248-installsh-fw-init-fails-when-frameworkro.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3729-bump-designer-pin-to-0152-from-832s-anno.md
 - **Context:** Initial task creation
 
-### 2026-10-17 — hypothesis confirmed (dimitri-mint-dev msg 5c2e549a, their run 2)
-- The worker that ran install.sh had FRAMEWORK_ROOT, PROJECT_ROOT, _FW_PATHS_DERIVED_BY and FW_ROUTED_FROM ALL set
-  to/for the target (TASKS_DIR/CONTEXT_DIR unset) → bin/fw kept the inherited FRAMEWORK_ROOT → <target>/lib/init.sh.
-  Their run 3 re-runs unchanged master under env -u (result pending) — tells whether master works with a clean env.
-- New, same family: the TermLink dispatch writes `.context/dispatch-results/<name>.md` INTO the target project after
-  each run (agents/termlink/termlink.sh, project_dir), so a greenfield target is never empty after a dispatched
-  attempt. Decide: results belong in the dispatcher's project, not the target — or in a temp dir when the target
-  has no framework yet.
-
-### 2026-10-17 — run 3 result (dimitri-mint-dev msg e3c20734, aef-install-20261017T144241Z-dimitrimintdev)
-- Unchanged GitHub master 704c9988 under `env -u` for the six vars INSTALLS (fw v1.8.10 vendored, doctor exit 0,
-  31 WARN, 0 FAIL). So the init failure is the inherited env, not master: this task's fix is to make bin/fw / install.sh
-  refuse or ignore an inherited FRAMEWORK_ROOT that does not contain lib/init.sh (G-116 class), not a master defect.
-- Hooks loaded mid-session in the worker and every gate crashed missing-hook (fail-open) — likely the same inherited
-  FRAMEWORK_ROOT reaching the hooks. Same root, kept here.
-- Two independent defects filed separately (one bug = one task): install.sh in a target without .git, inside an
-  enclosing repo at / (T-4251); dispatch preamble's plain `fw sidecar inbox` marks other projects' DMs read (T-4252).
-- Record: /opt/0909-boot-into-timeshift-snapshots/.context/install-findings/ (F-01..F-24).
-
-### 2026-10-17T18:41:05Z — status-update [task-update-agent]
+### 2026-10-17T21:57:30Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 
-### 2026-10-17 — implementation evidence [worker w4248]
-- **Fix:** `bin/fw` (resolution block) drops an inherited `FRAMEWORK_ROOT` that lacks `lib/` or `agents/` with a stderr warning and re-resolves. `install.sh` `do_project_init` runs `fw init` under `env -u` of the six variables, counts a failed `fw init` and every `[x]` in `INSTALL_ERRORS`, and exits 1 with "Installation FAILED". `install.sh` `backup_local_bin_entry` copies an existing `~/.local/bin/fw` / `claude-fw` to `*.bak-<UTC>` before replacing it and announces it.
-- **Regression:** `tests/unit/t4248_install_inherited_env.bats` — 3 tests. All three FAIL on the pre-fix code (test 1 "No such file or directory"; test 2 same; test 3 no "Backed up" line) and PASS after: `ok 1`, `ok 2`, `ok 3`.
-- **Simulation:** `tests/unit/upgrade_fresh_machine_simulation.bats` → 16 ok, **0 not ok** (plan 1..16).
-- **Vendor:** `bin/fw vendor self` run; `bin/fw vendor self --check` → in sync.
-- **Gap left open:** the installer's FAILED-exit path has no test yet (AC left unticked).
-- **Timing:** on this host (load average ~30) a full `fw init` takes about 145 s; the bootstrap commit's secret-scan of ~3,700 files dominates. Installer bats tests are slow for that reason; they are not hung.
-- **Shared-file note:** my `bin/fw` hunk was committed inside `1bd5ce40b` (T-4257) before this commit; the vendored `.agentic-framework/bin/fw` hunk is committed here.
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-daa044ef
+- **Timestamp:** 2026-10-17T22:26:00Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Every advice line that tells the operator to run `fw designer sync --from-tag` after a pin/version mismatch (agents/designer/designer.sh, bin/fw) names the pin edit of `policy/designer-pin.yaml` from 
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=policy/designer-pin.yaml in: Every advice line that tells the operator to run `fw designer sync --from-tag` after a pin/version mismatch (agents/designer/designer.sh, bin/fw) name`
+
+### 2026-10-17T22:24:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

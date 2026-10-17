@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3059: pickup_next_id is read-then-write with no lock, so concurrent sends collide
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T23:27:40Z
+# ============================================================================
+
+task_id: T-3059
+task_name: "pickup_next_id is read-then-write with no lock, so concurrent sends collide"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-08-17T06:23:38Z
+completed: 2026-10-17T23:27:11Z
+duration_days: 61
+updates_count: 2
+first_commit: 2026-10-18T00:29:17+02:00
+last_commit: 2026-10-18T00:29:17+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  serialise pickup id allocation + envelope write under an exclusive flock; concurrency regression test
+
+# Key outcomes
+outcomes:
+  - '`pickup_send` holds an exclusive per-project lock across `pickup_next_id` + envelope write, so id allocation and the write are one critical section'
+  - 'Regression test: N concurrent `pickup_send` calls in one project yield N distinct P-NNN ids and N envelope files (fails without the lock)'
+  - 'Neighbouring pickup bats (lib_pickup, lib_pickup_triple_dedup, t3052_pickup_id_collision, t4274_pickup_inbox_filename) stay green; T-4274 push-side filename unchanged'
+  - 'Vendored copy synced (`bin/fw vendor self --check` clean)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-18 — lock primitive'
+    chose: 'a direct `flock -x` on `.context/pickup/.id-allocation.lock` via a bash-allocated fd, held from allocation until the envelope is on disk and released before the remote push.'
+    rationale: 'the lock sits next to the data it guards. It adds no new source dependency (keylock.sh pulls in config.sh, and its `KEYLOCK_DIR` is fixed from `PROJECT_ROOT` at source time). Pickup has a single critical section, so a key/fd registry buys nothing.'
+    alternatives_rejected: ['`keylock_acquire` — it would work, but it couples pickup.sh to keylock''s source-time globals for no gain.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/pickup.sh'
+  - 'lib/pickup.sh'
+  - '.tasks/active/T-3059-pickupnextid-is-read-then-write-with-no-.md'
+  - 'tests/unit/t3059_pickup_send_concurrent_ids.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T00:29:17'
+    action: 'T-3059: serialise pickup id allocation + envelope write under an exclusive flock; concurrency regression test'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 88863 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 88863
+  commits: 1
+  files_changed: 4
+  lines_added: 106
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3059-pickupnextid-is-read-then-write-with-no-.md
+generated_by: context-agent-hybrid

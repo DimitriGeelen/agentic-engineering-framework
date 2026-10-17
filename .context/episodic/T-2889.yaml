@@ -1,0 +1,82 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2889: git stash classifies SAFE but writes the working tree — over-permission in the safe-list
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T23:28:03Z
+# ============================================================================
+
+task_id: T-2889
+task_name: "git stash classifies SAFE but writes the working tree — over-permission in the safe-list"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-09T10:40:43Z
+completed: 2026-10-17T23:27:43Z
+duration_days: 69
+updates_count: 2
+first_commit: 2026-10-18T00:32:50+02:00
+last_commit: 2026-10-18T00:32:50+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  decide git stash/branch/tag on their arguments — write forms no longer pass the task gate's safe fast path
+
+# Key outcomes
+outcomes:
+  - '`is_bash_safe_command` gates the write forms: bare `git stash` and `git stash push|pop|apply|drop|clear`; `git branch -d|-D|-m|-M|-c|-C|--delete|--move|--copy x` and `git branch <newname>`; `git tag -d|--delete x` and `git tag <name>` (create)'
+  - 'The read forms stay SAFE: `git stash list|show`, `git branch`, `git branch -a|-r|-v|--list p|--merged m|--contains c|--show-current`, `git tag`, `git tag -l|--list p`, `git tag --contains c`'
+  - 'Regression bats `tests/unit/t2889_git_refverb_args.bats` fails against the pre-fix safe-commands.sh and passes after'
+  - 'Existing `context_safe_commands.bats`, `safe_commands_*.bats`, `t3096_safe_commands_wrappers.bats`, `test_safe_commands_git_commit.bats` and `check_active_task_*.bats` show no new failures (only the known pre-existing T-2888 test 42; `stash` added to its mutating denylist so its residue is unchanged)'
+  - 'T-3746''s `has_bash_write_pattern` changes are untouched; `bin/fw vendor self --check` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/lib/safe-commands.sh'
+  - 'agents/context/lib/safe-commands.sh'
+  - '.tasks/active/T-2889-git-stash-classifies-safe-but-writes-the.md'
+  - 'tests/unit/context_safe_commands.bats'
+  - 'tests/unit/t2889_git_refverb_args.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T00:32:50'
+    action: 'T-2889: decide git stash/branch/tag on their arguments — write forms no longer pass the task gate''s safe fast path'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 100127 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 100127
+  commits: 1
+  files_changed: 5
+  lines_added: 266
+  lines_removed: 7
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2889-git-stash-classifies-safe-but-writes-the.md
+generated_by: context-agent-hybrid

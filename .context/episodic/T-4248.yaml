@@ -1,0 +1,95 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4248: install.sh: fw init fails when FRAMEWORK_ROOT/PROJECT_ROOT are inherited (bin/fw honours an env FRAMEWORK_ROOT unchecked) and the installer still prints 'Installation complete!' with exit 0; it also overwrites ~/.local/bin/fw and claude-fw without backup or notice
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T23:43:16Z
+# ============================================================================
+
+task_id: T-4248
+task_name: "install.sh: fw init fails when FRAMEWORK_ROOT/PROJECT_ROOT are inherited (bin/fw honours an env FRAMEWORK_ROOT unchecked) and the installer still prints 'Installation complete!' with exit 0; it also overwrites ~/.local/bin/fw and claude-fw without backup or notice"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T14:24:55Z
+completed: 2026-10-17T23:29:51Z
+duration_days: 0
+updates_count: 5
+first_commit: 2026-10-17T16:25:39+02:00
+last_commit: 2026-10-18T00:21:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  file installer blocker from the live greenfield run (inherited FRAMEWORK_ROOT, false success, silent overwrite). hypothesis confirmed by dimitri-mint-dev run 2 (inherited FRAMEWORK_ROOT etc.); dispatch results land in the target. run 3 result (clean env installs); file T-4251 enclosing-repo install and T-4252 shared-identity inbox mail loss. install.sh + bin/fw ignore a polluted inherited env; back up ~/.local/bin entries. install.sh re-run against an initialised target is a no-op (landed in 72f4e927d). test install.sh FAILED path when fw init exits non-zero or reports [x]; tick AC
+
+# Key outcomes
+outcomes:
+  - 'bin/fw re-resolves an inherited FRAMEWORK_ROOT that lacks lib/ or agents/ (warning on stderr), and still honours one that has both'
+  - 'install.sh runs its `fw init` call under `env -u FRAMEWORK_ROOT -u PROJECT_ROOT -u TASKS_DIR -u CONTEXT_DIR -u _FW_PATHS_DERIVED_BY -u FW_ROUTED_FROM`'
+  - 'case, and a passing control)'
+  - 'install.sh copies an existing ~/.local/bin/fw or claude-fw to a timestamped backup and announces it before replacing it'
+  - 'Regression bats test under tests/unit/ fails on the pre-fix code and passes after the fix (polluted-env case)'
+  - '`bin/fw vendor self --check` is clean; tests/unit/upgrade_fresh_machine_simulation.bats not-ok count reported in Updates'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'install.sh'
+  - '.tasks/active/T-4248-installsh-fw-init-fails-when-frameworkro.md'
+  - '.tasks/active/T-4251-installsh-in-a-target-without-git-attach.md'
+  - '.tasks/active/T-4252-dispatch-preamble-makes-workers-run-plai.md'
+  - 'tests/unit/t4248_install_inherited_env.bats'
+  - 'tests/unit/t4248_install_init_failure.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T16:25:39'
+    action: 'T-4248: file installer blocker from the live greenfield run (inherited FRAMEWORK_ROOT, false success, silent overwrite)'
+  - time: '2026-10-17T16:42:50'
+    action: 'T-4248: hypothesis confirmed by dimitri-mint-dev run 2 (inherited FRAMEWORK_ROOT etc.); dispatch results land in the target'
+  - time: '2026-10-17T17:02:43'
+    action: 'T-4248: run 3 result (clean env installs); file T-4251 enclosing-repo install and T-4252 shared-identity inbox mail loss'
+  - time: '2026-10-17T21:36:03'
+    action: 'T-4248: install.sh + bin/fw ignore a polluted inherited env; back up ~/.local/bin entries'
+  - time: '2026-10-17T23:25:02'
+    action: 'T-4248: install.sh re-run against an initialised target is a no-op (landed in 72f4e927d)'
+  - time: '2026-10-18T00:21:44'
+    action: 'T-4248: test install.sh FAILED path when fw init exits non-zero or reports [x]; tick AC'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 6 commit(s), 544 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 544
+  commits: 6
+  files_changed: 7
+  lines_added: 1331
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4248-installsh-fw-init-fails-when-frameworkro.md
+generated_by: context-agent-hybrid

@@ -1,0 +1,80 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3729: fw designer check-currency advice says 'sync --from-tag' re-pins, but sync refuses until the pin is first updated by hand from 832's announce
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T22:26:19Z
+# ============================================================================
+
+task_id: T-3729
+task_name: "fw designer check-currency advice says 'sync --from-tag' re-pins, but sync refuses until the pin is first updated by hand from 832's announce"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-02T14:53:17Z
+completed: 2026-10-17T22:24:11Z
+duration_days: 15
+updates_count: 2
+first_commit: 2026-10-18T00:17:52+02:00
+last_commit: 2026-10-18T00:17:52+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  designer currency advice names the pin edit from 832's announce before sync --from-tag (sync never re-pins)
+
+# Key outcomes
+outcomes:
+  - 'Every advice line that tells the operator to run `fw designer sync --from-tag` after a pin/version mismatch (agents/designer/designer.sh, bin/fw) names the pin edit of `policy/designer-pin.yaml` from 832''s rail announce as step 1, before the sync'
+  - 'No advice line claims that `sync --from-tag` re-pins'
+  - 'Regression test under tests/unit/ asserts the advice text names the pin edit before the sync, and fails against the pre-fix text'
+  - '`bin/fw vendor self --check` is clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/designer/designer.sh'
+  - 'agents/designer/designer.sh'
+  - '.tasks/active/T-3729-bump-designer-pin-to-0152-from-832s-anno.md'
+  - 'tests/unit/t3158_designer_currency_check.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T00:17:52'
+    action: 'T-3729: designer currency advice names the pin edit from 832''s announce before sync --from-tag (sync never re-pins)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 22050 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [designer, 055-report, consumer]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 22050
+  commits: 2
+  files_changed: 6
+  lines_added: 190
+  lines_removed: 24
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3729-bump-designer-pin-to-0152-from-832s-anno.md
+generated_by: context-agent-hybrid

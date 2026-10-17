@@ -1,0 +1,89 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3083: fw doctor takes 4.6 minutes and 88% of it is three checks
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T23:29:11Z
+# ============================================================================
+
+task_id: T-3083
+task_name: "fw doctor takes 4.6 minutes and 88% of it is three checks"
+workflow_type: refactor
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-18T18:58:26Z
+completed: 2026-10-17T23:28:42Z
+duration_days: 60
+updates_count: 2
+first_commit: 2026-10-18T00:34:02+02:00
+last_commit: 2026-10-18T01:11:35+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  doctor port3000 ratchet scans only git-visible files (425s→10s); held-unsurfaced reads receipts once (31s→0.7s). record post-fix doctor profile (190s), doctor bats results, tick Agent ACs
+
+# Key outcomes
+outcomes:
+  - 'Fresh per-check profile of `fw doctor` on this host written to `docs/reports/T-3083-doctor-profile.md` (total, top offenders with seconds, load average at time of run)'
+  - 'Each top offender diagnosed with a file:line root cause in `## RCA` (the TermLink check''s ~74 s explained, not just shortened)'
+  - 'Top offenders fixed without dropping any check''s verdict (every check still emits its line; the port3000 ratchet still WARNs, and its counts now cover only files git can see, which is a correctness fix recorded in the RCA)'
+  - 'Regression test under `tests/unit/` pins the fix and fails without it (`test_port3000_hygiene.py::test_git_repo_scan_skips_gitignored…`, `test_t3083_held_unsurfaced_batched.py`)'
+  - 'Doctor-related bats (`tests/unit/*doctor*.bats`) run; pass/fail counts reported, no new failures vs. before the change (185 ok / 4 not ok; 3 are nightly-baseline reds, 1 is live sidecar host state — see report)'
+  - '`tests/unit/doctor_designer_pin_drift.bats` run and its wall-clock time recorded in the profile report (591 s, 5/5 — was over the 900 s cap)'
+  - '`fw doctor` wall-clock re-measured after the fix and recorded in the profile report (target < 60 s idle — NOT met: 190 s at load ~14-22; no idle window; remaining cost is the Watchtower smoke sweep, 89 s)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'record post-fix doctor profile (190s), doctor bats results, tick Agent ACs'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar/inject.py'
+  - 'docs/reports/T-3083-doctor-profile.md'
+  - 'lib/sidecar/inject.py'
+  - '.tasks/active/T-3083-fw-doctor-takes-46-minutes-and-88-of-it-.md'
+  - 'tests/unit/test_port3000_hygiene.py'
+  - 'tests/unit/test_t3083_held_unsurfaced_batched.py'
+  - 'tools/port3000_hygiene.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T00:34:02'
+    action: 'T-3083: doctor port3000 ratchet scans only git-visible files (425s→10s); held-unsurfaced reads receipts once (31s→0.7s)'
+  - time: '2026-10-18T01:11:35'
+    action: 'T-3083: record post-fix doctor profile (190s), doctor bats results, tick Agent ACs'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 86670 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 86670
+  commits: 2
+  files_changed: 7
+  lines_added: 309
+  lines_removed: 14
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3083-fw-doctor-takes-46-minutes-and-88-of-it-.md
+generated_by: context-agent-hybrid

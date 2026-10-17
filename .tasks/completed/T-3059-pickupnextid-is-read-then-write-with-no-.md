@@ -1,26 +1,23 @@
 ---
-id: T-2889
-name: "git stash classifies SAFE but writes the working tree — over-permission in
-  the safe-list"
+id: T-3059
+name: "pickup_next_id is read-then-write with no lock, so concurrent sends collide"
 description: >
-  Opposite direction to T-2888. Measured: is_bash_safe_command 'git stash' returns
-  SAFE, and has_bash_write_pattern 'git stash' returns no-write, so bare 'git stash'
-  passes the whole fast path with no active task — and bare git stash writes, it stashes
-  the working tree. Same shape: 'git branch -d x' and 'git tag -d x' delete refs and
-  both verbs are on the allowlist. All three pre-existing, none introduced by T-2888.
-  This is the DANGEROUS failure direction per safe-commands.sh:82 — misjudging unsafe
-  as safe skips every gate, where the converse merely gates. Note Tier 0 is a separate
-  hook and still covers branch deletion, so scope the risk honestly before fixing.
-  Likely fix shape: these verbs cannot be decided on the verb alone (same class as
-  config and symbolic-ref), so they need argument inspection or removal from the verb-only
-  allowlist.
+  Split from T-3052. pickup_next_id (lib/pickup.sh) scans the four pickup directories
+  for the highest P-NNN and returns max+1, then pickup_send writes the envelope. Between
+  those two steps nothing holds a lock, so two concurrent 'fw pickup send' calls both
+  read the same high-water mark and both issue the same id. Because an envelope filename
+  IS its id (:566), they then aim at one inbox path. Distinct root cause from T-3052
+  (TOCTOU, not a missed directory), hence a separate task. T-3052 degraded the consequence
+  from silent data loss to a visible dup-N file plus a WARN, so this is no longer
+  a losing failure — but the id is still not unique. Likely fix: lib/keylock.sh exclusive()
+  around read-allocate-write, same treatment OBS-308 proposes for audit.sh.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/pickup.sh]
 related_tasks: []
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
@@ -32,9 +29,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-09T10:40:43Z
-last_update: '2026-10-17T22:30:19Z'
-date_finished:
+created: 2026-08-17T06:23:38Z
+last_update: 2026-10-17T23:27:11Z
+date_finished: 2026-10-17T23:27:11Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -46,35 +43,26 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-09T10:45:07Z'
+  - ts: '2026-08-17T06:30:10Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius: 0
       tier: 2
-      effort: 7
-    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=7 
+      effort: 8
+    rationale: blast_radius=0 (no-signal); tier=2 (no-signal); effort=8 
       (no-signal)
     rubric_sha: e4a00f38e801
-  - ts: '2026-08-17T12:36:10Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 7
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=7 (lines=179,acs=4)
-    rubric_sha: e4a00f38e801
-  - ts: '2026-10-17T22:30:19Z'
+  - ts: '2026-08-17T12:36:11Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=196,acs=7)
+      (workflow:build); effort=8 (lines=202,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-09T10:45:12Z'
+  - ts: '2026-08-17T06:30:19Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -93,7 +81,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-2889: git stash classifies SAFE but writes the working tree — over-permission in the safe-list
+# T-3059: pickup_next_id is read-then-write with no lock, so concurrent sends collide
 
 ## Context
 
@@ -103,11 +91,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `is_bash_safe_command` gates the write forms: bare `git stash` and `git stash push|pop|apply|drop|clear`; `git branch -d|-D|-m|-M|-c|-C|--delete|--move|--copy x` and `git branch <newname>`; `git tag -d|--delete x` and `git tag <name>` (create)
-- [x] The read forms stay SAFE: `git stash list|show`, `git branch`, `git branch -a|-r|-v|--list p|--merged m|--contains c|--show-current`, `git tag`, `git tag -l|--list p`, `git tag --contains c`
-- [x] Regression bats `tests/unit/t2889_git_refverb_args.bats` fails against the pre-fix safe-commands.sh and passes after
-- [x] Existing `context_safe_commands.bats`, `safe_commands_*.bats`, `t3096_safe_commands_wrappers.bats`, `test_safe_commands_git_commit.bats` and `check_active_task_*.bats` show no new failures (only the known pre-existing T-2888 test 42; `stash` added to its mutating denylist so its residue is unchanged)
-- [ ] T-3746's `has_bash_write_pattern` changes are untouched; `bin/fw vendor self --check` clean
+- [x] `pickup_send` holds an exclusive per-project lock across `pickup_next_id` + envelope write, so id allocation and the write are one critical section
+- [x] Regression test: N concurrent `pickup_send` calls in one project yield N distinct P-NNN ids and N envelope files (fails without the lock)
+- [x] Neighbouring pickup bats (lib_pickup, lib_pickup_triple_dedup, t3052_pickup_id_collision, t4274_pickup_inbox_filename) stay green; T-4274 push-side filename unchanged
+- [x] Vendored copy synced (`bin/fw vendor self --check` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -151,54 +138,48 @@ bvp_scores_proposed:
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
 #
-# Pipefail/SIGPIPE hint (L-387): P-011 runs each command under `set -eo pipefail`.
-# `cmd | grep -q PATTERN` exits 141 (SIGPIPE) when grep matches and closes stdin
-# while the upstream is still writing — verification then "fails" even though
-# the pattern was present. Safe pattern: capture first, grep the capture:
-#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
-# Or:
+# ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
+#
+# THE DEFAULT — redirect to a file, then grep the file:
 #     cmd > /tmp/.out 2>&1 && grep -q "PATTERN" /tmp/.out
-# Origin: L-387, captured 4× (T-1716, T-1838, T-1862, T-1863) before this hint.
-#
-# Single pipe only — no intermediate tail/awk/sed stages between capture and grep
-# (T-2090): `echo "$out" | tail -3 | grep -q PAT` re-introduces the SIGPIPE risk
-# the capture step closed off — the middle stage is what `grep -q` slams its
-# stdin on. grep scans the whole captured string anyway, so the tail-3 was
-# cosmetic. Drop it: `echo "$out" | grep -q PAT`.
-#
-# AND ONLY WHILE THE CAPTURE IS SMALL (T-2743). The two hints above are correct
-# for the captures they were written about, and both invert above the pipe
-# buffer. `echo "$out" | grep -q PAT` is NOT SIGPIPE-free — it is SIGPIPE-free
-# only while "$out" fits in the 65536-byte pipe buffer. Above that, with an
-# early match: echo blocks on the full pipe, grep -q exits, echo takes SIGPIPE,
-# pipeline exits 141 under pipefail — the exact failure L-387 exists to prevent.
-# Measured: a Watchtower page is 146,366 bytes, rc=141 on 3/3 runs, deterministic
-# not racy. Any line that curls a rendered page is exposed (routes run 50-200KB).
-# For anything that might be large, redirect to a file:
-#     cmd -o /tmp/.out && grep -q "PATTERN" /tmp/.out
 #     curl -sf "$(bin/fw watchtower url)/page" -o /tmp/.out && grep -q "PAT" /tmp/.out
-# This is the better default even when size is not a concern: `&&` keeps the
-# PRODUCING command's exit code in the verdict, where `out=$(cmd)` discards it —
-# the T-2738 problem one layer down. A 404 from curl fails the line instead of
-# silently producing an empty capture for grep to not-match.
+# Correct at any output size, and `&&` keeps the PRODUCING command's exit code in
+# the verdict. Reach for this first; the alternative below is the special case.
 #
-# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no `set -eo pipefail`. The line above returned 0 when run by hand and
-# 141 under P-011, from the same directory, the same second. To rehearse for real:
-#     bash -c 'set -eo pipefail; <your verification line>'
+# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line under `set -eo
+# pipefail`. When grep matches it exits and closes stdin while cmd is still
+# writing, cmd takes SIGPIPE, the pipeline exits 141 — verification "fails" with
+# the pattern present. Captured 4× (T-1716, T-1838, T-1862, T-1863).
 #
-# BUT NOT for a test runner (T-2738): the capture above discards the command's
-# exit code, and `set -e` is suppressed inside the `if` condition the gate runs
-# each line in — so in `cmd1; cmd2` only cmd2 is the verdict. For pytest/bats
-# that exit code WAS the verdict, and the pass marker you grep instead survives
-# a partial failure: a suite printing "3 failed, 9 passed" satisfies
-# `grep -q "9 passed"`. Generalising to `grep -qE "[0-9]+ passed"` matches the
-# same output. Either keep the exit code:
+# THE EXCEPTION — capture first, grep the capture:
+#     out=$(cmd 2>&1); echo "$out" | grep -q "PATTERN"
+# Valid ONLY while "$out" fits the 65536-byte pipe buffer, and it is on you to
+# know that it does. Above that the form inverts and becomes the very failure
+# L-387 describes: echo blocks on the full pipe, grep -q exits, echo takes
+# SIGPIPE, rc=141 (T-2743 — measured on a 146,366-byte Watchtower page, 3/3 runs,
+# deterministic not racy; rendered routes run 50-200KB, so anything that curls a
+# page is over the line). It also discards cmd's exit code, so a 404 yields an
+# empty capture that grep merely fails to match rather than a failed line.
+# If you do use it: single pipe only, no intermediate tail/awk/sed stage between
+# capture and grep (T-2090) — the middle stage is what `grep -q` slams its stdin
+# on, and grep scans the whole captured string anyway, so the `tail -3` was
+# cosmetic. `echo "$out" | grep -q PAT`, nothing between.
+#
+# TEST RUNNERS need a guard either way (T-2738). `set -e` is suppressed inside the
+# `if` condition the gate runs each line in, so in `cmd1; cmd2` only cmd2 is the
+# verdict — and the pass marker you grep for survives a partial failure: a suite
+# printing "3 failed, 9 passed" satisfies `grep -q "9 passed"`, and generalising
+# to `grep -qE "[0-9]+ passed"` matches the same output. Keep the exit code:
 #     python3 -m pytest <file> -q > /tmp/.out 2>&1 && grep -q passed /tmp/.out
 # or add the guard the exit code used to supply:
 #     out=$(python3 -m pytest <file> -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
 #     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
 # The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
+#
+# REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
+# shell has no `set -eo pipefail`. A line has returned 0 by hand and 141 under
+# P-011, from the same directory, the same second. To rehearse for real:
+#     bash -c 'set -eo pipefail; <your verification line>'
 #
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
@@ -206,11 +187,17 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-out=$(bats tests/unit/t2889_git_refverb_args.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-bash -c 'source agents/context/lib/safe-commands.sh; ! is_bash_safe_command "git stash" && ! is_bash_safe_command "git branch -d x" && ! is_bash_safe_command "git tag -d x" && is_bash_safe_command "git stash list" && is_bash_safe_command "git branch" && is_bash_safe_command "git tag -l"'
+out=$(bats tests/unit/t3059_pickup_send_concurrent_ids.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/lib_pickup.bats tests/unit/lib_pickup_triple_dedup.bats tests/unit/t3052_pickup_id_collision.bats tests/unit/t4274_pickup_inbox_filename.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
+grep -qF 'flock -x "$lock_fd"' lib/pickup.sh
 bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** two concurrent `fw pickup send` calls in one project issued the same P-NNN id and aimed at the same inbox path; since T-3052 the second envelope lands as `*.dup-N.yaml` with a WARN, so the id stops being unique. Reproduced 3/3 runs by the new bats (12 concurrent sends → fewer than 12 distinct ids).
+**Root cause:** `do_pickup_send` (lib/pickup.sh, `pickup_id=$(pickup_next_id)` then the python envelope write) is read-allocate-write with no lock. `pickup_next_id` (lib/pickup.sh:340) derives the next id from the envelopes on disk, and the only thing that raises that mark is the write that comes later, so every send in the gap reads the same max.
+**Why structurally allowed:** every pickup test ran sends one after another, and T-3052 fixed the *consequence* (no silent clobber), which hid the remaining non-uniqueness behind a WARN. No test exercised concurrency.
+**Prevention:** `tests/unit/t3059_pickup_send_concurrent_ids.bats` runs 12 sends at once and asserts 12 distinct ids and files; it fails against the unlocked code.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -225,14 +212,6 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** with no active task, `git stash`, `git branch -d x` and `git tag -d x` pass the task gate's Bash fast path (`check-active-task.sh:269`, `is_bash_safe_command` → exit 0), yet each writes: stash rewrites the working tree and refs/stash, the other two delete refs.
-
-**Root cause:** `agents/context/lib/safe-commands.sh:521` allowlisted `branch`, `tag` and `stash` on the git sub-verb alone (`awk '{print $2}'`). All three are dual-mode verbs whose read and write forms differ only by arguments — the same class the file already excludes `config` and `symbolic-ref` for — and `has_bash_write_pattern` has no git-argument rules, so nothing downstream caught the write forms.
-
-**Why structurally allowed:** the allowlist grew one verb per deadlock incident (T-2052/T-2054/T-2462/T-2878/T-2888), each driven by a *false-block* report. False-permits produce no symptom — the command just runs — so the dangerous direction (safe-commands.sh:82) had no feedback loop, and no test asserted any git write form is gated. Risk scope: Tier 0 (`check-tier0.sh`) still independently catches `git branch -D` (and other forced deletions it maps), so the real exposure was `git stash` (working-tree mutation, recoverable but silent), `git branch -d/-m/-c`, branch/tag creation, and `git tag -d`.
-
-**Prevention:** the three verbs are now decided by argument inspection (`_fw_git_refverb_is_read`), defaulting to GATED for anything not a recognised read form; `tests/unit/t2889_git_refverb_args.bats` pins both directions (write forms gated, read forms safe) per verb, so a future verb-only re-widening fails a test.
 
 ## Evolution
 
@@ -258,6 +237,35 @@ bin/fw vendor self --check
      (logged Tier-2). Non-arc tasks may leave this empty.
 -->
 
+## Recommendation
+
+<!-- T-2945: same shape as inception.md's block — the gate that reads it
+     (audit_inception_recommendation, lib/task-audit.sh:117) is shared, so the
+     shape is copied rather than reinvented.
+
+     REQUIRED once this task reaches partial-complete: Agent ACs done, at least
+     one `### Human` AC still unticked. `lib/review.sh:205-211` (T-2421) BLOCKS
+     `fw task review` emission for build/refactor/test/decommission tasks in that
+     state with no substantive block here — the operator would otherwise open
+     /review/<id> to a blank Recommendation card and be asked to approve a form.
+
+     Not required while every Human AC is ticked or the task has none: the gate
+     only fires on the partial-complete transition. It is here from the start so
+     you write it while you still have the evidence, not when the gate refuses.
+
+     Format (the parser wants the `**Recommendation:**` line at the start of a
+     line; a leading `-` or `*` bullet is also accepted):
+     **Recommendation:** GO / NO-GO / DEFER
+     **Rationale:** Why (cite evidence — what shipped, what was proven, what remains)
+     **Evidence:**
+     - Finding 1
+     - Finding 2
+
+     DEFER is for evidence gaps, not confidence gaps (CLAUDE.md §Presenting Work
+     for Human Review). If the artefact is complete and you still don't want to
+     commit, that is a calibration failure — recommend GO or NO-GO.
+-->
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -268,6 +276,11 @@ bin/fw vendor self --check
      - **Why:** [rationale]
      - **Rejected:** [alternatives and why not]
 -->
+
+### 2026-10-18 — lock primitive
+- **Chose:** a direct `flock -x` on `.context/pickup/.id-allocation.lock` via a bash-allocated fd, held from allocation until the envelope is on disk and released before the remote push.
+- **Why:** the lock sits next to the data it guards. It adds no new source dependency (keylock.sh pulls in config.sh, and its `KEYLOCK_DIR` is fixed from `PROJECT_ROOT` at source time). Pickup has a single critical section, so a key/fd registry buys nothing.
+- **Rejected:** `keylock_acquire` — it would work, but it couples pickup.sh to keylock's source-time globals for no gain.
 
 ## Decision
 
@@ -281,10 +294,22 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-08-09T10:40:43Z — task-created [task-create-agent]
+### 2026-08-17T06:23:38Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-2889-git-stash-classifies-safe-but-writes-the.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3059-pickupnextid-is-read-then-write-with-no-.md
 - **Context:** Initial task creation
 
-### 2026-10-17T22:24:51Z — status-update [task-update-agent]
+### 2026-10-17T22:24:53Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-d2085cad
+- **Timestamp:** 2026-10-17T23:27:26Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-17T23:27:11Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

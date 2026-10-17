@@ -11,7 +11,7 @@ description: >
 status: captured
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:44:00Z
-last_update: '2026-10-17T13:46:22Z'
+last_update: 2026-10-17T23:14:47Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -382,3 +382,6 @@ bvp_scores_proposed:
   .tasks paths, an index-only operation that cannot tick a box.
 - Hypothesis to test first: the decide chain runs git in a child that is killed/timed out after its commit, or two
   git processes (decide commit + a hook/post-commit writer) race on the index; compare with the Flask request timeout.
+
+### 2026-10-17T23:14:47Z — status-update [task-update-agent]
+- **Change:** horizon: next → now

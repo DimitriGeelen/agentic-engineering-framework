@@ -1,26 +1,35 @@
 ---
-id: T-3189
-name: "Gates attribute files from commits that merely REFERENCE a task, not only those
-  authoring it"
+id: T-4282
+name: "Test hygiene from the 2026-10-17 worker batches: 2 dead negations in t4257,
+  missing git-discovery fence in t4248_install_inherited_env (pre-push invariants
+  red)"
 description: >
-  The P-013 render-surface gate (and any check resolving a task's touched files via
-  git log --grep) treats a commit mentioning T-XXX anywhere in its message as a commit
-  BELONGING to T-XXX. Measured on T-3179: 6 commits matched the grep, only 2 were
-  authored under it; d998545b8 is a T-3180 commit whose body reads 'Ref: T-3179 (landing
-  thread)' and it dragged web/blueprints/inception.py into T-3179's blast radius,
-  firing the render gate on a task that touched no render surface. The framework ENCOURAGES
-  cross-references for traceability, so this penalises exactly the habit it asks for,
-  and the penalty is a bypass — which trains agents to reach for --skip flags on correct
-  work. Fix direction: attribute by subject-line prefix (^T-XXX:) rather than message-wide
-  grep, or by trailer.
+  Test hygiene from the 2026-10-17 worker batches: 2 dead negations in t4257, missing
+  git-discovery fence in t4248_install_inherited_env (pre-push invariants red)
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
+# write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
+#                                 # naming the files this task intends to write. Declared
+#                                 # at CAPTURE, unlike components: which the framework
+#                                 # resolves from git history at close. Feeds TWO things:
+#                                 #   1. `fw write-set check T-A T-B` — without it the
+#                                 #      comparison has nothing to compare and every real
+#                                 #      pair exits 2 (undecidable). 0 of 3032 tasks
+#                                 #      declared it, so that gate has never had an input.
+#                                 #   2. BVP blast_radius before close — the 0.6-weighted
+#                                 #      cost term, unavailable for 85% of rankable tasks
+#                                 #      because components: only exists once the task is
+#                                 #      finished (T-3471).
+#                                 # Example: write_set: ["lib/bvp.sh", "tests/unit/t*_bvp*"]
+#                                 # An EMPTY list is a real declaration ("writes nothing"),
+#                                 # which is not the same as omitting the field. Omitted
+#                                 # means unknown, and unknown must never score as cheap.
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -31,9 +40,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-08-26T22:48:50Z
-last_update: 2026-10-17T22:24:52Z
-date_finished:
+created: 2026-10-17T22:39:49Z
+last_update: 2026-10-17T23:45:12Z
+date_finished: 2026-10-17T23:45:12Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -45,36 +54,36 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-08-26T23:00:10Z'
+  - ts: '2026-10-17T22:45:29Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
       tier: 2
       effort: 8
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=202,acs=4)
+      (workflow:build); effort=8 (lines=291,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-08-26T23:00:19Z'
+  - ts: '2026-10-17T22:46:13Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
-      D2: 0
+      D2: 4
       D3: 3
       D4: 2
-      F-RECALL: 0
+      F-RECALL: 2
       F-AUTONOMY: 0
       F3: 0
       F1: 0
       F2: 0
-    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
       (body:component-discoverability); D4=2 (body:env-class-handled); 
-      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
-      (no-signal); F2=0 (no-signal)
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-3189: Gates attribute files from commits that merely REFERENCE a task, not only those authoring it
+# T-4282: Test hygiene from the 2026-10-17 worker batches: 2 dead negations in t4257, missing git-discovery fence in t4248_install_inherited_env (pre-push invariants red)
 
 ## Context
 
@@ -84,11 +93,8 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] One helper `lib/task_commits.py` defines ownership: a commit belongs to T-XXX only when its SUBJECT opens with a task-id list naming it (`T-X: …`, `T-1, T-2: …`, `T-1/T-2: …`); `verdict_ledger._owns` reuses it (one definition, not two)
-- [x] The render-surface gate (`lib/render_surface.sh`) resolves touched paths through the helper only — a commit that names the task in its body (`Ref: T-XXX`) or mid-subject is NOT attributed, with or without the task having its own commits
-- [x] The close-time component resolution (`update-task.sh`), the T-4024 servicing-ledger file list (`update-task.sh`) and the judge's changed-web-files (`lib/reviewer/judge_cli.py`) route through the same helper
-- [x] Regression tests with a fixture repo: Ref-only commit not attributed; subject-prefixed (single and listed ids) attributed; T-318 does not match T-3186; existing T-3198 render tests updated to the new semantics and green
-- [x] `bin/fw vendor self --check` clean
+- [x] tools/bats-dead-negation-lint.py reports 0 dead negations under tests/ (t4257 lines 67-68 made live)
+- [x] tests/unit/t4248_install_inherited_env.bats loads ../git_fence; tests/lint invariant suite has no red
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -121,16 +127,49 @@ bvp_scores_proposed:
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
+<!--
+  Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
+  web/app.py …) add a section headed "Visual Verification" (level-2 heading) after
+  Verification, with one checklist table — the check-visual-verification gate reads it
+  at commit time (T-4213; T-4202 GO):
+
+    | state | control | 1024 | 1440 | 1920 | note |
+    |-------|---------|------|------|------|------|
+    | toolbar | Load | ok | ok | ok | |
+
+  Cells: ok / clipped / hidden / overlap / unreachable (non-ok needs a note). Each
+  listed state needs screenshots at every UX_SHOT_WIDTHS width:
+  fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
+-->
+
 ## Verification
+python3 tools/bats-dead-negation-lint.py tests 2>&1 | grep -q '| dead 0 '
+grep -q '^load ../git_fence' tests/unit/t4248_install_inherited_env.bats
+out=$(bats tests/lint 2>&1); ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t4257_doctor_dm_host_summary.bats 2>&1); echo "$out" | grep -q '^ok' && ! echo "$out" | grep -q '^not ok'
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
+# Build/refactor/decommission tasks with NO command here are refused. If nothing can be
+# run, add the line `# verification: none — <why nothing can be run>`; it is serviced
+# (queued for review: add a check / other evidence / accept). See docs/reports/T-4024-servicing-loop.md.
 #
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
+#
+# ── Mutable-corpus anchor (T-3326) ────────────────────────────────────────────
+# Do NOT anchor a verification line (or a unit test it runs) to MUTABLE corpus
+# state — an exact live count, or a grep of live `fw audit`/`fw doctor` output
+# for a specific corpus entity (a named arc, a task count, a census number).
+# The corpus moves under the check, and the line rots: it goes red (or vanishes
+# its pattern) for reasons unrelated to the code under test, blocking closes.
+# Pin the INVARIANT (categories sum, count > 0, property holds) or run the code
+# against a COMMITTED FIXTURE — never the live count or a live-audit line.
+# Origin: T-2969 line grepping live audit for one arc's status; T-2871's census
+# test pinning exact live counts (56→74 files) — both blocked closes (OBS-377).
 #
 # ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
 #
@@ -140,8 +179,8 @@ bvp_scores_proposed:
 # Correct at any output size, and `&&` keeps the PRODUCING command's exit code in
 # the verdict. Reach for this first; the alternative below is the special case.
 #
-# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line under `set -eo
-# pipefail`. When grep matches it exits and closes stdin while cmd is still
+# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line with PIPEFAIL LIVE
+# (errexit is not — see below). When grep matches it exits and closes stdin while cmd is still
 # writing, cmd takes SIGPIPE, the pipeline exits 141 — verification "fails" with
 # the pattern present. Captured 4× (T-1716, T-1838, T-1862, T-1863).
 #
@@ -170,10 +209,66 @@ bvp_scores_proposed:
 #     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
 # The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
 #
+# ── A SKIPPED BATS TEST REPORTS `ok` (T-3217) ─────────────────────────────────
+#
+# `! grep -q "^not ok"` does NOT mean the suite ran. Bats emits a skip as
+#     ok 6 <name> # skip <reason>
+# which is not a `not ok`, so the gate passes and the report says ok while the
+# thing the test covers was measured NOWHERE. Origin: T-3213 guarded a test with
+# `[ "$(id -u)" -eq 0 ] && skip` — the suite runs as root here and in CI, so it
+# skipped on every run that mattered, for as long as it existed.
+#
+# Add a skip clause to any bats verification line. `# skip` is the marker bats
+# writes; counting it is the whole check:
+#     timeout 300 bats <file> > /tmp/.out 2>&1 && ! grep -q "^not ok" /tmp/.out
+#     test "$(grep -c '# skip' /tmp/.out)" -eq 0
+# Two lines, because they answer different questions — "did anything fail" and
+# "did everything run". If some skips are legitimate on your host (an optional
+# dependency is genuinely absent), assert the COUNT you expect rather than zero,
+# and say in the task why that number is right.
+#
+# Corpus-wide, the same check runs from `bin/fw test lint`
+# (tools/bats-silent-skip-lint.py): static mode flags guards that are fixed for
+# a deployment rather than probing an optional dependency, and `--tap FILE`
+# reports the skips a real run actually fired.
+#
 # REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no `set -eo pipefail`. A line has returned 0 by hand and 141 under
-# P-011, from the same directory, the same second. To rehearse for real:
-#     bash -c 'set -eo pipefail; <your verification line>'
+# shell has no pipefail. A line has returned 0 by hand and 141 under P-011, from
+# the same directory, the same second. To rehearse for real:
+#     bash -c 'set -o pipefail; <your verification line>'
+#
+# NOTE THE MISSING `-e` — it is not a typo (T-3203). This file used to prescribe
+# `set -eo pipefail` here, which is NOT the gate: it adds errexit the gate does
+# not have, so it FAILS lines the gate PASSES. Measured, 10 lines, 3 diverged:
+#     line                            gate    set -eo (old)   set -o (this)
+#     false; true                     PASS    FAIL  wrong     PASS  ok
+#     cd /nonexistent; echo ok        PASS    FAIL  wrong     PASS  ok
+#     grep -q MISS file; true         PASS    FAIL  wrong     PASS  ok
+# The divergence is one-directional and that is the trap: the old rehearsal only
+# ever fails lines the gate accepts, so it produces false REDS, and an author
+# who "fixes" a line to satisfy it is fixing something that was never broken —
+# while the line that actually is broken (`cmd1; cmd2` where cmd1 fails) passes
+# both. Re-derive rather than trust this table — it is pinned, not asserted:
+#     bats tests/unit/t3203_p011_gate_semantics.bats
+#
+# ── `cmd1; cmd2` IS JUDGED ONLY ON cmd2 (T-3203) ──────────────────────────────
+#
+# The gate runs each line as the CONDITION of an `if` (update-task.sh:1215), and
+# POSIX suppresses errexit for a compound command in an `if` condition — through
+# the subshell. So pipefail applies and `set -e` does not, and in a sequence only
+# the LAST command's status reaches the verdict. `cd /nonexistent; echo ok` passes.
+# 2,644 of 10,997 verification lines in this corpus contain `;` (re-derive with
+# the query in docs/reports/T-3203-p011-gate-semantics.md).
+#
+# SAFE SHAPES — both verified biting, each against a passing control:
+#   A. one command whose own status is the verdict (prefer this):
+#        out=$(cmd 2>&1); echo "$out" | grep -q PAT && ! echo "$out" | grep -q BAD
+#      the leading assignments are setup; the trailing `&&` chain is the verdict.
+#   B. an explicit sub-shell, whose errexit the outer `if` cannot reach into:
+#        bash -c 'set -eo pipefail; cmd1; cmd2'
+#      use when you genuinely need every command in the sequence to count.
+#
+# The rule of thumb: put the assertion LAST, and make sure it is an assertion.
 #
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
@@ -181,12 +276,6 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-python3 -m pytest tests/unit/test_task_commits.py -q > /tmp/.t3189-py 2>&1 && grep -q passed /tmp/.t3189-py
-out=$(bats tests/unit/t3198_render_surface_attribution.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-out=$(bats tests/unit/test_render_surface_gate.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
-! grep -nE -- '--grep' lib/render_surface.sh
-grep -q "task_commits" agents/task-create/update-task.sh && grep -q "task_commits" lib/reviewer/judge_cli.py && grep -q "task_commits" lib/verdict_ledger.py
-bin/fw vendor self --check
 
 ## RCA
 
@@ -203,32 +292,6 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** T-3179's close fired the P-013 render-surface gate although T-3179 touched no render
-surface: d998545b8 (a T-3180 commit whose body says `Ref: T-3179`) donated `web/blueprints/inception.py`.
-
-**Root cause:** every task→files resolver answered "which commits MENTION T-XXX" with its own
-`git log --grep` and called that ownership. `lib/render_surface.sh` (T-3198/T-3904 narrowed the
-primary path to subject-prefixed commits but kept two fallbacks — mid-subject mention, then the
-whole-message `--grep "${task_id}([^0-9]|$)"` at `_render_surface_git_touched_paths`) still
-attributed a body `Ref:` whenever the task had no prefixed commit; `agents/task-create/update-task.sh`
-component resolution (`git log --all --oneline --grep="$TASK_ID"`, unbounded — also a T-318/T-3186
-prefix collision); the T-4024 servicing ledger (`--grep "^T[: ]"`, which git anchors at ANY line of
-the message, body included); and `lib/reviewer/judge_cli.py:_changed_web_files`
-(`--grep={task_id}[^0-9]`). Meanwhile `lib/verdict_ledger.py:_owns` already had the correct
-definition (subject opens with a task-id list) and nobody else used it — five resolvers, four
-definitions.
-
-**Why structurally allowed:** no shared definition of "a task's commits"; each gate re-derived it
-from `git log --grep`, whose anchors apply per line, not per subject. Tests pinned each resolver
-in isolation, and the T-3198 fallback test asserted the body-mention attribution as desired.
-
-**Prevention:** `lib/task_commits.py` is the single definition (`owns`, `owned_commits`,
-`owned_files`, CLI `files|shas`); every gate above routes through it and `verdict_ledger._owns`
-is an alias of it. `tests/unit/test_task_commits.py` pins Ref-only/mid-subject/prefix-collision
-negatives and single/listed-id positives in a fixture repo; the T-3198 bats now asserts the
-Ref-only case is not attributed, and Verification greps that `lib/render_surface.sh` carries no
-`--grep` of its own.
 
 ## Evolution
 
@@ -306,10 +369,31 @@ Ref-only case is not attributed, and Verification greps that `lib/render_surface
 
 ## Updates
 
-### 2026-08-26T22:48:50Z — task-created [task-create-agent]
+### 2026-10-17T22:39:49Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3189-gates-attribute-files-from-commits-that-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4282-test-hygiene-from-the-2026-10-17-worker-.md
 - **Context:** Initial task creation
 
-### 2026-10-17T22:24:52Z — status-update [task-update-agent]
-- **Change:** status: captured → started-work
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-33ef5cae
+- **Timestamp:** 2026-10-17T23:49:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+**Verification-level findings:**
+
+  1. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 1
+     - evidence: `python3 tools/bats-dead-negation-lint.py tests 2>&1 | grep -q '| dead 0 '`
+  2. **l387-sigpipe-risk** (partial, heuristic) @ Verification:line 3
+     - evidence: `out=$(bats tests/lint 2>&1); ! echo "$out" | grep -q '^not ok'`
+
+### 2026-10-17T23:45:12Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

@@ -1,0 +1,77 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3711: fw upgrade step 5 regenerates .claude/settings.json and drops project hooks registered with fw hook-enable --script, although hook-enable promises they survive regeneration
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T23:03:18Z
+# ============================================================================
+
+task_id: T-3711
+task_name: "fw upgrade step 5 regenerates .claude/settings.json and drops project hooks registered with fw hook-enable --script, although hook-enable promises they survive regeneration"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-02T11:19:38Z
+completed: 2026-10-17T23:01:36Z
+duration_days: 15
+updates_count: 2
+first_commit: 2026-10-18T00:41:57+02:00
+last_commit: 2026-10-18T00:41:57+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  reproduce — hook-enable --script hooks (UserPromptSubmit+SessionStart) survive both step-5 branches since T-3833; regression test pins the reported shape
+
+# Key outcomes
+outcomes:
+  - 'Reproduced against the current tree (f8a63c605+): consumer with a `fw hook-enable --script` hook on UserPromptSubmit + SessionStart (055''s check-messages shape), live `fw upgrade` through both step-5 branches (regenerate, then merge) — **not reproducible**: first upgrade prints `KEPT  UserPromptSubmit …/check-messages.sh` and `KEPT  SessionStart …`, settings.json keeps both; second upgrade reports `2 project hook(s) of your own kept as-is` and both remain'
+  - 'Hooks survive: close-out evidence, RCA names T-3833 as the fix; regression test `tests/unit/t3711_upgrade_keeps_hook_enable_script_hooks.bats` pins the hook-enable / UserPromptSubmit+SessionStart shape through both branches (T-3833''s test covers only a PreToolUse matcher hook) — 1/1 ok'
+  - 'Not needed (hooks survive): no source fix'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-3711-fw-upgrade-step-5-regenerates-claudesett.md'
+  - 'tests/unit/t3711_upgrade_keeps_hook_enable_script_hooks.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T00:41:57'
+    action: 'T-3711: reproduce — hook-enable --script hooks (UserPromptSubmit+SessionStart) survive both step-5 branches since T-3833; regression test pins the reported shape'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 22301 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, upgrade, consumer, 055-report]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 22301
+  commits: 1
+  files_changed: 2
+  lines_added: 87
+  lines_removed: 4
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3711-fw-upgrade-step-5-regenerates-claudesett.md
+generated_by: context-agent-hybrid

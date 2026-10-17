@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4278: fw upgrade rewrites CLAUDE.md governance sections (step 1/10) before the vendor step can refuse; a T-3850 refusal leaves CLAUDE.md ahead of the installed code (ring20)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T23:27:01Z
+# ============================================================================
+
+task_id: T-4278
+task_name: "fw upgrade rewrites CLAUDE.md governance sections (step 1/10) before the vendor step can refuse; a T-3850 refusal leaves CLAUDE.md ahead of the installed code (ring20)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T19:03:51Z
+completed: 2026-10-17T23:23:10Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-18T00:38:13+02:00
+last_commit: 2026-10-18T00:38:13+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw upgrade runs the vendor local-file verdict before any step writes — a T-3850 refusal leaves the consumer byte-identical
+
+# Key outcomes
+outcomes:
+  - '`fw upgrade` runs the vendor step''s T-3850 local-file check (no writes) before step [0]/[1], and refuses the whole upgrade (rc 1, `REFUSED`) when it would refuse'
+  - 'Regression test: consumer with an unpreserved local file under `.agentic-framework/` and stale CLAUDE.md governance -> `fw upgrade` refuses and the consumer tree (CLAUDE.md, .claude/settings.json, every file) hashes identical before/after; the test fails without the fix'
+  - '`--allow-delete-locals` still lets the upgrade proceed past the precheck (flag forwarded)'
+  - 'T-3850, T-4232 and upgrade_fresh_machine_simulation.bats stay green'
+  - '`bin/fw vendor self --check` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'bin/fw'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4278-fw-upgrade-rewrites-claudemd-governance-.md'
+  - 'tests/unit/t4278_upgrade_refusal_atomic.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T00:38:13'
+    action: 'T-4278: fw upgrade runs the vendor local-file verdict before any step writes — a T-3850 refusal leaves the consumer byte-identical'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 259 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 259
+  commits: 1
+  files_changed: 6
+  lines_added: 211
+  lines_removed: 8
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4278-fw-upgrade-rewrites-claudemd-governance-.md
+generated_by: context-agent-hybrid

@@ -1,39 +1,26 @@
 ---
-id: T-4281
-name: "WM scope fence treats the session scratchpad (/tmp/claude-*/…/scratchpad) as
-  a source write; selection and close-out helpers cannot be written there"
+id: T-3083
+name: "fw doctor takes 4.6 minutes and 88% of it is three checks"
 description: >
-  Under WM-001/WM-002, Write/Edit to the harness scratchpad (/tmp/claude-0/<project>/<session>/scratchpad/*.py,
-  *.md) is refused by check-active-task's no-source-writes fence, though it is outside
-  the repo and is the sanctioned place for temporary files. Seen 3 times in session
-  2026-10-17 (backlog scan, worker prompt template); worked around via .context/working/.
-  Fix: the fence applies to paths inside PROJECT_ROOT only (or exempts the scratchpad
-  / /tmp like the project-boundary gate's write allowlist). Test: WM focus + scratchpad
-  write passes; WM focus + lib/x.sh write still blocked.
+  Measured 2026-08-18 with per-line timestamps (.context/working/.doctor-profile.txt):
+  total 278.6s. Large-file gate 96.6s, test-infrastructure check 75.0s (counts 4174
+  unit tests), TermLink check 74.0s. Those three are 245.6s = 88%. Everything else
+  together is under 33s. Two reasons this matters beyond wall-clock: (1) fw doctor
+  appears in many tasks' ## Verification blocks and in cron, so it is in the close
+  path; a 4.6-minute gate is one people route around. (2) 74s for a version check
+  is not slow, it is a timeout being hit — that is a correctness signal, not a performance
+  one, and worth diagnosing before optimising. NOTE this corrects an earlier claim
+  of mine that the web smoke loop dominated; measured, smoke was 50.8s of 241s = 21%,
+  and in this run it does not appear above 2s at all. Profiling method: bash -x does
+  not work because bin/fw re-execs; timestamping stdout per line does.
 
-status: started-work
-workflow_type: build
+status: work-completed
+workflow_type: refactor
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/sidecar/inject.py]
 related_tasks: []
-# write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
-#                                 # naming the files this task intends to write. Declared
-#                                 # at CAPTURE, unlike components: which the framework
-#                                 # resolves from git history at close. Feeds TWO things:
-#                                 #   1. `fw write-set check T-A T-B` — without it the
-#                                 #      comparison has nothing to compare and every real
-#                                 #      pair exits 2 (undecidable). 0 of 3032 tasks
-#                                 #      declared it, so that gate has never had an input.
-#                                 #   2. BVP blast_radius before close — the 0.6-weighted
-#                                 #      cost term, unavailable for 85% of rankable tasks
-#                                 #      because components: only exists once the task is
-#                                 #      finished (T-3471).
-#                                 # Example: write_set: ["lib/bvp.sh", "tests/unit/t*_bvp*"]
-#                                 # An EMPTY list is a real declaration ("writes nothing"),
-#                                 # which is not the same as omitting the field. Omitted
-#                                 # means unknown, and unknown must never score as cheap.
 # arc_id:                         # T-1849: optional — slug (e.g. "arc-grooming") OR arc-NNN (e.g. "arc-005")
 #                                 # When set, must resolve to .context/arcs/<id>.yaml; PreToolUse hook
 #                                 # (check-arc-id) blocks save under agent control if it doesn't resolve.
@@ -44,9 +31,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-17T21:57:35Z
-last_update: 2026-10-17T22:53:22Z
-date_finished:
+created: 2026-08-18T18:58:26Z
+last_update: 2026-10-17T23:28:42Z
+date_finished: 2026-10-17T23:28:42Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -58,21 +45,38 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-17T22:00:41Z'
+  - ts: '2026-08-18T19:00:10Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
-      tier: 2
+      tier: 3
       effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=287,acs=4)
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=3 
+      (workflow:refactor); effort=8 (lines=202,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-17T22:01:41Z'
+  - ts: '2026-08-18T19:00:19Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
-      D2: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
+      (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+  - ts: '2026-10-17T22:00:26Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
       D3: 3
       D4: 2
       F-RECALL: 2
@@ -80,14 +84,14 @@ bvp_scores_proposed:
       F3: 0
       F1: 0
       F2: 0
-    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
       (body:component-discoverability); D4=2 (body:env-class-handled); 
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
 ---
 
-# T-4281: WM scope fence treats the session scratchpad (/tmp/claude-*/…/scratchpad) as a source write; selection and close-out helpers cannot be written there
+# T-3083: fw doctor takes 4.6 minutes and 88% of it is three checks
 
 ## Context
 
@@ -97,11 +101,13 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `fw_wm_write_allowed` (lib/wm_tasks.sh) returns success for a Write/Edit path in the harness scratchpad (`/tmp/claude-<uid>/<project>/<session>/scratchpad/x.py`) under a WM focus
-- [x] `fw_wm_write_allowed` still returns failure for `lib/x.sh` under a WM focus (source writes stay fenced)
-- [x] `fw_wm_write_allowed` still returns success for `.context/working/x.yaml` under a WM focus
-- [x] Regression test in tests/unit/ covers all three cases and fails on the pre-fix code
-- [x] `bin/fw vendor self --check` clean
+- [x] Fresh per-check profile of `fw doctor` on this host written to `docs/reports/T-3083-doctor-profile.md` (total, top offenders with seconds, load average at time of run)
+- [x] Each top offender diagnosed with a file:line root cause in `## RCA` (the TermLink check's ~74 s explained, not just shortened)
+- [x] Top offenders fixed without dropping any check's verdict (every check still emits its line; the port3000 ratchet still WARNs, and its counts now cover only files git can see, which is a correctness fix recorded in the RCA)
+- [x] Regression test under `tests/unit/` pins the fix and fails without it (`test_port3000_hygiene.py::test_git_repo_scan_skips_gitignored…`, `test_t3083_held_unsurfaced_batched.py`)
+- [x] Doctor-related bats (`tests/unit/*doctor*.bats`) run; pass/fail counts reported, no new failures vs. before the change (185 ok / 4 not ok; 3 are nightly-baseline reds, 1 is live sidecar host state — see report)
+- [x] `tests/unit/doctor_designer_pin_drift.bats` run and its wall-clock time recorded in the profile report (591 s, 5/5 — was over the 900 s cap)
+- [x] `fw doctor` wall-clock re-measured after the fix and recorded in the profile report (target < 60 s idle — NOT met: 190 s at load ~14-22; no idle window; remaining cost is the Watchtower smoke sweep, 89 s)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -134,48 +140,16 @@ bvp_scores_proposed:
        `bin/fw reviewer T-XXX 2>&1 | grep -q "Overall:.*PASS"` added to ## Verification.
 -->
 
-<!--
-  Render-touching build tasks (web/templates, web/static, web/blueprints, web/shared.py,
-  web/app.py …) add a section headed "Visual Verification" (level-2 heading) after
-  Verification, with one checklist table — the check-visual-verification gate reads it
-  at commit time (T-4213; T-4202 GO):
-
-    | state | control | 1024 | 1440 | 1920 | note |
-    |-------|---------|------|------|------|------|
-    | toolbar | Load | ok | ok | ok | |
-
-  Cells: ok / clipped / hidden / overlap / unreachable (non-ok needs a note). Each
-  listed state needs screenshots at every UX_SHOT_WIDTHS width:
-  fw ux shots <T-ID> <state>=<URL>. This comment is inert: the gate ignores it.
--->
-
 ## Verification
-
-bin/fw vendor self --check
-bats tests/unit/t4281_wm_scratchpad_fence.bats > /tmp/t4281.out 2>&1 && ! grep -q "^not ok" /tmp/t4281.out
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
-# Build/refactor/decommission tasks with NO command here are refused. If nothing can be
-# run, add the line `# verification: none — <why nothing can be run>`; it is serviced
-# (queued for review: add a check / other evidence / accept). See docs/reports/T-4024-servicing-loop.md.
 #
 # Toolchain hint (L-291): if you edited *.vbproj/*.csproj/*.xaml add `dotnet build`;
 # *.go → `go build ./...`; Cargo.toml → `cargo check`; tsconfig.json → `tsc --noEmit`;
 # pom.xml → `mvn -q compile`. P-011 runs only what you write — broken builds slip
 # past otherwise (origin: 003-NTB-ATC-Plugin T-077, broken WPF DLL on master 5 days).
-#
-# ── Mutable-corpus anchor (T-3326) ────────────────────────────────────────────
-# Do NOT anchor a verification line (or a unit test it runs) to MUTABLE corpus
-# state — an exact live count, or a grep of live `fw audit`/`fw doctor` output
-# for a specific corpus entity (a named arc, a task count, a census number).
-# The corpus moves under the check, and the line rots: it goes red (or vanishes
-# its pattern) for reasons unrelated to the code under test, blocking closes.
-# Pin the INVARIANT (categories sum, count > 0, property holds) or run the code
-# against a COMMITTED FIXTURE — never the live count or a live-audit line.
-# Origin: T-2969 line grepping live audit for one arc's status; T-2871's census
-# test pinning exact live counts (56→74 files) — both blocked closes (OBS-377).
 #
 # ── Pipefail/SIGPIPE: grepping a command's output (L-387, T-2090, T-2743, T-2738) ──
 #
@@ -185,8 +159,8 @@ bats tests/unit/t4281_wm_scratchpad_fence.bats > /tmp/t4281.out 2>&1 && ! grep -
 # Correct at any output size, and `&&` keeps the PRODUCING command's exit code in
 # the verdict. Reach for this first; the alternative below is the special case.
 #
-# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line with PIPEFAIL LIVE
-# (errexit is not — see below). When grep matches it exits and closes stdin while cmd is still
+# Why not `cmd | grep -q PAT` (L-387): P-011 runs each line under `set -eo
+# pipefail`. When grep matches it exits and closes stdin while cmd is still
 # writing, cmd takes SIGPIPE, the pipeline exits 141 — verification "fails" with
 # the pattern present. Captured 4× (T-1716, T-1838, T-1862, T-1863).
 #
@@ -215,66 +189,10 @@ bats tests/unit/t4281_wm_scratchpad_fence.bats > /tmp/t4281.out 2>&1 && ! grep -
 #     out=$(bats <file> 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok'
 # The close gate refuses the unguarded form. Bypass: FW_ALLOW_UNJUDGED_TEST_RUN=1.
 #
-# ── A SKIPPED BATS TEST REPORTS `ok` (T-3217) ─────────────────────────────────
-#
-# `! grep -q "^not ok"` does NOT mean the suite ran. Bats emits a skip as
-#     ok 6 <name> # skip <reason>
-# which is not a `not ok`, so the gate passes and the report says ok while the
-# thing the test covers was measured NOWHERE. Origin: T-3213 guarded a test with
-# `[ "$(id -u)" -eq 0 ] && skip` — the suite runs as root here and in CI, so it
-# skipped on every run that mattered, for as long as it existed.
-#
-# Add a skip clause to any bats verification line. `# skip` is the marker bats
-# writes; counting it is the whole check:
-#     timeout 300 bats <file> > /tmp/.out 2>&1 && ! grep -q "^not ok" /tmp/.out
-#     test "$(grep -c '# skip' /tmp/.out)" -eq 0
-# Two lines, because they answer different questions — "did anything fail" and
-# "did everything run". If some skips are legitimate on your host (an optional
-# dependency is genuinely absent), assert the COUNT you expect rather than zero,
-# and say in the task why that number is right.
-#
-# Corpus-wide, the same check runs from `bin/fw test lint`
-# (tools/bats-silent-skip-lint.py): static mode flags guards that are fixed for
-# a deployment rather than probing an optional dependency, and `--tap FILE`
-# reports the skips a real run actually fired.
-#
 # REHEARSING A LINE BY HAND DOES NOT REHEARSE THE GATE (T-2743). Your interactive
-# shell has no pipefail. A line has returned 0 by hand and 141 under P-011, from
-# the same directory, the same second. To rehearse for real:
-#     bash -c 'set -o pipefail; <your verification line>'
-#
-# NOTE THE MISSING `-e` — it is not a typo (T-3203). This file used to prescribe
-# `set -eo pipefail` here, which is NOT the gate: it adds errexit the gate does
-# not have, so it FAILS lines the gate PASSES. Measured, 10 lines, 3 diverged:
-#     line                            gate    set -eo (old)   set -o (this)
-#     false; true                     PASS    FAIL  wrong     PASS  ok
-#     cd /nonexistent; echo ok        PASS    FAIL  wrong     PASS  ok
-#     grep -q MISS file; true         PASS    FAIL  wrong     PASS  ok
-# The divergence is one-directional and that is the trap: the old rehearsal only
-# ever fails lines the gate accepts, so it produces false REDS, and an author
-# who "fixes" a line to satisfy it is fixing something that was never broken —
-# while the line that actually is broken (`cmd1; cmd2` where cmd1 fails) passes
-# both. Re-derive rather than trust this table — it is pinned, not asserted:
-#     bats tests/unit/t3203_p011_gate_semantics.bats
-#
-# ── `cmd1; cmd2` IS JUDGED ONLY ON cmd2 (T-3203) ──────────────────────────────
-#
-# The gate runs each line as the CONDITION of an `if` (update-task.sh:1215), and
-# POSIX suppresses errexit for a compound command in an `if` condition — through
-# the subshell. So pipefail applies and `set -e` does not, and in a sequence only
-# the LAST command's status reaches the verdict. `cd /nonexistent; echo ok` passes.
-# 2,644 of 10,997 verification lines in this corpus contain `;` (re-derive with
-# the query in docs/reports/T-3203-p011-gate-semantics.md).
-#
-# SAFE SHAPES — both verified biting, each against a passing control:
-#   A. one command whose own status is the verdict (prefer this):
-#        out=$(cmd 2>&1); echo "$out" | grep -q PAT && ! echo "$out" | grep -q BAD
-#      the leading assignments are setup; the trailing `&&` chain is the verdict.
-#   B. an explicit sub-shell, whose errexit the outer `if` cannot reach into:
-#        bash -c 'set -eo pipefail; cmd1; cmd2'
-#      use when you genuinely need every command in the sequence to count.
-#
-# The rule of thumb: put the assertion LAST, and make sure it is an assertion.
+# shell has no `set -eo pipefail`. A line has returned 0 by hand and 141 under
+# P-011, from the same directory, the same second. To rehearse for real:
+#     bash -c 'set -eo pipefail; <your verification line>'
 #
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
@@ -282,16 +200,13 @@ bats tests/unit/t4281_wm_scratchpad_fence.bats > /tmp/t4281.out 2>&1 && ! grep -
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+test -s docs/reports/T-3083-doctor-profile.md
+python3 -m pytest tests/unit/test_port3000_hygiene.py tests/unit/test_t3083_held_unsurfaced_batched.py tests/unit/test_t4207_inject_off_surfaces.py -q > /tmp/.t3083-py.out 2>&1 && grep -q passed /tmp/.t3083-py.out
+timeout 120 python3 tools/port3000_hygiene.py doctor-line --root . --baseline .context/audits/port3000-baseline.json > /tmp/.t3083-p3k.out 2>&1; grep -qE '^(OK|WARN)\|port3000 hygiene' /tmp/.t3083-p3k.out
+PROJECT_ROOT=$PWD timeout 60 python3 lib/sidecar_cli.py held-unsurfaced --threshold-hours 24 --json > /tmp/.t3083-hu.out 2>&1 && python3 -c "import json;json.load(open('/tmp/.t3083-hu.out'))"
+bin/fw vendor self --check
 
 ## RCA
-
-**Symptom:** Under WM-001/WM-002, Write/Edit to the harness scratchpad (`/tmp/claude-*/…/scratchpad/*`) is refused with "cannot write source", although the path is outside the repo and is the sanctioned temp location.
-
-**Root cause:** `lib/wm_tasks.sh:129-137` `fw_wm_write_allowed` allows only four in-repo prefixes (`$root/.context/*`, `.tasks/*`, `.claude/*`, `.git/*`) plus two memory paths. Any path outside those is treated as source, including paths outside PROJECT_ROOT that are not source of this project. The caller `agents/context/check-active-task.sh:624` applies it to every Write/Edit under a WM focus.
-
-**Why structurally allowed:** The WM fence was specified as "no source writes" but implemented as "allowlist of in-repo prefixes" with no test pinning the out-of-repo case, so the scratchpad (outside the repo, not source) was classified as source by default.
-
-**Prevention:** Regression test `tests/unit/t4281_wm_scratchpad_fence.bats` pins the scratchpad-allowed / lib-blocked / .context-allowed triad under WM focus.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -306,6 +221,17 @@ bats tests/unit/t4281_wm_scratchpad_fence.bats > /tmp/t4281.out 2>&1 && ! grep -
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `fw doctor` did not finish within 600 s on 2026-10-17 (load ~19). The port3000 line alone took 425.8 s and reported `6642 new since baseline`.
+
+**Root cause (by offender; profile in docs/reports/T-3083-doctor-profile.md):**
+1. *port3000 hygiene ratchet* — `tools/port3000_hygiene.py:iter_scan_files` (was `os.walk`, line ~132) walked every file on disk, gitignored ones included. `.context/scratch/` (gitignored, `.gitignore:161`) had grown to 140,853 files / 7.5 GB. That cost the time, and scratch copies of repo files became thousands of "new" carriers that the 812-entry baseline never held. The WARN was mostly noise. Secondary: `scan_file` ran a regex per line over every file and tokenized every `.py` file, even with no `:3000` in it.
+2. *TermLink phase (45 s)* — `lib/sidecar/inject.py:held_unsurfaced` called `seen.withheld([mid])` per held message. Each call re-parses the whole sent-receipts ledger (`seen.py:119 answered_ids` → `receipts.read_sent`): 90 messages × ~36k rows = 3.24M `json.loads`, 30.7 s.
+3. *August's 74 s TermLink* — no longer reproduces: `termlink --version` 0.015 s, `channel list` 0.10 s. It was a hub-side timeout that day, not a doctor defect. August's other two offenders (test-infra count, large-file gate) had already been fixed by T-3324 and the batched `large-file-scan.sh`.
+
+**Why structurally allowed:** both costs grow with data, not with code. The port3000 test fixtures were tmp dirs with a handful of files, never a git repo with an ignored directory. The held-unsurfaced tests used 1–2 messages and an empty receipts ledger. Each check was fast when written and degraded silently as scratch output and receipts accumulated. T-3452's phase summary shows *that* a phase is slow, but nothing compares it against an expected bound.
+
+**Prevention:** `test_port3000_hygiene.py::test_git_repo_scan_skips_gitignored_but_keeps_untracked_and_vendored_exclusion` pins the git-visible scan set (fails on the old walk). `test_t3083_held_unsurfaced_batched.py` pins one ledger read per call, not per message (old code: 6 reads for 6 messages → fails).
 
 ## Evolution
 
@@ -383,11 +309,22 @@ bats tests/unit/t4281_wm_scratchpad_fence.bats > /tmp/t4281.out 2>&1 && ! grep -
 
 ## Updates
 
-### 2026-10-17T21:57:35Z — task-created [task-create-agent]
+### 2026-08-18T18:58:26Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4281-wm-scope-fence-treats-the-session-scratc.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-3083-fw-doctor-takes-46-minutes-and-88-of-it-.md
 - **Context:** Initial task creation
 
-### 2026-10-17T22:53:22Z — status-update [task-update-agent]
+### 2026-10-17T21:57:30Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-69b6dcd3
+- **Timestamp:** 2026-10-17T23:28:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** PASS
+- **Needs Human:** no
+- **Findings:** none
+
+### 2026-10-17T23:28:42Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

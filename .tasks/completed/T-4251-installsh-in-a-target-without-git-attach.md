@@ -1,22 +1,22 @@
 ---
-id: T-4280
-name: "Tier 0 kill-by-name rule over-blocks: killall -TERM <name> and lowercase signal
-  names containing f/r match the -f/-r clusters (T-3640 follow-up)"
+id: T-4251
+name: "install.sh in a target without .git attaches to an enclosing repo (here rooted
+  at /): hooks written outside the target, task ids continue from the parent, bootstrap
+  commit fails, yet 'All verification steps passed' (dimitri-mint-dev run 3)"
 description: >
-  T-3640 (fd8bb60da) blocks pkill -f/--full and killall -r/--regexp including clustered
-  flags; its worker noted that a signal name read as a flag cluster matches too: 'killall
-  -term' contains r, 'pkill -sigprof' contains f. killall -TERM <name> is an ordinary,
-  non-SIGKILL, exact-name kill and should pass. Fix: parse signal options (-SIGNAME,
-  -s NAME, --signal NAME) before treating a cluster as -f/-r; keep every T-3640 block
-  case. Tests: killall -TERM foo and pkill -HUP foo pass; killall -r 'x.*', pkill
-  -ef x, killall -KILL x still blocked.
+  Run aef-install-20261017T144241Z-dimitrimintdev: target /opt/0909-... had no .git;
+  git rev-parse resolved to a repo at /, so install.sh skipped git init, wrote /.git/hooks/pre-commit,
+  continued task ids from /.tasks (T-997), bootstrap commit failed on a stale /.git/index.lock,
+  and the installer still reported success. Fix: git init when the target is not itself
+  a repo top-level (toplevel != target), and fail the verification summary on a failed
+  bootstrap commit. Record F-01..F-24 in the target's .context/install-findings/.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/init.sh]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,9 +44,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-17T21:56:16Z
-last_update: '2026-10-17T22:00:41Z'
-date_finished:
+created: 2026-10-17T15:01:58Z
+last_update: 2026-10-17T22:31:20Z
+date_finished: 2026-10-17T22:31:20Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -57,8 +57,18 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-17T15:15:32Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-17T21:57:35Z'
+  - ts: '2026-10-17T15:16:15Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -75,19 +85,9 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-17T22:00:41Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=296,acs=6)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4280: Tier 0 kill-by-name rule over-blocks: killall -TERM <name> and lowercase signal names containing f/r match the -f/-r clusters (T-3640 follow-up)
+# T-4251: install.sh in a target without .git attaches to an enclosing repo (here rooted at /): hooks written outside the target, task ids continue from the parent, bootstrap commit fails, yet 'All verification steps passed' (dimitri-mint-dev run 3)
 
 ## Context
 
@@ -97,10 +97,12 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Signal-name options pass the -f/-r rules: `killall -TERM foo`, `killall -term foo`, `pkill -HUP foo`, `pkill -sigprof foo`, `pkill -PROF foo`, `killall -s TERM foo`, `pkill --signal=TERM foo` exit 0 from check-tier0.sh
-- [x] Every T-3640 block case still blocks: pkill -9/-KILL/-SIGKILL/-s 9/--signal=KILL, pkill -f/--full/-ef, killall -r/--regexp, killall -KILL (tests/unit/t3640_tier0_kill_by_name.bats green)
-- [x] Regression test `tests/unit/t4280_tier0_kill_signal_names.bats` fails without the fix and passes with it
-- [x] Nearest Tier 0 suites still green; vendored copy in sync (`bin/fw vendor self --check` clean)
+- [x] `fw init <dir>` creates <dir>'s own git repo when <dir> is not inside any work tree: `git -C <dir> rev-parse --show-toplevel` equals <dir>
+- [x] `fw init <dir>` creates <dir>'s own repo when the enclosing repo's top-level is `/` or `$HOME` (HOME stand-in test); the enclosing repo's HEAD does not move and no hook lands in its .git/hooks
+- [x] `fw init <dir>` inside a genuine enclosing project repo (top-level neither `/` nor `$HOME`, not greenfield) attaches to it, does NOT nest a repo, and prints one notice naming the enclosing top-level and `git init <dir>` as the way to get a separate repo
+- [x] `install.sh` creating a NEW target directory itself passes the greenfield signal, so fw init creates the target's own repo even under a genuine enclosing repo; verify() requires the own-top-level only in the own-repo cases
+- [x] Regression bats tests (tests/unit/t4251_init_own_git_repo.bats) cover all four cases plus the T-4248 install.sh re-run no-op, and pass
+- [x] `bin/fw vendor self --check` is clean; tests/unit/upgrade_fresh_machine_simulation.bats not-ok count reported in Updates
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -278,12 +280,20 @@ cost_estimate_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
-timeout 300 bats tests/unit/t4280_tier0_kill_signal_names.bats > /tmp/.t4280.out 2>&1 && ! grep -q "^not ok" /tmp/.t4280.out
-test "$(grep -c '# skip' /tmp/.t4280.out)" -eq 0
-timeout 300 bats tests/unit/t3640_tier0_kill_by_name.bats > /tmp/.t3640.out 2>&1 && ! grep -q "^not ok" /tmp/.t3640.out
+
+out=$(bats tests/unit/t4251_init_own_git_repo.bats 2>&1); echo "$out" | grep -q "^ok" && ! echo "$out" | grep -q "^not ok"
+grep -q 'FW_INIT_OWN_REPO' lib/init.sh && grep -q 'FW_INIT_OWN_REPO' install.sh
 bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** a greenfield target with no `.git`, inside an enclosing repo at `/`, got no `git init`; hooks went to `/.git/hooks`, task ids continued from `/.tasks`, the bootstrap commit failed on a stale `/.git/index.lock`, and the installer still printed "All verification steps passed".
+
+**Root cause:** `lib/init.sh:186` tested `git -C "$target_dir" rev-parse --is-inside-work-tree`, which is true for any enclosing repo, so `git init` was skipped (`lib/init.sh:188`). `install.sh` verify() (`install.sh` HEAD check) resolved `HEAD` through the same enclosing repo, so it passed.
+
+**Why structurally allowed:** the only "is it a repo" test asked whether the path is inside a work tree, not whether the work tree's top-level IS the target. The fresh-machine simulation always built the target as its own repo, so no test ever put a target inside an enclosing one.
+
+**Prevention:** the rule is now explicit (`lib/init.sh` git-init block): own repo when the target is in no work tree, when the enclosing top-level is `/` or `$HOME`, or when install.sh created the directory (`FW_INIT_OWN_REPO=1`); a genuine enclosing project repo (monorepo package) is attached to with a notice, so no repo is nested silently. `install.sh` verify() requires the own top-level exactly in those cases (`TARGET_OWN_REPO`). `tests/unit/t4251_init_own_git_repo.bats` pins all four cases (no repo, `$HOME` stand-in, enclosing project repo, install.sh greenfield + T-4248 re-run no-op), with `GIT_CEILING_DIRECTORIES` so a host repo at `/` (present on this host) cannot leak in. Note: `install.sh --local` clones the committed branch, so the install case tests committed `lib/init.sh`, not the working tree.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -298,14 +308,6 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
-
-**Symptom:** `killall -term foo` and `pkill -sigprof foo` were blocked as pattern kills (KILLALL -r / PKILL -f) even though they are ordinary exact-name kills with a non-SIGKILL signal. Measured before the fix: uppercase `killall -TERM foo` and `pkill -PROF foo` already passed, because the cluster classes match only lowercase `f`/`r`. Only lowercase signal names were affected, and pkill reads those case-insensitively.
-
-**Root cause:** `agents/context/check-tier0.sh` -f/-r rules (the `-[a-zA-Z]*f[a-zA-Z]*` and `-[a-zA-Z]*r[a-zA-Z]*` alternatives, added by T-3640 in fd8bb60da) treated every dash-word as a flag cluster. pkill reads `-<signal>` before its other options, so `-term`, `-sigprof`, `-vtalrm`, `-pwr`, `-urg`, `-fpe` and `-xfsz` are signal options, not clusters that contain -r or -f.
-
-**Why structurally allowed:** the T-3640 suite pinned the uppercase allowed controls and the block cases, but no lowercase signal-name control. Its worker noticed the gap and it was filed as this follow-up.
-
-**Prevention:** `NOT_SIGNAME` is a negative lookahead in front of both cluster alternatives. It only skips a word that is entirely a signal name, so `-termf` and `-hupr` still block. `tests/unit/t4280_tier0_kill_signal_names.bats` pins three things: lowercase and uppercase signal names pass, every T-3640 block case still blocks, and near-miss clusters still block. Verified red without the fix and green with it.
 
 ## Evolution
 
@@ -383,10 +385,33 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-17T21:56:16Z — task-created [task-create-agent]
+### 2026-10-17T15:01:58Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4280-tier-0-kill-by-name-rule-over-blocks-kil.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4251-installsh-in-a-target-without-git-attach.md
 - **Context:** Initial task creation
 
-### 2026-10-17T21:57:34Z — status-update [task-update-agent]
+### 2026-10-17T19:36:11Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+### 2026-10-17 — narrowed rule landed (w4251)
+- **Commit:** c723d0a36 (lib/init.sh, install.sh, vendored init.sh, tests/unit/t4251_init_own_git_repo.bats)
+- **Tests:** t4251_init_own_git_repo.bats 4/4 ok; upgrade_fresh_machine_simulation.bats 16 tests, **0 not-ok**; install_target_project.bats re-run test ok
+- **T-4248 part:** the install.sh re-run no-op hunk was swept into concurrent commit 72f4e927d from the shared index; ownership recorded by empty commit bddd0a35a (T-4248)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-9f1cb13a
+- **Timestamp:** 2026-10-17T22:38:39Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-17T22:31:20Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

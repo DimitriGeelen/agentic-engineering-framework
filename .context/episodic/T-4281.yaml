@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4281: WM scope fence treats the session scratchpad (/tmp/claude-*/…/scratchpad) as a source write; selection and close-out helpers cannot be written there
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T23:29:36Z
+# ============================================================================
+
+task_id: T-4281
+task_name: "WM scope fence treats the session scratchpad (/tmp/claude-*/…/scratchpad) as a source write; selection and close-out helpers cannot be written there"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T21:57:35Z
+completed: 2026-10-17T23:29:15Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-18T01:12:09+02:00
+last_commit: 2026-10-18T01:12:09+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  WM fence allows the harness scratchpad, refuses traversal
+
+# Key outcomes
+outcomes:
+  - '`fw_wm_write_allowed` (lib/wm_tasks.sh) returns success for a Write/Edit path in the harness scratchpad (`/tmp/claude-<uid>/<project>/<session>/scratchpad/x.py`) under a WM focus'
+  - '`fw_wm_write_allowed` still returns failure for `lib/x.sh` under a WM focus (source writes stay fenced)'
+  - '`fw_wm_write_allowed` still returns success for `.context/working/x.yaml` under a WM focus'
+  - 'Regression test in tests/unit/ covers all three cases and fails on the pre-fix code'
+  - '`bin/fw vendor self --check` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/wm_tasks.sh'
+  - 'lib/wm_tasks.sh'
+  - '.tasks/active/T-4281-wm-scope-fence-treats-the-session-scratc.md'
+  - 'tests/unit/t4281_wm_scratchpad_fence.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T01:12:09'
+    action: 'T-4281: WM fence allows the harness scratchpad, refuses traversal'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 91 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 91
+  commits: 1
+  files_changed: 4
+  lines_added: 477
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4281-wm-scope-fence-treats-the-session-scratc.md
+generated_by: context-agent-hybrid

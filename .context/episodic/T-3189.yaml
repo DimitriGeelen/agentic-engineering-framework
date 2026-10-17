@@ -1,0 +1,93 @@
+# ============================================================================
+# EPISODIC MEMORY - T-3189: Gates attribute files from commits that merely REFERENCE a task, not only those authoring it
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-17T23:28:39Z
+# ============================================================================
+
+task_id: T-3189
+task_name: "Gates attribute files from commits that merely REFERENCE a task, not only those authoring it"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-26T22:48:50Z
+completed: 2026-10-17T23:28:07Z
+duration_days: 52
+updates_count: 2
+first_commit: 2026-10-18T00:38:59+02:00
+last_commit: 2026-10-18T00:39:11+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  a commit belongs to a task only when its subject opens with the id. register lib/task_commits.py in the fabric
+
+# Key outcomes
+outcomes:
+  - 'One helper `lib/task_commits.py` defines ownership: a commit belongs to T-XXX only when its SUBJECT opens with a task-id list naming it (`T-X: …`, `T-1, T-2: …`, `T-1/T-2: …`); `verdict_ledger._owns` reuses it (one definition, not two)'
+  - 'The render-surface gate (`lib/render_surface.sh`) resolves touched paths through the helper only — a commit that names the task in its body (`Ref: T-XXX`) or mid-subject is NOT attributed, with or without the task having its own commits'
+  - 'The close-time component resolution (`update-task.sh`), the T-4024 servicing-ledger file list (`update-task.sh`) and the judge''s changed-web-files (`lib/reviewer/judge_cli.py`) route through the same helper'
+  - 'Regression tests with a fixture repo: Ref-only commit not attributed; subject-prefixed (single and listed ids) attributed; T-318 does not match T-3186; existing T-3198 render tests updated to the new semantics and green'
+  - '`bin/fw vendor self --check` clean'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/task-create/update-task.sh'
+  - '.agentic-framework/lib/render_surface.sh'
+  - '.agentic-framework/lib/reviewer/judge_cli.py'
+  - '.agentic-framework/lib/task_commits.py'
+  - '.agentic-framework/lib/verdict_ledger.py'
+  - 'agents/task-create/update-task.sh'
+  - '.fabric/components/lib-task_commits.yaml'
+  - 'lib/render_surface.sh'
+  - 'lib/reviewer/judge_cli.py'
+  - 'lib/task_commits.py'
+  - 'lib/verdict_ledger.py'
+  - '.tasks/active/T-3189-gates-attribute-files-from-commits-that-.md'
+  - 'tests/unit/t3198_render_surface_attribution.bats'
+  - 'tests/unit/test_task_commits.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T00:38:59'
+    action: 'T-3189: a commit belongs to a task only when its subject opens with the id'
+  - time: '2026-10-18T00:39:11'
+    action: 'T-3189: register lib/task_commits.py in the fabric'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 74919 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 74919
+  commits: 2
+  files_changed: 14
+  lines_added: 489
+  lines_removed: 203
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-3189-gates-attribute-files-from-commits-that-.md
+generated_by: context-agent-hybrid
