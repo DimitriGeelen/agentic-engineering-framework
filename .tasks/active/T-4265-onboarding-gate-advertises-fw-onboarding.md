@@ -8,7 +8,7 @@ description: >
   (0909 run aef-install-20261017T144241Z): F-28 (+F-27 framework half). Triage: docs/reports/T-4253-greenfield-run-triage.md
   PROPOSED-NEW-12.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:27:42Z
-last_update: '2026-10-17T15:31:18Z'
+last_update: 2026-10-17T16:54:51Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] check-active-task.sh bootstrap exemption (all 3 regex sites) admits `fw onboarding skip` and `fw onboarding status` under bin/fw, .agentic-framework/bin/fw and bare fw spellings
+- [x] Regression test tests/unit/t4265_onboarding_remedy_passes_gate.bats fails before the fix and passes after
+- [x] Test asserts every remedy command printed in the onboarding block message passes the same gate (no active task)
+- [x] A redirected form (`fw onboarding skip > f`) stays blocked (exemption not widened)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -144,6 +146,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bats tests/unit/t4265_onboarding_remedy_passes_gate.bats > /tmp/.t4265.out 2>&1 && ! grep -q "^not ok" /tmp/.t4265.out
+bats tests/unit/onboarding_gate_owner_human_exempt.bats tests/unit/check_onboarding_gate.bats tests/unit/onboarding_gate_arc_tag_fp.bats > /tmp/.t4265b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4265b.out
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -276,6 +282,11 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** A first-time user blocked by the T-532 onboarding gate is told to run `fw onboarding skip`; running it is refused by the same gate (0909 run F-28/F-27).
+**Root cause:** The task-bootstrap exemption regex (check-active-task.sh:258, :291, and the hint guard :333) lists only work-on|task create|context focus|inception; `onboarding skip|status` is absent, so the command falls through to the active-task / onboarding block.
+**Why structurally allowed:** Block messages and the exemption list were maintained separately; no test ran the printed remedies back through the gate (L-597).
+**Prevention:** t4265 bats extracts every remedy command from the block message and feeds it back through the gate, so a newly advertised remedy the gate refuses fails the suite.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -370,3 +381,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4265-onboarding-gate-advertises-fw-onboarding.md
 - **Context:** Initial task creation
+
+### 2026-10-17T16:52:23Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
