@@ -539,10 +539,14 @@ do_vendor() {
     local target="${PROJECT_ROOT:-.}"
     local source_override=""
     local allow_delete_locals=false
+    local precheck=false
 
     while [[ $# -gt 0 ]]; do
         case $1 in
             --dry-run) dry_run=true; shift ;;
+            # T-4278: run only the local-file check (T-3850) and return its verdict;
+            # writes nothing. fw upgrade calls this before its first writing step.
+            --precheck) precheck=true; dry_run=true; shift ;;
             --target) target="$2"; shift 2 ;;
             --source) source_override="$2"; shift 2 ;;
             --allow-delete-locals) allow_delete_locals=true; shift ;;
@@ -558,6 +562,8 @@ do_vendor() {
                 echo "  --allow-delete-locals"
                 echo "              Proceed even though local files under .agentic-framework/"
                 echo "              would be deleted or overwritten (logged Tier-2, backed up)"
+                echo "  --precheck  Only run the local-file check; exit non-zero where the real"
+                echo "              run would refuse. Writes nothing (used by fw upgrade, T-4278)"
                 echo "  -h, --help  Show this help"
                 echo ""
                 echo "Local files (T-3850): list them in .fwvendor-preserve.yaml at the project"
@@ -729,8 +735,17 @@ do_vendor() {
         if [ "$dry_run" = true ]; then
             # T-3907: preview the run as it would be invoked, flags included.
             [ "$allow_delete_locals" = true ] && _vp_args+=(--allow)
-            python3 "$_vp_py" pre "${_vp_args[@]}" --dry-run || _vp_rc=$?
+            local _vp_out=""
+            _vp_out=$(python3 "$_vp_py" pre "${_vp_args[@]}" --dry-run 2>&1) || _vp_rc=$?
+            [ -n "$_vp_out" ] && printf '%s\n' "$_vp_out"
             rm -rf "$_vp_dir"; _vp_dir=""
+            if [ "$precheck" = true ]; then
+                # T-4278: the verdict is the dry-run's own T-3907 line, not a new flag:
+                # the helper found beside bin/fw can be an older copy than this one.
+                [ "$_vp_rc" -ne 0 ] && return "$_vp_rc"
+                case "$_vp_out" in *"REAL RUN WOULD REFUSE"*) return 3 ;; esac
+                return 0
+            fi
         else
             [ "$allow_delete_locals" = true ] && _vp_args+=(--allow)
             python3 "$_vp_py" pre "${_vp_args[@]}" || _vp_rc=$?
@@ -740,7 +755,8 @@ do_vendor() {
                 return 1
             fi
         fi
-    elif [ -d "$dest" ] && [ -n "$(ls -A "$dest" 2>/dev/null)" ] && [ "$dry_run" != true ] \
+    elif [ -d "$dest" ] && [ -n "$(ls -A "$dest" 2>/dev/null)" ] \
+            && { [ "$dry_run" != true ] || [ "$precheck" = true ]; } \
             && [ "$allow_delete_locals" != true ]; then
         # Fail safe, not open: without the checker we cannot tell a consumer's
         # files from ours, and the copy below would delete them unseen.
@@ -748,6 +764,7 @@ do_vendor() {
         echo -e "         Re-run with --allow-delete-locals to vendor anyway (local files there will be lost)." >&2
         return 1
     fi
+    [ "$precheck" = true ] && return 0
 
     if [ "$dry_run" = true ]; then
         echo -e "${BOLD}fw vendor --dry-run${NC}"

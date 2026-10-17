@@ -13,7 +13,7 @@ description: >
   (step 1 deletes consumer text). Test: a consumer with an unpreserved local file;
   upgrade refuses; CLAUDE.md unchanged.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T19:03:51Z
-last_update: '2026-10-17T19:16:20Z'
+last_update: 2026-10-17T21:57:30Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -99,8 +99,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw upgrade` runs the vendor step's T-3850 local-file check (no writes) before step [0]/[1], and refuses the whole upgrade (rc 1, `REFUSED`) when it would refuse
+- [x] Regression test: consumer with an unpreserved local file under `.agentic-framework/` and stale CLAUDE.md governance -> `fw upgrade` refuses and the consumer tree (CLAUDE.md, .claude/settings.json, every file) hashes identical before/after; the test fails without the fix
+- [x] `--allow-delete-locals` still lets the upgrade proceed past the precheck (flag forwarded)
+- [x] T-3850, T-4232 and upgrade_fresh_machine_simulation.bats stay green
+- [x] `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -278,8 +281,22 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+timeout 900 bats tests/unit/t4278_upgrade_refusal_atomic.bats > /tmp/.t4278.out 2>&1 && ! grep -q "^not ok" /tmp/.t4278.out
+test "$(grep -c '# skip' /tmp/.t4278.out)" -eq 0
+timeout 600 bats tests/unit/t3850_vendor_preserve_locals.bats tests/unit/t4232_claudemd_governance_consumer_edits.bats > /tmp/.t4278b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4278b.out
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** ring20 (ed683536a -> 112c098b9): `fw upgrade` was refused by T-3850 (2 locals not in `.fwvendor-preserve.yaml`), the vendor step wrote nothing, yet CLAUDE.md already carried the new governance (new budget ladder) over the old installed code.
+
+**Root cause:** the T-3850 check lives only inside `do_vendor` (`bin/fw`, the `vendor_preserve.py pre` call near line 703), first reached at step [4b/9] (`lib/upgrade.sh` ~2055). Steps 0-4 (skeleton, CLAUDE.md rewrite at step [1/10] `lib/upgrade.sh:1571`, templates, seeds, git hooks) had already written before the refusal aborted the run (bin/fw's errexit+pipefail ends it at the step-4b pipeline).
+
+**Fix:** `do_vendor --precheck` (bin/fw) runs only the `vendor_preserve.py pre --dry-run` check and returns its verdict (the T-3907 `REAL RUN WOULD REFUSE` line, so an older helper copy found beside bin/fw still answers — a new python flag broke 4 fresh-machine tests through that skew). do_upgrade calls it before step 0 with the same flags as step 4b and refuses with nothing written.
+
+**Why structurally allowed:** each refusal is a local guard inside the step that owns it; nothing asserted the cross-step invariant "a refusing upgrade writes nothing". T-1912 (version) and T-3150/T-4232 (CLAUDE.md) refuse before their own writes, but the vendor refusal sits four steps later. Tests exercised `do_vendor` alone (t3850) or step 1 alone (t4232), never an upgrade that refuses late.
+
+**Prevention:** `tests/unit/t4278_upgrade_refusal_atomic.bats` hashes the whole consumer tree around a refusing upgrade, so a refusing check that lands after a writing step fails it.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -375,3 +392,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4278-fw-upgrade-rewrites-claudemd-governance-.md
 - **Context:** Initial task creation
+
+### 2026-10-17T21:57:30Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

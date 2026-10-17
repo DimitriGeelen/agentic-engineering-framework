@@ -1535,6 +1535,24 @@ do_upgrade() {
         fi
     fi
 
+    # T-4278: an upgrade that refuses must leave the consumer byte-identical. The
+    # vendor step (4b) refuses on consumer-local files (T-3850), but by then steps
+    # 0-4 had written: ring20 got the new CLAUDE.md governance over the old code.
+    # Ask for the same verdict here, before the first write. Same flags as step 4b.
+    if [ "$dry_run" != true ] && [ -d "$target_dir/.agentic-framework" ]; then
+        local _pre_vendor_rc=0
+        # `|| rc=` not a bare PIPESTATUS read: bin/fw runs with errexit+pipefail.
+        do_vendor --target "$target_dir" --source "$FRAMEWORK_ROOT" --precheck ${_vendor_extra[@]+"${_vendor_extra[@]}"} 2>&1 \
+            | sed 's/^/  /' || _pre_vendor_rc=${PIPESTATUS[0]}
+        if [ "$_pre_vendor_rc" -ne 0 ]; then
+            echo -e "${RED}REFUSED${NC}  The vendor step would refuse (local files under .agentic-framework/, T-3850)," >&2
+            echo -e "          so the upgrade refused before any step wrote: nothing was changed." >&2
+            echo -e "          Keep them: list them in .fwvendor-preserve.yaml, then re-run fw upgrade." >&2
+            echo -e "          Lose them: re-run with ${BOLD}--allow-delete-locals${NC} (logged Tier-2; copies kept)." >&2
+            return 1
+        fi
+    fi
+
     # ── 0. Directory skeleton (T-2758) ──
     #
     # Step 8 below has always created the .context/ subdirectories. It runs FIVE
