@@ -187,3 +187,13 @@ bvp_scores_proposed:
   git init, --peek inbox, FW_HOST=127.0.0.1). Companion pickup (evidence, change per finding, test feedback) pending.
 - Open for the README decision: publish v2.1 with its workaround sections now, or after those fixes ship and the
   sections are removed. Run 3's findings triage: T-4253.
+
+### 2026-10-17 — evidence package received (dimitri-mint-dev P-021) — all four operator criteria answered
+- Saved verbatim: docs/reports/T-4237-inputs/T-121-greenfield-v2.1-changes-and-onboarding-evaluation.md.
+- (2) runs: 3 (two stopped early by the orchestrator's own rules / the env leak; run 3 full STEPs 0-7, 49 findings,
+  published and read back). (3) a change per finding, plus a "left out and why" table. (4) test feedback: onboarding
+  ~19.5 min to the first authorised edit (3 min 41 s to the first, ungoverned, edit); the three aborted attempts cost ~25 min.
+- Their README recommendation: publish v2.1 now with the workaround sections marked "until AEF T-4248 / T-4251 /
+  T-4239 ship", then v2.2 after a clean re-run on the fixed master.
+- Their onboarding ranking puts F-28 (onboarding gate blocks its own skip remedy) at 5 and says AEF has not filed
+  it; T-4253's triage will propose it.
