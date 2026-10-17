@@ -105,9 +105,9 @@ bvp_scores_proposed:
 - [x] Each top offender diagnosed with a file:line root cause in `## RCA` (the TermLink check's ~74 s explained, not just shortened)
 - [x] Top offenders fixed without dropping any check's verdict (every check still emits its line; the port3000 ratchet still WARNs, and its counts now cover only files git can see, which is a correctness fix recorded in the RCA)
 - [x] Regression test under `tests/unit/` pins the fix and fails without it (`test_port3000_hygiene.py::test_git_repo_scan_skips_gitignored…`, `test_t3083_held_unsurfaced_batched.py`)
-- [ ] Doctor-related bats (`tests/unit/*doctor*.bats`) run; pass/fail counts reported, no new failures vs. before the change
-- [ ] `tests/unit/doctor_designer_pin_drift.bats` run and its wall-clock time recorded in the profile report
-- [ ] `fw doctor` wall-clock re-measured after the fix and recorded in the profile report (target < 60 s idle)
+- [x] Doctor-related bats (`tests/unit/*doctor*.bats`) run; pass/fail counts reported, no new failures vs. before the change (185 ok / 4 not ok; 3 are nightly-baseline reds, 1 is live sidecar host state — see report)
+- [x] `tests/unit/doctor_designer_pin_drift.bats` run and its wall-clock time recorded in the profile report (591 s, 5/5 — was over the 900 s cap)
+- [x] `fw doctor` wall-clock re-measured after the fix and recorded in the profile report (target < 60 s idle — NOT met: 190 s at load ~14-22; no idle window; remaining cost is the Watchtower smoke sweep, 89 s)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.

@@ -63,11 +63,32 @@ the held-unsurfaced fix landed after it. Doctor's phase summary:
 
 ## Run 3 — after all fixes
 
-RUN3_PLACEHOLDER
+**Total 190 s, exit 0** (load 13.9 / 19.9 / 22.0). Slowest phases: Watchtower smoke 89 s,
+port3000 phase 33 s (ratchet ~9 s of it; the rest is the MCP / vector-index checks in the same
+phase), plugin task-awareness 20 s. The TermLink phase dropped out of the top three
+(under 20 s, was 45 s). Every check still printed its line. The port3000 ratchet still WARNs
+(775 carriers, 17 new, 54 stale — real figures now).
+
+Progression: did not finish in 600 s → 247 s → 190 s. Without the smoke sweep (`FW_DOCTOR_SMOKE=0`)
+it is roughly 100 s at this load. The < 60 s idle target was **not met and could not be
+measured idle** (the host never dropped below load ~14).
 
 ## Doctor bats
 
-BATS_PLACEHOLDER
+`tests/unit/*doctor*.bats`, 32 files, run sequentially after the port3000 fix:
+**185 ok, 4 not ok.**
+
+- `doctor_designer_pin_drift.bats`: **591 s, 5/5 ok.** It hit the 900 s per-file cap in the
+  2026-10-17 nightly run (T-3778/T-3801 class); it now finishes under the cap.
+- The other nightly-capped files now finish: `t2243_doctor_self_vendor_templates` 377 s,
+  `t2290_doctor_mcp_content_check` 278 s (3/3), `test_doctor_scope_tags` 449 s (14/14).
+- `doctor_hook_counters.bats` — not ok 2, 3, 4 (T-2714 hook-counter wording). The same
+  three already failed in the nightly baseline (`.context/audits/unit-suite/LATEST.yaml`).
+  Not caused by this change.
+- `t2243 t1` — asserts real-repo doctor exits 0|1. During that run doctor exited 2 on the live
+  `FAIL Sidecar watcher NOT live: receiver not running` (host state). The receiver came back
+  before run 3, which exits 0. Not caused by this change. This test file had no
+  result in the nightly run (it timed out).
 
 ## Open (not done here)
 
