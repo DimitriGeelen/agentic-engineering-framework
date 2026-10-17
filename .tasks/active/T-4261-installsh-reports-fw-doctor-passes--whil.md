@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:26:35Z
-last_update: 2026-10-17T17:37:18Z
+last_update: 2026-10-17T17:38:14Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,10 +94,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] install.sh verify() Step 3 no longer says "fw doctor passes" while hiding WARNs: it prints the doctor WARN count and the first few WARN lines
-- [ ] install.sh verify() checks the target project resolves HEAD (`git rev-parse --verify HEAD`); when the bootstrap commit did not land it prints an error, does NOT print "All verification steps passed", and install.sh exits non-zero
-- [ ] Regression bats tests/unit/t4261_install_verify_head_and_warns.bats fails on the pre-fix install.sh and passes after; install_target_project, install_verify_no_cwd_init and upgrade_fresh_machine_simulation stay green
-- [ ] git-init behaviour untouched (scope fence: T-4251)
+- [x] install.sh verify() Step 3 no longer says "fw doctor passes" while hiding WARNs: it prints the doctor WARN count and the first few WARN lines
+- [x] install.sh verify() checks the target project resolves HEAD (`git rev-parse --verify HEAD`); when the bootstrap commit did not land it prints an error, does NOT print "All verification steps passed", and install.sh exits non-zero
+- [x] Regression bats tests/unit/t4261_install_verify_head_and_warns.bats fails on the pre-fix install.sh and passes after; install_target_project, install_verify_no_cwd_init and upgrade_fresh_machine_simulation stay green
+- [x] git-init behaviour untouched (scope fence: T-4251)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
