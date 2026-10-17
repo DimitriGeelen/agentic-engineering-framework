@@ -214,6 +214,13 @@ OPT_FORCE = ab('force-with-lease')
 OPT_DELETE = ab('delete')
 OPT_NO_VERIFY = ab('no-verify', 4)
 APPROVE_VERB = r'(?:\bfw\s+tier0\s+approve\b|\btier0_action\b)'
+# T-4280: a word that is a signal name (-term, -sigprof, -VTALRM) is the
+# signal option, not a flag cluster: pkill reads -<signal> before its other
+# options, case-insensitively. Without this, -term read as containing -r and
+# -sigprof as containing -f. Prefixed to the -f/-r cluster alternatives.
+NOT_SIGNAME = (r'(?!(?i:(?:sig)?(?:hup|int|quit|ill|trap|abrt|iot|bus|fpe|kill|segv|pipe'
+               r'|alrm|term|stkflt|chld|cld|cont|stop|tstp|ttin|ttou|urg|xcpu|xfsz|vtalrm'
+               r'|prof|winch|io|poll|pwr|sys|unused|emt|lost|info))(?![^\s;|&)]))')
 
 PATTERNS = [
     # === Git destructive operations ===
@@ -325,9 +332,9 @@ PATTERNS = [
     # kill <pid> (no p, no all) is untouched.
     (r'\b(?:pkill|killall)\b[^;|&\n]*\s(?:-(?:s\s*)?|--sig(?:n(?:a(?:l)?)?)?(?:=|\s+))(?i:(?:sig)?(?:9|kill))(?![^\s;|&)])',
      'SIGKILL BY NAME: pkill/killall with SIGKILL (-9, -KILL, -SIGKILL, -s KILL, --signal=KILL) force-kills every process of that name with no chance to clean up. Instead: kill the PID or process group you started (kill -TERM <pid>, kill -TERM -<pgid>)'),
-    (r'\bpkill\b[^;|&\n]*\s(?:-[a-zA-Z]*f[a-zA-Z]*|--fu(?:l(?:l)?)?)(?![^\s;|&)])',
+    (r'\bpkill\b[^;|&\n]*\s(?:-' + NOT_SIGNAME + r'[a-zA-Z]*f[a-zA-Z]*|--fu(?:l(?:l)?)?)(?![^\s;|&)])',
      'PKILL -f: pkill -f/--full matches its pattern against the full command line of every process on the host, so it hits unrelated processes (055: pkill -KILL -f sleep|trap killed a live agent session). Instead: kill the PID or process group you started (kill -TERM <pid>, kill -TERM -<pgid>)'),
-    (r'\bkillall\b[^;|&\n]*\s(?:-[a-zA-Z]*r[a-zA-Z]*|--re(?:g(?:e(?:x(?:p)?)?)?)?)(?![^\s;|&)])',
+    (r'\bkillall\b[^;|&\n]*\s(?:-' + NOT_SIGNAME + r'[a-zA-Z]*r[a-zA-Z]*|--re(?:g(?:e(?:x(?:p)?)?)?)?)(?![^\s;|&)])',
      'KILLALL -r: killall -r/--regexp kills every process whose name matches a regular expression, unrelated ones included. Instead: kill the PID or process group you started (kill -TERM <pid>, kill -TERM -<pgid>)'),
 
     # === Infrastructure destructive ===
