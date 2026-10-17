@@ -9,17 +9,17 @@ description: >
   language (lean: Go with mvdan.cc/sh parser); pilot = Tier 0 classifier on a real
   bash AST
 
-status: started-work
+status: work-completed
 workflow_type: inception
 owner: human
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
 origin: {kind: "operator", source: "", ref: "operator question 2026-10-01"}
 created: 2026-10-01T17:36:53Z
-last_update: '2026-10-05T20:15:18Z'
-date_finished:
+last_update: 2026-10-17T12:31:54Z
+date_finished: 2026-10-17T12:31:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── Inception scoring exception (T-2186 Slice 2 / T-2188). See 050-Inceptions.md §Scoring Exception. ──
@@ -139,15 +139,15 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- @auto-tick-on-decide -->
-- [ ] Problem statement validated
+- [x] Problem statement validated
 <!-- @auto-tick-on-decide -->
-- [ ] Assumptions tested
+- [x] Assumptions tested
 <!-- @auto-tick-on-decide -->
-- [ ] Recommendation written with rationale
+- [x] Recommendation written with rationale
 
 ### Human
 <!-- @auto-tick-on-decide -->
-- [ ] [REVIEW] Review exploration findings and approve go/no-go decision
+- [x] [REVIEW] Review exploration findings and approve go/no-go decision
   **Steps:**
   1. Run: `fw task review T-XXX` (opens Watchtower with recommendation, assumptions, research artifacts)
   2. Review the Agent Recommendation section and go/no-go criteria evaluation
@@ -218,7 +218,35 @@ The pilot routes the Tier 0 approval path through the broker, with fixed STOP co
 
 ## Decision
 
-<!-- Filled at completion via: fw inception decide T-XXX go|no-go --rationale "..." -->
+**Decision**: GO
+
+**Rationale**: Recommendation: GO
+
+Rationale:
+
+Operator question 2026-10-01 after 7 Tier 0 review rounds. Evidence: every Tier 0 round found another shell expansion the hand-written matcher did not model (braces, line continuation, ANSI-C, quoting, normalisation) — a parsing problem a real AST closes as a class; and the bash-core failure catalogue in learnings (heredoc-in-$(…), backticks in python -c, set -e semantics, pipefail/SIGPIPE false reds, dead negations) is silent-failure-shaped (D2). Go gives a mature bash parser (shfmt's), a single static binary (D4, P-01 installer), strong typing and fast hook cold-start. Pilot scope is bounded by an existing executable spec (~170 Tier 0 tests). Open: language choice (Go vs Rust vs strict Python), module scope, migration and vendoring/distribution, consumer impact.
+
+What your GO adopts (updated 2026-10-05 from the round-1 review, T-3896): a pilot, not a language migration. All three review seats put the boundary in configuration, not in a rewrite:
+- a non-root agent uid;
+- enforcement files the agent cannot write;
+- the aef-govd broker holding approval state;
+- server-side ref protection.
+
+The pilot routes the Tier 0 approval path through the broker, with fixed STOP conditions (IW-3). The rest of the plan:
+- Scope is the consensus core (IW-2).
+- Delivery is signed and pinned, and a missing component means deny (IW-4).
+- Migration is one module at a time (IW-5).
+- The implementation language is decided by the pilot's parity experiment (IW-1, deferred), not by this GO.
+
+Evidence:
+- `docs/reports/T-3670-core-language.md` is the research artifact. `docs/reports/T-3670-context-pack.md` is the frozen pack given to the reviewers.
+- `docs/reports/T-3670-r1-synthesis.md` covers round 1, three blind internal seats (OpenAI codex, Z.ai GLM via opencode, Anthropic claude -p):
+  - consensus on architecture (D1), elevation (D5), the pilot and delivery (D4);
+  - a split on language (D2).
+- `docs/reports/T-3670-r1-{openai,zai,anthropic}.md` hold the individual answers. The question was reviewed before it was asked: `T-3670-qreview-.md`.
+- Seven Tier 0 review rounds, each finding another shell expansion the hand-written matcher did not model. That is a parsing class a real AST closes (motivation; see Rationale).
+
+**Date**: 2026-10-17T12:31:53Z
 
 ## Updates
 
@@ -227,3 +255,68 @@ The pilot routes the Tier 0 approval path through the broker, with fixed STOP co
 
 ### 2026-10-01T17:37:58Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+### 2026-10-17T12:31:53Z — inception-decision [inception-workflow]
+- **Action:** Recorded inception decision
+- **Decision:** GO
+- **Rationale:** Recommendation: GO
+
+Rationale:
+
+Operator question 2026-10-01 after 7 Tier 0 review rounds. Evidence: every Tier 0 round found another shell expansion the hand-written matcher did not model (braces, line continuation, ANSI-C, quoting, normalisation) — a parsing problem a real AST closes as a class; and the bash-core failure catalogue in learnings (heredoc-in-$(…), backticks in python -c, set -e semantics, pipefail/SIGPIPE false reds, dead negations) is silent-failure-shaped (D2). Go gives a mature bash parser (shfmt's), a single static binary (D4, P-01 installer), strong typing and fast hook cold-start. Pilot scope is bounded by an existing executable spec (~170 Tier 0 tests). Open: language choice (Go vs Rust vs strict Python), module scope, migration and vendoring/distribution, consumer impact.
+
+What your GO adopts (updated 2026-10-05 from the round-1 review, T-3896): a pilot, not a language migration. All three review seats put the boundary in configuration, not in a rewrite:
+- a non-root agent uid;
+- enforcement files the agent cannot write;
+- the aef-govd broker holding approval state;
+- server-side ref protection.
+
+The pilot routes the Tier 0 approval path through the broker, with fixed STOP conditions (IW-3). The rest of the plan:
+- Scope is the consensus core (IW-2).
+- Delivery is signed and pinned, and a missing component means deny (IW-4).
+- Migration is one module at a time (IW-5).
+- The implementation language is decided by the pilot's parity experiment (IW-1, deferred), not by this GO.
+
+Evidence:
+- `docs/reports/T-3670-core-language.md` is the research artifact. `docs/reports/T-3670-context-pack.md` is the frozen pack given to the reviewers.
+- `docs/reports/T-3670-r1-synthesis.md` covers round 1, three blind internal seats (OpenAI codex, Z.ai GLM via opencode, Anthropic claude -p):
+  - consensus on architecture (D1), elevation (D5), the pilot and delivery (D4);
+  - a split on language (D2).
+- `docs/reports/T-3670-r1-{openai,zai,anthropic}.md` hold the individual answers. The question was reviewed before it was asked: `T-3670-qreview-.md`.
+- Seven Tier 0 review rounds, each finding another shell expansion the hand-written matcher did not model. That is a parsing class a real AST closes (motivation; see Rationale).
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-84594525
+- **Timestamp:** 2026-10-17T12:31:57Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Verification-level findings:**
+
+  1. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-2
+     - evidence: `IW-2 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  2. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-4
+     - evidence: `IW-4 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+  3. **disposition-incomplete** (partial, heuristic) @ ## Open Questions: IW-5
+     - evidence: `IW-5 disposition='answered' but rationale has no evidence citation (T-NNNN, file:line, docs/reports/, G-/L-/D-id, dialogue-log, or commit hash)`
+
+## Recommendation Verdict (v1.0)
+
+- **Scan ID:** RC-97a97544
+- **Timestamp:** 2026-10-17T12:31:57Z
+- **Overall:** CONFIRMED
+- **Claims:** 4
+
+| Claim | Type | Status |
+|-------|------|--------|
+| `docs/reports/T-3670-core-language.md` | file | ✓ pass |
+| `docs/reports/T-3670-context-pack.md` | file | ✓ pass |
+| `docs/reports/T-3670-r1-synthesis.md` | file | ✓ pass |
+| `T-3896` | task | ✓ pass |
+
+### 2026-10-17T12:31:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
+- **Reason:** Inception decision: GO
