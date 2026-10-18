@@ -53,8 +53,8 @@ _has_tag() { git -C "$1" rev-parse -q --verify "refs/tags/$2" >/dev/null 2>&1; }
     [ "$status" -eq 0 ]
     [[ "$output" == *"would post released on #7"* ]]
     [[ "$output" == *"dry-run: nothing posted or closed"* ]]
-    ! _has_tag "$REPO" v1.0.1
-    ! _has_tag "$ORIGIN" v1.0.1
+    if _has_tag "$REPO" v1.0.1; then false; fi
+    if _has_tag "$ORIGIN" v1.0.1; then false; fi
     [ ! -e "$REPO/.context/issues" ]
     [ ! -s "$GH_LOG" ] || ! grep -q "^issue" "$GH_LOG"
 }
