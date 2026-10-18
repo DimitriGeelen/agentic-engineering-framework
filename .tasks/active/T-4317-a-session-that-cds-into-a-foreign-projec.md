@@ -1,13 +1,28 @@
 ---
 id: T-4317
-name: "A session that cd's into a foreign project (its own .framework.yaml) is trapped: hooks re-derive PROJECT_ROOT from cwd, boundary gate blocks the cd back, budget gate reads the wrong CONTEXT_WINDOW"
+name: "A session that cd's into a foreign project (its own .framework.yaml) is trapped:
+  hooks re-derive PROJECT_ROOT from cwd, boundary gate blocks the cd back, budget
+  gate reads the wrong CONTEXT_WINDOW"
 description: >
-  dimitri-mint-dev field case (msg f8eacc3f, 2026-10-18): one 'cd <unpacked test record>/proj/.context/... && ls' in the orchestrator session; the record holds its own .framework.yaml. From then on every hook resolved PROJECT_ROOT to the record: check-project-boundary blocked cd back to the real root and Edit of the real .tasks; budget-gate read the record's config (no CONTEXT_WINDOW -> default) and declared CRITICAL at 378K while the real window is 800K; an auto-handover started and non-wrap-up Bash was blocked. Only the operator's '! cd' freed it. Same class as greenfield run 4 F-20/F-21/F-25. bin/fw prefers a valid CLAUDE_PROJECT_DIR (T-2390, bin/fw:270-290) only when PROJECT_ROOT is empty or stale, and the G-118 hook fast path (bin/fw:81) likewise; find which leg lets cwd win (an inherited PROJECT_ROOT, a hook script deriving the root itself, or the consumer's vendored version). Fix direction: pin the project at session start (CLAUDE_PROJECT_DIR) for every hook; at minimum check-project-boundary always allows cd to the session-start root. Regression test: a hook run with CLAUDE_PROJECT_DIR=A and cwd inside a foreign project B resolves A.
+  dimitri-mint-dev field case (msg f8eacc3f, 2026-10-18): one 'cd <unpacked test record>/proj/.context/...
+  && ls' in the orchestrator session; the record holds its own .framework.yaml. From
+  then on every hook resolved PROJECT_ROOT to the record: check-project-boundary blocked
+  cd back to the real root and Edit of the real .tasks; budget-gate read the record's
+  config (no CONTEXT_WINDOW -> default) and declared CRITICAL at 378K while the real
+  window is 800K; an auto-handover started and non-wrap-up Bash was blocked. Only
+  the operator's '! cd' freed it. Same class as greenfield run 4 F-20/F-21/F-25. bin/fw
+  prefers a valid CLAUDE_PROJECT_DIR (T-2390, bin/fw:270-290) only when PROJECT_ROOT
+  is empty or stale, and the G-118 hook fast path (bin/fw:81) likewise; find which
+  leg lets cwd win (an inherited PROJECT_ROOT, a hook script deriving the root itself,
+  or the consumer's vendored version). Fix direction: pin the project at session start
+  (CLAUDE_PROJECT_DIR) for every hook; at minimum check-project-boundary always allows
+  cd to the session-start root. Regression test: a hook run with CLAUDE_PROJECT_DIR=A
+  and cwd inside a foreign project B resolves A.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, hooks, project-root, greenfield]
 components: []
 related_tasks: []
@@ -39,8 +54,8 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T17:02:52Z
-last_update: 2026-10-18T17:02:52Z
-date_finished: null
+last_update: 2026-10-18T20:20:47Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +66,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-18T17:15:47Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=296,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-18T17:16:53Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4317: A session that cd's into a foreign project (its own .framework.yaml) is trapped: hooks re-derive PROJECT_ROOT from cwd, boundary gate blocks the cd back, budget gate reads the wrong CONTEXT_WINDOW
@@ -72,8 +115,11 @@ test for both.
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw hook NAME` with a valid CLAUDE_PROJECT_DIR=A and cwd inside a foreign project B resolves PROJECT_ROOT=A (main path and G-118 fast path)
+- [x] check-project-boundary allows `cd A` from a cwd inside foreign project B when CLAUDE_PROJECT_DIR=A
+- [x] A non-hook fw call with a stale CLAUDE_PROJECT_DIR and cwd in project B still resolves B (T-2446 kept)
+- [x] Regression bats `tests/unit/t4317_hook_project_dir_wins.bats` fails without the fix and passes with it; existing T-2390/T-2446 tests and upgrade_fresh_machine_simulation.bats stay green
+- [x] Vendored copy synced (`bin/fw vendor self --check` clean)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -251,6 +297,11 @@ test for both.
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n bin/fw
+timeout 300 bats tests/unit/t4317_hook_project_dir_wins.bats > /tmp/.t4317.out 2>&1 && ! grep -q "^not ok" /tmp/.t4317.out
+test "$(grep -c '# skip' /tmp/.t4317.out)" -eq 0
+timeout 600 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4317u.out 2>&1 && ! grep -q "^not ok" /tmp/.t4317u.out
+bin/fw vendor self --check
 
 ## RCA
 
@@ -267,6 +318,14 @@ test for both.
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** after one `cd` into a directory holding its own `.framework.yaml` (an unpacked test record), every hook in the session resolved PROJECT_ROOT to that directory: check-project-boundary refused the `cd` back and Edits of the real `.tasks`, budget-gate read the record's (absent) CONTEXT_WINDOW and declared CRITICAL at 378K of 800K, check-active-task read the record's empty focus. Only an operator `! cd` freed the session.
+
+**Root cause:** `bin/fw` "Resolve PROJECT_ROOT" block, T-2446 branch (bin/fw:296-312 before the fix): a valid CLAUDE_PROJECT_DIR was trusted only when `find_project_root` from the cwd found no *other* real project. That rule exists for long-lived daemon shells that inherit a stale CLAUDE_PROJECT_DIR, but it applied to `fw hook NAME` too, where Claude Code sets CLAUDE_PROJECT_DIR for this session and the cwd is only where the agent last cd'd. The T-3285/T-4218 leaked-root block (bin/fw:~360) ranked cwd over CLAUDE_PROJECT_DIR the same way. (The G-118 degraded fast path at bin/fw:81 already preferred CLAUDE_PROJECT_DIR; it was not the leg.)
+
+**Why structurally allowed:** the T-2446 tests pinned resolution only through `fw version` (non-hook), so "hook vs daemon shell" was never a dimension of the contract; no test ran a hook with cwd inside a second project.
+
+**Prevention:** `tests/unit/t4317_hook_project_dir_wins.bats` runs the real `fw hook check-project-boundary` with CLAUDE_PROJECT_DIR=A and cwd inside foreign project B (plain and with a leaked `_FW_PATHS_DERIVED_BY` root) and asserts A is the root; t3 pins T-2446 for non-hook calls. Fixtures are under /var/tmp because the boundary gate allows any cd into /tmp, which would make the test pass vacuously.
 
 ## Evolution
 
@@ -348,3 +407,7 @@ test for both.
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4317-a-session-that-cds-into-a-foreign-projec.md
 - **Context:** Initial task creation
+
+### 2026-10-18T20:20:47Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

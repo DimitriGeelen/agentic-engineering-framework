@@ -296,7 +296,17 @@ if [ -z "${PROJECT_ROOT:-}" ] || _project_root_is_stale "${PROJECT_ROOT:-}"; the
         # above — the canonical CC-hook case from T-2389/T-2390) → CLAUDE_PROJECT_DIR
         # wins. _project_root_is_stale encodes the =$HOME / no-marker test, so reusing
         # it keeps the two daemon-poison guards in lockstep.
-        _cwd_root=$(find_project_root) || _cwd_root=""
+        #
+        # T-4317: that rule is for non-hook shells only. Under `fw hook NAME` Claude Code
+        # sets CLAUDE_PROJECT_DIR for THIS session and the cwd is merely where the agent
+        # last cd'd; letting a foreign cwd project win there trapped a session that cd'd
+        # into a test record with its own .framework.yaml (boundary gate refused the cd
+        # back, budget gate read the record's CONTEXT_WINDOW). So in hook context the
+        # cwd walk is skipped and CLAUDE_PROJECT_DIR wins.
+        _cwd_root=""
+        if [ "${1:-}" != "hook" ]; then
+            _cwd_root=$(find_project_root) || _cwd_root=""
+        fi
         if [ -n "$_cwd_root" ] && ! _project_root_is_stale "$_cwd_root"; then
             _cwd_canon=$(cd "$_cwd_root" 2>/dev/null && pwd -P) || _cwd_canon="$_cwd_root"
             _cpd_canon=$(cd "$CLAUDE_PROJECT_DIR" 2>/dev/null && pwd -P) || _cpd_canon="$CLAUDE_PROJECT_DIR"
@@ -354,7 +364,12 @@ if [ -n "${PROJECT_ROOT:-}" ] && [ -n "${_FW_PATHS_DERIVED_BY:-}" ]; then
         # (a Claude Code hook whose cwd is in no project, e.g. $HOME or a worker's /tmp). The cwd
         # wins when it is a real project, as T-2446 ranks them. A non-project cwd with no
         # CLAUDE_PROJECT_DIR keeps the leaked root (the T-3285 contract, unchanged).
-        _t3285_cwd_root=$(find_project_root) || _t3285_cwd_root=""
+        # T-4317: under `fw hook NAME` the session's CLAUDE_PROJECT_DIR outranks the cwd.
+        _t3285_cwd_root=""
+        if [ "${1:-}" != "hook" ] || ! { [ -n "${CLAUDE_PROJECT_DIR:-}" ] && \
+             { [ -f "$CLAUDE_PROJECT_DIR/.framework.yaml" ] || [ -d "$CLAUDE_PROJECT_DIR/.tasks" ]; }; }; then
+            _t3285_cwd_root=$(find_project_root) || _t3285_cwd_root=""
+        fi
         _t3285_auth=""
         if [ -n "$_t3285_cwd_root" ] && ! _project_root_is_stale "$_t3285_cwd_root"; then
             _t3285_auth="$_t3285_cwd_root"
