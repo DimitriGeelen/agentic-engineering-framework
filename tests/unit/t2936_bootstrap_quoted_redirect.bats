@@ -107,8 +107,11 @@ _gate() {
     # go green while a new verb sat unprotected — the exact failure L-533 names,
     # and the one that caught do_triage in t2932 one function below where I'd read.
     local verbs
-    verbs=$(grep -oE '\(work-on\|task\[\[:space:\]\]\+create\|context\[\[:space:\]\]\+focus\|[a-z|[:space:]\\+_-]*\)' "$HOOK" \
-        | head -1 | tr -d '()' | sed 's/\[\[:space:\]\]+/ /g' | tr '|' '\n')
+    # T-4293: take the whole verb group after `fw[[:space:]]+(` up to its closing paren,
+    # so multi-word verbs written with [[:space:]]+ (onboarding skip, T-4265) are
+    # derived too. The group must stay flat (no nested parens) for this to hold.
+    verbs=$(grep -oE 'fw\[\[:space:\]\]\+\(work-on[^)]*\)' "$HOOK" \
+        | head -1 | sed 's/^fw\[\[:space:\]\]+(//; s/)$//' | sed 's/\[\[:space:\]\]+/ /g' | tr '|' '\n')
     [ -n "$verbs" ] || { echo "could not derive verb set from hook" >&2; return 1; }
     local v n=0
     while read -r v; do

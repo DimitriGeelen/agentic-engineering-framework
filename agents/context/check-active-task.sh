@@ -255,7 +255,7 @@ except Exception:
     # L-432 (T-2052) is this class keyed on a command's first WORD; this is the
     # same class keyed on its quoted PAYLOAD — the hazard the pattern-3 comments
     # at :102-108 already record for other branches, unfixed for this one.
-    if [[ "$BASH_CMD" =~ (^|[[:space:]]|/)fw[[:space:]]+(work-on|task[[:space:]]+create|context[[:space:]]+focus|inception|onboarding[[:space:]]+(skip|status))([[:space:]]|$) ]]; then
+    if [[ "$BASH_CMD" =~ (^|[[:space:]]|/)fw[[:space:]]+(work-on|task[[:space:]]+create|context[[:space:]]+focus|inception|onboarding[[:space:]]+skip|onboarding[[:space:]]+status)([[:space:]]|$) ]]; then
         _bootstrap_unquoted=$(printf '%s' "$BASH_CMD" | sed "s/'[^']*'//g; s/\"[^\"]*\"//g")
         if ! { type has_bash_write_pattern &>/dev/null && has_bash_write_pattern "$_bootstrap_unquoted"; }; then
             exit 0
@@ -288,7 +288,7 @@ except Exception:
             exit 0
         fi
         SAFE_ALLOWED=1
-    elif [[ "$BASH_CMD" =~ (^|[[:space:]]|/)fw[[:space:]]+(work-on|task[[:space:]]+create|context[[:space:]]+focus|inception|onboarding[[:space:]]+(skip|status))([[:space:]]|$) ]]; then
+    elif [[ "$BASH_CMD" =~ (^|[[:space:]]|/)fw[[:space:]]+(work-on|task[[:space:]]+create|context[[:space:]]+focus|inception|onboarding[[:space:]]+skip|onboarding[[:space:]]+status)([[:space:]]|$) ]]; then
         # Task-bootstrap commands always allowed (T-2052) — they ESTABLISH the
         # active task, so gating them on one is a deadlock; the "No active task"
         # block message below even lists them as the unblock path. Whole-command
@@ -330,7 +330,7 @@ fi
 _bootstrap_shape_hint() {
     local cmd="${1:-}"
     [ -n "$cmd" ] || return 0
-    [[ "$cmd" =~ (^|[[:space:]]|/)fw[[:space:]]+(work-on|task[[:space:]]+create|context[[:space:]]+focus|inception|onboarding[[:space:]]+(skip|status))([[:space:]]|$) ]] || return 0
+    [[ "$cmd" =~ (^|[[:space:]]|/)fw[[:space:]]+(work-on|task[[:space:]]+create|context[[:space:]]+focus|inception|onboarding[[:space:]]+skip|onboarding[[:space:]]+status)([[:space:]]|$) ]] || return 0
     type has_bash_write_pattern &>/dev/null || return 0
     has_bash_write_pattern "$cmd" || return 0
 
