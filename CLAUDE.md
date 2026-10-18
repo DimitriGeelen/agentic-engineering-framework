@@ -1457,6 +1457,8 @@ a story rather than a property. Land when you cut a release:
 bin/fw release tag-and-release [--bump patch|minor|major]
 ```
 
+A release also posts stage 9 (Released, with its evidence) on each linked GitHub issue per the close rule — T-4340: `fw issues release` runs after publish; closes only on a WORKS field verdict, else asks to confirm and the sweep closes after 14 days (`--dry-run` lists it, posts nothing).
+
 Between releases `master` deliberately lags. That lag **is** the product: a
 consumer running `fw upgrade` inherits the last released state, not tonight's
 half-finished refactor.

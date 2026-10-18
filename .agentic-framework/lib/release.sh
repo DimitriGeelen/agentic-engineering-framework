@@ -318,6 +318,32 @@ release_remote_ff_check() {
 }
 
 # ---------------------------------------------------------------------------
+# release_issue_leg <root> <latest> <next> <repo> <dry_run: true|false>  — T-4340
+#   Lifecycle stages 8-9 for the GitHub issues behind this release: `fw issues release`
+#   (lib/issues.py, the one outward verb) posts Released for every task in latest..HEAD
+#   that carries github_issue:, and applies the close rule. Never fails the release: a
+#   GitHub failure is reported and recorded in .context/issues/release-pending.jsonl.
+# ---------------------------------------------------------------------------
+release_issue_leg() {
+    local root="$1" latest="$2" next="$3" repo="$4" dry="$5"
+    local here
+    here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+    if ! command -v python3 >/dev/null 2>&1; then
+        echo -e "${YELLOW}python3 not found — GitHub issue stages skipped${NC}" >&2
+        return 0
+    fi
+    local envs=("PROJECT_ROOT=$root")
+    if [ -n "$repo" ]; then envs+=("FW_ISSUES_REPO=$repo"); fi
+    local args=(release "$next" --range "${latest}..HEAD" --root "$root")
+    if [ "$dry" = true ]; then args+=(--dry-run); fi
+    echo -e "${CYAN}GitHub issues (stages 8-9)...${NC}"
+    if ! env "${envs[@]}" python3 "$here/issues.py" "${args[@]}"; then
+        echo -e "  ${YELLOW}WARN: issue step did not finish (non-fatal). Retry: bin/fw issues release $next --range ${latest}..HEAD${NC}" >&2
+    fi
+    return 0
+}
+
+# ---------------------------------------------------------------------------
 # release_tag_and_release  — main entrypoint
 #   Flags: --dry-run, --bump {patch|minor|major}, --repo <owner/name>,
 #          --offline (skip the remote fast-forward check, T-3819)
@@ -451,6 +477,7 @@ release_tag_and_release() {
             uptodate) echo "$release_branch is already at HEAD — no fast-forward needed" ;;
             missing)  echo -e "${YELLOW}no local '$release_branch'${NC} — would skip the fast-forward" ;;
         esac
+        release_issue_leg "$root" "$latest" "$next" "$gh_repo" true
         return 0
     fi
 
@@ -599,6 +626,9 @@ release_tag_and_release() {
     else
         echo -e "${YELLOW}gh CLI not found — skipping GitHub Release${NC}"
     fi
+
+    # T-4340: after publish, so the field report and release notes it links to exist on master
+    release_issue_leg "$root" "$latest" "$next" "$gh_repo" false
 
     return $failed
 }

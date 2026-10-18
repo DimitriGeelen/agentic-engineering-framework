@@ -1,10 +1,17 @@
 ---
 id: T-4340
-name: "fw release posts 'Released in vX.Y.Z' on every linked GitHub issue, with a test-evidence and release-reasoning block, and closes it on positive field evidence"
+name: "fw release posts 'Released in vX.Y.Z' on every linked GitHub issue, with a
+  test-evidence and release-reasoning block, and closes it on positive field evidence"
 description: >
-  T-4039 lifecycle stage 9 (and 8 for pre-releases) was designed (docs/reports/T-4039-inbound-github-issues.md §Mechanisms: 'The release tooling posts stages 8 and 9 for every task in the range that has github_issue:') but never built: lib/release.sh never calls fw issues. Build it through the one outward verb (fw issues comment), idempotent per stage, with the evidence block drawn from the release's field-evidence report; dry-run lists what would be posted. Codify it in the CLAUDE.md release-train section and the T-4039 doc as a release step.
+  T-4039 lifecycle stage 9 (and 8 for pre-releases) was designed (docs/reports/T-4039-inbound-github-issues.md
+  §Mechanisms: 'The release tooling posts stages 8 and 9 for every task in the range
+  that has github_issue:') but never built: lib/release.sh never calls fw issues.
+  Build it through the one outward verb (fw issues comment), idempotent per stage,
+  with the evidence block drawn from the release's field-evidence report; dry-run
+  lists what would be posted. Codify it in the CLAUDE.md release-train section and
+  the T-4039 doc as a release step.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +46,8 @@ origin: {kind: "operator"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T21:55:15Z
-last_update: 2026-10-18T21:55:15Z
-date_finished: null
+last_update: '2026-10-18T22:00:50Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +58,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-18T21:59:58Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-18T22:00:50Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=297,acs=4)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4340: fw release posts 'Released in vX.Y.Z' on every linked GitHub issue, with a test-evidence and release-reasoning block, and closes it on positive field evidence
@@ -70,8 +105,14 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [ ] `lib/release.sh` posts the Released stage (via `fw issues comment`, never `gh` directly) for every task in the release range that has `github_issue: N`, with an evidence block (regression tests from the task's Verification/ACs, field verdict parsed from `docs/reports/field-test-vX.Y.Z-results.md`, gates passed, links to the release notes and field report).
+- [ ] Close rule applied: issue closed only when the task is work-completed AND the field report has a WORKS verdict for it; otherwise "Released — please confirm" is posted and a 14-day due date is recorded in the ledger.
+- [ ] A scheduled sweep (`fw issues sweep`) closes overdue please-confirm issues with a note, and never closes an issue that has a submitter reply after its Released comment.
+- [ ] Posting is idempotent per (issue, stage): a second run posts nothing new.
+- [ ] `fw release --dry-run` lists what would be posted/closed and calls no GitHub write.
+- [ ] A GitHub failure during the release-stage posting is reported and recorded for retry; the release exit code is unaffected.
+- [ ] Tests with a fake `gh` (no network) cover: posting with evidence, close vs please-confirm, idempotence, dry-run, overdue sweep, reply blocks close, GitHub failure does not fail release.
+- [ ] One line added to CLAUDE.md §Release-Train and to docs/reports/T-4039-inbound-github-issues.md stating that a release posts stage 9 per the close rule.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -243,6 +284,13 @@ date_finished: null
 #
 # The rule of thumb: put the assertion LAST, and make sure it is an assertion.
 #
+out=$(python3 -m pytest tests/unit/t4340_issues_release_test.py -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
+bash -n lib/release.sh && python3 -m py_compile lib/issues.py
+grep -q "release_issue_leg" lib/release.sh && grep -q "def cmd_sweep" lib/issues.py && grep -q "posts stage 9" docs/reports/T-4039-inbound-github-issues.md && grep -q "posts stage 9" CLAUDE.md
+out=$(bats tests/unit/t4340_release_issue_leg.bats 2>&1); echo "$out" | grep -q '^ok 1 ' && ! echo "$out" | grep -q '^not ok' && test "$(echo "$out" | grep -c '# skip')" -eq 0
+out=$(python3 -m pytest tests/unit/t4077_issues_comment_test.py tests/unit/t4078_issues_sync_test.py tests/unit/t4088_issues_close_test.py tests/unit/t4108_issues_security_test.py -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
+bin/fw vendor self --check
+#
 # Enforcement-baseline hint (L-398, T-1886): if you edited `.claude/settings.json`
 # (added/removed/reorganised hooks), add `bin/fw enforcement baseline` to your
 # Verification block. Otherwise the canonical hash diverges and `fw doctor`
@@ -265,6 +313,22 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** a release (`fw release tag-and-release`) ships fixes, but the GitHub issues those fixes
+came from never get the Released comment (stage 9) and are never closed. The submitter hears nothing.
+
+**Root cause:** `lib/release.sh` `release_tag_and_release` (around lines 325-604) has no issue step at all.
+It tags, publishes and creates the GitHub Release, and never calls `lib/issues.py`. The stage 9 design
+exists only as prose in `docs/reports/T-4039-inbound-github-issues.md` §Mechanisms; the verb it names,
+`fw issues comment --stage released`, can post the comment but nothing invokes it on release.
+
+**Why structurally allowed:** the T-4039 design was a document, not a contract. No test or verification
+line asserted that a release touches the issue leg, so the omission was invisible to every gate.
+
+**Prevention:** `tests/unit/t4340_issues_release_test.py` pins the release-to-issue leg (posting, close vs
+please-confirm, idempotence, dry-run, overdue sweep, reply block, GitHub failure never fails the release).
+The Verification block greps the release leg and the CLAUDE.md / T-4039 doc lines, so a future edit that
+removes the hook turns the close gate red.
 
 ## Evolution
 
@@ -346,3 +410,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4340-fw-release-posts-released-in-vxyz-on-eve.md
 - **Context:** Initial task creation
+
+### 2026-10-18T21:59:57Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

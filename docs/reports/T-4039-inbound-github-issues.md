@@ -27,6 +27,8 @@
 | 8 | **In a pre-release** | A T-4023 bleeding-edge pre-release (`-be`) contains it. | Comment: **Available for testing in vX.Y.Z-be.N**, plus a request: "does this fix it for you?" The submitter is a field reporter: their confirmation is the strongest evidence T-4023 can get. |
 | 9 | **Released** | The change reaches master in a release. | Comment: **Released in vX.Y.Z.** The issue is closed. |
 
+**Stage 9 is posted by the release (T-4340):** a release posts stage 9 per the close rule — Released with its evidence block for each task in the range that carries `github_issue:`; closed when the field report has a WORKS row for it, otherwise "please confirm" with a 14-day due date that `fw issues sweep` (also run by sync) closes unless the submitter replied.
+
 Every comment uses one fixed, machine-readable template: a stage marker, the date, the task id and a link. The sync can then read back the stage the issue is in, and the submitter sees a consistent record.
 
 Every stage comment ends with the same footer (operator, 2026-10-10): *"These status updates are automated, but Dimitri personally looks at every issue and decides what happens to it. Replies on this issue are read."*
