@@ -41,7 +41,11 @@ teardown() {
 }
 
 @test "T-4119: git still running at the limit is NOT cut there — handover completes" {
-    export FW_TERMINATOR_HANDOVER_TIMEOUT=2 FW_TERMINATOR_HANDOVER_MAX=60 GIT_STUB_SECS=5
+    # T-4300: at a 2 s limit this test went red under CPU overload (the fw stub had not
+    # reached its git call when /proc was checked, so there was no git to extend for). The
+    # limit is a timing fixture, not the behaviour under test; 6 s / 12 s keeps the assertion
+    # (git alive at the limit → handover completes) and survives a loaded host.
+    export FW_TERMINATOR_HANDOVER_TIMEOUT=6 FW_TERMINATOR_HANDOVER_MAX=60 GIT_STUB_SECS=12
     run _ensure_handover_before_kill "$ROOT" "$(date +%s)"
     [ "$status" -eq 0 ]
     [ -f "$ROOT/.context/handovers/LATEST.md" ]

@@ -46,7 +46,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T11:28:07Z
-last_update: 2026-10-18T11:28:33Z
+last_update: 2026-10-18T13:52:44Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -76,6 +76,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-18T11:30:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=297,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4300: claude-fw register-leak and handover-terminator tests red on the v1.8.11 tip only (t3647 x3, t4119 x3)
@@ -88,11 +98,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Root cause of t3647_claude_fw_register_leak.bats and t4119_terminator_handover_git_extension.bats red on HEAD is localised to file:line (or shown load-flaky with 3 solo passes)
+- [x] Root cause of t3647_claude_fw_register_leak.bats and t4119_terminator_handover_git_extension.bats red on HEAD is localised to file:line (or shown load-flaky with 3 solo passes)
 - [ ] A regression test fails without the fix and passes with it
-- [ ] Both t3647 and t4119 bats files pass on HEAD with the fix applied (no `not ok`, no skips)
-- [ ] Existing neighbouring bats (T-4249 / T-4283 touched files) still pass
-- [ ] `bin/fw vendor self --check` clean after any bin/fw or lib/ edit
+- [x] Both t3647 and t4119 bats files pass on HEAD with the fix applied (no `not ok`, no skips)
+- [x] Existing neighbouring bats (T-4249 / T-4283 touched files) still pass
+- [x] `bin/fw vendor self --check` clean after any bin/fw or lib/ edit
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -290,6 +300,18 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** t3647_claude_fw_register_leak.bats — all 3 tests red on HEAD (`[ "$status" -eq 0 ]` fails at lines 96/107/118). Each `run_wrapper` exits 124 (the 60 s `timeout`), so the register-leak assertions never run. t4119_terminator_handover_git_extension.bats — test 1 red in the 4 saved tip reruns (line 46, `status -eq 0`); 6/6 green on an idle host, and red under CPU overload (see the t4119 paragraph below). Note: t4119 does not exist on v1.8.10 (704c9988f, `git cat-file -e` fails), so it is not a regression against the control; it is a tip-only test for T-4119 (aa05b5094).
+
+**Root cause:** T-4249 (75b085d34) made the claude-fw exit marker per-run: the injected line is `printf '__CLAUDE_FW_EXIT_<tok>_%s__\n'` (bin/claude-fw:1235), and `_tl_claude_exit_code` only matches `__CLAUDE_FW_EXIT_<tok>_<code>__` (bin/claude-fw:340). T-4249 updated the PTY stubs that encode the marker in t3358 and t3648 (both now derive the token from the injected line), but not the stub in tests/unit/t3647_claude_fw_register_leak.bats:65, which still prints the bare `__CLAUDE_FW_EXIT_0__`. The wrapper never sees its marker, waits out the 60 s timeout, and exits 124. The register-leak code (bin/claude-fw:355-396) is not at fault.
+
+**Why structurally allowed:** The marker format is a contract shared by the wrapper and every PTY stub that imitates it, and nothing enumerates those stubs. T-4249's own commit touched 2 of the 3 stubs and its gate ran only the new t4249 file. The t3647 file was not in the changed set, so the sibling suite never ran.
+
+**Prevention:** The t3647 stub now derives the token from the injected line the way t3358/t3648 do, so it tracks the contract instead of a frozen string. The fix is test-side only; the wrapper behaviour is unchanged. T-4249's test (t4249_termlink_restart_on_exit.bats) already covers the product contract.
+
+**t4119 (verdict: load-flaky fixture, test-side fix, not a regression):** `_bounded_handover` (bin/claude-fw:455) checks `/proc/*/cwd` for a `git` process under the root at the `FW_TERMINATOR_HANDOVER_TIMEOUT` deadline. Test 1 set that limit to 2 s with a git stub that lives 5 s. Under CPU overload (48 busy loops on 24 cores) test 1 failed 3/3 and tests 2–4 also flaked, and with 6 s / 12 s test 1 passed where the 2 s form failed. Probe evidence: the TIMEOUT=6 GIT_STUB_SECS=12 form is the one committed to tests/unit/t4119_terminator_handover_git_extension.bats:46. The product logic is unchanged and no bin/ or lib/ file was touched for t4119. Not directly confirmed: the exact mechanism (fw stub not yet at its git call at 2 s is the likely cause, not measured with a trace).
+**Why it slipped:** the 2 s limit was chosen for a fast test, with no margin for process startup on a loaded host. The saved reruns' host load at the time is not recorded, so I cannot say whether they were the loaded case.
+**Prevention:** the test now has a 3x margin over the 2 s form. A future wider change to the 6 s limit should be re-run under load (the same 48-loop overload) before it is trusted.
 
 ## Evolution
 

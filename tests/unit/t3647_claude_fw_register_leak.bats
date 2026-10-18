@@ -61,8 +61,12 @@ case "\$1" in
         fi
         exit 0 ;;
     pty)
+        # T-4249: the exit marker carries a per-run token taken from the injected line.
+        [ "\$2" = "inject" ] && printf '%s\\n' "\$4" > "$STATE/inject.last"
         case "\$2" in
-            output) printf '__CLAUDE_FW_EXIT_0__\n' ;;
+            output)
+                tok=\$(sed -E 's/.*__CLAUDE_FW_EXIT_([A-Za-z0-9]+)_%s__.*/\\1/' "$STATE/inject.last" 2>/dev/null)
+                printf '__CLAUDE_FW_EXIT_%s_0__\n' "\$tok" ;;
         esac
         exit 0 ;;
     *) exit 0 ;;
