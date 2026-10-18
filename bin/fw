@@ -1228,7 +1228,8 @@ if [ -z "$PROJECT_ROOT" ]; then
        [ "$_cmd" != "init" ] && [ "$_cmd" != "help" ] && [ "$_cmd" != "-h" ] && \
        [ "$_cmd" != "--help" ] && [ "$_cmd" != "version" ] && [ "$_cmd" != "-v" ] && \
        [ "$_cmd" != "--version" ] && [ "$_cmd" != "update" ] && [ "$_cmd" != "hook" ] && \
-       [ "$_cmd" != "vendor" ] && [ -n "$_cmd" ] && _fw_cmd_is_known "$_cmd"; then
+       [ "$_cmd" != "vendor" ] && [ "$_cmd" != "upgrade" ] && [ "$_cmd" != "install" ] && \
+       [ -n "$_cmd" ] && _fw_cmd_is_known "$_cmd"; then
 
         # Non-TTY: use defaults (cwd + claude), announcing on stderr only.
         #
@@ -1252,17 +1253,14 @@ if [ -z "$PROJECT_ROOT" ]; then
         # Pinned by tests/unit/test_fw_json_stdout_purity.py, which asserts the
         # move in both directions (on stderr AND absent from stdout) plus that
         # the branch actually fires, so the contract cannot pass vacuously.
+        # T-2746: the non-TTY arm no longer initialises anything. It used to run
+        # do_init on $PWD for any known verb, so a read-only `fw sidecar inbox
+        # --peek` from an agent's Bash tool created a whole project (git init,
+        # vendored tree, live hooks) in whatever directory the agent happened to
+        # be in. No fw command initialises a project implicitly; `fw init` does.
         if [ ! -t 0 ]; then
-            FRAMEWORK_ROOT=$(resolve_framework) || true
-            if [ -n "$FRAMEWORK_ROOT" ]; then
-                export PROJECT_ROOT="$PWD"
-                export FRAMEWORK_ROOT
-                FW_LIB_DIR="$FRAMEWORK_ROOT/lib"
-                source "$FRAMEWORK_ROOT/lib/init.sh"
-                do_init "$PWD" --provider claude >&2
-                exec "$0" "$@"
-            fi
-            # Fall through to normal "no framework" error if resolve fails
+            echo "not in an AEF project: $PWD; run fw init to create one (fw init $PWD), or cd to an existing project" >&2
+            exit 1
         else
             echo -e "${YELLOW}No framework project detected in the current directory.${NC}"
             echo ""

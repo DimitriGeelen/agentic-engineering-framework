@@ -6,7 +6,7 @@ description: >
   fw auto-inits a project in PWD on any non-TTY invocation (read-only commands mutate
   the filesystem). Filed by T-2744 triage; evidence and mechanism in docs/reports/T-2744-unit-suite-triage.md
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -24,7 +24,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-08-03T00:08:30Z
-last_update: 2026-10-18T10:02:04Z
+last_update: 2026-10-18T14:50:49Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -55,6 +55,15 @@ cost_estimate_proposed:
     rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
       (workflow:build); effort=7 (lines=179,acs=4)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-18T13:30:12Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=200,acs=9)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
   - ts: '2026-08-03T00:15:09Z'
     estimator: bvp-estimator-v1-heuristic
@@ -73,6 +82,23 @@ bvp_scores_proposed:
       F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=0 (no-signal); F1=0 
       (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+  - ts: '2026-10-18T13:30:13Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 0
+      D3: 3
+      D4: 2
+      F-RECALL: 0
+      F-AUTONOMY: 0
+      F3: 1
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=0 (no-signal); D3=3 
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=0 (no-signal); F-AUTONOMY=0 (no-signal); F3=1 
+      (body/components:prompt-incidental); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-2746: fw auto-inits a project in PWD on any non-TTY invocation (read-only commands mutate the filesystem)
@@ -85,8 +111,13 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Non-TTY `fw <verb>` from a cwd with no project, for any verb not in {init, install, upgrade}, creates no files in that cwd (no `.framework.yaml`, `.tasks/`, `.git/`, `.agentic-framework/`)
+- [x] The same invocation prints `not in an AEF project: <cwd>; run fw init to create one` on stderr and exits non-zero
+- [x] Verbs `sidecar inbox --peek`, `doctor`, `task list`, `version` from an empty temp cwd with stdin not a TTY: no files created, clear message (version is exempt from the message and must still print its version)
+- [x] `fw init` from an empty temp cwd with no TTY still creates a project
+- [x] Regression test in tests/unit/ fails on the pre-fix bin/fw and passes after the fix
+- [x] `tests/unit/upgrade_fresh_machine_simulation.bats` run; not-ok count reported (no new failures attributable to this change)
+- [x] `bin/fw vendor self --check` clean after the fix
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -122,6 +153,8 @@ bvp_scores_proposed:
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
+bats tests/unit/t2746_no_auto_init_in_non_project.bats > /tmp/.t2746.out 2>&1 && grep -q '^ok ' /tmp/.t2746.out && ! grep -q '^not ok' /tmp/.t2746.out
+bin/fw vendor self --check
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 #
@@ -202,6 +235,14 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** A non-TTY `fw <verb>` (e.g. `fw sidecar inbox --peek`) run by absolute path from a directory with no project created a full project there: `git init`, a ~44 MB vendored `.agentic-framework/`, `.framework.yaml`, `.tasks/`, `.context/`, a bootstrap commit. Its hooks then went live mid-session and blocked writes to the real target.
+
+**Root cause:** `bin/fw` auto-init branch, non-TTY arm (`bin/fw:1214-1222`). When `PROJECT_ROOT` is empty and the verb is a known, non-exempt verb, the `[ ! -t 0 ]` arm runs `do_init "$PWD"` and then `exec "$0" "$@"`. It treats "no project here" as "make one here" for every verb. T-2770 explicitly left open whether read-only verbs should auto-init at all; nothing ever decided it.
+
+**Why structurally allowed:** The only tests of the branch pinned its firing as desired behaviour (`t2835` "KNOWN verb still auto-inits", `test_fw_json_stdout_purity.py`, `fw_help_no_autoinit.bats`). No test asserted that a read-only verb creates nothing from a non-project cwd. The mutation happens before any verb logic, so no verb-level guard could see it.
+
+**Prevention:** Fix: the non-TTY arm no longer initialises. It prints `not in an AEF project: <cwd>; run fw init to create one` on stderr and exits 1. `init`, `upgrade` and the existing exempt verbs keep their behaviour; the TTY prompt is unchanged. Regression: `tests/unit/t2746_no_auto_init_in_non_project.bats` runs `sidecar inbox --peek`, `doctor`, `task list` from an empty `env -i` cwd with stdin closed and asserts no files, the message, and non-zero exit, plus `fw init` still creating a project. Prevention for the class: that test runs the verbs from an empty directory with a cleared environment, so an inherited `PROJECT_ROOT` cannot mask the branch again.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -256,3 +297,6 @@ bvp_scores_proposed:
 
 ### 2026-10-18T10:02:04Z — status-update [task-update-agent]
 - **Change:** horizon: now → now
+
+### 2026-10-18T11:29:36Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

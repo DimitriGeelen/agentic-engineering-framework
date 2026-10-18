@@ -81,13 +81,12 @@ teardown() {
     ! echo "$cmds" | grep -qx "nosuchsubcommand"
 }
 
-@test "T-2770 boundary: a KNOWN verb still auto-inits (behaviour unchanged)" {
+@test "T-2746: a KNOWN verb no longer auto-inits; it refuses and creates nothing" {
     cd "$TEST_TEMP_DIR"
     run timeout 300 "$FW" doctor </dev/null
-    # The point is the side effect, not the exit code: doctor's own verdict may
-    # be non-zero on a freshly created project.
-    [ -e "$TEST_TEMP_DIR/.framework.yaml" ]
-    [ -e "$TEST_TEMP_DIR/.agentic-framework" ]
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"not in an AEF project:"* ]]
+    [ -z "$(ls -A "$TEST_TEMP_DIR")" ]
 }
 
 @test "an inherited PROJECT_ROOT suppresses auto-init (why setup unsets it)" {

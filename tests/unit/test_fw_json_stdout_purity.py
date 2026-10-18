@@ -64,38 +64,21 @@ def fresh_root(tmp_path: Path) -> Path:
     return tmp_path
 
 
-def test_json_stdout_parses_on_uninitialised_root(fresh_root: Path) -> None:
-    """The regression itself: stdout must be JSON and nothing else."""
-    result = _run_uninitialised(fresh_root, "orchestrator", "status", "--json")
-    assert result.returncode == 0, result.stderr
-    # Not `in`/startswith — the whole channel has to parse, which is the only
-    # assertion a downstream consumer's json.loads actually makes.
-    data = json.loads(result.stdout)
-    assert isinstance(data, dict)
+def test_uninitialised_root_keeps_stdout_clean(fresh_root: Path) -> None:
+    """T-2746: no implicit init, so no narration can reach the data channel.
 
-
-def test_auto_init_narration_goes_to_stderr(fresh_root: Path) -> None:
-    """The side effect must remain announced — just not on the data channel.
-
-    Pairs with the test above: together they say "moved", where either alone
-    would also be satisfied by "discarded".
+    Originally (T-2769) this pinned the auto-init narration to stderr. The
+    auto-init is gone; the contract that survives is that a --json caller from
+    a non-project gets an empty stdout and the refusal on stderr.
     """
     result = _run_uninitialised(fresh_root, "orchestrator", "status", "--json")
-    assert result.returncode == 0, result.stderr
-    assert "Setting up agentic governance" in result.stderr
-    assert "Setting up agentic governance" not in result.stdout
+    assert result.returncode != 0
+    assert result.stdout == ""
+    assert "not in an AEF project:" in result.stderr
+    assert "Setting up agentic governance" not in result.stderr
 
 
-def test_auto_init_actually_fired(fresh_root: Path) -> None:
-    """Guard against the tests passing because the branch was never reached.
-
-    If a future change stops auto-initialising here, the two assertions above
-    would still hold — vacuously, on a command that never had a banner to
-    misplace. This test fails loudly in that case so the contract above is
-    re-derived rather than silently retired (see T-2770, which may legitimately
-    change this behaviour; it should have to update this test to do so).
-    """
+def test_no_implicit_init(fresh_root: Path) -> None:
+    """Anti-vacuity: the refusal must leave the directory untouched."""
     _run_uninitialised(fresh_root, "orchestrator", "status", "--json")
-    assert (fresh_root / ".framework.yaml").exists(), (
-        "auto-init did not fire — the stdout-purity tests above are now vacuous"
-    )
+    assert list(fresh_root.iterdir()) == [], "fw created files in a non-project cwd"

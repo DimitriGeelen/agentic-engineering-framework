@@ -73,13 +73,12 @@ assert_dir_untouched() {
     done
 }
 
-@test "auto-init still fires for a real command from a non-project directory" {
-    # Non-vacuity guard. Without this, deleting the auto-init branch entirely
-    # would turn all three tests above green while removing the feature.
-    #
-    # `timeout` because a full init vendors the framework and takes ~minutes:
-    # the banner is emitted first, and its presence is the whole assertion.
+@test "a real command from a non-project directory refuses (T-2746: no auto-init)" {
+    # Non-vacuity guard: the refusal branch is reached and says so, rather than
+    # the directory staying clean because the command never ran.
     cd "$TEST_TEMP_DIR"
-    run timeout 8 env -u FRAMEWORK_ROOT -u PROJECT_ROOT "$(FW)" doctor
-    echo "$output" | grep -q 'Setting up agentic governance'
+    run timeout 30 env -u FRAMEWORK_ROOT -u PROJECT_ROOT "$(FW)" doctor </dev/null
+    [ "$status" -ne 0 ]
+    echo "$output" | grep -q 'not in an AEF project:'
+    assert_dir_untouched
 }
