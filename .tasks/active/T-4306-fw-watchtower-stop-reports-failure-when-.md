@@ -6,7 +6,7 @@ description: >
   when the pid is a zombie (already exited, not reaped); a zombie is stopped and should
   report so.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -41,7 +41,7 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T13:48:45Z
-last_update: '2026-10-18T14:02:08Z'
+last_update: 2026-10-18T21:06:25Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -95,8 +95,10 @@ and removes the pid file; start/restart treat a pid file whose process is gone o
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `bin/watchtower.sh` has one liveness predicate that treats a zombie (`/proc/PID/stat` state Z, or `ps` stat Z) and a gone pid as not running; `is_running`, `do_stop`, `do_current` and the start health loop use it instead of bare `kill -0`
+- [x] `stop` on a pid file pointing at a dead pid or a zombie exits 0, reports stopped/stale, and removes the pid/port/url triple
+- [x] `start` and `restart` with a pid file pointing at a dead pid or a zombie clear it as stale and proceed (no "already running" refusal)
+- [x] Regression bats `tests/unit/t4306_watchtower_zombie_pid.bats` covers stop/start/restart × dead/zombie, fails on the pre-fix script and passes after; neighbouring watchtower bats stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -274,6 +276,11 @@ and removes the pid file; start/restart treat a pid file whose process is gone o
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n bin/watchtower.sh
+timeout 300 bats tests/unit/t4306_watchtower_zombie_pid.bats > /tmp/.t4306.out 2>&1 && ! grep -q "^not ok" /tmp/.t4306.out
+test "$(grep -c '# skip' /tmp/.t4306.out)" -eq 0
+timeout 300 bats tests/unit/t3661_watchtower_status_exit.bats tests/unit/t3660_watchtower_detach.bats > /tmp/.t4306n.out 2>&1 && ! grep -q "^not ok" /tmp/.t4306n.out
+bin/fw vendor self --check
 
 ## RCA
 
@@ -290,6 +297,23 @@ and removes the pid file; start/restart treat a pid file whose process is gone o
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** with the Watchtower process a zombie (exited, parent never reaped it — common as PID 1 children in
+containers), `fw watchtower stop` printed "Failed to stop Watchtower" and exited 1, leaving the pid file; `start` then
+refused with "already running ... not reused" and `restart` failed the same way, until the pid file was removed by hand.
+
+**Root cause:** every liveness check in `bin/watchtower.sh` was a bare `kill -0 PID` (`is_running` :58, `do_stop`
+:151/:166/:173/:180, start health loop :413, `do_current` :558). `kill -0` succeeds on a zombie — the pid still
+exists in the process table — so stop sent TERM/KILL to a process that cannot die, saw `kill -0` still succeed and
+returned 1 at :180 without removing the triple; start's `is_running` (:268) reported the zombie as a running server.
+
+**Why structurally allowed:** the tests (t3661) only model "dead and reaped" stale pids; nothing ever modelled a
+zombie, and on a developer host with a real init/shell parent the server is always reaped, so the gap never showed
+outside containers.
+
+**Prevention:** one predicate `_pid_alive` (kill -0 AND state != Z via /proc, ps fallback) is the only liveness test
+in the script; `tests/unit/t4306_watchtower_zombie_pid.bats` creates a real zombie and pins stop/start/restart
+behaviour on it and on a dead pid.
 
 ## Evolution
 
@@ -371,3 +395,6 @@ and removes the pid file; start/restart treat a pid file whose process is gone o
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4306-fw-watchtower-stop-reports-failure-when-.md
 - **Context:** Initial task creation
+
+### 2026-10-18T21:06:25Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

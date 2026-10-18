@@ -52,10 +52,25 @@ get_pid() {
     fi
 }
 
+# T-4306: the one liveness test. `kill -0` alone succeeds on a ZOMBIE (exited,
+# not reaped — common for children of a container's PID 1), so stop failed and
+# start refused on a server that was already gone. A zombie is stopped.
+_pid_alive() {
+    local pid="$1" state=""
+    [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null || return 1
+    if [ -r "/proc/$pid/stat" ]; then
+        # comm may contain spaces/parens: the state follows the LAST ')'.
+        state=$(sed 's/.*) //' "/proc/$pid/stat" 2>/dev/null | cut -d' ' -f1)
+    else
+        state=$(ps -o stat= -p "$pid" 2>/dev/null | tr -d '[:space:]')
+    fi
+    [ "${state:0:1}" != "Z" ]
+}
+
 is_running() {
     local pid
     pid=$(get_pid)
-    [ -n "$pid" ] && kill -0 "$pid" 2>/dev/null
+    _pid_alive "$pid"
 }
 
 port_in_use() {
@@ -148,7 +163,7 @@ do_stop() {
     local pid
     pid=$(get_pid)
 
-    if ! kill -0 "$pid" 2>/dev/null; then
+    if ! _pid_alive "$pid"; then
         log_warn "Stale PID file (PID $pid not running). Cleaning up."
         rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE"
         return 0
@@ -163,21 +178,21 @@ do_stop() {
     pkill -TERM -P "$pid" 2>/dev/null || true
     kill -TERM "$pid" 2>/dev/null || true
     local timeout=10
-    while [ "$timeout" -gt 0 ] && kill -0 "$pid" 2>/dev/null; do
+    while [ "$timeout" -gt 0 ] && _pid_alive "$pid"; do
         log_info "  Waiting for shutdown... (${timeout}s)"
         sleep 1
         timeout=$((timeout - 1))
     done
 
     # Force kill if still running
-    if kill -0 "$pid" 2>/dev/null; then
+    if _pid_alive "$pid"; then
         log_warn "Graceful shutdown failed. Sending SIGKILL..."
         pkill -KILL -P "$pid" 2>/dev/null || true
         kill -KILL "$pid" 2>/dev/null || true
         sleep 1
     fi
 
-    if kill -0 "$pid" 2>/dev/null; then
+    if _pid_alive "$pid"; then
         log_error "Failed to stop Watchtower (PID $pid)."
         return 1
     fi
@@ -281,6 +296,11 @@ do_start() {
         log_warn "Watchtower is already running (PID $pid)${run_port:+ on port $run_port}, but it was not reused."
         log_info "Use '$(basename "$0") restart' to restart, or '$(basename "$0") stop' first."
         return 1
+    elif [ -f "$PID_FILE" ]; then
+        # T-4306: the pid on file is gone or a zombie — stale. Keep the port file:
+        # choose_port reads it as the last port (T-3876).
+        log_warn "Stale PID file (PID $(get_pid) not running). Cleaning up."
+        rm -f "$PID_FILE" "$URL_FILE"
     fi
 
     # T-3876: one port rule for start and restart (choose_port). T-3662's
@@ -410,7 +430,7 @@ do_start() {
         check=$((check + 1))
 
         # Check process is still alive
-        if ! kill -0 "$new_pid" 2>/dev/null; then
+        if ! _pid_alive "$new_pid"; then
             log_error "Watchtower exited immediately. Last 10 lines of log:"
             tail -10 "$LOG_FILE" >&2
             rm -f "$PID_FILE" "$PORT_FILE" "$URL_FILE"
@@ -555,7 +575,7 @@ do_current() {
     # set -euo pipefail is active: a missing pid file must read as "not
     # running", not abort the script mid-verdict.
     [ -f "$PID_FILE" ] && pid=$(tr -d '[:space:]' < "$PID_FILE" 2>/dev/null || true)
-    if [ -z "$pid" ] || ! kill -0 "$pid" 2>/dev/null; then
+    if [ -z "$pid" ] || ! _pid_alive "$pid"; then
         log_info "current: no Watchtower running — nothing to be stale"
         return 0
     fi
