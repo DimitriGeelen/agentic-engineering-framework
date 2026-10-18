@@ -42,7 +42,7 @@
 <div class="ac-section-label">Agent <small>({{ agent_acs | selectattr('checked') | list | length }}/{{ agent_acs|length }})</small></div>
 <ul class="ac-list">
     {% for ac in agent_acs %}
-    <li>{{ tick(ac) }}<span class="{% if ac.checked %}ac-checked{% endif %}">{{ (ac.text_html or ac.text) | safe }}</span></li>
+    <li>{{ tick(ac) }}<span class="{% if ac.checked %}ac-checked{% endif %}">{{ (ac.text_html or (ac.text|e)) | safe }}</span></li>
     {% endfor %}
 </ul>
 {% endif %}

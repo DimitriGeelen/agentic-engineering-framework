@@ -1,13 +1,19 @@
 ---
 id: T-4287
-name: "_ac_list.html prints criterion text through |safe with a raw fallback: (ac.text_html or ac.text)|safe would emit unescaped text for any includer that does not set text_html (latent; 832 OBS-319)"
+name: "_ac_list.html prints criterion text through |safe with a raw fallback: (ac.text_html
+  or ac.text)|safe would emit unescaped text for any includer that does not set text_html
+  (latent; 832 OBS-319)"
 description: >
-  832 msg 4f3de570 (their T-1153). web/templates/_ac_list.html:45. Today the only includer (inception_detail via web/blueprints/inception.py:417) sets text_html for every Agent criterion, so the fallback never fires. Fix: (ac.text_html or (ac.text|e))|safe, or make text_html mandatory and fail loudly; test that an includer without text_html renders escaped text. Render surface: needs a [REVIEW] Human AC.
+  832 msg 4f3de570 (their T-1153). web/templates/_ac_list.html:45. Today the only
+  includer (inception_detail via web/blueprints/inception.py:417) sets text_html for
+  every Agent criterion, so the fallback never fires. Fix: (ac.text_html or (ac.text|e))|safe,
+  or make text_html mandatory and fail loudly; test that an includer without text_html
+  renders escaped text. Render surface: needs a [REVIEW] Human AC.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -38,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T23:31:40Z
-last_update: 2026-10-17T23:31:40Z
-date_finished: null
+last_update: 2026-10-17T23:59:35Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +56,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-17T23:45:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-17T23:46:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4287: _ac_list.html prints criterion text through |safe with a raw fallback: (ac.text_html or ac.text)|safe would emit unescaped text for any includer that does not set text_html (latent; 832 OBS-319)
@@ -62,10 +96,21 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `web/templates/_ac_list.html` Agent-criterion line escapes the fallback: `(ac.text_html or (ac.text|e))|safe`
+- [x] Regression test `tests/unit/test_t4287_ac_list_escape.py` renders the partial with an Agent criterion that has no `text_html` and a `<script>` in `text`, and asserts the output carries `&lt;script&gt;` and no raw `<script>`; a second case asserts `text_html` still renders as HTML (fails without the fix)
+- [x] Vendored copy in sync: `bin/fw vendor self --check` clean
+- [x] Watchtower restarted; `bin/fw watchtower current` exits 0
 
 ### Human
+- [ ] [REVIEW] Inception page criteria still render as before
+  **Steps:**
+  1. `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url`
+  2. Open `<that url>/inception/T-4046` (or any inception with Agent criteria) in a browser
+  3. Look at the Agent criteria list: links, `code` spans and bold text inside criteria
+  **Expected:** Criteria look exactly as before the change — formatting rendered as HTML, not shown as literal `&lt;` / tags
+  **If not:** Screenshot the criterion list and note which criterion shows literal markup
+
+
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -241,6 +286,10 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+grep -q "(ac.text_html or (ac.text|e)) | safe" web/templates/_ac_list.html
+python3 -m pytest tests/unit/test_t4287_ac_list_escape.py -q > /tmp/.t4287 2>&1 && grep -q passed /tmp/.t4287 && ! grep -q failed /tmp/.t4287
+bin/fw vendor self --check
+bin/fw watchtower current
 
 ## RCA
 
@@ -257,6 +306,13 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+**Symptom:** none live yet. Latent: an includer of `_ac_list.html` that passes Agent criteria without `text_html` would print the raw criterion text unescaped (reported by 832, OBS-319 / their T-1153).
+
+**Root cause:** `web/templates/_ac_list.html:45` applied `| safe` to the whole expression `(ac.text_html or ac.text)`. `text_html` is pre-sanitised HTML and can be marked safe, but the fallback `ac.text` is raw task-file text, and `| safe` switched off autoescaping for it too.
+
+**Why structurally allowed:** the only includer (`web/blueprints/inception.py:417`) always sets `text_html`, so the fallback branch never ran and no test rendered the partial without it. Template `| safe` usage is not linted.
+
+**Prevention:** the fallback is now escaped explicitly (`ac.text|e`), and `tests/unit/test_t4287_ac_list_escape.py` renders the partial with no `text_html` and a `<script>` criterion, asserting it comes out escaped.
 
 ## Evolution
 
@@ -338,3 +394,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4287-aclisthtml-prints-criterion-text-through.md
 - **Context:** Initial task creation
+
+### 2026-10-17T23:59:35Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
