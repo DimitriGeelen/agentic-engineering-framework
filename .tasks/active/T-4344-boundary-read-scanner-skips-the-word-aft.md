@@ -1,10 +1,20 @@
 ---
 id: T-4344
-name: "Boundary read scanner skips the word after option flags that take no value, hiding outside reads (git diff --no-index -m /etc/shadow, git log --summary /etc/shadow)"
+name: "Boundary read scanner skips the word after option flags that take no value,
+  hiding outside reads (git diff --no-index -m /etc/shadow, git log --summary /etc/shadow)"
 description: >
-  ring20-dashboard finding (msg 4699f56c), reproduced on v1.8.11: lib/shell_write_scan.py scan_boundary_reads (T-4284 free-text option skipping) returns 2 hits for 'git diff --no-index /etc/shadow /dev/null' but 1 for '... -m /etc/shadow ...' and 0 for 'git log --summary /etc/shadow' (cat /etc/shadow: 1). One global option set plus skip-the-next-word hides paths after flags that take no value. Fix: key value-taking free-text options by command + subcommand (git commit/tag -m/--message/-F?, fw --rationale/--summary/--detail/--reason, gh --body/--title, termlink --body), never skip the next word for a flag that takes no value, and still judge a skipped word that is path-shaped (starts with /, ~, $HOME, ../). Regression tests for the reported cases plus the T-4284 false positives it fixed (must stay unflagged). Regression of v1.8.11 (shipped T-4284).
+  ring20-dashboard finding (msg 4699f56c), reproduced on v1.8.11: lib/shell_write_scan.py
+  scan_boundary_reads (T-4284 free-text option skipping) returns 2 hits for 'git diff
+  --no-index /etc/shadow /dev/null' but 1 for '... -m /etc/shadow ...' and 0 for 'git
+  log --summary /etc/shadow' (cat /etc/shadow: 1). One global option set plus skip-the-next-word
+  hides paths after flags that take no value. Fix: key value-taking free-text options
+  by command + subcommand (git commit/tag -m/--message/-F?, fw --rationale/--summary/--detail/--reason,
+  gh --body/--title, termlink --body), never skip the next word for a flag that takes
+  no value, and still judge a skipped word that is path-shaped (starts with /, ~,
+  $HOME, ../). Regression tests for the reported cases plus the T-4284 false positives
+  it fixed (must stay unflagged). Regression of v1.8.11 (shipped T-4284).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +49,8 @@ origin: {kind: "peer", source: "ring20-dashboard"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T22:02:56Z
-last_update: 2026-10-18T22:02:56Z
-date_finished: null
+last_update: 2026-10-18T22:04:04Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +61,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-18T22:04:07Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4344: Boundary read scanner skips the word after option flags that take no value, hiding outside reads (git diff --no-index -m /etc/shadow, git log --summary /etc/shadow)
@@ -63,8 +91,12 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `scan_boundary_reads` returns the reported counts: `git diff --no-index /etc/shadow /dev/null` = 2, `git diff --no-index -m /etc/shadow /dev/null` = 2, `git log --summary /etc/shadow` = 1, `cat /etc/shadow` = 1 (regression bats in tests/unit/t4344_boundary_read_free_text_opts.bats)
+- [x] Free-text value skipping is keyed per command (and git subcommand): a flag that takes no value (git log/diff `--summary`, `-m`) never skips the next word
+- [ ] A skipped free-text value that is path-shaped (`/`, `~`, `$HOME`, `../`) is still judged as a path read — NOT DONE: conflicts with the T-4284 cases (`--prompt="$OUT"`, `--name "$OUT"` must stay allowed); see RCA. Operator decision.
+- [x] T-4284 false positives stay unflagged: commit messages, fw `--rationale` text containing `>` or paths in prose (tests/unit/t4284_boundary_free_text_args.bats passes)
+- [x] Hook test suites that exercise the boundary scanner pass after the change
+- [x] `bin/fw vendor self --check` clean after the vendor sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -115,6 +147,9 @@ date_finished: null
 ## Verification
 
 # Shell commands that MUST pass before work-completed. One per line.
+out=$(bats tests/unit/t4344_boundary_read_free_text_opts.bats 2>&1); echo "$out" | grep -q "^1\.\." && ! echo "$out" | grep -q "^not ok"
+out=$(bats tests/unit/t4284_boundary_free_text_args.bats 2>&1); echo "$out" | grep -q "^1\.\." && ! echo "$out" | grep -q "^not ok"
+bin/fw vendor self --check
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
 # Build/refactor/decommission tasks with NO command here are refused. If nothing can be
@@ -259,6 +294,16 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** on v1.8.11, `scan_boundary_reads` reports 2 outside reads for `git diff --no-index /etc/shadow /dev/null` but 1 for the same command with `-m` before the path, and 0 for `git log --summary /etc/shadow` (`cat /etc/shadow` reports 1). The hook lets the read through.
+
+**Root cause:** `lib/shell_write_scan.py` `_read_words` consulted one global `_FREE_TEXT_OPTS` set (T-4284) for every `git`/`fw`/`gh`/`termlink`/`claude` segment. `-m` (git diff, takes no value) and `--summary` (git log, takes no value) are in that set, so the next word — the path operand — was skipped with `continue` and never judged (`lib/shell_write_scan.py` skip branch, formerly ~1222-1228).
+
+**Why structurally allowed:** the T-4284 test suite pinned the false positives the set fixed (commit messages, prompts) but never a value-taking spelling that is *also* a no-value flag in another subcommand, so the one global key looked correct. The scanner's own tests covered `-m` only under `fw`/`git commit`.
+
+**Prevention:** free-text options are now keyed per command and per git subcommand (`_FREE_TEXT_OPTS_BY_CMD`, `_git_subcommand`, `_free_text_opts`), so `git diff`/`git log` have no free-text options at all. `tests/unit/t4344_boundary_read_free_text_opts.bats` pins the four reported counts (HEAD gives 1 and 0 where 2 and 1 are expected), the no-value flags, the git `-C` subcommand stepping, and the T-4284 false positives.
+
+**Not done — path-shaped skipped values (AC 3):** the task asked that a skipped value still be judged when path-shaped. The T-4284 suite asserts `--prompt="$OUT"` and `--name "$OUT"` (a bare outside path as the free-text value) are allowed, and the task also requires those cases to stay unflagged. Both cannot hold, so this was left out. Decision needed from the operator.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -339,3 +384,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4344-boundary-read-scanner-skips-the-word-aft.md
 - **Context:** Initial task creation
+
+### 2026-10-18T22:04:04Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

@@ -1190,18 +1190,57 @@ _HOME_VAR = re.compile(r"^(?:\$HOME|\$\{HOME\})(?=/|$)")
 # text (`zip -m` and `gzip --name` are flags that take no value, so the next word IS a
 # path operand; `install -m`, `grep -m` take a mode/count). A substitution inside the
 # text (`-m "$(cat /x)"`) is its own executed piece and is still judged.
-_FREE_TEXT_OPTS = frozenset({"--prompt", "--body", "-m", "--message", "--description",
-                             "--name", "--rationale", "--summary", "--detail"})
-_FREE_TEXT_CMDS = frozenset({"fw", "git", "gh", "termlink", "claude"})
+# T-4344: the value-taking free-text options are keyed per command (and per git
+# subcommand). One global set let `--summary` (git log, takes no value) or `-m` (git diff,
+# takes no value) skip the next word — a path operand — and hide an outside read.
+_FREE_TEXT_OPTS_BY_CMD = {
+    "fw": {"*": frozenset({"--prompt", "--body", "-m", "--message", "--description", "--name",
+                           "--rationale", "--summary", "--detail", "--reason"})},
+    "gh": {"*": frozenset({"--body", "-b", "--title", "-t"})},
+    "termlink": {"*": frozenset({"--prompt", "--body", "--message", "--description", "--name",
+                                 "--summary"})},
+    "claude": {"*": frozenset({"--prompt"})},
+    "git": {sub: frozenset({"-m", "--message"}) for sub in ("commit", "tag", "merge", "stash", "notes")},
+}
+_GIT_VALUE_GLOBALS = frozenset({"-C", "-c", "--git-dir", "--work-tree", "--namespace"})
 
 
-def _is_free_text_opt(w: str) -> bool:
-    """`--opt`, `--opt=VALUE` or `-mVALUE` for a free-text option."""
-    if w in _FREE_TEXT_OPTS:
-        return True
-    if w.startswith("--") and "=" in w:
-        return w.split("=", 1)[0] in _FREE_TEXT_OPTS
-    return w.startswith("-m") and len(w) > 2 and not w.startswith("--")
+def _git_subcommand(argv: list[str]) -> str | None:
+    """The first non-option word after `git`, stepping over the value of `-C`/`-c`/…"""
+    it = iter(argv[1:])
+    for w in it:
+        if w in _GIT_VALUE_GLOBALS:
+            next(it, None)
+        elif not w.startswith("-"):
+            return w
+    return None
+
+
+def _free_text_opts(argv: list[str]) -> frozenset:
+    """The value-taking free-text options of this command, or none for any other command."""
+    if not argv:
+        return frozenset()
+    cmd = os.path.basename(argv[0])
+    table = _FREE_TEXT_OPTS_BY_CMD.get(cmd)
+    if not table:
+        return frozenset()
+    if cmd == "git":
+        return table.get(_git_subcommand(argv) or "", frozenset())
+    return table["*"]
+
+
+def _free_text_value(w: str, opts: frozenset) -> tuple[bool, str | None]:
+    """(is `w` a free-text option, its attached value or None when the value is the next word).
+    Spellings: `--opt`, `--opt=VALUE`, and `-mVALUE` for a short option."""
+    if w in opts:
+        return True, None
+    if w.startswith("--"):
+        name, sep, value = w.partition("=")
+        return (True, value) if sep and name in opts else (False, None)
+    for o in opts:
+        if len(o) == 2 and w.startswith(o) and len(w) > 2 and not w.startswith("--"):
+            return True, w[2:]
+    return False, None
 
 
 def _read_words(seg: list[str], ctx: _Ctx) -> None:
@@ -1217,15 +1256,17 @@ def _read_words(seg: list[str], ctx: _Ctx) -> None:
     if outside is None:
         return
     argv, _ = _unwrap(list(seg))
-    free_text = bool(argv) and os.path.basename(argv[0]) in _FREE_TEXT_CMDS
+    free_text = _free_text_opts(argv)
     skip_next = False
     for w in seg:
         if skip_next:
             skip_next = False
             continue
-        if free_text and _is_free_text_opt(w):
-            skip_next = w in _FREE_TEXT_OPTS
-            continue
+        if free_text:
+            is_free_text, _value = _free_text_value(w, free_text)
+            if is_free_text:
+                skip_next = _value is None
+                continue
         if not w or w.startswith("\x00") or w in _OPSET or w == UNRESOLVED:
             continue
         if w.startswith("-") and "=" in w:
