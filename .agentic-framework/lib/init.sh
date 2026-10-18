@@ -194,7 +194,11 @@ do_init() {
     _target_top=$(git -C "$target_dir" rev-parse --show-toplevel 2>/dev/null) || _target_top=""
     _target_real=$(cd "$target_dir" && pwd -P)
     [ -n "$_target_top" ] && _target_top=$(cd "$_target_top" && pwd -P)
-    [ -n "${HOME:-}" ] && _home_real=$(cd "$HOME" 2>/dev/null && pwd -P)
+    # T-4296: not `[ … ] && _home_real=$(…)` — under set -e a failing last command of an
+    # && list aborts init silently when HOME is unset or missing (CI, env -i fixtures).
+    if [ -n "${HOME:-}" ]; then
+        _home_real=$(cd "$HOME" 2>/dev/null && pwd -P) || _home_real=""
+    fi
     if [ -z "$_target_top" ] || { [ "$_target_top" != "$_target_real" ] && \
         { [ "$_target_top" = "/" ] || [ "$_target_top" = "$_home_real" ] || [ "${FW_INIT_OWN_REPO:-0}" = "1" ]; }; }; then
         echo -e "  ${GREEN}✓${NC}  Initializing git repository"
