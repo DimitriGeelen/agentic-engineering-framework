@@ -469,7 +469,8 @@ if [ "$_rc" -ne 0 ]; then
     echo "$_hits" >&2
     echo "" >&2
     echo "If this is a real secret: remove it from the staged content and re-commit." >&2
-    echo "If this is a false positive: add a regex to .secret-scan-allowlist." >&2
+    echo "If this is a false positive: add a regex to .secret-scan-allowlist in the project root" >&2
+    echo "  ($PROJECT_ROOT/.secret-scan-allowlist — not .agentic-framework/, which fw upgrade replaces)." >&2
     echo "" >&2
     echo "Bypass: git commit --no-verify" >&2
     echo "  (Tier 0 will prompt for approval on --no-verify. Bypasses are logged.)" >&2

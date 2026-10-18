@@ -14,7 +14,9 @@
 #
 # Configuration:
 #   .secret-scan-patterns   TSV catalogue (name<TAB>regex)
-#   .secret-scan-allowlist  One regex per line; matching findings suppressed
+#   .secret-scan-allowlist  One regex per line; matching findings suppressed.
+#                           Read from the project root AND beside the patterns
+#                           (union, T-4316) — consumers keep theirs at the root.
 #
 # Optional escalation:
 #   If `gitleaks` is on PATH, run it as a second pass and treat any finding
@@ -71,6 +73,23 @@ _secret_scan_build_allowlist() {
               | tr '\n' '|' \
               | sed 's/|$//')
     echo "$_joined"
+}
+
+# T-4316 (055 T-545): the effective allowlist is the UNION of the project-root
+# file and the one beside the chosen patterns. Patterns belong to the framework
+# and may come from the vendored copy; the allowlist belongs to the project, and
+# reading it only from $cfg meant a consumer could allowlist solely by editing
+# .agentic-framework/, which fw upgrade replaces — entries silently vanished.
+_secret_scan_allow_re() {
+    local root="$1" cfg="$2" _re _part
+    _re="$(_secret_scan_build_allowlist "$root/.secret-scan-allowlist")"
+    if [ "$cfg" != "$root" ]; then
+        _part="$(_secret_scan_build_allowlist "$cfg/.secret-scan-allowlist")"
+        if [ -n "$_part" ]; then
+            _re="${_re:+$_re|}$_part"
+        fi
+    fi
+    echo "$_re"
 }
 
 # T-3665 (P-01 Win F-07): emit the pattern catalogue with carriage returns
@@ -157,14 +176,13 @@ _secret_scan_run_patterns() {
 # Public: scan staged content via `git diff --cached`. This is the pre-commit
 # hook's primary mode.
 scan_staged() {
-    local root cfg patterns allowlist
+    local root cfg patterns
     root="$(_secret_scan_project_root)"
     cfg="$(_secret_scan_config_dir "$root")"
     patterns="$cfg/.secret-scan-patterns"
-    allowlist="$cfg/.secret-scan-allowlist"
 
     local allow_re
-    allow_re="$(_secret_scan_build_allowlist "$allowlist")"
+    allow_re="$(_secret_scan_allow_re "$root" "$cfg")"
 
     # Format: walk the staged diff, prefix each added line with file:line:
     # — this gives the regex run a stable "filepath:linenumber:content" shape.
@@ -230,14 +248,13 @@ scan_staged() {
 # Public: scan the entire working tree (audit mode). Used by the human-AC
 # step to surface pre-existing matches that need allowlisting.
 scan_tree() {
-    local root cfg patterns allowlist
+    local root cfg patterns
     root="$(_secret_scan_project_root)"
     cfg="$(_secret_scan_config_dir "$root")"
     patterns="$cfg/.secret-scan-patterns"
-    allowlist="$cfg/.secret-scan-allowlist"
 
     local allow_re
-    allow_re="$(_secret_scan_build_allowlist "$allowlist")"
+    allow_re="$(_secret_scan_allow_re "$root" "$cfg")"
 
     # T-3983 (ring20 T-2271, via the T-3977 review): both axes read the git INDEX
     # (git grep over tracked files, git ls-files). Outside a work tree, or with zero
@@ -437,11 +454,10 @@ _secret_name_classify() {
 # Public: scan tracked FILENAMES for credential material.
 # Returns 0 if none, 1 if any.
 scan_names() {
-    local root cfg allowlist allow_re
+    local root cfg allow_re
     root="$(_secret_scan_project_root)"
     cfg="$(_secret_scan_config_dir "$root")"
-    allowlist="$cfg/.secret-scan-allowlist"
-    allow_re="$(_secret_scan_build_allowlist "$allowlist")"
+    allow_re="$(_secret_scan_allow_re "$root" "$cfg")"
 
     local _hits=0 _path _base _lower _class
     while IFS= read -r _path; do
@@ -466,18 +482,17 @@ scan_file() {
     local file="$1"
     [ -z "$file" ] && { echo "usage: scan-file <path>" >&2; return 2; }
     [ ! -f "$file" ] && { echo "scan-file: not found: $file" >&2; return 2; }
-    local root cfg patterns allowlist
+    local root cfg patterns
     root="$(_secret_scan_project_root)"
     cfg="$(_secret_scan_config_dir "$root")"
     patterns="$cfg/.secret-scan-patterns"
-    allowlist="$cfg/.secret-scan-allowlist"
     # T-3971: not a commit gate, so no fail-open — missing catalogue is NOT CHECKED (3).
     if [ ! -f "$patterns" ]; then
         echo "secret-scan: NOT CHECKED: no patterns catalogue ($patterns)" >&2
         return 3
     fi
     local allow_re
-    allow_re="$(_secret_scan_build_allowlist "$allowlist")"
+    allow_re="$(_secret_scan_allow_re "$root" "$cfg")"
     awk -v file="$file" '{ printf "%s:%d:%s\n", file, NR, $0 }' "$file" \
         | _secret_scan_run_patterns "$patterns" "$allow_re"
 }
@@ -507,7 +522,8 @@ FW_SECRET_SCAN_STRICT=1.
 
 Configuration:
   .secret-scan-patterns   TSV pattern catalogue
-  .secret-scan-allowlist  Suppress known false-positives
+  .secret-scan-allowlist  Suppress known false-positives (project root; the
+                          vendored copy's entries also apply)
 USAGE
             return 0
             ;;

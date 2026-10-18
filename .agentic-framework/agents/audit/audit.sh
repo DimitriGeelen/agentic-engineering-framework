@@ -4778,7 +4778,7 @@ if [ -x "$SECRET_SCANNER" ]; then
         _ss_count=$(echo "$_ss_out" | grep -c "^  \[" || true)
         fail "Secret scan: $_ss_count finding(s) in tracked tree (T-1844)" \
              "$(echo "$_ss_out" | head -5)" \
-             "Remove the secret from source + history (filter-repo if already committed); allowlist false-positives in .secret-scan-allowlist"
+             "Remove the secret from source + history (filter-repo if already committed); allowlist false-positives in the project-root .secret-scan-allowlist (not .agentic-framework/, which fw upgrade replaces)"
     else
         pass "Secret scan: tracked tree clean"
     fi

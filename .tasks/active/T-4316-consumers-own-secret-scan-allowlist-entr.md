@@ -1,13 +1,23 @@
 ---
 id: T-4316
-name: "Consumer's own secret-scan allowlist entries are lost at fw upgrade (allowlist read only from the vendored copy unless the project has its own patterns)"
+name: "Consumer's own secret-scan allowlist entries are lost at fw upgrade (allowlist
+  read only from the vendored copy unless the project has its own patterns)"
 description: >
-  055 finding (msg 7dd19179, their T-545). agents/git/lib/secret-scan.sh:46-58 _secret_scan_config_dir picks ONE directory for both patterns and allowlist: the project root only if it has .secret-scan-patterns, else .agentic-framework/. Lines 164/237/443/473 then read cfg/.secret-scan-allowlist. So the scanner's own remedy ('add a regex to .secret-scan-allowlist') means editing the vendored copy, which fw upgrade replaces: entries silently vanish. Fix: read the allowlist as the union of PROJECT_ROOT/.secret-scan-allowlist and the vendored one, independent of where patterns come from; the block message names the project-root file. Keep tests/unit/upgrade_fresh_machine_simulation.bats green; add a test that a project-root allowlist entry suppresses a finding while patterns come from the vendored copy.
+  055 finding (msg 7dd19179, their T-545). agents/git/lib/secret-scan.sh:46-58 _secret_scan_config_dir
+  picks ONE directory for both patterns and allowlist: the project root only if it
+  has .secret-scan-patterns, else .agentic-framework/. Lines 164/237/443/473 then
+  read cfg/.secret-scan-allowlist. So the scanner's own remedy ('add a regex to .secret-scan-allowlist')
+  means editing the vendored copy, which fw upgrade replaces: entries silently vanish.
+  Fix: read the allowlist as the union of PROJECT_ROOT/.secret-scan-allowlist and
+  the vendored one, independent of where patterns come from; the block message names
+  the project-root file. Keep tests/unit/upgrade_fresh_machine_simulation.bats green;
+  add a test that a project-root allowlist entry suppresses a finding while patterns
+  come from the vendored copy.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: [bug, secret-scan, consumer, upgrade]
 components: []
 related_tasks: []
@@ -39,8 +49,8 @@ origin: {kind: "peer", source: "055"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T16:44:20Z
-last_update: 2026-10-18T16:44:20Z
-date_finished: null
+last_update: 2026-10-18T21:09:05Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +61,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-18T16:45:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-18T16:46:42Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4316: Consumer's own secret-scan allowlist entries are lost at fw upgrade (allowlist read only from the vendored copy unless the project has its own patterns)
@@ -63,8 +101,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A regex in PROJECT_ROOT/.secret-scan-allowlist suppresses a finding in scan-staged, scan-tree, scan-names and scan-file while the patterns come from .agentic-framework/ (project root has no .secret-scan-patterns)
+- [x] An entry in the vendored .agentic-framework/.secret-scan-allowlist still suppresses a finding (union, not replacement)
+- [x] With neither allowlist file present the scanner still runs and reports the finding (exit 1, no error)
+- [x] The pre-commit block message (agents/git/lib/hooks.sh) and the audit finding (agents/audit/audit.sh) name the PROJECT-ROOT .secret-scan-allowlist, not the vendored copy
+- [ ] Regression bats tests/unit/t4316_secret_scan_allowlist_union.bats passes; test_secret_scan.bats and upgrade_fresh_machine_simulation.bats stay green; vendor self --check clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -113,6 +154,14 @@ date_finished: null
 -->
 
 ## Verification
+
+bash -n agents/git/lib/secret-scan.sh && bash -n agents/git/lib/hooks.sh
+timeout 300 bats tests/unit/t4316_secret_scan_allowlist_union.bats > /tmp/.t4316a.out 2>&1 && ! grep -q "^not ok" /tmp/.t4316a.out
+test "$(grep -c '# skip' /tmp/.t4316a.out)" -eq 0
+timeout 300 bats tests/unit/test_secret_scan.bats > /tmp/.t4316b.out 2>&1 && ! grep -q "^not ok" /tmp/.t4316b.out
+timeout 600 bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4316c.out 2>&1 && ! grep -q "^not ok" /tmp/.t4316c.out
+grep -q 'project root' agents/git/lib/hooks.sh
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -259,6 +308,14 @@ date_finished: null
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** 055 (their T-545) added false-positive regexes to `.agentic-framework/.secret-scan-allowlist`, as the block message implied; `fw upgrade` replaced the vendored copy and the entries vanished, so the same commits blocked again.
+
+**Root cause:** `agents/git/lib/secret-scan.sh:46-58` `_secret_scan_config_dir` resolves ONE directory for both the pattern catalogue and the allowlist — the project root only when it has its own `.secret-scan-patterns`, else `.agentic-framework/`. scan_staged / scan_tree / scan_names / scan_file (lines 164/237/443/473) then read `$cfg/.secret-scan-allowlist`. A consumer keeping the shipped patterns (the normal case) could only allowlist by editing a vendored, upgrade-overwritten file; a project-root allowlist was silently ignored. The block message (`agents/git/lib/hooks.sh:472`) named no path.
+
+**Why structurally allowed:** every test in test_secret_scan.bats copies patterns AND allowlist into the test repo root, so config always came from one place and the split case (patterns vendored, allowlist local) was never exercised. Patterns and allowlist have different owners (framework vs consumer) but shared one resolver.
+
+**Prevention:** the allowlist is now the union of `PROJECT_ROOT/.secret-scan-allowlist` and the allowlist next to the chosen patterns (`_secret_scan_allow_re`), independent of where patterns come from; remedy messages name the project-root file. `tests/unit/t4316_secret_scan_allowlist_union.bats` pins the split case across all four modes, the vendored-still-applies leg, and the neither-present leg.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -339,3 +396,7 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4316-consumers-own-secret-scan-allowlist-entr.md
 - **Context:** Initial task creation
+
+### 2026-10-18T21:09:05Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
