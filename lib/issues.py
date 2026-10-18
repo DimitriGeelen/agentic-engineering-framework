@@ -265,6 +265,25 @@ def _approval_ok(ref: str, issue: int, stage: str) -> bool:
     return False
 
 
+# Operator ruling 2026-10-19 (T-4347): 'you can post fully automatically no approval needed'.
+# Supersedes answer 1 of 2026-10-10 for decision comments, but only while the key is on.
+STANDING_PERMISSION_KEY = "ISSUES_DECISIONS_STANDING_PERMISSION"
+STANDING_PERMISSION_REF = "standing-permission:operator-2026-10-19"
+
+
+def _standing_permission() -> bool:
+    """env FW_<KEY> > .framework.yaml > 0, resolved like fw_config. Only an explicit 1 grants it."""
+    raw = os.environ.get("FW_" + STANDING_PERMISSION_KEY)
+    if raw in (None, ""):
+        try:
+            text = (_project_root() / ".framework.yaml").read_text(encoding="utf-8")
+        except OSError:
+            return False
+        m = re.search(rf"^{STANDING_PERMISSION_KEY}:\s*['\"]?([^'\"#\n]+?)['\"]?\s*(#.*)?$", text, re.M)
+        raw = m.group(1) if m else ""
+    return raw.strip() == "1"
+
+
 def cmd_approve(a) -> int:
     if _is_agent():
         raise IssuesError("approving a decision comment is an operator action — refused under "
@@ -372,7 +391,10 @@ def cmd_comment(a) -> int:
     if a.test_cmd and ("`" in a.test_cmd or "\n" in a.test_cmd):
         raise IssuesError("--test-cmd must be one line without backticks")
 
-    if st in DECISION_STAGES:
+    standing = ""
+    if st in DECISION_STAGES and not a.approved_by_operator and _standing_permission():
+        standing = STANDING_PERMISSION_REF
+    elif st in DECISION_STAGES:
         if not a.approved_by_operator:
             raise IssuesError(f"stage {st} is a decision: it needs --approved-by-operator <ref>")
         if _is_agent() and not _approval_ok(a.approved_by_operator, a.issue, st):
@@ -415,6 +437,8 @@ def cmd_comment(a) -> int:
         row["commit"] = a.commit
     if a.version:
         row["version"] = a.version
+    if standing:
+        row["approved_by"] = standing
     row.update(getattr(a, "extra", None) or {})  # sync's classification fields ride on the row
     if st == "released" and getattr(a, "please_confirm", False):
         row["due"] = (datetime.now(timezone.utc) + timedelta(days=RELEASE_DUE_DAYS)).strftime("%Y-%m-%d")

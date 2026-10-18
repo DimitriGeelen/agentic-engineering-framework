@@ -62,7 +62,7 @@ def env(tmp_path):
     (project / ".tasks" / "active").mkdir(parents=True)
     (project / ".tasks" / "active" / "T-4040-stale-config-cache-after-upgrade.md").write_text("x")
     ledger = tmp_path / "issues"
-    e = dict(os.environ, PATH=f"{bindir}:{os.environ['PATH']}", STUB_DIR=str(stub),
+    e = dict(os.environ, PATH=f"{bindir}:{os.environ['PATH']}", STUB_DIR=str(stub), FW_ISSUES_DECISIONS_STANDING_PERMISSION="0",
              FW_ISSUES_DIR=str(ledger), FW_ISSUES_REPO="o/r", FW_ISSUES_GIT_REMOTE="github",
              PROJECT_ROOT=str(project))
     for k in ("CLAUDECODE", "AI_AGENT", "CLAUDE_CODE_ENTRYPOINT"):

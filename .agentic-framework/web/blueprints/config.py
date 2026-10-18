@@ -22,6 +22,7 @@ SETTINGS = [
     ("RAIL_PROJECT_LABEL", "", "Canonical from_project label attached to outbound rail posts (T-2905). Empty = derived from the project directory name, normalised. Emitted, never typed at a call site."),
     ("SIDECAR_RAIL_IDENTITY", "0", "1 = the sidecar's termlink calls sign with RAIL_IDENTITY_FILE (the key fw rail uses) instead of the host-shared key, unless a TERMLINK_IDENTITY_* variable is already set (T-4311). Off by default: turning it on changes which dm:* rails address this project, so coordinate with peers"),
     ("SIDECAR_HOST_DM_TRANSITION", "1", "While SIDECAR_RAIL_IDENTITY is on, also read dm:* rails addressed to the old host fingerprint so earlier DMs are not lost (T-4311). Set 0 once peers address the project key: host rails are shared by every co-resident project"),
+    ("ISSUES_DECISIONS_STANDING_PERMISSION", "0", "1 = fw issues comment posts a decision stage (accepted / needs-info / duplicate / not-planned) without a per-comment operator approval; the ledger row records approved_by: standing-permission:operator-2026-10-19 (operator ruling 2026-10-19, T-4347). 0 keeps the per-comment approval"),
     ("DISPATCH_LIMIT", "0", "Built-in harness sub-agent (Agent tool) dispatches allowed before the TermLink gate blocks. Default 0 (operator ruling 2026-10-06, T-3910): sub-agents run as TermLink workers, never through a vendor harness's dispatcher"),
     ("BUDGET_RECHECK_INTERVAL", "5", "Re-read transcript every N tool calls"),
     ("BUDGET_STATUS_MAX_AGE", "90", "Max seconds before cached budget status is stale"),

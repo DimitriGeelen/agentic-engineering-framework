@@ -56,7 +56,7 @@ def env(tmp_path):
     gh.write_text(GH_STUB)
     gh.chmod(gh.stat().st_mode | stat.S_IEXEC)
     ledger = tmp_path / "issues"
-    e = dict(os.environ, PATH=f"{bindir}:{os.environ['PATH']}", STUB_DIR=str(stub),
+    e = dict(os.environ, PATH=f"{bindir}:{os.environ['PATH']}", STUB_DIR=str(stub), FW_ISSUES_DECISIONS_STANDING_PERMISSION="0",
              FW_ISSUES_DIR=str(ledger), FW_ISSUES_REPO="o/r", FW_ISSUES_GIT_REMOTE="github")
     for k in ("CLAUDECODE", "AI_AGENT", "CLAUDE_CODE_ENTRYPOINT"):
         e.pop(k, None)

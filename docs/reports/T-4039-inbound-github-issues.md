@@ -76,6 +76,12 @@ Every stage comment ends with the same footer (operator, 2026-10-10): *"These st
 7. **Footer** on every comment (added on request): "These status updates are automated, but Dimitri personally looks at every issue and decides what happens to it. Replies on this issue are read."
 8. **Routing:** every MikeEchoVoid issue goes to arc `mikeechovoid-requests` (arc-021), horizon `now`.
 
+### Operator answer 2026-10-19 (T-4347) — supersedes answer 1 for decision comments
+
+Verbatim: *"you can post fully automatically no approval needed"*, then *"please codify that"*.
+
+Decision comments (Accepted / Needs info / Duplicate / Not planned) no longer need the operator's yes each time. Codified as config key `ISSUES_DECISIONS_STANDING_PERMISSION` (default `0`; set to `1` for this project). With it on, `fw issues comment` posts a decision stage without `--approved-by-operator` and the ledger row records `approved_by: standing-permission:operator-2026-10-19`. With it `0` the 2026-10-10 rule applies unchanged. Comment text, footer, one outward verb, idempotence per (issue, stage) and untrusted-issue-text handling are unchanged.
+
 ## First batch, by hand (evidence for the build)
 
 Run 2026-10-10 → 2026-10-11 with `gh` and the intake ledger `.context/issues/intake.jsonl`:

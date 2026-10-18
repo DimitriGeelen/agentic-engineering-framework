@@ -53,7 +53,8 @@ def env(tmp_path):
     gh.write_text(GH_STUB)
     gh.chmod(gh.stat().st_mode | stat.S_IEXEC)
     e = dict(os.environ, PATH=f"{bindir}:{os.environ['PATH']}", STUB_DIR=str(stub),
-             FW_ISSUES_DIR=str(tmp_path / "issues"), FW_ISSUES_REPO="o/r")
+             FW_ISSUES_DIR=str(tmp_path / "issues"), FW_ISSUES_REPO="o/r",
+             FW_ISSUES_DECISIONS_STANDING_PERMISSION="0")
     for k in ("CLAUDECODE", "AI_AGENT", "CLAUDE_CODE_ENTRYPOINT"):
         e.pop(k, None)
     return e, stub, tmp_path / "issues"
