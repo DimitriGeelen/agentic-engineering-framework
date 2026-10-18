@@ -45,7 +45,7 @@ origin: {kind: "peer", source: "055"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T13:47:53Z
-last_update: 2026-10-18T13:52:33Z
+last_update: '2026-10-18T14:01:10Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -75,6 +75,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-18T14:01:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=292,acs=6)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4303: A bin/fw that does not parse blocks every hook, so the operator cannot reach the session (055 finding)
@@ -87,8 +97,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `bin/fw hook <name>` routes through a fast path placed before the bulk of bin/fw is parsed, so a bin/fw with an unclosed block above the hook branch still runs hooks (regression test copies bin/fw to a temp tree, injects an unclosed block above the main routing case, proves a hook still routes)
+- [x] When bin/fw itself does not parse, the hook error names bin/fw, says it does not parse, and gives the repair (`bash -n bin/fw`, `git diff bin/fw`)
+- [x] Hook behaviour preserved: missing-hook degrade-to-allow, telemetry, and exit codes unchanged; `.claude/settings.json` not edited
+- [x] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green, and the new regression test fails without the fix (run against HEAD:bin/fw: tests 2-5 fail)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -267,6 +279,13 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n bin/fw && bash -n lib/hook-dispatch.sh
+bats tests/unit/t4303_hook_routes_when_binfw_unparseable.bats > /tmp/.t4303-v.out 2>&1 && ! grep -q "^not ok" /tmp/.t4303-v.out
+test "$(grep -c '# skip' /tmp/.t4303-v.out)" -eq 0
+bats tests/unit/hook_dispatcher.bats tests/unit/hook_telemetry.bats tests/unit/t3645_hook_root_marker_home.bats > /tmp/.t4303-h.out 2>&1 && ! grep -q "^not ok" /tmp/.t4303-h.out
+bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4303-up.out 2>&1 && ! grep -q "^not ok" /tmp/.t4303-up.out
+bin/fw vendor self --check
+
 ## RCA
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
@@ -282,6 +301,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** one unfinished edit to `bin/fw` (unclosed block at line 1354, left by a T-4298 worker) made every `fw hook` call fail with `unexpected end of file`. Every UserPromptSubmit, PreToolUse and Stop hook failed, so operator prompts and peer mail were blocked and the workers stalled.
+
+**Root cause:** bash parses a script one top-level command at a time, and the whole main routing `case "$cmd"` (line 6226 at HEAD, `esac` at the end of the file) is one command. The `hook)` branch sat inside it (line 10553 of 11528 lines at HEAD). An unclosed block above the case makes the parser consume the file to EOF, so nothing from the case runs, including the hook branch. All hooks share this one parse surface, so one unfinished edit anywhere in the file takes them all down.
+
+**Why structurally allowed:** nothing ran `bash -n bin/fw` after the edit. The hook entrypoint lives in the file it guards, so the failing parse also silenced the path that would have reported the error. Worse, the failure surfaced only as a generic bash message inside a hook, with no pointer to bin/fw or the repair.
+
+**Prevention:** (1) a `fw hook` fast path placed right after `FW_BIN_DIR` (`bin/fw`, G-118 block). It runs `bash -n` on bin/fw, and when that fails it names bin/fw, says it does not parse, gives `bash -n bin/fw` / `git diff bin/fw`, then runs the hook through `lib/hook-dispatch.sh` with a minimal path resolution. A healthy bin/fw falls straight through, so behaviour is unchanged. The cost is one `bash -n` (~25 ms) per `fw hook` call, which is the price of parsing the file before the bulk. (2) The hook body moved to `lib/hook-dispatch.sh` unchanged, so the healthy and degraded paths share one implementation. (3) `tests/unit/t4303_hook_routes_when_binfw_unparseable.bats` injects an unclosed block above the routing case and asserts hooks still route, the exit code propagates, and the error names bin/fw. The unpatched `HEAD:bin/fw` with the same injection fails with `unexpected end of file`, rc=2, which was reproduced by hand before the fix. `.claude/settings.json` is untouched.
 
 ## Evolution
 

@@ -1,0 +1,73 @@
+#!/bin/bash
+# hook-dispatch.sh — `fw hook <name> [args...]` body (G-118, T-4303)
+#
+# Every Claude Code hook runs `bin/fw hook NAME`. bash parses bin/fw from the top,
+# so a parse error anywhere above the `hook)` branch (today: line ~10553 of 11.5k)
+# stops every hook. The body lives here so bin/fw can run it from a fast path placed
+# above the bulk of the file (see the G-118 block after FW_BIN_DIR in bin/fw).
+#
+# Expects in the environment: FRAMEWORK_ROOT, PROJECT_ROOT, AGENTS_DIR, FW_LIB_DIR.
+# Always exits (exit or exec) — callers must not expect a return.
+
+fw_hook_run() {
+        # fw hook <name> [args...] — runtime path resolution for Claude Code hooks
+        # Resolves FRAMEWORK_ROOT from symlink, PROJECT_ROOT from cwd.
+        # Replaces hardcoded absolute paths in .claude/settings.json (G-021/T-496).
+        _hook_name="${1:-}"
+        shift 2>/dev/null || true
+        # T-1437: --help / -h print usage, not treated as a hook name
+        # (would miss agents/context/--help.sh and log a spurious crash).
+        if [ -z "$_hook_name" ] || [ "$_hook_name" = "--help" ] || [ "$_hook_name" = "-h" ]; then
+            _hook_exit=1
+            [ "${_hook_name:-}" = "--help" ] || [ "${_hook_name:-}" = "-h" ] && _hook_exit=0
+            echo "Usage: fw hook <name> [args...]" >&2
+            # T-1186/G-042: Generate hook list from filesystem (single source of truth)
+            _hooks=$(ls "$AGENTS_DIR/context/"*.sh 2>/dev/null | xargs -I{} basename {} .sh | sort | tr '\n' ', ' | sed 's/,$//' | sed 's/,/, /g')
+            echo "Available hooks: $_hooks" >&2
+            exit $_hook_exit
+        fi
+        _hook_script="$AGENTS_DIR/context/${_hook_name}.sh"
+        if [ ! -f "$_hook_script" ]; then
+            # T-1360 / G-053-B: missing hook script = config drift, NOT a reason to
+            # block the agent's tool surface. Exit 2 would hard-block PreToolUse and
+            # cascade across every Bash/Write/Edit. Log once to hook-crashes.log so
+            # `fw doctor` can surface the drift, then exit 0 (allow).
+            echo "WARNING: Hook script not found: $_hook_script (degrading to allow — fix hook config)" >&2
+            if [ -n "${PROJECT_ROOT:-}" ] && [ -d "$PROJECT_ROOT/.context/working" ]; then
+                _crash_log="$PROJECT_ROOT/.context/working/.hook-crashes.log"
+                echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) missing-hook $_hook_name script=$_hook_script" >> "$_crash_log" 2>/dev/null || true
+            fi
+            # T-1628 (B-2 of T-1626): record the missing-hook event as a failure
+            # so .hook-failure-counter surfaces it. This is the exact witness
+            # scenario from T-1626 (ring20-dashboard 2026-04-30): a path-broken
+            # hook that "succeeds" with exit 0 was invisible to every health
+            # surface. By marking it as a fire with synthetic exit 127 (sh
+            # convention for command-not-found), B-3's threshold scan + doctor
+            # check have a deterministic signal to alert on.
+            if [ -f "$FW_LIB_DIR/hook-telemetry.sh" ]; then
+                # shellcheck disable=SC1091
+                source "$FW_LIB_DIR/hook-telemetry.sh"
+                fw_record_hook_fire "$_hook_name" 127 2>/dev/null || true
+            fi
+            exit 0
+        fi
+        export FRAMEWORK_ROOT PROJECT_ROOT
+        # T-863: Use bash explicitly — don't require -x (core.filemode=false drops execute bits)
+        # T-1628 (B-2 of T-1626): record per-hook fire + non-zero-exit telemetry to
+        # .context/working/.hook-counter / .hook-failure-counter. The original `exec`
+        # replaced this process; we now run-and-capture so post-exit telemetry can
+        # observe the exit code. Telemetry overhead is <0.2ms per fire (mapfile-based,
+        # no subprocess); the extra fork from non-exec is negligible vs. hook payload.
+        # Source is best-effort — if telemetry helper is missing, skip silently and
+        # fall back to plain exec (preserves behaviour on degraded installs).
+        if [ -f "$FW_LIB_DIR/hook-telemetry.sh" ]; then
+            # shellcheck disable=SC1091
+            source "$FW_LIB_DIR/hook-telemetry.sh"
+            bash "$_hook_script" "$@"
+            _hook_rc=$?
+            fw_record_hook_fire "$_hook_name" "$_hook_rc" 2>/dev/null || true
+            exit "$_hook_rc"
+        else
+            exec bash "$_hook_script" "$@"
+        fi
+}

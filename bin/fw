@@ -62,6 +62,47 @@ NC='\033[0m'
 FW_REAL_PATH="$(readlink -f "$0" 2>/dev/null || realpath "$0" 2>/dev/null || echo "$0")"
 FW_BIN_DIR="$(cd "$(dirname "$FW_REAL_PATH")" && pwd)"
 
+# --- G-118 / T-4303: `fw hook` must route even when this file does not parse ---
+# bash reads bin/fw one top-level command at a time, so a broken block anywhere below
+# this point (an unclosed block at line 1354 took every hook down) is never reached
+# if we leave here first. Healthy bin/fw: bash -n passes and we fall straight through,
+# unchanged. Broken bin/fw: name the cause and the repair, then run the hook through
+# lib/hook-dispatch.sh with a minimal resolution (no bin/fw functions are available).
+if [ "${1:-}" = "hook" ] && ! _fw_parse_err="$(bash -n "$FW_REAL_PATH" 2>&1)"; then
+    echo "fw hook: bin/fw ($FW_REAL_PATH) does not parse, so hooks run in degraded mode via lib/hook-dispatch.sh." >&2
+    echo "  bash: $(printf '%s\n' "$_fw_parse_err" | head -1)" >&2
+    echo "  repair (from the framework repo root): bash -n bin/fw   then   git diff bin/fw   (the unfinished edit)" >&2
+    _fw_fb_lib="$FW_BIN_DIR/../lib/hook-dispatch.sh"
+    if [ ! -f "$FW_BIN_DIR/../FRAMEWORK.md" ] || [ ! -f "$_fw_fb_lib" ]; then
+        echo "fw hook: framework tree at $FW_BIN_DIR/.. is incomplete — allowing (hook not run)." >&2
+        exit 0
+    fi
+    FRAMEWORK_ROOT="$(cd "$FW_BIN_DIR/.." && pwd)"
+    if [ -n "${CLAUDE_PROJECT_DIR:-}" ] && { [ -f "$CLAUDE_PROJECT_DIR/.framework.yaml" ] || [ -d "$CLAUDE_PROJECT_DIR/.tasks" ]; }; then
+        PROJECT_ROOT="$CLAUDE_PROJECT_DIR"
+    elif [ -n "${PROJECT_ROOT:-}" ] && { [ -f "$PROJECT_ROOT/.framework.yaml" ] || [ -d "$PROJECT_ROOT/.tasks" ]; }; then
+        :
+    else
+        _fw_fb_dir="$PWD"
+        PROJECT_ROOT=""
+        while [ "$_fw_fb_dir" != "/" ] && [ -z "$PROJECT_ROOT" ]; do
+            if [ ! -f "$_fw_fb_dir/.fw-not-a-project" ] && { [ -f "$_fw_fb_dir/.framework.yaml" ] || [ -d "$_fw_fb_dir/.tasks" ]; }; then
+                PROJECT_ROOT="$_fw_fb_dir"
+            fi
+            _fw_fb_dir="$(dirname "$_fw_fb_dir")"
+        done
+        PROJECT_ROOT="${PROJECT_ROOT:-$FRAMEWORK_ROOT}"
+    fi
+    export FRAMEWORK_ROOT PROJECT_ROOT
+    AGENTS_DIR="$FRAMEWORK_ROOT/agents"
+    FW_LIB_DIR="$FRAMEWORK_ROOT/lib"
+    # shellcheck source=../lib/hook-dispatch.sh
+    source "$_fw_fb_lib"
+    shift
+    fw_hook_run "$@"
+    exit 0
+fi
+
 # Find PROJECT_ROOT by walking up from cwd looking for .framework.yaml or .tasks/.
 # T-1841: skip dirs containing .fw-not-a-project sentinel — these are vendored
 # framework copies (.agentic-framework/) or rollback dirs (.agentic-framework.rollback/)
@@ -10551,66 +10592,10 @@ PYSEARCH
         do_vendor "$@"
         ;;
     hook)
-        # fw hook <name> [args...] — runtime path resolution for Claude Code hooks
-        # Resolves FRAMEWORK_ROOT from symlink, PROJECT_ROOT from cwd.
-        # Replaces hardcoded absolute paths in .claude/settings.json (G-021/T-496).
-        _hook_name="${1:-}"
-        shift 2>/dev/null || true
-        # T-1437: --help / -h print usage, not treated as a hook name
-        # (would miss agents/context/--help.sh and log a spurious crash).
-        if [ -z "$_hook_name" ] || [ "$_hook_name" = "--help" ] || [ "$_hook_name" = "-h" ]; then
-            _hook_exit=1
-            [ "${_hook_name:-}" = "--help" ] || [ "${_hook_name:-}" = "-h" ] && _hook_exit=0
-            echo "Usage: fw hook <name> [args...]" >&2
-            # T-1186/G-042: Generate hook list from filesystem (single source of truth)
-            _hooks=$(ls "$AGENTS_DIR/context/"*.sh 2>/dev/null | xargs -I{} basename {} .sh | sort | tr '\n' ', ' | sed 's/,$//' | sed 's/,/, /g')
-            echo "Available hooks: $_hooks" >&2
-            exit $_hook_exit
-        fi
-        _hook_script="$AGENTS_DIR/context/${_hook_name}.sh"
-        if [ ! -f "$_hook_script" ]; then
-            # T-1360 / G-053-B: missing hook script = config drift, NOT a reason to
-            # block the agent's tool surface. Exit 2 would hard-block PreToolUse and
-            # cascade across every Bash/Write/Edit. Log once to hook-crashes.log so
-            # `fw doctor` can surface the drift, then exit 0 (allow).
-            echo "WARNING: Hook script not found: $_hook_script (degrading to allow — fix hook config)" >&2
-            if [ -n "${PROJECT_ROOT:-}" ] && [ -d "$PROJECT_ROOT/.context/working" ]; then
-                _crash_log="$PROJECT_ROOT/.context/working/.hook-crashes.log"
-                echo "$(date -u +%Y-%m-%dT%H:%M:%SZ) missing-hook $_hook_name script=$_hook_script" >> "$_crash_log" 2>/dev/null || true
-            fi
-            # T-1628 (B-2 of T-1626): record the missing-hook event as a failure
-            # so .hook-failure-counter surfaces it. This is the exact witness
-            # scenario from T-1626 (ring20-dashboard 2026-04-30): a path-broken
-            # hook that "succeeds" with exit 0 was invisible to every health
-            # surface. By marking it as a fire with synthetic exit 127 (sh
-            # convention for command-not-found), B-3's threshold scan + doctor
-            # check have a deterministic signal to alert on.
-            if [ -f "$FW_LIB_DIR/hook-telemetry.sh" ]; then
-                # shellcheck disable=SC1091
-                source "$FW_LIB_DIR/hook-telemetry.sh"
-                fw_record_hook_fire "$_hook_name" 127 2>/dev/null || true
-            fi
-            exit 0
-        fi
-        export FRAMEWORK_ROOT PROJECT_ROOT
-        # T-863: Use bash explicitly — don't require -x (core.filemode=false drops execute bits)
-        # T-1628 (B-2 of T-1626): record per-hook fire + non-zero-exit telemetry to
-        # .context/working/.hook-counter / .hook-failure-counter. The original `exec`
-        # replaced this process; we now run-and-capture so post-exit telemetry can
-        # observe the exit code. Telemetry overhead is <0.2ms per fire (mapfile-based,
-        # no subprocess); the extra fork from non-exec is negligible vs. hook payload.
-        # Source is best-effort — if telemetry helper is missing, skip silently and
-        # fall back to plain exec (preserves behaviour on degraded installs).
-        if [ -f "$FW_LIB_DIR/hook-telemetry.sh" ]; then
-            # shellcheck disable=SC1091
-            source "$FW_LIB_DIR/hook-telemetry.sh"
-            bash "$_hook_script" "$@"
-            _hook_rc=$?
-            fw_record_hook_fire "$_hook_name" "$_hook_rc" 2>/dev/null || true
-            exit "$_hook_rc"
-        else
-            exec bash "$_hook_script" "$@"
-        fi
+        # fw hook <name> [args...] — the body lives in lib/hook-dispatch.sh (G-118, T-4303).
+        # bin/fw also runs it from the fast path near the top when this file does not parse.
+        source "$FW_LIB_DIR/hook-dispatch.sh"
+        fw_hook_run "$@"
         ;;
     hook-enable)
         # fw hook-enable — register a framework hook in .claude/settings.json (T-1189)

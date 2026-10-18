@@ -37,7 +37,10 @@ teardown() {
 }
 
 @test "bin/fw dispatcher invokes fw_record_hook_fire" {
-    grep -q "fw_record_hook_fire" "$FRAMEWORK_ROOT/bin/fw"
+    # T-4303: the hook body moved to lib/hook-dispatch.sh (bin/fw routes to it from both
+    # its fast path and the hook) branch), so the telemetry call is pinned there.
+    grep -q "fw_record_hook_fire" "$FRAMEWORK_ROOT/lib/hook-dispatch.sh"
+    grep -q "hook-dispatch.sh" "$FRAMEWORK_ROOT/bin/fw"
 }
 
 @test "bin/fw sources lib/hook-telemetry.sh" {
