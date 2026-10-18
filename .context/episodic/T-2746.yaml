@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-2746: fw auto-inits a project in PWD on any non-TTY invocation (read-only commands mutate the filesystem)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T15:14:23Z
+# ============================================================================
+
+task_id: T-2746
+task_name: "fw auto-inits a project in PWD on any non-TTY invocation (read-only commands mutate the filesystem)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-08-03T00:08:30Z
+completed: 2026-10-18T15:12:29Z
+duration_days: 76
+updates_count: 3
+first_commit: 2026-10-18T17:11:44+02:00
+last_commit: 2026-10-18T17:11:44+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  bin/fw no longer auto-inits a project on non-TTY invocation; refuses with one actionable line
+
+# Key outcomes
+outcomes:
+  - 'Non-TTY `fw <verb>` from a cwd with no project, for any verb not in {init, install, upgrade}, creates no files in that cwd (no `.framework.yaml`, `.tasks/`, `.git/`, `.agentic-framework/`)'
+  - 'The same invocation prints `not in an AEF project: <cwd>; run fw init to create one` on stderr and exits non-zero'
+  - 'Verbs `sidecar inbox --peek`, `doctor`, `task list`, `version` from an empty temp cwd with stdin not a TTY: no files created, clear message (version is exempt from the message and must still print its version)'
+  - '`fw init` from an empty temp cwd with no TTY still creates a project'
+  - 'Regression test in tests/unit/ fails on the pre-fix bin/fw and passes after the fix'
+  - '`tests/unit/upgrade_fresh_machine_simulation.bats` run; not-ok count reported (no new failures attributable to this change)'
+  - '`bin/fw vendor self --check` clean after the fix'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - '.tasks/active/T-2746-fw-auto-inits-a-project-in-pwd-on-any-no.md'
+  - 'tests/unit/fw_help_no_autoinit.bats'
+  - 'tests/unit/t2746_no_auto_init_in_non_project.bats'
+  - 'tests/unit/t2835_unknown_cmd_no_autoinit.bats'
+  - 'tests/unit/test_fw_json_stdout_purity.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T17:11:44'
+    action: 'T-2746: bin/fw no longer auto-inits a project on non-TTY invocation; refuses with one actionable line'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 110343 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 110343
+  commits: 1
+  files_changed: 7
+  lines_added: 176
+  lines_removed: 68
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-2746-fw-auto-inits-a-project-in-pwd-on-any-no.md
+generated_by: context-agent-hybrid
