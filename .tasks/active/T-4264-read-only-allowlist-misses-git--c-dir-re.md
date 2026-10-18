@@ -7,10 +7,10 @@ description: >
   it only if it reproduces. Findings (0909 run aef-install-20261017T144241Z): F-26.
   Triage: docs/reports/T-4253-greenfield-run-triage.md PROPOSED-NEW-11.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -41,7 +41,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T15:27:26Z
-last_update: '2026-10-17T15:31:18Z'
+last_update: 2026-10-18T14:18:27Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,8 +93,12 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `git -C DIR <read-verb>` (status, log, diff, show, rev-parse, ls-files) is classified read-only by `is_bash_safe_command` / the git branch of the safe-commands function
+- [x] `git --git-dir=X` and `git --work-tree=X` (and `-c k=v`, `--no-pager`, `-P`) before a read-verb are classified read-only (`-c` keys that run a program, e.g. core.pager / core.fsmonitor, stay gated)
+- [x] Write verbs behind the same global options stay gated: `git -C DIR commit` and `git --git-dir=X commit`, `branch -D`, `tag -d` are NOT read-only (control cases). `git -C DIR push` / `add` now follow bare `git push` / `add`, which the existing code already admits (T-2462, T-2054)
+- [x] The `2>&1` compound form from F-26 is re-tested: bare `git status 2>&1` was already SAFE before the fix; `git -C DIR status 2>&1` reproduced (GATED) and is fixed by the same change, so it is in the test set
+- [x] Bats regression cases added in tests/unit/t4264_git_global_opts_safe.bats; the three reproducing forms are GATED at HEAD and SAFE after the fix
+- [x] `bash -n` passes on the edited safe-commands.sh
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -143,6 +147,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bash -n agents/context/lib/safe-commands.sh
+bats tests/unit/t4264_git_global_opts_safe.bats > .context/working/.t4264.out 2>&1 && ! grep -q "^not ok" .context/working/.t4264.out
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -289,6 +297,14 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** `git -C /path status`, `git --git-dir=X log`, `git --work-tree=X diff` and `git -C DIR status 2>&1` are gated by the read-only allowlist (task gate fires on read-only inspection). Bare `git status` is admitted.
+
+**Root cause:** agents/context/lib/safe-commands.sh, git arm (`git_sub=$(echo "$cmd" | awk '{print $2}')`, was ~line 508): the sub-verb is taken as the second word. Git accepts its global options (`-C DIR`, `--git-dir=`, `--work-tree=`, `-c k=v`, `-P`, `--no-pager`) before the verb, so the word read is `-C`, which matches no arm and returns 1 (gated). The same first-word-keyed assumption as L-432 and the T-3344 wrapper/affix class.
+
+**Why structurally allowed:** the T-2888 sweep derived the git verb set from the verbs our tooling *uses*, and every fixture used the bare form (`git status`), so no test exercised a global option in front of the verb. The allowlist's positional reader was never tested against git's own grammar.
+
+**Prevention:** `_fw_git_skip_globals` strips git's global options before the verb is read, and refuses unknown globals and `-c` keys that run a program (fail closed). The git arm and `_fw_git_refverb_is_read` both judge the normalised command. tests/unit/t4264_git_global_opts_safe.bats pins the admitted forms and the write/fail-closed control cases, so a future reader that re-derives the verb from `$2` fails the suite.
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -369,3 +385,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4264-read-only-allowlist-misses-git--c-dir-re.md
 - **Context:** Initial task creation
+
+### 2026-10-18T14:18:27Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

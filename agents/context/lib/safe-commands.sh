@@ -248,6 +248,41 @@ _fw_strip_env_prefixes() {
     _FW_ENV_STRIPPED="$c"
 }
 
+# F-26 (T-4264): git takes its global options BEFORE the sub-verb, so the word
+# after `git` is `-C`, `--git-dir=...`, `-P` and so on, not the verb. This strips
+# them and prints `git <verb> <args...>` for the caller to classify. The verb is
+# then judged exactly as the bare form is, so a write behind a global option stays
+# a write: `git -C DIR commit` is still refused. Anything not recognised (an
+# unknown global, a value option with no value) returns non-zero: fail closed.
+# `-c` is the one that can run code: `-c core.fsmonitor=CMD status` executes CMD,
+# so keys that name a program are refused here rather than admitted as read-only.
+_fw_git_skip_globals() {
+    local -a words
+    read -ra words <<< "$1"
+    local i=1 n=${#words[@]} tok key
+    while [ "$i" -lt "$n" ]; do
+        tok="${words[$i]}"
+        case "$tok" in
+            -C|--git-dir|--work-tree|--namespace)
+                i=$((i + 2)) ;;
+            --git-dir=*|--work-tree=*|--namespace=*|-P|--no-pager)
+                i=$((i + 1)) ;;
+            -c)
+                key="${words[$((i + 1))]:-}"
+                key="${key%%=*}"
+                case "${key,,}" in
+                    ""|core.fsmonitor|core.pager|pager.*|diff.external|core.sshcommand|core.askpass|core.hookspath|core.editor|core.gitproxy|include.*|includeif.*|alias.*|filter.*|gpg.*|credential.*|*.textconv|*.helper|*.command|*.driver|sequence.editor)
+                        return 1 ;;
+                esac
+                i=$((i + 2)) ;;
+            -*) return 1 ;;
+            *) break ;;
+        esac
+    done
+    [ "$i" -lt "$n" ] || return 1
+    echo "git ${words[*]:$i}"
+}
+
 # Single (non-compound) command classification. This is the original
 # is_bash_safe_command body, unchanged apart from the name.
 _fw_single_command_is_safe() {
@@ -504,8 +539,10 @@ _fw_single_command_is_safe() {
     case "$base" in
         # Category 1: Git read-only
         git)
-            local git_sub
-            git_sub=$(echo "$cmd" | awk '{print $2}')
+            # F-26 (T-4264): judge the verb after git's global options, not the first word.
+            local git_norm git_sub
+            git_norm=$(_fw_git_skip_globals "$cmd") || return 1
+            git_sub=$(echo "$git_norm" | awk '{print $2}')
             case "$git_sub" in
                 # T-2888 added the second line. The first had grown one verb per
                 # incident — T-2052, T-2054, T-2462 and T-2878 each patched this
@@ -528,7 +565,7 @@ _fw_single_command_is_safe() {
                 # stashes the working tree, `git branch -d x` / `git tag -d x`
                 # delete refs). Decided on the arguments, gated when unsure.
                 branch|tag|stash)
-                    _fw_git_refverb_is_read "$git_sub" "$cmd" && return 0
+                    _fw_git_refverb_is_read "$git_sub" "$git_norm" && return 0
                     return 1
                     ;;
                 rev-list|ls-remote|merge-base|grep|for-each-ref|count-objects|check-ignore|verify-commit|var|whatchanged|cherry|diff-tree|show-ref|help)
