@@ -42,6 +42,20 @@ this inception with him.
   PEP 668 blocks pip) → T-4304. Their recommendation for IW-2: Docker on the runner host, dedicated token fetched
   from Infisical at run time; a VM only later, for other OS images. Scripts on their side:
   docs/proposals/testbed/{s1-smoke-inside.sh, s2-full-inside.sh}, plus a 14-line host runme.
+- **Runner handed off (dimitri-mint-dev T-127, msg 71143abf, 2026-10-18).** Packaged at
+  tools/greenfield-testbed/ in their repo (README, Dockerfile with prereqs and Claude Code, no credential and
+  deliberately no markdown2; run.sh host runner; level-1 and level-2 inside scripts; infisical-token.sh; fpdiff.py
+  with 7/7 tests). Verified on .107: L1 137 s, 8 VERDICT lines, no containers left; L2 with a token file 315 + 345 s,
+  26 findings, leak-clean; L2 with the token fetched from Infisical 765 + 311 s, 32 findings, leak-clean (slot
+  aef-testbed/prod/CLAUDE_CODE_OAUTH_TOKEN, read-only identity set up by ring20 T-2404; any other runner gets its own
+  identity). Token only in a mode-600 temp env file for one `docker exec`; records grepped for it; unpacked records
+  defused (.framework.yaml and .claude renamed) because of the T-4317 trap. Limits: no TermLink in the container, one
+  OS image, open outbound network.
+- **Finding for IW-3 (fingerprints).** Two L2 runs of the SAME build diffed as "new 31 | fixed 25 | still open 1":
+  mostly the same defects under different fingerprints, because each agent computed them differently. Agent-written
+  fingerprints are not stable. Their proposal: a tool computes the fingerprint deterministically from a recorded
+  field (normalise the first error line, sha1, step:surface:hex); the agent never writes it. Level-1 VERDICT diffs are
+  deterministic today.
 
 ## Agent recommendation (initial; to be refined in dialogue)
 
