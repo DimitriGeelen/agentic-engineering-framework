@@ -1,0 +1,91 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4283: AEF's own sidecar receiver died silently ~21:16-21:18Z 2026-10-17, as a worker batch started; the pre-push audit then FAILed 'Sidecar watcher NOT live' (cause unknown)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T08:52:09Z
+# ============================================================================
+
+task_id: T-4283
+task_name: "AEF's own sidecar receiver died silently ~21:16-21:18Z 2026-10-17, as a worker batch started; the pre-push audit then FAILed 'Sidecar watcher NOT live' (cause unknown)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T22:46:37Z
+completed: 2026-10-18T08:49:40Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-18T01:10:51+02:00
+last_commit: 2026-10-18T10:49:39+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  reclaim orphan receivers of this project on start; ensure restarts a dead receiver. ensure reports a refused receiver start as REFUSED, not running; a start that will be refused keeps the live stale receiver. make the refused-start test independent of earlier runs (unique agent names; kill its receiver by recorded pid — cmd_receiver_stop left it running, so the next run's start was refused)
+
+# Key outcomes
+outcomes:
+  - 'Root cause of the silent receiver death is localised to file:line, or the ruled-out hypotheses and missing evidence are recorded in ## RCA'
+  - 'No test under tests/ reads or writes the live `.context/sidecar/receiver.pid` or calls `fw sidecar stop|start` / kills `http_server.py` without a fixture PROJECT_ROOT (checked by grep; no offender found, recorded in ## RCA)'
+  - 'A regression test drives the fix and fails on the pre-fix tree (`test_orphan_receiver_of_this_project_is_reclaimed_so_start_proceeds` returned rc=1 before the fix)'
+  - '`fw sidecar ensure` restarts a dead receiver when the watcher reports `receiver not running` (`test_ensure_restarts_a_receiver_the_watcher_reports_as_not_running`)'
+  - 'The sidecar unit tests closest to the changed code (test_sidecar_watcher_t3684.py, test_t4208_receiver_single_instance.py, test_sidecar_receiver_t3693.py) still pass'
+  - '`bin/fw vendor self --check` is clean after the change'
+  - 'Round 2: the death is localised from the 16:50–21:20Z lines of `watcher/events.jsonl`, `watcher/ticks.jsonl`, `receiver/events.jsonl` and `server.log` (read-only), recorded in ## RCA with what is confirmed and what is not'
+  - '`fw sidecar ensure` no longer reports a refused receiver start as `running`: a start refused by a live receiver of another copy reports `REFUSED …` (`test_ensure_reports_a_refused_receiver_start_as_refused`, fails on the pre-fix tree)'
+  - 'A start that will be refused no longer kills this project''s live stale-code receiver first (`test_refused_start_leaves_the_live_stale_receiver_running`, fails on the pre-fix tree)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/sidecar_cli.py'
+  - '.agentic-framework/lib/sidecar/lifecycle.py'
+  - 'lib/sidecar_cli.py'
+  - 'lib/sidecar/lifecycle.py'
+  - '.tasks/active/T-4283-aefs-own-sidecar-receiver-died-silently-.md'
+  - 'tests/unit/test_t4283_orphan_receiver_reclaim.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T01:10:51'
+    action: 'T-4283: reclaim orphan receivers of this project on start; ensure restarts a dead receiver'
+  - time: '2026-10-18T02:08:53'
+    action: 'T-4283: ensure reports a refused receiver start as REFUSED, not running; a start that will be refused keeps the live stale receiver'
+  - time: '2026-10-18T10:49:39'
+    action: 'T-4283: make the refused-start test independent of earlier runs (unique agent names; kill its receiver by recorded pid — cmd_receiver_stop left it running, so the next run''s start was refused)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 3 commit(s), 603 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 603
+  commits: 3
+  files_changed: 6
+  lines_added: 759
+  lines_removed: 19
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4283-aefs-own-sidecar-receiver-died-silently-.md
+generated_by: context-agent-hybrid

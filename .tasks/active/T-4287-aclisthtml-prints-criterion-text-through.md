@@ -10,9 +10,9 @@ description: >
   or make text_html mandatory and fail loudly; test that an includer without text_html
   renders escaped text. Render surface: needs a [REVIEW] Human AC.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
 components: []
@@ -44,8 +44,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T23:31:40Z
-last_update: 2026-10-17T23:59:35Z
-date_finished:
+last_update: 2026-10-18T08:52:47Z
+date_finished: 2026-10-18T08:52:47Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -367,6 +367,15 @@ bin/fw watchtower current
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** One template expression changed: the fallback for an Agent criterion without `text_html` is now escaped (`(ac.text_html or (ac.text|e))|safe`). Today's only includer (the inception page) always sets `text_html`, so the page renders exactly as before; the change only matters for a future includer, which would now get escaped text instead of raw HTML. The open Human check is only that the inception page still looks the same.
+
+**Evidence:**
+- tests/unit/test_t4287_ac_list_escape.py renders the partial with a criterion containing a script tag and no text_html: escaped with the fix, raw without it
+- Watchtower restarted, `bin/fw watchtower current` exits 0; vendored copy in sync
+- Follow-up for the Human-criterion fields that also pass through |safe: T-4290
+
 ## Decisions
 
 <!-- Record decisions ONLY when choosing between alternatives.
@@ -398,3 +407,20 @@ bin/fw watchtower current
 ### 2026-10-17T23:59:35Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
 - **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fc528c63
+- **Timestamp:** 2026-10-18T08:52:54Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#3 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-18T08:52:47Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

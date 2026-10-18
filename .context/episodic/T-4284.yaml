@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4284: Boundary gate (after T-3768) reads a '>' inside a double-quoted argument as a file redirect: a dispatch prompt mentioning /tmp/claude-<uid>/<project>/... is blocked as an outside write
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T08:39:43Z
+# ============================================================================
+
+task_id: T-4284
+task_name: "Boundary gate (after T-3768) reads a '>' inside a double-quoted argument as a file redirect: a dispatch prompt mentioning /tmp/claude-<uid>/<project>/... is blocked as an outside write"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-17T22:53:27Z
+completed: 2026-10-18T08:37:27Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-18T02:09:58+02:00
+last_commit: 2026-10-18T02:09:58+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  boundary gate reads free text as text — quoted newlines do not split a TermLink segment; free-text option values of fw/git/gh/termlink/claude are not path reads
+
+# Key outcomes
+outcomes:
+  - 'WRITE side: a `<`/`>` inside a quoted argument (e.g. `--prompt "… /tmp/claude-<uid>/<project>/…"`, single- or multi-line) is not read as a redirect; the hook allows it'
+  - 'READ side: free-text option values (`--prompt`, `--body`, `-m`, `--message`, `--description`, `--name`, `--rationale`, `--summary`, `--detail`, as `--opt VALUE`, `--opt=VALUE` or `-mVALUE`) of fw/git/gh/termlink/claude are text, not path operands. A dispatch prompt, a sidecar body and a commit message that mention an outside path are allowed'
+  - 'Real accesses still block: `cat` of an outside file (plain, quoted, escaped), `>`/`>>`/`2>` to an outside path (quoted or not), `cp`/`tee` with a quoted outside path, a `$(...)` inside a message, `zip -m`/`gzip --name` operands, and every T-3768 probe'
+  - 'Regression suite `tests/unit/t4284_boundary_free_text_args.bats` covers both directions: 17/17 pass with the fix, 5 fail without it'
+  - 'The 8 neighbouring boundary suites stay green: 191/191, 0 skips (191 + 17 new = 208)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-18 — scope of the free-text exemption'
+    chose: 'treat free-text option values as text only for fw, git, gh, termlink and claude.'
+    rationale: 'for other commands the same spellings are not text. `zip -m` and `gzip --name` are flags that take no value, so the next word is a real path operand. A universal exemption would reopen a read/write bypass.'
+    alternatives_rejected: ['a universal option list, which reopens that bypass. Judging only known path-operand verbs, which reopens T-3768 for every unlisted reader.']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/agents/context/check-project-boundary.sh'
+  - '.agentic-framework/lib/shell_write_scan.py'
+  - 'agents/context/check-project-boundary.sh'
+  - 'lib/shell_write_scan.py'
+  - '.tasks/active/T-4284-boundary-gate-after-t-3768-reads-a--insi.md'
+  - 'tests/unit/t4284_boundary_free_text_args.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T02:09:58'
+    action: 'T-4284: boundary gate reads free text as text — quoted newlines do not split a TermLink segment; free-text option values of fw/git/gh/termlink/claude are not path reads'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 584 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 584
+  commits: 1
+  files_changed: 6
+  lines_added: 269
+  lines_removed: 9
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4284-boundary-gate-after-t-3768-reads-a--insi.md
+generated_by: context-agent-hybrid

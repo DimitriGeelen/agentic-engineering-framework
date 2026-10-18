@@ -1,26 +1,30 @@
 ---
-id: T-4283
-name: "AEF's own sidecar receiver died silently ~21:16-21:18Z 2026-10-17, as a worker
-  batch started; the pre-push audit then FAILed 'Sidecar watcher NOT live' (cause
-  unknown)"
+id: T-4286
+name: "SECURITY (release blocker v1.8.11): estate push refuses a private key only
+  by pattern NAME, and redact() leaves the key body; a missing or broken catalogue
+  redacts nothing (ring20-dashboard)"
 description: >
-  Last receiver event 2026-10-17T21:16:41Z (events.jsonl RECEIPT_SENT); batch-3 workers
-  (w4251 T-4251, w3640 T-3640 Tier 0 kill-by-name, w3768, w3794, w3746) dispatched
-  ~21:18Z. Only AEF's receiver died; other projects' receivers (same http_server.py)
-  ran 3 days. Watcher kept ticking with probe_ok=False 'receiver not running'; fw
-  sidecar ensure did not restart it; fw sidecar start did (2026-10-18 00:45). Suspects:
-  a test that stops/kills the receiver via the LIVE .context/sidecar/receiver.pid
-  instead of a fixture, or a kill-by-name reproduction. Find the cause (git log of
-  tests run by those workers; grep tests for receiver.pid / sidecar stop without a
-  fixture PROJECT_ROOT), fix the test isolation, and make 'ensure' restart a dead
-  receiver when the watcher reports it.
+  ring20-dashboard msg 49af751f, confirmed on a75c25472 by probe: lib/estate_push.py
+  build_plan loads <project>/.secret-scan-patterns, but REFUSE_PATTERNS = {'SSH Private
+  Key'} matches by catalogue pattern NAME; a consumer catalogue naming it 'private-key-header'
+  fires but does not refuse, and redact() replaces only the '-----BEGIN ... PRIVATE
+  KEY-----' line, so the key body stays in the staged text (also with the framework
+  catalogue: refused True but body survives redact). load_patterns() returns [] for
+  a missing file and silently drops patterns that fail to compile, so the push then
+  redacts nothing and says nothing. Fix: refuse on the MATCH itself (any BEGIN ...
+  PRIVATE KEY block, all key types), independent of catalogue names; redact whole
+  blocks BEGIN..END; fail closed (refuse the push) when the catalogue is missing,
+  empty, or any pattern fails to compile. Tests: fake OpenSSH/RSA/EC keys with a renamed
+  catalogue -> refused; no key body in any staged output; missing/broken catalogue
+  -> refused with a clear message. Not live anywhere yet (estate pilot T-4162/T-4163
+  pending).
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [lib/estate_push.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -48,9 +52,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-17T22:46:37Z
-last_update: 2026-10-17T23:59:31Z
-date_finished:
+created: 2026-10-17T23:29:45Z
+last_update: 2026-10-18T08:37:00Z
+date_finished: 2026-10-18T08:37:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -61,8 +65,18 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-17T23:45:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-17T22:53:21Z'
+  - ts: '2026-10-17T23:46:10Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -79,19 +93,9 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-17T23:00:49Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=297,acs=8)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4283: AEF's own sidecar receiver died silently ~21:16-21:18Z 2026-10-17, as a worker batch started; the pre-push audit then FAILed 'Sidecar watcher NOT live' (cause unknown)
+# T-4286: SECURITY (release blocker v1.8.11): estate push refuses a private key only by pattern NAME, and redact() leaves the key body; a missing or broken catalogue redacts nothing (ring20-dashboard)
 
 ## Context
 
@@ -101,15 +105,11 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Root cause of the silent receiver death is localised to file:line, or the ruled-out hypotheses and missing evidence are recorded in ## RCA
-- [x] No test under tests/ reads or writes the live `.context/sidecar/receiver.pid` or calls `fw sidecar stop|start` / kills `http_server.py` without a fixture PROJECT_ROOT (checked by grep; no offender found, recorded in ## RCA)
-- [x] A regression test drives the fix and fails on the pre-fix tree (`test_orphan_receiver_of_this_project_is_reclaimed_so_start_proceeds` returned rc=1 before the fix)
-- [x] `fw sidecar ensure` restarts a dead receiver when the watcher reports `receiver not running` (`test_ensure_restarts_a_receiver_the_watcher_reports_as_not_running`)
-- [x] The sidecar unit tests closest to the changed code (test_sidecar_watcher_t3684.py, test_t4208_receiver_single_instance.py, test_sidecar_receiver_t3693.py) still pass
-- [x] `bin/fw vendor self --check` is clean after the change
-- [x] Round 2: the death is localised from the 16:50–21:20Z lines of `watcher/events.jsonl`, `watcher/ticks.jsonl`, `receiver/events.jsonl` and `server.log` (read-only), recorded in ## RCA with what is confirmed and what is not
-- [x] `fw sidecar ensure` no longer reports a refused receiver start as `running`: a start refused by a live receiver of another copy reports `REFUSED …` (`test_ensure_reports_a_refused_receiver_start_as_refused`, fails on the pre-fix tree)
-- [x] A start that will be refused no longer kills this project's live stale-code receiver first (`test_refused_start_leaves_the_live_stale_receiver_running`, fails on the pre-fix tree)
+- [x] A chunk holding any private-key block (OPENSSH, RSA, EC, DSA, ENCRYPTED, plain PKCS8) is refused by `build_plan` from the match itself, with the framework catalogue AND with a consumer catalogue that names the pattern `private-key-header` (no catalogue name involved)
+- [x] `redact()` removes whole `BEGIN ... PRIVATE KEY` .. `END ... PRIVATE KEY` blocks (and an unterminated block to end of text); no key body line survives in any staged payload, refused record or printed output
+- [x] `scan_items()` (the final gate, also used by estate ingest) flags any surviving private-key block regardless of catalogue
+- [x] `load_patterns()` fails closed: a missing or empty catalogue, or any pattern that fails to compile, raises `CatalogueError` naming the file (and the pattern); `fw estate push` and `fw estate ingest` refuse with that message and stage nothing
+- [x] Regression tests in `tests/unit/test_estate_push.py` cover all of the above with fake key material built in the test; existing estate_push and estate_ingest tests stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -158,10 +158,6 @@ cost_estimate_proposed:
 -->
 
 ## Verification
-
-out=$(python3 -m pytest tests/unit/test_t4283_orphan_receiver_reclaim.py tests/unit/test_sidecar_watcher_t3684.py tests/unit/test_t4208_receiver_single_instance.py tests/unit/test_sidecar_receiver_t3693.py -q -p no:cacheprovider 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
-bin/fw vendor self --check
-out=$(python3 -m pytest tests/unit/test_t4283_orphan_receiver_reclaim.py -q -p no:cacheprovider -k "refused" 2>&1); echo "$out" | grep -q "2 passed" && ! echo "$out" | grep -q failed
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -291,38 +287,21 @@ out=$(python3 -m pytest tests/unit/test_t4283_orphan_receiver_reclaim.py -q -p n
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_estate_push.py tests/unit/test_estate_ingest.py -q > /tmp/.t4286.out 2>&1 && grep -q passed /tmp/.t4286.out && ! grep -q failed /tmp/.t4286.out
+python3 -m pytest tests/unit/test_estate_push.py -q -k "t4286" > /tmp/.t4286b.out 2>&1 && grep -qE "[0-9]+ passed" /tmp/.t4286b.out
+grep -q "class CatalogueError" lib/estate_push.py
+! grep -q "REFUSE_PATTERNS" lib/estate_push.py
+bin/fw vendor self --check
 
 ## RCA
 
-### Round 2 (supersedes round 1's timeline)
+**Symptom:** ring20-dashboard (msg 49af751f, probe on a75c25472): with a consumer `.secret-scan-patterns` naming the key pattern `private-key-header`, `fw estate push` staged a chunk holding a private key; with the framework catalogue the chunk was refused but `redact()` output still carried the key body. A missing catalogue made the push redact nothing, silently.
 
-**Timeline (from `watcher/ticks.jsonl`, `watcher/events.jsonl`, `receiver/events.jsonl` and `server.log`, read-only).** The receiver did not die at 21:16Z. The receiver events at 21:10Z and 21:16Z are `INGESTED_FROM_HUB` rows, written by the watcher's hub pull (`lib/sidecar/watcher.py:290`), not by the HTTP receiver. The last direct POST stored by the receiver was at 16:54:39Z (`receiver/events.jsonl:5161`, sender 055). The probe flipped to `receiver not running` at 16:55:20Z and stayed there until 22:45:57Z. The supervisor's `RECEIVER_RESTARTED rc=1` loop starts at 16:56:10Z (`watcher/events.jsonl:464`), right after a `STALE_CODE_RESTART` at 16:56:09Z. `server.log` was last written on 10-13, so the receiver left no traceback: it was signalled, it did not crash.
+**Root cause:** `lib/estate_push.py:48` `REFUSE_PATTERNS = {"SSH Private Key"}` and `build_plan` (:137) refused only when the *catalogue name* matched that string, so any other name fell through to redaction. `redact()` (:85-89) substitutes only what the regex matches, and the catalogue regex matches the header line alone, so the base64 body survived. `load_patterns()` (:62-77) returned `[]` for a missing file and `continue`d past any pattern that failed to compile, so a broken catalogue degraded to "no secrets" with no message. The framework catalogue also never matched `ENCRYPTED PRIVATE KEY` or plain PKCS8 `PRIVATE KEY`.
 
-**Root cause (confirmed, apart from the exact second of the kill).** Two faults combined:
-1. **AEF's `enabled.json` named the wrong agent.** Every restart from 16:56Z asked for agent `t4217-envleak`. The restart detail says so (`watcher/events.jsonl:610` and later: `could not create inbox:…/999-Agentic-Engineering-Framework/t4217-envleak`), and the supervisor passes `--agent cfg["agent"]` (`lib/sidecar/watcher.py:803`). `t4217-envleak` is the dispatch worker id of T-4217/T-4218 (commit 23ba84665, author `dispatch+t4217-en`). Dispatch exports `FW_SIDECAR_AGENT_ID=<worker>` (`lib/sidecar/circuit.py:40`), and `fw sidecar start` (run by `bin/claude-fw:1075` at every launch) calls `_start_watcher` → `watcher.enable(agent)` (`lib/sidecar/watcher.py:194`). That overwrites the project's enabled.json even when the receiver is already running, which is why nothing showed. This is the G-116 leak class. Which launch wrote it is not recorded: enabled.json was rewritten at 22:45:33Z by the manual `fw sidecar start` and has no history.
-2. **A start that would be refused killed the live receiver first.** At ~16:55Z the T-4252 worker's edits to `lib/sidecar_cli.py` / `lib/sidecar/dm.py` (committed 16:58:34Z, c75652dc6) made the running receiver stale code (`watcher.is_stale`, `lib/sidecar/watcher.py:935`). The next `fw sidecar ensure` (cron `sidecar-ensure-1m`, or a `claude-fw` launch's `fw sidecar start`) entered `_start_receiver`'s stale branch (`lib/sidecar_cli.py`, T-3685 block). That branch SIGTERMed AEF's receiver and cleared the triple file. Only after that did the T-4208 rival guard check agent `t4217-envleak`, find the leaked fixture receiver pid 3441291 (`/tmp/t4218head.*`, cwd a deleted tmp dir, alive since 22:50Z 10-16), and refuse with rc 1. `ensure` mapped that rc 1 to `receiver: running` (the false green). The supervisor retried every 5 s for six hours, and every retry was refused the same way.
+**Why structurally allowed:** the security property (no key leaves the host) was delegated to operator-owned data (catalogue names and regexes) instead of being a property of the code; the tests used one fixed catalogue whose name happened to equal the hard-coded string, and asserted only that a refused record lacked the body, never that redacted/staged text lacked it.
 
-Not explained: the ~50 s gap between the probe failing (16:55:20Z) and the `STALE_CODE_RESTART` event (16:56:09Z). It is consistent with two consecutive ensure runs or with a `claude-fw` launch doing the kill, but neither is logged. Ruled out: a test touching the live receiver.pid (round-1 grep, still true). Round 1's orphan reclaim does not cover this case, because the blocking rival runs in another copy (a deleted tmp cwd). It is correctly left alone.
-
-**Why structurally allowed:** (1) `ensure` mapped every rc 1 to `running`, so a refused start looked green; (2) `_start_receiver` stopped the live receiver *before* it knew the replacement would be allowed; (3) `fw sidecar start` rewrites a project's enabled agent from whatever `FW_SIDECAR_AGENT_ID` the caller inherited, with no check against the agent of the receiver already running.
-
-**Prevention (round 2):** `_start_receiver` now checks for a live receiver of another copy holding the agent *before* the stale-code kill. If it finds one, it refuses with rc 1 and keeps the live receiver. `cmd_ensure` reports rc 1 with no triple file of ours as `REFUSED: agent … is served by pid …` (also on stderr), never `running`. Pinned by `test_ensure_reports_a_refused_receiver_start_as_refused` and `test_refused_start_leaves_the_live_stale_receiver_running`, both failing on the pre-fix tree.
-
-**Open, not fixed here (each its own bug):** (a) enabled.json agent poisoning by an inherited `FW_SIDECAR_AGENT_ID` in `fw sidecar start` / `_start_watcher`; (b) leaked fixture receivers still alive on this host: pid 3441291 `t4217-envleak` (it blocked AEF) and pid 3575904 `t4283-fixture-agent` (cwd `/tmp/t4283-fx.*`, from round 1). Neither was touched.
-
-### Round 1 (timeline superseded above)
-
-**Symptom:** AEF's receiver stopped answering. The watcher's probe read `receiver not running` from 21:02:52Z (`.context/sidecar/watcher/ticks.jsonl`), the supervisor's receiver restart returned rc=1 every ~5 s from 21:09:46Z (`watcher/events.jsonl:3101`), and nothing restarted it until a manual `fw sidecar start` at 00:45Z. A process for the agent was still answering POSTs until 21:16:41Z (`receiver/events.jsonl:5288`), so the outage was an unreachable live process, not a clean exit.
-
-**Root cause (mechanism confirmed in a fixture; trigger not confirmed):** the restart path cannot recover when a live receiver for the agent has no triple file. `_start_receiver` (`lib/sidecar_cli.py`, rival guard) refuses any start while a live `http_server.py --agent X` exists (T-4208). A receiver whose pid/port/url files were cleared is alive but unreachable, so the guard refuses every restart: rc=1. The supervisor's `_restart_receiver` (`lib/sidecar/watcher.py:800-812`, retried at `:874-875`) and `fw sidecar ensure` (which calls the same `_start_receiver`) both fail that way. `ensure` then reports the receiver as `running` (rc 1 → "running" mapping, `lib/sidecar_cli.py` cmd_ensure). Reproduced in `tests/unit/test_t4283_orphan_receiver_reclaim.py::test_orphan_receiver_of_this_project_is_reclaimed_so_start_proceeds`: rc=1 with an orphan of this project present, before the fix.
-What cleared the triple file around 21:02Z is NOT confirmed. Evidence for and against the candidates:
-- Test leak: ruled out as far as the code shows. Every sidecar test reference to `receiver.pid` / receiver stop or start runs under a tmp root (`PROJECT_ROOT` pinned, `FW_SIDECAR_ENABLED_DIR` and `FW_SIDECAR_REGISTRY_DIR` isolated by `tests/unit/conftest.py`). None of the commits in the 21:00–22:30Z window touches a sidecar test. A test receiver *does* leak (`t4217-envleak`, pid 3441291, started from a `/tmp/t4218head` copy at 00:50 on 10-17, still alive); it is another agent, not AEF's, so it does not explain this outage.
-- `_start_receiver`'s stale/unhealthy branch: in a fixture it SIGTERMs a live receiver whose health check fails. That kills the process rather than orphaning it, so it does not explain the orphan on its own. Its interaction with a concurrent start is the open lead.
-- Next step to settle it: `.context/sidecar/receiver/server.log` and the 21:00–21:03Z lines of `receiver/events.jsonl`, which were not read in this pass.
-
-**Why structurally allowed:** (1) the T-4208 guard keys on argv only, so it cannot tell a live orphan of this project from a live receiver of another copy, and it never checks the orphan is reachable; (2) the probe's "receiver not running" is recorded every tick with no escalation for 80 minutes; (3) `ensure` maps a refused start (rc 1) to a green `running`.
-
-**Prevention:** `_reclaim_orphan_receivers` (`lib/sidecar_cli.py`) stops a live receiver for the agent only when it runs in THIS project's root (`/proc/<pid>/cwd`) and is older than `ORPHAN_MIN_AGE_S` (30 s), so a booting receiver is never taken for an orphan. Receivers of other copies still block (T-4208 kept). The four tests in `tests/unit/test_t4283_orphan_receiver_reclaim.py` pin reclaim, the other-copy case, the booting-receiver race, and `ensure` restarting the receiver. Open, not fixed here: rc 1 still maps to `running` in `ensure`'s output (a false green), and an unexplained trigger for the triple-file loss.
+**Prevention:** private-key detection is now built into the module (`PRIVATE_KEY_BLOCK`, independent of the catalogue) and applied at refuse, redact and the final `scan_items` gate; the catalogue loader raises instead of degrading. Regression tests run every key type against both the framework catalogue and a renamed consumer catalogue, assert no body line in staged/refused/printed output, and assert missing/empty/broken catalogues refuse.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -414,10 +393,27 @@ What cleared the triple file around 21:02Z is NOT confirmed. Evidence for and ag
 
 ## Updates
 
-### 2026-10-17T22:46:37Z — task-created [task-create-agent]
+### 2026-10-17T23:29:45Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4283-aefs-own-sidecar-receiver-died-silently-.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4286-security-release-blocker-v1811-estate-pu.md
 - **Context:** Initial task creation
 
-### 2026-10-17T22:53:20Z — status-update [task-update-agent]
+### 2026-10-17T23:59:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-21595ee9
+- **Timestamp:** 2026-10-18T08:37:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-18T08:37:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

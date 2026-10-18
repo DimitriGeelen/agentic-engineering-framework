@@ -8,12 +8,12 @@ description: >
   + their T-117. The decide chain (T-4127 git commit --only path) must not leave the
   lock behind; find the leaking step, make it fail-safe, test.
 
-status: started-work
+status: work-completed
 workflow_type: build
-owner: agent
+owner: human
 horizon: now
 tags: []
-components: []
+components: [web/blueprints/inception.py, web/decide_runner.py]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -42,8 +42,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:44:00Z
-last_update: 2026-10-17T23:59:28Z
-date_finished:
+last_update: 2026-10-18T08:41:59Z
+date_finished: 2026-10-18T08:41:59Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -421,3 +421,24 @@ Ruled out first: (1) the 30 s subprocess timeout killing `git commit --only` mid
 
 ### 2026-10-17T23:59:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-183d2769
+- **Timestamp:** 2026-10-18T08:42:23Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 3
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — Root cause of the stale `.git/index.lock` + stale index after a Watchtower decide commit is localised to a file:line and confirmed by a reproduction in a fixture repo (never the live repo/Watchtower)
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=git/index.lock in: Root cause of the stale `.git/index.lock` + stale index after a Watchtower decide commit is localised to a file:line and confirmed by a reproduction i`
+- **AC#2 (Agent)** — `_commit_decision` (web/blueprints/inception.py) never leaves `.git/index.lock` behind and never leaves the real index at pre-decision content: after a decide commit the index matches HEAD for the dec
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=web/blueprints/inception.py in: `_commit_decision` (web/blueprints/inception.py) never leaves `.git/index.lock` behind and never leaves the real index at pre-decision content: after `
+- **AC#3 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-18T08:41:59Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

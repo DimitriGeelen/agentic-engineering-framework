@@ -1,0 +1,83 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4286: SECURITY (release blocker v1.8.11): estate push refuses a private key only by pattern NAME, and redact() leaves the key body; a missing or broken catalogue redacts nothing (ring20-dashboard)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T08:37:23Z
+# ============================================================================
+
+task_id: T-4286
+task_name: "SECURITY (release blocker v1.8.11): estate push refuses a private key only by pattern NAME, and redact() leaves the key body; a missing or broken catalogue redacts nothing (ring20-dashboard)"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T23:29:45Z
+completed: 2026-10-18T08:37:00Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-18T02:03:01+02:00
+last_commit: 2026-10-18T02:03:01+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  estate push refuses any private-key block by match, redacts whole blocks, catalogue fails closed
+
+# Key outcomes
+outcomes:
+  - 'A chunk holding any private-key block (OPENSSH, RSA, EC, DSA, ENCRYPTED, plain PKCS8) is refused by `build_plan` from the match itself, with the framework catalogue AND with a consumer catalogue that names the pattern `private-key-header` (no catalogue name involved)'
+  - '`redact()` removes whole `BEGIN ... PRIVATE KEY` .. `END ... PRIVATE KEY` blocks (and an unterminated block to end of text); no key body line survives in any staged payload, refused record or printed output'
+  - '`scan_items()` (the final gate, also used by estate ingest) flags any surviving private-key block regardless of catalogue'
+  - '`load_patterns()` fails closed: a missing or empty catalogue, or any pattern that fails to compile, raises `CatalogueError` naming the file (and the pattern); `fw estate push` and `fw estate ingest` refuse with that message and stage nothing'
+  - 'Regression tests in `tests/unit/test_estate_push.py` cover all of the above with fake key material built in the test; existing estate_push and estate_ingest tests stay green'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/estate_ingest.py'
+  - '.agentic-framework/lib/estate_push.py'
+  - 'lib/estate_ingest.py'
+  - 'lib/estate_push.py'
+  - '.tasks/active/T-4286-security-release-blocker-v1811-estate-pu.md'
+  - 'tests/unit/test_estate_push.py'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T02:03:01'
+    action: 'T-4286: estate push refuses any private-key block by match, redacts whole blocks, catalogue fails closed'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 547 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 547
+  commits: 1
+  files_changed: 6
+  lines_added: 248
+  lines_removed: 29
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4286-security-release-blocker-v1811-estate-pu.md
+generated_by: context-agent-hybrid
