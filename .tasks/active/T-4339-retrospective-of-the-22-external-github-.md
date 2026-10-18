@@ -106,7 +106,9 @@ cost_estimate_proposed:
 - [x] The report has one DRAFT comment per issue in the T-4039 template shape (stage marker, task id, links, footer); no comment is posted (read-only gh use)
 - [x] Every task id, commit hash and path cited in the report resolves (verified by the Verification script)
 - [x] Each #95-#105 draft has a classification and a recommended decision (accept / needs-info / duplicate / not-planned) with a one-line reason; code-reproduction and duplicate-search results are recorded
-- [x] No GitHub write was made (no gh issue comment/edit/close/label) during this task
+- [x] No GitHub write was made by the drafting worker (no gh issue comment/edit/close/label before the parent's review)
+- [x] After review, posted through fw issues comment (one outward verb, ledgered): Released + please-confirm on #86-#94 (evidence block: how tested, why released, permalinks pinned to 50fae848f); Received + Classified + Accepted on #95-#105 (tasks T-4352..T-4362, github_issue linked, arc-021, horizon now; decisions under the operator's standing permission of 2026-10-19); Duplicate of #13 on #14 — every post's comment URL is in .context/issues/intake.jsonl
+- [x] #13 and #85 left unchanged (outreach notice; not-planned already posted 2026-10-10); #106 arrived after the retrospective and is left to the resumed intake sync (T-4342)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
