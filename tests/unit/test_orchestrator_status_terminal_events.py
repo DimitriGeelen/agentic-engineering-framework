@@ -33,6 +33,8 @@ FW = REPO_ROOT / "bin" / "fw"
 
 
 def _run_status(tmp_root: Path, *args: str) -> subprocess.CompletedProcess:
+    # T-4313: a project marker; fw no longer auto-inits a non-project dir (T-2746).
+    (tmp_root / ".tasks").mkdir(parents=True, exist_ok=True)
     env = os.environ.copy()
     env["PROJECT_ROOT"] = str(tmp_root)
     return subprocess.run(
