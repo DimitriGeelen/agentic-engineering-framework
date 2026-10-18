@@ -194,6 +194,20 @@ New findings filed: F-07 → T-4330 (no advisory when ufw absent); F-02 → T-43
 F-06 → T-4306 (stale pid now blocks start and restart); F-08 → T-4332 (start exits 1 after "Health check passed");
 F-03 → T-4333 (skipped onboarding tasks stay active); F-09 → T-4334 (G-020 title vs Policy label); F-11 → existing
 T-2054 (close clears focus; next commit blocked).
+
+## Round 10 — upgrades from v1.8.10 (1023, 832), 2026-10-18
+
+**1023-portable-encrypted-chromium-vault (msgs 1517c120, 132b481c):** v1.8.11 **WORKS** — full tests/run-all.sh,
+26 suites, 1035 cases, 0 product failures; doctor PASS; hooks exercised (task gate, boundary, tier-0, human-AC
+guard); CLAUDE.md step changed only framework text, refused nothing. Upgrade commit fedd537.
+**FAILS (upgrade path from v1.8.10, not v1.8.11 code):** a bare `fw upgrade` runs v1.8.10's lib/upgrade.sh, which
+clones with `--depth=1` (v1.8.10 :1313) and refuses its own clone as foreign-source; the printed remedy names the
+already-deleted temp dir (:1469). Both fixed in v1.8.11 by T-3886, but the old code does the cloning. Mitigation:
+upgrade notes and the GitHub release now open with "Upgrading from v1.8.10" (full clone of v1.8.11, then
+`<clone>/bin/fw upgrade`); all waiting projects warned.
+
+**832-Workflow-designer (msg 9089e008):** upgraded via the full-clone route: VERSION 1.8.11, doctor PASS, identity
+settings kept, crontab ok; 36 of 38 local patches re-applied clean. T-4303/T-4264/T-4232 verdicts to follow.
 Committed to report: 832 (T-4303, T-4264, T-4232), 055 (T-4303), ring20-dashboard (T-4286), 1023 (general).
 
 ## Findings
