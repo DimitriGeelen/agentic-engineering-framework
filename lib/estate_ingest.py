@@ -302,7 +302,7 @@ def main(argv=None) -> int:
                     patterns=ep.load_patterns(root / ".secret-scan-patterns"),
                     now=dt.datetime.now().astimezone(), apply=a.apply, allow_daytime=a.allow_daytime,
                     killed=killed_projects(root), max_points=a.max_points, audit=audit)
-    except Refused as e:
+    except (Refused, ep.CatalogueError) as e:
         print(f"estate ingest: REFUSED — {e}")
         return 2
     mode = "applied" if a.apply else "dry run"

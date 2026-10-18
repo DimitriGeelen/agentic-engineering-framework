@@ -1,10 +1,25 @@
 ---
 id: T-4286
-name: "SECURITY (release blocker v1.8.11): estate push refuses a private key only by pattern NAME, and redact() leaves the key body; a missing or broken catalogue redacts nothing (ring20-dashboard)"
+name: "SECURITY (release blocker v1.8.11): estate push refuses a private key only
+  by pattern NAME, and redact() leaves the key body; a missing or broken catalogue
+  redacts nothing (ring20-dashboard)"
 description: >
-  ring20-dashboard msg 49af751f, confirmed on a75c25472 by probe: lib/estate_push.py build_plan loads <project>/.secret-scan-patterns, but REFUSE_PATTERNS = {'SSH Private Key'} matches by catalogue pattern NAME; a consumer catalogue naming it 'private-key-header' fires but does not refuse, and redact() replaces only the '-----BEGIN ... PRIVATE KEY-----' line, so the key body stays in the staged text (also with the framework catalogue: refused True but body survives redact). load_patterns() returns [] for a missing file and silently drops patterns that fail to compile, so the push then redacts nothing and says nothing. Fix: refuse on the MATCH itself (any BEGIN ... PRIVATE KEY block, all key types), independent of catalogue names; redact whole blocks BEGIN..END; fail closed (refuse the push) when the catalogue is missing, empty, or any pattern fails to compile. Tests: fake OpenSSH/RSA/EC keys with a renamed catalogue -> refused; no key body in any staged output; missing/broken catalogue -> refused with a clear message. Not live anywhere yet (estate pilot T-4162/T-4163 pending).
+  ring20-dashboard msg 49af751f, confirmed on a75c25472 by probe: lib/estate_push.py
+  build_plan loads <project>/.secret-scan-patterns, but REFUSE_PATTERNS = {'SSH Private
+  Key'} matches by catalogue pattern NAME; a consumer catalogue naming it 'private-key-header'
+  fires but does not refuse, and redact() replaces only the '-----BEGIN ... PRIVATE
+  KEY-----' line, so the key body stays in the staged text (also with the framework
+  catalogue: refused True but body survives redact). load_patterns() returns [] for
+  a missing file and silently drops patterns that fail to compile, so the push then
+  redacts nothing and says nothing. Fix: refuse on the MATCH itself (any BEGIN ...
+  PRIVATE KEY block, all key types), independent of catalogue names; redact whole
+  blocks BEGIN..END; fail closed (refuse the push) when the catalogue is missing,
+  empty, or any pattern fails to compile. Tests: fake OpenSSH/RSA/EC keys with a renamed
+  catalogue -> refused; no key body in any staged output; missing/broken catalogue
+  -> refused with a clear message. Not live anywhere yet (estate pilot T-4162/T-4163
+  pending).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +53,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T23:29:45Z
-last_update: 2026-10-17T23:29:45Z
-date_finished: null
+last_update: 2026-10-17T23:59:28Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +65,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-17T23:45:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-17T23:46:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4286: SECURITY (release blocker v1.8.11): estate push refuses a private key only by pattern NAME, and redact() leaves the key body; a missing or broken catalogue redacts nothing (ring20-dashboard)
@@ -62,8 +105,11 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] A chunk holding any private-key block (OPENSSH, RSA, EC, DSA, ENCRYPTED, plain PKCS8) is refused by `build_plan` from the match itself, with the framework catalogue AND with a consumer catalogue that names the pattern `private-key-header` (no catalogue name involved)
+- [x] `redact()` removes whole `BEGIN ... PRIVATE KEY` .. `END ... PRIVATE KEY` blocks (and an unterminated block to end of text); no key body line survives in any staged payload, refused record or printed output
+- [x] `scan_items()` (the final gate, also used by estate ingest) flags any surviving private-key block regardless of catalogue
+- [x] `load_patterns()` fails closed: a missing or empty catalogue, or any pattern that fails to compile, raises `CatalogueError` naming the file (and the pattern); `fw estate push` and `fw estate ingest` refuse with that message and stage nothing
+- [x] Regression tests in `tests/unit/test_estate_push.py` cover all of the above with fake key material built in the test; existing estate_push and estate_ingest tests stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -241,8 +287,21 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest tests/unit/test_estate_push.py tests/unit/test_estate_ingest.py -q > /tmp/.t4286.out 2>&1 && grep -q passed /tmp/.t4286.out && ! grep -q failed /tmp/.t4286.out
+python3 -m pytest tests/unit/test_estate_push.py -q -k "t4286" > /tmp/.t4286b.out 2>&1 && grep -qE "[0-9]+ passed" /tmp/.t4286b.out
+grep -q "class CatalogueError" lib/estate_push.py
+! grep -q "REFUSE_PATTERNS" lib/estate_push.py
+bin/fw vendor self --check
 
 ## RCA
+
+**Symptom:** ring20-dashboard (msg 49af751f, probe on a75c25472): with a consumer `.secret-scan-patterns` naming the key pattern `private-key-header`, `fw estate push` staged a chunk holding a private key; with the framework catalogue the chunk was refused but `redact()` output still carried the key body. A missing catalogue made the push redact nothing, silently.
+
+**Root cause:** `lib/estate_push.py:48` `REFUSE_PATTERNS = {"SSH Private Key"}` and `build_plan` (:137) refused only when the *catalogue name* matched that string, so any other name fell through to redaction. `redact()` (:85-89) substitutes only what the regex matches, and the catalogue regex matches the header line alone, so the base64 body survived. `load_patterns()` (:62-77) returned `[]` for a missing file and `continue`d past any pattern that failed to compile, so a broken catalogue degraded to "no secrets" with no message. The framework catalogue also never matched `ENCRYPTED PRIVATE KEY` or plain PKCS8 `PRIVATE KEY`.
+
+**Why structurally allowed:** the security property (no key leaves the host) was delegated to operator-owned data (catalogue names and regexes) instead of being a property of the code; the tests used one fixed catalogue whose name happened to equal the hard-coded string, and asserted only that a refused record lacked the body, never that redacted/staged text lacked it.
+
+**Prevention:** private-key detection is now built into the module (`PRIVATE_KEY_BLOCK`, independent of the catalogue) and applied at refuse, redact and the final `scan_items` gate; the catalogue loader raises instead of degrading. Regression tests run every key type against both the framework catalogue and a renamed consumer catalogue, assert no body line in staged/refused/printed output, and assert missing/empty/broken catalogues refuse.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -338,3 +397,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4286-security-release-blocker-v1811-estate-pu.md
 - **Context:** Initial task creation
+
+### 2026-10-17T23:59:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

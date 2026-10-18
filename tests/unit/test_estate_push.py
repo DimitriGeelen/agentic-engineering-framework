@@ -1,7 +1,10 @@
 """T-4162: `fw estate push` — diff the local index against what was pushed, stage text+payload."""
 from __future__ import annotations
 
+import base64
 import json
+import os
+import shutil
 import sqlite3
 import sys
 from pathlib import Path
@@ -83,7 +86,7 @@ def test_private_key_item_refused_and_logged_without_value(tmp_path):
     key = "-----BEGIN " + "RSA PRIVATE KEY-----\nMIIabc\n"
     p = plan(tmp_path, [(".tasks/completed/T-1.md", "Completed Tasks", 0, key)])
     assert p.upserts == []
-    assert p.refused[0]["reason"] == "SSH Private Key"
+    assert p.refused[0]["reason"] == "private-key"
     assert "MIIabc" not in json.dumps(p.refused)
 
 
@@ -159,6 +162,7 @@ def project(tmp_path, n_rows):
     (root / ".context/working").mkdir(parents=True)
     make_db(tmp_path, [(".tasks/completed/T-%d.md" % i, "Completed Tasks", 0, "t%d" % i) for i in range(n_rows)])
     (tmp_path / "idx.db").rename(root / ".context/working/fw-vec-index.db")
+    shutil.copy(ROOT / ".secret-scan-patterns", root / ".secret-scan-patterns")
     return root
 
 
@@ -357,3 +361,110 @@ def test_project_and_folder_overrides(tmp_path, monkeypatch):
     _fake_http(monkeypatch, calls)
     ep._token()
     assert "workspaceId=ring20proj" in calls[1][1] and "secretPath=%2Festate" in calls[1][1]
+
+
+# --- T-4286: private keys refused by the match itself; whole blocks redacted; catalogue fails closed ---
+
+import pytest  # noqa: E402
+
+KEY_TYPES = ["OPENSSH ", "RSA ", "EC ", "DSA ", "ENCRYPTED ", ""]  # "" = plain PKCS8
+RENAMED = [("private-key-header", r"-----BEGIN (RSA|OPENSSH) PRIVATE KEY-----"),
+           ("GitHub PAT", r"gh[pousr]_[A-Za-z0-9]{36,}")]
+
+
+def fake_key(kind):
+    """Clearly fake key material: random bytes, base64-wrapped, built at run time (no literal key)."""
+    body = [base64.b64encode(os.urandom(48)).decode() for _ in range(4)]
+    dash = "-" * 5
+    text = "\n".join([f"{dash}BEGIN {kind}PRIVATE KEY{dash}", *body, f"{dash}END {kind}PRIVATE KEY{dash}"])
+    return text, body
+
+
+def framework_catalogue():
+    return ep.load_patterns(ROOT / ".secret-scan-patterns")
+
+
+@pytest.mark.parametrize("kind", KEY_TYPES)
+@pytest.mark.parametrize("catalogue", ["framework", "renamed"])
+def test_t4286_any_private_key_refused_whatever_the_catalogue_calls_it(tmp_path, kind, catalogue):
+    pats = framework_catalogue() if catalogue == "framework" else RENAMED
+    key, body = fake_key(kind)
+    db = make_db(tmp_path, [(".tasks/completed/T-1.md", "Completed Tasks", 0, f"notes\n{key}\nafter")])
+    p = ep.build_plan(db, {}, project="aef", patterns=pats, role_map={}, framework_version="x")
+    assert p.upserts == [] and [r["reason"] for r in p.refused] == ["private-key"]
+    dumped = json.dumps(p.__dict__)
+    assert not any(line in dumped for line in body)
+
+
+@pytest.mark.parametrize("kind", KEY_TYPES)
+@pytest.mark.parametrize("catalogue", ["framework", "renamed"])
+def test_t4286_redact_removes_the_whole_block(kind, catalogue):
+    pats = framework_catalogue() if catalogue == "framework" else RENAMED
+    key, body = fake_key(kind)
+    clean, fired = ep.redact(f"before\n{key}\nafter", pats, {})
+    assert not any(line in clean for line in body)
+    assert "PRIVATE KEY" not in clean and "before" in clean and "after" in clean
+    assert "private-key" in fired
+
+
+def test_t4286_unterminated_block_redacted_to_end():
+    key, body = fake_key("RSA ")
+    truncated = key.rsplit("\n", 1)[0]  # END line lost (e.g. chunk boundary)
+    clean, _ = ep.redact(f"x\n{truncated}", RENAMED, {})
+    assert not any(line in clean for line in body)
+
+
+def test_t4286_final_gate_flags_a_surviving_key_with_no_catalogue_entry():
+    key, _ = fake_key("EC ")
+    bad = ep.scan_items([{"payload": {"text": key, "chunk_key": "k"}}], [("GitHub PAT", r"ghp_x")])
+    assert [b["reason"] for b in bad] == ["private-key"]
+
+
+def test_t4286_main_never_prints_or_stages_a_key_body(tmp_path, monkeypatch, capsys):
+    root = project(tmp_path, 1)
+    (root / ".secret-scan-patterns").write_text("private-key-header\t-----BEGIN RSA PRIVATE KEY-----\n")
+    key, body = fake_key("OPENSSH ")
+    db = sqlite3.connect(root / ".context/working/fw-vec-index.db")
+    db.execute("UPDATE documents SET chunk_text=?", (key,))
+    db.commit()
+    db.close()
+    store = FakeStore()
+    staged = []
+    monkeypatch.setattr(ep, "_token", lambda: "TOK")
+    monkeypatch.setattr(ep, "_count", store.count)
+    monkeypatch.setattr(ep, "stage", lambda plan, *a: staged.append(plan) or 0)
+    ep.main(["--apply", "--project-root", str(root)])
+    out = capsys.readouterr()
+    written = "".join(p.read_text() for p in (root / ".context/working").glob("estate-push-*"))
+    everything = out.out + out.err + written + json.dumps([p.__dict__ for p in staged])
+    assert not any(line in everything for line in body)
+    assert "1 refused" in out.out
+
+
+@pytest.mark.parametrize("content,needle", [
+    (None, "not found"),
+    ("# only comments\n\n", "no patterns"),
+    ("good\tabc\nbroken-one\t(unclosed\n", "broken-one"),
+])
+def test_t4286_missing_empty_or_broken_catalogue_refused(tmp_path, content, needle):
+    path = tmp_path / ".secret-scan-patterns"
+    if content is not None:
+        path.write_text(content)
+    with pytest.raises(ep.CatalogueError) as e:
+        ep.load_patterns(path)
+    assert needle in str(e.value) and str(path) in str(e.value)
+
+
+@pytest.mark.parametrize("content", [None, "", "x\t(unclosed\n"])
+def test_t4286_push_refuses_and_stages_nothing_on_bad_catalogue(tmp_path, monkeypatch, content):
+    root = project(tmp_path, 3)
+    cat = root / ".secret-scan-patterns"
+    cat.unlink()
+    if content is not None:
+        cat.write_text(content)
+    store = FakeStore()
+    with pytest.raises(SystemExit) as e:
+        run_main(monkeypatch, root, store)
+    assert "REFUSED" in str(e.value) and str(cat) in str(e.value)
+    assert store.stage_calls == []
+    assert not (root / ".context/working/estate-push-state.json").exists()

@@ -44,8 +44,18 @@ PILOT_CATEGORIES = {
     "Specifications": "specification",
     "Component Fabric": "module-card",
 }
-# Matches that cannot be redacted away: the surrounding block is the secret.
-REFUSE_PATTERNS = {"SSH Private Key"}
+# A private key cannot be redacted away: the whole block is the secret. Detected by the
+# module itself, never by catalogue names (T-4286): a consumer catalogue may name or
+# phrase its key pattern however it likes, or lack one. Covers OPENSSH, RSA, EC, DSA,
+# ENCRYPTED, PGP and plain PKCS8; an unterminated block runs to the end of the text.
+PRIVATE_KEY_REASON = "private-key"
+PRIVATE_KEY_BLOCK = re.compile(
+    r"-----BEGIN ([A-Z0-9 ]*?)PRIVATE KEY( BLOCK)?-----.*?(?:-----END \1PRIVATE KEY( BLOCK)?-----|\Z)",
+    re.S)
+
+
+class CatalogueError(ValueError):
+    """The secret-pattern catalogue is missing, empty or broken: nothing may be pushed."""
 
 _POSIX = {"[:space:]": r"\s", "[:alnum:]": "A-Za-z0-9", "[:alpha:]": "A-Za-z", "[:digit:]": "0-9"}
 _IPV4 = re.compile(r"\b(?:\d{1,3}\.){3}\d{1,3}\b")
@@ -60,9 +70,11 @@ class Plan:
 
 
 def load_patterns(path: Path) -> list[tuple[str, str]]:
+    """Read the secret catalogue. Fails closed (T-4286): a missing or empty catalogue, or
+    one pattern that does not compile, raises CatalogueError rather than redacting less."""
     out = []
     if not path.is_file():
-        return out
+        raise CatalogueError(f"secret-pattern catalogue not found: {path}")
     for line in path.read_text().replace("\r", "").splitlines():
         if not line.strip() or line.lstrip().startswith("#") or "\t" not in line:
             continue
@@ -71,9 +83,12 @@ def load_patterns(path: Path) -> list[tuple[str, str]]:
             rx = rx.replace(k, v)
         try:
             re.compile(rx)
-        except re.error:
-            continue
+        except re.error as e:
+            raise CatalogueError(f"secret-pattern catalogue {path}: pattern '{name.strip()}' "
+                                 f"does not compile ({e})") from None
         out.append((name.strip(), rx))
+    if not out:
+        raise CatalogueError(f"secret-pattern catalogue has no patterns: {path}")
     return out
 
 
@@ -88,6 +103,9 @@ def load_role_map(path: Path) -> dict:
 def redact(text: str, patterns, role_map) -> tuple[str, list[str]]:
     """Return (redacted, names of secret patterns that fired)."""
     fired = []
+    text, n = PRIVATE_KEY_BLOCK.subn(f"[REDACTED:{PRIVATE_KEY_REASON}]", text)
+    if n:
+        fired.append(PRIVATE_KEY_REASON)
     for name, rx in patterns:
         text, n = re.subn(rx, f"[REDACTED:{name}]", text)
         if n:
@@ -102,6 +120,8 @@ def scan_items(items, patterns) -> list[dict]:
     """Final gate: any staged upsert whose text still matches a secret pattern."""
     bad = []
     for it in items:
+        if PRIVATE_KEY_BLOCK.search(it["payload"]["text"]):
+            bad.append({"chunk_key": it["payload"]["chunk_key"], "reason": PRIVATE_KEY_REASON})
         for name, rx in patterns:
             if re.search(rx, it["payload"]["text"]):
                 bad.append({"chunk_key": it["payload"]["chunk_key"], "reason": name})
@@ -140,9 +160,8 @@ def build_plan(db_path, ledger: dict, *, project: str, patterns, role_map: dict,
             plan.skipped.append({"chunk_key": key, "reason": "too-large"})
             continue
         seen.add(key)
-        if any(name in REFUSE_PATTERNS and re.search(rx, text) for name, rx in patterns):
-            name = next(n for n, rx in patterns if n in REFUSE_PATTERNS and re.search(rx, text))
-            plan.refused.append({"chunk_key": key, "reason": name})
+        if PRIVATE_KEY_BLOCK.search(text):
+            plan.refused.append({"chunk_key": key, "reason": PRIVATE_KEY_REASON})
             continue
         clean, _ = redact(text, patterns, role_map)
         left = scan_items([{"payload": {"text": clean, "chunk_key": key}}], patterns)
@@ -336,7 +355,11 @@ def main(argv=None) -> int:
     ledger = json.loads(state.read_text()) if state.is_file() else {}
     cats = {c.strip() for c in a.categories.split(",") if c.strip()} or None
     ver = (root / "VERSION").read_text().strip() if (root / "VERSION").is_file() else "unknown"
-    plan = build_plan(db, ledger, project=root.name, patterns=load_patterns(root / ".secret-scan-patterns"),
+    try:
+        patterns = load_patterns(root / ".secret-scan-patterns")
+    except CatalogueError as e:
+        sys.exit(f"estate push: REFUSED — {e}; nothing staged")
+    plan = build_plan(db, ledger, project=root.name, patterns=patterns,
                       role_map=load_role_map(root / ".context/estate/role-map.yaml"),
                       framework_version=ver, categories=cats)
     if plan.refused:
