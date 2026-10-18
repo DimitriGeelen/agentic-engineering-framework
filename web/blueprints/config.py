@@ -16,6 +16,7 @@ SETTINGS = [
     ("PORT", "3000", "Watchtower web UI listen port"),
     ("UX_SHOT_WIDTHS", "1024,1440,1920", "Comma-separated viewport widths for fw ux shots (agents/ux-review/ux_shots.py). At least 3 entries, each 320-7680, no duplicates. T-4212"),
     ("HOST", "0.0.0.0", "Watchtower bind address (env FW_HOST, read by web/config.py). A specific address makes the shell side probe and advertise that address instead of localhost; 0.0.0.0 or :: means all interfaces (T-4041, GitHub #88)"),
+    ("WATCHTOWER_OPEN_FIREWALL", "0", "1 = Watchtower start may add a UFW allow rule for its port when UFW is active and the bind is not loopback. 0 (default) never changes the firewall; it prints the exact ufw command instead. A loopback bind never touches UFW (T-4297)"),
     ("PORT_SCAN_BASE", "3000", "First port tried when a project has no PORT set: fw serve scans 100 ports up from here, skips any held by another service, and records the chosen port as PORT in .framework.yaml (T-3662)"),
     ("RAIL_IDENTITY_FILE", "", "Project-owned termlink signing identity for outbound rail posts (T-2904). Empty = sign as host key, which is indistinguishable from co-resident agents. Created on first use."),
     ("RAIL_PROJECT_LABEL", "", "Canonical from_project label attached to outbound rail posts (T-2905). Empty = derived from the project directory name, normalised. Emitted, never typed at a call site."),

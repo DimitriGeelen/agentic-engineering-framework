@@ -396,7 +396,10 @@ do_start() {
             fi
             log_info "Health check passed (identity verified)."
             [ "$allocated" -eq 1 ] && persist_port "$port"
-            ensure_firewall_open "$port"
+            # T-4297: pass the bind host (loopback never touches UFW) and honour the
+            # operator's opt-in from config; without it nothing is opened.
+            FW_WATCHTOWER_OPEN_FIREWALL="${FW_WATCHTOWER_OPEN_FIREWALL:-$(fw_config "WATCHTOWER_OPEN_FIREWALL" "0" 2>/dev/null || echo 0)}" \
+                ensure_firewall_open "$port" "Agentic Framework" "${FW_HOST:-0.0.0.0}"
 
             local lan_ip
             lan_ip=$(detect_lan_ip)

@@ -1,10 +1,19 @@
 ---
 id: T-4297
-name: "SECURITY: fw watchtower start adds a UFW rule opening the port to Anywhere without asking, even for a 127.0.0.1 bind (dimitri-mint-dev F-34/F-37)"
+name: "SECURITY: fw watchtower start adds a UFW rule opening the port to Anywhere
+  without asking, even for a 127.0.0.1 bind (dimitri-mint-dev F-34/F-37)"
 description: >
-  Greenfield run 4 (2026-10-18, fb8caf3b3): watchtower start ran 'ufw allow <port>' (rule '3011/tcp ALLOW IN Anywhere # Agentic Framework') for a loopback-only bind, with no prompt and no mention in --help; their host has ~100 such rules accumulated. A loopback bind needs no firewall change at all; a LAN bind is the operator's decision. Fix: never touch the firewall for a 127.0.0.1/localhost bind; for a LAN bind, do not add a rule unless explicitly asked (flag or config), and print the exact rule; scope it to the LAN, not Anywhere; offer cleanup of rules this framework added (comment 'Agentic Framework'). Related: T-4239 (0.0.0.0 default, no auth). Test with a ufw stub on PATH.
+  Greenfield run 4 (2026-10-18, fb8caf3b3): watchtower start ran 'ufw allow <port>'
+  (rule '3011/tcp ALLOW IN Anywhere # Agentic Framework') for a loopback-only bind,
+  with no prompt and no mention in --help; their host has ~100 such rules accumulated.
+  A loopback bind needs no firewall change at all; a LAN bind is the operator's decision.
+  Fix: never touch the firewall for a 127.0.0.1/localhost bind; for a LAN bind, do
+  not add a rule unless explicitly asked (flag or config), and print the exact rule;
+  scope it to the LAN, not Anywhere; offer cleanup of rules this framework added (comment
+  'Agentic Framework'). Related: T-4239 (0.0.0.0 default, no auth). Test with a ufw
+  stub on PATH.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -38,8 +47,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T10:00:09Z
-last_update: 2026-10-18T10:00:09Z
-date_finished: null
+last_update: 2026-10-18T10:19:41Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -50,6 +59,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-18T10:15:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-18T10:16:28Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4297: SECURITY: fw watchtower start adds a UFW rule opening the port to Anywhere without asking, even for a 127.0.0.1 bind (dimitri-mint-dev F-34/F-37)
@@ -62,10 +99,18 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] For a loopback bind (127.x, localhost, ::1) Watchtower start never calls `ufw allow`
+- [x] For any other bind, `ufw allow` runs only when the operator opted in (config WATCHTOWER_OPEN_FIREWALL=1 / env FW_WATCHTOWER_OPEN_FIREWALL=1); otherwise the exact command is printed and nothing changes
+- [x] Tests with a ufw stub on PATH cover loopback (no call), LAN without opt-in (no call, command printed), LAN with opt-in (call made); existing lib_firewall.bats still passes
+- [x] Config key registered in lib/config.sh (and the web/blueprints/config.py mirror, parity lint green); vendored copy in sync
 
 ### Human
+- [ ] [REVIEW] The /config page shows the new WATCHTOWER_OPEN_FIREWALL setting sensibly
+  **Steps:**
+  1. Open http://192.168.10.107:3000/config
+  2. Find WATCHTOWER_OPEN_FIREWALL in the settings list
+  **Expected:** listed with default 0 and a description saying the firewall is only changed when it is set to 1, and never for a loopback bind; the page otherwise looks as before
+  **If not:** note what reads wrong or looks broken; the entry lives in web/blueprints/config.py
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
      Remove this section if all criteria are agent-verifiable.
      Each criterion MUST include Steps/Expected/If-not so the human can act without guessing.
@@ -112,6 +157,12 @@ date_finished: null
 -->
 
 ## Verification
+out=$(bats tests/unit/t4297_watchtower_firewall_consent.bats 2>&1); echo "$out" | grep -q '^ok' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/lib_firewall.bats 2>&1); echo "$out" | grep -q '^ok' && ! echo "$out" | grep -q '^not ok'
+grep -q 'WATCHTOWER_OPEN_FIREWALL' lib/config.sh
+bin/fw vendor self --check
+bin/fw watchtower current
+out=$(bats tests/lint/config-registry-parity.bats 2>&1); ! echo "$out" | grep -q '^not ok'
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -244,6 +295,16 @@ date_finished: null
 
 ## RCA
 
+**Symptom:** greenfield run 4 (dimitri-mint-dev F-34): `fw watchtower start` with a 127.0.0.1 bind added the UFW rule "3011/tcp ALLOW IN Anywhere # Agentic Framework" without asking; their host had ~100 such rules from repeated starts.
+
+**Root cause:** bin/watchtower.sh called `ensure_firewall_open "$port"` after every successful start (T-888 extraction into lib/firewall.sh), with no knowledge of the bind address and no consent step. A loopback-only server needs no rule; a LAN rule to Anywhere is a host security change made as a side effect.
+
+**Why nothing caught it:** lib_firewall.bats only mocked "ufw not installed"; no test exercised an active UFW, and the only field signal was on hosts where UFW is active (most dev boxes have it off).
+
+**Fix:** ensure_firewall_open takes the bind host; loopback never touches UFW; any other bind opens the port only with WATCHTOWER_OPEN_FIREWALL=1 (config) / FW_WATCHTOWER_OPEN_FIREWALL=1, otherwise prints the exact `sudo ufw allow` command and changes nothing. Default behaviour change: a new LAN install no longer opens the port by itself. Existing rules are left as they are (cleanup of framework-added rules is a separate decision).
+
+**Prevention:** tests/unit/t4297_watchtower_firewall_consent.bats with an active-UFW stub pins loopback/no-consent/consent and the call site.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -311,7 +372,21 @@ date_finished: null
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
 
+**Recommendation:** GO
+
+**Rationale:** Watchtower no longer changes the host firewall as a side effect: a loopback bind never touches UFW, and a LAN bind opens the port only when the operator set WATCHTOWER_OPEN_FIREWALL=1, otherwise it prints the exact command. All Agent criteria pass with an active-UFW stub. The one Human check is that the new setting reads sensibly on /config.
+
+**Evidence:**
+- tests/unit/t4297_watchtower_firewall_consent.bats 4/4; tests/unit/lib_firewall.bats 7/7; config parity lint green
+- Watchtower restarted; /config lists WATCHTOWER_OPEN_FIREWALL
+- Field origin: dimitri-mint-dev greenfield run 4, F-34 (rule "3011/tcp ALLOW IN Anywhere" on a loopback bind)
+
 ## Decisions
+
+### 2026-10-18 — consent default for a LAN bind
+- **Chose:** opt-in (config WATCHTOWER_OPEN_FIREWALL=1); without it, print the exact command.
+- **Why:** a firewall rule open to Anywhere is a host security change; the framework should not make it as a side effect of starting a dashboard.
+- **Rejected:** scoping the auto-rule to the LAN subnet (still a silent system change; subnet detection is guesswork); keeping auto-open for 0.0.0.0 (the default bind, so it would keep opening rules on most installs).
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
@@ -338,3 +413,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4297-security-fw-watchtower-start-adds-a-ufw-.md
 - **Context:** Initial task creation
+
+### 2026-10-18T10:19:41Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
