@@ -4,10 +4,10 @@ name: "t3382 liveness test leaks a slow_watchtower.py fixture process per test (
 description: >
   ring20 report (T-2415, msg 5e0af822), confirmed on .107: 115 orphaned python3 tests/fixtures/slow_watchtower.py processes, 1.1 GB RSS. tests/unit/t3382_liveness_identity_probe.bats:46 sets FIXTURE_PID=$! inside _start_fixture, but callers use port=$(_start_fixture ...) (lines 67/77/85/100/107), a subshell, so teardown (line 37) never sees the pid. Fix: record the pid in $TEST_TEMP_DIR/fixture.pid and have teardown kill from it; regression: no slow_watchtower process for the test's temp dir survives teardown. Clean up the existing orphans.
 
-status: started-work
+status: work-completed
 workflow_type: test
 owner: agent
-horizon: now
+horizon: null
 tags: [tests, leak, bug]
 components: []
 related_tasks: []
@@ -39,8 +39,8 @@ origin: {kind: "peer", source: "ring20"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T21:26:39Z
-last_update: 2026-10-18T21:26:39Z
-date_finished: null
+last_update: 2026-10-18T21:30:00Z
+date_finished: 2026-10-18T21:30:00Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -249,6 +249,11 @@ grep -q 'fixture.pid' tests/unit/t3382_liveness_identity_probe.bats
 
 ## RCA
 
+**Symptom:** 115 orphaned `tests/fixtures/slow_watchtower.py` processes (ppid 1, 1.1 GB RSS, oldest ~3.5 days) on .107, up to 5 more per run of t3382 (reported by ring20).
+**Root cause:** `tests/unit/t3382_liveness_identity_probe.bats:46` sets `FIXTURE_PID=$!` inside `_start_fixture`, but every caller runs it as `port=$(_start_fixture ...)` (lines 67/77/85/100/107), a command-substitution subshell, so the variable never reaches the test shell and `teardown` (line 37) kills nothing.
+**Why structurally allowed:** the fixture exits on its own only after its timeout, the processes use no CPU, and nothing in the suite or `fw doctor` counts processes a test left running, so the leak was invisible until another agent looked at the host's process table.
+**Prevention:** the pid is written to `$TEST_TEMP_DIR/fixture.pid` and teardown kills from the file, which survives the subshell; verified by a before/after process count around the bats run. A general guard (doctor or suite-level check for leftover fixture processes) is not part of this fix; the same class exists for any test that backgrounds a process inside `$(...)`.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -343,3 +348,22 @@ grep -q 'fixture.pid' tests/unit/t3382_liveness_identity_probe.bats
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4338-t3382-liveness-test-leaks-a-slowwatchtow.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-a9783cfe
+- **Timestamp:** 2026-10-18T21:30:08Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 2
+
+**Per-AC findings:**
+
+- **AC#1 (Agent)** — _start_fixture records the fixture pid in $TEST_TEMP_DIR/fixture.pid and teardown kills from that file
+  - **AC-verify-mismatch** (narrow, heuristic) — `path=TEST_TEMP_DIR/fixture.pid in: _start_fixture records the fixture pid in $TEST_TEMP_DIR/fixture.pid and teardown kills from that file`
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-18T21:30:00Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

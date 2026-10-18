@@ -1,0 +1,78 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4338: t3382 liveness test leaks a slow_watchtower.py fixture process per test (FIXTURE_PID set in a command-substitution subshell)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T21:30:28Z
+# ============================================================================
+
+task_id: T-4338
+task_name: "t3382 liveness test leaks a slow_watchtower.py fixture process per test (FIXTURE_PID set in a command-substitution subshell)"
+workflow_type: test
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T21:26:39Z
+completed: 2026-10-18T21:30:00Z
+duration_days: 0
+updates_count: 1
+first_commit: 2026-10-18T23:28:26+02:00
+last_commit: 2026-10-18T23:28:26+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  t3382 fixture pid recorded in a file so teardown kills it (was set inside a $(...) subshell; 115 orphans, 1.1 GB, cleaned up) — ring20 report
+
+# Key outcomes
+outcomes:
+  - '_start_fixture records the fixture pid in $TEST_TEMP_DIR/fixture.pid and teardown kills from that file'
+  - 'Running t3382_liveness_identity_probe.bats leaves no slow_watchtower.py process behind (count before = after: 116 = 116, 8 ok)'
+  - 'The existing orphaned slow_watchtower.py fixtures on this host are cleaned up (verified orphaned: ppid 1, temp dir gone) — 115 terminated by pid; 1 left belongs to a live test run'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 't3382 fixture pid recorded in a file so teardown kills it (was set inside a $(...) subshell; 115 orphans, 1.1 GB, cleaned up) — ring20 report'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.tasks/active/T-4338-t3382-liveness-test-leaks-a-slowwatchtow.md'
+  - 'tests/unit/t3382_liveness_identity_probe.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T23:28:26'
+    action: 'T-4338: t3382 fixture pid recorded in a file so teardown kills it (was set inside a $(...) subshell; 115 orphans, 1.1 GB, cleaned up) — ring20 report'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 3 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [tests, leak, bug]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 3
+  commits: 1
+  files_changed: 2
+  lines_added: 349
+  lines_removed: 0
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4338-t3382-liveness-test-leaks-a-slowwatchtow.md
+generated_by: context-agent-hybrid
