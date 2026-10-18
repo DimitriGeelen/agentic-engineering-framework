@@ -174,6 +174,11 @@ def test_inbox_drain_really_sends_received_after_printing_and_no_handed_over(ab,
     hub.topics["inbox:x/rcpt-b"] = [_hub_env(0, cid, "rcpt-a", body="drain-me")]
     monkeypatch.setattr(inbox, "pending", functools.partial(inbox.pending, reader=hub.reader))
     from lib import sidecar_cli
+    # T-4312: cmd_inbox passes reader=alerts.strict_reader explicitly (an unreadable
+    # hub is NOT CHECKED, not empty), which overrides the partial above; inject the
+    # fake hub at that seam too.
+    from lib.sidecar import alerts
+    monkeypatch.setattr(alerts, "strict_reader", hub.reader)
     monkeypatch.setattr(sidecar_cli.dm, "pending", lambda advance=True: [])
     # ORDER: the consult must already be printed when the receipt is sent. The
     # wrapper reads what was printed so far, then calls the REAL send.
