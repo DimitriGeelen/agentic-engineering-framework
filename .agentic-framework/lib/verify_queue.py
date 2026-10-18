@@ -298,7 +298,14 @@ def main(argv: list[str]) -> int:
     for tid in targets:
         rec = run_task(root, tid, timeout)
         results.append(rec)
-        state[tid] = {"ts": int(time.time()), "status": rec["status"],
+        # T-4228: an explicit --task verify of a still-red task is looking, not
+        # clearing. Advancing its ts would sink it to the back of the rotation
+        # and let the audit slice skip a task that is still red (CTL-013b), so
+        # the prior ts is kept; status/failed still record the red verdict.
+        keep_ts = bool(only) and rec["status"] == "fail"
+        prev_ts = state.get(tid, {}).get("ts", 0)
+        state[tid] = {"ts": prev_ts if keep_ts else int(time.time()),
+                      "status": rec["status"],
                       "failed": rec["failed"], "total": rec["total"]}
         # Persist and report per task, not at the end: a full sweep of this queue
         # runs for hours (some stored blocks are whole pytest suites), and a run

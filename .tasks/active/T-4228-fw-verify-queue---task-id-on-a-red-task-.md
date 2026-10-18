@@ -8,10 +8,10 @@ description: >
   item 2. Fix: an explicit single-task verify must not advance the rotation ts of
   a task that is still red (or must re-queue it).
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -42,7 +42,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:09:12Z
-last_update: '2026-10-17T13:16:16Z'
+last_update: 2026-10-18T20:38:40Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -94,8 +94,10 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw verify-queue --task T-X` on a still-red task does not advance its rotation ts (lib/verify_queue.py), so it keeps its place at the head of the rotation
+- [x] A green task verified with --task still advances its ts
+- [x] Regression test in tests/unit/t2765_verify_queue.bats fails without the fix and passes with it
+- [x] `bin/fw vendor self --check` clean
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -144,6 +146,10 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+bats tests/unit/t2765_verify_queue.bats > /tmp/.t4228.out 2>&1 && ! grep -q "^not ok" /tmp/.t4228.out
+grep -q "T-4228" tests/unit/t2765_verify_queue.bats
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -276,6 +282,11 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** `fw verify-queue --task T-X` on a red task made the next rotation treat it as freshly checked; the audit slice could PASS while the task was still red.
+**Root cause:** lib/verify_queue.py main() (~line 301) writes `state[tid]["ts"] = now` for every verified task regardless of verdict, including explicit `--task` runs; select() sorts by ts, so a red task drops to the back.
+**Why structurally allowed:** the rotation ts conflated "was looked at" with "was verified green"; no test pinned red-task rotation behaviour.
+**Prevention:** a red task keeps its prior ts (status/failed still recorded); regression test in t2765_verify_queue.bats.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -370,3 +381,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4228-fw-verify-queue---task-id-on-a-red-task-.md
 - **Context:** Initial task creation
+
+### 2026-10-18T20:38:40Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

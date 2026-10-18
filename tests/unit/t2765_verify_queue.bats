@@ -234,6 +234,25 @@ true')"
     grep -q 'T-9021' "$state"
 }
 
+@test "T-4228: --task on a still-red task keeps its rotation ts; a green one advances" {
+    PROJECT="$(create_test_project)"
+    make_queue_task "$PROJECT" T-9030 'test 1 = 2' > /dev/null
+    make_queue_task "$PROJECT" T-9031 'true' > /dev/null
+    local state="$PROJECT/.context/working/.verify-queue-state.json"
+    mkdir -p "$(dirname "$state")"
+    echo '{"T-9030": {"ts": 100, "status": "fail"}, "T-9031": {"ts": 100, "status": "pass"}}' > "$state"
+    run_vq "$PROJECT" --task T-9030
+    [ "$status" -eq 1 ]
+    run_vq "$PROJECT" --task T-9031
+    [ "$status" -eq 0 ]
+    run python3 -c "
+import json
+s = json.load(open('$state'))
+print(s['T-9030']['ts'], s['T-9030']['status'], s['T-9031']['ts'] > 100)
+"
+    [ "$output" = "100 fail True" ]
+}
+
 @test "T-2765: select() puts never-checked tasks ahead of checked ones" {
     run python3 -c "
 import sys; sys.path.insert(0, '$FRAMEWORK_ROOT/lib')
