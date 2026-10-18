@@ -49,7 +49,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T22:46:37Z
-last_update: '2026-10-17T23:00:49Z'
+last_update: 2026-10-17T23:59:31Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -107,6 +107,9 @@ cost_estimate_proposed:
 - [x] `fw sidecar ensure` restarts a dead receiver when the watcher reports `receiver not running` (`test_ensure_restarts_a_receiver_the_watcher_reports_as_not_running`)
 - [x] The sidecar unit tests closest to the changed code (test_sidecar_watcher_t3684.py, test_t4208_receiver_single_instance.py, test_sidecar_receiver_t3693.py) still pass
 - [x] `bin/fw vendor self --check` is clean after the change
+- [x] Round 2: the death is localised from the 16:50–21:20Z lines of `watcher/events.jsonl`, `watcher/ticks.jsonl`, `receiver/events.jsonl` and `server.log` (read-only), recorded in ## RCA with what is confirmed and what is not
+- [x] `fw sidecar ensure` no longer reports a refused receiver start as `running`: a start refused by a live receiver of another copy reports `REFUSED …` (`test_ensure_reports_a_refused_receiver_start_as_refused`, fails on the pre-fix tree)
+- [x] A start that will be refused no longer kills this project's live stale-code receiver first (`test_refused_start_leaves_the_live_stale_receiver_running`, fails on the pre-fix tree)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -158,6 +161,7 @@ cost_estimate_proposed:
 
 out=$(python3 -m pytest tests/unit/test_t4283_orphan_receiver_reclaim.py tests/unit/test_sidecar_watcher_t3684.py tests/unit/test_t4208_receiver_single_instance.py tests/unit/test_sidecar_receiver_t3693.py -q -p no:cacheprovider 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
 bin/fw vendor self --check
+out=$(python3 -m pytest tests/unit/test_t4283_orphan_receiver_reclaim.py -q -p no:cacheprovider -k "refused" 2>&1); echo "$out" | grep -q "2 passed" && ! echo "$out" | grep -q failed
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -289,6 +293,24 @@ bin/fw vendor self --check
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
 ## RCA
+
+### Round 2 (supersedes round 1's timeline)
+
+**Timeline (from `watcher/ticks.jsonl`, `watcher/events.jsonl`, `receiver/events.jsonl` and `server.log`, read-only).** The receiver did not die at 21:16Z. The receiver events at 21:10Z and 21:16Z are `INGESTED_FROM_HUB` rows, written by the watcher's hub pull (`lib/sidecar/watcher.py:290`), not by the HTTP receiver. The last direct POST stored by the receiver was at 16:54:39Z (`receiver/events.jsonl:5161`, sender 055). The probe flipped to `receiver not running` at 16:55:20Z and stayed there until 22:45:57Z. The supervisor's `RECEIVER_RESTARTED rc=1` loop starts at 16:56:10Z (`watcher/events.jsonl:464`), right after a `STALE_CODE_RESTART` at 16:56:09Z. `server.log` was last written on 10-13, so the receiver left no traceback: it was signalled, it did not crash.
+
+**Root cause (confirmed, apart from the exact second of the kill).** Two faults combined:
+1. **AEF's `enabled.json` named the wrong agent.** Every restart from 16:56Z asked for agent `t4217-envleak`. The restart detail says so (`watcher/events.jsonl:610` and later: `could not create inbox:…/999-Agentic-Engineering-Framework/t4217-envleak`), and the supervisor passes `--agent cfg["agent"]` (`lib/sidecar/watcher.py:803`). `t4217-envleak` is the dispatch worker id of T-4217/T-4218 (commit 23ba84665, author `dispatch+t4217-en`). Dispatch exports `FW_SIDECAR_AGENT_ID=<worker>` (`lib/sidecar/circuit.py:40`), and `fw sidecar start` (run by `bin/claude-fw:1075` at every launch) calls `_start_watcher` → `watcher.enable(agent)` (`lib/sidecar/watcher.py:194`). That overwrites the project's enabled.json even when the receiver is already running, which is why nothing showed. This is the G-116 leak class. Which launch wrote it is not recorded: enabled.json was rewritten at 22:45:33Z by the manual `fw sidecar start` and has no history.
+2. **A start that would be refused killed the live receiver first.** At ~16:55Z the T-4252 worker's edits to `lib/sidecar_cli.py` / `lib/sidecar/dm.py` (committed 16:58:34Z, c75652dc6) made the running receiver stale code (`watcher.is_stale`, `lib/sidecar/watcher.py:935`). The next `fw sidecar ensure` (cron `sidecar-ensure-1m`, or a `claude-fw` launch's `fw sidecar start`) entered `_start_receiver`'s stale branch (`lib/sidecar_cli.py`, T-3685 block). That branch SIGTERMed AEF's receiver and cleared the triple file. Only after that did the T-4208 rival guard check agent `t4217-envleak`, find the leaked fixture receiver pid 3441291 (`/tmp/t4218head.*`, cwd a deleted tmp dir, alive since 22:50Z 10-16), and refuse with rc 1. `ensure` mapped that rc 1 to `receiver: running` (the false green). The supervisor retried every 5 s for six hours, and every retry was refused the same way.
+
+Not explained: the ~50 s gap between the probe failing (16:55:20Z) and the `STALE_CODE_RESTART` event (16:56:09Z). It is consistent with two consecutive ensure runs or with a `claude-fw` launch doing the kill, but neither is logged. Ruled out: a test touching the live receiver.pid (round-1 grep, still true). Round 1's orphan reclaim does not cover this case, because the blocking rival runs in another copy (a deleted tmp cwd). It is correctly left alone.
+
+**Why structurally allowed:** (1) `ensure` mapped every rc 1 to `running`, so a refused start looked green; (2) `_start_receiver` stopped the live receiver *before* it knew the replacement would be allowed; (3) `fw sidecar start` rewrites a project's enabled agent from whatever `FW_SIDECAR_AGENT_ID` the caller inherited, with no check against the agent of the receiver already running.
+
+**Prevention (round 2):** `_start_receiver` now checks for a live receiver of another copy holding the agent *before* the stale-code kill. If it finds one, it refuses with rc 1 and keeps the live receiver. `cmd_ensure` reports rc 1 with no triple file of ours as `REFUSED: agent … is served by pid …` (also on stderr), never `running`. Pinned by `test_ensure_reports_a_refused_receiver_start_as_refused` and `test_refused_start_leaves_the_live_stale_receiver_running`, both failing on the pre-fix tree.
+
+**Open, not fixed here (each its own bug):** (a) enabled.json agent poisoning by an inherited `FW_SIDECAR_AGENT_ID` in `fw sidecar start` / `_start_watcher`; (b) leaked fixture receivers still alive on this host: pid 3441291 `t4217-envleak` (it blocked AEF) and pid 3575904 `t4283-fixture-agent` (cwd `/tmp/t4283-fx.*`, from round 1). Neither was touched.
+
+### Round 1 (timeline superseded above)
 
 **Symptom:** AEF's receiver stopped answering. The watcher's probe read `receiver not running` from 21:02:52Z (`.context/sidecar/watcher/ticks.jsonl`), the supervisor's receiver restart returned rc=1 every ~5 s from 21:09:46Z (`watcher/events.jsonl:3101`), and nothing restarted it until a manual `fw sidecar start` at 00:45Z. A process for the agent was still answering POSTs until 21:16:41Z (`receiver/events.jsonl:5288`), so the outage was an unreachable live process, not a clean exit.
 

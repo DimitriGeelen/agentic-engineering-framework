@@ -736,7 +736,17 @@ def _start_receiver(agent: str, port, no_inject: bool, quiet: bool) -> tuple[int
         if not quiet:
             print(f"receiver already running: pid={info['pid']} url={info['url']}")
         return 1, info
+    root_path = receiver._root().resolve()
     if info and lifecycle.is_receiver_alive(info):
+        # T-4283: a start that the rival guard below will refuse must not take the
+        # live receiver down first; that left AEF with none for six hours.
+        foreign = [p for p in lifecycle.live_receiver_pids(agent)
+                   if p != info["pid"] and lifecycle.process_cwd(p) != root_path]
+        if foreign:
+            if not quiet:
+                print(f"receiver already served by pid {', '.join(map(str, foreign))} for agent "
+                      f"{agent!r} (another framework copy, T-4208) — keeping pid={info['pid']}")
+            return 1, None
         # T-3685: running code older than what is on disk — replace it, so a
         # fix (e.g. T-3745's per-session targeting) is actually live.
         import signal as _sig
@@ -755,7 +765,7 @@ def _start_receiver(agent: str, port, no_inject: bool, quiet: bool) -> tuple[int
     # T-4208: a live receiver for this agent id may run from ANOTHER framework
     # copy (055: vendored + AEF's), with no triple file of ours pointing at it.
     # Starting a second one is the duplicate this guard exists to prevent.
-    rivals = _reclaim_orphan_receivers(agent, receiver._root().resolve(), quiet)
+    rivals = _reclaim_orphan_receivers(agent, root_path, quiet)
     if rivals:
         if not quiet:
             print(f"receiver already served by pid {', '.join(map(str, rivals))} for agent "
@@ -924,9 +934,16 @@ def cmd_ensure(args) -> int:
                          if watcher.stopped_marker().exists()
                          else "not enabled (fw sidecar start enables it)")
     else:
-        rc, _ = _start_receiver(str(cfg.get("agent") or _agent_or_none() or ""), None,
-                                _ensure_no_inject(cfg), True)
+        agent = str(cfg.get("agent") or _agent_or_none() or "")
+        rc, info = _start_receiver(agent, None, _ensure_no_inject(cfg), True)
         row["receiver"] = {0: "restarted", 1: "running", 2: "FAILED"}[rc]
+        if rc == 1 and info is None:
+            # T-4283: rc 1 with no triple file of ours is a refused start, not a
+            # running receiver — another copy's receiver holds the agent id.
+            rivals = ", ".join(map(str, lifecycle.live_receiver_pids(agent)))
+            row["receiver"] = (f"REFUSED: agent {agent!r} is served by pid {rivals} "
+                               "(another framework copy, T-4208)")
+            print(f"receiver: {row['receiver']}", file=sys.stderr)
         if watcher.is_stale(watcher.read_pid("supervisor")) or watcher.is_stale(watcher.read_pid("watcher")):
             watcher.stop_processes()
             watcher.record_event("STALE_CODE_RESTART")

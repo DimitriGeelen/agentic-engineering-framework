@@ -121,3 +121,59 @@ def test_ensure_restarts_a_receiver_the_watcher_reports_as_not_running(proj, tmp
             orphan.kill()
             orphan.wait()
         cli.cmd_receiver_stop(Namespace(quiet=True, agent=agent))
+
+
+def test_ensure_reports_a_refused_receiver_start_as_refused(proj, tmp_path, monkeypatch, capsys):
+    """Round 2: a receiver start refused by a live receiver of another copy is not
+    'running'. Before the fix ensure mapped that rc 1 to a green 'running' while
+    the project had no receiver at all (AEF, 16:55-22:45Z 2026-10-17)."""
+    import json
+    from argparse import Namespace
+    from lib.sidecar import watcher
+
+    agent = "t4283-refused"
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    foreign = _orphan(agent, elsewhere, tmp_path)
+    watcher.enable(agent, None, inject_on=False)
+    monkeypatch.setattr(watcher, "supervisor_alive", lambda: True)
+    monkeypatch.setattr(cli, "_ensure_inbox_topic",
+                        lambda a, q: {"topic": None, "action": "skipped", "reason": "fixture"})
+    try:
+        capsys.readouterr()
+        assert cli.cmd_ensure(Namespace(all=False, autostart=False, json=True)) == 0
+        row = json.loads(capsys.readouterr().out.strip().splitlines()[-1])
+        assert row["receiver"] != "running", "a refused start was reported as a running receiver"
+        assert row["receiver"].startswith("REFUSED") and str(foreign.pid) in row["receiver"]
+    finally:
+        watcher.disable()
+        foreign.kill()
+        foreign.wait()
+
+
+def test_refused_start_leaves_the_live_stale_receiver_running(proj, tmp_path, monkeypatch):
+    """Round 2, the kill: this project's receiver runs stale code, and the start that
+    would replace it is going to be refused (a live receiver of another copy serves
+    the requested agent). The stale receiver must stay up: before the fix it was
+    SIGTERMed and its triple file cleared first, then the start was refused, and
+    the project was left with no receiver."""
+    from lib.sidecar import watcher
+
+    ours, theirs = "t4283-ours", "t4283-theirs"
+    rc, _ = cli._start_receiver(ours, None, False, True)
+    assert rc == 0
+    info = lifecycle.read_triple_file()
+    elsewhere = tmp_path / "elsewhere"
+    elsewhere.mkdir()
+    foreign = _orphan(theirs, elsewhere, tmp_path)
+    monkeypatch.setattr(watcher, "is_stale", lambda pid: True)
+    try:
+        rc, got = cli._start_receiver(theirs, None, False, True)
+        assert rc == 1 and got is None
+        assert lifecycle.pid_alive(info["pid"]), "a refused start killed the live receiver"
+        assert lifecycle.read_triple_file() == info, "a refused start cleared the triple file"
+    finally:
+        foreign.kill()
+        foreign.wait()
+        monkeypatch.undo()
+        cli.cmd_receiver_stop(type("A", (), {"quiet": True, "agent": ours})())
