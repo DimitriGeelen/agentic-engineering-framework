@@ -436,9 +436,38 @@ def _drop_termlink_segments(cmd, root):
         return cmd
 
 
+def _segment_mask(cmd):
+    """T-4284: the quote-blanked view for SEGMENT SPLITTING — quoted newlines blanked too.
+
+    _strip_quoted keeps a newline inside a quoted string so its mask stays line-aligned,
+    but _split_segments splits on every newline it sees. A multi-line quoted argument
+    (`termlink dispatch --prompt "line1\\nline2 <project>"`) was cut into segments, only
+    the first was blanked as TermLink, and the leftover closing quote then opened a quote
+    in the next pass, leaving the prompt text unquoted (`<project>` read as a redirect).
+    Length-preserving, so offsets still index the real command."""
+    mask = list(_strip_quoted(cmd))
+    # Walk the mask with _strip_quoted's own rules: outside quotes a backslash keeps
+    # the next char; inside, everything but newlines is already blank.
+    quote, k, n = None, 0, len(mask)
+    while k < n:
+        c = mask[k]
+        if quote is None:
+            if c == '\\':
+                k += 2
+                continue
+            if c in '"\'':
+                quote = c
+        elif c == quote:
+            quote = None
+        elif c == '\n':
+            mask[k] = ' '
+        k += 1
+    return ''.join(mask)
+
+
 def _termlink_spans(cmd, root):
     """[(start, end)] of the segments of `cmd` that invoke TermLink (may raise)."""
-    mask = _strip_quoted(cmd)
+    mask = _segment_mask(cmd)
     return [(s, e) for s, e in _split_segments(mask)
             if s < e and _segment_invokes_termlink(mask[s:e], root)]
 
@@ -465,7 +494,7 @@ def _cred_exempt_spans(cmd, root):
     try:
         files = None
         spans = []
-        mask = _strip_quoted(cmd)
+        mask = _segment_mask(cmd)   # T-4284: a quoted newline does not split
         for s, e in _split_segments(mask):
             toks = list(re.finditer(r'\S+', mask[s:e]))
             words = [t.group(0) for t in toks]

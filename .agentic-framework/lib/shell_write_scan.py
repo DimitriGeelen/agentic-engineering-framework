@@ -1184,6 +1184,25 @@ def scan_boundary(command: str, cwd: str | None, guarded, cd_ok) -> list[Hit]:
 _READ_REASON = "Outside-path argument"
 _HOME_VAR = re.compile(r"^(?:\$HOME|\$\{HOME\})(?=/|$)")
 
+# T-4284: free-text options are TEXT, never path operands — a commit message, a dispatch
+# prompt or a sidecar body that MENTIONS an outside path does not read it. Scoped to the
+# commands whose options are known to mean this: elsewhere the same spellings are not
+# text (`zip -m` and `gzip --name` are flags that take no value, so the next word IS a
+# path operand; `install -m`, `grep -m` take a mode/count). A substitution inside the
+# text (`-m "$(cat /x)"`) is its own executed piece and is still judged.
+_FREE_TEXT_OPTS = frozenset({"--prompt", "--body", "-m", "--message", "--description",
+                             "--name", "--rationale", "--summary", "--detail"})
+_FREE_TEXT_CMDS = frozenset({"fw", "git", "gh", "termlink", "claude"})
+
+
+def _is_free_text_opt(w: str) -> bool:
+    """`--opt`, `--opt=VALUE` or `-mVALUE` for a free-text option."""
+    if w in _FREE_TEXT_OPTS:
+        return True
+    if w.startswith("--") and "=" in w:
+        return w.split("=", 1)[0] in _FREE_TEXT_OPTS
+    return w.startswith("-m") and len(w) > 2 and not w.startswith("--")
+
 
 def _read_words(seg: list[str], ctx: _Ctx) -> None:
     """T-3768: judge every path-shaped word of one segment, AFTER quote removal.
@@ -1197,7 +1216,16 @@ def _read_words(seg: list[str], ctx: _Ctx) -> None:
     outside = ctx.read_outside
     if outside is None:
         return
+    argv, _ = _unwrap(list(seg))
+    free_text = bool(argv) and os.path.basename(argv[0]) in _FREE_TEXT_CMDS
+    skip_next = False
     for w in seg:
+        if skip_next:
+            skip_next = False
+            continue
+        if free_text and _is_free_text_opt(w):
+            skip_next = w in _FREE_TEXT_OPTS
+            continue
         if not w or w.startswith("\x00") or w in _OPSET or w == UNRESOLVED:
             continue
         if w.startswith("-") and "=" in w:

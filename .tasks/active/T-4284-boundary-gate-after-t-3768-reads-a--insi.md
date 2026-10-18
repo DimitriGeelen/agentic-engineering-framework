@@ -13,7 +13,7 @@ description: >
   blocking real redirects to outside paths (> /root/x, 2>/opt/other/f, >> "/opt/other/f").
   Tests for both.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T22:53:27Z
-last_update: '2026-10-17T23:01:50Z'
+last_update: 2026-10-17T23:59:33Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -93,14 +93,17 @@ bvp_scores_proposed:
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Boundary hook false positives on free text (see description). Scope widened 2026-10-18 to the READ side introduced by T-3768.
 
 ## Acceptance Criteria
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] WRITE side: a `<`/`>` inside a quoted argument (e.g. `--prompt "… /tmp/claude-<uid>/<project>/…"`, single- or multi-line) is not read as a redirect; the hook allows it
+- [x] READ side: free-text option values (`--prompt`, `--body`, `-m`, `--message`, `--description`, `--name`, `--rationale`, `--summary`, `--detail`, as `--opt VALUE`, `--opt=VALUE` or `-mVALUE`) of fw/git/gh/termlink/claude are text, not path operands. A dispatch prompt, a sidecar body and a commit message that mention an outside path are allowed
+- [x] Real accesses still block: `cat` of an outside file (plain, quoted, escaped), `>`/`>>`/`2>` to an outside path (quoted or not), `cp`/`tee` with a quoted outside path, a `$(...)` inside a message, `zip -m`/`gzip --name` operands, and every T-3768 probe
+- [x] Regression suite `tests/unit/t4284_boundary_free_text_args.bats` covers both directions: 17/17 pass with the fix, 5 fail without it
+- [x] The 8 neighbouring boundary suites stay green: 191/191, 0 skips (191 + 17 new = 208)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -150,6 +153,10 @@ bvp_scores_proposed:
 
 ## Verification
 
+timeout 300 bats tests/unit/t4284_boundary_free_text_args.bats > /tmp/.t4284.out 2>&1 && ! grep -q "^not ok" /tmp/.t4284.out
+test "$(grep -c '# skip' /tmp/.t4284.out)" -eq 0
+timeout 900 bats tests/unit/check_project_boundary.bats tests/unit/t2920_boundary_heredoc_strip_order.bats tests/unit/t3076_boundary_termlink_segment_scope.bats tests/unit/t3768_boundary_quoted_read_paths.bats tests/unit/t4114_boundary_tee_options.bats tests/unit/t4126_boundary_write_verbs.bats tests/unit/t4149_boundary_parser_differential.bats tests/unit/test_boundary_hook_arguments.bats > /tmp/.t4284n.out 2>&1 && ! grep -q "^not ok" /tmp/.t4284n.out
+bin/fw vendor self --check
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
 # The completion gate runs each command — if any exits non-zero, completion is blocked.
@@ -295,6 +302,16 @@ bvp_scores_proposed:
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
 
+**Symptom:** a `bin/fw termlink dispatch --prompt "…"` whose prompt spans several lines and mentions `/tmp/claude-<uid>/<project>/…` was refused as "File write to /<project>/<session>/scratchpad/...)". Separately, since T-3768, `git commit -m "<outside path> …"`, `fw sidecar send --body '<outside path> …'` and `fw task create --name "<outside path>"` are refused as outside reads.
+
+**Root cause:**
+- WRITE side: `_strip_quoted` (agents/context/check-project-boundary.sh:200) keeps `\n` inside a quoted string so the mask lines up with the command, and `_split_segments` (:331) splits on every `\n` in that mask. A multi-line quoted prompt is therefore cut into several "segments". Only the first one starts with `termlink`, so `_drop_termlink_segments` (:419) blanks only that one, including the opening quote. The later lines keep the closing quote, which the next `_strip_quoted` pass then reads as an *opening* quote. The prompt text is left unquoted, and its `<project>` is read as a redirect. Single-line prompts were never affected, which is why this looked intermittent.
+- READ side: `_read_words` (lib/shell_write_scan.py, T-3768) judges every word whose text starts with `/`, whatever its position. When a free-text option's value is itself a path-led sentence, the whole word is judged as a path.
+
+**Why structurally allowed:** the T-3076/T-3768 suites only used single-line prompts, and only used messages where the path was not the first character of the value. No test covered a newline inside a quoted argument of an exempt segment, or a free-text option whose value starts with a path.
+
+**Prevention:** `tests/unit/t4284_boundary_free_text_args.bats` pins both false positives (a multi-line dispatch prompt, a commit message, a sidecar body and a task name) and the real accesses that must still block. Segment splitting now uses a mask with quoted newlines blanked, and the read pass skips the values of free-text options only for commands whose options are known to be text (fw, git, gh, termlink, claude).
+
 ## Evolution
 
 <!-- REQUIRED for arc-tagged build tasks (tags include arc:*). Captures how
@@ -359,6 +376,11 @@ bvp_scores_proposed:
      - **Rejected:** [alternatives and why not]
 -->
 
+### 2026-10-18 — scope of the free-text exemption
+- **Chose:** treat free-text option values as text only for fw, git, gh, termlink and claude.
+- **Why:** for other commands the same spellings are not text. `zip -m` and `gzip --name` are flags that take no value, so the next word is a real path operand. A universal exemption would reopen a read/write bypass.
+- **Rejected:** a universal option list, which reopens that bypass. Judging only known path-operand verbs, which reopens T-3768 for every unlisted reader.
+
 ## Decision
 
 <!-- Filled at completion of inception tasks via:
@@ -375,3 +397,6 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4284-boundary-gate-after-t-3768-reads-a--insi.md
 - **Context:** Initial task creation
+
+### 2026-10-17T23:59:33Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
