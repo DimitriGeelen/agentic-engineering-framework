@@ -93,7 +93,7 @@ bvp_scores_proposed:
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
 - [x] `scan_boundary_reads` returns the reported counts: `git diff --no-index /etc/shadow /dev/null` = 2, `git diff --no-index -m /etc/shadow /dev/null` = 2, `git log --summary /etc/shadow` = 1, `cat /etc/shadow` = 1 (regression bats in tests/unit/t4344_boundary_read_free_text_opts.bats)
 - [x] Free-text value skipping is keyed per command (and git subcommand): a flag that takes no value (git log/diff `--summary`, `-m`) never skips the next word
-- [ ] A skipped free-text value that is path-shaped (`/`, `~`, `$HOME`, `../`) is still judged as a path read — NOT DONE: conflicts with the T-4284 cases (`--prompt="$OUT"`, `--name "$OUT"` must stay allowed); see RCA. Operator decision.
+- [x] Options whose value the program READS as a file stay judged as path reads; only true free-text values are skipped (replaces the path-shaped-value criterion, see Decisions): `git commit -F /etc/shadow`, `git tag -F /etc/shadow v1`, `gh issue create --body-file /etc/shadow` each report 1 outside read; `git commit -m /etc/shadow` reports 0 (checked by the parent, 2026-10-19)
 - [x] T-4284 false positives stay unflagged: commit messages, fw `--rationale` text containing `>` or paths in prose (tests/unit/t4284_boundary_free_text_args.bats passes)
 - [x] Hook test suites that exercise the boundary scanner pass after the change
 - [x] `bin/fw vendor self --check` clean after the vendor sync
@@ -358,6 +358,13 @@ bin/fw vendor self --check
 -->
 
 ## Decisions
+
+- **2026-10-19 — free-text values are not path reads (parent).** Considered: also judging a path-shaped value of a
+  free-text option (`--prompt "/x"`, `-m "/x"`). Rejected: the program never opens that value as a file, so flagging it
+  is a false positive and contradicts T-4284's correct cases (`--prompt="$OUT"`, `--name "$OUT"`). The security
+  property that matters is that every option whose value IS read as a file (`-F`, `--file`, `--body-file`) is not in
+  the free-text set; verified for git commit/tag -F and gh --body-file. The reported bypass came from no-value flags
+  (`-m` on git diff, `--summary` on git log) being treated as value-taking, which the per-command table fixes.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
