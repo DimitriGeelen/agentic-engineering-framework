@@ -57,7 +57,16 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Localised by dimitri-mint-dev (msg 8b238004), consistent with our tip: vendored 1.8.10; PROJECT_ROOT and
+FRAMEWORK_ROOT unset; hooks wired as `${CLAUDE_PROJECT_DIR}/.agentic-framework/bin/fw hook NAME` with a valid
+CLAUDE_PROJECT_DIR. The T-2446 branch (bin/fw ~285-320 at our tip) trusts CLAUDE_PROJECT_DIR only when the cwd is
+not "genuinely inside another project": find_project_root from the hook's cwd (the record, which has its own
+.framework.yaml) returns a different root, so PROJECT_ROOT becomes the cwd's root. T-2446 exists for long-lived
+daemon shells that inherit a stale CLAUDE_PROJECT_DIR; in a Claude Code hook the cwd is only where the agent last
+cd'd. Blocks seen: check-project-boundary (cd back, Edit of own .tasks), budget-gate (record's 300K default),
+check-active-task (record's empty focus). Fix direction: in hook context (`fw hook`, where Claude Code sets
+CLAUDE_PROJECT_DIR for this session), a valid CLAUDE_PROJECT_DIR wins; keep T-2446 for non-hook invocations; regression
+test for both.
 
 ## Acceptance Criteria
 
