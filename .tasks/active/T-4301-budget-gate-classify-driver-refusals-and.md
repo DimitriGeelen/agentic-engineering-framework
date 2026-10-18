@@ -47,7 +47,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T11:28:25Z
-last_update: 2026-10-18T11:28:52Z
+last_update: 2026-10-18T13:52:46Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -77,6 +77,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-18T11:30:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=299,acs=8)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4301: budget-gate classify, driver refusals and unit-suite partial-run tests red on the v1.8.11 tip only (t2919, t3254, t3602)
@@ -89,12 +99,13 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Root cause of the t2919 failure ('the prescribed cd /path && cmd shape still passes') is localised to file:line and confirmed by one isolated test run
-- [ ] Root cause of the t3254 (A9, driver refusals) failure is localised to file:line and confirmed by one isolated test run
-- [ ] Root cause of the t3602 (unit-suite partial run) failure is localised to file:line, or shown to be load-flaky with 3 passing isolated runs on HEAD
-- [ ] Each confirmed regression is fixed in the main checkout with a minimal change in the surrounding style
-- [ ] A regression test fails without the fix and passes with it (bats under tests/unit/)
-- [ ] t2919, t3254 and t3602 bats files all pass on HEAD after the fix
+- [x] t2919 root cause localised: tests/unit/t2919_budget_gate_command_classify.bats:127 hard-codes the checkout path; the committed test is red on the v1.8.11 tip clone (413701ff9) and the working-tree version is green there
+- [x] t3254 root cause localised: tests/unit/t3254_driver_refusals.bats A9 fixture has no agents/ dir, so bin/fw:1373 re-resolves FRAMEWORK_ROOT and the ceiling check never becomes unevaluable; the committed test is red on the tip, the working-tree version is green there
+- [x] t3602 classified: test 7 ("runner records per-file durations…", line 196 status check) went red once in the full suite and does not reproduce; 3 isolated runs on the main checkout and 4 on the tip pass; T-3794 (d6344344a) does not change any asserted field, so it is not the cause. Recorded as load-flaky, no code change
+- [x] Each fix is test-side only (no bin/fw, lib/, agents/ edit), minimal, in the surrounding style
+- [x] A regression test fails on the committed version and passes with the fix: t2919 control leg (cd into another install is refused) and t3254 re-resolve guard (`[[ "$output" != *"re-resolving"* ]]`)
+- [x] t2919 and t3254 bats files pass on the main checkout after the fix
+- [x] t3602 bats file passes on the main checkout (3 of 3 runs)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -144,10 +155,9 @@ bvp_scores_proposed:
 
 ## Verification
 
-bats tests/unit/t2919_budget_gate_command_classify.bats > /tmp/t4301-t2919.out 2>&1 && ! grep -q "^not ok" /tmp/t4301-t2919.out
-bats tests/unit/t3254_driver_refusals.bats > /tmp/t4301-t3254.out 2>&1 && ! grep -q "^not ok" /tmp/t4301-t3254.out
-bats tests/unit/t3602_unit_suite_partial_run.bats > /tmp/t4301-t3602.out 2>&1 && ! grep -q "^not ok" /tmp/t4301-t3602.out
-bin/fw vendor self --check
+bats tests/unit/t2919_budget_gate_command_classify.bats > .context/scratch/t4301/t2919.out 2>&1 && ! grep -q "^not ok" .context/scratch/t4301/t2919.out
+bats tests/unit/t3254_driver_refusals.bats > .context/scratch/t4301/t3254.out 2>&1 && ! grep -q "^not ok" .context/scratch/t4301/t3254.out
+bats tests/unit/t3602_unit_suite_partial_run.bats > .context/scratch/t4301/t3602.out 2>&1 && ! grep -q "^not ok" .context/scratch/t4301/t3602.out
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -293,6 +303,17 @@ bin/fw vendor self --check
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** on the v1.8.11 tip clone only (413701ff9), t2919 ("the prescribed cd /path && cmd shape still passes"), t3254 (A9, unevaluable ceiling) and t3602 (partial-run report, test 7) were red in the full-suite comparison (docs/reports/T-4246-full-suite-comparison.md). They were green on the base clone.
+
+**Root cause:**
+- t2919: tests/unit/t2919_budget_gate_command_classify.bats:127 (committed) hard-codes `/opt/999-Agentic-Engineering-Framework` in the "prescribed shape" assertion. The gate is right: `cd <another install> && bin/fw handover` is refused ("launcher is not this project's own", T-4125). Only the test was checkout-specific.
+- t3254: tests/unit/t3254_driver_refusals.bats A9 (committed, ~l.203) builds a FRAMEWORK_ROOT fixture with lib/ and bin/ but no agents/. bin/fw:1373 (T-4248) rejects that root and re-resolves to the real checkout, which has the injector, so the "unevaluable ceiling" branch is never reached and the output is not JSON.
+- t3602: test 7 (tests/unit/t3602_unit_suite_partial_run.bats:~190-205) asserts several per-file fields after running agents/audit/unit-suite.sh with FILE_TIMEOUT=5. Its verdict depends on a cold python/pytest start finishing inside 5 s. Not reproduced: isolated, 6-way concurrent, and 48-busy-loop saturation runs all pass. T-3794 (d6344344a) only adds a LAST-COMPLETE.yaml write and changes no asserted field, so it is ruled out as the cause.
+
+**Why structurally allowed:** the tests encode the environment (a checkout path; a fixture that has to satisfy a validator added later, T-4248) and nothing checks that a bats file is hermetic to the checkout it runs from. The t3602 timing assertions have no slack and nothing flags that.
+
+**Prevention:** the t2919 and t3254 fixes make both tests hermetic (FRAMEWORK_ROOT-relative path; agents/ in the fixture) and the t2919 control leg proves the refusal side is exercised, not only the allow side. Hermeticity of FRAMEWORK_ROOT-based fixtures is a candidate for a lint (not built here). t3602 test 7 is left as-is and recorded as load-flaky; widening its per-file cap would be the next step if it recurs in a full-suite run.
 
 ## Evolution
 

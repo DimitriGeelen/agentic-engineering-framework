@@ -200,16 +200,22 @@ Y
 @test "A9 an unevaluable ceiling is a blocker, never a green light" {
     # The inverse of A8: when the injector genuinely cannot be found, refusing is
     # correct. "No breach" and "could not check" must not collapse into each other.
-    # A framework root that fw can RUN from but which has no agents/ tree. Pointing
+    # A framework root that fw can RUN from but which has no injector. Pointing
     # FRAMEWORK_ROOT at a nonexistent path would not test this: fw resolves its own
     # libraries through the same variable and dies before the ceiling join is reached,
     # which is an empty stdout that a laxer assertion would have read as a pass.
-    mkdir -p "$SB/fakefw"
+    # T-4295/T-4248: bin/fw honours an inherited FRAMEWORK_ROOT only with lib/ AND
+    # agents/ present, so the fixture needs an agents/ tree. Without it fw re-resolves
+    # to this repo, finds the injector, and the ceiling check never becomes unevaluable.
+    mkdir -p "$SB/fakefw/agents"
     ln -sf "$REPO/lib" "$SB/fakefw/lib"
     ln -sf "$REPO/bin" "$SB/fakefw/bin"
     [ ! -e "$SB/fakefw/agents/context/inject-next-directive.py" ]
 
     run env PROJECT_ROOT="$SB" FRAMEWORK_ROOT="$SB/fakefw" "$FW" continuous status --json
+    # The fixture must be accepted as the framework root. A re-resolve notice on
+    # stderr (run merges it into $output) means the premise of this test is gone.
+    [[ "$output" != *"re-resolving"* ]]
     [ -n "$output" ]
     echo "$output" | python3 -c 'import json,sys
 d = json.load(sys.stdin)

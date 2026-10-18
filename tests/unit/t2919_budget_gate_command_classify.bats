@@ -124,7 +124,17 @@ assert_blocked() {
     # CLAUDE.md mandates this prefix on every handed-over command. Anchoring
     # without allowing `cd` would make the gate refuse the framework's own
     # required form.
-    assert_allowed "cd /opt/999-Agentic-Engineering-Framework && bin/fw handover"
+    assert_allowed "cd $FRAMEWORK_ROOT && bin/fw handover"
+}
+
+@test "t2919: the cd-prefixed shape is refused when cd names ANOTHER install (T-4125 control)" {
+    # The leg above names this install. A hard-coded checkout path made it pass only
+    # where the suite happened to run from that checkout (T-4301: red in every clone
+    # elsewhere). The gate's refusal is the other half of the contract: a relative
+    # bin/fw after cd into a different install runs that install's fw, not ours.
+    local other="$WORK/other-install"
+    mkdir -p "$other/bin"
+    assert_blocked "cd $other && bin/fw handover"
 }
 
 @test "t2919: a commit message containing shell separators is not split by them" {
