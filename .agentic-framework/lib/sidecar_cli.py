@@ -239,9 +239,13 @@ def _framed(text) -> str:
 def cmd_inbox(args) -> int:
     if getattr(args, "show", None):
         return _cmd_show(args)
+    from lib.sidecar import alerts
     try:
-        messages = inbox.pending(advance=not args.peek)
-    except circuit.CircuitError as e:
+        # T-4312: the strict reader, as `fw sidecar alerts` uses. The default
+        # reader turns a missing binary or a refused read into [], which read
+        # as "no pending consults" with exit 0 whenever the hub id was known.
+        messages = inbox.pending(advance=not args.peek, reader=alerts.strict_reader)
+    except (circuit.CircuitError, alerts.Unreadable) as e:
         # T-4308: no termlink binary (or no readable hub anchor) means the inbox
         # is UNKNOWN, not empty. Same NOT CHECKED answer and exit 3 as `fw sidecar alerts`.
         import shutil
