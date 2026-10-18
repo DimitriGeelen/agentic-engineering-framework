@@ -40,7 +40,7 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T13:48:28Z
-last_update: 2026-10-18T13:52:49Z
+last_update: '2026-10-18T14:01:10Z'
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -70,6 +70,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-18T14:01:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=315,acs=8)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4305: /embeddings returns 500 on an empty project
@@ -82,8 +92,20 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] Reproduced: GET /embeddings on a fresh `fw init` project with web.embeddings unimportable (forced via sys.modules) returns HTTP 500 via the Flask test client, root cause at web/templates/embeddings.html:56 (a fresh project with the stack importable and no index returns 200 before the fix too)
+- [x] web/blueprints/embeddings.py unavailable branch carries explicit None keys; GET /embeddings returns HTTP 200 with the empty-state render on the same fixture
+- [x] Regression pytest tests/unit/test_t4305_embeddings_empty_state.py added: 2 tests fail before the fix, control and fix both pass
+- [x] Neighbouring tests still pass (tests/unit/test_embed_health.py, tests/unit/test_t4305_embeddings_empty_state.py: 27 passed)
+- [x] web/blueprints/embeddings.py vendored (FW_VENDOR_ONLY); Watchtower restarted and `bin/fw watchtower current` exits 0, live /embeddings returns 200. Overall `bin/fw vendor self --check` is still red from another worker's uncommitted lib/hook-dispatch.sh, which is not mine to vendor
+
+### Human
+- [ ] [REVIEW] Empty-state page on a fresh project reads clearly
+  **Steps:**
+  1. Run `cd /opt/999-Agentic-Engineering-Framework && bin/fw watchtower url` and note the URL
+  2. Open `<that URL>/embeddings` in a browser on a project with no vector index (or run `bin/fw watchtower restart` first if the URL is stale)
+  3. Look at the headline verdict and the panels
+  **Expected:** The page renders without an error banner and shows an explicit "unknown" or empty state, not a blank or broken layout
+  **If not:** Screenshot the page and note the unreadable section; reopen T-4305
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -132,6 +154,11 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+out=$(python3 -m pytest tests/unit/test_t4305_embeddings_empty_state.py -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
+out=$(python3 -m pytest tests/unit/test_embed_health.py -q 2>&1); echo "$out" | grep -q passed && ! echo "$out" | grep -q failed
+bin/fw vendor self --check
+bin/fw watchtower current
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -264,6 +291,14 @@ bvp_scores_proposed:
 
 ## RCA
 
+**Symptom:** GET /embeddings returns HTTP 500 on a freshly initialised project (greenfield container run, dimitri-mint-dev T-126).
+
+**Root cause:** `web/blueprints/embeddings.py:84-87` — when `web.embeddings` will not import, `_index_state()` returns `{"available": False, "reason": ...}` with no `chunks`, `age_days`, `built_at` keys. The template reads `index.chunks` (`web/templates/embeddings.html:55-56`): the guard `index.chunks is not none` is true for Jinja's `Undefined`, so `"{:,}".format(index.chunks)` runs on `Undefined` and raises `TypeError: unsupported format string passed to Undefined.__format__`. Reproduced with `fw init` into a temp dir and `sys.modules["web.embeddings"]=None` (forces the import failure); test client returns 500 with that traceback at embeddings.html:56. A project with the stack importable and no DB file returns 200 (the `chunks` key exists as None), so the no-index state alone does not trigger it. The container most likely lacks the embedding stack (the comment at blueprints/embeddings.py:80-82 says consumers need not have it); the container's import error was not captured, so that link is inferred.
+
+**Why structurally allowed:** The tri-state contract (blueprint docstring, lines 17-22) says every loader returns explicit None for "unknown", but the unavailable branch returned a partial dict, so the template saw Undefined rather than None. No test renders `/embeddings` with the stack absent; existing embed tests exercise `web.embed_health`, not this blueprint.
+
+**Prevention:** the unavailable branch returns the same keys as the available one (None values), and a pytest renders `/embeddings` with the import forced to fail and with the empty-project state, asserting 200 and no 500.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -330,6 +365,13 @@ bvp_scores_proposed:
      for Human Review). If the artefact is complete and you still don't want to
      commit, that is a calibration failure — recommend GO or NO-GO.
 -->
+
+**Recommendation:** GO
+**Rationale:** The 500 is a template TypeError, not a missing index. When `web.embeddings` will not import, `_index_state()` returned a partial dict, so `index.chunks` was Jinja Undefined and `"{:,}".format()` raised at `web/templates/embeddings.html:56`. The blueprint now returns the same keys as the available branch, all None. Forced-import fixture: 500 before, 200 after; live Watchtower returns 200. The fix is in the blueprint, not the template, so the tri-state contract holds for every consumer of `_index_state()`.
+**Evidence:**
+- Regression test tests/unit/test_t4305_embeddings_empty_state.py: 2 failed before the fix (500 and the missing-key contract), control passed; 27 passed with test_embed_health.py after the fix
+- Live `bin/fw watchtower restart` then `bin/fw watchtower current` exit 0; `curl` on the resolved `/embeddings` URL returns 200
+- Open for the operator: the field container's actual import error was not captured, so "stack not importable" is the inferred trigger, not observed. The `[REVIEW]` Human AC asks you to confirm the empty-state page reads clearly.
 
 ## Decisions
 

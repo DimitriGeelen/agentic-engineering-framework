@@ -84,7 +84,18 @@ def _index_state() -> dict:
     try:
         from web.embeddings import DB_PATH, index_freshness
     except Exception as exc:  # noqa: BLE001 — any import failure is the same verdict
-        return {"available": False, "reason": f"web.embeddings not importable: {exc}"}
+        # Same keys as the available branch, all None: the template formats
+        # index.chunks, and a missing key is Undefined, which is not none (T-4305).
+        return {
+            "available": False,
+            "reason": f"web.embeddings not importable: {exc}",
+            "db_path": None,
+            "built_at": None,
+            "age_seconds": None,
+            "age_days": None,
+            "freshness_source": None,
+            "chunks": None,
+        }
 
     state: dict = {"available": True, "db_path": str(DB_PATH), "reason": None}
 
