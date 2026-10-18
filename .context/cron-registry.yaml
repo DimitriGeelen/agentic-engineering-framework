@@ -436,7 +436,7 @@ jobs:
   command: flock -n /var/lock/agentic-cron-issues-sync-2h.lock -c 'fw issues sync'
   source_file: agentic-audit.crontab
   origin_task: T-4078
-  status: paused
+  status: active
   description: 'T-4078 (T-4039 slice 2). Reads open GitHub issues into .context/issues/intake.jsonl:
     new issues get Received and Classified comments through fw issues comment; changed
     title/body is recorded (not re-classified); submitter replies are recorded and

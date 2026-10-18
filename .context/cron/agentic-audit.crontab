@@ -102,4 +102,4 @@ PATH=/usr/local/bin:/usr/bin:/bin
 26 4 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-fabric-describe-daily.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" fabric enrich --describe-only' 2>&1 | logger -t agentic-cron
 
 # GitHub issue intake sync (every 2 h, T-4078)
-# PAUSED: 17 */2 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-issues-sync-2h.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" issues sync' 2>&1 | logger -t agentic-cron
+17 */2 * * * root cd "/opt/999-Agentic-Engineering-Framework" && PROJECT_ROOT="/opt/999-Agentic-Engineering-Framework" flock -n /var/lock/agentic-cron-issues-sync-2h.lock -c '"/opt/999-Agentic-Engineering-Framework/bin/fw" issues sync' 2>&1 | logger -t agentic-cron

@@ -177,11 +177,20 @@ def test_other_submitters_are_not_routed(env):
 
 
 def test_agent_filed_issue_is_internal_class(env):
+    # T-4342: internal = ledger row, no Received/Classified comment, no label edit
     e, stub, ledger = env
-    set_issues(stub, [issue(107, author="o", title="fw upstream: doctor warns twice")])
+    set_issues(stub, [issue(107, author="o", title="fw upstream: doctor warns twice"),
+                      issue(108, title="Bug: external thing")])
     assert sync(e).returncode == 0
-    cls = [x for x in rows(ledger) if x["issue"] == 107 and x["stage"] == "classified"][0]
-    assert cls["class"] == "internal" and cls["type"] == "internal"
+    mine = [x for x in rows(ledger) if x["issue"] == 107]
+    assert len(mine) == 1 and mine[0]["class"] == "internal" and "comment" not in mine[0]
+    assert mine[0]["stage"] == "received+classified"
+    assert all(not p.startswith("107 ") for p in posts(stub))
+    assert any(p.startswith("108 ") and "stage=received" in p for p in posts(stub))
+    assert not any(c[:3] == ["issue", "edit", "107"] for c in
+                   map(json.loads, (stub / "calls.log").read_text().splitlines()))
+    before = (ledger / "intake.jsonl").read_text()
+    assert sync(e).returncode == 0 and (ledger / "intake.jsonl").read_text() == before
 
 
 def test_gh_failure_leaves_ledger_untouched_and_exits_nonzero(env):

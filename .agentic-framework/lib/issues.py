@@ -592,6 +592,19 @@ def cmd_sync(a) -> int:
         if needs_cls:
             others = [(int(i["number"]), i.get("title") or "") for i in issues if int(i["number"]) != n]
             c = _classify(it, others, tasks, owner)
+        if internal and needs_cls:
+            # T-4342: our own issues (filed via fw upstream) are class internal: a ledger row, no
+            # Received/Classified comment and no label. The operator reads them directly.
+            missing = [st for st in ("received", "classified") if not _has(rows, n, st)]
+            if is_new:
+                counts["new"] += 1
+            counts["classified"] += 1
+            lines.append(f"INTERNAL #{n} from {author}: ledger only, nothing posted")
+            if not a.dry_run:
+                _append_row(ledger, {"issue": n, "stage": "+".join(missing), "class": "internal",
+                                     "type": "internal", "body_hash": h, "title": title[:120],
+                                     "author": author, "ts": _now()})
+            continue
         if is_new:
             counts["new"] += 1
             lines.append(f"NEW #{n} from {author or '?'}: {c['type']}/{c['area']}/{c['severity']}"
