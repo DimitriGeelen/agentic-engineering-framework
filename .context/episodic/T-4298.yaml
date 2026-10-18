@@ -1,0 +1,86 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4298: T-4248 follow-up: install.sh prints no warning when it ignores an inherited FRAMEWORK_ROOT; the vendored fw warns instead on every later call (noise) (dimitri-mint-dev v2.2 F-01/F-12)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T15:09:03Z
+# ============================================================================
+
+task_id: T-4298
+task_name: "T-4248 follow-up: install.sh prints no warning when it ignores an inherited FRAMEWORK_ROOT; the vendored fw warns instead on every later call (noise) (dimitri-mint-dev v2.2 F-01/F-12)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-18T10:01:04Z
+completed: 2026-10-18T14:58:31Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-18T16:42:07+02:00
+last_commit: 2026-10-18T16:42:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  install.sh names ignored inherited env; bin/fw warns about stale FRAMEWORK_ROOT once per shell, never on hook calls
+
+# Key outcomes
+outcomes:
+  - 'install.sh with FRAMEWORK_ROOT/PROJECT_ROOT set in its environment prints exactly one info line naming every ignored variable (test in tests/unit/t4298_inherited_root_warning.bats)'
+  - 'install.sh with a clean environment prints no ignored-variable line (test in the same bats file)'
+  - 'Two consecutive `bin/fw` calls with the same polluted FRAMEWORK_ROOT (no lib/ or agents/) print the "inherited FRAMEWORK_ROOT ... re-resolving" warning exactly once in total, not once per call (test in the same bats file)'
+  - 'The new regression tests are run red before the source fix (recorded in the RCA) and green after it'
+  - 'Existing T-4248 and T-4295 install/fixture tests stay green'
+  - '`bin/fw vendor self --check` is clean after the vendored-path edits'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-18 — once-only mechanism'
+    chose: 'marker file ${TMPDIR:-/tmp}/fw-inherited-root-warned.<uid>.<PPID> (PPID = the calling shell that exported the stale value); skipped entirely when $1 is `hook`.'
+    rationale: 'bin/fw cannot unset the parent''s env, so per-shell state must live outside the process; PPID gives "once per shell" and works without a TTY (testable; CI logs still show it once).'
+    alternatives_rejected: ['TTY-only (hides it in logs); marker under .context/working (the stale root has no project, would write into the wrong tree); first-command-only (undetectable).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/fw'
+  - 'bin/fw'
+  - 'install.sh'
+  - '.tasks/active/T-4298-t-4248-follow-up-installsh-prints-no-war.md'
+  - 'tests/unit/t4298_inherited_root_warning.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T16:42:07'
+    action: 'T-4298: install.sh names ignored inherited env; bin/fw warns about stale FRAMEWORK_ROOT once per shell, never on hook calls'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 297 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 297
+  commits: 1
+  files_changed: 5
+  lines_added: 142
+  lines_removed: 10
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4298-t-4248-follow-up-installsh-prints-no-war.md
+generated_by: context-agent-hybrid

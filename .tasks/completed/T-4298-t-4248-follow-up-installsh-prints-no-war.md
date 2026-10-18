@@ -1,22 +1,21 @@
 ---
-id: T-4302
-name: "t2912_upgrade_hook_regen_convergence.bats times out (900 s) on the v1.8.11
-  tip but not on v1.8.10"
+id: T-4298
+name: "T-4248 follow-up: install.sh prints no warning when it ignores an inherited
+  FRAMEWORK_ROOT; the vendored fw warns instead on every later call (noise) (dimitri-mint-dev
+  v2.2 F-01/F-12)"
 description: >
-  v1.8.11 full-suite comparison (tip 413701ff9 vs v1.8.10 704c9988f; reports in .context/scratch/v1811/reports,
-  reruns in .context/scratch/v1811/reruns): t2912_upgrade_hook_regen_convergence.bats.
-  Suspects: T-4278 (upgrade refusal atomicity, lib/upgrade.sh) or T-4232; find whether
-  it hangs or is just slower, and why. Localise (rerun alone on both clones .context/scratch/v1811/tip
-  and .context/scratch/v1811/base; bisect with git log 704c9988f..413701ff9 on the
-  files the test touches), then fix the regression with a test, or show it is load-flaky
-  (passes alone 3 times on tip) and say so.
+  Greenfield run 4: the env leak itself is fixed (WORKS), but the 'with a warning'
+  half FAILS: install.sh says nothing; afterwards every fw call in the new project
+  prints the inherited-FRAMEWORK_ROOT warning. Fix: install.sh warns once (naming
+  the ignored variables) when it runs init under env -u; the vendored fw warns at
+  most once per session or only when the inherited root is actually used for something.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
-components: []
+components: [bin/fw]
 related_tasks: []
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
@@ -44,9 +43,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-18T11:28:43Z
-last_update: 2026-10-18T13:52:47Z
-date_finished:
+created: 2026-10-18T10:01:04Z
+last_update: 2026-10-18T14:58:31Z
+date_finished: 2026-10-18T14:58:31Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -57,8 +56,18 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-18T10:15:37Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-18T11:29:13Z'
+  - ts: '2026-10-18T10:16:28Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -75,19 +84,9 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
-cost_estimate_proposed:
-  - ts: '2026-10-18T11:30:33Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=293,acs=7)
-    rubric_sha: e4a00f38e801
 ---
 
-# T-4302: t2912_upgrade_hook_regen_convergence.bats times out (900 s) on the v1.8.11 tip but not on v1.8.10
+# T-4298: T-4248 follow-up: install.sh prints no warning when it ignores an inherited FRAMEWORK_ROOT; the vendored fw warns instead on every later call (noise) (dimitri-mint-dev v2.2 F-01/F-12)
 
 ## Context
 
@@ -97,11 +96,12 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] Root cause of the t2912 900 s timeout is localised to a file:line (hang vs. slowdown, and which commit introduced it), confirmed by a single isolated run — no hang: all 5 tests pass (exit 0); the slowdown is the T-3886 auto-clone at lib/upgrade.sh:1344 (commit e8b6d839a), a full-history `file://` pack per `fw upgrade` (~40 s wall, 58 s CPU) vs `--depth=1` (~9 s, 12 s CPU), ×6 upgrades in the file
-- [x] The fix lands on the main checkout in lib/upgrade.sh: a local-directory upstream is cloned by path (keeps full history for the T-3886 origin guard, drops the file:// pack transfer)
-- [ ] tests/unit/t2912_upgrade_hook_regen_convergence.bats passes in full on the main checkout, and its wall time drops measurably (no hang)
-- [x] A regression test (tests/unit/t4302_upgrade_local_clone_by_path.bats) fails without the fix and passes with it (test 2 red before the lib/upgrade.sh edit, green after)
-- [x] `bin/fw vendor self --check` is clean after any framework-file edit
+- [x] install.sh with FRAMEWORK_ROOT/PROJECT_ROOT set in its environment prints exactly one info line naming every ignored variable (test in tests/unit/t4298_inherited_root_warning.bats)
+- [x] install.sh with a clean environment prints no ignored-variable line (test in the same bats file)
+- [x] Two consecutive `bin/fw` calls with the same polluted FRAMEWORK_ROOT (no lib/ or agents/) print the "inherited FRAMEWORK_ROOT ... re-resolving" warning exactly once in total, not once per call (test in the same bats file)
+- [x] The new regression tests are run red before the source fix (recorded in the RCA) and green after it
+- [x] Existing T-4248 and T-4295 install/fixture tests stay green
+- [x] `bin/fw vendor self --check` is clean after the vendored-path edits
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -150,6 +150,11 @@ cost_estimate_proposed:
 -->
 
 ## Verification
+
+timeout 600 bats tests/unit/t4298_inherited_root_warning.bats > .context/working/t4298-bats.out 2>&1 && ! grep -q "^not ok" .context/working/t4298-bats.out
+test "$(grep -c '# skip' .context/working/t4298-bats.out)" -eq 0
+timeout 600 bats tests/unit/t4248_install_inherited_env.bats > .context/working/t4298-t4248.out 2>&1 && ! grep -q "^not ok" .context/working/t4298-t4248.out
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -280,20 +285,12 @@ cost_estimate_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
-bash -n lib/upgrade.sh
-bin/fw vendor self --check
-out=$(bats tests/unit/t4302_upgrade_local_clone_by_path.bats 2>&1); echo "$out" | grep -q '^ok 2 ' && ! echo "$out" | grep -q '^not ok'
-out=$(bats tests/unit/t3886_upgrade_autoclone_history.bats 2>&1); echo "$out" | grep -q '^ok 3 ' && ! echo "$out" | grep -q '^not ok'
-
 ## RCA
 
-**Symptom:** tests/unit/t2912_upgrade_hook_regen_convergence.bats exceeds the 900 s per-file budget on the v1.8.11 tip (413701ff9) and finishes on v1.8.10 (704c9988f). Isolated run on the main checkout: exit 0, no hang. Per-test wall: 70 s, 123 s, 293 s, 17 ms, 203 s (705 s total at host load ~25).
-
-**Root cause:** `lib/upgrade.sh:1344` (commit e8b6d839a, T-3886 / GitHub #87). Every bare `fw upgrade` auto-clones the upstream into a temp dir. Before T-3886 this was `git clone --depth=1` (~9 s wall, 12 s CPU on the 12k-commit framework repo over `file://`). T-3886 switched it to full history with `--filter=blob:none` so the origin guard can see the consumer's pinned version_sha. Over `file://` git ignores the filter and packs the whole history: ~40 s wall, 58 s CPU per upgrade (measured: `git clone --filter=blob:none file://…up.git` 35–46 s; `git clone --depth=1 file://…` 8–10 s; path clone `git clone <path>` 1.7 s CPU). The t2912 file runs six upgrades (1+2+2+1) plus fixture clones, so the regression is ~30 s × 6 ≈ 3 min of CPU-heavy work added to a file already near budget. Doctor (~17 s) and the T-4278 precheck (~2 s) are unchanged or small: `fw doctor` at base and tip both take 16.7–16.8 s.
-
-**Why structurally allowed:** no test or gate measures wall time of the upgrade path; the T-3886 test uses a 3-commit upstream, so the full-history cost never shows; the file:// transport cost is invisible at small fixture sizes and only appears against the real framework history.
-
-**Prevention:** (1) for a local-directory upstream the clone goes by path (hardlinked objects, full history kept, no pack transfer) — fix; (2) `tests/unit/t4302_upgrade_local_clone_by_path.bats` pins the clone argv (no `file://`, no `--filter` for a local source) with a logging git wrapper, so the regression is deterministic and not a timing assertion; (3) the T-3886 history test still gates the guard behaviour.
+**Symptom:** install.sh silently ignored an inherited FRAMEWORK_ROOT/PROJECT_ROOT for fw init; afterwards every fw call in that shell printed "inherited FRAMEWORK_ROOT ... re-resolving".
+**Root cause:** install.sh do_project_init ran `env -u ...` with no notice; bin/fw (~line 1372) echoed the warning unconditionally on every invocation while the shell kept the stale export.
+**Why structurally allowed:** T-4248 tested only that init succeeded, never that the ignore was announced or the warning bounded. Red evidence: pre-fix bin/fw printed the warning 2x for 2 calls; post-fix 1x.
+**Prevention:** tests/unit/t4298_inherited_root_warning.bats (install notice once, none in clean env, fw once per shell, none on hook).
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -364,6 +361,11 @@ out=$(bats tests/unit/t3886_upgrade_autoclone_history.bats 2>&1); echo "$out" | 
 
 ## Decisions
 
+### 2026-10-18 — once-only mechanism
+- **Chose:** marker file ${TMPDIR:-/tmp}/fw-inherited-root-warned.<uid>.<PPID> (PPID = the calling shell that exported the stale value); skipped entirely when $1 is `hook`.
+- **Why:** bin/fw cannot unset the parent's env, so per-shell state must live outside the process; PPID gives "once per shell" and works without a TTY (testable; CI logs still show it once).
+- **Rejected:** TTY-only (hides it in logs); marker under .context/working (the stale root has no project, would write into the wrong tree); first-command-only (undetectable).
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -385,10 +387,28 @@ out=$(bats tests/unit/t3886_upgrade_autoclone_history.bats 2>&1); echo "$out" | 
 
 ## Updates
 
-### 2026-10-18T11:28:43Z — task-created [task-create-agent]
+### 2026-10-18T10:01:04Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4302-t2912upgradehookregenconvergencebats-tim.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4298-t-4248-follow-up-installsh-prints-no-war.md
 - **Context:** Initial task creation
 
-### 2026-10-18T11:29:12Z — status-update [task-update-agent]
+### 2026-10-18T11:29:38Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-6baa0497
+- **Timestamp:** 2026-10-18T15:08:48Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-18T14:58:31Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

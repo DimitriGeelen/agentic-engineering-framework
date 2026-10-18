@@ -1,20 +1,23 @@
 ---
-id: T-4304
-name: "Watchtower cannot start on a clean machine: markdown2 missing, nothing installs
-  it, PEP 668 blocks pip (greenfield container run)"
+id: T-4302
+name: "t2912_upgrade_hook_regen_convergence.bats times out (900 s) on the v1.8.11
+  tip but not on v1.8.10"
 description: >
-  dimitri-mint-dev T-126 level-2 container run (ubuntu:24.04): Watchtower start fails
-  because markdown2 is not installed; install.sh and fw init install nothing; pip
-  install is blocked by PEP 668. Workstation runs never saw it. Blocker for greenfield.
+  v1.8.11 full-suite comparison (tip 413701ff9 vs v1.8.10 704c9988f; reports in .context/scratch/v1811/reports,
+  reruns in .context/scratch/v1811/reruns): t2912_upgrade_hook_regen_convergence.bats.
+  Suspects: T-4278 (upgrade refusal atomicity, lib/upgrade.sh) or T-4232; find whether
+  it hangs or is just slower, and why. Localise (rerun alone on both clones .context/scratch/v1811/tip
+  and .context/scratch/v1811/base; bisect with git log 704c9988f..413701ff9 on the
+  files the test touches), then fix the regression with a test, or show it is load-flaky
+  (passes alone 3 times on tip) and say so.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: [bug, greenfield, watchtower]
-components: []
+horizon: null
+tags: []
+components: [lib/upgrade.sh]
 related_tasks: []
-origin: {kind: "peer", source: "dimitri-mint-dev"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -41,9 +44,9 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-18T13:48:10Z
-last_update: 2026-10-18T14:05:28Z
-date_finished:
+created: 2026-10-18T11:28:43Z
+last_update: 2026-10-18T14:51:07Z
+date_finished: 2026-10-18T14:51:07Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -54,18 +57,8 @@ date_finished:
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
-cost_estimate_proposed:
-  - ts: '2026-10-18T14:01:10Z'
-    estimator: bvp-estimator-v1-heuristic
-    cost_estimate:
-      blast_radius:
-      tier: 2
-      effort: 8
-    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
-      (workflow:build); effort=8 (lines=287,acs=4)
-    rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-18T14:02:08Z'
+  - ts: '2026-10-18T11:29:13Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -82,9 +75,19 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-18T11:30:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=293,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
-# T-4304: Watchtower cannot start on a clean machine: markdown2 missing, nothing installs it, PEP 668 blocks pip (greenfield container run)
+# T-4302: t2912_upgrade_hook_regen_convergence.bats times out (900 s) on the v1.8.11 tip but not on v1.8.10
 
 ## Context
 
@@ -94,13 +97,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] `bin/watchtower.sh` start pre-flight checks every REQUIRED Python module Watchtower imports at load (flask, flask_socketio, yaml, markdown2 — the set that breaks `import web.app` when blocked; `WATCHTOWER_REQUIRED_MODULES`), not only `flask`
-- [x] Optional modules (ollama, sqlite_vec, tantivy) are NOT pre-flight failures: `import web.app` succeeds with all three blocked (verified by blocking them in a run); their imports are lazy in web/
-- [x] On a missing required module the pre-flight exits 1 with ONE actionable line naming every missing module and the exact command (apt `python3-markdown2` on Debian/Ubuntu/Mint; venv route otherwise); no traceback (bats tests 2–4)
-- [x] The pre-flight does NOT run sudo or `pip` automatically (bats test 5 records any call)
-- [x] Decision recorded in `## Decisions` on whether `fw init` / `install.sh` should offer the install, with evidence
-- [x] Bats regression test `tests/unit/t4304_watchtower_preflight_modules.bats` runs the pre-flight with markdown2 unimportable (PYTHONPATH stub); 4 of 6 tests fail on the pre-fix code (the 6th pins the required set; test 1 passes pre-fix only because the unfixed server exits 1 too)
-- [x] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green (16/16 ok, exit 0, run alone)
+- [x] Root cause of the t2912 900 s timeout is localised to a file:line (hang vs. slowdown, and which commit introduced it), confirmed by a single isolated run — no hang: all 5 tests pass (exit 0); the slowdown is the T-3886 auto-clone at lib/upgrade.sh:1344 (commit e8b6d839a), a full-history `file://` pack per `fw upgrade` (~40 s wall, 58 s CPU) vs `--depth=1` (~9 s, 12 s CPU), ×6 upgrades in the file
+- [x] The fix lands on the main checkout in lib/upgrade.sh: a local-directory upstream is cloned by path (keeps full history for the T-3886 origin guard, drops the file:// pack transfer)
+- [x] tests/unit/t2912_upgrade_hook_regen_convergence.bats passes in full on the main checkout, and its wall time drops measurably (no hang) — 5/5 ok, exit 0, ~705 s → ~437 s (worker w4302 run, 2026-10-18)
+- [x] A regression test (tests/unit/t4302_upgrade_local_clone_by_path.bats) fails without the fix and passes with it (test 2 red before the lib/upgrade.sh edit, green after)
+- [x] `bin/fw vendor self --check` is clean after any framework-file edit
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -149,12 +150,6 @@ bvp_scores_proposed:
 -->
 
 ## Verification
-
-bash -n bin/watchtower.sh
-bats tests/unit/t4304_watchtower_preflight_modules.bats > /tmp/.t4304-out 2>&1 && ! grep -q "^not ok" /tmp/.t4304-out
-test "$(grep -c '# skip' /tmp/.t4304-out)" -eq 0
-bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4304-sim 2>&1 && ! grep -q "^not ok" /tmp/.t4304-sim
-bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -285,15 +280,20 @@ bin/fw vendor self --check
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n lib/upgrade.sh
+bin/fw vendor self --check
+out=$(bats tests/unit/t4302_upgrade_local_clone_by_path.bats 2>&1); echo "$out" | grep -q '^ok 2 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t3886_upgrade_autoclone_history.bats 2>&1); echo "$out" | grep -q '^ok 3 ' && ! echo "$out" | grep -q '^not ok'
+
 ## RCA
 
-**Symptom:** On a fresh ubuntu:24.04 container, Watchtower fails to start because `markdown2` is not installed. Nothing installs it, and a plain `pip install` is blocked by PEP 668.
+**Symptom:** tests/unit/t2912_upgrade_hook_regen_convergence.bats exceeds the 900 s per-file budget on the v1.8.11 tip (413701ff9) and finishes on v1.8.10 (704c9988f). Isolated run on the main checkout: exit 0, no hang. Per-test wall: 70 s, 123 s, 293 s, 17 ms, 203 s (705 s total at host load ~25).
 
-**Root cause:** `bin/watchtower.sh:271` pre-flights only `import flask`. `web/blueprints/core.py:6` (and tasks.py, inception.py, docs.py, shared.py-optional) imports `markdown2` at module load, so the app dies with a traceback after the pre-flight passed. The requirements list in `web/requirements.txt` is never checked against the runtime.
+**Root cause:** `lib/upgrade.sh:1344` (commit e8b6d839a, T-3886 / GitHub #87). Every bare `fw upgrade` auto-clones the upstream into a temp dir. Before T-3886 this was `git clone --depth=1` (~9 s wall, 12 s CPU on the 12k-commit framework repo over `file://`). T-3886 switched it to full history with `--filter=blob:none` so the origin guard can see the consumer's pinned version_sha. Over `file://` git ignores the filter and packs the whole history: ~40 s wall, 58 s CPU per upgrade (measured: `git clone --filter=blob:none file://…up.git` 35–46 s; `git clone --depth=1 file://…` 8–10 s; path clone `git clone <path>` 1.7 s CPU). The t2912 file runs six upgrades (1+2+2+1) plus fixture clones, so the regression is ~30 s × 6 ≈ 3 min of CPU-heavy work added to a file already near budget. Doctor (~17 s) and the T-4278 precheck (~2 s) are unchanged or small: `fw doctor` at base and tip both take 16.7–16.8 s.
 
-**Why structurally allowed:** The pre-flight checks a single module chosen by hand, not the set the app needs. `install.sh` and `fw init` install no Python packages, so nothing creates the dependency either. Workstation runs never hit it because the operator's Python already has the packages, so no test ever ran a clean interpreter.
+**Why structurally allowed:** no test or gate measures wall time of the upgrade path; the T-3886 test uses a 3-commit upstream, so the full-history cost never shows; the file:// transport cost is invisible at small fixture sizes and only appears against the real framework history.
 
-**Prevention:** the pre-flight enumerates the required module set (`WATCHTOWER_REQUIRED_MODULES` in bin/watchtower.sh, derived by blocking each module against `import web.app`) and emits one actionable message; `tests/unit/t4304_watchtower_preflight_modules.bats` runs the real start path with markdown2 unimportable and pins the message, exit code and no-sudo/no-pip behaviour, so the gap cannot silently return.
+**Prevention:** (1) for a local-directory upstream the clone goes by path (hardlinked objects, full history kept, no pack transfer) — fix; (2) `tests/unit/t4302_upgrade_local_clone_by_path.bats` pins the clone argv (no `file://`, no `--filter` for a local source) with a logging git wrapper, so the regression is deterministic and not a timing assertion; (3) the T-3886 history test still gates the guard behaviour.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -364,12 +364,6 @@ bin/fw vendor self --check
 
 ## Decisions
 
-### 2026-10-18 — Where the install offer lives (fw init / install.sh vs the start pre-flight)
-- **Chose:** the start pre-flight (`bin/watchtower.sh`) is the only place that prints the install command, and it prints it, never runs it. `fw init` and `install.sh` get no install step in this task.
-- **Why:** (1) PEP 668 means the only non-destructive route on Ubuntu/Mint is apt, which needs sudo; neither `fw init` nor `install.sh` should trigger sudo silently. (2) The pre-flight runs on the one path that actually needs the modules (`fw watchtower start`), so the message reaches the operator when it matters, not at init when Watchtower may never be started. (3) Evidence: `install.sh` and `fw init` install no Python packages today (task description); blocking each module in turn shows only flask, flask_socketio, yaml, markdown2 break `import web.app`, so a single init-time list would either over-install or drift from the code.
-- **Rejected:** auto `pip install --break-system-packages` (forbidden by ACs; breaks PEP 668 hosts); a `fw init` prompt (adds an interactive step to a non-interactive, consumer-facing command, and `bin/fw` is out of scope here).
-- **Open:** a `fw doctor` WARN for missing required modules is a natural follow-up; not filed here.
-
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -391,10 +385,27 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-18T13:48:10Z — task-created [task-create-agent]
+### 2026-10-18T11:28:43Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4304-watchtower-cannot-start-on-a-clean-machi.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4302-t2912upgradehookregenconvergencebats-tim.md
 - **Context:** Initial task creation
 
-### 2026-10-18T14:05:28Z — status-update [task-update-agent]
+### 2026-10-18T11:29:12Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-c20922ff
+- **Timestamp:** 2026-10-18T14:52:19Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-18T14:51:07Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

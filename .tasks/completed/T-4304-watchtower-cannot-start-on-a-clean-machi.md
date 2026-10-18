@@ -1,22 +1,20 @@
 ---
-id: T-4298
-name: "T-4248 follow-up: install.sh prints no warning when it ignores an inherited
-  FRAMEWORK_ROOT; the vendored fw warns instead on every later call (noise) (dimitri-mint-dev
-  v2.2 F-01/F-12)"
+id: T-4304
+name: "Watchtower cannot start on a clean machine: markdown2 missing, nothing installs
+  it, PEP 668 blocks pip (greenfield container run)"
 description: >
-  Greenfield run 4: the env leak itself is fixed (WORKS), but the 'with a warning'
-  half FAILS: install.sh says nothing; afterwards every fw call in the new project
-  prints the inherited-FRAMEWORK_ROOT warning. Fix: install.sh warns once (naming
-  the ignored variables) when it runs init under env -u; the vendored fw warns at
-  most once per session or only when the inherited root is actually used for something.
+  dimitri-mint-dev T-126 level-2 container run (ubuntu:24.04): Watchtower start fails
+  because markdown2 is not installed; install.sh and fw init install nothing; pip
+  install is blocked by PEP 668. Workstation runs never saw it. Blocker for greenfield.
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
-tags: []
-components: []
+horizon: null
+tags: [bug, greenfield, watchtower]
+components: [bin/watchtower.sh]
 related_tasks: []
+origin: {kind: "peer", source: "dimitri-mint-dev"}
 # write_set:                      # T-3512: optional — globs (relative to PROJECT_ROOT)
 #                                 # naming the files this task intends to write. Declared
 #                                 # at CAPTURE, unlike components: which the framework
@@ -43,9 +41,9 @@ related_tasks: []
 #                                 # FW_I_AM_DEMO_ORCHESTRATOR=1 (env) is passed. Prevents the parent
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
-created: 2026-10-18T10:01:04Z
-last_update: 2026-10-18T14:29:08Z
-date_finished:
+created: 2026-10-18T13:48:10Z
+last_update: 2026-10-18T14:52:54Z
+date_finished: 2026-10-18T14:52:54Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -57,7 +55,7 @@ date_finished:
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
 cost_estimate_proposed:
-  - ts: '2026-10-18T10:15:37Z'
+  - ts: '2026-10-18T14:01:10Z'
     estimator: bvp-estimator-v1-heuristic
     cost_estimate:
       blast_radius:
@@ -67,7 +65,7 @@ cost_estimate_proposed:
       (workflow:build); effort=8 (lines=287,acs=4)
     rubric_sha: e4a00f38e801
 bvp_scores_proposed:
-  - ts: '2026-10-18T10:16:28Z'
+  - ts: '2026-10-18T14:02:08Z'
     estimator: bvp-estimator-v1-heuristic
     scores:
       D1: 4
@@ -86,7 +84,7 @@ bvp_scores_proposed:
     rubric_sha: e4a00f38e801
 ---
 
-# T-4298: T-4248 follow-up: install.sh prints no warning when it ignores an inherited FRAMEWORK_ROOT; the vendored fw warns instead on every later call (noise) (dimitri-mint-dev v2.2 F-01/F-12)
+# T-4304: Watchtower cannot start on a clean machine: markdown2 missing, nothing installs it, PEP 668 blocks pip (greenfield container run)
 
 ## Context
 
@@ -96,12 +94,13 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [x] install.sh with FRAMEWORK_ROOT/PROJECT_ROOT set in its environment prints exactly one info line naming every ignored variable (test in tests/unit/t4298_inherited_root_warning.bats)
-- [x] install.sh with a clean environment prints no ignored-variable line (test in the same bats file)
-- [x] Two consecutive `bin/fw` calls with the same polluted FRAMEWORK_ROOT (no lib/ or agents/) print the "inherited FRAMEWORK_ROOT ... re-resolving" warning exactly once in total, not once per call (test in the same bats file)
-- [x] The new regression tests are run red before the source fix (recorded in the RCA) and green after it
-- [x] Existing T-4248 and T-4295 install/fixture tests stay green
-- [x] `bin/fw vendor self --check` is clean after the vendored-path edits
+- [x] `bin/watchtower.sh` start pre-flight checks every REQUIRED Python module Watchtower imports at load (flask, flask_socketio, yaml, markdown2 — the set that breaks `import web.app` when blocked; `WATCHTOWER_REQUIRED_MODULES`), not only `flask`
+- [x] Optional modules (ollama, sqlite_vec, tantivy) are NOT pre-flight failures: `import web.app` succeeds with all three blocked (verified by blocking them in a run); their imports are lazy in web/
+- [x] On a missing required module the pre-flight exits 1 with ONE actionable line naming every missing module and the exact command (apt `python3-markdown2` on Debian/Ubuntu/Mint; venv route otherwise); no traceback (bats tests 2–4)
+- [x] The pre-flight does NOT run sudo or `pip` automatically (bats test 5 records any call)
+- [x] Decision recorded in `## Decisions` on whether `fw init` / `install.sh` should offer the install, with evidence
+- [x] Bats regression test `tests/unit/t4304_watchtower_preflight_modules.bats` runs the pre-flight with markdown2 unimportable (PYTHONPATH stub); 4 of 6 tests fail on the pre-fix code (the 6th pins the required set; test 1 passes pre-fix only because the unfixed server exits 1 too)
+- [x] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green (16/16 ok, exit 0, run alone)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -151,9 +150,10 @@ bvp_scores_proposed:
 
 ## Verification
 
-timeout 600 bats tests/unit/t4298_inherited_root_warning.bats > .context/working/t4298-bats.out 2>&1 && ! grep -q "^not ok" .context/working/t4298-bats.out
-test "$(grep -c '# skip' .context/working/t4298-bats.out)" -eq 0
-timeout 600 bats tests/unit/t4248_install_inherited_env.bats > .context/working/t4298-t4248.out 2>&1 && ! grep -q "^not ok" .context/working/t4298-t4248.out
+bash -n bin/watchtower.sh
+bats tests/unit/t4304_watchtower_preflight_modules.bats > /tmp/.t4304-out 2>&1 && ! grep -q "^not ok" /tmp/.t4304-out
+test "$(grep -c '# skip' /tmp/.t4304-out)" -eq 0
+bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4304-sim 2>&1 && ! grep -q "^not ok" /tmp/.t4304-sim
 bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
@@ -287,10 +287,13 @@ bin/fw vendor self --check
 
 ## RCA
 
-**Symptom:** install.sh silently ignored an inherited FRAMEWORK_ROOT/PROJECT_ROOT for fw init; afterwards every fw call in that shell printed "inherited FRAMEWORK_ROOT ... re-resolving".
-**Root cause:** install.sh do_project_init ran `env -u ...` with no notice; bin/fw (~line 1372) echoed the warning unconditionally on every invocation while the shell kept the stale export.
-**Why structurally allowed:** T-4248 tested only that init succeeded, never that the ignore was announced or the warning bounded. Red evidence: pre-fix bin/fw printed the warning 2x for 2 calls; post-fix 1x.
-**Prevention:** tests/unit/t4298_inherited_root_warning.bats (install notice once, none in clean env, fw once per shell, none on hook).
+**Symptom:** On a fresh ubuntu:24.04 container, Watchtower fails to start because `markdown2` is not installed. Nothing installs it, and a plain `pip install` is blocked by PEP 668.
+
+**Root cause:** `bin/watchtower.sh:271` pre-flights only `import flask`. `web/blueprints/core.py:6` (and tasks.py, inception.py, docs.py, shared.py-optional) imports `markdown2` at module load, so the app dies with a traceback after the pre-flight passed. The requirements list in `web/requirements.txt` is never checked against the runtime.
+
+**Why structurally allowed:** The pre-flight checks a single module chosen by hand, not the set the app needs. `install.sh` and `fw init` install no Python packages, so nothing creates the dependency either. Workstation runs never hit it because the operator's Python already has the packages, so no test ever ran a clean interpreter.
+
+**Prevention:** the pre-flight enumerates the required module set (`WATCHTOWER_REQUIRED_MODULES` in bin/watchtower.sh, derived by blocking each module against `import web.app`) and emits one actionable message; `tests/unit/t4304_watchtower_preflight_modules.bats` runs the real start path with markdown2 unimportable and pins the message, exit code and no-sudo/no-pip behaviour, so the gap cannot silently return.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
@@ -361,10 +364,11 @@ bin/fw vendor self --check
 
 ## Decisions
 
-### 2026-10-18 — once-only mechanism
-- **Chose:** marker file ${TMPDIR:-/tmp}/fw-inherited-root-warned.<uid>.<PPID> (PPID = the calling shell that exported the stale value); skipped entirely when $1 is `hook`.
-- **Why:** bin/fw cannot unset the parent's env, so per-shell state must live outside the process; PPID gives "once per shell" and works without a TTY (testable; CI logs still show it once).
-- **Rejected:** TTY-only (hides it in logs); marker under .context/working (the stale root has no project, would write into the wrong tree); first-command-only (undetectable).
+### 2026-10-18 — Where the install offer lives (fw init / install.sh vs the start pre-flight)
+- **Chose:** the start pre-flight (`bin/watchtower.sh`) is the only place that prints the install command, and it prints it, never runs it. `fw init` and `install.sh` get no install step in this task.
+- **Why:** (1) PEP 668 means the only non-destructive route on Ubuntu/Mint is apt, which needs sudo; neither `fw init` nor `install.sh` should trigger sudo silently. (2) The pre-flight runs on the one path that actually needs the modules (`fw watchtower start`), so the message reaches the operator when it matters, not at init when Watchtower may never be started. (3) Evidence: `install.sh` and `fw init` install no Python packages today (task description); blocking each module in turn shows only flask, flask_socketio, yaml, markdown2 break `import web.app`, so a single init-time list would either over-install or drift from the code.
+- **Rejected:** auto `pip install --break-system-packages` (forbidden by ACs; breaks PEP 668 hosts); a `fw init` prompt (adds an interactive step to a non-interactive, consumer-facing command, and `bin/fw` is out of scope here).
+- **Open:** a `fw doctor` WARN for missing required modules is a natural follow-up; not filed here.
 
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
@@ -387,11 +391,27 @@ bin/fw vendor self --check
 
 ## Updates
 
-### 2026-10-18T10:01:04Z — task-created [task-create-agent]
+### 2026-10-18T13:48:10Z — task-created [task-create-agent]
 - **Action:** Created task via task-create agent
-- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4298-t-4248-follow-up-installsh-prints-no-war.md
+- **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4304-watchtower-cannot-start-on-a-clean-machi.md
 - **Context:** Initial task creation
 
-### 2026-10-18T11:29:38Z — status-update [task-update-agent]
+### 2026-10-18T14:05:28Z — status-update [task-update-agent]
 - **Change:** status: captured → started-work
-- **Change:** horizon: next → now (auto-sync)
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-fb3499a6
+- **Timestamp:** 2026-10-18T14:57:56Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-18T14:52:54Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed

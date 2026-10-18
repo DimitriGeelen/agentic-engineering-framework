@@ -1,0 +1,88 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4304: Watchtower cannot start on a clean machine: markdown2 missing, nothing installs it, PEP 668 blocks pip (greenfield container run)
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T14:58:11Z
+# ============================================================================
+
+task_id: T-4304
+task_name: "Watchtower cannot start on a clean machine: markdown2 missing, nothing installs it, PEP 668 blocks pip (greenfield container run)"
+workflow_type: build
+enrichment_status: complete  # AC checked + decisions recorded
+
+# Timeline
+created: 2026-10-18T13:48:10Z
+completed: 2026-10-18T14:52:54Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-18T16:21:25+02:00
+last_commit: 2026-10-18T16:28:10+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  Watchtower start pre-flight checks every module web.app imports at load. tick simulation AC (16/16 green)
+
+# Key outcomes
+outcomes:
+  - '`bin/watchtower.sh` start pre-flight checks every REQUIRED Python module Watchtower imports at load (flask, flask_socketio, yaml, markdown2 — the set that breaks `import web.app` when blocked; `WATCHTOWER_REQUIRED_MODULES`), not only `flask`'
+  - 'Optional modules (ollama, sqlite_vec, tantivy) are NOT pre-flight failures: `import web.app` succeeds with all three blocked (verified by blocking them in a run); their imports are lazy in web/'
+  - 'On a missing required module the pre-flight exits 1 with ONE actionable line naming every missing module and the exact command (apt `python3-markdown2` on Debian/Ubuntu/Mint; venv route otherwise); no traceback (bats tests 2–4)'
+  - 'The pre-flight does NOT run sudo or `pip` automatically (bats test 5 records any call)'
+  - 'Decision recorded in `## Decisions` on whether `fw init` / `install.sh` should offer the install, with evidence'
+  - 'Bats regression test `tests/unit/t4304_watchtower_preflight_modules.bats` runs the pre-flight with markdown2 unimportable (PYTHONPATH stub); 4 of 6 tests fail on the pre-fix code (the 6th pins the required set; test 1 passes pre-fix only because the unfixed server exits 1 too)'
+  - '`tests/unit/upgrade_fresh_machine_simulation.bats` stays green (16/16 ok, exit 0, run alone)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  - decision: '2026-10-18 — Where the install offer lives (fw init / install.sh vs the start pre-flight)'
+    chose: 'the start pre-flight (`bin/watchtower.sh`) is the only place that prints the install command, and it prints it, never runs it. `fw init` and `install.sh` get no install step in this task.'
+    rationale: '(1) PEP 668 means the only non-destructive route on Ubuntu/Mint is apt, which needs sudo; neither `fw init` nor `install.sh` should trigger sudo silently. (2) The pre-flight runs on the one path that actually needs the modules (`fw watchtower start`), so the message reaches the operator when it matters, not at init when Watchtower may never be started. (3) Evidence: `install.sh` and `fw init` install no Python packages today (task description); blocking each module in turn shows only flask, flask_socketio, yaml, markdown2 break `import web.app`, so a single init-time list would either over-install or drift from the code.'
+    alternatives_rejected: ['auto `pip install --break-system-packages` (forbidden by ACs; breaks PEP 668 hosts); a `fw init` prompt (adds an interactive step to a non-interactive, consumer-facing command, and `bin/fw` is out of scope here).']
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/bin/watchtower.sh'
+  - 'bin/watchtower.sh'
+  - '.tasks/active/T-4304-watchtower-cannot-start-on-a-clean-machi.md'
+  - 'tests/unit/t4304_watchtower_preflight_modules.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T16:21:25'
+    action: 'T-4304: Watchtower start pre-flight checks every module web.app imports at load'
+  - time: '2026-10-18T16:28:10'
+    action: 'T-4304: tick simulation AC (16/16 green)'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 2 commit(s), 64 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: [bug, greenfield, watchtower]
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 64
+  commits: 2
+  files_changed: 4
+  lines_added: 221
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4304-watchtower-cannot-start-on-a-clean-machi.md
+generated_by: context-agent-hybrid

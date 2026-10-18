@@ -1,0 +1,81 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4302: t2912_upgrade_hook_regen_convergence.bats times out (900 s) on the v1.8.11 tip but not on v1.8.10
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T14:52:34Z
+# ============================================================================
+
+task_id: T-4302
+task_name: "t2912_upgrade_hook_regen_convergence.bats times out (900 s) on the v1.8.11 tip but not on v1.8.10"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-18T11:28:43Z
+completed: 2026-10-18T14:51:07Z
+duration_days: 0
+updates_count: 2
+first_commit: 2026-10-18T16:34:05+02:00
+last_commit: 2026-10-18T16:34:05+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  fw upgrade clones a local upstream by path, not file:// (full history kept; drops per-run pack transfer that made t2912 exceed 900 s); regression test pins clone argv
+
+# Key outcomes
+outcomes:
+  - 'Root cause of the t2912 900 s timeout is localised to a file:line (hang vs. slowdown, and which commit introduced it), confirmed by a single isolated run — no hang: all 5 tests pass (exit 0); the slowdown is the T-3886 auto-clone at lib/upgrade.sh:1344 (commit e8b6d839a), a full-history `file://` pack per `fw upgrade` (~40 s wall, 58 s CPU) vs `--depth=1` (~9 s, 12 s CPU), ×6 upgrades in the file'
+  - 'The fix lands on the main checkout in lib/upgrade.sh: a local-directory upstream is cloned by path (keeps full history for the T-3886 origin guard, drops the file:// pack transfer)'
+  - 'tests/unit/t2912_upgrade_hook_regen_convergence.bats passes in full on the main checkout, and its wall time drops measurably (no hang) — 5/5 ok, exit 0, ~705 s → ~437 s (worker w4302 run, 2026-10-18)'
+  - 'A regression test (tests/unit/t4302_upgrade_local_clone_by_path.bats) fails without the fix and passes with it (test 2 red before the lib/upgrade.sh edit, green after)'
+  - '`bin/fw vendor self --check` is clean after any framework-file edit'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  # No challenges detected in commit messages
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.agentic-framework/lib/upgrade.sh'
+  - 'lib/upgrade.sh'
+  - '.tasks/active/T-4302-t2912upgradehookregenconvergencebats-tim.md'
+  - 'tests/unit/t4302_upgrade_local_clone_by_path.bats'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-18T16:34:05'
+    action: 'T-4302: fw upgrade clones a local upstream by path, not file:// (full history kept; drops per-run pack transfer that made t2912 exceed 900 s); regression test pins clone argv'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 1 commit(s), 202 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 202
+  commits: 1
+  files_changed: 4
+  lines_added: 144
+  lines_removed: 20
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4302-t2912upgradehookregenconvergencebats-tim.md
+generated_by: context-agent-hybrid
