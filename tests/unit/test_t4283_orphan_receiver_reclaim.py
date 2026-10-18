@@ -173,8 +173,13 @@ def test_refused_start_leaves_the_live_stale_receiver_running(proj, tmp_path, mo
         elsewhere = tmp_path / "elsewhere"
         elsewhere.mkdir()
         foreign = _orphan(theirs, elsewhere, tmp_path)
-        monkeypatch.setattr(watcher, "is_stale", lambda pid: True)
-        rc, got = cli._start_receiver(theirs, None, False, True)
+        # T-4315: scope the patch to a context. A bare monkeypatch.undo() in the
+        # finally below also undid the fixture's PROJECT_ROOT, so the cleanup ran
+        # against the suite's PROJECT_ROOT -- the real checkout -- and stopped the
+        # live project's sidecar (watcher.stop_all) and its receiver.
+        with monkeypatch.context() as m:
+            m.setattr(watcher, "is_stale", lambda pid: True)
+            rc, got = cli._start_receiver(theirs, None, False, True)
         assert rc == 1 and got is None
         assert lifecycle.pid_alive(info["pid"]), "a refused start killed the live receiver"
         assert lifecycle.read_triple_file() == info, "a refused start cleared the triple file"
@@ -182,8 +187,7 @@ def test_refused_start_leaves_the_live_stale_receiver_running(proj, tmp_path, mo
         if foreign is not None:
             foreign.kill()
             foreign.wait()
-        monkeypatch.undo()
+        assert os.environ["PROJECT_ROOT"] == str(proj), "cleanup must stop the fixture, not the real project"
         cli.cmd_receiver_stop(type("A", (), {"quiet": True, "agent": ours})())
-        # cmd_receiver_stop alone left this receiver running: kill it by the pid it recorded.
         if info and info.get("pid") and lifecycle.pid_alive(info["pid"]):
             os.kill(int(info["pid"]), signal.SIGTERM)

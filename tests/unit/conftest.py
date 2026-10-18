@@ -190,6 +190,29 @@ def _sidecar_tests_cannot_reach_the_live_hub(request, monkeypatch, tmp_path):
     monkeypatch.setenv("FW_SIDECAR_REGISTRY_DIR", str(tmp_path / "sidecar-registry"))
 
 
+# T-4315: the explicit-stop marker `watcher.stop_all()` writes into a project.
+_REAL_SIDECAR_STOPPED = _REPO / ".context" / "sidecar" / "watcher" / "stopped"
+
+
+@pytest.fixture(autouse=True)
+def _tests_cannot_stop_the_real_sidecar(request):
+    """Fail any test that explicitly stops THIS checkout's sidecar.
+
+    The nightly suite exports PROJECT_ROOT=<this checkout>, so a test whose
+    cleanup loses its fixture root (T-4315: a bare `monkeypatch.undo()` before
+    `cmd_receiver_stop`) stops the live watcher, and cron then leaves it down as
+    'explicitly stopped'. That happened three times on 2026-10-18 with no test
+    going red. Detection, not prevention: the stop has already happened, but the
+    test that did it is named instead of the operator finding a dead sidecar.
+    """
+    existed = _REAL_SIDECAR_STOPPED.exists()
+    yield
+    if not existed and _REAL_SIDECAR_STOPPED.exists():
+        pytest.fail(f"{request.node.nodeid} explicitly stopped the REAL project's sidecar "
+                    f"({_REAL_SIDECAR_STOPPED} created); point PROJECT_ROOT at tmp for every "
+                    "sidecar call, cleanup included. Restart it: bin/fw sidecar start")
+
+
 # ---------------------------------------------------------------------------
 # T-4205: the TermLink tripwire. Test traffic reached the host's real outbound
 # queue and fleet channel (G-115): `termlink` resolved to the host binary, and

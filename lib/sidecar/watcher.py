@@ -939,8 +939,30 @@ def is_stale(pid) -> bool:
     return started is not None and started < code_mtime()
 
 
-def stop_processes(timeout: float = 10.0) -> dict:
+def _cmdline(pid: int) -> str | None:
+    try:
+        raw = Path(f"/proc/{pid}/cmdline").read_bytes()
+    except OSError:
+        return None
+    return raw.replace(b"\0", b" ").decode("utf-8", "replace").strip()[:500] or None
+
+
+def stop_caller() -> dict:
+    """T-4315: who is asking for the stop. WATCHER_STOPPED is written by the
+    watcher itself, which never learns who sent the SIGTERM; three explicit
+    stops on 2026-10-18 could not be attributed. Recorded with every stop request."""
+    ppid = os.getppid()
+    return {"caller_pid": os.getpid(), "caller_ppid": ppid,
+            "caller_argv": " ".join(sys.argv)[:500],
+            "caller_parent": _cmdline(ppid),
+            "caller_project_root": os.environ.get("PROJECT_ROOT") or "(unset)",
+            "caller_cwd": os.getcwd(),
+            "caller_test": os.environ.get("PYTEST_CURRENT_TEST") or os.environ.get("BATS_TEST_FILENAME")}
+
+
+def stop_processes(timeout: float = 10.0, reason: str = "restart") -> dict:
     """Stop supervisor and watcher WITHOUT disabling (a restart)."""
+    record_event("STOP_REQUESTED", reason=reason, **stop_caller())
     stopped = {}
     for which in ("supervisor", "watcher"):
         pid = read_pid(which)
@@ -961,7 +983,7 @@ def stop_all(timeout: float = 10.0) -> dict:
     orphan)."""
     disable()
     stopped_marker().write_text(_now().isoformat(), encoding="utf-8")
-    return stop_processes(timeout)
+    return stop_processes(timeout, reason="explicit stop")
 
 
 def project_launcher(root: Path) -> list[str] | None:
