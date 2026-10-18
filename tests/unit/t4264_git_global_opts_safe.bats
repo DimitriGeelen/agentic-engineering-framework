@@ -45,10 +45,14 @@ setup() {
     is_bash_safe_command "git -P log -1"
 }
 
-# ── -c k=v: admitted for ordinary keys, refused for keys that run a program ──
+# ── -c k=v: never read-only (fails closed; a key denylist cannot be complete) ──
 
-@test "T-4264: git -c user.name=x status is SAFE (ordinary key)" {
-    is_bash_safe_command "git -c user.name=x status"
+@test "T-4264 control: git -c user.name=x status is NOT-SAFE (-c fails closed, even an ordinary key)" {
+    if is_bash_safe_command "git -c user.name=x status"; then false; fi
+}
+
+@test "T-4264 control: git -c diff.x.textconv=CMD log -p is NOT-SAFE (textconv runs CMD)" {
+    if is_bash_safe_command "git -c diff.x.textconv=touch log -p"; then false; fi
 }
 
 @test "T-4264 control: git -c core.pager=CMD log is NOT-SAFE (pager runs CMD)" {

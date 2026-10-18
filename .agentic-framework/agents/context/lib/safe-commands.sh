@@ -267,14 +267,9 @@ _fw_git_skip_globals() {
                 i=$((i + 2)) ;;
             --git-dir=*|--work-tree=*|--namespace=*|-P|--no-pager)
                 i=$((i + 1)) ;;
-            -c)
-                key="${words[$((i + 1))]:-}"
-                key="${key%%=*}"
-                case "${key,,}" in
-                    ""|core.fsmonitor|core.pager|pager.*|diff.external|core.sshcommand|core.askpass|core.hookspath|core.editor|core.gitproxy|include.*|includeif.*|alias.*|filter.*|gpg.*|credential.*|*.textconv|*.helper|*.command|*.driver|sequence.editor)
-                        return 1 ;;
-                esac
-                i=$((i + 2)) ;;
+            # -c k=v is never read-only: too many config keys run a program
+            # (pager, fsmonitor, textconv, filters, ssh/askpass, aliases, ...)
+            # for a denylist to be complete, so it fails closed with the rest.
             -*) return 1 ;;
             *) break ;;
         esac
