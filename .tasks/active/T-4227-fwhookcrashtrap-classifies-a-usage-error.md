@@ -10,10 +10,10 @@ description: >
   Fix: distinguish a usage error from a crash; add an acknowledge/rotate verb so doctor's
   count can return to zero.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
-horizon: next
+horizon: now
 tags: []
 components: []
 related_tasks: []
@@ -44,7 +44,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:08:51Z
-last_update: '2026-10-17T13:16:16Z'
+last_update: 2026-10-18T20:21:03Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -96,8 +96,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `lib/config.sh` gains `fw_hook_usage_exit` (marks the exit as a usage error); `fw_hook_crash_trap` skips the banner and the log append when that marker is set
+- [x] `agents/context/checkpoint.sh` with no/unknown argument exits 1 via the usage path: prints its Usage line, no HOOK CRASHED, `.hook-crashes.log` untouched
+- [x] A genuine crash (unmarked non-0/non-2 exit) still prints HOOK CRASHED and appends to `.hook-crashes.log`
+- [x] `lib/hook-crashes.sh acknowledge` moves live entries to `.hook-crashes.acknowledged.log` (history kept) and empties the live log, so doctor's count returns to zero; `count` prints the live count
+- [x] Regression bats `tests/unit/t4227_hook_usage_not_crash.bats` covers all three and passes; bin/fw route left to parent (not edited)
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -275,6 +278,11 @@ bvp_scores_proposed:
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bash -n lib/config.sh && bash -n lib/hook-crashes.sh && bash -n agents/context/checkpoint.sh
+timeout 300 bats tests/unit/t4227_hook_usage_not_crash.bats > /tmp/.t4227.out 2>&1 && ! grep -q "^not ok" /tmp/.t4227.out
+test "$(grep -c '# skip' /tmp/.t4227.out)" -eq 0
+d=$(mktemp -d); mkdir -p "$d/.context/working"; out=$(PROJECT_ROOT="$d" bash agents/context/checkpoint.sh 2>&1); ! echo "$out" | grep -q "HOOK CRASHED" && test ! -s "$d/.context/working/.hook-crashes.log"
+bin/fw vendor self --check
 
 ## RCA
 
@@ -291,6 +299,14 @@ bvp_scores_proposed:
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** `PROJECT_ROOT=$(mktemp -d) bash agents/context/checkpoint.sh` (no argument) prints the HOOK CRASHED banner and appends a CRASH line to `.context/working/.hook-crashes.log`; `fw doctor` then WARNs on hook crashes, and nothing ever lowers that count (1023 msg cc1a5259).
+
+**Root cause:** `fw_hook_crash_trap` (lib/config.sh:172-188) classifies purely by exit code: anything not 0 and not 2 is a crash. The hook's own usage branch (agents/context/checkpoint.sh:766-768) exits 1, so a deliberate usage refusal is indistinguishable from an unexpected failure. Separately, `.hook-crashes.log` is append-only with no consumer that acknowledges entries; doctor (bin/fw:4320) counts every line ever written.
+
+**Why structurally allowed:** the T-821 trap was written for PreToolUse payload paths, where exit 1 really is unexpected; the scripts' manual-invocation usage paths were never tested against it, and no test asserted that the log could return to empty.
+
+**Prevention:** usage paths now go through `fw_hook_usage_exit`, which marks the exit so the trap stays silent; `lib/hook-crashes.sh acknowledge` archives and empties the live log; `tests/unit/t4227_hook_usage_not_crash.bats` pins usage-silent, crash-still-logged and acknowledge-to-zero.
 
 ## Evolution
 
@@ -372,3 +388,7 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4227-fwhookcrashtrap-classifies-a-usage-error.md
 - **Context:** Initial task creation
+
+### 2026-10-18T20:21:03Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
+- **Change:** horizon: next → now (auto-sync)

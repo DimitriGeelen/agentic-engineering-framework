@@ -175,7 +175,8 @@ fw_hook_crash_trap() {
     # shellcheck disable=SC2154 # _exit is assigned by $? inside the trap
     trap '
         _exit=$?
-        if [ $_exit -ne 0 ] && [ $_exit -ne 2 ]; then
+        # T-4227: a usage refusal (fw_hook_usage_exit) is not a crash.
+        if [ $_exit -ne 0 ] && [ $_exit -ne 2 ] && [ "${_FW_HOOK_USAGE_EXIT:-0}" != 1 ]; then
             echo "" >&2
             echo "╔══════════════════════════════════════════════════╗" >&2
             echo "║  HOOK CRASHED: '"$hook_name"' (exit $_exit)            ║" >&2
@@ -185,6 +186,18 @@ fw_hook_crash_trap() {
             echo "[$(date -u +%Y-%m-%dT%H:%M:%SZ)] CRASH: '"$hook_name"' exit=$_exit" >> "'"$crash_log"'" 2>/dev/null
         fi
     ' EXIT
+}
+
+# fw_hook_usage_exit CODE MESSAGE — exit from a hook's own usage/argument path (T-4227).
+# Prints MESSAGE to stderr and exits CODE, marked so fw_hook_crash_trap neither
+# announces HOOK CRASHED nor appends to .hook-crashes.log: a usage error is the
+# script refusing bad input on purpose, not a malfunction.
+fw_hook_usage_exit() {
+    local code="${1:-1}"
+    shift 2>/dev/null || true
+    [ $# -gt 0 ] && echo "$*" >&2
+    _FW_HOOK_USAGE_EXIT=1
+    exit "$code"
 }
 
 # fw_config_list — List all FW_* overrides (for fw doctor / Watchtower)

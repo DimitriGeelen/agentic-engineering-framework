@@ -1,0 +1,21 @@
+id: lib/hook-crashes.sh
+name: hook-crashes
+type: script
+subsystem: framework-core
+location: lib/hook-crashes.sh
+tags: []
+
+purpose: "hook-crashes.sh — acknowledge / count the hook crash log (T-4227)"
+purpose_source: header-comment
+
+depends_on:
+  # Format: - target: <relative-path>
+  #          type: calls|reads|writes|triggers|renders
+  []
+
+depended_by:
+  # Same format as depends_on — filled by enrich.py or manually
+  []
+
+last_verified: 2026-10-18
+created_by: unknown

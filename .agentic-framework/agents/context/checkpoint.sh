@@ -765,6 +765,6 @@ else:
         ;;
     *)
         echo "Usage: checkpoint.sh {post-tool|reset|status|budget|baseline}"
-        exit 1
+        fw_hook_usage_exit 1  # T-4227: usage error, not a hook crash
         ;;
 esac
