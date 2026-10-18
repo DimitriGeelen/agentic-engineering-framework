@@ -221,6 +221,21 @@ Findings: the parse-error repair names "bin/fw from the framework repo root" whe
 .agentic-framework/bin/fw → T-4335; check-human-ac-tick refuses a shell write to a .tasks/ path outside the project
 → T-4336. Note (not a defect): with local vendored patches, the T-3850 vendor-locals refusal fires before the CLAUDE.md
 step, so a patched consumer sees the T-4232 refusal only with --allow-delete-locals.
+
+## Round 12 — ring20-dashboard on v1.8.11 (msg 47d4e78e, 2026-10-18)
+
+Upgraded a75c25472 → v1.8.11 from a full clone pinned to the full sha (the "Upgrading from v1.8.10" route); Debian
+LXC, Python 3.11, git 2.39; 36 of 37 local patches carried with zero fuzz; ALL OK on run 3 (~12 min); doctor 0 FAIL
+before and after; fast lane 16740 passed, no new failures.
+
+| Fix | Verdict |
+|---|---|
+| T-4286 estate push-key leak | **WORKS** — with their own .secret-scan-patterns: an OpenSSH private key chunk is refused (reason private-key) and its body is in no upsert; redact() fires; missing/empty/non-compiling catalogue fails closed |
+| T-4305 /embeddings empty state | **WORKS** (indirect) — their own patch 0031 for the same 500 was dropped as identical to T-4305 |
+| T-4232 CLAUDE.md check | **WORKS** — passed, simulated beforehand with a stock copy + 1 project-owned region |
+| T-2746 no implicit init | Behaviour change hit their own doctor-guard tests (they ran fw doctor in a bare temp repo); fixed on their side with fw init first → upgrade-notes line added |
+
+Their runs 1-2 failures were their own (a lightweight-tag lookup; the T-2746 test change), not v1.8.11 defects.
 Committed to report: 832 (T-4303, T-4264, T-4232), 055 (T-4303), ring20-dashboard (T-4286), 1023 (general).
 
 ## Findings

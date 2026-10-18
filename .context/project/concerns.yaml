@@ -5548,3 +5548,24 @@ concerns:
   detection_gap: nothing checks that bin/fw parses after an edit; the hook error names neither the cause nor the fix
   what_remains: T-4303. Close when a bin/fw with a parse error below its preamble still routes hooks, and the
     error for a parse error in the preamble names bin/fw and the repair.
+- id: G-119
+  type: gap
+  title: The GitHub issue lifecycle was designed and approved but its release and task legs were never built, so a release tells no reporter anything
+  description: 'T-4039 (GO, operator answers 2026-10-10) designed a nine-stage lifecycle with standing permission for
+    template stages, and named where stages 6-9 are posted: update-task.sh (In progress, Fixed on bleeding-edge) and the
+    release tooling (Available for testing, Released, then close). Only fw issues (the verb), the ledger and the sync
+    were built; the sync was paused 2026-10-12 pending a backlog decision; update-task.sh and lib/release.sh never call
+    fw issues. On 2026-10-18 v1.8.11 shipped the fixes for #86-#89 (and the code for #90-#94) and every issue still
+    read "fixed on bleeding-edge"; 11 new external issues (#95-#105) sat un-ingested. Operator caught it.'
+  severity: high
+  status: open
+  detected_in: T-4339
+  observed: '2026-10-18'
+  reported_by: operator
+  blast_radius: every external reporter; the issue tracker is the project's public face
+  detection_gap: nothing compares tasks with github_issue shipped in a release against the issue's ledger stage;
+    the GO-scope-unpropagated audit counts inceptions without build links but cannot see a half-built GO
+  what_remains: T-4339 (retrospective, post the missing updates), T-4340 (release posts stage 9 with evidence and
+    closes per the operator's close rule), T-4341 (task lifecycle posts 6-7), T-4342 (resume intake). Close when a
+    release run posts Released on every linked issue without manual steps, and an audit check flags a shipped linked
+    task whose issue is behind.
