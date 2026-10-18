@@ -17,6 +17,8 @@ setup() {
     mkdir -p "$FAKE"
     cp -r "$FRAMEWORK_ROOT/bin" "$FRAMEWORK_ROOT/lib" "$FAKE/"
     cp "$FRAMEWORK_ROOT/VERSION" "$FAKE/" 2>/dev/null || true
+    # T-4295: bin/fw accepts an inherited FRAMEWORK_ROOT only with lib/ AND agents/ (T-4248).
+    mkdir -p "$FAKE/agents"
     mkdir -p "$FAKE/tests/integration"
     export PROJECT_ROOT="$TEST_TEMP_DIR/proj"
     mkdir -p "$PROJECT_ROOT/.context" "$PROJECT_ROOT/.tasks/active"

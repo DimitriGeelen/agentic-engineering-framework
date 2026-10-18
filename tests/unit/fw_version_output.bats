@@ -72,7 +72,8 @@ teardown() {
     # The vendored case. `_derive_version` falls back to the VERSION file there,
     # so the counter is all the identity that exists — which is exactly the fact
     # the operator needs told, not hidden behind an absent line.
-    mkdir -p "$TEST_TEMP_DIR/nogit"
+    # T-4295: a framework root needs lib/ and agents/ to be accepted (T-4248), as a real vendored copy has.
+    mkdir -p "$TEST_TEMP_DIR/nogit/lib" "$TEST_TEMP_DIR/nogit/agents"
     run env -u PROJECT_ROOT FRAMEWORK_ROOT="$TEST_TEMP_DIR/nogit" "$(FW)" --version
     [ "$status" -eq 0 ]
     echo "$output" | grep -q '^Commit:.*none'
