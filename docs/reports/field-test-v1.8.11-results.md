@@ -83,6 +83,29 @@ Security findings from a review they ran on our code:
   `bash -c` was still reported. Second look at what is skipped past depth 4 is optional.
 - Docs suggestion: pin the full 40-char sha in upgrade docs.
 
+## Round 6 — dimitri-mint-dev greenfield v2.2 run 4 on bleeding-edge fb8caf3b3 (2026-10-18, msg 86d31421)
+
+Installer from bleeding-edge (`--branch bleeding-edge`, recorded deviation), NO v2.1 workarounds; cross-checked by a
+clean-container smoke (ubuntu:24.04, their T-126 S1). 46 findings (24 framework-defect; 3 blocker).
+Record: /opt/0909-aef-greenfield-v22/.context/install-findings/aef-install-20261018T090519Z-dimitrimintdev/.
+
+| Fix | Result |
+|---|---|
+| T-4248 inherited env ignored | WORKS (workstation and container) |
+| T-4248 "with a warning" | **FAILS** — install.sh prints none; the vendored fw warns later on every call → T-4298 |
+| T-4248 failed step → non-zero/FAILED | NOT EXERCISED (covered by tests/unit/t4248_install_init_failure.bats) |
+| T-4248 ~/.local/bin backup | WORKS in the container; skipped on the workstation (files identical) |
+| T-4251 own repo, installer-created dir | WORKS; the / or HOME case not exercised |
+| T-4252 plain inbox safe | WORKS (no cursor moved) |
+| T-4261 WARN count | WORKS; failed-bootstrap half not exercised |
+| T-4265 onboarding skip | WORKS, also through a live T-532 gate |
+| T-4257 one INFO line | WORKS |
+| T-3083 doctor speed | WORKS — 25 s / 40 s workstation, 10 s container |
+
+New from this run: blocker cascade F-20 → F-21 → F-25 — a no-TTY `fw` call from a non-project cwd auto-ran `fw init`
+there (T-2746, promoted to now); the accidental project's hooks went live; T-559 then blocked the real target.
+Security F-34: `watchtower start` adds a UFW rule to Anywhere even for a loopback bind → T-4297.
+
 ## Findings
 
 - **T-4203** (055 item 7): `_fw_is_own_launcher` / `cmd_classify._Ctx` refuse a consumer's tracked
