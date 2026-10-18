@@ -34,6 +34,14 @@ this inception with him.
   Workstation noise: 31 doctor WARNs vs 6 in a clean container.
 - The v1.8.11 field evidence report (docs/reports/field-test-v1.8.11-results.md, round 6) shows the run is also
   the strongest per-fix field test available: 9 fixes verified WORKS in one run.
+- **Container spike done (dimitri-mint-dev T-126, msg 65d06812, 2026-10-18).** Level 2 (full, with an agent) in a
+  throwaway ubuntu:24.04 container, no mounts: 8 m 37 s total (install 205 s, fresh session 283 s), 19 findings,
+  no host side effects. Level 1 (scripted, no credential): 3 m 25 s. Auth: a dedicated `claude setup-token` token
+  passed only via `docker exec --env-file`, never in the image; the record is grepped for the token before keeping.
+  It found a blocker no workstation run could see: Watchtower cannot start on a clean machine (markdown2 missing,
+  PEP 668 blocks pip) → T-4304. Their recommendation for IW-2: Docker on the runner host, dedicated token fetched
+  from Infisical at run time; a VM only later, for other OS images. Scripts on their side:
+  docs/proposals/testbed/{s1-smoke-inside.sh, s2-full-inside.sh}, plus a 14-line host runme.
 
 ## Agent recommendation (initial; to be refined in dialogue)
 
@@ -47,3 +55,6 @@ for (b); who triages findings.
 - 2026-10-18 — proposal received from the operator via dimitri-mint-dev; inception opened, awaiting the dialogue.
 - 2026-10-18 — observed while opening it: the G-067 open-questions gate requires IW questions before the C-001
   research artifact can be written (the order conflict dimitri-mint-dev filed as run-3 F-44).
+- 2026-10-18 — dimitri-mint-dev reports the container spike (above). It answers IW-1's feasibility and timing
+  question with measurements and gives a concrete IW-2 proposal; IW-2 (which credential, where it lives) stays the
+  operator's decision.
