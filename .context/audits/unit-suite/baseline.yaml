@@ -279,6 +279,48 @@ entries:
   added: '2026-10-17'
   expires: '2026-10-31'
   added_by: human
+- leg: bats
+  name: 'fw_focus_alias.bats: fw focus T-XXX prints the same confirmation as fw context focus T-XXX'
+  file: fw_focus_alias.bats
+  owner: T-4325
+  added: '2026-10-18'
+  expires: '2026-11-01'
+  added_by: human
+- leg: bats
+  name: 'fw_focus_alias.bats: fw focus rejects a nonexistent task exactly like fw context focus'
+  file: fw_focus_alias.bats
+  owner: T-4325
+  added: '2026-10-18'
+  expires: '2026-11-01'
+  added_by: human
+- leg: bats
+  name: 'fw_focus_alias.bats: fw focus with no argument reports current focus, not a false success'
+  file: fw_focus_alias.bats
+  owner: T-4325
+  added: '2026-10-18'
+  expires: '2026-11-01'
+  added_by: human
+- leg: bats
+  name: 'fw_focus_alias.bats: fw focus with no argument and no prior focus reports unset, not silent success'
+  file: fw_focus_alias.bats
+  owner: T-4325
+  added: '2026-10-18'
+  expires: '2026-11-01'
+  added_by: human
+- leg: bats
+  name: 't1719_ask_routing.bats: t1719-a3: a live ask writes a dispatch row with workflow_id=ask'
+  file: t1719_ask_routing.bats
+  owner: T-4325
+  added: '2026-10-18'
+  expires: '2026-11-01'
+  added_by: human
+- leg: bats
+  name: 't1719_ask_routing.bats: t1719-a3: a live ask writes an outcome row naming the route'
+  file: t1719_ask_routing.bats
+  owner: T-4325
+  added: '2026-10-18'
+  expires: '2026-11-01'
+  added_by: human
 last_regenerated:
   at: '2026-10-17'
   report: /opt/999-Agentic-Engineering-Framework/.context/audits/unit-suite/LATEST.yaml
