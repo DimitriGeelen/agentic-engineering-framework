@@ -29,7 +29,10 @@ voi_score: 0.5                    # float 0..1. Value of Information — expecte
 
 ## Problem Statement
 
-<!-- What problem are we exploring? For whom? Why now? -->
+When an arc's work is done, nothing prompts the agent to file a CLOSE recommendation with demo evidence, so the
+operator meets an empty or wrong close form (1023 vault-mvp, 2026-10-18). Measured 2026-10-18: AEF 21 of 22
+in-progress arcs have no close_task (5 have neither close_task nor anchor_task); 1023 2 of 2 before its local fix.
+The T-3843 close_task mechanism exists and is almost never used.
 
 ## Assumptions
 

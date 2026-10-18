@@ -57,7 +57,8 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Also handle an arc with NEITHER close_task NOR anchor_task (1023's arc-002; 5 of 22 in-progress arcs here on
+2026-10-18): the close page and fw arc review must name the same agent action, not render an empty recommendation.
 
 ## Acceptance Criteria
 
