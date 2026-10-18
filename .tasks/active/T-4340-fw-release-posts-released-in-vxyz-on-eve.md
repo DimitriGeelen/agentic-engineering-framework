@@ -105,14 +105,14 @@ cost_estimate_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] `lib/release.sh` posts the Released stage (via `fw issues comment`, never `gh` directly) for every task in the release range that has `github_issue: N`, with an evidence block (regression tests from the task's Verification/ACs, field verdict parsed from `docs/reports/field-test-vX.Y.Z-results.md`, gates passed, links to the release notes and field report).
-- [ ] Close rule applied: issue closed only when the task is work-completed AND the field report has a WORKS verdict for it; otherwise "Released — please confirm" is posted and a 14-day due date is recorded in the ledger.
-- [ ] A scheduled sweep (`fw issues sweep`) closes overdue please-confirm issues with a note, and never closes an issue that has a submitter reply after its Released comment.
-- [ ] Posting is idempotent per (issue, stage): a second run posts nothing new.
-- [ ] `fw release --dry-run` lists what would be posted/closed and calls no GitHub write.
-- [ ] A GitHub failure during the release-stage posting is reported and recorded for retry; the release exit code is unaffected.
-- [ ] Tests with a fake `gh` (no network) cover: posting with evidence, close vs please-confirm, idempotence, dry-run, overdue sweep, reply blocks close, GitHub failure does not fail release.
-- [ ] One line added to CLAUDE.md §Release-Train and to docs/reports/T-4039-inbound-github-issues.md stating that a release posts stage 9 per the close rule.
+- [x] `lib/release.sh` posts the Released stage (via `fw issues comment`, never `gh` directly) for every task in the release range that has `github_issue: N`, with an evidence block (regression tests from the task's Verification/ACs, field verdict parsed from `docs/reports/field-test-vX.Y.Z-results.md`, gates passed, links to the release notes and field report).
+- [x] Close rule applied: issue closed only when the task is work-completed AND the field report has a WORKS verdict for it; otherwise "Released — please confirm" is posted and a 14-day due date is recorded in the ledger.
+- [x] A scheduled sweep (`fw issues sweep`) closes overdue please-confirm issues with a note, and never closes an issue that has a submitter reply after its Released comment.
+- [x] Posting is idempotent per (issue, stage): a second run posts nothing new.
+- [x] `fw release --dry-run` lists what would be posted/closed and calls no GitHub write.
+- [x] A GitHub failure during the release-stage posting is reported and recorded for retry; the release exit code is unaffected.
+- [x] Tests with a fake `gh` (no network) cover: posting with evidence, close vs please-confirm, idempotence, dry-run, overdue sweep, reply blocks close, GitHub failure does not fail release.
+- [x] One line added to CLAUDE.md §Release-Train and to docs/reports/T-4039-inbound-github-issues.md stating that a release posts stage 9 per the close rule.
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
