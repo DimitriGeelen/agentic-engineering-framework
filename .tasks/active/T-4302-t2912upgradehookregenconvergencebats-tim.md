@@ -45,7 +45,7 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T11:28:43Z
-last_update: 2026-10-18T11:29:12Z
+last_update: 2026-10-18T13:52:47Z
 date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
@@ -75,6 +75,16 @@ bvp_scores_proposed:
       F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
       (no-signal); F1=0 (no-signal); F2=0 (no-signal)
     rubric_sha: e4a00f38e801
+cost_estimate_proposed:
+  - ts: '2026-10-18T11:30:33Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=293,acs=7)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4302: t2912_upgrade_hook_regen_convergence.bats times out (900 s) on the v1.8.11 tip but not on v1.8.10
@@ -87,11 +97,11 @@ bvp_scores_proposed:
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] Root cause of the t2912 900 s timeout on tip 413701ff9 is localised to a file:line (hang vs. slowdown, and which commit introduced it), confirmed by a single isolated run
-- [ ] The fix (or the proof that it is load-flaky) lands on the main checkout, minimal and in the style of lib/upgrade.sh / lib/init.sh
-- [ ] tests/unit/t2912_upgrade_hook_regen_convergence.bats passes in full on the main checkout within its 900 s budget (no hang)
-- [ ] A regression test fails without the fix and passes with it
-- [ ] `bin/fw vendor self --check` is clean after any framework-file edit
+- [x] Root cause of the t2912 900 s timeout is localised to a file:line (hang vs. slowdown, and which commit introduced it), confirmed by a single isolated run — no hang: all 5 tests pass (exit 0); the slowdown is the T-3886 auto-clone at lib/upgrade.sh:1344 (commit e8b6d839a), a full-history `file://` pack per `fw upgrade` (~40 s wall, 58 s CPU) vs `--depth=1` (~9 s, 12 s CPU), ×6 upgrades in the file
+- [x] The fix lands on the main checkout in lib/upgrade.sh: a local-directory upstream is cloned by path (keeps full history for the T-3886 origin guard, drops the file:// pack transfer)
+- [ ] tests/unit/t2912_upgrade_hook_regen_convergence.bats passes in full on the main checkout, and its wall time drops measurably (no hang)
+- [x] A regression test (tests/unit/t4302_upgrade_local_clone_by_path.bats) fails without the fix and passes with it (test 2 red before the lib/upgrade.sh edit, green after)
+- [x] `bin/fw vendor self --check` is clean after any framework-file edit
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -270,7 +280,20 @@ bvp_scores_proposed:
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
 
+bash -n lib/upgrade.sh
+bin/fw vendor self --check
+out=$(bats tests/unit/t4302_upgrade_local_clone_by_path.bats 2>&1); echo "$out" | grep -q '^ok 2 ' && ! echo "$out" | grep -q '^not ok'
+out=$(bats tests/unit/t3886_upgrade_autoclone_history.bats 2>&1); echo "$out" | grep -q '^ok 3 ' && ! echo "$out" | grep -q '^not ok'
+
 ## RCA
+
+**Symptom:** tests/unit/t2912_upgrade_hook_regen_convergence.bats exceeds the 900 s per-file budget on the v1.8.11 tip (413701ff9) and finishes on v1.8.10 (704c9988f). Isolated run on the main checkout: exit 0, no hang. Per-test wall: 70 s, 123 s, 293 s, 17 ms, 203 s (705 s total at host load ~25).
+
+**Root cause:** `lib/upgrade.sh:1344` (commit e8b6d839a, T-3886 / GitHub #87). Every bare `fw upgrade` auto-clones the upstream into a temp dir. Before T-3886 this was `git clone --depth=1` (~9 s wall, 12 s CPU on the 12k-commit framework repo over `file://`). T-3886 switched it to full history with `--filter=blob:none` so the origin guard can see the consumer's pinned version_sha. Over `file://` git ignores the filter and packs the whole history: ~40 s wall, 58 s CPU per upgrade (measured: `git clone --filter=blob:none file://…up.git` 35–46 s; `git clone --depth=1 file://…` 8–10 s; path clone `git clone <path>` 1.7 s CPU). The t2912 file runs six upgrades (1+2+2+1) plus fixture clones, so the regression is ~30 s × 6 ≈ 3 min of CPU-heavy work added to a file already near budget. Doctor (~17 s) and the T-4278 precheck (~2 s) are unchanged or small: `fw doctor` at base and tip both take 16.7–16.8 s.
+
+**Why structurally allowed:** no test or gate measures wall time of the upgrade path; the T-3886 test uses a 3-commit upstream, so the full-history cost never shows; the file:// transport cost is invisible at small fixture sizes and only appears against the real framework history.
+
+**Prevention:** (1) for a local-directory upstream the clone goes by path (hardlinked objects, full history kept, no pack transfer) — fix; (2) `tests/unit/t4302_upgrade_local_clone_by_path.bats` pins the clone argv (no `file://`, no `--filter` for a local source) with a logging git wrapper, so the regression is deterministic and not a timing assertion; (3) the T-3886 history test still gates the guard behaviour.
 
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).

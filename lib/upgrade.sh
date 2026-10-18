@@ -1337,15 +1337,18 @@ do_upgrade() {
         # must find the consumer's recorded version_sha, and a shallow clone cannot
         # see it. --filter=blob:none keeps the clone cheap; a server that ignores
         # filters falls back to a full clone (git warns, does not fail).
-        # Exception: a LOCAL shallow source. Under file:// the filter is ignored and
-        # git 2.43 then never completes the clone of a shallow repo (measured: 60 s
-        # timeout, endless "filtering not recognized" warnings). Plain clone instead;
-        # the guard then refuses with the runnable remedy, which is the right outcome.
-        local _clone_filter=(--filter=blob:none) _clone_src="${_upstream_url#file://}"
-        if [ -d "$_clone_src" ] && [ "$(git -C "$_clone_src" rev-parse --is-shallow-repository 2>/dev/null)" = "true" ]; then
+        # T-4302: a LOCAL source is cloned by path, not file://. Over file:// git ignores
+        # the filter and packs the whole history on every upgrade: ~40 s wall and ~58 s
+        # CPU on the 12k-commit framework repo (--depth=1 was ~9 s). A path clone
+        # hardlinks the objects (~2 s CPU) and keeps the full history the guard needs.
+        # A shallow local source stays shallow on a path clone, so the guard still
+        # refuses it with the runnable remedy.
+        local _clone_filter=(--filter=blob:none) _clone_src="${_upstream_url#file://}" _clone_from="$_upstream_url"
+        if [ -d "$_clone_src" ]; then
             _clone_filter=()
+            _clone_from="$_clone_src"
         fi
-        if ! git clone ${_clone_filter[@]+"${_clone_filter[@]}"} --quiet "$_upstream_url" "$_tmpd/fw" 2>"$_tmpd/clone.err"; then
+        if ! git clone ${_clone_filter[@]+"${_clone_filter[@]}"} --quiet "$_clone_from" "$_tmpd/fw" 2>"$_tmpd/clone.err"; then
             echo "FAILED"
             echo -e "${RED}ERROR: git clone failed${NC}" >&2
             sed 's/^/    /' "$_tmpd/clone.err" >&2 2>/dev/null || true
