@@ -2,9 +2,11 @@
 id: T-4310
 name: "Re-pin the workflow designer to 0.23.0"
 description: >
-  832 T-1202 released designer-v0.23.0 (sha 431cc5114d86b061ba12a92b8f2bcfa7c8d766bbc79a390803f561492b3857ee, 1171433 B): kit CONFORMANCE.md gains a CONVENTIONAL class; no node ids, fields or migration change.
+  832 T-1202 released designer-v0.23.0 (sha 431cc5114d86b061ba12a92b8f2bcfa7c8d766bbc79a390803f561492b3857ee,
+  1171433 B): kit CONFORMANCE.md gains a CONVENTIONAL class; no node ids, fields or
+  migration change.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +41,8 @@ origin: {kind: "peer", source: "832"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T13:49:52Z
-last_update: 2026-10-18T13:49:52Z
-date_finished: null
+last_update: 2026-10-18T13:54:09Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +53,24 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+bvp_scores_proposed:
+  - ts: '2026-10-18T13:54:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4310: Re-pin the workflow designer to 0.23.0
@@ -63,8 +83,9 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] policy/designer-pin.yaml pins 0.23.0 via `fw designer sync --from-tag designer-v0.23.0`; sha256 431cc5114d86b061ba12a92b8f2bcfa7c8d766bbc79a390803f561492b3857ee and 1171433 bytes verified (832 announce 590beaba)
+- [x] Designer id tests and corpus lint still pass (0.23.0 changes no node ids, fields or validator output)
+- [x] Watchtower restarted; /designer/app serves 0.23.0; vendored copy in sync
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -242,6 +263,12 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+bin/fw designer status > /tmp/.t4310 2>&1 && grep -q 'PRESENT ✓ (sha256 matches pin)' /tmp/.t4310
+grep -q '^version: "0.23.0"' policy/designer-pin.yaml && test -f vendor/designer/aef-workflow-designer-0.23.0.html
+bin/fw corpus lint > /tmp/.t4310l 2>&1 && grep -q CLEAN /tmp/.t4310l
+python3 -m pytest -q tests/unit/t2974_greenfield_operator_prose.py tests/unit/t2979_existing_project_onboarding_map.py tests/unit/test_corpus_spec_roundtrip.py
+curl -sf "$(bin/fw watchtower url)/designer/app" -o /tmp/.t4310p && grep -q '0\.23\.0' /tmp/.t4310p
+bin/fw vendor self --check
 
 ## RCA
 
@@ -339,3 +366,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4310-re-pin-the-workflow-designer-to-0230.md
 - **Context:** Initial task creation
+
+### 2026-10-18T13:54:09Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work
