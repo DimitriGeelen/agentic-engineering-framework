@@ -1,8 +1,18 @@
 ---
 id: T-4315
-name: "Sidecar watcher was explicitly stopped at 2026-10-18T14:15:32Z by an unknown caller; the keep-alive cron then leaves it down"
+name: "Sidecar watcher was explicitly stopped at 2026-10-18T14:15:32Z by an unknown
+  caller; the keep-alive cron then leaves it down"
 description: >
-  Evidence (.context/sidecar/watcher/events.jsonl, autostart.log): WATCHER_STOPPED pid 1782010 and SUPERVISOR_STOPPED pid 1781797 at 14:15:32Z, a clean stop that marks the sidecar 'explicitly stopped', so sidecar-ensure-1m and SessionStart autostart both leave it down (autostart.log: 8 'explicitly stopped' lines). Doctor then FAILs and pre-push FAILs 'Sidecar watcher NOT live'; this session had no peer-mail wake-up until a manual fw sidecar start at 16:15Z. The time matches the operator restarting the session; no hook in .claude/settings.json calls stop, and the only test that stops a sidecar (t3959) uses a stub. Same day: WATCHER_DIED rc=-9 at 10:19Z, 24 WATCHER_HUNG_KILLED in the log. Find the caller: record argv/ppid/session in the stop event, then decide whether an explicit stop should survive a session restart.
+  Evidence (.context/sidecar/watcher/events.jsonl, autostart.log): WATCHER_STOPPED
+  pid 1782010 and SUPERVISOR_STOPPED pid 1781797 at 14:15:32Z, a clean stop that marks
+  the sidecar 'explicitly stopped', so sidecar-ensure-1m and SessionStart autostart
+  both leave it down (autostart.log: 8 'explicitly stopped' lines). Doctor then FAILs
+  and pre-push FAILs 'Sidecar watcher NOT live'; this session had no peer-mail wake-up
+  until a manual fw sidecar start at 16:15Z. The time matches the operator restarting
+  the session; no hook in .claude/settings.json calls stop, and the only test that
+  stops a sidecar (t3959) uses a stub. Same day: WATCHER_DIED rc=-9 at 10:19Z, 24
+  WATCHER_HUNG_KILLED in the log. Find the caller: record argv/ppid/session in the
+  stop event, then decide whether an explicit stop should survive a session restart.
 
 status: captured
 workflow_type: build
@@ -39,8 +49,8 @@ origin: {kind: "agent", source: "T-4246"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T16:43:22Z
-last_update: 2026-10-18T16:43:22Z
-date_finished: null
+last_update: '2026-10-18T16:46:41Z'
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,13 +61,47 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-18T16:45:40Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-18T16:46:41Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4315: Sidecar watcher was explicitly stopped at 2026-10-18T14:15:32Z by an unknown caller; the keep-alive cron then leaves it down
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Second occurrence: WATCHER_STOPPED pid 3180730 / SUPERVISOR_STOPPED pid 3180667 at 2026-10-18T17:35:19Z, during the
+full unit-suite run (16:39:49Z-17:36:29Z), one minute before it finished. The 14:15:32Z stop also fell while workers
+were running test files. Strong suspect: a test that stops THIS project's sidecar rather than its fixture's. Candidates
+that call stop/disable: test_sidecar_watcher_t3684.py (_cli(root, "stop")), test_t4208_receiver_single_instance.py,
+test_sidecar_receiver_t3693.py, test_sidecar_waiting_t3782.py, test_t4283_orphan_receiver_reclaim.py
+(watcher.stop_all / disable; fixture sets PROJECT_ROOT to tmp, so probably not). Bisect by running each alone with the
+real watcher live and checking events.jsonl afterwards.
 
 ## Acceptance Criteria
 
