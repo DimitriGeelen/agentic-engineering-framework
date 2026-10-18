@@ -1,0 +1,207 @@
+# ============================================================================
+# EPISODIC MEMORY - T-4246: Release v1.8.11: field evidence, full-suite comparison against v1.8.10, dry run, operator decision, tag and announce
+# ============================================================================
+# STATUS: AUTO-GENERATED
+# Hybrid episodic: git-mined timeline/metrics + task-file decisions/AC.
+# Generated: 2026-10-18T20:09:00Z
+# ============================================================================
+
+task_id: T-4246
+task_name: "Release v1.8.11: field evidence, full-suite comparison against v1.8.10, dry run, operator decision, tag and announce"
+workflow_type: build
+enrichment_status: auto-complete  # Mechanical task — AC checked, no decisions to record
+
+# Timeline
+created: 2026-10-17T13:50:24Z
+completed: 2026-10-18T20:08:40Z
+duration_days: 1
+updates_count: 2
+first_commit: 2026-10-17T15:51:57+02:00
+last_commit: 2026-10-18T22:08:07+02:00
+
+# Summary (auto-generated from git commit messages)
+summary: |
+  release v1.8.11 task + field round 3 (832: T-4219, T-4223 WORKS); T-4247 gauge follow-up. field doc — T-4247 closed as not needed (gauges already limited to watching gaps). field round 4 — ring20 confirms T-4250 WORKS; file T-4278 (upgrade step 1 runs before the vendor step can refuse). field round 5 (ring20-dashboard: 3 WORKS, 11 not exercised); file T-4286 estate-push key leak as a release blocker. field round 6 (greenfield v2.2: 9 WORKS, T-4248 warning FAILS); file T-4297 UFW rule, T-4298; promote T-2746 (F-20 auto-init). v1.8.11 full-suite comparison report (22 tip-only reds: 13 attributed and fixed, 9 + 1 timeout under T-4300..T-4302). register G-118 (a bin/fw that does not parse blocks every hook; T-4303); file T-4303..T-4310 from peer findings (055, dimitri-mint-dev round 7, 832 0.23.0). field round 7 (dimitri-mint-dev container greenfield: markdown2 blocker T-4304, T-4305..T-4308); T-4310 closed; file T-4311 (sidecar ignores RAIL_IDENTITY_FILE, 832 T-1151). close T-4300, T-4301, T-4303, T-4307, T-4308, T-4312, T-4264 (verification passed at the gate); T-4296 move. close T-4302, T-4304, T-4298 (verification passed at the gate). comparison report final — all 22 tip-only reds attributed (19 fixed, 2 not regressions), t2912 timeout fixed; gate met. v1.8.11 upgrade notes — T-4232 landed (project-owned markers), firewall opt-in, FRAMEWORK_ROOT validation, Watchtower module pre-flight, hook fast path, git -c gated. close T-2746 (no implicit fw init; greenfield F-20); upgrade note for it. upgrade notes numbering. close T-4313, T-4314. file T-4315 (sidecar watcher explicitly stopped by an unknown caller; keep-alive leaves it down). file T-4316 (055: consumer secret-scan allowlist lost at upgrade). file T-4317 (session trapped after cd into a foreign project; dimitri-mint-dev). close T-4318. file T-4319 (ring20: dispatched workers persist after result collection). file T-4320 (arc close accepts the anchor's opening GO) and inception T-4321 (agent files close recommendation + demo), from 1023's report. file T-4322 (firewall rule from Anywhere -> local subnet) and T-4323 (stale Watchtower firewall rules), dimitri-mint-dev T-128. file T-4324 (no supported way to correct a mis-clicked inception decision; T-2899). greenfield prompt v2.2.1 from dimitri-mint-dev (verbatim, sha256 2a1f69c3; AEF review corrections applied) — to publish in README section A with v1.8.11. file T-4325 (unit-suite tests that fail only under parallel load). README section A+ publishes greenfield prompt v2.2.1 (dimitri-mint-dev T-129/T-131, verified sha256 2a1f69c3; for v1.8.11; v2.1 kept in docs/reports for v1.8.10). file T-4326 (rail status host/project misread) and T-4327 (rail label case), from 832 T-1203. v1.8.11 released (master/tag e42aa41bf, GitHub release); field report lists the NOT EXERCISED fixes and who re-tests them; peers notified
+
+# Key outcomes
+outcomes:
+  - 'docs/reports/field-test-v1.8.11-results.md lists every fix in the release with its field result (WORKS / BROKEN / NOT EXERCISED, which project, which head)'
+  - 'Full unit suite on the release head compared with v1.8.10 (scratch clone, not a worktree): no failure attributed to the release diff that is not baselined with an owner'
+  - '`bin/fw release tag-and-release --bump patch --dry-run` clean on the pushed head; output kept in Updates'
+  - 'Operator decision recorded (yes/no) — fixes without a positive field test listed in the question'
+  - 'After a yes: tag v1.8.11, master fast-forwarded, GitHub release present, waiting projects notified (1409, 055, 832, 1023, ring20-dashboard)'
+
+# Challenges (auto-detected from git: commits with fix/revert/bug/error)
+challenges:
+  - description: 'v1.8.11 released (master/tag e42aa41bf, GitHub release); field report lists the NOT EXERCISED fixes and who re-tests them; peers notified'
+    source: git-mined
+  - description: 'comparison report final — all 22 tip-only reds attributed (19 fixed, 2 not regressions), t2912 timeout fixed; gate met'
+    source: git-mined
+  - description: 'v1.8.11 full-suite comparison report (22 tip-only reds: 13 attributed and fixed, 9 + 1 timeout under T-4300..T-4302)'
+    source: git-mined
+
+# Decisions (from task file Decisions section)
+decisions:
+  # No decisions recorded (mechanical task or old template)
+
+# Artifacts (auto-mined from git --name-only)
+artifacts:
+  - '.context/episodic/T-2746.yaml'
+  - '.context/episodic/T-4247.yaml'
+  - '.context/episodic/T-4264.yaml'
+  - '.context/episodic/T-4296.yaml'
+  - '.context/episodic/T-4298.yaml'
+  - '.context/episodic/T-4300.yaml'
+  - '.context/episodic/T-4301.yaml'
+  - '.context/episodic/T-4302.yaml'
+  - '.context/episodic/T-4303.yaml'
+  - '.context/episodic/T-4304.yaml'
+  - '.context/episodic/T-4307.yaml'
+  - '.context/episodic/T-4308.yaml'
+  - '.context/episodic/T-4310.yaml'
+  - '.context/episodic/T-4312.yaml'
+  - '.context/episodic/T-4313.yaml'
+  - '.context/episodic/T-4314.yaml'
+  - '.context/episodic/T-4318.yaml'
+  - '.context/project/concerns.yaml'
+  - 'docs/releases/v1.8.11-upgrade-notes.md'
+  - 'docs/reports/field-test-v1.8.11-results.md'
+  - 'docs/reports/T-4237-inputs/aef-greenfield-install-prompt-v2.2.1.md'
+  - 'docs/reports/T-4246-full-suite-comparison.md'
+  - 'README.md'
+  - '.tasks/active/T-2746-fw-auto-inits-a-project-in-pwd-on-any-no.md'
+  - '.tasks/active/T-4246-release-v1811-field-evidence-full-suite-.md'
+  - '.tasks/active/T-4247-gaps-runs-the-gauges-of-resolved-gaps-to.md'
+  - '.tasks/active/T-4278-fw-upgrade-rewrites-claudemd-governance-.md'
+  - '.tasks/active/T-4286-security-release-blocker-v1811-estate-pu.md'
+  - '.tasks/active/T-4297-security-fw-watchtower-start-adds-a-ufw-.md'
+  - '.tasks/active/T-4298-t-4248-follow-up-installsh-prints-no-war.md'
+  - '.tasks/active/T-4300-claude-fw-register-leak-and-handover-ter.md'
+  - '.tasks/active/T-4301-budget-gate-classify-driver-refusals-and.md'
+  - '.tasks/active/T-4302-t2912upgradehookregenconvergencebats-tim.md'
+  - '.tasks/active/T-4303-a-binfw-that-does-not-parse-blocks-every.md'
+  - '.tasks/active/T-4304-watchtower-cannot-start-on-a-clean-machi.md'
+  - '.tasks/active/T-4305-embeddings-returns-500-on-an-empty-proje.md'
+  - '.tasks/active/T-4306-fw-watchtower-stop-reports-failure-when-.md'
+  - '.tasks/active/T-4307-p-013-render-gate-false-positive-on-the-.md'
+  - '.tasks/active/T-4308-fw-inbox-t-4252-prints-a-python-tracebac.md'
+  - '.tasks/active/T-4309-should-aef-own-a-joint-agent-profile-v1-.md'
+  - '.tasks/active/T-4310-re-pin-the-workflow-designer-to-0230.md'
+  - '.tasks/active/T-4311-sidecar-signs-with-the-host-key-even-whe.md'
+  - '.tasks/active/T-4315-sidecar-watcher-was-explicitly-stopped-a.md'
+  - '.tasks/active/T-4316-consumers-own-secret-scan-allowlist-entr.md'
+  - '.tasks/active/T-4317-a-session-that-cds-into-a-foreign-projec.md'
+  - '.tasks/active/T-4319-dispatched-termlink-workers-persist-afte.md'
+  - '.tasks/active/T-4320-arc-close-accepts-the-anchor-tasks-openi.md'
+  - '.tasks/active/T-4321-should-the-arc-lifecycle-make-the-agent-.md'
+  - '.tasks/active/T-4322-watchtowers-opted-in-firewall-rule-allow.md'
+  - '.tasks/active/T-4323-firewall-rules-watchtower-opened-are-nev.md'
+  - '.tasks/active/T-4324-no-supported-way-to-correct-a-mis-clicke.md'
+  - '.tasks/active/T-4325-unit-suite-tests-that-fail-only-under-th.md'
+  - '.tasks/active/T-4326-fw-rail-status-reports-state-host-when-t.md'
+  - '.tasks/active/T-4327-check-rail-mcp-label-suggests-a-lower-ca.md'
+  - '.tasks/completed/T-2746-fw-auto-inits-a-project-in-pwd-on-any-no.md'
+  - '.tasks/completed/T-4247-gaps-runs-the-gauges-of-resolved-gaps-to.md'
+  - '.tasks/completed/T-4264-read-only-allowlist-misses-git--c-dir-re.md'
+  - '.tasks/completed/T-4296-fw-init-exits-1-silently-when-home-does-.md'
+  - '.tasks/completed/T-4298-t-4248-follow-up-installsh-prints-no-war.md'
+  - '.tasks/completed/T-4300-claude-fw-register-leak-and-handover-ter.md'
+  - '.tasks/completed/T-4301-budget-gate-classify-driver-refusals-and.md'
+  - '.tasks/completed/T-4302-t2912upgradehookregenconvergencebats-tim.md'
+  - '.tasks/completed/T-4303-a-binfw-that-does-not-parse-blocks-every.md'
+  - '.tasks/completed/T-4304-watchtower-cannot-start-on-a-clean-machi.md'
+  - '.tasks/completed/T-4307-p-013-render-gate-false-positive-on-the-.md'
+  - '.tasks/completed/T-4308-fw-inbox-t-4252-prints-a-python-tracebac.md'
+  - '.tasks/completed/T-4310-re-pin-the-workflow-designer-to-0230.md'
+  - '.tasks/completed/T-4312-sidecar-inbox-reports-no-pending-consult.md'
+  - '.tasks/completed/T-4313-orchestrator-status-test-fixtures-are-no.md'
+  - '.tasks/completed/T-4314-verdict-ledger-audit-fails-in-a-non-git-.md'
+  - '.tasks/completed/T-4318-installtargetproject-t-2809-fetch-dir-te.md'
+
+# Timeline (auto-mined from git log)
+git_timeline:
+  - time: '2026-10-17T15:51:57'
+    action: 'T-4246: release v1.8.11 task + field round 3 (832: T-4219, T-4223 WORKS); T-4247 gauge follow-up'
+  - time: '2026-10-17T15:54:05'
+    action: 'T-4246: field doc — T-4247 closed as not needed (gauges already limited to watching gaps)'
+  - time: '2026-10-17T21:04:41'
+    action: 'T-4246: field round 4 — ring20 confirms T-4250 WORKS; file T-4278 (upgrade step 1 runs before the vendor step can refuse)'
+  - time: '2026-10-18T01:30:45'
+    action: 'T-4246: field round 5 (ring20-dashboard: 3 WORKS, 11 not exercised); file T-4286 estate-push key leak as a release blocker'
+  - time: '2026-10-18T12:02:43'
+    action: 'T-4246: field round 6 (greenfield v2.2: 9 WORKS, T-4248 warning FAILS); file T-4297 UFW rule, T-4298; promote T-2746 (F-20 auto-init)'
+  - time: '2026-10-18T13:29:55'
+    action: 'T-4246: v1.8.11 full-suite comparison report (22 tip-only reds: 13 attributed and fixed, 9 + 1 timeout under T-4300..T-4302)'
+  - time: '2026-10-18T15:53:00'
+    action: 'T-4246: register G-118 (a bin/fw that does not parse blocks every hook; T-4303); file T-4303..T-4310 from peer findings (055, dimitri-mint-dev round 7, 832 0.23.0)'
+  - time: '2026-10-18T16:01:58'
+    action: 'T-4246: field round 7 (dimitri-mint-dev container greenfield: markdown2 blocker T-4304, T-4305..T-4308); T-4310 closed; file T-4311 (sidecar ignores RAIL_IDENTITY_FILE, 832 T-1151)'
+  - time: '2026-10-18T16:48:52'
+    action: 'T-4246: close T-4300, T-4301, T-4303, T-4307, T-4308, T-4312, T-4264 (verification passed at the gate); T-4296 move'
+  - time: '2026-10-18T17:09:27'
+    action: 'T-4246: close T-4302, T-4304, T-4298 (verification passed at the gate)'
+  - time: '2026-10-18T17:09:44'
+    action: 'T-4246: comparison report final — all 22 tip-only reds attributed (19 fixed, 2 not regressions), t2912 timeout fixed; gate met'
+  - time: '2026-10-18T17:10:21'
+    action: 'T-4246: v1.8.11 upgrade notes — T-4232 landed (project-owned markers), firewall opt-in, FRAMEWORK_ROOT validation, Watchtower module pre-flight, hook fast path, git -c gated'
+  - time: '2026-10-18T17:14:35'
+    action: 'T-4246: close T-2746 (no implicit fw init; greenfield F-20); upgrade note for it'
+  - time: '2026-10-18T17:14:43'
+    action: 'T-4246: upgrade notes numbering'
+  - time: '2026-10-18T18:37:02'
+    action: 'T-4246: close T-4313, T-4314'
+  - time: '2026-10-18T18:43:49'
+    action: 'T-4246: file T-4315 (sidecar watcher explicitly stopped by an unknown caller; keep-alive leaves it down)'
+  - time: '2026-10-18T18:44:48'
+    action: 'T-4246: file T-4316 (055: consumer secret-scan allowlist lost at upgrade)'
+  - time: '2026-10-18T19:03:57'
+    action: 'T-4246: file T-4317 (session trapped after cd into a foreign project; dimitri-mint-dev)'
+  - time: '2026-10-18T20:13:04'
+    action: 'T-4246: close T-4318'
+  - time: '2026-10-18T20:19:28'
+    action: 'T-4246: file T-4319 (ring20: dispatched workers persist after result collection)'
+  - time: '2026-10-18T20:29:02'
+    action: 'T-4246: file T-4320 (arc close accepts the anchor''s opening GO) and inception T-4321 (agent files close recommendation + demo), from 1023''s report'
+  - time: '2026-10-18T20:40:52'
+    action: 'T-4246: file T-4322 (firewall rule from Anywhere -> local subnet) and T-4323 (stale Watchtower firewall rules), dimitri-mint-dev T-128'
+  - time: '2026-10-18T20:44:32'
+    action: 'T-4246: file T-4324 (no supported way to correct a mis-clicked inception decision; T-2899)'
+  - time: '2026-10-18T20:54:39'
+    action: 'T-4246: greenfield prompt v2.2.1 from dimitri-mint-dev (verbatim, sha256 2a1f69c3; AEF review corrections applied) — to publish in README section A with v1.8.11'
+  - time: '2026-10-18T21:20:17'
+    action: 'T-4246: file T-4325 (unit-suite tests that fail only under parallel load)'
+  - time: '2026-10-18T21:30:07'
+    action: 'T-4246: README section A+ publishes greenfield prompt v2.2.1 (dimitri-mint-dev T-129/T-131, verified sha256 2a1f69c3; for v1.8.11; v2.1 kept in docs/reports for v1.8.10)'
+  - time: '2026-10-18T21:33:29'
+    action: 'T-4246: file T-4326 (rail status host/project misread) and T-4327 (rail label case), from 832 T-1203'
+  - time: '2026-10-18T22:08:07'
+    action: 'T-4246: v1.8.11 released (master/tag e42aa41bf, GitHub release); field report lists the NOT EXERCISED fixes and who re-tests them; peers notified'
+
+# What worked well (requires judgment — [TODO] if enrichment_status is pending)
+successes:
+  # Completed successfully in 29 commit(s), 1818 min
+
+# Related tasks
+related_tasks:
+  blocked: []
+  absorbed: []
+  spawned: []
+
+# Tags for retrieval
+tags: []
+
+# Passive metrics (derived automatically — do not edit)
+metrics:
+  # git_mining: ok = the four counters below are measurements.
+  #             skipped = git could not be reached from PROJECT_ROOT; the
+  #             counters are null (absent measurement), NOT zero (T-3129).
+  git_mining: ok
+  wall_clock_minutes: 1818
+  commits: 29
+  files_changed: 55
+  lines_added: 12609
+  lines_removed: 220
+
+# Metadata
+source_file: /opt/999-Agentic-Engineering-Framework/.tasks/completed/T-4246-release-v1811-field-evidence-full-suite-.md
+generated_by: context-agent-hybrid

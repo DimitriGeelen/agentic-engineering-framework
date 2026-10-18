@@ -6,10 +6,10 @@ description: >
   Release v1.8.11: field evidence, full-suite comparison against v1.8.10, dry run,
   operator decision, tag and announce
 
-status: started-work
+status: work-completed
 workflow_type: build
 owner: agent
-horizon: now
+horizon: null
 tags: []
 components: []
 related_tasks: []
@@ -40,8 +40,8 @@ related_tasks: []
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-17T13:50:24Z
-last_update: '2026-10-17T14:01:32Z'
-date_finished:
+last_update: 2026-10-18T20:08:40Z
+date_finished: 2026-10-18T20:08:40Z
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -145,6 +145,11 @@ bvp_scores_proposed:
 -->
 
 ## Verification
+
+test "$(git ls-remote origin refs/tags/v1.8.11^{} | cut -c1-40)" = "$(git ls-remote origin refs/heads/master | cut -c1-40)"
+grep -qx '1.8.11' VERSION
+grep -q '^## Release cut' docs/reports/field-test-v1.8.11-results.md
+grep -q 'is met on this evidence' docs/reports/T-4246-full-suite-comparison.md
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -378,3 +383,20 @@ bvp_scores_proposed:
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4246-release-v1811-field-evidence-full-suite-.md
 - **Context:** Initial task creation
+
+## Reviewer Verdict (v1.5)
+
+- **Scan ID:** R-424ec6c7
+- **Timestamp:** 2026-10-18T20:08:42Z
+- **Catalogue:** v1.3-seed
+- **Overall:** CONCERN
+- **Needs Human:** no
+- **Findings:** 1
+
+**Per-AC findings:**
+
+- **AC#2 (Human)** — [REVIEWER] Block message names both bypass mechanisms
+  - **reviewer-prose-mismatch** (partial, heuristic) — `matched='reads' in: Verdict: PASS; no findings on `block-message-completeness``
+
+### 2026-10-18T20:08:40Z — status-update [task-update-agent]
+- **Change:** status: started-work → work-completed
