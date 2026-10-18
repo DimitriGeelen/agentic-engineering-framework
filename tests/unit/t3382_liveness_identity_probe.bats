@@ -35,6 +35,9 @@ setup() {
 
 teardown() {
     [ -n "${FIXTURE_PID:-}" ] && kill "$FIXTURE_PID" 2>/dev/null
+    # T-4338: callers run _start_fixture in $(...), so FIXTURE_PID set there never
+    # reaches this shell; the pid file does.
+    [ -s "${TEST_TEMP_DIR:-}/fixture.pid" ] && kill "$(cat "$TEST_TEMP_DIR/fixture.pid")" 2>/dev/null
     [ -n "${TEST_TEMP_DIR:-}" ] && rm -rf "$TEST_TEMP_DIR"
     return 0
 }
@@ -44,6 +47,7 @@ _start_fixture() {
     local out="$TEST_TEMP_DIR/fixture.port"
     python3 "$FIXTURE" "$out" "$1" 3 >/dev/null 2>&1 3>&- </dev/null &
     FIXTURE_PID=$!
+    echo "$FIXTURE_PID" > "$TEST_TEMP_DIR/fixture.pid"
     local i
     for i in $(seq 1 50); do
         [ -s "$out" ] && { cat "$out"; return 0; }
