@@ -1,10 +1,13 @@
 ---
 id: T-4304
-name: "Watchtower cannot start on a clean machine: markdown2 missing, nothing installs it, PEP 668 blocks pip (greenfield container run)"
+name: "Watchtower cannot start on a clean machine: markdown2 missing, nothing installs
+  it, PEP 668 blocks pip (greenfield container run)"
 description: >
-  dimitri-mint-dev T-126 level-2 container run (ubuntu:24.04): Watchtower start fails because markdown2 is not installed; install.sh and fw init install nothing; pip install is blocked by PEP 668. Workstation runs never saw it. Blocker for greenfield.
+  dimitri-mint-dev T-126 level-2 container run (ubuntu:24.04): Watchtower start fails
+  because markdown2 is not installed; install.sh and fw init install nothing; pip
+  install is blocked by PEP 668. Workstation runs never saw it. Blocker for greenfield.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +42,8 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T13:48:10Z
-last_update: 2026-10-18T13:48:10Z
-date_finished: null
+last_update: 2026-10-18T14:05:28Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-18T14:01:10Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-18T14:02:08Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4304: Watchtower cannot start on a clean machine: markdown2 missing, nothing installs it, PEP 668 blocks pip (greenfield container run)
@@ -63,8 +94,13 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `bin/watchtower.sh` start pre-flight checks every REQUIRED Python module Watchtower imports at load (flask, flask_socketio, yaml, markdown2 — the set that breaks `import web.app` when blocked; `WATCHTOWER_REQUIRED_MODULES`), not only `flask`
+- [x] Optional modules (ollama, sqlite_vec, tantivy) are NOT pre-flight failures: `import web.app` succeeds with all three blocked (verified by blocking them in a run); their imports are lazy in web/
+- [x] On a missing required module the pre-flight exits 1 with ONE actionable line naming every missing module and the exact command (apt `python3-markdown2` on Debian/Ubuntu/Mint; venv route otherwise); no traceback (bats tests 2–4)
+- [x] The pre-flight does NOT run sudo or `pip` automatically (bats test 5 records any call)
+- [x] Decision recorded in `## Decisions` on whether `fw init` / `install.sh` should offer the install, with evidence
+- [x] Bats regression test `tests/unit/t4304_watchtower_preflight_modules.bats` runs the pre-flight with markdown2 unimportable (PYTHONPATH stub); 4 of 6 tests fail on the pre-fix code (the 6th pins the required set; test 1 passes pre-fix only because the unfixed server exits 1 too)
+- [ ] `tests/unit/upgrade_fresh_machine_simulation.bats` stays green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -113,6 +149,12 @@ date_finished: null
 -->
 
 ## Verification
+
+bash -n bin/watchtower.sh
+bats tests/unit/t4304_watchtower_preflight_modules.bats > /tmp/.t4304-out 2>&1 && ! grep -q "^not ok" /tmp/.t4304-out
+test "$(grep -c '# skip' /tmp/.t4304-out)" -eq 0
+bats tests/unit/upgrade_fresh_machine_simulation.bats > /tmp/.t4304-sim 2>&1 && ! grep -q "^not ok" /tmp/.t4304-sim
+bin/fw vendor self --check
 
 # Shell commands that MUST pass before work-completed. One per line.
 # Lines starting with # are comments (skipped). Empty lines ignored.
@@ -245,6 +287,14 @@ date_finished: null
 
 ## RCA
 
+**Symptom:** On a fresh ubuntu:24.04 container, Watchtower fails to start because `markdown2` is not installed. Nothing installs it, and a plain `pip install` is blocked by PEP 668.
+
+**Root cause:** `bin/watchtower.sh:271` pre-flights only `import flask`. `web/blueprints/core.py:6` (and tasks.py, inception.py, docs.py, shared.py-optional) imports `markdown2` at module load, so the app dies with a traceback after the pre-flight passed. The requirements list in `web/requirements.txt` is never checked against the runtime.
+
+**Why structurally allowed:** The pre-flight checks a single module chosen by hand, not the set the app needs. `install.sh` and `fw init` install no Python packages, so nothing creates the dependency either. Workstation runs never hit it because the operator's Python already has the packages, so no test ever ran a clean interpreter.
+
+**Prevention:** the pre-flight enumerates the required module set (`WATCHTOWER_REQUIRED_MODULES` in bin/watchtower.sh, derived by blocking each module against `import web.app`) and emits one actionable message; `tests/unit/t4304_watchtower_preflight_modules.bats` runs the real start path with markdown2 unimportable and pins the message, exit code and no-sudo/no-pip behaviour, so the gap cannot silently return.
+
 <!-- REQUIRED for bug-class tasks (workflow_type=build with bug-tag, OR title matches
      fix/bug/rca/broken/crash/error/regression/fail/hotfix).
      Non-bug-class tasks may leave this section empty or remove it.
@@ -314,6 +364,12 @@ date_finished: null
 
 ## Decisions
 
+### 2026-10-18 — Where the install offer lives (fw init / install.sh vs the start pre-flight)
+- **Chose:** the start pre-flight (`bin/watchtower.sh`) is the only place that prints the install command, and it prints it, never runs it. `fw init` and `install.sh` get no install step in this task.
+- **Why:** (1) PEP 668 means the only non-destructive route on Ubuntu/Mint is apt, which needs sudo; neither `fw init` nor `install.sh` should trigger sudo silently. (2) The pre-flight runs on the one path that actually needs the modules (`fw watchtower start`), so the message reaches the operator when it matters, not at init when Watchtower may never be started. (3) Evidence: `install.sh` and `fw init` install no Python packages today (task description); blocking each module in turn shows only flask, flask_socketio, yaml, markdown2 break `import web.app`, so a single init-time list would either over-install or drift from the code.
+- **Rejected:** auto `pip install --break-system-packages` (forbidden by ACs; breaks PEP 668 hosts); a `fw init` prompt (adds an interactive step to a non-interactive, consumer-facing command, and `bin/fw` is out of scope here).
+- **Open:** a `fw doctor` WARN for missing required modules is a natural follow-up; not filed here.
+
 <!-- Record decisions ONLY when choosing between alternatives.
      Skip for tasks with no meaningful choices.
      Format:
@@ -339,3 +395,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4304-watchtower-cannot-start-on-a-clean-machi.md
 - **Context:** Initial task creation
+
+### 2026-10-18T14:05:28Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

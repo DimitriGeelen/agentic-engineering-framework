@@ -189,6 +189,46 @@ do_stop() {
 # ---------------------------------------------------------------------------
 # start — Launch Watchtower with health check
 # ---------------------------------------------------------------------------
+# T-4304: the modules Watchtower imports at load (python3 -m web.app). A missing one
+# is a traceback AFTER the pre-flight passed, so they are checked here.
+# Format: import-name|pip-name|apt-name. Derived by blocking each module in turn
+# against `import web.app`: ruamel.yaml, bleach and gunicorn are NOT on the start
+# path; ollama, sqlite_vec and tantivy are imported lazily and the app degrades.
+WATCHTOWER_REQUIRED_MODULES=(
+    "flask|flask|python3-flask"
+    "flask_socketio|flask-socketio|python3-flask-socketio"
+    "yaml|pyyaml|python3-yaml"
+    "markdown2|markdown2|python3-markdown2"
+)
+
+# T-4304: one actionable error naming every missing required module and the
+# command for this machine. Prints the command; never runs sudo or pip.
+_watchtower_check_modules() {
+    local entry mod pip_name apt_name cmd
+    local names="" pips="" apts=""
+    if ! command -v python3 >/dev/null 2>&1; then
+        log_error "Watchtower cannot start: python3 is not installed."
+        return 1
+    fi
+    for entry in "${WATCHTOWER_REQUIRED_MODULES[@]}"; do
+        IFS='|' read -r mod pip_name apt_name <<< "$entry"
+        if ! python3 -c "import $mod" 2>/dev/null; then
+            names="${names:+$names, }$mod"
+            pips="${pips:+$pips }$pip_name"
+            apts="${apts:+$apts }$apt_name"
+        fi
+    done
+    [ -z "$names" ] && return 0
+    if command -v apt-get >/dev/null 2>&1 && grep -qiE '^ID(_LIKE)?=.*(debian|ubuntu)' /etc/os-release 2>/dev/null; then
+        cmd="sudo apt-get install -y $apts"
+    else
+        # A venv, not --break-system-packages: PEP 668 interpreters refuse the latter.
+        cmd="python3 -m venv ~/.venvs/aef-watchtower && ~/.venvs/aef-watchtower/bin/pip install $pips && . ~/.venvs/aef-watchtower/bin/activate (then re-run in that shell)"
+    fi
+    log_error "Watchtower cannot start: missing Python module(s): $names. Install: $cmd"
+    return 1
+}
+
 do_start() {
     local port=""
     local debug_flag=""
@@ -267,12 +307,8 @@ do_start() {
             fi ;;
     esac
 
-    # Check Flask is installed
-    if ! python3 -c "import flask" 2>/dev/null; then
-        log_error "Flask is not installed."
-        echo "  Install: pip install flask pyyaml ruamel.yaml markdown2 bleach" >&2
-        exit 1
-    fi
+    # T-4304: check every module the app imports at load, not only flask
+    _watchtower_check_modules || exit 1
 
     # Check port availability
     if port_in_use "$port"; then
