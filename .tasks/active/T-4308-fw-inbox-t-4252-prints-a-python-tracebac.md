@@ -1,10 +1,13 @@
 ---
 id: T-4308
-name: "fw inbox (T-4252) prints a Python traceback and exits 1 when termlink is not installed"
+name: "fw inbox (T-4252) prints a Python traceback and exits 1 when termlink is not
+  installed"
 description: >
-  Greenfield container run (dimitri-mint-dev T-126): with no termlink binary, the T-4252 inbox verb raises a traceback, exit 1, instead of a one-line 'termlink not installed' notice.
+  Greenfield container run (dimitri-mint-dev T-126): with no termlink binary, the
+  T-4252 inbox verb raises a traceback, exit 1, instead of a one-line 'termlink not
+  installed' notice.
 
-status: captured
+status: started-work
 workflow_type: build
 owner: agent
 horizon: now
@@ -39,8 +42,8 @@ origin: {kind: "peer", source: "dimitri-mint-dev"}
 #                                 # session from consuming the captured→started-work transition the demo
 #                                 # worker expects to drive. Origin OBS-057.
 created: 2026-10-18T13:49:19Z
-last_update: 2026-10-18T13:49:19Z
-date_finished: null
+last_update: 2026-10-18T14:07:15Z
+date_finished:
 # revisit_at: YYYY-MM-DD          # T-1451: set on DEFER decisions to enable G-053 daily revisit scan
 # revisit_evidence_needed:        # T-1451: one-line description of what evidence makes the revisit actionable
 # ── BVP scoring fields (T-1918, arc-006). See docs/reports/T-1915-bvp-inception.md for semantics. ──
@@ -51,6 +54,34 @@ date_finished: null
 #                                 # from bvp_scores: on any driver (M3 v2-delta). Shape: list of timestamped entries.
 # cost_estimate:                  # F8 composite: 0.6×blast_radius + 0.3×tier + 0.1×effort.
 #                                 # Q2 fallback: T-shirt S/M/L/XL mapped to 2/4/6/8 when blast_radius is not yet computable.
+cost_estimate_proposed:
+  - ts: '2026-10-18T14:01:11Z'
+    estimator: bvp-estimator-v1-heuristic
+    cost_estimate:
+      blast_radius:
+      tier: 2
+      effort: 8
+    rationale: blast_radius=? (no-components-UNMEASURED-not-zero); tier=2 
+      (workflow:build); effort=8 (lines=287,acs=4)
+    rubric_sha: e4a00f38e801
+bvp_scores_proposed:
+  - ts: '2026-10-18T14:02:09Z'
+    estimator: bvp-estimator-v1-heuristic
+    scores:
+      D1: 4
+      D2: 4
+      D3: 3
+      D4: 2
+      F-RECALL: 2
+      F-AUTONOMY: 0
+      F3: 0
+      F1: 0
+      F2: 0
+    rationale: D1=4 (body:structural-gate); D2=4 (body:fw-audit-or-doctor); D3=3
+      (body:component-discoverability); D4=2 (body:env-class-handled); 
+      F-RECALL=2 (body:lightly-promoted); F-AUTONOMY=0 (no-signal); F3=0 
+      (no-signal); F1=0 (no-signal); F2=0 (no-signal)
+    rubric_sha: e4a00f38e801
 ---
 
 # T-4308: fw inbox (T-4252) prints a Python traceback and exits 1 when termlink is not installed
@@ -63,8 +94,10 @@ date_finished: null
 
 ### Agent
 <!-- Criteria the agent can verify (code, tests, commands). P-010 gates on these. -->
-- [ ] [First criterion]
-- [ ] [Second criterion]
+- [x] `fw sidecar inbox --peek` with termlink absent from PATH prints no Python traceback and exits with the documented NOT CHECKED code (3), printing one line that says termlink is not installed and the inbox cannot be read
+- [x] Every termlink subprocess call on the inbox read path (`lib/sidecar/inbox.py` default_reader, pending, and any others reached from cmd_inbox) handles a missing binary (FileNotFoundError / OSError) the way the surrounding module does
+- [x] A regression test in tests/unit runs the verb with termlink stripped from PATH and asserts no "Traceback" in output and the documented exit code; it fails on the pre-fix code
+- [x] Existing sidecar inbox/dm tests stay green
 
 ### Human
 <!-- Criteria requiring human verification (UI/UX, subjective quality). Not blocking.
@@ -242,6 +275,9 @@ date_finished: null
 # reports a FAIL ("Enforcement baseline CHANGED") that accumulates silently.
 # Origin: T-1849/T-1730/T-1731 each added a legitimate hook without refreshing
 # the baseline — FAIL sat for multiple sessions until T-1886 cleaned up.
+python3 -m pytest -q tests/unit/test_sidecar_inbox_no_termlink_t4308.py
+python3 -m pytest -q tests/unit/test_sidecar_receipts_t3684.py tests/unit/test_sidecar_cli_peer_frame.py tests/unit/test_sidecar_inbox.py
+bin/fw vendor self --check
 
 ## RCA
 
@@ -258,6 +294,14 @@ date_finished: null
      The completion gate (T-1550, G-019) blocks --status work-completed when
      bug-class AND this section is empty/template-only. Use --skip-rca to bypass (logged).
 -->
+
+**Symptom:** on a greenfield host with no `termlink` binary and no `.context/sidecar/hub-id` cache, `fw sidecar inbox --peek` prints a Python traceback and exits 1 instead of one NOT CHECKED line.
+
+**Root cause:** `lib/sidecar/circuit.py:124` `hub_id()` correctly converts the missing binary (`OSError`) into `CircuitError`, but `lib/sidecar_cli.py` `cmd_inbox` (line ~242) calls `inbox.pending()` with no handler, so `CircuitError` escapes to the top level. The sibling verbs already handle this: `cmd_alerts` catches its failure and prints `NOT CHECKED: <reason>` with exit 3, and `_inbound_or_unknown` catches `CircuitError` at the display boundary.
+
+**Why structurally allowed:** the `.context/sidecar/hub-id` cache hid the path on every host that had run the sidecar once, so no test or dogfood run ever reached `hub_id()` with termlink absent. The existing inbox tests monkeypatch `pending`/`read_topics`, so the address-derivation call was never exercised.
+
+**Prevention:** `tests/unit/test_sidecar_inbox_no_termlink_t4308.py` runs the real verb in an empty project with termlink stripped from PATH and no hub-id cache, asserting no traceback and exit 3 with the NOT CHECKED line.
 
 ## Evolution
 
@@ -339,3 +383,6 @@ date_finished: null
 - **Action:** Created task via task-create agent
 - **Output:** /opt/999-Agentic-Engineering-Framework/.tasks/active/T-4308-fw-inbox-t-4252-prints-a-python-tracebac.md
 - **Context:** Initial task creation
+
+### 2026-10-18T14:07:15Z — status-update [task-update-agent]
+- **Change:** status: captured → started-work

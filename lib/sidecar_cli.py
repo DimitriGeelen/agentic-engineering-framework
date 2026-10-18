@@ -239,7 +239,20 @@ def _framed(text) -> str:
 def cmd_inbox(args) -> int:
     if getattr(args, "show", None):
         return _cmd_show(args)
-    messages = inbox.pending(advance=not args.peek)
+    try:
+        messages = inbox.pending(advance=not args.peek)
+    except circuit.CircuitError as e:
+        # T-4308: no termlink binary (or no readable hub anchor) means the inbox
+        # is UNKNOWN, not empty. Same NOT CHECKED answer and exit 3 as `fw sidecar alerts`.
+        import shutil
+        reason = str(e) or type(e).__name__
+        if shutil.which("termlink") is None:
+            reason = "termlink is not installed; the inbox cannot be read"
+        if args.json:
+            print(json.dumps({"checked": False, "reason": reason}))
+        else:
+            print(f"NOT CHECKED: {reason}")
+        return 3
     try:
         return _print_inbox(args, messages)
     finally:
