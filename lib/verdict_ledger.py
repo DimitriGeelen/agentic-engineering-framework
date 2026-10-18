@@ -1664,6 +1664,10 @@ def history_fault(root: Path, rel: Path) -> str:
     walk `load_ledger` makes for verdicts.jsonl, applied to the completions file)."""
     rc, _ = _git_out(root, "rev-parse", "-q", "--verify", "HEAD")
     if rc == 128:
+        # T-4314: an absent or blank file has no history to verify.
+        p = root / rel
+        if not p.is_file() or not _nonblank(p.read_text(encoding="utf-8", errors="replace")):
+            return ""
         return "git cannot answer (not a repository) — history is unverifiable"
     history = ""
     if rc == 0:
@@ -2026,7 +2030,10 @@ def load_ledger(root: Path) -> Ledger:
     try:
         rc, _ = _git_out(root, "rev-parse", "-q", "--verify", "HEAD")
         if rc == 128:
-            led.faults.append("git cannot answer (not a repository) — ledger history is unverifiable")
+            # T-4314: no rows means nothing to verify and nothing that can count as a
+            # verdict; fail closed only when there are rows whose history is unknowable.
+            if cur:
+                led.faults.append("git cannot answer (not a repository) — ledger history is unverifiable")
             return led
         history = ""
         if rc == 0:
