@@ -57,7 +57,8 @@ date_finished: null
 
 ## Context
 
-<!-- One sentence for small tasks. Link to design docs for substantial ones. -->
+Input from 832 (msg c4aefa7e): 832 already compares the label against the verbatim dir name, so a verbatim
+canonical form costs them nothing.
 
 ## Acceptance Criteria
 
